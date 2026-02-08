@@ -69,7 +69,7 @@ See **TESTING.md** for the full testing playbook.
 | Phase | Status | Description |
 |-------|--------|-------------|
 | 0 | Done | Scaffold, types, testing pipeline, CLAUDE.md |
-| 1 | Pending | Hand, Deck, BiddingSequence, HCP calculator |
+| 1 | Done | Engine core: types, constants, hand-evaluator, deal-generator, EnginePort |
 | 2 | Pending | Convention registry + Stayman implementation |
 | 3 | Pending | AI opponent engine |
 | 4 | Pending | Drill UI with feedback |

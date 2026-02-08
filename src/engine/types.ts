@@ -32,3 +32,117 @@ export enum Seat {
   South = 'S',
   West = 'W',
 }
+
+export enum Vulnerability {
+  None = 'None',
+  NorthSouth = 'NS',
+  EastWest = 'EW',
+  Both = 'Both',
+}
+
+export enum BidSuit {
+  Clubs = 'C',
+  Diamonds = 'D',
+  Hearts = 'H',
+  Spades = 'S',
+  NoTrump = 'NT',
+}
+
+export enum SpecialBid {
+  Pass = 'Pass',
+  Double = 'X',
+  Redouble = 'XX',
+}
+
+export interface Hand {
+  readonly cards: readonly Card[];
+}
+
+export interface ContractBid {
+  readonly type: 'bid';
+  readonly level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  readonly strain: BidSuit;
+}
+
+export interface SpecialCall {
+  readonly type: 'pass' | 'double' | 'redouble';
+}
+
+export type Call = ContractBid | SpecialCall;
+
+export interface AuctionEntry {
+  readonly seat: Seat;
+  readonly call: Call;
+}
+
+export interface Auction {
+  readonly entries: readonly AuctionEntry[];
+  readonly isComplete: boolean;
+}
+
+export interface Contract {
+  readonly level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  readonly strain: BidSuit;
+  readonly doubled: boolean;
+  readonly redoubled: boolean;
+  readonly declarer: Seat;
+}
+
+export interface Deal {
+  readonly hands: Record<Seat, Hand>;
+  readonly dealer: Seat;
+  readonly vulnerability: Vulnerability;
+}
+
+export type SuitLength = readonly [number, number, number, number];
+
+export interface DistributionPoints {
+  readonly shortness: number;
+  readonly length: number;
+  readonly total: number;
+}
+
+export interface HandEvaluation {
+  readonly hcp: number;
+  readonly distribution: DistributionPoints;
+  readonly shape: SuitLength;
+  readonly totalPoints: number;
+  readonly strategy: string;
+}
+
+export interface HandEvaluationStrategy {
+  readonly name: string;
+  evaluate(hand: Hand): HandEvaluation;
+}
+
+export interface SeatConstraint {
+  readonly seat: Seat;
+  readonly minHcp?: number;
+  readonly maxHcp?: number;
+  readonly balanced?: boolean;
+  readonly minLength?: Partial<Record<Suit, number>>;
+  readonly maxLength?: Partial<Record<Suit, number>>;
+}
+
+export interface DealConstraints {
+  readonly seats: readonly SeatConstraint[];
+  readonly vulnerability?: Vulnerability;
+  readonly dealer?: Seat;
+}
+
+export interface DealGeneratorResult {
+  readonly deal: Deal;
+  readonly iterations: number;
+  readonly relaxationSteps: number;
+}
+
+export interface DDSolution {
+  readonly tricks: Record<Seat, Record<BidSuit, number>>;
+}
+
+export interface Score {
+  readonly contract: Contract;
+  readonly tricksWon: number;
+  readonly score: number;
+  readonly vulnerability: Vulnerability;
+}

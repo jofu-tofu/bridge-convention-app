@@ -8,7 +8,7 @@
 | Component | @testing-library/svelte | `src/components/__tests__/*.test.ts` | 25 at completion |
 | E2E | Playwright | `tests/e2e/*.spec.ts` | 2-5 smoke tests |
 
-**Current (Phase 0):** 10 unit tests, 0 component tests, 2 E2E tests.
+**Current (Phase 1):** 96 unit tests, 0 component tests, 2 E2E tests.
 
 **Runtime targets:** Unit <2s, Component ~5s, E2E ~30s, Total <40s.
 
