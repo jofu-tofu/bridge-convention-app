@@ -17,11 +17,11 @@
   --color-accent-danger: #EF4444;
   --color-suit-spades: #E2E8F0;
   --color-suit-hearts: #F87171;
-  --color-suit-diamonds: #60A5FA;
+  --color-suit-diamonds: #FB923C; /* Diamonds are orange per Style Guide, NOT blue or red */
   --color-suit-clubs: #A3E635;
   --color-suit-card-spades: #1A1A2E;
   --color-suit-card-hearts: #F87171;
-  --color-suit-card-diamonds: #3B82F6;
+  --color-suit-card-diamonds: #FB923C; /* Diamonds are orange per Style Guide, NOT blue or red */
   --color-suit-card-clubs: #A3E635;
   --color-table-surface: #1A2332;
   --color-table-border: #2A3A4E;
@@ -67,3 +67,13 @@ body {
 #app { height: 100%; }
 button { font-family: inherit; cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* Global focus-visible indicators (WCAG 2.4.7) */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+input:focus-visible { outline-offset: 0; }

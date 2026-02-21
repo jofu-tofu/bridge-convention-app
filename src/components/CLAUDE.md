@@ -46,16 +46,16 @@ components/
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
-**Design tokens:** Suit colors use 4-color scheme: Spades (#E2E8F0), Hearts (#F87171), Diamonds (#60A5FA blue), Clubs (#A3E635). Card-face colors differ from on-dark-bg colors — see `src/lib/tokens.ts`.
+**Design tokens:** Suit colors use 4-color scheme: Spades (#E2E8F0), Hearts (#F87171), Diamonds (#FB923C orange), Clubs (#A3E635). Card-face colors differ from on-dark-bg colors — see `src/lib/tokens.ts`.
 
 ## Gotchas
 
 - `GameScreen` uses a one-shot `$effect` with `initialized` flag to avoid re-triggering `startNewDrill()` on every render
 - `GameScreen` auto-navigates to ExplanationScreen when `gameStore.phase === "EXPLANATION"` via a separate `$effect`
 - PLAYING phase is a stub — shows "Card play coming in Phase 5" message
-- `BidPanel` `callSortKey` must use `call.type !== "bid"` guard before accessing `call.level`/`call.strain` (TS discriminated union)
+- `BidPanel` always renders all 35 contract bids (7x5 grid) + 3 specials; unavailable bids are disabled/grayed, not hidden
 - User seat is hardcoded to `Seat.South` in GameScreen/ExplanationScreen — future: make configurable
-- Old flat components (`components/*.svelte`) are kept for backward compat with old tests — new code imports from `screens/`, `game/`, `shared/`
+- GameScreen has a local `dealNumber` counter that increments on each new drill and resets on remount
 
 ---
 

@@ -87,6 +87,7 @@ tests/
 
 ## Gotchas
 
+- `npm run dev` uses Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here
 - `src-tauri/` is boilerplate scaffold until Phase 5 — don't add custom Rust commands yet

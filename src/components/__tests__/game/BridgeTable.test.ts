@@ -9,7 +9,6 @@ describe("BridgeTable", () => {
   const defaultProps = {
     hands: deal.hands,
     userSeat: Seat.South,
-    dealer: Seat.North,
   };
 
   it("renders 4 hand fan areas", () => {

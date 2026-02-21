@@ -1,5 +1,10 @@
 import { setContext, getContext } from "svelte";
 import type { EnginePort } from "../engine/port";
+import type { createGameStore } from "../stores/game.svelte";
+import type { createAppStore } from "../stores/app.svelte";
+
+type GameStore = ReturnType<typeof createGameStore>;
+type AppStore = ReturnType<typeof createAppStore>;
 
 const ENGINE_KEY = Symbol("engine");
 const GAME_STORE_KEY = Symbol("game-store");
@@ -14,25 +19,20 @@ export function getEngine(): EnginePort {
   return getContext<EnginePort>(ENGINE_KEY);
 }
 
-// Game store context — typed generically since the store shape is defined in stores/game.svelte.ts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function setGameStore(store: any): void { // any: store type defined in game.svelte.ts
+// Game store context
+export function setGameStore(store: GameStore): void {
   setContext(GAME_STORE_KEY, store);
 }
 
-export function getGameStore(): ReturnType<typeof import("../stores/game.svelte").createGameStore> {
-  // any: typed at call site
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return getContext<any>(GAME_STORE_KEY);
+export function getGameStore(): GameStore {
+  return getContext<GameStore>(GAME_STORE_KEY);
 }
 
 // App store context
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function setAppStore(store: any): void { // any: store type defined in app.svelte.ts
+export function setAppStore(store: AppStore): void {
   setContext(APP_STORE_KEY, store);
 }
 
-export function getAppStore(): ReturnType<typeof import("../stores/app.svelte").createAppStore> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return getContext<any>(APP_STORE_KEY);
+export function getAppStore(): AppStore {
+  return getContext<AppStore>(APP_STORE_KEY);
 }

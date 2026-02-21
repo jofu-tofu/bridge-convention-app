@@ -1,5 +1,8 @@
+<!-- Design: Always show all 35 bids in a stable 7x5 grid. Unavailable bids are
+     grayed out (disabled) rather than hidden, so the table structure stays constant
+     across auction states. This is a deliberate UX choice, not a bug. -->
 <script lang="ts">
-  import type { Call } from "../../engine/types";
+  import type { Call, ContractBid } from "../../engine/types";
   import { BidSuit } from "../../engine/types";
   import { formatCall } from "../../lib/format";
   import { BID_SUIT_COLOR_CLASS } from "../../lib/tokens";
@@ -13,22 +16,28 @@
 
   let { legalCalls, onBid, disabled = false, compact = false }: Props = $props();
 
-  function callSortKey(call: Call): number {
-    if (call.type !== "bid") {
-      if (call.type === "pass") return 0;
-      if (call.type === "double") return 1000;
-      return 1001; // redouble
-    }
-    const strainOrder: Record<BidSuit, number> = { C: 0, D: 1, H: 2, S: 3, NT: 4 };
-    return call.level * 10 + strainOrder[call.strain];
+  const ALL_BIDS: readonly ContractBid[] = Array.from({ length: 35 }, (_, i) => ({
+    type: "bid" as const,
+    level: (Math.floor(i / 5) + 1) as ContractBid["level"],
+    strain: ([BidSuit.Clubs, BidSuit.Diamonds, BidSuit.Hearts, BidSuit.Spades, BidSuit.NoTrump] as const)[i % 5],
+  }));
+
+  const ALL_SPECIALS: Call[] = [
+    { type: "pass" },
+    { type: "double" },
+    { type: "redouble" },
+  ];
+
+  function callKey(call: Call): string {
+    if (call.type === "bid") return `${call.level}${call.strain}`;
+    return call.type;
   }
 
-  const sortedCalls = $derived(
-    [...legalCalls].sort((a, b) => callSortKey(a) - callSortKey(b)),
-  );
+  const legalSet = $derived(new Set(legalCalls.map(callKey)));
 
-  const levelBids = $derived(sortedCalls.filter((c) => c.type === "bid"));
-  const specialBids = $derived(sortedCalls.filter((c) => c.type !== "bid"));
+  function isLegal(call: Call): boolean {
+    return legalSet.has(callKey(call));
+  }
 
   function getColorClass(call: Call): string {
     if (call.type !== "bid") return "text-text-primary";
@@ -38,14 +47,15 @@
 
 <div class="space-y-2">
   <div class="grid grid-cols-5 gap-1" data-testid="level-bids">
-    {#each levelBids as call (callSortKey(call))}
+    {#each ALL_BIDS as call (callKey(call))}
+      {@const legal = isLegal(call) && !disabled}
       <button
         class="{compact ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'} rounded-[--radius-sm] font-mono transition-colors
-          {disabled
-            ? 'bg-bg-elevated text-text-muted'
-            : 'bg-bg-elevated hover:bg-bg-hover cursor-pointer'
+          {legal
+            ? 'bg-bg-elevated hover:bg-bg-hover cursor-pointer'
+            : 'bg-bg-elevated opacity-30 cursor-default'
           } {getColorClass(call)}"
-        disabled={disabled}
+        disabled={!legal}
         onclick={() => onBid(call)}
       >
         {formatCall(call)}
@@ -54,22 +64,19 @@
   </div>
 
   <div class="flex gap-1" data-testid="special-bids">
-    {#each specialBids as call (callSortKey(call))}
+    {#each ALL_SPECIALS as call (callKey(call))}
+      {@const legal = isLegal(call) && !disabled}
       <button
         class="{compact ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'} rounded-[--radius-sm] font-mono transition-colors
-          {disabled
-            ? 'bg-bg-elevated text-text-muted'
-            : 'bg-bg-elevated hover:bg-bg-hover text-text-primary cursor-pointer'
+          {legal
+            ? 'bg-bg-elevated hover:bg-bg-hover text-text-primary cursor-pointer'
+            : 'bg-bg-elevated text-text-primary opacity-30 cursor-default'
           }"
-        disabled={disabled}
+        disabled={!legal}
         onclick={() => onBid(call)}
       >
         {formatCall(call)}
       </button>
     {/each}
   </div>
-
-  {#if sortedCalls.length === 0}
-    <span class="text-text-muted italic text-sm">No legal calls</span>
-  {/if}
 </div>

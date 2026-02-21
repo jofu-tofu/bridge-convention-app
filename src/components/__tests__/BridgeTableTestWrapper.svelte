@@ -6,12 +6,11 @@
   interface Props {
     hands: Record<Seat, Hand>;
     userSeat: Seat;
-    dealer: Seat;
   }
 
-  let { hands, userSeat, dealer }: Props = $props();
+  let { hands, userSeat }: Props = $props();
 </script>
 
-<BridgeTable {hands} {userSeat} {dealer}>
+<BridgeTable {hands} {userSeat}>
   <div data-testid="center-content">Center</div>
 </BridgeTable>

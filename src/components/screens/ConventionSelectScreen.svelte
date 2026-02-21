@@ -31,21 +31,33 @@
 
   <!-- Search -->
   <div class="mb-4">
-    <input
-      type="text"
-      placeholder="Search conventions..."
-      bind:value={searchQuery}
-      class="w-full px-4 py-2 bg-bg-card border border-border-default rounded-[--radius-md]
-        text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-primary
-        transition-colors"
-    />
+    <div class="flex items-center gap-3 bg-bg-card border border-border-subtle rounded-[--radius-lg] px-4 py-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary shrink-0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input
+        type="text"
+        placeholder="Search conventions..."
+        aria-label="Search conventions"
+        bind:value={searchQuery}
+        class="w-full bg-transparent text-text-primary placeholder-text-muted"
+      />
+    </div>
   </div>
 
   <!-- Category filters -->
   <div class="flex gap-2 mb-6 flex-wrap">
+    <button
+      class="px-4 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors cursor-pointer
+        {activeCategory === null
+          ? 'bg-accent-primary text-white'
+          : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'
+        }"
+      onclick={() => (activeCategory = null)}
+    >
+      All
+    </button>
     {#each categories as cat (cat)}
       <button
-        class="px-3 py-1.5 rounded-[--radius-md] text-sm font-medium transition-colors cursor-pointer
+        class="px-4 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors cursor-pointer
           {activeCategory === cat
             ? 'bg-accent-primary text-white'
             : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'
@@ -57,19 +69,21 @@
     {/each}
   </div>
 
-  <!-- Convention cards -->
+  <!-- Convention list -->
   {#if filteredConventions.length > 0}
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-3">
       {#each filteredConventions as convention (convention.id)}
         <button
-          class="text-left p-4 rounded-[--radius-lg] bg-bg-card
-            border border-border-subtle hover:border-accent-primary
+          class="flex items-center justify-between text-left p-4 rounded-[--radius-lg] bg-bg-card
+            border-2 border-transparent hover:border-accent-primary
             transition-colors cursor-pointer"
           onclick={() => handleSelect(convention)}
         >
-          <h2 class="text-lg font-semibold text-text-primary">{convention.name}</h2>
-          <p class="text-sm text-text-secondary mt-1">{convention.description}</p>
-          <span class="inline-block mt-2 px-2 py-0.5 rounded-[--radius-sm] text-xs bg-bg-elevated text-text-muted">
+          <div>
+            <h2 class="text-lg font-semibold text-text-primary">{convention.name}</h2>
+            <p class="text-sm text-text-secondary mt-1">{convention.description}</p>
+          </div>
+          <span class="rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1 ml-4 shrink-0">
             {convention.category}
           </span>
         </button>

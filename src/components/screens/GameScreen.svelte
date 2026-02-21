@@ -14,9 +14,12 @@
 
   const userSeat = Seat.South;
 
+  let dealNumber = $state(0);
+
   async function startNewDrill() {
     const convention = appStore.selectedConvention;
     if (!convention) return;
+    dealNumber++;
     await startDrill(engine, convention, userSeat, gameStore);
   }
 
@@ -24,7 +27,7 @@
   $effect(() => {
     if (!initialized) {
       initialized = true;
-      startNewDrill();
+      startNewDrill().catch(console.error);
     }
   });
 
@@ -63,15 +66,19 @@
   <div class="h-full flex flex-col">
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-3 border-b border-border-subtle">
-      <h1 class="text-lg font-bold text-text-primary">
-        {appStore.selectedConvention?.name ?? "Drill"}
-      </h1>
-      <button
-        class="text-sm text-text-secondary hover:text-text-primary cursor-pointer transition-colors"
-        onclick={() => appStore.navigateToMenu()}
-      >
-        Back to Menu
-      </button>
+      <div class="flex items-center gap-4">
+        <button
+          class="min-w-[44px] min-h-[44px] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
+          onclick={() => appStore.navigateToMenu()}
+          aria-label="Back to menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        </button>
+        <h1 class="text-xl font-semibold text-text-primary">
+          {appStore.selectedConvention?.name ?? "Drill"} Practice
+        </h1>
+      </div>
+      <span class="text-text-secondary text-base">Deal #{dealNumber}</span>
     </div>
 
     {#if gameStore.phase === "BIDDING"}
@@ -82,7 +89,6 @@
             <BridgeTable
               hands={gameStore.deal.hands}
               {userSeat}
-              dealer={gameStore.deal.dealer}
             >
               <div class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md">
                 <AuctionTable

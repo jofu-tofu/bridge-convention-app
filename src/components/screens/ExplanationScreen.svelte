@@ -2,7 +2,7 @@
   import { Seat } from "../../engine/types";
   import { getEngine, getGameStore, getAppStore } from "../../lib/context";
   import { startDrill } from "../../lib/drill-helpers";
-  import { formatCall } from "../../lib/format";
+  import { formatCall, STRAIN_SYMBOLS } from "../../lib/format";
   import BiddingReview from "../game/BiddingReview.svelte";
   import Button from "../shared/Button.svelte";
 
@@ -37,7 +37,7 @@
     <div class="bg-bg-card rounded-[--radius-lg] p-4 border border-border-subtle">
       <h2 class="text-sm font-medium text-text-muted mb-1">Contract</h2>
       <p class="text-lg font-mono text-text-primary">
-        {gameStore.contract.level}{gameStore.contract.strain}
+        {gameStore.contract.level}{STRAIN_SYMBOLS[gameStore.contract.strain]}
         {gameStore.contract.doubled ? " X" : ""}{gameStore.contract.redoubled ? " XX" : ""}
         by {gameStore.contract.declarer}
       </p>
