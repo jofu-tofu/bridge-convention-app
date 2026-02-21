@@ -1,30 +1,51 @@
 # E2E Tests
 
-## Purpose
+Playwright end-to-end smoke tests for user-facing behavior.
 
-End-to-end smoke tests using Playwright. Test user-facing behavior in a real browser.
+## Commands
 
-## Config
+| Command            | Purpose              |
+| ------------------ | -------------------- |
+| `npm run test:e2e` | Run Playwright tests |
+| `npm run test:all` | Unit + E2E together  |
 
-- Config file: `playwright.config.ts`
-- Test directory: `tests/e2e/`
-- Dev server: Auto-starts `npm run dev` on port 1420
+## Conventions
+
+- Config: `playwright.config.ts` at project root
+- Test location: `tests/e2e/<flow>.spec.ts`
+- Dev server auto-starts on port 1420 if not running
 - Base URL: `http://localhost:1420`
-- Reuses existing dev server if already running
+- Test structural concerns (elements render, navigation works), not specific copy
 
-## Current Tests
+## Architecture
 
-| File | Tests |
-|------|-------|
-| `convention-select.spec.ts` | App loads with main content area; heading and description render |
+**Key files:**
 
-## Running
+| File                            | Role                                                             |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `e2e/convention-select.spec.ts` | App loads with main content area; heading and description render |
 
-```bash
-npm run test:e2e     # Playwright only
-npm run test:all     # Unit + E2E together
-```
+## Constraints
 
-## Full Testing Guide
+- Full testing playbook in **TESTING.md** at project root
+- E2E tests are smoke tests only — keep count low (2-5 target)
 
-See **TESTING.md** for the complete testing playbook including test pyramid, verification flows, and mocking strategy.
+---
+
+## Context Maintenance
+
+**After modifying files in this directory:** scan the entries above — if any claim is now
+false or incomplete, update this file before ending the task. Do not defer.
+
+**Add** an entry only if an agent would fail without knowing it, it is not obvious from
+the code, and it belongs at this scope (project-wide rule → root CLAUDE.md; WHY decision
+→ inline comment or ADR; inferable from code → nowhere).
+
+**Remove** any entry that fails the falsifiability test: if removing it would not change
+how an agent acts here, remove it. If a convention here conflicts with the codebase,
+the codebase wins — update this file, do not work around it. Prune aggressively.
+
+**Staleness anchor:** This file assumes `e2e/convention-select.spec.ts` exists. If it doesn't, this file
+is stale — update or regenerate before relying on it.
+
+<!-- context-layer: generated=2026-02-20 | last-audited=never | version=1 -->

@@ -1,6 +1,19 @@
-# Tauri + SvelteKit + TypeScript
+# Bridge Practice App
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+Desktop app for drilling bridge bidding conventions (Stayman, Gerber, DONT, Bergen Raises). Built with Tauri 2.0 + Svelte 5 + TypeScript.
+
+## Getting Started
+
+```bash
+# Install all dependencies
+npm install
+
+# Start the dev server
+npm run dev
+
+# Run all tests
+npm run test:all
+```
 
 ## Recommended IDE Setup
 

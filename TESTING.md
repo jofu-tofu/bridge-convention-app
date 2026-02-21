@@ -2,27 +2,27 @@
 
 ## Test Pyramid
 
-| Layer | Tool | Location | Count Target |
-|-------|------|----------|-------------|
-| Unit | Vitest | `src/<module>/__tests__/*.test.ts` | 190+ at completion |
-| Component | @testing-library/svelte | `src/components/__tests__/*.test.ts` | 25 at completion |
-| E2E | Playwright | `tests/e2e/*.spec.ts` | 2-5 smoke tests |
+| Layer     | Tool                    | Location                             | Count Target       |
+| --------- | ----------------------- | ------------------------------------ | ------------------ |
+| Unit      | Vitest                  | `src/<module>/__tests__/*.test.ts`   | 190+ at completion |
+| Component | @testing-library/svelte | `src/components/__tests__/*.test.ts` | 25 at completion   |
+| E2E       | Playwright              | `tests/e2e/*.spec.ts`                | 2-5 smoke tests    |
 
-**Current (Phase 1):** 96 unit tests, 0 component tests, 2 E2E tests.
+**Current (Phase 2):** 291 unit tests, 0 component tests, 2 E2E tests.
 
 **Runtime targets:** Unit <2s, Component ~5s, E2E ~30s, Total <40s.
 
 ## Commands
 
-| Command | Purpose | When |
-|---------|---------|------|
-| `npm run test` | Vitest watch mode | During development |
-| `npm run test:run` | Vitest single run | Before commit |
-| `npm run test:coverage` | Coverage with thresholds | Before PR |
-| `npm run test:e2e` | Playwright E2E | After UI changes |
-| `npm run test:all` | Unit + E2E together | Full verification |
-| `npx tsc --noEmit` | TypeScript type-check | Before commit |
-| `npm run check` | Svelte type-check | After .svelte changes |
+| Command                 | Purpose                  | When                  |
+| ----------------------- | ------------------------ | --------------------- |
+| `npm run test`          | Vitest watch mode        | During development    |
+| `npm run test:run`      | Vitest single run        | Before commit         |
+| `npm run test:coverage` | Coverage with thresholds | Before PR             |
+| `npm run test:e2e`      | Playwright E2E           | After UI changes      |
+| `npm run test:all`      | Unit + E2E together      | Full verification     |
+| `npx tsc --noEmit`      | TypeScript type-check    | Before commit         |
+| `npm run check`         | Svelte type-check        | After .svelte changes |
 
 ## Unit Tests (Vitest)
 
@@ -34,15 +34,49 @@
 
 ### Coverage Thresholds
 
-| Metric | Threshold |
-|--------|-----------|
-| Branches | 90% |
-| Functions | 90% |
-| Lines | 85% |
+| Metric    | Threshold |
+| --------- | --------- |
+| Branches  | 90%       |
+| Functions | 90%       |
+| Lines     | 85%       |
 
-**Scope:** `src/engine/**`, `src/conventions/**`, `src/ai/**`
+**Scope:** `src/engine/**`, `src/conventions/**`, `src/ai/**`, `src/cli/**`
 
 Coverage is enforced in `vitest.config.ts`. Runs with `npm run test:coverage`.
+
+## Bridge Rules as Tests
+
+Tests encode bridge rules as executable assertions, serving as both verification and living documentation. Each test name references the bridge rule being tested (e.g., "auction ends after three consecutive passes following a bid").
+
+**Rule Sources:** See `docs/bridge-rules-sources.md` for authoritative references.
+
+**Test Organization:**
+- One test file per engine module: `auction.test.ts`, `scoring.test.ts`, `play.test.ts`
+- Convention tests in `src/conventions/__tests__/`
+- Engine test fixtures in `src/engine/__tests__/fixtures.ts`
+
+## Convention Test Patterns
+
+Template: `src/conventions/__tests__/_convention-template.test.ts`
+
+**Fixture API** (from `src/conventions/__tests__/fixtures.ts`):
+
+```typescript
+// Build auction from shorthand bid strings
+auctionFromBids(dealer: Seat, bids: string[]): Auction
+// e.g. auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"])
+
+// Create auction with single opening bid
+makeOpening(dealer: Seat, bid: string): Auction
+
+// Assert last auction entry matches expected
+expectBid(auction: Auction, seat: Seat, expected: string): void
+
+// Parse bid notation: "1C"-"7NT", "P", "X", "XX"
+parseCallString(str: string): Call
+```
+
+Also re-exports `hand()` and `card()` from engine fixtures.
 
 ## Component Tests (@testing-library/svelte)
 
@@ -70,13 +104,13 @@ For interactive, visible testing during development:
 4. Check the browser console for errors
 5. Take screenshots for evidence if needed
 
-| Scenario | Approach |
-|----------|----------|
-| CI/CD pipeline | Playwright headless (`npm run test:e2e`) |
-| Verifying UI during dev | Browser at localhost:1420 |
-| Regression testing | Playwright headless |
-| Debugging visual issues | Browser with devtools open |
-| Screenshot evidence | Browser screenshot or Playwright artifacts |
+| Scenario                | Approach                                   |
+| ----------------------- | ------------------------------------------ |
+| CI/CD pipeline          | Playwright headless (`npm run test:e2e`)   |
+| Verifying UI during dev | Browser at localhost:1420                  |
+| Regression testing      | Playwright headless                        |
+| Debugging visual issues | Browser with devtools open                 |
+| Screenshot evidence     | Browser screenshot or Playwright artifacts |
 
 ## Verification Flow
 
@@ -104,21 +138,21 @@ npm run test:all
 
 ## Evidence and Artifacts
 
-| Source | Location | Gitignored |
-|--------|----------|------------|
-| Playwright artifacts | `test-results/` | Yes |
-| Playwright report | `playwright-report/` | Yes |
-| Coverage report | `coverage/` | Yes |
+| Source               | Location             | Gitignored |
+| -------------------- | -------------------- | ---------- |
+| Playwright artifacts | `test-results/`      | Yes        |
+| Playwright report    | `playwright-report/` | Yes        |
+| Coverage report      | `coverage/`          | Yes        |
 
 ## Mocking Strategy
 
-| Layer | Mock? | Why |
-|-------|-------|-----|
-| Engine unit tests | No | Pure functions, no deps |
-| Convention tests | No | Pure decision trees |
-| AI tests | No | Real hands, real bids |
-| Component tests | Yes — mock engine | Pass known data as props |
-| E2E tests | No | Test the real app |
+| Layer             | Mock?             | Why                      |
+| ----------------- | ----------------- | ------------------------ |
+| Engine unit tests | No                | Pure functions, no deps  |
+| Convention tests  | No                | Pure decision trees      |
+| AI tests          | No                | Real hands, real bids    |
+| Component tests   | Yes — mock engine | Pass known data as props |
+| E2E tests         | No                | Test the real app        |
 
 ## TDD Workflow (Engine)
 

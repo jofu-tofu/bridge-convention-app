@@ -15,7 +15,10 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family:
+      system-ui,
+      -apple-system,
+      sans-serif;
     color: #e2e8f0;
     background-color: #1a202c;
   }
