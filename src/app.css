@@ -42,19 +42,25 @@
   --shadow-glow: 0 0 20px rgba(59,130,246,0.15);
   --font-mono: 'Consolas', 'Monaco', ui-monospace, monospace;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --color-text-on-accent: #FFFFFF;
+  --color-card-face: #FFFFFF;
+  --size-touch-target: 44px;
+  --width-side-panel: 220px;
+  --spacing-card-width: 70px;
+  --spacing-card-height: 98px;
+  --spacing-card-overlap-h: -20px;
+  --spacing-card-overlap-v: -72px;
+  --spacing-table-width: 800px;
+  --spacing-table-height: 650px;
 }
 
 :root {
-  --card-width: 70px;
-  --card-height: 98px;
-  --card-overlap-h: -20px;
-  --card-overlap-v: -72px;
-  --table-width: 800px;
-  --table-height: 650px;
-  --duration-fast: 100ms;
-  --duration-normal: 200ms;
-  --duration-slow: 300ms;
-  --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --card-width: var(--spacing-card-width);
+  --card-height: var(--spacing-card-height);
+  --card-overlap-h: var(--spacing-card-overlap-h);
+  --card-overlap-v: var(--spacing-card-overlap-v);
+  --table-width: var(--spacing-table-width);
+  --table-height: var(--spacing-table-height);
 }
 
 html, body { height: 100%; }
@@ -77,3 +83,13 @@ a:focus-visible,
   outline-offset: 2px;
 }
 input:focus-visible { outline-offset: 0; }
+
+/* Respect reduced-motion preferences (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

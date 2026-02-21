@@ -10,10 +10,11 @@
   let { bidHistory }: Props = $props();
 </script>
 
-<div class="space-y-2">
+<div class="flex flex-col gap-2">
   <h3 class="text-lg font-semibold text-text-secondary">Bidding Review</h3>
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
+      <caption class="sr-only">Bidding review</caption>
       <thead>
         <tr class="text-text-muted">
           <th class="text-left px-2 py-1">Seat</th>

@@ -50,6 +50,41 @@ export interface DealConstraintSource {
   readonly constraints: DealConstraints;
 }
 
+/** A single testable condition within a bidding rule. */
+export interface RuleCondition {
+  readonly name: string;
+  /** Test whether this condition is satisfied. */
+  test(context: BiddingContext): boolean;
+  /** Produce a human-readable description of what this condition found.
+   *  Context-aware: references actual hand values, not just thresholds. */
+  describe(context: BiddingContext): string;
+  /** For compound conditions (or/and): evaluate sub-conditions individually.
+   *  Returns null for leaf conditions. */
+  evaluateChildren?(context: BiddingContext): ConditionBranch[];
+}
+
+export interface ConditionBranch {
+  readonly results: readonly ConditionResult[];
+  readonly passed: boolean;
+}
+
+export interface ConditionResult {
+  readonly condition: RuleCondition;
+  readonly passed: boolean;
+  readonly description: string;
+  /** For compound conditions: per-branch sub-results. */
+  readonly branches?: readonly ConditionBranch[];
+}
+
+/**
+ * A BiddingRule whose matches() is derived from an array of named conditions.
+ * CONSTRAINT: Never override matches() independently of conditions[].
+ * Always use the conditionedRule() factory to construct these.
+ */
+export interface ConditionedBiddingRule extends BiddingRule {
+  readonly conditions: readonly RuleCondition[];
+}
+
 export interface ConventionConfig {
   readonly id: string;
   readonly name: string;

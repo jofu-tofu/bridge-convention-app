@@ -29,8 +29,8 @@
 {#if faceUp && clickable}
   <button
     type="button"
-    class="relative bg-white rounded-[--radius-md] shadow-md select-none
-      hover:-translate-y-1 hover:shadow-lg cursor-pointer transition-transform
+    class="relative bg-card-face rounded-[--radius-md] shadow-md select-none
+      motion-safe:hover:-translate-y-1 hover:shadow-lg cursor-pointer motion-safe:transition-transform
       border-none p-0"
     style={cardStyle}
     onclick={onclick}
@@ -42,8 +42,9 @@
   </button>
 {:else if faceUp}
   <div
-    class="relative bg-white rounded-[--radius-md] shadow-md select-none"
+    class="relative bg-card-face rounded-[--radius-md] shadow-md select-none"
     style={cardStyle}
+    aria-label="{card.rank} of {card.suit}"
     data-testid="card"
     data-suit={card.suit}
   >
@@ -53,6 +54,7 @@
   <div
     class="rounded-[--radius-md] bg-card-back border border-card-back-border"
     style={cardStyle}
+    aria-label="Card back"
     data-testid="card-back"
   ></div>
 {/if}

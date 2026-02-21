@@ -14,16 +14,20 @@
       {
         "title": "Bridge Practice",
         "width": 1024,
-        "height": 768
+        "height": 768,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ws://localhost:* http://localhost:*"
     }
   },
   "bundle": {
     "active": true,
     "targets": "all",
+    "category": "Game",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

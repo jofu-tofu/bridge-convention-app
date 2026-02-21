@@ -25,7 +25,7 @@
   }
 </script>
 
-<div class="max-w-3xl mx-auto p-6">
+<main class="max-w-3xl mx-auto p-6" aria-label="Convention selection">
   <h1 class="text-3xl font-bold text-text-primary mb-2">Bridge Practice</h1>
   <p class="text-text-secondary mb-6">Select a convention to begin drilling.</p>
 
@@ -46,22 +46,24 @@
   <!-- Category filters -->
   <div class="flex gap-2 mb-6 flex-wrap">
     <button
-      class="px-4 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors cursor-pointer
+      class="px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
         {activeCategory === null
-          ? 'bg-accent-primary text-white'
+          ? 'bg-accent-primary text-text-on-accent'
           : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'
         }"
+      aria-pressed={activeCategory === null}
       onclick={() => (activeCategory = null)}
     >
       All
     </button>
     {#each categories as cat (cat)}
       <button
-        class="px-4 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors cursor-pointer
+        class="px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
           {activeCategory === cat
-            ? 'bg-accent-primary text-white'
+            ? 'bg-accent-primary text-text-on-accent'
             : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'
           }"
+        aria-pressed={activeCategory === cat}
         onclick={() => toggleCategory(cat)}
       >
         {cat}
@@ -94,4 +96,4 @@
       <p class="text-text-muted">No conventions match your search.</p>
     </div>
   {/if}
-</div>
+</main>

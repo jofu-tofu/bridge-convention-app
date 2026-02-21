@@ -1,28 +1,19 @@
 import { Seat, Suit, BidSuit } from "../engine/types";
 import type { DealConstraints, Call, Auction, Deal } from "../engine/types";
 import { ConventionCategory } from "./types";
-import type { ConventionConfig, BiddingRule, BiddingContext } from "./types";
+import type { ConventionConfig, BiddingContext } from "./types";
 import { auctionMatchesExact, buildAuction } from "../engine/auction-helpers";
 import { getSuitLength } from "../engine/hand-evaluator";
+import {
+  conditionedRule,
+  auctionMatchesAny,
+  hcpMin,
+  hcpMax,
+  hcpRange,
+  majorSupport,
+} from "./conditions";
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
-
-// ─── Helpers ──────────────────────────────────────────────────
-
-function openerBidHearts(auction: Auction): boolean {
-  return auctionMatchesExact(auction, ["1H", "P"]);
-}
-
-function openerBidSpades(auction: Auction): boolean {
-  return auctionMatchesExact(auction, ["1S", "P"]);
-}
-
-function hasSupport(ctx: BiddingContext): boolean {
-  const shape = ctx.evaluation.shape;
-  if (openerBidHearts(ctx.auction)) return shape[1]! >= 4; // hearts index 1
-  if (openerBidSpades(ctx.auction)) return shape[0]! >= 4; // spades index 0
-  return false;
-}
 
 // ─── Deal Constraints ─────────────────────────────────────────
 
@@ -47,59 +38,59 @@ export const bergenDealConstraints: DealConstraints = {
 
 // ─── Bidding Rules ────────────────────────────────────────────
 
-const bergenGameRaise: BiddingRule = {
+const bergenGameRaise = conditionedRule({
   name: "bergen-game-raise",
-  explanation: "Bid 4 of opener's major with 13+ HCP and 4+ card support",
-  matches(ctx: BiddingContext): boolean {
-    if (!openerBidHearts(ctx.auction) && !openerBidSpades(ctx.auction)) return false;
-    if (ctx.evaluation.hcp < 13) return false;
-    return hasSupport(ctx);
-  },
+  conditions: [
+    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    hcpMin(13),
+    majorSupport(),
+  ],
   call(ctx: BiddingContext): Call {
-    if (openerBidHearts(ctx.auction)) return { type: "bid", level: 4, strain: BidSuit.Hearts };
+    if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
+      return { type: "bid", level: 4, strain: BidSuit.Hearts };
+    }
     return { type: "bid", level: 4, strain: BidSuit.Spades };
   },
-};
+});
 
-const bergenLimitRaise: BiddingRule = {
+const bergenLimitRaise = conditionedRule({
   name: "bergen-limit-raise",
-  explanation: "Bid 3D showing a limit raise (10-12 HCP) with 4+ card support",
-  matches(ctx: BiddingContext): boolean {
-    if (!openerBidHearts(ctx.auction) && !openerBidSpades(ctx.auction)) return false;
-    if (ctx.evaluation.hcp < 10 || ctx.evaluation.hcp > 12) return false;
-    return hasSupport(ctx);
-  },
+  conditions: [
+    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    hcpRange(10, 12),
+    majorSupport(),
+  ],
   call(): Call {
     return { type: "bid", level: 3, strain: BidSuit.Diamonds };
   },
-};
+});
 
-const bergenConstructiveRaise: BiddingRule = {
+const bergenConstructiveRaise = conditionedRule({
   name: "bergen-constructive-raise",
-  explanation: "Bid 3C showing a constructive raise (7-9 HCP) with 4+ card support",
-  matches(ctx: BiddingContext): boolean {
-    if (!openerBidHearts(ctx.auction) && !openerBidSpades(ctx.auction)) return false;
-    if (ctx.evaluation.hcp < 7 || ctx.evaluation.hcp > 9) return false;
-    return hasSupport(ctx);
-  },
+  conditions: [
+    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    hcpRange(7, 9),
+    majorSupport(),
+  ],
   call(): Call {
     return { type: "bid", level: 3, strain: BidSuit.Clubs };
   },
-};
+});
 
-const bergenPreemptiveRaise: BiddingRule = {
+const bergenPreemptiveRaise = conditionedRule({
   name: "bergen-preemptive-raise",
-  explanation: "Bid 3 of opener's major as a preemptive raise (0-6 HCP) with 4+ card support",
-  matches(ctx: BiddingContext): boolean {
-    if (!openerBidHearts(ctx.auction) && !openerBidSpades(ctx.auction)) return false;
-    if (ctx.evaluation.hcp > 6) return false;
-    return hasSupport(ctx);
-  },
+  conditions: [
+    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    hcpMax(6),
+    majorSupport(),
+  ],
   call(ctx: BiddingContext): Call {
-    if (openerBidHearts(ctx.auction)) return { type: "bid", level: 3, strain: BidSuit.Hearts };
+    if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
+      return { type: "bid", level: 3, strain: BidSuit.Hearts };
+    }
     return { type: "bid", level: 3, strain: BidSuit.Spades };
   },
-};
+});
 
 // ─── Default Auction ──────────────────────────────────────────
 

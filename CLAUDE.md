@@ -52,7 +52,7 @@ src/
     game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea)
     shared/        Reusable components (Card, Button, ConventionCallout)
   stores/          Svelte stores (app navigation, game drill state)
-src-tauri/         Rust Tauri backend (scaffold only until Phase 5)
+src-tauri/         Rust Tauri backend (shell wrapper, no custom commands)
 tests/
   e2e/             Playwright E2E tests
 ```
@@ -62,14 +62,14 @@ tests/
 - **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort (entry: `src/engine/types.ts`)
 - **Conventions:** Registry of convention configs — each convention = one file exporting `ConventionConfig` with deal constraints, bidding rules, explanations, example hands (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ (entry: `src/shared/types.ts`)
-- **AI:** Bidding strategies — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory (entry: `src/ai/convention-strategy.ts`)
+- **AI:** Bidding strategies + play AI — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `randomPlay()` card selection (entry: `src/ai/convention-strategy.ts`)
 - **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`) (entry: `src/lib/format.ts`)
 - **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, GameScreen, ExplanationScreen), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
 - **Stores:** App store (screen navigation, selected convention) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
 - **CLI:** Command-line interface wrapping EnginePort — JSON default, text opt-in, phase-gated future commands (entry: `src/cli/runner.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
-**Game phases:** BIDDING → PLAYING → EXPLANATION (tracked in `stores/game.svelte.ts`). PLAYING is a stub — immediately skips to EXPLANATION. Phase 5 will add card play UI.
+**Game phases:** BIDDING → PLAYING → EXPLANATION (tracked in `stores/game.svelte.ts`). User always plays South. When South is declarer, user also controls dummy (North) cards face-up. AI plays random legal cards with 500ms delay. "Skip to Review" button auto-completes remaining tricks.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
@@ -83,7 +83,9 @@ tests/
 | 2     | Done    | Convention registry + Stayman implementation                              |
 | 3     | Done    | AI bidding strategies (BiddingStrategy, convention adapter, pass strategy) |
 | 4     | Done    | Drill UI with feedback (Tailwind, stores, components, drill session)       |
-| 5     | Pending | Tauri desktop integration                                                 |
+| 5     | Done    | Card play UI + Tauri desktop shell                                        |
+| 6     | Pending | Rust engine port — `TauriIpcEngine` via Tauri IPC, DDS solver (`dds-bridge-sys`) |
+| 7     | Pending | Smart play AI — heuristic → DDS-assisted → convention-aware card play     |
 
 ## Gotchas
 
@@ -129,6 +131,10 @@ the code, and applies project-wide (not just one directory).
 **Remove** any entry that fails the falsifiability test: if removing it would not change
 how an agent acts, remove it. If a convention here conflicts with the codebase, the
 codebase wins — update this file, do not work around it. Prune aggressively.
+
+**Track follow-up work:** After modifying files, evaluate whether changes create incomplete
+work, shift a phase status, or break an assumption tracked elsewhere. If so, create a task
+or update the Phase Tracking table before ending the session. Do not leave implicit TODOs.
 
 **Staleness anchor:** This file assumes `src/engine/types.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.

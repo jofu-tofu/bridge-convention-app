@@ -47,6 +47,7 @@
 
 <div class="overflow-x-auto">
   <table class="w-full text-center {compact ? 'text-xs' : 'text-sm'}">
+    <caption class="sr-only">Auction sequence</caption>
     <thead>
       <tr>
         {#each SEAT_LABELS as label (label)}

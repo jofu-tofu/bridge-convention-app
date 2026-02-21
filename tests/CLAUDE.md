@@ -24,6 +24,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 | File                            | Role                                                             |
 | ------------------------------- | ---------------------------------------------------------------- |
 | `e2e/convention-select.spec.ts` | App loads with main content area; heading and description render |
+| `e2e/play-phase.spec.ts`       | Play phase loads after bidding; skip-to-review reaches explanation |
 
 ## Constraints
 

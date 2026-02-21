@@ -37,6 +37,18 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 3. Write tests in `src/ai/__tests__/{name}-strategy.test.ts`
 4. Strategy chaining: callers can try strategies in sequence, using the first non-null result
 
+## Play AI
+
+| File | Role |
+|------|------|
+| `play-strategy.ts` | `randomPlay(legalCards)` — picks random legal card (Phase 5 baseline) |
+
+**Phase 7 roadmap:**
+- **Tier 1 (7a — heuristic):** Follow suit rules, play high to win, lead trumps, finesse detection
+- **Tier 2 (7b — DDS-assisted):** Use `suggestPlay()` backed by DDS double-dummy solver (requires Phase 6 Rust engine)
+- **Tier 3 (7c — convention-aware):** Signal/discard conventions (attitude, count, suit preference)
+- Integration point: `PlayStrategy` interface mirroring `BiddingStrategy`
+
 ## Gotchas
 
 - `DrillSession.getNextBid()` returns `null` for user seats (signals UI to wait), wraps null strategy results as pass for AI seats

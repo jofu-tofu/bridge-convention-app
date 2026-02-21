@@ -1,5 +1,6 @@
-import type { ConventionConfig, BiddingRule, BiddingContext } from "./types";
+import type { ConventionConfig, BiddingRule, BiddingContext, ConditionResult } from "./types";
 import type { Call } from "../engine/types";
+import { isConditionedRule, evaluateConditions, buildExplanation } from "./condition-evaluator";
 
 const registry = new Map<string, ConventionConfig>();
 
@@ -35,6 +36,7 @@ export interface BiddingRuleResult {
   readonly call: Call;
   readonly rule: string;
   readonly explanation: string;
+  readonly conditionResults?: readonly ConditionResult[];
 }
 
 export function evaluateBiddingRules(
@@ -43,6 +45,15 @@ export function evaluateBiddingRules(
 ): BiddingRuleResult | null {
   for (const rule of rules) {
     if (rule.matches(context)) {
+      if (isConditionedRule(rule)) {
+        const conditionResults = evaluateConditions(rule, context);
+        return {
+          call: rule.call(context),
+          rule: rule.name,
+          explanation: buildExplanation(conditionResults),
+          conditionResults,
+        };
+      }
       return {
         call: rule.call(context),
         rule: rule.name,

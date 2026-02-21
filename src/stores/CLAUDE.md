@@ -7,22 +7,38 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - **Factory + DI.** `createGameStore(engine)` takes `EnginePort` as parameter. Tests inject a stub engine. No `vi.mock`.
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
-- **No engine internal imports.** Stores import `EnginePort` type and `nextSeat` from constants. Never import `hand-evaluator`, `auction`, etc.
+- **Minimal engine imports.** Stores import `EnginePort` type, `nextSeat`/`partnerSeat` from constants, and `evaluateHand` from hand-evaluator (for bid correctness checking). Never import `auction`, `scoring`, etc.
 
 ## Architecture
 
 | File | Role |
 |------|------|
 | `app.svelte.ts` | `createAppStore()` — screen navigation (`select`/`game`/`explanation`), selected convention |
-| `game.svelte.ts` | `createGameStore(engine)` — deal, auction, bid history, phase transitions, AI bid loop |
+| `game.svelte.ts` | `createGameStore(engine)` — deal, auction, bid history, phase transitions, AI bid loop, play phase |
 
-**Game store key methods:**
-- `startDrill(deal, session, initialAuction?)` — initializes state, replays default auction, runs AI bids
-- `userBid(call)` — validates turn, adds bid, advances, runs AI bids
+**Game store key methods (bidding):**
+- `startDrill(deal, session, initialAuction?, strategy?)` — initializes state, stores convention strategy, replays default auction, runs AI bids
+- `userBid(call)` — validates turn, checks correctness against convention strategy, adds bid; pauses on wrong bid (user must dismiss feedback), auto-continues on correct bid
+- `dismissBidFeedback()` — clears wrong bid feedback and resumes auction (runs AI bids)
+- `skipFromFeedback()` — clears feedback and jumps directly to EXPLANATION phase
 - `runAiBids()` — async loop: AI bids until user seat or auction complete
-- `completeAuction()` — gets contract, transitions to EXPLANATION phase
+- `completeAuction()` — gets contract, transitions to PLAYING phase (or EXPLANATION for passout)
 
-**Race condition protection:** `isProcessing` flag + `userBid()` early return guard.
+**Game store key methods (play):**
+- `startPlay()` — called by `completeAuction()`, sets up play state, determines declarer/dummy/opening leader
+- `userPlayCard(card, seat)` — validates legality and seat control, adds to trick, triggers AI plays
+- `runAiPlays()` — async loop: AI plays with 500ms delay until user's turn or trick complete
+- `completeTrick()` — determines trick winner, updates counts, pauses 1s for UI
+- `completePlay()` — calculates score via engine, transitions to EXPLANATION
+- `skipToReview()` — sets `playAborted` flag, synchronously finishes all remaining tricks
+- `getLegalPlaysForSeat(seat)` — returns legal cards for a seat in current trick context
+- `getRemainingCards(seat)` — returns hand minus already-played cards
+
+**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry`, `GamePhase`
+
+**Exported helper:** `seatController(seat, declarer, userSeat)` → `'user' | 'ai'`
+
+**Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
 
 ## Gotchas
 
@@ -41,4 +57,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-21 | version=1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-21 | version=2 -->

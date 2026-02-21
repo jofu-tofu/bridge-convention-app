@@ -12,6 +12,16 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 - **Tailwind CSS + design tokens.** Tailwind utility classes augmented with CSS custom properties defined via `@theme` in `src/app.css`. Midnight Table dark theme. No `<style>` blocks in new components except for CSS that Tailwind can't express (e.g., HandFan overlap/rotation).
 - **Pure function extraction.** Complex logic extracted to `src/lib/` for testability: `sortCards`, `computeTableScale`, `filterConventions`, `startDrill`.
 
+## Accessibility
+
+Components use semantic HTML and ARIA attributes to support screen readers and accessibility-tree-based testing (e.g., Playwright `ariaSnapshot()`).
+
+- **Semantic landmarks.** Screen components use `<main>` as the root container. GameScreen uses `<header>` for the top bar. Logical content groups use `<section>` with headings.
+- **ARIA labels on display elements.** Non-interactive visual elements that convey information get `aria-label` (e.g., face-up cards: `aria-label="{rank} of {suit}"`, face-down cards: `aria-label="Card back"`).
+- **Live regions for dynamic content.** Use `aria-live="polite"` on content that updates during gameplay (turn indicator, trick scores). Use `role="alert"` for immediate feedback (bid correct/incorrect).
+- **Decorative elements hidden.** SVG icons use `aria-hidden="true"`. Purely decorative elements should not appear in the accessibility tree.
+- **Native semantics first.** Prefer `<button>`, `<table>`, `<input>` over `<div>` with ARIA roles. Existing semantic tables (AuctionTable, BiddingReview) use `<caption class="sr-only">` for screen reader context.
+
 ## Architecture
 
 ```
@@ -24,7 +34,7 @@ components/
   game/
     BridgeTable.svelte               800x650 table with 4 seats, absolute positioning
     HandFan.svelte                   Overlapping visual card fan (horizontal/vertical)
-    TrickArea.svelte                 Center area (stub for Phase 5)
+    TrickArea.svelte                 Center trick display with NSEW card positions and trick count
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
     BidPanel.svelte                  5-col grid + specials row, compact mode
     BiddingReview.svelte             Bid history table with convention callouts
@@ -52,7 +62,7 @@ components/
 
 - `GameScreen` uses a one-shot `$effect` with `initialized` flag to avoid re-triggering `startNewDrill()` on every render
 - `GameScreen` auto-navigates to ExplanationScreen when `gameStore.phase === "EXPLANATION"` via a separate `$effect`
-- PLAYING phase is a stub — shows "Card play coming in Phase 5" message
+- PLAYING phase shows BridgeTable with TrickArea center, HandFan with legal plays, and side panel with trick count + skip button
 - `BidPanel` always renders all 35 contract bids (7x5 grid) + 3 specials; unavailable bids are disabled/grayed, not hidden
 - User seat is hardcoded to `Seat.South` in GameScreen/ExplanationScreen — future: make configurable
 - GameScreen has a local `dealNumber` counter that increments on each new drill and resets on remount
