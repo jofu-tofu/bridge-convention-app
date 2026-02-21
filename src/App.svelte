@@ -1,34 +1,27 @@
 <script lang="ts">
-  // Screen routing will be implemented in Phase 3
-  // Screens: ConventionSelect | GameScreen | ExplanationScreen
+  import { TsEngine } from "./engine/ts-engine";
+  import { createGameStore } from "./stores/game.svelte";
+  import { createAppStore } from "./stores/app.svelte";
+  import { setEngine, setGameStore, setAppStore } from "./lib/context";
+  import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
+  import GameScreen from "./components/screens/GameScreen.svelte";
+  import ExplanationScreen from "./components/screens/ExplanationScreen.svelte";
+
+  const engine = new TsEngine();
+  const gameStore = createGameStore(engine);
+  const appStore = createAppStore();
+
+  setEngine(engine);
+  setGameStore(gameStore);
+  setAppStore(appStore);
 </script>
 
-<main>
-  <h1>Bridge Practice</h1>
-  <p>Convention drilling app — select a convention to begin.</p>
-</main>
-
-<style>
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    font-family:
-      system-ui,
-      -apple-system,
-      sans-serif;
-    color: #e2e8f0;
-    background-color: #1a202c;
-  }
-
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-
-  p {
-    color: #a0aec0;
-  }
-</style>
+<div class="min-h-screen bg-bg-deepest text-text-primary font-sans">
+  {#if appStore.screen === "select"}
+    <ConventionSelectScreen />
+  {:else if appStore.screen === "game"}
+    <GameScreen />
+  {:else if appStore.screen === "explanation"}
+    <ExplanationScreen />
+  {/if}
+</div>

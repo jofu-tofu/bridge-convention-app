@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-deepest: #0F1419;
+  --color-bg-base: #151C24;
+  --color-bg-card: #1C2530;
+  --color-bg-elevated: #243040;
+  --color-bg-hover: #2A3A4E;
+  --color-text-primary: #E2E8F0;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #7B8DA3;
+  --color-text-inverse: #0F1419;
+  --color-accent-primary: #3B82F6;
+  --color-accent-primary-hover: #2563EB;
+  --color-accent-success: #22C55E;
+  --color-accent-warning: #F59E0B;
+  --color-accent-danger: #EF4444;
+  --color-suit-spades: #E2E8F0;
+  --color-suit-hearts: #F87171;
+  --color-suit-diamonds: #60A5FA;
+  --color-suit-clubs: #A3E635;
+  --color-suit-card-spades: #1A1A2E;
+  --color-suit-card-hearts: #F87171;
+  --color-suit-card-diamonds: #3B82F6;
+  --color-suit-card-clubs: #A3E635;
+  --color-table-surface: #1A2332;
+  --color-table-border: #2A3A4E;
+  --color-card-back: #1E3A5F;
+  --color-card-back-border: #152D4A;
+  --color-border-subtle: rgba(255,255,255,0.06);
+  --color-border-default: rgba(255,255,255,0.1);
+  --color-border-strong: rgba(255,255,255,0.18);
+  --color-accent-primary-subtle: rgba(59,130,246,0.15);
+  --color-convention-highlight: rgba(59,130,246,0.2);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 20px rgba(59,130,246,0.15);
+  --font-mono: 'Consolas', 'Monaco', ui-monospace, monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --card-width: 70px;
+  --card-height: 98px;
+  --card-overlap-h: -20px;
+  --card-overlap-v: -72px;
+  --table-width: 800px;
+  --table-height: 650px;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+
+html, body { height: 100%; }
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-deepest);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+#app { height: 100%; }
+button { font-family: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }

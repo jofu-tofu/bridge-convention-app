@@ -45,9 +45,13 @@ src/
     __tests__/     CLI unit tests
   shared/          Cross-boundary types (BidResult, BiddingStrategy)
   conventions/     Convention definitions (registry, Stayman, types)
-  ai/              AI bidding strategies (convention adapter, pass strategy, drill types)
-  components/      Svelte UI components (Phase 4 — not yet created)
-  stores/          Svelte stores (Phase 4 — not yet created)
+  ai/              AI bidding strategies (convention adapter, pass strategy, drill session)
+  lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers)
+  components/      Svelte UI components
+    screens/       Screen-level components (ConventionSelectScreen, GameScreen, ExplanationScreen)
+    game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea)
+    shared/        Reusable components (Card, Button, ConventionCallout)
+  stores/          Svelte stores (app navigation, game drill state)
 src-tauri/         Rust Tauri backend (scaffold only until Phase 5)
 tests/
   e2e/             Playwright E2E tests
@@ -58,11 +62,14 @@ tests/
 - **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort (entry: `src/engine/types.ts`)
 - **Conventions:** Registry of convention configs — each convention = one file exporting `ConventionConfig` with deal constraints, bidding rules, explanations, example hands (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ (entry: `src/shared/types.ts`)
-- **AI:** Bidding strategies — `conventionToStrategy()` adapter, `passStrategy`, drill types for Phase 4 (entry: `src/ai/convention-strategy.ts`)
+- **AI:** Bidding strategies — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory (entry: `src/ai/convention-strategy.ts`)
+- **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`) (entry: `src/lib/format.ts`)
+- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, GameScreen, ExplanationScreen), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
+- **Stores:** App store (screen navigation, selected convention) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
 - **CLI:** Command-line interface wrapping EnginePort — JSON default, text opt-in, phase-gated future commands (entry: `src/cli/runner.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
-**Game phases:** BIDDING → PLAYING → EXPLANATION (tracked in `stores/game.svelte.ts` — Phase 4, not yet created)
+**Game phases:** BIDDING → PLAYING → EXPLANATION (tracked in `stores/game.svelte.ts`). PLAYING is a stub — immediately skips to EXPLANATION. Phase 5 will add card play UI.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
@@ -75,7 +82,7 @@ tests/
 | 1.5   | Done    | Auction mechanics, scoring engine, play rules, convention test fixtures    |
 | 2     | Done    | Convention registry + Stayman implementation                              |
 | 3     | Done    | AI bidding strategies (BiddingStrategy, convention adapter, pass strategy) |
-| 4     | Pending | Drill UI with feedback                                                    |
+| 4     | Done    | Drill UI with feedback (Tailwind, stores, components, drill session)       |
 | 5     | Pending | Tauri desktop integration                                                 |
 
 ## Gotchas
@@ -87,6 +94,10 @@ tests/
 - DONT uses Standard DONT (original Marty Bergen) variant. Bergen Raises uses Standard Bergen (3C=constructive 7-9, 3D=limit 10-12, 3M=preemptive 0-6)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
+- Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
+- `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports
+- Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
+- Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
 
 **Reference docs** (detailed architecture, not auto-loaded):
 
@@ -100,6 +111,8 @@ tests/
 - `src/conventions/CLAUDE.md` — registry pattern, convention rules reference, how to add conventions
 - `src/cli/CLAUDE.md` — JSON-first output, PhaseGate, how to add commands
 - `src/ai/CLAUDE.md` — strategy pattern, dependency rules, how to add strategies
+- `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
+- `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
 - `tests/CLAUDE.md` — E2E config, test running
 
 ---
@@ -126,4 +139,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-21 | version=4 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-21 | version=5 -->

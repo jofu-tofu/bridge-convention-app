@@ -26,7 +26,9 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 |------|------|
 | `convention-strategy.ts` | `conventionToStrategy()` — wraps `ConventionConfig` as `BiddingStrategy` |
 | `pass-strategy.ts` | Always-pass placeholder strategy |
-| `types.ts` | `DrillConfig`, `DrillSession` — Phase 4 types (not yet implemented) |
+| `types.ts` | `DrillConfig`, `DrillSession` — interfaces for drill mode |
+| `drill-session.ts` | `createDrillSession()` — DrillSession implementation with null-contract for user/AI seats |
+| `drill-config-factory.ts` | `createDrillConfig()` — builds DrillConfig from convention ID and user seat |
 
 ## Adding a Strategy
 
@@ -37,7 +39,7 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 
 ## Gotchas
 
-- `DrillConfig` and `DrillSession` are type-only — no implementation until Phase 4
+- `DrillSession.getNextBid()` returns `null` for user seats (signals UI to wait), wraps null strategy results as pass for AI seats
 - `conventionToStrategy` maps `BiddingRuleResult.rule` to `BidResult.ruleName` (field name change)
 - Tests use `clearRegistry()`/`registerConvention()` in `beforeEach` for isolation
 
