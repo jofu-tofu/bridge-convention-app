@@ -1,6 +1,13 @@
-import { Suit } from './types';
-import type { Card, Hand, HandEvaluation, DistributionPoints, SuitLength, HandEvaluationStrategy } from './types';
-import { HCP_VALUES } from './constants';
+import { Suit } from "./types";
+import type {
+  Card,
+  Hand,
+  HandEvaluation,
+  DistributionPoints,
+  SuitLength,
+  HandEvaluationStrategy,
+} from "./types";
+import { HCP_VALUES } from "./constants";
 
 export function calculateHcp(hand: Hand): number {
   return hand.cards.reduce((sum, card) => sum + HCP_VALUES[card.rank], 0);
@@ -13,17 +20,30 @@ export function getSuitLength(hand: Hand): SuitLength {
   let clubs = 0;
   for (const card of hand.cards) {
     switch (card.suit) {
-      case Suit.Spades: spades++; break;
-      case Suit.Hearts: hearts++; break;
-      case Suit.Diamonds: diamonds++; break;
-      case Suit.Clubs: clubs++; break;
+      case Suit.Spades:
+        spades++;
+        break;
+      case Suit.Hearts:
+        hearts++;
+        break;
+      case Suit.Diamonds:
+        diamonds++;
+        break;
+      case Suit.Clubs:
+        clubs++;
+        break;
     }
   }
   return [spades, hearts, diamonds, clubs] as const;
 }
 
 export function isBalanced(shape: SuitLength): boolean {
-  const sorted = [...shape].sort((a, b) => b - a) as [number, number, number, number];
+  const sorted = [...shape].sort((a, b) => b - a) as [
+    number,
+    number,
+    number,
+    number,
+  ];
   const [a, b, c, d] = sorted;
   // 4-3-3-3, 4-4-3-2, 5-3-3-2
   if (a === 4 && b === 3 && c === 3 && d === 3) return true;
@@ -32,7 +52,9 @@ export function isBalanced(shape: SuitLength): boolean {
   return false;
 }
 
-export function calculateDistributionPoints(shape: SuitLength): DistributionPoints {
+export function calculateDistributionPoints(
+  shape: SuitLength,
+): DistributionPoints {
   let shortness = 0;
   let length = 0;
   for (const count of shape) {
@@ -49,7 +71,7 @@ export function getCardsInSuit(hand: Hand, suit: Suit): Card[] {
 }
 
 export const hcpStrategy: HandEvaluationStrategy = {
-  name: 'HCP',
+  name: "HCP",
   evaluate(hand: Hand): HandEvaluation {
     const hcp = calculateHcp(hand);
     const shape = getSuitLength(hand);
@@ -59,7 +81,7 @@ export const hcpStrategy: HandEvaluationStrategy = {
       distribution,
       shape,
       totalPoints: hcp + distribution.total,
-      strategy: 'HCP',
+      strategy: "HCP",
     };
   },
 };

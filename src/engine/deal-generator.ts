@@ -1,18 +1,32 @@
-import { Suit, Seat, Vulnerability } from './types';
-import type { Card, Hand, Deal, DealConstraints, SeatConstraint, DealGeneratorResult } from './types';
-import { SEATS, SUIT_ORDER, createDeck, createHand } from './constants';
-import { calculateHcp, getSuitLength, isBalanced } from './hand-evaluator';
+import { Seat, Vulnerability } from "./types";
+import type {
+  Card,
+  Hand,
+  Deal,
+  DealConstraints,
+  SeatConstraint,
+  DealGeneratorResult,
+} from "./types";
+import { SUIT_ORDER, createDeck, createHand } from "./constants";
+import { calculateHcp, getSuitLength, isBalanced } from "./hand-evaluator";
 
-function fisherYatesShuffle(cards: Card[]): Card[] {
+function fisherYatesShuffle(
+  cards: Card[],
+  rng: () => number = Math.random,
+): Card[] {
   const shuffled = [...cards];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
   }
   return shuffled;
 }
 
-function dealFromShuffled(cards: Card[], dealer: Seat, vulnerability: Vulnerability): Deal {
+function dealFromShuffled(
+  cards: Card[],
+  dealer: Seat,
+  vulnerability: Vulnerability,
+): Deal {
   const hands: Record<Seat, Hand> = {
     [Seat.North]: createHand(cards.slice(0, 13)),
     [Seat.East]: createHand(cards.slice(13, 26)),
@@ -25,18 +39,24 @@ function dealFromShuffled(cards: Card[], dealer: Seat, vulnerability: Vulnerabil
 function checkSeatConstraint(hand: Hand, constraint: SeatConstraint): boolean {
   if (constraint.minHcp !== undefined || constraint.maxHcp !== undefined) {
     const hcp = calculateHcp(hand);
-    if (constraint.minHcp !== undefined && hcp < constraint.minHcp) return false;
-    if (constraint.maxHcp !== undefined && hcp > constraint.maxHcp) return false;
+    if (constraint.minHcp !== undefined && hcp < constraint.minHcp)
+      return false;
+    if (constraint.maxHcp !== undefined && hcp > constraint.maxHcp)
+      return false;
   }
 
-  const needsShape = constraint.balanced !== undefined
-    || constraint.minLength !== undefined
-    || constraint.maxLength !== undefined;
+  const needsShape =
+    constraint.balanced !== undefined ||
+    constraint.minLength !== undefined ||
+    constraint.maxLength !== undefined;
   if (!needsShape) return true;
 
   const shape = getSuitLength(hand);
 
-  if (constraint.balanced !== undefined && constraint.balanced !== isBalanced(shape)) {
+  if (
+    constraint.balanced !== undefined &&
+    constraint.balanced !== isBalanced(shape)
+  ) {
     return false;
   }
 
@@ -57,7 +77,10 @@ function checkSeatConstraint(hand: Hand, constraint: SeatConstraint): boolean {
   return true;
 }
 
-export function checkConstraints(deal: Deal, constraints: DealConstraints): boolean {
+export function checkConstraints(
+  deal: Deal,
+  constraints: DealConstraints,
+): boolean {
   for (const seatConstraint of constraints.seats) {
     const hand = deal.hands[seatConstraint.seat];
     if (!checkSeatConstraint(hand, seatConstraint)) return false;
@@ -66,18 +89,26 @@ export function checkConstraints(deal: Deal, constraints: DealConstraints): bool
 }
 
 /** Relaxes HCP bounds only. Shape constraints (balanced, minLength, maxLength) stay fixed. */
-function relaxConstraints(constraints: DealConstraints, step: number): DealConstraints {
+export function relaxConstraints(
+  constraints: DealConstraints,
+  step: number,
+): DealConstraints {
   return {
     ...constraints,
     seats: constraints.seats.map((sc) => ({
       ...sc,
-      minHcp: sc.minHcp !== undefined ? Math.max(0, sc.minHcp - step) : undefined,
-      maxHcp: sc.maxHcp !== undefined ? Math.min(37, sc.maxHcp + step) : undefined,
+      minHcp:
+        sc.minHcp !== undefined ? Math.max(0, sc.minHcp - step) : undefined,
+      maxHcp:
+        sc.maxHcp !== undefined ? Math.min(37, sc.maxHcp + step) : undefined,
     })),
   };
 }
 
-export function generateDeal(constraints: DealConstraints): DealGeneratorResult {
+export function generateDeal(
+  constraints: DealConstraints,
+  rng?: () => number,
+): DealGeneratorResult {
   const deck = createDeck();
   const dealer = constraints.dealer ?? Seat.North;
   const vulnerability = constraints.vulnerability ?? Vulnerability.None;
@@ -85,12 +116,11 @@ export function generateDeal(constraints: DealConstraints): DealGeneratorResult 
   const attemptsPerStep = 1000;
 
   for (let relaxStep = 0; relaxStep <= maxRelaxationSteps; relaxStep++) {
-    const currentConstraints = relaxStep === 0
-      ? constraints
-      : relaxConstraints(constraints, relaxStep);
+    const currentConstraints =
+      relaxStep === 0 ? constraints : relaxConstraints(constraints, relaxStep);
 
     for (let attempt = 1; attempt <= attemptsPerStep; attempt++) {
-      const shuffled = fisherYatesShuffle(deck);
+      const shuffled = fisherYatesShuffle(deck, rng);
       const deal = dealFromShuffled(shuffled, dealer, vulnerability);
 
       if (checkConstraints(deal, currentConstraints)) {

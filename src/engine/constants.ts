@@ -1,5 +1,5 @@
-import { Suit, Rank, Seat } from './types';
-import type { Card, Hand } from './types';
+import { Suit, Rank, Seat } from "./types";
+import type { Card, Hand } from "./types";
 
 export const SUITS: readonly Suit[] = [
   Suit.Clubs,
