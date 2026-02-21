@@ -23,6 +23,8 @@ import {
   getSuitLength,
   isBalanced as checkBalanced,
 } from "./hand-evaluator";
+import type { BiddingStrategy, BidResult } from "../shared/types";
+import type { BiddingContext } from "../conventions/types";
 import {
   getLegalCalls as auctionGetLegalCalls,
   addCall as auctionAddCall,
@@ -104,11 +106,19 @@ export class TsEngine implements EnginePort {
   }
 
   async suggestBid(
-    _hand: Hand,
-    _auction: Auction,
-    _seat: Seat,
-    _conventionId?: string,
-  ): Promise<Call> {
-    throw new Error("DDS not available in V1");
+    hand: Hand,
+    auction: Auction,
+    seat: Seat,
+    strategy: BiddingStrategy,
+  ): Promise<BidResult> {
+    const evaluation = evaluateHand(hand);
+    const context: BiddingContext = { hand, auction, seat, evaluation };
+    const result = strategy.suggest(context);
+    if (result) return result;
+    return {
+      call: { type: "pass" },
+      ruleName: null,
+      explanation: "No matching rule — defaulting to pass",
+    };
   }
 }

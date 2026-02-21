@@ -5,10 +5,12 @@ Pure TypeScript game logic. Zero platform dependencies.
 ## Conventions
 
 - Never import from: `svelte`, `@tauri-apps/*`, `window`, `document`, `localStorage`
+- `port.ts` and `ts-engine.ts` import types from `../shared/types` (`BiddingStrategy`, `BidResult`) — this is the cross-boundary type import
+- `ts-engine.ts` no longer imports from `conventions/registry` — it receives pre-built `BiddingStrategy` objects from callers
 - All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
-- Phase 2 bidding/scoring/play implemented; DDS methods throw `'DDS not available in V1'`
+- Phase 1.5 bidding/scoring/play implemented; DDS methods throw `'DDS not available in V1'`
 
 ## Architecture
 
@@ -16,8 +18,8 @@ Pure TypeScript game logic. Zero platform dependencies.
 
 ```
 types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
-                        ↘ auction.ts                            ↘
-                        ↘ play.ts            → port.ts → ts-engine.ts
+                        ↘ auction.ts → auction-helpers.ts       ↘
+                        ↘ play.ts            → port.ts → ts-engine.ts → ../conventions/registry
          types.ts → scoring.ts
 ```
 
@@ -34,6 +36,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `auction.ts`        | Auction logic: bid comparison, legality, completion, contract/declarer extraction       |
 | `play.ts`           | Trick play rules: legal plays (follow suit), lead suit, trick winner determination      |
 | `scoring.ts`        | Contract scoring: trick points, bonuses, penalties, unified score calculation           |
+| `auction-helpers.ts` | Auction query utils: lastContractBid, bidsInSequence, auctionMatchesExact, buildAuction |
 | `notation.ts`       | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures      |
 
 ## Gotchas
@@ -48,8 +51,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Constraints
 
-- Deal generation: max 10 relaxation steps × 1000 iterations = 11,000 max attempts
-- Constraint relaxation widens HCP by ±1 per step; shape stays fixed
+- Deal generation: flat rejection sampling, default 10,000 max attempts (configurable via `maxAttempts`). Convention deal constraints use `minLengthAny` for OR constraints and `customCheck` for exotic filters.
 - Tests colocated in `__tests__/<module>.test.ts`; use `import type` for interfaces
 - Coverage: 90% branches, 90% functions, 85% lines (enforced in `vitest.config.ts`)
 
@@ -71,4 +73,4 @@ the codebase wins — update this file, do not work around it. Prune aggressivel
 **Staleness anchor:** This file assumes `types.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-20 | version=2 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-21 | version=3 -->

@@ -1,3 +1,4 @@
+import "../conventions";
 import type { DealConstraints, DealGeneratorResult } from "../engine/types";
 import type { CliDependencies, CliEngine } from "./types";
 import { TsEngine } from "../engine/ts-engine";
@@ -22,8 +23,8 @@ export function createCliEngine(): CliEngine {
     solveDeal: (deal) => tsEngine.solveDeal(deal),
     suggestPlay: (hand, currentTrick, trumpSuit, previousTricks) =>
       tsEngine.suggestPlay(hand, currentTrick, trumpSuit, previousTricks),
-    suggestBid: (hand, auction, seat, conventionId) =>
-      tsEngine.suggestBid(hand, auction, seat, conventionId),
+    suggestBid: (hand, auction, seat, strategy) =>
+      tsEngine.suggestBid(hand, auction, seat, strategy),
     getLegalPlays: (hand, leadSuit) => tsEngine.getLegalPlays(hand, leadSuit),
     getTrickWinner: (trick) => tsEngine.getTrickWinner(trick),
 

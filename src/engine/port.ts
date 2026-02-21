@@ -16,6 +16,7 @@ import type {
   Trick,
   Vulnerability,
 } from "./types";
+import type { BiddingStrategy, BidResult } from "../shared/types";
 
 export interface EnginePort {
   // Phase 1 — implemented
@@ -54,6 +55,6 @@ export interface EnginePort {
     hand: Hand,
     auction: Auction,
     seat: Seat,
-    conventionId?: string,
-  ): Promise<Call>;
+    strategy: BiddingStrategy,
+  ): Promise<BidResult>;
 }
