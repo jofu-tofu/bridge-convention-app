@@ -1,5 +1,5 @@
 import { Seat, Suit, BidSuit } from "../engine/types";
-import type { DealConstraints, Call, Auction, Hand, Deal } from "../engine/types";
+import type { DealConstraints, Call, Auction, Deal } from "../engine/types";
 import { ConventionCategory } from "./types";
 import type { ConventionConfig, BiddingRule, BiddingContext } from "./types";
 import { auctionMatchesExact, buildAuction } from "../engine/auction-helpers";

@@ -1,5 +1,5 @@
 import type { EnginePort } from "../../engine/port";
-import type { Deal, Hand, Call, Auction, AuctionEntry, Contract, Seat, Card, Suit, BidSuit, Trick, Vulnerability, SuitLength, HandEvaluation, DDSolution, DealConstraints } from "../../engine/types";
+import type { Deal, Hand, Call, Auction, AuctionEntry, Contract, Seat, Card, Vulnerability, SuitLength, HandEvaluation, DDSolution } from "../../engine/types";
 import { createDeck } from "../../engine/constants";
 
 /**

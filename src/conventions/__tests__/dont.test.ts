@@ -423,7 +423,7 @@ describe("DONT overcaller edge cases", () => {
 
   test("5C+5D hand: dont-2c fires (clubs + higher suit)", () => {
     // 5C + 5D, diamonds is the "higher suit" relative to clubs
-    const hand5C5D = hand(
+    const _hand5C5D = hand(
       "S5", "S2",
       "H5", "H2",
       "DA", "DK", "D8", "D5", "D3", // 5 diamonds

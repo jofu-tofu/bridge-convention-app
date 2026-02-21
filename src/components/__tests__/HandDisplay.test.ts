@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/svelte";
+import { render } from "@testing-library/svelte";
 import HandDisplay from "../HandDisplay.svelte";
 import { createDeck, createHand } from "../../engine/constants";
-import { Suit, Rank } from "../../engine/types";
+import { Rank } from "../../engine/types";
 import type { Hand } from "../../engine/types";
 
 function makeTestHand(): Hand {

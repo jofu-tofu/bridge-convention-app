@@ -12,7 +12,7 @@ import {
   auctionFromBids,
 } from "../../conventions/__tests__/fixtures";
 import { conventionToStrategy } from "../../ai/convention-strategy";
-import type { BiddingStrategy, BidResult } from "../../shared/types";
+import type { BiddingStrategy } from "../../shared/types";
 
 const engine = new TsEngine();
 

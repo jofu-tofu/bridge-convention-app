@@ -5,7 +5,6 @@ import type { Contract } from "../../engine/types";
 import { calculateScore } from "../../engine/scoring";
 import type { CliError } from "../errors";
 import type { Result } from "../types";
-import type { CommandResult } from "../types";
 
 const STRAIN_MAP: Record<string, BidSuit> = {
   C: BidSuit.Clubs,

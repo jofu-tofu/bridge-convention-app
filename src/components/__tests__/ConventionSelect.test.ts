@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, fireEvent } from "@testing-library/svelte";
+import { describe, it, expect, beforeEach } from "vitest";
 import { clearRegistry, registerConvention, listConventions } from "../../conventions/registry";
 import { staymanConfig } from "../../conventions/stayman";
 import { gerberConfig } from "../../conventions/gerber";
