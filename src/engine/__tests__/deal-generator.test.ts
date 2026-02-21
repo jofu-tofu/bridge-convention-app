@@ -1,9 +1,8 @@
 import { describe, test, expect } from "vitest";
 import { Suit, Seat, Vulnerability } from "../types";
 import type { Card, Deal, DealConstraints } from "../types";
-import { checkConstraints, generateDeal, relaxConstraints } from "../deal-generator";
+import { checkConstraints, generateDeal } from "../deal-generator";
 import { calculateHcp } from "../hand-evaluator";
-import { HCP_VALUES } from "../constants";
 import { hand } from "./fixtures";
 
 // Fixture deal with known properties
@@ -234,6 +233,133 @@ describe("checkConstraints", () => {
   });
 });
 
+describe("checkConstraints maxLength", () => {
+  test("maxLength constraint rejects hand with too many cards in suit", () => {
+    // North has 4 spades in fixtureDeal
+    const deal = fixtureDeal();
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, maxLength: { [Suit.Spades]: 3 } }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(false);
+  });
+
+  test("maxLength already enforced: opener with 5-card heart suit rejected when maxLength[Hearts]=4", () => {
+    // South has 4 hearts in fixtureDeal
+    const deal = fixtureDeal();
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.South, maxLength: { [Suit.Hearts]: 3 } }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(false);
+  });
+});
+
+describe("checkConstraints minLengthAny", () => {
+  test("minLengthAny passes when at least one suit meets minimum", () => {
+    const deal = fixtureDeal();
+    // South has 4 hearts — satisfies "4+ hearts OR 4+ spades"
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.South,
+        minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+      }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(true);
+  });
+
+  test("minLengthAny rejects when no suit meets any minimum", () => {
+    const deal = fixtureDeal();
+    // North has 4-3-3-3, so no suit has 5+
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.North,
+        minLengthAny: { [Suit.Hearts]: 5, [Suit.Spades]: 5 },
+      }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(false);
+  });
+
+  test("minLengthAny with single suit entry works", () => {
+    const deal = fixtureDeal();
+    // North has 4 spades — "4+ in spades only" should pass
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.North,
+        minLengthAny: { [Suit.Spades]: 4 },
+      }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(true);
+  });
+
+  test("minLengthAny with single suit rejects when not met", () => {
+    const deal = fixtureDeal();
+    // North has 3 hearts — "4+ in hearts only" should fail
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.North,
+        minLengthAny: { [Suit.Hearts]: 4 },
+      }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(false);
+  });
+});
+
+describe("checkConstraints customCheck", () => {
+  test("customCheck is called and filters correctly", () => {
+    const deal = fixtureDeal();
+    // North has 21 HCP — custom check requires < 20
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.North,
+        customCheck: (h) => calculateHcp(h) < 20,
+      }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(false);
+  });
+
+  test("customCheck passes when predicate returns true", () => {
+    const deal = fixtureDeal();
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.North,
+        customCheck: (h) => calculateHcp(h) > 20,
+      }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(true);
+  });
+
+  test("customCheck only runs when standard checks pass", () => {
+    let customCheckCalled = false;
+    const deal = fixtureDeal();
+    // minHcp 30 will fail before customCheck runs (North has 21)
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.North,
+        minHcp: 30,
+        customCheck: () => {
+          customCheckCalled = true;
+          return true;
+        },
+      }],
+    };
+    expect(checkConstraints(deal, constraints)).toBe(false);
+    expect(customCheckCalled).toBe(false);
+  });
+
+  test("customCheck that throws is treated as rejection", () => {
+    const deal = fixtureDeal();
+    const constraints: DealConstraints = {
+      seats: [{
+        seat: Seat.North,
+        customCheck: () => {
+          throw new Error("boom");
+        },
+      }],
+    };
+    // Should not crash, just reject the deal
+    expect(checkConstraints(deal, constraints)).toBe(false);
+  });
+});
+
 describe("generateDeal", () => {
   test("unconstrained deal has 52 unique cards", () => {
     const result = generateDeal({ seats: [] });
@@ -280,10 +406,43 @@ describe("generateDeal", () => {
     expect(() => generateDeal(constraints)).toThrow();
   });
 
+  test("throws after maxAttempts exhausted", () => {
+    // Impossible constraint with low maxAttempts
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 38 }],
+      maxAttempts: 10,
+    };
+    expect(() => generateDeal(constraints)).toThrow(/10 attempts/);
+  });
+
+  test("respects custom maxAttempts value", () => {
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 38 }],
+      maxAttempts: 5,
+    };
+    expect(() => generateDeal(constraints)).toThrow(/5 attempts/);
+  });
+
+  test("default maxAttempts is 10000", () => {
+    // This test verifies the error message mentions 10000
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 38 }],
+    };
+    expect(() => generateDeal(constraints)).toThrow(/10000 attempts/);
+  });
+
   test("returns iteration metadata", () => {
     const result = generateDeal({ seats: [] });
     expect(result.iterations).toBeGreaterThanOrEqual(1);
-    expect(result.relaxationSteps).toBeGreaterThanOrEqual(0);
+    expect(result.relaxationSteps).toBe(0);
+  });
+
+  test("relaxationSteps always 0", () => {
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 12 }],
+    };
+    const result = generateDeal(constraints);
+    expect(result.relaxationSteps).toBe(0);
   });
 
   test("respects dealer constraint", () => {
@@ -322,16 +481,74 @@ describe("generateDeal", () => {
       expect(new Set(keys).size).toBe(52);
     }
   });
+
+  test("generates deal satisfying exact HCP constraints (no relaxation)", () => {
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 15, maxHcp: 17 }],
+    };
+    for (let i = 0; i < 20; i++) {
+      const result = generateDeal(constraints);
+      const hcp = calculateHcp(result.deal.hands[Seat.North]);
+      expect(hcp).toBeGreaterThanOrEqual(15);
+      expect(hcp).toBeLessThanOrEqual(17);
+      expect(result.relaxationSteps).toBe(0);
+    }
+  });
+
+  test("Stayman-like constraints succeed reliably", () => {
+    // 15-17 balanced opener + 8+ HCP responder with 4-card major
+    const constraints: DealConstraints = {
+      seats: [
+        {
+          seat: Seat.North,
+          minHcp: 15,
+          maxHcp: 17,
+          balanced: true,
+          maxLength: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+        },
+        {
+          seat: Seat.South,
+          minHcp: 8,
+          minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+        },
+      ],
+    };
+    for (let i = 0; i < 10; i++) {
+      const result = generateDeal(constraints);
+      expect(checkConstraints(result.deal, constraints)).toBe(true);
+    }
+  });
 });
 
-describe("checkConstraints maxLength", () => {
-  test("maxLength constraint rejects hand with too many cards in suit", () => {
-    // North has 4 spades in fixtureDeal
-    const deal = fixtureDeal();
+describe("generateDeal benchmark", () => {
+  test("100 Stayman-constrained deals with mean < 500 attempts", () => {
     const constraints: DealConstraints = {
-      seats: [{ seat: Seat.North, maxLength: { [Suit.Spades]: 3 } }],
+      seats: [
+        {
+          seat: Seat.North,
+          minHcp: 15,
+          maxHcp: 17,
+          balanced: true,
+          maxLength: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+        },
+        {
+          seat: Seat.South,
+          minHcp: 8,
+          minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+        },
+      ],
     };
-    expect(checkConstraints(deal, constraints)).toBe(false);
+    let totalIterations = 0;
+    let maxIterations = 0;
+    for (let i = 0; i < 100; i++) {
+      const result = generateDeal(constraints);
+      totalIterations += result.iterations;
+      maxIterations = Math.max(maxIterations, result.iterations);
+      expect(checkConstraints(result.deal, constraints)).toBe(true);
+    }
+    const meanIterations = totalIterations / 100;
+    expect(meanIterations).toBeLessThan(500);
+    expect(maxIterations).toBeLessThan(5000);
   });
 });
 
@@ -350,63 +567,6 @@ describe("multi-seat constraints", () => {
   });
 });
 
-describe("relaxConstraints", () => {
-  test("widens minHcp by step amount", () => {
-    const constraints: DealConstraints = {
-      seats: [{ seat: Seat.North, minHcp: 15 }],
-    };
-    const relaxed = relaxConstraints(constraints, 3);
-    expect(relaxed.seats[0]!.minHcp).toBe(12);
-  });
-
-  test("widens maxHcp by step amount", () => {
-    const constraints: DealConstraints = {
-      seats: [{ seat: Seat.North, maxHcp: 17 }],
-    };
-    const relaxed = relaxConstraints(constraints, 2);
-    expect(relaxed.seats[0]!.maxHcp).toBe(19);
-  });
-
-  test("minHcp does not go below 0", () => {
-    const constraints: DealConstraints = {
-      seats: [{ seat: Seat.North, minHcp: 2 }],
-    };
-    const relaxed = relaxConstraints(constraints, 5);
-    expect(relaxed.seats[0]!.minHcp).toBe(0);
-  });
-
-  test("maxHcp does not exceed 37", () => {
-    const constraints: DealConstraints = {
-      seats: [{ seat: Seat.North, maxHcp: 35 }],
-    };
-    const relaxed = relaxConstraints(constraints, 5);
-    expect(relaxed.seats[0]!.maxHcp).toBe(37);
-  });
-
-  test("preserves shape constraints unchanged", () => {
-    const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        minHcp: 15,
-        balanced: true,
-        minLength: { [Suit.Spades]: 5 },
-      }],
-    };
-    const relaxed = relaxConstraints(constraints, 3);
-    expect(relaxed.seats[0]!.balanced).toBe(true);
-    expect(relaxed.seats[0]!.minLength).toEqual({ [Suit.Spades]: 5 });
-    expect(relaxed.seats[0]!.minHcp).toBe(12);
-  });
-
-  test("leaves undefined HCP fields as undefined", () => {
-    const constraints: DealConstraints = {
-      seats: [{ seat: Seat.North, balanced: true }],
-    };
-    const relaxed = relaxConstraints(constraints, 3);
-    expect(relaxed.seats[0]!.minHcp).toBeUndefined();
-    expect(relaxed.seats[0]!.maxHcp).toBeUndefined();
-  });
-});
 
 describe("seeded RNG", () => {
   /** Simple seeded PRNG (mulberry32) for deterministic tests. */

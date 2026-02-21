@@ -16,6 +16,8 @@ import {
   isBalanced,
 } from "./hand-evaluator";
 
+const DEFAULT_MAX_ATTEMPTS = 10_000;
+
 /** Module-level deck — created once, never mutated. */
 const STANDARD_DECK: readonly Card[] = createDeck();
 
@@ -59,7 +61,8 @@ function checkSeatConstraint(hand: Hand, constraint: SeatConstraint): boolean {
   const needsShape =
     constraint.balanced !== undefined ||
     constraint.minLength !== undefined ||
-    constraint.maxLength !== undefined;
+    constraint.maxLength !== undefined ||
+    constraint.minLengthAny !== undefined;
 
   // When both HCP and shape needed, use single-pass function
   if (needsHcp && needsShape) {
@@ -68,21 +71,28 @@ function checkSeatConstraint(hand: Hand, constraint: SeatConstraint): boolean {
       return false;
     if (constraint.maxHcp !== undefined && hcp > constraint.maxHcp)
       return false;
-    return checkShapeConstraint(shape, constraint);
-  }
-
-  if (needsHcp) {
+    if (!checkShapeConstraint(shape, constraint)) return false;
+  } else if (needsHcp) {
     const hcp = calculateHcp(hand);
     if (constraint.minHcp !== undefined && hcp < constraint.minHcp)
       return false;
     if (constraint.maxHcp !== undefined && hcp > constraint.maxHcp)
       return false;
+  } else if (needsShape) {
+    const shape = getSuitLength(hand);
+    if (!checkShapeConstraint(shape, constraint)) return false;
   }
 
-  if (!needsShape) return true;
+  // customCheck runs last, after all standard checks pass
+  if (constraint.customCheck !== undefined) {
+    try {
+      if (!constraint.customCheck(hand)) return false;
+    } catch {
+      return false;
+    }
+  }
 
-  const shape = getSuitLength(hand);
-  return checkShapeConstraint(shape, constraint);
+  return true;
 }
 
 function checkShapeConstraint(
@@ -110,6 +120,19 @@ function checkShapeConstraint(
     }
   }
 
+  // minLengthAny: at least ONE listed suit meets its minimum
+  if (constraint.minLengthAny !== undefined) {
+    let anyMet = false;
+    for (let i = 0; i < SUIT_ORDER.length; i++) {
+      const min = constraint.minLengthAny[SUIT_ORDER[i]!];
+      if (min !== undefined && shape[i]! >= min) {
+        anyMet = true;
+        break;
+      }
+    }
+    if (!anyMet) return false;
+  }
+
   return true;
 }
 
@@ -124,22 +147,6 @@ export function checkConstraints(
   return true;
 }
 
-/** Relaxes HCP bounds only. Shape constraints (balanced, minLength, maxLength) stay fixed. */
-export function relaxConstraints(
-  constraints: DealConstraints,
-  step: number,
-): DealConstraints {
-  return {
-    ...constraints,
-    seats: constraints.seats.map((sc) => ({
-      ...sc,
-      minHcp:
-        sc.minHcp !== undefined ? Math.max(0, sc.minHcp - step) : undefined,
-      maxHcp:
-        sc.maxHcp !== undefined ? Math.min(37, sc.maxHcp + step) : undefined,
-    })),
-  };
-}
 
 export function generateDeal(
   constraints: DealConstraints,
@@ -147,28 +154,22 @@ export function generateDeal(
 ): DealGeneratorResult {
   const dealer = constraints.dealer ?? Seat.North;
   const vulnerability = constraints.vulnerability ?? Vulnerability.None;
-  const maxRelaxationSteps = 10;
-  const attemptsPerStep = 1000;
+  const maxAttempts = constraints.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
 
-  for (let relaxStep = 0; relaxStep <= maxRelaxationSteps; relaxStep++) {
-    const currentConstraints =
-      relaxStep === 0 ? constraints : relaxConstraints(constraints, relaxStep);
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const shuffled = fisherYatesShuffle(STANDARD_DECK, rng);
+    const deal = dealFromShuffled(shuffled, dealer, vulnerability);
 
-    for (let attempt = 1; attempt <= attemptsPerStep; attempt++) {
-      const shuffled = fisherYatesShuffle(STANDARD_DECK, rng);
-      const deal = dealFromShuffled(shuffled, dealer, vulnerability);
-
-      if (checkConstraints(deal, currentConstraints)) {
-        return {
-          deal,
-          iterations: relaxStep * attemptsPerStep + attempt,
-          relaxationSteps: relaxStep,
-        };
-      }
+    if (checkConstraints(deal, constraints)) {
+      return {
+        deal,
+        iterations: attempt,
+        relaxationSteps: 0,
+      };
     }
   }
 
   throw new Error(
-    `Failed to generate deal after ${maxRelaxationSteps} relaxation steps (${(maxRelaxationSteps + 1) * attemptsPerStep} attempts)`,
+    `Failed to generate deal after ${maxAttempts} attempts`,
   );
 }

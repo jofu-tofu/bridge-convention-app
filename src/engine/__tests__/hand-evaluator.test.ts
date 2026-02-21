@@ -10,7 +10,7 @@ import {
   evaluateHand,
 } from "../hand-evaluator";
 import { HCP_VALUES, createDeck } from "../constants";
-import { card, hand } from "./fixtures";
+import { hand } from "./fixtures";
 
 // Test fixtures — HCP verified: A=4, K=3, Q=2, J=1
 const HAND_ALL_ACES = hand(

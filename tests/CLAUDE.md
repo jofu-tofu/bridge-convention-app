@@ -48,4 +48,4 @@ the codebase wins — update this file, do not work around it. Prune aggressivel
 **Staleness anchor:** This file assumes `e2e/convention-select.spec.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=never | version=1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-20 | version=1 -->

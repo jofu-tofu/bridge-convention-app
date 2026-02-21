@@ -22,6 +22,8 @@ engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/
                                                                                     cli/runner.ts
                                                                                           ↑
                                                                               cli/commands/*.ts
+                                                                                    ↑
+                                                                        conventions/registry.ts (bid command)
 ```
 
 **Key files:**
@@ -37,7 +39,10 @@ engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/
 | `errors.ts`              | CliError type and formatError()                               |
 | `commands/generate.ts`   | Phase 1: deal generation with constraints                     |
 | `commands/evaluate.ts`   | Phase 1: hand evaluation                                      |
-| `commands/*.ts` (stubs)  | Phase 2/3/6: gate-locked, ~15 lines each                     |
+| `commands/bid.ts`        | Phase 2: suggest bid using a convention (imports conventions/) |
+| `commands/score.ts`      | Phase 2: calculate contract score                             |
+| `commands/conventions.ts`| Phase 2: list/inspect registered conventions                  |
+| `commands/*.ts` (stubs)  | Phase 3/6: gate-locked — simulate, suggest-bid, suggest-play, solve |
 
 ## How to Add a Command
 
@@ -45,6 +50,7 @@ engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/
 2. Import and add to `ALL_COMMANDS` array in `src/cli/runner.ts`
 3. When the phase ships: bump `CURRENT_PHASE` in `src/cli/constants.ts`
 4. Write tests in `src/cli/__tests__/{name}.test.ts`
+5. Update the key files table in this CLAUDE.md — add the new command with its phase and role
 
 ## CliEngine Diagnostics Bypass
 
@@ -57,7 +63,15 @@ engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/
 **After modifying files in this directory:** scan the entries above — if any claim is now
 false or incomplete, update this file before ending the task. Do not defer.
 
+**Add** an entry only if an agent would fail without knowing it, it is not obvious from
+the code, and it belongs at this scope (project-wide rule → root CLAUDE.md; WHY decision
+→ inline comment or ADR; inferable from code → nowhere).
+
+**Remove** any entry that fails the falsifiability test: if removing it would not change
+how an agent acts here, remove it. If a convention here conflicts with the codebase,
+the codebase wins — update this file, do not work around it. Prune aggressively.
+
 **Staleness anchor:** This file assumes `runner.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-20 | version=1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-21 | version=2 -->

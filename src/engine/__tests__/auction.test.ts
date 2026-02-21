@@ -6,9 +6,7 @@ import {
   compareBids,
   isLegalCall,
   addCall,
-  isAuctionComplete,
   getContract,
-  getDeclarer,
   getLegalCalls,
 } from "../auction";
 

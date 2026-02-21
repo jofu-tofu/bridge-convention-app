@@ -1,4 +1,4 @@
-export const CURRENT_PHASE = 1;
+export const CURRENT_PHASE = 2;
 
 export const PHASE_DESCRIPTIONS: Record<number, string> = {
   1: "Engine core (deal generation, hand evaluation)",

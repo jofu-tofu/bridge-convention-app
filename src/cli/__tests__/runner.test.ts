@@ -55,11 +55,11 @@ describe("createCli", () => {
   it("phase-gates future commands with structured error", async () => {
     const deps = createTestDeps();
     const cli = createCli(deps);
-    const exitCode = await cli.run(["bid"]);
+    const exitCode = await cli.run(["simulate"]);
     expect(exitCode).toBe(1);
     const parsed = JSON.parse(deps.errorLines[0]!);
     expect(parsed.error.code).toBe("NOT_IMPLEMENTED");
-    expect(parsed.error.phase).toBe(2);
+    expect(parsed.error.phase).toBe(3);
   });
 
   it("returns error for unknown commands", async () => {

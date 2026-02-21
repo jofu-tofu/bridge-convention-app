@@ -122,17 +122,23 @@ export interface SeatConstraint {
   readonly balanced?: boolean;
   readonly minLength?: Partial<Record<Suit, number>>;
   readonly maxLength?: Partial<Record<Suit, number>>;
+  /** OR constraint: at least ONE listed suit meets its minimum length. */
+  readonly minLengthAny?: Partial<Record<Suit, number>>;
+  /** Escape hatch for exotic constraints. Runs last, after all other checks pass. */
+  readonly customCheck?: (hand: Hand) => boolean;
 }
 
 export interface DealConstraints {
   readonly seats: readonly SeatConstraint[];
   readonly vulnerability?: Vulnerability;
   readonly dealer?: Seat;
+  readonly maxAttempts?: number;
 }
 
 export interface DealGeneratorResult {
   readonly deal: Deal;
   readonly iterations: number;
+  /** @deprecated Always 0. Relaxation was removed in Phase 2. */
   readonly relaxationSteps: number;
 }
 
