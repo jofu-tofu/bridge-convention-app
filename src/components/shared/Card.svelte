@@ -17,6 +17,15 @@
   const cardStyle = "width: var(--card-width); height: var(--card-height);";
 </script>
 
+{#snippet cardFace()}
+  <span class="absolute top-1 left-1.5 text-xs font-bold leading-none {colorClass}">
+    {card.rank}<br>{symbol}
+  </span>
+  <span class="absolute bottom-1 right-1.5 text-xs font-bold leading-none {colorClass}" style="transform: rotate(180deg);">
+    {card.rank}<br>{symbol}
+  </span>
+{/snippet}
+
 {#if faceUp && clickable}
   <button
     type="button"
@@ -25,15 +34,11 @@
       border-none p-0"
     style={cardStyle}
     onclick={onclick}
+    aria-label="{card.rank} of {card.suit}"
     data-testid="card"
     data-suit={card.suit}
   >
-    <span class="absolute top-1 left-1.5 text-xs font-bold leading-none {colorClass}">
-      {card.rank}<br>{symbol}
-    </span>
-    <span class="absolute bottom-1 right-1.5 text-xs font-bold leading-none {colorClass}" style="transform: rotate(180deg);">
-      {card.rank}<br>{symbol}
-    </span>
+    {@render cardFace()}
   </button>
 {:else if faceUp}
   <div
@@ -42,12 +47,7 @@
     data-testid="card"
     data-suit={card.suit}
   >
-    <span class="absolute top-1 left-1.5 text-xs font-bold leading-none {colorClass}">
-      {card.rank}<br>{symbol}
-    </span>
-    <span class="absolute bottom-1 right-1.5 text-xs font-bold leading-none {colorClass}" style="transform: rotate(180deg);">
-      {card.rank}<br>{symbol}
-    </span>
+    {@render cardFace()}
   </div>
 {:else}
   <div

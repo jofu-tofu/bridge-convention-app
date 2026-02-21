@@ -40,8 +40,7 @@
       class="card-wrapper"
       style="{vertical
         ? `margin-top: var(--card-overlap-v)`
-        : `margin-left: var(--card-overlap-h)`};
-        {vertical ? '' : ''}"
+        : `margin-left: var(--card-overlap-h)`}"
     >
       <Card
         {card}

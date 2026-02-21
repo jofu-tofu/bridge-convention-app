@@ -55,7 +55,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each rows as row, rowIdx (rowIdx)}
+      {#each rows as row, rowIdx ('row-' + rowIdx)}
         <tr class="border-t border-border-subtle">
           {#each row as cell, cellIdx (rowIdx * 4 + cellIdx)}
             <td class="px-3 {compact ? 'py-0.5' : 'py-1'} font-mono {cell.isPlaceholder ? 'text-text-muted' : cell.colorClass || 'text-text-primary'}">

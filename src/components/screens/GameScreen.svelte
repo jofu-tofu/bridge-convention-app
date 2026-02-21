@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { Seat } from "../../engine/types";
   import type { Call } from "../../engine/types";
   import { getEngine, getGameStore, getAppStore } from "../../lib/context";
@@ -23,12 +24,8 @@
     await startDrill(engine, convention, userSeat, gameStore);
   }
 
-  let initialized = false;
-  $effect(() => {
-    if (!initialized) {
-      initialized = true;
-      startNewDrill().catch(console.error);
-    }
+  onMount(() => {
+    startNewDrill().catch(console.error);
   });
 
   $effect(() => {
@@ -45,22 +42,11 @@
   let innerW = $state(1024);
   let innerH = $state(768);
 
-  $effect(() => {
-    if (typeof window !== "undefined") {
-      innerW = window.innerWidth;
-      innerH = window.innerHeight;
-      const onResize = () => {
-        innerW = window.innerWidth;
-        innerH = window.innerHeight;
-      };
-      window.addEventListener("resize", onResize);
-      return () => window.removeEventListener("resize", onResize);
-    }
-  });
-
   const isDesktop = $derived(innerW > 1023);
   const tableScale = $derived(computeTableScale(innerW, innerH, { sidePanel: isDesktop }));
 </script>
+
+<svelte:window bind:innerWidth={innerW} bind:innerHeight={innerH} />
 
 {#if gameStore.deal}
   <div class="h-full flex flex-col">

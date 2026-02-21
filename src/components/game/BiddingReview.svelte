@@ -22,7 +22,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each bidHistory as entry, idx (idx)}
+        {#each bidHistory as entry, idx (entry.seat + '-' + idx)}
           <tr class="border-t border-border-subtle {entry.isUser ? 'bg-accent-primary-subtle' : ''}">
             <td class="px-2 py-2 font-mono text-text-secondary">{entry.seat}</td>
             <td class="px-2 py-2 font-mono text-text-primary">{formatCall(entry.call)}</td>
