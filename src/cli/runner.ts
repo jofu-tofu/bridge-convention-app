@@ -163,50 +163,44 @@ export function createCli(deps: CliDependencies) {
         return 0;
       }
 
-      try {
-        const { values } = parseArgs({
-          args: commandArgv,
-          options: {
-            ...cmd.options,
-            format: { type: "string" },
-            "no-unicode": { type: "boolean" },
-          },
-          allowPositionals: false,
-          strict: false,
-        });
+      const { values } = parseArgs({
+        args: commandArgv,
+        options: {
+          ...cmd.options,
+          format: { type: "string" },
+          "no-unicode": { type: "boolean" },
+        },
+        allowPositionals: false,
+        strict: false,
+      });
 
-        const result = await cmd.handler(
+      let result;
+      try {
+        result = await cmd.handler(
           values as Record<string, unknown>,
           deps,
         );
-        const output = formatResult(result, format, { unicode });
-
-        // For JSON format, output the full envelope when piping
-        if (format === "json") {
-          deps.output(JSON.stringify(result, null, 2));
-        } else {
-          deps.output(output);
-        }
-        return 0;
-      } catch (err: unknown) {
-        if (
-          typeof err === "object" &&
-          err !== null &&
-          "code" in err &&
-          "message" in err
-        ) {
-          deps.errorOutput(formatError(err as CliError, format));
-        } else if (err instanceof Error) {
-          const cliError: CliError = {
-            code: "ENGINE_ERROR",
-            message: err.message,
-          };
-          deps.errorOutput(formatError(cliError, format));
-        } else {
-          deps.errorOutput(`Unknown error: ${String(err)}`);
-        }
+      } catch (thrown: unknown) {
+        const cliError: CliError = {
+          code: "ENGINE_ERROR",
+          message: thrown instanceof Error ? thrown.message : String(thrown),
+        };
+        deps.errorOutput(formatError(cliError, format));
         return 1;
       }
+
+      if (!result.success) {
+        deps.errorOutput(formatError(result.error, format));
+        return 1;
+      }
+
+      const output = formatResult(result.value, format, { unicode });
+      if (format === "json") {
+        deps.output(JSON.stringify(result.value, null, 2));
+      } else {
+        deps.output(output);
+      }
+      return 0;
     },
   };
 }

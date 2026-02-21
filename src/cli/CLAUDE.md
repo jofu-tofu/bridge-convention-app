@@ -9,6 +9,7 @@ Command-line interface for the bridge practice engine. Consumer of `src/engine/`
 - **PhaseGate** — `CURRENT_PHASE` in `constants.ts` is the sole coordination point. Commands with `phase > CURRENT_PHASE` are blocked before the handler runs. To unlock a phase, bump `CURRENT_PHASE`.
 - **No mocking own modules** — tests use real `TsEngine` via `createCliDependencies()`.
 - **Named exports only** — no `export default` anywhere in CLI.
+- **Result type for errors** — command handlers return `Result<CommandResult, CliError>`, never throw `CliError`. Use `ok()` / `err()` helpers from `types.ts`. Runner discriminates on `result.success`. Only unexpected engine crashes use try/catch.
 
 ## Architecture
 
@@ -30,7 +31,7 @@ engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/
 
 | File                     | Role                                                          |
 | ------------------------ | ------------------------------------------------------------- |
-| `types.ts`               | CommandResult, CommandHandler, CommandDef, CliDependencies     |
+| `types.ts`               | Result, ok, err, CommandResult, CommandHandler, CommandDef, CliDependencies |
 | `constants.ts`           | CURRENT_PHASE, PHASE_DESCRIPTIONS                             |
 | `engine-factory.ts`      | CliEngine (extends EnginePort + diagnostics), dependency factory |
 | `runner.ts`              | Command registry, dispatcher, PhaseGate, --help/--version     |

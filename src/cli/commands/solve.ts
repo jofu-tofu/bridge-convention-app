@@ -1,4 +1,5 @@
 import type { CommandDef } from "../types";
+import { err } from "../types";
 
 export const solveCommand: CommandDef = {
   name: "solve",
@@ -8,6 +9,6 @@ export const solveCommand: CommandDef = {
     "deal-from": { type: "string", description: "Read deal from source (stdin)" },
   },
   async handler() {
-    throw new Error("Unreachable: solve command is phase-gated");
+    return err({ code: "NOT_IMPLEMENTED", message: "solve command is phase-gated" });
   },
 };

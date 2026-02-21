@@ -234,6 +234,57 @@ describe("getTrickWinner — error handling", () => {
       "Trick must have exactly 4 plays",
     );
   });
+
+  test("throws if trick has more than 4 plays", () => {
+    const trick: Trick = {
+      plays: [
+        { card: card("SA"), seat: Seat.North },
+        { card: card("SK"), seat: Seat.East },
+        { card: card("SQ"), seat: Seat.South },
+        { card: card("SJ"), seat: Seat.West },
+        { card: card("ST"), seat: Seat.North },
+      ],
+    };
+    expect(() => getTrickWinner(trick)).toThrow(
+      "Trick must have exactly 4 plays",
+    );
+  });
+
+  test("throws if trick has 0 plays", () => {
+    const trick: Trick = { plays: [] };
+    expect(() => getTrickWinner(trick)).toThrow(
+      "Trick must have exactly 4 plays",
+    );
+  });
+});
+
+describe("getTrickWinner — all-different-suits edge cases", () => {
+  test("all 4 different suits in NT — only led suit card wins", () => {
+    // H2 led, then SA, DA, CA off-suit. H2 wins (only card in led suit)
+    const trick: Trick = {
+      plays: [
+        { card: card("H2"), seat: Seat.North },
+        { card: card("SA"), seat: Seat.East },
+        { card: card("DA"), seat: Seat.South },
+        { card: card("CA"), seat: Seat.West },
+      ],
+    };
+    expect(getTrickWinner(trick)).toBe(Seat.North);
+  });
+
+  test("trump led in trump contract — highest trump wins", () => {
+    // Hearts are trump, H2 led, HA follows
+    const trick: Trick = {
+      plays: [
+        { card: card("H2"), seat: Seat.North },
+        { card: card("HA"), seat: Seat.East },
+        { card: card("H3"), seat: Seat.South },
+        { card: card("H4"), seat: Seat.West },
+      ],
+      trumpSuit: Suit.Hearts,
+    };
+    expect(getTrickWinner(trick)).toBe(Seat.East);
+  });
 });
 
 describe("rank ordering through trick winner behavior", () => {

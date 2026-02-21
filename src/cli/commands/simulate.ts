@@ -1,4 +1,5 @@
 import type { CommandDef } from "../types";
+import { err } from "../types";
 
 export const simulateCommand: CommandDef = {
   name: "simulate",
@@ -9,6 +10,6 @@ export const simulateCommand: CommandDef = {
     count: { type: "string", short: "n", description: "Number of simulations" },
   },
   async handler() {
-    throw new Error("Unreachable: simulate command is phase-gated");
+    return err({ code: "NOT_IMPLEMENTED", message: "simulate command is phase-gated" });
   },
 };

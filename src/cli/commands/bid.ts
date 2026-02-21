@@ -1,10 +1,10 @@
 import type { CommandDef } from "../types";
+import { ok, err } from "../types";
 import { Seat, type Auction } from "../../engine/types";
 import { parseHand } from "../../engine/notation";
 import { getConvention } from "../../conventions/registry";
 import { buildAuction } from "../../engine/auction-helpers";
 import { conventionToStrategy } from "../../ai/convention-strategy";
-import type { CliError } from "../errors";
 
 const SEAT_MAP: Record<string, Seat> = {
   N: Seat.North,
@@ -26,17 +26,14 @@ export const bidCommand: CommandDef = {
   },
   async handler(args, deps) {
     if (!args.convention) {
-      const err: CliError = { code: "INVALID_ARGS", message: "Missing --convention" };
-      throw err;
+      return err({ code: "INVALID_ARGS", message: "Missing --convention" });
     }
     if (!args.hand) {
-      const err: CliError = { code: "INVALID_ARGS", message: "Missing --hand" };
-      throw err;
+      return err({ code: "INVALID_ARGS", message: "Missing --hand" });
     }
     const seat = args.seat ? SEAT_MAP[String(args.seat).toUpperCase()] : undefined;
     if (!seat) {
-      const err: CliError = { code: "INVALID_ARGS", message: "Missing or invalid --seat (N|E|S|W)" };
-      throw err;
+      return err({ code: "INVALID_ARGS", message: "Missing or invalid --seat (N|E|S|W)" });
     }
 
     const conventionId = String(args.convention);
@@ -52,18 +49,18 @@ export const bidCommand: CommandDef = {
       const dealer = args.dealer ? SEAT_MAP[String(args.dealer).toUpperCase()] ?? Seat.North : Seat.North;
       auction = buildAuction(dealer, bids);
     } else {
-      auction = convention.defaultAuction?.(seat) ?? { entries: [], isComplete: false };
+      auction = convention.defaultAuction?.(seat, undefined) ?? { entries: [], isComplete: false };
     }
 
     const result = await deps.engine.suggestBid(hand, auction, seat, strategy);
 
-    return {
+    return ok({
       type: "bid",
       data: {
         call: result.call,
         rule: result.ruleName,
         explanation: result.explanation,
       },
-    };
+    });
   },
 };

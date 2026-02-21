@@ -50,6 +50,26 @@ describe("parseCard", () => {
   test("throws on single character", () => {
     expect(() => parseCard("S")).toThrow("Invalid card notation");
   });
+
+  test("throws on lowercase input 'sa'", () => {
+    expect(() => parseCard("sa")).toThrow("Invalid card notation");
+  });
+
+  test("throws on mixed case 'Sa'", () => {
+    expect(() => parseCard("Sa")).toThrow("Invalid card notation");
+  });
+
+  test("throws on leading whitespace ' SA'", () => {
+    expect(() => parseCard(" SA")).toThrow("Invalid card notation");
+  });
+
+  test("throws on embedded whitespace 'S A'", () => {
+    expect(() => parseCard("S A")).toThrow("Invalid card notation");
+  });
+
+  test("throws on numeric rank notation 'S10' (use 'ST' instead)", () => {
+    expect(() => parseCard("S10")).toThrow("Invalid card notation");
+  });
 });
 
 describe("parseHand", () => {
@@ -76,5 +96,15 @@ describe("parseHand", () => {
       "CA", "CK", "CQ", "XX",
     ];
     expect(() => parseHand(notations)).toThrow("Invalid card notation");
+  });
+
+  test("throws on duplicate cards in hand", () => {
+    const notations = [
+      "SA", "SA", "SQ", "SJ",
+      "HA", "HK", "HQ",
+      "DA", "DK",
+      "CA", "CK", "CQ", "CJ",
+    ];
+    expect(() => parseHand(notations)).toThrow();
   });
 });

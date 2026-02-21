@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { conventionsCommand } from "../commands/conventions";
 import { createCliDependencies } from "../engine-factory";
-import type { CommandResult } from "../types";
 import { clearRegistry, registerConvention } from "../../conventions/registry";
 import { staymanConfig } from "../../conventions/stayman";
 
@@ -16,45 +15,51 @@ beforeEach(() => {
 
 describe("conventions command", () => {
   it("--list returns all conventions", async () => {
-    const result: CommandResult = await conventionsCommand.handler(
+    const result = await conventionsCommand.handler(
       { list: true },
       deps,
     );
-    expect(result.type).toBe("conventions");
-    const data = result.data as Array<{ id: string; name: string }>;
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.value.type).toBe("conventions");
+    const data = result.value.data as Array<{ id: string; name: string }>;
     expect(data).toHaveLength(1);
     expect(data[0]!.id).toBe("stayman");
     expect(data[0]!.name).toBe("Stayman");
   });
 
   it("--show stayman returns convention details", async () => {
-    const result: CommandResult = await conventionsCommand.handler(
+    const result = await conventionsCommand.handler(
       { show: "stayman" },
       deps,
     );
-    expect(result.type).toBe("convention");
-    const data = result.data as { id: string; name: string; rules: string[] };
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.value.type).toBe("convention");
+    const data = result.value.data as { id: string; name: string; rules: string[] };
     expect(data.id).toBe("stayman");
     expect(data.rules).toContain("stayman-ask");
   });
 
-  it("--show unknown throws error", async () => {
-    await expect(
-      conventionsCommand.handler({ show: "nonexistent" }, deps),
-    ).rejects.toMatchObject({ code: "INVALID_ARGS" });
+  it("--show unknown returns error", async () => {
+    const result = await conventionsCommand.handler({ show: "nonexistent" }, deps);
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.code).toBe("INVALID_ARGS");
   });
 
   it("list returns JSON format correctly", async () => {
     const result = await conventionsCommand.handler({ list: true }, deps);
-    // JSON output should have type and data properties
-    expect(result).toHaveProperty("type", "conventions");
-    expect(result).toHaveProperty("data");
-    expect(Array.isArray(result.data)).toBe(true);
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.value.type).toBe("conventions");
+    expect(Array.isArray(result.value.data)).toBe(true);
   });
 
   it("requires --list or --show argument", async () => {
-    await expect(
-      conventionsCommand.handler({}, deps),
-    ).rejects.toMatchObject({ code: "INVALID_ARGS" });
+    const result = await conventionsCommand.handler({}, deps);
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.code).toBe("INVALID_ARGS");
   });
 });

@@ -1,9 +1,9 @@
 import type { CommandDef } from "../types";
+import { ok, err } from "../types";
 import {
   listConventions,
   getConvention,
 } from "../../conventions/registry";
-import type { CliError } from "../errors";
 
 export const conventionsCommand: CommandDef = {
   name: "conventions",
@@ -16,7 +16,7 @@ export const conventionsCommand: CommandDef = {
   async handler(args) {
     if (args.list) {
       const conventions = listConventions();
-      return {
+      return ok({
         type: "conventions",
         data: conventions.map((c) => ({
           id: c.id,
@@ -24,14 +24,14 @@ export const conventionsCommand: CommandDef = {
           description: c.description,
           category: c.category,
         })),
-      };
+      });
     }
 
     if (args.show) {
       const id = String(args.show);
       try {
         const convention = getConvention(id);
-        return {
+        return ok({
           type: "convention",
           data: {
             id: convention.id,
@@ -40,20 +40,18 @@ export const conventionsCommand: CommandDef = {
             category: convention.category,
             rules: convention.biddingRules.map((r) => r.name),
           },
-        };
+        });
       } catch {
-        const err: CliError = {
+        return err({
           code: "INVALID_ARGS",
           message: `Unknown convention: "${id}"`,
-        };
-        throw err;
+        });
       }
     }
 
-    const err: CliError = {
+    return err({
       code: "INVALID_ARGS",
       message: "Provide --list or --show <id>",
-    };
-    throw err;
+    });
   },
 };

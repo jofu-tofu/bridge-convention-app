@@ -135,7 +135,7 @@ const staymanRebidNoFit: BiddingRule = {
 };
 
 /** Responder position starts after 1NT - P. */
-function staymanDefaultAuction(seat: Seat): Auction | undefined {
+function staymanDefaultAuction(seat: Seat, _deal?: import("../engine/types").Deal): Auction | undefined {
   if (seat === Seat.South || seat === Seat.East) {
     return buildAuction(Seat.North, ["1NT", "P"]);
   }

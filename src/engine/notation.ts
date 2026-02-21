@@ -35,7 +35,16 @@ export function parseCard(notation: string): Card {
   return { suit, rank };
 }
 
-/** Parse an array of card notations into a Hand (must be exactly 13 cards). */
+/** Parse an array of card notations into a Hand (must be exactly 13 cards, no duplicates). */
 export function parseHand(notations: string[]): Hand {
-  return createHand(notations.map(parseCard));
+  const cards = notations.map(parseCard);
+  const seen = new Set<string>();
+  for (const card of cards) {
+    const key = `${card.suit}${card.rank}`;
+    if (seen.has(key)) {
+      throw new Error(`Duplicate card in hand: ${key}`);
+    }
+    seen.add(key);
+  }
+  return createHand(cards);
 }

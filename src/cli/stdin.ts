@@ -1,4 +1,5 @@
 import type { CommandResult } from "./types";
+import { ok, err, type Result } from "./types";
 import type { CliError } from "./errors";
 
 export interface StdinSource {
@@ -8,14 +9,13 @@ export interface StdinSource {
 
 export async function readStdin(
   stdin: StdinSource = process.stdin as StdinSource,
-): Promise<CommandResult> {
+): Promise<Result<CommandResult, CliError>> {
   if (stdin.isTTY) {
-    const error: CliError = {
+    return err({
       code: "INVALID_ARGS",
       message:
         "No piped input detected. Use --hand instead, or pipe from another command.",
-    };
-    throw error;
+    });
   }
 
   const chunks: Buffer[] = [];
@@ -25,22 +25,20 @@ export async function readStdin(
 
   const raw = Buffer.concat(chunks).toString("utf-8").trim();
   if (!raw) {
-    const error: CliError = {
+    return err({
       code: "PARSE_ERROR",
       message: "Empty input from stdin.",
-    };
-    throw error;
+    });
   }
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch {
-    const error: CliError = {
+    return err({
       code: "PARSE_ERROR",
       message: "Invalid JSON from stdin.",
-    };
-    throw error;
+    });
   }
 
   if (
@@ -49,13 +47,12 @@ export async function readStdin(
     !("type" in parsed) ||
     !("data" in parsed)
   ) {
-    const error: CliError = {
+    return err({
       code: "PARSE_ERROR",
       message:
         'Malformed CommandResult envelope: missing "type" or "data" field.',
-    };
-    throw error;
+    });
   }
 
-  return parsed as CommandResult;
+  return ok(parsed as CommandResult);
 }

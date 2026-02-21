@@ -1,6 +1,19 @@
 import type { EnginePort } from "../engine/port";
+import type { CliError } from "./errors";
 
 export type OutputFormat = "json" | "text";
+
+export type Result<T, E> =
+  | { readonly success: true; readonly value: T }
+  | { readonly success: false; readonly error: E };
+
+export function ok<T>(value: T): Result<T, never> {
+  return { success: true, value };
+}
+
+export function err<E>(error: E): Result<never, E> {
+  return { success: false, error };
+}
 
 export interface CommandResult {
   readonly type: string;
@@ -16,7 +29,7 @@ export interface CliDependencies {
   readonly engine: CliEngine;
   readonly output: (message: string) => void;
   readonly errorOutput: (message: string) => void;
-  readonly readStdin: () => Promise<CommandResult>;
+  readonly readStdin: () => Promise<Result<CommandResult, CliError>>;
 }
 
 export interface CliEngine extends EnginePort {
@@ -29,7 +42,7 @@ export interface CommandHandler {
   (
     args: Record<string, unknown>,
     deps: CliDependencies,
-  ): Promise<CommandResult>;
+  ): Promise<Result<CommandResult, CliError>>;
 }
 
 export interface CommandDef {

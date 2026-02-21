@@ -359,6 +359,50 @@ describe("extreme hand shapes — bridge edge cases", () => {
   });
 });
 
+describe("hand evaluator edge cases", () => {
+  test("yarborough total points = 0 (0 HCP + 4-3-3-3 shape)", () => {
+    const result = evaluateHand(HAND_YARBOROUGH);
+    expect(result.hcp).toBe(0);
+    expect(result.totalPoints).toBe(0);
+  });
+
+  test("13-0-0-0 total points = 28 (10 HCP + 18 distribution)", () => {
+    const monosuit = hand(
+      "SA", "SK", "SQ", "SJ", "ST",
+      "S9", "S8", "S7", "S6", "S5",
+      "S4", "S3", "S2",
+    );
+    const result = evaluateHand(monosuit);
+    expect(result.hcp).toBe(10);
+    expect(result.distribution.total).toBe(18);
+    expect(result.totalPoints).toBe(28);
+  });
+
+  test("5-3-3-2 with 5-card minor is balanced", () => {
+    // 5 diamonds, 3-3-2 in others
+    const fiveMinor = hand(
+      "SA", "SK", "S2",             // 3 spades
+      "HK", "H5",                    // 2 hearts
+      "DQ", "DJ", "D8", "D5", "D3", // 5 diamonds
+      "CQ", "C5", "C2",             // 3 clubs
+    );
+    const shape = getSuitLength(fiveMinor);
+    expect(isBalanced(shape)).toBe(true);
+  });
+
+  test("maximum HCP single hand = 37 (all honors except one Jack)", () => {
+    // 4A(16) + 4K(12) + 4Q(8) + 1J(1) = 37
+    const maxHand = hand(
+      "SA", "SK", "SQ",
+      "HA", "HK", "HQ",
+      "DA", "DK", "DQ",
+      "CA", "CK", "CQ",
+      "SJ",
+    );
+    expect(calculateHcp(maxHand)).toBe(37);
+  });
+});
+
 describe("deck HCP invariants", () => {
   test("total deck HCP equals 40", () => {
     const deck = createDeck();

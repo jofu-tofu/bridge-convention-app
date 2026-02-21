@@ -1,8 +1,11 @@
 import type { CommandDef } from "../types";
+import { ok, err } from "../types";
 import { BidSuit, Seat, Vulnerability } from "../../engine/types";
 import type { Contract } from "../../engine/types";
 import { calculateScore } from "../../engine/scoring";
 import type { CliError } from "../errors";
+import type { Result } from "../types";
+import type { CommandResult } from "../types";
 
 const STRAIN_MAP: Record<string, BidSuit> = {
   C: BidSuit.Clubs,
@@ -12,28 +15,27 @@ const STRAIN_MAP: Record<string, BidSuit> = {
   NT: BidSuit.NoTrump,
 };
 
-function parseContract(str: string): Contract {
+function parseContract(str: string): Result<Contract, CliError> {
   const upper = str.toUpperCase().trim();
   const match = upper.match(/^([1-7])(C|D|H|S|NT)(XX|X)?$/);
   if (!match) {
-    const err: CliError = {
+    return err({
       code: "INVALID_ARGS",
       message: `Invalid contract string: "${str}". Expected format: 3NT, 4SX, 4SXX`,
-    };
-    throw err;
+    });
   }
 
   const level = Number(match[1]) as Contract["level"];
   const strain = STRAIN_MAP[match[2]!]!;
   const modifier = match[3] ?? "";
 
-  return {
+  return ok({
     level,
     strain,
     doubled: modifier === "X",
     redoubled: modifier === "XX",
     declarer: Seat.South,
-  };
+  });
 }
 
 export const scoreCommand: CommandDef = {
@@ -47,23 +49,25 @@ export const scoreCommand: CommandDef = {
   },
   async handler(args) {
     if (!args.contract) {
-      const err: CliError = { code: "INVALID_ARGS", message: "Missing --contract" };
-      throw err;
+      return err({ code: "INVALID_ARGS", message: "Missing --contract" });
     }
     if (args.tricks === undefined || args.tricks === null) {
-      const err: CliError = { code: "INVALID_ARGS", message: "Missing --tricks" };
-      throw err;
+      return err({ code: "INVALID_ARGS", message: "Missing --tricks" });
     }
 
     const contractStr = String(args.contract);
-    const contract = parseContract(contractStr);
+    const contractResult = parseContract(contractStr);
+    if (!contractResult.success) {
+      return contractResult;
+    }
+    const contract = contractResult.value;
     const tricksWon = Number(args.tricks);
     const vulnerable = args.vulnerable === true;
     const vuln = vulnerable ? Vulnerability.Both : Vulnerability.None;
 
     const score = calculateScore(contract, tricksWon, vuln);
 
-    return {
+    return ok({
       type: "score",
       data: {
         score,
@@ -71,6 +75,6 @@ export const scoreCommand: CommandDef = {
         tricks: tricksWon,
         vulnerable,
       },
-    };
+    });
   },
 };

@@ -84,14 +84,15 @@ tests/
 - Full testing playbook is in **TESTING.md**, not here
 - `src-tauri/` is boilerplate scaffold until Phase 5 — don't add custom Rust commands yet
 - No vendored bridge libraries — clean-room implementation only
-- DONT and Bergen Raises variant selection must be resolved before Phase 4 implementation
+- DONT uses Standard DONT (original Marty Bergen) variant. Bergen Raises uses Standard Bergen (3C=constructive 7-9, 3D=limit 10-12, 3M=preemptive 0-6)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 
 **Reference docs** (detailed architecture, not auto-loaded):
 
 - `docs/architecture-reference.md` — convention constraints, AI heuristics, screen flow, phase details
-- `docs/bridge-rules-sources.md` — authoritative bridge rules sources, coverage gaps, ambiguity resolution
+- `docs/bridge-rules-sources.md` — authoritative bridge rules sources, ambiguity resolution
+- `docs/conventions/` — per-convention reference docs (gerber.md, bergen-raises.md, dont.md) with sources, rules, edge cases
 
 **Context tree** (read the relevant one before working in that directory):
 

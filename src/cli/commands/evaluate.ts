@@ -1,7 +1,8 @@
 import { Seat } from "../../engine/types";
 import type { Deal, Hand } from "../../engine/types";
 import { parseHand } from "../../engine/notation";
-import type { CommandDef, CommandResult } from "../types";
+import type { CommandDef } from "../types";
+import { ok, err } from "../types";
 
 function parseSeat(s: string): Seat | undefined {
   const map: Record<string, Seat> = {
@@ -28,45 +29,46 @@ export const evaluateCommand: CommandDef = {
 
     if (args["hand-from"] === "stdin") {
       if (!args.seat) {
-        throw {
-          code: "INVALID_ARGS" as const,
+        return err({
+          code: "INVALID_ARGS",
           message: "--seat is required when reading from stdin.",
-        };
+        });
       }
       const seat = parseSeat(args.seat as string);
       if (!seat) {
-        throw {
-          code: "INVALID_ARGS" as const,
+        return err({
+          code: "INVALID_ARGS",
           message: `Invalid seat: ${args.seat as string}. Use N, E, S, or W.`,
-        };
+        });
       }
       const stdinResult = await deps.readStdin();
-      const deal = stdinResult.data as Deal;
+      if (!stdinResult.success) {
+        return stdinResult;
+      }
+      const deal = stdinResult.value.data as Deal;
       if (!deal.hands || !deal.hands[seat]) {
-        throw {
-          code: "PARSE_ERROR" as const,
+        return err({
+          code: "PARSE_ERROR",
           message: `No hand found for seat ${seat} in piped data.`,
-        };
+        });
       }
       hand = deal.hands[seat];
     } else if (args.hand) {
       const notations = (args.hand as string).split(/\s+/);
       hand = parseHand(notations);
     } else {
-      throw {
-        code: "INVALID_ARGS" as const,
+      return err({
+        code: "INVALID_ARGS",
         message: "Provide --hand or --hand-from stdin.",
-      };
+      });
     }
 
     const strategy = args.strategy as string | undefined;
     const evaluation = await deps.engine.evaluateHand(hand, strategy);
 
-    const result: CommandResult = {
+    return ok({
       type: "evaluation",
       data: evaluation,
-    };
-
-    return result;
+    });
   },
 };

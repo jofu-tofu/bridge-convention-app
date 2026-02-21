@@ -1,4 +1,5 @@
 import type { CommandDef } from "../types";
+import { err } from "../types";
 
 export const suggestPlayCommand: CommandDef = {
   name: "suggest-play",
@@ -9,6 +10,6 @@ export const suggestPlayCommand: CommandDef = {
     trump: { type: "string", description: "Trump suit (S|H|D|C or NT)" },
   },
   async handler() {
-    throw new Error("Unreachable: suggest-play command is phase-gated");
+    return err({ code: "NOT_IMPLEMENTED", message: "suggest-play command is phase-gated" });
   },
 };

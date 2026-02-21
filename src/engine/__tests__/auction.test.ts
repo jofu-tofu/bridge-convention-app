@@ -474,4 +474,115 @@ describe("getLegalCalls", () => {
     const calls = getLegalCalls(auction, Seat.North);
     expect(calls).toHaveLength(0);
   });
+
+  test("after 7NT only pass and double available", () => {
+    const auction = buildAuction(Seat.North, [bid(7, BidSuit.NoTrump)]);
+    const calls = getLegalCalls(auction, Seat.East);
+    // pass + double = 2 (no higher bids exist, no redouble)
+    expect(calls).toHaveLength(2);
+    expect(calls).toContainEqual(pass);
+    expect(calls).toContainEqual(double);
+  });
+
+  test("getLegalCalls count with redouble available", () => {
+    // N:1C E:X — S's options: pass(1) + bids>1C(34) + redouble(1) = 36
+    const auction = buildAuction(Seat.North, [bid(1, BidSuit.Clubs), double]);
+    const calls = getLegalCalls(auction, Seat.South);
+    expect(calls).toHaveLength(36);
+    expect(calls).toContainEqual(pass);
+    expect(calls).toContainEqual(redouble);
+    expect(calls).not.toContainEqual(double);
+    expect(calls).not.toContainEqual(bid(1, BidSuit.Clubs));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Edge cases: double/redouble with intervening passes
+// ---------------------------------------------------------------------------
+
+describe("isLegalCall — intervening passes", () => {
+  test("double legal after 2 intervening passes (opponent's bid still active)", () => {
+    // N:1C E:P S:P — W can double (opponent N's bid)
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Clubs),
+      pass,
+      pass,
+    ]);
+    expect(isLegalCall(auction, double, Seat.West)).toBe(true);
+  });
+
+  test("redouble legal after 2 intervening passes (double still active)", () => {
+    // N:1C E:X S:P W:P — N can redouble (opponent's double)
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Clubs),
+      double,
+      pass,
+      pass,
+    ]);
+    expect(isLegalCall(auction, redouble, Seat.North)).toBe(true);
+  });
+
+  test("double illegal when last non-pass call is a double", () => {
+    // N:1C E:X S:P — W cannot double (last non-pass is already a double)
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Clubs),
+      double,
+      pass,
+    ]);
+    expect(isLegalCall(auction, double, Seat.West)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Edge cases: addCall immutability and competitive auctions
+// ---------------------------------------------------------------------------
+
+describe("addCall — complex sequences", () => {
+  test("addCall preserves immutability for complex 6-entry auction", () => {
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Clubs),
+      bid(1, BidSuit.Diamonds),
+      bid(1, BidSuit.Hearts),
+      bid(1, BidSuit.Spades),
+      bid(2, BidSuit.Clubs),
+      bid(2, BidSuit.Diamonds),
+    ]);
+    const originalLength = auction.entries.length;
+    const next = addCall(auction, { seat: Seat.South, call: bid(2, BidSuit.Hearts) });
+    expect(next.entries).toHaveLength(originalLength + 1);
+    expect(auction.entries).toHaveLength(originalLength);
+  });
+});
+
+describe("competitive auction edge cases", () => {
+  test("competitive auction with escalating bids completes correctly", () => {
+    // N:1C E:1D S:1H W:1S N:2C E:2D then S:P W:P N:P
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Clubs),
+      bid(1, BidSuit.Diamonds),
+      bid(1, BidSuit.Hearts),
+      bid(1, BidSuit.Spades),
+      bid(2, BidSuit.Clubs),
+      bid(2, BidSuit.Diamonds),
+      pass,
+      pass,
+      pass,
+    ]);
+    expect(auction.isComplete).toBe(true);
+  });
+
+  test("getContract declarer is first on side to name strain in competitive auction", () => {
+    // N:1D E:P S:2D P P P — declarer is N (first on NS to bid diamonds)
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Diamonds),
+      pass,
+      bid(2, BidSuit.Diamonds),
+      pass,
+      pass,
+      pass,
+    ]);
+    const contract = getContract(auction)!;
+    expect(contract.declarer).toBe(Seat.North);
+    expect(contract.strain).toBe(BidSuit.Diamonds);
+  });
 });

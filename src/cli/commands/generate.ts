@@ -1,6 +1,7 @@
 import { Seat, Suit, Vulnerability } from "../../engine/types";
 import type { DealConstraints, SeatConstraint } from "../../engine/types";
-import type { CommandDef, CommandResult } from "../types";
+import type { CommandDef } from "../types";
+import { ok, err } from "../types";
 
 function parseSuit(s: string): Suit | undefined {
   const map: Record<string, Suit> = {
@@ -64,10 +65,10 @@ export const generateCommand: CommandDef = {
     if (args.seat) {
       const seat = parseSeat(args.seat as string);
       if (!seat) {
-        throw {
-          code: "INVALID_ARGS" as const,
+        return err({
+          code: "INVALID_ARGS",
           message: `Invalid seat: ${args.seat as string}. Use N, E, S, or W.`,
-        };
+        });
       }
 
       const sc: {
@@ -82,13 +83,13 @@ export const generateCommand: CommandDef = {
       if (args["min-hcp"] !== undefined) {
         sc.minHcp = parseInt(args["min-hcp"] as string, 10);
         if (isNaN(sc.minHcp)) {
-          throw { code: "INVALID_ARGS" as const, message: "Invalid --min-hcp value." };
+          return err({ code: "INVALID_ARGS", message: "Invalid --min-hcp value." });
         }
       }
       if (args["max-hcp"] !== undefined) {
         sc.maxHcp = parseInt(args["max-hcp"] as string, 10);
         if (isNaN(sc.maxHcp)) {
-          throw { code: "INVALID_ARGS" as const, message: "Invalid --max-hcp value." };
+          return err({ code: "INVALID_ARGS", message: "Invalid --max-hcp value." });
         }
       }
       if (args.balanced) {
@@ -97,14 +98,14 @@ export const generateCommand: CommandDef = {
       if (args["min-length"]) {
         const parsed = parseSuitLength(args["min-length"] as string);
         if (!parsed) {
-          throw { code: "INVALID_ARGS" as const, message: "Invalid --min-length. Use format S=5." };
+          return err({ code: "INVALID_ARGS", message: "Invalid --min-length. Use format S=5." });
         }
         sc.minLength = { [parsed.suit]: parsed.count };
       }
       if (args["max-length"]) {
         const parsed = parseSuitLength(args["max-length"] as string);
         if (!parsed) {
-          throw { code: "INVALID_ARGS" as const, message: "Invalid --max-length. Use format H=3." };
+          return err({ code: "INVALID_ARGS", message: "Invalid --max-length. Use format H=3." });
         }
         sc.maxLength = { [parsed.suit]: parsed.count };
       }
@@ -124,22 +125,21 @@ export const generateCommand: CommandDef = {
     const result = await deps.engine.generateDealWithDiagnostics(constraints);
     const durationMs = Date.now() - start;
 
-    const commandResult: CommandResult = {
-      type: "deal",
-      data: result.deal,
-    };
-
     if (args.diagnostics) {
-      return {
-        ...commandResult,
+      return ok({
+        type: "deal",
+        data: result.deal,
         meta: {
           iterations: result.iterations,
           relaxationSteps: result.relaxationSteps,
           durationMs,
         },
-      };
+      });
     }
 
-    return commandResult;
+    return ok({
+      type: "deal",
+      data: result.deal,
+    });
   },
 };

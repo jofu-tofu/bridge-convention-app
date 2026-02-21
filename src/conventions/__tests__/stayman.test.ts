@@ -704,6 +704,66 @@ describe("Stayman edge cases", () => {
     expect(result!.rule).toBe("stayman-response-denial");
   });
 
+  test("3 cards in both majors does NOT trigger Stayman", () => {
+    // 18 HCP, 3-3-4-3 shape — no 4-card major despite high HCP
+    const noMajor = hand(
+      "SA", "SK", "SQ",               // 9 HCP (3 spades)
+      "HA", "HK", "H5",               // 7 HCP (3 hearts)
+      "DQ", "D7", "D5", "D3",         // 2 HCP (4 diamonds)
+      "C5", "C3", "C2",               // 0 HCP (3 clubs)
+    );
+    expect(calculateHcp(noMajor)).toBe(18);
+    const shape = getSuitLength(noMajor);
+    expect(shape[0]).toBe(3); // spades
+    expect(shape[1]).toBe(3); // hearts
+    const result = callFromRules(noMajor, Seat.South, ["1NT", "P"]);
+    if (result !== null) {
+      expect(result.rule).not.toBe("stayman-ask");
+    }
+  });
+
+  test("both majors with 2S response: responder bids 4S (spade fit)", () => {
+    // Responder has 4H + 4S, opener shows 2S → fit in spades
+    const responderBothMajors = hand(
+      "SJ", "ST", "S9", "S3",       // 1 HCP (4 spades)
+      "HA", "HQ", "H9", "H3",       // 6 HCP (4 hearts)
+      "DA", "D4",                     // 4 HCP (2 diamonds)
+      "CQ", "C9", "C3",              // 2 HCP (3 clubs)
+    );
+    const result = callFromRules(responderBothMajors, Seat.South, [
+      "1NT", "P", "2C", "P", "2S", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-major-fit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+
+  test("full denial sequence: 1NT-P-2C-P-2D-P-3NT completes", () => {
+    // Responder with 4 hearts asks Stayman, opener denies, responder bids 3NT
+    const responder = hand(
+      "SQ", "S5", "S3",             // 2 HCP (3 spades)
+      "HA", "HQ", "HJ", "H2",      // 8 HCP (4 hearts)
+      "DQ", "D8", "D4",             // 2 HCP (3 diamonds)
+      "C9", "C3", "C6",             // 0 HCP (3 clubs)
+    );
+    // Step 1: Ask
+    const ask = callFromRules(responder, Seat.South, ["1NT", "P"]);
+    expect(ask).not.toBeNull();
+    expect(ask!.rule).toBe("stayman-ask");
+
+    // Step 2: Denial already tested — just verify rebid
+    const rebid = callFromRules(responder, Seat.South, [
+      "1NT", "P", "2C", "P", "2D", "P",
+    ]);
+    expect(rebid).not.toBeNull();
+    expect(rebid!.rule).toBe("stayman-rebid-no-fit");
+    const call = rebid!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.NoTrump);
+  });
+
   test("non-trigger: responder with no 4-card major does not invoke Stayman", () => {
     // Responder with 10 HCP but no 4-card major should not trigger stayman-ask
     const noMajorResponder = hand(

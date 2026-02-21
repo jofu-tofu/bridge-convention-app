@@ -568,6 +568,70 @@ describe("multi-seat constraints", () => {
 });
 
 
+describe("deal-generator edge cases", () => {
+  /** Simple seeded PRNG (mulberry32) for deterministic edge case tests. */
+  function createSeededRng(seed: number): () => number {
+    let s = seed | 0;
+    return () => {
+      s = (s + 0x6d2b79f5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  test("all 4 seats constrained (HCP conservation)", () => {
+    // N:15-17 balanced, S:8+, E:5+, W:5+ — total HCP=40 means this is tight but feasible
+    const constraints: DealConstraints = {
+      seats: [
+        { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
+        { seat: Seat.South, minHcp: 8 },
+        { seat: Seat.East, minHcp: 5 },
+        { seat: Seat.West, minHcp: 5 },
+      ],
+    };
+    for (let i = 0; i < 5; i++) {
+      const result = generateDeal(constraints);
+      expect(checkConstraints(result.deal, constraints)).toBe(true);
+    }
+  });
+
+  test("maxAttempts=1 unconstrained succeeds on first try", () => {
+    const result = generateDeal({ seats: [], maxAttempts: 1 });
+    expect(result.iterations).toBe(1);
+    expect(result.deal.hands[Seat.North].cards).toHaveLength(13);
+  });
+
+  test("maxAttempts=1 with tight constraints throws with '1 attempts'", () => {
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 37 }],
+      maxAttempts: 1,
+    };
+    expect(() => generateDeal(constraints)).toThrow(/1 attempts/);
+  });
+
+  test("conflicting min > max HCP always throws", () => {
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 20, maxHcp: 10 }],
+      maxAttempts: 100,
+    };
+    expect(() => generateDeal(constraints)).toThrow(/100 attempts/);
+  });
+
+  test("empty constraints object produces valid deal in 1 iteration", () => {
+    const rng = createSeededRng(42);
+    const result = generateDeal({ seats: [] }, rng);
+    expect(result.iterations).toBe(1);
+    const allCards = [
+      ...result.deal.hands[Seat.North].cards,
+      ...result.deal.hands[Seat.East].cards,
+      ...result.deal.hands[Seat.South].cards,
+      ...result.deal.hands[Seat.West].cards,
+    ];
+    expect(allCards).toHaveLength(52);
+  });
+});
+
 describe("seeded RNG", () => {
   /** Simple seeded PRNG (mulberry32) for deterministic tests. */
   function createSeededRng(seed: number): () => number {

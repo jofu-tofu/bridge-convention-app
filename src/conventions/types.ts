@@ -4,6 +4,7 @@ import type {
   Call,
   HandEvaluation,
   DealConstraints,
+  Deal,
 } from "../engine/types";
 import { Seat } from "../engine/types";
 
@@ -58,5 +59,5 @@ export interface ConventionConfig {
   readonly biddingRules: readonly BiddingRule[];
   readonly examples: readonly ExampleHand[];
   /** Returns the default auction context for a given seat, or undefined for empty auction. */
-  readonly defaultAuction?: (seat: Seat) => Auction | undefined;
+  readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
 }

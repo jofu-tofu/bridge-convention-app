@@ -6,6 +6,7 @@ import {
   bidsInSequence,
   seatBidCount,
   auctionMatchesExact,
+  parsePatternCall,
 } from "../auction-helpers";
 import { auctionFromBids } from "../../conventions/__tests__/fixtures";
 
@@ -63,6 +64,40 @@ describe("seatBidCount", () => {
   test("returns 0 for seat with no entries", () => {
     const auction = auctionFromBids(Seat.North, ["1NT"]);
     expect(seatBidCount(auction, Seat.East)).toBe(0);
+  });
+});
+
+describe("bidsInSequence edge cases", () => {
+  test("empty auction returns empty array", () => {
+    const auction = { entries: [], isComplete: false };
+    const bids = bidsInSequence(auction);
+    expect(bids).toHaveLength(0);
+  });
+});
+
+describe("seatBidCount edge cases", () => {
+  test("empty auction returns 0 for any seat", () => {
+    const auction = { entries: [], isComplete: false };
+    expect(seatBidCount(auction, Seat.North)).toBe(0);
+    expect(seatBidCount(auction, Seat.East)).toBe(0);
+    expect(seatBidCount(auction, Seat.South)).toBe(0);
+    expect(seatBidCount(auction, Seat.West)).toBe(0);
+  });
+});
+
+describe("parsePatternCall edge cases", () => {
+  test("lowercase '1c' normalizes to 1C bid", () => {
+    const call = parsePatternCall("1c");
+    expect(call.type).toBe("bid");
+    expect((call as import("../types").ContractBid).level).toBe(1);
+    expect((call as import("../types").ContractBid).strain).toBe(BidSuit.Clubs);
+  });
+
+  test("whitespace ' 1NT ' normalizes via trim", () => {
+    const call = parsePatternCall(" 1NT ");
+    expect(call.type).toBe("bid");
+    expect((call as import("../types").ContractBid).level).toBe(1);
+    expect((call as import("../types").ContractBid).strain).toBe(BidSuit.NoTrump);
   });
 });
 

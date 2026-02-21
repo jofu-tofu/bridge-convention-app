@@ -519,6 +519,74 @@ describe("calculateScore", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Doubled contract game threshold edge cases (ACBL Law 77)
+// ---------------------------------------------------------------------------
+
+describe("doubled contract game thresholds", () => {
+  test("2C doubled is NOT game (80 trick points < 100)", () => {
+    // 2C doubled: 20 * 2 * 2 = 80
+    expect(calculateTrickPoints(contract(2, BidSuit.Clubs, Seat.South, true))).toBe(80);
+    expect(isGame(contract(2, BidSuit.Clubs, Seat.South, true))).toBe(false);
+  });
+
+  test("3C doubled IS game (120 trick points >= 100)", () => {
+    // 3C doubled: 20 * 3 * 2 = 120
+    expect(calculateTrickPoints(contract(3, BidSuit.Clubs, Seat.South, true))).toBe(120);
+    expect(isGame(contract(3, BidSuit.Clubs, Seat.South, true))).toBe(true);
+  });
+
+  test("4C undoubled is NOT game (80 trick points < 100)", () => {
+    // 4C: 20 * 4 = 80
+    expect(calculateTrickPoints(contract(4, BidSuit.Clubs))).toBe(80);
+    expect(isGame(contract(4, BidSuit.Clubs))).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// NT overtrick and multiple overtrick edge cases (ACBL Law 77-78)
+// ---------------------------------------------------------------------------
+
+describe("overtrick edge cases", () => {
+  test("NT overtrick value is 30 not 40 (1NT NV +1 = 120)", () => {
+    // 1NT +1 NV: trick=40, partscore=50, overtrick=30 → 120 (NOT 130)
+    expect(calculateMakingScore(contract(1, BidSuit.NoTrump), 1, false)).toBe(120);
+  });
+
+  test("multiple doubled overtricks NV (3NT doubled NV +3 = 850)", () => {
+    // 3NT doubled NV +3: trick=200, game=300, insult=50, overtricks=3*100=300 → 850
+    expect(
+      calculateMakingScore(contract(3, BidSuit.NoTrump, Seat.South, true), 3, false),
+    ).toBe(850);
+  });
+
+  test("multiple redoubled V overtricks (1H XX V +3 = 1920)", () => {
+    // 1H redoubled V +3: trick=120, game=500, insult=100, overtricks=3*400=1200 → 1920
+    expect(
+      calculateMakingScore(contract(1, BidSuit.Hearts, Seat.South, false, true), 3, true),
+    ).toBe(1920);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Extreme penalty and zero-overtrick boundary (ACBL Law 79)
+// ---------------------------------------------------------------------------
+
+describe("extreme penalties and boundaries", () => {
+  test("redoubled NV down 8 = 4000", () => {
+    // Doubled NV down 8: 100+200+200+300+300+300+300+300 = 2000
+    // Redoubled = 2000 * 2 = 4000
+    expect(
+      calculatePenalty(contract(7, BidSuit.NoTrump, Seat.South, false, true), 8, false),
+    ).toBe(4000);
+  });
+
+  test("4H exactly making NV (0 overtricks) = 420", () => {
+    // 4H NV making exact: trick=120, game=300 → 420
+    expect(calculateMakingScore(contract(4, BidSuit.Hearts), 0, false)).toBe(420);
+  });
+});
+
 describe("bridge scoring extremes", () => {
   test("7NT redoubled vulnerable making exact = highest possible making score", () => {
     // 7NT redoubled V: trick points = (40 + 30*6) * 4 = 880
