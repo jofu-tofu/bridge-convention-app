@@ -25,3 +25,8 @@ coverage/
 
 # OS files
 Thumbs.db
+
+# AIW Installation
+.windsurf/
+_output/
+.claude/
