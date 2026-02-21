@@ -1,24 +1,24 @@
 export enum Suit {
-  Clubs = 'C',
-  Diamonds = 'D',
-  Hearts = 'H',
-  Spades = 'S',
+  Clubs = "C",
+  Diamonds = "D",
+  Hearts = "H",
+  Spades = "S",
 }
 
 export enum Rank {
-  Two = '2',
-  Three = '3',
-  Four = '4',
-  Five = '5',
-  Six = '6',
-  Seven = '7',
-  Eight = '8',
-  Nine = '9',
-  Ten = 'T',
-  Jack = 'J',
-  Queen = 'Q',
-  King = 'K',
-  Ace = 'A',
+  Two = "2",
+  Three = "3",
+  Four = "4",
+  Five = "5",
+  Six = "6",
+  Seven = "7",
+  Eight = "8",
+  Nine = "9",
+  Ten = "T",
+  Jack = "J",
+  Queen = "Q",
+  King = "K",
+  Ace = "A",
 }
 
 export interface Card {
@@ -27,31 +27,31 @@ export interface Card {
 }
 
 export enum Seat {
-  North = 'N',
-  East = 'E',
-  South = 'S',
-  West = 'W',
+  North = "N",
+  East = "E",
+  South = "S",
+  West = "W",
 }
 
 export enum Vulnerability {
-  None = 'None',
-  NorthSouth = 'NS',
-  EastWest = 'EW',
-  Both = 'Both',
+  None = "None",
+  NorthSouth = "NS",
+  EastWest = "EW",
+  Both = "Both",
 }
 
 export enum BidSuit {
-  Clubs = 'C',
-  Diamonds = 'D',
-  Hearts = 'H',
-  Spades = 'S',
-  NoTrump = 'NT',
+  Clubs = "C",
+  Diamonds = "D",
+  Hearts = "H",
+  Spades = "S",
+  NoTrump = "NT",
 }
 
 export enum SpecialBid {
-  Pass = 'Pass',
-  Double = 'X',
-  Redouble = 'XX',
+  Pass = "Pass",
+  Double = "X",
+  Redouble = "XX",
 }
 
 export interface Hand {
@@ -59,13 +59,13 @@ export interface Hand {
 }
 
 export interface ContractBid {
-  readonly type: 'bid';
+  readonly type: "bid";
   readonly level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   readonly strain: BidSuit;
 }
 
 export interface SpecialCall {
-  readonly type: 'pass' | 'double' | 'redouble';
+  readonly type: "pass" | "double" | "redouble";
 }
 
 export type Call = ContractBid | SpecialCall;
@@ -145,4 +145,15 @@ export interface Score {
   readonly tricksWon: number;
   readonly score: number;
   readonly vulnerability: Vulnerability;
+}
+
+export interface PlayedCard {
+  readonly card: Card;
+  readonly seat: Seat;
+}
+
+export interface Trick {
+  readonly plays: readonly PlayedCard[];
+  readonly trumpSuit?: Suit;
+  readonly winner?: Seat;
 }
