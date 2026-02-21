@@ -1,3 +1,4 @@
+import { Vulnerability } from "./types";
 import type {
   Deal,
   DealConstraints,
@@ -12,14 +13,27 @@ import type {
   DDSolution,
   Card,
   BidSuit,
-} from './types';
-import type { EnginePort } from './port';
-import { generateDeal } from './deal-generator';
+  Suit,
+  Trick,
+} from "./types";
+import type { EnginePort } from "./port";
+import { generateDeal } from "./deal-generator";
 import {
   evaluateHand,
   getSuitLength,
   isBalanced as checkBalanced,
-} from './hand-evaluator';
+} from "./hand-evaluator";
+import {
+  getLegalCalls as auctionGetLegalCalls,
+  addCall as auctionAddCall,
+  isAuctionComplete as auctionIsComplete,
+  getContract as auctionGetContract,
+} from "./auction";
+import { calculateScore as scoringCalculateScore } from "./scoring";
+import {
+  getLegalPlays as playGetLegalPlays,
+  getTrickWinner as playGetTrickWinner,
+} from "./play";
 
 export class TsEngine implements EnginePort {
   // Phase 1 — implemented
@@ -40,31 +54,44 @@ export class TsEngine implements EnginePort {
     return checkBalanced(getSuitLength(hand));
   }
 
-  // Phase 2 — Bidding (not implemented)
-  async getLegalCalls(_auction: Auction, _seat: Seat): Promise<Call[]> {
-    throw new Error('Not implemented until Phase 2');
+  // Phase 2 — Bidding
+  async getLegalCalls(auction: Auction, seat: Seat): Promise<Call[]> {
+    return auctionGetLegalCalls(auction, seat);
   }
 
-  async addCall(_auction: Auction, _entry: AuctionEntry): Promise<Auction> {
-    throw new Error('Not implemented until Phase 2');
+  async addCall(auction: Auction, entry: AuctionEntry): Promise<Auction> {
+    return auctionAddCall(auction, entry);
   }
 
-  async isAuctionComplete(_auction: Auction): Promise<boolean> {
-    throw new Error('Not implemented until Phase 2');
+  async isAuctionComplete(auction: Auction): Promise<boolean> {
+    return auctionIsComplete(auction);
   }
 
-  async getContract(_auction: Auction): Promise<Contract | null> {
-    throw new Error('Not implemented until Phase 2');
+  async getContract(auction: Auction): Promise<Contract | null> {
+    return auctionGetContract(auction);
   }
 
-  // Phase 2 — Scoring (not implemented)
-  async calculateScore(_contract: Contract, _tricksWon: number, _vulnerable: boolean): Promise<number> {
-    throw new Error('Not implemented until Phase 2');
+  // Phase 2 — Scoring
+  async calculateScore(
+    contract: Contract,
+    tricksWon: number,
+    vulnerability: Vulnerability,
+  ): Promise<number> {
+    return scoringCalculateScore(contract, tricksWon, vulnerability);
+  }
+
+  // Phase 2 — Play
+  async getLegalPlays(hand: Hand, leadSuit?: Suit): Promise<Card[]> {
+    return playGetLegalPlays(hand, leadSuit);
+  }
+
+  async getTrickWinner(trick: Trick): Promise<Seat> {
+    return playGetTrickWinner(trick);
   }
 
   // V2 — DDS (not available)
   async solveDeal(_deal: Deal): Promise<DDSolution> {
-    throw new Error('DDS not available in V1');
+    throw new Error("DDS not available in V1");
   }
 
   async suggestPlay(
@@ -73,10 +100,15 @@ export class TsEngine implements EnginePort {
     _trumpSuit: BidSuit | null,
     _previousTricks: readonly (readonly Card[])[],
   ): Promise<Card> {
-    throw new Error('DDS not available in V1');
+    throw new Error("DDS not available in V1");
   }
 
-  async suggestBid(_hand: Hand, _auction: Auction, _seat: Seat, _conventionId?: string): Promise<Call> {
-    throw new Error('DDS not available in V1');
+  async suggestBid(
+    _hand: Hand,
+    _auction: Auction,
+    _seat: Seat,
+    _conventionId?: string,
+  ): Promise<Call> {
+    throw new Error("DDS not available in V1");
   }
 }

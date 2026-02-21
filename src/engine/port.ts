@@ -12,7 +12,10 @@ import type {
   DDSolution,
   Card,
   BidSuit,
-} from './types';
+  Suit,
+  Trick,
+  Vulnerability,
+} from "./types";
 
 export interface EnginePort {
   // Phase 1 — implemented
@@ -29,7 +32,15 @@ export interface EnginePort {
   getContract(auction: Auction): Promise<Contract | null>;
 
   // Phase 2 — Scoring
-  calculateScore(contract: Contract, tricksWon: number, vulnerable: boolean): Promise<number>;
+  calculateScore(
+    contract: Contract,
+    tricksWon: number,
+    vulnerability: Vulnerability,
+  ): Promise<number>;
+
+  // Phase 2 — Play
+  getLegalPlays(hand: Hand, leadSuit?: Suit): Promise<Card[]>;
+  getTrickWinner(trick: Trick): Promise<Seat>;
 
   // V2 — DDS
   solveDeal(deal: Deal): Promise<DDSolution>;
@@ -39,5 +50,10 @@ export interface EnginePort {
     trumpSuit: BidSuit | null,
     previousTricks: readonly (readonly Card[])[],
   ): Promise<Card>;
-  suggestBid(hand: Hand, auction: Auction, seat: Seat, conventionId?: string): Promise<Call>;
+  suggestBid(
+    hand: Hand,
+    auction: Auction,
+    seat: Seat,
+    conventionId?: string,
+  ): Promise<Call>;
 }
