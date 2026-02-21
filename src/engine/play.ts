@@ -1,10 +1,10 @@
 import { Suit, Rank } from "./types";
 import type { Card, Hand, Trick, Seat } from "./types";
-import { RANKS } from "./constants";
+import { RANK_INDEX } from "./constants";
 
-/** Rank comparison: use RANKS array index (Two=0 ... Ace=12) */
+/** Rank comparison: use RANK_INDEX lookup (Two=0 ... Ace=12) */
 export function rankValue(rank: Rank): number {
-  return RANKS.indexOf(rank);
+  return RANK_INDEX[rank];
 }
 
 /** Get the suit of the first card played (lead suit) */

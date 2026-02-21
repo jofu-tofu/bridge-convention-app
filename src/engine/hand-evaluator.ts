@@ -38,18 +38,71 @@ export function getSuitLength(hand: Hand): SuitLength {
 }
 
 export function isBalanced(shape: SuitLength): boolean {
-  const sorted = [...shape].sort((a, b) => b - a) as [
-    number,
-    number,
-    number,
-    number,
-  ];
-  const [a, b, c, d] = sorted;
+  // Sorting network for 4 elements — zero allocation, 5 conditional swaps
+  let a = shape[0]!,
+    b = shape[1]!,
+    c = shape[2]!,
+    d = shape[3]!;
+  if (a < b) {
+    const t = a;
+    a = b;
+    b = t;
+  }
+  if (c < d) {
+    const t = c;
+    c = d;
+    d = t;
+  }
+  if (a < c) {
+    const t = a;
+    a = c;
+    c = t;
+  }
+  if (b < d) {
+    const t = b;
+    b = d;
+    d = t;
+  }
+  if (b < c) {
+    const t = b;
+    b = c;
+    c = t;
+  }
+  // a >= b >= c >= d, a+b+c+d = 13
   // 4-3-3-3, 4-4-3-2, 5-3-3-2
   if (a === 4 && b === 3 && c === 3 && d === 3) return true;
   if (a === 4 && b === 4 && c === 3 && d === 2) return true;
   if (a === 5 && b === 3 && c === 3 && d === 2) return true;
   return false;
+}
+
+/** Single-pass HCP + suit length calculation — avoids double iteration over hand.cards */
+export function calculateHcpAndShape(
+  hand: Hand,
+): { hcp: number; shape: SuitLength } {
+  let hcp = 0;
+  let spades = 0;
+  let hearts = 0;
+  let diamonds = 0;
+  let clubs = 0;
+  for (const card of hand.cards) {
+    hcp += HCP_VALUES[card.rank];
+    switch (card.suit) {
+      case Suit.Spades:
+        spades++;
+        break;
+      case Suit.Hearts:
+        hearts++;
+        break;
+      case Suit.Diamonds:
+        diamonds++;
+        break;
+      case Suit.Clubs:
+        clubs++;
+        break;
+    }
+  }
+  return { hcp, shape: [spades, hearts, diamonds, clubs] as const };
 }
 
 export function calculateDistributionPoints(

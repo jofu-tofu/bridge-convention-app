@@ -39,6 +39,29 @@ export const SEATS: readonly Seat[] = [
   Seat.West,
 ] as const;
 
+export const SEAT_INDEX: Record<Seat, number> = {
+  [Seat.North]: 0,
+  [Seat.East]: 1,
+  [Seat.South]: 2,
+  [Seat.West]: 3,
+};
+
+export const RANK_INDEX: Record<Rank, number> = {
+  [Rank.Two]: 0,
+  [Rank.Three]: 1,
+  [Rank.Four]: 2,
+  [Rank.Five]: 3,
+  [Rank.Six]: 4,
+  [Rank.Seven]: 5,
+  [Rank.Eight]: 6,
+  [Rank.Nine]: 7,
+  [Rank.Ten]: 8,
+  [Rank.Jack]: 9,
+  [Rank.Queen]: 10,
+  [Rank.King]: 11,
+  [Rank.Ace]: 12,
+};
+
 export const HCP_VALUES: Record<Rank, number> = {
   [Rank.Two]: 0,
   [Rank.Three]: 0,
@@ -73,13 +96,9 @@ export function createHand(cards: Card[]): Hand {
 }
 
 export function nextSeat(seat: Seat): Seat {
-  const idx = SEATS.indexOf(seat);
-  // SEATS has exactly 4 elements; (idx + 1) % 4 is always 0-3
-  return SEATS[(idx + 1) % 4]!;
+  return SEATS[(SEAT_INDEX[seat] + 1) % 4]!;
 }
 
 export function partnerSeat(seat: Seat): Seat {
-  const idx = SEATS.indexOf(seat);
-  // SEATS has exactly 4 elements; (idx + 2) % 4 is always 0-3
-  return SEATS[(idx + 2) % 4]!;
+  return SEATS[(SEAT_INDEX[seat] + 2) % 4]!;
 }

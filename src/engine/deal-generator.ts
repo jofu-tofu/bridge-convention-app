@@ -5,21 +5,37 @@ import type {
   Deal,
   DealConstraints,
   SeatConstraint,
+  SuitLength,
   DealGeneratorResult,
 } from "./types";
-import { SUIT_ORDER, createDeck, createHand } from "./constants";
-import { calculateHcp, getSuitLength, isBalanced } from "./hand-evaluator";
+import { SUIT_ORDER, createDeck } from "./constants";
+import {
+  calculateHcp,
+  calculateHcpAndShape,
+  getSuitLength,
+  isBalanced,
+} from "./hand-evaluator";
+
+/** Module-level deck — created once, never mutated. */
+const STANDARD_DECK: readonly Card[] = createDeck();
+
+/** Pre-allocated shuffle buffer — reused across iterations to avoid per-call spread. */
+const shuffleBuffer: Card[] = new Array(52);
 
 function fisherYatesShuffle(
-  cards: Card[],
+  cards: readonly Card[],
   rng: () => number = Math.random,
 ): Card[] {
-  const shuffled = [...cards];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  for (let i = 0; i < cards.length; i++) {
+    shuffleBuffer[i] = cards[i]!;
   }
-  return shuffled;
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    const tmp = shuffleBuffer[i]!;
+    shuffleBuffer[i] = shuffleBuffer[j]!;
+    shuffleBuffer[j] = tmp;
+  }
+  return shuffleBuffer;
 }
 
 function dealFromShuffled(
@@ -27,17 +43,35 @@ function dealFromShuffled(
   dealer: Seat,
   vulnerability: Vulnerability,
 ): Deal {
+  // Construct hands directly — slices are already fresh arrays, skip createHand's defensive copy
   const hands: Record<Seat, Hand> = {
-    [Seat.North]: createHand(cards.slice(0, 13)),
-    [Seat.East]: createHand(cards.slice(13, 26)),
-    [Seat.South]: createHand(cards.slice(26, 39)),
-    [Seat.West]: createHand(cards.slice(39, 52)),
+    [Seat.North]: { cards: cards.slice(0, 13) },
+    [Seat.East]: { cards: cards.slice(13, 26) },
+    [Seat.South]: { cards: cards.slice(26, 39) },
+    [Seat.West]: { cards: cards.slice(39, 52) },
   };
   return { hands, dealer, vulnerability };
 }
 
 function checkSeatConstraint(hand: Hand, constraint: SeatConstraint): boolean {
-  if (constraint.minHcp !== undefined || constraint.maxHcp !== undefined) {
+  const needsHcp =
+    constraint.minHcp !== undefined || constraint.maxHcp !== undefined;
+  const needsShape =
+    constraint.balanced !== undefined ||
+    constraint.minLength !== undefined ||
+    constraint.maxLength !== undefined;
+
+  // When both HCP and shape needed, use single-pass function
+  if (needsHcp && needsShape) {
+    const { hcp, shape } = calculateHcpAndShape(hand);
+    if (constraint.minHcp !== undefined && hcp < constraint.minHcp)
+      return false;
+    if (constraint.maxHcp !== undefined && hcp > constraint.maxHcp)
+      return false;
+    return checkShapeConstraint(shape, constraint);
+  }
+
+  if (needsHcp) {
     const hcp = calculateHcp(hand);
     if (constraint.minHcp !== undefined && hcp < constraint.minHcp)
       return false;
@@ -45,14 +79,16 @@ function checkSeatConstraint(hand: Hand, constraint: SeatConstraint): boolean {
       return false;
   }
 
-  const needsShape =
-    constraint.balanced !== undefined ||
-    constraint.minLength !== undefined ||
-    constraint.maxLength !== undefined;
   if (!needsShape) return true;
 
   const shape = getSuitLength(hand);
+  return checkShapeConstraint(shape, constraint);
+}
 
+function checkShapeConstraint(
+  shape: SuitLength,
+  constraint: SeatConstraint,
+): boolean {
   if (
     constraint.balanced !== undefined &&
     constraint.balanced !== isBalanced(shape)
@@ -109,7 +145,6 @@ export function generateDeal(
   constraints: DealConstraints,
   rng?: () => number,
 ): DealGeneratorResult {
-  const deck = createDeck();
   const dealer = constraints.dealer ?? Seat.North;
   const vulnerability = constraints.vulnerability ?? Vulnerability.None;
   const maxRelaxationSteps = 10;
@@ -120,7 +155,7 @@ export function generateDeal(
       relaxStep === 0 ? constraints : relaxConstraints(constraints, relaxStep);
 
     for (let attempt = 1; attempt <= attemptsPerStep; attempt++) {
-      const shuffled = fisherYatesShuffle(deck, rng);
+      const shuffled = fisherYatesShuffle(STANDARD_DECK, rng);
       const deal = dealFromShuffled(shuffled, dealer, vulnerability);
 
       if (checkConstraints(deal, currentConstraints)) {
