@@ -42,7 +42,7 @@ engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/
 | `commands/bid.ts`        | Phase 2: suggest bid using a convention (imports conventions/) |
 | `commands/score.ts`      | Phase 2: calculate contract score                             |
 | `commands/conventions.ts`| Phase 2: list/inspect registered conventions                  |
-| `commands/*.ts` (stubs)  | Phase 3/6: gate-locked — simulate, suggest-bid, suggest-play, solve |
+| `commands/*.ts` (stubs)  | Phase 3/6: gate-locked — simulate, suggest-play, solve |
 
 ## How to Add a Command
 

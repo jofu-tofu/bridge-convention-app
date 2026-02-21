@@ -1,4 +1,6 @@
-import { Vulnerability } from "./types";
+import type { BiddingStrategy, BidResult } from "../shared/types";
+import type { BiddingContext } from "../conventions/types";
+
 import type {
   Deal,
   DealConstraints,
@@ -15,16 +17,15 @@ import type {
   BidSuit,
   Suit,
   Trick,
+  Vulnerability,
 } from "./types";
 import type { EnginePort } from "./port";
 import { generateDeal } from "./deal-generator";
 import {
   evaluateHand,
   getSuitLength,
-  isBalanced as checkBalanced,
+  isBalanced as isHandBalanced,
 } from "./hand-evaluator";
-import type { BiddingStrategy, BidResult } from "../shared/types";
-import type { BiddingContext } from "../conventions/types";
 import {
   getLegalCalls as auctionGetLegalCalls,
   addCall as auctionAddCall,
@@ -53,7 +54,7 @@ export class TsEngine implements EnginePort {
   }
 
   async isBalanced(hand: Hand): Promise<boolean> {
-    return checkBalanced(getSuitLength(hand));
+    return isHandBalanced(getSuitLength(hand));
   }
 
   // Phase 2 — Bidding

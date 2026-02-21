@@ -1,6 +1,5 @@
 import type { CommandDef } from "../types";
-import { Seat } from "../../engine/types";
-import type { Auction } from "../../engine/types";
+import { Seat, type Auction } from "../../engine/types";
 import { parseHand } from "../../engine/notation";
 import { getConvention } from "../../conventions/registry";
 import { buildAuction } from "../../engine/auction-helpers";
@@ -23,6 +22,7 @@ export const bidCommand: CommandDef = {
     seat: { type: "string", short: "s", description: "Bidding seat (N|E|S|W)" },
     convention: { type: "string", short: "c", description: "Convention to use" },
     auction: { type: "string", short: "a", description: "Auction context (e.g. '1NT P')" },
+    dealer: { type: "string", short: "d", description: "Dealer seat for auction (N|E|S|W, default: N)" },
   },
   async handler(args, deps) {
     if (!args.convention) {
@@ -33,13 +33,13 @@ export const bidCommand: CommandDef = {
       const err: CliError = { code: "INVALID_ARGS", message: "Missing --hand" };
       throw err;
     }
-    if (!args.seat || !SEAT_MAP[String(args.seat).toUpperCase()]) {
+    const seat = args.seat ? SEAT_MAP[String(args.seat).toUpperCase()] : undefined;
+    if (!seat) {
       const err: CliError = { code: "INVALID_ARGS", message: "Missing or invalid --seat (N|E|S|W)" };
       throw err;
     }
 
     const conventionId = String(args.convention);
-    const seat = SEAT_MAP[String(args.seat).toUpperCase()]!;
     const handCards = String(args.hand).split(/\s+/);
     const hand = parseHand(handCards);
 
@@ -49,7 +49,8 @@ export const bidCommand: CommandDef = {
     let auction: Auction;
     if (args.auction) {
       const bids = String(args.auction).split(/\s+/);
-      auction = buildAuction(Seat.North, bids);
+      const dealer = args.dealer ? SEAT_MAP[String(args.dealer).toUpperCase()] ?? Seat.North : Seat.North;
+      auction = buildAuction(dealer, bids);
     } else {
       auction = convention.defaultAuction?.(seat) ?? { entries: [], isComplete: false };
     }

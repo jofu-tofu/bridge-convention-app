@@ -8,6 +8,33 @@ import { expect } from "vitest";
 
 // Re-export engine test helpers for convenience
 export { card, hand } from "../../engine/__tests__/fixtures";
+import { hand } from "../../engine/__tests__/fixtures";
+
+// --- Named Stayman test hands ---
+
+/** Responder: 13 HCP, 4 hearts (should bid 2C Stayman after 1NT-P) */
+export const staymanResponder = () => hand(
+  "SK", "S5", "S2",
+  "HA", "HK", "HQ", "H3",
+  "D5", "D3", "D2",
+  "C5", "C3", "C2",
+);
+
+/** Opener: 16 HCP, balanced, 4 hearts (responds 2H to Stayman) */
+export const staymanOpener = () => hand(
+  "SA", "SK", "S3",
+  "HK", "HQ", "HJ", "H2",
+  "DK", "D5", "D3",
+  "C7", "C5", "C2",
+);
+
+/** No 4-card major — no Stayman rule matches */
+export const noMajorHand = () => hand(
+  "SA", "S5", "S2",
+  "HK", "H8", "H3",
+  "DA", "DQ", "D7", "D4",
+  "C5", "C3", "C2",
+);
 
 // Re-export production helpers as the test fixture API
 export { buildAuction, parsePatternCall };

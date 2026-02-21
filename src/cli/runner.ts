@@ -10,7 +10,6 @@ import { bidCommand } from "./commands/bid";
 import { scoreCommand } from "./commands/score";
 import { conventionsCommand } from "./commands/conventions";
 import { simulateCommand } from "./commands/simulate";
-import { suggestBidCommand } from "./commands/suggest-bid";
 import { solveCommand } from "./commands/solve";
 import { suggestPlayCommand } from "./commands/suggest-play";
 
@@ -21,7 +20,6 @@ const ALL_COMMANDS: CommandDef[] = [
   scoreCommand,
   conventionsCommand,
   simulateCommand,
-  suggestBidCommand,
   solveCommand,
   suggestPlayCommand,
 ];

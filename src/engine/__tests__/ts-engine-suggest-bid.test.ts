@@ -5,7 +5,12 @@ import { TsEngine } from "../ts-engine";
 import { registerConvention, clearRegistry } from "../../conventions/registry";
 import { staymanConfig } from "../../conventions/stayman";
 import { hand } from "./fixtures";
-import { auctionFromBids } from "../../conventions/__tests__/fixtures";
+import {
+  staymanResponder,
+  staymanOpener,
+  noMajorHand,
+  auctionFromBids,
+} from "../../conventions/__tests__/fixtures";
 import { conventionToStrategy } from "../../ai/convention-strategy";
 import type { BiddingStrategy, BidResult } from "../../shared/types";
 
@@ -20,13 +25,7 @@ const staymanStrategy = () => conventionToStrategy(staymanConfig);
 
 describe("TsEngine.suggestBid", () => {
   test("suggestBid with stayman returns BidResult for hand+auction", async () => {
-    // Responder with 4 hearts, 13 HCP — should bid 2C (Stayman)
-    const responder = hand(
-      "SK", "S5", "S2",
-      "HA", "HK", "HQ", "H3",
-      "D5", "D3", "D2",
-      "C5", "C3", "C2",
-    );
+    const responder = staymanResponder();
     const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
     const result = await engine.suggestBid(responder, auction, Seat.South, staymanStrategy());
     expect(result.call.type).toBe("bid");
@@ -38,13 +37,7 @@ describe("TsEngine.suggestBid", () => {
   });
 
   test("returns BidResult with pass when no rules match", async () => {
-    // Hand with no 4-card major and too few HCP for Stayman — no rule should match
-    const noMajor = hand(
-      "SA", "S5", "S2",
-      "HK", "H8", "H3",
-      "DA", "DQ", "D7", "D4",
-      "C5", "C3", "C2",
-    );
+    const noMajor = noMajorHand();
     const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
     const result = await engine.suggestBid(noMajor, auction, Seat.South, staymanStrategy());
     expect(result.call.type).toBe("pass");
@@ -72,14 +65,8 @@ describe("TsEngine.suggestBid", () => {
   });
 
   test("full Stayman sequence through suggestBid", async () => {
-    // Opener: 16 HCP balanced, 4 hearts
-    const opener = hand(
-      "SA", "SK", "S3",
-      "HK", "HQ", "HJ", "H2",
-      "DK", "D5", "D3",
-      "C7", "C5", "C2",
-    );
-    // Responder: 13 HCP, 4 hearts
+    const opener = staymanOpener();
+    // Responder for sequence test: 13 HCP, 4 hearts (different from staymanResponder to test variety)
     const responder = hand(
       "SQ", "S5", "S2",
       "HA", "HK", "H5", "H3",

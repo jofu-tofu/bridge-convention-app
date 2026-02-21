@@ -352,9 +352,9 @@ describe("extreme hand shapes — bridge edge cases", () => {
       [5, 4, 3, 1],
       [6, 3, 3, 1],
       [13, 0, 0, 0],
-    ];
+    ] as const;
     for (const shape of unbalanced) {
-      expect(isBalanced(shape)).toBe(false);
+      expect(isBalanced([...shape])).toBe(false);
     }
   });
 });
