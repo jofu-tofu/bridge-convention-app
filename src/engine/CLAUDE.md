@@ -25,22 +25,22 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 **Key files:**
 
-| File                | Role                                                                                   |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| `types.ts`          | All enums (`Suit`, `Rank`, `Seat`) and interfaces (`Card`, `Hand`, `Deal`, `Contract`) |
-| `constants.ts`      | Suit/rank orderings, display mappings                                                  |
-| `hand-evaluator.ts` | HCP calculation, strategy pattern for evaluation                                       |
-| `deal-generator.ts` | Rejection sampling with Fisher-Yates shuffle, constraint relaxation                    |
-| `port.ts`           | `EnginePort` interface — async boundary between UI and engine                          |
-| `ts-engine.ts`      | `TsEngine` — V1 implementation wrapping sync functions in `Promise.resolve()`          |
-| `auction.ts`        | Auction logic: bid comparison, legality, completion, contract/declarer extraction       |
-| `play.ts`           | Trick play rules: legal plays (follow suit), lead suit, trick winner determination      |
-| `scoring.ts`        | Contract scoring: trick points, bonuses, penalties, unified score calculation           |
-| `auction-helpers.ts` | Auction query utils: lastContractBid, bidsInSequence, auctionMatchesExact, buildAuction |
-| `notation.ts`       | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures      |
-| `bid-suggester.ts`  | Standalone `suggestBid()` — extracted from EnginePort (can't cross IPC/HTTP)           |
-| `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()`, strips `customCheck`/`rng`       |
-| `http-engine.ts`    | `HttpEngine` — EnginePort via HTTP `fetch()` to bridge-server, strips `customCheck`/`rng` |
+| File                  | Role                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `types.ts`            | All enums (`Suit`, `Rank`, `Seat`) and interfaces (`Card`, `Hand`, `Deal`, `Contract`)    |
+| `constants.ts`        | Suit/rank orderings, display mappings                                                     |
+| `hand-evaluator.ts`   | HCP calculation, strategy pattern for evaluation                                          |
+| `deal-generator.ts`   | Rejection sampling with Fisher-Yates shuffle, constraint relaxation                       |
+| `port.ts`             | `EnginePort` interface — async boundary between UI and engine                             |
+| `ts-engine.ts`        | `TsEngine` — V1 implementation wrapping sync functions in `Promise.resolve()`             |
+| `auction.ts`          | Auction logic: bid comparison, legality, completion, contract/declarer extraction         |
+| `play.ts`             | Trick play rules: legal plays (follow suit), lead suit, trick winner determination        |
+| `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
+| `auction-helpers.ts`  | Auction query utils: lastContractBid, bidsInSequence, auctionMatchesExact, buildAuction   |
+| `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
+| `bid-suggester.ts`    | Standalone `suggestBid()` — extracted from EnginePort (can't cross IPC/HTTP)              |
+| `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()`, strips `customCheck`/`rng`            |
+| `http-engine.ts`      | `HttpEngine` — EnginePort via HTTP `fetch()` to bridge-server, strips `customCheck`/`rng` |
 
 ## Gotchas
 
@@ -57,6 +57,13 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 - Deal generation: flat rejection sampling, default 10,000 max attempts (configurable via `maxAttempts`). Convention deal constraints use `minLengthAny` for OR constraints and `customCheck` for exotic filters. `DealConstraints.rng` accepts an optional PRNG function for deterministic deals (used by dev seed feature).
 - Tests colocated in `__tests__/<module>.test.ts`; use `import type` for interfaces
 - Coverage: 90% branches, 90% functions, 85% lines (enforced in `vitest.config.ts`)
+
+## Rust Backend Integration
+
+- **Engine fallback chain:** `TauriIpcEngine` (desktop) → `HttpEngine` (dev:web, port 3001) → `TsEngine` (browser fallback)
+- **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
+- **Stateless HTTP:** Every request sends full state. No sessions. Error format: plain text body, 400 status code.
+- **`HttpEngine` strips** `customCheck` and `rng` from constraints before serialization. Rust uses `seed: Option<u64>` instead.
 
 ---
 

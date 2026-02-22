@@ -4,26 +4,26 @@ Desktop app for drilling bridge bidding conventions (Stayman, Gerber, DONT, Berg
 
 ## Commands
 
-| Command                 | Purpose                                                  |
-| ----------------------- | -------------------------------------------------------- |
-| `npm run dev`           | Start dev server (port 1420)                             |
-| `npm run build`         | Build production bundle                                  |
-| `npm run check`         | Svelte type-check                                        |
-| `npx tsc --noEmit`      | TypeScript type-check                                    |
-| `npm run test`          | Vitest watch mode                                        |
-| `npm run test:run`      | Vitest single run                                        |
-| `npm run test:coverage` | Coverage report (90% branches, 90% functions, 85% lines) |
-| `npm run test:e2e`      | Playwright E2E tests                                     |
-| `npm run test:all`      | Unit + E2E together                                      |
-| `npm run cli`           | Run CLI in dev mode (via tsx)                             |
-| `npm run build:cli`     | Compile CLI to dist/                                      |
-| `npm run lint`          | ESLint check                                             |
-| `npm run lint:fix`      | ESLint auto-fix                                          |
-| `npm run format`        | Prettier format all files                                |
-| `npm run format:check`  | Prettier check (CI)                                      |
-| `npm run dev:web`       | Rust HTTP server (3001) + Vite dev (1420) via concurrently |
-| `cargo test --workspace`| Run all Rust tests (from src-tauri/)                      |
-| `cargo build --workspace`| Build all Rust crates (from src-tauri/)                  |
+| Command                   | Purpose                                                    |
+| ------------------------- | ---------------------------------------------------------- |
+| `npm run dev`             | Start dev server (port 1420)                               |
+| `npm run build`           | Build production bundle                                    |
+| `npm run check`           | Svelte type-check                                          |
+| `npx tsc --noEmit`        | TypeScript type-check                                      |
+| `npm run test`            | Vitest watch mode                                          |
+| `npm run test:run`        | Vitest single run                                          |
+| `npm run test:coverage`   | Coverage report (90% branches, 90% functions, 85% lines)   |
+| `npm run test:e2e`        | Playwright E2E tests                                       |
+| `npm run test:all`        | Unit + E2E together                                        |
+| `npm run cli`             | Run CLI in dev mode (via tsx)                              |
+| `npm run build:cli`       | Compile CLI to dist/                                       |
+| `npm run lint`            | ESLint check                                               |
+| `npm run lint:fix`        | ESLint auto-fix                                            |
+| `npm run format`          | Prettier format all files                                  |
+| `npm run format:check`    | Prettier check (CI)                                        |
+| `npm run dev:web`         | Rust HTTP server (3001) + Vite dev (1420) via concurrently |
+| `cargo test --workspace`  | Run all Rust tests (from src-tauri/)                       |
+| `cargo build --workspace` | Build all Rust crates (from src-tauri/)                    |
 
 ## Dev Tools (dev server only)
 
@@ -88,30 +88,30 @@ tests/
 
 ## Phase Tracking
 
-| Phase | Status  | Description                                                               |
-| ----- | ------- | ------------------------------------------------------------------------- |
-| 0     | Done    | Scaffold, types, testing pipeline, CLAUDE.md                              |
-| 1     | Done    | Engine core: types, constants, hand-evaluator, deal-generator, EnginePort, CLI |
-| 1.5   | Done    | Auction mechanics, scoring engine, play rules, convention test fixtures    |
-| 2     | Done    | Convention registry + Stayman implementation                              |
-| 3     | Done    | AI bidding strategies (BiddingStrategy, convention adapter, pass strategy) |
-| 4     | Done    | Drill UI with feedback (Tailwind, stores, components, drill session)       |
-| 5     | Done    | Card play UI + Tauri desktop shell                                        |
-| 6     | In Progress | Rust engine port — three-crate workspace (bridge-engine, bridge-tauri, bridge-server), dual transport (Tauri IPC + HTTP) |
-| 7     | Pending | Smart play AI — heuristic → DDS-assisted → convention-aware card play     |
+| Phase | Status  | Description                                                                                                                              |
+| ----- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Done    | Scaffold, types, testing pipeline, CLAUDE.md                                                                                             |
+| 1     | Done    | Engine core: types, constants, hand-evaluator, deal-generator, EnginePort, CLI                                                           |
+| 1.5   | Done    | Auction mechanics, scoring engine, play rules, convention test fixtures                                                                  |
+| 2     | Done    | Convention registry + Stayman implementation                                                                                             |
+| 3     | Done    | AI bidding strategies (BiddingStrategy, convention adapter, pass strategy)                                                               |
+| 4     | Done    | Drill UI with feedback (Tailwind, stores, components, drill session)                                                                     |
+| 5     | Done    | Card play UI + Tauri desktop shell                                                                                                       |
+| 6     | Done    | Rust engine port — three-crate workspace (bridge-engine, bridge-tauri, bridge-server), dual transport (Tauri IPC + HTTP), 122 Rust tests |
+| 7     | Pending | Smart play AI — heuristic → DDS-assisted → convention-aware card play                                                                    |
 
 ## Testing Scope
 
 **Run only the tests affected by your changes — not the full suite.** Vitest supports file-pattern filtering:
 
-| Changed files in… | Test command | When to use full suite |
-|---|---|---|
-| `src/components/` | `npx vitest run src/components/` | Never for UI-only (CSS, props, layout) |
-| `src/stores/` | `npx vitest run src/stores/` | If store interface changed |
-| `src/engine/` | `npx vitest run src/engine/` | If types/exports changed |
-| `src/lib/` | `npx vitest run src/lib/` | If shared utility signatures changed |
-| CSS-only / layout tweaks | `npm run check` (type-check only) | Never |
-| Cross-cutting (types, exports) | `npm run test:run` (full suite) | Always for type/interface changes |
+| Changed files in…              | Test command                      | When to use full suite                 |
+| ------------------------------ | --------------------------------- | -------------------------------------- |
+| `src/components/`              | `npx vitest run src/components/`  | Never for UI-only (CSS, props, layout) |
+| `src/stores/`                  | `npx vitest run src/stores/`      | If store interface changed             |
+| `src/engine/`                  | `npx vitest run src/engine/`      | If types/exports changed               |
+| `src/lib/`                     | `npx vitest run src/lib/`         | If shared utility signatures changed   |
+| CSS-only / layout tweaks       | `npm run check` (type-check only) | Never                                  |
+| Cross-cutting (types, exports) | `npm run test:run` (full suite)   | Always for type/interface changes      |
 
 **Rule:** If you only changed `.svelte` files, CSS values, or added optional props — run targeted tests or just type-check. Full suite (`npm run test:run`) only when changing shared types, store interfaces, or engine logic.
 

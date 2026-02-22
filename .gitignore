@@ -14,6 +14,9 @@ html-presentations
 # Vite build output
 dist/
 
+# Rust build artifacts
+src-tauri/target/
+
 # Playwright artifacts
 test-results/
 playwright-report/

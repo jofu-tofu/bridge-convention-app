@@ -16,8 +16,10 @@
     if ((window as any).__TAURI__) {
       return new TauriIpcEngine();
     }
-    // In dev mode with bridge-server running, use HTTP engine
-    // Fallback to TsEngine for pure browser mode without server
+    // In dev:web mode, bridge-server runs on 3001 (VITE_RUST_ENGINE set by dev:web script)
+    if (import.meta.env.VITE_RUST_ENGINE) {
+      return new HttpEngine("http://localhost:3001");
+    }
     return new TsEngine();
   }
 
