@@ -23,17 +23,15 @@ describe("HttpEngine", () => {
     expect(engine.suggestPlay).toBeTypeOf("function");
   });
 
-  test("solveDeal throws not available", async () => {
+  test("solveDeal rejects with invalid deal", async () => {
     const engine = new HttpEngine("http://localhost:3001");
     const deal = {
       hands: {} as Record<string, Hand>,
       dealer: Seat.North,
       vulnerability: "None" as const,
     };
-    // any: deal structure doesn't matter, should throw before fetch
-    await expect(engine.solveDeal(deal as any)).rejects.toThrow(
-      "DDS not available",
-    );
+    // solveDeal delegates to the HTTP server — rejects with validation or network error
+    await expect(engine.solveDeal(deal as any)).rejects.toThrow();
   });
 
   test("suggestPlay throws not available", async () => {

@@ -7,7 +7,7 @@ use axum::{
 use serde::Deserialize;
 
 use bridge_engine::types::{
-    Auction, AuctionEntry, Call, Card, Contract, Deal, DealConstraints, Hand,
+    Auction, AuctionEntry, Call, Card, Contract, DDSolution, Deal, DealConstraints, Hand,
     HandEvaluation, Seat, Suit, SuitLength, Trick, Vulnerability,
 };
 
@@ -66,6 +66,11 @@ pub struct GetTrickWinnerReq {
     trick: Trick,
 }
 
+#[derive(Deserialize)]
+pub struct SolveDealReq {
+    deal: Deal,
+}
+
 // --- Route handlers ---
 
 async fn generate_deal(Json(req): Json<GenerateDealReq>) -> Result<Json<Deal>, (StatusCode, String)> {
@@ -121,6 +126,17 @@ async fn get_trick_winner(Json(req): Json<GetTrickWinnerReq>) -> Result<Json<Sea
     Ok(Json(result))
 }
 
+#[cfg(feature = "dds")]
+async fn solve_deal(Json(req): Json<SolveDealReq>) -> Result<Json<DDSolution>, (StatusCode, String)> {
+    let result = bridge_engine::dds::solve_deal_with_par(&req.deal).map_err(engine_err)?;
+    Ok(Json(result))
+}
+
+#[cfg(not(feature = "dds"))]
+async fn solve_deal(Json(_req): Json<SolveDealReq>) -> Result<Json<DDSolution>, (StatusCode, String)> {
+    Err((StatusCode::SERVICE_UNAVAILABLE, "DDS not available".to_string()))
+}
+
 // --- Router ---
 
 pub fn api_routes() -> Router {
@@ -136,6 +152,7 @@ pub fn api_routes() -> Router {
         .route("/calculate_score", post(calculate_score))
         .route("/get_legal_plays", post(get_legal_plays))
         .route("/get_trick_winner", post(get_trick_winner))
+        .route("/solve_deal", post(solve_deal))
 }
 
 #[cfg(test)]

@@ -11,16 +11,43 @@
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
 
-  // Runtime engine detection: Tauri IPC → HTTP server → TS fallback
+  // Runtime engine detection: Tauri IPC → HTTP (Rust) → TS fallback
   function createEngine(): EnginePort {
     if ((window as any).__TAURI__) {
       return new TauriIpcEngine();
     }
-    // In dev:web mode, bridge-server runs on 3001 (VITE_RUST_ENGINE set by dev:web script)
-    if (import.meta.env.VITE_RUST_ENGINE) {
-      return new HttpEngine("http://localhost:3001");
-    }
-    return new TsEngine();
+    return createFallbackEngine(
+      new HttpEngine("http://localhost:3001"),
+      new TsEngine(),
+    );
+  }
+
+  /** Proxy that tries primary engine first, falls back to secondary on network errors. */
+  function createFallbackEngine(primary: EnginePort, fallback: EnginePort): EnginePort {
+    let useFallback = false;
+    return new Proxy(primary, {
+      get(target, prop, receiver) {
+        const engine = useFallback ? fallback : target;
+        const value = Reflect.get(engine, prop, receiver);
+        if (typeof value !== "function") return value;
+        return async (...args: unknown[]) => {
+          if (useFallback) {
+            return (value as Function).apply(engine, args);
+          }
+          try {
+            return await (value as Function).apply(engine, args);
+          } catch (err) {
+            if (err instanceof TypeError && (err.message.includes("fetch") || err.message.includes("network"))) {
+              console.warn("[engine] Rust server unreachable, falling back to TsEngine");
+              useFallback = true;
+              const fallbackValue = Reflect.get(fallback, prop, receiver);
+              return (fallbackValue as Function).apply(fallback, args);
+            }
+            throw err;
+          }
+        };
+      },
+    });
   }
 
   const engine = createEngine();

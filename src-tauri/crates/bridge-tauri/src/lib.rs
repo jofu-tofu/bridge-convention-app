@@ -15,6 +15,7 @@ pub fn run() {
             commands::calculate_score,
             commands::get_legal_plays,
             commands::get_trick_winner,
+            commands::solve_deal,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

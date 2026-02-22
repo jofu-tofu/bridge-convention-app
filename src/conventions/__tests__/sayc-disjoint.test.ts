@@ -110,6 +110,8 @@ describe("SAYC rule disjointness", () => {
       if (key.includes("sayc-open-2nt") && key.includes("sayc-open-1")) return false;
       if (key.includes("sayc-open-2c") && key.includes("sayc-open-1")) return false;
       if (key.includes("sayc-open-1h") && key.includes("sayc-open-1s")) return false;
+      // 6-6 hands with both majors match both weak-2 rules; first-match resolves
+      if (key.includes("sayc-open-weak-2h") && key.includes("sayc-open-weak-2s")) return false;
       return true;
     });
     if (unexpectedOverlaps.length > 0) {

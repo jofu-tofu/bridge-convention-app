@@ -98,6 +98,7 @@ export function createGameStore(engine: EnginePort) {
   let bidHistory = $state<BidHistoryEntry[]>([]);
   let contract = $state<Contract | null>(null);
   let isProcessing = $state(false);
+  let isShowingTrickResult = $state(false);
   let legalCalls = $state<Call[]>([]);
   let drillSession = $state<DrillSession | null>(null);
 
@@ -134,16 +135,17 @@ export function createGameStore(engine: EnginePort) {
   const DDS_TIMEOUT_MS = 10_000;
 
   async function triggerDDSSolve() {
-    if (!deal || ddsSolving) return;
+    if (!deal || !contract || ddsSolving) return;
     const solvingDeal = deal;
     ddsSolving = true;
     ddsError = null;
     ddsSolution = null;
 
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("DDS analysis timed out")), DDS_TIMEOUT_MS),
-      );
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error("DDS analysis timed out")), DDS_TIMEOUT_MS);
+      });
       const result = await Promise.race([
         engine.solveDeal(solvingDeal),
         timeoutPromise,
@@ -157,6 +159,7 @@ export function createGameStore(engine: EnginePort) {
         ddsError = err instanceof Error ? err.message : String(err);
       }
     } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
       if (deal === solvingDeal) {
         ddsSolving = false;
       }
@@ -281,7 +284,7 @@ export function createGameStore(engine: EnginePort) {
   }
 
   function acceptDefend() {
-    if (!contract) return;
+    if (!contract || phase !== "DECLARER_PROMPT") return;
     // User stays as South (defender) — no seat swap needed
     startPlay();
   }
@@ -365,10 +368,10 @@ export function createGameStore(engine: EnginePort) {
 
     tricks = [...tricks, completedTrick];
 
-    // Brief pause to show completed trick
-    isProcessing = true;
+    // Brief pause to show completed trick (separate from isProcessing to avoid race)
+    isShowingTrickResult = true;
     await delay(TRICK_PAUSE);
-    isProcessing = false;
+    isShowingTrickResult = false;
 
     if (playAborted) return;
 
@@ -451,7 +454,9 @@ export function createGameStore(engine: EnginePort) {
           { cards: remaining },
           leadSuit,
         );
-        const card = selectAiCard(seat, legalPlays);
+        // Use first legal play and log as "skip" — not AI-attributed
+        const card = legalPlays[0]!;
+        playLog = [...playLog, { seat, card, reason: "skip", trickIndex: tricks.length }];
         currentTrick = [...currentTrick, { card, seat }];
       }
 
@@ -661,6 +666,7 @@ export function createGameStore(engine: EnginePort) {
       score = null;
       trumpSuit = undefined;
       effectiveUserSeat = null;
+      isShowingTrickResult = false;
 
       // Reset DDS state
       ddsSolution = null;
@@ -824,6 +830,7 @@ export function createGameStore(engine: EnginePort) {
       score = null;
       trumpSuit = undefined;
       effectiveUserSeat = null;
+      isShowingTrickResult = false;
       // Reset inference + strategy state
       nsInferenceEngine = null;
       playInferences = null;

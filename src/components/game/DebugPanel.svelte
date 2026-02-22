@@ -2,7 +2,7 @@
 <script lang="ts">
   import type { ConventionConfig } from "../../conventions/types";
   import type { Hand, Auction, Seat } from "../../engine/types";
-  import { evaluateHand } from "../../engine/hand-evaluator";
+  import { evaluateHand } from "../../lib/hcp-eval";
   import { conventionToStrategy } from "../../ai/convention-strategy";
   import { formatCall } from "../../lib/format";
 

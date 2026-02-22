@@ -3,6 +3,10 @@ name = "bridge-server"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["dds"]
+dds = ["bridge-engine/dds"]
+
 [dependencies]
 bridge-engine = { path = "../bridge-engine" }
 axum = "0.8"

@@ -209,6 +209,8 @@
         </h1>
         <span
           class="px-2.5 py-0.5 rounded-full text-xs font-semibold {phaseInfo.color} {phaseInfo.textColor}"
+          aria-label="Current phase: {phaseInfo.label}"
+          data-testid="game-phase"
         >
           {phaseInfo.label}
         </span>
@@ -220,6 +222,7 @@
             class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
             onclick={() => appStore.toggleDebugPanel()}
             aria-label="Toggle debug panel"
+            aria-expanded={appStore.debugPanelOpen}
             data-testid="debug-toggle"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -250,7 +253,7 @@
           </BridgeTable>
         </ScaledTableArea>
 
-        <div class={sidePanelClass}>
+        <aside class={sidePanelClass} aria-label="Bidding controls">
           <BiddingSidePanel
             legalCalls={gameStore.legalCalls}
             onBid={handleBid}
@@ -267,7 +270,7 @@
             auction={DEV ? gameStore.auction : undefined}
             seat={DEV ? userSeat : undefined}
           />
-        </div>
+        </aside>
       </div>
     {:else if gameStore.phase === "DECLARER_PROMPT"}
       <!-- Show normal view with dummy (North) face-up; rotation happens on accept -->
@@ -285,6 +288,8 @@
             <div class="flex flex-col gap-3 items-center">
               <div
                 class="bg-bg-card rounded-[--radius-xl] p-5 border border-border-subtle shadow-lg text-center"
+                role="dialog"
+                aria-label={gameStore.isDefenderPrompt ? "Defender prompt" : "Declarer prompt"}
               >
                 {#if gameStore.contract}
                   <ContractDisplay contract={gameStore.contract} size="lg" />
@@ -369,14 +374,14 @@
           </BridgeTable>
         </ScaledTableArea>
 
-        <div class={sidePanelClass}>
+        <aside class={sidePanelClass} aria-label="Play controls">
           <PlaySidePanel
             contract={gameStore.contract}
             declarerTricksWon={gameStore.declarerTricksWon}
             defenderTricksWon={gameStore.defenderTricksWon}
             onSkipToReview={() => gameStore.skipToReview()}
           />
-        </div>
+        </aside>
       </div>
     {:else if gameStore.phase === "EXPLANATION"}
       <div
@@ -400,6 +405,8 @@
                 type="button"
                 class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[44px] rounded-[--radius-md] border border-border-subtle bg-bg-card/80 shrink-0"
                 onclick={() => (showAllCards = !showAllCards)}
+                aria-expanded={showAllCards}
+                aria-label="Toggle all hands visibility"
               >
                 Hide Hands
               </button>
@@ -445,6 +452,8 @@
                   type="button"
                   class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[44px] rounded-[--radius-md] border border-border-subtle bg-bg-card/80"
                   onclick={() => (showAllCards = !showAllCards)}
+                  aria-expanded={showAllCards}
+                  aria-label="Toggle all hands visibility"
                 >
                   Show All Hands
                 </button>
@@ -453,7 +462,7 @@
           </ScaledTableArea>
         {/if}
 
-        <div class={sidePanelClass}>
+        <aside class={sidePanelClass} aria-label="Review panel">
           <ReviewSidePanel
             contract={gameStore.contract}
             score={gameStore.score}
@@ -463,10 +472,11 @@
             ddsSolving={gameStore.ddsSolving}
             ddsError={gameStore.ddsError}
             vulnerability={gameStore.deal.vulnerability}
+            {dealNumber}
             onNextDeal={handleNextDeal}
             onBackToMenu={handleBackToMenu}
           />
-        </div>
+        </aside>
       </div>
     {/if}
 

@@ -242,8 +242,25 @@ pub trait DoubleDummySolver: Send + Sync {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ParContract {
+    pub level: u8,
+    pub strain: BidSuit,
+    pub declarer: Seat,
+    pub doubled: bool,
+    pub overtricks: i8,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ParInfo {
+    pub score: i32,
+    pub contracts: Vec<ParContract>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DDSolution {
     pub tricks: HashMap<Seat, HashMap<BidSuit, u32>>,
+    pub par: Option<ParInfo>,
 }
 
 #[cfg(test)]
@@ -448,5 +465,78 @@ mod tests {
         assert_eq!(sc.min_hcp, Some(12));
         assert_eq!(sc.max_hcp, Some(14));
         assert_eq!(sc.balanced, Some(true));
+    }
+
+    #[test]
+    fn par_contract_camel_case() {
+        let pc = ParContract {
+            level: 3,
+            strain: BidSuit::NoTrump,
+            declarer: Seat::South,
+            doubled: false,
+            overtricks: 1,
+        };
+        let json = serde_json::to_string(&pc).unwrap();
+        assert!(json.contains("\"level\":3"));
+        assert!(json.contains("\"strain\":\"NT\""));
+        assert!(json.contains("\"declarer\":\"S\""));
+        assert!(json.contains("\"overtricks\":1"));
+        let back: ParContract = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, pc);
+    }
+
+    #[test]
+    fn par_info_roundtrip() {
+        let pi = ParInfo {
+            score: 400,
+            contracts: vec![ParContract {
+                level: 3,
+                strain: BidSuit::NoTrump,
+                declarer: Seat::South,
+                doubled: false,
+                overtricks: 0,
+            }],
+        };
+        let json = serde_json::to_string(&pi).unwrap();
+        let back: ParInfo = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, pi);
+    }
+
+    #[test]
+    fn ddsolution_with_par_roundtrip() {
+        let mut tricks = HashMap::new();
+        let mut north_tricks = HashMap::new();
+        north_tricks.insert(BidSuit::NoTrump, 9u32);
+        tricks.insert(Seat::North, north_tricks);
+
+        let dds = DDSolution {
+            tricks,
+            par: Some(ParInfo {
+                score: 400,
+                contracts: vec![ParContract {
+                    level: 3,
+                    strain: BidSuit::NoTrump,
+                    declarer: Seat::South,
+                    doubled: false,
+                    overtricks: 0,
+                }],
+            }),
+        };
+        let json = serde_json::to_string(&dds).unwrap();
+        assert!(json.contains("\"par\""));
+        let back: DDSolution = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, dds);
+    }
+
+    #[test]
+    fn ddsolution_par_null_roundtrip() {
+        let dds = DDSolution {
+            tricks: HashMap::new(),
+            par: None,
+        };
+        let json = serde_json::to_string(&dds).unwrap();
+        assert!(json.contains("\"par\":null"));
+        let back: DDSolution = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.par, None);
     }
 }

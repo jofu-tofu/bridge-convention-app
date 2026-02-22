@@ -16,6 +16,7 @@
     ddsSolving: boolean;
     ddsError: string | null;
     vulnerability: Vulnerability;
+    dealNumber: number;
     onNextDeal: () => void;
     onBackToMenu: () => void;
   }
@@ -29,11 +30,18 @@
     ddsSolving,
     ddsError,
     vulnerability,
+    dealNumber,
     onNextDeal,
     onBackToMenu,
   }: Props = $props();
 
   let activeTab = $state<"bidding" | "analysis">("bidding");
+
+  // Reset to bidding tab on new deal
+  $effect(() => {
+    void dealNumber;
+    activeTab = "bidding";
+  });
 
   /** Format contract result like "3NT= — +400" or "2H -1 — -100" */
   function formatResult(): string | null {
@@ -53,9 +61,12 @@
 </script>
 
 <!-- Tab bar -->
-<div class="flex gap-1 mb-3">
+<div class="flex gap-1 mb-3" role="tablist" aria-label="Review tabs">
   <button
     type="button"
+    role="tab"
+    aria-selected={activeTab === "bidding"}
+    aria-controls="review-panel-bidding"
     class="flex-1 px-3 py-1.5 text-sm font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'bidding'
       ? 'bg-bg-elevated text-text-primary'
       : 'text-text-muted hover:text-text-secondary'}"
@@ -65,6 +76,9 @@
   </button>
   <button
     type="button"
+    role="tab"
+    aria-selected={activeTab === "analysis"}
+    aria-controls="review-panel-analysis"
     class="flex-1 px-3 py-1.5 text-sm font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'analysis'
       ? 'bg-bg-elevated text-text-primary'
       : 'text-text-muted hover:text-text-secondary'}"
@@ -75,62 +89,67 @@
 </div>
 
 {#if activeTab === "bidding"}
-  {#if contract}
-    <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-      <p class="text-xs font-medium text-text-muted mb-1">Contract</p>
-      <ContractDisplay {contract} />
-      {#if score !== null}
-        {@const result = formatResult()}
-        {#if result}
-          <p
-            class="text-base font-mono mt-2 {score >= 0
-              ? 'text-green-400'
-              : 'text-red-400'}"
-            data-testid="score-result"
-          >
-            {result}
-          </p>
+  <div id="review-panel-bidding" role="tabpanel" aria-label="Bidding review">
+    {#if contract}
+      <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
+        <p class="text-xs font-medium text-text-muted mb-1">Contract</p>
+        <ContractDisplay {contract} />
+        {#if score !== null}
+          {@const result = formatResult()}
+          {#if result}
+            <p
+              class="text-base font-mono mt-2 {score >= 0
+                ? 'text-green-400'
+                : 'text-red-400'}"
+              data-testid="score-result"
+            >
+              {result}
+            </p>
+          {/if}
         {/if}
-      {/if}
-    </div>
-  {:else}
-    <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-      <p class="text-text-muted text-sm">Passed out — no contract.</p>
-    </div>
-  {/if}
+      </div>
+    {:else}
+      <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
+        <p class="text-text-muted text-sm">Passed out — no contract.</p>
+      </div>
+    {/if}
 
-  <BiddingReview {bidHistory} />
+    <BiddingReview {bidHistory} />
+  </div>
 {:else if activeTab === "analysis"}
-  {#if ddsSolving}
-    <div class="flex items-center gap-2 p-4">
+  <div id="review-panel-analysis" role="tabpanel" aria-label="DDS analysis">
+    {#if ddsSolving}
+      <div class="flex items-center gap-2 p-4" aria-live="polite">
+        <div
+          class="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"
+          aria-hidden="true"
+        ></div>
+        <span class="text-text-secondary text-sm">Analyzing deal...</span>
+      </div>
+    {:else if ddsError}
       <div
-        class="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"
-      ></div>
-      <span class="text-text-secondary text-sm">Analyzing deal...</span>
-    </div>
-  {:else if ddsError}
-    <div
-      class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
-    >
-      <p class="text-text-muted text-sm">{ddsError}</p>
-    </div>
-  {:else if ddsSolution}
-    <AnalysisPanel
-      {ddsSolution}
-      {contract}
-      {score}
-      {declarerTricksWon}
-      {vulnerability}
-    />
-  {:else}
-    <div
-      class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
-    >
-      <p class="text-text-muted text-sm">
-        DDS analysis not available in browser mode.
-      </p>
-    </div>
-  {/if}
+        class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
+        role="alert"
+      >
+        <p class="text-text-muted text-sm">{ddsError}</p>
+      </div>
+    {:else if ddsSolution}
+      <AnalysisPanel
+        {ddsSolution}
+        {contract}
+        {score}
+        {declarerTricksWon}
+      />
+    {:else}
+      <div
+        class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
+      >
+        <p class="text-text-muted text-sm">
+          DDS analysis not available.
+        </p>
+      </div>
+    {/if}
+  </div>
 {/if}
 
 <div class="flex flex-col gap-2 mt-2">

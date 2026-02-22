@@ -22,16 +22,15 @@ describe("TauriIpcEngine", () => {
     expect(TauriIpcEngine.prototype.getTrickWinner).toBeTypeOf("function");
   });
 
-  test("solveDeal throws not available", async () => {
+  test("solveDeal rejects without Tauri runtime", async () => {
     const engine = new TauriIpcEngine();
     const deal = {
       hands: {} as Record<string, Hand>,
       dealer: Seat.North,
       vulnerability: "None" as const,
     };
-    await expect(engine.solveDeal(deal as any)).rejects.toThrow(
-      "DDS not available",
-    );
+    // solveDeal delegates to Tauri invoke(), which isn't available in unit tests
+    await expect(engine.solveDeal(deal as any)).rejects.toThrow();
   });
 
   test("suggestPlay throws not available", async () => {

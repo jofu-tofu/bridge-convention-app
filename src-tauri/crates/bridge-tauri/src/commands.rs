@@ -1,5 +1,5 @@
 use bridge_engine::types::{
-    Auction, AuctionEntry, Call, Card, Contract, Deal, DealConstraints, Hand,
+    Auction, AuctionEntry, Call, Card, Contract, DDSolution, Deal, DealConstraints, Hand,
     HandEvaluation, Seat, Suit, SuitLength, Trick, Vulnerability,
 };
 
@@ -62,4 +62,17 @@ pub fn get_legal_plays(hand: Hand, lead_suit: Option<Suit>) -> Result<Vec<Card>,
 #[tauri::command]
 pub fn get_trick_winner(trick: Trick) -> Result<Seat, String> {
     bridge_engine::get_trick_winner(&trick).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn solve_deal(deal: Deal) -> Result<DDSolution, String> {
+    #[cfg(feature = "dds")]
+    {
+        bridge_engine::dds::solve_deal_with_par(&deal).map_err(|e| e.to_string())
+    }
+    #[cfg(not(feature = "dds"))]
+    {
+        let _ = deal;
+        Err("DDS not available".to_string())
+    }
 }

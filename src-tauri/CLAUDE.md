@@ -48,7 +48,14 @@ crates/
 
 - `HandEvaluationStrategy` — V1: `HcpStrategy`. Future: Bergen, Zar, LTC.
 - `PlayStrategy` — Phase 7: heuristic → DDS-assisted play AI.
-- `DoubleDummySolver` — V2: wraps `dds-bridge-sys` FFI.
+- `DoubleDummySolver` — trait defined. Implementation in `bridge-engine/src/dds.rs` via `dds-bridge` v0.8 (feature-gated).
+
+## DDS Integration
+
+- `dds-bridge` v0.8 optional dependency behind `dds` feature flag (default on in bridge-tauri and bridge-server)
+- `bridge-engine/src/dds.rs`: `to_dds_deal()`, `from_tricks_table()`, `solve_deal_with_par()` — type conversion + solver wrapper
+- `solve_deal` command/route returns `DDSolution { tricks, par }` with 4×5 tricks table and optional par info
+- Requires `libclang-dev` for `dds-bridge-sys` C++ compilation (bindgen)
 
 ## Gotchas
 

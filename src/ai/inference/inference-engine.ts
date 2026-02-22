@@ -51,11 +51,12 @@ export function createInferenceEngine(
   const timeline: InferenceSnapshot[] = [];
 
   function computeInferences(): Record<Seat, InferredHoldings> {
-    const result = {} as Record<Seat, InferredHoldings>;
-    for (const seat of ALL_SEATS) {
-      result[seat] = mergeInferences(seat, rawInferences[seat]);
-    }
-    return result;
+    return {
+      [SeatEnum.North]: mergeInferences(SeatEnum.North, rawInferences[SeatEnum.North]),
+      [SeatEnum.East]: mergeInferences(SeatEnum.East, rawInferences[SeatEnum.East]),
+      [SeatEnum.South]: mergeInferences(SeatEnum.South, rawInferences[SeatEnum.South]),
+      [SeatEnum.West]: mergeInferences(SeatEnum.West, rawInferences[SeatEnum.West]),
+    };
   }
 
   return {

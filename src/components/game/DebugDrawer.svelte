@@ -1,13 +1,12 @@
 <!-- Full-lifecycle debug drawer. See also: DebugPanel.svelte (bidding-phase-only suggested bid display in BiddingSidePanel). -->
 <script lang="ts">
   import { Seat, Suit } from "../../engine/types";
-  import type { Hand, Auction, Card } from "../../engine/types";
+  import type { Hand, Card } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../lib/context";
-  import { evaluateHand } from "../../engine/hand-evaluator";
+  import { computeHcp } from "../../lib/hcp";
   import { formatCall, SUIT_SYMBOLS } from "../../lib/format";
   import { sortCards } from "../../lib/sort-cards";
-  import { evaluateAllBiddingRules } from "../../conventions/registry";
-  import { reconstructBiddingContext } from "../../conventions/debug-utils";
+  import { computeBidEvalTraces } from "../../lib/debug-bid-eval";
 
   interface Props {
     open: boolean;
@@ -20,27 +19,15 @@
 
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
 
-  // Compute full rule evaluation trace for each bid in history (recomputes when bidHistory changes)
+  // Compute full rule evaluation trace for each bid in history (recomputes when bidHistory or auction entries change)
   const bidEvalTraces = $derived.by(() => {
-    const convention = appStore.selectedConvention;
-    const deal = gameStore.deal;
-    if (!convention || !deal) return [];
-
-    return gameStore.bidHistory.map((entry, i) => {
-      // Reconstruct auction state at the time of this bid
-      const auctionPrefix: Auction = {
-        entries: gameStore.auction.entries.slice(0, i),
-        isComplete: false,
-      };
-      const ctx = reconstructBiddingContext(deal, entry.seat, auctionPrefix);
-      const allResults = evaluateAllBiddingRules(convention.biddingRules, ctx);
-      return { entry, allResults };
-    });
+    return computeBidEvalTraces(
+      appStore.selectedConvention,
+      gameStore.deal,
+      gameStore.bidHistory,
+      gameStore.auction.entries,
+    );
   });
-
-  function formatHcp(hand: Hand): number {
-    return evaluateHand(hand).hcp;
-  }
 
   function formatSuitCards(cards: readonly Card[], suit: Suit): string {
     const sorted = sortCards([...cards]);
@@ -56,6 +43,7 @@
     ? 'translate-x-0'
     : 'translate-x-full'}"
   aria-label="Debug drawer"
+  inert={!open}
 >
   <!-- Header -->
   <div
@@ -131,7 +119,7 @@
               <div class="font-semibold text-text-primary">
                 {seat}
                 <span class="text-text-muted font-normal"
-                  >({formatHcp(gameStore.deal.hands[seat])} HCP)</span
+                  >({computeHcp(gameStore.deal.hands[seat])} HCP)</span
                 >
               </div>
               <div class="pl-2">
@@ -161,7 +149,7 @@
         {#if bidEvalTraces.length === 0}
           <div class="text-text-muted italic">No bids yet</div>
         {:else}
-          {#each bidEvalTraces as { entry, allResults }, i (i)}
+          {#each bidEvalTraces as { entry, allResults }, i (entry.seat + '-' + i)}
             <details class="mb-1">
               <summary class="cursor-pointer">
                 <span class="text-text-primary">{entry.seat}</span>:
@@ -214,7 +202,7 @@
         {#if gameStore.inferenceTimeline.length === 0}
           <div class="text-text-muted italic">No inferences</div>
         {:else}
-          {#each gameStore.inferenceTimeline as snapshot, i (i)}
+          {#each gameStore.inferenceTimeline as snapshot, i (snapshot.entry.seat + '-' + i)}
             <div class="mb-1 border-l border-border-subtle pl-2">
               <div>
                 <span class="text-text-primary">{snapshot.entry.seat}</span>:
@@ -246,7 +234,7 @@
         {#if gameStore.playLog.length === 0}
           <div class="text-text-muted italic">No plays yet</div>
         {:else}
-          {#each gameStore.playLog as entry, i (i)}
+          {#each gameStore.playLog as entry, i (entry.seat + '-' + entry.card.suit + entry.card.rank)}
             {#if i === 0 || entry.trickIndex !== gameStore.playLog[i - 1]?.trickIndex}
               <div class="text-text-primary font-semibold mt-1">
                 Trick {entry.trickIndex + 1}

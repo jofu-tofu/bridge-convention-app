@@ -22,4 +22,8 @@ pub enum EngineError {
 
     #[error("{0}")]
     NotImplemented(String),
+
+    #[cfg(feature = "dds")]
+    #[error("DDS error: {0}")]
+    DdsError(String),
 }

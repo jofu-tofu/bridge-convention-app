@@ -2,7 +2,6 @@
   import type {
     DDSolution,
     Contract,
-    Vulnerability,
   } from "../../engine/types";
   import { STRAIN_SYMBOLS } from "../../lib/format";
   import MakeableContractsTable from "./MakeableContractsTable.svelte";
@@ -12,10 +11,9 @@
     contract: Contract | null;
     score: number | null;
     declarerTricksWon: number;
-    vulnerability: Vulnerability;
   }
 
-  let { ddsSolution, contract, score, declarerTricksWon, vulnerability }: Props =
+  let { ddsSolution, contract, score, declarerTricksWon }: Props =
     $props();
 
   const optimalTricks = $derived.by(() => {
@@ -82,7 +80,7 @@
           <div class="text-sm text-text-secondary mt-1">
             {#each ddsSolution.par.contracts as pc (pc.declarer + pc.strain + pc.level)}
               <span class="mr-2">
-                {pc.level}{STRAIN_SYMBOLS[pc.strain]}
+                {pc.level}{STRAIN_SYMBOLS[pc.strain]}{pc.doubled ? "X" : ""}
                 by {pc.declarer}{pc.overtricks > 0
                   ? ` +${pc.overtricks}`
                   : pc.overtricks < 0

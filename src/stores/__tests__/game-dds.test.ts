@@ -43,6 +43,7 @@ const fakeDDSolution: DDSolution = {
         level: 3,
         strain: BidSuit.NoTrump,
         declarer: Seat.South,
+        doubled: false,
         overtricks: 0,
       },
     ],

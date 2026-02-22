@@ -145,9 +145,10 @@ export interface DealGeneratorResult {
 }
 
 export interface ParContract {
-  readonly level: number;
+  readonly level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   readonly strain: BidSuit;
   readonly declarer: Seat;
+  readonly doubled: boolean;
   readonly overtricks: number;
 }
 

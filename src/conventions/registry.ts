@@ -100,7 +100,7 @@ export function evaluateAllBiddingRules(
       isLegal = isLegalCall(context.auction, call, context.seat);
     }
 
-    const conditionResults = isConditionedRule(rule)
+    const conditionResults = matched && isConditionedRule(rule)
       ? evaluateConditions(rule, context)
       : undefined;
 
