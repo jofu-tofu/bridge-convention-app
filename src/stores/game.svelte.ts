@@ -7,7 +7,7 @@ import { nextSeat, partnerSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { randomPlay } from "../ai/play-strategy";
 
-export type GamePhase = "BIDDING" | "PLAYING" | "EXPLANATION";
+export type GamePhase = "BIDDING" | "DECLARER_PROMPT" | "PLAYING" | "EXPLANATION";
 
 export interface BidHistoryEntry {
   readonly seat: Seat;
@@ -85,6 +85,7 @@ export function createGameStore(engine: EnginePort) {
   let score = $state<number | null>(null);
   let playAborted = $state(false);
   let trumpSuit = $state<Suit | undefined>(undefined);
+  let effectiveUserSeat = $state<Seat | null>(null);
 
   const isUserTurn = $derived(
     currentTurn !== null &&
@@ -99,8 +100,10 @@ export function createGameStore(engine: EnginePort) {
 
   /** Check if a seat is user-controlled during play. */
   function isUserControlled(seat: Seat): boolean {
-    if (!contract || !userSeat) return false;
-    return seatController(seat, contract.declarer, userSeat) === "user";
+    if (!contract) return false;
+    const activeSeat = effectiveUserSeat ?? userSeat;
+    if (!activeSeat) return false;
+    return seatController(seat, contract.declarer, activeSeat) === "user";
   }
 
   /** Get remaining cards for a seat (original hand minus played cards). */
@@ -129,11 +132,29 @@ export function createGameStore(engine: EnginePort) {
     const result = await engine.getContract(auction);
     contract = result;
     if (result) {
-      startPlay();
+      // Check if user is dummy (partner of declarer === user's seat)
+      if (userSeat && partnerSeat(result.declarer) === userSeat) {
+        effectiveUserSeat = userSeat; // default to South, may be swapped
+        phase = "DECLARER_PROMPT";
+      } else {
+        effectiveUserSeat = userSeat;
+        startPlay();
+      }
     } else {
       // Passed out — skip to explanation
       phase = "EXPLANATION";
     }
+  }
+
+  function acceptDeclarerSwap() {
+    if (!contract) return;
+    effectiveUserSeat = contract.declarer;
+    startPlay();
+  }
+
+  function declineDeclarerSwap() {
+    // effectiveUserSeat already set to userSeat (South) in completeAuction
+    startPlay();
   }
 
   function startPlay() {
@@ -380,6 +401,7 @@ export function createGameStore(engine: EnginePort) {
     get dummySeat() { return dummySeat; },
     get score() { return score; },
     get trumpSuit() { return trumpSuit; },
+    get effectiveUserSeat() { return effectiveUserSeat; },
 
     /** Get legal plays for a seat based on current trick context. */
     async getLegalPlaysForSeat(seat: Seat): Promise<Card[]> {
@@ -393,6 +415,8 @@ export function createGameStore(engine: EnginePort) {
 
     userPlayCard,
     skipToReview,
+    acceptDeclarerSwap,
+    declineDeclarerSwap,
 
     async startDrill(
       newDeal: Deal,
@@ -417,6 +441,7 @@ export function createGameStore(engine: EnginePort) {
       dummySeat = null;
       score = null;
       trumpSuit = undefined;
+      effectiveUserSeat = null;
 
       if (initialAuction) {
         auction = initialAuction;
@@ -541,6 +566,7 @@ export function createGameStore(engine: EnginePort) {
       dummySeat = null;
       score = null;
       trumpSuit = undefined;
+      effectiveUserSeat = null;
     },
   };
 }

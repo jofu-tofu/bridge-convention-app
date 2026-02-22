@@ -22,10 +22,14 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `dismissBidFeedback()` — clears wrong bid feedback and resumes auction (runs AI bids)
 - `skipFromFeedback()` — clears feedback and jumps directly to EXPLANATION phase
 - `runAiBids()` — async loop: AI bids until user seat or auction complete
-- `completeAuction()` — gets contract, transitions to PLAYING phase (or EXPLANATION for passout)
+- `completeAuction()` — gets contract, transitions to DECLARER_PROMPT (when user is dummy) or PLAYING phase (or EXPLANATION for passout)
+
+**Game store key methods (declarer prompt):**
+- `acceptDeclarerSwap()` — sets `effectiveUserSeat` to `contract.declarer` (North), calls `startPlay()`. Table rotates 180°.
+- `declineDeclarerSwap()` — keeps `effectiveUserSeat` as South, calls `startPlay()`. AI plays all cards.
 
 **Game store key methods (play):**
-- `startPlay()` — called by `completeAuction()`, sets up play state, determines declarer/dummy/opening leader
+- `startPlay()` — called by `completeAuction()` or declarer swap methods, sets up play state, determines declarer/dummy/opening leader
 - `userPlayCard(card, seat)` — validates legality and seat control, adds to trick, triggers AI plays
 - `runAiPlays()` — async loop: AI plays with 500ms delay until user's turn or trick complete
 - `completeTrick()` — determines trick winner, updates counts, pauses 1s for UI
@@ -34,9 +38,11 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `getLegalPlaysForSeat(seat)` — returns legal cards for a seat in current trick context
 - `getRemainingCards(seat)` — returns hand minus already-played cards
 
-**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry`, `GamePhase`
+**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry`, `GamePhase` (includes `"DECLARER_PROMPT"`)
 
 **Exported helper:** `seatController(seat, declarer, userSeat)` → `'user' | 'ai'`
+
+**Key state:** `effectiveUserSeat` — defaults to `userSeat` (South), set to North when user accepts declarer swap. Used by `isUserControlled()` during play. Reset to `null` by `startDrill()`.
 
 **Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
 
@@ -57,4 +63,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-21 | version=2 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=3 -->

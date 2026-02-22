@@ -1,22 +1,22 @@
 <script lang="ts">
   import { Seat } from "../../engine/types";
   import type { PlayedCard, Suit } from "../../engine/types";
+  import { viewSeat } from "../../lib/seat-mapping";
   import Card from "../shared/Card.svelte";
 
   interface Props {
     currentTrick: readonly PlayedCard[];
     currentPlayer: Seat | null;
     trumpSuit: Suit | undefined;
-    declarerTricksWon: number;
-    defenderTricksWon: number;
+    /** When true, rotate card positions 180°: North's card at bottom, etc. */
+    rotated?: boolean;
   }
 
   let {
     currentTrick,
     currentPlayer,
     trumpSuit,
-    declarerTricksWon,
-    defenderTricksWon,
+    rotated = false,
   }: Props = $props();
 
   const seatPositions: Record<Seat, string> = {
@@ -32,18 +32,11 @@
 </script>
 
 <div class="trick-area relative" aria-label="Current trick" data-testid="trick-area">
-  <!-- Trick count scoreboard -->
-  <div class="absolute trick-scoreboard text-center">
-    <span class="text-xs font-medium text-text-muted" aria-live="polite">
-      Decl: {declarerTricksWon} — Def: {defenderTricksWon}
-    </span>
-  </div>
-
   <!-- Card positions for each seat -->
   {#each [Seat.North, Seat.East, Seat.South, Seat.West] as seat (seat)}
     {@const played = getPlayedCard(seat)}
     <div
-      class="absolute {seatPositions[seat]}"
+      class="absolute {seatPositions[viewSeat(seat, rotated)]}"
       data-testid="trick-position-{seat}"
     >
       {#if played}
@@ -64,12 +57,6 @@
   .trick-area {
     width: calc(var(--card-width) * 3 + 16px);
     height: calc(var(--card-height) * 2.5);
-  }
-
-  .trick-scoreboard {
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .trick-north {

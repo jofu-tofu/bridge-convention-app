@@ -13,8 +13,6 @@ describe("TrickArea", () => {
     currentTrick: [] as PlayedCard[],
     currentPlayer: Seat.South,
     trumpSuit: undefined,
-    declarerTricksWon: 0,
-    defenderTricksWon: 0,
   };
 
   it("renders the trick area container", () => {
@@ -47,14 +45,6 @@ describe("TrickArea", () => {
     });
     const activePlaceholder = container.querySelector("[data-testid='trick-placeholder-active']");
     expect(activePlaceholder).not.toBeNull();
-  });
-
-  it("displays trick count scoreboard", () => {
-    const { container } = render(TrickArea, {
-      props: { ...defaultProps, declarerTricksWon: 3, defenderTricksWon: 2 },
-    });
-    expect(container.textContent).toContain("Decl: 3");
-    expect(container.textContent).toContain("Def: 2");
   });
 
   it("does not show active placeholder for seats that have played", () => {

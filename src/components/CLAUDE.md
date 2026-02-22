@@ -52,7 +52,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING phase) → ExplanationScreen
+**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → DECLARER_PROMPT (conditional) → PLAYING) → ExplanationScreen
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
@@ -63,6 +63,8 @@ components/
 - `GameScreen` uses a one-shot `$effect` with `initialized` flag to avoid re-triggering `startNewDrill()` on every render
 - `GameScreen` auto-navigates to ExplanationScreen when `gameStore.phase === "EXPLANATION"` via a separate `$effect`
 - PLAYING phase shows BridgeTable with TrickArea center, HandFan with legal plays, and side panel with trick count + skip button
+- BridgeTable and TrickArea accept optional `rotated` prop for 180° table rotation (declarer swap). Uses `viewSeat()` pure function from `src/lib/seat-mapping.ts` — not CSS rotation.
+- DECLARER_PROMPT phase shown when user (South) is dummy; offers "Play as Declarer" (rotates table, user controls North) or "Watch" (AI plays all)
 - `BidPanel` always renders all 35 contract bids (7x5 grid) + 3 specials; unavailable bids are disabled/grayed, not hidden
 - User seat is hardcoded to `Seat.South` in GameScreen/ExplanationScreen — future: make configurable
 - GameScreen has a local `dealNumber` counter that increments on each new drill and resets on remount
@@ -77,4 +79,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `App.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-21 | version=2 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=3 -->

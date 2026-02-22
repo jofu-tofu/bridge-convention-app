@@ -46,7 +46,7 @@ src/
   shared/          Cross-boundary types (BidResult, BiddingStrategy, ConditionDetail)
   conventions/     Convention definitions (registry, conditions, evaluator, Stayman, types)
   ai/              AI bidding strategies (convention adapter, pass strategy, drill session)
-  lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers)
+  lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers, seat-mapping)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, GameScreen, ExplanationScreen)
     game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea)
@@ -63,13 +63,13 @@ tests/
 - **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. All 23 rules across 4 conventions use introspectable conditions (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ (entry: `src/shared/types.ts`)
 - **AI:** Bidding strategies + play AI — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `randomPlay()` card selection (entry: `src/ai/convention-strategy.ts`)
-- **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`) (entry: `src/lib/format.ts`)
+- **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`) (entry: `src/lib/format.ts`)
 - **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, GameScreen, ExplanationScreen), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
 - **Stores:** App store (screen navigation, selected convention) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
 - **CLI:** Command-line interface wrapping EnginePort — JSON default, text opt-in, phase-gated future commands (entry: `src/cli/runner.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
-**Game phases:** BIDDING → PLAYING → EXPLANATION (tracked in `stores/game.svelte.ts`). User always plays South. When South is declarer, user also controls dummy (North) cards face-up. AI plays random legal cards with 500ms delay. "Skip to Review" button auto-completes remaining tricks.
+**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers to play as declarer (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`). When South is declarer, user also controls dummy (North) cards face-up. AI plays random legal cards with 500ms delay. "Skip to Review" button auto-completes remaining tricks.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
@@ -86,6 +86,21 @@ tests/
 | 5     | Done    | Card play UI + Tauri desktop shell                                        |
 | 6     | Pending | Rust engine port — `TauriIpcEngine` via Tauri IPC, DDS solver (`dds-bridge-sys`) |
 | 7     | Pending | Smart play AI — heuristic → DDS-assisted → convention-aware card play     |
+
+## Testing Scope
+
+**Run only the tests affected by your changes — not the full suite.** Vitest supports file-pattern filtering:
+
+| Changed files in… | Test command | When to use full suite |
+|---|---|---|
+| `src/components/` | `npx vitest run src/components/` | Never for UI-only (CSS, props, layout) |
+| `src/stores/` | `npx vitest run src/stores/` | If store interface changed |
+| `src/engine/` | `npx vitest run src/engine/` | If types/exports changed |
+| `src/lib/` | `npx vitest run src/lib/` | If shared utility signatures changed |
+| CSS-only / layout tweaks | `npm run check` (type-check only) | Never |
+| Cross-cutting (types, exports) | `npm run test:run` (full suite) | Always for type/interface changes |
+
+**Rule:** If you only changed `.svelte` files, CSS values, or added optional props — run targeted tests or just type-check. Full suite (`npm run test:run`) only when changing shared types, store interfaces, or engine logic.
 
 ## Gotchas
 

@@ -10,6 +10,8 @@
     sorted?: boolean;
     legalPlays?: readonly CardType[];
     onPlayCard?: (card: CardType) => void;
+    /** When true, card text shown at bottom only (for dummy viewed from across table) */
+    mirrored?: boolean;
   }
 
   let {
@@ -19,6 +21,7 @@
     sorted = true,
     legalPlays = [],
     onPlayCard,
+    mirrored = false,
   }: Props = $props();
 
   const displayCards = $derived(sorted ? sortCards(cards) : [...cards]);
@@ -45,6 +48,7 @@
       <Card
         {card}
         {faceUp}
+        {mirrored}
         clickable={legal && !!onPlayCard}
         onclick={legal && onPlayCard ? () => onPlayCard(card) : undefined}
       />

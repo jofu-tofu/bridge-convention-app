@@ -27,6 +27,11 @@
   let dealNumber = $state(0);
   let playLegalPlays = $state<CardType[]>([]);
 
+  // Table rotation: only when effectiveUserSeat is exactly North (declarer swap accepted)
+  const rotated = $derived(gameStore.effectiveUserSeat === Seat.North);
+  // Effective seat for play phase (effectiveUserSeat after swap, or default userSeat)
+  const playUserSeat = $derived(gameStore.effectiveUserSeat ?? userSeat);
+
   async function startNewDrill() {
     const convention = appStore.selectedConvention;
     if (!convention) return;
@@ -72,12 +77,12 @@
     gameStore.userPlayCard(card, seat);
   }
 
-  // Compute user-controlled seats for play phase
+  // Compute user-controlled seats for play phase (uses effectiveUserSeat after swap)
   const userControlledSeats = $derived.by(() => {
-    if (!gameStore.contract) return [userSeat];
-    const seats: Seat[] = [userSeat];
+    if (!gameStore.contract) return [playUserSeat];
+    const seats: Seat[] = [playUserSeat];
     const dummy = partnerSeat(gameStore.contract.declarer);
-    if (seatController(dummy, gameStore.contract.declarer, userSeat) === "user") {
+    if (seatController(dummy, gameStore.contract.declarer, playUserSeat) === "user") {
       seats.push(dummy);
     }
     return seats;
@@ -97,6 +102,9 @@
   const phaseInfo = $derived.by(() => {
     if (gameStore.phase === "BIDDING") {
       return { label: "Bidding", color: "bg-blue-600", textColor: "text-blue-100" };
+    }
+    if (gameStore.phase === "DECLARER_PROMPT") {
+      return { label: "Declarer", color: "bg-teal-600", textColor: "text-teal-100" };
     }
     if (gameStore.phase === "PLAYING") {
       return { label: "Playing", color: "bg-amber-600", textColor: "text-amber-100" };
@@ -200,6 +208,29 @@
           {/if}
         </div>
       </div>
+    {:else if gameStore.phase === "DECLARER_PROMPT"}
+      <div class="flex-1 flex items-center justify-center">
+        <div class="bg-bg-card rounded-[--radius-xl] p-8 border border-border-subtle shadow-lg text-center max-w-md">
+          {#if gameStore.contract}
+            <h2 class="text-xl font-semibold text-text-primary mb-2">
+              {gameStore.contract.level}{STRAIN_SYMBOLS[gameStore.contract.strain]}
+              {gameStore.contract.doubled ? " X" : ""}{gameStore.contract.redoubled ? " XX" : ""}
+              by {gameStore.contract.declarer}
+            </h2>
+          {/if}
+          <p class="text-text-secondary mb-6">
+            You are dummy. Play as {gameStore.contract?.declarer ?? "North"} (declarer)?
+          </p>
+          <div class="flex gap-3 justify-center">
+            <Button variant="primary" onclick={() => gameStore.acceptDeclarerSwap()}>
+              Play as Declarer
+            </Button>
+            <Button variant="secondary" onclick={() => gameStore.declineDeclarerSwap()}>
+              Watch
+            </Button>
+          </div>
+        </div>
+      </div>
     {:else if gameStore.phase === "PLAYING"}
       <div class="flex-1 flex {isDesktop ? 'flex-row' : 'flex-col'} overflow-hidden">
         <!-- Table area -->
@@ -207,20 +238,20 @@
           <div style="transform: scale({tableScale}); transform-origin: center;">
             <BridgeTable
               hands={gameStore.deal.hands}
-              {userSeat}
+              userSeat={playUserSeat}
               dummySeat={gameStore.dummySeat ?? undefined}
               legalPlays={playLegalPlays}
               onPlayCard={handlePlayCard}
               currentPlayer={gameStore.currentPlayer ?? undefined}
               {userControlledSeats}
               {remainingCards}
+              {rotated}
             >
               <TrickArea
                 currentTrick={gameStore.currentTrick}
                 currentPlayer={gameStore.currentPlayer}
                 trumpSuit={gameStore.trumpSuit}
-                declarerTricksWon={gameStore.declarerTricksWon}
-                defenderTricksWon={gameStore.defenderTricksWon}
+                {rotated}
               />
             </BridgeTable>
           </div>

@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
   import type { Hand, Card as CardType } from "../../engine/types";
   import { Seat } from "../../engine/types";
+  import { viewSeat } from "../../lib/seat-mapping";
   import HandFan from "./HandFan.svelte";
 
   interface Props {
@@ -20,6 +21,8 @@
     userControlledSeats?: readonly Seat[];
     /** During play: remaining cards per seat (after cards played in tricks) */
     remainingCards?: Partial<Record<Seat, readonly CardType[]>>;
+    /** When true, rotate table 180°: North at bottom, South at top, E↔W swapped */
+    rotated?: boolean;
   }
 
   let {
@@ -32,7 +35,14 @@
     currentPlayer,
     userControlledSeats = [],
     remainingCards,
+    rotated = false,
   }: Props = $props();
+
+  // Map physical screen positions to logical seats
+  const northSeat = $derived(viewSeat(Seat.North, rotated));
+  const southSeat = $derived(viewSeat(Seat.South, rotated));
+  const eastSeat = $derived(viewSeat(Seat.East, rotated));
+  const westSeat = $derived(viewSeat(Seat.West, rotated));
 
   function isFaceUp(seat: Seat): boolean {
     if (seat === userSeat) return true;
@@ -77,38 +87,38 @@
   aria-label="Bridge table"
   data-testid="bridge-table"
 >
-  <!-- North -->
+  <!-- Physical top position (North normally, South when rotated) -->
   <div class="absolute seat-north">
-    <HandFan cards={getCards(Seat.North)} faceUp={isFaceUp(Seat.North)} legalPlays={getSeatLegalPlays(Seat.North)} onPlayCard={getSeatOnPlayCard(Seat.North)} />
+    <HandFan cards={getCards(northSeat)} faceUp={isFaceUp(northSeat)} legalPlays={getSeatLegalPlays(northSeat)} onPlayCard={getSeatOnPlayCard(northSeat)} mirrored={rotated} />
     <div class="text-center mt-2">
-      <span class={seatLabelClass(Seat.North)} data-testid="seat-label-N" aria-label="North">N</span>
+      <span class={seatLabelClass(northSeat)} data-testid="seat-label-{northSeat}" aria-label={northSeat === Seat.North ? "North" : "South"}>{northSeat === Seat.North ? "N" : "S"}</span>
     </div>
   </div>
 
-  <!-- South -->
+  <!-- Physical bottom position (South normally, North when rotated) — z-10 stays on bottom hand -->
   <div class="absolute z-10 seat-south">
     <div class="text-center mb-2">
-      <span class={seatLabelClass(Seat.South)} data-testid="seat-label-S" aria-label="South">S</span>
+      <span class={seatLabelClass(southSeat)} data-testid="seat-label-{southSeat}" aria-label={southSeat === Seat.South ? "South" : "North"}>{southSeat === Seat.South ? "S" : "N"}</span>
     </div>
-    <HandFan cards={getCards(Seat.South)} faceUp={isFaceUp(Seat.South)} legalPlays={getSeatLegalPlays(Seat.South)} onPlayCard={getSeatOnPlayCard(Seat.South)} />
+    <HandFan cards={getCards(southSeat)} faceUp={isFaceUp(southSeat)} legalPlays={getSeatLegalPlays(southSeat)} onPlayCard={getSeatOnPlayCard(southSeat)} />
   </div>
 
-  <!-- East cards -->
+  <!-- Physical right position (East normally, West when rotated) -->
   <div class="absolute seat-east">
-    <HandFan cards={getCards(Seat.East)} faceUp={isFaceUp(Seat.East)} vertical legalPlays={getSeatLegalPlays(Seat.East)} onPlayCard={getSeatOnPlayCard(Seat.East)} />
+    <HandFan cards={getCards(eastSeat)} faceUp={isFaceUp(eastSeat)} vertical legalPlays={getSeatLegalPlays(eastSeat)} onPlayCard={getSeatOnPlayCard(eastSeat)} />
   </div>
   <!-- East label — inset from edge to clear the vertical card fan (~12% card width + gap) -->
   <div class="absolute seat-label-east">
-    <span class={seatLabelClass(Seat.East)} data-testid="seat-label-E" aria-label="East">E</span>
+    <span class={seatLabelClass(eastSeat)} data-testid="seat-label-{eastSeat}" aria-label={eastSeat === Seat.East ? "East" : "West"}>{eastSeat === Seat.East ? "E" : "W"}</span>
   </div>
 
-  <!-- West cards -->
+  <!-- Physical left position (West normally, East when rotated) -->
   <div class="absolute seat-west">
-    <HandFan cards={getCards(Seat.West)} faceUp={isFaceUp(Seat.West)} vertical legalPlays={getSeatLegalPlays(Seat.West)} onPlayCard={getSeatOnPlayCard(Seat.West)} />
+    <HandFan cards={getCards(westSeat)} faceUp={isFaceUp(westSeat)} vertical legalPlays={getSeatLegalPlays(westSeat)} onPlayCard={getSeatOnPlayCard(westSeat)} />
   </div>
   <!-- West label — inset from edge to clear the vertical card fan (~12% card width + gap) -->
   <div class="absolute seat-label-west">
-    <span class={seatLabelClass(Seat.West)} data-testid="seat-label-W" aria-label="West">W</span>
+    <span class={seatLabelClass(westSeat)} data-testid="seat-label-{westSeat}" aria-label={westSeat === Seat.West ? "West" : "East"}>{westSeat === Seat.West ? "W" : "E"}</span>
   </div>
 
   <!-- Center area (auction or tricks) — positioned in upper-center to leave room for growing auction rows -->
@@ -121,11 +131,11 @@
 
 <style>
   .bridge-table {
-    --seat-edge: 2%;
+    --seat-edge: 4%;
     --seat-center: 50%;
     --seat-south-bottom: 8%;
     --seat-label-inset: 14%;
-    --seat-center-top: 38%;
+    --seat-center-top: 42%;
   }
   .seat-north {
     top: var(--seat-edge);
