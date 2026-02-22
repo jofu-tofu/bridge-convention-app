@@ -58,7 +58,8 @@ export const dontDealConstraints: DealConstraints = {
 // Rule 1: dont-2h — both majors
 const dont2H = conditionedRule({
   name: "dont-2h",
-  conditions: [auctionMatches(["1NT"]), bothMajors()],
+  auctionConditions: [auctionMatches(["1NT"])],
+  handConditions: [bothMajors()],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Hearts };
   },
@@ -67,7 +68,8 @@ const dont2H = conditionedRule({
 // Rule 2: dont-2d — diamonds + major
 const dont2D = conditionedRule({
   name: "dont-2d",
-  conditions: [auctionMatches(["1NT"]), diamondsPlusMajor()],
+  auctionConditions: [auctionMatches(["1NT"])],
+  handConditions: [diamondsPlusMajor()],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Diamonds };
   },
@@ -76,7 +78,8 @@ const dont2D = conditionedRule({
 // Rule 3: dont-2c — clubs + higher suit
 const dont2C = conditionedRule({
   name: "dont-2c",
-  conditions: [auctionMatches(["1NT"]), clubsPlusHigher()],
+  auctionConditions: [auctionMatches(["1NT"])],
+  handConditions: [clubsPlusHigher()],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Clubs };
   },
@@ -85,7 +88,8 @@ const dont2C = conditionedRule({
 // Rule 4: dont-2s — natural spades 6+
 const dont2S = conditionedRule({
   name: "dont-2s",
-  conditions: [auctionMatches(["1NT"]), suitMin(0, "spades", 6)],
+  auctionConditions: [auctionMatches(["1NT"])],
+  handConditions: [suitMin(0, "spades", 6)],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Spades };
   },
@@ -94,7 +98,8 @@ const dont2S = conditionedRule({
 // Rule 5: dont-double — single-suited (not spades)
 const dontDouble = conditionedRule({
   name: "dont-double",
-  conditions: [auctionMatches(["1NT"]), hasSingleLongSuit()],
+  auctionConditions: [auctionMatches(["1NT"])],
+  handConditions: [hasSingleLongSuit()],
   call(): Call {
     return { type: "double" };
   },
@@ -105,7 +110,9 @@ const dontDouble = conditionedRule({
 // Rule 6: dont-advance-pass — pass with support
 const dontAdvancePass = conditionedRule({
   name: "dont-advance-pass",
-  conditions: [
+  auctionConditions: [],
+  handConditions: [
+    // Hybrid: each advanceSupportFor checks auction to resolve suit, gates on hand length
     or(
       advanceSupportFor(["1NT", "2H", "P"], 1, "hearts", 3),
       advanceSupportFor(["1NT", "2S", "P"], 0, "spades", 2),
@@ -121,7 +128,9 @@ const dontAdvancePass = conditionedRule({
 // Rule 7: dont-advance-next-step — bid next step to ask
 const dontAdvanceNextStep = conditionedRule({
   name: "dont-advance-next-step",
-  conditions: [
+  auctionConditions: [],
+  handConditions: [
+    // Hybrid: each advanceLackSupport/advanceAfterDouble checks auction internally
     or(
       advanceLackSupport(["1NT", "2H", "P"], 1, "hearts", 3),
       advanceLackSupport(["1NT", "2D", "P"], 2, "diamonds", 3),

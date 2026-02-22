@@ -12,11 +12,13 @@ import {
   isOpener,
   isResponder,
   partnerOpened,
+  partnerOpenedAt,
   opponentBid,
   isBalanced,
   noFiveCardMajor,
   longerMajor,
   noPriorBid,
+  seatHasBid,
   not,
 } from "./conditions";
 
@@ -74,6 +76,45 @@ function bidIsHigher(
   return false;
 }
 
+/** Get this seat's first contract bid strain. */
+function seatFirstBidStrain(ctx: BiddingContext): BidSuit | null {
+  for (const entry of ctx.auction.entries) {
+    if (entry.call.type === "bid" && entry.seat === ctx.seat) {
+      return entry.call.strain;
+    }
+  }
+  return null;
+}
+
+/** Check if partner's last bid is the same strain this seat opened. */
+function partnerRaisedOurSuit(ctx: BiddingContext): boolean {
+  const ourStrain = seatFirstBidStrain(ctx);
+  if (!ourStrain) return false;
+  const partner = partnerSeat(ctx.seat);
+  for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+    const entry = ctx.auction.entries[i]!;
+    if (entry.call.type === "bid" && entry.seat === partner) {
+      return entry.call.strain === ourStrain;
+    }
+  }
+  return false;
+}
+
+/** Check if partner responded with a major (not the strain we opened). */
+function partnerRespondedMajor(ctx: BiddingContext): BidSuit | null {
+  const partner = partnerSeat(ctx.seat);
+  for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+    const entry = ctx.auction.entries[i]!;
+    if (entry.call.type === "bid" && entry.seat === partner) {
+      if (entry.call.strain === BidSuit.Hearts || entry.call.strain === BidSuit.Spades) {
+        return entry.call.strain;
+      }
+      return null;
+    }
+  }
+  return null;
+}
+
 // ─── SAYC Convention ─────────────────────────────────────────
 
 export const saycConfig: ConventionConfig = {
@@ -92,60 +133,48 @@ export const saycConfig: ConventionConfig = {
     // 2C: 22+ HCP (check before NT openings)
     conditionedRule({
       name: "sayc-open-2c",
-      conditions: [noPriorBid(), isOpener(), hcpMin(22)],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpMin(22)],
       call: () => bid(2, BidSuit.Clubs),
     }),
 
     // 2NT: 20-21 HCP, balanced (before 1NT to avoid 1-level suit catch-all)
     conditionedRule({
       name: "sayc-open-2nt",
-      conditions: [noPriorBid(), isOpener(), hcpRange(20, 21), isBalanced()],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpRange(20, 21), isBalanced()],
       call: () => bid(2, BidSuit.NoTrump),
     }),
 
     // 1NT: 15-17 HCP, balanced, no 5-card major
     conditionedRule({
       name: "sayc-open-1nt",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
-        hcpRange(15, 17),
-        isBalanced(),
-        noFiveCardMajor(),
-      ],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpRange(15, 17), isBalanced(), noFiveCardMajor()],
       call: () => bid(1, BidSuit.NoTrump),
     }),
 
     // 1S: 12+ HCP, 5+ spades (spades >= hearts)
     conditionedRule({
       name: "sayc-open-1s",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
-        hcpMin(12),
-        longerMajor(0, "spades"),
-      ],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpMin(12), longerMajor(0, "spades")],
       call: () => bid(1, BidSuit.Spades),
     }),
 
     // 1H: 12+ HCP, 5+ hearts
     conditionedRule({
       name: "sayc-open-1h",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
-        hcpMin(12),
-        suitMin(1, "hearts", 5),
-      ],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpMin(12), suitMin(1, "hearts", 5)],
       call: () => bid(1, BidSuit.Hearts),
     }),
 
     // 1D: 12+ HCP, 4+ diamonds (longer minor or equal)
     conditionedRule({
       name: "sayc-open-1d",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [
         hcpMin(12),
         suitBelow(0, "spades", 5),
         suitBelow(1, "hearts", 5),
@@ -157,9 +186,8 @@ export const saycConfig: ConventionConfig = {
     // 1C: 12+ HCP, 3+ clubs (catch-all minor opening)
     conditionedRule({
       name: "sayc-open-1c",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [
         hcpMin(12),
         suitBelow(0, "spades", 5),
         suitBelow(1, "hearts", 5),
@@ -171,36 +199,24 @@ export const saycConfig: ConventionConfig = {
     // Weak 2H: 5-11 HCP, 6+ hearts
     conditionedRule({
       name: "sayc-open-weak-2h",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
-        hcpRange(5, 11),
-        suitMin(1, "hearts", 6),
-      ],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpRange(5, 11), suitMin(1, "hearts", 6)],
       call: () => bid(2, BidSuit.Hearts),
     }),
 
     // Weak 2S: 5-11 HCP, 6+ spades
     conditionedRule({
       name: "sayc-open-weak-2s",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
-        hcpRange(5, 11),
-        suitMin(0, "spades", 6),
-      ],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpRange(5, 11), suitMin(0, "spades", 6)],
       call: () => bid(2, BidSuit.Spades),
     }),
 
     // Weak 2D: 5-11 HCP, 6+ diamonds
     conditionedRule({
       name: "sayc-open-weak-2d",
-      conditions: [
-        noPriorBid(),
-        isOpener(),
-        hcpRange(5, 11),
-        suitMin(2, "diamonds", 6),
-      ],
+      auctionConditions: [noPriorBid(), isOpener()],
+      handConditions: [hcpRange(5, 11), suitMin(2, "diamonds", 6)],
       call: () => bid(2, BidSuit.Diamonds),
     }),
 
@@ -209,9 +225,8 @@ export const saycConfig: ConventionConfig = {
     // Stayman after partner's 1NT: 8+ HCP, 4-card major
     conditionedRule({
       name: "sayc-respond-1nt-stayman",
-      conditions: [
-        isResponder(),
-        partnerOpened(BidSuit.NoTrump),
+      auctionConditions: [isResponder(), partnerOpenedAt(1, BidSuit.NoTrump)],
+      handConditions: [
         hcpMin(8),
         // Must have at least one 4-card major
         {
@@ -235,11 +250,8 @@ export const saycConfig: ConventionConfig = {
     // Pass after partner's 1NT: 0-7 HCP
     conditionedRule({
       name: "sayc-respond-1nt-pass",
-      conditions: [
-        isResponder(),
-        partnerOpened(BidSuit.NoTrump),
-        hcpRange(0, 7),
-      ],
+      auctionConditions: [isResponder(), partnerOpenedAt(1, BidSuit.NoTrump)],
+      handConditions: [hcpRange(0, 7)],
       call: () => pass,
     }),
 
@@ -248,10 +260,10 @@ export const saycConfig: ConventionConfig = {
     // Raise partner's major: 6-10 HCP, 3+ support
     conditionedRule({
       name: "sayc-respond-raise-major",
-      conditions: [
-        isResponder(),
+      auctionConditions: [isResponder()],
+      handConditions: [
         hcpRange(6, 10),
-        // Partner opened a major and we have 3+ support
+        // Hybrid: checks auction to resolve suit, gates on hand support
         {
           name: "major-support-3",
           inference: { type: "suit-min", params: { suitIndex: -1, suitName: "major", min: 3 } },
@@ -284,9 +296,10 @@ export const saycConfig: ConventionConfig = {
     // Jump raise partner's major: 10-12 HCP, 4+ support
     conditionedRule({
       name: "sayc-respond-jump-raise-major",
-      conditions: [
-        isResponder(),
+      auctionConditions: [isResponder()],
+      handConditions: [
         hcpRange(10, 12),
+        // Hybrid: checks auction to resolve suit, gates on hand support
         {
           name: "major-support-4",
           inference: { type: "suit-min", params: { suitIndex: -1, suitName: "major", min: 4 } },
@@ -316,13 +329,50 @@ export const saycConfig: ConventionConfig = {
       },
     }),
 
+    // Game raise partner's major: 13+ HCP, 4+ support
+    conditionedRule({
+      name: "sayc-respond-game-raise-major",
+      auctionConditions: [isResponder()],
+      handConditions: [
+        hcpMin(13),
+        // Hybrid: checks auction to resolve suit, gates on hand support
+        {
+          name: "major-support-4-for-game",
+          inference: { type: "suit-min", params: { suitIndex: -1, suitName: "major", min: 4 } },
+          test(ctx) {
+            const strain = partnerOpeningStrain(ctx);
+            if (strain === BidSuit.Hearts) return ctx.evaluation.shape[1]! >= 4;
+            if (strain === BidSuit.Spades) return ctx.evaluation.shape[0]! >= 4;
+            return false;
+          },
+          describe(ctx) {
+            const strain = partnerOpeningStrain(ctx);
+            if (strain === BidSuit.Hearts) {
+              const len = ctx.evaluation.shape[1]!;
+              return len >= 4 ? `${len} hearts (4+ for game)` : `Only ${len} hearts`;
+            }
+            if (strain === BidSuit.Spades) {
+              const len = ctx.evaluation.shape[0]!;
+              return len >= 4 ? `${len} spades (4+ for game)` : `Only ${len} spades`;
+            }
+            return "Partner did not open a major";
+          },
+        },
+      ],
+      call(ctx) {
+        const strain = partnerOpeningStrain(ctx)!;
+        return bid(4, strain);
+      },
+    }),
+
     // 1H over 1C/1D: 6+ HCP, 4+ hearts
     conditionedRule({
       name: "sayc-respond-1h-over-minor",
-      conditions: [
-        isResponder(),
+      auctionConditions: [isResponder()],
+      handConditions: [
         hcpMin(6),
         suitMin(1, "hearts", 4),
+        // Hybrid: checks auction to verify partner opened minor
         {
           name: "partner-opened-minor",
           test(ctx) {
@@ -343,10 +393,11 @@ export const saycConfig: ConventionConfig = {
     // 1S over 1C/1D: 6+ HCP, 4+ spades
     conditionedRule({
       name: "sayc-respond-1s-over-minor",
-      conditions: [
-        isResponder(),
+      auctionConditions: [isResponder()],
+      handConditions: [
         hcpMin(6),
         suitMin(0, "spades", 4),
+        // Hybrid: checks auction to verify partner opened minor
         {
           name: "partner-opened-minor",
           test(ctx) {
@@ -367,58 +418,102 @@ export const saycConfig: ConventionConfig = {
     // 1S over 1H: 6+ HCP, 4+ spades
     conditionedRule({
       name: "sayc-respond-1s-over-1h",
-      conditions: [
-        isResponder(),
-        partnerOpened(BidSuit.Hearts),
-        hcpMin(6),
-        suitMin(0, "spades", 4),
-      ],
+      auctionConditions: [isResponder(), partnerOpened(BidSuit.Hearts)],
+      handConditions: [hcpMin(6), suitMin(0, "spades", 4)],
       call: () => bid(1, BidSuit.Spades),
+    }),
+
+    // 2C over partner's major: 12+ HCP, 4+ clubs (2-over-1 game force)
+    conditionedRule({
+      name: "sayc-respond-2c-over-major",
+      auctionConditions: [isResponder()],
+      handConditions: [
+        hcpMin(12),
+        suitMin(3, "clubs", 4),
+        // Hybrid: checks auction to verify partner opened major
+        {
+          name: "partner-opened-major",
+          test(ctx) {
+            const strain = partnerOpeningStrain(ctx);
+            return strain === BidSuit.Hearts || strain === BidSuit.Spades;
+          },
+          describe(ctx) {
+            const strain = partnerOpeningStrain(ctx);
+            if (strain === BidSuit.Hearts || strain === BidSuit.Spades)
+              return `Partner opened ${strain}`;
+            return "Partner did not open a major";
+          },
+        },
+      ],
+      call: () => bid(2, BidSuit.Clubs),
+    }),
+
+    // 2D over partner's major: 12+ HCP, 4+ diamonds (2-over-1 game force)
+    conditionedRule({
+      name: "sayc-respond-2d-over-major",
+      auctionConditions: [isResponder()],
+      handConditions: [
+        hcpMin(12),
+        suitMin(2, "diamonds", 4),
+        // Hybrid: checks auction to verify partner opened major
+        {
+          name: "partner-opened-major",
+          test(ctx) {
+            const strain = partnerOpeningStrain(ctx);
+            return strain === BidSuit.Hearts || strain === BidSuit.Spades;
+          },
+          describe(ctx) {
+            const strain = partnerOpeningStrain(ctx);
+            if (strain === BidSuit.Hearts || strain === BidSuit.Spades)
+              return `Partner opened ${strain}`;
+            return "Partner did not open a major";
+          },
+        },
+      ],
+      call: () => bid(2, BidSuit.Diamonds),
     }),
 
     // 1NT response: partner opened suit, 6-10 HCP (no better bid)
     conditionedRule({
       name: "sayc-respond-1nt",
-      conditions: [
-        isResponder(),
-        hcpRange(6, 10),
-        not(partnerOpened(BidSuit.NoTrump)),
-      ],
+      auctionConditions: [isResponder(), not(partnerOpened(BidSuit.NoTrump))],
+      handConditions: [hcpRange(6, 10)],
       call: () => bid(1, BidSuit.NoTrump),
     }),
 
     // 2NT response: 13-15 HCP, balanced, partner opened suit
     conditionedRule({
       name: "sayc-respond-2nt",
-      conditions: [
-        isResponder(),
-        hcpRange(13, 15),
-        isBalanced(),
-        not(partnerOpened(BidSuit.NoTrump)),
-      ],
+      auctionConditions: [isResponder(), not(partnerOpened(BidSuit.NoTrump))],
+      handConditions: [hcpRange(13, 15), isBalanced()],
       call: () => bid(2, BidSuit.NoTrump),
     }),
 
     // 3NT response: 16-18 HCP, balanced, partner opened suit
     conditionedRule({
       name: "sayc-respond-3nt",
-      conditions: [
-        isResponder(),
-        hcpRange(16, 18),
-        isBalanced(),
-        not(partnerOpened(BidSuit.NoTrump)),
-      ],
+      auctionConditions: [isResponder(), not(partnerOpened(BidSuit.NoTrump))],
+      handConditions: [hcpRange(16, 18), isBalanced()],
       call: () => bid(3, BidSuit.NoTrump),
     }),
 
     // ─── Competitive ───────────────────────────────────────────
 
+    // 1NT overcall: opponent opened, 15-18 HCP, balanced
+    conditionedRule({
+      name: "sayc-1nt-overcall",
+      auctionConditions: [opponentBid(), not(isOpener()), not(isResponder())],
+      handConditions: [hcpRange(15, 18), isBalanced()],
+      call: () => bid(1, BidSuit.NoTrump),
+    }),
+
     // Overcall at 1-level: opponent opened, 8-16 HCP, 5+ in a suit
     conditionedRule({
       name: "sayc-overcall-1level",
-      conditions: [
-        opponentBid(),
+      auctionConditions: [opponentBid()],
+      handConditions: [
         hcpRange(8, 16),
+        // Hybrid: checks auction for last bid to determine legal bids
         {
           name: "good-5-card-suit-at-1",
           test(ctx) {
@@ -468,9 +563,10 @@ export const saycConfig: ConventionConfig = {
     // Overcall at 2-level: opponent opened, 10-16 HCP, 5+ in a suit
     conditionedRule({
       name: "sayc-overcall-2level",
-      conditions: [
-        opponentBid(),
+      auctionConditions: [opponentBid()],
+      handConditions: [
         hcpRange(10, 16),
+        // Hybrid: checks auction for last bid to determine legal bids
         {
           name: "good-5-card-suit-at-2",
           test(ctx) {
@@ -528,11 +624,175 @@ export const saycConfig: ConventionConfig = {
       },
     }),
 
+    // ─── Opener Rebids ─────────────────────────────────────────
+
+    // After partner raises our major: bid game with 19+
+    conditionedRule({
+      name: "sayc-rebid-4m-after-raise",
+      auctionConditions: [isOpener(), seatHasBid()],
+      handConditions: [
+        hcpMin(19),
+        // Hybrid: checks auction for partner's raise
+        {
+          name: "partner-raised-our-major",
+          test(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (ourStrain !== BidSuit.Hearts && ourStrain !== BidSuit.Spades) return false;
+            return partnerRaisedOurSuit(ctx);
+          },
+          describe(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (ourStrain && partnerRaisedOurSuit(ctx))
+              return `Partner raised our ${ourStrain}`;
+            return "Partner did not raise our major";
+          },
+        },
+      ],
+      call(ctx) {
+        return bid(4, seatFirstBidStrain(ctx)!);
+      },
+    }),
+
+    // After partner raises our major: invite with 17-18
+    conditionedRule({
+      name: "sayc-rebid-3m-invite",
+      auctionConditions: [isOpener(), seatHasBid()],
+      handConditions: [
+        hcpRange(17, 18),
+        // Hybrid: checks auction for partner's raise
+        {
+          name: "partner-raised-our-major",
+          test(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (ourStrain !== BidSuit.Hearts && ourStrain !== BidSuit.Spades) return false;
+            return partnerRaisedOurSuit(ctx);
+          },
+          describe(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (ourStrain && partnerRaisedOurSuit(ctx))
+              return `Partner raised our ${ourStrain}`;
+            return "Partner did not raise our major";
+          },
+        },
+      ],
+      call(ctx) {
+        return bid(3, seatFirstBidStrain(ctx)!);
+      },
+    }),
+
+    // After partner raises our major: pass with 12-16 (minimum)
+    conditionedRule({
+      name: "sayc-rebid-pass-after-raise",
+      auctionConditions: [isOpener(), seatHasBid()],
+      handConditions: [
+        hcpRange(12, 16),
+        // Hybrid: checks auction for partner's raise
+        {
+          name: "partner-raised-our-major",
+          test(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (ourStrain !== BidSuit.Hearts && ourStrain !== BidSuit.Spades) return false;
+            return partnerRaisedOurSuit(ctx);
+          },
+          describe(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (ourStrain && partnerRaisedOurSuit(ctx))
+              return `Partner raised our ${ourStrain}`;
+            return "Partner did not raise our major";
+          },
+        },
+      ],
+      call: () => pass,
+    }),
+
+    // Raise partner's major response: 4+ support, 12-16
+    conditionedRule({
+      name: "sayc-rebid-raise-partner-major",
+      auctionConditions: [isOpener(), seatHasBid()],
+      handConditions: [
+        hcpRange(12, 16),
+        // Hybrid: checks auction for partner's major response
+        {
+          name: "partner-responded-major-with-support",
+          test(ctx) {
+            const partnerMajor = partnerRespondedMajor(ctx);
+            if (!partnerMajor) return false;
+            if (partnerMajor === BidSuit.Hearts) return ctx.evaluation.shape[1]! >= 4;
+            return ctx.evaluation.shape[0]! >= 4;
+          },
+          describe(ctx) {
+            const partnerMajor = partnerRespondedMajor(ctx);
+            if (!partnerMajor) return "Partner did not respond with a major";
+            const idx = partnerMajor === BidSuit.Hearts ? 1 : 0;
+            const len = ctx.evaluation.shape[idx]!;
+            return len >= 4
+              ? `${len} ${partnerMajor} (4+ support for partner's response)`
+              : `Only ${len} ${partnerMajor}`;
+          },
+        },
+      ],
+      call(ctx) {
+        const partnerMajor = partnerRespondedMajor(ctx)!;
+        return bid(2, partnerMajor);
+      },
+    }),
+
+    // Rebid own suit with 6+ cards, 12-17
+    conditionedRule({
+      name: "sayc-rebid-own-suit",
+      auctionConditions: [isOpener(), seatHasBid()],
+      handConditions: [
+        hcpRange(12, 17),
+        // Hybrid: checks auction for our first bid suit
+        {
+          name: "6-plus-in-opened-suit",
+          test(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (!ourStrain) return false;
+            const suitIdx = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs]
+              .indexOf(ourStrain);
+            return suitIdx >= 0 && ctx.evaluation.shape[suitIdx]! >= 6;
+          },
+          describe(ctx) {
+            const ourStrain = seatFirstBidStrain(ctx);
+            if (!ourStrain) return "No previous bid";
+            const suitIdx = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs]
+              .indexOf(ourStrain);
+            if (suitIdx < 0) return "Not a suit bid";
+            const len = ctx.evaluation.shape[suitIdx]!;
+            return len >= 6
+              ? `${len} ${ourStrain} (rebiddable)`
+              : `Only ${len} ${ourStrain} (need 6+)`;
+          },
+        },
+      ],
+      call(ctx) {
+        return bid(2, seatFirstBidStrain(ctx)!);
+      },
+    }),
+
+    // Rebid 1NT: opened minor, 12-14 balanced
+    conditionedRule({
+      name: "sayc-rebid-1nt",
+      auctionConditions: [isOpener(), seatHasBid()],
+      handConditions: [hcpRange(12, 14), isBalanced()],
+      call: () => bid(1, BidSuit.NoTrump),
+    }),
+
+    // Rebid 2NT: 18-19 balanced (too strong for 1NT opening, too weak for 2NT opening)
+    conditionedRule({
+      name: "sayc-rebid-2nt",
+      auctionConditions: [isOpener(), seatHasBid()],
+      handConditions: [hcpRange(18, 19), isBalanced()],
+      call: () => bid(2, BidSuit.NoTrump),
+    }),
+
     // ─── Default: Pass (catch-all) ─────────────────────────────
 
     conditionedRule({
       name: "sayc-pass",
-      conditions: [],
+      auctionConditions: [],
+      handConditions: [],
       call: () => pass,
     }),
   ],

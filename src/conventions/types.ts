@@ -93,11 +93,18 @@ export interface ConditionResult {
 }
 
 /**
- * A BiddingRule whose matches() is derived from an array of named conditions.
- * CONSTRAINT: Never override matches() independently of conditions[].
+ * A BiddingRule whose matches() is derived from separate auction and hand conditions.
  * Always use the conditionedRule() factory to construct these.
+ *
+ * Auction/hand separation is enforced by convention + tests, not separate TypeScript
+ * types. Both arrays share RuleCondition because hybrid conditions (e.g., majorSupport)
+ * that check auction to resolve parameters but gate on hand properties must live in
+ * handConditions for inference engine access.
  */
 export interface ConditionedBiddingRule extends BiddingRule {
+  readonly auctionConditions: readonly RuleCondition[];
+  readonly handConditions: readonly RuleCondition[];
+  /** Flattened view for backward compat with evaluateConditions/buildExplanation. */
   readonly conditions: readonly RuleCondition[];
 }
 

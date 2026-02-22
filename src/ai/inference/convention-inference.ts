@@ -61,9 +61,10 @@ export function createConventionInferenceProvider(
         const ruleCall = tryGetRuleCall(conditioned);
         if (ruleCall && !callsMatch(ruleCall, entry.call)) continue;
 
-        // Extract hand-related inferences from all conditions
+        // Extract hand-related inferences from handConditions only
+        // (auction conditions never carry .inference metadata)
         const handInferences: HandInference[] = [];
-        for (const condition of conditioned.conditions) {
+        for (const condition of conditioned.handConditions) {
           const ci = extractInference(condition);
           if (ci) {
             const hi = conditionToHandInference(ci, seat, conditioned.name);

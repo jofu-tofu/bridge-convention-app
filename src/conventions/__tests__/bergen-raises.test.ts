@@ -72,7 +72,7 @@ describe("Bergen Raises deal constraints", () => {
     }
   });
 
-  test("[bridgebum/bergen] responder 6-12 HCP with 4+ major", () => {
+  test("[bridgebum/bergen] responder 6+ HCP with 4+ major (no upper cap)", () => {
     for (let i = 0; i < 20; i++) {
       const result = generateDeal(bergenDealConstraints);
       const responderHand = result.deal.hands[Seat.South];
@@ -80,7 +80,7 @@ describe("Bergen Raises deal constraints", () => {
       const shape = getSuitLength(responderHand);
 
       expect(hcp).toBeGreaterThanOrEqual(6);
-      expect(hcp).toBeLessThanOrEqual(12);
+      // No maxHcp cap — game raise (13+) needs to be reachable
       const hasSpades = shape[0]! >= 4;
       const hasHearts = shape[1]! >= 4;
       expect(hasSpades || hasHearts).toBe(true);

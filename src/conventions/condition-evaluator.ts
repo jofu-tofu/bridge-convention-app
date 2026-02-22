@@ -12,7 +12,8 @@ export function isConditionedRule(
   rule: BiddingRule,
 ): rule is ConditionedBiddingRule {
   return (
-    "conditions" in rule &&
+    "auctionConditions" in rule &&
+    "handConditions" in rule &&
     Array.isArray((rule as ConditionedBiddingRule).conditions)
   );
 }

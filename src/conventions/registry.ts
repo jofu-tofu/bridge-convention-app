@@ -5,6 +5,7 @@ import type {
   ConditionResult,
 } from "./types";
 import type { Call } from "../engine/types";
+import { isLegalCall } from "../engine/auction";
 import {
   isConditionedRule,
   evaluateConditions,
@@ -50,17 +51,24 @@ export function evaluateBiddingRules(
 ): BiddingRuleResult | null {
   for (const rule of rules) {
     if (rule.matches(context)) {
+      const call = rule.call(context);
+
+      // Skip rules that produce illegal bids (e.g., below current auction level)
+      if (!isLegalCall(context.auction, call, context.seat)) {
+        continue;
+      }
+
       if (isConditionedRule(rule)) {
         const conditionResults = evaluateConditions(rule, context);
         return {
-          call: rule.call(context),
+          call,
           rule: rule.name,
           explanation: buildExplanation(conditionResults),
           conditionResults,
         };
       }
       return {
-        call: rule.call(context),
+        call,
         rule: rule.name,
         explanation: rule.explanation,
       };

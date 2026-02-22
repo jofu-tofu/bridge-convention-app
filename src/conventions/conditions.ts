@@ -22,21 +22,27 @@ export function countAcesInHand(hand: Hand): number {
 // ─── conditionedRule factory ─────────────────────────────────
 
 /**
- * Build a ConditionedBiddingRule from named conditions.
+ * Build a ConditionedBiddingRule from separate auction and hand conditions.
  * matches() is auto-derived: all conditions must pass.
  * explanation is empty — use buildExplanation() at evaluation time.
  */
 export function conditionedRule(config: {
   readonly name: string;
-  readonly conditions: RuleCondition[];
+  readonly auctionConditions: RuleCondition[];
+  readonly handConditions: RuleCondition[];
   readonly call: (context: BiddingContext) => Call;
 }): ConditionedBiddingRule {
+  const allConditions = [...config.auctionConditions, ...config.handConditions];
   return {
     name: config.name,
     explanation: "",
-    conditions: config.conditions,
+    auctionConditions: config.auctionConditions,
+    handConditions: config.handConditions,
+    get conditions(): readonly RuleCondition[] {
+      return allConditions;
+    },
     matches(ctx: BiddingContext): boolean {
-      return config.conditions.every((c) => c.test(ctx));
+      return allConditions.every((c) => c.test(ctx));
     },
     call: config.call,
   };
@@ -403,6 +409,39 @@ export function partnerOpened(strain?: BidSuit): RuleCondition {
   };
 }
 
+/** Check if partner opened at a specific level and strain. */
+export function partnerOpenedAt(level: number, strain: BidSuit): RuleCondition {
+  return {
+    name: `partner-opened-${level}${strain}`,
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          return (
+            entry.seat === partner &&
+            entry.call.level === level &&
+            entry.call.strain === strain
+          );
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          if (entry.seat !== partner) return `Partner did not open`;
+          if (entry.call.level !== level || entry.call.strain !== strain) {
+            return `Partner opened ${entry.call.level}${entry.call.strain}, not ${level}${strain}`;
+          }
+          return `Partner opened ${level}${strain}`;
+        }
+      }
+      return "No opening bid found";
+    },
+  };
+}
+
 /** Check if partner bid a specific suit at any point. */
 export function partnerBidSuit(suit: BidSuit): RuleCondition {
   return {
@@ -541,6 +580,26 @@ export function noPriorBid(): RuleCondition {
     describe(ctx) {
       const hasBid = ctx.auction.entries.some((e) => e.call.type === "bid");
       return hasBid ? "Prior contract bid exists" : "No prior contract bids";
+    },
+  };
+}
+
+/** This seat has made at least one contract bid in the auction. */
+export function seatHasBid(): RuleCondition {
+  return {
+    name: "seat-has-bid",
+    test(ctx) {
+      return ctx.auction.entries.some(
+        (e) => e.call.type === "bid" && e.seat === ctx.seat,
+      );
+    },
+    describe(ctx) {
+      const hasBid = ctx.auction.entries.some(
+        (e) => e.call.type === "bid" && e.seat === ctx.seat,
+      );
+      return hasBid
+        ? "This seat has previously bid"
+        : "This seat has not bid yet";
     },
   };
 }

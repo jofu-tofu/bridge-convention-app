@@ -21,7 +21,9 @@ export async function startDrill(
   },
   rng?: () => number,
 ) {
-  const config = createDrillConfig(convention.id, userSeat);
+  const config = createDrillConfig(convention.id, userSeat, {
+    opponentBidding: true,
+  });
   const session = createDrillSession(config);
   const strategy = conventionToStrategy(convention);
   const constraints = rng

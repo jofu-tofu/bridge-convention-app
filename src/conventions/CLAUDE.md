@@ -88,6 +88,9 @@ index.ts (auto-registration entry point)
 ## Conditioned Rules
 
 - **`conditionedRule()` factory mandate.** All new rules MUST use `conditionedRule()` from `conditions.ts`. Never hand-build a `ConditionedBiddingRule` object (risks split-brain between `matches()` and `conditions[]`).
+- **Auction/hand condition split.** `conditionedRule()` requires explicit `auctionConditions` and `handConditions` arrays (both required, use `[]` if empty). The flattened `.conditions` getter provides backward compat for `evaluateConditions()` and `buildExplanation()`.
+- **Hybrid conditions belong in `handConditions`.** Conditions like `majorSupport()`, `gerberSignoffCondition()`, `advanceSupportFor()` that check auction state to resolve parameters but ultimately gate on hand properties belong in `handConditions`, not `auctionConditions`. The inference engine iterates only `handConditions` for `.inference` metadata.
+- **Auction conditions must NOT carry `.inference` metadata** — enforced by test in `conditions.test.ts`.
 - **`or()` always-evaluate invariant.** `or()` MUST evaluate all branches unconditionally — short-circuiting breaks the UI branch-highlighting feature. Max 4 branches, nesting depth ≤ 2.
 - **Imperative escape hatch.** A rule MAY stay as plain `BiddingRule` (with static `explanation`) if the declarative model cannot express its logic. All rules across 5 conventions use `conditionedRule()`. New conventions should use `conditionedRule()`.
 

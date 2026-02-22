@@ -705,20 +705,15 @@ describe("DONT overcaller bidding rules", () => {
   });
 
   test("[bridgebum/dont] rejects when North opens 1NT (wrong seat)", () => {
-    // Using North as dealer — the auction ["1NT"] starts from North, not East
+    // Using North as dealer — the auction ["1NT"] starts from North, not East.
+    // South can't double partner's (North's) bid — legality check catches this.
     const result = callFromRules(
       sixHeartsSingle,
       Seat.South,
       ["1NT"],
       Seat.North,
     );
-    // The auction pattern ["1NT"] still matches, but this tests that dealer context matters.
-    // Actually auctionMatchesExact only checks call patterns, not seats.
-    // The convention still matches because it only checks bid pattern.
-    // This is fine — seat isolation is handled by deal constraints, not bidding rules.
-    // So let's just verify the auction is well-formed.
-    // In practice, deal constraints ensure East is dealer and opens 1NT.
-    expect(result).not.toBeNull(); // rules match on pattern, seat isolation via deal constraints
+    expect(result).toBeNull();
   });
 });
 

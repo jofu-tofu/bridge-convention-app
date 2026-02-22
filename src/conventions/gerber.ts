@@ -64,7 +64,8 @@ export const gerberDealConstraints: DealConstraints = {
 
 const gerberAsk = conditionedRule({
   name: "gerber-ask",
-  conditions: [auctionMatches(["1NT", "P"]), hcpMin(13)],
+  auctionConditions: [auctionMatches(["1NT", "P"])],
+  handConditions: [hcpMin(13)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Clubs };
   },
@@ -72,7 +73,8 @@ const gerberAsk = conditionedRule({
 
 const gerberResponseZeroFour = conditionedRule({
   name: "gerber-response-zero-four",
-  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCountAny([0, 4])],
+  auctionConditions: [auctionMatches(["1NT", "P", "4C", "P"])],
+  handConditions: [aceCountAny([0, 4])],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Diamonds };
   },
@@ -80,7 +82,8 @@ const gerberResponseZeroFour = conditionedRule({
 
 const gerberResponseOne = conditionedRule({
   name: "gerber-response-one",
-  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCount(1)],
+  auctionConditions: [auctionMatches(["1NT", "P", "4C", "P"])],
+  handConditions: [aceCount(1)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Hearts };
   },
@@ -88,7 +91,8 @@ const gerberResponseOne = conditionedRule({
 
 const gerberResponseTwo = conditionedRule({
   name: "gerber-response-two",
-  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCount(2)],
+  auctionConditions: [auctionMatches(["1NT", "P", "4C", "P"])],
+  handConditions: [aceCount(2)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Spades };
   },
@@ -96,7 +100,8 @@ const gerberResponseTwo = conditionedRule({
 
 const gerberResponseThree = conditionedRule({
   name: "gerber-response-three",
-  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCount(3)],
+  auctionConditions: [auctionMatches(["1NT", "P", "4C", "P"])],
+  handConditions: [aceCount(3)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.NoTrump };
   },
@@ -104,7 +109,8 @@ const gerberResponseThree = conditionedRule({
 
 const gerberSignoff = conditionedRule({
   name: "gerber-signoff",
-  conditions: [gerberSignoffCondition()],
+  auctionConditions: [],
+  handConditions: [gerberSignoffCondition()], // Hybrid: checks auction to resolve aces, gates on hand
   call(ctx: BiddingContext): Call {
     const responderAces = countAces(ctx.hand);
     const openerAces = inferOpenerAces(ctx.auction, responderAces);

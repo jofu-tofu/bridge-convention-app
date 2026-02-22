@@ -44,8 +44,8 @@ export const staymanDealConstraints: DealConstraints = {
 
 const staymanAsk = conditionedRule({
   name: "stayman-ask",
-  conditions: [
-    auctionMatches(["1NT", "P"]),
+  auctionConditions: [auctionMatches(["1NT", "P"])],
+  handConditions: [
     hcpMin(8),
     anySuitMin(
       [
@@ -62,10 +62,8 @@ const staymanAsk = conditionedRule({
 
 const staymanResponseHearts = conditionedRule({
   name: "stayman-response-hearts",
-  conditions: [
-    auctionMatches(["1NT", "P", "2C", "P"]),
-    suitMin(1, "hearts", 4),
-  ],
+  auctionConditions: [auctionMatches(["1NT", "P", "2C", "P"])],
+  handConditions: [suitMin(1, "hearts", 4)],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Hearts };
   },
@@ -73,11 +71,8 @@ const staymanResponseHearts = conditionedRule({
 
 const staymanResponseSpades = conditionedRule({
   name: "stayman-response-spades",
-  conditions: [
-    auctionMatches(["1NT", "P", "2C", "P"]),
-    suitMin(0, "spades", 4),
-    suitBelow(1, "hearts", 4),
-  ],
+  auctionConditions: [auctionMatches(["1NT", "P", "2C", "P"])],
+  handConditions: [suitMin(0, "spades", 4), suitBelow(1, "hearts", 4)],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Spades };
   },
@@ -85,11 +80,8 @@ const staymanResponseSpades = conditionedRule({
 
 const staymanResponseDenial = conditionedRule({
   name: "stayman-response-denial",
-  conditions: [
-    auctionMatches(["1NT", "P", "2C", "P"]),
-    suitBelow(0, "spades", 4),
-    suitBelow(1, "hearts", 4),
-  ],
+  auctionConditions: [auctionMatches(["1NT", "P", "2C", "P"])],
+  handConditions: [suitBelow(0, "spades", 4), suitBelow(1, "hearts", 4)],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Diamonds };
   },
@@ -97,12 +89,14 @@ const staymanResponseDenial = conditionedRule({
 
 const staymanRebidMajorFit = conditionedRule({
   name: "stayman-rebid-major-fit",
-  conditions: [
+  auctionConditions: [
     auctionMatchesAny([
       ["1NT", "P", "2C", "P", "2H", "P"],
       ["1NT", "P", "2C", "P", "2S", "P"],
     ]),
-    // Custom condition: responder has 4+ in the shown major
+  ],
+  handConditions: [
+    // Hybrid: checks auction to resolve suit, gates on hand length
     {
       name: "fit-in-shown-major",
       test(ctx) {
@@ -152,13 +146,15 @@ const staymanRebidMajorFit = conditionedRule({
 
 const staymanRebidNoFit = conditionedRule({
   name: "stayman-rebid-no-fit",
-  conditions: [
+  auctionConditions: [
     auctionMatchesAny([
       ["1NT", "P", "2C", "P", "2H", "P"],
       ["1NT", "P", "2C", "P", "2S", "P"],
       ["1NT", "P", "2C", "P", "2D", "P"],
     ]),
-    // Custom condition: no fit with shown suit (or denial)
+  ],
+  handConditions: [
+    // Hybrid: checks auction to resolve suit, gates on hand length
     {
       name: "no-major-fit",
       test(ctx) {

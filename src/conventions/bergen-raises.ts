@@ -17,7 +17,7 @@ import {
 
 // ─── Deal Constraints ─────────────────────────────────────────
 
-/** Bergen Raises deal constraints: opener 12-21 HCP with 5+ major, responder 6-12 HCP with 4+ major */
+/** Bergen Raises deal constraints: opener 12-21 HCP with 5+ major, responder 6+ HCP with 4+ major */
 export const bergenDealConstraints: DealConstraints = {
   seats: [
     {
@@ -29,7 +29,6 @@ export const bergenDealConstraints: DealConstraints = {
     {
       seat: Seat.South,
       minHcp: 6,
-      maxHcp: 12,
       minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 },
     },
   ],
@@ -40,14 +39,13 @@ export const bergenDealConstraints: DealConstraints = {
 
 const bergenGameRaise = conditionedRule({
   name: "bergen-game-raise",
-  conditions: [
+  auctionConditions: [
     auctionMatchesAny([
       ["1H", "P"],
       ["1S", "P"],
     ]),
-    hcpMin(13),
-    majorSupport(),
   ],
+  handConditions: [hcpMin(13), majorSupport()],
   call(ctx: BiddingContext): Call {
     if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
       return { type: "bid", level: 4, strain: BidSuit.Hearts };
@@ -58,14 +56,13 @@ const bergenGameRaise = conditionedRule({
 
 const bergenLimitRaise = conditionedRule({
   name: "bergen-limit-raise",
-  conditions: [
+  auctionConditions: [
     auctionMatchesAny([
       ["1H", "P"],
       ["1S", "P"],
     ]),
-    hcpRange(10, 12),
-    majorSupport(),
   ],
+  handConditions: [hcpRange(10, 12), majorSupport()],
   call(): Call {
     return { type: "bid", level: 3, strain: BidSuit.Diamonds };
   },
@@ -73,14 +70,13 @@ const bergenLimitRaise = conditionedRule({
 
 const bergenConstructiveRaise = conditionedRule({
   name: "bergen-constructive-raise",
-  conditions: [
+  auctionConditions: [
     auctionMatchesAny([
       ["1H", "P"],
       ["1S", "P"],
     ]),
-    hcpRange(7, 9),
-    majorSupport(),
   ],
+  handConditions: [hcpRange(7, 9), majorSupport()],
   call(): Call {
     return { type: "bid", level: 3, strain: BidSuit.Clubs };
   },
@@ -88,14 +84,13 @@ const bergenConstructiveRaise = conditionedRule({
 
 const bergenPreemptiveRaise = conditionedRule({
   name: "bergen-preemptive-raise",
-  conditions: [
+  auctionConditions: [
     auctionMatchesAny([
       ["1H", "P"],
       ["1S", "P"],
     ]),
-    hcpMax(6),
-    majorSupport(),
   ],
+  handConditions: [hcpMax(6), majorSupport()],
   call(ctx: BiddingContext): Call {
     if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
       return { type: "bid", level: 3, strain: BidSuit.Hearts };

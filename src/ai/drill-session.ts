@@ -2,6 +2,7 @@ import type { DrillConfig, DrillSession } from "./types";
 import type { BidResult } from "../shared/types";
 import type { Hand, Auction, Seat } from "../engine/types";
 import { evaluateHand } from "../engine/hand-evaluator";
+import { isLegalCall } from "../engine/auction";
 
 /**
  * Creates a DrillSession that manages bidding for a drill.
@@ -36,6 +37,15 @@ export function createDrillSession(config: DrillConfig): DrillSession {
           call: { type: "pass" },
           ruleName: null,
           explanation: "No matching rule — defaulting to pass",
+        };
+      }
+
+      // Validate the suggested call is legal in the current auction
+      if (!isLegalCall(auction, result.call, seat)) {
+        return {
+          call: { type: "pass" },
+          ruleName: null,
+          explanation: `Convention suggested illegal bid — defaulting to pass`,
         };
       }
 

@@ -373,6 +373,35 @@ describe("SAYC edge cases", () => {
     expect(result!.rule).toBe("sayc-open-1s");
   });
 
+  test("sayc-respond-1nt-stayman does NOT fire after partner opens 2NT", () => {
+    // 10 HCP, 4 hearts — would be Stayman after 1NT but NOT after 2NT
+    const responder = hand(
+      "SA", "S5", "S2",        // 3 spades, 4 HCP
+      "HK", "HQ", "H6", "H2", // 4 hearts, 5 HCP
+      "DJ", "D7", "D3",        // 3 diamonds, 1 HCP
+      "C5", "C3", "C2",        // 3 clubs, 0 HCP
+    );
+    // 10 HCP, 4 hearts — Stayman candidate
+    const result = callFromRules(responder, Seat.South, ["2NT", "P"]);
+    if (result) {
+      expect(result.rule).not.toBe("sayc-respond-1nt-stayman");
+    }
+  });
+
+  test("sayc-respond-1nt-pass does NOT fire after partner opens 2NT", () => {
+    // 5 HCP — would pass 1NT but should not match 1NT-pass rule after 2NT
+    const responder = hand(
+      "S8", "S5", "S2",        // 3 spades, 0 HCP
+      "HK", "HQ", "H6", "H2", // 4 hearts, 5 HCP
+      "DT", "D7", "D3",        // 3 diamonds, 0 HCP
+      "C5", "C3", "C2",        // 3 clubs, 0 HCP
+    );
+    const result = callFromRules(responder, Seat.South, ["2NT", "P"]);
+    if (result) {
+      expect(result.rule).not.toBe("sayc-respond-1nt-pass");
+    }
+  });
+
   test("2NT opening: 20-21 balanced", () => {
     // 20 HCP, 4-3-3-3 balanced
     const opener = hand(

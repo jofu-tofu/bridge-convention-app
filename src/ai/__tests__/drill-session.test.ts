@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { createDrillSession } from "../drill-session";
 import type { DrillConfig } from "../types";
 import type { BiddingStrategy, BidResult } from "../../shared/types";
-import { Seat } from "../../engine/types";
+import { Seat, BidSuit } from "../../engine/types";
+import type { Auction } from "../../engine/types";
 import { createHand, createDeck } from "../../engine/constants";
 
 function makeHand() {
@@ -84,6 +85,41 @@ describe("createDrillSession", () => {
     expect(result!.call).toEqual({ type: "pass" });
     expect(result!.ruleName).toBeNull();
     expect(result!.explanation).toBe("No matching rule — defaulting to pass");
+  });
+
+  it("falls back to pass when strategy suggests an illegal bid", () => {
+    // Strategy suggests 1NT, but auction already has a 2C bid — 1NT is illegal
+    const illegalResult: BidResult = {
+      call: { type: "bid", level: 1, strain: BidSuit.NoTrump },
+      ruleName: "sayc-respond-1nt",
+      explanation: "1NT response",
+    };
+    const strategy = makeStrategy(illegalResult);
+
+    const config: DrillConfig = {
+      conventionId: "test",
+      userSeat: Seat.South,
+      seatStrategies: {
+        [Seat.North]: makeStrategy(null),
+        [Seat.East]: strategy,
+        [Seat.South]: "user",
+        [Seat.West]: makeStrategy(null),
+      },
+    };
+
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.North, call: { type: "bid", level: 2, strain: BidSuit.Clubs } },
+      ],
+      isComplete: false,
+    };
+
+    const session = createDrillSession(config);
+    // East's turn — strategy suggests 1NT which is below the current 2C bid
+    const result = session.getNextBid(Seat.East, makeHand(), auction);
+    expect(result).not.toBeNull();
+    expect(result!.call).toEqual({ type: "pass" });
+    expect(result!.explanation).toContain("illegal");
   });
 
   it("isUserSeat returns true for user seat only", () => {
