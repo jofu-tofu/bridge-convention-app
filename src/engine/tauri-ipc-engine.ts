@@ -95,8 +95,8 @@ export class TauriIpcEngine implements EnginePort {
     return invoke<Seat>("get_trick_winner", { trick });
   }
 
-  async solveDeal(_deal: Deal): Promise<DDSolution> {
-    throw new Error("DDS not available in V1");
+  async solveDeal(deal: Deal): Promise<DDSolution> {
+    return invoke<DDSolution>("solve_deal", { deal });
   }
 
   async suggestPlay(

@@ -5,6 +5,7 @@ export type {
   InferenceConfig,
   SuitInference,
   ConditionInference,
+  InferenceSnapshot,
 } from "./types";
 
 export { createNaturalInferenceProvider } from "./natural-inference";

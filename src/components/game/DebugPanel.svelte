@@ -1,3 +1,4 @@
+<!-- Bidding-phase suggested-bid display only. For full debug drawer, see DebugDrawer.svelte. -->
 <script lang="ts">
   import type { ConventionConfig } from "../../conventions/types";
   import type { Hand, Auction, Seat } from "../../engine/types";

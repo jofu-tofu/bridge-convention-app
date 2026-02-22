@@ -8,6 +8,7 @@ import type {
   PlayedCard,
   Trick,
   Hand,
+  DDSolution,
 } from "../engine/types";
 import { BidSuit, Suit, Seat } from "../engine/types";
 import type { DrillSession } from "../ai/types";
@@ -20,6 +21,7 @@ import type {
 } from "../shared/types";
 import type { InferredHoldings } from "../shared/types";
 import type { InferenceEngine } from "../ai/inference/inference-engine";
+import type { InferenceSnapshot } from "../ai/inference/types";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { randomPlayStrategy } from "../ai/play-strategy";
@@ -37,6 +39,13 @@ export interface BidHistoryEntry {
   readonly explanation: string;
   readonly isUser: boolean;
   readonly conditions?: readonly ConditionDetail[];
+}
+
+export interface PlayLogEntry {
+  readonly seat: Seat;
+  readonly card: Card;
+  readonly reason: string;
+  readonly trickIndex: number;
 }
 
 export interface BidFeedback {
@@ -113,6 +122,53 @@ export function createGameStore(engine: EnginePort) {
   let playInferences = $state<Record<Seat, InferredHoldings> | null>(null);
   let activePlayStrategy = $state<PlayStrategy | null>(null);
 
+  // Always-on: playLog is not DEV-gated. Resets per drill, max ~52 entries.
+  // Used by DebugDrawer now and future play review features.
+  let playLog = $state<PlayLogEntry[]>([]);
+
+  // DDS analysis state
+  let ddsSolution = $state<DDSolution | null>(null);
+  let ddsSolving = $state(false);
+  let ddsError = $state<string | null>(null);
+
+  const DDS_TIMEOUT_MS = 10_000;
+
+  async function triggerDDSSolve() {
+    if (!deal || ddsSolving) return;
+    const solvingDeal = deal;
+    ddsSolving = true;
+    ddsError = null;
+    ddsSolution = null;
+
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("DDS analysis timed out")), DDS_TIMEOUT_MS),
+      );
+      const result = await Promise.race([
+        engine.solveDeal(solvingDeal),
+        timeoutPromise,
+      ]);
+      // Guard against stale results
+      if (deal === solvingDeal) {
+        ddsSolution = result;
+      }
+    } catch (err: unknown) {
+      if (deal === solvingDeal) {
+        ddsError = err instanceof Error ? err.message : String(err);
+      }
+    } finally {
+      if (deal === solvingDeal) {
+        ddsSolving = false;
+      }
+    }
+  }
+
+  /** Transition to EXPLANATION phase and trigger DDS solve. */
+  function transitionToExplanation() {
+    phase = "EXPLANATION";
+    triggerDDSSolve();
+  }
+
   const isUserTurn = $derived(
     currentTurn !== null &&
       drillSession !== null &&
@@ -178,10 +234,11 @@ export function createGameStore(engine: EnginePort) {
   function selectAiCard(seat: Seat, legalCards: readonly Card[]): Card {
     const remaining = getRemainingCards(seat);
     const ctx = buildPlayContext(seat, { cards: remaining }, legalCards);
-    if (activePlayStrategy && contract) {
-      return activePlayStrategy.suggest(ctx).card;
-    }
-    return randomPlayStrategy.suggest(ctx).card;
+    const result = (activePlayStrategy && contract)
+      ? activePlayStrategy.suggest(ctx)
+      : randomPlayStrategy.suggest(ctx);
+    playLog = [...playLog, { seat, card: result.card, reason: result.reason, trickIndex: tricks.length }];
+    return result.card;
   }
 
   async function completeAuction() {
@@ -197,14 +254,18 @@ export function createGameStore(engine: EnginePort) {
       if (userSeat && partnerSeat(result.declarer) === userSeat) {
         effectiveUserSeat = userSeat; // default to South, may be swapped
         phase = "DECLARER_PROMPT";
-      } else {
+      } else if (userSeat && result.declarer === userSeat) {
         // User is declarer — skip play, go straight to review
         effectiveUserSeat = userSeat;
-        phase = "EXPLANATION";
+        transitionToExplanation();
+      } else {
+        // E/W declares — offer user the option to defend
+        effectiveUserSeat = userSeat;
+        phase = "DECLARER_PROMPT";
       }
     } else {
       // Passed out — skip to explanation
-      phase = "EXPLANATION";
+      transitionToExplanation();
     }
   }
 
@@ -216,7 +277,18 @@ export function createGameStore(engine: EnginePort) {
 
   function declineDeclarerSwap() {
     // Skip play phase, go straight to review
-    phase = "EXPLANATION";
+    transitionToExplanation();
+  }
+
+  function acceptDefend() {
+    if (!contract) return;
+    // User stays as South (defender) — no seat swap needed
+    startPlay();
+  }
+
+  function declineDefend() {
+    // Skip play phase, go straight to review
+    transitionToExplanation();
   }
 
   function startPlay() {
@@ -358,7 +430,7 @@ export function createGameStore(engine: EnginePort) {
       deal.vulnerability,
     );
     score = result;
-    phase = "EXPLANATION";
+    transitionToExplanation();
   }
 
   async function skipToReview() {
@@ -518,6 +590,35 @@ export function createGameStore(engine: EnginePort) {
     get effectiveUserSeat() {
       return effectiveUserSeat;
     },
+    // DDS analysis state
+    get ddsSolution() {
+      return ddsSolution;
+    },
+    get ddsSolving() {
+      return ddsSolving;
+    },
+    get ddsError() {
+      return ddsError;
+    },
+    /** True when DECLARER_PROMPT is showing because E/W declares (user defends). */
+    get isDefenderPrompt() {
+      if (!contract || !userSeat) return false;
+      return (
+        contract.declarer !== userSeat &&
+        partnerSeat(contract.declarer) !== userSeat
+      );
+    },
+
+    // --- Debug observability getters ---
+    get playLog() {
+      return playLog;
+    },
+    get playInferences() {
+      return playInferences;
+    },
+    get inferenceTimeline(): readonly InferenceSnapshot[] {
+      return nsInferenceEngine?.getTimeline() ?? [];
+    },
 
     /** Get legal plays for a seat based on current trick context. */
     async getLegalPlaysForSeat(seat: Seat): Promise<Card[]> {
@@ -533,6 +634,8 @@ export function createGameStore(engine: EnginePort) {
     skipToReview,
     acceptDeclarerSwap,
     declineDeclarerSwap,
+    acceptDefend,
+    declineDefend,
 
     async startDrill(
       newDeal: Deal,
@@ -559,11 +662,17 @@ export function createGameStore(engine: EnginePort) {
       trumpSuit = undefined;
       effectiveUserSeat = null;
 
+      // Reset DDS state
+      ddsSolution = null;
+      ddsSolving = false;
+      ddsError = null;
+
       // Set up play strategy from drill config
       activePlayStrategy = session.config.playStrategy ?? null;
 
       // Set up inference engine if configured
       playInferences = null;
+      playLog = [];
       if (session.config.nsInferenceConfig) {
         const { createInferenceEngine } = await import("../ai/inference/inference-engine");
         nsInferenceEngine = createInferenceEngine(
@@ -689,7 +798,7 @@ export function createGameStore(engine: EnginePort) {
     /** Skip directly to explanation from bid feedback. */
     async skipFromFeedback() {
       bidFeedback = null;
-      phase = "EXPLANATION";
+      transitionToExplanation();
     },
 
     async reset() {
@@ -719,6 +828,11 @@ export function createGameStore(engine: EnginePort) {
       nsInferenceEngine = null;
       playInferences = null;
       activePlayStrategy = null;
+      playLog = [];
+      // Reset DDS state
+      ddsSolution = null;
+      ddsSolving = false;
+      ddsError = null;
     },
   };
 }

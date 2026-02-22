@@ -23,12 +23,15 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `dismissBidFeedback()` — clears wrong bid feedback and resumes auction (runs AI bids)
 - `skipFromFeedback()` — clears feedback and jumps directly to EXPLANATION phase
 - `runAiBids()` — async loop: AI bids until user seat or auction complete
-- `completeAuction()` — gets contract, transitions to DECLARER_PROMPT (when user is dummy) or EXPLANATION (when user is declarer or for passout)
+- `completeAuction()` — gets contract, transitions to DECLARER_PROMPT (when user is dummy OR E/W declares) or EXPLANATION (when user is declarer or for passout)
 
-**Game store key methods (declarer prompt):**
+**Game store key methods (declarer/defender prompt):**
 
 - `acceptDeclarerSwap()` — sets `effectiveUserSeat` to `contract.declarer` (North), calls `startPlay()`. Table rotates 180°.
 - `declineDeclarerSwap()` — skips play phase, goes straight to EXPLANATION. Used as "Skip to Review" in UI.
+- `acceptDefend()` — keeps `effectiveUserSeat` as South (defender), calls `startPlay()`. No table rotation.
+- `declineDefend()` — skips play phase, goes straight to EXPLANATION.
+- `isDefenderPrompt` (getter) — true when DECLARER_PROMPT is showing because E/W declares (user defends).
 
 **Game store key methods (play):**
 
@@ -36,8 +39,10 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `userPlayCard(card, seat)` — validates legality and seat control, adds to trick, triggers AI plays
 - `runAiPlays()` — async loop: AI plays with 500ms delay until user's turn or trick complete
 - `completeTrick()` — determines trick winner, updates counts, pauses 1s for UI
-- `completePlay()` — calculates score via engine, transitions to EXPLANATION
+- `completePlay()` — calculates score via engine, transitions to EXPLANATION via `transitionToExplanation()`
 - `skipToReview()` — sets `playAborted` flag, synchronously finishes all remaining tricks
+- `transitionToExplanation()` — sets phase to EXPLANATION and triggers async DDS solve
+- `triggerDDSSolve()` — calls `engine.solveDeal(deal)` with 10s timeout, stale-result guard, sets `ddsSolving`/`ddsSolution`/`ddsError`
 - `getLegalPlaysForSeat(seat)` — returns legal cards for a seat in current trick context
 - `getRemainingCards(seat)` — returns hand minus already-played cards
 
@@ -48,11 +53,15 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `setDevSeed(seed)` — sets seed and resets deal count to 0
 - `advanceDevDeal()` — increments deal count
 
-**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry`, `GamePhase` (includes `"DECLARER_PROMPT"`)
+**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry`, `GamePhase` (includes `"DECLARER_PROMPT"`), `PlayLogEntry` (seat, card, reason, trickIndex)
 
 **Exported helper:** `seatController(seat, declarer, userSeat)` → `'user' | 'ai'`
 
 **Key state:** `effectiveUserSeat` — defaults to `userSeat` (South), set to North when user accepts declarer swap. Used by `isUserControlled()` during play. Reset to `null` by `startDrill()`.
+
+**Debug observability getters (game store):** `playLog` (always-on array of PlayLogEntry, resets per drill), `playInferences` (Record<Seat, InferredHoldings> after auction), `inferenceTimeline` (readonly InferenceSnapshot[] from inference engine).
+
+**App store debug state:** `debugPanelOpen` (boolean), `toggleDebugPanel()`, `setDebugPanel(open)`. Set via `?debug=true` URL param in dev mode.
 
 **Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
 

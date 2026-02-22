@@ -7,6 +7,7 @@ export function createAppStore() {
   let selectedConvention = $state<ConventionConfig | null>(null);
   let devSeed = $state<number | null>(null);
   let devDealCount = $state(0);
+  let debugPanelOpen = $state(false);
 
   return {
     get screen() {
@@ -39,6 +40,18 @@ export function createAppStore() {
 
     advanceDevDeal() {
       devDealCount++;
+    },
+
+    get debugPanelOpen() {
+      return debugPanelOpen;
+    },
+
+    toggleDebugPanel() {
+      debugPanelOpen = !debugPanelOpen;
+    },
+
+    setDebugPanel(open: boolean) {
+      debugPanelOpen = open;
     },
   };
 }

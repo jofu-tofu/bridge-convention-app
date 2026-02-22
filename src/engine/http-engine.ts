@@ -106,8 +106,8 @@ export class HttpEngine implements EnginePort {
     return this.post<Seat>("get_trick_winner", { trick });
   }
 
-  async solveDeal(_deal: Deal): Promise<DDSolution> {
-    throw new Error("DDS not available in V1");
+  async solveDeal(deal: Deal): Promise<DDSolution> {
+    return this.post<DDSolution>("solve_deal", { deal });
   }
 
   async suggestPlay(

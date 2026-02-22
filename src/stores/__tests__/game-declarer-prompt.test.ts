@@ -152,15 +152,46 @@ describe("DECLARER_PROMPT phase", () => {
     expect(store.phase).toBe("EXPLANATION");
   });
 
-  it("goes directly to EXPLANATION when East declares", async () => {
+  it("enters DECLARER_PROMPT when East declares (user=South is defender)", async () => {
     createEngineWithDeclarer(Seat.East);
     await startDrillWithTimers();
-    expect(store.phase).toBe("EXPLANATION");
+    expect(store.phase).toBe("DECLARER_PROMPT");
   });
 
-  it("goes directly to EXPLANATION when West declares", async () => {
+  it("enters DECLARER_PROMPT when West declares (user=South is defender)", async () => {
     createEngineWithDeclarer(Seat.West);
     await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+  });
+
+  it("isDefenderPrompt is true when E/W declares", async () => {
+    createEngineWithDeclarer(Seat.East);
+    await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+    expect(store.isDefenderPrompt).toBe(true);
+  });
+
+  it("isDefenderPrompt is false when North declares (user is dummy)", async () => {
+    createEngineWithDeclarer(Seat.North);
+    await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+    expect(store.isDefenderPrompt).toBe(false);
+  });
+
+  it("acceptDefend starts play with effectiveUserSeat remaining South", async () => {
+    createEngineWithDeclarer(Seat.East);
+    await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+    store.acceptDefend();
+    expect(store.effectiveUserSeat).toBe(Seat.South);
+    expect(store.phase).toBe("PLAYING");
+  });
+
+  it("declineDefend skips to EXPLANATION phase", async () => {
+    createEngineWithDeclarer(Seat.West);
+    await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+    store.declineDefend();
     expect(store.phase).toBe("EXPLANATION");
   });
 

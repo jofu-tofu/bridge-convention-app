@@ -1,5 +1,6 @@
 import type { InferenceConfig, InferredHoldings, HandInference } from "./types";
 import type { Auction, AuctionEntry, Seat } from "../../engine/types";
+import type { InferenceSnapshot } from "./types";
 import { Seat as SeatEnum } from "../../engine/types";
 import { partnerSeat } from "../../engine/constants";
 import { mergeInferences } from "./merge";
@@ -23,6 +24,8 @@ export interface InferenceEngine {
   processBid(entry: AuctionEntry, auctionBefore: Auction): void;
   /** Get merged inferences for all seats. */
   getInferences(): Record<Seat, InferredHoldings>;
+  /** Get per-bid inference timeline snapshots. */
+  getTimeline(): readonly InferenceSnapshot[];
   /** Clear all accumulated inferences. */
   reset(): void;
 }
@@ -43,6 +46,18 @@ export function createInferenceEngine(
     [SeatEnum.West]: [],
   };
 
+  // Always-on: timeline resets per engine reset, max ~12 entries per auction.
+  // Used by DebugDrawer now and future play review features.
+  const timeline: InferenceSnapshot[] = [];
+
+  function computeInferences(): Record<Seat, InferredHoldings> {
+    const result = {} as Record<Seat, InferredHoldings>;
+    for (const seat of ALL_SEATS) {
+      result[seat] = mergeInferences(seat, rawInferences[seat]);
+    }
+    return result;
+  }
+
   return {
     processBid(entry: AuctionEntry, auctionBefore: Auction): void {
       const bidderSeat = entry.seat;
@@ -50,32 +65,35 @@ export function createInferenceEngine(
         ? config.ownPartnership
         : config.opponentPartnership;
 
+      let newInference: HandInference | null = null;
       try {
-        const inference = provider.inferFromBid(
+        newInference = provider.inferFromBid(
           entry,
           auctionBefore,
           bidderSeat,
-        );
-        if (inference) {
-          rawInferences[bidderSeat].push(inference);
+        ) ?? null;
+        if (newInference) {
+          rawInferences[bidderSeat].push(newInference);
         }
       } catch {
         // Inference errors are silently swallowed — never thrown to callers
       }
+      timeline.push({ entry, newInference, cumulativeInferences: computeInferences() });
     },
 
     getInferences(): Record<Seat, InferredHoldings> {
-      const result = {} as Record<Seat, InferredHoldings>;
-      for (const seat of ALL_SEATS) {
-        result[seat] = mergeInferences(seat, rawInferences[seat]);
-      }
-      return result;
+      return computeInferences();
+    },
+
+    getTimeline(): readonly InferenceSnapshot[] {
+      return timeline;
     },
 
     reset(): void {
       for (const seat of ALL_SEATS) {
         rawInferences[seat] = [];
       }
+      timeline.length = 0;
     },
   };
 }

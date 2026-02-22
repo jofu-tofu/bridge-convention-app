@@ -77,6 +77,37 @@ export function evaluateBiddingRules(
   return null;
 }
 
+export interface DebugRuleResult {
+  readonly ruleName: string;
+  readonly matched: boolean;
+  readonly isLegal: boolean;
+  readonly call?: Call;
+  readonly conditionResults?: readonly ConditionResult[];
+}
+
+/** Evaluate ALL rules against a context, returning results for every rule (not just first match). */
+export function evaluateAllBiddingRules(
+  rules: readonly BiddingRule[],
+  context: BiddingContext,
+): DebugRuleResult[] {
+  return rules.map((rule) => {
+    const matched = rule.matches(context);
+    let isLegal = false;
+    let call: Call | undefined;
+
+    if (matched) {
+      call = rule.call(context);
+      isLegal = isLegalCall(context.auction, call, context.seat);
+    }
+
+    const conditionResults = isConditionedRule(rule)
+      ? evaluateConditions(rule, context)
+      : undefined;
+
+    return { ruleName: rule.name, matched, isLegal, call, conditionResults };
+  });
+}
+
 export function clearRegistry(): void {
   registry.clear();
 }

@@ -43,6 +43,11 @@
         }
       }
 
+      const debugParam = params.get("debug");
+      if (debugParam === "true") {
+        appStore.setDebugPanel(true);
+      }
+
       const conventionParam = params.get("convention");
       if (conventionParam) {
         try {

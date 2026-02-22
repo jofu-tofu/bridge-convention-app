@@ -10,6 +10,7 @@
   import { partnerSeat } from "../../../engine/constants";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
+  import HandFan from "../../game/HandFan.svelte";
   import TrickArea from "../../game/TrickArea.svelte";
   import Button from "../../shared/Button.svelte";
   import ContractDisplay from "./ContractDisplay.svelte";
@@ -17,6 +18,7 @@
   import BiddingSidePanel from "./BiddingSidePanel.svelte";
   import PlaySidePanel from "./PlaySidePanel.svelte";
   import ReviewSidePanel from "./ReviewSidePanel.svelte";
+  import DebugDrawer from "../../game/DebugDrawer.svelte";
 
   const DEV = import.meta.env.DEV;
 
@@ -28,6 +30,7 @@
 
   let dealNumber = $state(0);
   let playLegalPlays = $state<CardType[]>([]);
+  let showAllCards = $state(false);
 
   // Table rotation: only when effectiveUserSeat is exactly North (declarer swap accepted)
   const rotated = $derived(gameStore.effectiveUserSeat === Seat.North);
@@ -60,6 +63,7 @@
   async function handleNextDeal() {
     const convention = appStore.selectedConvention;
     if (!convention) return;
+    showAllCards = false;
     dealNumber++;
     await startDrill(engine, convention, userSeat, gameStore, makeDevRng());
   }
@@ -121,11 +125,17 @@
       };
     }
     if (gameStore.phase === "DECLARER_PROMPT") {
-      return {
-        label: "Declarer",
-        color: "bg-teal-600",
-        textColor: "text-teal-100",
-      };
+      return gameStore.isDefenderPrompt
+        ? {
+            label: "Defend",
+            color: "bg-amber-600",
+            textColor: "text-amber-100",
+          }
+        : {
+            label: "Declarer",
+            color: "bg-teal-600",
+            textColor: "text-teal-100",
+          };
     }
     if (gameStore.phase === "PLAYING") {
       return {
@@ -203,7 +213,21 @@
           {phaseInfo.label}
         </span>
       </div>
-      <span class="text-text-secondary text-base">Deal #{dealNumber}</span>
+      <div class="flex items-center gap-3">
+        <span class="text-text-secondary text-base">Deal #{dealNumber}</span>
+        {#if DEV}
+          <button
+            class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
+            onclick={() => appStore.toggleDebugPanel()}
+            aria-label="Toggle debug panel"
+            data-testid="debug-toggle"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+          </button>
+        {/if}
+      </div>
     </header>
 
     {#if gameStore.phase === "BIDDING"}
@@ -256,7 +280,7 @@
           <BridgeTable
             hands={gameStore.deal.hands}
             {userSeat}
-            dummySeat={gameStore.contract?.declarer}
+            dummySeat={gameStore.isDefenderPrompt ? undefined : gameStore.contract?.declarer}
           >
             <div class="flex flex-col gap-3 items-center">
               <div
@@ -266,22 +290,41 @@
                   <ContractDisplay contract={gameStore.contract} size="lg" />
                 {/if}
                 <p class="text-text-secondary text-sm mb-3 mt-1">
-                  You are dummy. Play as {gameStore.contract?.declarer ??
-                    "North"} (declarer)?
+                  {#if gameStore.isDefenderPrompt}
+                    Opponents won the contract. Defend as {userSeat}?
+                  {:else}
+                    You are dummy. Play as {gameStore.contract?.declarer ??
+                      "North"} (declarer)?
+                  {/if}
                 </p>
                 <div class="flex gap-3 justify-center">
-                  <Button
-                    variant="primary"
-                    onclick={() => gameStore.acceptDeclarerSwap()}
-                  >
-                    Play as Declarer
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onclick={() => gameStore.declineDeclarerSwap()}
-                  >
-                    Skip to Review
-                  </Button>
+                  {#if gameStore.isDefenderPrompt}
+                    <Button
+                      variant="primary"
+                      onclick={() => gameStore.acceptDefend()}
+                    >
+                      Play as Defender
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onclick={() => gameStore.declineDefend()}
+                    >
+                      Skip to Review
+                    </Button>
+                  {:else}
+                    <Button
+                      variant="primary"
+                      onclick={() => gameStore.acceptDeclarerSwap()}
+                    >
+                      Play as Declarer
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onclick={() => gameStore.declineDeclarerSwap()}
+                    >
+                      Skip to Review
+                    </Button>
+                  {/if}
                 </div>
               </div>
               <div
@@ -341,19 +384,74 @@
           ? 'flex-row'
           : 'flex-col'} overflow-hidden"
       >
-        <ScaledTableArea scale={tableScale} origin={tableOrigin}>
-          <BridgeTable hands={gameStore.deal.hands} {userSeat}>
-            <div
-              class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
-            >
-              <AuctionTable
-                entries={gameStore.auction.entries}
-                dealer={gameStore.deal.dealer}
-                compact
-              />
+        {#if showAllCards}
+          <div class="flex-1 flex flex-col gap-3 p-4 overflow-auto min-w-0">
+            <div class="flex items-center justify-between">
+              <div
+                class="bg-bg-card rounded-[--radius-lg] p-2 border border-border-subtle shadow-md"
+              >
+                <AuctionTable
+                  entries={gameStore.auction.entries}
+                  dealer={gameStore.deal.dealer}
+                  compact
+                />
+              </div>
+              <button
+                type="button"
+                class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[44px] rounded-[--radius-md] border border-border-subtle bg-bg-card/80 shrink-0"
+                onclick={() => (showAllCards = !showAllCards)}
+              >
+                Hide Hands
+              </button>
             </div>
-          </BridgeTable>
-        </ScaledTableArea>
+            <div
+              class="grid grid-cols-2 gap-3"
+              style="--card-width: 52px; --card-height: 73px; --card-overlap-h: -30px;"
+            >
+              {#each [Seat.North, Seat.East, Seat.South, Seat.West] as seat (seat)}
+                <section
+                  class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle"
+                  aria-label="{seat} hand"
+                >
+                  <div class="flex items-center gap-2 mb-2">
+                    <span
+                      class="text-sm font-bold tracking-wide px-2 py-0.5 rounded {seat ===
+                      userSeat
+                        ? 'bg-blue-600/30 text-blue-200'
+                        : 'bg-bg-elevated text-text-primary'}"
+                    >
+                      {seat}
+                    </span>
+                  </div>
+                  <HandFan cards={gameStore.deal.hands[seat].cards} faceUp />
+                </section>
+              {/each}
+            </div>
+          </div>
+        {:else}
+          <ScaledTableArea scale={tableScale} origin={tableOrigin}>
+            <BridgeTable hands={gameStore.deal.hands} {userSeat}>
+              <div class="flex flex-col gap-2 items-center">
+                <div
+                  class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
+                >
+                  <AuctionTable
+                    entries={gameStore.auction.entries}
+                    dealer={gameStore.deal.dealer}
+                    compact
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[44px] rounded-[--radius-md] border border-border-subtle bg-bg-card/80"
+                  onclick={() => (showAllCards = !showAllCards)}
+                >
+                  Show All Hands
+                </button>
+              </div>
+            </BridgeTable>
+          </ScaledTableArea>
+        {/if}
 
         <div class={sidePanelClass}>
           <ReviewSidePanel
@@ -361,11 +459,19 @@
             score={gameStore.score}
             declarerTricksWon={gameStore.declarerTricksWon}
             bidHistory={gameStore.bidHistory}
+            ddsSolution={gameStore.ddsSolution}
+            ddsSolving={gameStore.ddsSolving}
+            ddsError={gameStore.ddsError}
+            vulnerability={gameStore.deal.vulnerability}
             onNextDeal={handleNextDeal}
             onBackToMenu={handleBackToMenu}
           />
         </div>
       </div>
+    {/if}
+
+    {#if DEV}
+      <DebugDrawer open={appStore.debugPanelOpen} />
     {/if}
   </main>
 {:else}

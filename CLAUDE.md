@@ -83,13 +83,13 @@ tests/
 - **CLI:** Command-line interface wrapping EnginePort — JSON default, text opt-in, phase-gated future commands (entry: `src/cli/runner.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
-**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`) or "Skip to Review" (goes straight to EXPLANATION). When South declares or E/W declares, auction completes directly to EXPLANATION (no play phase). Play phase only entered via acceptDeclarerSwap. AI plays using heuristic strategy (opening leads, second-hand-low, third-hand-high, trump management) with 500ms delay; falls back to random if no strategy configured.
+**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`) or "Skip to Review". When E/W declares, DECLARER_PROMPT offers "Play as Defender" (user stays South) or "Skip to Review". When South declares, auction completes directly to EXPLANATION. Play phase entered via `acceptDeclarerSwap` (dummy) or `acceptDefend` (defender). AI plays using heuristic strategy (opening leads, second-hand-low, third-hand-high, trump management) with 500ms delay; falls back to random if no strategy configured.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
 ## Roadmap
 
-1. **DDS Review Integration** — Double-dummy analysis in review/explanation screen, optimal play comparison
+1. ~~**DDS Review Integration**~~ — Done. Tabbed ReviewSidePanel (Bidding + Analysis) with DDS via `dds-bridge` Rust FFI. Requires `libclang-dev`.
 2. **User Learning Enhancements** — Two surfaces: (a) in-game info panel/tab showing active convention rules during practice, (b) dedicated learning screen for browsing full convention rule sets. Both built programmatically from existing conditions/rules framework; may require refactoring conventions layer for teaching use
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard), wires `InferenceProvider` selection per partnership
 

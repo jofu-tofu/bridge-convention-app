@@ -23,6 +23,8 @@
     remainingCards?: Partial<Record<Seat, readonly CardType[]>>;
     /** When true, rotate table 180°: North at bottom, South at top, E↔W swapped */
     rotated?: boolean;
+    /** When true, all hands are shown face-up (review mode) */
+    showAll?: boolean;
   }
 
   let {
@@ -36,6 +38,7 @@
     userControlledSeats = [],
     remainingCards,
     rotated = false,
+    showAll = false,
   }: Props = $props();
 
   // Map physical screen positions to logical seats
@@ -45,6 +48,7 @@
   const westSeat = $derived(viewSeat(Seat.West, rotated));
 
   function isFaceUp(seat: Seat): boolean {
+    if (showAll) return true;
     if (seat === userSeat) return true;
     if (seat === dummySeat) return true;
     return false;

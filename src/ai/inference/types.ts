@@ -1,5 +1,5 @@
 import type { Seat, Auction, AuctionEntry } from "../../engine/types";
-import type { HandInference } from "../../shared/types";
+import type { HandInference, InferredHoldings } from "../../shared/types";
 
 // Re-export ConditionInference from its canonical location
 export type { ConditionInference } from "../../conventions/types";
@@ -10,6 +10,13 @@ export type {
   HandInference,
   InferredHoldings,
 } from "../../shared/types";
+
+/** Snapshot of inference state after a single bid is processed. */
+export interface InferenceSnapshot {
+  readonly entry: AuctionEntry;
+  readonly newInference: HandInference | null;
+  readonly cumulativeInferences: Record<Seat, InferredHoldings>;
+}
 
 /** Determines how a partnership's bids are interpreted. */
 export interface InferenceProvider {

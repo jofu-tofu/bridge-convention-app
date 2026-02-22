@@ -44,6 +44,8 @@ components/
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Correct/incorrect bid feedback with show-answer toggle
     BiddingReview.svelte             Bid history table with convention callouts
+    MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
+    AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
@@ -70,7 +72,7 @@ components/
 - GameScreen renders all phases (BIDDING, DECLARER_PROMPT, PLAYING, EXPLANATION) inline via conditional blocks — no separate ExplanationScreen
 - PLAYING phase shows BridgeTable with TrickArea center, HandFan with legal plays, and side panel with trick count + skip button
 - BridgeTable and TrickArea accept optional `rotated` prop for 180° table rotation (declarer swap). Uses `viewSeat()` pure function from `src/lib/seat-mapping.ts` — not CSS rotation.
-- DECLARER_PROMPT phase shown when user (South) is dummy; offers "Play as Declarer" (rotates table, user controls North) or "Watch" (AI plays all)
+- DECLARER_PROMPT phase shown when user (South) is dummy OR when E/W declares; offers "Play as Declarer"/"Play as Defender" or "Skip to Review" based on `isDefenderPrompt`
 - `BidPanel` always renders all 35 contract bids (7x5 grid) + 3 specials; unavailable bids are disabled/grayed, not hidden. All buttons have `data-testid="bid-{callKey}"` (e.g., `bid-1C`, `bid-pass`) for Playwright selectors.
 - User seat is hardcoded to `Seat.South` in GameScreen — future: make configurable
 - GameScreen supports dev-mode seeded RNG via `appStore.devSeed` — `makeDevRng()` creates mulberry32 PRNG, seed advances per deal

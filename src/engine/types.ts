@@ -144,8 +144,21 @@ export interface DealGeneratorResult {
   readonly relaxationSteps: number;
 }
 
+export interface ParContract {
+  readonly level: number;
+  readonly strain: BidSuit;
+  readonly declarer: Seat;
+  readonly overtricks: number;
+}
+
+export interface ParInfo {
+  readonly score: number;
+  readonly contracts: readonly ParContract[];
+}
+
 export interface DDSolution {
   readonly tricks: Record<Seat, Record<BidSuit, number>>;
+  readonly par: ParInfo | null;
 }
 
 export interface Score {
