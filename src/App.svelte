@@ -1,6 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { TsEngine } from "./engine/ts-engine";
+  import { TauriIpcEngine } from "./engine/tauri-ipc-engine";
+  import { HttpEngine } from "./engine/http-engine";
+  import type { EnginePort } from "./engine/port";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
   import { setEngine, setGameStore, setAppStore } from "./lib/context";
@@ -8,7 +11,17 @@
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
 
-  const engine = new TsEngine();
+  // Runtime engine detection: Tauri IPC → HTTP server → TS fallback
+  function createEngine(): EnginePort {
+    if ((window as any).__TAURI__) {
+      return new TauriIpcEngine();
+    }
+    // In dev mode with bridge-server running, use HTTP engine
+    // Fallback to TsEngine for pure browser mode without server
+    return new TsEngine();
+  }
+
+  const engine = createEngine();
   const gameStore = createGameStore(engine);
   const appStore = createAppStore();
 

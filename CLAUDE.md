@@ -21,6 +21,9 @@ Desktop app for drilling bridge bidding conventions (Stayman, Gerber, DONT, Berg
 | `npm run lint:fix`      | ESLint auto-fix                                          |
 | `npm run format`        | Prettier format all files                                |
 | `npm run format:check`  | Prettier check (CI)                                      |
+| `npm run dev:web`       | Rust HTTP server (3001) + Vite dev (1420) via concurrently |
+| `cargo test --workspace`| Run all Rust tests (from src-tauri/)                      |
+| `cargo build --workspace`| Build all Rust crates (from src-tauri/)                  |
 
 ## Dev Tools (dev server only)
 
@@ -58,14 +61,18 @@ src/
     game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea)
     shared/        Reusable components (Card, Button, ConventionCallout)
   stores/          Svelte stores (app navigation, game drill state)
-src-tauri/         Rust Tauri backend (shell wrapper, no custom commands)
+src-tauri/         Cargo workspace with three crates
+  crates/
+    bridge-engine/   Pure Rust engine logic (types, hand eval, deal gen, auction, scoring, play)
+    bridge-tauri/    Tauri app with #[tauri::command] handlers delegating to BridgeEngine trait
+    bridge-server/   Axum HTTP server (port 3001) for browser dev mode
 tests/
   e2e/             Playwright E2E tests
 ```
 
 **Subsystems:**
 
-- **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort (entry: `src/engine/types.ts`)
+- **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `tauri-ipc-engine.ts` and `http-engine.ts` provide Rust-backed transports. (entry: `src/engine/types.ts`)
 - **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. All 23 rules across 4 conventions use introspectable conditions (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ (entry: `src/shared/types.ts`)
 - **AI:** Bidding strategies + play AI — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `randomPlay()` card selection (entry: `src/ai/convention-strategy.ts`)
@@ -90,7 +97,7 @@ tests/
 | 3     | Done    | AI bidding strategies (BiddingStrategy, convention adapter, pass strategy) |
 | 4     | Done    | Drill UI with feedback (Tailwind, stores, components, drill session)       |
 | 5     | Done    | Card play UI + Tauri desktop shell                                        |
-| 6     | Pending | Rust engine port — `TauriIpcEngine` via Tauri IPC, DDS solver (`dds-bridge-sys`) |
+| 6     | In Progress | Rust engine port — three-crate workspace (bridge-engine, bridge-tauri, bridge-server), dual transport (Tauri IPC + HTTP) |
 | 7     | Pending | Smart play AI — heuristic → DDS-assisted → convention-aware card play     |
 
 ## Testing Scope

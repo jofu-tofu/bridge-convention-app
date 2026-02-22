@@ -5,8 +5,8 @@ Pure TypeScript game logic. Zero platform dependencies.
 ## Conventions
 
 - Never import from: `svelte`, `@tauri-apps/*`, `window`, `document`, `localStorage`
-- `port.ts` and `ts-engine.ts` import types from `../shared/types` (`BiddingStrategy`, `BidResult`) — this is the cross-boundary type import
 - `ts-engine.ts` no longer imports from `conventions/registry` — it receives pre-built `BiddingStrategy` objects from callers
+- `suggestBid` is NOT on EnginePort — it's a standalone function in `bid-suggester.ts` (can't cross IPC/HTTP because BiddingStrategy has methods)
 - All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
@@ -38,6 +38,9 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `scoring.ts`        | Contract scoring: trick points, bonuses, penalties, unified score calculation           |
 | `auction-helpers.ts` | Auction query utils: lastContractBid, bidsInSequence, auctionMatchesExact, buildAuction |
 | `notation.ts`       | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures      |
+| `bid-suggester.ts`  | Standalone `suggestBid()` — extracted from EnginePort (can't cross IPC/HTTP)           |
+| `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()`, strips `customCheck`/`rng`       |
+| `http-engine.ts`    | `HttpEngine` — EnginePort via HTTP `fetch()` to bridge-server, strips `customCheck`/`rng` |
 
 ## Gotchas
 
