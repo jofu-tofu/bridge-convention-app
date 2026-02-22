@@ -5,9 +5,18 @@ import type {
   ConditionResult,
   ConditionBranch,
 } from "./types";
-import type { Call } from "../engine/types";
+import type { Call, Hand } from "../engine/types";
+import { Rank, BidSuit } from "../engine/types";
 import { auctionMatchesExact } from "../engine/auction-helpers";
-import { countAces } from "./gerber";
+
+/** Count aces in a hand. Canonical implementation — re-exported by gerber.ts as countAces. */
+export function countAcesInHand(hand: Hand): number {
+  let count = 0;
+  for (const card of hand.cards) {
+    if (card.rank === Rank.Ace) count++;
+  }
+  return count;
+}
 
 // ─── conditionedRule factory ─────────────────────────────────
 
@@ -130,21 +139,24 @@ export function suitMin(suitIndex: number, suitName: string, min: number): RuleC
   };
 }
 
-/** Maximum length in a specific suit. */
-export function suitMax(suitIndex: number, suitName: string, max: number): RuleCondition {
+/** Fewer than `threshold` cards in a specific suit (strict less-than). */
+export function suitBelow(suitIndex: number, suitName: string, threshold: number): RuleCondition {
   return {
-    name: `${suitName}-max`,
+    name: `${suitName}-below`,
     test(ctx) {
-      return ctx.evaluation.shape[suitIndex]! < max;
+      return ctx.evaluation.shape[suitIndex]! < threshold;
     },
     describe(ctx) {
       const len = ctx.evaluation.shape[suitIndex]!;
-      return len < max
-        ? `${len} ${suitName} (under ${max})`
-        : `${len} ${suitName} (need under ${max})`;
+      return len < threshold
+        ? `${len} ${suitName} (fewer than ${threshold})`
+        : `${len} ${suitName} (need fewer than ${threshold})`;
     },
   };
 }
+
+/** @deprecated Use suitBelow — suitMax name was misleading (uses strict <, not <=). */
+export const suitMax = suitBelow;
 
 /** At least one of the given suits has min+ cards. */
 export function anySuitMin(suits: { index: number; name: string }[], min: number): RuleCondition {
@@ -171,10 +183,10 @@ export function aceCount(count: number): RuleCondition {
   return {
     name: "ace-count",
     test(ctx) {
-      return countAces(ctx.hand) === count;
+      return countAcesInHand(ctx.hand) === count;
     },
     describe(ctx) {
-      const aces = countAces(ctx.hand);
+      const aces = countAcesInHand(ctx.hand);
       return aces === count
         ? `${aces} ace${aces !== 1 ? "s" : ""}`
         : `${aces} ace${aces !== 1 ? "s" : ""} (need exactly ${count})`;
@@ -188,10 +200,10 @@ export function aceCountAny(counts: number[]): RuleCondition {
   return {
     name: "ace-count-any",
     test(ctx) {
-      return counts.includes(countAces(ctx.hand));
+      return counts.includes(countAcesInHand(ctx.hand));
     },
     describe(ctx) {
-      const aces = countAces(ctx.hand);
+      const aces = countAcesInHand(ctx.hand);
       return counts.includes(aces)
         ? `${aces} ace${aces !== 1 ? "s" : ""} (${label})`
         : `${aces} ace${aces !== 1 ? "s" : ""} (need ${label})`;
@@ -336,11 +348,17 @@ export function hasSingleLongSuit(): RuleCondition {
       const longest = Math.max(...shape);
       const longestIdx = shape.indexOf(longest);
       const suitName = suitNames[longestIdx] ?? "unknown";
-      if (this.test(ctx)) {
+      // Inline the test logic to avoid this-binding fragility
+      const spades = shape[0]!;
+      const hearts = shape[1]!;
+      const diamonds = shape[2]!;
+      const clubs = shape[3]!;
+      if (spades < 6 && (hearts >= 6 || diamonds >= 6 || clubs >= 6) &&
+          [spades, hearts, diamonds, clubs].filter((n) => n >= 4).length <= 1) {
         return `${longest} ${suitName}, single-suited`;
       }
-      const foursPlus = shape.filter((n) => n >= 4).length;
-      if (shape[0]! >= 6) return `${shape[0]} spades (use 2S natural instead)`;
+      const foursPlus = [spades, hearts, diamonds, clubs].filter((n) => n >= 4).length;
+      if (spades >= 6) return `${spades} spades (use 2S natural instead)`;
       if (foursPlus > 1) return `Two suits with 4+ cards (not single-suited)`;
       return `Longest suit only ${longest} (need 6+ single-suited)`;
     },
@@ -387,8 +405,13 @@ export function gerberSignoffCondition(): RuleCondition {
       return after4D || after4H || after4S || after4NT;
     },
     describe(ctx) {
-      if (!this.test(ctx)) return "Not in Gerber signoff position";
-      const responderAces = countAces(ctx.hand);
+      // Inline the position check to avoid this-binding fragility
+      const after4D = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4D", "P"]);
+      const after4H = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4H", "P"]);
+      const after4S = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4S", "P"]);
+      const after4NT = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4NT", "P"]);
+      if (!(after4D || after4H || after4S || after4NT)) return "Not in Gerber signoff position";
+      const responderAces = countAcesInHand(ctx.hand);
       const openerAces = inferOpenerAcesFromAuction(ctx);
       const total = responderAces + openerAces;
       return `Total ${total} aces (${responderAces} yours + ${openerAces} opener's)`;
@@ -398,17 +421,18 @@ export function gerberSignoffCondition(): RuleCondition {
 
 // Internal helper — same logic as gerber.ts inferOpenerAces
 function inferOpenerAcesFromAuction(ctx: BiddingContext): number {
+  // index 4 = 5th call in auction: 1NT-P-4C-P-{response}
   const responseEntry = ctx.auction.entries[4];
   if (!responseEntry || responseEntry.call.type !== "bid") return 0;
   const response = responseEntry.call;
-  const responderAces = countAces(ctx.hand);
+  const responderAces = countAcesInHand(ctx.hand);
 
-  if (response.strain === "D" && response.level === 4) {
+  if (response.strain === BidSuit.Diamonds && response.level === 4) {
     return responderAces === 4 ? 0 : 4;
   }
-  if (response.strain === "H" && response.level === 4) return 1;
-  if (response.strain === "S" && response.level === 4) return 2;
-  if (response.strain === "NT" && response.level === 4) return 3;
+  if (response.strain === BidSuit.Hearts && response.level === 4) return 1;
+  if (response.strain === BidSuit.Spades && response.level === 4) return 2;
+  if (response.strain === BidSuit.NoTrump && response.level === 4) return 3;
   return 0;
 }
 

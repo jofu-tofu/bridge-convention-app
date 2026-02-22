@@ -51,7 +51,34 @@
         {#if feedback.expectedResult.ruleName}
           <p class="text-red-300/60 text-xs mt-1">{feedback.expectedResult.ruleName}</p>
         {/if}
-        {#if feedback.expectedResult.explanation}
+        {#if feedback.expectedResult.conditions}
+          <ul class="mt-2 space-y-1" role="list" aria-label="Bid conditions">
+            {#each feedback.expectedResult.conditions as cond (cond.name)}
+              {#if cond.children}
+                <li class="text-xs">
+                  <span class="text-red-200/70">{cond.description}</span>
+                  {#each cond.children as branch (branch.name)}
+                    <ul class="ml-3 mt-1 {branch.isBestBranch ? '' : 'opacity-40'}" role="list" aria-label={branch.isBestBranch ? 'Best matching path' : 'Alternative path'}>
+                      {#each branch.children ?? [] as sub (sub.name)}
+                        <li class="flex items-center gap-1.5">
+                          <span class={sub.passed ? 'text-accent-success' : 'text-accent-danger'} aria-hidden="true">{sub.passed ? '✓' : '✗'}</span>
+                          <span class="sr-only">{sub.passed ? 'Passed:' : 'Failed:'}</span>
+                          <span class="text-red-200/70">{sub.description}</span>
+                        </li>
+                      {/each}
+                    </ul>
+                  {/each}
+                </li>
+              {:else}
+                <li class="flex items-center gap-1.5">
+                  <span class={cond.passed ? 'text-accent-success' : 'text-accent-danger'} aria-hidden="true">{cond.passed ? '✓' : '✗'}</span>
+                  <span class="sr-only">{cond.passed ? 'Passed:' : 'Failed:'}</span>
+                  <span class="text-red-200/70">{cond.description}</span>
+                </li>
+              {/if}
+            {/each}
+          </ul>
+        {:else if feedback.expectedResult.explanation}
           <p class="text-red-200/50 text-xs mt-1 leading-tight">{feedback.expectedResult.explanation}</p>
         {/if}
       </div>

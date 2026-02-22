@@ -14,7 +14,10 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 
 **Module graph:**
 ```
-types.ts (ConventionConfig, BiddingRule, BiddingContext)
+types.ts (ConventionConfig, BiddingRule, BiddingContext, RuleCondition, ConditionedBiddingRule)
+  ↑
+conditions.ts (condition factories, conditionedRule builder, combinators)
+condition-evaluator.ts (evaluateConditions, buildExplanation, isConditionedRule)
   ↑
 registry.ts (registerConvention, getConvention, evaluateBiddingRules)
   ↑
@@ -30,8 +33,10 @@ index.ts (auto-registration entry point)
 
 | File | Role |
 |------|------|
-| `types.ts` | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory` |
-| `registry.ts` | Convention map, `evaluateBiddingRules` (first-match), `clearRegistry` for tests |
+| `types.ts` | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory`, `RuleCondition`, `ConditionedBiddingRule` |
+| `conditions.ts` | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
+| `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard |
+| `registry.ts` | Convention map, `evaluateBiddingRules` (first-match, condition-aware), `clearRegistry` for tests |
 | `stayman.ts` | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules |
 | `gerber.ts` | Gerber convention: deal constraints (1NT opener + 13+ HCP responder), 6 bidding rules |
 | `bergen-raises.ts` | Bergen Raises convention: deal constraints (1M opener + responder), 4 bidding rules |
@@ -66,13 +71,20 @@ index.ts (auto-registration entry point)
 **Bridge rules sources:** See `docs/bridge-rules-sources.md` for authoritative references and ambiguity resolution.
 **Architecture details:** See `docs/architecture-reference.md` for convention constraints, AI heuristics, and phase details.
 
+## Conditioned Rules
+
+- **`conditionedRule()` factory mandate.** All new rules MUST use `conditionedRule()` from `conditions.ts`. Never hand-build a `ConditionedBiddingRule` object (risks split-brain between `matches()` and `conditions[]`).
+- **`or()` always-evaluate invariant.** `or()` MUST evaluate all branches unconditionally — short-circuiting breaks the UI branch-highlighting feature. Max 4 branches, nesting depth ≤ 2.
+- **Imperative escape hatch.** A rule MAY stay as plain `BiddingRule` (with static `explanation`) if the declarative model cannot express its logic. All 23 current rules are migrated. New conventions should use `conditionedRule()`.
+
 ## Adding a Convention
 
 1. Create `src/conventions/{name}.ts` — export a `ConventionConfig` with `id`, `name`, `description`, `category`, `dealConstraints`, `biddingRules`, `examples`
-2. Add `registerConvention({name}Config)` call in `index.ts`
-3. Write tests in `src/conventions/__tests__/{name}.test.ts`
-4. Test deal constraints with `checkConstraints()` — verify both acceptance and rejection
-5. Test bidding rules with `evaluateBiddingRules()` — verify rule matching and call output
+2. Use `conditionedRule()` from `conditions.ts` for all bidding rules — compose from existing condition factories
+3. Add `registerConvention({name}Config)` call in `index.ts`
+4. Write tests in `src/conventions/__tests__/{name}.test.ts`
+5. Test deal constraints with `checkConstraints()` — verify both acceptance and rejection
+6. Test bidding rules with `evaluateBiddingRules()` — verify rule matching, call output, and `conditionResults`
 
 ## Gotchas
 

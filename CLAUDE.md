@@ -43,8 +43,8 @@ src/
   cli/             CLI interface — consumer of engine, JSON-first output
     commands/      Command handlers (generate, evaluate, stubs for future phases)
     __tests__/     CLI unit tests
-  shared/          Cross-boundary types (BidResult, BiddingStrategy)
-  conventions/     Convention definitions (registry, Stayman, types)
+  shared/          Cross-boundary types (BidResult, BiddingStrategy, ConditionDetail)
+  conventions/     Convention definitions (registry, conditions, evaluator, Stayman, types)
   ai/              AI bidding strategies (convention adapter, pass strategy, drill session)
   lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers)
   components/      Svelte UI components
@@ -60,7 +60,7 @@ tests/
 **Subsystems:**
 
 - **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort (entry: `src/engine/types.ts`)
-- **Conventions:** Registry of convention configs — each convention = one file exporting `ConventionConfig` with deal constraints, bidding rules, explanations, example hands (entry: `src/conventions/registry.ts`)
+- **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. All 23 rules across 4 conventions use introspectable conditions (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ (entry: `src/shared/types.ts`)
 - **AI:** Bidding strategies + play AI — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `randomPlay()` card selection (entry: `src/ai/convention-strategy.ts`)
 - **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`) (entry: `src/lib/format.ts`)

@@ -44,7 +44,7 @@
   <div class="flex items-center justify-between">
     <h1 class="text-xl font-bold text-text-primary">Bidding Review</h1>
     <div class="flex gap-3">
-      <Button variant="secondary" onclick={() => appStore.navigateToMenu()}>
+      <Button variant="secondary" onclick={() => { gameStore.reset(); appStore.navigateToMenu(); }}>
         Back to Menu
       </Button>
       <Button onclick={() => handleNextDeal()}>

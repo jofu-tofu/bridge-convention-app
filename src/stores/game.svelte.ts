@@ -2,7 +2,7 @@ import type { EnginePort } from "../engine/port";
 import type { Deal, Call, Auction, Seat, Contract, Card, PlayedCard, Trick } from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
 import type { DrillSession } from "../ai/types";
-import type { BiddingStrategy, BidResult } from "../shared/types";
+import type { BiddingStrategy, BidResult, ConditionDetail } from "../shared/types";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { randomPlay } from "../ai/play-strategy";
@@ -15,6 +15,7 @@ export interface BidHistoryEntry {
   readonly ruleName: string | null;
   readonly explanation: string;
   readonly isUser: boolean;
+  readonly conditions?: readonly ConditionDetail[];
 }
 
 export interface BidFeedback {
@@ -338,6 +339,7 @@ export function createGameStore(engine: EnginePort) {
           ruleName: result.ruleName,
           explanation: result.explanation,
           isUser: false,
+          conditions: result.conditions,
         }];
 
         currentTurn = nextSeat(currentTurn);

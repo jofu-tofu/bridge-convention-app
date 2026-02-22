@@ -29,7 +29,7 @@
             <td class="px-2 py-2 font-mono text-text-primary">{formatCall(entry.call)}</td>
             <td class="px-2 py-2">
               {#if entry.ruleName}
-                <ConventionCallout ruleName={entry.ruleName} explanation={entry.explanation} />
+                <ConventionCallout ruleName={entry.ruleName} explanation={entry.explanation} conditions={entry.conditions} />
               {:else}
                 <span class="text-text-muted text-sm">{entry.explanation}</span>
               {/if}
