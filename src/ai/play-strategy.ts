@@ -1,13 +1,13 @@
-import type { Card } from "../engine/types";
+import type { PlayStrategy, PlayResult } from "../shared/types";
 
-/**
- * Pick a random card from the legal plays array.
- * Phase 5 AI: no heuristics, just random legal play.
- */
-export function randomPlay(legalCards: readonly Card[]): Card {
-  if (legalCards.length === 0) {
-    throw new Error("No legal cards to play");
-  }
-  const index = Math.floor(Math.random() * legalCards.length);
-  return legalCards[index]!;
-}
+export const randomPlayStrategy: PlayStrategy = {
+  id: "random",
+  name: "Random Play",
+  suggest(context): PlayResult {
+    if (context.legalPlays.length === 0) {
+      throw new Error("No legal cards to play");
+    }
+    const index = Math.floor(Math.random() * context.legalPlays.length);
+    return { card: context.legalPlays[index]!, reason: "random" };
+  },
+};

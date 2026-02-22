@@ -1,11 +1,18 @@
 import type { Hand, Auction, Seat } from "../engine/types";
-import type { BiddingStrategy, BidResult } from "../shared/types";
+import type {
+  BiddingStrategy,
+  BidResult,
+  PlayStrategy,
+} from "../shared/types";
+import type { InferenceConfig } from "./inference/types";
 
-// Phase 4 types — defined now, implemented later
 export interface DrillConfig {
   readonly conventionId: string;
   readonly userSeat: Seat;
   readonly seatStrategies: Record<Seat, BiddingStrategy | "user">;
+  readonly playStrategy?: PlayStrategy;
+  readonly nsInferenceConfig?: InferenceConfig;
+  readonly ewInferenceConfig?: InferenceConfig;
 }
 
 export interface DrillSession {

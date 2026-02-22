@@ -26,6 +26,7 @@ stayman.ts (staymanConfig, staymanDealConstraints)
 gerber.ts (gerberConfig, gerberDealConstraints)
 bergen-raises.ts (bergenConfig, bergenDealConstraints)
 dont.ts (dontConfig, dontDealConstraints)
+sayc.ts (saycConfig — internal, hidden from UI)
   ↑
 index.ts (auto-registration entry point)
 ```
@@ -35,13 +36,14 @@ index.ts (auto-registration entry point)
 | File                     | Role                                                                                                                       |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `types.ts`               | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory`, `RuleCondition`, `ConditionedBiddingRule`       |
-| `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
+| `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, relational: `isOpener`, `isResponder`, `partnerOpened`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
 | `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard                                             |
 | `registry.ts`            | Convention map, `evaluateBiddingRules` (first-match, condition-aware), `clearRegistry` for tests                           |
 | `stayman.ts`             | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules                                             |
 | `gerber.ts`              | Gerber convention: deal constraints (1NT opener + 13+ HCP responder), 6 bidding rules                                      |
 | `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), 4 bidding rules                                        |
 | `dont.ts`                | DONT convention: deal constraints (1NT opponent + overcaller), 7 bidding rules                                             |
+| `sayc.ts`                | SAYC convention: internal (opponent AI), no deal constraints, ~22 bidding rules                                            |
 | `index.ts`               | Auto-registration entry point — import to activate all conventions                                                         |
 
 ## Convention Rules Reference
@@ -73,6 +75,13 @@ index.ts (auto-registration entry point)
 - **Priority:** Two-suited bids (rules 1-3) before single-suited (rules 4-5). 6-4 hands use two-suited bid, not double. Advance pass checked before next-step.
 - **Dealer:** East (not North like Stayman).
 
+**SAYC** (`sayc.ts`):
+
+- **Internal convention** (`internal: true`) — hidden from UI convention picker, used for opponent AI bidding.
+- **No deal constraints** — SAYC works with any hand.
+- **Rules (in priority order):** Opening bids (`sayc-open-2c`, `sayc-open-1nt`, `sayc-open-2nt`, `sayc-open-1s`, `sayc-open-1h`, `sayc-open-1d`, `sayc-open-1c`, `sayc-open-weak-2h`, `sayc-open-weak-2s`), 1NT responses (`sayc-respond-1nt-stayman`, `sayc-respond-1nt-pass`), suit responses (`sayc-respond-raise-major`, `sayc-respond-jump-raise-major`, `sayc-respond-1h-over-minor`, `sayc-respond-1s-over-minor`, `sayc-respond-1s-over-1h`, `sayc-respond-1nt`, `sayc-respond-2nt`, `sayc-respond-3nt`), competitive (`sayc-overcall-1level`, `sayc-overcall-2level`), default (`sayc-pass`).
+- **Relational conditions:** Uses `isOpener()`, `isResponder()`, `partnerOpened()`, `opponentBid()`, `noPriorBid()`, `isBalanced()`, `noFiveCardMajor()`, `longerMajor()` from `conditions.ts`.
+
 **Bridge rules sources:** See `docs/bridge-rules-sources.md` for authoritative references and ambiguity resolution.
 **Architecture details:** See `docs/architecture-reference.md` for convention constraints, AI heuristics, and phase details.
 
@@ -80,7 +89,7 @@ index.ts (auto-registration entry point)
 
 - **`conditionedRule()` factory mandate.** All new rules MUST use `conditionedRule()` from `conditions.ts`. Never hand-build a `ConditionedBiddingRule` object (risks split-brain between `matches()` and `conditions[]`).
 - **`or()` always-evaluate invariant.** `or()` MUST evaluate all branches unconditionally — short-circuiting breaks the UI branch-highlighting feature. Max 4 branches, nesting depth ≤ 2.
-- **Imperative escape hatch.** A rule MAY stay as plain `BiddingRule` (with static `explanation`) if the declarative model cannot express its logic. All 23 current rules are migrated. New conventions should use `conditionedRule()`.
+- **Imperative escape hatch.** A rule MAY stay as plain `BiddingRule` (with static `explanation`) if the declarative model cannot express its logic. All rules across 5 conventions use `conditionedRule()`. New conventions should use `conditionedRule()`.
 
 ## Adding a Convention
 
@@ -98,6 +107,7 @@ index.ts (auto-registration entry point)
 - Shape indices follow `SUIT_ORDER`: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 - DONT uses East as dealer (not North like Stayman) — all DONT auctions start from East's 1NT opening
 - Bergen Raises variant is Standard Bergen (3C=constructive 7-9, 3D=limit 10-12, 3M=preemptive 0-6)
+- Internal conventions (`internal: true`) are filtered from the UI by `filterConventions()` in `src/lib/filter-conventions.ts`
 
 ---
 
@@ -109,4 +119,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `registry.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=2 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:19,exts:ts:18,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=3 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:21,exts:ts:20,md:1 -->

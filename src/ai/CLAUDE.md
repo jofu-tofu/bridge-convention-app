@@ -29,7 +29,7 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 | `pass-strategy.ts`        | Always-pass placeholder strategy                                                          |
 | `types.ts`                | `DrillConfig`, `DrillSession` — interfaces for drill mode                                 |
 | `drill-session.ts`        | `createDrillSession()` — DrillSession implementation with null-contract for user/AI seats |
-| `drill-config-factory.ts` | `createDrillConfig()` — builds DrillConfig from convention ID and user seat               |
+| `drill-config-factory.ts` | `createDrillConfig()` — builds DrillConfig from convention ID and user seat. Wires both `nsInferenceConfig` and `ewInferenceConfig`. Options: `opponentBidding` (enables E-W convention inference), `opponentConventionId` (defaults to "sayc", falls back to natural on invalid ID). |
 
 ## Adding a Strategy
 
@@ -40,22 +40,28 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 
 ## Play AI
 
-| File               | Role                                                                  |
-| ------------------ | --------------------------------------------------------------------- |
-| `play-strategy.ts` | `randomPlay(legalCards)` — picks random legal card (Phase 5 baseline) |
+| File                         | Role                                                                                      |
+| ---------------------------- | ----------------------------------------------------------------------------------------- |
+| `play-strategy.ts`           | `randomPlay(legalCards)` (legacy) + `randomPlayStrategy` (PlayStrategy interface wrapper)  |
+| `heuristic-play-strategy.ts` | `createHeuristicPlayStrategy()` — chain-of-responsibility heuristic play (Tier 1 Smart AI) |
 
-**Phase 7 roadmap:**
+**Heuristic priority chain** (first non-null wins): opening-lead → second-hand-low → third-hand-high → cover-honor-with-honor → trump-management → discard-management → default-lowest.
 
-- **Tier 1 (7a — heuristic):** Follow suit rules, play high to win, lead trumps, finesse detection
-- **Tier 2 (7b — DDS-assisted):** Use `suggestPlay()` backed by DDS double-dummy solver (requires Phase 6 Rust engine)
-- **Tier 3 (7c — convention-aware):** Signal/discard conventions (attitude, count, suit preference)
-- Integration point: `PlayStrategy` interface mirroring `BiddingStrategy`
+- `second-hand-low` only fires when following suit (defers to trump/discard when void)
+- `trump-management` won't ruff partner's winning trick
+- All heuristics return cards from `legalPlays` only; fallback always returns lowest legal card
+
+**Roadmap:**
+
+- **Tier 2 — DDS-assisted:** Use `suggestPlay()` backed by DDS double-dummy solver (requires Rust engine)
+- **Tier 3 — convention-aware:** Signal/discard conventions (attitude, count, suit preference)
 
 ## Gotchas
 
 - `DrillSession.getNextBid()` returns `null` for user seats (signals UI to wait), wraps null strategy results as pass for AI seats
 - `conventionToStrategy` maps `BiddingRuleResult.rule` to `BidResult.ruleName` (field name change)
 - Tests use `clearRegistry()`/`registerConvention()` in `beforeEach` for isolation
+- `DrillConfig.ewInferenceConfig` — E-W inference config: natural by default, convention-aware (SAYC or custom) when `opponentBidding: true`. Invalid `opponentConventionId` falls back to natural provider.
 
 ---
 
@@ -67,4 +73,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `convention-strategy.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=2 | dir-commits-at-audit=5 | tree-sig=dirs:1,files:11,exts:ts:10,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=3 | dir-commits-at-audit=5 | tree-sig=dirs:2,files:13,exts:ts:12,md:1 -->

@@ -52,9 +52,10 @@ src/
   cli/             CLI interface — consumer of engine, JSON-first output
     commands/      Command handlers (generate, evaluate, stubs for future phases)
     __tests__/     CLI unit tests
-  shared/          Cross-boundary types (BidResult, BiddingStrategy, ConditionDetail)
-  conventions/     Convention definitions (registry, conditions, evaluator, Stayman, types)
-  ai/              AI bidding strategies (convention adapter, pass strategy, drill session)
+  shared/          Cross-boundary types (BidResult, BiddingStrategy, PlayStrategy, ConditionDetail)
+  conventions/     Convention definitions (registry, conditions, evaluator, Stayman, SAYC, types)
+  ai/              AI bidding + play strategies, auction inference engine
+    inference/     Auction inference system (per-partnership information asymmetry)
   lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers, seat-mapping)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, game-screen/GameScreen)
@@ -73,23 +74,35 @@ tests/
 **Subsystems:**
 
 - **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `tauri-ipc-engine.ts` and `http-engine.ts` provide Rust-backed transports. (entry: `src/engine/types.ts`)
-- **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. All 23 rules across 4 conventions use introspectable conditions (entry: `src/conventions/registry.ts`)
-- **Shared:** Cross-boundary type definitions used by both engine/ and ai/ (entry: `src/shared/types.ts`)
-- **AI:** Bidding strategies + play AI — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `randomPlay()` card selection (entry: `src/ai/convention-strategy.ts`)
+- **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. 23 rules across 4 user conventions + 23 SAYC rules (internal, for opponent AI). Conditions carry optional `ConditionInference` metadata for the inference engine. (entry: `src/conventions/registry.ts`)
+- **Shared:** Cross-boundary type definitions used by both engine/ and ai/ — includes `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings` (entry: `src/shared/types.ts`)
+- **AI:** Bidding strategies + play AI + auction inference — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `createHeuristicPlayStrategy()` with 7-heuristic chain, `randomPlay()` legacy fallback. `inference/` subsystem models per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). (entry: `src/ai/convention-strategy.ts`)
 - **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
 - **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` + sub-components), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
 - **Stores:** App store (screen navigation, selected convention, dev seed state) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
 - **CLI:** Command-line interface wrapping EnginePort — JSON default, text opt-in, phase-gated future commands (entry: `src/cli/runner.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
-**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`) or "Skip to Review" (goes straight to EXPLANATION). When South declares or E/W declares, auction completes directly to EXPLANATION (no play phase). Play phase only entered via acceptDeclarerSwap. AI plays random legal cards with 500ms delay.
+**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`) or "Skip to Review" (goes straight to EXPLANATION). When South declares or E/W declares, auction completes directly to EXPLANATION (no play phase). Play phase only entered via acceptDeclarerSwap. AI plays using heuristic strategy (opening leads, second-hand-low, third-hand-high, trump management) with 500ms delay; falls back to random if no strategy configured.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
 ## Roadmap
 
-1. **Smart Play AI** — Replace random card play with heuristic → DDS-assisted → convention-aware play
+1. **DDS Review Integration** — Double-dummy analysis in review/explanation screen, optimal play comparison
 2. **User Learning Enhancements** — Two surfaces: (a) in-game info panel/tab showing active convention rules during practice, (b) dedicated learning screen for browsing full convention rule sets. Both built programmatically from existing conditions/rules framework; may require refactoring conventions layer for teaching use
+3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard), wires `InferenceProvider` selection per partnership
+
+## Test-Driven Development
+
+This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implementations must follow this workflow:
+
+- **Failing test first.** Write a test that fails before writing implementation code. No exceptions for "simple" changes — if it changes behavior, it gets a test first.
+- **Behavior over implementation.** Tests verify WHAT code does, not HOW (Kent Beck / Michael Feathers). A test should pass unchanged if you rewrite the implementation with a different algorithm.
+- **Test through public interfaces.** Don't test private methods or internal state. Test the contract the module exposes.
+- **One concern per test.** Each test verifies one behavior. If it has "and" in the description, split it.
+- **Characterization tests for unknowns.** When modifying code you don't fully understand, write tests that capture current behavior before changing it (Michael Feathers).
+- **No test rewrites on refactor.** If a refactoring breaks tests, the tests were coupled to implementation — fix the tests to test behavior, then refactor.
 
 ## Testing Scope
 

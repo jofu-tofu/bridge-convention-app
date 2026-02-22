@@ -7,6 +7,7 @@ import type {
 } from "./types";
 import type { Call, Hand } from "../engine/types";
 import { Rank, BidSuit } from "../engine/types";
+import { partnerSeat } from "../engine/constants";
 import { auctionMatchesExact } from "../engine/auction-helpers";
 
 /** Count aces in a hand. Canonical implementation — re-exported by gerber.ts as countAces. */
@@ -79,6 +80,7 @@ export function auctionMatchesAny(patterns: string[][]): RuleCondition {
 export function hcpMin(min: number): RuleCondition {
   return {
     name: "hcp-min",
+    inference: { type: "hcp-min", params: { min } },
     test(ctx) {
       return ctx.evaluation.hcp >= min;
     },
@@ -95,6 +97,7 @@ export function hcpMin(min: number): RuleCondition {
 export function hcpMax(max: number): RuleCondition {
   return {
     name: "hcp-max",
+    inference: { type: "hcp-max", params: { max } },
     test(ctx) {
       return ctx.evaluation.hcp <= max;
     },
@@ -111,6 +114,7 @@ export function hcpMax(max: number): RuleCondition {
 export function hcpRange(min: number, max: number): RuleCondition {
   return {
     name: "hcp-range",
+    inference: { type: "hcp-range", params: { min, max } },
     test(ctx) {
       return ctx.evaluation.hcp >= min && ctx.evaluation.hcp <= max;
     },
@@ -131,6 +135,7 @@ export function suitMin(
 ): RuleCondition {
   return {
     name: `${suitName}-min`,
+    inference: { type: "suit-min", params: { suitIndex, suitName, min } },
     test(ctx) {
       return ctx.evaluation.shape[suitIndex]! >= min;
     },
@@ -151,6 +156,10 @@ export function suitBelow(
 ): RuleCondition {
   return {
     name: `${suitName}-below`,
+    inference: {
+      type: "suit-max",
+      params: { suitIndex, suitName, max: threshold - 1 },
+    },
     test(ctx) {
       return ctx.evaluation.shape[suitIndex]! < threshold;
     },
@@ -195,6 +204,7 @@ export function anySuitMin(
 export function aceCount(count: number): RuleCondition {
   return {
     name: "ace-count",
+    inference: { type: "ace-count", params: { count } },
     test(ctx) {
       return countAcesInHand(ctx.hand) === count;
     },
@@ -305,6 +315,236 @@ export function or(...conds: RuleCondition[]): RuleCondition {
   };
 }
 
+// ─── Relational condition factories ──────────────────────────
+
+/** Check if this seat made the first non-pass bid in the auction. */
+export function isOpener(): RuleCondition {
+  return {
+    name: "is-opener",
+    test(ctx) {
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          return entry.seat === ctx.seat;
+        }
+      }
+      // No bids yet — we could be the opener
+      return true;
+    },
+    describe(ctx) {
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          return entry.seat === ctx.seat
+            ? "This seat opened the bidding"
+            : "This seat did not open the bidding";
+        }
+      }
+      return "No bids yet — opening position";
+    },
+  };
+}
+
+/** Check if partner made the first non-pass bid (this seat is responding). */
+export function isResponder(): RuleCondition {
+  return {
+    name: "is-responder",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          return entry.seat === partner;
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          return entry.seat === partner
+            ? "Partner opened — responding position"
+            : "Partner did not open";
+        }
+      }
+      return "No bids yet — not in responding position";
+    },
+  };
+}
+
+/** Check if partner opened in a specific strain, or any strain if not specified. */
+export function partnerOpened(strain?: BidSuit): RuleCondition {
+  const label = strain ? `partner opened ${strain}` : "partner opened";
+  return {
+    name: label,
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          if (entry.seat !== partner) return false;
+          if (strain) return entry.call.strain === strain;
+          return true;
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          if (entry.seat !== partner)
+            return `Partner did not open (${entry.seat} opened)`;
+          if (strain && entry.call.strain !== strain) {
+            return `Partner opened ${entry.call.strain}, not ${strain}`;
+          }
+          return `Partner opened ${entry.call.strain}`;
+        }
+      }
+      return "No opening bid found";
+    },
+  };
+}
+
+/** Check if partner bid a specific suit at any point. */
+export function partnerBidSuit(suit: BidSuit): RuleCondition {
+  return {
+    name: `partner-bid-${suit}`,
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      return ctx.auction.entries.some(
+        (e) =>
+          e.seat === partner &&
+          e.call.type === "bid" &&
+          e.call.strain === suit,
+      );
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      const found = ctx.auction.entries.find(
+        (e) =>
+          e.seat === partner &&
+          e.call.type === "bid" &&
+          e.call.strain === suit,
+      );
+      return found ? `Partner bid ${suit}` : `Partner has not bid ${suit}`;
+    },
+  };
+}
+
+/** Check if an opponent has made a contract bid. */
+export function opponentBid(): RuleCondition {
+  return {
+    name: "opponent-bid",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      return ctx.auction.entries.some(
+        (e) =>
+          e.call.type === "bid" &&
+          e.seat !== ctx.seat &&
+          e.seat !== partner,
+      );
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      const found = ctx.auction.entries.find(
+        (e) =>
+          e.call.type === "bid" &&
+          e.seat !== ctx.seat &&
+          e.seat !== partner,
+      );
+      return found ? `Opponent (${found.seat}) bid` : "No opponent bids";
+    },
+  };
+}
+
+/** Check if hand is balanced (no singleton/void, at most one doubleton). */
+export function isBalanced(): RuleCondition {
+  return {
+    name: "balanced",
+    inference: { type: "balanced", params: { balanced: true } },
+    test(ctx) {
+      const shape = ctx.evaluation.shape;
+      const hasVoid = shape.some((s) => s === 0);
+      const hasSingleton = shape.some((s) => s === 1);
+      const doubletonCount = shape.filter((s) => s === 2).length;
+      return !hasVoid && !hasSingleton && doubletonCount <= 1;
+    },
+    describe(ctx) {
+      const shape = ctx.evaluation.shape;
+      const hasVoid = shape.some((s) => s === 0);
+      const hasSingleton = shape.some((s) => s === 1);
+      const doubletonCount = shape.filter((s) => s === 2).length;
+      if (!hasVoid && !hasSingleton && doubletonCount <= 1) {
+        return `Balanced hand (${shape.join("-")})`;
+      }
+      if (hasVoid) return `Unbalanced — has void (${shape.join("-")})`;
+      if (hasSingleton)
+        return `Unbalanced — has singleton (${shape.join("-")})`;
+      return `Unbalanced — ${doubletonCount} doubletons (${shape.join("-")})`;
+    },
+  };
+}
+
+/** No 5-card major. */
+export function noFiveCardMajor(): RuleCondition {
+  return {
+    name: "no-5-card-major",
+    test(ctx) {
+      return ctx.evaluation.shape[0]! < 5 && ctx.evaluation.shape[1]! < 5;
+    },
+    describe(ctx) {
+      const spades = ctx.evaluation.shape[0]!;
+      const hearts = ctx.evaluation.shape[1]!;
+      if (spades < 5 && hearts < 5) {
+        return `No 5-card major (${spades} spades, ${hearts} hearts)`;
+      }
+      if (spades >= 5) return `Has 5+ spades (${spades})`;
+      return `Has 5+ hearts (${hearts})`;
+    },
+  };
+}
+
+/** Hand has 5+ cards in the longer major, and that major is the specified one. */
+export function longerMajor(
+  suitIndex: number,
+  suitName: string,
+): RuleCondition {
+  return {
+    name: `longer-major-${suitName}`,
+    inference: { type: "suit-min", params: { suitIndex, suitName, min: 5 } },
+    test(ctx) {
+      const thisLen = ctx.evaluation.shape[suitIndex]!;
+      // suitIndex 0=spades, 1=hearts; the other major
+      const otherIndex = suitIndex === 0 ? 1 : 0;
+      const otherLen = ctx.evaluation.shape[otherIndex]!;
+      return thisLen >= 5 && thisLen >= otherLen;
+    },
+    describe(ctx) {
+      const thisLen = ctx.evaluation.shape[suitIndex]!;
+      const otherIndex = suitIndex === 0 ? 1 : 0;
+      const otherName = suitIndex === 0 ? "hearts" : "spades";
+      const otherLen = ctx.evaluation.shape[otherIndex]!;
+      if (thisLen >= 5 && thisLen >= otherLen) {
+        return `${thisLen} ${suitName} (longer/equal major vs ${otherLen} ${otherName})`;
+      }
+      if (thisLen < 5) return `Only ${thisLen} ${suitName} (need 5+)`;
+      return `${thisLen} ${suitName} shorter than ${otherLen} ${otherName}`;
+    },
+  };
+}
+
+/** No previous contract bid in the auction (everyone passed so far). */
+export function noPriorBid(): RuleCondition {
+  return {
+    name: "no-prior-bid",
+    test(ctx) {
+      return ctx.auction.entries.every((e) => e.call.type !== "bid");
+    },
+    describe(ctx) {
+      const hasBid = ctx.auction.entries.some((e) => e.call.type === "bid");
+      return hasBid ? "Prior contract bid exists" : "No prior contract bids";
+    },
+  };
+}
+
 // ─── Convention-specific compound conditions ─────────────────
 
 /**
@@ -393,6 +633,7 @@ export function isTwoSuited(minLong: number, minShort: number): RuleCondition {
   const suitNames = ["spades", "hearts", "diamonds", "clubs"];
   return {
     name: "two-suited",
+    inference: { type: "two-suited", params: { minLong, minShort } },
     test(ctx) {
       const sorted = [...ctx.evaluation.shape].sort((a, b) => b - a);
       return sorted[0]! >= minLong && sorted[1]! >= minShort;

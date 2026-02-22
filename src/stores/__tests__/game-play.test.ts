@@ -246,19 +246,35 @@ describe("createGameStore play phase", () => {
   });
 });
 
-describe("randomPlay", () => {
+describe("randomPlayStrategy", () => {
   it("returns a card from the legal plays array", async () => {
-    const { randomPlay } = await import("../../ai/play-strategy");
+    const { randomPlayStrategy } = await import("../../ai/play-strategy");
     const cards: Card[] = [
       makeCard(Suit.Hearts, Rank.Ace),
       makeCard(Suit.Spades, Rank.King),
     ];
-    const result = randomPlay(cards);
-    expect(cards).toContainEqual(result);
+    const result = randomPlayStrategy.suggest({
+      hand: { cards: [] },
+      currentTrick: [],
+      previousTricks: [],
+      contract: { level: 1, strain: BidSuit.NoTrump, doubled: false, redoubled: false, declarer: Seat.South },
+      seat: Seat.South,
+      trumpSuit: undefined,
+      legalPlays: cards,
+    });
+    expect(cards).toContainEqual(result.card);
   });
 
-  it("throws on empty array", async () => {
-    const { randomPlay } = await import("../../ai/play-strategy");
-    expect(() => randomPlay([])).toThrow("No legal cards to play");
+  it("throws on empty legal plays", async () => {
+    const { randomPlayStrategy } = await import("../../ai/play-strategy");
+    expect(() => randomPlayStrategy.suggest({
+      hand: { cards: [] },
+      currentTrick: [],
+      previousTricks: [],
+      contract: { level: 1, strain: BidSuit.NoTrump, doubled: false, redoubled: false, declarer: Seat.South },
+      seat: Seat.South,
+      trumpSuit: undefined,
+      legalPlays: [],
+    })).toThrow("No legal cards to play");
   });
 });

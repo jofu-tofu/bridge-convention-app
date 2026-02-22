@@ -7,6 +7,7 @@ export function filterConventions(
   category: ConventionCategory | null,
 ): ConventionConfig[] {
   return conventions.filter((c) => {
+    if (c.internal) return false;
     const matchesSearch =
       !query ||
       c.name.toLowerCase().includes(query.toLowerCase()) ||

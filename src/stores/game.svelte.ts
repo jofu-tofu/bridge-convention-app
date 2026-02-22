@@ -3,22 +3,26 @@ import type {
   Deal,
   Call,
   Auction,
-  Seat,
   Contract,
   Card,
   PlayedCard,
   Trick,
+  Hand,
 } from "../engine/types";
-import { BidSuit, Suit } from "../engine/types";
+import { BidSuit, Suit, Seat } from "../engine/types";
 import type { DrillSession } from "../ai/types";
 import type {
   BiddingStrategy,
   BidResult,
   ConditionDetail,
+  PlayStrategy,
+  PlayContext,
 } from "../shared/types";
+import type { InferredHoldings } from "../shared/types";
+import type { InferenceEngine } from "../ai/inference/inference-engine";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
-import { randomPlay } from "../ai/play-strategy";
+import { randomPlayStrategy } from "../ai/play-strategy";
 
 export type GamePhase =
   | "BIDDING"
@@ -104,6 +108,11 @@ export function createGameStore(engine: EnginePort) {
   let trumpSuit = $state<Suit | undefined>(undefined);
   let effectiveUserSeat = $state<Seat | null>(null);
 
+  // Inference + play strategy state
+  let nsInferenceEngine = $state<InferenceEngine | null>(null);
+  let playInferences = $state<Record<Seat, InferredHoldings> | null>(null);
+  let activePlayStrategy = $state<PlayStrategy | null>(null);
+
   const isUserTurn = $derived(
     currentTurn !== null &&
       drillSession !== null &&
@@ -145,7 +154,42 @@ export function createGameStore(engine: EnginePort) {
     return currentTrick.length > 0 ? currentTrick[0]!.card.suit : undefined;
   }
 
+  /** Build a PlayContext for AI card selection. */
+  function buildPlayContext(
+    seat: Seat,
+    hand: Hand,
+    legalCards: readonly Card[],
+  ): PlayContext {
+    const dummyVisible = tricks.length > 0 || currentTrick.length > 0;
+    return {
+      hand,
+      currentTrick: [...currentTrick],
+      previousTricks: [...tricks],
+      contract: contract!,
+      seat,
+      trumpSuit,
+      legalPlays: legalCards,
+      dummyHand: dummyVisible && dummySeat && deal ? deal.hands[dummySeat] : undefined,
+      inferences: playInferences ?? undefined,
+    };
+  }
+
+  /** Select a card using the active play strategy or fall back to random. */
+  function selectAiCard(seat: Seat, legalCards: readonly Card[]): Card {
+    const remaining = getRemainingCards(seat);
+    const ctx = buildPlayContext(seat, { cards: remaining }, legalCards);
+    if (activePlayStrategy && contract) {
+      return activePlayStrategy.suggest(ctx).card;
+    }
+    return randomPlayStrategy.suggest(ctx).card;
+  }
+
   async function completeAuction() {
+    // Capture inferences from both engines before transitioning
+    if (nsInferenceEngine) {
+      playInferences = nsInferenceEngine.getInferences();
+    }
+
     const result = await engine.getContract(auction);
     contract = result;
     if (result) {
@@ -288,7 +332,7 @@ export function createGameStore(engine: EnginePort) {
           { cards: remaining },
           getLeadSuit(),
         );
-        const card = randomPlay(legalPlays);
+        const card = selectAiCard(currentPlayer, legalPlays);
         addCardToTrick(card, currentPlayer);
 
         if (currentTrick.length === 4) {
@@ -335,7 +379,7 @@ export function createGameStore(engine: EnginePort) {
           { cards: remaining },
           leadSuit,
         );
-        const card = randomPlay(legalPlays);
+        const card = selectAiCard(seat, legalPlays);
         currentTrick = [...currentTrick, { card, seat }];
       }
 
@@ -378,10 +422,13 @@ export function createGameStore(engine: EnginePort) {
         // Safety: null from AI means no bid possible
         if (!result) break;
 
-        auction = await engine.addCall(auction, {
-          seat: currentTurn,
-          call: result.call,
-        });
+        const bidEntry = { seat: currentTurn, call: result.call };
+        const auctionBefore = auction;
+        auction = await engine.addCall(auction, bidEntry);
+
+        // Process bid through inference engine
+        if (nsInferenceEngine) nsInferenceEngine.processBid(bidEntry, auctionBefore);
+
         bidHistory = [
           ...bidHistory,
           {
@@ -512,6 +559,21 @@ export function createGameStore(engine: EnginePort) {
       trumpSuit = undefined;
       effectiveUserSeat = null;
 
+      // Set up play strategy from drill config
+      activePlayStrategy = session.config.playStrategy ?? null;
+
+      // Set up inference engine if configured
+      playInferences = null;
+      if (session.config.nsInferenceConfig) {
+        const { createInferenceEngine } = await import("../ai/inference/inference-engine");
+        nsInferenceEngine = createInferenceEngine(
+          session.config.nsInferenceConfig,
+          Seat.North,
+        );
+      } else {
+        nsInferenceEngine = null;
+      }
+
       if (initialAuction) {
         auction = initialAuction;
         // Replay initial auction entries into bid history with generic explanations
@@ -573,7 +635,13 @@ export function createGameStore(engine: EnginePort) {
       };
 
       // Add bid to auction regardless of correctness
-      auction = await engine.addCall(auction, { seat: currentTurn, call });
+      const userBidEntry = { seat: currentTurn, call };
+      const auctionBeforeUser = auction;
+      auction = await engine.addCall(auction, userBidEntry);
+
+      // Process user bid through inference engine
+      if (nsInferenceEngine) nsInferenceEngine.processBid(userBidEntry, auctionBeforeUser);
+
       bidHistory = [
         ...bidHistory,
         {
@@ -647,6 +715,10 @@ export function createGameStore(engine: EnginePort) {
       score = null;
       trumpSuit = undefined;
       effectiveUserSeat = null;
+      // Reset inference + strategy state
+      nsInferenceEngine = null;
+      playInferences = null;
+      activePlayStrategy = null;
     },
   };
 }

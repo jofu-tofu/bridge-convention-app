@@ -8,6 +8,20 @@ import type {
 } from "../engine/types";
 import { Seat } from "../engine/types";
 
+/** Structured inference data attached to a RuleCondition. */
+export interface ConditionInference {
+  readonly type:
+    | "hcp-min"
+    | "hcp-max"
+    | "hcp-range"
+    | "suit-min"
+    | "suit-max"
+    | "balanced"
+    | "ace-count"
+    | "two-suited";
+  readonly params: Record<string, number | string | boolean>;
+}
+
 export enum ConventionCategory {
   Asking = "Asking",
   Defensive = "Defensive",
@@ -61,6 +75,8 @@ export interface RuleCondition {
   /** For compound conditions (or/and): evaluate sub-conditions individually.
    *  Returns null for leaf conditions. */
   evaluateChildren?(context: BiddingContext): ConditionBranch[];
+  /** Structured inference data for the auction inference engine. Optional — added incrementally. */
+  readonly inference?: ConditionInference;
 }
 
 export interface ConditionBranch {
@@ -95,4 +111,6 @@ export interface ConventionConfig {
   readonly examples: readonly ExampleHand[];
   /** Returns the default auction context for a given seat, or undefined for empty auction. */
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
+  /** If true, convention is internal (e.g., SAYC for opponents) and hidden from UI picker. */
+  readonly internal?: boolean;
 }
