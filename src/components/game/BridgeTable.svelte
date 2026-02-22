@@ -89,7 +89,7 @@
 >
   <!-- Physical top position (North normally, South when rotated) -->
   <div class="absolute seat-north">
-    <HandFan cards={getCards(northSeat)} faceUp={isFaceUp(northSeat)} legalPlays={getSeatLegalPlays(northSeat)} onPlayCard={getSeatOnPlayCard(northSeat)} mirrored={rotated} />
+    <HandFan cards={getCards(northSeat)} faceUp={isFaceUp(northSeat)} legalPlays={getSeatLegalPlays(northSeat)} onPlayCard={getSeatOnPlayCard(northSeat)} mirrored />
     <div class="text-center mt-2">
       <span class={seatLabelClass(northSeat)} data-testid="seat-label-{northSeat}" aria-label={northSeat === Seat.North ? "North" : "South"}>{northSeat === Seat.North ? "N" : "S"}</span>
     </div>

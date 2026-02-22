@@ -75,4 +75,4 @@ the codebase wins — update this file, do not work around it. Prune aggressivel
 **Staleness anchor:** This file assumes `runner.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-21 | version=2 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-22 | version=3 | dir-commits-at-audit=6 | tree-sig=dirs:2,files:25,exts:ts:24,md:1 -->

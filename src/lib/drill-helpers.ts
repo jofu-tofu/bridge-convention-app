@@ -12,11 +12,15 @@ export async function startDrill(
   convention: ConventionConfig,
   userSeat: Seat,
   gameStore: { startDrill: (deal: Deal, session: DrillSession, initialAuction?: Auction, strategy?: BiddingStrategy) => Promise<void> },
+  rng?: () => number,
 ) {
   const config = createDrillConfig(convention.id, userSeat);
   const session = createDrillSession(config);
   const strategy = conventionToStrategy(convention);
-  const deal = await engine.generateDeal(convention.dealConstraints);
+  const constraints = rng
+    ? { ...convention.dealConstraints, rng }
+    : convention.dealConstraints;
+  const deal = await engine.generateDeal(constraints);
   const initialAuction = convention.defaultAuction
     ? convention.defaultAuction(userSeat, deal)
     : undefined;

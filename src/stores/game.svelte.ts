@@ -137,8 +137,9 @@ export function createGameStore(engine: EnginePort) {
         effectiveUserSeat = userSeat; // default to South, may be swapped
         phase = "DECLARER_PROMPT";
       } else {
+        // User is declarer — skip play, go straight to review
         effectiveUserSeat = userSeat;
-        startPlay();
+        phase = "EXPLANATION";
       }
     } else {
       // Passed out — skip to explanation
@@ -153,8 +154,8 @@ export function createGameStore(engine: EnginePort) {
   }
 
   function declineDeclarerSwap() {
-    // effectiveUserSeat already set to userSeat (South) in completeAuction
-    startPlay();
+    // Skip play phase, go straight to review
+    phase = "EXPLANATION";
   }
 
   function startPlay() {

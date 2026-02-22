@@ -56,13 +56,6 @@ export function createStubEngine(overrides: Partial<EnginePort> = {}): EnginePor
     async suggestPlay(): Promise<Card> {
       throw new Error("Not available in test");
     },
-    async suggestBid(): Promise<import("../../shared/types").BidResult> {
-      return {
-        call: { type: "pass" },
-        ruleName: null,
-        explanation: "Test pass",
-      };
-    },
   };
 
   return { ...defaultEngine, ...overrides };

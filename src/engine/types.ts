@@ -133,6 +133,8 @@ export interface DealConstraints {
   readonly vulnerability?: Vulnerability;
   readonly dealer?: Seat;
   readonly maxAttempts?: number;
+  /** Optional seedable PRNG for deterministic deal generation. */
+  readonly rng?: () => number;
 }
 
 export interface DealGeneratorResult {

@@ -29,14 +29,20 @@ App.svelte                           Root — creates engine/stores, sets contex
 components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter
-    GameScreen.svelte                Bridge table + side panel, responsive layout
-    ExplanationScreen.svelte         Bid review with convention callouts
+    game-screen/
+      GameScreen.svelte              Bridge table + side panel, responsive layout, seeded RNG
+      BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
+      PlaySidePanel.svelte           Contract, trick counts, skip-to-review
+      ReviewSidePanel.svelte         Bid review table, next deal / back to menu
+      ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
+      ScaledTableArea.svelte         Responsive table wrapper with transform-origin
   game/
     BridgeTable.svelte               800x650 table with 4 seats, absolute positioning
     HandFan.svelte                   Overlapping visual card fan (horizontal/vertical)
     TrickArea.svelte                 Center trick display with NSEW card positions and trick count
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
-    BidPanel.svelte                  5-col grid + specials row, compact mode
+    BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
+    BidFeedbackPanel.svelte          Correct/incorrect bid feedback with show-answer toggle
     BiddingReview.svelte             Bid history table with convention callouts
   shared/
     Button.svelte                    Primary/secondary/ghost variants
@@ -52,7 +58,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → DECLARER_PROMPT (conditional) → PLAYING) → ExplanationScreen
+**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION)
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
@@ -60,13 +66,14 @@ components/
 
 ## Gotchas
 
-- `GameScreen` uses a one-shot `$effect` with `initialized` flag to avoid re-triggering `startNewDrill()` on every render
-- `GameScreen` auto-navigates to ExplanationScreen when `gameStore.phase === "EXPLANATION"` via a separate `$effect`
+- `GameScreen` uses `onMount` to skip starting a new drill if a deal is already in progress
+- GameScreen renders all phases (BIDDING, DECLARER_PROMPT, PLAYING, EXPLANATION) inline via conditional blocks — no separate ExplanationScreen
 - PLAYING phase shows BridgeTable with TrickArea center, HandFan with legal plays, and side panel with trick count + skip button
 - BridgeTable and TrickArea accept optional `rotated` prop for 180° table rotation (declarer swap). Uses `viewSeat()` pure function from `src/lib/seat-mapping.ts` — not CSS rotation.
 - DECLARER_PROMPT phase shown when user (South) is dummy; offers "Play as Declarer" (rotates table, user controls North) or "Watch" (AI plays all)
-- `BidPanel` always renders all 35 contract bids (7x5 grid) + 3 specials; unavailable bids are disabled/grayed, not hidden
-- User seat is hardcoded to `Seat.South` in GameScreen/ExplanationScreen — future: make configurable
+- `BidPanel` always renders all 35 contract bids (7x5 grid) + 3 specials; unavailable bids are disabled/grayed, not hidden. All buttons have `data-testid="bid-{callKey}"` (e.g., `bid-1C`, `bid-pass`) for Playwright selectors.
+- User seat is hardcoded to `Seat.South` in GameScreen — future: make configurable
+- GameScreen supports dev-mode seeded RNG via `appStore.devSeed` — `makeDevRng()` creates mulberry32 PRNG, seed advances per deal
 - GameScreen has a local `dealNumber` counter that increments on each new drill and resets on remount
 
 ---
@@ -79,4 +86,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `App.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=3 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=5 | dir-commits-at-audit=7 | tree-sig=dirs:4,files:34,exts:svelte:21,ts:12,md:1 -->

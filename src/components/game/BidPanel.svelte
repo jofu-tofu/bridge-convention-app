@@ -51,7 +51,8 @@
     {#each ALL_BIDS as call (callKey(call))}
       {@const legal = isLegal(call) && !disabled}
       <button
-        class="{compact ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated
+        data-testid="bid-{callKey(call)}"
+        class="{compact ? 'px-2 py-2 text-xs' : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated
           {legal
             ? 'hover:bg-bg-hover cursor-pointer'
             : 'opacity-30 cursor-default'
@@ -68,7 +69,8 @@
     {#each ALL_SPECIALS as call (callKey(call))}
       {@const legal = isLegal(call) && !disabled}
       <button
-        class="{compact ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary
+        data-testid="bid-{callKey(call)}"
+        class="{compact ? 'px-2 py-2 text-xs' : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary
           {legal
             ? 'hover:bg-bg-hover cursor-pointer'
             : 'opacity-30 cursor-default'

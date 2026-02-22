@@ -1,10 +1,12 @@
 import type { ConventionConfig } from "../conventions/types";
 
-export type Screen = "select" | "game" | "explanation";
+export type Screen = "select" | "game";
 
 export function createAppStore() {
   let currentScreen = $state<Screen>("select");
   let selectedConvention = $state<ConventionConfig | null>(null);
+  let devSeed = $state<number | null>(null);
+  let devDealCount = $state(0);
 
   return {
     get screen() {
@@ -12,6 +14,12 @@ export function createAppStore() {
     },
     get selectedConvention() {
       return selectedConvention;
+    },
+    get devSeed() {
+      return devSeed;
+    },
+    get devDealCount() {
+      return devDealCount;
     },
 
     selectConvention(config: ConventionConfig) {
@@ -24,12 +32,13 @@ export function createAppStore() {
       currentScreen = "select";
     },
 
-    navigateToExplanation() {
-      currentScreen = "explanation";
+    setDevSeed(seed: number | null) {
+      devSeed = seed;
+      devDealCount = 0;
     },
 
-    navigateToGame() {
-      currentScreen = "game";
+    advanceDevDeal() {
+      devDealCount++;
     },
   };
 }

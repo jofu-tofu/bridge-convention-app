@@ -16,6 +16,8 @@ Playwright end-to-end smoke tests for user-facing behavior.
 - Dev server auto-starts on port 1420 if not running
 - Base URL: `http://localhost:1420`
 - Test structural concerns (elements render, navigation works), not specific copy
+- Bid buttons have `data-testid="bid-{callKey}"` selectors (e.g., `bid-1C`, `bid-pass`) — use these instead of unicode suit symbols
+- Dev URL params available: `?convention=stayman&seed=42` for deterministic test scenarios
 
 ## Architecture
 
@@ -49,4 +51,4 @@ the codebase wins — update this file, do not work around it. Prune aggressivel
 **Staleness anchor:** This file assumes `e2e/convention-select.spec.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-20 | version=1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-22 | version=3 | dir-commits-at-audit=4 | tree-sig=dirs:1,files:3,exts:ts:2,md:1 -->

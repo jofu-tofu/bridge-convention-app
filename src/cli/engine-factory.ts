@@ -23,8 +23,6 @@ export function createCliEngine(): CliEngine {
     solveDeal: (deal) => tsEngine.solveDeal(deal),
     suggestPlay: (hand, currentTrick, trumpSuit, previousTricks) =>
       tsEngine.suggestPlay(hand, currentTrick, trumpSuit, previousTricks),
-    suggestBid: (hand, auction, seat, strategy) =>
-      tsEngine.suggestBid(hand, auction, seat, strategy),
     getLegalPlays: (hand, leadSuit) => tsEngine.getLegalPlays(hand, leadSuit),
     getTrickWinner: (trick) => tsEngine.getTrickWinner(trick),
 

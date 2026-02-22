@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../types";
 import type { ContractBid } from "../types";
-import { TsEngine } from "../ts-engine";
+import { suggestBid } from "../bid-suggester";
 import { registerConvention, clearRegistry } from "../../conventions/registry";
 import { staymanConfig } from "../../conventions/stayman";
 import { hand } from "./fixtures";
@@ -14,8 +14,6 @@ import {
 import { conventionToStrategy } from "../../ai/convention-strategy";
 import type { BiddingStrategy } from "../../shared/types";
 
-const engine = new TsEngine();
-
 beforeEach(() => {
   clearRegistry();
   registerConvention(staymanConfig);
@@ -23,11 +21,11 @@ beforeEach(() => {
 
 const staymanStrategy = () => conventionToStrategy(staymanConfig);
 
-describe("TsEngine.suggestBid", () => {
-  test("suggestBid with stayman returns BidResult for hand+auction", async () => {
+describe("suggestBid", () => {
+  test("suggestBid with stayman returns BidResult for hand+auction", () => {
     const responder = staymanResponder();
     const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
-    const result = await engine.suggestBid(responder, auction, Seat.South, staymanStrategy());
+    const result = suggestBid(responder, auction, Seat.South, staymanStrategy());
     expect(result.call.type).toBe("bid");
     const bid = result.call as ContractBid;
     expect(bid.level).toBe(2);
@@ -36,16 +34,16 @@ describe("TsEngine.suggestBid", () => {
     expect(result.explanation).toBeTruthy();
   });
 
-  test("returns BidResult with pass when no rules match", async () => {
+  test("returns BidResult with pass when no rules match", () => {
     const noMajor = noMajorHand();
     const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
-    const result = await engine.suggestBid(noMajor, auction, Seat.South, staymanStrategy());
+    const result = suggestBid(noMajor, auction, Seat.South, staymanStrategy());
     expect(result.call.type).toBe("pass");
     expect(result.ruleName).toBeNull();
     expect(result.explanation).toBeTruthy();
   });
 
-  test("null→pass boundary: strategy returning null produces pass BidResult", async () => {
+  test("null→pass boundary: strategy returning null produces pass BidResult", () => {
     const alwaysNullStrategy: BiddingStrategy = {
       id: "test:always-null",
       name: "Always Null",
@@ -58,15 +56,14 @@ describe("TsEngine.suggestBid", () => {
       "CA", "CK", "CQ", "CJ",
     );
     const auction = { entries: [], isComplete: false };
-    const result = await engine.suggestBid(h, auction, Seat.North, alwaysNullStrategy);
+    const result = suggestBid(h, auction, Seat.North, alwaysNullStrategy);
     expect(result.call.type).toBe("pass");
     expect(result.ruleName).toBeNull();
     expect(result.explanation).toBeTruthy();
   });
 
-  test("full Stayman sequence through suggestBid", async () => {
+  test("full Stayman sequence through suggestBid", () => {
     const opener = staymanOpener();
-    // Responder for sequence test: 13 HCP, 4 hearts (different from staymanResponder to test variety)
     const responder = hand(
       "SQ", "S5", "S2",
       "HA", "HK", "H5", "H3",
@@ -76,19 +73,19 @@ describe("TsEngine.suggestBid", () => {
 
     // Step 1: South bids 2C (Stayman)
     let auction = auctionFromBids(Seat.North, ["1NT", "P"]);
-    const result1 = await engine.suggestBid(responder, auction, Seat.South, staymanStrategy());
+    const result1 = suggestBid(responder, auction, Seat.South, staymanStrategy());
     expect(result1.call.type).toBe("bid");
     expect((result1.call as ContractBid).strain).toBe(BidSuit.Clubs);
 
     // Step 2: North responds 2H
     auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
-    const result2 = await engine.suggestBid(opener, auction, Seat.North, staymanStrategy());
+    const result2 = suggestBid(opener, auction, Seat.North, staymanStrategy());
     expect(result2.call.type).toBe("bid");
     expect((result2.call as ContractBid).strain).toBe(BidSuit.Hearts);
 
     // Step 3: South bids 4H
     auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P", "2H", "P"]);
-    const result3 = await engine.suggestBid(responder, auction, Seat.South, staymanStrategy());
+    const result3 = suggestBid(responder, auction, Seat.South, staymanStrategy());
     expect(result3.call.type).toBe("bid");
     expect((result3.call as ContractBid).level).toBe(4);
     expect((result3.call as ContractBid).strain).toBe(BidSuit.Hearts);

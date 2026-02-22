@@ -197,14 +197,6 @@ describe("TsEngine", () => {
     await expect(engine.solveDeal(deal)).rejects.toThrow();
   });
 
-  test("suggestBid returns pass for null-returning strategy", async () => {
-    const engine = new TsEngine();
-    const auction: Auction = { entries: [], isComplete: false };
-    const nullStrategy = { id: "test", name: "Test", suggest() { return null; } };
-    const result = await engine.suggestBid(testHand, auction, Seat.North, nullStrategy);
-    expect(result.call.type).toBe("pass");
-  });
-
   test("suggestPlay is not yet implemented", async () => {
     const engine = new TsEngine();
     await expect(engine.suggestPlay(testHand, [], null, [])).rejects.toThrow();

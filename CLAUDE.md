@@ -22,6 +22,12 @@ Desktop app for drilling bridge bidding conventions (Stayman, Gerber, DONT, Berg
 | `npm run format`        | Prettier format all files                                |
 | `npm run format:check`  | Prettier check (CI)                                      |
 
+## Dev Tools (dev server only)
+
+- **URL routing:** `?convention=stayman` jumps to game screen with that convention (IDs: `stayman`, `gerber`, `dont`, `bergen-raises`)
+- **Deterministic seed:** `?seed=42` seeds the PRNG for reproducible deals. Seed advances per deal (42, 43, 44...). Reload resets.
+- **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
+
 ## Conventions
 
 - **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `ai/`. Engine imports `shared/types` for cross-boundary types (`BiddingStrategy`, `BidResult`)
@@ -48,7 +54,7 @@ src/
   ai/              AI bidding strategies (convention adapter, pass strategy, drill session)
   lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers, seat-mapping)
   components/      Svelte UI components
-    screens/       Screen-level components (ConventionSelectScreen, GameScreen, ExplanationScreen)
+    screens/       Screen-level components (ConventionSelectScreen, game-screen/GameScreen)
     game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea)
     shared/        Reusable components (Card, Button, ConventionCallout)
   stores/          Svelte stores (app navigation, game drill state)
@@ -63,13 +69,13 @@ tests/
 - **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. All 23 rules across 4 conventions use introspectable conditions (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ (entry: `src/shared/types.ts`)
 - **AI:** Bidding strategies + play AI — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `randomPlay()` card selection (entry: `src/ai/convention-strategy.ts`)
-- **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`) (entry: `src/lib/format.ts`)
-- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, GameScreen, ExplanationScreen), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
-- **Stores:** App store (screen navigation, selected convention) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
+- **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
+- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` + sub-components), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
+- **Stores:** App store (screen navigation, selected convention, dev seed state) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
 - **CLI:** Command-line interface wrapping EnginePort — JSON default, text opt-in, phase-gated future commands (entry: `src/cli/runner.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
-**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers to play as declarer (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`). When South is declarer, user also controls dummy (North) cards face-up. AI plays random legal cards with 500ms delay. "Skip to Review" button auto-completes remaining tricks.
+**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`) or "Skip to Review" (goes straight to EXPLANATION). When South declares or E/W declares, auction completes directly to EXPLANATION (no play phase). Play phase only entered via acceptDeclarerSwap. AI plays random legal cards with 500ms delay.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
@@ -161,4 +167,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-21 | version=5 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-22 | version=6 | dir-commits-at-audit=21 | tree-sig=dirs:9,files:120+ -->

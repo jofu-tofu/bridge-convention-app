@@ -7,7 +7,7 @@ export function computeTableScale(
   options: { sidePanel?: boolean; padding?: number; headerH?: number } = {},
 ): number {
   const { sidePanel = true, padding = 32, headerH = 64 } = options;
-  const sidePanelW = sidePanel ? 220 : 0;
+  const sidePanelW = sidePanel ? 400 : 0;
   const availW = Math.max(0, viewportW - sidePanelW - padding);
   const availH = Math.max(0, viewportH - headerH - padding);
   if (availW === 0 || availH === 0) return 0.35;

@@ -49,12 +49,13 @@ function makeTestDeal() {
   };
 }
 
+// North declares so user (South) is dummy — play phase reachable via acceptDeclarerSwap
 const CONTRACT_1NT: Contract = {
   level: 1,
   strain: BidSuit.NoTrump,
   doubled: false,
   redoubled: false,
-  declarer: Seat.South,
+  declarer: Seat.North,
 };
 
 describe("seatController", () => {
@@ -115,16 +116,15 @@ describe("createGameStore play phase", () => {
   });
 
   /**
-   * Start a drill and advance fake timers past AI bid delays only.
-   * Uses a short advancement (2000ms) to cover bid delays without
-   * triggering fire-and-forget AI play delays from startPlay().
+   * Start a drill and advance to PLAYING phase via acceptDeclarerSwap.
+   * North declares, so user (South) is dummy → DECLARER_PROMPT → accept → PLAYING.
    */
   async function startDrillWithTimers(drillStore: typeof store, deal: ReturnType<typeof makeTestDeal>, session: DrillSession) {
     const promise = drillStore.startDrill(deal, session);
-    // Advance past bid delays (AI_BID_DELAY = 500ms × 1 AI bid before auction completes)
-    // but not so far that fire-and-forget runAiPlays() play delays also fire
     await vi.advanceTimersByTimeAsync(600);
     await promise;
+    // North declares → DECLARER_PROMPT; accept swap to enter PLAYING
+    drillStore.acceptDeclarerSwap();
   }
 
   it("transitions to PLAYING after auction completes", async () => {
@@ -143,8 +143,8 @@ describe("createGameStore play phase", () => {
 
     await startDrillWithTimers(store, deal, session);
 
-    // South is declarer → West leads (nextSeat goes N→E→S→W)
-    expect(store.currentPlayer).toBe(Seat.West);
+    // North is declarer → East leads (nextSeat(North))
+    expect(store.currentPlayer).toBe(Seat.East);
   });
 
   it("sets dummy as partner of declarer", async () => {
@@ -153,8 +153,8 @@ describe("createGameStore play phase", () => {
 
     await startDrillWithTimers(store, deal, session);
 
-    // South is declarer → North is dummy
-    expect(store.dummySeat).toBe(Seat.North);
+    // North is declarer → South is dummy
+    expect(store.dummySeat).toBe(Seat.South);
   });
 
   it("skipToReview completes all tricks and transitions to EXPLANATION", async () => {

@@ -16,7 +16,6 @@ import type {
   Trick,
   Vulnerability,
 } from "./types";
-import type { BiddingStrategy, BidResult } from "../shared/types";
 
 export interface EnginePort {
   // Phase 1 — implemented
@@ -51,10 +50,4 @@ export interface EnginePort {
     trumpSuit: BidSuit | null,
     previousTricks: readonly (readonly Card[])[],
   ): Promise<Card>;
-  suggestBid(
-    hand: Hand,
-    auction: Auction,
-    seat: Seat,
-    strategy: BiddingStrategy,
-  ): Promise<BidResult>;
 }

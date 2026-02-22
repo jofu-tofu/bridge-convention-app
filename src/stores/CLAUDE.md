@@ -13,7 +13,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 | File | Role |
 |------|------|
-| `app.svelte.ts` | `createAppStore()` — screen navigation (`select`/`game`/`explanation`), selected convention |
+| `app.svelte.ts` | `createAppStore()` — screen navigation (`select`/`game`), selected convention, dev seed state |
 | `game.svelte.ts` | `createGameStore(engine)` — deal, auction, bid history, phase transitions, AI bid loop, play phase |
 
 **Game store key methods (bidding):**
@@ -22,11 +22,11 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `dismissBidFeedback()` — clears wrong bid feedback and resumes auction (runs AI bids)
 - `skipFromFeedback()` — clears feedback and jumps directly to EXPLANATION phase
 - `runAiBids()` — async loop: AI bids until user seat or auction complete
-- `completeAuction()` — gets contract, transitions to DECLARER_PROMPT (when user is dummy) or PLAYING phase (or EXPLANATION for passout)
+- `completeAuction()` — gets contract, transitions to DECLARER_PROMPT (when user is dummy) or EXPLANATION (when user is declarer or for passout)
 
 **Game store key methods (declarer prompt):**
 - `acceptDeclarerSwap()` — sets `effectiveUserSeat` to `contract.declarer` (North), calls `startPlay()`. Table rotates 180°.
-- `declineDeclarerSwap()` — keeps `effectiveUserSeat` as South, calls `startPlay()`. AI plays all cards.
+- `declineDeclarerSwap()` — skips play phase, goes straight to EXPLANATION. Used as "Skip to Review" in UI.
 
 **Game store key methods (play):**
 - `startPlay()` — called by `completeAuction()` or declarer swap methods, sets up play state, determines declarer/dummy/opening leader
@@ -37,6 +37,12 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `skipToReview()` — sets `playAborted` flag, synchronously finishes all remaining tricks
 - `getLegalPlaysForSeat(seat)` — returns legal cards for a seat in current trick context
 - `getRemainingCards(seat)` — returns hand minus already-played cards
+
+**App store dev seed state (dev-only):**
+- `devSeed` (`number | null`) — seed for deterministic PRNG, set via `?seed=` URL param
+- `devDealCount` (`number`) — increments per deal; effective seed = `devSeed + devDealCount`
+- `setDevSeed(seed)` — sets seed and resets deal count to 0
+- `advanceDevDeal()` — increments deal count
 
 **Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry`, `GamePhase` (includes `"DECLARER_PROMPT"`)
 
@@ -63,4 +69,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=3 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=5 | dir-commits-at-audit=4 | tree-sig=dirs:1,files:6,exts:ts:5,md:1 -->

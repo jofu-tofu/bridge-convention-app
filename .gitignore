@@ -8,6 +8,8 @@ node_modules
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+# MY specific folders
+html-presentations
 
 # Vite build output
 dist/
@@ -25,6 +27,9 @@ coverage/
 
 # OS files
 Thumbs.db
+
+# Dev sharing script (local-only)
+share-dev.ps1
 
 # AIW Installation
 .windsurf/

@@ -5,6 +5,7 @@ import { parseHand } from "../../engine/notation";
 import { getConvention } from "../../conventions/registry";
 import { buildAuction } from "../../engine/auction-helpers";
 import { conventionToStrategy } from "../../ai/convention-strategy";
+import { suggestBid } from "../../engine/bid-suggester";
 
 const SEAT_MAP: Record<string, Seat> = {
   N: Seat.North,
@@ -52,7 +53,7 @@ export const bidCommand: CommandDef = {
       auction = convention.defaultAuction?.(seat, undefined) ?? { entries: [], isComplete: false };
     }
 
-    const result = await deps.engine.suggestBid(hand, auction, seat, strategy);
+    const result = suggestBid(hand, auction, seat, strategy);
 
     return ok({
       type: "bid",

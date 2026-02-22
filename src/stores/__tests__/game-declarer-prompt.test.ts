@@ -100,23 +100,22 @@ describe("DECLARER_PROMPT phase", () => {
     expect(store.phase).toBe("DECLARER_PROMPT");
   });
 
-  it("goes directly to PLAYING when South declares (user is declarer)", async () => {
+  it("goes directly to EXPLANATION when South declares (user is declarer)", async () => {
     createEngineWithDeclarer(Seat.South);
     await startDrillWithTimers();
-    expect(store.phase).toBe("PLAYING");
+    expect(store.phase).toBe("EXPLANATION");
   });
 
-  it("goes directly to PLAYING when East declares", async () => {
+  it("goes directly to EXPLANATION when East declares", async () => {
     createEngineWithDeclarer(Seat.East);
     await startDrillWithTimers();
-    // AI play starts immediately, phase should be PLAYING
-    expect(store.phase).toBe("PLAYING");
+    expect(store.phase).toBe("EXPLANATION");
   });
 
-  it("goes directly to PLAYING when West declares", async () => {
+  it("goes directly to EXPLANATION when West declares", async () => {
     createEngineWithDeclarer(Seat.West);
     await startDrillWithTimers();
-    expect(store.phase).toBe("PLAYING");
+    expect(store.phase).toBe("EXPLANATION");
   });
 
   it("acceptDeclarerSwap sets effectiveUserSeat to North and phase to PLAYING", async () => {
@@ -128,13 +127,12 @@ describe("DECLARER_PROMPT phase", () => {
     expect(store.phase).toBe("PLAYING");
   });
 
-  it("declineDeclarerSwap keeps effectiveUserSeat as South and phase to PLAYING", async () => {
+  it("declineDeclarerSwap skips to EXPLANATION phase", async () => {
     createEngineWithDeclarer(Seat.North);
     await startDrillWithTimers();
     expect(store.phase).toBe("DECLARER_PROMPT");
     store.declineDeclarerSwap();
-    expect(store.effectiveUserSeat).toBe(Seat.South);
-    expect(store.phase).toBe("PLAYING");
+    expect(store.phase).toBe("EXPLANATION");
   });
 
   it("startDrill resets effectiveUserSeat to null", async () => {

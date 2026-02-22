@@ -104,4 +104,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `registry.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-21 | version=1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=2 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:19,exts:ts:18,md:1 -->

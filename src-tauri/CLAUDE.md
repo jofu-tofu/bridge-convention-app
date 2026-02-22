@@ -31,4 +31,4 @@ Tauri v2 desktop shell. Currently a wrapper only — no custom Rust commands.
 **Staleness anchor:** This file assumes `src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-21 | version=1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=2 | dir-commits-at-audit=3 | tree-sig=dirs:2,files:8,exts:rs:2,toml:1,json:1,png:1,ico:1,md:1 -->

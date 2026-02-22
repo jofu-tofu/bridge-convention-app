@@ -51,7 +51,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Constraints
 
-- Deal generation: flat rejection sampling, default 10,000 max attempts (configurable via `maxAttempts`). Convention deal constraints use `minLengthAny` for OR constraints and `customCheck` for exotic filters.
+- Deal generation: flat rejection sampling, default 10,000 max attempts (configurable via `maxAttempts`). Convention deal constraints use `minLengthAny` for OR constraints and `customCheck` for exotic filters. `DealConstraints.rng` accepts an optional PRNG function for deterministic deals (used by dev seed feature).
 - Tests colocated in `__tests__/<module>.test.ts`; use `import type` for interfaces
 - Coverage: 90% branches, 90% functions, 85% lines (enforced in `vitest.config.ts`)
 
@@ -73,4 +73,4 @@ the codebase wins — update this file, do not work around it. Prune aggressivel
 **Staleness anchor:** This file assumes `types.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-21 | version=3 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-22 | version=4 | dir-commits-at-audit=13 | tree-sig=dirs:1,files:25,exts:ts:24,md:1 -->

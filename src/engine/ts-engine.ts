@@ -1,6 +1,3 @@
-import type { BiddingStrategy, BidResult } from "../shared/types";
-import type { BiddingContext } from "../conventions/types";
-
 import type {
   Deal,
   DealConstraints,
@@ -41,7 +38,7 @@ import {
 export class TsEngine implements EnginePort {
   // Phase 1 — implemented
   async generateDeal(constraints: DealConstraints): Promise<Deal> {
-    return generateDeal(constraints).deal;
+    return generateDeal(constraints, constraints.rng).deal;
   }
 
   // TODO: Phase 2 — resolve _strategy to a HandEvaluationStrategy via registry lookup
@@ -106,20 +103,4 @@ export class TsEngine implements EnginePort {
     throw new Error("DDS not available in V1");
   }
 
-  async suggestBid(
-    hand: Hand,
-    auction: Auction,
-    seat: Seat,
-    strategy: BiddingStrategy,
-  ): Promise<BidResult> {
-    const evaluation = evaluateHand(hand);
-    const context: BiddingContext = { hand, auction, seat, evaluation };
-    const result = strategy.suggest(context);
-    if (result) return result;
-    return {
-      call: { type: "pass" },
-      ruleName: null,
-      explanation: "No matching rule — defaulting to pass",
-    };
-  }
 }

@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { TsEngine } from "./engine/ts-engine";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
   import { setEngine, setGameStore, setAppStore } from "./lib/context";
+  import { getConvention } from "./conventions/registry";
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
-  import GameScreen from "./components/screens/GameScreen.svelte";
-  import ExplanationScreen from "./components/screens/ExplanationScreen.svelte";
+  import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
 
   const engine = new TsEngine();
   const gameStore = createGameStore(engine);
@@ -14,6 +15,30 @@
   setEngine(engine);
   setGameStore(gameStore);
   setAppStore(appStore);
+
+  if (import.meta.env.DEV) {
+    onMount(() => {
+      const params = new URLSearchParams(window.location.search);
+
+      const seedParam = params.get("seed");
+      if (seedParam != null) {
+        const seed = Number(seedParam);
+        if (Number.isFinite(seed)) {
+          appStore.setDevSeed(seed);
+        }
+      }
+
+      const conventionParam = params.get("convention");
+      if (conventionParam) {
+        try {
+          const config = getConvention(conventionParam);
+          appStore.selectConvention(config);
+        } catch (e) {
+          console.warn(`[dev] Unknown convention "${conventionParam}":`, e);
+        }
+      }
+    });
+  }
 </script>
 
 <div class="min-h-screen bg-bg-deepest text-text-primary font-sans">
@@ -21,7 +46,5 @@
     <ConventionSelectScreen />
   {:else if appStore.screen === "game"}
     <GameScreen />
-  {:else if appStore.screen === "explanation"}
-    <ExplanationScreen />
   {/if}
 </div>

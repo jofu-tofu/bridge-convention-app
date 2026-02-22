@@ -65,4 +65,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `convention-strategy.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-21 | version=1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=2 | dir-commits-at-audit=5 | tree-sig=dirs:1,files:11,exts:ts:10,md:1 -->

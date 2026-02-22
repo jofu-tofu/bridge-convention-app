@@ -10,6 +10,7 @@
     "build:cli": "tsc -p tsconfig.cli.json",
     "cli": "npx tsx src/cli/index.ts",
     "dev": "vite dev",
+    "dev:share": "bash scripts/dev-share.sh",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
