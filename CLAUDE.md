@@ -86,19 +86,10 @@ tests/
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
-## Phase Tracking
+## Roadmap
 
-| Phase | Status  | Description                                                                                                                              |
-| ----- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | Done    | Scaffold, types, testing pipeline, CLAUDE.md                                                                                             |
-| 1     | Done    | Engine core: types, constants, hand-evaluator, deal-generator, EnginePort, CLI                                                           |
-| 1.5   | Done    | Auction mechanics, scoring engine, play rules, convention test fixtures                                                                  |
-| 2     | Done    | Convention registry + Stayman implementation                                                                                             |
-| 3     | Done    | AI bidding strategies (BiddingStrategy, convention adapter, pass strategy)                                                               |
-| 4     | Done    | Drill UI with feedback (Tailwind, stores, components, drill session)                                                                     |
-| 5     | Done    | Card play UI + Tauri desktop shell                                                                                                       |
-| 6     | Done    | Rust engine port — three-crate workspace (bridge-engine, bridge-tauri, bridge-server), dual transport (Tauri IPC + HTTP), 122 Rust tests |
-| 7     | Pending | Smart play AI — heuristic → DDS-assisted → convention-aware card play                                                                    |
+1. **Smart Play AI** — Replace random card play with heuristic → DDS-assisted → convention-aware play
+2. **User Learning Enhancements** — Two surfaces: (a) in-game info panel/tab showing active convention rules during practice, (b) dedicated learning screen for browsing full convention rule sets. Both built programmatically from existing conditions/rules framework; may require refactoring conventions layer for teaching use
 
 ## Testing Scope
 
