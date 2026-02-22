@@ -14,6 +14,7 @@ Command-line interface for the bridge practice engine. Consumer of `src/engine/`
 ## Architecture
 
 **Module graph:**
+
 ```
 engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/deal-generator.ts
                                                                   ↘ engine/port.ts → engine/ts-engine.ts
@@ -29,21 +30,21 @@ engine/types.ts → engine/constants.ts → engine/hand-evaluator.ts → engine/
 
 **Key files:**
 
-| File                     | Role                                                          |
-| ------------------------ | ------------------------------------------------------------- |
-| `types.ts`               | Result, ok, err, CommandResult, CommandHandler, CommandDef, CliDependencies |
-| `constants.ts`           | CURRENT_PHASE, PHASE_DESCRIPTIONS                             |
-| `engine-factory.ts`      | CliEngine (extends EnginePort + diagnostics), dependency factory |
-| `runner.ts`              | Command registry, dispatcher, PhaseGate, --help/--version     |
-| `formatter.ts`           | JSON default, text opt-in, bridge display helpers             |
-| `stdin.ts`               | Piped input reader with TTY detection and envelope validation |
-| `errors.ts`              | CliError type and formatError()                               |
-| `commands/generate.ts`   | Phase 1: deal generation with constraints                     |
-| `commands/evaluate.ts`   | Phase 1: hand evaluation                                      |
-| `commands/bid.ts`        | Phase 2: suggest bid using a convention (imports conventions/) |
-| `commands/score.ts`      | Phase 2: calculate contract score                             |
-| `commands/conventions.ts`| Phase 2: list/inspect registered conventions                  |
-| `commands/*.ts` (stubs)  | Phase 3/6: gate-locked — simulate, suggest-play, solve |
+| File                      | Role                                                                        |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `types.ts`                | Result, ok, err, CommandResult, CommandHandler, CommandDef, CliDependencies |
+| `constants.ts`            | CURRENT_PHASE, PHASE_DESCRIPTIONS                                           |
+| `engine-factory.ts`       | CliEngine (extends EnginePort + diagnostics), dependency factory            |
+| `runner.ts`               | Command registry, dispatcher, PhaseGate, --help/--version                   |
+| `formatter.ts`            | JSON default, text opt-in, bridge display helpers                           |
+| `stdin.ts`                | Piped input reader with TTY detection and envelope validation               |
+| `errors.ts`               | CliError type and formatError()                                             |
+| `commands/generate.ts`    | Phase 1: deal generation with constraints                                   |
+| `commands/evaluate.ts`    | Phase 1: hand evaluation                                                    |
+| `commands/bid.ts`         | Phase 2: suggest bid using a convention (imports conventions/)              |
+| `commands/score.ts`       | Phase 2: calculate contract score                                           |
+| `commands/conventions.ts` | Phase 2: list/inspect registered conventions                                |
+| `commands/*.ts` (stubs)   | Phase 3/6: gate-locked — simulate, suggest-play, solve                      |
 
 ## How to Add a Command
 

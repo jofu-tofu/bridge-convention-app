@@ -6,10 +6,17 @@ export const simulateCommand: CommandDef = {
   description: "Simulate a full deal with AI bidding",
   phase: 3,
   options: {
-    convention: { type: "string", short: "c", description: "Convention to drill" },
+    convention: {
+      type: "string",
+      short: "c",
+      description: "Convention to drill",
+    },
     count: { type: "string", short: "n", description: "Number of simulations" },
   },
   async handler() {
-    return err({ code: "NOT_IMPLEMENTED", message: "simulate command is phase-gated" });
+    return err({
+      code: "NOT_IMPLEMENTED",
+      message: "simulate command is phase-gated",
+    });
   },
 };

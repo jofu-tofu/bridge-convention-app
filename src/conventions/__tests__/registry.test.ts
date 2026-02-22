@@ -102,29 +102,20 @@ describe("evaluateBiddingRules", () => {
   };
 
   test("returns first matching rule", () => {
-    const rules = [
-      makeRule("rule-a", true),
-      makeRule("rule-b", true),
-    ];
+    const rules = [makeRule("rule-a", true), makeRule("rule-b", true)];
     const result = evaluateBiddingRules(rules, dummyContext);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("rule-a");
   });
 
   test("returns null when no rules match", () => {
-    const rules = [
-      makeRule("rule-a", false),
-      makeRule("rule-b", false),
-    ];
+    const rules = [makeRule("rule-a", false), makeRule("rule-b", false)];
     const result = evaluateBiddingRules(rules, dummyContext);
     expect(result).toBeNull();
   });
 
   test("skips non-matching rules, finds later match", () => {
-    const rules = [
-      makeRule("skip-me", false),
-      makeRule("match-me", true),
-    ];
+    const rules = [makeRule("skip-me", false), makeRule("match-me", true)];
     const result = evaluateBiddingRules(rules, dummyContext);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("match-me");

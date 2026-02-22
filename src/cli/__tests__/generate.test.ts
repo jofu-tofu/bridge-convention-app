@@ -49,10 +49,7 @@ describe("generate command", () => {
   });
 
   it("includes diagnostics when --diagnostics is set", async () => {
-    const result = await generateCommand.handler(
-      { diagnostics: true },
-      deps,
-    );
+    const result = await generateCommand.handler({ diagnostics: true }, deps);
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.value.meta).toBeDefined();
@@ -109,7 +106,10 @@ describe("generate command", () => {
   });
 
   it("returns error on invalid --min-hcp", async () => {
-    const result = await generateCommand.handler({ seat: "N", "min-hcp": "abc" }, deps);
+    const result = await generateCommand.handler(
+      { seat: "N", "min-hcp": "abc" },
+      deps,
+    );
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.code).toBe("INVALID_ARGS");

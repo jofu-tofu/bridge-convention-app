@@ -20,7 +20,9 @@ import type {
 import type { EnginePort } from "./port";
 
 /** Strip non-serializable fields from seat constraints. */
-function cleanSeatConstraint(sc: SeatConstraint): Omit<SeatConstraint, "customCheck"> {
+function cleanSeatConstraint(
+  sc: SeatConstraint,
+): Omit<SeatConstraint, "customCheck"> {
   const { customCheck: _, ...rest } = sc;
   return rest;
 }
@@ -48,7 +50,9 @@ export class HttpEngine implements EnginePort {
   }
 
   async generateDeal(constraints: DealConstraints): Promise<Deal> {
-    return this.post<Deal>("generate_deal", { constraints: cleanConstraints(constraints) });
+    return this.post<Deal>("generate_deal", {
+      constraints: cleanConstraints(constraints),
+    });
   }
 
   async evaluateHand(hand: Hand, _strategy?: string): Promise<HandEvaluation> {
@@ -92,7 +96,10 @@ export class HttpEngine implements EnginePort {
   }
 
   async getLegalPlays(hand: Hand, leadSuit?: Suit): Promise<Card[]> {
-    return this.post<Card[]>("get_legal_plays", { hand, leadSuit: leadSuit ?? null });
+    return this.post<Card[]>("get_legal_plays", {
+      hand,
+      leadSuit: leadSuit ?? null,
+    });
   }
 
   async getTrickWinner(trick: Trick): Promise<Seat> {

@@ -70,8 +70,12 @@ describe("BidPanel", () => {
     const { container } = render(BidPanel, {
       props: { legalCalls: calls, onBid: () => {} },
     });
-    expect(container.querySelector("[data-testid='level-bids']")).not.toBeNull();
-    expect(container.querySelector("[data-testid='special-bids']")).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='level-bids']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='special-bids']"),
+    ).not.toBeNull();
   });
 
   it("displays bids in order: level 1-7, each level C/D/H/S/NT", () => {

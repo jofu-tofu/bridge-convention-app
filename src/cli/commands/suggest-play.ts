@@ -10,6 +10,9 @@ export const suggestPlayCommand: CommandDef = {
     trump: { type: "string", description: "Trump suit (S|H|D|C or NT)" },
   },
   async handler() {
-    return err({ code: "NOT_IMPLEMENTED", message: "suggest-play command is phase-gated" });
+    return err({
+      code: "NOT_IMPLEMENTED",
+      message: "suggest-play command is phase-gated",
+    });
   },
 };

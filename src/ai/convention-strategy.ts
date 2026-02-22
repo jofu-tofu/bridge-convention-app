@@ -1,6 +1,10 @@
 import type { ConventionConfig, ConditionResult } from "../conventions/types";
 import { evaluateBiddingRules } from "../conventions/registry";
-import type { BiddingStrategy, BidResult, ConditionDetail } from "../shared/types";
+import type {
+  BiddingStrategy,
+  BidResult,
+  ConditionDetail,
+} from "../shared/types";
 
 function mapConditionResult(cr: ConditionResult): ConditionDetail {
   if (cr.branches && cr.branches.length > 0) {
@@ -40,7 +44,9 @@ function mapConditionResult(cr: ConditionResult): ConditionDetail {
   };
 }
 
-export function conventionToStrategy(config: ConventionConfig): BiddingStrategy {
+export function conventionToStrategy(
+  config: ConventionConfig,
+): BiddingStrategy {
   return {
     id: `convention:${config.id}`,
     name: config.name,

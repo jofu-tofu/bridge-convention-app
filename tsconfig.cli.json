@@ -6,12 +6,6 @@
     "types": ["node"],
     "lib": ["ESNext"]
   },
-  "include": [
-    "src/cli/**/*.ts",
-    "src/engine/**/*.ts"
-  ],
-  "exclude": [
-    "src/**/*.test.ts",
-    "src/**/__tests__/**"
-  ]
+  "include": ["src/cli/**/*.ts", "src/engine/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/**/__tests__/**"]
 }

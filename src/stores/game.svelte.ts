@@ -1,13 +1,30 @@
 import type { EnginePort } from "../engine/port";
-import type { Deal, Call, Auction, Seat, Contract, Card, PlayedCard, Trick } from "../engine/types";
+import type {
+  Deal,
+  Call,
+  Auction,
+  Seat,
+  Contract,
+  Card,
+  PlayedCard,
+  Trick,
+} from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
 import type { DrillSession } from "../ai/types";
-import type { BiddingStrategy, BidResult, ConditionDetail } from "../shared/types";
+import type {
+  BiddingStrategy,
+  BidResult,
+  ConditionDetail,
+} from "../shared/types";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { randomPlay } from "../ai/play-strategy";
 
-export type GamePhase = "BIDDING" | "DECLARER_PROMPT" | "PLAYING" | "EXPLANATION";
+export type GamePhase =
+  | "BIDDING"
+  | "DECLARER_PROMPT"
+  | "PLAYING"
+  | "EXPLANATION";
 
 export interface BidHistoryEntry {
   readonly seat: Seat;
@@ -89,9 +106,9 @@ export function createGameStore(engine: EnginePort) {
 
   const isUserTurn = $derived(
     currentTurn !== null &&
-    drillSession !== null &&
-    drillSession.isUserSeat(currentTurn) &&
-    !isProcessing,
+      drillSession !== null &&
+      drillSession.isUserSeat(currentTurn) &&
+      !isProcessing,
   );
 
   const userSeat = $derived<Seat | null>(
@@ -220,7 +237,10 @@ export function createGameStore(engine: EnginePort) {
 
     // Update trick counts
     if (!contract) return;
-    const declarerSide = new Set([contract.declarer, partnerSeat(contract.declarer)]);
+    const declarerSide = new Set([
+      contract.declarer,
+      partnerSeat(contract.declarer),
+    ]);
     if (declarerSide.has(winner)) {
       declarerTricksWon++;
     } else {
@@ -305,9 +325,10 @@ export function createGameStore(engine: EnginePort) {
     while (tricks.length < 13) {
       // Fill current trick to 4 cards
       while (currentTrick.length < 4) {
-        const seat = currentTrick.length === 0
-          ? currentPlayer!
-          : nextSeat(currentTrick[currentTrick.length - 1]!.seat);
+        const seat =
+          currentTrick.length === 0
+            ? currentPlayer!
+            : nextSeat(currentTrick[currentTrick.length - 1]!.seat);
         const remaining = getRemainingCards(seat);
         const leadSuit = getLeadSuit();
         const legalPlays = await engine.getLegalPlays(
@@ -326,7 +347,10 @@ export function createGameStore(engine: EnginePort) {
       const winner = await engine.getTrickWinner(trick);
       const completedTrick: Trick = { ...trick, winner };
 
-      const declarerSide = new Set([contract.declarer, partnerSeat(contract.declarer)]);
+      const declarerSide = new Set([
+        contract.declarer,
+        partnerSeat(contract.declarer),
+      ]);
       if (declarerSide.has(winner)) {
         declarerTricksWon++;
       } else {
@@ -354,15 +378,21 @@ export function createGameStore(engine: EnginePort) {
         // Safety: null from AI means no bid possible
         if (!result) break;
 
-        auction = await engine.addCall(auction, { seat: currentTurn, call: result.call });
-        bidHistory = [...bidHistory, {
+        auction = await engine.addCall(auction, {
           seat: currentTurn,
           call: result.call,
-          ruleName: result.ruleName,
-          explanation: result.explanation,
-          isUser: false,
-          conditions: result.conditions,
-        }];
+        });
+        bidHistory = [
+          ...bidHistory,
+          {
+            seat: currentTurn,
+            call: result.call,
+            ruleName: result.ruleName,
+            explanation: result.explanation,
+            isUser: false,
+            conditions: result.conditions,
+          },
+        ];
 
         currentTurn = nextSeat(currentTurn);
 
@@ -383,26 +413,64 @@ export function createGameStore(engine: EnginePort) {
   }
 
   return {
-    get deal() { return deal; },
-    get auction() { return auction; },
-    get phase() { return phase; },
-    get currentTurn() { return currentTurn; },
-    get bidHistory() { return bidHistory; },
-    get contract() { return contract; },
-    get isProcessing() { return isProcessing; },
-    get isUserTurn() { return isUserTurn; },
-    get legalCalls() { return legalCalls; },
-    get bidFeedback() { return bidFeedback; },
+    get deal() {
+      return deal;
+    },
+    get auction() {
+      return auction;
+    },
+    get phase() {
+      return phase;
+    },
+    get currentTurn() {
+      return currentTurn;
+    },
+    get bidHistory() {
+      return bidHistory;
+    },
+    get contract() {
+      return contract;
+    },
+    get isProcessing() {
+      return isProcessing;
+    },
+    get isUserTurn() {
+      return isUserTurn;
+    },
+    get legalCalls() {
+      return legalCalls;
+    },
+    get bidFeedback() {
+      return bidFeedback;
+    },
     // Play state
-    get tricks() { return tricks; },
-    get currentTrick() { return currentTrick; },
-    get currentPlayer() { return currentPlayer; },
-    get declarerTricksWon() { return declarerTricksWon; },
-    get defenderTricksWon() { return defenderTricksWon; },
-    get dummySeat() { return dummySeat; },
-    get score() { return score; },
-    get trumpSuit() { return trumpSuit; },
-    get effectiveUserSeat() { return effectiveUserSeat; },
+    get tricks() {
+      return tricks;
+    },
+    get currentTrick() {
+      return currentTrick;
+    },
+    get currentPlayer() {
+      return currentPlayer;
+    },
+    get declarerTricksWon() {
+      return declarerTricksWon;
+    },
+    get defenderTricksWon() {
+      return defenderTricksWon;
+    },
+    get dummySeat() {
+      return dummySeat;
+    },
+    get score() {
+      return score;
+    },
+    get trumpSuit() {
+      return trumpSuit;
+    },
+    get effectiveUserSeat() {
+      return effectiveUserSeat;
+    },
 
     /** Get legal plays for a seat based on current trick context. */
     async getLegalPlaysForSeat(seat: Seat): Promise<Card[]> {
@@ -451,13 +519,15 @@ export function createGameStore(engine: EnginePort) {
           seat: entry.seat,
           call: entry.call,
           ruleName: null,
-          explanation: entry.call.type === "bid"
-            ? `Opening ${entry.call.level}${entry.call.strain} bid`
-            : "Pass",
+          explanation:
+            entry.call.type === "bid"
+              ? `Opening ${entry.call.level}${entry.call.strain} bid`
+              : "Pass",
           isUser: false,
         }));
         // Current turn is the next seat after the last entry
-        const lastEntry = initialAuction.entries[initialAuction.entries.length - 1];
+        const lastEntry =
+          initialAuction.entries[initialAuction.entries.length - 1];
         currentTurn = lastEntry ? nextSeat(lastEntry.seat) : newDeal.dealer;
       } else {
         auction = { entries: [], isComplete: false };
@@ -479,11 +549,17 @@ export function createGameStore(engine: EnginePort) {
         const hand = deal.hands[currentTurn];
         const evaluation = evaluateHand(hand);
         expectedResult = conventionStrategy.suggest({
-          hand, auction, seat: currentTurn, evaluation,
+          hand,
+          auction,
+          seat: currentTurn,
+          evaluation,
         });
       }
 
-      const isCorrect = callsMatch(call, expectedResult?.call ?? { type: "pass" });
+      const isCorrect = callsMatch(
+        call,
+        expectedResult?.call ?? { type: "pass" },
+      );
 
       // Store feedback
       bidFeedback = {
@@ -498,13 +574,16 @@ export function createGameStore(engine: EnginePort) {
 
       // Add bid to auction regardless of correctness
       auction = await engine.addCall(auction, { seat: currentTurn, call });
-      bidHistory = [...bidHistory, {
-        seat: currentTurn,
-        call,
-        ruleName: null,
-        explanation: "User bid",
-        isUser: true,
-      }];
+      bidHistory = [
+        ...bidHistory,
+        {
+          seat: currentTurn,
+          call,
+          ruleName: null,
+          explanation: "User bid",
+          isUser: true,
+        },
+      ];
 
       currentTurn = nextSeat(currentTurn);
 

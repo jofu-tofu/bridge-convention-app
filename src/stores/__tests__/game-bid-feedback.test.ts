@@ -33,13 +33,35 @@ function makeNoOpStrategy(): BiddingStrategy {
 }
 
 function makeTestDeal() {
-  const ranks = [Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack, Rank.Queen, Rank.King, Rank.Ace];
+  const ranks = [
+    Rank.Two,
+    Rank.Three,
+    Rank.Four,
+    Rank.Five,
+    Rank.Six,
+    Rank.Seven,
+    Rank.Eight,
+    Rank.Nine,
+    Rank.Ten,
+    Rank.Jack,
+    Rank.Queen,
+    Rank.King,
+    Rank.Ace,
+  ];
   return {
     hands: {
-      [Seat.North]: { cards: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })) },
-      [Seat.East]: { cards: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })) },
-      [Seat.South]: { cards: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })) },
-      [Seat.West]: { cards: ranks.map((r) => ({ suit: Suit.Spades, rank: r })) },
+      [Seat.North]: {
+        cards: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })),
+      },
+      [Seat.East]: {
+        cards: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })),
+      },
+      [Seat.South]: {
+        cards: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })),
+      },
+      [Seat.West]: {
+        cards: ranks.map((r) => ({ suit: Suit.Spades, rank: r })),
+      },
     },
     dealer: Seat.North,
     vulnerability: Vulnerability.None,
@@ -52,10 +74,34 @@ function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
       conventionId: "test",
       userSeat,
       seatStrategies: {
-        [Seat.North]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
-        [Seat.East]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
+        [Seat.North]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
+        [Seat.East]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
         [Seat.South]: "user",
-        [Seat.West]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
+        [Seat.West]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
       },
     },
     getNextBid(seat) {
@@ -81,7 +127,12 @@ describe("bid feedback — user-facing behavior", () => {
   describe("when user bids incorrectly", () => {
     it("auction pauses so user can review their mistake", async () => {
       const store = makeStore();
-      await store.startDrill(makeTestDeal(), makeDrillSession(), undefined, make2CStrategy());
+      await store.startDrill(
+        makeTestDeal(),
+        makeDrillSession(),
+        undefined,
+        make2CStrategy(),
+      );
 
       // User is on turn
       expect(store.isUserTurn).toBe(true);
@@ -94,21 +145,35 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("tells user what the correct bid was", async () => {
       const store = makeStore();
-      await store.startDrill(makeTestDeal(), makeDrillSession(), undefined, make2CStrategy());
+      await store.startDrill(
+        makeTestDeal(),
+        makeDrillSession(),
+        undefined,
+        make2CStrategy(),
+      );
       await store.userBid({ type: "pass" });
 
       // Feedback contains the correct bid the user should have made
       const feedback = store.bidFeedback!;
       expect(feedback.isCorrect).toBe(false);
       expect(feedback.expectedResult!.call).toEqual({
-        type: "bid", level: 2, strain: BidSuit.Clubs,
+        type: "bid",
+        level: 2,
+        strain: BidSuit.Clubs,
       });
-      expect(feedback.expectedResult!.explanation).toBe("Bid 2C to ask for a 4-card major");
+      expect(feedback.expectedResult!.explanation).toBe(
+        "Bid 2C to ask for a 4-card major",
+      );
     });
 
     it("auction resumes when user dismisses feedback", async () => {
       const store = makeStore();
-      await store.startDrill(makeTestDeal(), makeDrillSession(), undefined, make2CStrategy());
+      await store.startDrill(
+        makeTestDeal(),
+        makeDrillSession(),
+        undefined,
+        make2CStrategy(),
+      );
       await store.userBid({ type: "pass" });
 
       expect(store.bidFeedback).not.toBeNull();
@@ -122,7 +187,12 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("user can skip directly to review", async () => {
       const store = makeStore();
-      await store.startDrill(makeTestDeal(), makeDrillSession(), undefined, make2CStrategy());
+      await store.startDrill(
+        makeTestDeal(),
+        makeDrillSession(),
+        undefined,
+        make2CStrategy(),
+      );
       await store.userBid({ type: "pass" });
 
       await store.skipFromFeedback();
@@ -135,7 +205,12 @@ describe("bid feedback — user-facing behavior", () => {
   describe("when user bids correctly", () => {
     it("auction continues without interruption", async () => {
       const store = makeStore();
-      await store.startDrill(makeTestDeal(), makeDrillSession(), undefined, make2CStrategy());
+      await store.startDrill(
+        makeTestDeal(),
+        makeDrillSession(),
+        undefined,
+        make2CStrategy(),
+      );
 
       const correctBid: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
       await store.userBid(correctBid);
@@ -149,7 +224,12 @@ describe("bid feedback — user-facing behavior", () => {
   describe("edge cases", () => {
     it("passing is correct when convention does not apply", async () => {
       const store = makeStore();
-      await store.startDrill(makeTestDeal(), makeDrillSession(), undefined, makeNoOpStrategy());
+      await store.startDrill(
+        makeTestDeal(),
+        makeDrillSession(),
+        undefined,
+        makeNoOpStrategy(),
+      );
 
       await store.userBid({ type: "pass" });
 

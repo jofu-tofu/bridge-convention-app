@@ -16,6 +16,8 @@
 </script>
 
 <p class="{textSize} font-mono text-text-primary">
-  {contract.level}{STRAIN_SYMBOLS[contract.strain]}{contract.doubled ? " X" : ""}{contract.redoubled ? " XX" : ""}
+  {contract.level}{STRAIN_SYMBOLS[contract.strain]}{contract.doubled
+    ? " X"
+    : ""}{contract.redoubled ? " XX" : ""}
   by {contract.declarer}
 </p>

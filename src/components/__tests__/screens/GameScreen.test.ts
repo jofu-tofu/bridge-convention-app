@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Seat } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { clearRegistry, registerConvention } from "../../../conventions/registry";
+import {
+  clearRegistry,
+  registerConvention,
+} from "../../../conventions/registry";
 import { staymanConfig } from "../../../conventions/stayman";
 import { createStubEngine, makeDeal } from "../test-helpers";
 

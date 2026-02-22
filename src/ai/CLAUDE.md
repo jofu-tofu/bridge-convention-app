@@ -12,6 +12,7 @@ Bidding AI strategies. Consumer of `conventions/` and `engine/` via `shared/type
 ## Architecture
 
 **Module graph:**
+
 ```
 shared/types.ts (BidResult, BiddingStrategy)
   ↑ import type
@@ -22,13 +23,13 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 
 **Key files:**
 
-| File | Role |
-|------|------|
-| `convention-strategy.ts` | `conventionToStrategy()` — wraps `ConventionConfig` as `BiddingStrategy` |
-| `pass-strategy.ts` | Always-pass placeholder strategy |
-| `types.ts` | `DrillConfig`, `DrillSession` — interfaces for drill mode |
-| `drill-session.ts` | `createDrillSession()` — DrillSession implementation with null-contract for user/AI seats |
-| `drill-config-factory.ts` | `createDrillConfig()` — builds DrillConfig from convention ID and user seat |
+| File                      | Role                                                                                      |
+| ------------------------- | ----------------------------------------------------------------------------------------- |
+| `convention-strategy.ts`  | `conventionToStrategy()` — wraps `ConventionConfig` as `BiddingStrategy`                  |
+| `pass-strategy.ts`        | Always-pass placeholder strategy                                                          |
+| `types.ts`                | `DrillConfig`, `DrillSession` — interfaces for drill mode                                 |
+| `drill-session.ts`        | `createDrillSession()` — DrillSession implementation with null-contract for user/AI seats |
+| `drill-config-factory.ts` | `createDrillConfig()` — builds DrillConfig from convention ID and user seat               |
 
 ## Adding a Strategy
 
@@ -39,11 +40,12 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 
 ## Play AI
 
-| File | Role |
-|------|------|
+| File               | Role                                                                  |
+| ------------------ | --------------------------------------------------------------------- |
 | `play-strategy.ts` | `randomPlay(legalCards)` — picks random legal card (Phase 5 baseline) |
 
 **Phase 7 roadmap:**
+
 - **Tier 1 (7a — heuristic):** Follow suit rules, play high to win, lead trumps, finesse detection
 - **Tier 2 (7b — DDS-assisted):** Use `suggestPlay()` backed by DDS double-dummy solver (requires Phase 6 Rust engine)
 - **Tier 3 (7c — convention-aware):** Signal/discard conventions (attitude, count, suit preference)

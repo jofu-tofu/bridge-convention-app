@@ -1,14 +1,21 @@
-import type { ConventionConfig, BiddingRule, BiddingContext, ConditionResult } from "./types";
+import type {
+  ConventionConfig,
+  BiddingRule,
+  BiddingContext,
+  ConditionResult,
+} from "./types";
 import type { Call } from "../engine/types";
-import { isConditionedRule, evaluateConditions, buildExplanation } from "./condition-evaluator";
+import {
+  isConditionedRule,
+  evaluateConditions,
+  buildExplanation,
+} from "./condition-evaluator";
 
 const registry = new Map<string, ConventionConfig>();
 
 export function registerConvention(config: ConventionConfig): void {
   if (registry.has(config.id)) {
-    throw new Error(
-      `Convention "${config.id}" is already registered.`,
-    );
+    throw new Error(`Convention "${config.id}" is already registered.`);
   }
   registry.set(config.id, config);
 }
@@ -17,9 +24,7 @@ export function getConvention(id: string): ConventionConfig {
   const config = registry.get(id);
   if (!config) {
     const available = [...registry.keys()].join(", ") || "(none)";
-    throw new Error(
-      `Unknown convention "${id}". Available: ${available}`,
-    );
+    throw new Error(`Unknown convention "${id}". Available: ${available}`);
   }
   return config;
 }

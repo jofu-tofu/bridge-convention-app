@@ -49,15 +49,40 @@ export const generateCommand: CommandDef = {
   description: "Generate a random deal with optional constraints",
   phase: 1,
   options: {
-    seat: { type: "string", short: "s", description: "Seat to constrain (N|E|S|W)" },
+    seat: {
+      type: "string",
+      short: "s",
+      description: "Seat to constrain (N|E|S|W)",
+    },
     "min-hcp": { type: "string", description: "Minimum HCP for seat" },
     "max-hcp": { type: "string", description: "Maximum HCP for seat" },
-    balanced: { type: "boolean", short: "b", description: "Require balanced hand" },
-    "min-length": { type: "string", description: "Minimum suit length (e.g. S=5)" },
-    "max-length": { type: "string", description: "Maximum suit length (e.g. H=3)" },
-    dealer: { type: "string", short: "d", description: "Dealer seat (default: N)" },
-    vulnerability: { type: "string", short: "v", description: "Vulnerability (None|NS|EW|Both)" },
-    diagnostics: { type: "boolean", description: "Include iteration/relaxation data" },
+    balanced: {
+      type: "boolean",
+      short: "b",
+      description: "Require balanced hand",
+    },
+    "min-length": {
+      type: "string",
+      description: "Minimum suit length (e.g. S=5)",
+    },
+    "max-length": {
+      type: "string",
+      description: "Maximum suit length (e.g. H=3)",
+    },
+    dealer: {
+      type: "string",
+      short: "d",
+      description: "Dealer seat (default: N)",
+    },
+    vulnerability: {
+      type: "string",
+      short: "v",
+      description: "Vulnerability (None|NS|EW|Both)",
+    },
+    diagnostics: {
+      type: "boolean",
+      description: "Include iteration/relaxation data",
+    },
   },
   async handler(args, deps) {
     const seatConstraints: SeatConstraint[] = [];
@@ -83,13 +108,19 @@ export const generateCommand: CommandDef = {
       if (args["min-hcp"] !== undefined) {
         sc.minHcp = parseInt(args["min-hcp"] as string, 10);
         if (isNaN(sc.minHcp)) {
-          return err({ code: "INVALID_ARGS", message: "Invalid --min-hcp value." });
+          return err({
+            code: "INVALID_ARGS",
+            message: "Invalid --min-hcp value.",
+          });
         }
       }
       if (args["max-hcp"] !== undefined) {
         sc.maxHcp = parseInt(args["max-hcp"] as string, 10);
         if (isNaN(sc.maxHcp)) {
-          return err({ code: "INVALID_ARGS", message: "Invalid --max-hcp value." });
+          return err({
+            code: "INVALID_ARGS",
+            message: "Invalid --max-hcp value.",
+          });
         }
       }
       if (args.balanced) {
@@ -98,14 +129,20 @@ export const generateCommand: CommandDef = {
       if (args["min-length"]) {
         const parsed = parseSuitLength(args["min-length"] as string);
         if (!parsed) {
-          return err({ code: "INVALID_ARGS", message: "Invalid --min-length. Use format S=5." });
+          return err({
+            code: "INVALID_ARGS",
+            message: "Invalid --min-length. Use format S=5.",
+          });
         }
         sc.minLength = { [parsed.suit]: parsed.count };
       }
       if (args["max-length"]) {
         const parsed = parseSuitLength(args["max-length"] as string);
         if (!parsed) {
-          return err({ code: "INVALID_ARGS", message: "Invalid --max-length. Use format H=3." });
+          return err({
+            code: "INVALID_ARGS",
+            message: "Invalid --max-length. Use format H=3.",
+          });
         }
         sc.maxLength = { [parsed.suit]: parsed.count };
       }

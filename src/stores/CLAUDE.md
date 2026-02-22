@@ -11,12 +11,13 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 ## Architecture
 
-| File | Role |
-|------|------|
-| `app.svelte.ts` | `createAppStore()` — screen navigation (`select`/`game`), selected convention, dev seed state |
+| File             | Role                                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| `app.svelte.ts`  | `createAppStore()` — screen navigation (`select`/`game`), selected convention, dev seed state      |
 | `game.svelte.ts` | `createGameStore(engine)` — deal, auction, bid history, phase transitions, AI bid loop, play phase |
 
 **Game store key methods (bidding):**
+
 - `startDrill(deal, session, initialAuction?, strategy?)` — initializes state, stores convention strategy, replays default auction, runs AI bids
 - `userBid(call)` — validates turn, checks correctness against convention strategy, adds bid; pauses on wrong bid (user must dismiss feedback), auto-continues on correct bid
 - `dismissBidFeedback()` — clears wrong bid feedback and resumes auction (runs AI bids)
@@ -25,10 +26,12 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `completeAuction()` — gets contract, transitions to DECLARER_PROMPT (when user is dummy) or EXPLANATION (when user is declarer or for passout)
 
 **Game store key methods (declarer prompt):**
+
 - `acceptDeclarerSwap()` — sets `effectiveUserSeat` to `contract.declarer` (North), calls `startPlay()`. Table rotates 180°.
 - `declineDeclarerSwap()` — skips play phase, goes straight to EXPLANATION. Used as "Skip to Review" in UI.
 
 **Game store key methods (play):**
+
 - `startPlay()` — called by `completeAuction()` or declarer swap methods, sets up play state, determines declarer/dummy/opening leader
 - `userPlayCard(card, seat)` — validates legality and seat control, adds to trick, triggers AI plays
 - `runAiPlays()` — async loop: AI plays with 500ms delay until user's turn or trick complete
@@ -39,6 +42,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `getRemainingCards(seat)` — returns hand minus already-played cards
 
 **App store dev seed state (dev-only):**
+
 - `devSeed` (`number | null`) — seed for deterministic PRNG, set via `?seed=` URL param
 - `devDealCount` (`number`) — increments per deal; effective seed = `devSeed + devDealCount`
 - `setDevSeed(seed)` — sets seed and resets deal count to 0

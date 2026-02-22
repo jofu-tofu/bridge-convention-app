@@ -12,10 +12,34 @@ function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
       conventionId: "test",
       userSeat,
       seatStrategies: {
-        [Seat.North]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
-        [Seat.East]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
+        [Seat.North]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
+        [Seat.East]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
         [Seat.South]: "user",
-        [Seat.West]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
+        [Seat.West]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
       },
     },
     getNextBid(seat) {
@@ -29,13 +53,35 @@ function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
 }
 
 function makeTestDeal() {
-  const ranks = [Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack, Rank.Queen, Rank.King, Rank.Ace];
+  const ranks = [
+    Rank.Two,
+    Rank.Three,
+    Rank.Four,
+    Rank.Five,
+    Rank.Six,
+    Rank.Seven,
+    Rank.Eight,
+    Rank.Nine,
+    Rank.Ten,
+    Rank.Jack,
+    Rank.Queen,
+    Rank.King,
+    Rank.Ace,
+  ];
   return {
     hands: {
-      [Seat.North]: { cards: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })) },
-      [Seat.East]: { cards: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })) },
-      [Seat.South]: { cards: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })) },
-      [Seat.West]: { cards: ranks.map((r) => ({ suit: Suit.Spades, rank: r })) },
+      [Seat.North]: {
+        cards: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })),
+      },
+      [Seat.East]: {
+        cards: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })),
+      },
+      [Seat.South]: {
+        cards: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })),
+      },
+      [Seat.West]: {
+        cards: ranks.map((r) => ({ suit: Suit.Spades, rank: r })),
+      },
     },
     dealer: Seat.North,
     vulnerability: Vulnerability.None,

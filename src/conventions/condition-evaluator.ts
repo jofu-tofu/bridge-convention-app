@@ -11,7 +11,10 @@ import type {
 export function isConditionedRule(
   rule: BiddingRule,
 ): rule is ConditionedBiddingRule {
-  return "conditions" in rule && Array.isArray((rule as ConditionedBiddingRule).conditions);
+  return (
+    "conditions" in rule &&
+    Array.isArray((rule as ConditionedBiddingRule).conditions)
+  );
 }
 
 /**

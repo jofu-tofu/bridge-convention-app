@@ -2,7 +2,10 @@ import { BidSuit, Seat, Vulnerability } from "./types";
 import type { Contract } from "./types";
 
 /** Check if a declarer is vulnerable given the vulnerability setting. */
-export function isVulnerable(declarer: Seat, vulnerability: Vulnerability): boolean {
+export function isVulnerable(
+  declarer: Seat,
+  vulnerability: Vulnerability,
+): boolean {
   switch (vulnerability) {
     case Vulnerability.None:
       return false;
@@ -127,7 +130,10 @@ export function calculatePenalty(
 }
 
 /** Calculate doubled undertrick penalty (before redouble multiplier). */
-function calculateDoubledPenalty(undertricks: number, vulnerable: boolean): number {
+function calculateDoubledPenalty(
+  undertricks: number,
+  vulnerable: boolean,
+): number {
   let total = 0;
   for (let i = 1; i <= undertricks; i++) {
     if (vulnerable) {

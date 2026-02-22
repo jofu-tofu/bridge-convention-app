@@ -31,7 +31,11 @@
   }
 </script>
 
-<div class="trick-area relative" aria-label="Current trick" data-testid="trick-area">
+<div
+  class="trick-area relative"
+  aria-label="Current trick"
+  data-testid="trick-area"
+>
   <!-- Card positions for each seat -->
   {#each [Seat.North, Seat.East, Seat.South, Seat.West] as seat (seat)}
     {@const played = getPlayedCard(seat)}

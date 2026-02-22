@@ -41,7 +41,10 @@ export const bergenDealConstraints: DealConstraints = {
 const bergenGameRaise = conditionedRule({
   name: "bergen-game-raise",
   conditions: [
-    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    auctionMatchesAny([
+      ["1H", "P"],
+      ["1S", "P"],
+    ]),
     hcpMin(13),
     majorSupport(),
   ],
@@ -56,7 +59,10 @@ const bergenGameRaise = conditionedRule({
 const bergenLimitRaise = conditionedRule({
   name: "bergen-limit-raise",
   conditions: [
-    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    auctionMatchesAny([
+      ["1H", "P"],
+      ["1S", "P"],
+    ]),
     hcpRange(10, 12),
     majorSupport(),
   ],
@@ -68,7 +74,10 @@ const bergenLimitRaise = conditionedRule({
 const bergenConstructiveRaise = conditionedRule({
   name: "bergen-constructive-raise",
   conditions: [
-    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    auctionMatchesAny([
+      ["1H", "P"],
+      ["1S", "P"],
+    ]),
     hcpRange(7, 9),
     majorSupport(),
   ],
@@ -80,7 +89,10 @@ const bergenConstructiveRaise = conditionedRule({
 const bergenPreemptiveRaise = conditionedRule({
   name: "bergen-preemptive-raise",
   conditions: [
-    auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+    auctionMatchesAny([
+      ["1H", "P"],
+      ["1S", "P"],
+    ]),
     hcpMax(6),
     majorSupport(),
   ],
@@ -101,7 +113,7 @@ function bergenDefaultAuction(seat: Seat, deal?: Deal): Auction | undefined {
   const spades = openerShape[0]; // index 0 = Spades
   const hearts = openerShape[1]; // index 1 = Hearts
   // SAYC: open the LONGER major; with 5-5, prefer 1S (higher-ranking)
-  const openMajor = (spades >= 5 && spades >= hearts) ? "1S" : "1H";
+  const openMajor = spades >= 5 && spades >= hearts ? "1S" : "1H";
   return buildAuction(Seat.North, [openMajor, "P"]);
 }
 
@@ -110,7 +122,8 @@ function bergenDefaultAuction(seat: Seat, deal?: Deal): Auction | undefined {
 export const bergenConfig: ConventionConfig = {
   id: "bergen-raises",
   name: "Bergen Raises",
-  description: "Bergen Raises: coded responses to 1M opening showing support and strength",
+  description:
+    "Bergen Raises: coded responses to 1M opening showing support and strength",
   category: ConventionCategory.Constructive,
   dealConstraints: bergenDealConstraints,
   biddingRules: [

@@ -1,9 +1,6 @@
 import type { CommandDef } from "../types";
 import { ok, err } from "../types";
-import {
-  listConventions,
-  getConvention,
-} from "../../conventions/registry";
+import { listConventions, getConvention } from "../../conventions/registry";
 
 export const conventionsCommand: CommandDef = {
   name: "conventions",

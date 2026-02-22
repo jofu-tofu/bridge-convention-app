@@ -258,10 +258,12 @@ describe("checkConstraints minLengthAny", () => {
     const deal = fixtureDeal();
     // South has 4 hearts — satisfies "4+ hearts OR 4+ spades"
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.South,
-        minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
-      }],
+      seats: [
+        {
+          seat: Seat.South,
+          minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+        },
+      ],
     };
     expect(checkConstraints(deal, constraints)).toBe(true);
   });
@@ -270,10 +272,12 @@ describe("checkConstraints minLengthAny", () => {
     const deal = fixtureDeal();
     // North has 4-3-3-3, so no suit has 5+
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        minLengthAny: { [Suit.Hearts]: 5, [Suit.Spades]: 5 },
-      }],
+      seats: [
+        {
+          seat: Seat.North,
+          minLengthAny: { [Suit.Hearts]: 5, [Suit.Spades]: 5 },
+        },
+      ],
     };
     expect(checkConstraints(deal, constraints)).toBe(false);
   });
@@ -282,10 +286,12 @@ describe("checkConstraints minLengthAny", () => {
     const deal = fixtureDeal();
     // North has 4 spades — "4+ in spades only" should pass
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        minLengthAny: { [Suit.Spades]: 4 },
-      }],
+      seats: [
+        {
+          seat: Seat.North,
+          minLengthAny: { [Suit.Spades]: 4 },
+        },
+      ],
     };
     expect(checkConstraints(deal, constraints)).toBe(true);
   });
@@ -294,10 +300,12 @@ describe("checkConstraints minLengthAny", () => {
     const deal = fixtureDeal();
     // North has 3 hearts — "4+ in hearts only" should fail
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        minLengthAny: { [Suit.Hearts]: 4 },
-      }],
+      seats: [
+        {
+          seat: Seat.North,
+          minLengthAny: { [Suit.Hearts]: 4 },
+        },
+      ],
     };
     expect(checkConstraints(deal, constraints)).toBe(false);
   });
@@ -308,10 +316,12 @@ describe("checkConstraints customCheck", () => {
     const deal = fixtureDeal();
     // North has 21 HCP — custom check requires < 20
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        customCheck: (h) => calculateHcp(h) < 20,
-      }],
+      seats: [
+        {
+          seat: Seat.North,
+          customCheck: (h) => calculateHcp(h) < 20,
+        },
+      ],
     };
     expect(checkConstraints(deal, constraints)).toBe(false);
   });
@@ -319,10 +329,12 @@ describe("checkConstraints customCheck", () => {
   test("customCheck passes when predicate returns true", () => {
     const deal = fixtureDeal();
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        customCheck: (h) => calculateHcp(h) > 20,
-      }],
+      seats: [
+        {
+          seat: Seat.North,
+          customCheck: (h) => calculateHcp(h) > 20,
+        },
+      ],
     };
     expect(checkConstraints(deal, constraints)).toBe(true);
   });
@@ -332,14 +344,16 @@ describe("checkConstraints customCheck", () => {
     const deal = fixtureDeal();
     // minHcp 30 will fail before customCheck runs (North has 21)
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        minHcp: 30,
-        customCheck: () => {
-          customCheckCalled = true;
-          return true;
+      seats: [
+        {
+          seat: Seat.North,
+          minHcp: 30,
+          customCheck: () => {
+            customCheckCalled = true;
+            return true;
+          },
         },
-      }],
+      ],
     };
     expect(checkConstraints(deal, constraints)).toBe(false);
     expect(customCheckCalled).toBe(false);
@@ -348,12 +362,14 @@ describe("checkConstraints customCheck", () => {
   test("customCheck that throws is treated as rejection", () => {
     const deal = fixtureDeal();
     const constraints: DealConstraints = {
-      seats: [{
-        seat: Seat.North,
-        customCheck: () => {
-          throw new Error("boom");
+      seats: [
+        {
+          seat: Seat.North,
+          customCheck: () => {
+            throw new Error("boom");
+          },
         },
-      }],
+      ],
     };
     // Should not crash, just reject the deal
     expect(checkConstraints(deal, constraints)).toBe(false);
@@ -567,7 +583,6 @@ describe("multi-seat constraints", () => {
   });
 });
 
-
 describe("deal-generator edge cases", () => {
   /** Simple seeded PRNG (mulberry32) for deterministic edge case tests. */
   function createSeededRng(seed: number): () => number {
@@ -657,8 +672,12 @@ describe("seeded RNG", () => {
     const rng2 = createSeededRng(999);
     const deal1 = generateDeal({ seats: [] }, rng1);
     const deal2 = generateDeal({ seats: [] }, rng2);
-    const cards1 = deal1.deal.hands[Seat.North].cards.map((c) => `${c.suit}${c.rank}`);
-    const cards2 = deal2.deal.hands[Seat.North].cards.map((c) => `${c.suit}${c.rank}`);
+    const cards1 = deal1.deal.hands[Seat.North].cards.map(
+      (c) => `${c.suit}${c.rank}`,
+    );
+    const cards2 = deal2.deal.hands[Seat.North].cards.map(
+      (c) => `${c.suit}${c.rank}`,
+    );
     expect(cards1).not.toEqual(cards2);
   });
 

@@ -1,12 +1,27 @@
 import type { EnginePort } from "../../engine/port";
-import type { Deal, Hand, Call, Auction, AuctionEntry, Contract, Seat, Card, Vulnerability, SuitLength, HandEvaluation, DDSolution } from "../../engine/types";
+import type {
+  Deal,
+  Hand,
+  Call,
+  Auction,
+  AuctionEntry,
+  Contract,
+  Seat,
+  Card,
+  Vulnerability,
+  SuitLength,
+  HandEvaluation,
+  DDSolution,
+} from "../../engine/types";
 import { createDeck } from "../../engine/constants";
 
 /**
  * Creates a stub EnginePort for component testing.
  * All methods return sensible defaults that can be overridden.
  */
-export function createStubEngine(overrides: Partial<EnginePort> = {}): EnginePort {
+export function createStubEngine(
+  overrides: Partial<EnginePort> = {},
+): EnginePort {
   const defaultEngine: EnginePort = {
     async generateDeal(): Promise<Deal> {
       return makeDeal();

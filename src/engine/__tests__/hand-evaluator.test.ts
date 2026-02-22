@@ -292,9 +292,19 @@ describe("evaluateHand", () => {
 describe("extreme hand shapes — bridge edge cases", () => {
   test("13-0-0-0 shape: all cards in one suit", () => {
     const monosuit = hand(
-      "SA", "SK", "SQ", "SJ", "ST",
-      "S9", "S8", "S7", "S6", "S5",
-      "S4", "S3", "S2",
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "ST",
+      "S9",
+      "S8",
+      "S7",
+      "S6",
+      "S5",
+      "S4",
+      "S3",
+      "S2",
     );
     expect(getSuitLength(monosuit)).toEqual([13, 0, 0, 0]);
   });
@@ -368,9 +378,19 @@ describe("hand evaluator edge cases", () => {
 
   test("13-0-0-0 total points = 28 (10 HCP + 18 distribution)", () => {
     const monosuit = hand(
-      "SA", "SK", "SQ", "SJ", "ST",
-      "S9", "S8", "S7", "S6", "S5",
-      "S4", "S3", "S2",
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "ST",
+      "S9",
+      "S8",
+      "S7",
+      "S6",
+      "S5",
+      "S4",
+      "S3",
+      "S2",
     );
     const result = evaluateHand(monosuit);
     expect(result.hcp).toBe(10);
@@ -381,10 +401,19 @@ describe("hand evaluator edge cases", () => {
   test("5-3-3-2 with 5-card minor is balanced", () => {
     // 5 diamonds, 3-3-2 in others
     const fiveMinor = hand(
-      "SA", "SK", "S2",             // 3 spades
-      "HK", "H5",                    // 2 hearts
-      "DQ", "DJ", "D8", "D5", "D3", // 5 diamonds
-      "CQ", "C5", "C2",             // 3 clubs
+      "SA",
+      "SK",
+      "S2", // 3 spades
+      "HK",
+      "H5", // 2 hearts
+      "DQ",
+      "DJ",
+      "D8",
+      "D5",
+      "D3", // 5 diamonds
+      "CQ",
+      "C5",
+      "C2", // 3 clubs
     );
     const shape = getSuitLength(fiveMinor);
     expect(isBalanced(shape)).toBe(true);
@@ -393,10 +422,18 @@ describe("hand evaluator edge cases", () => {
   test("maximum HCP single hand = 37 (all honors except one Jack)", () => {
     // 4A(16) + 4K(12) + 4Q(8) + 1J(1) = 37
     const maxHand = hand(
-      "SA", "SK", "SQ",
-      "HA", "HK", "HQ",
-      "DA", "DK", "DQ",
-      "CA", "CK", "CQ",
+      "SA",
+      "SK",
+      "SQ",
+      "HA",
+      "HK",
+      "HQ",
+      "DA",
+      "DK",
+      "DQ",
+      "CA",
+      "CK",
+      "CQ",
       "SJ",
     );
     expect(calculateHcp(maxHand)).toBe(37);
@@ -416,9 +453,18 @@ describe("deck HCP invariants", () => {
 
   test("max single-suit HCP is 10 (A+K+Q+J)", () => {
     const suitHand = hand(
-      "SA", "SK", "SQ", "SJ", // AKQJ of spades = 4+3+2+1 = 10
-      "H2", "H3", "H4", "H5",
-      "H6", "D2", "D3", "D4",
+      "SA",
+      "SK",
+      "SQ",
+      "SJ", // AKQJ of spades = 4+3+2+1 = 10
+      "H2",
+      "H3",
+      "H4",
+      "H5",
+      "H6",
+      "D2",
+      "D3",
+      "D4",
       "C2",
     );
     const spadesCards = getCardsInSuit(suitHand, Suit.Spades);

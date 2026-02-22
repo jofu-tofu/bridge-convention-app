@@ -6,9 +6,15 @@ export const solveCommand: CommandDef = {
   description: "Run DDS solver on a deal (V2)",
   phase: 6,
   options: {
-    "deal-from": { type: "string", description: "Read deal from source (stdin)" },
+    "deal-from": {
+      type: "string",
+      description: "Read deal from source (stdin)",
+    },
   },
   async handler() {
-    return err({ code: "NOT_IMPLEMENTED", message: "solve command is phase-gated" });
+    return err({
+      code: "NOT_IMPLEMENTED",
+      message: "solve command is phase-gated",
+    });
   },
 };

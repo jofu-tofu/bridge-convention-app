@@ -29,7 +29,21 @@ describe("parseCard", () => {
   });
 
   test("parses all ranks", () => {
-    const ranks = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"];
+    const ranks = [
+      "A",
+      "K",
+      "Q",
+      "J",
+      "T",
+      "9",
+      "8",
+      "7",
+      "6",
+      "5",
+      "4",
+      "3",
+      "2",
+    ];
     for (const r of ranks) {
       expect(() => parseCard(`S${r}`)).not.toThrow();
     }
@@ -75,10 +89,19 @@ describe("parseCard", () => {
 describe("parseHand", () => {
   test("parses valid 13-card hand", () => {
     const notations = [
-      "SA", "SK", "SQ", "SJ",
-      "HA", "HK", "HQ",
-      "DA", "DK",
-      "CA", "CK", "CQ", "CJ",
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "HA",
+      "HK",
+      "HQ",
+      "DA",
+      "DK",
+      "CA",
+      "CK",
+      "CQ",
+      "CJ",
     ];
     const hand = parseHand(notations);
     expect(hand.cards).toHaveLength(13);
@@ -90,20 +113,38 @@ describe("parseHand", () => {
 
   test("throws when any card notation is invalid", () => {
     const notations = [
-      "SA", "SK", "SQ", "SJ",
-      "HA", "HK", "HQ",
-      "DA", "DK",
-      "CA", "CK", "CQ", "XX",
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "HA",
+      "HK",
+      "HQ",
+      "DA",
+      "DK",
+      "CA",
+      "CK",
+      "CQ",
+      "XX",
     ];
     expect(() => parseHand(notations)).toThrow("Invalid card notation");
   });
 
   test("throws on duplicate cards in hand", () => {
     const notations = [
-      "SA", "SA", "SQ", "SJ",
-      "HA", "HK", "HQ",
-      "DA", "DK",
-      "CA", "CK", "CQ", "CJ",
+      "SA",
+      "SA",
+      "SQ",
+      "SJ",
+      "HA",
+      "HK",
+      "HQ",
+      "DA",
+      "DK",
+      "CA",
+      "CK",
+      "CQ",
+      "CJ",
     ];
     expect(() => parseHand(notations)).toThrow();
   });

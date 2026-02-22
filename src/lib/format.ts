@@ -26,7 +26,12 @@ export function formatCall(call: Call): string {
 }
 
 export function suitColor(suit: Suit | BidSuit): "red" | "black" {
-  if (suit === Suit.Hearts || suit === Suit.Diamonds || suit === BidSuit.Hearts || suit === BidSuit.Diamonds) {
+  if (
+    suit === Suit.Hearts ||
+    suit === Suit.Diamonds ||
+    suit === BidSuit.Hearts ||
+    suit === BidSuit.Diamonds
+  ) {
     return "red";
   }
   return "black";

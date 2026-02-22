@@ -44,11 +44,15 @@ function buildAuction(dealer: Seat, calls: Call[]): Auction {
 
 describe("compareBids", () => {
   test("1C is less than 7NT (lowest vs highest)", () => {
-    expect(compareBids(bid(1, BidSuit.Clubs), bid(7, BidSuit.NoTrump))).toBeLessThan(0);
+    expect(
+      compareBids(bid(1, BidSuit.Clubs), bid(7, BidSuit.NoTrump)),
+    ).toBeLessThan(0);
   });
 
   test("7NT is greater than 1C", () => {
-    expect(compareBids(bid(7, BidSuit.NoTrump), bid(1, BidSuit.Clubs))).toBeGreaterThan(0);
+    expect(
+      compareBids(bid(7, BidSuit.NoTrump), bid(1, BidSuit.Clubs)),
+    ).toBeGreaterThan(0);
   });
 
   test("equal bids compare to 0", () => {
@@ -64,12 +68,16 @@ describe("compareBids", () => {
       BidSuit.NoTrump,
     ];
     for (let i = 0; i < strains.length - 1; i++) {
-      expect(compareBids(bid(1, strains[i]!), bid(1, strains[i + 1]!))).toBeLessThan(0);
+      expect(
+        compareBids(bid(1, strains[i]!), bid(1, strains[i + 1]!)),
+      ).toBeLessThan(0);
     }
   });
 
   test("higher level always beats any strain at lower level: 2C > 1NT", () => {
-    expect(compareBids(bid(2, BidSuit.Clubs), bid(1, BidSuit.NoTrump))).toBeGreaterThan(0);
+    expect(
+      compareBids(bid(2, BidSuit.Clubs), bid(1, BidSuit.NoTrump)),
+    ).toBeGreaterThan(0);
   });
 
   test("35 distinct bids exist (7 levels × 5 strains)", () => {
@@ -108,8 +116,12 @@ describe("isLegalCall", () => {
   });
 
   test("any bid is legal on empty auction", () => {
-    expect(isLegalCall(emptyAuction(), bid(1, BidSuit.Clubs), Seat.North)).toBe(true);
-    expect(isLegalCall(emptyAuction(), bid(7, BidSuit.NoTrump), Seat.North)).toBe(true);
+    expect(isLegalCall(emptyAuction(), bid(1, BidSuit.Clubs), Seat.North)).toBe(
+      true,
+    );
+    expect(
+      isLegalCall(emptyAuction(), bid(7, BidSuit.NoTrump), Seat.North),
+    ).toBe(true);
   });
 
   test("can't bid 1H after 1S (lower strain at same level)", () => {
@@ -151,7 +163,9 @@ describe("isLegalCall", () => {
       pass,
       pass,
     ]);
-    expect(isLegalCall(auction, bid(2, BidSuit.Hearts), Seat.North)).toBe(false);
+    expect(isLegalCall(auction, bid(2, BidSuit.Hearts), Seat.North)).toBe(
+      false,
+    );
     // But N CAN bid higher (3H or above)
     expect(isLegalCall(auction, bid(3, BidSuit.Hearts), Seat.North)).toBe(true);
   });
@@ -208,7 +222,11 @@ describe("isLegalCall", () => {
   test("redouble legal with intervening passes", () => {
     // N: 1C, E: X, S: pass — W can't redouble (W is on same side as E who doubled)
     // N: 1C, E: X, S: pass — N can redouble
-    const auction = buildAuction(Seat.North, [bid(1, BidSuit.Clubs), double, pass]);
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Clubs),
+      double,
+      pass,
+    ]);
     expect(isLegalCall(auction, redouble, Seat.West)).toBe(false);
     expect(isLegalCall(auction, redouble, Seat.North)).toBe(true);
   });
@@ -235,7 +253,11 @@ describe("isAuctionComplete", () => {
   });
 
   test("auction not complete after two passes following a bid", () => {
-    const auction = buildAuction(Seat.North, [bid(1, BidSuit.Clubs), pass, pass]);
+    const auction = buildAuction(Seat.North, [
+      bid(1, BidSuit.Clubs),
+      pass,
+      pass,
+    ]);
     expect(auction.isComplete).toBe(false);
   });
 
@@ -298,7 +320,10 @@ describe("addCall", () => {
 
   test("returns new Auction with entry appended", () => {
     const auction = emptyAuction();
-    const next = addCall(auction, { seat: Seat.North, call: bid(1, BidSuit.Clubs) });
+    const next = addCall(auction, {
+      seat: Seat.North,
+      call: bid(1, BidSuit.Clubs),
+    });
     expect(next.entries).toHaveLength(1);
     expect(next.entries[0]!.call).toEqual(bid(1, BidSuit.Clubs));
     // Original unchanged (immutability)
@@ -307,9 +332,7 @@ describe("addCall", () => {
 
   test("does not allow calls on a completed auction", () => {
     const auction = buildAuction(Seat.North, [pass, pass, pass, pass]);
-    expect(() =>
-      addCall(auction, { seat: Seat.North, call: pass }),
-    ).toThrow();
+    expect(() => addCall(auction, { seat: Seat.North, call: pass })).toThrow();
   });
 });
 
@@ -548,7 +571,10 @@ describe("addCall — complex sequences", () => {
       bid(2, BidSuit.Diamonds),
     ]);
     const originalLength = auction.entries.length;
-    const next = addCall(auction, { seat: Seat.South, call: bid(2, BidSuit.Hearts) });
+    const next = addCall(auction, {
+      seat: Seat.South,
+      call: bid(2, BidSuit.Hearts),
+    });
     expect(next.entries).toHaveLength(originalLength + 1);
     expect(auction.entries).toHaveLength(originalLength);
   });

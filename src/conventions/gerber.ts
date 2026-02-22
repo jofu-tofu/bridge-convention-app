@@ -64,10 +64,7 @@ export const gerberDealConstraints: DealConstraints = {
 
 const gerberAsk = conditionedRule({
   name: "gerber-ask",
-  conditions: [
-    auctionMatches(["1NT", "P"]),
-    hcpMin(13),
-  ],
+  conditions: [auctionMatches(["1NT", "P"]), hcpMin(13)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Clubs };
   },
@@ -75,10 +72,7 @@ const gerberAsk = conditionedRule({
 
 const gerberResponseZeroFour = conditionedRule({
   name: "gerber-response-zero-four",
-  conditions: [
-    auctionMatches(["1NT", "P", "4C", "P"]),
-    aceCountAny([0, 4]),
-  ],
+  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCountAny([0, 4])],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Diamonds };
   },
@@ -86,10 +80,7 @@ const gerberResponseZeroFour = conditionedRule({
 
 const gerberResponseOne = conditionedRule({
   name: "gerber-response-one",
-  conditions: [
-    auctionMatches(["1NT", "P", "4C", "P"]),
-    aceCount(1),
-  ],
+  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCount(1)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Hearts };
   },
@@ -97,10 +88,7 @@ const gerberResponseOne = conditionedRule({
 
 const gerberResponseTwo = conditionedRule({
   name: "gerber-response-two",
-  conditions: [
-    auctionMatches(["1NT", "P", "4C", "P"]),
-    aceCount(2),
-  ],
+  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCount(2)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.Spades };
   },
@@ -108,10 +96,7 @@ const gerberResponseTwo = conditionedRule({
 
 const gerberResponseThree = conditionedRule({
   name: "gerber-response-three",
-  conditions: [
-    auctionMatches(["1NT", "P", "4C", "P"]),
-    aceCount(3),
-  ],
+  conditions: [auctionMatches(["1NT", "P", "4C", "P"]), aceCount(3)],
   call(): Call {
     return { type: "bid", level: 4, strain: BidSuit.NoTrump };
   },
@@ -119,9 +104,7 @@ const gerberResponseThree = conditionedRule({
 
 const gerberSignoff = conditionedRule({
   name: "gerber-signoff",
-  conditions: [
-    gerberSignoffCondition(),
-  ],
+  conditions: [gerberSignoffCondition()],
   call(ctx: BiddingContext): Call {
     const responderAces = countAces(ctx.hand);
     const openerAces = inferOpenerAces(ctx.auction, responderAces);
@@ -148,7 +131,10 @@ const gerberSignoff = conditionedRule({
 });
 
 /** Responder position starts after 1NT - P. */
-function gerberDefaultAuction(seat: Seat, _deal?: import("../engine/types").Deal): Auction | undefined {
+function gerberDefaultAuction(
+  seat: Seat,
+  _deal?: import("../engine/types").Deal,
+): Auction | undefined {
   if (seat === Seat.South || seat === Seat.East) {
     return buildAuction(Seat.North, ["1NT", "P"]);
   }
@@ -158,7 +144,8 @@ function gerberDefaultAuction(seat: Seat, _deal?: import("../engine/types").Deal
 export const gerberConfig: ConventionConfig = {
   id: "gerber",
   name: "Gerber",
-  description: "Gerber convention: 4C response to 1NT asking for aces (slam exploration)",
+  description:
+    "Gerber convention: 4C response to 1NT asking for aces (slam exploration)",
   category: ConventionCategory.Asking,
   dealConstraints: gerberDealConstraints,
   biddingRules: [

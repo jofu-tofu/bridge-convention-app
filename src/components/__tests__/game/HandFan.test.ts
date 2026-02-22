@@ -29,7 +29,9 @@ describe("HandFan", () => {
       props: { cards: testCards, faceUp: true },
     });
     const faceUpCards = container.querySelectorAll("[data-testid='card']");
-    const faceDownCards = container.querySelectorAll("[data-testid='card-back']");
+    const faceDownCards = container.querySelectorAll(
+      "[data-testid='card-back']",
+    );
     expect(faceUpCards).toHaveLength(4);
     expect(faceDownCards).toHaveLength(0);
   });
@@ -39,7 +41,9 @@ describe("HandFan", () => {
       props: { cards: testCards, faceUp: false },
     });
     const faceUpCards = container.querySelectorAll("[data-testid='card']");
-    const faceDownCards = container.querySelectorAll("[data-testid='card-back']");
+    const faceDownCards = container.querySelectorAll(
+      "[data-testid='card-back']",
+    );
     expect(faceUpCards).toHaveLength(0);
     expect(faceDownCards).toHaveLength(4);
   });
@@ -78,7 +82,9 @@ describe("HandFan", () => {
         onPlayCard,
       },
     });
-    const clickableCard = container.querySelector("[data-testid='card'].cursor-pointer");
+    const clickableCard = container.querySelector(
+      "[data-testid='card'].cursor-pointer",
+    );
     expect(clickableCard).not.toBeNull();
     await fireEvent.click(clickableCard!);
     expect(onPlayCard).toHaveBeenCalledWith(

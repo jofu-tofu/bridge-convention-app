@@ -5,7 +5,12 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../engine/types";
 import type { ContractBid, Hand } from "../../engine/types";
-import { calculateHcp, getSuitLength, isBalanced, evaluateHand } from "../../engine/hand-evaluator";
+import {
+  calculateHcp,
+  getSuitLength,
+  isBalanced,
+  evaluateHand,
+} from "../../engine/hand-evaluator";
 import { checkConstraints, generateDeal } from "../../engine/deal-generator";
 import {
   registerConvention,
@@ -73,30 +78,84 @@ describe("DONT deal constraints", () => {
 
       expect(hcp).toBeGreaterThanOrEqual(8);
       expect(hcp).toBeLessThanOrEqual(15);
-      expect(sorted[0]! >= 6 || (sorted[0]! >= 5 && sorted[1]! >= 4)).toBe(true);
+      expect(sorted[0]! >= 6 || (sorted[0]! >= 5 && sorted[1]! >= 4)).toBe(
+        true,
+      );
     }
   });
 
   test("[bridgebum/dont] rejects South with balanced hand", () => {
     // 12 HCP, 4-3-3-3 balanced — no 6+ suit, no 5-4
     const balancedSouth = hand(
-      "SA", "SK", "S5", "S2",
-      "HK", "H5", "H3",
-      "D5", "D3", "D2",
-      "C5", "C3", "C2",
+      "SA",
+      "SK",
+      "S5",
+      "S2",
+      "HK",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "D2",
+      "C5",
+      "C3",
+      "C2",
     );
     const shape = getSuitLength(balancedSouth);
     expect(isBalanced(shape)).toBe(true);
     const satisfied = checkConstraints(
       {
         hands: {
-          [Seat.East]: hand("SQ", "SJ", "S3", "HQ", "HJ", "H2", "DA", "DK", "D6", "CA", "CK", "C4", "C3"),
+          [Seat.East]: hand(
+            "SQ",
+            "SJ",
+            "S3",
+            "HQ",
+            "HJ",
+            "H2",
+            "DA",
+            "DK",
+            "D6",
+            "CA",
+            "CK",
+            "C4",
+            "C3",
+          ),
           [Seat.South]: balancedSouth,
-          [Seat.North]: hand("S9", "S8", "S7", "HA", "H9", "H8", "DQ", "DJ", "D9", "CQ", "CJ", "C9", "C8"),
-          [Seat.West]: hand("ST", "S6", "S4", "HT", "H7", "H6", "H4", "DT", "D8", "D7", "D4", "CT", "C7"),
+          [Seat.North]: hand(
+            "S9",
+            "S8",
+            "S7",
+            "HA",
+            "H9",
+            "H8",
+            "DQ",
+            "DJ",
+            "D9",
+            "CQ",
+            "CJ",
+            "C9",
+            "C8",
+          ),
+          [Seat.West]: hand(
+            "ST",
+            "S6",
+            "S4",
+            "HT",
+            "H7",
+            "H6",
+            "H4",
+            "DT",
+            "D8",
+            "D7",
+            "D4",
+            "CT",
+            "C7",
+          ),
         },
         dealer: Seat.East,
-        vulnerability: "None" as unknown as import("../../engine/types").Vulnerability,
+        vulnerability:
+          "None" as unknown as import("../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -106,10 +165,19 @@ describe("DONT deal constraints", () => {
   test("[bridgebum/dont] accepts South with 6-card suit", () => {
     // 10 HCP, 6 hearts — single-suited
     const sixSuiter = hand(
-      "S5", "S3", "S2",
-      "HA", "HK", "HQ", "HJ", "H7", "H3",
-      "D5", "D2",
-      "C5", "C2",
+      "S5",
+      "S3",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "H3",
+      "D5",
+      "D2",
+      "C5",
+      "C2",
     );
     const shape = getSuitLength(sixSuiter);
     const sorted = [...shape].sort((a, b) => b - a);
@@ -117,13 +185,56 @@ describe("DONT deal constraints", () => {
     const satisfied = checkConstraints(
       {
         hands: {
-          [Seat.East]: hand("SA", "SK", "S4", "HT", "H5", "H2", "DA", "DK", "D6", "D3", "CQ", "CJ", "C4"),
+          [Seat.East]: hand(
+            "SA",
+            "SK",
+            "S4",
+            "HT",
+            "H5",
+            "H2",
+            "DA",
+            "DK",
+            "D6",
+            "D3",
+            "CQ",
+            "CJ",
+            "C4",
+          ),
           [Seat.South]: sixSuiter,
-          [Seat.North]: hand("SQ", "SJ", "S9", "H9", "H8", "H6", "DQ", "DJ", "D9", "CK", "CT", "C9", "C8"),
-          [Seat.West]: hand("ST", "S8", "S7", "S6", "HK", "H4", "DT", "D8", "D7", "D4", "CA", "C7", "C6"),
+          [Seat.North]: hand(
+            "SQ",
+            "SJ",
+            "S9",
+            "H9",
+            "H8",
+            "H6",
+            "DQ",
+            "DJ",
+            "D9",
+            "CK",
+            "CT",
+            "C9",
+            "C8",
+          ),
+          [Seat.West]: hand(
+            "ST",
+            "S8",
+            "S7",
+            "S6",
+            "HK",
+            "H4",
+            "DT",
+            "D8",
+            "D7",
+            "D4",
+            "CA",
+            "C7",
+            "C6",
+          ),
         },
         dealer: Seat.East,
-        vulnerability: "None" as unknown as import("../../engine/types").Vulnerability,
+        vulnerability:
+          "None" as unknown as import("../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -133,10 +244,19 @@ describe("DONT deal constraints", () => {
   test("[bridgebum/dont] accepts South with 5-4 shape", () => {
     // 10 HCP, 5 hearts + 4 spades
     const fiveFour = hand(
-      "SQ", "SJ", "S7", "S2",
-      "HA", "HK", "H8", "H5", "H3",
-      "D5", "D3",
-      "C5", "C2",
+      "SQ",
+      "SJ",
+      "S7",
+      "S2",
+      "HA",
+      "HK",
+      "H8",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "C5",
+      "C2",
     );
     const shape = getSuitLength(fiveFour);
     const sorted = [...shape].sort((a, b) => b - a);
@@ -145,13 +265,56 @@ describe("DONT deal constraints", () => {
     const satisfied = checkConstraints(
       {
         hands: {
-          [Seat.East]: hand("SA", "SK", "S4", "HT", "H6", "H2", "DA", "DK", "D6", "D2", "CQ", "CJ", "C4"),
+          [Seat.East]: hand(
+            "SA",
+            "SK",
+            "S4",
+            "HT",
+            "H6",
+            "H2",
+            "DA",
+            "DK",
+            "D6",
+            "D2",
+            "CQ",
+            "CJ",
+            "C4",
+          ),
           [Seat.South]: fiveFour,
-          [Seat.North]: hand("S9", "S8", "S5", "HQ", "HJ", "H9", "DQ", "DJ", "D9", "CK", "CT", "C9", "C8"),
-          [Seat.West]: hand("ST", "S6", "S3", "HK", "H7", "H4", "DT", "D8", "D7", "D4", "CA", "C7", "C6"),
+          [Seat.North]: hand(
+            "S9",
+            "S8",
+            "S5",
+            "HQ",
+            "HJ",
+            "H9",
+            "DQ",
+            "DJ",
+            "D9",
+            "CK",
+            "CT",
+            "C9",
+            "C8",
+          ),
+          [Seat.West]: hand(
+            "ST",
+            "S6",
+            "S3",
+            "HK",
+            "H7",
+            "H4",
+            "DT",
+            "D8",
+            "D7",
+            "D4",
+            "CA",
+            "C7",
+            "C6",
+          ),
         },
         dealer: Seat.East,
-        vulnerability: "None" as unknown as import("../../engine/types").Vulnerability,
+        vulnerability:
+          "None" as unknown as import("../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -161,10 +324,19 @@ describe("DONT deal constraints", () => {
   test("[bridgebum/dont] rejects South with 5-3 shape (no second suit)", () => {
     // 10 HCP, 5-3-3-2 — longest suit is only 5, no second 4+
     const fiveThree = hand(
-      "SA", "SK", "S5",
-      "HQ", "HJ", "H8", "H5", "H3",
-      "D5", "D3",
-      "C5", "C3", "C2",
+      "SA",
+      "SK",
+      "S5",
+      "HQ",
+      "HJ",
+      "H8",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
     );
     const shape = getSuitLength(fiveThree);
     const sorted = [...shape].sort((a, b) => b - a);
@@ -173,13 +345,56 @@ describe("DONT deal constraints", () => {
     const satisfied = checkConstraints(
       {
         hands: {
-          [Seat.East]: hand("SQ", "SJ", "S4", "HK", "H6", "H2", "DA", "DK", "D6", "D2", "CQ", "CJ", "C4"),
+          [Seat.East]: hand(
+            "SQ",
+            "SJ",
+            "S4",
+            "HK",
+            "H6",
+            "H2",
+            "DA",
+            "DK",
+            "D6",
+            "D2",
+            "CQ",
+            "CJ",
+            "C4",
+          ),
           [Seat.South]: fiveThree,
-          [Seat.North]: hand("S9", "S8", "S7", "HA", "HT", "H9", "DQ", "DJ", "D9", "CK", "CT", "C9", "C8"),
-          [Seat.West]: hand("ST", "S6", "S3", "S2", "H7", "H4", "DT", "D8", "D7", "D4", "CA", "C7", "C6"),
+          [Seat.North]: hand(
+            "S9",
+            "S8",
+            "S7",
+            "HA",
+            "HT",
+            "H9",
+            "DQ",
+            "DJ",
+            "D9",
+            "CK",
+            "CT",
+            "C9",
+            "C8",
+          ),
+          [Seat.West]: hand(
+            "ST",
+            "S6",
+            "S3",
+            "S2",
+            "H7",
+            "H4",
+            "DT",
+            "D8",
+            "D7",
+            "D4",
+            "CA",
+            "C7",
+            "C6",
+          ),
         },
         dealer: Seat.East,
-        vulnerability: "None" as unknown as import("../../engine/types").Vulnerability,
+        vulnerability:
+          "None" as unknown as import("../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -196,90 +411,189 @@ describe("DONT deal constraints", () => {
 describe("DONT overcaller bidding rules", () => {
   // 5H + 4S: two majors
   const twoMajors5H4S = hand(
-    "SQ", "SJ", "S7", "S2",
-    "HA", "HK", "H8", "H5", "H3",
-    "D5", "D3",
-    "C5", "C2",
+    "SQ",
+    "SJ",
+    "S7",
+    "S2",
+    "HA",
+    "HK",
+    "H8",
+    "H5",
+    "H3",
+    "D5",
+    "D3",
+    "C5",
+    "C2",
   );
 
   // 5S + 4H: two majors (spades longer)
   const twoMajors5S4H = hand(
-    "SA", "SK", "SQ", "S7", "S2",
-    "HK", "HJ", "H5", "H3",
-    "D5", "D3",
-    "C5", "C2",
+    "SA",
+    "SK",
+    "SQ",
+    "S7",
+    "S2",
+    "HK",
+    "HJ",
+    "H5",
+    "H3",
+    "D5",
+    "D3",
+    "C5",
+    "C2",
   );
 
   // 5D + 4H: diamonds and a major
   const diamonds5H4 = hand(
-    "S5", "S3", "S2",
-    "HK", "HJ", "H5", "H3",
-    "DA", "DK", "D8", "D5", "D3",
+    "S5",
+    "S3",
+    "S2",
+    "HK",
+    "HJ",
+    "H5",
+    "H3",
+    "DA",
+    "DK",
+    "D8",
+    "D5",
+    "D3",
     "C2",
   );
 
   // 5C + 4S: clubs and a higher suit
   const clubs5S4 = hand(
-    "SA", "SJ", "S7", "S2",
-    "H5", "H3",
-    "D5", "D3",
-    "CK", "CQ", "C8", "C5", "C2",
+    "SA",
+    "SJ",
+    "S7",
+    "S2",
+    "H5",
+    "H3",
+    "D5",
+    "D3",
+    "CK",
+    "CQ",
+    "C8",
+    "C5",
+    "C2",
   );
 
   // 6S: natural spades
   const sixSpades = hand(
-    "SA", "SK", "SQ", "SJ", "S7", "S2",
-    "H5", "H3",
-    "D5", "D3",
-    "C5", "C3", "C2",
+    "SA",
+    "SK",
+    "SQ",
+    "SJ",
+    "S7",
+    "S2",
+    "H5",
+    "H3",
+    "D5",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
   );
 
   // 6H single-suited (no second 4+ suit)
   const sixHeartsSingle = hand(
-    "S5", "S3", "S2",
-    "HA", "HK", "HQ", "HJ", "H7", "H3",
-    "D5", "D2",
-    "C5", "C2",
+    "S5",
+    "S3",
+    "S2",
+    "HA",
+    "HK",
+    "HQ",
+    "HJ",
+    "H7",
+    "H3",
+    "D5",
+    "D2",
+    "C5",
+    "C2",
   );
 
   // 6D single-suited
   const sixDiamondsSingle = hand(
-    "S5", "S3", "S2",
-    "H5", "H3",
-    "DA", "DK", "DQ", "DJ", "D7", "D3",
-    "C5", "C2",
+    "S5",
+    "S3",
+    "S2",
+    "H5",
+    "H3",
+    "DA",
+    "DK",
+    "DQ",
+    "DJ",
+    "D7",
+    "D3",
+    "C5",
+    "C2",
   );
 
   // 6C single-suited
   const sixClubsSingle = hand(
-    "S5", "S3", "S2",
-    "H5", "H3",
-    "D5", "D2",
-    "CA", "CK", "CQ", "CJ", "C7", "C3",
+    "S5",
+    "S3",
+    "S2",
+    "H5",
+    "H3",
+    "D5",
+    "D2",
+    "CA",
+    "CK",
+    "CQ",
+    "CJ",
+    "C7",
+    "C3",
   );
 
   // 6C + 4H: two-suited (should use 2C, not double)
   const sixClubs4Hearts = hand(
-    "S5", "S3",
-    "HK", "HJ", "H5", "H3",
+    "S5",
+    "S3",
+    "HK",
+    "HJ",
+    "H5",
+    "H3",
     "D2",
-    "CA", "CK", "CQ", "CJ", "C7", "C3",
+    "CA",
+    "CK",
+    "CQ",
+    "CJ",
+    "C7",
+    "C3",
   );
 
   // 4-4-3-2: no DONT bid
   const fourFour = hand(
-    "SA", "SK", "SQ", "S2",
-    "HK", "HJ", "H5", "H3",
-    "D5", "D3", "D2",
-    "C5", "C2",
+    "SA",
+    "SK",
+    "SQ",
+    "S2",
+    "HK",
+    "HJ",
+    "H5",
+    "H3",
+    "D5",
+    "D3",
+    "D2",
+    "C5",
+    "C2",
   );
 
   // 5-3-3-2: no DONT bid (5 but no second 4+)
   const fiveThree = hand(
-    "SA", "SK", "SQ", "S7", "S2",
-    "H5", "H3", "H2",
-    "D5", "D3",
-    "C5", "C3", "C2",
+    "SA",
+    "SK",
+    "SQ",
+    "S7",
+    "S2",
+    "H5",
+    "H3",
+    "H2",
+    "D5",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
   );
 
   test("[bridgebum/dont] dont-2h matches with 5 hearts 4 spades", () => {
@@ -392,7 +706,12 @@ describe("DONT overcaller bidding rules", () => {
 
   test("[bridgebum/dont] rejects when North opens 1NT (wrong seat)", () => {
     // Using North as dealer — the auction ["1NT"] starts from North, not East
-    const result = callFromRules(sixHeartsSingle, Seat.South, ["1NT"], Seat.North);
+    const result = callFromRules(
+      sixHeartsSingle,
+      Seat.South,
+      ["1NT"],
+      Seat.North,
+    );
     // The auction pattern ["1NT"] still matches, but this tests that dealer context matters.
     // Actually auctionMatchesExact only checks call patterns, not seats.
     // The convention still matches because it only checks bid pattern.
@@ -411,10 +730,19 @@ describe("DONT overcaller edge cases", () => {
     // Hearts=5 spades=2: dont-2h fails (neither condition met for both majors)
     // dont-2d: diamonds>=5 && hearts>=4 → yes
     const hand5H5D2S = hand(
-      "S5", "S2",                    // 2 spades
-      "HA", "HK", "H8", "H5", "H3", // 5 hearts
-      "DA", "DK", "D8", "D5", "D3", // 5 diamonds
-      "C2",                          // 1 club
+      "S5",
+      "S2", // 2 spades
+      "HA",
+      "HK",
+      "H8",
+      "H5",
+      "H3", // 5 hearts
+      "DA",
+      "DK",
+      "D8",
+      "D5",
+      "D3", // 5 diamonds
+      "C2", // 1 club
     );
     const result = callFromRules(hand5H5D2S, Seat.South, ["1NT"]);
     expect(result).not.toBeNull();
@@ -424,17 +752,35 @@ describe("DONT overcaller edge cases", () => {
   test("5C+5D hand: dont-2c fires (clubs + higher suit)", () => {
     // 5C + 5D, diamonds is the "higher suit" relative to clubs
     const _hand5C5D = hand(
-      "S5", "S2",
-      "H5", "H2",
-      "DA", "DK", "D8", "D5", "D3", // 5 diamonds
-      "CA", "CK", "C8", "C5",       // 4 clubs — wait need 5
+      "S5",
+      "S2",
+      "H5",
+      "H2",
+      "DA",
+      "DK",
+      "D8",
+      "D5",
+      "D3", // 5 diamonds
+      "CA",
+      "CK",
+      "C8",
+      "C5", // 4 clubs — wait need 5
     );
     // Actually 5C needs exactly 5 clubs. Let me fix: 2S, 1H, 5D, 5C = 13
     const hand5C5Dv2 = hand(
-      "S5", "S2",
+      "S5",
+      "S2",
       "H2",
-      "DA", "DK", "D8", "D5", "D3", // 5 diamonds
-      "CA", "CK", "C8", "C5", "C2", // 5 clubs
+      "DA",
+      "DK",
+      "D8",
+      "D5",
+      "D3", // 5 diamonds
+      "CA",
+      "CK",
+      "C8",
+      "C5",
+      "C2", // 5 clubs
     );
     const result = callFromRules(hand5C5Dv2, Seat.South, ["1NT"]);
     expect(result).not.toBeNull();
@@ -446,9 +792,18 @@ describe("DONT overcaller edge cases", () => {
   test("6H+3-3-1 (single-suited non-spades): dont-double fires", () => {
     // 6 hearts, 3-3-1 in others — single suited, not spades
     const hand6H = hand(
-      "S5", "S3", "S2",
-      "HA", "HK", "HQ", "H7", "H5", "H3",
-      "D5", "D3", "D2",
+      "S5",
+      "S3",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "D2",
       "C2",
     );
     const result = callFromRules(hand6H, Seat.South, ["1NT"]);
@@ -462,9 +817,19 @@ describe("DONT advancer edge cases", () => {
   test("advancer 0 spades after 2S: advance-pass requires 2+ spades, fails", () => {
     // Advancer with 0 spades — cannot pass after 2S
     const noSpades = hand(
-      "HK", "HQ", "HJ", "H7", "H5",
-      "DA", "DK", "D7", "D3",
-      "C5", "C3", "C2", "C8",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "H5",
+      "DA",
+      "DK",
+      "D7",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+      "C8",
     );
     // advance-pass for 2S requires spades >= 2
     const passResult = callFromRules(noSpades, Seat.North, ["1NT", "2S", "P"]);
@@ -481,77 +846,157 @@ describe("DONT advancer edge cases", () => {
 describe("DONT advance bidding rules", () => {
   // Advancer with 3+ hearts (support after 2H)
   const advancerHeartsSupport = hand(
-    "S5", "S3", "S2",
-    "HQ", "HJ", "H8",
-    "DA", "DK", "D7", "D3",
-    "C5", "C3", "C2",
+    "S5",
+    "S3",
+    "S2",
+    "HQ",
+    "HJ",
+    "H8",
+    "DA",
+    "DK",
+    "D7",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
   );
 
   // Advancer with fewer than 3 hearts (prefers spades after 2H)
   const advancerFewHearts = hand(
-    "SQ", "SJ", "S7", "S5",
-    "H5", "H3",
-    "DA", "DK", "D7", "D3",
-    "C5", "C3", "C2",
+    "SQ",
+    "SJ",
+    "S7",
+    "S5",
+    "H5",
+    "H3",
+    "DA",
+    "DK",
+    "D7",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
   );
 
   // Advancer with 2+ spades (support after 2S)
   const advancerSpadesSupport = hand(
-    "SQ", "S5",
-    "HK", "HJ", "H7", "H3",
-    "DA", "D7", "D3",
-    "C5", "C3", "C2", "C8",
+    "SQ",
+    "S5",
+    "HK",
+    "HJ",
+    "H7",
+    "H3",
+    "DA",
+    "D7",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
+    "C8",
   );
 
   // Advancer with 3+ diamonds (support after 2D)
   const advancerDiamondSupport = hand(
-    "S5", "S3",
-    "HK", "H5", "H3",
-    "DA", "DK", "D7", "D3",
-    "C5", "C3", "C2", "C8",
+    "S5",
+    "S3",
+    "HK",
+    "H5",
+    "H3",
+    "DA",
+    "DK",
+    "D7",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
+    "C8",
   );
 
   // Advancer with fewer than 3 diamonds (asks for major after 2D)
   const advancerFewDiamonds = hand(
-    "SQ", "SJ", "S7", "S5",
-    "HK", "HJ", "H7", "H3",
-    "D5", "D3",
-    "C5", "C3", "C2",
+    "SQ",
+    "SJ",
+    "S7",
+    "S5",
+    "HK",
+    "HJ",
+    "H7",
+    "H3",
+    "D5",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
   );
 
   // Advancer with 3+ clubs (support after 2C)
   const advancerClubSupport = hand(
-    "S5", "S3",
-    "HK", "H5", "H3",
-    "DA", "D7", "D3",
-    "CK", "CQ", "C8", "C5", "C2",
+    "S5",
+    "S3",
+    "HK",
+    "H5",
+    "H3",
+    "DA",
+    "D7",
+    "D3",
+    "CK",
+    "CQ",
+    "C8",
+    "C5",
+    "C2",
   );
 
   // Advancer with fewer than 3 clubs (asks for higher suit after 2C)
   const advancerFewClubs = hand(
-    "SQ", "SJ", "S7", "S5",
-    "HK", "HJ", "H7", "H3",
-    "DA", "D7", "D3",
-    "C5", "C2",
+    "SQ",
+    "SJ",
+    "S7",
+    "S5",
+    "HK",
+    "HJ",
+    "H7",
+    "H3",
+    "DA",
+    "D7",
+    "D3",
+    "C5",
+    "C2",
   );
 
   // Any hand for relay after double
   const advancerAny = hand(
-    "SQ", "SJ", "S7", "S5",
-    "HK", "H5", "H3",
-    "DA", "D7", "D3",
-    "C5", "C3", "C2",
+    "SQ",
+    "SJ",
+    "S7",
+    "S5",
+    "HK",
+    "H5",
+    "H3",
+    "DA",
+    "D7",
+    "D3",
+    "C5",
+    "C3",
+    "C2",
   );
 
   test("[bridgebum/dont] advance passes after 2H with 3+ hearts", () => {
-    const result = callFromRules(advancerHeartsSupport, Seat.North, ["1NT", "2H", "P"]);
+    const result = callFromRules(advancerHeartsSupport, Seat.North, [
+      "1NT",
+      "2H",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-pass");
     expect(result!.call.type).toBe("pass");
   });
 
   test("[bridgebum/dont] advance bids 2S after 2H with <3 hearts (prefers spades)", () => {
-    const result = callFromRules(advancerFewHearts, Seat.North, ["1NT", "2H", "P"]);
+    const result = callFromRules(advancerFewHearts, Seat.North, [
+      "1NT",
+      "2H",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-next-step");
     const call = result!.call as ContractBid;
@@ -560,21 +1005,33 @@ describe("DONT advance bidding rules", () => {
   });
 
   test("[bridgebum/dont] advance passes after 2S with 2+ spades", () => {
-    const result = callFromRules(advancerSpadesSupport, Seat.North, ["1NT", "2S", "P"]);
+    const result = callFromRules(advancerSpadesSupport, Seat.North, [
+      "1NT",
+      "2S",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-pass");
     expect(result!.call.type).toBe("pass");
   });
 
   test("[bridgebum/dont] advance passes after 2D with 3+ diamonds", () => {
-    const result = callFromRules(advancerDiamondSupport, Seat.North, ["1NT", "2D", "P"]);
+    const result = callFromRules(advancerDiamondSupport, Seat.North, [
+      "1NT",
+      "2D",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-pass");
     expect(result!.call.type).toBe("pass");
   });
 
   test("[bridgebum/dont] advance bids 2H after 2D (asking for major)", () => {
-    const result = callFromRules(advancerFewDiamonds, Seat.North, ["1NT", "2D", "P"]);
+    const result = callFromRules(advancerFewDiamonds, Seat.North, [
+      "1NT",
+      "2D",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-next-step");
     const call = result!.call as ContractBid;
@@ -583,14 +1040,22 @@ describe("DONT advance bidding rules", () => {
   });
 
   test("[bridgebum/dont] advance passes after 2C with 3+ clubs", () => {
-    const result = callFromRules(advancerClubSupport, Seat.North, ["1NT", "2C", "P"]);
+    const result = callFromRules(advancerClubSupport, Seat.North, [
+      "1NT",
+      "2C",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-pass");
     expect(result!.call.type).toBe("pass");
   });
 
   test("[bridgebum/dont] advance bids 2D after 2C (asking for higher suit)", () => {
-    const result = callFromRules(advancerFewClubs, Seat.North, ["1NT", "2C", "P"]);
+    const result = callFromRules(advancerFewClubs, Seat.North, [
+      "1NT",
+      "2C",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-next-step");
     const call = result!.call as ContractBid;
@@ -610,12 +1075,25 @@ describe("DONT advance bidding rules", () => {
   test("[bridgebum/dont] advance with exactly 3 cards support (boundary)", () => {
     // Exactly 3 hearts — boundary test for pass after 2H
     const exactThreeHearts = hand(
-      "SQ", "SJ", "S7", "S5",
-      "HK", "H5", "H3",
-      "DA", "D7", "D3",
-      "C5", "C3", "C2",
+      "SQ",
+      "SJ",
+      "S7",
+      "S5",
+      "HK",
+      "H5",
+      "H3",
+      "DA",
+      "D7",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
     );
-    const result = callFromRules(exactThreeHearts, Seat.North, ["1NT", "2H", "P"]);
+    const result = callFromRules(exactThreeHearts, Seat.North, [
+      "1NT",
+      "2H",
+      "P",
+    ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("dont-advance-pass");
     expect(result!.call.type).toBe("pass");
@@ -628,17 +1106,35 @@ describe("DONT full sequences", () => {
   test("1NT-2H-P-P (both majors, partner has hearts)", () => {
     // South: 5H + 4S (bids 2H showing both majors)
     const overcaller = hand(
-      "SQ", "SJ", "S7", "S2",
-      "HA", "HK", "H8", "H5", "H3",
-      "D5", "D3",
-      "C5", "C2",
+      "SQ",
+      "SJ",
+      "S7",
+      "S2",
+      "HA",
+      "HK",
+      "H8",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "C5",
+      "C2",
     );
     // North: 3+ hearts (passes, accepting hearts)
     const advancer = hand(
-      "S5", "S3", "S2",
-      "HQ", "HJ", "H8",
-      "DA", "DK", "D7", "D3",
-      "C5", "C3", "C2",
+      "S5",
+      "S3",
+      "S2",
+      "HQ",
+      "HJ",
+      "H8",
+      "DA",
+      "DK",
+      "D7",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
     );
 
     // Step 1: South overcalls 2H
@@ -656,17 +1152,35 @@ describe("DONT full sequences", () => {
   test("1NT-X-P-2C (single suited, relay)", () => {
     // South: 6 hearts, single-suited (doubles)
     const overcaller = hand(
-      "S5", "S3", "S2",
-      "HA", "HK", "HQ", "HJ", "H7", "H3",
-      "D5", "D2",
-      "C5", "C2",
+      "S5",
+      "S3",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "H3",
+      "D5",
+      "D2",
+      "C5",
+      "C2",
     );
     // North: any hand (always relays 2C after double)
     const advancer = hand(
-      "SQ", "SJ", "S7", "S4",
-      "H9", "H8",
-      "DA", "DK", "D7", "D3",
-      "C8", "C3", "C2",
+      "SQ",
+      "SJ",
+      "S7",
+      "S4",
+      "H9",
+      "H8",
+      "DA",
+      "DK",
+      "D7",
+      "D3",
+      "C8",
+      "C3",
+      "C2",
     );
 
     // Step 1: South doubles (single-suited)
@@ -686,17 +1200,35 @@ describe("DONT full sequences", () => {
   test("1NT-2C-P-2D (clubs+higher, asking)", () => {
     // South: 5C + 4S (bids 2C showing clubs+higher)
     const overcaller = hand(
-      "SA", "SJ", "S7", "S2",
-      "H5", "H3",
-      "D5", "D3",
-      "CK", "CQ", "C8", "C5", "C2",
+      "SA",
+      "SJ",
+      "S7",
+      "S2",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "CK",
+      "CQ",
+      "C8",
+      "C5",
+      "C2",
     );
     // North: fewer than 3 clubs (bids 2D to ask for higher suit)
     const advancer = hand(
-      "SQ", "S9", "S5", "S3",
-      "HK", "HQ", "HJ", "H7",
-      "DA", "D7", "D3",
-      "C4", "C3",
+      "SQ",
+      "S9",
+      "S5",
+      "S3",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "DA",
+      "D7",
+      "D3",
+      "C4",
+      "C3",
     );
 
     // Step 1: South overcalls 2C
@@ -716,17 +1248,35 @@ describe("DONT full sequences", () => {
   test("1NT-2D-P-2H (diamonds+major, asking for major)", () => {
     // South: 5D + 4H (bids 2D showing diamonds+major)
     const overcaller = hand(
-      "S5", "S3", "S2",
-      "HK", "HJ", "H5", "H3",
-      "DA", "DK", "D8", "D5", "D3",
+      "S5",
+      "S3",
+      "S2",
+      "HK",
+      "HJ",
+      "H5",
+      "H3",
+      "DA",
+      "DK",
+      "D8",
+      "D5",
+      "D3",
       "C2",
     );
     // North: fewer than 3 diamonds (bids 2H asking for major)
     const advancer = hand(
-      "SQ", "SJ", "S7", "S4",
-      "HA", "HQ", "H9", "H8",
-      "D7", "D2",
-      "CQ", "C5", "C3",
+      "SQ",
+      "SJ",
+      "S7",
+      "S4",
+      "HA",
+      "HQ",
+      "H9",
+      "H8",
+      "D7",
+      "D2",
+      "CQ",
+      "C5",
+      "C3",
     );
 
     const overcall = callFromRules(overcaller, Seat.South, ["1NT"]);
@@ -744,17 +1294,35 @@ describe("DONT full sequences", () => {
   test("1NT-2S-P-P (natural spades, partner supports)", () => {
     // South: 6 spades (bids 2S natural)
     const overcaller = hand(
-      "SA", "SK", "SQ", "SJ", "S7", "S2",
-      "H5", "H3",
-      "D5", "D3",
-      "C5", "C3", "C2",
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S7",
+      "S2",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
     );
     // North: 2+ spades (passes)
     const advancer = hand(
-      "S9", "S5",
-      "HK", "HQ", "HJ", "H7",
-      "DA", "DK", "D7",
-      "CQ", "C8", "C4", "C2",
+      "S9",
+      "S5",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "DA",
+      "DK",
+      "D7",
+      "CQ",
+      "C8",
+      "C4",
+      "C2",
     );
 
     const overcall = callFromRules(overcaller, Seat.South, ["1NT"]);

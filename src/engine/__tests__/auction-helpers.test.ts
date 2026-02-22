@@ -97,7 +97,9 @@ describe("parsePatternCall edge cases", () => {
     const call = parsePatternCall(" 1NT ");
     expect(call.type).toBe("bid");
     expect((call as import("../types").ContractBid).level).toBe(1);
-    expect((call as import("../types").ContractBid).strain).toBe(BidSuit.NoTrump);
+    expect((call as import("../types").ContractBid).strain).toBe(
+      BidSuit.NoTrump,
+    );
   });
 });
 

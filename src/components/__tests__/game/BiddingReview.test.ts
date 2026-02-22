@@ -26,7 +26,10 @@ describe("BiddingReview", () => {
   });
 
   it("shows seat label for each entry", () => {
-    const bidHistory = [makeEntry({ seat: Seat.South }), makeEntry({ seat: Seat.North })];
+    const bidHistory = [
+      makeEntry({ seat: Seat.South }),
+      makeEntry({ seat: Seat.North }),
+    ];
     const { container } = render(BiddingReview, {
       props: { bidHistory },
     });
@@ -51,9 +54,7 @@ describe("BiddingReview", () => {
   });
 
   it("renders plain explanation when ruleName is null", () => {
-    const bidHistory = [
-      makeEntry({ ruleName: null, explanation: "User bid" }),
-    ];
+    const bidHistory = [makeEntry({ ruleName: null, explanation: "User bid" })];
     const { container } = render(BiddingReview, {
       props: { bidHistory },
     });

@@ -42,7 +42,10 @@
 </script>
 
 <div>
-  <h2 class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider" aria-live="polite">
+  <h2
+    class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider"
+    aria-live="polite"
+  >
     {#if bidFeedback}
       Your bid
     {:else if isUserTurn}
@@ -51,12 +54,7 @@
       Waiting...
     {/if}
   </h2>
-  <BidPanel
-    {legalCalls}
-    {onBid}
-    {disabled}
-    compact
-  />
+  <BidPanel {legalCalls} {onBid} {disabled} compact />
 </div>
 {#if bidFeedback}
   <BidFeedbackPanel
@@ -67,11 +65,6 @@
 {/if}
 {#if DEV && convention && hand && auction && seat && !bidFeedback}
   <div class="mt-auto">
-    <DebugPanel
-      {convention}
-      {hand}
-      {auction}
-      {seat}
-    />
+    <DebugPanel {convention} {hand} {auction} {seat} />
   </div>
 {/if}

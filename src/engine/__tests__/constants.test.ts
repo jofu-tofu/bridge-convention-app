@@ -23,8 +23,12 @@ describe("SUITS", () => {
   });
 
   test("clubs lowest, spades highest (bridge ascending order)", () => {
-    expect(SUITS.indexOf(Suit.Clubs)).toBeLessThan(SUITS.indexOf(Suit.Diamonds));
-    expect(SUITS.indexOf(Suit.Diamonds)).toBeLessThan(SUITS.indexOf(Suit.Hearts));
+    expect(SUITS.indexOf(Suit.Clubs)).toBeLessThan(
+      SUITS.indexOf(Suit.Diamonds),
+    );
+    expect(SUITS.indexOf(Suit.Diamonds)).toBeLessThan(
+      SUITS.indexOf(Suit.Hearts),
+    );
     expect(SUITS.indexOf(Suit.Hearts)).toBeLessThan(SUITS.indexOf(Suit.Spades));
   });
 });
@@ -139,9 +143,15 @@ describe("SUIT_ORDER", () => {
   });
 
   test("spades highest, clubs lowest (bridge display ranking)", () => {
-    expect(SUIT_ORDER.indexOf(Suit.Spades)).toBeLessThan(SUIT_ORDER.indexOf(Suit.Hearts));
-    expect(SUIT_ORDER.indexOf(Suit.Hearts)).toBeLessThan(SUIT_ORDER.indexOf(Suit.Diamonds));
-    expect(SUIT_ORDER.indexOf(Suit.Diamonds)).toBeLessThan(SUIT_ORDER.indexOf(Suit.Clubs));
+    expect(SUIT_ORDER.indexOf(Suit.Spades)).toBeLessThan(
+      SUIT_ORDER.indexOf(Suit.Hearts),
+    );
+    expect(SUIT_ORDER.indexOf(Suit.Hearts)).toBeLessThan(
+      SUIT_ORDER.indexOf(Suit.Diamonds),
+    );
+    expect(SUIT_ORDER.indexOf(Suit.Diamonds)).toBeLessThan(
+      SUIT_ORDER.indexOf(Suit.Clubs),
+    );
   });
 });
 

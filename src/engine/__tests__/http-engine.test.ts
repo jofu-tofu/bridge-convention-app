@@ -1,8 +1,8 @@
 import { describe, test, expect } from "vitest";
 import { HttpEngine } from "../http-engine";
 import type { EnginePort } from "../port";
-import type { DealConstraints, SeatConstraint, Hand } from "../types";
-import { Seat, Suit } from "../types";
+import type { Hand } from "../types";
+import { Seat } from "../types";
 
 describe("HttpEngine", () => {
   test("implements EnginePort interface", () => {
@@ -31,11 +31,15 @@ describe("HttpEngine", () => {
       vulnerability: "None" as const,
     };
     // any: deal structure doesn't matter, should throw before fetch
-    await expect(engine.solveDeal(deal as any)).rejects.toThrow("DDS not available");
+    await expect(engine.solveDeal(deal as any)).rejects.toThrow(
+      "DDS not available",
+    );
   });
 
   test("suggestPlay throws not available", async () => {
     const engine = new HttpEngine("http://localhost:3001");
-    await expect(engine.suggestPlay({ cards: [] }, [], null, [])).rejects.toThrow("DDS not available");
+    await expect(
+      engine.suggestPlay({ cards: [] }, [], null, []),
+    ).rejects.toThrow("DDS not available");
   });
 });

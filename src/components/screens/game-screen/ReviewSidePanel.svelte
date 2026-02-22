@@ -15,7 +15,14 @@
     onBackToMenu: () => void;
   }
 
-  let { contract, score, declarerTricksWon, bidHistory, onNextDeal, onBackToMenu }: Props = $props();
+  let {
+    contract,
+    score,
+    declarerTricksWon,
+    bidHistory,
+    onNextDeal,
+    onBackToMenu,
+  }: Props = $props();
 
   /** Format contract result like "3NT= — +400" or "2H -1 — -100" */
   function formatResult(): string | null {
@@ -41,7 +48,12 @@
     {#if score !== null}
       {@const result = formatResult()}
       {#if result}
-        <p class="text-base font-mono mt-2 {score >= 0 ? 'text-green-400' : 'text-red-400'}" data-testid="score-result">
+        <p
+          class="text-base font-mono mt-2 {score >= 0
+            ? 'text-green-400'
+            : 'text-red-400'}"
+          data-testid="score-result"
+        >
           {result}
         </p>
       {/if}
@@ -57,7 +69,5 @@
 
 <div class="flex flex-col gap-2 mt-2">
   <Button onclick={onNextDeal}>Next Deal</Button>
-  <Button variant="secondary" onclick={onBackToMenu}>
-    Back to Menu
-  </Button>
+  <Button variant="secondary" onclick={onBackToMenu}>Back to Menu</Button>
 </div>

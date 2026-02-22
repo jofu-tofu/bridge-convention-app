@@ -17,12 +17,16 @@ describe("TrickArea", () => {
 
   it("renders the trick area container", () => {
     const { container } = render(TrickArea, { props: defaultProps });
-    expect(container.querySelector("[data-testid='trick-area']")).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='trick-area']"),
+    ).not.toBeNull();
   });
 
   it("shows 4 trick position slots", () => {
     const { container } = render(TrickArea, { props: defaultProps });
-    const positions = container.querySelectorAll("[data-testid^='trick-position-']");
+    const positions = container.querySelectorAll(
+      "[data-testid^='trick-position-']",
+    );
     expect(positions).toHaveLength(4);
   });
 
@@ -43,20 +47,24 @@ describe("TrickArea", () => {
     const { container } = render(TrickArea, {
       props: { ...defaultProps, currentPlayer: Seat.South, currentTrick: [] },
     });
-    const activePlaceholder = container.querySelector("[data-testid='trick-placeholder-active']");
+    const activePlaceholder = container.querySelector(
+      "[data-testid='trick-placeholder-active']",
+    );
     expect(activePlaceholder).not.toBeNull();
   });
 
   it("does not show active placeholder for seats that have played", () => {
-    const trick: PlayedCard[] = [
-      playedCard(Seat.South, Suit.Hearts, Rank.Ace),
-    ];
+    const trick: PlayedCard[] = [playedCard(Seat.South, Suit.Hearts, Rank.Ace)];
     const { container } = render(TrickArea, {
       props: { ...defaultProps, currentTrick: trick, currentPlayer: Seat.West },
     });
     // South already played — should not have active placeholder at South
-    const southPosition = container.querySelector("[data-testid='trick-position-S']");
-    const activePlaceholder = southPosition?.querySelector("[data-testid='trick-placeholder-active']");
+    const southPosition = container.querySelector(
+      "[data-testid='trick-position-S']",
+    );
+    const activePlaceholder = southPosition?.querySelector(
+      "[data-testid='trick-placeholder-active']",
+    );
     expect(activePlaceholder).toBeNull();
   });
 });

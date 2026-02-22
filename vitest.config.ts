@@ -12,7 +12,12 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: "v8",
-      include: ["src/engine/**", "src/conventions/**", "src/ai/**", "src/cli/**"],
+      include: [
+        "src/engine/**",
+        "src/conventions/**",
+        "src/ai/**",
+        "src/cli/**",
+      ],
       thresholds: {
         branches: 90,
         functions: 90,

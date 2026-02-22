@@ -77,9 +77,10 @@ export function isBalanced(shape: SuitLength): boolean {
 }
 
 /** Single-pass HCP + suit length calculation — avoids double iteration over hand.cards */
-export function calculateHcpAndShape(
-  hand: Hand,
-): { hcp: number; shape: SuitLength } {
+export function calculateHcpAndShape(hand: Hand): {
+  hcp: number;
+  shape: SuitLength;
+} {
   let hcp = 0;
   let spades = 0;
   let hearts = 0;

@@ -124,7 +124,11 @@ export function hcpRange(min: number, max: number): RuleCondition {
 }
 
 /** Minimum length in a specific suit. suitIndex: [0]=S, [1]=H, [2]=D, [3]=C. */
-export function suitMin(suitIndex: number, suitName: string, min: number): RuleCondition {
+export function suitMin(
+  suitIndex: number,
+  suitName: string,
+  min: number,
+): RuleCondition {
   return {
     name: `${suitName}-min`,
     test(ctx) {
@@ -140,7 +144,11 @@ export function suitMin(suitIndex: number, suitName: string, min: number): RuleC
 }
 
 /** Fewer than `threshold` cards in a specific suit (strict less-than). */
-export function suitBelow(suitIndex: number, suitName: string, threshold: number): RuleCondition {
+export function suitBelow(
+  suitIndex: number,
+  suitName: string,
+  threshold: number,
+): RuleCondition {
   return {
     name: `${suitName}-below`,
     test(ctx) {
@@ -159,7 +167,10 @@ export function suitBelow(suitIndex: number, suitName: string, threshold: number
 export const suitMax = suitBelow;
 
 /** At least one of the given suits has min+ cards. */
-export function anySuitMin(suits: { index: number; name: string }[], min: number): RuleCondition {
+export function anySuitMin(
+  suits: { index: number; name: string }[],
+  min: number,
+): RuleCondition {
   const suitNames = suits.map((s) => s.name).join("/");
   return {
     name: `any-${suitNames}-min`,
@@ -172,7 +183,9 @@ export function anySuitMin(suits: { index: number; name: string }[], min: number
         const len = ctx.evaluation.shape[found.index]!;
         return `${len} ${found.name} (${min}+ in ${suitNames})`;
       }
-      const counts = suits.map((s) => `${ctx.evaluation.shape[s.index]!} ${s.name}`).join(", ");
+      const counts = suits
+        .map((s) => `${ctx.evaluation.shape[s.index]!} ${s.name}`)
+        .join(", ");
       return `Only ${counts} (need ${min}+ in ${suitNames})`;
     },
   };
@@ -277,11 +290,13 @@ export function or(...conds: RuleCondition[]): RuleCondition {
           };
         }
         return {
-          results: [{
-            condition: c,
-            passed: c.test(ctx),
-            description: c.describe(ctx),
-          }],
+          results: [
+            {
+              condition: c,
+              passed: c.test(ctx),
+              description: c.describe(ctx),
+            },
+          ],
           passed: c.test(ctx),
         };
       });
@@ -340,7 +355,8 @@ export function hasSingleLongSuit(): RuleCondition {
       const clubs = shape[3]!;
       if (spades >= 6) return false; // Use 2S instead
       const hasSingleLong = hearts >= 6 || diamonds >= 6 || clubs >= 6;
-      const hasSecond4 = [spades, hearts, diamonds, clubs].filter((n) => n >= 4).length > 1;
+      const hasSecond4 =
+        [spades, hearts, diamonds, clubs].filter((n) => n >= 4).length > 1;
       return hasSingleLong && !hasSecond4;
     },
     describe(ctx) {
@@ -353,11 +369,16 @@ export function hasSingleLongSuit(): RuleCondition {
       const hearts = shape[1]!;
       const diamonds = shape[2]!;
       const clubs = shape[3]!;
-      if (spades < 6 && (hearts >= 6 || diamonds >= 6 || clubs >= 6) &&
-          [spades, hearts, diamonds, clubs].filter((n) => n >= 4).length <= 1) {
+      if (
+        spades < 6 &&
+        (hearts >= 6 || diamonds >= 6 || clubs >= 6) &&
+        [spades, hearts, diamonds, clubs].filter((n) => n >= 4).length <= 1
+      ) {
         return `${longest} ${suitName}, single-suited`;
       }
-      const foursPlus = [spades, hearts, diamonds, clubs].filter((n) => n >= 4).length;
+      const foursPlus = [spades, hearts, diamonds, clubs].filter(
+        (n) => n >= 4,
+      ).length;
       if (spades >= 6) return `${spades} spades (use 2S natural instead)`;
       if (foursPlus > 1) return `Two suits with 4+ cards (not single-suited)`;
       return `Longest suit only ${longest} (need 6+ single-suited)`;
@@ -398,19 +419,76 @@ export function gerberSignoffCondition(): RuleCondition {
     name: "gerber-signoff",
     test(ctx) {
       // Match after 1NT-P-4C-P-{4D|4H|4S|4NT}-P (responder's turn)
-      const after4D = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4D", "P"]);
-      const after4H = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4H", "P"]);
-      const after4S = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4S", "P"]);
-      const after4NT = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4NT", "P"]);
+      const after4D = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4D",
+        "P",
+      ]);
+      const after4H = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4H",
+        "P",
+      ]);
+      const after4S = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4S",
+        "P",
+      ]);
+      const after4NT = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4NT",
+        "P",
+      ]);
       return after4D || after4H || after4S || after4NT;
     },
     describe(ctx) {
       // Inline the position check to avoid this-binding fragility
-      const after4D = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4D", "P"]);
-      const after4H = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4H", "P"]);
-      const after4S = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4S", "P"]);
-      const after4NT = auctionMatchesExact(ctx.auction, ["1NT", "P", "4C", "P", "4NT", "P"]);
-      if (!(after4D || after4H || after4S || after4NT)) return "Not in Gerber signoff position";
+      const after4D = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4D",
+        "P",
+      ]);
+      const after4H = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4H",
+        "P",
+      ]);
+      const after4S = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4S",
+        "P",
+      ]);
+      const after4NT = auctionMatchesExact(ctx.auction, [
+        "1NT",
+        "P",
+        "4C",
+        "P",
+        "4NT",
+        "P",
+      ]);
+      if (!(after4D || after4H || after4S || after4NT))
+        return "Not in Gerber signoff position";
       const responderAces = countAcesInHand(ctx.hand);
       const openerAces = inferOpenerAcesFromAuction(ctx);
       const total = responderAces + openerAces;
@@ -450,7 +528,13 @@ export function bothMajors(): RuleCondition {
 export function diamondsPlusMajor(): RuleCondition {
   return and(
     suitMin(2, "diamonds", 5),
-    anySuitMin([{ index: 0, name: "spades" }, { index: 1, name: "hearts" }], 4),
+    anySuitMin(
+      [
+        { index: 0, name: "spades" },
+        { index: 1, name: "hearts" },
+      ],
+      4,
+    ),
   );
 }
 
@@ -458,11 +542,14 @@ export function diamondsPlusMajor(): RuleCondition {
 export function clubsPlusHigher(): RuleCondition {
   return and(
     suitMin(3, "clubs", 5),
-    anySuitMin([
-      { index: 2, name: "diamonds" },
-      { index: 1, name: "hearts" },
-      { index: 0, name: "spades" },
-    ], 4),
+    anySuitMin(
+      [
+        { index: 2, name: "diamonds" },
+        { index: 1, name: "hearts" },
+        { index: 0, name: "spades" },
+      ],
+      4,
+    ),
   );
 }
 
@@ -470,7 +557,12 @@ export function clubsPlusHigher(): RuleCondition {
  * DONT advance: support check for partner's shown suit.
  * Different thresholds for different auction patterns.
  */
-export function advanceSupportFor(auctionPattern: string[], suitIndex: number, suitName: string, minSupport: number): RuleCondition {
+export function advanceSupportFor(
+  auctionPattern: string[],
+  suitIndex: number,
+  suitName: string,
+  minSupport: number,
+): RuleCondition {
   return {
     name: `advance-support-${suitName}`,
     test(ctx) {
@@ -490,7 +582,12 @@ export function advanceSupportFor(auctionPattern: string[], suitIndex: number, s
 }
 
 /** DONT advance: lack of support triggers next-step bid. */
-export function advanceLackSupport(auctionPattern: string[], suitIndex: number, suitName: string, threshold: number): RuleCondition {
+export function advanceLackSupport(
+  auctionPattern: string[],
+  suitIndex: number,
+  suitName: string,
+  threshold: number,
+): RuleCondition {
   return {
     name: `advance-lack-${suitName}`,
     test(ctx) {

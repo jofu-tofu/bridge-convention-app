@@ -17,10 +17,34 @@ function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
       conventionId: "test",
       userSeat,
       seatStrategies: {
-        [Seat.North]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
-        [Seat.East]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
+        [Seat.North]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
+        [Seat.East]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
         [Seat.South]: "user",
-        [Seat.West]: { id: "pass", name: "Pass", suggest: () => ({ call: { type: "pass" as const }, ruleName: null, explanation: "pass" }) },
+        [Seat.West]: {
+          id: "pass",
+          name: "Pass",
+          suggest: () => ({
+            call: { type: "pass" as const },
+            ruleName: null,
+            explanation: "pass",
+          }),
+        },
       },
     },
     getNextBid(seat) {
@@ -35,7 +59,21 @@ function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
 
 /** Create a simple deal where each seat has 13 cards of one suit. */
 function makeTestDeal() {
-  const ranks = [Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack, Rank.Queen, Rank.King, Rank.Ace];
+  const ranks = [
+    Rank.Two,
+    Rank.Three,
+    Rank.Four,
+    Rank.Five,
+    Rank.Six,
+    Rank.Seven,
+    Rank.Eight,
+    Rank.Nine,
+    Rank.Ten,
+    Rank.Jack,
+    Rank.Queen,
+    Rank.King,
+    Rank.Ace,
+  ];
 
   return {
     hands: {
@@ -119,7 +157,11 @@ describe("createGameStore play phase", () => {
    * Start a drill and advance to PLAYING phase via acceptDeclarerSwap.
    * North declares, so user (South) is dummy → DECLARER_PROMPT → accept → PLAYING.
    */
-  async function startDrillWithTimers(drillStore: typeof store, deal: ReturnType<typeof makeTestDeal>, session: DrillSession) {
+  async function startDrillWithTimers(
+    drillStore: typeof store,
+    deal: ReturnType<typeof makeTestDeal>,
+    session: DrillSession,
+  ) {
     const promise = drillStore.startDrill(deal, session);
     await vi.advanceTimersByTimeAsync(600);
     await promise;

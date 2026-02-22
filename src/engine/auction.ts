@@ -1,5 +1,11 @@
 import { BidSuit, Seat } from "./types";
-import type { Auction, AuctionEntry, Call, Contract, ContractBid } from "./types";
+import type {
+  Auction,
+  AuctionEntry,
+  Call,
+  Contract,
+  ContractBid,
+} from "./types";
 import { partnerSeat } from "./constants";
 
 /**
@@ -17,7 +23,13 @@ const STRAIN_RANK: Record<BidSuit, number> = {
 /** All 35 possible contract bids in ascending order. */
 const ALL_BIDS: readonly ContractBid[] = (() => {
   const bids: ContractBid[] = [];
-  const strains = [BidSuit.Clubs, BidSuit.Diamonds, BidSuit.Hearts, BidSuit.Spades, BidSuit.NoTrump];
+  const strains = [
+    BidSuit.Clubs,
+    BidSuit.Diamonds,
+    BidSuit.Hearts,
+    BidSuit.Spades,
+    BidSuit.NoTrump,
+  ];
   for (let level = 1; level <= 7; level++) {
     for (const strain of strains) {
       bids.push({ type: "bid", level: level as ContractBid["level"], strain });
@@ -145,7 +157,9 @@ export function addCall(auction: Auction, entry: AuctionEntry): Auction {
   }
 
   if (!isLegalCall(auction, entry.call, entry.seat)) {
-    throw new Error(`Illegal call: ${JSON.stringify(entry.call)} by ${entry.seat}`);
+    throw new Error(
+      `Illegal call: ${JSON.stringify(entry.call)} by ${entry.seat}`,
+    );
   }
 
   const newEntries = [...auction.entries, entry];

@@ -130,7 +130,11 @@ describe("TsEngine", () => {
       declarer: Seat.South,
     };
     // South is NS, vulnerable: 4S making = 620 (120 + 500 vul game bonus)
-    const score = await engine.calculateScore(contract, 10, Vulnerability.NorthSouth);
+    const score = await engine.calculateScore(
+      contract,
+      10,
+      Vulnerability.NorthSouth,
+    );
     expect(score).toBe(620);
   });
 
@@ -144,7 +148,11 @@ describe("TsEngine", () => {
       declarer: Seat.South,
     };
     // South is NS, EW vulnerable means declarer is NOT vulnerable
-    const score = await engine.calculateScore(contract, 10, Vulnerability.EastWest);
+    const score = await engine.calculateScore(
+      contract,
+      10,
+      Vulnerability.EastWest,
+    );
     expect(score).toBe(420);
   });
 

@@ -19,10 +19,24 @@ export const evaluateCommand: CommandDef = {
   description: "Evaluate a hand (HCP, shape, distribution points)",
   phase: 1,
   options: {
-    hand: { type: "string", short: "h", description: "Space-separated card notations (e.g. SA SK HK ...)" },
-    "hand-from": { type: "string", description: "Read hand from source (stdin)" },
-    seat: { type: "string", short: "s", description: "Seat to evaluate from piped deal (N|E|S|W)" },
-    strategy: { type: "string", description: "Evaluation strategy (default: HCP)" },
+    hand: {
+      type: "string",
+      short: "h",
+      description: "Space-separated card notations (e.g. SA SK HK ...)",
+    },
+    "hand-from": {
+      type: "string",
+      description: "Read hand from source (stdin)",
+    },
+    seat: {
+      type: "string",
+      short: "s",
+      description: "Seat to evaluate from piped deal (N|E|S|W)",
+    },
+    strategy: {
+      type: "string",
+      description: "Evaluation strategy (default: HCP)",
+    },
   },
   async handler(args, deps) {
     let hand: Hand;

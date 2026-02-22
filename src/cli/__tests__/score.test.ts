@@ -58,7 +58,10 @@ describe("score command", () => {
   });
 
   it("returns error on invalid contract string", async () => {
-    const result = await scoreCommand.handler({ contract: "8NT", tricks: "9" }, deps);
+    const result = await scoreCommand.handler(
+      { contract: "8NT", tricks: "9" },
+      deps,
+    );
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.code).toBe("INVALID_ARGS");

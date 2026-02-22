@@ -105,12 +105,16 @@ describe("calculateTrickPoints", () => {
   });
 
   test("1H doubled = 60", () => {
-    expect(calculateTrickPoints(contract(1, BidSuit.Hearts, Seat.South, true))).toBe(60);
+    expect(
+      calculateTrickPoints(contract(1, BidSuit.Hearts, Seat.South, true)),
+    ).toBe(60);
   });
 
   test("1H redoubled = 120", () => {
     expect(
-      calculateTrickPoints(contract(1, BidSuit.Hearts, Seat.South, false, true)),
+      calculateTrickPoints(
+        contract(1, BidSuit.Hearts, Seat.South, false, true),
+      ),
     ).toBe(120);
   });
 });
@@ -196,69 +200,99 @@ describe("isGrandSlam", () => {
 describe("calculateMakingScore", () => {
   describe("partscore bonus", () => {
     test("1C making exact NV = 20 + 50 = 70", () => {
-      expect(calculateMakingScore(contract(1, BidSuit.Clubs), 0, false)).toBe(70);
+      expect(calculateMakingScore(contract(1, BidSuit.Clubs), 0, false)).toBe(
+        70,
+      );
     });
 
     test("2H making exact NV = 60 + 50 = 110", () => {
-      expect(calculateMakingScore(contract(2, BidSuit.Hearts), 0, false)).toBe(110);
+      expect(calculateMakingScore(contract(2, BidSuit.Hearts), 0, false)).toBe(
+        110,
+      );
     });
 
     test("partscore bonus is 50 even when vulnerable", () => {
-      expect(calculateMakingScore(contract(1, BidSuit.Clubs), 0, true)).toBe(70);
+      expect(calculateMakingScore(contract(1, BidSuit.Clubs), 0, true)).toBe(
+        70,
+      );
     });
   });
 
   describe("game bonus", () => {
     test("3NT making exact NV = 100 + 300 = 400", () => {
-      expect(calculateMakingScore(contract(3, BidSuit.NoTrump), 0, false)).toBe(400);
+      expect(calculateMakingScore(contract(3, BidSuit.NoTrump), 0, false)).toBe(
+        400,
+      );
     });
 
     test("3NT making exact V = 100 + 500 = 600", () => {
-      expect(calculateMakingScore(contract(3, BidSuit.NoTrump), 0, true)).toBe(600);
+      expect(calculateMakingScore(contract(3, BidSuit.NoTrump), 0, true)).toBe(
+        600,
+      );
     });
 
     test("4H making exact NV = 120 + 300 = 420", () => {
-      expect(calculateMakingScore(contract(4, BidSuit.Hearts), 0, false)).toBe(420);
+      expect(calculateMakingScore(contract(4, BidSuit.Hearts), 0, false)).toBe(
+        420,
+      );
     });
 
     test("4S making exact V = 120 + 500 = 620", () => {
-      expect(calculateMakingScore(contract(4, BidSuit.Spades), 0, true)).toBe(620);
+      expect(calculateMakingScore(contract(4, BidSuit.Spades), 0, true)).toBe(
+        620,
+      );
     });
 
     test("5C making exact NV = 100 + 300 = 400", () => {
-      expect(calculateMakingScore(contract(5, BidSuit.Clubs), 0, false)).toBe(400);
+      expect(calculateMakingScore(contract(5, BidSuit.Clubs), 0, false)).toBe(
+        400,
+      );
     });
   });
 
   describe("slam bonus", () => {
     test("6H making exact NV = 180 + 300 game + 500 slam = 980", () => {
-      expect(calculateMakingScore(contract(6, BidSuit.Hearts), 0, false)).toBe(980);
+      expect(calculateMakingScore(contract(6, BidSuit.Hearts), 0, false)).toBe(
+        980,
+      );
     });
 
     test("6H making exact V = 180 + 500 game + 750 slam = 1430", () => {
-      expect(calculateMakingScore(contract(6, BidSuit.Hearts), 0, true)).toBe(1430);
+      expect(calculateMakingScore(contract(6, BidSuit.Hearts), 0, true)).toBe(
+        1430,
+      );
     });
 
     test("7NT making exact NV = 220 + 300 game + 1000 grand slam = 1520", () => {
-      expect(calculateMakingScore(contract(7, BidSuit.NoTrump), 0, false)).toBe(1520);
+      expect(calculateMakingScore(contract(7, BidSuit.NoTrump), 0, false)).toBe(
+        1520,
+      );
     });
 
     test("7NT making exact V = 220 + 500 game + 1500 grand slam = 2220", () => {
-      expect(calculateMakingScore(contract(7, BidSuit.NoTrump), 0, true)).toBe(2220);
+      expect(calculateMakingScore(contract(7, BidSuit.NoTrump), 0, true)).toBe(
+        2220,
+      );
     });
   });
 
   describe("overtricks undoubled", () => {
     test("2H NV +1 overtrick = 60 + 50 partscore + 30 overtrick = 140", () => {
-      expect(calculateMakingScore(contract(2, BidSuit.Hearts), 1, false)).toBe(140);
+      expect(calculateMakingScore(contract(2, BidSuit.Hearts), 1, false)).toBe(
+        140,
+      );
     });
 
     test("3NT NV +2 overtricks = 100 + 300 game + 60 overtricks = 460", () => {
-      expect(calculateMakingScore(contract(3, BidSuit.NoTrump), 2, false)).toBe(460);
+      expect(calculateMakingScore(contract(3, BidSuit.NoTrump), 2, false)).toBe(
+        460,
+      );
     });
 
     test("1C NV +3 overtricks = 20 + 50 + 60 = 130", () => {
-      expect(calculateMakingScore(contract(1, BidSuit.Clubs), 3, false)).toBe(130);
+      expect(calculateMakingScore(contract(1, BidSuit.Clubs), 3, false)).toBe(
+        130,
+      );
     });
   });
 
@@ -266,41 +300,67 @@ describe("calculateMakingScore", () => {
     test("doubled insult adds +50", () => {
       // 1C doubled NV making exact: trick=40, partscore=50, insult=50 → 140
       // Wait: 1C doubled = 20*2 = 40 trick points. 40 < 100, so partscore.
-      expect(calculateMakingScore(contract(1, BidSuit.Clubs, Seat.South, true), 0, false)).toBe(140);
+      expect(
+        calculateMakingScore(
+          contract(1, BidSuit.Clubs, Seat.South, true),
+          0,
+          false,
+        ),
+      ).toBe(140);
     });
 
     test("redoubled insult adds +100", () => {
       // 1C redoubled NV making exact: trick=80, partscore=50, insult=100 → 230
       expect(
-        calculateMakingScore(contract(1, BidSuit.Clubs, Seat.South, false, true), 0, false),
+        calculateMakingScore(
+          contract(1, BidSuit.Clubs, Seat.South, false, true),
+          0,
+          false,
+        ),
       ).toBe(230);
     });
 
     test("doubled overtricks NV = 100 per overtrick", () => {
       // 2H doubled NV +1: trick=120, game=300, insult=50, overtrick=100 → 570
       expect(
-        calculateMakingScore(contract(2, BidSuit.Hearts, Seat.South, true), 1, false),
+        calculateMakingScore(
+          contract(2, BidSuit.Hearts, Seat.South, true),
+          1,
+          false,
+        ),
       ).toBe(570);
     });
 
     test("doubled overtricks V = 200 per overtrick", () => {
       // 2H doubled V +1: trick=120, game=500, insult=50, overtrick=200 → 870
       expect(
-        calculateMakingScore(contract(2, BidSuit.Hearts, Seat.South, true), 1, true),
+        calculateMakingScore(
+          contract(2, BidSuit.Hearts, Seat.South, true),
+          1,
+          true,
+        ),
       ).toBe(870);
     });
 
     test("redoubled overtricks NV = 200 per overtrick", () => {
       // 1H redoubled NV +1: trick=120, game=300, insult=100, overtrick=200 → 720
       expect(
-        calculateMakingScore(contract(1, BidSuit.Hearts, Seat.South, false, true), 1, false),
+        calculateMakingScore(
+          contract(1, BidSuit.Hearts, Seat.South, false, true),
+          1,
+          false,
+        ),
       ).toBe(720);
     });
 
     test("redoubled overtricks V = 400 per overtrick", () => {
       // 1H redoubled V +1: trick=120, game=500, insult=100, overtrick=400 → 1120
       expect(
-        calculateMakingScore(contract(1, BidSuit.Hearts, Seat.South, false, true), 1, true),
+        calculateMakingScore(
+          contract(1, BidSuit.Hearts, Seat.South, false, true),
+          1,
+          true,
+        ),
       ).toBe(1120);
     });
   });
@@ -309,7 +369,11 @@ describe("calculateMakingScore", () => {
     test("4S doubled NV making +1 = 690", () => {
       // trick=4*30*2=240, game=300, insult=50, overtrick=100 → 690
       expect(
-        calculateMakingScore(contract(4, BidSuit.Spades, Seat.South, true), 1, false),
+        calculateMakingScore(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          1,
+          false,
+        ),
       ).toBe(690);
     });
   });
@@ -338,60 +402,126 @@ describe("calculatePenalty", () => {
 
   describe("doubled not vulnerable", () => {
     test("down 1 = 100", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 1, false)).toBe(100);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          1,
+          false,
+        ),
+      ).toBe(100);
     });
 
     test("down 2 = 300", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 2, false)).toBe(300);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          2,
+          false,
+        ),
+      ).toBe(300);
     });
 
     test("down 3 = 500", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 3, false)).toBe(500);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          3,
+          false,
+        ),
+      ).toBe(500);
     });
 
     test("down 4 = 800", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 4, false)).toBe(800);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          4,
+          false,
+        ),
+      ).toBe(800);
     });
 
     test("down 5 = 1100", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 5, false)).toBe(1100);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          5,
+          false,
+        ),
+      ).toBe(1100);
     });
   });
 
   describe("doubled vulnerable", () => {
     test("down 1 = 200", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 1, true)).toBe(200);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          1,
+          true,
+        ),
+      ).toBe(200);
     });
 
     test("down 2 = 500", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 2, true)).toBe(500);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          2,
+          true,
+        ),
+      ).toBe(500);
     });
 
     test("down 3 = 800", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 3, true)).toBe(800);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          3,
+          true,
+        ),
+      ).toBe(800);
     });
 
     test("down 4 = 1100", () => {
-      expect(calculatePenalty(contract(4, BidSuit.Spades, Seat.South, true), 4, true)).toBe(1100);
+      expect(
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, true),
+          4,
+          true,
+        ),
+      ).toBe(1100);
     });
   });
 
   describe("redoubled", () => {
     test("redoubled NV down 1 = 200", () => {
       expect(
-        calculatePenalty(contract(4, BidSuit.Spades, Seat.South, false, true), 1, false),
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, false, true),
+          1,
+          false,
+        ),
       ).toBe(200);
     });
 
     test("redoubled NV down 3 = 1000", () => {
       expect(
-        calculatePenalty(contract(4, BidSuit.Spades, Seat.South, false, true), 3, false),
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, false, true),
+          3,
+          false,
+        ),
       ).toBe(1000);
     });
 
     test("redoubled V down 2 = 1000", () => {
       expect(
-        calculatePenalty(contract(4, BidSuit.Spades, Seat.South, false, true), 2, true),
+        calculatePenalty(
+          contract(4, BidSuit.Spades, Seat.South, false, true),
+          2,
+          true,
+        ),
       ).toBe(1000);
     });
   });
@@ -401,31 +531,59 @@ describe("calculatePenalty", () => {
       // 100 + 200 + 200 + 300 + 300 + 300 = 1400... let me calculate:
       // Down 1: 100, down 2: +200=300, down 3: +200=500, down 4: +300=800,
       // down 5: +300=1100, down 6: +300=1400
-      expect(calculatePenalty(contract(7, BidSuit.NoTrump, Seat.South, true), 6, false)).toBe(1400);
+      expect(
+        calculatePenalty(
+          contract(7, BidSuit.NoTrump, Seat.South, true),
+          6,
+          false,
+        ),
+      ).toBe(1400);
     });
 
     test("doubled NV down 7 = 1700", () => {
-      expect(calculatePenalty(contract(7, BidSuit.NoTrump, Seat.South, true), 7, false)).toBe(1700);
+      expect(
+        calculatePenalty(
+          contract(7, BidSuit.NoTrump, Seat.South, true),
+          7,
+          false,
+        ),
+      ).toBe(1700);
     });
 
     test("doubled V down 6 = 1700", () => {
       // 200 + 300*5 = 1700
-      expect(calculatePenalty(contract(7, BidSuit.NoTrump, Seat.South, true), 6, true)).toBe(1700);
+      expect(
+        calculatePenalty(
+          contract(7, BidSuit.NoTrump, Seat.South, true),
+          6,
+          true,
+        ),
+      ).toBe(1700);
     });
 
     test("doubled V down 7 = 2000", () => {
       // 200 + 300*6 = 2000
-      expect(calculatePenalty(contract(7, BidSuit.NoTrump, Seat.South, true), 7, true)).toBe(2000);
+      expect(
+        calculatePenalty(
+          contract(7, BidSuit.NoTrump, Seat.South, true),
+          7,
+          true,
+        ),
+      ).toBe(2000);
     });
 
     test("undoubled NV down 13 = 650", () => {
       // 13 × 50 = 650 (worst possible undoubled NV)
-      expect(calculatePenalty(contract(7, BidSuit.NoTrump), 13, false)).toBe(650);
+      expect(calculatePenalty(contract(7, BidSuit.NoTrump), 13, false)).toBe(
+        650,
+      );
     });
 
     test("undoubled V down 13 = 1300", () => {
       // 13 × 100 = 1300 (worst possible undoubled V)
-      expect(calculatePenalty(contract(7, BidSuit.NoTrump), 13, true)).toBe(1300);
+      expect(calculatePenalty(contract(7, BidSuit.NoTrump), 13, true)).toBe(
+        1300,
+      );
     });
   });
 });
@@ -526,13 +684,17 @@ describe("calculateScore", () => {
 describe("doubled contract game thresholds", () => {
   test("2C doubled is NOT game (80 trick points < 100)", () => {
     // 2C doubled: 20 * 2 * 2 = 80
-    expect(calculateTrickPoints(contract(2, BidSuit.Clubs, Seat.South, true))).toBe(80);
+    expect(
+      calculateTrickPoints(contract(2, BidSuit.Clubs, Seat.South, true)),
+    ).toBe(80);
     expect(isGame(contract(2, BidSuit.Clubs, Seat.South, true))).toBe(false);
   });
 
   test("3C doubled IS game (120 trick points >= 100)", () => {
     // 3C doubled: 20 * 3 * 2 = 120
-    expect(calculateTrickPoints(contract(3, BidSuit.Clubs, Seat.South, true))).toBe(120);
+    expect(
+      calculateTrickPoints(contract(3, BidSuit.Clubs, Seat.South, true)),
+    ).toBe(120);
     expect(isGame(contract(3, BidSuit.Clubs, Seat.South, true))).toBe(true);
   });
 
@@ -550,20 +712,30 @@ describe("doubled contract game thresholds", () => {
 describe("overtrick edge cases", () => {
   test("NT overtrick value is 30 not 40 (1NT NV +1 = 120)", () => {
     // 1NT +1 NV: trick=40, partscore=50, overtrick=30 → 120 (NOT 130)
-    expect(calculateMakingScore(contract(1, BidSuit.NoTrump), 1, false)).toBe(120);
+    expect(calculateMakingScore(contract(1, BidSuit.NoTrump), 1, false)).toBe(
+      120,
+    );
   });
 
   test("multiple doubled overtricks NV (3NT doubled NV +3 = 850)", () => {
     // 3NT doubled NV +3: trick=200, game=300, insult=50, overtricks=3*100=300 → 850
     expect(
-      calculateMakingScore(contract(3, BidSuit.NoTrump, Seat.South, true), 3, false),
+      calculateMakingScore(
+        contract(3, BidSuit.NoTrump, Seat.South, true),
+        3,
+        false,
+      ),
     ).toBe(850);
   });
 
   test("multiple redoubled V overtricks (1H XX V +3 = 1920)", () => {
     // 1H redoubled V +3: trick=120, game=500, insult=100, overtricks=3*400=1200 → 1920
     expect(
-      calculateMakingScore(contract(1, BidSuit.Hearts, Seat.South, false, true), 3, true),
+      calculateMakingScore(
+        contract(1, BidSuit.Hearts, Seat.South, false, true),
+        3,
+        true,
+      ),
     ).toBe(1920);
   });
 });
@@ -577,13 +749,19 @@ describe("extreme penalties and boundaries", () => {
     // Doubled NV down 8: 100+200+200+300+300+300+300+300 = 2000
     // Redoubled = 2000 * 2 = 4000
     expect(
-      calculatePenalty(contract(7, BidSuit.NoTrump, Seat.South, false, true), 8, false),
+      calculatePenalty(
+        contract(7, BidSuit.NoTrump, Seat.South, false, true),
+        8,
+        false,
+      ),
     ).toBe(4000);
   });
 
   test("4H exactly making NV (0 overtricks) = 420", () => {
     // 4H NV making exact: trick=120, game=300 → 420
-    expect(calculateMakingScore(contract(4, BidSuit.Hearts), 0, false)).toBe(420);
+    expect(calculateMakingScore(contract(4, BidSuit.Hearts), 0, false)).toBe(
+      420,
+    );
   });
 });
 
@@ -593,7 +771,9 @@ describe("bridge scoring extremes", () => {
     // Game bonus (V) = 500, Grand slam (V) = 1500, Redoubled insult = 100
     // Total = 880 + 500 + 1500 + 100 = 2980
     const result = calculateMakingScore(
-      contract(7, BidSuit.NoTrump, Seat.South, false, true), 0, true
+      contract(7, BidSuit.NoTrump, Seat.South, false, true),
+      0,
+      true,
     );
     expect(result).toBe(2980);
   });
@@ -602,7 +782,9 @@ describe("bridge scoring extremes", () => {
     // trick points = 880, game bonus (NV) = 300, grand slam (NV) = 1000, insult = 100
     // Total = 880 + 300 + 1000 + 100 = 2280
     const result = calculateMakingScore(
-      contract(7, BidSuit.NoTrump, Seat.South, false, true), 0, false
+      contract(7, BidSuit.NoTrump, Seat.South, false, true),
+      0,
+      false,
     );
     expect(result).toBe(2280);
   });
@@ -618,7 +800,9 @@ describe("bridge scoring extremes", () => {
     // Overtrick (redoubled V) = 400
     // Total = 760 + 500 + 750 + 100 + 400 = 2510
     const result = calculateMakingScore(
-      contract(6, BidSuit.NoTrump, Seat.South, false, true), 1, true
+      contract(6, BidSuit.NoTrump, Seat.South, false, true),
+      1,
+      true,
     );
     expect(result).toBe(2510);
   });

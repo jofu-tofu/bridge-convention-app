@@ -41,9 +41,9 @@
     {@const legal = isLegal(card)}
     <div
       class="card-wrapper"
-      style="{vertical
+      style={vertical
         ? `margin-top: var(--card-overlap-v)`
-        : `margin-left: var(--card-overlap-h)`}"
+        : `margin-left: var(--card-overlap-h)`}
     >
       <Card
         {card}

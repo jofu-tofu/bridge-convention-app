@@ -21,7 +21,9 @@ import type {
 import type { EnginePort } from "./port";
 
 /** Strip non-serializable fields from seat constraints. */
-function cleanSeatConstraint(sc: SeatConstraint): Omit<SeatConstraint, "customCheck"> {
+function cleanSeatConstraint(
+  sc: SeatConstraint,
+): Omit<SeatConstraint, "customCheck"> {
   const { customCheck: _, ...rest } = sc;
   return rest;
 }
@@ -37,7 +39,9 @@ function cleanConstraints(constraints: DealConstraints): object {
 
 export class TauriIpcEngine implements EnginePort {
   async generateDeal(constraints: DealConstraints): Promise<Deal> {
-    return invoke<Deal>("generate_deal", { constraints: cleanConstraints(constraints) });
+    return invoke<Deal>("generate_deal", {
+      constraints: cleanConstraints(constraints),
+    });
   }
 
   async evaluateHand(hand: Hand, _strategy?: string): Promise<HandEvaluation> {
@@ -81,7 +85,10 @@ export class TauriIpcEngine implements EnginePort {
   }
 
   async getLegalPlays(hand: Hand, leadSuit?: Suit): Promise<Card[]> {
-    return invoke<Card[]>("get_legal_plays", { hand, leadSuit: leadSuit ?? null });
+    return invoke<Card[]>("get_legal_plays", {
+      hand,
+      leadSuit: leadSuit ?? null,
+    });
   }
 
   async getTrickWinner(trick: Trick): Promise<Seat> {

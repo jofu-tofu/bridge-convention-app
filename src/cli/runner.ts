@@ -142,8 +142,7 @@ export function createCli(deps: CliDependencies) {
 
       // Phase gate
       if (cmd.phase > CURRENT_PHASE) {
-        const phaseDesc =
-          PHASE_DESCRIPTIONS[cmd.phase] ?? `Phase ${cmd.phase}`;
+        const phaseDesc = PHASE_DESCRIPTIONS[cmd.phase] ?? `Phase ${cmd.phase}`;
         const error: CliError = {
           code: "NOT_IMPLEMENTED",
           message: `'${cmd.name}' is not yet available (requires Phase ${cmd.phase}: ${phaseDesc}).`,
@@ -176,10 +175,7 @@ export function createCli(deps: CliDependencies) {
 
       let result;
       try {
-        result = await cmd.handler(
-          values as Record<string, unknown>,
-          deps,
-        );
+        result = await cmd.handler(values as Record<string, unknown>, deps);
       } catch (thrown: unknown) {
         const cliError: CliError = {
           code: "ENGINE_ERROR",

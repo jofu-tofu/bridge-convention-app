@@ -1,10 +1,5 @@
 import { Suit } from "../engine/types";
-import type {
-  Deal,
-  Hand,
-  HandEvaluation,
-  Seat,
-} from "../engine/types";
+import type { Deal, Hand, HandEvaluation, Seat } from "../engine/types";
 import { SUIT_ORDER } from "../engine/constants";
 import { calculateHcp } from "../engine/hand-evaluator";
 import type { CommandResult, OutputFormat } from "./types";
@@ -46,10 +41,7 @@ function formatHandCards(hand: Hand, unicode: boolean): string {
   ).join("  ");
 }
 
-export function formatDeal(
-  deal: Deal,
-  options: FormatOptions = {},
-): string {
+export function formatDeal(deal: Deal, options: FormatOptions = {}): string {
   const unicode = options.unicode !== false;
   const lines: string[] = [];
   const seats: Seat[] = ["N", "E", "S", "W"] as Seat[];

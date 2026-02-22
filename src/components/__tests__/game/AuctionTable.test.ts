@@ -19,9 +19,15 @@ describe("AuctionTable", () => {
 
   it("renders bids in correct positions", () => {
     const entries: AuctionEntry[] = [
-      { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
+      {
+        seat: Seat.North,
+        call: { type: "bid", level: 1, strain: BidSuit.NoTrump },
+      },
       { seat: Seat.East, call: { type: "pass" } },
-      { seat: Seat.South, call: { type: "bid", level: 2, strain: BidSuit.Clubs } },
+      {
+        seat: Seat.South,
+        call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+      },
     ];
     const { container } = render(AuctionTable, {
       props: { entries, dealer: Seat.North },
@@ -47,7 +53,10 @@ describe("AuctionTable", () => {
 
   it("applies suit color classes to bid cells", () => {
     const entries: AuctionEntry[] = [
-      { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.Hearts } },
+      {
+        seat: Seat.North,
+        call: { type: "bid", level: 1, strain: BidSuit.Hearts },
+      },
     ];
     const { container } = render(AuctionTable, {
       props: { entries, dealer: Seat.North },
@@ -66,11 +75,17 @@ describe("AuctionTable", () => {
 
   it("renders multiple rows for long auctions", () => {
     const entries: AuctionEntry[] = [
-      { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.Clubs } },
+      {
+        seat: Seat.North,
+        call: { type: "bid", level: 1, strain: BidSuit.Clubs },
+      },
       { seat: Seat.East, call: { type: "pass" } },
       { seat: Seat.South, call: { type: "pass" } },
       { seat: Seat.West, call: { type: "pass" } },
-      { seat: Seat.North, call: { type: "bid", level: 2, strain: BidSuit.Clubs } },
+      {
+        seat: Seat.North,
+        call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+      },
     ];
     const { container } = render(AuctionTable, {
       props: { entries, dealer: Seat.North },

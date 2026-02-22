@@ -3,7 +3,9 @@ import { filterConventions } from "../filter-conventions";
 import { ConventionCategory } from "../../conventions/types";
 import type { ConventionConfig } from "../../conventions/types";
 
-function makeConvention(overrides: Partial<ConventionConfig>): ConventionConfig {
+function makeConvention(
+  overrides: Partial<ConventionConfig>,
+): ConventionConfig {
   return {
     id: "test",
     name: "Test Convention",
@@ -17,10 +19,30 @@ function makeConvention(overrides: Partial<ConventionConfig>): ConventionConfig 
 }
 
 const conventions: ConventionConfig[] = [
-  makeConvention({ id: "stayman", name: "Stayman", description: "Asking for 4-card major", category: ConventionCategory.Asking }),
-  makeConvention({ id: "gerber", name: "Gerber", description: "Ace asking convention", category: ConventionCategory.Asking }),
-  makeConvention({ id: "dont", name: "DONT", description: "Disturb opponents notrump", category: ConventionCategory.Defensive }),
-  makeConvention({ id: "bergen", name: "Bergen Raises", description: "Major suit raises", category: ConventionCategory.Constructive }),
+  makeConvention({
+    id: "stayman",
+    name: "Stayman",
+    description: "Asking for 4-card major",
+    category: ConventionCategory.Asking,
+  }),
+  makeConvention({
+    id: "gerber",
+    name: "Gerber",
+    description: "Ace asking convention",
+    category: ConventionCategory.Asking,
+  }),
+  makeConvention({
+    id: "dont",
+    name: "DONT",
+    description: "Disturb opponents notrump",
+    category: ConventionCategory.Defensive,
+  }),
+  makeConvention({
+    id: "bergen",
+    name: "Bergen Raises",
+    description: "Major suit raises",
+    category: ConventionCategory.Constructive,
+  }),
 ];
 
 describe("filterConventions", () => {
@@ -42,14 +64,22 @@ describe("filterConventions", () => {
   });
 
   it("filters by category", () => {
-    const result = filterConventions(conventions, "", ConventionCategory.Asking);
+    const result = filterConventions(
+      conventions,
+      "",
+      ConventionCategory.Asking,
+    );
     expect(result).toHaveLength(2);
     expect(result.map((c) => c.id)).toContain("stayman");
     expect(result.map((c) => c.id)).toContain("gerber");
   });
 
   it("combines search query and category filter (AND logic)", () => {
-    const result = filterConventions(conventions, "gerber", ConventionCategory.Asking);
+    const result = filterConventions(
+      conventions,
+      "gerber",
+      ConventionCategory.Asking,
+    );
     expect(result).toHaveLength(1);
     expect(result[0]!.id).toBe("gerber");
   });

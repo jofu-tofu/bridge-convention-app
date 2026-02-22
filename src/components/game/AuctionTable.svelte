@@ -34,7 +34,11 @@
       if (entry.call.type === "bid") {
         colorClass = BID_SUIT_COLOR_CLASS[entry.call.strain] ?? "";
       }
-      cells.push({ text: formatCall(entry.call), isPlaceholder: false, colorClass });
+      cells.push({
+        text: formatCall(entry.call),
+        isPlaceholder: false,
+        colorClass,
+      });
     }
 
     const result: CellData[][] = [];
@@ -51,15 +55,25 @@
     <thead>
       <tr>
         {#each SEAT_LABELS as label (label)}
-          <th class="px-3 {compact ? 'py-0.5' : 'py-1'} text-text-muted font-medium">{label}</th>
+          <th
+            class="px-3 {compact
+              ? 'py-0.5'
+              : 'py-1'} text-text-muted font-medium">{label}</th
+          >
         {/each}
       </tr>
     </thead>
     <tbody>
-      {#each rows as row, rowIdx ('row-' + rowIdx)}
+      {#each rows as row, rowIdx ("row-" + rowIdx)}
         <tr class="border-t border-border-subtle">
           {#each row as cell, cellIdx (rowIdx * 4 + cellIdx)}
-            <td class="px-3 {compact ? 'py-0.5' : 'py-1'} font-mono {cell.isPlaceholder ? 'text-text-muted' : cell.colorClass || 'text-text-primary'}">
+            <td
+              class="px-3 {compact
+                ? 'py-0.5'
+                : 'py-1'} font-mono {cell.isPlaceholder
+                ? 'text-text-muted'
+                : cell.colorClass || 'text-text-primary'}"
+            >
               {cell.text}
             </td>
           {/each}

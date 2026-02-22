@@ -8,7 +8,12 @@
     text?: string;
   }
 
-  let { variant = "primary", disabled = false, onclick, text = "Click me" }: Props = $props();
+  let {
+    variant = "primary",
+    disabled = false,
+    onclick,
+    text = "Click me",
+  }: Props = $props();
 </script>
 
 <Button {variant} {disabled} {onclick}>{text}</Button>

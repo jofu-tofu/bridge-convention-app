@@ -29,11 +29,15 @@ describe("TauriIpcEngine", () => {
       dealer: Seat.North,
       vulnerability: "None" as const,
     };
-    await expect(engine.solveDeal(deal as any)).rejects.toThrow("DDS not available");
+    await expect(engine.solveDeal(deal as any)).rejects.toThrow(
+      "DDS not available",
+    );
   });
 
   test("suggestPlay throws not available", async () => {
     const engine = new TauriIpcEngine();
-    await expect(engine.suggestPlay({ cards: [] }, [], null, [])).rejects.toThrow("DDS not available");
+    await expect(
+      engine.suggestPlay({ cards: [] }, [], null, []),
+    ).rejects.toThrow("DDS not available");
   });
 });

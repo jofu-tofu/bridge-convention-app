@@ -43,9 +43,19 @@ describe("Rank", () => {
 
   test("named ranks cover Two through Ace", () => {
     const allRanks = [
-      Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six,
-      Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten,
-      Rank.Jack, Rank.Queen, Rank.King, Rank.Ace,
+      Rank.Two,
+      Rank.Three,
+      Rank.Four,
+      Rank.Five,
+      Rank.Six,
+      Rank.Seven,
+      Rank.Eight,
+      Rank.Nine,
+      Rank.Ten,
+      Rank.Jack,
+      Rank.Queen,
+      Rank.King,
+      Rank.Ace,
     ];
     expect(allRanks).toHaveLength(13);
     expect(new Set(allRanks).size).toBe(13);
@@ -120,8 +130,10 @@ describe("Vulnerability", () => {
 describe("BidSuit", () => {
   test("bridge bidding has 5 strains: 4 suits plus NoTrump", () => {
     const strains = [
-      BidSuit.Clubs, BidSuit.Diamonds,
-      BidSuit.Hearts, BidSuit.Spades,
+      BidSuit.Clubs,
+      BidSuit.Diamonds,
+      BidSuit.Hearts,
+      BidSuit.Spades,
       BidSuit.NoTrump,
     ];
     expect(strains).toHaveLength(5);

@@ -15,10 +15,7 @@ beforeEach(() => {
 
 describe("conventions command", () => {
   it("--list returns all conventions", async () => {
-    const result = await conventionsCommand.handler(
-      { list: true },
-      deps,
-    );
+    const result = await conventionsCommand.handler({ list: true }, deps);
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.value.type).toBe("conventions");
@@ -29,20 +26,24 @@ describe("conventions command", () => {
   });
 
   it("--show stayman returns convention details", async () => {
-    const result = await conventionsCommand.handler(
-      { show: "stayman" },
-      deps,
-    );
+    const result = await conventionsCommand.handler({ show: "stayman" }, deps);
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.value.type).toBe("convention");
-    const data = result.value.data as { id: string; name: string; rules: string[] };
+    const data = result.value.data as {
+      id: string;
+      name: string;
+      rules: string[];
+    };
     expect(data.id).toBe("stayman");
     expect(data.rules).toContain("stayman-ask");
   });
 
   it("--show unknown returns error", async () => {
-    const result = await conventionsCommand.handler({ show: "nonexistent" }, deps);
+    const result = await conventionsCommand.handler(
+      { show: "nonexistent" },
+      deps,
+    );
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.code).toBe("INVALID_ARGS");

@@ -12,7 +12,13 @@
     mirrored?: boolean;
   }
 
-  let { card, faceUp = true, clickable = false, onclick, mirrored = false }: Props = $props();
+  let {
+    card,
+    faceUp = true,
+    clickable = false,
+    onclick,
+    mirrored = false,
+  }: Props = $props();
 
   const colorClass = $derived(SUIT_CARD_COLOR_CLASS[card.suit]);
   const symbol = $derived(SUIT_SYMBOLS[card.suit]);
@@ -20,23 +26,30 @@
   const hoverClass = $derived(
     mirrored
       ? "motion-safe:hover:translate-y-1 hover:shadow-lg cursor-pointer motion-safe:transition-transform"
-      : "motion-safe:hover:-translate-y-1 hover:shadow-lg cursor-pointer motion-safe:transition-transform"
+      : "motion-safe:hover:-translate-y-1 hover:shadow-lg cursor-pointer motion-safe:transition-transform",
   );
 </script>
 
 {#snippet cardFace()}
   {#if mirrored}
     <!-- Mirrored: text at bottom-left only, readable from across the table -->
-    <span class="absolute bottom-1 left-1.5 text-xs font-bold leading-none {colorClass}">
-      {card.rank}<br>{symbol}
+    <span
+      class="absolute bottom-1 left-1.5 text-xs font-bold leading-none {colorClass}"
+    >
+      {card.rank}<br />{symbol}
     </span>
   {:else}
     <!-- Normal: top-left upright + bottom-right rotated 180° -->
-    <span class="absolute top-1 left-1.5 text-xs font-bold leading-none {colorClass}">
-      {card.rank}<br>{symbol}
+    <span
+      class="absolute top-1 left-1.5 text-xs font-bold leading-none {colorClass}"
+    >
+      {card.rank}<br />{symbol}
     </span>
-    <span class="absolute bottom-1 right-1.5 text-xs font-bold leading-none {colorClass}" style="transform: rotate(180deg);">
-      {card.rank}<br>{symbol}
+    <span
+      class="absolute bottom-1 right-1.5 text-xs font-bold leading-none {colorClass}"
+      style="transform: rotate(180deg);"
+    >
+      {card.rank}<br />{symbol}
     </span>
   {/if}
 {/snippet}
@@ -48,7 +61,7 @@
       {hoverClass}
       border-none p-0"
     style={cardStyle}
-    onclick={onclick}
+    {onclick}
     aria-label="{card.rank} of {card.suit}"
     data-testid="card"
     data-suit={card.suit}

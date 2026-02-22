@@ -76,7 +76,11 @@ describe("Card", () => {
   it("fires onclick when clicked and clickable", async () => {
     const onclick = vi.fn();
     const { container } = render(Card, {
-      props: { card: { suit: Suit.Spades, rank: Rank.Ace }, clickable: true, onclick },
+      props: {
+        card: { suit: Suit.Spades, rank: Rank.Ace },
+        clickable: true,
+        onclick,
+      },
     });
     const cardEl = container.querySelector("[data-testid='card']")!;
     await fireEvent.click(cardEl);
@@ -86,7 +90,11 @@ describe("Card", () => {
   it("does not fire onclick when not clickable", async () => {
     const onclick = vi.fn();
     const { container } = render(Card, {
-      props: { card: { suit: Suit.Spades, rank: Rank.Ace }, clickable: false, onclick },
+      props: {
+        card: { suit: Suit.Spades, rank: Rank.Ace },
+        clickable: false,
+        onclick,
+      },
     });
     const cardEl = container.querySelector("[data-testid='card']")!;
     await fireEvent.click(cardEl);

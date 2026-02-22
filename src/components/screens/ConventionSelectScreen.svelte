@@ -31,8 +31,23 @@
 
   <!-- Search -->
   <div class="mb-4">
-    <div class="flex items-center gap-3 bg-bg-card border border-border-subtle rounded-[--radius-lg] px-4 py-3">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary shrink-0" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <div
+      class="flex items-center gap-3 bg-bg-card border border-border-subtle rounded-[--radius-lg] px-4 py-3"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="text-text-secondary shrink-0"
+        aria-hidden="true"
+        ><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg
+      >
       <input
         type="text"
         placeholder="Search conventions..."
@@ -48,9 +63,8 @@
     <button
       class="px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
         {activeCategory === null
-          ? 'bg-accent-primary text-text-on-accent'
-          : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'
-        }"
+        ? 'bg-accent-primary text-text-on-accent'
+        : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'}"
       aria-pressed={activeCategory === null}
       onclick={() => (activeCategory = null)}
     >
@@ -60,9 +74,8 @@
       <button
         class="px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
           {activeCategory === cat
-            ? 'bg-accent-primary text-text-on-accent'
-            : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'
-          }"
+          ? 'bg-accent-primary text-text-on-accent'
+          : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'}"
         aria-pressed={activeCategory === cat}
         onclick={() => toggleCategory(cat)}
       >
@@ -82,10 +95,16 @@
           onclick={() => handleSelect(convention)}
         >
           <div>
-            <h2 class="text-lg font-semibold text-text-primary">{convention.name}</h2>
-            <p class="text-sm text-text-secondary mt-1">{convention.description}</p>
+            <h2 class="text-lg font-semibold text-text-primary">
+              {convention.name}
+            </h2>
+            <p class="text-sm text-text-secondary mt-1">
+              {convention.description}
+            </p>
           </div>
-          <span class="rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1 ml-4 shrink-0">
+          <span
+            class="rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1 ml-4 shrink-0"
+          >
             {convention.category}
           </span>
         </button>

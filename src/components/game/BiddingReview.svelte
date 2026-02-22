@@ -23,13 +23,24 @@
         </tr>
       </thead>
       <tbody>
-        {#each bidHistory as entry, idx (entry.seat + '-' + idx)}
-          <tr class="border-t border-border-subtle {entry.isUser ? 'bg-accent-primary-subtle' : ''}">
-            <td class="px-2 py-2 font-mono text-text-secondary">{entry.seat}</td>
-            <td class="px-2 py-2 font-mono text-text-primary">{formatCall(entry.call)}</td>
+        {#each bidHistory as entry, idx (entry.seat + "-" + idx)}
+          <tr
+            class="border-t border-border-subtle {entry.isUser
+              ? 'bg-accent-primary-subtle'
+              : ''}"
+          >
+            <td class="px-2 py-2 font-mono text-text-secondary">{entry.seat}</td
+            >
+            <td class="px-2 py-2 font-mono text-text-primary"
+              >{formatCall(entry.call)}</td
+            >
             <td class="px-2 py-2">
               {#if entry.ruleName}
-                <ConventionCallout ruleName={entry.ruleName} explanation={entry.explanation} conditions={entry.conditions} />
+                <ConventionCallout
+                  ruleName={entry.ruleName}
+                  explanation={entry.explanation}
+                  conditions={entry.conditions}
+                />
               {:else}
                 <span class="text-text-muted text-sm">{entry.explanation}</span>
               {/if}

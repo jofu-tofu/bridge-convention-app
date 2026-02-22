@@ -24,7 +24,11 @@ describe("bid command", () => {
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.value.type).toBe("bid");
-    const data = result.value.data as { call: ContractBid; rule: string; explanation: string };
+    const data = result.value.data as {
+      call: ContractBid;
+      rule: string;
+      explanation: string;
+    };
     expect(data.call.type).toBe("bid");
     expect(data.call.level).toBe(2);
     expect(data.call.strain).toBe(BidSuit.Clubs);
@@ -41,7 +45,10 @@ describe("bid command", () => {
   });
 
   it("returns error without hand", async () => {
-    const result = await bidCommand.handler({ seat: "S", convention: "stayman" }, deps);
+    const result = await bidCommand.handler(
+      { seat: "S", convention: "stayman" },
+      deps,
+    );
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.code).toBe("INVALID_ARGS");
@@ -49,7 +56,10 @@ describe("bid command", () => {
 
   it("returns error with invalid seat", async () => {
     const handStr = "SK S5 S2 HA HK HQ H3 D5 D3 D2 C5 C3 C2";
-    const result = await bidCommand.handler({ hand: handStr, seat: "X", convention: "stayman" }, deps);
+    const result = await bidCommand.handler(
+      { hand: handStr, seat: "X", convention: "stayman" },
+      deps,
+    );
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.code).toBe("INVALID_ARGS");

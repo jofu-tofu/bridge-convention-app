@@ -13,10 +13,19 @@ describe("passStrategy", () => {
 
   test("always returns BidResult with pass call", () => {
     const h = hand(
-      "SA", "SK", "SQ", "SJ",
-      "HA", "HK", "HQ",
-      "DA", "DK",
-      "CA", "CK", "CQ", "CJ",
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "HA",
+      "HK",
+      "HQ",
+      "DA",
+      "DK",
+      "CA",
+      "CK",
+      "CQ",
+      "CJ",
     );
     const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
     const context: BiddingContext = {
@@ -35,10 +44,19 @@ describe("passStrategy", () => {
 
   test("never returns null", () => {
     const h = hand(
-      "S2", "S3", "S4",
-      "H2", "H3", "H4",
-      "D2", "D3", "D4", "D5",
-      "C2", "C3", "C4",
+      "S2",
+      "S3",
+      "S4",
+      "H2",
+      "H3",
+      "H4",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "C2",
+      "C3",
+      "C4",
     );
     const context: BiddingContext = {
       hand: h,

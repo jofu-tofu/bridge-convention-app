@@ -9,7 +9,10 @@ import { createHand } from "../../engine/constants";
 
 const deps = createCliDependencies();
 
-function createTestDepsWithStdin(stdinData: { type: string; data: unknown }): CliDependencies {
+function createTestDepsWithStdin(stdinData: {
+  type: string;
+  data: unknown;
+}): CliDependencies {
   return {
     ...deps,
     readStdin: async () => ok(stdinData),
@@ -57,14 +60,20 @@ describe("evaluate command", () => {
   });
 
   it("returns error when --hand-from stdin without --seat", async () => {
-    const result = await evaluateCommand.handler({ "hand-from": "stdin" }, deps);
+    const result = await evaluateCommand.handler(
+      { "hand-from": "stdin" },
+      deps,
+    );
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.code).toBe("INVALID_ARGS");
   });
 
   it("returns error when --hand-from stdin with invalid seat", async () => {
-    const result = await evaluateCommand.handler({ "hand-from": "stdin", seat: "X" }, deps);
+    const result = await evaluateCommand.handler(
+      { "hand-from": "stdin", seat: "X" },
+      deps,
+    );
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.code).toBe("INVALID_ARGS");
@@ -119,7 +128,11 @@ describe("evaluate command", () => {
   it("returns error when stdin deal has no hand for given seat", async () => {
     const stdinDeps = createTestDepsWithStdin({
       type: "deal",
-      data: { hands: {}, dealer: Seat.North, vulnerability: Vulnerability.None },
+      data: {
+        hands: {},
+        dealer: Seat.North,
+        vulnerability: Vulnerability.None,
+      },
     });
 
     const result = await evaluateCommand.handler(

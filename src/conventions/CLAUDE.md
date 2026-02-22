@@ -13,6 +13,7 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 ## Architecture
 
 **Module graph:**
+
 ```
 types.ts (ConventionConfig, BiddingRule, BiddingContext, RuleCondition, ConditionedBiddingRule)
   ↑
@@ -31,38 +32,42 @@ index.ts (auto-registration entry point)
 
 **Key files:**
 
-| File | Role |
-|------|------|
-| `types.ts` | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory`, `RuleCondition`, `ConditionedBiddingRule` |
-| `conditions.ts` | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
-| `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard |
-| `registry.ts` | Convention map, `evaluateBiddingRules` (first-match, condition-aware), `clearRegistry` for tests |
-| `stayman.ts` | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules |
-| `gerber.ts` | Gerber convention: deal constraints (1NT opener + 13+ HCP responder), 6 bidding rules |
-| `bergen-raises.ts` | Bergen Raises convention: deal constraints (1M opener + responder), 4 bidding rules |
-| `dont.ts` | DONT convention: deal constraints (1NT opponent + overcaller), 7 bidding rules |
-| `index.ts` | Auto-registration entry point — import to activate all conventions |
+| File                     | Role                                                                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `types.ts`               | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory`, `RuleCondition`, `ConditionedBiddingRule`       |
+| `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
+| `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard                                             |
+| `registry.ts`            | Convention map, `evaluateBiddingRules` (first-match, condition-aware), `clearRegistry` for tests                           |
+| `stayman.ts`             | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules                                             |
+| `gerber.ts`              | Gerber convention: deal constraints (1NT opener + 13+ HCP responder), 6 bidding rules                                      |
+| `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), 4 bidding rules                                        |
+| `dont.ts`                | DONT convention: deal constraints (1NT opponent + overcaller), 7 bidding rules                                             |
+| `index.ts`               | Auto-registration entry point — import to activate all conventions                                                         |
 
 ## Convention Rules Reference
 
 **Stayman** (`stayman.ts`):
+
 - **Deal constraints:** Opener (North) 15-17 HCP, balanced, no 5-card major. Responder (South) 8+ HCP, at least one 4-card major.
 - **Rules (in priority order):** `stayman-ask` (2C), `stayman-response-hearts` (2H), `stayman-response-spades` (2S), `stayman-response-denial` (2D), `stayman-rebid-major-fit` (4M), `stayman-rebid-no-fit` (3NT).
 - **Priority:** Hearts shown before spades when opener has both 4-card majors.
 
 **Gerber** (`gerber.ts`):
+
 - **Deal constraints:** Opener (North) 15-17 HCP, balanced. Responder (South) 13+ HCP (slam interest).
 - **Rules (in priority order):** `gerber-ask` (4C), `gerber-response-zero-four` (4D), `gerber-response-one` (4H), `gerber-response-two` (4S), `gerber-response-three` (4NT), `gerber-signoff` (4NT/5NT/6NT/7NT).
 - **Ace disambiguation:** 4D response = 0 or 4 aces; responder's own ace count disambiguates.
 - **Signoff logic:** totalAces=4 -> 7NT, totalAces=3 -> 6NT, else signoff (4NT after 4D/4H, 5NT after 4S).
 
 **Bergen Raises** (`bergen-raises.ts`):
+
 - **Deal constraints:** Opener (North) 12-21 HCP, 5+ card major. Responder (South) 6-12 HCP, 4+ card major.
 - **Rules (in priority order):** `bergen-game-raise` (4M, 13+ HCP), `bergen-limit-raise` (3D, 10-12 HCP), `bergen-constructive-raise` (3C, 7-9 HCP), `bergen-preemptive-raise` (3M, 0-6 HCP).
 - **Variant:** Standard Bergen (3C=constructive, 3D=limit, 3M=preemptive).
 - **Default auction:** Deal-aware -- opens opener's longer major (1S with 5-5).
 
 **DONT** (`dont.ts`):
+
 - **Deal constraints:** Opponent (East) 15-17 HCP, balanced (opens 1NT). Overcaller (South) 8-15 HCP, one 6+ suit OR 5-4+ two-suited.
 - **Rules (in priority order):** `dont-2h` (both majors), `dont-2d` (diamonds+major), `dont-2c` (clubs+higher), `dont-2s` (6+ spades natural), `dont-double` (single-suited non-spades), `dont-advance-pass` (support), `dont-advance-next-step` (relay/ask).
 - **Priority:** Two-suited bids (rules 1-3) before single-suited (rules 4-5). 6-4 hands use two-suited bid, not double. Advance pass checked before next-step.

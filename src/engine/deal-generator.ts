@@ -147,7 +147,6 @@ export function checkConstraints(
   return true;
 }
 
-
 export function generateDeal(
   constraints: DealConstraints,
   rng?: () => number,
@@ -169,7 +168,5 @@ export function generateDeal(
     }
   }
 
-  throw new Error(
-    `Failed to generate deal after ${maxAttempts} attempts`,
-  );
+  throw new Error(`Failed to generate deal after ${maxAttempts} attempts`);
 }

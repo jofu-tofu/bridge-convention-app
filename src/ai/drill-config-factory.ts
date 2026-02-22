@@ -12,7 +12,10 @@ import { SEATS } from "../engine/constants";
  * - Non-participant opponents get passStrategy
  * - User seat gets "user"
  */
-export function createDrillConfig(conventionId: string, userSeat: Seat): DrillConfig {
+export function createDrillConfig(
+  conventionId: string,
+  userSeat: Seat,
+): DrillConfig {
   const convention = getConvention(conventionId);
   const strategy = conventionToStrategy(convention);
 

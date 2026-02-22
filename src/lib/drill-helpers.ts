@@ -11,7 +11,14 @@ export async function startDrill(
   engine: EnginePort,
   convention: ConventionConfig,
   userSeat: Seat,
-  gameStore: { startDrill: (deal: Deal, session: DrillSession, initialAuction?: Auction, strategy?: BiddingStrategy) => Promise<void> },
+  gameStore: {
+    startDrill: (
+      deal: Deal,
+      session: DrillSession,
+      initialAuction?: Auction,
+      strategy?: BiddingStrategy,
+    ) => Promise<void>;
+  },
   rng?: () => number,
 ) {
   const config = createDrillConfig(convention.id, userSeat);

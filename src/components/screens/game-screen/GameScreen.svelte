@@ -92,7 +92,10 @@
     if (!gameStore.contract) return [playUserSeat];
     const seats: Seat[] = [playUserSeat];
     const dummy = partnerSeat(gameStore.contract.declarer);
-    if (seatController(dummy, gameStore.contract.declarer, playUserSeat) === "user") {
+    if (
+      seatController(dummy, gameStore.contract.declarer, playUserSeat) ===
+      "user"
+    ) {
       seats.push(dummy);
     }
     return seats;
@@ -111,20 +114,36 @@
   // Phase display info
   const phaseInfo = $derived.by(() => {
     if (gameStore.phase === "BIDDING") {
-      return { label: "Bidding", color: "bg-blue-600", textColor: "text-blue-100" };
+      return {
+        label: "Bidding",
+        color: "bg-blue-600",
+        textColor: "text-blue-100",
+      };
     }
     if (gameStore.phase === "DECLARER_PROMPT") {
-      return { label: "Declarer", color: "bg-teal-600", textColor: "text-teal-100" };
+      return {
+        label: "Declarer",
+        color: "bg-teal-600",
+        textColor: "text-teal-100",
+      };
     }
     if (gameStore.phase === "PLAYING") {
-      return { label: "Playing", color: "bg-amber-600", textColor: "text-amber-100" };
+      return {
+        label: "Playing",
+        color: "bg-amber-600",
+        textColor: "text-amber-100",
+      };
     }
-    return { label: "Review", color: "bg-purple-600", textColor: "text-purple-100" };
+    return {
+      label: "Review",
+      color: "bg-purple-600",
+      textColor: "text-purple-100",
+    };
   });
 
   // Whether feedback is showing and blocking input
   const isFeedbackBlocking = $derived(
-    gameStore.bidFeedback !== null && !gameStore.bidFeedback.isCorrect
+    gameStore.bidFeedback !== null && !gameStore.bidFeedback.isCorrect,
   );
 
   // Responsive table scaling — use fallback values for SSR/jsdom
@@ -132,11 +151,13 @@
   let innerH = $state(768);
 
   const isDesktop = $derived(innerW > 1023);
-  const tableScale = $derived(computeTableScale(innerW, innerH, { sidePanel: isDesktop }));
+  const tableScale = $derived(
+    computeTableScale(innerW, innerH, { sidePanel: isDesktop }),
+  );
 
-  const tableOrigin = $derived(isDesktop ? 'left center' : 'center');
+  const tableOrigin = $derived(isDesktop ? "left center" : "center");
   const sidePanelClass = $derived(
-    `${isDesktop ? 'w-[400px] shrink-0' : 'border-t border-border-subtle'} bg-bg-base p-4 flex flex-col gap-4 overflow-y-auto`
+    `${isDesktop ? "w-[400px] shrink-0" : "border-t border-border-subtle"} bg-bg-base p-4 flex flex-col gap-4 overflow-y-auto`,
   );
 
   function handleBackToMenu() {
@@ -150,19 +171,35 @@
 {#if gameStore.deal}
   <main class="h-full flex flex-col" aria-label="Bridge drill">
     <!-- Header -->
-    <header class="flex items-center justify-between px-6 py-3 border-b border-border-subtle">
+    <header
+      class="flex items-center justify-between px-6 py-3 border-b border-border-subtle"
+    >
       <div class="flex items-center gap-4">
         <button
           class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
           onclick={handleBackToMenu}
           aria-label="Back to menu"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg
+          >
         </button>
         <h1 class="text-xl font-semibold text-text-primary">
           {appStore.selectedConvention?.name ?? "Drill"} Practice
         </h1>
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold {phaseInfo.color} {phaseInfo.textColor}">
+        <span
+          class="px-2.5 py-0.5 rounded-full text-xs font-semibold {phaseInfo.color} {phaseInfo.textColor}"
+        >
           {phaseInfo.label}
         </span>
       </div>
@@ -170,13 +207,16 @@
     </header>
 
     {#if gameStore.phase === "BIDDING"}
-      <div class="flex-1 flex {isDesktop ? 'flex-row' : 'flex-col'} overflow-hidden">
+      <div
+        class="flex-1 flex {isDesktop
+          ? 'flex-row'
+          : 'flex-col'} overflow-hidden"
+      >
         <ScaledTableArea scale={tableScale} origin={tableOrigin}>
-          <BridgeTable
-            hands={gameStore.deal.hands}
-            {userSeat}
-          >
-            <div class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md">
+          <BridgeTable hands={gameStore.deal.hands} {userSeat}>
+            <div
+              class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
+            >
               <AuctionTable
                 entries={gameStore.auction.entries}
                 dealer={gameStore.deal.dealer}
@@ -190,7 +230,9 @@
           <BiddingSidePanel
             legalCalls={gameStore.legalCalls}
             onBid={handleBid}
-            disabled={!gameStore.isUserTurn || isFeedbackBlocking || !!gameStore.bidFeedback}
+            disabled={!gameStore.isUserTurn ||
+              isFeedbackBlocking ||
+              !!gameStore.bidFeedback}
             isUserTurn={gameStore.isUserTurn}
             bidFeedback={gameStore.bidFeedback}
             {isFeedbackBlocking}
@@ -205,7 +247,11 @@
       </div>
     {:else if gameStore.phase === "DECLARER_PROMPT"}
       <!-- Show normal view with dummy (North) face-up; rotation happens on accept -->
-      <div class="flex-1 flex {isDesktop ? 'flex-row' : 'flex-col'} overflow-hidden">
+      <div
+        class="flex-1 flex {isDesktop
+          ? 'flex-row'
+          : 'flex-col'} overflow-hidden"
+      >
         <ScaledTableArea scale={tableScale} origin={tableOrigin}>
           <BridgeTable
             hands={gameStore.deal.hands}
@@ -213,23 +259,34 @@
             dummySeat={gameStore.contract?.declarer}
           >
             <div class="flex flex-col gap-3 items-center">
-              <div class="bg-bg-card rounded-[--radius-xl] p-5 border border-border-subtle shadow-lg text-center">
+              <div
+                class="bg-bg-card rounded-[--radius-xl] p-5 border border-border-subtle shadow-lg text-center"
+              >
                 {#if gameStore.contract}
                   <ContractDisplay contract={gameStore.contract} size="lg" />
                 {/if}
                 <p class="text-text-secondary text-sm mb-3 mt-1">
-                  You are dummy. Play as {gameStore.contract?.declarer ?? "North"} (declarer)?
+                  You are dummy. Play as {gameStore.contract?.declarer ??
+                    "North"} (declarer)?
                 </p>
                 <div class="flex gap-3 justify-center">
-                  <Button variant="primary" onclick={() => gameStore.acceptDeclarerSwap()}>
+                  <Button
+                    variant="primary"
+                    onclick={() => gameStore.acceptDeclarerSwap()}
+                  >
                     Play as Declarer
                   </Button>
-                  <Button variant="secondary" onclick={() => gameStore.declineDeclarerSwap()}>
+                  <Button
+                    variant="secondary"
+                    onclick={() => gameStore.declineDeclarerSwap()}
+                  >
                     Skip to Review
                   </Button>
                 </div>
               </div>
-              <div class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md">
+              <div
+                class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
+              >
                 <AuctionTable
                   entries={gameStore.auction.entries}
                   dealer={gameStore.deal.dealer}
@@ -243,7 +300,11 @@
         <div class={sidePanelClass}></div>
       </div>
     {:else if gameStore.phase === "PLAYING"}
-      <div class="flex-1 flex {isDesktop ? 'flex-row' : 'flex-col'} overflow-hidden">
+      <div
+        class="flex-1 flex {isDesktop
+          ? 'flex-row'
+          : 'flex-col'} overflow-hidden"
+      >
         <ScaledTableArea scale={tableScale} origin={tableOrigin}>
           <BridgeTable
             hands={gameStore.deal.hands}
@@ -275,13 +336,16 @@
         </div>
       </div>
     {:else if gameStore.phase === "EXPLANATION"}
-      <div class="flex-1 flex {isDesktop ? 'flex-row' : 'flex-col'} overflow-hidden">
+      <div
+        class="flex-1 flex {isDesktop
+          ? 'flex-row'
+          : 'flex-col'} overflow-hidden"
+      >
         <ScaledTableArea scale={tableScale} origin={tableOrigin}>
-          <BridgeTable
-            hands={gameStore.deal.hands}
-            {userSeat}
-          >
-            <div class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md">
+          <BridgeTable hands={gameStore.deal.hands} {userSeat}>
+            <div
+              class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
+            >
               <AuctionTable
                 entries={gameStore.auction.entries}
                 dealer={gameStore.deal.dealer}

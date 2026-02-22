@@ -14,14 +14,28 @@
     compact?: boolean;
   }
 
-  let { legalCalls, onBid, disabled = false, compact = false }: Props = $props();
+  let {
+    legalCalls,
+    onBid,
+    disabled = false,
+    compact = false,
+  }: Props = $props();
 
-  const STRAINS = [BidSuit.Clubs, BidSuit.Diamonds, BidSuit.Hearts, BidSuit.Spades, BidSuit.NoTrump] as const;
-  const ALL_BIDS: readonly ContractBid[] = Array.from({ length: 35 }, (_, i) => ({
-    type: "bid" as const,
-    level: (Math.floor(i / 5) + 1) as ContractBid["level"],
-    strain: STRAINS[i % 5]!,
-  }));
+  const STRAINS = [
+    BidSuit.Clubs,
+    BidSuit.Diamonds,
+    BidSuit.Hearts,
+    BidSuit.Spades,
+    BidSuit.NoTrump,
+  ] as const;
+  const ALL_BIDS: readonly ContractBid[] = Array.from(
+    { length: 35 },
+    (_, i) => ({
+      type: "bid" as const,
+      level: (Math.floor(i / 5) + 1) as ContractBid["level"],
+      strain: STRAINS[i % 5]!,
+    }),
+  );
 
   const ALL_SPECIALS: Call[] = [
     { type: "pass" },
@@ -47,16 +61,21 @@
 </script>
 
 <div class="flex flex-col gap-2">
-  <div class="grid grid-cols-5 gap-1" aria-label="Contract bids" data-testid="level-bids">
+  <div
+    class="grid grid-cols-5 gap-1"
+    aria-label="Contract bids"
+    data-testid="level-bids"
+  >
     {#each ALL_BIDS as call (callKey(call))}
       {@const legal = isLegal(call) && !disabled}
       <button
         data-testid="bid-{callKey(call)}"
-        class="{compact ? 'px-2 py-2 text-xs' : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated
+        class="{compact
+          ? 'px-2 py-2 text-xs'
+          : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated
           {legal
-            ? 'hover:bg-bg-hover cursor-pointer'
-            : 'opacity-30 cursor-default'
-          } {getColorClass(call)}"
+          ? 'hover:bg-bg-hover cursor-pointer'
+          : 'opacity-30 cursor-default'} {getColorClass(call)}"
         disabled={!legal}
         onclick={() => onBid(call)}
       >
@@ -70,11 +89,12 @@
       {@const legal = isLegal(call) && !disabled}
       <button
         data-testid="bid-{callKey(call)}"
-        class="{compact ? 'px-2 py-2 text-xs' : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary
+        class="{compact
+          ? 'px-2 py-2 text-xs'
+          : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary
           {legal
-            ? 'hover:bg-bg-hover cursor-pointer'
-            : 'opacity-30 cursor-default'
-          }"
+          ? 'hover:bg-bg-hover cursor-pointer'
+          : 'opacity-30 cursor-default'}"
         disabled={!legal}
         onclick={() => onBid(call)}
       >

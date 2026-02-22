@@ -102,5 +102,4 @@ export class TsEngine implements EnginePort {
   ): Promise<Card> {
     throw new Error("DDS not available in V1");
   }
-
 }

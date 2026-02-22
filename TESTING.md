@@ -51,6 +51,7 @@ Tests encode bridge rules as executable assertions, serving as both verification
 **Rule Sources:** See `docs/bridge-rules-sources.md` for authoritative references.
 
 **Test Organization:**
+
 - One test file per engine module: `auction.test.ts`, `scoring.test.ts`, `play.test.ts`
 - Convention tests in `src/conventions/__tests__/`
 - Engine test fixtures in `src/engine/__tests__/fixtures.ts`

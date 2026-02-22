@@ -33,7 +33,9 @@ describe("BridgeTable", () => {
       props: defaultProps,
     });
     // Other seats should have face-down cards
-    const faceDownCards = container.querySelectorAll("[data-testid='card-back']");
+    const faceDownCards = container.querySelectorAll(
+      "[data-testid='card-back']",
+    );
     expect(faceDownCards.length).toBeGreaterThan(0);
   });
 
@@ -41,7 +43,9 @@ describe("BridgeTable", () => {
     const { container } = render(BridgeTableTestWrapper, {
       props: defaultProps,
     });
-    expect(container.querySelector("[data-testid='center-content']")).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='center-content']"),
+    ).not.toBeNull();
     expect(container.textContent).toContain("Center");
   });
 
@@ -49,9 +53,17 @@ describe("BridgeTable", () => {
     const { container } = render(BridgeTableTestWrapper, {
       props: defaultProps,
     });
-    expect(container.querySelector("[data-testid='seat-label-N']")).not.toBeNull();
-    expect(container.querySelector("[data-testid='seat-label-E']")).not.toBeNull();
-    expect(container.querySelector("[data-testid='seat-label-S']")).not.toBeNull();
-    expect(container.querySelector("[data-testid='seat-label-W']")).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='seat-label-N']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='seat-label-E']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='seat-label-S']"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector("[data-testid='seat-label-W']"),
+    ).not.toBeNull();
   });
 });

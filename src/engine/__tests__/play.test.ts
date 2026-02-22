@@ -290,8 +290,13 @@ describe("getTrickWinner — all-different-suits edge cases", () => {
 describe("rank ordering through trick winner behavior", () => {
   test("ace beats every other rank in same suit (bridge rule)", () => {
     const lowerRanks = [
-      Rank.King, Rank.Queen, Rank.Jack, Rank.Ten,
-      Rank.Nine, Rank.Five, Rank.Two,
+      Rank.King,
+      Rank.Queen,
+      Rank.Jack,
+      Rank.Ten,
+      Rank.Nine,
+      Rank.Five,
+      Rank.Two,
     ];
     for (const rank of lowerRanks) {
       const trick: Trick = {
@@ -308,7 +313,11 @@ describe("rank ordering through trick winner behavior", () => {
 
   test("two is lowest rank — loses to every other rank in same suit", () => {
     const higherRanks = [
-      Rank.Three, Rank.Seven, Rank.Ten, Rank.Jack, Rank.King,
+      Rank.Three,
+      Rank.Seven,
+      Rank.Ten,
+      Rank.Jack,
+      Rank.King,
     ];
     for (const rank of higherRanks) {
       const trick: Trick = {

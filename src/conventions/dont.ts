@@ -3,7 +3,13 @@
 // - Marty Bergen, original DONT description [Bergen/dont]
 
 import { Seat, BidSuit } from "../engine/types";
-import type { DealConstraints, Call, Auction, Hand, Deal } from "../engine/types";
+import type {
+  DealConstraints,
+  Call,
+  Auction,
+  Hand,
+  Deal,
+} from "../engine/types";
 import { ConventionCategory } from "./types";
 import type { ConventionConfig, BiddingContext } from "./types";
 import { auctionMatchesExact, buildAuction } from "../engine/auction-helpers";
@@ -52,10 +58,7 @@ export const dontDealConstraints: DealConstraints = {
 // Rule 1: dont-2h — both majors
 const dont2H = conditionedRule({
   name: "dont-2h",
-  conditions: [
-    auctionMatches(["1NT"]),
-    bothMajors(),
-  ],
+  conditions: [auctionMatches(["1NT"]), bothMajors()],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Hearts };
   },
@@ -64,10 +67,7 @@ const dont2H = conditionedRule({
 // Rule 2: dont-2d — diamonds + major
 const dont2D = conditionedRule({
   name: "dont-2d",
-  conditions: [
-    auctionMatches(["1NT"]),
-    diamondsPlusMajor(),
-  ],
+  conditions: [auctionMatches(["1NT"]), diamondsPlusMajor()],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Diamonds };
   },
@@ -76,10 +76,7 @@ const dont2D = conditionedRule({
 // Rule 3: dont-2c — clubs + higher suit
 const dont2C = conditionedRule({
   name: "dont-2c",
-  conditions: [
-    auctionMatches(["1NT"]),
-    clubsPlusHigher(),
-  ],
+  conditions: [auctionMatches(["1NT"]), clubsPlusHigher()],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Clubs };
   },
@@ -88,10 +85,7 @@ const dont2C = conditionedRule({
 // Rule 4: dont-2s — natural spades 6+
 const dont2S = conditionedRule({
   name: "dont-2s",
-  conditions: [
-    auctionMatches(["1NT"]),
-    suitMin(0, "spades", 6),
-  ],
+  conditions: [auctionMatches(["1NT"]), suitMin(0, "spades", 6)],
   call(): Call {
     return { type: "bid", level: 2, strain: BidSuit.Spades };
   },
@@ -100,10 +94,7 @@ const dont2S = conditionedRule({
 // Rule 5: dont-double — single-suited (not spades)
 const dontDouble = conditionedRule({
   name: "dont-double",
-  conditions: [
-    auctionMatches(["1NT"]),
-    hasSingleLongSuit(),
-  ],
+  conditions: [auctionMatches(["1NT"]), hasSingleLongSuit()],
   call(): Call {
     return { type: "double" };
   },
@@ -168,7 +159,8 @@ function dontDefaultAuction(seat: Seat, _deal?: Deal): Auction | undefined {
 export const dontConfig: ConventionConfig = {
   id: "dont",
   name: "DONT",
-  description: "DONT (Disturbing Opponent's No Trump): overcalls against 1NT openings",
+  description:
+    "DONT (Disturbing Opponent's No Trump): overcalls against 1NT openings",
   category: ConventionCategory.Defensive,
   dealConstraints: dontDealConstraints,
   biddingRules: [

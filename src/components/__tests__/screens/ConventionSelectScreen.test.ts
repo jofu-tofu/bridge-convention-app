@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { clearRegistry, registerConvention, listConventions } from "../../../conventions/registry";
+import {
+  clearRegistry,
+  registerConvention,
+  listConventions,
+} from "../../../conventions/registry";
 import { staymanConfig } from "../../../conventions/stayman";
 import { gerberConfig } from "../../../conventions/gerber";
 import { bergenConfig } from "../../../conventions/bergen-raises";
@@ -34,7 +38,8 @@ describe("ConventionSelectScreen", () => {
   });
 
   it("filterConventions filters by search query", async () => {
-    const { filterConventions } = await import("../../../lib/filter-conventions");
+    const { filterConventions } =
+      await import("../../../lib/filter-conventions");
     const conventions = listConventions();
     const result = filterConventions(conventions, "stayman", null);
     expect(result).toHaveLength(1);
@@ -42,16 +47,22 @@ describe("ConventionSelectScreen", () => {
   });
 
   it("filterConventions filters by category", async () => {
-    const { filterConventions } = await import("../../../lib/filter-conventions");
+    const { filterConventions } =
+      await import("../../../lib/filter-conventions");
     const { ConventionCategory } = await import("../../../conventions/types");
     const conventions = listConventions();
-    const result = filterConventions(conventions, "", ConventionCategory.Defensive);
+    const result = filterConventions(
+      conventions,
+      "",
+      ConventionCategory.Defensive,
+    );
     expect(result).toHaveLength(1);
     expect(result[0]!.id).toBe("dont");
   });
 
   it("shows empty state when no conventions match", async () => {
-    const { filterConventions } = await import("../../../lib/filter-conventions");
+    const { filterConventions } =
+      await import("../../../lib/filter-conventions");
     const conventions = listConventions();
     const result = filterConventions(conventions, "nonexistent", null);
     expect(result).toHaveLength(0);

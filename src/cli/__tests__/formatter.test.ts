@@ -151,7 +151,10 @@ describe("formatError", () => {
   });
 
   it("formats text error with code and message", () => {
-    const error: CliError = { code: "ENGINE_ERROR", message: "Something broke" };
+    const error: CliError = {
+      code: "ENGINE_ERROR",
+      message: "Something broke",
+    };
     const output = formatError(error, "text");
     expect(output).toBe("Error [ENGINE_ERROR]: Something broke");
   });

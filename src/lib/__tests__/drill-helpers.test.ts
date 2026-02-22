@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { startDrill } from "../drill-helpers";
-import { createStubEngine, makeDeal } from "../../components/__tests__/test-helpers";
+import {
+  createStubEngine,
+  makeDeal,
+} from "../../components/__tests__/test-helpers";
 import { Seat } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/registry";
 import { staymanConfig } from "../../conventions/stayman";
@@ -53,7 +56,10 @@ describe("startDrill", () => {
 
     await startDrill(engine, conventionWithDefault, Seat.South, gameStore);
 
-    expect(conventionWithDefault.defaultAuction).toHaveBeenCalledWith(Seat.South, deal);
+    expect(conventionWithDefault.defaultAuction).toHaveBeenCalledWith(
+      Seat.South,
+      deal,
+    );
     const [, , calledAuction] = gameStore.startDrill.mock.calls[0]!;
     expect(calledAuction).toBe(mockAuction);
   });
@@ -67,7 +73,10 @@ describe("startDrill", () => {
     // Create convention without defaultAuction
     const { defaultAuction: _, ...conventionNoDefault } = staymanConfig;
     registerConvention({ ...conventionNoDefault, id: "stayman-no-default" });
-    const config = { ...conventionNoDefault, id: "stayman-no-default" } as typeof staymanConfig;
+    const config = {
+      ...conventionNoDefault,
+      id: "stayman-no-default",
+    } as typeof staymanConfig;
 
     await startDrill(engine, config, Seat.South, gameStore);
 
