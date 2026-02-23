@@ -40,7 +40,7 @@ index.ts (auto-registration entry point)
 | `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard                                             |
 | `registry.ts`            | Convention map, `evaluateBiddingRules` (first-match, condition-aware), `clearRegistry` for tests                           |
 | `stayman.ts`             | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules                                             |
-| `gerber.ts`              | Gerber convention: deal constraints (1NT opener + 13+ HCP responder), 6 bidding rules                                      |
+| `gerber.ts`              | Gerber convention: deal constraints (NT opener + 16+ HCP responder), 11 bidding rules (ace-ask, king-ask, responses, signoff) |
 | `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), 4 bidding rules                                        |
 | `dont.ts`                | DONT convention: deal constraints (1NT opponent + overcaller), 7 bidding rules                                             |
 | `sayc.ts`                | SAYC convention: internal (opponent AI), no deal constraints, ~22 bidding rules                                            |
@@ -56,10 +56,12 @@ index.ts (auto-registration entry point)
 
 **Gerber** (`gerber.ts`):
 
-- **Deal constraints:** Opener (North) 15-17 HCP, balanced. Responder (South) 13+ HCP (slam interest).
-- **Rules (in priority order):** `gerber-ask` (4C), `gerber-response-zero-four` (4D), `gerber-response-one` (4H), `gerber-response-two` (4S), `gerber-response-three` (4NT), `gerber-signoff` (4NT/5NT/6NT/7NT).
-- **Ace disambiguation:** 4D response = 0 or 4 aces; responder's own ace count disambiguates.
-- **Signoff logic:** totalAces=4 -> 7NT, totalAces=3 -> 6NT, else signoff (4NT after 4D/4H, 5NT after 4S).
+- **Deal constraints:** Opener (North) 15-17 HCP, balanced. Responder (South) 16+ HCP (slam interest), no void.
+- **Trigger:** 4C response to any NT opening (1NT or 2NT).
+- **Ace-asking rules (in priority order):** `gerber-ask` (4C), `gerber-response-zero-four` (4D), `gerber-response-one` (4H), `gerber-response-two` (4S), `gerber-response-three` (4NT).
+- **King-asking rules:** `gerber-king-ask` (5C, fires when total aces >= 3), `gerber-king-response-zero-four` (5D), `gerber-king-response-one` (5H), `gerber-king-response-two` (5S), `gerber-king-response-three` (5NT).
+- **Signoff:** `gerber-signoff` (4NT/5NT/6NT/7NT) — fires after ace response (< 3 aces) or after king response.
+- **Ace/King disambiguation:** 4D/5D response = 0 or 4; responder's own count disambiguates.
 
 **Bergen Raises** (`bergen-raises.ts`):
 

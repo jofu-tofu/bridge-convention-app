@@ -46,9 +46,9 @@ function makeBiddingContext(
 // ─── Stayman vs Gerber after 1NT ────────────────────────────
 
 describe("Stayman vs Gerber after 1NT", () => {
-  test("[cross-convention] 13+ HCP with 4-card major: Stayman produces 2C, Gerber produces 4C", () => {
-    // 13 HCP, 4 hearts — qualifies for both Stayman (8+ HCP, 4M) and Gerber (13+ HCP)
-    // SA(4) + HK(3) + HQ(2) + HJ(1) + DK(3) = 13 HCP
+  test("[cross-convention] 16+ HCP with 4-card major: Stayman produces 2C, Gerber produces 4C", () => {
+    // 16 HCP, 4 hearts — qualifies for both Stayman (8+ HCP, 4M) and Gerber (16+ HCP)
+    // SA(4) + HK(3) + HQ(2) + HJ(1) + DK(3) + CK(3) = 16 HCP
     const h = hand(
       "SA",
       "S5",
@@ -60,7 +60,7 @@ describe("Stayman vs Gerber after 1NT", () => {
       "DK",
       "D3",
       "D2",
-      "C5",
+      "CK",
       "C3",
       "C2",
     );
@@ -87,7 +87,7 @@ describe("Stayman vs Gerber after 1NT", () => {
   });
 
   test("[cross-convention] 8 HCP with 4-card major: only Stayman fires, Gerber returns null", () => {
-    // 8 HCP, 4 spades — Stayman (8+) fires, Gerber (13+) does not
+    // 8 HCP, 4 spades — Stayman (8+) fires, Gerber (16+) does not
     const h = hand(
       "SK",
       "SQ",
@@ -113,8 +113,9 @@ describe("Stayman vs Gerber after 1NT", () => {
     expect(gerberResult).toBeNull();
   });
 
-  test("[cross-convention] 13+ HCP no 4-card major: only Gerber fires, Stayman returns null", () => {
-    // 14 HCP, 3-3-4-3 shape (no 4-card major)
+  test("[cross-convention] 16+ HCP no 4-card major: only Gerber fires, Stayman returns null", () => {
+    // 17 HCP, 3-3-4-3 shape (no 4-card major)
+    // SA(4)+SK(3)+HA(4)+DK(3)+CK(3) = 17
     const h = hand(
       "SA",
       "SK",
@@ -126,7 +127,7 @@ describe("Stayman vs Gerber after 1NT", () => {
       "D5",
       "D3",
       "D2",
-      "C5",
+      "CK",
       "C3",
       "C2",
     );
@@ -141,7 +142,7 @@ describe("Stayman vs Gerber after 1NT", () => {
   });
 
   test("[cross-convention] 7 HCP with 4-card major: neither Stayman nor Gerber fires", () => {
-    // 7 HCP, 4 hearts — below Stayman (8+) and Gerber (13+)
+    // 7 HCP, 4 hearts — below Stayman (8+) and Gerber (16+)
     const h = hand(
       "S5",
       "S3",

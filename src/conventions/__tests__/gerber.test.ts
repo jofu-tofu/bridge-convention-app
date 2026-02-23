@@ -12,7 +12,7 @@ import {
   clearRegistry,
   evaluateBiddingRules,
 } from "../registry";
-import { gerberConfig, gerberDealConstraints, countAces } from "../gerber";
+import { gerberConfig, gerberDealConstraints, countAces, countKings } from "../gerber";
 import type { BiddingContext } from "../types";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { hand, auctionFromBids } from "./fixtures";
@@ -61,49 +61,49 @@ describe("Gerber deal constraints", () => {
     }
   });
 
-  test("[bridgebum/gerber] responder 13+ HCP", () => {
+  test("[bridgebum/gerber] responder 16+ HCP", () => {
     for (let i = 0; i < 20; i++) {
       const result = generateDeal(gerberDealConstraints);
       const responderHand = result.deal.hands[Seat.South];
       const hcp = calculateHcp(responderHand);
-      expect(hcp).toBeGreaterThanOrEqual(13);
+      expect(hcp).toBeGreaterThanOrEqual(16);
     }
   });
 
-  test("[bridgebum/gerber] rejects responder with 12 HCP", () => {
-    // 12 HCP responder — below threshold
-    // SQ(2)+HK(3)+HQ(2)+DK(3)+CQ(2) = 12
-    const responder12 = hand(
+  test("[bridgebum/gerber] rejects responder with 15 HCP", () => {
+    // 15 HCP responder — below 16 threshold
+    // SA(4)+SK(3)+SQ(2)+HK(3)+DK(3) = 15
+    const responder15 = hand(
+      "SA",
+      "SK",
       "SQ",
-      "S7",
       "S6",
       "S2",
       "HK",
-      "HQ",
       "H3",
       "DK",
       "D5",
       "D3",
-      "CQ",
       "C5",
+      "C3",
       "C2",
     );
-    expect(calculateHcp(responder12)).toBe(12);
+    expect(calculateHcp(responder15)).toBe(15);
 
-    // Opener: 16 HCP balanced (3-3-4-3)
-    // SA(4)+SK(3)+HA(4)+DA(4)+CJ(1) = 16
+    // Opener: 16 HCP balanced (3-4-3-3)
+    // SJ(1)+S5+S3, HA(4)+HQ(2)+H5+H4, DA(4)+DQ(2)+D4, CK(3)+C7+C4 = 16
     const opener = hand(
-      "SA",
-      "SK",
+      "SJ",
+      "S5",
       "S3",
       "HA",
+      "HQ",
       "H5",
       "H4",
       "DA",
-      "DJ",
-      "D7",
+      "DQ",
       "D4",
-      "CJ",
+      "CK",
       "C7",
       "C4",
     );
@@ -113,34 +113,34 @@ describe("Gerber deal constraints", () => {
         hands: {
           [Seat.North]: opener,
           [Seat.East]: hand(
-            "S4",
-            "S5",
+            "ST",
+            "S9",
             "S8",
-            "H6",
-            "H7",
-            "H8",
+            "HT",
             "H9",
-            "D2",
-            "D6",
+            "H8",
+            "H7",
+            "DJ",
             "D8",
-            "C3",
-            "C8",
+            "D7",
+            "CA",
+            "CQ",
             "C9",
           ),
-          [Seat.South]: responder12,
+          [Seat.South]: responder15,
           [Seat.West]: hand(
-            "S9",
-            "ST",
-            "SJ",
-            "HT",
+            "S7",
+            "S4",
             "HJ",
+            "H6",
             "H2",
-            "DQ",
             "DT",
             "D9",
-            "CA",
-            "CK",
+            "D6",
+            "D2",
+            "CJ",
             "CT",
+            "C8",
             "C6",
           ),
         },
@@ -153,28 +153,28 @@ describe("Gerber deal constraints", () => {
     expect(satisfied).toBe(false);
   });
 
-  test("[bridgebum/gerber] accepts responder with exactly 13 HCP", () => {
-    // 13 HCP responder — boundary
-    // SA(4)+SK(3)+HK(3)+DQ(2)+CJ(1) = 13
-    const responder13 = hand(
+  test("[bridgebum/gerber] accepts responder with exactly 16 HCP", () => {
+    // 16 HCP responder — boundary
+    // SA(4)+SK(3)+HK(3)+DK(3)+CK(3) = 16
+    const responder16 = hand(
       "SA",
       "SK",
       "S5",
       "S2",
       "HK",
       "H3",
-      "DQ",
+      "DK",
       "D5",
       "D3",
-      "CJ",
+      "CK",
       "C5",
       "C3",
       "C2",
     );
-    expect(calculateHcp(responder13)).toBe(13);
+    expect(calculateHcp(responder16)).toBe(16);
 
     // Opener: 16 HCP balanced (3-4-3-3)
-    // SQ(2)+HA(4)+HQ(2)+HJ(1)+DA(4)+DK(3) = 16
+    // SQ(2)+HA(4)+HQ(2)+HJ(1)+DA(4)+DQ(2)+DJ(1) = 16
     const opener = hand(
       "SQ",
       "SJ",
@@ -184,7 +184,7 @@ describe("Gerber deal constraints", () => {
       "HJ",
       "H2",
       "DA",
-      "DK",
+      "DQ",
       "D4",
       "C7",
       "C6",
@@ -210,7 +210,7 @@ describe("Gerber deal constraints", () => {
             "C9",
             "CT",
           ),
-          [Seat.South]: responder13,
+          [Seat.South]: responder16,
           [Seat.West]: hand(
             "S8",
             "S9",
@@ -223,8 +223,8 @@ describe("Gerber deal constraints", () => {
             "D9",
             "D7",
             "CA",
-            "CK",
             "CQ",
+            "CJ",
           ),
         },
         dealer: Seat.North,
@@ -323,7 +323,7 @@ describe("Gerber deal constraints", () => {
 // --- Rule Unit Tests ---
 
 describe("Gerber bidding rules -- gerber-ask", () => {
-  test("[bridgebum/gerber] gerber-ask matches 13+ HCP after 1NT-P", () => {
+  test("[bridgebum/gerber] gerber-ask matches 16+ HCP after 1NT-P", () => {
     // SA(4)+SK(3)+HA(4)+DK(3)+CQ(2) = 16
     const responder = hand(
       "SA",
@@ -349,31 +349,31 @@ describe("Gerber bidding rules -- gerber-ask", () => {
     expect(call.strain).toBe(BidSuit.Clubs);
   });
 
-  test("[bridgebum/gerber] gerber-ask rejects 12 HCP", () => {
-    // SQ(2)+HK(3)+HQ(2)+DK(3)+CQ(2) = 12
+  test("[bridgebum/gerber] gerber-ask rejects 15 HCP", () => {
+    // SA(4)+SK(3)+SQ(2)+HK(3)+DK(3) = 15
     const weakResponder = hand(
+      "SA",
+      "SK",
       "SQ",
-      "S7",
       "S6",
       "S2",
       "HK",
-      "HQ",
       "H3",
       "DK",
       "D5",
       "D3",
-      "CQ",
       "C5",
+      "C3",
       "C2",
     );
-    expect(calculateHcp(weakResponder)).toBe(12);
+    expect(calculateHcp(weakResponder)).toBe(15);
     const result = callFromRules(weakResponder, Seat.South, ["1NT", "P"]);
     if (result !== null) {
       expect(result.rule).not.toBe("gerber-ask");
     }
   });
 
-  test("[bridgebum/gerber] gerber-ask rejects wrong auction (2NT-P)", () => {
+  test("[bridgebum/gerber] gerber-ask fires after 2NT-P", () => {
     const responder = hand(
       "SA",
       "SK",
@@ -390,30 +390,57 @@ describe("Gerber bidding rules -- gerber-ask", () => {
       "C2",
     );
     const result = callFromRules(responder, Seat.South, ["2NT", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("gerber-ask");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Clubs);
+  });
+
+  test("[bridgebum/gerber] gerber-ask rejects hand with void", () => {
+    // SA(4)+SK(3)+SQ(2)+SJ(1)+HA(4)+HK(3)+DA(4)+DK(3) = 24 HCP, void in clubs
+    const responderWithVoid = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "H3",
+      "DA",
+      "DK",
+      "D5",
+      "D3",
+    );
+    expect(calculateHcp(responderWithVoid)).toBe(24);
+    const result = callFromRules(responderWithVoid, Seat.South, ["1NT", "P"]);
+    // Should not fire gerber-ask due to void in clubs
     if (result !== null) {
       expect(result.rule).not.toBe("gerber-ask");
     }
   });
 
-  test("[bridgebum/gerber] boundary: exactly 13 HCP responder fires gerber-ask", () => {
-    // SA(4)+SK(3)+HK(3)+CQ(2)+CJ(1) = 13
-    const responder13 = hand(
+  test("[bridgebum/gerber] boundary: exactly 16 HCP responder fires gerber-ask", () => {
+    // SA(4)+SK(3)+HK(3)+DK(3)+CK(3) = 16
+    const responder16 = hand(
       "SA",
       "SK",
       "S5",
       "S2",
       "HK",
       "H3",
-      "D5",
+      "DK",
       "D4",
       "D3",
-      "CQ",
-      "CJ",
+      "CK",
+      "C5",
       "C3",
       "C2",
     );
-    expect(calculateHcp(responder13)).toBe(13);
-    const result = callFromRules(responder13, Seat.South, ["1NT", "P"]);
+    expect(calculateHcp(responder16)).toBe(16);
+    const result = callFromRules(responder16, Seat.South, ["1NT", "P"]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("gerber-ask");
   });
@@ -591,42 +618,9 @@ describe("Gerber bidding rules -- ace responses", () => {
   });
 });
 
-describe("Gerber bidding rules -- signoff", () => {
-  test("[bridgebum/gerber] gerber-signoff bids 7NT with 4 combined aces", () => {
-    // Responder has 2 aces, opener showed 4S (2 aces) -> total 4
-    const responder2 = hand(
-      "SA",
-      "SK",
-      "S5",
-      "S2",
-      "HA",
-      "H3",
-      "DK",
-      "D5",
-      "D3",
-      "CQ",
-      "C5",
-      "C3",
-      "C2",
-    );
-    expect(countAces(responder2)).toBe(2);
-    const result = callFromRules(responder2, Seat.South, [
-      "1NT",
-      "P",
-      "4C",
-      "P",
-      "4S",
-      "P",
-    ]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("gerber-signoff");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(7);
-    expect(call.strain).toBe(BidSuit.NoTrump);
-  });
-
-  test("[bridgebum/gerber] gerber-signoff bids 6NT with 3 combined aces", () => {
-    // Responder has 2 aces, opener showed 4H (1 ace) -> total 3
+describe("Gerber bidding rules -- king-ask", () => {
+  test("[bridgebum/gerber] gerber-king-ask fires with 3+ total aces after ace response", () => {
+    // Responder has 2 aces, opener showed 4H (1 ace) -> total 3 -> ask for kings
     const responder2 = hand(
       "SA",
       "SK",
@@ -652,14 +646,157 @@ describe("Gerber bidding rules -- signoff", () => {
       "P",
     ]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("gerber-signoff");
+    expect(result!.rule).toBe("gerber-king-ask");
     const call = result!.call as ContractBid;
-    expect(call.level).toBe(6);
-    expect(call.strain).toBe(BidSuit.NoTrump);
+    expect(call.level).toBe(5);
+    expect(call.strain).toBe(BidSuit.Clubs);
   });
 
+  test("[bridgebum/gerber] gerber-king-ask fires with 4 total aces after 4S response", () => {
+    // Responder has 2 aces, opener showed 4S (2 aces) -> total 4 -> ask for kings
+    const responder2 = hand(
+      "SA",
+      "SK",
+      "S5",
+      "S2",
+      "HA",
+      "H3",
+      "DK",
+      "D5",
+      "D3",
+      "CQ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(countAces(responder2)).toBe(2);
+    const result = callFromRules(responder2, Seat.South, [
+      "1NT",
+      "P",
+      "4C",
+      "P",
+      "4S",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("gerber-king-ask");
+  });
+});
+
+describe("Gerber bidding rules -- king responses", () => {
+  test("[bridgebum/gerber] gerber-king-response-zero-four matches opener with 0 kings", () => {
+    // 0 kings: SA(4)+SQ(2)+HA(4)+HQ(2)+DA(4) = 16 HCP, 0 kings
+    const opener0k = hand(
+      "SA",
+      "SQ",
+      "S5",
+      "S2",
+      "HA",
+      "HQ",
+      "H3",
+      "DA",
+      "D7",
+      "D5",
+      "CJ",
+      "C7",
+      "C2",
+    );
+    expect(countKings(opener0k)).toBe(0);
+    const result = callFromRules(opener0k, Seat.North, [
+      "1NT", "P", "4C", "P", "4H", "P", "5C", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("gerber-king-response-zero-four");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(5);
+    expect(call.strain).toBe(BidSuit.Diamonds);
+  });
+
+  test("[bridgebum/gerber] gerber-king-response-one matches opener with 1 king", () => {
+    const opener1k = hand(
+      "SK",
+      "SQ",
+      "SJ",
+      "S2",
+      "HA",
+      "HQ",
+      "H3",
+      "DA",
+      "DQ",
+      "D5",
+      "CJ",
+      "C7",
+      "C2",
+    );
+    expect(countKings(opener1k)).toBe(1);
+    const result = callFromRules(opener1k, Seat.North, [
+      "1NT", "P", "4C", "P", "4S", "P", "5C", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("gerber-king-response-one");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(5);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/gerber] gerber-king-response-two matches opener with 2 kings", () => {
+    const opener2k = hand(
+      "SK",
+      "SQ",
+      "SJ",
+      "S2",
+      "HK",
+      "HQ",
+      "H3",
+      "DA",
+      "DQ",
+      "D5",
+      "CJ",
+      "C7",
+      "C2",
+    );
+    expect(countKings(opener2k)).toBe(2);
+    const result = callFromRules(opener2k, Seat.North, [
+      "1NT", "P", "4C", "P", "4H", "P", "5C", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("gerber-king-response-two");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(5);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+
+  test("[bridgebum/gerber] gerber-king-response-three matches opener with 3 kings", () => {
+    const opener3k = hand(
+      "SK",
+      "SQ",
+      "S3",
+      "HK",
+      "HQ",
+      "HJ",
+      "H2",
+      "DK",
+      "D7",
+      "D4",
+      "CA",
+      "C7",
+      "C4",
+    );
+    expect(countKings(opener3k)).toBe(3);
+    const result = callFromRules(opener3k, Seat.North, [
+      "1NT", "P", "4C", "P", "4NT", "P", "5C", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("gerber-king-response-three");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(5);
+    expect(call.strain).toBe(BidSuit.NoTrump);
+  });
+});
+
+describe("Gerber bidding rules -- signoff", () => {
   test("[bridgebum/gerber] gerber-signoff bids 4NT signoff with 2 combined aces after 4H", () => {
-    // Responder has 1 ace, opener showed 4H (1 ace) -> total 2
+    // Responder has 1 ace, opener showed 4H (1 ace) -> total 2 -> direct signoff (< 3)
     const responder1 = hand(
       "SA",
       "SK",
@@ -692,7 +829,7 @@ describe("Gerber bidding rules -- signoff", () => {
   });
 
   test("[bridgebum/gerber] gerber-signoff bids 5NT signoff after 4S when not enough aces", () => {
-    // Responder has 0 aces, opener showed 4S (2 aces) -> total 2
+    // Responder has 0 aces, opener showed 4S (2 aces) -> total 2 -> direct signoff
     // SK(3)+SQ(2)+HK(3)+HQ(2)+DK(3)+CK(3) = 16
     const responder0 = hand(
       "SK",
@@ -725,47 +862,28 @@ describe("Gerber bidding rules -- signoff", () => {
     expect(call.strain).toBe(BidSuit.NoTrump);
   });
 
-  test("[bridgebum/gerber] gerber-signoff bids 4NT signoff after 4D with 0 opener aces", () => {
-    // Responder has 4 aces -> opener has 0 (4D = 0 or 4, disambiguation: resp has 4 so opener has 0)
-    // Total aces = 4 -> 7NT
-    // Actually let me use a different scenario: responder has 0 aces, 4D means 0 or 4.
-    // If responder has 0 aces, opener could have 4 aces -> total 4 -> 7NT. That's not signoff.
-    // For signoff after 4D: responder needs enough aces to make total < 3.
-    // 4D = 0 or 4 aces. If responder has 4, opener = 0, total = 4 -> 7NT.
-    // If responder has 0-3, opener = 4, total = 4-7 -> never signoff.
-    // Wait: if responder has 0 aces and opener shows 4D (0 or 4), disambiguation says opener = 4.
-    // So total = 0 + 4 = 4 -> 7NT. This means 4D response rarely leads to signoff.
-    // Let's test: responder 1 ace, opener 4D (0/4), disambiguate: resp != 4, so opener = 4, total = 5 -> 7NT
-    // Actually the disambiguation says: if responder has 4 aces, opener = 0; otherwise opener = 4.
-    // So for any non-4-ace responder, opener from 4D = 4 aces, meaning total >= 4 always.
-    // The only signoff from 4D: responder has 4 aces, opener has 0, total = 4 -> 7NT (not signoff either!)
-    // So 4D response never leads to signoff (always >= 4 total or exactly 4). It's always 7NT.
-    // Let's just test a different meaningful scenario instead.
-
-    // Test after 4D: responder has 4 aces, opener = 0, total = 4 -> 7NT
-    const responder4 = hand(
+  test("[bridgebum/gerber] gerber-signoff after king response: 7NT with 4 aces + 4 kings", () => {
+    // Responder has 2 aces 2 kings, opener showed 4S (2 aces), king resp 5S (2 kings)
+    // -> total 4 aces, 4 kings -> 7NT
+    const responder = hand(
       "SA",
+      "SK",
       "S5",
       "S2",
       "HA",
-      "H3",
-      "DA",
+      "HK",
+      "DQ",
       "D5",
       "D3",
-      "D2",
-      "CA",
+      "CQ",
       "C5",
       "C3",
       "C2",
     );
-    expect(countAces(responder4)).toBe(4);
-    const result = callFromRules(responder4, Seat.South, [
-      "1NT",
-      "P",
-      "4C",
-      "P",
-      "4D",
-      "P",
+    expect(countAces(responder)).toBe(2);
+    expect(countKings(responder)).toBe(2);
+    const result = callFromRules(responder, Seat.South, [
+      "1NT", "P", "4C", "P", "4S", "P", "5C", "P", "5S", "P",
     ]);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("gerber-signoff");
@@ -773,13 +891,43 @@ describe("Gerber bidding rules -- signoff", () => {
     expect(call.level).toBe(7);
     expect(call.strain).toBe(BidSuit.NoTrump);
   });
+
+  test("[bridgebum/gerber] gerber-signoff after king response: 6NT with 3 aces + 2 kings", () => {
+    // Responder has 2 aces 1 king, opener showed 4H (1 ace), king resp 5H (1 king)
+    // -> total 3 aces, 2 kings -> 6NT
+    const responder = hand(
+      "SA",
+      "SK",
+      "S5",
+      "S2",
+      "HA",
+      "H3",
+      "DQ",
+      "D5",
+      "D3",
+      "CQ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(countAces(responder)).toBe(2);
+    expect(countKings(responder)).toBe(1);
+    const result = callFromRules(responder, Seat.South, [
+      "1NT", "P", "4C", "P", "4H", "P", "5C", "P", "5H", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("gerber-signoff");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(6);
+    expect(call.strain).toBe(BidSuit.NoTrump);
+  });
 });
 
 // --- Full Sequence Integration ---
 
 describe("Gerber full sequences", () => {
-  test("1NT-P-4C-P-4S-P-6NT (2 opener aces + 1 responder = 3 -> 6NT)", () => {
-    // Opener: 16 HCP, 2 aces
+  test("1NT-P-4C-P-4S-P-5C-P-5H-P-6NT (3 aces, ask kings, 2 kings -> 6NT)", () => {
+    // Opener: 16 HCP, 2 aces, 1 king
     const opener = hand(
       "SQ",
       "SJ",
@@ -796,8 +944,9 @@ describe("Gerber full sequences", () => {
       "C4",
     );
     expect(countAces(opener)).toBe(2);
+    expect(countKings(opener)).toBe(1);
 
-    // Responder: 14 HCP, 1 ace
+    // Responder: 17 HCP, 1 ace, 2 kings
     const responder = hand(
       "SA",
       "SK",
@@ -805,7 +954,7 @@ describe("Gerber full sequences", () => {
       "S2",
       "HK",
       "H3",
-      "DK",
+      "DQ",
       "D5",
       "D3",
       "CQ",
@@ -814,37 +963,39 @@ describe("Gerber full sequences", () => {
       "C2",
     );
     expect(countAces(responder)).toBe(1);
+    expect(countKings(responder)).toBe(2);
 
-    // Step 1: South bids 4C (Gerber)
+    // Step 1: 4C (Gerber)
     const ask = callFromRules(responder, Seat.South, ["1NT", "P"]);
-    expect(ask).not.toBeNull();
     expect(ask!.rule).toBe("gerber-ask");
-    expect((ask!.call as ContractBid).level).toBe(4);
-    expect((ask!.call as ContractBid).strain).toBe(BidSuit.Clubs);
 
-    // Step 2: North responds 4S (2 aces)
-    const response = callFromRules(opener, Seat.North, ["1NT", "P", "4C", "P"]);
-    expect(response).not.toBeNull();
-    expect(response!.rule).toBe("gerber-response-two");
-    expect((response!.call as ContractBid).strain).toBe(BidSuit.Spades);
+    // Step 2: 4S (2 aces)
+    const aceResp = callFromRules(opener, Seat.North, ["1NT", "P", "4C", "P"]);
+    expect(aceResp!.rule).toBe("gerber-response-two");
 
-    // Step 3: South bids 6NT (1 + 2 = 3 aces -> small slam)
-    const signoff = callFromRules(responder, Seat.South, [
-      "1NT",
-      "P",
-      "4C",
-      "P",
-      "4S",
-      "P",
+    // Step 3: 5C (ask kings, total 3 aces)
+    const kingAsk = callFromRules(responder, Seat.South, [
+      "1NT", "P", "4C", "P", "4S", "P",
     ]);
-    expect(signoff).not.toBeNull();
+    expect(kingAsk!.rule).toBe("gerber-king-ask");
+
+    // Step 4: 5H (1 king)
+    const kingResp = callFromRules(opener, Seat.North, [
+      "1NT", "P", "4C", "P", "4S", "P", "5C", "P",
+    ]);
+    expect(kingResp!.rule).toBe("gerber-king-response-one");
+
+    // Step 5: 6NT (3 aces, 3 kings -> 6NT)
+    const signoff = callFromRules(responder, Seat.South, [
+      "1NT", "P", "4C", "P", "4S", "P", "5C", "P", "5H", "P",
+    ]);
     expect(signoff!.rule).toBe("gerber-signoff");
     expect((signoff!.call as ContractBid).level).toBe(6);
     expect((signoff!.call as ContractBid).strain).toBe(BidSuit.NoTrump);
   });
 
-  test("1NT-P-4C-P-4D-P-7NT (4D = 0 or 4 aces, responder has 0 so opener has 4)", () => {
-    // Opener with 4 aces (16 HCP)
+  test("1NT-P-4C-P-4D-P-king-ask (4D = 0 or 4 aces, responder has 0 so opener has 4)", () => {
+    // Opener with 4 aces
     const opener = hand(
       "SA",
       "S5",
@@ -862,8 +1013,7 @@ describe("Gerber full sequences", () => {
     );
     expect(countAces(opener)).toBe(4);
 
-    // Responder with 0 aces, 13 HCP
-    // SK(3)+SQ(2)+HK(3)+HQ(2)+DK(3) = 13
+    // Responder with 0 aces, 16 HCP
     const responder = hand(
       "SK",
       "SQ",
@@ -875,36 +1025,28 @@ describe("Gerber full sequences", () => {
       "DK",
       "D5",
       "D4",
-      "C7",
+      "CK",
       "C4",
       "C3",
     );
     expect(countAces(responder)).toBe(0);
-    expect(calculateHcp(responder)).toBe(13);
 
     // Step 1: 4C
     const ask = callFromRules(responder, Seat.South, ["1NT", "P"]);
     expect(ask!.rule).toBe("gerber-ask");
 
     // Step 2: 4D (0 or 4 aces)
-    const response = callFromRules(opener, Seat.North, ["1NT", "P", "4C", "P"]);
-    expect(response!.rule).toBe("gerber-response-zero-four");
+    const aceResp = callFromRules(opener, Seat.North, ["1NT", "P", "4C", "P"]);
+    expect(aceResp!.rule).toBe("gerber-response-zero-four");
 
-    // Step 3: 7NT (responder has 0, so opener = 4, total = 4)
-    const signoff = callFromRules(responder, Seat.South, [
-      "1NT",
-      "P",
-      "4C",
-      "P",
-      "4D",
-      "P",
+    // Step 3: 5C king-ask (responder has 0 aces, disambiguates opener = 4, total = 4)
+    const kingAsk = callFromRules(responder, Seat.South, [
+      "1NT", "P", "4C", "P", "4D", "P",
     ]);
-    expect(signoff!.rule).toBe("gerber-signoff");
-    expect((signoff!.call as ContractBid).level).toBe(7);
-    expect((signoff!.call as ContractBid).strain).toBe(BidSuit.NoTrump);
+    expect(kingAsk!.rule).toBe("gerber-king-ask");
   });
 
-  test("1NT-P-4C-P-4H-P-6NT (1 opener + 2 responder = 3 -> 6NT)", () => {
+  test("1NT-P-4C-P-4H-P-4NT signoff (1 opener + 0 responder = 1 -> direct signoff)", () => {
     // Opener: 1 ace
     const opener = hand(
       "SA",
@@ -923,84 +1065,24 @@ describe("Gerber full sequences", () => {
     );
     expect(countAces(opener)).toBe(1);
 
-    // Responder: 2 aces, 13 HCP
-    // SK(3)+HA(4)+DA(4)+CQ(2) = 13
+    // Responder: 0 aces, 16 HCP
     const responder = hand(
       "SK",
+      "SQ",
       "S5",
       "S3",
-      "HA",
-      "H7",
-      "H2",
-      "DA",
-      "D7",
-      "D4",
-      "D3",
-      "CQ",
-      "C5",
-      "C3",
-    );
-    expect(countAces(responder)).toBe(2);
-    expect(calculateHcp(responder)).toBe(13);
-
-    const ask = callFromRules(responder, Seat.South, ["1NT", "P"]);
-    expect(ask!.rule).toBe("gerber-ask");
-
-    const response = callFromRules(opener, Seat.North, ["1NT", "P", "4C", "P"]);
-    expect(response!.rule).toBe("gerber-response-one");
-    expect((response!.call as ContractBid).strain).toBe(BidSuit.Hearts);
-
-    const signoff = callFromRules(responder, Seat.South, [
-      "1NT",
-      "P",
-      "4C",
-      "P",
-      "4H",
-      "P",
-    ]);
-    expect(signoff!.rule).toBe("gerber-signoff");
-    expect((signoff!.call as ContractBid).level).toBe(6);
-    expect((signoff!.call as ContractBid).strain).toBe(BidSuit.NoTrump);
-  });
-
-  test("1NT-P-4C-P-4H-P-4NT signoff (1 opener + 0 responder = 1 -> signoff)", () => {
-    // Opener: 1 ace
-    const opener = hand(
-      "SA",
-      "SQ",
-      "SJ",
-      "S2",
       "HK",
       "HQ",
-      "H3",
-      "DK",
-      "DQ",
-      "D5",
-      "CK",
-      "C7",
-      "C2",
-    );
-    expect(countAces(opener)).toBe(1);
-
-    // Responder: 0 aces, 13 HCP
-    // SK(3)+SQ(2)+HK(3)+DK(3)+CQ(2) = 13
-    const responder = hand(
-      "SK",
-      "SQ",
-      "S5",
-      "S3",
-      "HK",
-      "HT",
       "H2",
       "DK",
       "D7",
       "D4",
       "D3",
-      "CQ",
+      "CK",
       "C2",
     );
     expect(countAces(responder)).toBe(0);
-    expect(calculateHcp(responder)).toBe(13);
+    expect(calculateHcp(responder)).toBe(16);
 
     const ask = callFromRules(responder, Seat.South, ["1NT", "P"]);
     expect(ask!.rule).toBe("gerber-ask");
@@ -1021,7 +1103,7 @@ describe("Gerber full sequences", () => {
     expect((signoff!.call as ContractBid).strain).toBe(BidSuit.NoTrump);
   });
 
-  test("1NT-P-4C-P-4NT-P-6NT (3 opener aces + 0 responder = 3 -> 6NT)", () => {
+  test("1NT-P-4C-P-4NT-P-king-ask (3 opener aces + 0 responder = 3 -> ask kings)", () => {
     // Opener: 3 aces
     const opener = hand(
       "SA",
@@ -1040,24 +1122,24 @@ describe("Gerber full sequences", () => {
     );
     expect(countAces(opener)).toBe(3);
 
-    // Responder: 0 aces, 13 HCP
+    // Responder: 0 aces, 16 HCP
     const responder = hand(
       "SK",
-      "SJ",
+      "SQ",
       "S5",
       "S2",
       "HK",
-      "HT",
+      "HQ",
       "H3",
       "DK",
       "D5",
       "D3",
-      "CQ",
-      "CJ",
+      "CK",
+      "C4",
       "C2",
     );
     expect(countAces(responder)).toBe(0);
-    expect(calculateHcp(responder)).toBe(13);
+    expect(calculateHcp(responder)).toBe(16);
 
     const ask = callFromRules(responder, Seat.South, ["1NT", "P"]);
     expect(ask!.rule).toBe("gerber-ask");
@@ -1065,7 +1147,8 @@ describe("Gerber full sequences", () => {
     const response = callFromRules(opener, Seat.North, ["1NT", "P", "4C", "P"]);
     expect(response!.rule).toBe("gerber-response-three");
 
-    const signoff = callFromRules(responder, Seat.South, [
+    // With 3 total aces, king-ask fires
+    const kingAsk = callFromRules(responder, Seat.South, [
       "1NT",
       "P",
       "4C",
@@ -1073,9 +1156,7 @@ describe("Gerber full sequences", () => {
       "4NT",
       "P",
     ]);
-    expect(signoff!.rule).toBe("gerber-signoff");
-    expect((signoff!.call as ContractBid).level).toBe(6);
-    expect((signoff!.call as ContractBid).strain).toBe(BidSuit.NoTrump);
+    expect(kingAsk!.rule).toBe("gerber-king-ask");
   });
 });
 
@@ -1188,7 +1269,7 @@ describe("Gerber reference hands", () => {
       "C2",
     );
     expect(countAces(responder4)).toBe(4);
-    // After 4D, responder has 4 aces -> opener = 0, total = 4 -> 7NT
+    // After 4D, responder has 4 aces -> opener = 0, total = 4 -> king-ask (3+ aces)
     const result = callFromRules(responder4, Seat.South, [
       "1NT",
       "P",
@@ -1197,8 +1278,9 @@ describe("Gerber reference hands", () => {
       "4D",
       "P",
     ]);
-    expect(result!.rule).toBe("gerber-signoff");
-    expect((result!.call as ContractBid).level).toBe(7);
+    expect(result!.rule).toBe("gerber-king-ask");
+    expect((result!.call as ContractBid).level).toBe(5);
+    expect((result!.call as ContractBid).strain).toBe(BidSuit.Clubs);
   });
 
   test("[bridgebum/gerber] countAces helper returns correct counts", () => {
@@ -1256,12 +1338,11 @@ describe("Gerber reference hands", () => {
 // --- Edge Cases: Ace Disambiguation and Signoff Boundaries ---
 
 describe("Gerber edge cases — ace disambiguation", () => {
-  test("responder with 1 ace sees 4D: infers opener=4, total=5 (impossible) → 6NT", () => {
+  test("responder with 1 ace sees 4D: infers opener=4, total=5 → king-ask", () => {
     // Responder has 1 ace, opener showed 4D (0 or 4).
     // Since responder != 4 aces, disambiguation says opener = 4.
     // Total = 1 + 4 = 5 (impossible in real bridge — only 4 aces exist).
-    // Signoff logic: totalAces === 4 → 7NT, totalAces >= 3 → 6NT.
-    // So total=5 produces 6NT (known simplification of disambiguation).
+    // With 3+ total aces, king-ask fires instead of direct signoff.
     const responder1 = hand(
       "SA",
       "SK",
@@ -1287,14 +1368,14 @@ describe("Gerber edge cases — ace disambiguation", () => {
       "P",
     ]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("gerber-signoff");
+    expect(result!.rule).toBe("gerber-king-ask");
     const call = result!.call as ContractBid;
-    expect(call.level).toBe(6);
-    expect(call.strain).toBe(BidSuit.NoTrump);
+    expect(call.level).toBe(5);
+    expect(call.strain).toBe(BidSuit.Clubs);
   });
 
-  test("signoff after 4S with exactly 1 responder ace: total=3 → 6NT", () => {
-    // Responder has 1 ace, opener showed 4S (2 aces) → total = 3 → 6NT
+  test("king-ask after 4S with exactly 1 responder ace: total=3 → 5C", () => {
+    // Responder has 1 ace, opener showed 4S (2 aces) → total = 3 → king-ask
     const responder1 = hand(
       "SA",
       "SK",
@@ -1320,10 +1401,10 @@ describe("Gerber edge cases — ace disambiguation", () => {
       "P",
     ]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("gerber-signoff");
+    expect(result!.rule).toBe("gerber-king-ask");
     const call = result!.call as ContractBid;
-    expect(call.level).toBe(6);
-    expect(call.strain).toBe(BidSuit.NoTrump);
+    expect(call.level).toBe(5);
+    expect(call.strain).toBe(BidSuit.Clubs);
   });
 
   test("countAces returns 0 for hand with no face cards (yarborough-like)", () => {
@@ -1349,20 +1430,29 @@ describe("Gerber edge cases — ace disambiguation", () => {
 // --- Property-Based Invariants ---
 
 describe("Gerber property-based invariants", () => {
-  test("[bridgebum/gerber invariant] 50 random deals produce valid bids from gerber-ask rule", () => {
+  test("[bridgebum/gerber invariant] 50 random deals: gerber-ask fires unless hand has void", () => {
     for (let i = 0; i < 50; i++) {
       const result = generateDeal(gerberDealConstraints);
       const responderHand = result.deal.hands[Seat.South];
       const hcp = calculateHcp(responderHand);
-      expect(hcp).toBeGreaterThanOrEqual(13);
+      expect(hcp).toBeGreaterThanOrEqual(16);
 
       const ctx = makeBiddingContext(responderHand, Seat.South, ["1NT", "P"]);
       const ruleResult = evaluateBiddingRules(gerberConfig.biddingRules, ctx);
-      expect(ruleResult).not.toBeNull();
-      expect(ruleResult!.rule).toBe("gerber-ask");
-      const call = ruleResult!.call as ContractBid;
-      expect(call.level).toBe(4);
-      expect(call.strain).toBe(BidSuit.Clubs);
+
+      const hasVoid = ctx.evaluation.shape.some((s) => s === 0);
+      if (hasVoid) {
+        // Hands with void should NOT fire gerber-ask
+        if (ruleResult !== null) {
+          expect(ruleResult.rule).not.toBe("gerber-ask");
+        }
+      } else {
+        expect(ruleResult).not.toBeNull();
+        expect(ruleResult!.rule).toBe("gerber-ask");
+        const call = ruleResult!.call as ContractBid;
+        expect(call.level).toBe(4);
+        expect(call.strain).toBe(BidSuit.Clubs);
+      }
     }
   });
 
@@ -1471,7 +1561,7 @@ describe("Gerber property-based invariants", () => {
     }
   });
 
-  test("[bridgebum/gerber invariant] signoff after any ace response produces valid NT bid", () => {
+  test("[bridgebum/gerber invariant] after any ace response, either king-ask or signoff fires", () => {
     const responder = hand(
       "SA",
       "SK",
@@ -1498,11 +1588,8 @@ describe("Gerber property-based invariants", () => {
         "P",
       ]);
       expect(result).not.toBeNull();
-      expect(result!.rule).toBe("gerber-signoff");
-      const call = result!.call as ContractBid;
-      expect(call.strain).toBe(BidSuit.NoTrump);
-      expect(call.level).toBeGreaterThanOrEqual(4);
-      expect(call.level).toBeLessThanOrEqual(7);
+      // With 2 aces, king-ask fires when total >= 3, signoff when < 3
+      expect(["gerber-king-ask", "gerber-signoff"]).toContain(result!.rule);
     }
   });
 
@@ -1534,17 +1621,16 @@ describe("Gerber property-based invariants", () => {
     }
   });
 
-  test("[bridgebum/gerber invariant] grand slam only when all 4 aces accounted for", () => {
-    // Test with various ace distributions
+  test("[bridgebum/gerber invariant] king-ask fires with 3+ total aces, signoff with fewer", () => {
+    // Test with various ace distributions — 3+ aces = king-ask, <3 = signoff
     const testCases = [
-      { respAces: 2, response: "4S", expectedTotal: 4, expectedLevel: 7 }, // 2+2=4
-      { respAces: 1, response: "4NT", expectedTotal: 4, expectedLevel: 7 }, // 1+3=4
-      { respAces: 2, response: "4H", expectedTotal: 3, expectedLevel: 6 }, // 2+1=3
-      { respAces: 1, response: "4H", expectedTotal: 2, expectedLevel: 4 }, // 1+1=2 -> 4NT signoff
+      { respAces: 2, response: "4S", expectedTotal: 4, expectedRule: "gerber-king-ask" }, // 2+2=4
+      { respAces: 1, response: "4NT", expectedTotal: 4, expectedRule: "gerber-king-ask" }, // 1+3=4
+      { respAces: 2, response: "4H", expectedTotal: 3, expectedRule: "gerber-king-ask" }, // 2+1=3
+      { respAces: 1, response: "4H", expectedTotal: 2, expectedRule: "gerber-signoff" }, // 1+1=2 -> signoff
     ];
 
     for (const tc of testCases) {
-      // Build a hand with the right number of aces
       let h: Hand;
       if (tc.respAces === 0) {
         h = hand(
@@ -1605,9 +1691,7 @@ describe("Gerber property-based invariants", () => {
         "P",
       ]);
       expect(result).not.toBeNull();
-      const call = result!.call as ContractBid;
-      expect(call.level).toBe(tc.expectedLevel);
-      expect(call.strain).toBe(BidSuit.NoTrump);
+      expect(result!.rule).toBe(tc.expectedRule);
     }
   });
 });
