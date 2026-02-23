@@ -69,6 +69,7 @@ components/
 
 ## Gotchas
 
+- **Scrollbar & overflow:** Global dark scrollbar styles in `app.css` (no `.custom-scroll` class needed). Side panels use `overflow-x-hidden` to prevent horizontal scroll. Content components (ConventionCallout, BiddingReview) use `flex-wrap` and `break-words` to wrap instead of overflow. MakeableContractsTable uses `table-fixed` for uniform columns.
 - `GameScreen` uses `onMount` to skip starting a new drill if a deal is already in progress
 - GameScreen renders all phases (BIDDING, DECLARER_PROMPT, PLAYING, EXPLANATION) inline via conditional blocks — no separate ExplanationScreen
 - PLAYING phase shows BridgeTable with TrickArea center, HandFan with legal plays, and side panel with trick count + skip button

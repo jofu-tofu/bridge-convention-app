@@ -8,7 +8,7 @@ Source: Obsidian vault `Projects/Bridge Practice App/Architecture.md`.
 | Convention        | Opener Constraints                          | Responder Constraints                                        |
 | ----------------- | ------------------------------------------- | ------------------------------------------------------------ |
 | **Stayman**       | North: 15-17 HCP, balanced, no 5-card major | South: 8+ HCP, 4+ card major                                 |
-| **Gerber**        | North: 15-17 HCP, balanced                  | South: 13+ HCP, slam interest, combined 33+ HCP              |
+| **Gerber**        | North: 15-17 HCP, balanced                  | South: 16+ HCP, slam interest                                |
 | **DONT**          | East: 15-17 HCP, balanced (opens 1NT)       | South: shape for DONT overcall (single-suited or two-suited) |
 | **Bergen Raises** | North: 12-21 HCP, 5+ card major             | South: 6-12 HCP, 4+ card support                             |
 

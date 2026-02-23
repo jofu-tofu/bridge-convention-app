@@ -12,11 +12,11 @@
     children: Snippet;
   }
 
-  let { engine, gameStore, appStore, children }: Props = $props();
+  let props: Props = $props();
 
-  setEngine(engine);
-  setGameStore(gameStore);
-  setAppStore(appStore);
+  setEngine(props.engine);
+  setGameStore(props.gameStore);
+  setAppStore(props.appStore);
 </script>
 
-{@render children()}
+{@render props.children()}
