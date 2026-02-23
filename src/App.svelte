@@ -3,6 +3,7 @@
   import { TsEngine } from "./engine/ts-engine";
   import { TauriIpcEngine } from "./engine/tauri-ipc-engine";
   import { HttpEngine } from "./engine/http-engine";
+  import { createFallbackEngine } from "./engine/fallback-engine";
   import type { EnginePort } from "./engine/port";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -16,38 +17,12 @@
     if ((window as any).__TAURI__) {
       return new TauriIpcEngine();
     }
+    // In dev mode, Vite proxies /api to the Rust server — use same origin
+    const rustUrl = import.meta.env.DEV ? "" : "http://localhost:3001";
     return createFallbackEngine(
-      new HttpEngine("http://localhost:3001"),
+      new HttpEngine(rustUrl),
       new TsEngine(),
     );
-  }
-
-  /** Proxy that tries primary engine first, falls back to secondary on network errors. */
-  function createFallbackEngine(primary: EnginePort, fallback: EnginePort): EnginePort {
-    let useFallback = false;
-    return new Proxy(primary, {
-      get(target, prop, receiver) {
-        const engine = useFallback ? fallback : target;
-        const value = Reflect.get(engine, prop, receiver);
-        if (typeof value !== "function") return value;
-        return async (...args: unknown[]) => {
-          if (useFallback) {
-            return (value as Function).apply(engine, args);
-          }
-          try {
-            return await (value as Function).apply(engine, args);
-          } catch (err) {
-            if (err instanceof TypeError && (err.message.includes("fetch") || err.message.includes("network"))) {
-              console.warn("[engine] Rust server unreachable, falling back to TsEngine");
-              useFallback = true;
-              const fallbackValue = Reflect.get(fallback, prop, receiver);
-              return (fallbackValue as Function).apply(fallback, args);
-            }
-            throw err;
-          }
-        };
-      },
-    });
   }
 
   const engine = createEngine();
@@ -84,11 +59,33 @@
           console.warn(`[dev] Unknown convention "${conventionParam}":`, e);
         }
       }
+
+      // Probe Rust server connectivity (via Vite proxy in dev)
+      const controller = new AbortController();
+      fetch("/api/evaluate_hand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hand: { cards: [] } }),
+        signal: controller.signal,
+      })
+        .then((res) => {
+          const status = `Rust engine: ${res.ok ? "connected" : `HTTP ${res.status}`} | DDS: available`;
+          appStore.setEngineStatus(status);
+          console.log(`[engine] ${status}`);
+        })
+        .catch((err) => {
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          const status = `Rust engine: UNREACHABLE (${err.message}) | Using TS fallback — no DDS`;
+          appStore.setEngineStatus(status);
+          console.error(`[engine] ${status}`);
+        });
+
+      return () => controller.abort();
     });
   }
 </script>
 
-<div class="min-h-screen bg-bg-deepest text-text-primary font-sans">
+<div class="h-screen overflow-hidden bg-bg-deepest text-text-primary font-sans">
   {#if appStore.screen === "select"}
     <ConventionSelectScreen />
   {:else if appStore.screen === "game"}

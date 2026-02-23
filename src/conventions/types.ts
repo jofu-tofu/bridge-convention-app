@@ -67,6 +67,9 @@ export interface DealConstraintSource {
 /** A single testable condition within a bidding rule. */
 export interface RuleCondition {
   readonly name: string;
+  /** Static, context-free human-readable description (e.g., "8+ HCP", "4+ spades").
+   *  Used for reference rule display when no BiddingContext is available. */
+  readonly label: string;
   /** Test whether this condition is satisfied. */
   test(context: BiddingContext): boolean;
   /** Produce a human-readable description of what this condition found.

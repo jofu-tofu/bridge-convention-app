@@ -52,16 +52,17 @@ export function conditionedRule(config: {
 
 /** Match auction entries exactly against a pattern. */
 export function auctionMatches(pattern: string[]): RuleCondition {
-  const label = pattern.join(" — ");
+  const patternLabel = pattern.join(" — ");
   return {
     name: "auction",
+    label: `After ${patternLabel}`,
     test(ctx) {
       return auctionMatchesExact(ctx.auction, pattern);
     },
     describe(ctx) {
       return auctionMatchesExact(ctx.auction, pattern)
-        ? `After ${label}`
-        : `Auction does not match ${label}`;
+        ? `After ${patternLabel}`
+        : `Auction does not match ${patternLabel}`;
     },
   };
 }
@@ -71,6 +72,7 @@ export function auctionMatchesAny(patterns: string[][]): RuleCondition {
   const labels = patterns.map((p) => p.join(" — ")).join(" or ");
   return {
     name: "auction",
+    label: `After ${labels}`,
     test(ctx) {
       return patterns.some((p) => auctionMatchesExact(ctx.auction, p));
     },
@@ -86,6 +88,7 @@ export function auctionMatchesAny(patterns: string[][]): RuleCondition {
 export function hcpMin(min: number): RuleCondition {
   return {
     name: "hcp-min",
+    label: `${min}+ HCP`,
     inference: { type: "hcp-min", params: { min } },
     test(ctx) {
       return ctx.evaluation.hcp >= min;
@@ -103,6 +106,7 @@ export function hcpMin(min: number): RuleCondition {
 export function hcpMax(max: number): RuleCondition {
   return {
     name: "hcp-max",
+    label: `${max} max HCP`,
     inference: { type: "hcp-max", params: { max } },
     test(ctx) {
       return ctx.evaluation.hcp <= max;
@@ -120,6 +124,7 @@ export function hcpMax(max: number): RuleCondition {
 export function hcpRange(min: number, max: number): RuleCondition {
   return {
     name: "hcp-range",
+    label: `${min}–${max} HCP`,
     inference: { type: "hcp-range", params: { min, max } },
     test(ctx) {
       return ctx.evaluation.hcp >= min && ctx.evaluation.hcp <= max;
@@ -141,6 +146,7 @@ export function suitMin(
 ): RuleCondition {
   return {
     name: `${suitName}-min`,
+    label: `${min}+ ${suitName}`,
     inference: { type: "suit-min", params: { suitIndex, suitName, min } },
     test(ctx) {
       return ctx.evaluation.shape[suitIndex]! >= min;
@@ -162,6 +168,7 @@ export function suitBelow(
 ): RuleCondition {
   return {
     name: `${suitName}-below`,
+    label: `Fewer than ${threshold} ${suitName}`,
     inference: {
       type: "suit-max",
       params: { suitIndex, suitName, max: threshold - 1 },
@@ -189,6 +196,7 @@ export function anySuitMin(
   const suitNames = suits.map((s) => s.name).join("/");
   return {
     name: `any-${suitNames}-min`,
+    label: `${min}+ in ${suitNames}`,
     test(ctx) {
       return suits.some((s) => ctx.evaluation.shape[s.index]! >= min);
     },
@@ -210,6 +218,7 @@ export function anySuitMin(
 export function aceCount(count: number): RuleCondition {
   return {
     name: "ace-count",
+    label: `Exactly ${count} ace${count !== 1 ? "s" : ""}`,
     inference: { type: "ace-count", params: { count } },
     test(ctx) {
       return countAcesInHand(ctx.hand) === count;
@@ -225,17 +234,18 @@ export function aceCount(count: number): RuleCondition {
 
 /** Ace count matches any of the given counts. */
 export function aceCountAny(counts: number[]): RuleCondition {
-  const label = counts.join(" or ");
+  const countsLabel = counts.join(" or ");
   return {
     name: "ace-count-any",
+    label: `${countsLabel} aces`,
     test(ctx) {
       return counts.includes(countAcesInHand(ctx.hand));
     },
     describe(ctx) {
       const aces = countAcesInHand(ctx.hand);
       return counts.includes(aces)
-        ? `${aces} ace${aces !== 1 ? "s" : ""} (${label})`
-        : `${aces} ace${aces !== 1 ? "s" : ""} (need ${label})`;
+        ? `${aces} ace${aces !== 1 ? "s" : ""} (${countsLabel})`
+        : `${aces} ace${aces !== 1 ? "s" : ""} (need ${countsLabel})`;
     },
   };
 }
@@ -246,6 +256,7 @@ export function aceCountAny(counts: number[]): RuleCondition {
 export function not(cond: RuleCondition): RuleCondition {
   return {
     name: `not-${cond.name}`,
+    label: `Not: ${cond.label}`,
     test(ctx) {
       return !cond.test(ctx);
     },
@@ -259,6 +270,7 @@ export function not(cond: RuleCondition): RuleCondition {
 export function and(...conds: RuleCondition[]): RuleCondition {
   return {
     name: "and",
+    label: conds.map((c) => c.label).join("; "),
     test(ctx) {
       return conds.every((c) => c.test(ctx));
     },
@@ -285,6 +297,7 @@ export function or(...conds: RuleCondition[]): RuleCondition {
   if (conds.length > 4) throw new Error("or() supports max 4 branches");
   return {
     name: "or",
+    label: conds.map((c) => c.label).join(" or "),
     test(ctx) {
       return conds.some((c) => c.test(ctx));
     },
@@ -327,6 +340,7 @@ export function or(...conds: RuleCondition[]): RuleCondition {
 export function isOpener(): RuleCondition {
   return {
     name: "is-opener",
+    label: "Opening bidder",
     test(ctx) {
       for (const entry of ctx.auction.entries) {
         if (entry.call.type === "bid") {
@@ -353,6 +367,7 @@ export function isOpener(): RuleCondition {
 export function isResponder(): RuleCondition {
   return {
     name: "is-responder",
+    label: "Responding to partner's opening",
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (const entry of ctx.auction.entries) {
@@ -378,9 +393,10 @@ export function isResponder(): RuleCondition {
 
 /** Check if partner opened in a specific strain, or any strain if not specified. */
 export function partnerOpened(strain?: BidSuit): RuleCondition {
-  const label = strain ? `partner opened ${strain}` : "partner opened";
+  const condName = strain ? `partner opened ${strain}` : "partner opened";
   return {
-    name: label,
+    name: condName,
+    label: strain ? `Partner opened ${strain}` : "Partner opened",
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (const entry of ctx.auction.entries) {
@@ -413,6 +429,7 @@ export function partnerOpened(strain?: BidSuit): RuleCondition {
 export function partnerOpenedAt(level: number, strain: BidSuit): RuleCondition {
   return {
     name: `partner-opened-${level}${strain}`,
+    label: `Partner opened ${level}${strain}`,
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (const entry of ctx.auction.entries) {
@@ -446,6 +463,7 @@ export function partnerOpenedAt(level: number, strain: BidSuit): RuleCondition {
 export function partnerBidSuit(suit: BidSuit): RuleCondition {
   return {
     name: `partner-bid-${suit}`,
+    label: `Partner bid ${suit}`,
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       return ctx.auction.entries.some(
@@ -472,6 +490,7 @@ export function partnerBidSuit(suit: BidSuit): RuleCondition {
 export function opponentBid(): RuleCondition {
   return {
     name: "opponent-bid",
+    label: "Opponent has bid",
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       return ctx.auction.entries.some(
@@ -498,6 +517,7 @@ export function opponentBid(): RuleCondition {
 export function isBalanced(): RuleCondition {
   return {
     name: "balanced",
+    label: "Balanced hand",
     inference: { type: "balanced", params: { balanced: true } },
     test(ctx) {
       const shape = ctx.evaluation.shape;
@@ -526,6 +546,7 @@ export function isBalanced(): RuleCondition {
 export function noFiveCardMajor(): RuleCondition {
   return {
     name: "no-5-card-major",
+    label: "No 5-card major",
     test(ctx) {
       return ctx.evaluation.shape[0]! < 5 && ctx.evaluation.shape[1]! < 5;
     },
@@ -548,6 +569,7 @@ export function longerMajor(
 ): RuleCondition {
   return {
     name: `longer-major-${suitName}`,
+    label: `5+ ${suitName} (longer/equal major)`,
     inference: { type: "suit-min", params: { suitIndex, suitName, min: 5 } },
     test(ctx) {
       const thisLen = ctx.evaluation.shape[suitIndex]!;
@@ -574,6 +596,7 @@ export function longerMajor(
 export function noPriorBid(): RuleCondition {
   return {
     name: "no-prior-bid",
+    label: "No prior contract bids",
     test(ctx) {
       return ctx.auction.entries.every((e) => e.call.type !== "bid");
     },
@@ -588,6 +611,7 @@ export function noPriorBid(): RuleCondition {
 export function seatHasBid(): RuleCondition {
   return {
     name: "seat-has-bid",
+    label: "Has previously bid",
     test(ctx) {
       return ctx.auction.entries.some(
         (e) => e.call.type === "bid" && e.seat === ctx.seat,
@@ -613,6 +637,7 @@ export function seatHasBid(): RuleCondition {
 export function majorSupport(): RuleCondition {
   return {
     name: "major-support",
+    label: "4+ support in opened major",
     test(ctx) {
       const shape = ctx.evaluation.shape;
       if (auctionMatchesExact(ctx.auction, ["1H", "P"])) return shape[1]! >= 4;
@@ -646,6 +671,7 @@ export function hasSingleLongSuit(): RuleCondition {
   const suitNames = ["spades", "hearts", "diamonds", "clubs"];
   return {
     name: "single-long-suit",
+    label: "Single long suit (6+, non-spades)",
     test(ctx) {
       const shape = ctx.evaluation.shape;
       const spades = shape[0]!;
@@ -692,6 +718,7 @@ export function isTwoSuited(minLong: number, minShort: number): RuleCondition {
   const suitNames = ["spades", "hearts", "diamonds", "clubs"];
   return {
     name: "two-suited",
+    label: `Two-suited (${minLong}-${minShort}+)`,
     inference: { type: "two-suited", params: { minLong, minShort } },
     test(ctx) {
       const sorted = [...ctx.evaluation.shape].sort((a, b) => b - a);
@@ -717,6 +744,7 @@ export function isTwoSuited(minLong: number, minShort: number): RuleCondition {
 export function gerberSignoffCondition(): RuleCondition {
   return {
     name: "gerber-signoff",
+    label: "In Gerber signoff position (after ace response)",
     test(ctx) {
       // Match after 1NT-P-4C-P-{4D|4H|4S|4NT}-P (responder's turn)
       const after4D = auctionMatchesExact(ctx.auction, [
@@ -865,6 +893,7 @@ export function advanceSupportFor(
 ): RuleCondition {
   return {
     name: `advance-support-${suitName}`,
+    label: `${minSupport}+ ${suitName} support after ${auctionPattern.join(" — ")}`,
     test(ctx) {
       if (!auctionMatchesExact(ctx.auction, auctionPattern)) return false;
       return ctx.evaluation.shape[suitIndex]! >= minSupport;
@@ -890,6 +919,7 @@ export function advanceLackSupport(
 ): RuleCondition {
   return {
     name: `advance-lack-${suitName}`,
+    label: `Fewer than ${threshold} ${suitName} after ${auctionPattern.join(" — ")}`,
     test(ctx) {
       if (!auctionMatchesExact(ctx.auction, auctionPattern)) return false;
       return ctx.evaluation.shape[suitIndex]! < threshold;
@@ -910,6 +940,7 @@ export function advanceLackSupport(
 export function advanceAfterDouble(): RuleCondition {
   return {
     name: "advance-after-double",
+    label: "After partner's double, relay 2C",
     test(ctx) {
       return auctionMatchesExact(ctx.auction, ["1NT", "X", "P"]);
     },

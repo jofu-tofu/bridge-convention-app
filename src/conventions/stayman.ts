@@ -99,6 +99,7 @@ const staymanRebidMajorFit = conditionedRule({
     // Hybrid: checks auction to resolve suit, gates on hand length
     {
       name: "fit-in-shown-major",
+      label: "4+ cards in opener's shown major",
       test(ctx) {
         if (
           auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2H", "P"])
@@ -157,6 +158,7 @@ const staymanRebidNoFit = conditionedRule({
     // Hybrid: checks auction to resolve suit, gates on hand length
     {
       name: "no-major-fit",
+      label: "No 4-card fit in opener's shown major",
       test(ctx) {
         if (
           auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2D", "P"])

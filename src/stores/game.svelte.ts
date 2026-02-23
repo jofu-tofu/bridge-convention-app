@@ -801,9 +801,18 @@ export function createGameStore(engine: EnginePort) {
       await runAiBids();
     },
 
-    /** Skip directly to explanation from bid feedback. */
+    /** Skip directly to explanation from bid feedback — completes auction first for DDS. */
     async skipFromFeedback() {
       bidFeedback = null;
+
+      // Complete the auction with AI bids so contract is available for DDS
+      const complete = await engine.isAuctionComplete(auction);
+      if (!complete) {
+        await runAiBids();
+      }
+      // Extract contract (may be null for passout)
+      contract = await engine.getContract(auction);
+
       transitionToExplanation();
     },
 

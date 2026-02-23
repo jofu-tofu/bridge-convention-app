@@ -167,7 +167,7 @@
 
   const tableOrigin = $derived(isDesktop ? "left center" : "center");
   const sidePanelClass = $derived(
-    `${isDesktop ? "w-[400px] shrink-0" : "border-t border-border-subtle"} bg-bg-base p-4 flex flex-col gap-4 overflow-y-auto`,
+    `${isDesktop ? "w-[400px] shrink-0" : "border-t border-border-subtle"} bg-bg-base p-4 flex flex-col gap-4 min-h-0 overflow-y-auto`,
   );
 
   function handleBackToMenu() {
@@ -182,7 +182,7 @@
   <main class="h-full flex flex-col" aria-label="Bridge drill">
     <!-- Header -->
     <header
-      class="flex items-center justify-between px-6 py-3 border-b border-border-subtle"
+      class="flex items-center justify-between px-6 py-3 border-b border-border-subtle shrink-0"
     >
       <div class="flex items-center gap-4">
         <button
@@ -413,7 +413,7 @@
             </div>
             <div
               class="grid grid-cols-2 gap-3"
-              style="--card-width: 52px; --card-height: 73px; --card-overlap-h: -30px;"
+              style="--card-overlap-h: -38px;"
             >
               {#each [Seat.North, Seat.East, Seat.South, Seat.West] as seat (seat)}
                 <section
@@ -475,6 +475,8 @@
             {dealNumber}
             onNextDeal={handleNextDeal}
             onBackToMenu={handleBackToMenu}
+            convention={appStore.selectedConvention ?? undefined}
+            deal={gameStore.deal ?? undefined}
           />
         </aside>
       </div>

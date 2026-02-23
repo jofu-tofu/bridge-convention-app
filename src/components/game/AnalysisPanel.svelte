@@ -25,9 +25,28 @@
 <div class="flex flex-col gap-4">
   <!-- Makeable Contracts Table -->
   <section>
-    <h3 class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wide">
-      Makeable Contracts
-    </h3>
+    <div class="flex items-center gap-1.5 mb-2">
+      <h3 class="text-xs font-medium text-text-muted uppercase tracking-wide">
+        Makeable Contracts
+      </h3>
+      <div class="group relative">
+        <button
+          type="button"
+          class="text-text-muted hover:text-text-secondary transition-colors cursor-help"
+          aria-label="What are makeable contracts?"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+          </svg>
+        </button>
+        <div
+          class="absolute left-0 top-full mt-1 w-56 p-2.5 rounded-[--radius-md] bg-bg-elevated border border-border-subtle shadow-lg text-xs text-text-secondary leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity z-20"
+          role="tooltip"
+        >
+          Double Dummy Solver (DDS) analysis showing the maximum tricks each seat can take as declarer in each strain, assuming perfect play by all four hands.
+        </div>
+      </div>
+    </div>
     <div
       class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
     >

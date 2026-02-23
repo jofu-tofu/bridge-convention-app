@@ -25,6 +25,28 @@ export function formatCall(call: Call): string {
   return "Pass";
 }
 
+/** Known bridge abbreviations that should be fully uppercased. */
+const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp", "dont"]);
+
+/** Convert kebab-case rule name to Title Case display name.
+ *  e.g., "stayman-ask" → "Stayman Ask", "sayc-open-1nt" → "SAYC Open 1NT" */
+export function formatRuleName(name: string): string {
+  if (name === "") return "";
+  return name
+    .split("-")
+    .map((w) => {
+      const lower = w.toLowerCase();
+      if (BRIDGE_ABBREVIATIONS.has(lower)) return w.toUpperCase();
+      // Handle numeric prefix + abbreviation, e.g., "1nt" → "1NT"
+      const match = lower.match(/^(\d+)(.+)$/);
+      if (match && BRIDGE_ABBREVIATIONS.has(match[2]!)) {
+        return match[1] + match[2]!.toUpperCase();
+      }
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join(" ");
+}
+
 export function suitColor(suit: Suit | BidSuit): "red" | "black" {
   if (
     suit === Suit.Hearts ||

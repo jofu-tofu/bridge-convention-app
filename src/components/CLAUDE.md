@@ -33,7 +33,7 @@ components/
       GameScreen.svelte              Bridge table + side panel, responsive layout, seeded RNG
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, skip-to-review
-      ReviewSidePanel.svelte         Bid review table, next deal / back to menu
+      ReviewSidePanel.svelte         Tabbed review: Bidding + Rules + Analysis, next deal / back to menu
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin
   game/
@@ -46,6 +46,7 @@ components/
     BiddingReview.svelte             Bid history table with convention callouts
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
+    RulesPanel.svelte                Convention rules display: fired (evaluated) + reference (static)
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card

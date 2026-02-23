@@ -73,6 +73,15 @@
     </button>
   </div>
 
+  <!-- Engine status bar -->
+  {#if appStore.engineStatus}
+    <div
+      class="px-3 py-1.5 text-xs font-mono border-b border-border-subtle {appStore.engineStatus.includes('UNREACHABLE') ? 'bg-red-900/80 text-red-200' : 'bg-green-900/80 text-green-200'}"
+    >
+      {appStore.engineStatus}
+    </div>
+  {/if}
+
   <div class="p-3 flex flex-col gap-1">
     <!-- 1. Deal Info -->
     <details open>

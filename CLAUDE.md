@@ -56,10 +56,10 @@ src/
   conventions/     Convention definitions (registry, conditions, evaluator, Stayman, SAYC, types)
   ai/              AI bidding + play strategies, auction inference engine
     inference/     Auction inference system (per-partnership information asymmetry)
-  lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers, seat-mapping)
+  lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers, seat-mapping, rules-display)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, game-screen/GameScreen)
-    game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea)
+    game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea, RulesPanel)
     shared/        Reusable components (Card, Button, ConventionCallout)
   stores/          Svelte stores (app navigation, game drill state)
 src-tauri/         Cargo workspace with three crates
@@ -77,8 +77,8 @@ tests/
 - **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. 23 rules across 4 user conventions + 23 SAYC rules (internal, for opponent AI). Conditions carry optional `ConditionInference` metadata for the inference engine. (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ — includes `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings` (entry: `src/shared/types.ts`)
 - **AI:** Bidding strategies + play AI + auction inference — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `createHeuristicPlayStrategy()` with 7-heuristic chain, `randomPlay()` legacy fallback. `inference/` subsystem models per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). (entry: `src/ai/convention-strategy.ts`)
-- **Lib:** Display utilities + pure functions — `formatCall()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
-- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` + sub-components), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
+- **Lib:** Display utilities + pure functions — `formatCall()`, `formatRuleName()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`, `prepareRulesForDisplay`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
+- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` + sub-components), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea, RulesPanel), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
 - **Stores:** App store (screen navigation, selected convention, dev seed state) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
 - **CLI:** Command-line interface wrapping EnginePort — JSON default, text opt-in, phase-gated future commands (entry: `src/cli/runner.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
@@ -90,7 +90,9 @@ tests/
 ## Roadmap
 
 1. ~~**DDS Review Integration**~~ — Done. Tabbed ReviewSidePanel (Bidding + Analysis) with DDS via `dds-bridge` Rust FFI. Requires `libclang-dev`.
-2. **User Learning Enhancements** — Two surfaces: (a) in-game info panel/tab showing active convention rules during practice, (b) dedicated learning screen for browsing full convention rule sets. Both built programmatically from existing conditions/rules framework; may require refactoring conventions layer for teaching use
+2. **User Learning Enhancements**
+   - ~~(a) Rules tab in ReviewSidePanel~~ — Done. Context-aware convention rules display during review phase. Fired rules show evaluated conditions with actual hand values; reference rules show static condition names.
+   - (b) Dedicated learning screen — Browse full convention rule sets outside of game context. Accessible from ConventionSelectScreen. Reuses RulesPanel component.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard), wires `InferenceProvider` selection per partnership
 
 ## Test-Driven Development

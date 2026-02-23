@@ -231,6 +231,7 @@ export const saycConfig: ConventionConfig = {
         // Must have at least one 4-card major
         {
           name: "has-4-card-major",
+          label: "Has 4+ card major",
           test(ctx) {
             return (
               ctx.evaluation.shape[0]! >= 4 || ctx.evaluation.shape[1]! >= 4
@@ -266,6 +267,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction to resolve suit, gates on hand support
         {
           name: "major-support-3",
+          label: "3+ in partner's opened major",
           inference: { type: "suit-min", params: { suitIndex: -1, suitName: "major", min: 3 } },
           test(ctx) {
             const strain = partnerOpeningStrain(ctx);
@@ -302,6 +304,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction to resolve suit, gates on hand support
         {
           name: "major-support-4",
+          label: "4+ in partner's opened major",
           inference: { type: "suit-min", params: { suitIndex: -1, suitName: "major", min: 4 } },
           test(ctx) {
             const strain = partnerOpeningStrain(ctx);
@@ -338,6 +341,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction to resolve suit, gates on hand support
         {
           name: "major-support-4-for-game",
+          label: "4+ in partner's major (game)",
           inference: { type: "suit-min", params: { suitIndex: -1, suitName: "major", min: 4 } },
           test(ctx) {
             const strain = partnerOpeningStrain(ctx);
@@ -375,6 +379,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction to verify partner opened minor
         {
           name: "partner-opened-minor",
+          label: "Partner opened a minor suit",
           test(ctx) {
             const strain = partnerOpeningStrain(ctx);
             return strain === BidSuit.Clubs || strain === BidSuit.Diamonds;
@@ -400,6 +405,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction to verify partner opened minor
         {
           name: "partner-opened-minor",
+          label: "Partner opened a minor suit",
           test(ctx) {
             const strain = partnerOpeningStrain(ctx);
             return strain === BidSuit.Clubs || strain === BidSuit.Diamonds;
@@ -433,6 +439,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction to verify partner opened major
         {
           name: "partner-opened-major",
+          label: "Partner opened a major suit",
           test(ctx) {
             const strain = partnerOpeningStrain(ctx);
             return strain === BidSuit.Hearts || strain === BidSuit.Spades;
@@ -458,6 +465,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction to verify partner opened major
         {
           name: "partner-opened-major",
+          label: "Partner opened a major suit",
           test(ctx) {
             const strain = partnerOpeningStrain(ctx);
             return strain === BidSuit.Hearts || strain === BidSuit.Spades;
@@ -516,6 +524,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction for last bid to determine legal bids
         {
           name: "good-5-card-suit-at-1",
+          label: "5+ card suit biddable at 1-level",
           test(ctx) {
             const lb = lastBid(ctx);
             if (!lb) return false;
@@ -569,6 +578,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction for last bid to determine legal bids
         {
           name: "good-5-card-suit-at-2",
+          label: "5+ card suit biddable at 2-level",
           test(ctx) {
             const lb = lastBid(ctx);
             if (!lb) return false;
@@ -635,6 +645,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction for partner's raise
         {
           name: "partner-raised-our-major",
+          label: "Partner raised our major suit",
           test(ctx) {
             const ourStrain = seatFirstBidStrain(ctx);
             if (ourStrain !== BidSuit.Hearts && ourStrain !== BidSuit.Spades) return false;
@@ -662,6 +673,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction for partner's raise
         {
           name: "partner-raised-our-major",
+          label: "Partner raised our major suit",
           test(ctx) {
             const ourStrain = seatFirstBidStrain(ctx);
             if (ourStrain !== BidSuit.Hearts && ourStrain !== BidSuit.Spades) return false;
@@ -689,6 +701,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction for partner's raise
         {
           name: "partner-raised-our-major",
+          label: "Partner raised our major suit",
           test(ctx) {
             const ourStrain = seatFirstBidStrain(ctx);
             if (ourStrain !== BidSuit.Hearts && ourStrain !== BidSuit.Spades) return false;
@@ -714,6 +727,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction for partner's major response
         {
           name: "partner-responded-major-with-support",
+          label: "4+ support for partner's major response",
           test(ctx) {
             const partnerMajor = partnerRespondedMajor(ctx);
             if (!partnerMajor) return false;
@@ -746,6 +760,7 @@ export const saycConfig: ConventionConfig = {
         // Hybrid: checks auction for our first bid suit
         {
           name: "6-plus-in-opened-suit",
+          label: "6+ cards in opened suit",
           test(ctx) {
             const ourStrain = seatFirstBidStrain(ctx);
             if (!ourStrain) return false;
