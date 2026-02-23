@@ -957,7 +957,7 @@ describe("Bergen Raises full sequences", () => {
     expect(call.strain).toBe(BidSuit.Spades);
   });
 
-  test("1H-P-4H via game raise with 15 HCP, 5 hearts", () => {
+  test("5-heart support does not trigger Bergen (requires exactly 4)", () => {
     // SA(4) + SK(3) + HK(3) + HQ(2) + DK(3) = 15 HCP, 5 hearts
     const responder = hand(
       "SA",
@@ -976,11 +976,7 @@ describe("Bergen Raises full sequences", () => {
     );
     expect(calculateHcp(responder)).toBe(15);
     const result = callFromRules(responder, Seat.South, ["1H", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("bergen-game-raise");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(4);
-    expect(call.strain).toBe(BidSuit.Hearts);
+    expect(result).toBeNull();
   });
 });
 
@@ -1086,7 +1082,7 @@ describe("Bergen Raises property-based invariants", () => {
       // So we only assert a match when responder has support for the opened major.
       const responderShape = getSuitLength(responderHand);
       const hasSupportForOpened =
-        openMajor === "1H" ? responderShape[1]! >= 4 : responderShape[0]! >= 4;
+        openMajor === "1H" ? responderShape[1]! === 4 : responderShape[0]! === 4;
 
       if (hasSupportForOpened) {
         expect(ruleResult).not.toBeNull();
@@ -1423,14 +1419,684 @@ describe("Bergen Raises property-based invariants", () => {
     expect(auction!.entries[1]!.call).toEqual({ type: "pass" });
   });
 
-  test("[bridgebum/bergen invariant] all four rules produce distinct bids", () => {
+  test("[bridgebum/bergen invariant] all thirteen rules produce distinct names", () => {
     const rules = bergenConfig.biddingRules;
-    expect(rules).toHaveLength(4);
+    expect(rules).toHaveLength(13);
     const names = rules.map((r) => r.name);
-    expect(new Set(names).size).toBe(4);
+    expect(new Set(names).size).toBe(13);
     expect(names).toContain("bergen-game-raise");
     expect(names).toContain("bergen-limit-raise");
     expect(names).toContain("bergen-constructive-raise");
     expect(names).toContain("bergen-preemptive-raise");
+    expect(names).toContain("bergen-rebid-game-after-constructive");
+    expect(names).toContain("bergen-rebid-try-after-constructive");
+    expect(names).toContain("bergen-rebid-signoff-after-constructive");
+    expect(names).toContain("bergen-try-accept");
+    expect(names).toContain("bergen-try-reject");
+    expect(names).toContain("bergen-rebid-game-after-limit");
+    expect(names).toContain("bergen-rebid-signoff-after-limit");
+    expect(names).toContain("bergen-rebid-game-after-preemptive");
+    expect(names).toContain("bergen-rebid-pass-after-preemptive");
+  });
+});
+
+// ─── Opener Rebids After Constructive ─────────────────────────
+
+describe("Bergen Raises — opener rebids after constructive (1M P 3C P)", () => {
+  // Opener hands for North seat (12-21 HCP, 5+ hearts)
+  // 18 HCP: SA(4) + HA(4) + HK(3) + HQ(2) + DK(3) + DQ(2) = 18
+  const strongOpener = () =>
+    hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DK",
+      "DQ",
+      "C5",
+      "C3",
+      "C2",
+    );
+
+  // 15 HCP: SA(4) + HA(4) + HK(3) + HQ(2) + DQ(2) = 15
+  const mediumOpener = () =>
+    hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+
+  // 13 HCP: SK(3) + HA(4) + HK(3) + HQ(2) + DJ(1) = 13
+  const minOpener = () =>
+    hand(
+      "SK",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DJ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+
+  test("18 HCP opener bids 4H after 1H-P-3C-P (game)", () => {
+    const opener = strongOpener();
+    expect(calculateHcp(opener)).toBe(18);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-game-after-constructive");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("15 HCP opener bids 3D after 1H-P-3C-P (game try)", () => {
+    const opener = mediumOpener();
+    expect(calculateHcp(opener)).toBe(15);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-try-after-constructive");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Diamonds);
+  });
+
+  test("13 HCP opener passes after 1H-P-3C-P (signoff)", () => {
+    const opener = minOpener();
+    expect(calculateHcp(opener)).toBe(13);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-signoff-after-constructive");
+    expect(result!.call.type).toBe("pass");
+  });
+
+  test("1S path: 18 HCP opener bids 4S after 1S-P-3C-P", () => {
+    // SA(4) + SK(3) + SQ(2) + SJ(1) + S7 + HA(4) + DA(4) = 18, 5S
+    const opener = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S7",
+      "HA",
+      "H3",
+      "DA",
+      "D3",
+      "C5",
+      "C4",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(18);
+    const result = callFromRules(opener, Seat.North, ["1S", "P", "3C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-game-after-constructive");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+});
+
+// ─── Opener Rebid HCP Boundaries (Constructive) ──────────────
+
+describe("Bergen Raises — constructive rebid HCP boundaries", () => {
+  // Template: North opener with 5 hearts, varying HCP
+  // 13 HCP → pass (12-13 range)
+  test("boundary: 13 HCP opener passes after constructive (top of signoff)", () => {
+    // SK(3) + HA(4) + HK(3) + HQ(2) + DJ(1) = 13
+    const opener = hand(
+      "SK",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DJ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(13);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3C", "P"]);
+    expect(result!.rule).toBe("bergen-rebid-signoff-after-constructive");
+  });
+
+  test("boundary: 14 HCP opener bids 3D game try (bottom of try)", () => {
+    // SK(3) + HA(4) + HK(3) + HQ(2) + DQ(2) = 14
+    const opener = hand(
+      "SK",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(14);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3C", "P"]);
+    expect(result!.rule).toBe("bergen-rebid-try-after-constructive");
+  });
+
+  test("boundary: 16 HCP opener bids 3D game try (top of try)", () => {
+    // SA(4) + HA(4) + HK(3) + HQ(2) + DK(3) = 16
+    const opener = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DK",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(16);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3C", "P"]);
+    expect(result!.rule).toBe("bergen-rebid-try-after-constructive");
+  });
+
+  test("boundary: 17 HCP opener bids 4H game (bottom of game)", () => {
+    // SA(4) + HA(4) + HK(3) + HQ(2) + DK(3) + DJ(1) = 17
+    const opener = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DK",
+      "DJ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(17);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3C", "P"]);
+    expect(result!.rule).toBe("bergen-rebid-game-after-constructive");
+  });
+});
+
+// ─── Game Try Continuation ───────────────────────────────────
+
+describe("Bergen Raises — game try continuation (1M P 3C P 3D P)", () => {
+  test("9 HCP responder accepts game try → 4H", () => {
+    // HK(3) + HQ(2) + DK(3) + CJ(1) = 9 HCP, 4 hearts
+    const responder = hand(
+      "S8",
+      "S5",
+      "S2",
+      "HK",
+      "HQ",
+      "H6",
+      "H2",
+      "DK",
+      "D7",
+      "D3",
+      "CJ",
+      "C5",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(9);
+    const result = callFromRules(responder, Seat.South, [
+      "1H",
+      "P",
+      "3C",
+      "P",
+      "3D",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-try-accept");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("8 HCP responder rejects game try → 3H", () => {
+    // HK(3) + DK(3) + DQ(2) = 8 HCP, 4 hearts
+    const responder = hand(
+      "S8",
+      "S5",
+      "S2",
+      "HK",
+      "HT",
+      "H6",
+      "H2",
+      "DK",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(8);
+    const result = callFromRules(responder, Seat.South, [
+      "1H",
+      "P",
+      "3C",
+      "P",
+      "3D",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-try-reject");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("7 HCP responder rejects game try → 3H (bottom of range)", () => {
+    // HK(3) + HQ(2) + DJ(1) + CJ(1) = 7 HCP, 4 hearts
+    const responder = hand(
+      "S8",
+      "S5",
+      "S2",
+      "HK",
+      "HQ",
+      "H6",
+      "H2",
+      "DJ",
+      "D7",
+      "D3",
+      "CJ",
+      "C5",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(7);
+    const result = callFromRules(responder, Seat.South, [
+      "1H",
+      "P",
+      "3C",
+      "P",
+      "3D",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-try-reject");
+  });
+
+  test("1S path: 9 HCP responder accepts → 4S", () => {
+    // SK(3) + SQ(2) + DK(3) + CJ(1) = 9 HCP, 4 spades
+    const responder = hand(
+      "SK",
+      "SQ",
+      "S6",
+      "S2",
+      "H8",
+      "H5",
+      "H2",
+      "DK",
+      "D7",
+      "D3",
+      "CJ",
+      "C5",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(9);
+    const result = callFromRules(responder, Seat.South, [
+      "1S",
+      "P",
+      "3C",
+      "P",
+      "3D",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-try-accept");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+});
+
+// ─── Opener Rebids After Limit ───────────────────────────────
+
+describe("Bergen Raises — opener rebids after limit (1M P 3D P)", () => {
+  test("16 HCP opener bids 4H after limit raise (game)", () => {
+    // SA(4) + HA(4) + HK(3) + HQ(2) + DK(3) = 16
+    const opener = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DK",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(16);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3D", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-game-after-limit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("13 HCP opener bids 3H after limit raise (signoff)", () => {
+    // SK(3) + HA(4) + HK(3) + HQ(2) + DJ(1) = 13
+    const opener = hand(
+      "SK",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DJ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(13);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3D", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-signoff-after-limit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("boundary: 14 HCP → signoff, 15 HCP → game", () => {
+    // 14 HCP: SK(3) + HA(4) + HK(3) + HQ(2) + DQ(2) = 14
+    const opener14 = hand(
+      "SK",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener14)).toBe(14);
+    const result14 = callFromRules(opener14, Seat.North, ["1H", "P", "3D", "P"]);
+    expect(result14!.rule).toBe("bergen-rebid-signoff-after-limit");
+
+    // 15 HCP: SA(4) + HA(4) + HK(3) + HQ(2) + DQ(2) = 15
+    const opener15 = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener15)).toBe(15);
+    const result15 = callFromRules(opener15, Seat.North, ["1H", "P", "3D", "P"]);
+    expect(result15!.rule).toBe("bergen-rebid-game-after-limit");
+  });
+
+  test("1S path: 16 HCP opener bids 4S after 1S-P-3D-P", () => {
+    // SA(4) + SK(3) + SQ(2) + SJ(1) + S7 + HA(4) + DQ(2) = 16, 5S
+    const opener = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S7",
+      "HA",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C4",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(16);
+    const result = callFromRules(opener, Seat.North, ["1S", "P", "3D", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-game-after-limit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+});
+
+// ─── Opener Rebids After Preemptive ──────────────────────────
+
+describe("Bergen Raises — opener rebids after preemptive (1M P 3M P)", () => {
+  test("19 HCP opener bids 4H after 1H-P-3H-P (game)", () => {
+    // SA(4) + SK(3) + HA(4) + HK(3) + HQ(2) + DK(3) = 19, 5H
+    const opener = hand(
+      "SA",
+      "SK",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DK",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(19);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3H", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-game-after-preemptive");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("15 HCP opener passes after 1H-P-3H-P (signoff)", () => {
+    // SA(4) + HA(4) + HK(3) + HQ(2) + DQ(2) = 15
+    const opener = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(15);
+    const result = callFromRules(opener, Seat.North, ["1H", "P", "3H", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-pass-after-preemptive");
+    expect(result!.call.type).toBe("pass");
+  });
+
+  test("boundary: 17 HCP → pass, 18 HCP → game", () => {
+    // 17 HCP: SA(4) + HA(4) + HK(3) + HQ(2) + DK(3) + DJ(1) = 17
+    const opener17 = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DK",
+      "DJ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener17)).toBe(17);
+    const result17 = callFromRules(opener17, Seat.North, ["1H", "P", "3H", "P"]);
+    expect(result17!.rule).toBe("bergen-rebid-pass-after-preemptive");
+
+    // 18 HCP: SA(4) + SK(3) + HA(4) + HK(3) + HQ(2) + DQ(2) = 18
+    const opener18 = hand(
+      "SA",
+      "SK",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener18)).toBe(18);
+    const result18 = callFromRules(opener18, Seat.North, ["1H", "P", "3H", "P"]);
+    expect(result18!.rule).toBe("bergen-rebid-game-after-preemptive");
+  });
+
+  test("1S path: 19 HCP opener bids 4S after 1S-P-3S-P", () => {
+    // SA(4) + SK(3) + SQ(2) + SJ(1) + S7 + HA(4) + HK(3) + DQ(2) = 19, 5S
+    const opener = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S7",
+      "HA",
+      "HK",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(19);
+    const result = callFromRules(opener, Seat.North, ["1S", "P", "3S", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-rebid-game-after-preemptive");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+});
+
+// ─── Rebid Invariants ────────────────────────────────────────
+
+describe("Bergen Raises — rebid invariants", () => {
+  test("responder initial rules don't fire on 4-entry auctions", () => {
+    // 8 HCP responder hand — would match constructive on 2-entry, but not on 4-entry
+    const responder = hand(
+      "S8",
+      "S5",
+      "S2",
+      "HK",
+      "HT",
+      "H6",
+      "H2",
+      "DK",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    // South evaluating after "1H P 3C P" — responder already bid, not round 0
+    const result = callFromRules(responder, Seat.South, ["1H", "P", "3C", "P"]);
+    // Responder initial rules require auctionMatches(["1H","P"]) which won't match 4-entry
+    expect(result).toBeNull();
+  });
+
+  test("opener rebid rules don't fire on 2-entry auctions", () => {
+    // 18 HCP opener — would match game rebid on 4-entry, but not on 2-entry
+    const opener = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DA",
+      "DK",
+      "C5",
+      "C3",
+      "C2",
+    );
+    // North evaluating after just "1H P" — biddingRound(1) requires 1 prior bid but this is round 0
+    const result = callFromRules(opener, Seat.North, ["1H", "P"]);
+    // isOpener() passes but biddingRound(1) fails (opener at round 0)
+    expect(result).toBeNull();
+  });
+
+  test("game try rules don't fire on 4-entry auctions (need 6-entry)", () => {
+    // 9 HCP responder — would accept game try on 6-entry
+    const responder = hand(
+      "S8",
+      "S5",
+      "S2",
+      "HK",
+      "HQ",
+      "H6",
+      "H2",
+      "DK",
+      "D7",
+      "D3",
+      "CJ",
+      "C5",
+      "C2",
+    );
+    // Only 4 entries, not 6 — biddingRound(1) requires responder to have bid once already
+    const result = callFromRules(responder, Seat.South, ["1H", "P", "3C", "P"]);
+    expect(result).toBeNull();
   });
 });

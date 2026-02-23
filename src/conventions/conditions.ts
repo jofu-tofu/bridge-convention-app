@@ -669,6 +669,65 @@ export function noPriorBid(): RuleCondition {
   };
 }
 
+/** This seat is making their Nth contract bid (0-indexed). Round 0 = first bid, Round 1 = rebid. */
+export function biddingRound(n: number): RuleCondition {
+  return {
+    name: "bidding-round",
+    label: `Bidding round ${n}`,
+    test(ctx) {
+      let count = 0;
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid" && entry.seat === ctx.seat) {
+          count++;
+        }
+      }
+      return count === n;
+    },
+    describe(ctx) {
+      let count = 0;
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid" && entry.seat === ctx.seat) {
+          count++;
+        }
+      }
+      return count === n
+        ? `Seat has made ${n} prior bid${n !== 1 ? "s" : ""} (round ${n})`
+        : `Seat has made ${count} prior bid${count !== 1 ? "s" : ""} (need round ${n})`;
+    },
+  };
+}
+
+/** Partner bid at a specific level and strain at any point in the auction. */
+export function partnerBidAt(level: number, strain: BidSuit): RuleCondition {
+  return {
+    name: `partner-bid-${level}${strain}`,
+    label: `Partner bid ${level}${strain}`,
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      return ctx.auction.entries.some(
+        (e) =>
+          e.seat === partner &&
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain,
+      );
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      const found = ctx.auction.entries.some(
+        (e) =>
+          e.seat === partner &&
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain,
+      );
+      return found
+        ? `Partner bid ${level}${strain}`
+        : `Partner has not bid ${level}${strain}`;
+    },
+  };
+}
+
 /** This seat has made at least one contract bid in the auction. */
 export function seatHasBid(): RuleCondition {
   return {
@@ -693,32 +752,41 @@ export function seatHasBid(): RuleCondition {
 // ─── Convention-specific compound conditions ─────────────────
 
 /**
- * Check for 4+ support in the opened major suit.
+ * Check for support in the opened major suit.
  * Reads auction to detect 1H or 1S opening.
+ * @param count — number of cards required (default 4)
+ * @param orMore — if true, checks count+ (>=); if false, checks exactly count (===)
  */
-export function majorSupport(): RuleCondition {
+export function majorSupport(count: number = 4, orMore: boolean = false): RuleCondition {
+  const op = orMore ? ">=" : "===";
+  const label = orMore ? `${count}+ cards in opened major` : `Exactly ${count} cards in opened major`;
+  const check = orMore
+    ? (len: number) => len >= count
+    : (len: number) => len === count;
+
   return {
     name: "major-support",
-    label: "4+ support in opened major",
+    label,
     test(ctx) {
       const shape = ctx.evaluation.shape;
-      if (auctionMatchesExact(ctx.auction, ["1H", "P"])) return shape[1]! >= 4;
-      if (auctionMatchesExact(ctx.auction, ["1S", "P"])) return shape[0]! >= 4;
+      if (auctionMatchesExact(ctx.auction, ["1H", "P"])) return check(shape[1]!);
+      if (auctionMatchesExact(ctx.auction, ["1S", "P"])) return check(shape[0]!);
       return false;
     },
     describe(ctx) {
       const shape = ctx.evaluation.shape;
+      const suffix = orMore ? `${count}+ support` : `exactly ${count}`;
       if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
         const len = shape[1]!;
-        return len >= 4
-          ? `${len} hearts (4+ support for opened major)`
-          : `Only ${len} hearts (need 4+ support)`;
+        return check(len)
+          ? `${len} hearts (${suffix})`
+          : `${len} hearts (need ${suffix})`;
       }
       if (auctionMatchesExact(ctx.auction, ["1S", "P"])) {
         const len = shape[0]!;
-        return len >= 4
-          ? `${len} spades (4+ support for opened major)`
-          : `Only ${len} spades (need 4+ support)`;
+        return check(len)
+          ? `${len} spades (${suffix})`
+          : `${len} spades (need ${suffix})`;
       }
       return "No major opening detected";
     },

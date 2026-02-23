@@ -26,6 +26,7 @@ stayman.ts (staymanConfig, staymanDealConstraints)
 gerber.ts (gerberConfig, gerberDealConstraints)
 bergen-raises.ts (bergenConfig, bergenDealConstraints)
 dont.ts (dontConfig, dontDealConstraints)
+landy.ts (landyConfig, landyDealConstraints)
 sayc.ts (saycConfig — internal, hidden from UI)
   ↑
 index.ts (auto-registration entry point)
@@ -36,13 +37,14 @@ index.ts (auto-registration entry point)
 | File                     | Role                                                                                                                       |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `types.ts`               | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory`, `RuleCondition`, `ConditionedBiddingRule`       |
-| `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, relational: `isOpener`, `isResponder`, `partnerOpened`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
+| `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, relational: `isOpener`, `isResponder`, `partnerOpened`, `biddingRound`, `partnerBidAt`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
 | `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard                                             |
 | `registry.ts`            | Convention map, `evaluateBiddingRules` (first-match, condition-aware), `clearRegistry` for tests                           |
 | `stayman.ts`             | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules                                             |
 | `gerber.ts`              | Gerber convention: deal constraints (NT opener + 16+ HCP responder), 11 bidding rules (ace-ask, king-ask, responses, signoff) |
-| `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), 4 bidding rules                                        |
+| `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), 13 bidding rules (4 initial + 9 rebids)                |
 | `dont.ts`                | DONT convention: deal constraints (1NT opponent + overcaller), 7 bidding rules                                             |
+| `landy.ts`               | Landy convention: deal constraints (1NT opponent + overcaller), 5 bidding rules                                            |
 | `sayc.ts`                | SAYC convention: internal (opponent AI), no deal constraints, ~22 bidding rules                                            |
 | `index.ts`               | Auto-registration entry point — import to activate all conventions                                                         |
 
@@ -65,10 +67,22 @@ index.ts (auto-registration entry point)
 
 **Bergen Raises** (`bergen-raises.ts`):
 
-- **Deal constraints:** Opener (North) 12-21 HCP, 5+ card major. Responder (South) 6-12 HCP, 4+ card major.
-- **Rules (in priority order):** `bergen-game-raise` (4M, 13+ HCP), `bergen-limit-raise` (3D, 10-12 HCP), `bergen-constructive-raise` (3C, 7-9 HCP), `bergen-preemptive-raise` (3M, 0-6 HCP).
+- **Deal constraints:** Opener (North) 12-21 HCP, 5+ card major. Responder (South) 0+ HCP, exactly 4-card major.
+- **Responder initial rules (after 1M-P):** `bergen-game-raise` (4M, 13+ HCP), `bergen-limit-raise` (3D, 10-12 HCP), `bergen-constructive-raise` (3C, 7-9 HCP), `bergen-preemptive-raise` (3M, 0-6 HCP).
+- **Opener rebids after constructive (1M P 3C P):** `bergen-rebid-game-after-constructive` (4M, 17+ HCP), `bergen-rebid-try-after-constructive` (3D help-suit game try, 14-16 HCP), `bergen-rebid-signoff-after-constructive` (Pass, 12-13 HCP).
+- **Responder game try continuation (1M P 3C P 3D P):** `bergen-try-accept` (4M, 9-10 HCP top of constructive), `bergen-try-reject` (3M, 7-8 HCP bottom of constructive).
+- **Opener rebids after limit (1M P 3D P):** `bergen-rebid-game-after-limit` (4M, 15+ HCP), `bergen-rebid-signoff-after-limit` (3M, 12-14 HCP).
+- **Opener rebids after preemptive (1M P 3M P):** `bergen-rebid-game-after-preemptive` (4M, 18+ HCP), `bergen-rebid-pass-after-preemptive` (Pass, 12-17 HCP).
 - **Variant:** Standard Bergen (3C=constructive, 3D=limit, 3M=preemptive).
+- **Multi-round framework:** Uses `biddingRound(n)` + `isOpener()`/`isResponder()` for clean round separation. `partnerBidAt()` and inline `partnerRaisedToThreeOfMajor()` detect specific partner bids.
 - **Default auction:** Deal-aware -- opens opener's longer major (1S with 5-5).
+
+**Landy** (`landy.ts`):
+
+- **Deal constraints:** Opponent (East) 15-17 HCP, balanced (opens 1NT). Overcaller (South) 10+ HCP, 5-4+ in both majors.
+- **Rules (in priority order):** `landy-2c` (2C showing both majors), `landy-response-pass` (5+ clubs, play 2C), `landy-response-2h` (4+ hearts signoff), `landy-response-2s` (4+ spades, <4 hearts signoff), `landy-response-2d` (artificial relay, no major preference).
+- **Priority:** Pass (clubs) before major responses; hearts before spades; relay is catchall.
+- **Dealer:** East (same as DONT).
 
 **DONT** (`dont.ts`):
 
