@@ -12,8 +12,7 @@
   import AuctionTable from "../../game/AuctionTable.svelte";
   import HandFan from "../../game/HandFan.svelte";
   import TrickArea from "../../game/TrickArea.svelte";
-  import Button from "../../shared/Button.svelte";
-  import ContractDisplay from "./ContractDisplay.svelte";
+  import DeclarerPrompt from "../../game/DeclarerPrompt.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import BiddingSidePanel from "./BiddingSidePanel.svelte";
   import PlaySidePanel from "./PlaySidePanel.svelte";
@@ -125,17 +124,18 @@
       };
     }
     if (gameStore.phase === "DECLARER_PROMPT") {
-      return gameStore.isDefenderPrompt
-        ? {
-            label: "Defend",
-            color: "bg-amber-600",
-            textColor: "text-amber-100",
-          }
-        : {
-            label: "Declarer",
-            color: "bg-teal-600",
-            textColor: "text-teal-100",
-          };
+      if (gameStore.isDefenderPrompt) {
+        return {
+          label: "Defend",
+          color: "bg-amber-600",
+          textColor: "text-amber-100",
+        };
+      }
+      return {
+        label: "Declarer",
+        color: "bg-teal-600",
+        textColor: "text-teal-100",
+      };
     }
     if (gameStore.phase === "PLAYING") {
       return {
@@ -156,18 +156,40 @@
     gameStore.bidFeedback !== null && !gameStore.bidFeedback.isCorrect,
   );
 
-  // Responsive table scaling — use fallback values for SSR/jsdom
+  // Responsive table scaling — measure actual available space
   let innerW = $state(1024);
   let innerH = $state(768);
+  let headerH = $state(0);
+
+  // Derive root font size from viewport to match CSS: clamp(16px, 1.5vw, 28px)
+  const rootFontSize = $derived(Math.min(28, Math.max(16, innerW * 0.015)));
+  const tableBaseW = 800; // --spacing-table-width (px, scaled by CSS transform)
+  const tableBaseH = 650; // --spacing-table-height (px, scaled by CSS transform)
+  // Match CSS: clamp(16rem, 25vw, 25rem)
+  const sidePanelW = $derived(
+    Math.min(25 * rootFontSize, Math.max(16 * rootFontSize, innerW * 0.25)),
+  );
 
   const isDesktop = $derived(innerW > 1023);
   const tableScale = $derived(
-    computeTableScale(innerW, innerH, { sidePanel: isDesktop }),
+    computeTableScale(innerW, innerH, {
+      sidePanel: isDesktop,
+      tableW: tableBaseW,
+      tableH: tableBaseH,
+      sidePanelW,
+      headerH: headerH || 64,
+      padding: 16,
+    }),
   );
 
-  const tableOrigin = $derived(isDesktop ? "left center" : "center");
+  const tableOrigin = $derived(isDesktop ? "top left" : "center");
+  const phaseContainerClass = $derived(
+    isDesktop
+      ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[1fr] overflow-hidden"
+      : "flex-1 flex flex-col overflow-hidden",
+  );
   const sidePanelClass = $derived(
-    `${isDesktop ? "w-[400px] shrink-0" : "border-t border-border-subtle"} bg-bg-base p-4 flex flex-col gap-4 min-h-0 overflow-y-auto`,
+    `${isDesktop ? "" : "border-t border-border-subtle"} bg-bg-base p-4 flex flex-col gap-4 min-h-0 overflow-hidden`,
   );
 
   function handleBackToMenu() {
@@ -182,7 +204,8 @@
   <main class="h-full flex flex-col" aria-label="Bridge drill">
     <!-- Header -->
     <header
-      class="flex items-center justify-between px-6 py-3 border-b border-border-subtle shrink-0"
+      bind:clientHeight={headerH}
+      class="flex items-center justify-between px-6 py-3 border-b border-border-subtle shrink-0 bg-bg-base relative z-10"
     >
       <div class="flex items-center gap-4">
         <button
@@ -235,11 +258,9 @@
 
     {#if gameStore.phase === "BIDDING"}
       <div
-        class="flex-1 flex {isDesktop
-          ? 'flex-row'
-          : 'flex-col'} overflow-hidden"
+        class={phaseContainerClass}
       >
-        <ScaledTableArea scale={tableScale} origin={tableOrigin}>
+        <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
           <BridgeTable hands={gameStore.deal.hands} {userSeat}>
             <div
               class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
@@ -265,6 +286,7 @@
             {isFeedbackBlocking}
             onDismissFeedback={() => gameStore.dismissBidFeedback()}
             onSkipToReview={() => gameStore.skipFromFeedback()}
+            onRetry={() => gameStore.retryBid()}
             convention={DEV ? appStore.selectedConvention : undefined}
             hand={DEV ? gameStore.deal.hands[userSeat] : undefined}
             auction={DEV ? gameStore.auction : undefined}
@@ -275,85 +297,59 @@
     {:else if gameStore.phase === "DECLARER_PROMPT"}
       <!-- Show normal view with dummy (North) face-up; rotation happens on accept -->
       <div
-        class="flex-1 flex {isDesktop
-          ? 'flex-row'
-          : 'flex-col'} overflow-hidden"
+        class={phaseContainerClass}
       >
-        <ScaledTableArea scale={tableScale} origin={tableOrigin}>
+        <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
           <BridgeTable
             hands={gameStore.deal.hands}
             {userSeat}
-            dummySeat={gameStore.isDefenderPrompt ? undefined : gameStore.contract?.declarer}
+            dummySeat={gameStore.isDefenderPrompt
+              ? partnerSeat(gameStore.contract?.declarer ?? userSeat)
+              : gameStore.isSouthDeclarerPrompt
+                ? partnerSeat(gameStore.contract?.declarer ?? userSeat)
+                : gameStore.contract?.declarer}
           >
-            <div class="flex flex-col gap-3 items-center">
-              <div
-                class="bg-bg-card rounded-[--radius-xl] p-5 border border-border-subtle shadow-lg text-center"
-                role="dialog"
-                aria-label={gameStore.isDefenderPrompt ? "Defender prompt" : "Declarer prompt"}
-              >
-                {#if gameStore.contract}
-                  <ContractDisplay contract={gameStore.contract} size="lg" />
-                {/if}
-                <p class="text-text-secondary text-sm mb-3 mt-1">
-                  {#if gameStore.isDefenderPrompt}
-                    Opponents won the contract. Defend as {userSeat}?
-                  {:else}
-                    You are dummy. Play as {gameStore.contract?.declarer ??
-                      "North"} (declarer)?
-                  {/if}
-                </p>
-                <div class="flex gap-3 justify-center">
-                  {#if gameStore.isDefenderPrompt}
-                    <Button
-                      variant="primary"
-                      onclick={() => gameStore.acceptDefend()}
-                    >
-                      Play as Defender
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onclick={() => gameStore.declineDefend()}
-                    >
-                      Skip to Review
-                    </Button>
-                  {:else}
-                    <Button
-                      variant="primary"
-                      onclick={() => gameStore.acceptDeclarerSwap()}
-                    >
-                      Play as Declarer
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onclick={() => gameStore.declineDeclarerSwap()}
-                    >
-                      Skip to Review
-                    </Button>
-                  {/if}
-                </div>
-              </div>
-              <div
-                class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
-              >
-                <AuctionTable
-                  entries={gameStore.auction.entries}
-                  dealer={gameStore.deal.dealer}
-                  compact
-                />
-              </div>
-            </div>
+            {#if gameStore.contract}
+              <DeclarerPrompt
+                contract={gameStore.contract}
+                {userSeat}
+                mode={gameStore.isDefenderPrompt
+                  ? "defender"
+                  : gameStore.isSouthDeclarerPrompt
+                    ? "south-declarer"
+                    : "declarer-swap"}
+                onAccept={gameStore.isDefenderPrompt
+                  ? () => gameStore.acceptDefend()
+                  : gameStore.isSouthDeclarerPrompt
+                    ? () => gameStore.acceptSouthPlay()
+                    : () => gameStore.acceptDeclarerSwap()}
+                onSkip={gameStore.isDefenderPrompt
+                  ? () => gameStore.declineDefend()
+                  : gameStore.isSouthDeclarerPrompt
+                    ? () => gameStore.declineSouthPlay()
+                    : () => gameStore.declineDeclarerSwap()}
+              />
+            {/if}
           </BridgeTable>
         </ScaledTableArea>
 
-        <div class={sidePanelClass}></div>
+        <aside class={sidePanelClass} aria-label="Auction summary">
+          <div
+            class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
+          >
+            <AuctionTable
+              entries={gameStore.auction.entries}
+              dealer={gameStore.deal.dealer}
+              compact
+            />
+          </div>
+        </aside>
       </div>
     {:else if gameStore.phase === "PLAYING"}
       <div
-        class="flex-1 flex {isDesktop
-          ? 'flex-row'
-          : 'flex-col'} overflow-hidden"
+        class={phaseContainerClass}
       >
-        <ScaledTableArea scale={tableScale} origin={tableOrigin}>
+        <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
           <BridgeTable
             hands={gameStore.deal.hands}
             userSeat={playUserSeat}
@@ -385,9 +381,7 @@
       </div>
     {:else if gameStore.phase === "EXPLANATION"}
       <div
-        class="flex-1 flex {isDesktop
-          ? 'flex-row'
-          : 'flex-col'} overflow-hidden"
+        class={phaseContainerClass}
       >
         {#if showAllCards}
           <div class="flex-1 flex flex-col gap-3 p-4 overflow-auto min-w-0">
@@ -403,7 +397,7 @@
               </div>
               <button
                 type="button"
-                class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[44px] rounded-[--radius-md] border border-border-subtle bg-bg-card/80 shrink-0"
+                class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[--size-touch-target] rounded-[--radius-md] border border-border-subtle bg-bg-card/80 shrink-0"
                 onclick={() => (showAllCards = !showAllCards)}
                 aria-expanded={showAllCards}
                 aria-label="Toggle all hands visibility"
@@ -436,7 +430,7 @@
             </div>
           </div>
         {:else}
-          <ScaledTableArea scale={tableScale} origin={tableOrigin}>
+          <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
             <BridgeTable hands={gameStore.deal.hands} {userSeat}>
               <div class="flex flex-col gap-2 items-center">
                 <div
@@ -450,7 +444,7 @@
                 </div>
                 <button
                   type="button"
-                  class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[44px] rounded-[--radius-md] border border-border-subtle bg-bg-card/80"
+                  class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[--size-touch-target] rounded-[--radius-md] border border-border-subtle bg-bg-card/80"
                   onclick={() => (showAllCards = !showAllCards)}
                   aria-expanded={showAllCards}
                   aria-label="Toggle all hands visibility"
@@ -475,6 +469,7 @@
             {dealNumber}
             onNextDeal={handleNextDeal}
             onBackToMenu={handleBackToMenu}
+            onPlayHand={gameStore.contract ? () => gameStore.playThisHand() : undefined}
             convention={appStore.selectedConvention ?? undefined}
             deal={gameStore.deal ?? undefined}
           />
