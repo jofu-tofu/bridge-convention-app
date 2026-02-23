@@ -1438,6 +1438,138 @@ describe("Stayman edge cases", () => {
     expect(call.strain).toBe(BidSuit.Spades);
   });
 
+  test("responder bids 3H (invite) after opener shows 2H with 8-9 HCP heart fit", () => {
+    // 9 HCP, 4 hearts — invitational, not game-forcing
+    const inviteResponder = hand(
+      "SK",
+      "S5",
+      "S2", // 3 HCP (3 spades)
+      "HQ",
+      "HJ",
+      "HT",
+      "H3", // 3 HCP (4 hearts)
+      "DK",
+      "D5",
+      "D3", // 3 HCP (3 diamonds)
+      "C5",
+      "C3",
+      "C2", // 0 HCP (3 clubs)
+    );
+    expect(calculateHcp(inviteResponder)).toBe(9);
+    const result = callFromRules(inviteResponder, Seat.South, [
+      "1NT",
+      "P",
+      "2C",
+      "P",
+      "2H",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-major-fit-invite");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("responder bids 3S (invite) after opener shows 2S with 8 HCP spade fit", () => {
+    // 8 HCP, 4 spades — invitational
+    const inviteResponder = hand(
+      "SQ",
+      "SJ",
+      "ST",
+      "S3", // 3 HCP (4 spades)
+      "HK",
+      "H5",
+      "H2", // 3 HCP (3 hearts)
+      "DQ",
+      "D5",
+      "D3", // 2 HCP (3 diamonds)
+      "C5",
+      "C3",
+      "C2", // 0 HCP (3 clubs)
+    );
+    expect(calculateHcp(inviteResponder)).toBe(8);
+    const result = callFromRules(inviteResponder, Seat.South, [
+      "1NT",
+      "P",
+      "2C",
+      "P",
+      "2S",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-major-fit-invite");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+
+  test("responder bids 2NT (invite) after 2D denial with 8-9 HCP", () => {
+    // 9 HCP, 4 hearts — invitational after denial
+    const inviteResponder = hand(
+      "SK",
+      "S5",
+      "S2", // 3 HCP (3 spades)
+      "HQ",
+      "HJ",
+      "HT",
+      "H3", // 3 HCP (4 hearts)
+      "DK",
+      "D5",
+      "D3", // 3 HCP (3 diamonds)
+      "C5",
+      "C3",
+      "C2", // 0 HCP (3 clubs)
+    );
+    expect(calculateHcp(inviteResponder)).toBe(9);
+    const result = callFromRules(inviteResponder, Seat.South, [
+      "1NT",
+      "P",
+      "2C",
+      "P",
+      "2D",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-no-fit-invite");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.NoTrump);
+  });
+
+  test("responder bids 2NT (invite) after 2H with no heart fit and 9 HCP", () => {
+    // 9 HCP, 4 spades no hearts — invitational after 2H shows no heart fit
+    const inviteResponder = hand(
+      "SQ",
+      "SJ",
+      "ST",
+      "S3", // 3 HCP (4 spades)
+      "H5",
+      "H3",
+      "H2", // 0 HCP (3 hearts)
+      "DK",
+      "DJ",
+      "D3", // 4 HCP (3 diamonds)
+      "CQ",
+      "C4",
+      "C2", // 2 HCP (3 clubs)
+    );
+    expect(calculateHcp(inviteResponder)).toBe(9);
+    const result = callFromRules(inviteResponder, Seat.South, [
+      "1NT",
+      "P",
+      "2C",
+      "P",
+      "2H",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-no-fit-invite");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.NoTrump);
+  });
+
   test("full denial sequence: 1NT-P-2C-P-2D-P-3NT completes", () => {
     // Responder with 4 hearts asks Stayman, opener denies, responder bids 3NT
     const responder = hand(

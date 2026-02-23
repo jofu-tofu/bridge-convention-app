@@ -72,14 +72,14 @@ describe("Bergen Raises deal constraints", () => {
     }
   });
 
-  test("[bridgebum/bergen] responder 6+ HCP with 4+ major (no upper cap)", () => {
+  test("[bridgebum/bergen] responder 0+ HCP with 4+ major (no upper cap)", () => {
     for (let i = 0; i < 20; i++) {
       const result = generateDeal(bergenDealConstraints);
       const responderHand = result.deal.hands[Seat.South];
       const hcp = calculateHcp(responderHand);
       const shape = getSuitLength(responderHand);
 
-      expect(hcp).toBeGreaterThanOrEqual(6);
+      expect(hcp).toBeGreaterThanOrEqual(0);
       // No maxHcp cap — game raise (13+) needs to be reachable
       const hasSpades = shape[0]! >= 4;
       const hasHearts = shape[1]! >= 4;
@@ -167,8 +167,8 @@ describe("Bergen Raises deal constraints", () => {
     expect(satisfied).toBe(false);
   });
 
-  test("[bridgebum/bergen] rejects responder with 5 HCP", () => {
-    // HK(3) + HJ(1) + CJ(1) = 5 HCP, 4 hearts
+  test("[bridgebum/bergen] accepts responder with 5 HCP (preemptive range)", () => {
+    // HK(3) + HJ(1) + CJ(1) = 5 HCP, 4 hearts — valid for preemptive raise
     const weakResponder = hand(
       "S8",
       "S5",
@@ -240,7 +240,7 @@ describe("Bergen Raises deal constraints", () => {
       },
       bergenDealConstraints,
     );
-    expect(satisfied).toBe(false);
+    expect(satisfied).toBe(true);
   });
 
   test("[bridgebum/bergen] accepts responder with exactly 6 HCP", () => {
@@ -1081,7 +1081,7 @@ describe("Bergen Raises property-based invariants", () => {
       ]);
       const ruleResult = evaluateBiddingRules(bergenConfig.biddingRules, ctx);
 
-      // The responder has 6-12 HCP and 4+ in at least one major, but
+      // The responder has 0+ HCP and 4+ in at least one major, but
       // they may not have 4+ in the SPECIFIC major that was opened.
       // So we only assert a match when responder has support for the opened major.
       const responderShape = getSuitLength(responderHand);

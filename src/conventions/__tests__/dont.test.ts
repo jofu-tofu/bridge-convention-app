@@ -784,6 +784,73 @@ describe("DONT overcaller edge cases", () => {
     expect(result!.rule).toBe("dont-2c");
   });
 
+  test("[bridgebum/dont] 4D+6H hand bids dont-2d (reversed 4-5 distribution)", () => {
+    // 6H + 4D: diamonds is the announced suit (lower), hearts is the hidden major
+    // Per bridgebum: "at least 5-4 or 4-5 distribution" — either suit can be longer
+    const hand4D6H = hand(
+      "S2",
+      "S3", // 2 spades
+      "HA",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "H3", // 6 hearts
+      "DA",
+      "DK",
+      "D8",
+      "D5", // 4 diamonds
+      "C2", // 1 club
+    );
+    const result = callFromRules(hand4D6H, Seat.South, ["1NT"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-2d");
+  });
+
+  test("[bridgebum/dont] 4C+5H hand bids dont-2c (reversed 4-5 distribution)", () => {
+    // 5H + 4C: clubs is the announced suit (lower), hearts is the hidden higher suit
+    const hand4C5H = hand(
+      "S3",
+      "S2", // 2 spades
+      "HA",
+      "HK",
+      "H8",
+      "H5",
+      "H3", // 5 hearts
+      "D5",
+      "D3", // 2 diamonds
+      "CK",
+      "CQ",
+      "C8",
+      "C5", // 4 clubs
+    );
+    const result = callFromRules(hand4C5H, Seat.South, ["1NT"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-2c");
+  });
+
+  test("[bridgebum/dont] 4D+5S hand bids dont-2d (reversed distribution, major is spades)", () => {
+    // 5S + 4D: diamonds is the announced suit, spades is the hidden major
+    const hand4D5S = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "S7",
+      "S2", // 5 spades
+      "H3",
+      "H2", // 2 hearts
+      "DK",
+      "DJ",
+      "D8",
+      "D5", // 4 diamonds
+      "C5",
+      "C2", // 2 clubs
+    );
+    const result = callFromRules(hand4D5S, Seat.South, ["1NT"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-2d");
+  });
+
   test("6H+3-3-1 (single-suited non-spades): dont-double fires", () => {
     // 6 hearts, 3-3-1 in others — single suited, not spades
     const hand6H = hand(
