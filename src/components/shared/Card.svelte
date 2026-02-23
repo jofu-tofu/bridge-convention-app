@@ -22,7 +22,7 @@
 
   const colorClass = $derived(SUIT_CARD_COLOR_CLASS[card.suit]);
   const symbol = $derived(SUIT_SYMBOLS[card.suit]);
-  const cardStyle = "width: var(--card-width); height: var(--card-height);";
+  const cardStyle = "width: var(--card-width); height: var(--card-height); --card-font: calc(var(--card-width) * 0.32);";
   const hoverClass = $derived(
     mirrored
       ? "motion-safe:hover:translate-y-1 hover:shadow-lg cursor-pointer motion-safe:transition-transform"
@@ -34,20 +34,14 @@
   {#if mirrored}
     <!-- Mirrored: text at bottom-left only, readable from across the table -->
     <span
-      class="absolute bottom-1 left-1.5 text-xs font-bold leading-none {colorClass}"
+      class="absolute bottom-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--card-font);"
     >
       {card.rank}<br />{symbol}
     </span>
   {:else}
     <!-- Normal: top-left upright + bottom-right rotated 180° -->
     <span
-      class="absolute top-1 left-1.5 text-xs font-bold leading-none {colorClass}"
-    >
-      {card.rank}<br />{symbol}
-    </span>
-    <span
-      class="absolute bottom-1 right-1.5 text-xs font-bold leading-none {colorClass}"
-      style="transform: rotate(180deg);"
+      class="absolute top-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--card-font);"
     >
       {card.rank}<br />{symbol}
     </span>

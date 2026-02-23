@@ -18,11 +18,11 @@
   --color-suit-spades: #e2e8f0;
   --color-suit-hearts: #f87171;
   --color-suit-diamonds: #fb923c; /* Diamonds are orange per Style Guide, NOT blue or red */
-  --color-suit-clubs: #a3e635;
+  --color-suit-clubs: #22d3ee; /* Cyan — colorblind-safe, off red-green axis */
   --color-suit-card-spades: #1a1a2e;
   --color-suit-card-hearts: #f87171;
   --color-suit-card-diamonds: #fb923c; /* Diamonds are orange per Style Guide, NOT blue or red */
-  --color-suit-card-clubs: #a3e635;
+  --color-suit-card-clubs: #22d3ee; /* Cyan — colorblind-safe, off red-green axis */
   --color-table-surface: #1a2332;
   --color-table-border: #2a3a4e;
   --color-card-back: #1e3a5f;
@@ -44,8 +44,11 @@
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --color-text-on-accent: #ffffff;
   --color-card-face: #ffffff;
-  --size-touch-target: 44px;
-  --width-side-panel: 220px;
+  --size-touch-target: 2.75rem;
+  --width-side-panel: clamp(16rem, 25vw, 25rem);
+  /* px tokens below are used inside CSS-transformed areas (table/cards) where
+     rem scaling would double-compound with the fluid root font-size above.
+     rem tokens (above) scale with viewport; px tokens are fixed-size. */
   --spacing-card-width: 70px;
   --spacing-card-height: 98px;
   --spacing-card-overlap-h: -20px;
@@ -63,6 +66,9 @@
   --table-height: var(--spacing-table-height);
 }
 
+html {
+  font-size: clamp(16px, 1.5vw, 28px);
+}
 html,
 body {
   height: 100%;
@@ -95,6 +101,26 @@ a:focus-visible,
 }
 input:focus-visible {
   outline-offset: 0;
+}
+
+/* Custom scrollbar — Midnight Table theme (global) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-bg-hover) transparent;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-hover);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-primary);
 }
 
 /* Respect reduced-motion preferences (WCAG 2.3.3) */
