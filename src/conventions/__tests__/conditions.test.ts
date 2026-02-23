@@ -142,6 +142,8 @@ const AUCTION_CONDITION_NAMES = new Set([
   "seat-has-bid",
   "bidding-round",
   "partner-raised-3M",
+  "partner-bid-4M",
+  "partner-signoff-3M",
 ]);
 
 /** Check if a condition name is a known auction condition (including partner-opened variants). */
@@ -187,6 +189,8 @@ describe("condition classification audit", () => {
       "seat-has-bid",
       "bidding-round",
       "partner-raised-3M",
+      "partner-bid-4M",
+      "partner-signoff-3M",
     ]);
     const violations: string[] = [];
     const conventions = listConventions();

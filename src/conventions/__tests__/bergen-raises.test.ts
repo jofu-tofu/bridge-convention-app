@@ -1419,11 +1419,11 @@ describe("Bergen Raises property-based invariants", () => {
     expect(auction!.entries[1]!.call).toEqual({ type: "pass" });
   });
 
-  test("[bridgebum/bergen invariant] all thirteen rules produce distinct names", () => {
+  test("[bridgebum/bergen invariant] all sixteen rules produce distinct names", () => {
     const rules = bergenConfig.biddingRules;
-    expect(rules).toHaveLength(13);
+    expect(rules).toHaveLength(16);
     const names = rules.map((r) => r.name);
-    expect(new Set(names).size).toBe(13);
+    expect(new Set(names).size).toBe(16);
     expect(names).toContain("bergen-game-raise");
     expect(names).toContain("bergen-limit-raise");
     expect(names).toContain("bergen-constructive-raise");
@@ -1437,6 +1437,9 @@ describe("Bergen Raises property-based invariants", () => {
     expect(names).toContain("bergen-rebid-signoff-after-limit");
     expect(names).toContain("bergen-rebid-game-after-preemptive");
     expect(names).toContain("bergen-rebid-pass-after-preemptive");
+    expect(names).toContain("bergen-accept-game");
+    expect(names).toContain("bergen-accept-signoff");
+    expect(names).toContain("bergen-opener-accept-after-try");
   });
 });
 
@@ -2098,5 +2101,168 @@ describe("Bergen Raises — rebid invariants", () => {
     // Only 4 entries, not 6 — biddingRound(1) requires responder to have bid once already
     const result = callFromRules(responder, Seat.South, ["1H", "P", "3C", "P"]);
     expect(result).toBeNull();
+  });
+});
+
+// ─── Acceptance Passes ───────────────────────────────────────
+
+describe("Bergen Raises — acceptance passes (closing the auction)", () => {
+  test("responder passes after opener bids game 4H (accept game)", () => {
+    // 11 HCP limit hand, after 1H-P-3D-P-4H-P — South passes to close
+    const responder = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HK",
+      "HJ",
+      "H6",
+      "H2",
+      "DQ",
+      "D7",
+      "D3",
+      "CJ",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(11);
+    const result = callFromRules(responder, Seat.South, [
+      "1H",
+      "P",
+      "3D",
+      "P",
+      "4H",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-accept-game");
+    expect(result!.call.type).toBe("pass");
+  });
+
+  test("responder passes after opener signs off 3H (accept signoff)", () => {
+    // 11 HCP limit hand, after 1H-P-3D-P-3H-P — South passes
+    const responder = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HK",
+      "HJ",
+      "H6",
+      "H2",
+      "DQ",
+      "D7",
+      "D3",
+      "CJ",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(11);
+    const result = callFromRules(responder, Seat.South, [
+      "1H",
+      "P",
+      "3D",
+      "P",
+      "3H",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-accept-signoff");
+    expect(result!.call.type).toBe("pass");
+  });
+
+  test("responder passes after opener bids 4S (spades path)", () => {
+    // 8 HCP constructive, after 1S-P-3C-P-4S-P
+    const responder = hand(
+      "SK",
+      "ST",
+      "S6",
+      "S2",
+      "H8",
+      "H5",
+      "H2",
+      "DK",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(8);
+    const result = callFromRules(responder, Seat.South, [
+      "1S",
+      "P",
+      "3C",
+      "P",
+      "4S",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-accept-game");
+    expect(result!.call.type).toBe("pass");
+  });
+
+  test("opener passes after game try rejection 3H (accept try result)", () => {
+    // 15 HCP opener, after 1H-P-3C-P-3D-P-3H-P — North passes to close
+    const opener = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(15);
+    const result = callFromRules(opener, Seat.North, [
+      "1H",
+      "P",
+      "3C",
+      "P",
+      "3D",
+      "P",
+      "3H",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-opener-accept-after-try");
+    expect(result!.call.type).toBe("pass");
+  });
+
+  test("opener passes after game try acceptance 4H (accept try result)", () => {
+    // 15 HCP opener, after 1H-P-3C-P-3D-P-4H-P — North passes
+    const opener = hand(
+      "SA",
+      "S5",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(opener)).toBe(15);
+    const result = callFromRules(opener, Seat.North, [
+      "1H",
+      "P",
+      "3C",
+      "P",
+      "3D",
+      "P",
+      "4H",
+      "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-opener-accept-after-try");
+    expect(result!.call.type).toBe("pass");
   });
 });

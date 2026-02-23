@@ -254,6 +254,107 @@ const bergenRebidPassAfterPreemptive = conditionedRule({
   },
 });
 
+// ─── Responder Acceptance Passes ─────────────────────────────
+// After opener rebids game (4M) or signoff (3M), responder passes to close auction.
+// Without these rules, the user sees "No convention bid applies — pass" with no explanation.
+
+/** Condition: partner bid game in a major (4H or 4S). */
+function partnerBidGameInMajor(): RuleCondition {
+  return {
+    name: "partner-bid-4M",
+    label: "Partner bid game in major",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      return ctx.auction.entries.some(
+        (e) =>
+          e.seat === partner &&
+          e.call.type === "bid" &&
+          e.call.level === 4 &&
+          (e.call.strain === BidSuit.Hearts || e.call.strain === BidSuit.Spades),
+      );
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      const found = ctx.auction.entries.find(
+        (e) =>
+          e.seat === partner &&
+          e.call.type === "bid" &&
+          e.call.level === 4 &&
+          (e.call.strain === BidSuit.Hearts || e.call.strain === BidSuit.Spades),
+      );
+      return found ? `Partner bid game in ${(found.call as { strain: BidSuit }).strain}` : "Partner has not bid game in a major";
+    },
+  };
+}
+
+/** Condition: partner signed off in 3 of their opened major. */
+function partnerSignedOffInThreeMajor(): RuleCondition {
+  return {
+    name: "partner-signoff-3M",
+    label: "Partner signed off in 3 of major",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      // Find partner's opening strain
+      let openerStrain: BidSuit | null = null;
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid" && entry.seat === partner) {
+          openerStrain = entry.call.strain;
+          break;
+        }
+      }
+      if (openerStrain !== BidSuit.Hearts && openerStrain !== BidSuit.Spades) return false;
+      // Check partner bid 3 of that same major (their rebid)
+      let partnerBidCount = 0;
+      for (const entry of ctx.auction.entries) {
+        if (entry.seat === partner && entry.call.type === "bid") {
+          partnerBidCount++;
+          if (
+            partnerBidCount === 2 &&
+            entry.call.level === 3 &&
+            entry.call.strain === openerStrain
+          ) {
+            return true;
+          }
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      return this.test(ctx)
+        ? "Partner signed off in 3 of their major"
+        : "Partner did not sign off in 3 of major";
+    },
+  };
+}
+
+const bergenAcceptGame = conditionedRule({
+  name: "bergen-accept-game",
+  auctionConditions: [isResponder(), biddingRound(1), partnerBidGameInMajor()],
+  handConditions: [],
+  call(): Call {
+    return { type: "pass" };
+  },
+});
+
+const bergenAcceptSignoff = conditionedRule({
+  name: "bergen-accept-signoff",
+  auctionConditions: [isResponder(), biddingRound(1), partnerSignedOffInThreeMajor()],
+  handConditions: [],
+  call(): Call {
+    return { type: "pass" };
+  },
+});
+
+// North also needs to pass after game try continuation (responder bid 3M reject or 4M accept)
+const bergenOpenerAcceptAfterTry = conditionedRule({
+  name: "bergen-opener-accept-after-try",
+  auctionConditions: [isOpener(), biddingRound(2)],
+  handConditions: [],
+  call(): Call {
+    return { type: "pass" };
+  },
+});
+
 // ─── Default Auction ──────────────────────────────────────────
 
 function bergenDefaultAuction(seat: Seat, deal?: Deal): Auction | undefined {
@@ -295,6 +396,10 @@ export const bergenConfig: ConventionConfig = {
     // --- Opener rebids after preemptive (4-entry: "1M P 3M P") ---
     bergenRebidGameAfterPreemptive,
     bergenRebidPassAfterPreemptive,
+    // --- Acceptance passes (close auction after rebid) ---
+    bergenAcceptGame,
+    bergenAcceptSignoff,
+    bergenOpenerAcceptAfterTry,
   ],
   examples: [],
   defaultAuction: bergenDefaultAuction,
