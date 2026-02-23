@@ -72,6 +72,8 @@ export function conditionToHandInference(
       return { seat, isBalanced: true, suits: {}, source };
     case "ace-count":
       return { seat, suits: {}, source }; // Ace count doesn't map to HCP/suit inference
+    case "king-count":
+      return { seat, suits: {}, source }; // King count doesn't map to HCP/suit inference
     case "two-suited":
       return { seat, suits: {}, source }; // Two-suited noted but no specific suit known
     default:

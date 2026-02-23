@@ -19,6 +19,15 @@ export function countAcesInHand(hand: Hand): number {
   return count;
 }
 
+/** Count kings in a hand. Canonical implementation — re-exported by gerber.ts as countKings. */
+export function countKingsInHand(hand: Hand): number {
+  let count = 0;
+  for (const card of hand.cards) {
+    if (card.rank === Rank.King) count++;
+  }
+  return count;
+}
+
 // ─── conditionedRule factory ─────────────────────────────────
 
 /**
@@ -246,6 +255,59 @@ export function aceCountAny(counts: number[]): RuleCondition {
       return counts.includes(aces)
         ? `${aces} ace${aces !== 1 ? "s" : ""} (${countsLabel})`
         : `${aces} ace${aces !== 1 ? "s" : ""} (need ${countsLabel})`;
+    },
+  };
+}
+
+/** Exact king count. */
+export function kingCount(count: number): RuleCondition {
+  return {
+    name: "king-count",
+    label: `Exactly ${count} king${count !== 1 ? "s" : ""}`,
+    inference: { type: "king-count", params: { count } },
+    test(ctx) {
+      return countKingsInHand(ctx.hand) === count;
+    },
+    describe(ctx) {
+      const kings = countKingsInHand(ctx.hand);
+      return kings === count
+        ? `${kings} king${kings !== 1 ? "s" : ""}`
+        : `${kings} king${kings !== 1 ? "s" : ""} (need exactly ${count})`;
+    },
+  };
+}
+
+/** King count matches any of the given counts. */
+export function kingCountAny(counts: number[]): RuleCondition {
+  const countsLabel = counts.join(" or ");
+  return {
+    name: "king-count-any",
+    label: `${countsLabel} kings`,
+    test(ctx) {
+      return counts.includes(countKingsInHand(ctx.hand));
+    },
+    describe(ctx) {
+      const kings = countKingsInHand(ctx.hand);
+      return counts.includes(kings)
+        ? `${kings} king${kings !== 1 ? "s" : ""} (${countsLabel})`
+        : `${kings} king${kings !== 1 ? "s" : ""} (need ${countsLabel})`;
+    },
+  };
+}
+
+/** Hand has no void (no suit with 0 cards). */
+export function noVoid(): RuleCondition {
+  return {
+    name: "no-void",
+    label: "No void suit",
+    test(ctx) {
+      return !ctx.evaluation.shape.some((s) => s === 0);
+    },
+    describe(ctx) {
+      const hasVoid = ctx.evaluation.shape.some((s) => s === 0);
+      return hasVoid
+        ? `Has void (${ctx.evaluation.shape.join("-")})`
+        : `No void suit (${ctx.evaluation.shape.join("-")})`;
     },
   };
 }
@@ -741,93 +803,94 @@ export function isTwoSuited(minLong: number, minShort: number): RuleCondition {
 /**
  * Gerber signoff condition — reads ace response from auction.
  */
+/** Build all Gerber ace-response auction patterns for both 1NT and 2NT openings. */
+function gerberAceResponsePatterns(): string[][] {
+  const openings = ["1NT", "2NT"];
+  const aceResponses = ["4D", "4H", "4S", "4NT"];
+  const patterns: string[][] = [];
+  for (const opening of openings) {
+    for (const resp of aceResponses) {
+      patterns.push([opening, "P", "4C", "P", resp, "P"]);
+    }
+  }
+  return patterns;
+}
+
+/** Build all Gerber king-response auction patterns for both 1NT and 2NT openings. */
+function gerberKingResponsePatterns(): string[][] {
+  const openings = ["1NT", "2NT"];
+  const aceResponses = ["4D", "4H", "4S", "4NT"];
+  const kingResponses = ["5D", "5H", "5S", "5NT"];
+  const patterns: string[][] = [];
+  for (const opening of openings) {
+    for (const aceResp of aceResponses) {
+      for (const kingResp of kingResponses) {
+        patterns.push([opening, "P", "4C", "P", aceResp, "P", "5C", "P", kingResp, "P"]);
+      }
+    }
+  }
+  return patterns;
+}
+
 export function gerberSignoffCondition(): RuleCondition {
+  const acePatterns = gerberAceResponsePatterns();
+  const kingPatterns = gerberKingResponsePatterns();
   return {
     name: "gerber-signoff",
-    label: "In Gerber signoff position (after ace response)",
+    label: "In Gerber signoff position (after ace or king response)",
     test(ctx) {
-      // Match after 1NT-P-4C-P-{4D|4H|4S|4NT}-P (responder's turn)
-      const after4D = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4D",
-        "P",
-      ]);
-      const after4H = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4H",
-        "P",
-      ]);
-      const after4S = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4S",
-        "P",
-      ]);
-      const after4NT = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4NT",
-        "P",
-      ]);
-      return after4D || after4H || after4S || after4NT;
+      const afterAce = acePatterns.some((p) => auctionMatchesExact(ctx.auction, p));
+      const afterKing = kingPatterns.some((p) => auctionMatchesExact(ctx.auction, p));
+      return afterAce || afterKing;
     },
     describe(ctx) {
-      // Inline the position check to avoid this-binding fragility
-      const after4D = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4D",
-        "P",
-      ]);
-      const after4H = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4H",
-        "P",
-      ]);
-      const after4S = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4S",
-        "P",
-      ]);
-      const after4NT = auctionMatchesExact(ctx.auction, [
-        "1NT",
-        "P",
-        "4C",
-        "P",
-        "4NT",
-        "P",
-      ]);
-      if (!(after4D || after4H || after4S || after4NT))
+      const afterAce = acePatterns.some((p) => auctionMatchesExact(ctx.auction, p));
+      const afterKing = kingPatterns.some((p) => auctionMatchesExact(ctx.auction, p));
+      if (!(afterAce || afterKing))
         return "Not in Gerber signoff position";
       const responderAces = countAcesInHand(ctx.hand);
       const openerAces = inferOpenerAcesFromAuction(ctx);
       const total = responderAces + openerAces;
+      if (afterKing) {
+        const responderKings = countKingsInHand(ctx.hand);
+        const openerKings = inferOpenerKingsFromAuction(ctx);
+        const totalKings = responderKings + openerKings;
+        return `Total ${total} aces, ${totalKings} kings (after king response)`;
+      }
       return `Total ${total} aces (${responderAces} yours + ${openerAces} opener's)`;
+    },
+  };
+}
+
+/** Condition for Gerber king-ask (5C): responder's turn after ace response with 3+ total aces. */
+export function gerberKingAskCondition(): RuleCondition {
+  const patterns = gerberAceResponsePatterns();
+  return {
+    name: "gerber-king-ask",
+    label: "In Gerber king-ask position (3+ total aces after ace response)",
+    test(ctx) {
+      const inPosition = patterns.some((p) => auctionMatchesExact(ctx.auction, p));
+      if (!inPosition) return false;
+      const responderAces = countAcesInHand(ctx.hand);
+      const openerAces = inferOpenerAcesFromAuction(ctx);
+      return responderAces + openerAces >= 3;
+    },
+    describe(ctx) {
+      const inPosition = patterns.some((p) => auctionMatchesExact(ctx.auction, p));
+      if (!inPosition) return "Not in Gerber king-ask position";
+      const responderAces = countAcesInHand(ctx.hand);
+      const openerAces = inferOpenerAcesFromAuction(ctx);
+      const total = responderAces + openerAces;
+      return total >= 3
+        ? `${total} total aces (3+ needed) — ask for kings`
+        : `Only ${total} total aces (need 3+ to ask for kings)`;
     },
   };
 }
 
 // Internal helper — same logic as gerber.ts inferOpenerAces
 function inferOpenerAcesFromAuction(ctx: BiddingContext): number {
-  // index 4 = 5th call in auction: 1NT-P-4C-P-{response}
+  // index 4 = 5th call in auction: {NT}-P-4C-P-{response}
   const responseEntry = ctx.auction.entries[4];
   if (!responseEntry || responseEntry.call.type !== "bid") return 0;
   const response = responseEntry.call;
@@ -842,6 +905,25 @@ function inferOpenerAcesFromAuction(ctx: BiddingContext): number {
   return 0;
 }
 
+/** Infer opener king count from king response bid.
+ * 5D = 0 or 4 kings, 5H = 1, 5S = 2, 5NT = 3.
+ */
+function inferOpenerKingsFromAuction(ctx: BiddingContext): number {
+  // index 8 = 9th call: {NT}-P-4C-P-{ace}-P-5C-P-{king response}
+  const responseEntry = ctx.auction.entries[8];
+  if (!responseEntry || responseEntry.call.type !== "bid") return 0;
+  const response = responseEntry.call;
+  const responderKings = countKingsInHand(ctx.hand);
+
+  if (response.strain === BidSuit.Diamonds && response.level === 5) {
+    return responderKings === 4 ? 0 : 4;
+  }
+  if (response.strain === BidSuit.Hearts && response.level === 5) return 1;
+  if (response.strain === BidSuit.Spades && response.level === 5) return 2;
+  if (response.strain === BidSuit.NoTrump && response.level === 5) return 3;
+  return 0;
+}
+
 // ─── DONT-specific conditions ────────────────────────────────
 
 /** Both majors: hearts 5+ & spades 4+, or spades 5+ & hearts 4+. */
@@ -852,32 +934,28 @@ export function bothMajors(): RuleCondition {
   );
 }
 
-/** Diamonds + a 4-card major. */
+/** Diamonds + a major (5-4 or 4-5 distribution). */
 export function diamondsPlusMajor(): RuleCondition {
-  return and(
-    suitMin(2, "diamonds", 5),
-    anySuitMin(
-      [
-        { index: 0, name: "spades" },
-        { index: 1, name: "hearts" },
-      ],
-      4,
-    ),
+  const majors = [
+    { index: 0, name: "spades" },
+    { index: 1, name: "hearts" },
+  ];
+  return or(
+    and(suitMin(2, "diamonds", 5), anySuitMin(majors, 4)),
+    and(suitMin(2, "diamonds", 4), anySuitMin(majors, 5)),
   );
 }
 
-/** Clubs + a higher-ranking suit. */
+/** Clubs + a higher-ranking suit (5-4 or 4-5 distribution). */
 export function clubsPlusHigher(): RuleCondition {
-  return and(
-    suitMin(3, "clubs", 5),
-    anySuitMin(
-      [
-        { index: 2, name: "diamonds" },
-        { index: 1, name: "hearts" },
-        { index: 0, name: "spades" },
-      ],
-      4,
-    ),
+  const higherSuits = [
+    { index: 2, name: "diamonds" },
+    { index: 1, name: "hearts" },
+    { index: 0, name: "spades" },
+  ];
+  return or(
+    and(suitMin(3, "clubs", 5), anySuitMin(higherSuits, 4)),
+    and(suitMin(3, "clubs", 4), anySuitMin(higherSuits, 5)),
   );
 }
 

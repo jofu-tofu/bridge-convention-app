@@ -18,6 +18,7 @@ export interface ConditionInference {
     | "suit-max"
     | "balanced"
     | "ace-count"
+    | "king-count"
     | "two-suited";
   readonly params: Record<string, number | string | boolean>;
 }

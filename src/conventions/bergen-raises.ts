@@ -17,7 +17,7 @@ import {
 
 // ─── Deal Constraints ─────────────────────────────────────────
 
-/** Bergen Raises deal constraints: opener 12-21 HCP with 5+ major, responder 6+ HCP with 4+ major */
+/** Bergen Raises deal constraints: opener 12-21 HCP with 5+ major, responder 0+ HCP with 4+ major */
 export const bergenDealConstraints: DealConstraints = {
   seats: [
     {
@@ -28,7 +28,7 @@ export const bergenDealConstraints: DealConstraints = {
     },
     {
       seat: Seat.South,
-      minHcp: 6,
+      minHcp: 0,
       minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 },
     },
   ],
