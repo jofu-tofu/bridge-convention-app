@@ -12,7 +12,7 @@
 
 <div class="flex flex-col gap-2">
   <h3 class="text-lg font-semibold text-text-secondary">Bidding Review</h3>
-  <div class="overflow-x-auto">
+  <div class="min-w-0">
     <table class="w-full text-sm">
       <caption class="sr-only">Bidding review</caption>
       <thead>
@@ -25,17 +25,35 @@
       <tbody>
         {#each bidHistory as entry, idx (entry.seat + "-" + idx)}
           <tr
-            class="border-t border-border-subtle {entry.isUser
-              ? 'bg-accent-primary-subtle'
-              : ''}"
+            class="border-t border-border-subtle {entry.isUser && entry.isCorrect === false
+              ? 'bg-red-950/40'
+              : entry.isUser
+                ? 'bg-accent-primary-subtle'
+                : ''}"
           >
             <td class="px-2 py-2 font-mono text-text-secondary">{entry.seat}</td
             >
-            <td class="px-2 py-2 font-mono text-text-primary"
-              >{formatCall(entry.call)}</td
+            <td class="px-2 py-2 font-mono {entry.isUser && entry.isCorrect === false ? 'text-red-300' : 'text-text-primary'}"
+              >{formatCall(entry.call)}{#if entry.isUser && entry.isCorrect === false} <span class="text-red-400 text-xs">✗</span>{/if}</td
             >
-            <td class="px-2 py-2">
-              {#if entry.ruleName}
+            <td class="px-2 py-2 break-words">
+              {#if entry.isUser && entry.isCorrect === false && entry.expectedResult}
+                <div class="space-y-1">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <span class="text-red-300/70">Expected:</span>
+                    <span class="font-mono font-bold text-red-100">{formatCall(entry.expectedResult.call)}</span>
+                  </div>
+                  {#if entry.expectedResult.ruleName}
+                    <ConventionCallout
+                      ruleName={entry.expectedResult.ruleName}
+                      explanation={entry.expectedResult.explanation}
+                      conditions={entry.expectedResult.conditions}
+                    />
+                  {:else if entry.expectedResult.explanation}
+                    <span class="text-red-200/60 text-xs">{entry.expectedResult.explanation}</span>
+                  {/if}
+                </div>
+              {:else if entry.ruleName}
                 <ConventionCallout
                   ruleName={entry.ruleName}
                   explanation={entry.explanation}

@@ -60,9 +60,9 @@
   }
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2 min-w-0">
   <div
-    class="grid grid-cols-5 gap-1"
+    class="grid grid-cols-5 gap-0.5"
     aria-label="Contract bids"
     data-testid="level-bids"
   >
@@ -71,8 +71,8 @@
       <button
         data-testid="bid-{callKey(call)}"
         class="{compact
-          ? 'px-2 py-2 text-xs'
-          : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated
+          ? 'px-1 py-1.5 text-xs'
+          : 'px-2 py-2.5 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated truncate
           {legal
           ? 'hover:bg-bg-hover cursor-pointer'
           : 'opacity-30 cursor-default'} {getColorClass(call)}"
@@ -84,14 +84,14 @@
     {/each}
   </div>
 
-  <div class="flex gap-1" aria-label="Special bids" data-testid="special-bids">
+  <div class="flex gap-0.5" aria-label="Special bids" data-testid="special-bids">
     {#each ALL_SPECIALS as call (callKey(call))}
       {@const legal = isLegal(call) && !disabled}
       <button
         data-testid="bid-{callKey(call)}"
-        class="{compact
-          ? 'px-2 py-2 text-xs'
-          : 'px-3 py-3 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary
+        class="flex-1 {compact
+          ? 'px-1 py-1.5 text-xs'
+          : 'px-2 py-2.5 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary truncate
           {legal
           ? 'hover:bg-bg-hover cursor-pointer'
           : 'opacity-30 cursor-default'}"

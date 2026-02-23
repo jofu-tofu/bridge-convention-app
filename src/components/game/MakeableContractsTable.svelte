@@ -19,7 +19,7 @@
   ] as const;
 </script>
 
-<table class="w-full text-sm border-collapse">
+<table class="w-full text-sm border-collapse table-fixed">
   <caption class="sr-only">Makeable contracts by declarer and strain</caption>
   <thead>
     <tr>

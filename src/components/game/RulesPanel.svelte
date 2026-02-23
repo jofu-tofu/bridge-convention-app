@@ -30,7 +30,7 @@
   }
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4 overflow-hidden">
   <div class="flex flex-col gap-1">
     <h2 class="text-base font-semibold text-text-primary">
       {convention.name} Convention Rules
@@ -52,26 +52,26 @@
     <div class="flex flex-col gap-2.5">
       {#each ruleData.firedRules as rule (rule.ruleName)}
         <div
-          class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle flex flex-col gap-2"
+          class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle flex flex-col gap-2 min-w-0"
           data-testid="rule-card-fired"
         >
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between min-w-0 gap-2">
             <span
-              class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-accent-primary-subtle text-accent-primary border border-accent-primary/40"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-accent-primary-subtle text-accent-primary border border-accent-primary/40 truncate max-w-full"
             >
               {rule.displayName}
             </span>
             {#if callText(rule)}
               <span
-                class="inline-flex items-center px-2 py-0.5 rounded text-[13px] font-bold bg-bg-elevated {callColorClass(rule)} font-mono"
+                class="inline-flex items-center px-2 py-0.5 rounded text-sm font-bold bg-bg-elevated {callColorClass(rule)} font-mono"
               >
                 {callText(rule)}
               </span>
             {/if}
           </div>
-          <div class="flex flex-col gap-[3px]">
+          <div class="flex flex-col gap-1">
             {#each rule.conditions as cond (cond.name)}
-              <p class="text-xs text-text-muted">
+              <p class="text-xs text-text-muted break-words">
                 &bull; {cond.description}
               </p>
             {/each}
@@ -81,26 +81,26 @@
 
       {#each ruleData.referenceRules as rule (rule.ruleName)}
         <div
-          class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle flex flex-col gap-2"
+          class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle flex flex-col gap-2 min-w-0"
           data-testid="rule-card-reference"
         >
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between min-w-0 gap-2">
             <span
-              class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-accent-primary-subtle text-accent-primary border border-accent-primary/40"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-accent-primary-subtle text-accent-primary border border-accent-primary/40 truncate max-w-full"
             >
               {rule.displayName}
             </span>
             {#if callText(rule)}
               <span
-                class="inline-flex items-center px-2 py-0.5 rounded text-[13px] font-bold bg-bg-elevated {callColorClass(rule)} font-mono"
+                class="inline-flex items-center px-2 py-0.5 rounded text-sm font-bold bg-bg-elevated {callColorClass(rule)} font-mono"
               >
                 {callText(rule)}
               </span>
             {/if}
           </div>
-          <div class="flex flex-col gap-[3px]">
+          <div class="flex flex-col gap-1">
             {#each rule.conditions as cond (cond.name)}
-              <p class="text-xs text-text-muted">
+              <p class="text-xs text-text-muted break-words">
                 &bull; {cond.description}
               </p>
             {/each}

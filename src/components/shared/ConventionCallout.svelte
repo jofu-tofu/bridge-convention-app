@@ -10,7 +10,7 @@
   let { ruleName, explanation, conditions }: Props = $props();
 </script>
 
-<span class="inline-flex items-center gap-2">
+<span class="inline-flex flex-wrap items-center gap-2">
   <span
     class="inline-block px-2 py-0.5 rounded-[--radius-sm] text-xs font-semibold bg-accent-primary-subtle text-accent-primary"
   >
@@ -18,7 +18,7 @@
   </span>
   {#if conditions && conditions.length > 0}
     <ul
-      class="inline-flex items-center gap-2 text-text-secondary text-sm list-none p-0 m-0"
+      class="inline-flex flex-wrap items-center gap-2 text-text-secondary text-sm list-none p-0 m-0"
       role="list"
       aria-label="Bid conditions"
     >

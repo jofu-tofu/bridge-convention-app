@@ -3,6 +3,7 @@
   import type { Hand, Card as CardType } from "../../engine/types";
   import { Seat } from "../../engine/types";
   import { viewSeat } from "../../lib/seat-mapping";
+  import { computeHcp } from "../../lib/hcp";
   import HandFan from "./HandFan.svelte";
 
   interface Props {
@@ -40,6 +41,8 @@
     rotated = false,
     showAll = false,
   }: Props = $props();
+
+  const southHcp = $derived(computeHcp(hands[Seat.South]));
 
   // Map physical screen positions to logical seats
   const northSeat = $derived(viewSeat(Seat.North, rotated));
@@ -119,12 +122,18 @@
 
   <!-- Physical bottom position (South normally, North when rotated) — z-10 stays on bottom hand -->
   <div class="absolute z-10 seat-south">
-    <div class="text-center mb-2">
+    <div class="text-center mb-2 flex items-center justify-center gap-1.5">
       <span
         class={seatLabelClass(southSeat)}
         data-testid="seat-label-{southSeat}"
         aria-label={southSeat === Seat.South ? "South" : "North"}
         >{southSeat === Seat.South ? "S" : "N"}</span
+      >
+      <span
+        class="text-xs text-text-secondary bg-bg-elevated/60 px-1.5 py-0.5 rounded-full"
+        data-testid="south-hcp"
+        aria-label="{southHcp} high card points"
+        >{southHcp} HCP</span
       >
     </div>
     <HandFan
@@ -187,7 +196,7 @@
   .bridge-table {
     --seat-edge: 4%;
     --seat-center: 50%;
-    --seat-south-bottom: 8%;
+    --seat-south-bottom: 4%;
     --seat-label-inset: 14%;
     --seat-center-top: 42%;
   }

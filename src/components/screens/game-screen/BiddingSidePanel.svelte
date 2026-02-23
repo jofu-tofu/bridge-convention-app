@@ -16,6 +16,7 @@
     isFeedbackBlocking: boolean;
     onDismissFeedback: () => void;
     onSkipToReview: () => void;
+    onRetry?: () => void;
     /** DEV-only props for debug panel */
     convention?: ConventionConfig | null;
     hand?: Hand;
@@ -32,6 +33,7 @@
     isFeedbackBlocking,
     onDismissFeedback,
     onSkipToReview,
+    onRetry,
     convention,
     hand,
     auction,
@@ -41,7 +43,7 @@
   const DEV = import.meta.env.DEV;
 </script>
 
-<div>
+<div class="min-w-0">
   <h2
     class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"
@@ -61,6 +63,7 @@
     feedback={bidFeedback}
     onContinue={onDismissFeedback}
     {onSkipToReview}
+    {onRetry}
   />
 {/if}
 {#if DEV && convention && hand && auction && seat && !bidFeedback}

@@ -21,6 +21,7 @@
     dealNumber: number;
     onNextDeal: () => void;
     onBackToMenu: () => void;
+    onPlayHand?: (() => void) | undefined;
     convention?: ConventionConfig | undefined;
     deal?: Deal | undefined;
   }
@@ -37,6 +38,7 @@
     dealNumber,
     onNextDeal,
     onBackToMenu,
+    onPlayHand,
     convention,
     deal,
   }: Props = $props();
@@ -66,8 +68,9 @@
   }
 </script>
 
+<div class="flex flex-col min-w-0 w-full min-h-0 flex-1">
 <!-- Tab bar -->
-<div class="flex gap-1 mb-3" role="tablist" aria-label="Review tabs">
+<div class="flex gap-1 mb-3 shrink-0" role="tablist" aria-label="Review tabs">
   <button
     type="button"
     role="tab"
@@ -106,6 +109,7 @@
   </button>
 </div>
 
+<div class="flex-1 overflow-y-auto overflow-x-hidden min-h-0 min-w-0">
 {#if activeTab === "bidding"}
   <div id="review-panel-bidding" role="tabpanel" aria-label="Bidding review">
     {#if contract}
@@ -145,7 +149,7 @@
     {/if}
   </div>
 {:else if activeTab === "analysis"}
-  <div id="review-panel-analysis" role="tabpanel" aria-label="DDS analysis">
+  <div id="review-panel-analysis" role="tabpanel" aria-label="DDS analysis" class="min-w-0 overflow-x-hidden">
     {#if ddsSolving}
       <div class="flex items-center gap-2 p-4" aria-live="polite">
         <div
@@ -179,8 +183,13 @@
     {/if}
   </div>
 {/if}
+</div>
 
-<div class="flex flex-col gap-2 mt-2">
-  <Button onclick={onNextDeal}>Next Deal</Button>
+<div class="flex flex-col gap-2 mt-2 shrink-0">
+  {#if onPlayHand}
+    <Button onclick={onPlayHand}>Play this Hand</Button>
+  {/if}
+  <Button variant={onPlayHand ? "secondary" : "primary"} onclick={onNextDeal}>Next Deal</Button>
   <Button variant="secondary" onclick={onBackToMenu}>Back to Menu</Button>
+</div>
 </div>
