@@ -39,6 +39,10 @@ export interface BidHistoryEntry {
   readonly explanation: string;
   readonly isUser: boolean;
   readonly conditions?: readonly ConditionDetail[];
+  /** Whether the user's bid matched the expected convention bid (user bids only). */
+  readonly isCorrect?: boolean;
+  /** The expected correct bid when the user bid incorrectly (user bids only). */
+  readonly expectedResult?: BidResult;
 }
 
 export interface PlayLogEntry {
@@ -106,6 +110,11 @@ export function createGameStore(engine: EnginePort) {
   let bidFeedback = $state<BidFeedback | null>(null);
   let conventionStrategy = $state<BiddingStrategy | null>(null);
 
+  // Retry state — saved before a wrong bid so we can roll back
+  let preBidAuction = $state<Auction | null>(null);
+  let preBidTurn = $state<Seat | null>(null);
+  let preBidHistory = $state<BidHistoryEntry[] | null>(null);
+
   // Play state
   let tricks = $state<Trick[]>([]);
   let currentTrick = $state<PlayedCard[]>([]);
@@ -169,6 +178,7 @@ export function createGameStore(engine: EnginePort) {
   /** Transition to EXPLANATION phase and trigger DDS solve. */
   function transitionToExplanation() {
     phase = "EXPLANATION";
+    currentPlayer = null; // Stop any in-flight AI play loop
     triggerDDSSolve();
   }
 
@@ -253,19 +263,9 @@ export function createGameStore(engine: EnginePort) {
     const result = await engine.getContract(auction);
     contract = result;
     if (result) {
-      // Check if user is dummy (partner of declarer === user's seat)
-      if (userSeat && partnerSeat(result.declarer) === userSeat) {
-        effectiveUserSeat = userSeat; // default to South, may be swapped
-        phase = "DECLARER_PROMPT";
-      } else if (userSeat && result.declarer === userSeat) {
-        // User is declarer — skip play, go straight to review
-        effectiveUserSeat = userSeat;
-        transitionToExplanation();
-      } else {
-        // E/W declares — offer user the option to defend
-        effectiveUserSeat = userSeat;
-        phase = "DECLARER_PROMPT";
-      }
+      // All declarer/dummy/defender scenarios go through DECLARER_PROMPT
+      effectiveUserSeat = userSeat;
+      phase = "DECLARER_PROMPT";
     } else {
       // Passed out — skip to explanation
       transitionToExplanation();
@@ -291,6 +291,16 @@ export function createGameStore(engine: EnginePort) {
 
   function declineDefend() {
     // Skip play phase, go straight to review
+    transitionToExplanation();
+  }
+
+  function acceptSouthPlay() {
+    if (!contract || phase !== "DECLARER_PROMPT") return;
+    // South is already declarer — no seat swap needed
+    startPlay();
+  }
+
+  function declineSouthPlay() {
     transitionToExplanation();
   }
 
@@ -433,6 +443,7 @@ export function createGameStore(engine: EnginePort) {
       deal.vulnerability,
     );
     score = result;
+    currentPlayer = null;
     transitionToExplanation();
   }
 
@@ -613,6 +624,11 @@ export function createGameStore(engine: EnginePort) {
         partnerSeat(contract.declarer) !== userSeat
       );
     },
+    /** True when DECLARER_PROMPT is showing because South (user) is declarer. */
+    get isSouthDeclarerPrompt() {
+      if (!contract || !userSeat) return false;
+      return contract.declarer === userSeat;
+    },
 
     // --- Debug observability getters ---
     get playLog() {
@@ -641,6 +657,31 @@ export function createGameStore(engine: EnginePort) {
     declineDeclarerSwap,
     acceptDefend,
     declineDefend,
+    acceptSouthPlay,
+    declineSouthPlay,
+
+    /** Return to DECLARER_PROMPT from EXPLANATION so the user can play the hand. */
+    playThisHand() {
+      if (!contract || phase !== "EXPLANATION") return;
+      // Signal any in-flight AI play loop to stop
+      playAborted = true;
+      tricks = [];
+      currentTrick = [];
+      currentPlayer = null;
+      declarerTricksWon = 0;
+      defenderTricksWon = 0;
+      dummySeat = null;
+      score = null;
+      trumpSuit = undefined;
+      effectiveUserSeat = userSeat;
+      isShowingTrickResult = false;
+      playLog = [];
+      // Reset DDS state so it doesn't leak into the new play session
+      ddsSolution = null;
+      ddsSolving = false;
+      ddsError = null;
+      phase = "DECLARER_PROMPT";
+    },
 
     async startDrill(
       newDeal: Deal,
@@ -652,6 +693,9 @@ export function createGameStore(engine: EnginePort) {
       drillSession = session;
       conventionStrategy = strategy ?? null;
       bidFeedback = null;
+      preBidAuction = null;
+      preBidTurn = null;
+      preBidHistory = null;
       contract = null;
       phase = "BIDDING";
       playAborted = true; // Cancel any in-flight play from previous drill
@@ -749,9 +793,20 @@ export function createGameStore(engine: EnginePort) {
         },
       };
 
+      // Save pre-bid state for potential retry (wrong bids only)
+      const auctionBeforeUser = auction;
+      if (!isCorrect) {
+        preBidAuction = auction;
+        preBidTurn = currentTurn;
+        preBidHistory = [...bidHistory];
+      } else {
+        preBidAuction = null;
+        preBidTurn = null;
+        preBidHistory = null;
+      }
+
       // Add bid to auction regardless of correctness
       const userBidEntry = { seat: currentTurn, call };
-      const auctionBeforeUser = auction;
       auction = await engine.addCall(auction, userBidEntry);
 
       // Process user bid through inference engine
@@ -765,6 +820,8 @@ export function createGameStore(engine: EnginePort) {
           ruleName: null,
           explanation: "User bid",
           isUser: true,
+          isCorrect,
+          expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
         },
       ];
 
@@ -801,8 +858,30 @@ export function createGameStore(engine: EnginePort) {
       await runAiBids();
     },
 
+    /** Undo the wrong bid and let user try again on the same deal. */
+    async retryBid() {
+      if (isProcessing) return;
+      if (!preBidAuction || !preBidTurn || !preBidHistory) return;
+      auction = preBidAuction;
+      currentTurn = preBidTurn;
+      bidHistory = preBidHistory;
+      bidFeedback = null;
+      preBidAuction = null;
+      preBidTurn = null;
+      preBidHistory = null;
+
+      // Refresh legal calls for the restored turn
+      if (currentTurn) {
+        legalCalls = await engine.getLegalCalls(auction, currentTurn);
+      }
+
+      // Inference state for the undone bid is not rolled back — acceptable
+      // since inference is approximate and the user is retrying immediately
+    },
+
     /** Skip directly to explanation from bid feedback — completes auction first for DDS. */
     async skipFromFeedback() {
+      if (phase !== "BIDDING") return;
       bidFeedback = null;
 
       // Complete the auction with AI bids so contract is available for DDS
@@ -829,6 +908,9 @@ export function createGameStore(engine: EnginePort) {
       drillSession = null;
       bidFeedback = null;
       conventionStrategy = null;
+      preBidAuction = null;
+      preBidTurn = null;
+      preBidHistory = null;
       // Reset play state
       tricks = [];
       currentTrick = [];

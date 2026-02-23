@@ -129,16 +129,27 @@ describe("game store DDS state", () => {
     vi.useRealTimers();
   });
 
-  /** Start drill and advance timers past AI bid delays. */
+  /** Start drill and advance timers past AI bid delays. Skips DECLARER_PROMPT if reached. */
   async function startDrillWithTimers(
     store: ReturnType<typeof createGameStore>,
     deal = makeTestDeal(),
     session = makeDrillSession(),
+    { skipPrompt = true }: { skipPrompt?: boolean } = {},
   ) {
     const promise = store.startDrill(deal, session);
     // Advance past AI bid delays (3 AI seats × 300ms each)
     await vi.advanceTimersByTimeAsync(1200);
     await promise;
+    // Skip past DECLARER_PROMPT to reach EXPLANATION for DDS tests
+    if (skipPrompt && store.phase === "DECLARER_PROMPT") {
+      if (store.isSouthDeclarerPrompt) {
+        store.declineSouthPlay();
+      } else if (store.isDefenderPrompt) {
+        store.declineDefend();
+      } else {
+        store.declineDeclarerSwap();
+      }
+    }
   }
 
   it("exposes DDS getters with null initial state", () => {

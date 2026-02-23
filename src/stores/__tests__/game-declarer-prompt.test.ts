@@ -146,9 +146,34 @@ describe("DECLARER_PROMPT phase", () => {
     expect(store.phase).toBe("DECLARER_PROMPT");
   });
 
-  it("goes directly to EXPLANATION when South declares (user is declarer)", async () => {
+  it("enters DECLARER_PROMPT when South declares (user is declarer)", async () => {
     createEngineWithDeclarer(Seat.South);
     await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+  });
+
+  it("isSouthDeclarerPrompt is true when South declares", async () => {
+    createEngineWithDeclarer(Seat.South);
+    await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+    expect(store.isSouthDeclarerPrompt).toBe(true);
+    expect(store.isDefenderPrompt).toBe(false);
+  });
+
+  it("acceptSouthPlay starts play with effectiveUserSeat remaining South", async () => {
+    createEngineWithDeclarer(Seat.South);
+    await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+    store.acceptSouthPlay();
+    expect(store.effectiveUserSeat).toBe(Seat.South);
+    expect(store.phase).toBe("PLAYING");
+  });
+
+  it("declineSouthPlay skips to EXPLANATION phase", async () => {
+    createEngineWithDeclarer(Seat.South);
+    await startDrillWithTimers();
+    expect(store.phase).toBe("DECLARER_PROMPT");
+    store.declineSouthPlay();
     expect(store.phase).toBe("EXPLANATION");
   });
 
