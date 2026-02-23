@@ -15,6 +15,7 @@ export default defineConfig({
     port: 1420,
     strictPort: true,
     host: host || true,
+    allowedHosts: [".trycloudflare.com"],
     hmr: host
       ? {
           protocol: "ws",
