@@ -57,6 +57,22 @@ export function conditionedRule(config: {
   };
 }
 
+// ─── Canonical auction condition names ───────────────────────
+// Single source of truth for condition names that are pure auction checks.
+// Used by flattenTree() for auction/hand splitting and by conditions.test.ts purity invariant.
+export const AUCTION_CONDITION_NAMES = new Set([
+  "auction",
+  "is-opener",
+  "is-responder",
+  "no-prior-bid",
+  "opponent-bid",
+  "seat-has-bid",
+  "bidding-round",
+  "partner-raised-3M",
+  "partner-bid-4M",
+  "partner-signoff-3M",
+]);
+
 // ─── Leaf condition factories ────────────────────────────────
 
 /** Match auction entries exactly against a pattern. */

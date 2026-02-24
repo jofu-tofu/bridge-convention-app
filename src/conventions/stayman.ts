@@ -1,18 +1,17 @@
 import { Seat, Suit, BidSuit } from "../engine/types";
 import type { DealConstraints, Call, Auction } from "../engine/types";
 import { ConventionCategory } from "./types";
-import type { ConventionConfig, BiddingContext } from "./types";
-import { auctionMatchesExact, buildAuction } from "../engine/auction-helpers";
+import { buildAuction } from "../engine/auction-helpers";
 import {
-  conditionedRule,
   auctionMatches,
-  auctionMatchesAny,
   hcpMin,
   hcpMax,
   suitMin,
-  suitBelow,
   anySuitMin,
 } from "./conditions";
+import { decision, bid, fallback } from "./rule-tree";
+import type { RuleNode, TreeConventionConfig } from "./rule-tree";
+import { flattenTree } from "./tree-compat";
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
@@ -41,13 +40,14 @@ export const staymanDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-// ─── Bidding Rules ──────────────────────────────────────────
+// ─── Rule Tree ────────────────────────────────────────────────
 
-const staymanAsk = conditionedRule({
-  name: "stayman-ask",
-  auctionConditions: [auctionMatches(["1NT", "P"])],
-  handConditions: [
-    hcpMin(8),
+// Round 1: Responder asks 2C (after 1NT-P)
+const round1Ask: RuleNode = decision(
+  "hcp-8-plus",
+  hcpMin(8),
+  decision(
+    "has-4-card-major",
     anySuitMin(
       [
         { index: 0, name: "spades" },
@@ -55,192 +55,104 @@ const staymanAsk = conditionedRule({
       ],
       4,
     ),
-  ],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Clubs };
-  },
-});
+    bid("stayman-ask", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+    fallback("no-major"),
+  ),
+  fallback("too-weak"),
+);
 
-const staymanResponseHearts = conditionedRule({
-  name: "stayman-response-hearts",
-  auctionConditions: [auctionMatches(["1NT", "P", "2C", "P"])],
-  handConditions: [suitMin(1, "hearts", 4)],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Hearts };
-  },
-});
+// Round 2: Opener responds (after 1NT-P-2C-P)
+const round2Response: RuleNode = decision(
+  "has-4-hearts",
+  suitMin(1, "hearts", 4),
+  bid("stayman-response-hearts", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+  decision(
+    "has-4-spades",
+    suitMin(0, "spades", 4),
+    bid("stayman-response-spades", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+    bid("stayman-response-denial", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+  ),
+);
 
-const staymanResponseSpades = conditionedRule({
-  name: "stayman-response-spades",
-  auctionConditions: [auctionMatches(["1NT", "P", "2C", "P"])],
-  handConditions: [suitMin(0, "spades", 4), suitBelow(1, "hearts", 4)],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Spades };
-  },
-});
+// Round 3: Responder rebids — decomposed per opener response
 
-const staymanResponseDenial = conditionedRule({
-  name: "stayman-response-denial",
-  auctionConditions: [auctionMatches(["1NT", "P", "2C", "P"])],
-  handConditions: [suitBelow(0, "spades", 4), suitBelow(1, "hearts", 4)],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Diamonds };
-  },
-});
+// After opener showed 2H
+const rebidAfter2H: RuleNode = decision(
+  "fit-hearts",
+  suitMin(1, "hearts", 4),
+  // Fit found: game or invite based on HCP
+  decision(
+    "game-hcp-fit-h",
+    hcpMin(10),
+    bid("stayman-rebid-major-fit", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Hearts })),
+    bid("stayman-rebid-major-fit-invite", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
+  ),
+  // No fit: NT game or invite
+  decision(
+    "game-hcp-nofit-h",
+    hcpMin(10),
+    bid("stayman-rebid-no-fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+    bid("stayman-rebid-no-fit-invite", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+  ),
+);
 
-/** Hybrid condition: 4+ cards in the major opener showed via Stayman. */
-function fitInShownMajor(): import("./types").RuleCondition {
-  return {
-    name: "fit-in-shown-major",
-    label: "4+ cards in opener's shown major",
-    test(ctx) {
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2H", "P"])
-      ) {
-        return ctx.evaluation.shape[1]! >= 4;
-      }
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2S", "P"])
-      ) {
-        return ctx.evaluation.shape[0]! >= 4;
-      }
-      return false;
-    },
-    describe(ctx) {
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2H", "P"])
-      ) {
-        const len = ctx.evaluation.shape[1]!;
-        return len >= 4
-          ? `${len} hearts (fit with opener's shown major)`
-          : `Only ${len} hearts (no fit)`;
-      }
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2S", "P"])
-      ) {
-        const len = ctx.evaluation.shape[0]!;
-        return len >= 4
-          ? `${len} spades (fit with opener's shown major)`
-          : `Only ${len} spades (no fit)`;
-      }
-      return "No major shown by opener";
-    },
-  };
-}
+// After opener showed 2S
+const rebidAfter2S: RuleNode = decision(
+  "fit-spades",
+  suitMin(0, "spades", 4),
+  decision(
+    "game-hcp-fit-s",
+    hcpMin(10),
+    bid("stayman-rebid-major-fit", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Spades })),
+    bid("stayman-rebid-major-fit-invite", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+  ),
+  decision(
+    "game-hcp-nofit-s",
+    hcpMin(10),
+    bid("stayman-rebid-no-fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+    bid("stayman-rebid-no-fit-invite", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+  ),
+);
 
-/** Resolve which major strain to bid based on opener's Stayman response. */
-function shownMajorStrain(ctx: BiddingContext): BidSuit {
-  if (
-    auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2H", "P"]) &&
-    ctx.evaluation.shape[1]! >= 4
-  ) {
-    return BidSuit.Hearts;
-  }
-  return BidSuit.Spades;
-}
+// After opener denied with 2D
+const rebidAfter2D: RuleNode = decision(
+  "game-hcp-denial",
+  hcpMin(10),
+  bid("stayman-rebid-no-fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+  bid("stayman-rebid-no-fit-invite", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+);
 
-const staymanRebidMajorFitGame = conditionedRule({
-  name: "stayman-rebid-major-fit",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1NT", "P", "2C", "P", "2H", "P"],
-      ["1NT", "P", "2C", "P", "2S", "P"],
-    ]),
-  ],
-  handConditions: [hcpMin(10), fitInShownMajor()],
-  call(ctx: BiddingContext): Call {
-    return { type: "bid", level: 4, strain: shownMajorStrain(ctx) };
-  },
-});
-
-const staymanRebidMajorFitInvite = conditionedRule({
-  name: "stayman-rebid-major-fit-invite",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1NT", "P", "2C", "P", "2H", "P"],
-      ["1NT", "P", "2C", "P", "2S", "P"],
-    ]),
-  ],
-  handConditions: [hcpMax(9), fitInShownMajor()],
-  call(ctx: BiddingContext): Call {
-    return { type: "bid", level: 3, strain: shownMajorStrain(ctx) };
-  },
-});
-
-/** Hybrid condition: no 4-card fit in opener's shown major (or 2D denial). */
-function noMajorFit(): import("./types").RuleCondition {
-  return {
-    name: "no-major-fit",
-    label: "No 4-card fit in opener's shown major",
-    test(ctx) {
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2D", "P"])
-      )
-        return true;
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2H", "P"])
-      ) {
-        return ctx.evaluation.shape[1]! < 4;
-      }
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2S", "P"])
-      ) {
-        return ctx.evaluation.shape[0]! < 4;
-      }
-      return false;
-    },
-    describe(ctx) {
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2D", "P"])
-      ) {
-        return "Opener denied 4-card major";
-      }
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2H", "P"])
-      ) {
-        const len = ctx.evaluation.shape[1]!;
-        return `Only ${len} hearts (no fit with opener's hearts)`;
-      }
-      if (
-        auctionMatchesExact(ctx.auction, ["1NT", "P", "2C", "P", "2S", "P"])
-      ) {
-        const len = ctx.evaluation.shape[0]!;
-        return `Only ${len} spades (no fit with opener's spades)`;
-      }
-      return "Not in rebid position";
-    },
-  };
-}
-
-const staymanRebidNoFitGame = conditionedRule({
-  name: "stayman-rebid-no-fit",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1NT", "P", "2C", "P", "2H", "P"],
-      ["1NT", "P", "2C", "P", "2S", "P"],
-      ["1NT", "P", "2C", "P", "2D", "P"],
-    ]),
-  ],
-  handConditions: [hcpMin(10), noMajorFit()],
-  call(): Call {
-    return { type: "bid", level: 3, strain: BidSuit.NoTrump };
-  },
-});
-
-const staymanRebidNoFitInvite = conditionedRule({
-  name: "stayman-rebid-no-fit-invite",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1NT", "P", "2C", "P", "2H", "P"],
-      ["1NT", "P", "2C", "P", "2S", "P"],
-      ["1NT", "P", "2C", "P", "2D", "P"],
-    ]),
-  ],
-  handConditions: [hcpMax(9), noMajorFit()],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.NoTrump };
-  },
-});
+// Full tree
+const staymanRuleTree: RuleNode = decision(
+  "after-1nt-p",
+  auctionMatches(["1NT", "P"]),
+  // Round 1: Responder's Stayman ask
+  round1Ask,
+  // Not after 1NT-P — check Round 2
+  decision(
+    "after-1nt-p-2c-p",
+    auctionMatches(["1NT", "P", "2C", "P"]),
+    // Round 2: Opener responds
+    round2Response,
+    // Not Round 2 — check Round 3 rebid positions
+    decision(
+      "after-2h-response",
+      auctionMatches(["1NT", "P", "2C", "P", "2H", "P"]),
+      rebidAfter2H,
+      decision(
+        "after-2s-response",
+        auctionMatches(["1NT", "P", "2C", "P", "2S", "P"]),
+        rebidAfter2S,
+        decision(
+          "after-2d-denial",
+          auctionMatches(["1NT", "P", "2C", "P", "2D", "P"]),
+          rebidAfter2D,
+          fallback("not-stayman-auction"),
+        ),
+      ),
+    ),
+  ),
+);
 
 /** Responder position starts after 1NT - P. */
 function staymanDefaultAuction(
@@ -253,23 +165,15 @@ function staymanDefaultAuction(
   return undefined;
 }
 
-export const staymanConfig: ConventionConfig = {
+export const staymanConfig: TreeConventionConfig = {
   id: "stayman",
   name: "Stayman",
   description:
     "Stayman convention: 2C response to 1NT asking for 4-card majors",
   category: ConventionCategory.Asking,
   dealConstraints: staymanDealConstraints,
-  biddingRules: [
-    staymanAsk,
-    staymanResponseHearts,
-    staymanResponseSpades,
-    staymanResponseDenial,
-    staymanRebidMajorFitGame,
-    staymanRebidMajorFitInvite,
-    staymanRebidNoFitGame,
-    staymanRebidNoFitInvite,
-  ],
+  ruleTree: staymanRuleTree,
+  biddingRules: flattenTree(staymanRuleTree),
   examples: [],
   defaultAuction: staymanDefaultAuction,
 };

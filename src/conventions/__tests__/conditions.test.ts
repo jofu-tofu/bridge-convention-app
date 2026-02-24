@@ -20,6 +20,7 @@ import {
   suitMin,
 } from "../conditions";
 import type { BiddingContext, ConditionedBiddingRule } from "../types";
+import { isAuctionCondition } from "../tree-compat";
 import { hand, auctionFromBids } from "./fixtures";
 
 beforeEach(() => {
@@ -132,30 +133,6 @@ describe("conditionedRule factory", () => {
 
 // ─── Classification audit tests ───────────────────────────
 
-/** Known auction condition names. */
-const AUCTION_CONDITION_NAMES = new Set([
-  "auction",
-  "is-opener",
-  "is-responder",
-  "no-prior-bid",
-  "opponent-bid",
-  "seat-has-bid",
-  "bidding-round",
-  "partner-raised-3M",
-  "partner-bid-4M",
-  "partner-signoff-3M",
-]);
-
-/** Check if a condition name is a known auction condition (including partner-opened variants). */
-function isAuctionConditionName(name: string): boolean {
-  if (AUCTION_CONDITION_NAMES.has(name)) return true;
-  if (name.startsWith("partner-opened") || name.startsWith("partner opened")) return true;
-  if (name.startsWith("partner-bid-") || name.startsWith("partner bid ")) return true;
-  // not() wrappers
-  if (name.startsWith("not-")) return isAuctionConditionName(name.slice(4));
-  return false;
-}
-
 describe("condition classification audit", () => {
   test("auctionConditions only contain known auction condition names", () => {
     const violations: string[] = [];
@@ -166,7 +143,7 @@ describe("condition classification audit", () => {
         if (!isConditionedRule(rule)) continue;
         const conditioned = rule as ConditionedBiddingRule;
         for (const cond of conditioned.auctionConditions) {
-          if (!isAuctionConditionName(cond.name)) {
+          if (!isAuctionCondition(cond.name)) {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" in auctionConditions`);
           }
         }
@@ -178,20 +155,10 @@ describe("condition classification audit", () => {
 
   test("no auction condition names appear in handConditions (except hybrid conditions)", () => {
     // Pure auction conditions (auctionMatches, isOpener, isResponder, etc.)
-    // should never appear in handConditions. Hybrid conditions that embed
-    // auction checks are fine because they ultimately gate on hand properties.
-    const PURE_AUCTION_NAMES = new Set([
-      "auction",
-      "is-opener",
-      "is-responder",
-      "no-prior-bid",
-      "opponent-bid",
-      "seat-has-bid",
-      "bidding-round",
-      "partner-raised-3M",
-      "partner-bid-4M",
-      "partner-signoff-3M",
-    ]);
+    // should never appear in handConditions — including negated (not-) and
+    // prefix-matched (partner-opened-1H, partner-bid-3C) forms.
+    // Hybrid conditions that embed auction checks are fine because they
+    // ultimately gate on hand properties.
     const violations: string[] = [];
     const conventions = listConventions();
 
@@ -200,7 +167,7 @@ describe("condition classification audit", () => {
         if (!isConditionedRule(rule)) continue;
         const conditioned = rule as ConditionedBiddingRule;
         for (const cond of conditioned.handConditions) {
-          if (PURE_AUCTION_NAMES.has(cond.name)) {
+          if (isAuctionCondition(cond.name)) {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" in handConditions`);
           }
         }

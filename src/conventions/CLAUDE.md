@@ -139,8 +139,12 @@ index.ts (auto-registration entry point)
 - FallbackNode = "convention doesn't apply to this hand/auction"; BidNode = "convention fires with this call"
 - Strict tree constraint: do not reuse node object references across branches (breaks `flattenTree()` path accumulation)
 - Use `createBiddingContext()` factory from `context-factory.ts` for all new BiddingContext construction
+- `biddingRules` must be `flattenTree(ruleTree)`, NOT `[]` — CLI, RulesPanel, and inference engine iterate `biddingRules`
+- `flattenTree()` splits accumulated conditions: pure auction conditions → `auctionConditions`, hand conditions → `handConditions`
+- `auctionMatches()` uses exact match (via `auctionMatchesExact()`), not prefix. `["1NT", "P"]` does NOT match when auction is `["1NT", "P", "2C", "P"]`. This is why chaining rounds off the NO branch works — longer auctions fall through to later checks.
+- Multiple BidNodes may share the same name (e.g., `dont-advance-pass` × 3). This is safe for all consumers (registry, inference, CLI, RulesPanel).
 
-**Migration order (Phase 2):** Landy → DONT → Stayman → Gerber → Bergen → SAYC (smallest to largest)
+**Migration status (Phase 2):** ~~Landy~~ ~~DONT~~ ~~Stayman~~ done → Gerber → Bergen → SAYC remaining
 
 ## Gotchas
 

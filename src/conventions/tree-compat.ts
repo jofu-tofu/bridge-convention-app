@@ -5,17 +5,34 @@ import type { ConditionedBiddingRule, ConditionResult, RuleCondition, BiddingCon
 import type { RuleNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
 import type { BiddingRuleResult } from "./registry";
-import { conditionedRule } from "./conditions";
+import { conditionedRule, AUCTION_CONDITION_NAMES } from "./conditions";
 
 // ─── flattenTree ─────────────────────────────────────────────
+
+const NEGATION_PREFIX = "not-";
+
+/**
+ * Check if a condition name (or its negation) is a pure auction check.
+ * Handles exact names, dynamic names with level+strain (e.g., partner-opened-1H,
+ * partner-bid-3C), and negation prefixes.
+ */
+export function isAuctionCondition(name: string): boolean {
+  if (AUCTION_CONDITION_NAMES.has(name)) return true;
+  // Dynamic names from partnerOpenedAt/partnerBidAt: partner-opened-{digit}..., partner-bid-{digit}...
+  if (/^partner-opened-\d/.test(name)) return true;
+  if (/^partner-bid-\d/.test(name)) return true;
+  // partnerOpened(strain) produces "partner opened {strain}" (with space)
+  if (name.startsWith("partner opened")) return true;
+  if (name.startsWith(NEGATION_PREFIX)) return isAuctionCondition(name.slice(NEGATION_PREFIX.length));
+  return false;
+}
 
 /**
  * Walk all paths to BidNodes, collecting accumulated conditions along each path.
  * Returns ConditionedBiddingRule[] compatible with the flat evaluation system.
  *
- * WARNING: All accumulated conditions are placed in `handConditions` regardless of
- * semantic type. Auction-check nodes (e.g., isResponder) will appear as hand conditions.
- * This is a debug-only compat adapter — do not use for inference engine input.
+ * Conditions are split: pure auction conditions (auctionMatches, isOpener, etc.)
+ * go into `auctionConditions`, everything else into `handConditions`.
  *
  * Constraint: tree must be a strict tree (no shared node references across branches).
  * DAG structure would produce duplicate/incorrect flattened paths.
@@ -32,12 +49,21 @@ export function flattenTree(tree: RuleNode): readonly ConditionedBiddingRule[] {
         // Dead end — no rule produced
         return;
       case "bid": {
-        // Reached a bid leaf — create a conditioned rule from accumulated conditions
+        // Reached a bid leaf — split accumulated conditions by type
+        const auctionConds: RuleCondition[] = [];
+        const handConds: RuleCondition[] = [];
+        for (const cond of conditions) {
+          if (isAuctionCondition(cond.name)) {
+            auctionConds.push(cond);
+          } else {
+            handConds.push(cond);
+          }
+        }
         rules.push(
           conditionedRule({
             name: node.name,
-            auctionConditions: [],
-            handConditions: [...conditions],
+            auctionConditions: auctionConds,
+            handConditions: handConds,
             call: node.call,
           }),
         );
@@ -50,7 +76,7 @@ export function flattenTree(tree: RuleNode): readonly ConditionedBiddingRule[] {
         // Note: .inference is intentionally omitted — negated bounds need inverted
         // inference types (e.g., not-hcp-min → hcp-max). Wire this in Phase 1.5(c) cleanup.
         const negated: RuleCondition = {
-          name: `not-${node.condition.name}`,
+          name: `${NEGATION_PREFIX}${node.condition.name}`,
           label: `Not: ${node.condition.label}`,
           test(ctx: BiddingContext) {
             return !node.condition.test(ctx);

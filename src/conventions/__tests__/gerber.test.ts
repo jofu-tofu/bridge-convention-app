@@ -45,7 +45,7 @@ function callFromRules(
   dealer: Seat = Seat.North,
 ) {
   const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(gerberConfig.biddingRules, context);
+  return evaluateBiddingRules(gerberConfig.biddingRules, context, gerberConfig);
 }
 
 // --- Deal Constraints ---
@@ -1438,7 +1438,7 @@ describe("Gerber property-based invariants", () => {
       expect(hcp).toBeGreaterThanOrEqual(16);
 
       const ctx = makeBiddingContext(responderHand, Seat.South, ["1NT", "P"]);
-      const ruleResult = evaluateBiddingRules(gerberConfig.biddingRules, ctx);
+      const ruleResult = evaluateBiddingRules(gerberConfig.biddingRules, ctx, gerberConfig);
 
       const hasVoid = ctx.evaluation.shape.some((s) => s === 0);
       if (hasVoid) {
@@ -1605,7 +1605,7 @@ describe("Gerber property-based invariants", () => {
         "4C",
         "P",
       ]);
-      const ruleResult = evaluateBiddingRules(gerberConfig.biddingRules, ctx);
+      const ruleResult = evaluateBiddingRules(gerberConfig.biddingRules, ctx, gerberConfig);
       expect(ruleResult).not.toBeNull();
 
       // Verify correct rule fires

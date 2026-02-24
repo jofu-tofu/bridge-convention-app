@@ -10,16 +10,16 @@ import type {
   Deal,
 } from "../engine/types";
 import { ConventionCategory } from "./types";
-import type { ConventionConfig, BiddingContext } from "./types";
 import { getSuitLength } from "../engine/hand-evaluator";
 import { buildAuction } from "../engine/auction-helpers";
 import {
-  conditionedRule,
   auctionMatches,
   bothMajors,
   suitMin,
-  suitBelow,
 } from "./conditions";
+import { decision, bid, fallback } from "./rule-tree";
+import type { RuleNode, TreeConventionConfig } from "./rule-tree";
+import { flattenTree } from "./tree-compat";
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
@@ -46,59 +46,51 @@ export const landyDealConstraints: DealConstraints = {
   dealer: Seat.East,
 };
 
-// ─── Overcaller Bidding Rules (South, after East opens 1NT) ──
+// ─── Rule Tree ────────────────────────────────────────────────
 
-// Rule 1: landy-2c — 2C showing both majors (5-4+)
-const landy2C = conditionedRule({
-  name: "landy-2c",
-  auctionConditions: [auctionMatches(["1NT"])],
-  handConditions: [bothMajors()],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Clubs };
-  },
-});
-
-// ─── Response Rules (North, after South overcalls 2C) ────────
-
-// Rule 2: landy-response-pass — 5+ clubs, happy to play 2C
-const landyResponsePass = conditionedRule({
-  name: "landy-response-pass",
-  auctionConditions: [auctionMatches(["1NT", "2C", "P"])],
-  handConditions: [suitMin(3, "clubs", 5)],
-  call(): Call {
-    return { type: "pass" };
-  },
-});
-
-// Rule 3: landy-response-2h — 4+ hearts (natural signoff)
-const landyResponse2H = conditionedRule({
-  name: "landy-response-2h",
-  auctionConditions: [auctionMatches(["1NT", "2C", "P"])],
-  handConditions: [suitMin(1, "hearts", 4)],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Hearts };
-  },
-});
-
-// Rule 4: landy-response-2s — 4+ spades, <4 hearts (natural signoff)
-const landyResponse2S = conditionedRule({
-  name: "landy-response-2s",
-  auctionConditions: [auctionMatches(["1NT", "2C", "P"])],
-  handConditions: [suitMin(0, "spades", 4), suitBelow(1, "hearts", 4)],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Spades };
-  },
-});
-
-// Rule 5: landy-response-2d — artificial relay (no strong preference)
-const landyResponse2D = conditionedRule({
-  name: "landy-response-2d",
-  auctionConditions: [auctionMatches(["1NT", "2C", "P"])],
-  handConditions: [suitBelow(1, "hearts", 4), suitBelow(0, "spades", 4)],
-  call(): Call {
-    return { type: "bid", level: 2, strain: BidSuit.Diamonds };
-  },
-});
+const landyRuleTree: RuleNode = decision(
+  "after-1nt",
+  auctionMatches(["1NT"]),
+  // YES: opponent opened 1NT
+  decision(
+    "both-majors",
+    bothMajors(),
+    // YES: has both majors
+    bid("landy-2c", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+    // NO: doesn't have both majors
+    fallback("not-suited"),
+  ),
+  // NO: not after 1NT, check response auctions
+  decision(
+    "after-1nt-2c-p",
+    auctionMatches(["1NT", "2C", "P"]),
+    // YES: partner overcalled 2C, we're responding
+    decision(
+      "has-5-clubs",
+      suitMin(3, "clubs", 5),
+      // YES: 5+ clubs, happy to play 2C
+      bid("landy-response-pass", (): Call => ({ type: "pass" })),
+      // NO: fewer than 5 clubs, pick a major
+      decision(
+        "has-4-hearts",
+        suitMin(1, "hearts", 4),
+        // YES: 4+ hearts
+        bid("landy-response-2h", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+        // NO: fewer than 4 hearts
+        decision(
+          "has-4-spades",
+          suitMin(0, "spades", 4),
+          // YES: 4+ spades (hearts already rejected)
+          bid("landy-response-2s", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+          // NO: no major preference, relay 2D
+          bid("landy-response-2d", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+        ),
+      ),
+    ),
+    // NO: not a Landy auction
+    fallback("not-landy-auction"),
+  ),
+);
 
 /** Overcaller position: East opened 1NT */
 function landyDefaultAuction(seat: Seat, _deal?: Deal): Auction | undefined {
@@ -108,20 +100,15 @@ function landyDefaultAuction(seat: Seat, _deal?: Deal): Auction | undefined {
   return undefined;
 }
 
-export const landyConfig: ConventionConfig = {
+export const landyConfig: TreeConventionConfig = {
   id: "landy",
   name: "Landy",
   description:
     "Landy: 2C overcall over opponent's 1NT showing both major suits (5-4+)",
   category: ConventionCategory.Defensive,
   dealConstraints: landyDealConstraints,
-  biddingRules: [
-    landy2C,
-    landyResponsePass,
-    landyResponse2H,
-    landyResponse2S,
-    landyResponse2D,
-  ],
+  ruleTree: landyRuleTree,
+  biddingRules: flattenTree(landyRuleTree),
   examples: [],
   defaultAuction: landyDefaultAuction,
 };

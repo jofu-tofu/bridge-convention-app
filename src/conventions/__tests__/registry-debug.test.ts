@@ -53,7 +53,7 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
+    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
     expect(results.length).toBe(staymanConfig.biddingRules.length);
   });
 
@@ -65,7 +65,7 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
+    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
     const staymanAsk = results.find((r) => r.ruleName === "stayman-ask");
     expect(staymanAsk).toBeDefined();
     expect(staymanAsk!.matched).toBe(true);
@@ -81,7 +81,7 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
+    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
     // Response rules shouldn't match for responder
     const nonMatching = results.filter((r) => !r.matched);
     expect(nonMatching.length).toBeGreaterThan(0);
@@ -98,7 +98,7 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
+    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
     // All Stayman rules use conditionedRule()
     const withConditions = results.filter((r) => r.conditionResults !== undefined);
     expect(withConditions.length).toBeGreaterThan(0);

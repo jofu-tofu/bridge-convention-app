@@ -41,8 +41,9 @@ export type RuleNode = DecisionNode | BidNode | FallbackNode;
 
 /**
  * Convention config using a hierarchical rule tree instead of flat rules.
- * `biddingRules` is vestigial — set to `[]`. The tree dispatch in registry.ts
- * evaluates `ruleTree` and ignores `biddingRules` entirely.
+ * `biddingRules` must be set to `flattenTree(ruleTree)` — NOT `[]`.
+ * Registry dispatch evaluates `ruleTree` directly, but other consumers
+ * (CLI, RulesPanel, inference engine) iterate `biddingRules`.
  */
 export interface TreeConventionConfig extends ConventionConfig {
   readonly ruleTree: RuleNode;

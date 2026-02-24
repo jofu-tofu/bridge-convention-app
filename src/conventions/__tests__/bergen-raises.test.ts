@@ -48,7 +48,7 @@ function callFromRules(
   dealer: Seat = Seat.North,
 ) {
   const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(bergenConfig.biddingRules, context);
+  return evaluateBiddingRules(bergenConfig.biddingRules, context, bergenConfig);
 }
 
 // HCP reference: A=4, K=3, Q=2, J=1
@@ -1075,7 +1075,7 @@ describe("Bergen Raises property-based invariants", () => {
         openMajor,
         "P",
       ]);
-      const ruleResult = evaluateBiddingRules(bergenConfig.biddingRules, ctx);
+      const ruleResult = evaluateBiddingRules(bergenConfig.biddingRules, ctx, bergenConfig);
 
       // The responder has 0+ HCP and 4+ in at least one major, but
       // they may not have 4+ in the SPECIFIC major that was opened.

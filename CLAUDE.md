@@ -92,7 +92,8 @@ tests/
 1. ~~**DDS Review Integration**~~ — Done. Tabbed ReviewSidePanel (Bidding + Analysis) with DDS via `dds-bridge` Rust FFI. Requires `libclang-dev`.
 1.5. **Rule Tree Migration** — Replace flat `conditionedRule()` system with hierarchical decision trees for negative inference support
    - ~~(a) Tree infrastructure~~ — Done. Types (`rule-tree.ts`), evaluator (`tree-evaluator.ts`), compat adapter (`tree-compat.ts`), registry dispatch, `createBiddingContext()` factory (`context-factory.ts`), `BiddingContext` expanded with optional `vulnerability`/`dealer`
-   - (b) Convention migration — one at a time: Landy → DONT → Stayman → Gerber → Bergen → SAYC
+   - ~~(b) Convention migration phase 2a~~ — Done. Landy, DONT, Stayman migrated to trees with `flattenTree()` compat
+   - (b.2) Convention migration phase 2b — Gerber → Bergen → SAYC
    - (c) Cleanup + negative inference — remove flat path, wire tree rejection data to inference engine
 2. **User Learning Enhancements**
    - ~~(a) Rules tab in ReviewSidePanel~~ — Done. Context-aware convention rules display during review phase. Fired rules show evaluated conditions with actual hand values; reference rules show static condition names.
