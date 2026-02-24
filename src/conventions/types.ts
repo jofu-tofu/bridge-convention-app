@@ -5,6 +5,7 @@ import type {
   HandEvaluation,
   DealConstraints,
   Deal,
+  Vulnerability,
 } from "../engine/types";
 import { Seat } from "../engine/types";
 
@@ -42,6 +43,10 @@ export interface BiddingContext {
   readonly auction: Auction;
   readonly seat: Seat;
   readonly evaluation: HandEvaluation;
+  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
+  readonly vulnerability?: Vulnerability;
+  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
+  readonly dealer?: Seat;
 }
 
 export interface BiddingRule {
@@ -124,4 +129,6 @@ export interface ConventionConfig {
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   /** If true, convention is internal (e.g., SAYC for opponents) and hidden from UI picker. */
   readonly internal?: boolean;
+  /** Present on tree conventions only. See TreeConventionConfig in rule-tree.ts. */
+  readonly ruleTree?: import("./rule-tree").RuleNode;
 }

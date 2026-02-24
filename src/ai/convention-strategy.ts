@@ -51,7 +51,7 @@ export function conventionToStrategy(
     id: `convention:${config.id}`,
     name: config.name,
     suggest(context): BidResult | null {
-      const result = evaluateBiddingRules(config.biddingRules, context);
+      const result = evaluateBiddingRules(config.biddingRules, context, config);
       if (!result) return null;
       return {
         call: result.call,

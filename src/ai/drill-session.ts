@@ -3,6 +3,7 @@ import type { BidResult } from "../shared/types";
 import type { Hand, Auction, Seat } from "../engine/types";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { isLegalCall } from "../engine/auction";
+import { createBiddingContext } from "../conventions/context-factory";
 
 /**
  * Creates a DrillSession that manages bidding for a drill.
@@ -28,7 +29,7 @@ export function createDrillSession(config: DrillConfig): DrillSession {
 
       // AI seat — delegate to strategy
       const evaluation = evaluateHand(hand);
-      const context = { hand, auction, seat, evaluation };
+      const context = createBiddingContext({ hand, auction, seat, evaluation });
       const result = strategy.suggest(context);
 
       // Strategy returned null — wrap as pass

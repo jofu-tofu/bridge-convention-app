@@ -25,6 +25,7 @@ import type { InferenceSnapshot } from "../ai/inference/types";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { randomPlayStrategy } from "../ai/play-strategy";
+import { createBiddingContext } from "../conventions/context-factory";
 
 export type GamePhase =
   | "BIDDING"
@@ -769,12 +770,9 @@ export function createGameStore(engine: EnginePort) {
       if (conventionStrategy) {
         const hand = deal.hands[currentTurn];
         const evaluation = evaluateHand(hand);
-        expectedResult = conventionStrategy.suggest({
-          hand,
-          auction,
-          seat: currentTurn,
-          evaluation,
-        });
+        expectedResult = conventionStrategy.suggest(
+          createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
+        );
       }
 
       const isCorrect = callsMatch(

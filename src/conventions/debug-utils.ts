@@ -1,6 +1,7 @@
 import type { BiddingContext } from "./types";
 import type { Deal, Seat, Auction } from "../engine/types";
 import { evaluateHand } from "../engine/hand-evaluator";
+import { createBiddingContext } from "./context-factory";
 
 /**
  * Reconstruct the BiddingContext for a historical bid.
@@ -13,5 +14,5 @@ export function reconstructBiddingContext(
 ): BiddingContext {
   const hand = deal.hands[seat];
   const evaluation = evaluateHand(hand);
-  return { hand, auction: auctionPrefix, seat, evaluation };
+  return createBiddingContext({ hand, auction: auctionPrefix, seat, evaluation });
 }

@@ -4,6 +4,7 @@
   import type { Hand, Auction, Seat } from "../../engine/types";
   import { evaluateHand } from "../../lib/hcp-eval";
   import { conventionToStrategy } from "../../ai/convention-strategy";
+  import { createBiddingContext } from "../../conventions/context-factory";
   import { formatCall } from "../../lib/format";
 
   interface Props {
@@ -18,7 +19,7 @@
   const suggestion = $derived.by(() => {
     const strategy = conventionToStrategy(convention);
     const evaluation = evaluateHand(hand);
-    return strategy.suggest({ hand, auction, seat, evaluation });
+    return strategy.suggest(createBiddingContext({ hand, auction, seat, evaluation }));
   });
 </script>
 

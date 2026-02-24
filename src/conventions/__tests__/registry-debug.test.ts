@@ -8,7 +8,7 @@ import { staymanConfig } from "../stayman";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { Suit, Rank, Seat, BidSuit } from "../../engine/types";
 import type { Hand, Auction } from "../../engine/types";
-import type { BiddingContext } from "../types";
+import { createBiddingContext } from "../context-factory";
 
 function makeHand(cards: Array<{ suit: Suit; rank: Rank }>): Hand {
   return { cards };
@@ -46,24 +46,24 @@ describe("evaluateAllBiddingRules", () => {
   });
 
   it("returns results for all rules, not just the winner", () => {
-    const context: BiddingContext = {
+    const context = createBiddingContext({
       hand: responderHand,
       auction: auction1NT,
       seat: Seat.South,
       evaluation: evaluateHand(responderHand),
-    };
+    });
 
     const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
     expect(results.length).toBe(staymanConfig.biddingRules.length);
   });
 
   it("matching rule has matched: true and isLegal reflects legality", () => {
-    const context: BiddingContext = {
+    const context = createBiddingContext({
       hand: responderHand,
       auction: auction1NT,
       seat: Seat.South,
       evaluation: evaluateHand(responderHand),
-    };
+    });
 
     const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
     const staymanAsk = results.find((r) => r.ruleName === "stayman-ask");
@@ -74,12 +74,12 @@ describe("evaluateAllBiddingRules", () => {
   });
 
   it("non-matching rules have matched: false", () => {
-    const context: BiddingContext = {
+    const context = createBiddingContext({
       hand: responderHand,
       auction: auction1NT,
       seat: Seat.South,
       evaluation: evaluateHand(responderHand),
-    };
+    });
 
     const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
     // Response rules shouldn't match for responder
@@ -91,12 +91,12 @@ describe("evaluateAllBiddingRules", () => {
   });
 
   it("conditioned rules have conditionResults populated", () => {
-    const context: BiddingContext = {
+    const context = createBiddingContext({
       hand: responderHand,
       auction: auction1NT,
       seat: Seat.South,
       evaluation: evaluateHand(responderHand),
-    };
+    });
 
     const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context);
     // All Stayman rules use conditionedRule()

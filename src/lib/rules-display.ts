@@ -1,7 +1,6 @@
 import type {
   BiddingRule,
   ConditionedBiddingRule,
-  BiddingContext,
 } from "../conventions/types";
 import type { BidHistoryEntry } from "../stores/game.svelte";
 import type { Deal, Call, Seat, Auction } from "../engine/types";
@@ -11,6 +10,7 @@ import {
   evaluateConditions,
 } from "../conventions/condition-evaluator";
 import { evaluateHand } from "../engine/hand-evaluator";
+import { createBiddingContext } from "../conventions/context-factory";
 import { formatRuleName } from "./format";
 
 export interface DisplayCondition {
@@ -71,12 +71,12 @@ export function prepareRulesForDisplay(
       }));
       const auction = { entries: auctionEntries, isComplete: false };
 
-      const context: BiddingContext = {
+      const context = createBiddingContext({
         hand,
         auction,
         seat: entry.seat,
         evaluation,
-      };
+      });
 
       const conditions: DisplayCondition[] = isConditionedRule(rule)
         ? evaluateConditions(rule, context).map((r) => ({
@@ -135,12 +135,12 @@ export function prepareRulesForDisplay(
       try {
         const dummyAuction: Auction = { entries: [], isComplete: false };
         const southHand = deal.hands[SeatEnum.South];
-        const dummyContext: BiddingContext = {
+        const dummyContext = createBiddingContext({
           hand: southHand,
           auction: dummyAuction,
           seat: SeatEnum.South,
           evaluation: evaluateHand(southHand),
-        };
+        });
         const computed = rule.call(dummyContext);
         if (computed.type === "bid") {
           referenceCall = computed;

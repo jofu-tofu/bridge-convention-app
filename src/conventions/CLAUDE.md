@@ -19,8 +19,12 @@ types.ts (ConventionConfig, BiddingRule, BiddingContext, RuleCondition, Conditio
   ↑
 conditions.ts (condition factories, conditionedRule builder, combinators)
 condition-evaluator.ts (evaluateConditions, buildExplanation, isConditionedRule)
+rule-tree.ts (RuleNode, DecisionNode, BidNode, FallbackNode, TreeConventionConfig, builder helpers)
+tree-evaluator.ts (evaluateTree, evaluateTreeFast, TreeEvalResult, PathEntry)
+tree-compat.ts (flattenTree, treeResultToBiddingRuleResult — temporary compat adapter)
+context-factory.ts (createBiddingContext — canonical BiddingContext constructor)
   ↑
-registry.ts (registerConvention, getConvention, evaluateBiddingRules)
+registry.ts (registerConvention, getConvention, evaluateBiddingRules — dispatches tree conventions)
   ↑
 stayman.ts (staymanConfig, staymanDealConstraints)
 gerber.ts (gerberConfig, gerberDealConstraints)
@@ -39,7 +43,11 @@ index.ts (auto-registration entry point)
 | `types.ts`               | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory`, `RuleCondition`, `ConditionedBiddingRule`       |
 | `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, relational: `isOpener`, `isResponder`, `partnerOpened`, `biddingRound`, `partnerBidAt`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
 | `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard                                             |
-| `registry.ts`            | Convention map, `evaluateBiddingRules` (first-match, condition-aware), `clearRegistry` for tests                           |
+| `rule-tree.ts`           | `RuleNode` (DecisionNode, BidNode, FallbackNode), `TreeConventionConfig`, `decision()`/`bid()`/`fallback()` builders     |
+| `tree-evaluator.ts`      | `evaluateTree()` (path + visited traversal order), `evaluateTreeFast()` (match only, used by registry hot path)          |
+| `tree-compat.ts`         | `flattenTree()`, `treeResultToBiddingRuleResult()` — temporary compat during migration                                   |
+| `context-factory.ts`     | `createBiddingContext()` — canonical constructor with `vulnerability`/`dealer` defaults                                   |
+| `registry.ts`            | Convention map, `evaluateBiddingRules` (tree-aware dispatch via `isTreeConvention()`), `clearRegistry` for tests          |
 | `stayman.ts`             | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules                                             |
 | `gerber.ts`              | Gerber convention: deal constraints (NT opener + 16+ HCP responder), 11 bidding rules (ace-ask, king-ask, responses, signoff) |
 | `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), 13 bidding rules (4 initial + 9 rebids)                |
@@ -119,6 +127,21 @@ index.ts (auto-registration entry point)
 5. Test deal constraints with `checkConstraints()` — verify both acceptance and rejection
 6. Test bidding rules with `evaluateBiddingRules()` — verify rule matching, call output, and `conditionResults`
 
+## Tree System (Migration In Progress)
+
+**Why Rule Trees?** The flat `conditionedRule()` system has 11 gaps (see `_output/contexts/260223-1730-audit-conditions-respect-unexpected-senarios-bridge/notes/condition-audit.md`). Most critically: (1) interference blindness — all 65 rules assume uncontested auctions; (2) no negative inference — flat condition lists can't express "this convention path was rejected, so these hand constraints DON'T apply." Three options were evaluated; Option C (rule trees) was chosen because tree path rejection data is the only architecture that enables negative inference. Both flat and tree systems coexist during migration.
+
+**Coexistence:** `registry.ts` dispatches via `isTreeConvention()`. Non-tree conventions use the flat `conditionedRule()` → `evaluateConditions()` path unchanged. Tree conventions use `evaluateTree()` → `treeResultToBiddingRuleResult()`. Both produce the same `BiddingRuleResult` shape.
+
+**Tree Authoring Rules:**
+- Auction checks = parent DecisionNodes, hand checks = child DecisionNodes (auction narrows first, then hand evaluates)
+- DecisionNode names: descriptive kebab-case slugs (e.g., `is-responder`, `has-4-card-major`)
+- FallbackNode = "convention doesn't apply to this hand/auction"; BidNode = "convention fires with this call"
+- Strict tree constraint: do not reuse node object references across branches (breaks `flattenTree()` path accumulation)
+- Use `createBiddingContext()` factory from `context-factory.ts` for all new BiddingContext construction
+
+**Migration order (Phase 2):** Landy → DONT → Stayman → Gerber → Bergen → SAYC (smallest to largest)
+
 ## Gotchas
 
 - `clearRegistry()` must be called in `beforeEach` for test isolation — conventions auto-register on import
@@ -138,4 +161,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `registry.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=3 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:21,exts:ts:20,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-23 | version=4 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:27,exts:ts:26,md:1 -->

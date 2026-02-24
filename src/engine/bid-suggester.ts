@@ -1,6 +1,7 @@
 import type { BiddingStrategy, BidResult } from "../shared/types";
+import type { Hand, Auction } from "./types";
 import type { BiddingContext } from "../conventions/types";
-import type { Hand, Auction, Seat } from "./types";
+import { Seat, Vulnerability } from "./types";
 import { evaluateHand } from "./hand-evaluator";
 
 /**
@@ -15,7 +16,16 @@ export function suggestBid(
   strategy: BiddingStrategy,
 ): BidResult {
   const evaluation = evaluateHand(hand);
-  const context: BiddingContext = { hand, auction, seat, evaluation };
+  // Inline construction instead of createBiddingContext() — engine must not have
+  // runtime imports from conventions/. Update defaults here if BiddingContext changes.
+  const context: BiddingContext = {
+    hand,
+    auction,
+    seat,
+    evaluation,
+    vulnerability: Vulnerability.None,
+    dealer: Seat.North,
+  };
   const result = strategy.suggest(context);
   if (result) return result;
   return {

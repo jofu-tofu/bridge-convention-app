@@ -16,7 +16,7 @@ Bidding AI strategies. Consumer of `conventions/` and `engine/` via `shared/type
 ```
 shared/types.ts (BidResult, BiddingStrategy)
   ↑ import type
-ai/convention-strategy.ts → conventions/registry (evaluateBiddingRules)
+ai/convention-strategy.ts → conventions/registry (evaluateBiddingRules — tree-aware dispatch via config param)
 ai/pass-strategy.ts
 ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 ```

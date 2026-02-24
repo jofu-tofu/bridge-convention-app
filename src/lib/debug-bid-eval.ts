@@ -33,7 +33,7 @@ export function computeBidEvalTraces(
       isComplete: false,
     };
     const ctx = reconstructBiddingContext(deal, entry.seat, auctionPrefix);
-    const allResults = evaluateAllBiddingRules(convention.biddingRules, ctx);
+    const allResults = evaluateAllBiddingRules(convention.biddingRules, ctx, convention);
     return { entry, allResults };
   });
 }

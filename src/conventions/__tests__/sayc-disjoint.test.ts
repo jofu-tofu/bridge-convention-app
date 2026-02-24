@@ -6,6 +6,7 @@ import { evaluateHand } from "../../engine/hand-evaluator";
 import { Seat, BidSuit } from "../../engine/types";
 import type { Auction, Hand } from "../../engine/types";
 import type { BiddingContext, BiddingRule } from "../types";
+import { createBiddingContext } from "../context-factory";
 import { SEATS } from "../../engine/constants";
 import { isLegalCall } from "../../engine/auction";
 
@@ -36,8 +37,8 @@ function makeCtx(
   hand: Hand,
   seat: Seat,
   auction: Auction,
-): BiddingContext {
-  return { hand, auction, seat, evaluation: evaluateHand(hand) };
+) {
+  return createBiddingContext({ hand, auction, seat, evaluation: evaluateHand(hand) });
 }
 
 /** Build an auction from a list of calls starting from a dealer. */
