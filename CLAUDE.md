@@ -74,7 +74,7 @@ tests/
 **Subsystems:**
 
 - **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `tauri-ipc-engine.ts` and `http-engine.ts` provide Rust-backed transports. (entry: `src/engine/types.ts`)
-- **Conventions:** Registry of convention configs — each convention = one file using `conditionedRule()` with composable condition factories (`conditions.ts`), evaluated by `condition-evaluator.ts`, registered via `registry.ts`. 42 rules across 5 user conventions + 23 SAYC rules (internal, for opponent AI). Conditions carry optional `ConditionInference` metadata for the inference engine. (entry: `src/conventions/registry.ts`)
+- **Conventions:** Registry of convention configs — all 6 conventions use hierarchical rule trees (`TreeConventionConfig`). Each tree built with `decision()`/`bid()`/`fallback()` from `rule-tree.ts`, flattened via `flattenTree()` for backward-compat consumers (CLI, RulesPanel, inference). Registry dispatches via `isTreeConvention()` → `evaluateTreeFast()`. Conditions carry optional `ConditionInference` metadata for the inference engine. (entry: `src/conventions/registry.ts`)
 - **Shared:** Cross-boundary type definitions used by both engine/ and ai/ — includes `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings` (entry: `src/shared/types.ts`)
 - **AI:** Bidding strategies + play AI + auction inference — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `createHeuristicPlayStrategy()` with 7-heuristic chain, `randomPlay()` legacy fallback. `inference/` subsystem models per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). (entry: `src/ai/convention-strategy.ts`)
 - **Lib:** Display utilities + pure functions — `formatCall()`, `formatRuleName()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`, `prepareRulesForDisplay`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
@@ -93,7 +93,7 @@ tests/
 1.5. **Rule Tree Migration** — Replace flat `conditionedRule()` system with hierarchical decision trees for negative inference support
    - ~~(a) Tree infrastructure~~ — Done. Types (`rule-tree.ts`), evaluator (`tree-evaluator.ts`), compat adapter (`tree-compat.ts`), registry dispatch, `createBiddingContext()` factory (`context-factory.ts`), `BiddingContext` expanded with optional `vulnerability`/`dealer`
    - ~~(b) Convention migration phase 2a~~ — Done. Landy, DONT, Stayman migrated to trees with `flattenTree()` compat
-   - (b.2) Convention migration phase 2b — Gerber → Bergen → SAYC
+   - ~~(b.2) Convention migration phase 2b~~ — Done. Gerber, Bergen Raises, SAYC migrated to trees. SAYC condition factories extracted to `conditions.ts`.
    - (c) Cleanup + negative inference — remove flat path, wire tree rejection data to inference engine
 2. **User Learning Enhancements**
    - ~~(a) Rules tab in ReviewSidePanel~~ — Done. Context-aware convention rules display during review phase. Fired rules show evaluated conditions with actual hand values; reference rules show static condition names.

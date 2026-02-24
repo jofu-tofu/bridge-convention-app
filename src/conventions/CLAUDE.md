@@ -41,7 +41,7 @@ index.ts (auto-registration entry point)
 | File                     | Role                                                                                                                       |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `types.ts`               | `ConventionConfig`, `BiddingRule`, `BiddingContext`, `ConventionCategory`, `RuleCondition`, `ConditionedBiddingRule`       |
-| `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, relational: `isOpener`, `isResponder`, `partnerOpened`, `biddingRound`, `partnerBidAt`, etc.), `conditionedRule()` builder, `or()`/`and()` combinators |
+| `conditions.ts`          | Condition factories (`hcpMin`, `suitMin`, `auctionMatches`, relational: `isOpener`, `isResponder`, `partnerOpened`, `biddingRound`, `partnerBidAt`, etc.), SAYC-extracted: `hasFourCardMajor`, `partnerOpenedMajor/Minor`, `majorSupportN`, `partnerRaisedOurMajor`, `partnerRespondedMajorWithSupport`, `sixPlusInOpenedSuit`, `goodSuitAtLevel`; helpers: `partnerOpeningStrain`, `seatFirstBidStrain`, `lastBid`, `bidIsHigher`; `conditionedRule()` builder, `or()`/`and()` combinators |
 | `condition-evaluator.ts` | `evaluateConditions()`, `buildExplanation()`, `isConditionedRule()` type guard                                             |
 | `rule-tree.ts`           | `RuleNode` (DecisionNode, BidNode, FallbackNode), `TreeConventionConfig`, `decision()`/`bid()`/`fallback()` builders     |
 | `tree-evaluator.ts`      | `evaluateTree()` (path + visited traversal order), `evaluateTreeFast()` (match only, used by registry hot path)          |
@@ -49,11 +49,11 @@ index.ts (auto-registration entry point)
 | `context-factory.ts`     | `createBiddingContext()` — canonical constructor with `vulnerability`/`dealer` defaults                                   |
 | `registry.ts`            | Convention map, `evaluateBiddingRules` (tree-aware dispatch via `isTreeConvention()`), `clearRegistry` for tests          |
 | `stayman.ts`             | Stayman convention: deal constraints (1NT opener + responder), 6 bidding rules                                             |
-| `gerber.ts`              | Gerber convention: deal constraints (NT opener + 16+ HCP responder), 11 bidding rules (ace-ask, king-ask, responses, signoff) |
-| `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), 13 bidding rules (4 initial + 9 rebids)                |
+| `gerber.ts`              | Gerber convention: deal constraints (NT opener + 16+ HCP responder), tree-based (11 flattened rules)                       |
+| `bergen-raises.ts`       | Bergen Raises convention: deal constraints (1M opener + responder), tree-based (16 flattened rules)                         |
 | `dont.ts`                | DONT convention: deal constraints (1NT opponent + overcaller), 7 bidding rules                                             |
 | `landy.ts`               | Landy convention: deal constraints (1NT opponent + overcaller), 5 bidding rules                                            |
-| `sayc.ts`                | SAYC convention: internal (opponent AI), no deal constraints, ~22 bidding rules                                            |
+| `sayc.ts`                | SAYC convention: internal (opponent AI), no deal constraints, tree-based (40 flattened rules)                              |
 | `index.ts`               | Auto-registration entry point — import to activate all conventions                                                         |
 
 ## Convention Rules Reference
@@ -144,7 +144,11 @@ index.ts (auto-registration entry point)
 - `auctionMatches()` uses exact match (via `auctionMatchesExact()`), not prefix. `["1NT", "P"]` does NOT match when auction is `["1NT", "P", "2C", "P"]`. This is why chaining rounds off the NO branch works — longer auctions fall through to later checks.
 - Multiple BidNodes may share the same name (e.g., `dont-advance-pass` × 3). This is safe for all consumers (registry, inference, CLI, RulesPanel).
 
-**Migration status (Phase 2):** ~~Landy~~ ~~DONT~~ ~~Stayman~~ done → Gerber → Bergen → SAYC remaining
+**Migration status (Phase 2):** All conventions migrated to trees: ~~Landy~~ ~~DONT~~ ~~Stayman~~ ~~Gerber~~ ~~Bergen~~ ~~SAYC~~ → Phase 2c cleanup next (remove flat path, wire tree rejection data to inference engine)
+
+**SAYC tree pattern:** SAYC uses `saycPass()` factory at all terminal positions instead of `fallback()` because SAYC is a catch-all convention — any hand that enters produces a bid or pass. Other conventions use `fallback()` to indicate "convention doesn't apply."
+
+**Extracted SAYC condition factories** (in `conditions.ts`): `hasFourCardMajor()`, `partnerOpenedMajor()`, `partnerOpenedMinor()`, `majorSupportN(n)`, `partnerRaisedOurMajor()`, `partnerRespondedMajorWithSupport()`, `sixPlusInOpenedSuit()`, `goodSuitAtLevel(level)`. Helpers also exported: `partnerOpeningStrain()`, `seatFirstBidStrain()`, `partnerRespondedMajor()`, `lastBid()`, `bidIsHigher()`. Internal helper: `partnerRaisedOurSuit()` (not exported, used by `partnerRaisedOurMajor()`).
 
 ## Gotchas
 

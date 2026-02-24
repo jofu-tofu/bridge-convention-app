@@ -2,22 +2,26 @@ import { Seat, Suit, BidSuit } from "../engine/types";
 import type { DealConstraints, Call, Auction, Deal } from "../engine/types";
 import { partnerSeat } from "../engine/constants";
 import { ConventionCategory } from "./types";
-import type { ConventionConfig, BiddingContext } from "./types";
-import { auctionMatchesExact, buildAuction } from "../engine/auction-helpers";
+import type { BiddingContext, RuleCondition } from "./types";
+import { buildAuction } from "../engine/auction-helpers";
 import { getSuitLength } from "../engine/hand-evaluator";
-import type { RuleCondition } from "./types";
 import {
-  conditionedRule,
   auctionMatchesAny,
   hcpMin,
   hcpMax,
   hcpRange,
   majorSupport,
+  and,
   isOpener,
   isResponder,
   biddingRound,
   partnerBidAt,
+  seatFirstBidStrain,
+  partnerOpeningStrain,
 } from "./conditions";
+import { decision, bid, fallback } from "./rule-tree";
+import type { RuleNode, TreeConventionConfig } from "./rule-tree";
+import { flattenTree } from "./tree-compat";
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
@@ -42,81 +46,59 @@ export const bergenDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-// ─── Bidding Rules ────────────────────────────────────────────
-
-const bergenGameRaise = conditionedRule({
-  name: "bergen-game-raise",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1H", "P"],
-      ["1S", "P"],
-    ]),
-  ],
-  handConditions: [hcpMin(13), majorSupport()],
-  call(ctx: BiddingContext): Call {
-    if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
-      return { type: "bid", level: 4, strain: BidSuit.Hearts };
-    }
-    return { type: "bid", level: 4, strain: BidSuit.Spades };
-  },
-});
-
-const bergenLimitRaise = conditionedRule({
-  name: "bergen-limit-raise",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1H", "P"],
-      ["1S", "P"],
-    ]),
-  ],
-  handConditions: [hcpRange(10, 12), majorSupport()],
-  call(): Call {
-    return { type: "bid", level: 3, strain: BidSuit.Diamonds };
-  },
-});
-
-const bergenConstructiveRaise = conditionedRule({
-  name: "bergen-constructive-raise",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1H", "P"],
-      ["1S", "P"],
-    ]),
-  ],
-  handConditions: [hcpRange(7, 9), majorSupport()],
-  call(): Call {
-    return { type: "bid", level: 3, strain: BidSuit.Clubs };
-  },
-});
-
-const bergenPreemptiveRaise = conditionedRule({
-  name: "bergen-preemptive-raise",
-  auctionConditions: [
-    auctionMatchesAny([
-      ["1H", "P"],
-      ["1S", "P"],
-    ]),
-  ],
-  handConditions: [hcpMax(6), majorSupport()],
-  call(ctx: BiddingContext): Call {
-    if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
-      return { type: "bid", level: 3, strain: BidSuit.Hearts };
-    }
-    return { type: "bid", level: 3, strain: BidSuit.Spades };
-  },
-});
-
 // ─── Local Helpers ───────────────────────────────────────────
 
-/** Find the strain of this seat's first contract bid in the auction. */
-function myFirstBidStrain(ctx: BiddingContext): BidSuit | null {
-  for (const entry of ctx.auction.entries) {
-    if (entry.call.type === "bid" && entry.seat === ctx.seat) {
-      return entry.call.strain;
-    }
-  }
+const pass: Call = { type: "pass" };
+
+/** Resolve a major strain, returning null if not Hearts or Spades. */
+function asMajor(strain: BidSuit | null): BidSuit.Hearts | BidSuit.Spades | null {
+  if (strain === BidSuit.Hearts || strain === BidSuit.Spades) return strain;
   return null;
 }
+
+/** Dynamic call: return 4 of opener's major (called by responder). */
+function gameInOpenersMajor(ctx: BiddingContext): Call {
+  const strain = asMajor(partnerOpeningStrain(ctx));
+  if (!strain) return pass;
+  return { type: "bid", level: 4, strain };
+}
+
+/** Dynamic call: return 3 of opener's major (called by responder). */
+function threeOfOpenersMajor(ctx: BiddingContext): Call {
+  const strain = asMajor(partnerOpeningStrain(ctx));
+  if (!strain) return pass;
+  return { type: "bid", level: 3, strain };
+}
+
+/** Dynamic call for game try accept: return 4M (called by responder). */
+function gameTryAcceptCall(ctx: BiddingContext): Call {
+  const strain = asMajor(partnerOpeningStrain(ctx));
+  if (!strain) return pass;
+  return { type: "bid", level: 4, strain };
+}
+
+/** Dynamic call for game try reject: return 3M (called by responder). */
+function gameTryRejectCall(ctx: BiddingContext): Call {
+  const strain = asMajor(partnerOpeningStrain(ctx));
+  if (!strain) return pass;
+  return { type: "bid", level: 3, strain };
+}
+
+/** Dynamic call for opener rebid game: return 4M of opener's own suit. */
+function openerRebidGame(ctx: BiddingContext): Call {
+  const strain = asMajor(seatFirstBidStrain(ctx));
+  if (!strain) return pass;
+  return { type: "bid", level: 4, strain };
+}
+
+/** Dynamic call for opener rebid signoff: return 3M of opener's own suit. */
+function openerRebidSignoff(ctx: BiddingContext): Call {
+  const strain = asMajor(seatFirstBidStrain(ctx));
+  if (!strain) return pass;
+  return { type: "bid", level: 3, strain };
+}
+
+// ─── Local Conditions ───────────────────────────────────────
 
 /** Condition: partner raised to 3 of opener's major (for preemptive detection). */
 function partnerRaisedToThreeOfMajor(): RuleCondition {
@@ -124,7 +106,7 @@ function partnerRaisedToThreeOfMajor(): RuleCondition {
     name: "partner-raised-3M",
     label: "Partner raised to 3 of opened major",
     test(ctx) {
-      const strain = myFirstBidStrain(ctx);
+      const strain = seatFirstBidStrain(ctx);
       if (strain !== BidSuit.Hearts && strain !== BidSuit.Spades) return false;
       const partner = partnerSeat(ctx.seat);
       return ctx.auction.entries.some(
@@ -136,7 +118,7 @@ function partnerRaisedToThreeOfMajor(): RuleCondition {
       );
     },
     describe(ctx) {
-      const strain = myFirstBidStrain(ctx);
+      const strain = seatFirstBidStrain(ctx);
       if (strain !== BidSuit.Hearts && strain !== BidSuit.Spades) {
         return "Opener did not bid a major";
       }
@@ -154,109 +136,6 @@ function partnerRaisedToThreeOfMajor(): RuleCondition {
     },
   };
 }
-
-// ─── Opener Rebids After Constructive (1M P 3C P) ───────────
-
-const bergenRebidGameAfterConstructive = conditionedRule({
-  name: "bergen-rebid-game-after-constructive",
-  auctionConditions: [isOpener(), biddingRound(1), partnerBidAt(3, BidSuit.Clubs)],
-  handConditions: [hcpMin(17)],
-  call(ctx: BiddingContext): Call {
-    const strain = myFirstBidStrain(ctx);
-    return { type: "bid", level: 4, strain: strain === BidSuit.Spades ? BidSuit.Spades : BidSuit.Hearts };
-  },
-});
-
-const bergenRebidTryAfterConstructive = conditionedRule({
-  name: "bergen-rebid-try-after-constructive",
-  auctionConditions: [isOpener(), biddingRound(1), partnerBidAt(3, BidSuit.Clubs)],
-  handConditions: [hcpRange(14, 16)],
-  call(): Call {
-    return { type: "bid", level: 3, strain: BidSuit.Diamonds };
-  },
-});
-
-const bergenRebidSignoffAfterConstructive = conditionedRule({
-  name: "bergen-rebid-signoff-after-constructive",
-  auctionConditions: [isOpener(), biddingRound(1), partnerBidAt(3, BidSuit.Clubs)],
-  handConditions: [hcpRange(12, 13)],
-  call(): Call {
-    return { type: "pass" };
-  },
-});
-
-// ─── Responder Game Try Continuation (1M P 3C P 3D P) ───────
-
-const bergenTryAccept = conditionedRule({
-  name: "bergen-try-accept",
-  auctionConditions: [isResponder(), biddingRound(1), partnerBidAt(3, BidSuit.Diamonds)],
-  handConditions: [hcpRange(9, 10)],
-  call(ctx: BiddingContext): Call {
-    if (auctionMatchesExact(ctx.auction, ["1H", "P", "3C", "P", "3D", "P"])) {
-      return { type: "bid", level: 4, strain: BidSuit.Hearts };
-    }
-    return { type: "bid", level: 4, strain: BidSuit.Spades };
-  },
-});
-
-const bergenTryReject = conditionedRule({
-  name: "bergen-try-reject",
-  auctionConditions: [isResponder(), biddingRound(1), partnerBidAt(3, BidSuit.Diamonds)],
-  handConditions: [hcpRange(7, 8)],
-  call(ctx: BiddingContext): Call {
-    if (auctionMatchesExact(ctx.auction, ["1H", "P", "3C", "P", "3D", "P"])) {
-      return { type: "bid", level: 3, strain: BidSuit.Hearts };
-    }
-    return { type: "bid", level: 3, strain: BidSuit.Spades };
-  },
-});
-
-// ─── Opener Rebids After Limit (1M P 3D P) ──────────────────
-
-const bergenRebidGameAfterLimit = conditionedRule({
-  name: "bergen-rebid-game-after-limit",
-  auctionConditions: [isOpener(), biddingRound(1), partnerBidAt(3, BidSuit.Diamonds)],
-  handConditions: [hcpMin(15)],
-  call(ctx: BiddingContext): Call {
-    const strain = myFirstBidStrain(ctx);
-    return { type: "bid", level: 4, strain: strain === BidSuit.Spades ? BidSuit.Spades : BidSuit.Hearts };
-  },
-});
-
-const bergenRebidSignoffAfterLimit = conditionedRule({
-  name: "bergen-rebid-signoff-after-limit",
-  auctionConditions: [isOpener(), biddingRound(1), partnerBidAt(3, BidSuit.Diamonds)],
-  handConditions: [hcpRange(12, 14)],
-  call(ctx: BiddingContext): Call {
-    const strain = myFirstBidStrain(ctx);
-    return { type: "bid", level: 3, strain: strain === BidSuit.Spades ? BidSuit.Spades : BidSuit.Hearts };
-  },
-});
-
-// ─── Opener Rebids After Preemptive (1M P 3M P) ─────────────
-
-const bergenRebidGameAfterPreemptive = conditionedRule({
-  name: "bergen-rebid-game-after-preemptive",
-  auctionConditions: [isOpener(), biddingRound(1), partnerRaisedToThreeOfMajor()],
-  handConditions: [hcpMin(18)],
-  call(ctx: BiddingContext): Call {
-    const strain = myFirstBidStrain(ctx);
-    return { type: "bid", level: 4, strain: strain === BidSuit.Spades ? BidSuit.Spades : BidSuit.Hearts };
-  },
-});
-
-const bergenRebidPassAfterPreemptive = conditionedRule({
-  name: "bergen-rebid-pass-after-preemptive",
-  auctionConditions: [isOpener(), biddingRound(1), partnerRaisedToThreeOfMajor()],
-  handConditions: [hcpRange(12, 17)],
-  call(): Call {
-    return { type: "pass" };
-  },
-});
-
-// ─── Responder Acceptance Passes ─────────────────────────────
-// After opener rebids game (4M) or signoff (3M), responder passes to close auction.
-// Without these rules, the user sees "No convention bid applies — pass" with no explanation.
 
 /** Condition: partner bid game in a major (4H or 4S). */
 function partnerBidGameInMajor(): RuleCondition {
@@ -294,14 +173,11 @@ function partnerSignedOffInThreeMajor(): RuleCondition {
     label: "Partner signed off in 3 of major",
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
-      // Find partner's opening strain
-      let openerStrain: BidSuit | null = null;
-      for (const entry of ctx.auction.entries) {
-        if (entry.call.type === "bid" && entry.seat === partner) {
-          openerStrain = entry.call.strain;
-          break;
-        }
-      }
+      // Find partner's opening strain (partner is opener in Bergen)
+      const firstEntry = ctx.auction.entries.find(
+        (e) => e.call.type === "bid" && e.seat === partner,
+      );
+      const openerStrain = firstEntry?.call.type === "bid" ? firstEntry.call.strain : null;
       if (openerStrain !== BidSuit.Hearts && openerStrain !== BidSuit.Spades) return false;
       // Check partner bid 3 of that same major (their rebid)
       let partnerBidCount = 0;
@@ -327,33 +203,123 @@ function partnerSignedOffInThreeMajor(): RuleCondition {
   };
 }
 
-const bergenAcceptGame = conditionedRule({
-  name: "bergen-accept-game",
-  auctionConditions: [isResponder(), biddingRound(1), partnerBidGameInMajor()],
-  handConditions: [],
-  call(): Call {
-    return { type: "pass" };
-  },
-});
+// ─── Rule Tree ────────────────────────────────────────────────
 
-const bergenAcceptSignoff = conditionedRule({
-  name: "bergen-accept-signoff",
-  auctionConditions: [isResponder(), biddingRound(1), partnerSignedOffInThreeMajor()],
-  handConditions: [],
-  call(): Call {
-    return { type: "pass" };
-  },
-});
+// Responder initial bids (after 1M-P)
+const responderInitialBranch: RuleNode = decision(
+  "game-raise-hcp",
+  and(hcpMin(13), majorSupport()),
+  bid("bergen-game-raise", gameInOpenersMajor),
+  decision(
+    "limit-raise-hcp",
+    and(hcpRange(10, 12), majorSupport()),
+    bid("bergen-limit-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+    decision(
+      "constructive-hcp",
+      and(hcpRange(7, 9), majorSupport()),
+      bid("bergen-constructive-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+      decision(
+        "preemptive-hcp",
+        and(hcpMax(6), majorSupport()),
+        bid("bergen-preemptive-raise", threeOfOpenersMajor),
+        fallback(),
+      ),
+    ),
+  ),
+);
 
-// North also needs to pass after game try continuation (responder bid 3M reject or 4M accept)
-const bergenOpenerAcceptAfterTry = conditionedRule({
-  name: "bergen-opener-accept-after-try",
-  auctionConditions: [isOpener(), biddingRound(2)],
-  handConditions: [],
-  call(): Call {
-    return { type: "pass" };
-  },
-});
+// Opener rebids after constructive (1M P 3C P)
+const openerAfterConstructive: RuleNode = decision(
+  "rebid-game-17+",
+  hcpMin(17),
+  bid("bergen-rebid-game-after-constructive", openerRebidGame),
+  decision(
+    "rebid-try-14-16",
+    hcpRange(14, 16),
+    bid("bergen-rebid-try-after-constructive", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+    bid("bergen-rebid-signoff-after-constructive", (): Call => ({ type: "pass" })),
+  ),
+);
+
+// Opener rebids after limit (1M P 3D P)
+const openerAfterLimit: RuleNode = decision(
+  "rebid-game-15+",
+  hcpMin(15),
+  bid("bergen-rebid-game-after-limit", openerRebidGame),
+  bid("bergen-rebid-signoff-after-limit", openerRebidSignoff),
+);
+
+// Opener rebids after preemptive (1M P 3M P)
+const openerAfterPreemptive: RuleNode = decision(
+  "rebid-game-18+",
+  hcpMin(18),
+  bid("bergen-rebid-game-after-preemptive", openerRebidGame),
+  bid("bergen-rebid-pass-after-preemptive", (): Call => ({ type: "pass" })),
+);
+
+// Opener round 1 rebids
+const openerRound1Branch: RuleNode = decision(
+  "after-constructive",
+  partnerBidAt(3, BidSuit.Clubs),
+  openerAfterConstructive,
+  decision(
+    "after-limit",
+    partnerBidAt(3, BidSuit.Diamonds),
+    openerAfterLimit,
+    decision(
+      "after-preemptive",
+      partnerRaisedToThreeOfMajor(),
+      openerAfterPreemptive,
+      fallback(),
+    ),
+  ),
+);
+
+// Responder round 1 continuation
+const responderRound1Branch: RuleNode = decision(
+  "partner-bid-game",
+  partnerBidGameInMajor(),
+  bid("bergen-accept-game", (): Call => ({ type: "pass" })),
+  decision(
+    "partner-signoff",
+    partnerSignedOffInThreeMajor(),
+    bid("bergen-accept-signoff", (): Call => ({ type: "pass" })),
+    decision(
+      "game-try-resp",
+      partnerBidAt(3, BidSuit.Diamonds),
+      decision(
+        "try-accept-9-10",
+        hcpRange(9, 10),
+        bid("bergen-try-accept", gameTryAcceptCall),
+        bid("bergen-try-reject", gameTryRejectCall),
+      ),
+      fallback(),
+    ),
+  ),
+);
+
+// Root tree
+const bergenRuleTree: RuleNode = decision(
+  "responder-initial",
+  auctionMatchesAny([["1H", "P"], ["1S", "P"]]),
+  responderInitialBranch,
+  decision(
+    "is-opener-round1",
+    and(isOpener(), biddingRound(1)),
+    openerRound1Branch,
+    decision(
+      "is-responder-round1",
+      and(isResponder(), biddingRound(1)),
+      responderRound1Branch,
+      decision(
+        "is-opener-round2",
+        and(isOpener(), biddingRound(2)),
+        bid("bergen-opener-accept-after-try", (): Call => ({ type: "pass" })),
+        fallback(),
+      ),
+    ),
+  ),
+);
 
 // ─── Default Auction ──────────────────────────────────────────
 
@@ -370,37 +336,15 @@ function bergenDefaultAuction(seat: Seat, deal?: Deal): Auction | undefined {
 
 // ─── Convention Config ────────────────────────────────────────
 
-export const bergenConfig: ConventionConfig = {
+export const bergenConfig: TreeConventionConfig = {
   id: "bergen-raises",
   name: "Bergen Raises",
   description:
     "Bergen Raises: coded responses to 1M opening showing support and strength",
   category: ConventionCategory.Constructive,
   dealConstraints: bergenDealConstraints,
-  biddingRules: [
-    // --- Responder initial rules (2-entry auction: "1M P") ---
-    bergenGameRaise,
-    bergenLimitRaise,
-    bergenConstructiveRaise,
-    bergenPreemptiveRaise,
-    // --- Opener rebids after constructive (4-entry: "1M P 3C P") ---
-    bergenRebidGameAfterConstructive,
-    bergenRebidTryAfterConstructive,
-    bergenRebidSignoffAfterConstructive,
-    // --- Responder game try continuation (6-entry: "1M P 3C P 3D P") ---
-    bergenTryAccept,
-    bergenTryReject,
-    // --- Opener rebids after limit (4-entry: "1M P 3D P") ---
-    bergenRebidGameAfterLimit,
-    bergenRebidSignoffAfterLimit,
-    // --- Opener rebids after preemptive (4-entry: "1M P 3M P") ---
-    bergenRebidGameAfterPreemptive,
-    bergenRebidPassAfterPreemptive,
-    // --- Acceptance passes (close auction after rebid) ---
-    bergenAcceptGame,
-    bergenAcceptSignoff,
-    bergenOpenerAcceptAfterTry,
-  ],
+  ruleTree: bergenRuleTree,
+  biddingRules: flattenTree(bergenRuleTree),
   examples: [],
   defaultAuction: bergenDefaultAuction,
 };

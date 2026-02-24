@@ -5,7 +5,7 @@ import type {
   ConditionResult,
   ConditionBranch,
 } from "./types";
-import type { Call, Hand } from "../engine/types";
+import type { Call, Hand, ContractBid } from "../engine/types";
 import { Rank, BidSuit } from "../engine/types";
 import { partnerSeat } from "../engine/constants";
 import { auctionMatchesExact } from "../engine/auction-helpers";
@@ -71,6 +71,8 @@ export const AUCTION_CONDITION_NAMES = new Set([
   "partner-raised-3M",
   "partner-bid-4M",
   "partner-signoff-3M",
+  "partner-opened-major",
+  "partner-opened-minor",
 ]);
 
 // ─── Leaf condition factories ────────────────────────────────
@@ -209,9 +211,6 @@ export function suitBelow(
     },
   };
 }
-
-/** @deprecated Use suitBelow — suitMax name was misleading (uses strict <, not <=). */
-export const suitMax = suitBelow;
 
 /** At least one of the given suits has min+ cards. */
 export function anySuitMin(
@@ -537,32 +536,7 @@ export function partnerOpenedAt(level: number, strain: BidSuit): RuleCondition {
   };
 }
 
-/** Check if partner bid a specific suit at any point. */
-export function partnerBidSuit(suit: BidSuit): RuleCondition {
-  return {
-    name: `partner-bid-${suit}`,
-    label: `Partner bid ${suit}`,
-    test(ctx) {
-      const partner = partnerSeat(ctx.seat);
-      return ctx.auction.entries.some(
-        (e) =>
-          e.seat === partner &&
-          e.call.type === "bid" &&
-          e.call.strain === suit,
-      );
-    },
-    describe(ctx) {
-      const partner = partnerSeat(ctx.seat);
-      const found = ctx.auction.entries.find(
-        (e) =>
-          e.seat === partner &&
-          e.call.type === "bid" &&
-          e.call.strain === suit,
-      );
-      return found ? `Partner bid ${suit}` : `Partner has not bid ${suit}`;
-    },
-  };
-}
+
 
 /** Check if an opponent has made a contract bid. */
 export function opponentBid(): RuleCondition {
@@ -1110,6 +1084,273 @@ export function advanceAfterDouble(): RuleCondition {
       return auctionMatchesExact(ctx.auction, ["1NT", "X", "P"])
         ? "After partner's double, relay 2C to discover suit"
         : "Not after partner's double";
+    },
+  };
+}
+
+// ─── SAYC-extracted helpers (data-returning, not condition factories) ────
+
+/** Find the strain of the first contract bid by partner. */
+export function partnerOpeningStrain(ctx: BiddingContext): BidSuit | null {
+  const partner = partnerSeat(ctx.seat);
+  for (const entry of ctx.auction.entries) {
+    if (entry.call.type === "bid" && entry.seat === partner) {
+      return entry.call.strain;
+    }
+  }
+  return null;
+}
+
+/** Get this seat's first contract bid strain. */
+export function seatFirstBidStrain(ctx: BiddingContext): BidSuit | null {
+  for (const entry of ctx.auction.entries) {
+    if (entry.call.type === "bid" && entry.seat === ctx.seat) {
+      return entry.call.strain;
+    }
+  }
+  return null;
+}
+
+/** Check if partner's last bid is the same strain this seat opened. */
+function partnerRaisedOurSuit(ctx: BiddingContext): boolean {
+  const ourStrain = seatFirstBidStrain(ctx);
+  if (!ourStrain) return false;
+  const partner = partnerSeat(ctx.seat);
+  for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+    const entry = ctx.auction.entries[i]!;
+    if (entry.call.type === "bid" && entry.seat === partner) {
+      return entry.call.strain === ourStrain;
+    }
+  }
+  return false;
+}
+
+/** Check if partner responded with a major (not the strain we opened). */
+export function partnerRespondedMajor(ctx: BiddingContext): BidSuit | null {
+  const partner = partnerSeat(ctx.seat);
+  for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+    const entry = ctx.auction.entries[i]!;
+    if (entry.call.type === "bid" && entry.seat === partner) {
+      if (entry.call.strain === BidSuit.Hearts || entry.call.strain === BidSuit.Spades) {
+        return entry.call.strain;
+      }
+      return null;
+    }
+  }
+  return null;
+}
+
+/** Find the last contract bid in the auction by any player. */
+export function lastBid(ctx: BiddingContext): ContractBid | null {
+  for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+    const call = ctx.auction.entries[i]!.call;
+    if (call.type === "bid") return call;
+  }
+  return null;
+}
+
+/** Canonical denomination ordering for bid legality checks. */
+const STRAIN_ORDER: Record<string, number> = {
+  [BidSuit.Clubs]: 0,
+  [BidSuit.Diamonds]: 1,
+  [BidSuit.Hearts]: 2,
+  [BidSuit.Spades]: 3,
+  [BidSuit.NoTrump]: 4,
+};
+
+/** Check if a bid at (level, strain) is higher than an existing bid. */
+export function bidIsHigher(
+  level: number,
+  strain: BidSuit,
+  existing: ContractBid,
+): boolean {
+  if (level > existing.level) return true;
+  if (level === existing.level) {
+    return STRAIN_ORDER[strain]! > STRAIN_ORDER[existing.strain]!;
+  }
+  return false;
+}
+
+// ─── SAYC-extracted condition factories ──────────────────────
+
+/** Has at least one 4-card major. */
+export function hasFourCardMajor(): RuleCondition {
+  return {
+    name: "has-4-card-major",
+    label: "Has 4+ card major",
+    test(ctx) {
+      return ctx.evaluation.shape[0]! >= 4 || ctx.evaluation.shape[1]! >= 4;
+    },
+    describe(ctx) {
+      const s = ctx.evaluation.shape[0]!;
+      const h = ctx.evaluation.shape[1]!;
+      if (s >= 4 || h >= 4) return `Has 4-card major (${s}S, ${h}H)`;
+      return `No 4-card major (${s}S, ${h}H)`;
+    },
+  };
+}
+
+/** Partner's first bid strain is Hearts or Spades. Pure auction check. */
+export function partnerOpenedMajor(): RuleCondition {
+  return {
+    name: "partner-opened-major",
+    label: "Partner opened a major suit",
+    test(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      return strain === BidSuit.Hearts || strain === BidSuit.Spades;
+    },
+    describe(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      if (strain === BidSuit.Hearts || strain === BidSuit.Spades)
+        return `Partner opened ${strain}`;
+      return "Partner did not open a major";
+    },
+  };
+}
+
+/** Partner's first bid strain is Clubs or Diamonds. Pure auction check. */
+export function partnerOpenedMinor(): RuleCondition {
+  return {
+    name: "partner-opened-minor",
+    label: "Partner opened a minor suit",
+    test(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      return strain === BidSuit.Clubs || strain === BidSuit.Diamonds;
+    },
+    describe(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      if (strain === BidSuit.Clubs || strain === BidSuit.Diamonds)
+        return `Partner opened ${strain}`;
+      return "Partner did not open a minor";
+    },
+  };
+}
+
+/** N+ cards in partner's opened major. Resolves partner's strain from auction. */
+export function majorSupportN(n: number): RuleCondition {
+  return {
+    name: `major-support-${n}`,
+    label: `${n}+ in partner's opened major`,
+    // Dynamic suit inference — suitIndex resolved at runtime from partner's opening.
+    // Omitting .inference until Phase 2c wires dynamic-suit support to the inference engine.
+    test(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      if (strain === BidSuit.Hearts) return ctx.evaluation.shape[1]! >= n;
+      if (strain === BidSuit.Spades) return ctx.evaluation.shape[0]! >= n;
+      return false;
+    },
+    describe(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      if (strain === BidSuit.Hearts) {
+        const len = ctx.evaluation.shape[1]!;
+        return len >= n ? `${len} hearts (${n}+ support)` : `Only ${len} hearts`;
+      }
+      if (strain === BidSuit.Spades) {
+        const len = ctx.evaluation.shape[0]!;
+        return len >= n ? `${len} spades (${n}+ support)` : `Only ${len} spades`;
+      }
+      return "Partner did not open a major";
+    },
+  };
+}
+
+/** Partner raised our major suit. Pure auction check + hand check. */
+export function partnerRaisedOurMajor(): RuleCondition {
+  return {
+    name: "partner-raised-our-major",
+    label: "Partner raised our major suit",
+    test(ctx) {
+      const ourStrain = seatFirstBidStrain(ctx);
+      if (ourStrain !== BidSuit.Hearts && ourStrain !== BidSuit.Spades) return false;
+      return partnerRaisedOurSuit(ctx);
+    },
+    describe(ctx) {
+      const ourStrain = seatFirstBidStrain(ctx);
+      if (ourStrain && partnerRaisedOurSuit(ctx))
+        return `Partner raised our ${ourStrain}`;
+      return "Partner did not raise our major";
+    },
+  };
+}
+
+/** Partner responded H/S + this seat has 4+ in that suit. */
+export function partnerRespondedMajorWithSupport(): RuleCondition {
+  return {
+    name: "partner-responded-major-with-support",
+    label: "4+ support for partner's major response",
+    test(ctx) {
+      const partnerMajor = partnerRespondedMajor(ctx);
+      if (!partnerMajor) return false;
+      if (partnerMajor === BidSuit.Hearts) return ctx.evaluation.shape[1]! >= 4;
+      return ctx.evaluation.shape[0]! >= 4;
+    },
+    describe(ctx) {
+      const partnerMajor = partnerRespondedMajor(ctx);
+      if (!partnerMajor) return "Partner did not respond with a major";
+      const idx = partnerMajor === BidSuit.Hearts ? 1 : 0;
+      const len = ctx.evaluation.shape[idx]!;
+      return len >= 4
+        ? `${len} ${partnerMajor} (4+ support for partner's response)`
+        : `Only ${len} ${partnerMajor}`;
+    },
+  };
+}
+
+/** 6+ cards in the suit this seat opened. */
+export function sixPlusInOpenedSuit(): RuleCondition {
+  return {
+    name: "6-plus-in-opened-suit",
+    label: "6+ cards in opened suit",
+    test(ctx) {
+      const ourStrain = seatFirstBidStrain(ctx);
+      if (!ourStrain) return false;
+      const suitIdx = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs]
+        .indexOf(ourStrain);
+      return suitIdx >= 0 && ctx.evaluation.shape[suitIdx]! >= 6;
+    },
+    describe(ctx) {
+      const ourStrain = seatFirstBidStrain(ctx);
+      if (!ourStrain) return "No previous bid";
+      const suitIdx = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs]
+        .indexOf(ourStrain);
+      if (suitIdx < 0) return "Not a suit bid";
+      const len = ctx.evaluation.shape[suitIdx]!;
+      return len >= 6
+        ? `${len} ${ourStrain} (rebiddable)`
+        : `Only ${len} ${ourStrain} (need 6+)`;
+    },
+  };
+}
+
+/** Has a 5+ card suit legally biddable at given level. */
+export function goodSuitAtLevel(level: number): RuleCondition {
+  return {
+    name: `good-5-card-suit-at-${level}`,
+    label: `5+ card suit biddable at ${level}-level`,
+    test(ctx) {
+      const lb = lastBid(ctx);
+      if (!lb) return false;
+      const suitStrains: BidSuit[] = [
+        BidSuit.Spades,
+        BidSuit.Hearts,
+        BidSuit.Diamonds,
+        BidSuit.Clubs,
+      ];
+      for (let i = 0; i < 4; i++) {
+        if (
+          ctx.evaluation.shape[i]! >= 5 &&
+          bidIsHigher(level, suitStrains[i]!, lb)
+        ) {
+          return true;
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      const longest = Math.max(...ctx.evaluation.shape);
+      return longest >= 5
+        ? `Has ${longest}-card suit for ${level}-level overcall`
+        : `No 5+ card suit`;
     },
   };
 }
