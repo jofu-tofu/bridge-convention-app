@@ -54,12 +54,41 @@ export interface ConditionDetail {
   readonly isBestBranch?: boolean;
 }
 
+/**
+ * Tree traversal DTOs for UI consumption.
+ * CONSTRAINT: Pure DTOs — no methods, no imports from conventions/ or engine/.
+ * These cross the conventions/ → ai/ → store → UI boundary as display-ready data.
+ * `depth` + `parentNodeName` on every entry supports future tree reconstruction:
+ * group by parentNodeName, order by depth, render navigable tree with taken branch highlighted.
+ */
+export interface TreePathEntry {
+  readonly nodeName: string;
+  readonly passed: boolean;
+  readonly description: string;
+  readonly depth: number;
+  readonly parentNodeName: string | null;
+}
+
+/** The decisive fork: what condition split the matched bid from an alternative? */
+export interface TreeForkPoint {
+  readonly matched: TreePathEntry;
+  readonly rejected: TreePathEntry;
+}
+
+export interface TreeEvalSummary {
+  readonly matchedNodeName: string;
+  readonly path: readonly TreePathEntry[];
+  readonly visited: readonly TreePathEntry[];
+  readonly forkPoint?: TreeForkPoint;
+}
+
 export interface BidResult {
   readonly call: Call;
   readonly ruleName: string | null;
   readonly explanation: string;
   readonly confidence?: number; // 0-1, future use (ML strategies)
   readonly conditions?: readonly ConditionDetail[];
+  readonly treePath?: TreeEvalSummary;
 }
 
 export interface BiddingStrategy {

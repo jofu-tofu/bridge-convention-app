@@ -6,7 +6,7 @@
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
-  import RulesPanel from "../../game/RulesPanel.svelte";
+  import AuctionRulesPanel from "../../game/AuctionRulesPanel.svelte";
   import Button from "../../shared/Button.svelte";
 
   interface Props {
@@ -140,13 +140,7 @@
   </div>
 {:else if activeTab === "rules"}
   <div id="review-panel-rules" role="tabpanel" aria-label="Convention rules">
-    {#if convention && deal}
-      <RulesPanel {convention} {deal} {bidHistory} />
-    {:else}
-      <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-        <p class="text-text-muted text-sm">Convention rules not available.</p>
-      </div>
-    {/if}
+    <AuctionRulesPanel {bidHistory} />
   </div>
 {:else if activeTab === "analysis"}
   <div id="review-panel-analysis" role="tabpanel" aria-label="DDS analysis" class="min-w-0 overflow-x-hidden">
@@ -189,7 +183,7 @@
   {#if onPlayHand}
     <Button onclick={onPlayHand}>Play this Hand</Button>
   {/if}
-  <Button variant={onPlayHand ? "secondary" : "primary"} onclick={onNextDeal}>Next Deal</Button>
-  <Button variant="secondary" onclick={onBackToMenu}>Back to Menu</Button>
+  <Button variant={onPlayHand ? "secondary" : "primary"} onclick={onNextDeal} testId="next-deal">Next Deal</Button>
+  <Button variant="secondary" onclick={onBackToMenu} testId="review-back-to-menu">Back to Menu</Button>
 </div>
 </div>

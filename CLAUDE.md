@@ -25,7 +25,7 @@ Desktop app for drilling bridge bidding conventions (Stayman, Gerber, DONT, Berg
 
 ## Dev Tools (dev server only)
 
-- **URL routing:** `?convention=stayman` jumps to game screen with that convention (IDs: `stayman`, `gerber`, `dont`, `bergen-raises`, `landy`)
+- **URL routing:** `?convention=stayman` jumps to game screen with that convention (IDs: `stayman`, `gerber`, `dont`, `bergen-raises`, `landy`, `sayc`)
 - **Deterministic seed:** `?seed=42` seeds the PRNG for reproducible deals. Seed advances per deal (42, 43, 44...). Reload resets.
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
 
@@ -68,12 +68,12 @@ tests/
 
 **Subsystems:**
 
-- **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `tauri-ipc-engine.ts` and `http-engine.ts` provide Rust-backed transports. (entry: `src/engine/types.ts`)
+- **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `tauri-ipc-engine.ts` (desktop) and `http-engine.ts` (dev/browser) provide Rust-backed transports — no fallback, Rust server required. (entry: `src/engine/types.ts`)
 - **Conventions:** Registry of convention configs — all 6 conventions use hierarchical rule trees (`TreeConventionConfig`). Each tree built with `decision()`/`bid()`/`fallback()` from `rule-tree.ts`, flattened on demand via `getConventionRules()` for display consumers (RulesPanel). Registry dispatches via `isTreeConvention()` → `evaluateTreeFast()`. `evaluateBiddingRules(context, config)` — tree-only, no flat dispatch. Conditions carry optional `ConditionInference` metadata for the inference engine. (entry: `src/conventions/registry.ts`)
-- **Shared:** Cross-boundary type definitions used by both engine/ and ai/ — includes `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings` (entry: `src/shared/types.ts`)
+- **Shared:** Cross-boundary type definitions used by both engine/ and ai/ — includes `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings`, `TreeEvalSummary`/`TreePathEntry`/`TreeForkPoint` (tree traversal DTOs) (entry: `src/shared/types.ts`)
 - **AI:** Bidding strategies + play AI + auction inference — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `createHeuristicPlayStrategy()` with 7-heuristic chain, `randomPlay()` legacy fallback. `inference/` subsystem models per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). (entry: `src/ai/convention-strategy.ts`)
-- **Lib:** Display utilities + pure functions — `formatCall()`, `formatRuleName()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`, `prepareRulesForDisplay`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
-- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` + sub-components), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea, RulesPanel), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
+- **Lib:** Display utilities + pure functions — `formatCall()`, `formatRuleName()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`, `prepareRulesForDisplay`, `groupBidsByRound`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
+- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` + sub-components), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea, AuctionRulesPanel, RulesPanel), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
 - **Stores:** App store (screen navigation, selected convention, dev seed state) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
@@ -89,6 +89,13 @@ tests/
    - ~~(b) Convention migration phase 2a~~ — Done. Landy, DONT, Stayman migrated to trees with `flattenTree()` compat
    - ~~(b.2) Convention migration phase 2b~~ — Done. Gerber, Bergen Raises, SAYC migrated to trees. SAYC condition factories extracted to `conditions.ts`.
    - ~~(c) Cleanup + negative inference~~ — Done. Flat dispatch removed from `evaluateBiddingRules()`. `biddingRules` now optional (computed lazily via `getConventionRules()`). Negative inference via `invertInference()` + `resolveDisjunction()`. `evaluateBiddingRules(context, config)` and `evaluateAllBiddingRules(context, config)` — no `rules` param.
+1.6. ~~**Bridge Bum Test Audit**~~ — Done. Verified all 6 conventions against Bridge Bum / ACBL references. Added citations, missing rules, and reference docs.
+   - ~~(a) Gerber~~ — Done. Citation cleanup (7 tests), 2 negative tests (non-jump 4C).
+   - ~~(b) Bergen Raises~~ — Done. Constructive HCP 7-10 (Bridge Bum), splinter bids (3S/3H, 12+ HCP with shortage).
+   - ~~(c) DONT~~ — Done. Advancer 6+ suit bypass after double/2C/2D, overcaller reveal after relay.
+   - ~~(d) Landy~~ — Done. 2NT inquiry (12+ HCP), invitational 3H/3S (10-12), overcaller rebids after 2NT.
+   - ~~(e) SAYC~~ — Done. Tests for weak 2D, jump raise, game raise, new suit 2-level, 2NT response, opener rebids, 1NT overcall.
+   - ~~(f) Stayman~~ — Done. Smolen (3H/3S after 2D denial), Stayman after 2NT opening (3C ask + responses).
 2. **User Learning Enhancements**
    - ~~(a) Rules tab in ReviewSidePanel~~ — Done. Context-aware convention rules display during review phase. Fired rules show evaluated conditions with actual hand values; reference rules show static condition names.
    - (b) Dedicated learning screen — Browse full convention rule sets outside of game context. Accessible from ConventionSelectScreen. Reuses RulesPanel component.
@@ -127,7 +134,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - Full testing playbook is in **TESTING.md**, not here
 - `src-tauri/` is boilerplate scaffold until Phase 5 — don't add custom Rust commands yet
 - No vendored bridge libraries — clean-room implementation only
-- DONT uses Standard DONT (original Marty Bergen) variant. Bergen Raises uses Standard Bergen (3C=constructive 7-9, 3D=limit 10-12, 3M=preemptive 0-6)
+- DONT uses Standard DONT (original Marty Bergen) variant. Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`

@@ -10,6 +10,6 @@ test("app renders a heading and description", async ({ page }) => {
   await page.goto("/");
   const heading = page.locator("h1");
   await expect(heading).toBeVisible();
-  const description = page.locator("main p");
+  const description = page.locator("main p").first();
   await expect(description).toBeVisible();
 });

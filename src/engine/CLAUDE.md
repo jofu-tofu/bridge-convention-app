@@ -5,12 +5,11 @@ Pure TypeScript game logic. Zero platform dependencies.
 ## Conventions
 
 - Never import from: `svelte`, `@tauri-apps/*`, `window`, `document`, `localStorage`
-- `ts-engine.ts` no longer imports from `conventions/registry` — it receives pre-built `BiddingStrategy` objects from callers
 - `suggestBid` is NOT on EnginePort — it's a standalone function in `bid-suggester.ts` (can't cross IPC/HTTP because BiddingStrategy has methods)
 - All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
-- Phase 1.5 bidding/scoring/play implemented; `solveDeal` works via Rust backends (HttpEngine, TauriIpcEngine), TsEngine still throws. `suggestPlay` throws everywhere.
+- Phase 1.5 bidding/scoring/play implemented; `solveDeal` works via Rust backends (HttpEngine, TauriIpcEngine). `suggestPlay` throws everywhere.
 
 ## Architecture
 
@@ -19,7 +18,7 @@ Pure TypeScript game logic. Zero platform dependencies.
 ```
 types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
                         ↘ auction.ts → auction-helpers.ts       ↘
-                        ↘ play.ts            → port.ts → ts-engine.ts → ../conventions/registry
+                        ↘ play.ts            → port.ts
          types.ts → scoring.ts
 ```
 
@@ -32,7 +31,6 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `hand-evaluator.ts`   | HCP calculation, strategy pattern for evaluation                                          |
 | `deal-generator.ts`   | Rejection sampling with Fisher-Yates shuffle, constraint relaxation                       |
 | `port.ts`             | `EnginePort` interface — async boundary between UI and engine                             |
-| `ts-engine.ts`        | `TsEngine` — V1 implementation wrapping sync functions in `Promise.resolve()`             |
 | `auction.ts`          | Auction logic: bid comparison, legality, completion, contract/declarer extraction         |
 | `play.ts`             | Trick play rules: legal plays (follow suit), lead suit, trick winner determination        |
 | `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
@@ -60,7 +58,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Rust Backend Integration
 
-- **Engine fallback chain:** `TauriIpcEngine` (desktop) → `HttpEngine` (dev:web, port 3001) → `TsEngine` (browser fallback)
+- **No fallback.** `TauriIpcEngine` (desktop) or `HttpEngine` (dev/browser). If Rust server isn't running, calls fail loudly.
 - **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
 - **Stateless HTTP:** Every request sends full state. No sessions. Error format: plain text body, 400 status code.
 - **`HttpEngine` strips** `customCheck` and `rng` from constraints before serialization. Rust uses `seed: Option<u64>` instead.

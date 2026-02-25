@@ -1,9 +1,14 @@
 import type { ConventionConfig, ConditionResult } from "../conventions/types";
 import { evaluateBiddingRules } from "../conventions/registry";
+import type { RuleNode } from "../conventions/rule-tree";
+import type { TreeEvalResult, PathEntry } from "../conventions/tree-evaluator";
 import type {
   BiddingStrategy,
   BidResult,
   ConditionDetail,
+  TreePathEntry,
+  TreeEvalSummary,
+  TreeForkPoint,
 } from "../shared/types";
 
 function mapConditionResult(cr: ConditionResult): ConditionDetail {
@@ -44,6 +49,65 @@ function mapConditionResult(cr: ConditionResult): ConditionDetail {
   };
 }
 
+// ─── Tree eval → DTO mapper ──────────────────────────────────
+
+/** Walk a RuleNode tree to build depth/parentName lookup for all DecisionNodes. */
+function buildNodeInfo(tree: RuleNode): Map<string, { depth: number; parentName: string | null }> {
+  const info = new Map<string, { depth: number; parentName: string | null }>();
+  function walk(node: RuleNode, depth: number, parentName: string | null) {
+    if (node.type === "decision") {
+      info.set(node.name, { depth, parentName });
+      walk(node.yes, depth + 1, node.name);
+      walk(node.no, depth + 1, node.name);
+    }
+  }
+  walk(tree, 0, null);
+  return info;
+}
+
+/** Map PathEntry[] to TreePathEntry[] with depth/parentNodeName from tree structure. */
+export function mapVisitedWithStructure(
+  visited: readonly PathEntry[],
+  tree: RuleNode,
+): TreePathEntry[] {
+  const nodeInfo = buildNodeInfo(tree);
+  return visited.map((e) => {
+    const info = nodeInfo.get(e.node.name);
+    return {
+      nodeName: e.node.name,
+      passed: e.passed,
+      description: e.description,
+      depth: info?.depth ?? 0,
+      parentNodeName: info?.parentName ?? null,
+    };
+  });
+}
+
+/** Find the last (deepest) adjacent pass/fail pair that are true siblings (same parent). */
+export function extractForkPoint(entries: readonly TreePathEntry[]): TreeForkPoint | undefined {
+  for (let i = entries.length - 1; i >= 1; i--) {
+    const curr = entries[i]!;
+    const prev = entries[i - 1]!;
+    if (curr.passed !== prev.passed && curr.parentNodeName === prev.parentNodeName) {
+      const matched = curr.passed ? curr : prev;
+      const rejected = curr.passed ? prev : curr;
+      return { matched, rejected };
+    }
+  }
+  return undefined;
+}
+
+function mapTreeEvalResult(result: TreeEvalResult, tree: RuleNode): TreeEvalSummary {
+  const visited = mapVisitedWithStructure(result.visited, tree);
+  const path = visited.filter((e) => e.passed);
+  return {
+    matchedNodeName: result.matched?.name ?? "",
+    path,
+    visited,
+    forkPoint: extractForkPoint(visited),
+  };
+}
+
 export function conventionToStrategy(
   config: ConventionConfig,
 ): BiddingStrategy {
@@ -59,6 +123,9 @@ export function conventionToStrategy(
         explanation: result.explanation,
         conditions: result.conditionResults
           ? result.conditionResults.map(mapConditionResult)
+          : undefined,
+        treePath: result.treeEvalResult && result.treeRoot
+          ? mapTreeEvalResult(result.treeEvalResult, result.treeRoot)
           : undefined,
       };
     },

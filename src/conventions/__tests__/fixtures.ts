@@ -1,6 +1,8 @@
-import type { Auction, ContractBid } from "../../engine/types";
+import type { Auction, ContractBid, Hand } from "../../engine/types";
 import { Seat } from "../../engine/types";
 import { buildAuction, parsePatternCall } from "../../engine/auction-helpers";
+import { evaluateHand } from "../../engine/hand-evaluator";
+import type { BiddingContext } from "../types";
 import { expect } from "vitest";
 
 // Re-export engine test helpers for convenience
@@ -192,6 +194,24 @@ export const parseCallString = parsePatternCall;
  */
 export function makeOpening(dealer: Seat, bid: string): Auction {
   return buildAuction(dealer, [bid]);
+}
+
+/**
+ * Creates a BiddingContext from a hand, seat, bid sequence, and dealer.
+ * Shared helper used by edge-case tests across all conventions.
+ */
+export function makeBiddingContext(
+  h: Hand,
+  seat: Seat,
+  bids: string[],
+  dealer: Seat,
+): BiddingContext {
+  return {
+    hand: h,
+    auction: auctionFromBids(dealer, bids),
+    seat,
+    evaluation: evaluateHand(h),
+  };
 }
 
 /**

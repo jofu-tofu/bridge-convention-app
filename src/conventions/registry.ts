@@ -10,7 +10,8 @@ import {
   isConditionedRule,
   evaluateConditions,
 } from "./condition-evaluator";
-import type { TreeConventionConfig } from "./rule-tree";
+import type { TreeConventionConfig, RuleNode } from "./rule-tree";
+import type { TreeEvalResult } from "./tree-evaluator";
 import { evaluateTree, evaluateTreeFast } from "./tree-evaluator";
 import { treeResultToBiddingRuleResult, flattenTree } from "./tree-compat";
 
@@ -65,6 +66,11 @@ export interface BiddingRuleResult {
   readonly rule: string;
   readonly explanation: string;
   readonly conditionResults?: readonly ConditionResult[];
+  /** Raw tree evaluation result — available for conventions using rule trees.
+   *  Carries DecisionNode references, so must not cross the shared/ boundary directly. */
+  readonly treeEvalResult?: TreeEvalResult;
+  /** The tree root used for evaluation — needed by mappers that compute depth/parent info. */
+  readonly treeRoot?: RuleNode;
 }
 
 export function evaluateBiddingRules(
@@ -87,7 +93,7 @@ export function evaluateBiddingRules(
   const treeResult = evaluateTree(config.ruleTree, context);
   const result = treeResultToBiddingRuleResult(treeResult, context);
   if (!result) return null;
-  return result;
+  return { ...result, treeEvalResult: treeResult, treeRoot: config.ruleTree };
 }
 
 export interface DebugRuleResult {

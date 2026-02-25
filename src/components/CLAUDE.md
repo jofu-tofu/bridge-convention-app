@@ -42,11 +42,12 @@ components/
     TrickArea.svelte                 Center trick display with NSEW card positions and trick count
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
-    BidFeedbackPanel.svelte          Correct/incorrect bid feedback with show-answer toggle
+    BidFeedbackPanel.svelte          Correct/incorrect bid feedback with show-answer toggle + tree fork display
     BiddingReview.svelte             Bid history table with convention callouts
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
-    RulesPanel.svelte                Convention rules display: fired (evaluated) + reference (static)
+    AuctionRulesPanel.svelte         Round-by-round auction rules view (replaces RulesPanel in review)
+    RulesPanel.svelte                Convention rules display: fired (evaluated) + reference (static) — kept for future learning screen
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
@@ -70,6 +71,7 @@ components/
 ## Gotchas
 
 - **Scrollbar & overflow:** Global dark scrollbar styles in `app.css` (no `.custom-scroll` class needed). Side panels use `overflow-x-hidden` to prevent horizontal scroll. Content components (ConventionCallout, BiddingReview) use `flex-wrap` and `break-words` to wrap instead of overflow. MakeableContractsTable uses `table-fixed` for uniform columns.
+- **Store user-action methods return `void`** — `userBid`, `userPlayCard`, `dismissBidFeedback`, `retryBid`, `skipFromFeedback`, `skipToReview`, `reset` are safe to call from any onclick handler. Only `startDrill` and `getLegalPlaysForSeat` return Promises and must be awaited.
 - `GameScreen` uses `onMount` to skip starting a new drill if a deal is already in progress
 - GameScreen renders all phases (BIDDING, DECLARER_PROMPT, PLAYING, EXPLANATION) inline via conditional blocks — no separate ExplanationScreen
 - PLAYING phase shows BridgeTable with TrickArea center, HandFan with legal plays, and side panel with trick count + skip button

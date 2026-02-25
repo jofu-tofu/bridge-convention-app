@@ -204,7 +204,8 @@ describe("createGameStore play phase", () => {
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
-    await store.skipToReview();
+    store.skipToReview();
+    await vi.advanceTimersByTimeAsync(5000);
 
     expect(store.phase).toBe("EXPLANATION");
     expect(store.tricks.length).toBe(13);
@@ -221,7 +222,8 @@ describe("createGameStore play phase", () => {
     const initialCards = store.getRemainingCards(Seat.South);
     expect(initialCards.length).toBe(13);
 
-    await store.skipToReview();
+    store.skipToReview();
+    await vi.advanceTimersByTimeAsync(5000);
     const finalCards = store.getRemainingCards(Seat.South);
     expect(finalCards.length).toBe(0);
   });
@@ -231,9 +233,10 @@ describe("createGameStore play phase", () => {
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
-    await store.skipToReview();
+    store.skipToReview();
+    await vi.advanceTimersByTimeAsync(5000);
 
-    await store.reset();
+    store.reset();
 
     expect(store.phase).toBe("BIDDING");
     expect(store.tricks.length).toBe(0);

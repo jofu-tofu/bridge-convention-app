@@ -22,7 +22,7 @@
       role="list"
       aria-label="Bid conditions"
     >
-      {#each conditions as cond (cond.name)}
+      {#each conditions as cond, ci (cond.name + '-' + ci)}
         {#if cond.children}
           <li class="text-xs">
             <span class="text-text-muted">{cond.description}</span>
@@ -31,7 +31,7 @@
               role="list"
               aria-label="Condition branches"
             >
-              {#each cond.children as branch (branch.name)}
+              {#each cond.children as branch, bi (branch.name + '-' + bi)}
                 <li class={branch.isBestBranch ? "" : "opacity-40"}>
                   <span
                     class={branch.passed

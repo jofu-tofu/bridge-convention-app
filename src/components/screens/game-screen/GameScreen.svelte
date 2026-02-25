@@ -212,6 +212,7 @@
           class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
           onclick={handleBackToMenu}
           aria-label="Back to menu"
+          data-testid="back-to-menu"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

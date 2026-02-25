@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { saycConfig } from "../sayc";
-import { clearRegistry, registerConvention, getConventionRules } from "../registry";
-import { flattenTree } from "../tree-compat";
-import { generateDeal } from "../../engine/deal-generator";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import { Seat, BidSuit } from "../../engine/types";
-import type { Auction, Hand } from "../../engine/types";
-import type { BiddingContext, BiddingRule } from "../types";
-import { createBiddingContext } from "../context-factory";
-import { SEATS } from "../../engine/constants";
-import { isLegalCall } from "../../engine/auction";
+import { saycConfig } from "../../sayc";
+import { clearRegistry, registerConvention, getConventionRules } from "../../registry";
+import { flattenTree } from "../../tree-compat";
+import { generateDeal } from "../../../engine/deal-generator";
+import { evaluateHand } from "../../../engine/hand-evaluator";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { Auction, Hand } from "../../../engine/types";
+import type { BiddingContext, BiddingRule } from "../../types";
+import { createBiddingContext } from "../../context-factory";
+import { SEATS } from "../../../engine/constants";
+import { isLegalCall } from "../../../engine/auction";
 
 beforeEach(() => {
   clearRegistry();
@@ -57,7 +57,7 @@ function auctionFromCalls(
   return { entries, isComplete: false };
 }
 
-function parseCall(s: string): import("../../engine/types").Call {
+function parseCall(s: string): import("../../../engine/types").Call {
   if (s === "P") return { type: "pass" };
   if (s === "X") return { type: "double" };
   if (s === "XX") return { type: "redouble" };

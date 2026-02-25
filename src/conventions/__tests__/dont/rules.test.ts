@@ -3,23 +3,23 @@
 // - Marty Bergen, original DONT description [Bergen/dont]
 
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../engine/types";
-import type { ContractBid, Hand } from "../../engine/types";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { ContractBid, Hand } from "../../../engine/types";
 import {
   calculateHcp,
   getSuitLength,
   isBalanced,
   evaluateHand,
-} from "../../engine/hand-evaluator";
-import { checkConstraints, generateDeal } from "../../engine/deal-generator";
+} from "../../../engine/hand-evaluator";
+import { checkConstraints, generateDeal } from "../../../engine/deal-generator";
 import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../registry";
-import { dontConfig, dontDealConstraints } from "../dont";
-import type { BiddingContext } from "../types";
-import { hand, auctionFromBids } from "./fixtures";
+} from "../../registry";
+import { dontConfig, dontDealConstraints } from "../../dont";
+import type { BiddingContext } from "../../types";
+import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {
   clearRegistry();
@@ -155,7 +155,7 @@ describe("DONT deal constraints", () => {
         },
         dealer: Seat.East,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -234,7 +234,7 @@ describe("DONT deal constraints", () => {
         },
         dealer: Seat.East,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -314,7 +314,7 @@ describe("DONT deal constraints", () => {
         },
         dealer: Seat.East,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -394,7 +394,7 @@ describe("DONT deal constraints", () => {
         },
         dealer: Seat.East,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       dontDealConstraints,
     );
@@ -1424,5 +1424,274 @@ describe("DONT property-based invariants", () => {
         expect(bid.level).toBeGreaterThanOrEqual(2);
       }
     }
+  });
+});
+
+// ─── Advancer bypass with 6+ suit ────────────────────────────
+
+describe("DONT advancer bypass — 6+ suit after double [bridgebum/dont]", () => {
+  test("[bridgebum/dont] advancer bids 2H with 6+ hearts after double (bypasses relay)", () => {
+    // After 1NT-X-P, advancer (North) with 6+ hearts bids 2H directly
+    const advancer = hand(
+      "S5",
+      "S3",
+      "HA",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "H3",
+      "D5",
+      "D3",
+      "D2",
+      "C5",
+      "C2",
+    );
+    expect(getSuitLength(advancer)[1]).toBe(6); // 6 hearts
+    const result = callFromRules(advancer, Seat.North, ["1NT", "X", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-advance-long-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/dont] advancer bids 2S with 6+ spades after double", () => {
+    const advancer = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S7",
+      "S3",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "D2",
+      "C5",
+      "C2",
+    );
+    expect(getSuitLength(advancer)[0]).toBe(6); // 6 spades
+    const result = callFromRules(advancer, Seat.North, ["1NT", "X", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-advance-long-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+
+  test("[bridgebum/dont] advancer bids 2D with 6+ diamonds after double", () => {
+    const advancer = hand(
+      "S5",
+      "S3",
+      "H5",
+      "H3",
+      "DA",
+      "DK",
+      "DQ",
+      "DJ",
+      "D7",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(getSuitLength(advancer)[2]).toBe(6); // 6 diamonds
+    const result = callFromRules(advancer, Seat.North, ["1NT", "X", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-advance-long-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Diamonds);
+  });
+
+  test("[bridgebum/dont] advancer without 6+ suit relays 2C after double (unchanged)", () => {
+    // No 6+ suit → standard 2C relay
+    const advancer = hand(
+      "S5",
+      "S3",
+      "S2",
+      "HK",
+      "H7",
+      "H3",
+      "DA",
+      "D5",
+      "D3",
+      "CQ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    const result = callFromRules(advancer, Seat.North, ["1NT", "X", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-advance-next-step");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Clubs);
+  });
+});
+
+// ─── Overcaller reveal after relay ──────────────────────────
+
+describe("DONT overcaller reveal after relay [bridgebum/dont]", () => {
+  test("[bridgebum/dont] overcaller passes 2C with 6+ clubs (happy in 2C)", () => {
+    // After 1NT-X-P-2C-P, overcaller (South) with 6+ clubs passes
+    const overcaller = hand(
+      "S5",
+      "S3",
+      "H5",
+      "H3",
+      "D5",
+      "D2",
+      "CA",
+      "CK",
+      "CQ",
+      "CJ",
+      "C7",
+      "C3",
+      "C2",
+    );
+    expect(getSuitLength(overcaller)[3]).toBe(7); // 7 clubs
+    const result = callFromRules(overcaller, Seat.South, [
+      "1NT", "X", "P", "2C", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-reveal-pass");
+    expect(result!.call.type).toBe("pass");
+  });
+
+  test("[bridgebum/dont] overcaller bids 2D with 6+ diamonds after relay", () => {
+    const overcaller = hand(
+      "S5",
+      "S3",
+      "H5",
+      "H3",
+      "DA",
+      "DK",
+      "DQ",
+      "DJ",
+      "D7",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(getSuitLength(overcaller)[2]).toBe(6); // 6 diamonds
+    const result = callFromRules(overcaller, Seat.South, [
+      "1NT", "X", "P", "2C", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-reveal-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Diamonds);
+  });
+
+  test("[bridgebum/dont] overcaller bids 2H with 6+ hearts after relay", () => {
+    const overcaller = hand(
+      "S5",
+      "S3",
+      "S2",
+      "HA",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "H3",
+      "D5",
+      "D2",
+      "C5",
+      "C2",
+    );
+    expect(getSuitLength(overcaller)[1]).toBe(6); // 6 hearts
+    const result = callFromRules(overcaller, Seat.South, [
+      "1NT", "X", "P", "2C", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-reveal-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+});
+
+// ─── Advancer bypass after 2-suited bids ─────────────────────
+
+describe("DONT advancer bypass — 6+ suit after 2-suited bid [bridgebum/dont]", () => {
+  test("[bridgebum/dont] advancer bids 2S with 6+ spades after 2C (bypasses relay)", () => {
+    // After 1NT-2C-P, advancer with 6+ spades bids 2S instead of relay/pass
+    const advancer = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S7",
+      "S3",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "D2",
+      "C5",
+      "C2",
+    );
+    expect(getSuitLength(advancer)[0]).toBe(6); // 6 spades
+    const result = callFromRules(advancer, Seat.North, ["1NT", "2C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-advance-long-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+
+  test("[bridgebum/dont] advancer bids 2H with 6+ hearts after 2C", () => {
+    const advancer = hand(
+      "S5",
+      "S3",
+      "HA",
+      "HK",
+      "HQ",
+      "HJ",
+      "H7",
+      "H3",
+      "D5",
+      "D3",
+      "D2",
+      "C5",
+      "C2",
+    );
+    expect(getSuitLength(advancer)[1]).toBe(6); // 6 hearts
+    const result = callFromRules(advancer, Seat.North, ["1NT", "2C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-advance-long-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/dont] advancer bids 2S with 6+ spades after 2D", () => {
+    const advancer = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "SJ",
+      "S7",
+      "S3",
+      "H5",
+      "H3",
+      "D5",
+      "D3",
+      "D2",
+      "C5",
+      "C2",
+    );
+    expect(getSuitLength(advancer)[0]).toBe(6); // 6 spades
+    const result = callFromRules(advancer, Seat.North, ["1NT", "2D", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-advance-long-suit");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Spades);
   });
 });

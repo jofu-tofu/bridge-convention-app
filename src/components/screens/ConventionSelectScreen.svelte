@@ -96,6 +96,7 @@
             class="flex items-center justify-between text-left p-4 rounded-[--radius-lg] bg-bg-card
               border-2 border-transparent hover:border-accent-primary
               transition-colors cursor-pointer"
+            data-testid="convention-{convention.id}"
             onclick={() => handleSelect(convention)}
           >
             <div>

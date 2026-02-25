@@ -53,7 +53,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `setDevSeed(seed)` — sets seed and resets deal count to 0
 - `advanceDevDeal()` — increments deal count
 
-**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry`, `GamePhase` (includes `"DECLARER_PROMPT"`), `PlayLogEntry` (seat, card, reason, trickIndex)
+**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry` (includes optional `treePath: TreeEvalSummary`), `GamePhase` (includes `"DECLARER_PROMPT"`), `PlayLogEntry` (seat, card, reason, trickIndex)
 
 **Exported helper:** `seatController(seat, declarer, userSeat)` → `'user' | 'ai'`
 
@@ -67,11 +67,12 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 ## Gotchas
 
-- `EnginePort` methods are async (for V2 Tauri IPC). `TsEngine` resolves synchronously via `Promise.resolve()`, so no actual async gaps in V1.
+- `EnginePort` methods are async (for V2 Tauri IPC).
 - `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
-- `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`) + `seat` and `isUser`
+- `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `treePath`) + `seat` and `isUser`
 - Default auction entries get generic explanations (e.g., "Opening 1NT bid") — richer explanations deferred to V2
 - `isUserTurn` is `$derived` — combines `currentTurn`, `drillSession.isUserSeat()`, and `!isProcessing`
+- **Sync public API for user actions.** `userBid`, `userPlayCard`, `dismissBidFeedback`, `retryBid`, `skipFromFeedback`, `skipToReview`, `reset` return `void` — async logic runs in private `*Impl` functions. This prevents the Svelte 5 "unawaited async in event handler" DOM refresh bug. Only `startDrill` and `getLegalPlaysForSeat` return Promises.
 
 ---
 

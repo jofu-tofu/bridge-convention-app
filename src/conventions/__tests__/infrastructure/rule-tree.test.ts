@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { Seat, BidSuit } from "../../engine/types";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import { decision, bid, fallback } from "../rule-tree";
-import type { RuleNode } from "../rule-tree";
-import { evaluateTree, evaluateTreeFast } from "../tree-evaluator";
-import { hand } from "../../engine/__tests__/fixtures";
-import { buildAuction } from "../../engine/auction-helpers";
-import { hcpMin, anySuitMin, isResponder } from "../conditions";
-import { createBiddingContext } from "../context-factory";
-import type { RuleCondition } from "../types";
-import { alwaysTrue, alwaysFalse, staticBid, makeMinimalContext } from "./tree-test-helpers";
+import { Seat, BidSuit } from "../../../engine/types";
+import { evaluateHand } from "../../../engine/hand-evaluator";
+import { decision, bid, fallback } from "../../rule-tree";
+import type { RuleNode } from "../../rule-tree";
+import { evaluateTree, evaluateTreeFast } from "../../tree-evaluator";
+import { hand } from "../../../engine/__tests__/fixtures";
+import { buildAuction } from "../../../engine/auction-helpers";
+import { hcpMin, anySuitMin, isResponder } from "../../conditions";
+import { createBiddingContext } from "../../context-factory";
+import type { RuleCondition } from "../../types";
+import { alwaysTrue, alwaysFalse, staticBid, makeMinimalContext } from "../tree-test-helpers";
 
 // ─── Basic tree evaluation ───────────────────────────────────
 

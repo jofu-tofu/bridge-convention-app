@@ -3,19 +3,19 @@
 // - ACBL Standard American Yellow Card, Slam Bidding section [SAYC slam]
 
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../engine/types";
-import type { ContractBid, Hand } from "../../engine/types";
-import { calculateHcp } from "../../engine/hand-evaluator";
-import { checkConstraints, generateDeal } from "../../engine/deal-generator";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { ContractBid, Hand } from "../../../engine/types";
+import { calculateHcp } from "../../../engine/hand-evaluator";
+import { checkConstraints, generateDeal } from "../../../engine/deal-generator";
 import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../registry";
-import { gerberConfig, gerberDealConstraints, countAces, countKings } from "../gerber";
-import type { BiddingContext } from "../types";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import { hand, auctionFromBids } from "./fixtures";
+} from "../../registry";
+import { gerberConfig, gerberDealConstraints, countAces, countKings } from "../../gerber";
+import type { BiddingContext } from "../../types";
+import { evaluateHand } from "../../../engine/hand-evaluator";
+import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {
   clearRegistry();
@@ -146,7 +146,7 @@ describe("Gerber deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       gerberDealConstraints,
     );
@@ -229,7 +229,7 @@ describe("Gerber deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       gerberDealConstraints,
     );
@@ -312,7 +312,7 @@ describe("Gerber deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       gerberDealConstraints,
     );
@@ -926,7 +926,7 @@ describe("Gerber bidding rules -- signoff", () => {
 // --- Full Sequence Integration ---
 
 describe("Gerber full sequences", () => {
-  test("1NT-P-4C-P-4S-P-5C-P-5H-P-6NT (3 aces, ask kings, 2 kings -> 6NT)", () => {
+  test("[bridgebum/gerber] 1NT-P-4C-P-4S-P-5C-P-5H-P-6NT (3 aces, ask kings, 2 kings -> 6NT)", () => {
     // Opener: 16 HCP, 2 aces, 1 king
     const opener = hand(
       "SQ",
@@ -994,7 +994,7 @@ describe("Gerber full sequences", () => {
     expect((signoff!.call as ContractBid).strain).toBe(BidSuit.NoTrump);
   });
 
-  test("1NT-P-4C-P-4D-P-king-ask (4D = 0 or 4 aces, responder has 0 so opener has 4)", () => {
+  test("[bridgebum/gerber] 1NT-P-4C-P-4D-P-king-ask (4D = 0 or 4 aces, responder has 0 so opener has 4)", () => {
     // Opener with 4 aces
     const opener = hand(
       "SA",
@@ -1046,7 +1046,7 @@ describe("Gerber full sequences", () => {
     expect(kingAsk!.rule).toBe("gerber-king-ask");
   });
 
-  test("1NT-P-4C-P-4H-P-4NT signoff (1 opener + 0 responder = 1 -> direct signoff)", () => {
+  test("[bridgebum/gerber] 1NT-P-4C-P-4H-P-4NT signoff (1 opener + 0 responder = 1 -> direct signoff)", () => {
     // Opener: 1 ace
     const opener = hand(
       "SA",
@@ -1103,7 +1103,7 @@ describe("Gerber full sequences", () => {
     expect((signoff!.call as ContractBid).strain).toBe(BidSuit.NoTrump);
   });
 
-  test("1NT-P-4C-P-4NT-P-king-ask (3 opener aces + 0 responder = 3 -> ask kings)", () => {
+  test("[bridgebum/gerber] 1NT-P-4C-P-4NT-P-king-ask (3 opener aces + 0 responder = 3 -> ask kings)", () => {
     // Opener: 3 aces
     const opener = hand(
       "SA",
@@ -1338,7 +1338,7 @@ describe("Gerber reference hands", () => {
 // --- Edge Cases: Ace Disambiguation and Signoff Boundaries ---
 
 describe("Gerber edge cases — ace disambiguation", () => {
-  test("responder with 1 ace sees 4D: infers opener=4, total=5 → king-ask", () => {
+  test("[bridgebum/gerber] responder with 1 ace sees 4D: infers opener=4, total=5 → king-ask", () => {
     // Responder has 1 ace, opener showed 4D (0 or 4).
     // Since responder != 4 aces, disambiguation says opener = 4.
     // Total = 1 + 4 = 5 (impossible in real bridge — only 4 aces exist).
@@ -1374,7 +1374,7 @@ describe("Gerber edge cases — ace disambiguation", () => {
     expect(call.strain).toBe(BidSuit.Clubs);
   });
 
-  test("king-ask after 4S with exactly 1 responder ace: total=3 → 5C", () => {
+  test("[bridgebum/gerber] king-ask after 4S with exactly 1 responder ace: total=3 → 5C", () => {
     // Responder has 1 ace, opener showed 4S (2 aces) → total = 3 → king-ask
     const responder1 = hand(
       "SA",
@@ -1407,7 +1407,7 @@ describe("Gerber edge cases — ace disambiguation", () => {
     expect(call.strain).toBe(BidSuit.Clubs);
   });
 
-  test("countAces returns 0 for hand with no face cards (yarborough-like)", () => {
+  test("[bridgebum/gerber] countAces returns 0 for hand with no face cards (yarborough-like)", () => {
     const noAces = hand(
       "S9",
       "S8",
@@ -1424,6 +1424,64 @@ describe("Gerber edge cases — ace disambiguation", () => {
       "C7",
     );
     expect(countAces(noAces)).toBe(0);
+  });
+});
+
+// --- Negative Tests: When 4C is NOT Gerber ---
+
+describe("Gerber negative cases", () => {
+  test("[bridgebum/gerber] non-jump 4C after suit opening is NOT Gerber", () => {
+    // Per Bridge Bum: "4C is NOT Gerber. It is natural because it was not a jump"
+    // after a non-NT auction. Only an immediate/jump 4C after NT is Gerber.
+    // After 1S-P, bidding 4C is a natural club bid, not Gerber.
+    const responder = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "S2",
+      "HK",
+      "H3",
+      "DK",
+      "D5",
+      "D3",
+      "CQ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    const result = callFromRules(responder, Seat.South, ["1S", "P"]);
+    // Gerber should not fire after a suit opening
+    if (result !== null) {
+      expect(result.rule).not.toBe("gerber-ask");
+    }
+  });
+
+  test("[bridgebum/gerber] 4C after suit bid in auction is NOT Gerber", () => {
+    // 1NT-P-2C-P-2H-P — this is a Stayman sequence, not Gerber position
+    // If someone bids 4C here, it's not Gerber
+    const responder = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "S2",
+      "HK",
+      "H3",
+      "DK",
+      "D5",
+      "D3",
+      "CQ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    const result = callFromRules(
+      responder,
+      Seat.South,
+      ["1NT", "P", "2C", "P", "2H", "P"],
+    );
+    if (result !== null) {
+      expect(result.rule).not.toBe("gerber-ask");
+    }
   });
 });
 

@@ -4,12 +4,12 @@ import {
   clearRegistry,
   evaluateAllBiddingRules,
   getConventionRules,
-} from "../registry";
-import { staymanConfig } from "../stayman";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import { Suit, Rank, Seat, BidSuit } from "../../engine/types";
-import type { Hand, Auction } from "../../engine/types";
-import { createBiddingContext } from "../context-factory";
+} from "../../registry";
+import { staymanConfig } from "../../stayman";
+import { evaluateHand } from "../../../engine/hand-evaluator";
+import { Suit, Rank, Seat, BidSuit } from "../../../engine/types";
+import type { Hand, Auction } from "../../../engine/types";
+import { createBiddingContext } from "../../context-factory";
 
 function makeHand(cards: Array<{ suit: Suit; rank: Rank }>): Hand {
   return { cards };

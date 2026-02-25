@@ -5,6 +5,7 @@
     variant?: "primary" | "secondary" | "ghost";
     disabled?: boolean;
     onclick?: () => void;
+    testId?: string;
     children: Snippet;
   }
 
@@ -12,6 +13,7 @@
     variant = "primary",
     disabled = false,
     onclick,
+    testId,
     children,
   }: Props = $props();
 
@@ -30,6 +32,7 @@
   type="button"
   class="px-4 py-2 min-h-[--size-touch-target] rounded-[--radius-md] font-medium text-sm transition-colors {classes}"
   {disabled}
+  data-testid={testId}
   onclick={disabled ? undefined : onclick}
 >
   {@render children()}

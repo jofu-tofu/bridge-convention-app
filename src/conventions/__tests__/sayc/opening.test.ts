@@ -1,48 +1,15 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../engine/types";
-import type { ContractBid, Hand } from "../../engine/types";
-import {
-  registerConvention,
-  clearRegistry,
-  evaluateBiddingRules,
-} from "../registry";
-import { saycConfig } from "../sayc";
-import type { BiddingContext } from "../types";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import { hand, auctionFromBids } from "./fixtures";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { ContractBid } from "../../../engine/types";
+import { registerConvention, clearRegistry } from "../../registry";
+import { saycConfig } from "../../sayc";
+import { hand } from "../fixtures";
+import { callFromRules } from "./helpers";
 
 beforeEach(() => {
   clearRegistry();
   registerConvention(saycConfig);
 });
-
-// ─── Helpers ────────────────────────────────────────────────
-
-function makeBiddingContext(
-  h: Hand,
-  seat: Seat,
-  bids: string[],
-  dealer: Seat = Seat.North,
-): BiddingContext {
-  return {
-    hand: h,
-    auction: auctionFromBids(dealer, bids),
-    seat,
-    evaluation: evaluateHand(h),
-  };
-}
-
-function callFromRules(
-  h: Hand,
-  seat: Seat,
-  bids: string[],
-  dealer: Seat = Seat.North,
-) {
-  const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(context, saycConfig);
-}
-
-// ─── Opening Bids ───────────────────────────────────────────
 
 describe("SAYC opening bids", () => {
   test("1NT opening: 15-17 balanced, no 5-card major", () => {
@@ -69,10 +36,8 @@ describe("SAYC opening bids", () => {
       "DK", "D3",                     // 2 diamonds
       "C5", "C3", "C2",              // 3 clubs
     );
-    // 15 HCP, balanced 5-3-3-2 but has 5-card major
     const result = callFromRules(opener, Seat.North, []);
     expect(result).not.toBeNull();
-    // Should open 1S instead of 1NT
     expect(result!.rule).toBe("sayc-open-1s");
   });
 
@@ -146,7 +111,7 @@ describe("SAYC opening bids", () => {
     const opener = hand(
       "SA", "SK", "SQ", "SJ", // 4 spades, 10 HCP
       "HA", "HK", "HQ",        // 3 hearts, 10 HCP
-      "DK", "D5", "D3",        // 3 diamonds, 3 HCP (that's 23)
+      "DK", "D5", "D3",        // 3 diamonds, 3 HCP
       "C5", "C3", "C2",        // 3 clubs, 0 HCP
     );
     // 23 HCP
@@ -205,130 +170,7 @@ describe("SAYC opening bids", () => {
   });
 });
 
-// ─── Responses ──────────────────────────────────────────────
-
-describe("SAYC responses to 1-level suit openings", () => {
-  test("raise 1H to 2H: 6-10 HCP, 3+ hearts", () => {
-    // Partner (North) opened 1H, we (South) have 9 HCP 3 hearts
-    const responder = hand(
-      "SK", "S5", "S3", "S2",  // 4 spades, 3 HCP
-      "HQ", "HJ", "H7",        // 3 hearts, 3 HCP
-      "DK", "D5", "D3",        // 3 diamonds, 3 HCP
-      "C5", "C3", "C2",        // 3 clubs, 0 HCP
-    );
-    // 3 + 3 + 3 + 0 = 9 HCP. In 6-10 range.
-    const result = callFromRules(responder, Seat.South, ["1H", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-raise-major");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(2);
-    expect(call.strain).toBe(BidSuit.Hearts);
-  });
-
-  test("raise 1S to 2S: 6-10 HCP, 3+ spades", () => {
-    const responder = hand(
-      "SQ", "SJ", "S7",        // 3 spades, 3 HCP
-      "HK", "H5", "H3",        // 3 hearts, 3 HCP
-      "DQ", "D5", "D3",        // 3 diamonds, 2 HCP
-      "C5", "C4", "C3", "C2",  // 4 clubs, 0 HCP
-    );
-    // 8 HCP
-    const result = callFromRules(responder, Seat.South, ["1S", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-raise-major");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(2);
-    expect(call.strain).toBe(BidSuit.Spades);
-  });
-
-  test("1H over partner's minor: 6+ HCP, 4+ hearts", () => {
-    const responder = hand(
-      "S5", "S3", "S2",        // 3 spades, 0 HCP
-      "HK", "HQ", "HJ", "H3", // 4 hearts, 6 HCP
-      "DK", "D5", "D3",        // 3 diamonds, 3 HCP
-      "C5", "C3", "C2",        // 3 clubs, 0 HCP
-    );
-    // 9 HCP, 4 hearts — but also has 3 heart support for raise range
-    // However 1H response over minor should be chosen since partner opened minor
-    const result = callFromRules(responder, Seat.South, ["1D", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-1h-over-minor");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(1);
-    expect(call.strain).toBe(BidSuit.Hearts);
-  });
-
-  test("1S over partner's 1H: 6+ HCP, 4+ spades", () => {
-    const responder = hand(
-      "SA", "SK", "SQ", "S3",  // 4 spades, 10 HCP
-      "H5", "H3", "H2",        // 3 hearts, 0 HCP
-      "DK", "D5", "D3",        // 3 diamonds, 3 HCP
-      "C5", "C3", "C2",        // 3 clubs, 0 HCP
-    );
-    // 13 HCP, 4 spades
-    const result = callFromRules(responder, Seat.South, ["1H", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-1s-over-1h");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(1);
-    expect(call.strain).toBe(BidSuit.Spades);
-  });
-
-  test("1NT response: 6-10 HCP, no fit, partner opened suit", () => {
-    // 7 HCP, only 2 hearts (no 3+ support), no 4+ spades
-    const responder = hand(
-      "SK", "S5", "S3",        // 3 spades, 3 HCP
-      "H5", "H3",              // 2 hearts, 0 HCP
-      "DK", "D5", "D3", "D2", // 4 diamonds, 3 HCP
-      "CJ", "C5", "C3", "C2", // 4 clubs, 1 HCP
-    );
-    // 7 HCP, 2 hearts — can't raise 1H, no 4+ spades to bid 1S
-    const result = callFromRules(responder, Seat.South, ["1H", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-1nt");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(1);
-    expect(call.strain).toBe(BidSuit.NoTrump);
-  });
-});
-
-// ─── Responses to 1NT ───────────────────────────────────────
-
-describe("SAYC responses to 1NT", () => {
-  test("Stayman: 8+ HCP, 4-card major after 1NT", () => {
-    const responder = hand(
-      "SK", "SQ", "SJ", "S3", // 4 spades, 6 HCP
-      "HK", "H5", "H3",        // 3 hearts, 3 HCP
-      "D5", "D3", "D2",        // 3 diamonds, 0 HCP
-      "C5", "C3", "C2",        // 3 clubs, 0 HCP
-    );
-    // 9 HCP, 4 spades
-    const result = callFromRules(responder, Seat.South, ["1NT", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-1nt-stayman");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(2);
-    expect(call.strain).toBe(BidSuit.Clubs);
-  });
-
-  test("Pass 1NT: 0-7 HCP", () => {
-    const responder = hand(
-      "SK", "S5", "S3", "S2",  // 4 spades, 3 HCP
-      "H5", "H3", "H2",        // 3 hearts, 0 HCP
-      "DQ", "D5", "D3",        // 3 diamonds, 2 HCP
-      "C5", "C3", "C2",        // 3 clubs, 0 HCP
-    );
-    // 5 HCP
-    const result = callFromRules(responder, Seat.South, ["1NT", "P"]);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-1nt-pass");
-    expect(result!.call.type).toBe("pass");
-  });
-});
-
-// ─── Edge Cases ─────────────────────────────────────────────
-
-describe("SAYC edge cases", () => {
+describe("SAYC edge cases - opening", () => {
   test("opener with exactly 12 HCP opens 1-level suit", () => {
     // 12 HCP, 5 spades
     const opener = hand(
@@ -355,10 +197,6 @@ describe("SAYC edge cases", () => {
     expect(result!.rule).toBe("sayc-pass");
   });
 
-  test("config is internal", () => {
-    expect(saycConfig.internal).toBe(true);
-  });
-
   test("opener after passes: still opens", () => {
     // Dealer is North, East passes, South passes, West to bid with 14 HCP
     const opener = hand(
@@ -371,35 +209,6 @@ describe("SAYC edge cases", () => {
     const result = callFromRules(opener, Seat.West, ["P", "P", "P"], Seat.North);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("sayc-open-1s");
-  });
-
-  test("sayc-respond-1nt-stayman does NOT fire after partner opens 2NT", () => {
-    // 10 HCP, 4 hearts — would be Stayman after 1NT but NOT after 2NT
-    const responder = hand(
-      "SA", "S5", "S2",        // 3 spades, 4 HCP
-      "HK", "HQ", "H6", "H2", // 4 hearts, 5 HCP
-      "DJ", "D7", "D3",        // 3 diamonds, 1 HCP
-      "C5", "C3", "C2",        // 3 clubs, 0 HCP
-    );
-    // 10 HCP, 4 hearts — Stayman candidate
-    const result = callFromRules(responder, Seat.South, ["2NT", "P"]);
-    if (result) {
-      expect(result.rule).not.toBe("sayc-respond-1nt-stayman");
-    }
-  });
-
-  test("sayc-respond-1nt-pass does NOT fire after partner opens 2NT", () => {
-    // 5 HCP — would pass 1NT but should not match 1NT-pass rule after 2NT
-    const responder = hand(
-      "S8", "S5", "S2",        // 3 spades, 0 HCP
-      "HK", "HQ", "H6", "H2", // 4 hearts, 5 HCP
-      "DT", "D7", "D3",        // 3 diamonds, 0 HCP
-      "C5", "C3", "C2",        // 3 clubs, 0 HCP
-    );
-    const result = callFromRules(responder, Seat.South, ["2NT", "P"]);
-    if (result) {
-      expect(result.rule).not.toBe("sayc-respond-1nt-pass");
-    }
   });
 
   test("2NT opening: 20-21 balanced", () => {
@@ -417,5 +226,21 @@ describe("SAYC edge cases", () => {
     const call = result!.call as ContractBid;
     expect(call.level).toBe(2);
     expect(call.strain).toBe(BidSuit.NoTrump);
+  });
+
+  test("weak 2D: 5-11 HCP, 6+ diamonds", () => {
+    // K(3)+Q(2)+J(1)=6 HCP diamonds + J(1) clubs = 7 HCP total
+    const opener = hand(
+      "S5", "S3",
+      "H5", "H3",
+      "DK", "DQ", "DJ", "D7", "D5", "D3", // 6 diamonds
+      "CJ", "C3", "C2",
+    );
+    const result = callFromRules(opener, Seat.North, []);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("sayc-open-weak-2d");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Diamonds);
   });
 });

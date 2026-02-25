@@ -70,7 +70,7 @@
             {/if}
           </div>
           <div class="flex flex-col gap-1">
-            {#each rule.conditions as cond (cond.name)}
+            {#each rule.conditions as cond, ci (cond.name + '-' + ci)}
               <p class="text-xs text-text-muted break-words">
                 &bull; {cond.description}
               </p>
@@ -99,7 +99,7 @@
             {/if}
           </div>
           <div class="flex flex-col gap-1">
-            {#each rule.conditions as cond (cond.name)}
+            {#each rule.conditions as cond, ci (cond.name + '-' + ci)}
               <p class="text-xs text-text-muted break-words">
                 &bull; {cond.description}
               </p>

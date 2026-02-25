@@ -5,7 +5,7 @@ test("play phase loads after bidding completes", async ({ page }) => {
 
   // Select a convention from the menu
   const conventionCard = page
-    .locator("[data-testid='convention-card']")
+    .locator("[data-testid^='convention-']")
     .first();
   await expect(conventionCard).toBeVisible({ timeout: 5000 });
   await conventionCard.click();
@@ -32,7 +32,7 @@ test("skip to review button transitions to explanation", async ({ page }) => {
   await page.goto("/");
 
   const conventionCard = page
-    .locator("[data-testid='convention-card']")
+    .locator("[data-testid^='convention-']")
     .first();
   await expect(conventionCard).toBeVisible({ timeout: 5000 });
   await conventionCard.click();

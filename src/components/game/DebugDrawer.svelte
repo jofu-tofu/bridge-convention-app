@@ -170,7 +170,7 @@
                 {/if}
               </summary>
               <div class="pl-4 py-0.5">
-                {#each allResults as result (result.ruleName)}
+                {#each allResults as result, ri (result.ruleName + '-' + ri)}
                   <div
                     class={result.matched
                       ? result.isLegal
@@ -186,7 +186,7 @@
                   </div>
                   {#if result.conditionResults}
                     <div class="pl-4 text-text-muted">
-                      {#each result.conditionResults as cr (cr.condition.name)}
+                      {#each result.conditionResults as cr, ci (cr.condition.name + '-' + ci)}
                         <div>
                           {cr.passed ? "✓" : "✗"}
                           {cr.condition.name}: {cr.description}

@@ -9,6 +9,7 @@ export function createAppStore() {
   let devDealCount = $state(0);
   let debugPanelOpen = $state(false);
   let engineStatus = $state<string | null>(null);
+  let engineError = $state<string | null>(null);
 
   return {
     get screen() {
@@ -61,6 +62,14 @@ export function createAppStore() {
 
     setEngineStatus(status: string) {
       engineStatus = status;
+    },
+
+    get engineError() {
+      return engineError;
+    },
+
+    setEngineError(msg: string | null) {
+      engineError = msg;
     },
   };
 }

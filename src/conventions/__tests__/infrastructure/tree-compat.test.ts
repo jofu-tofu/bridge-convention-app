@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { BidSuit } from "../../engine/types";
-import { decision, bid, fallback } from "../rule-tree";
-import { evaluateTree } from "../tree-evaluator";
-import { flattenTree, treeResultToBiddingRuleResult } from "../tree-compat";
+import { BidSuit } from "../../../engine/types";
+import { decision, bid, fallback } from "../../rule-tree";
+import { evaluateTree } from "../../tree-evaluator";
+import { flattenTree, treeResultToBiddingRuleResult } from "../../tree-compat";
 import {
   alwaysTrue as condTrue,
   alwaysFalse as condFalse,
   staticBid,
   makeMinimalContext as makeCtx,
-} from "./tree-test-helpers";
+} from "../tree-test-helpers";
 
 // ─── flattenTree ─────────────────────────────────────────────
 

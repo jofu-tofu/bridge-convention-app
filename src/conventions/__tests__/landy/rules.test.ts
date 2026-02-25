@@ -2,23 +2,23 @@
 // - bridgebum.com/landy.php [bridgebum/landy]
 
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../engine/types";
-import type { ContractBid, Hand } from "../../engine/types";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { ContractBid, Hand } from "../../../engine/types";
 import {
   calculateHcp,
   getSuitLength,
   isBalanced,
   evaluateHand,
-} from "../../engine/hand-evaluator";
-import { checkConstraints, generateDeal } from "../../engine/deal-generator";
+} from "../../../engine/hand-evaluator";
+import { checkConstraints, generateDeal } from "../../../engine/deal-generator";
 import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../registry";
-import { landyConfig, landyDealConstraints } from "../landy";
-import type { BiddingContext } from "../types";
-import { hand, auctionFromBids } from "./fixtures";
+} from "../../registry";
+import { landyConfig, landyDealConstraints } from "../../landy";
+import type { BiddingContext } from "../../types";
+import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {
   clearRegistry();
@@ -153,7 +153,7 @@ describe("Landy deal constraints", () => {
         },
         dealer: Seat.East,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       landyDealConstraints,
     );
@@ -228,7 +228,7 @@ describe("Landy deal constraints", () => {
         },
         dealer: Seat.East,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       landyDealConstraints,
     );
@@ -358,7 +358,7 @@ describe("Landy overcaller bidding rules", () => {
 // ─── Response Rule Tests ────────────────────────────────────
 
 describe("Landy response bidding rules", () => {
-  // Advancer with 4+ hearts (hearts preference)
+  // Advancer with 4+ hearts (hearts preference), 7 HCP — basic response range
   const advancerHearts = hand(
     "S5",
     "S3",
@@ -367,15 +367,15 @@ describe("Landy response bidding rules", () => {
     "HJ",
     "H8",
     "H5",
-    "DA",
     "DK",
     "D7",
+    "D5",
     "D3",
     "C5",
     "C2",
   );
 
-  // Advancer with 4+ spades, <4 hearts (spades preference)
+  // Advancer with 4+ spades, <4 hearts (spades preference), 8 HCP — basic response range
   const advancerSpades = hand(
     "SQ",
     "SJ",
@@ -384,8 +384,8 @@ describe("Landy response bidding rules", () => {
     "H5",
     "H3",
     "H2",
-    "DA",
     "DK",
+    "DQ",
     "D7",
     "D3",
     "C5",
@@ -409,7 +409,7 @@ describe("Landy response bidding rules", () => {
     "C2",
   );
 
-  // Advancer with no strong preference (3-3 majors, fewer than 5 clubs)
+  // Advancer with no strong preference (3-3 majors, fewer than 5 clubs), 8 HCP — basic response range
   const advancerRelay = hand(
     "SQ",
     "S5",
@@ -417,9 +417,9 @@ describe("Landy response bidding rules", () => {
     "HK",
     "H5",
     "H3",
-    "DA",
-    "DK",
+    "DJ",
     "D7",
+    "D5",
     "D3",
     "D2",
     "C5",
@@ -477,18 +477,18 @@ describe("Landy response bidding rules", () => {
   });
 
   test("[bridgebum/landy] hearts preference beats spades when both 4+", () => {
-    // 4H + 4S: hearts shown first per convention priority
+    // 4H + 4S: hearts shown first per convention priority, 7 HCP (basic range)
     const bothFour = hand(
       "SQ",
       "SJ",
       "S7",
       "S5",
       "HK",
-      "HJ",
+      "H8",
       "H5",
       "H3",
-      "DA",
       "D7",
+      "D5",
       "D3",
       "C5",
       "C2",
@@ -518,6 +518,7 @@ describe("Landy full sequences", () => {
       "C5",
       "C2",
     );
+    // Advancer: 7 HCP, 4 hearts — basic response range
     const advancer = hand(
       "S5",
       "S3",
@@ -526,9 +527,9 @@ describe("Landy full sequences", () => {
       "HJ",
       "H8",
       "H5",
-      "DA",
       "DK",
       "D7",
+      "D5",
       "D3",
       "C5",
       "C2",
@@ -602,16 +603,17 @@ describe("Landy full sequences", () => {
       "C5",
       "C2",
     );
+    // Advancer: 6 HCP, 3-3 majors, no strong preference — relays 2D
     const advancer = hand(
       "SQ",
       "S5",
       "S2",
-      "HK",
+      "HJ",
       "H5",
       "H3",
-      "DA",
       "DK",
       "D7",
+      "D5",
       "D3",
       "D2",
       "C5",
@@ -655,5 +657,239 @@ describe("Landy property-based invariants", () => {
         expect(bid.level).toBeGreaterThanOrEqual(2);
       }
     }
+  });
+});
+
+// ─── 2NT Inquiry ─────────────────────────────────────────────
+
+describe("Landy 2NT inquiry [bridgebum/landy]", () => {
+  test("[bridgebum/landy] responder bids 2NT with 12+ HCP (forcing inquiry)", () => {
+    // After 1NT-2C-P, responder with 12+ HCP bids 2NT
+    const responder = hand(
+      "SA",
+      "SK",
+      "S7",
+      "S3",
+      "HK",
+      "H5",
+      "H2",
+      "DQ",
+      "D5",
+      "D3",
+      "CJ",
+      "C5",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(13);
+    const result = callFromRules(responder, Seat.North, ["1NT", "2C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-response-2nt");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.NoTrump);
+  });
+
+  test("[bridgebum/landy] 2NT not offered with 11 HCP (below threshold)", () => {
+    // SA(4) + SK(3) + HJ(1) + DQ(2) + CJ(1) = 11 HCP
+    const responder = hand(
+      "SA",
+      "SK",
+      "S7",
+      "S3",
+      "HJ",
+      "H5",
+      "H2",
+      "DQ",
+      "D5",
+      "D3",
+      "CJ",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(11);
+    const result = callFromRules(responder, Seat.North, ["1NT", "2C", "P"]);
+    expect(result).not.toBeNull();
+    // Should get a regular response, not 2NT
+    expect(result!.rule).not.toBe("landy-response-2nt");
+  });
+});
+
+// ─── Invitational Raises ─────────────────────────────────────
+
+describe("Landy invitational raises [bridgebum/landy]", () => {
+  test("[bridgebum/landy] responder bids 3H with 10-12 HCP + 4 hearts (invitational)", () => {
+    // After 1NT-2C-P, responder with 10-12 HCP and 4+ hearts bids 3H
+    // SK(3) + HK(3) + HQ(2) + DQ(2) + CJ(1) = 11 HCP
+    const responder = hand(
+      "SK",
+      "S5",
+      "S2",
+      "HK",
+      "HQ",
+      "H7",
+      "H3",
+      "DQ",
+      "D5",
+      "D3",
+      "CJ",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(11);
+    expect(getSuitLength(responder)[1]).toBe(4); // 4 hearts
+    const result = callFromRules(responder, Seat.North, ["1NT", "2C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-response-3h");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/landy] responder bids 3S with 10-12 HCP + 4 spades (invitational)", () => {
+    const responder = hand(
+      "SA",
+      "SK",
+      "S7",
+      "S3",
+      "H5",
+      "H3",
+      "H2",
+      "DK",
+      "D5",
+      "D3",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(10);
+    expect(getSuitLength(responder)[0]).toBe(4); // 4 spades
+    const result = callFromRules(responder, Seat.North, ["1NT", "2C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-response-3s");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+});
+
+// ─── Overcaller Rebids After 2NT ─────────────────────────────
+
+describe("Landy overcaller rebids after 2NT [bridgebum/landy]", () => {
+  test("[bridgebum/landy] overcaller bids 3D with 12+ HCP and 5-4 (maximum)", () => {
+    // After 1NT-2C-P-2NT-P, overcaller (South) with 12+ HCP and 5-4 bids 3D
+    const overcaller = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "S7",
+      "S3",
+      "HK",
+      "HQ",
+      "H5",
+      "H2",
+      "D5",
+      "D3",
+      "C5",
+      "C2",
+    );
+    expect(calculateHcp(overcaller)).toBe(14);
+    expect(getSuitLength(overcaller)[0]).toBe(5); // 5 spades
+    expect(getSuitLength(overcaller)[1]).toBe(4); // 4 hearts
+    const result = callFromRules(overcaller, Seat.South, [
+      "1NT", "2C", "P", "2NT", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-rebid-3d");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Diamonds);
+  });
+
+  test("[bridgebum/landy] overcaller bids 3C with 10-11 HCP and 5-4 (medium)", () => {
+    const overcaller = hand(
+      "SA",
+      "SK",
+      "S7",
+      "S5",
+      "S3",
+      "HK",
+      "H7",
+      "H5",
+      "H2",
+      "D5",
+      "D3",
+      "C5",
+      "C2",
+    );
+    expect(calculateHcp(overcaller)).toBe(10);
+    expect(getSuitLength(overcaller)[0]).toBe(5); // 5 spades
+    expect(getSuitLength(overcaller)[1]).toBe(4); // 4 hearts
+    const result = callFromRules(overcaller, Seat.South, [
+      "1NT", "2C", "P", "2NT", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-rebid-3c");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Clubs);
+  });
+
+  test("[bridgebum/landy] overcaller bids 3NT with 12+ HCP and 5-5 (maximum)", () => {
+    // SA(4)+SK(3)+SQ(2)+HK(3)+HJ(1) = 13 HCP
+    const overcaller = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "S7",
+      "S3",
+      "HK",
+      "HJ",
+      "H7",
+      "H5",
+      "H2",
+      "D5",
+      "D3",
+      "C2",
+    );
+    expect(calculateHcp(overcaller)).toBe(13);
+    expect(getSuitLength(overcaller)[0]).toBe(5); // 5 spades
+    expect(getSuitLength(overcaller)[1]).toBe(5); // 5 hearts
+    const result = callFromRules(overcaller, Seat.South, [
+      "1NT", "2C", "P", "2NT", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-rebid-3nt");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.NoTrump);
+  });
+
+  test("[bridgebum/landy] overcaller bids 3S with 10-11 HCP and 5-5 (medium)", () => {
+    const overcaller = hand(
+      "SA",
+      "SK",
+      "S7",
+      "S5",
+      "S3",
+      "HK",
+      "HJ",
+      "H7",
+      "H5",
+      "H2",
+      "D5",
+      "D3",
+      "C2",
+    );
+    expect(calculateHcp(overcaller)).toBe(11);
+    expect(getSuitLength(overcaller)[0]).toBe(5); // 5 spades
+    expect(getSuitLength(overcaller)[1]).toBe(5); // 5 hearts
+    const result = callFromRules(overcaller, Seat.South, [
+      "1NT", "2C", "P", "2NT", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-rebid-3s");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Spades);
   });
 });

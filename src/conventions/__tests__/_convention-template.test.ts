@@ -1,8 +1,11 @@
 /**
  * Convention Test Template
  *
- * Copy this file when implementing a new convention's tests.
- * Replace "Convention Name" with the actual convention (e.g., "Stayman").
+ * To add tests for a new convention:
+ *   1. Create src/conventions/__tests__/{name}/ directory
+ *   2. Copy this template to {name}/rules.test.ts
+ *   3. Create {name}/edge-cases.test.ts for interference, boundary, shape tests
+ *   4. Replace "Convention Name" with the actual convention (e.g., "Stayman")
  *
  * Structure:
  *   1. Deal constraints — opener/responder requirements (HCP, shape)
@@ -11,17 +14,18 @@
  *
  * All tests use test.todo() — they compile but skip until convention is implemented.
  *
- * Fixture API:
+ * Fixture API (import from ../fixtures):
  *   - hand('SA', 'SK', ...) — create a 13-card Hand from notation
  *   - card('SA') — create a single Card
  *   - auctionFromBids(Seat.North, ["1NT", "P", "2C"]) — build auction from shorthand
  *   - makeOpening(Seat.North, "1NT") — create auction with one opening bid
+ *   - makeBiddingContext(hand, seat, bids, dealer) — create BiddingContext for edge cases
  *   - expectBid(auction, Seat.South, "2C") — assert last bid matches
  */
 
 import { describe, test } from "vitest";
-// import { Seat } from "../../engine/types";
-// import { hand, auctionFromBids, makeOpening, expectBid } from "./fixtures";
+// import { Seat } from "../../../engine/types";
+// import { hand, auctionFromBids, makeOpening, expectBid, makeBiddingContext } from "../fixtures";
 
 describe("Convention Name", () => {
   describe("deal constraints", () => {

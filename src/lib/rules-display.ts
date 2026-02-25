@@ -2,6 +2,7 @@ import type {
   ConventionConfig,
 } from "../conventions/types";
 import type { BidHistoryEntry } from "../stores/game.svelte";
+import type { ConditionDetail, TreeEvalSummary } from "../shared/types";
 import type { Deal, Call, Seat, Auction } from "../engine/types";
 import { Seat as SeatEnum } from "../engine/types";
 import {
@@ -169,4 +170,49 @@ export function prepareRulesForDisplay(
     firedRules: firedRules.map((f) => f.rule),
     referenceRules,
   };
+}
+
+// ─── Round-by-round grouping ──────────────────────────────────
+
+export interface RoundEntry {
+  readonly seat: Seat;
+  readonly call: Call;
+  readonly ruleName: string | null;
+  readonly isUser: boolean;
+  readonly isCorrect?: boolean;
+  readonly treePath?: TreeEvalSummary;
+  readonly conditions?: readonly ConditionDetail[];
+}
+
+export interface RoundGroup {
+  readonly roundNumber: number;
+  readonly entries: readonly RoundEntry[];
+}
+
+/**
+ * Group bid history entries into rounds of 4 (one full table rotation).
+ * Every 4 consecutive bids form a round, regardless of dealer position.
+ */
+export function groupBidsByRound(
+  bidHistory: readonly BidHistoryEntry[],
+): RoundGroup[] {
+  if (bidHistory.length === 0) return [];
+
+  const groups: RoundGroup[] = [];
+  for (let i = 0; i < bidHistory.length; i += 4) {
+    const slice = bidHistory.slice(i, i + 4);
+    groups.push({
+      roundNumber: Math.floor(i / 4) + 1,
+      entries: slice.map((e) => ({
+        seat: e.seat,
+        call: e.call,
+        ruleName: e.ruleName,
+        isUser: e.isUser,
+        isCorrect: e.isCorrect,
+        treePath: e.treePath,
+        conditions: e.conditions,
+      })),
+    });
+  }
+  return groups;
 }

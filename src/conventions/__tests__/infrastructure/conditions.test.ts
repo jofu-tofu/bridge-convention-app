@@ -1,28 +1,28 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../engine/types";
-import type { Hand } from "../../engine/types";
-import { evaluateHand } from "../../engine/hand-evaluator";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { Hand } from "../../../engine/types";
+import { evaluateHand } from "../../../engine/hand-evaluator";
 import {
   registerConvention,
   clearRegistry,
   listConventions,
   getConventionRules,
-} from "../registry";
-import { staymanConfig } from "../stayman";
-import { gerberConfig } from "../gerber";
-import { bergenConfig } from "../bergen-raises";
-import { dontConfig } from "../dont";
-import { saycConfig } from "../sayc";
-import { isConditionedRule } from "../condition-evaluator";
+} from "../../registry";
+import { staymanConfig } from "../../stayman";
+import { gerberConfig } from "../../gerber";
+import { bergenConfig } from "../../bergen-raises";
+import { dontConfig } from "../../dont";
+import { saycConfig } from "../../sayc";
+import { isConditionedRule } from "../../condition-evaluator";
 import {
   conditionedRule,
   auctionMatches,
   hcpMin,
   suitMin,
-} from "../conditions";
-import type { BiddingContext, ConditionedBiddingRule } from "../types";
-import { isAuctionCondition } from "../tree-compat";
-import { hand, auctionFromBids } from "./fixtures";
+} from "../../conditions";
+import type { BiddingContext, ConditionedBiddingRule } from "../../types";
+import { isAuctionCondition } from "../../tree-compat";
+import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {
   clearRegistry();

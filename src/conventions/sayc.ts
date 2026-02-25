@@ -1,7 +1,7 @@
 import { ConventionCategory } from "./types";
 import type { BiddingContext } from "./types";
 import type { Call, ContractBid } from "../engine/types";
-import { BidSuit } from "../engine/types";
+import { BidSuit, Seat } from "../engine/types";
 import {
   hcpMin,
   hcpRange,
@@ -369,13 +369,17 @@ const saycRuleTree: RuleNode = decision(
 export const saycConfig: TreeConventionConfig = {
   id: "sayc",
   name: "Standard American Yellow Card",
-  description: "Standard American bidding system for opponent AI",
+  description:
+    "Standard American Yellow Card — full bidding system covering openings, responses, rebids, and competitive bids",
   category: ConventionCategory.Constructive,
-  internal: true,
   dealConstraints: {
-    seats: [], // No specific constraints — SAYC works with any hand
+    seats: [
+      // 10 HCP (not 12): ensures South practices both opening and responding positions.
+      // 12+ biases heavily toward opening hands.
+      { seat: Seat.South, minHcp: 10 },
+    ],
   },
   defaultAuction: () => undefined,
   ruleTree: saycRuleTree,
-  examples: [], // No examples needed for internal convention
+  examples: [], // Examples deferred to learning screen
 };

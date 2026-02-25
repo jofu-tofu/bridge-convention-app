@@ -66,6 +66,7 @@ export const AUCTION_CONDITION_NAMES = new Set([
   "is-responder",
   "no-prior-bid",
   "opponent-bid",
+  "opponent-acted",
   "seat-has-bid",
   "bidding-round",
   "partner-raised-3M",
@@ -565,6 +566,33 @@ export function opponentBid(): RuleCondition {
   };
 }
 
+/** Check if any opponent made a non-pass action (bid, double, or redouble). */
+export function opponentActed(): RuleCondition {
+  return {
+    name: "opponent-acted",
+    label: "Opponent acted (bid/double/redouble)",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      return ctx.auction.entries.some(
+        (e) =>
+          e.call.type !== "pass" &&
+          e.seat !== ctx.seat &&
+          e.seat !== partner,
+      );
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      const found = ctx.auction.entries.find(
+        (e) =>
+          e.call.type !== "pass" &&
+          e.seat !== ctx.seat &&
+          e.seat !== partner,
+      );
+      return found ? `Opponent (${found.seat}) acted` : "No opponent action";
+    },
+  };
+}
+
 /** Check if hand is balanced (no singleton/void, at most one doubleton). */
 export function isBalanced(): RuleCondition {
   return {
@@ -590,6 +618,29 @@ export function isBalanced(): RuleCondition {
       if (hasSingleton)
         return `Unbalanced — has singleton (${shape.join("-")})`;
       return `Unbalanced — ${doubletonCount} doubletons (${shape.join("-")})`;
+    },
+  };
+}
+
+/** Has a singleton or void in any suit (unbalanced with shortage). */
+export function hasShortage(): RuleCondition {
+  const suitNames = ["spades", "hearts", "diamonds", "clubs"];
+  return {
+    name: "has-shortage",
+    label: "Has singleton or void",
+    inference: { type: "balanced", params: { balanced: false } },
+    test(ctx) {
+      return ctx.evaluation.shape.some((s) => s <= 1);
+    },
+    describe(ctx) {
+      const shape = ctx.evaluation.shape;
+      const shorts = shape
+        .map((s, i) => (s <= 1 ? `${s} ${suitNames[i]}` : null))
+        .filter(Boolean);
+      if (shorts.length > 0) {
+        return `Has shortage: ${shorts.join(", ")} (${shape.join("-")})`;
+      }
+      return `No shortage (${shape.join("-")})`;
     },
   };
 }

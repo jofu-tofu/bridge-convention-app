@@ -1,21 +1,21 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../engine/types";
-import type { ContractBid, Hand } from "../../engine/types";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { ContractBid, Hand } from "../../../engine/types";
 import {
   calculateHcp,
   getSuitLength,
   isBalanced,
-} from "../../engine/hand-evaluator";
-import { checkConstraints, generateDeal } from "../../engine/deal-generator";
+} from "../../../engine/hand-evaluator";
+import { checkConstraints, generateDeal } from "../../../engine/deal-generator";
 import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../registry";
-import { staymanConfig, staymanDealConstraints } from "../stayman";
-import type { BiddingContext } from "../types";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import { hand, auctionFromBids } from "./fixtures";
+} from "../../registry";
+import { staymanConfig, staymanDealConstraints } from "../../stayman";
+import type { BiddingContext } from "../../types";
+import { evaluateHand } from "../../../engine/hand-evaluator";
+import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {
   clearRegistry();
@@ -153,7 +153,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability, // cast: test convenience
+          "None" as unknown as import("../../../engine/types").Vulnerability, // cast: test convenience
       },
       staymanDealConstraints,
     );
@@ -230,7 +230,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -308,7 +308,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -386,7 +386,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -464,7 +464,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -544,7 +544,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../engine/types").Vulnerability,
+          "None" as unknown as import("../../../engine/types").Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -1631,5 +1631,111 @@ describe("Stayman edge cases", () => {
     if (result !== null) {
       expect(result.rule).not.toBe("stayman-ask");
     }
+  });
+});
+
+// ─── Smolen after 2D denial [bridgebum/stayman] ───────────
+
+describe("Stayman Smolen bids after 2D denial", () => {
+  test("[bridgebum/stayman] 3H Smolen: 4S+5H GF after 2D denial", () => {
+    // 10+ HCP, 4 spades + 5 hearts, game-forcing
+    // K(3)+Q(2) spades = 5, A(4)+J(1) hearts = 5, Q(2) diamonds = 2 → 12 HCP
+    const responder = hand(
+      "SK", "SQ", "S7", "S3",
+      "HA", "HJ", "H7", "H5", "H3",
+      "DQ", "D5",
+      "C5", "C2",
+    );
+    expect(calculateHcp(responder)).toBe(12);
+    expect(getSuitLength(responder)[0]).toBe(4); // 4 spades
+    expect(getSuitLength(responder)[1]).toBe(5); // 5 hearts
+    const result = callFromRules(responder, Seat.South, [
+      "1NT", "P", "2C", "P", "2D", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-smolen-hearts");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/stayman] 3S Smolen: 5S+4H GF after 2D denial", () => {
+    // 10+ HCP, 5 spades + 4 hearts, game-forcing
+    // A(4)+K(3)+Q(2) spades = 9, J(1) hearts = 1, K(3) diamonds = 3 → 13 HCP
+    const responder = hand(
+      "SA", "SK", "SQ", "S7", "S3",
+      "HJ", "H7", "H5", "H3",
+      "DK", "D5",
+      "C5", "C2",
+    );
+    expect(calculateHcp(responder)).toBe(13);
+    expect(getSuitLength(responder)[0]).toBe(5); // 5 spades
+    expect(getSuitLength(responder)[1]).toBe(4); // 4 hearts
+    const result = callFromRules(responder, Seat.South, [
+      "1NT", "P", "2C", "P", "2D", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-smolen-spades");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+
+  test("[bridgebum/stayman] no Smolen with 4-4: bids 3NT after 2D denial", () => {
+    // 10+ HCP, 4 spades + 4 hearts (not 5-4), no Smolen — just 3NT
+    // A(4)+K(3) spades = 7, Q(2) hearts = 2, K(3) diamonds = 3 → 12 HCP
+    const responder = hand(
+      "SA", "SK", "S7", "S3",
+      "HQ", "H7", "H5", "H3",
+      "DK", "D5", "D3",
+      "C5", "C2",
+    );
+    expect(calculateHcp(responder)).toBe(12);
+    const result = callFromRules(responder, Seat.South, [
+      "1NT", "P", "2C", "P", "2D", "P",
+    ]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-rebid-no-fit");
+  });
+});
+
+// ─── Stayman after 2NT opening [bridgebum/stayman] ────────
+
+describe("Stayman after 2NT opening", () => {
+  test("[bridgebum/stayman] 3C Stayman ask after 2NT-P", () => {
+    // 5+ HCP with 4-card major after 2NT opening
+    // K(3)+Q(2) spades = 5, J(1) hearts = 1, Q(2) diamonds = 2 → 8 HCP
+    const responder = hand(
+      "SK", "SQ", "S7", "S3",
+      "HJ", "H5", "H3",
+      "DQ", "D5", "D3",
+      "C5", "C3", "C2",
+    );
+    expect(calculateHcp(responder)).toBe(8);
+    expect(getSuitLength(responder)[0]).toBe(4); // 4 spades
+    const result = callFromRules(responder, Seat.South, ["2NT", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-ask");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Clubs);
+  });
+
+  test("[bridgebum/stayman] opener responds 3H after 2NT-P-3C-P", () => {
+    // Opener with 4 hearts responds 3H
+    // A(4)+K(3) spades + K(3)+Q(2)+J(1) hearts + A(4)+K(3) diamonds = 20 HCP
+    const opener = hand(
+      "SA", "SK", "S5",
+      "HK", "HQ", "HJ", "H3",
+      "DA", "DK", "D5",
+      "C5", "C3", "C2",
+    );
+    expect(getSuitLength(opener)[1]).toBe(4); // 4 hearts
+    const result = callFromRules(opener, Seat.North, ["2NT", "P", "3C", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-response-hearts");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
   });
 });

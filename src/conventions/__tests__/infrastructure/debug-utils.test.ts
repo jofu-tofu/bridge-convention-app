@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { reconstructBiddingContext } from "../debug-utils";
-import { Suit, Rank, Seat, BidSuit, Vulnerability } from "../../engine/types";
-import type { Deal, Auction, Hand } from "../../engine/types";
+import { reconstructBiddingContext } from "../../debug-utils";
+import { Suit, Rank, Seat, BidSuit, Vulnerability } from "../../../engine/types";
+import type { Deal, Auction, Hand } from "../../../engine/types";
 
 function makeHand(cards: Array<{ suit: Suit; rank: Rank }>): Hand {
   return { cards };

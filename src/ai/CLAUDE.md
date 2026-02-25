@@ -6,8 +6,8 @@ Bidding AI strategies. Consumer of `conventions/` and `engine/` via `shared/type
 
 - **Dependency direction:** `ai/ → shared/ + conventions/ + engine/`. Engine never imports from ai/. Conventions never import from ai/.
 - **Strategy pattern.** `BiddingStrategy` (defined in `shared/types.ts`) is the core interface. Strategies are passed to `EnginePort.suggestBid()` by the caller.
-- **`null` means "no opinion."** A strategy returning `null` defers to the next strategy in a chain. `TsEngine.suggestBid()` wraps `null` into a pass at the boundary.
-- **Convention adapter.** `conventionToStrategy()` wraps a `ConventionConfig` as a `BiddingStrategy`. Callers (CLI, tests) construct strategies explicitly — the engine never resolves convention IDs to strategies.
+- **`null` means "no opinion."** A strategy returning `null` defers to the next strategy in a chain.
+- **Convention adapter.** `conventionToStrategy()` wraps a `ConventionConfig` as a `BiddingStrategy`. Maps `TreeEvalResult` to `TreeEvalSummary` DTO with depth/parent enrichment and fork point extraction. Callers (CLI, tests) construct strategies explicitly — the engine never resolves convention IDs to strategies.
 
 ## Architecture
 
@@ -25,7 +25,7 @@ ai/types.ts (DrillConfig, DrillSession — Phase 4 prep)
 
 | File                      | Role                                                                                      |
 | ------------------------- | ----------------------------------------------------------------------------------------- |
-| `convention-strategy.ts`  | `conventionToStrategy()` — wraps `ConventionConfig` as `BiddingStrategy`                  |
+| `convention-strategy.ts`  | `conventionToStrategy()` — wraps `ConventionConfig` as `BiddingStrategy`. Exports `mapVisitedWithStructure()`, `extractForkPoint()` for tree→DTO mapping. |
 | `pass-strategy.ts`        | Always-pass placeholder strategy                                                          |
 | `types.ts`                | `DrillConfig`, `DrillSession` — interfaces for drill mode                                 |
 | `drill-session.ts`        | `createDrillSession()` — DrillSession implementation with null-contract for user/AI seats |

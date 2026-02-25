@@ -10,7 +10,8 @@ import {
 } from "../../conventions/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import type { BiddingContext } from "../../conventions/types";
-import { conventionToStrategy } from "../convention-strategy";
+import { conventionToStrategy, extractForkPoint, mapVisitedWithStructure } from "../convention-strategy";
+import type { TreePathEntry } from "../../shared/types";
 
 describe("conventionToStrategy", () => {
   test("returns BiddingStrategy with convention-prefixed id and name", () => {
@@ -55,6 +56,30 @@ describe("conventionToStrategy", () => {
     expect(result).toBeNull();
   });
 
+  test("suggest includes treePath with forkPoint when tree matches", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const h = staymanResponder();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
+    const context: BiddingContext = {
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.treePath).toBeDefined();
+    expect(result!.treePath!.matchedNodeName).toBe("stayman-ask");
+    expect(result!.treePath!.path.length).toBeGreaterThan(0);
+    expect(result!.treePath!.visited.length).toBeGreaterThan(0);
+    // Every visited entry has depth and parentNodeName
+    for (const entry of result!.treePath!.visited) {
+      expect(typeof entry.depth).toBe("number");
+      expect(entry.depth).toBeGreaterThanOrEqual(0);
+    }
+  });
+
   test("suggest preserves rule metadata from evaluateBiddingRules", () => {
     const strategy = conventionToStrategy(staymanConfig);
     const opener = staymanOpener();
@@ -70,5 +95,54 @@ describe("conventionToStrategy", () => {
     expect(result).not.toBeNull();
     expect(result!.ruleName).toBe("stayman-response-hearts");
     expect(result!.explanation).toContain("heart");
+  });
+});
+
+describe("extractForkPoint", () => {
+  function entry(
+    nodeName: string,
+    passed: boolean,
+    parentNodeName: string | null,
+    depth = 0,
+  ): TreePathEntry {
+    return { nodeName, passed, description: `${nodeName} desc`, depth, parentNodeName };
+  }
+
+  test("finds last adjacent pass/fail pair with same parent", () => {
+    const entries: TreePathEntry[] = [
+      entry("a", true, null, 0),
+      entry("b", true, "a", 1),
+      entry("c", false, "b", 2),   // rejected sibling
+      entry("d", true, "b", 2),    // matched sibling
+    ];
+    const fork = extractForkPoint(entries);
+    expect(fork).toBeDefined();
+    expect(fork!.matched.nodeName).toBe("d");
+    expect(fork!.rejected.nodeName).toBe("c");
+  });
+
+  test("returns undefined when all entries pass", () => {
+    const entries: TreePathEntry[] = [
+      entry("a", true, null, 0),
+      entry("b", true, "a", 1),
+    ];
+    expect(extractForkPoint(entries)).toBeUndefined();
+  });
+
+  test("returns undefined for empty array", () => {
+    expect(extractForkPoint([])).toBeUndefined();
+  });
+
+  test("ignores adjacent pass/fail from different parents", () => {
+    const entries: TreePathEntry[] = [
+      entry("a", true, null, 0),
+      entry("b", false, "a", 1),  // parent is "a"
+      entry("c", true, "x", 1),   // parent is "x" — different parent, not siblings
+    ];
+    // Only a/b are adjacent with different pass values, and they share parent null/a
+    // b has parent "a", c has parent "x" — not siblings
+    const fork = extractForkPoint(entries);
+    // a(true, null) and b(false, "a") — different parents, not siblings
+    expect(fork).toBeUndefined();
   });
 });

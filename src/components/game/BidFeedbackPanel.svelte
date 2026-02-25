@@ -12,6 +12,7 @@
   let { feedback, onContinue, onSkipToReview, onRetry }: Props = $props();
 
   let showAnswer = $state(false);
+  const forkPoint = $derived(feedback.expectedResult?.treePath?.forkPoint ?? null);
 
   // Reset showAnswer when feedback changes (new wrong bid)
   let prevFeedback: BidFeedback | undefined;
@@ -116,11 +117,11 @@
         {/if}
         {#if feedback.expectedResult.conditions}
           <ul class="mt-2 space-y-1" role="list" aria-label="Bid conditions">
-            {#each feedback.expectedResult.conditions as cond (cond.name)}
+            {#each feedback.expectedResult.conditions as cond, ci (cond.name + '-' + ci)}
               {#if cond.children}
                 <li class="text-xs min-w-0">
                   <span class="text-red-200/70 break-words">{cond.description}</span>
-                  {#each cond.children as branch (branch.name)}
+                  {#each cond.children as branch, bi (branch.name + '-' + bi)}
                     <ul
                       class="ml-3 mt-1 {branch.isBestBranch
                         ? ''
@@ -130,7 +131,7 @@
                         ? "Best matching path"
                         : "Alternative path"}
                     >
-                      {#each branch.children ?? [] as sub (sub.name)}
+                      {#each branch.children ?? [] as sub, si (sub.name + '-' + si)}
                         <li class="flex items-center gap-1.5">
                           <span
                             class={sub.passed
@@ -167,6 +168,18 @@
           <p class="text-red-200/50 text-xs mt-1 leading-tight">
             {feedback.expectedResult.explanation}
           </p>
+        {/if}
+        {#if forkPoint}
+          <div class="mt-2 pt-2 border-t border-red-500/20 space-y-1" data-testid="fork-point">
+            <p class="text-xs text-green-400/80 flex items-center gap-1.5">
+              <span aria-hidden="true">&#10003;</span>
+              <span>{forkPoint.matched.description}</span>
+            </p>
+            <p class="text-xs text-red-300/50 flex items-center gap-1.5">
+              <span aria-hidden="true">&#10007;</span>
+              <span>Not: {forkPoint.rejected.description}</span>
+            </p>
+          </div>
         {/if}
       </div>
     {/if}

@@ -4,8 +4,6 @@
 
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../engine/types";
-import type { Hand } from "../../engine/types";
-import { evaluateHand } from "../../engine/hand-evaluator";
 import { generateDeal } from "../../engine/deal-generator";
 import {
   registerConvention,
@@ -16,8 +14,8 @@ import { staymanConfig } from "../stayman";
 import { gerberConfig } from "../gerber";
 import { bergenConfig } from "../bergen-raises";
 import { dontConfig } from "../dont";
-import type { BiddingContext } from "../types";
-import { hand, auctionFromBids } from "./fixtures";
+import { landyConfig } from "../landy";
+import { hand, makeBiddingContext } from "./fixtures";
 
 beforeEach(() => {
   clearRegistry();
@@ -25,23 +23,8 @@ beforeEach(() => {
   registerConvention(gerberConfig);
   registerConvention(bergenConfig);
   registerConvention(dontConfig);
+  registerConvention(landyConfig);
 });
-
-// ─── Helpers ────────────────────────────────────────────────
-
-function makeBiddingContext(
-  h: Hand,
-  seat: Seat,
-  bids: string[],
-  dealer: Seat = Seat.North,
-): BiddingContext {
-  return {
-    hand: h,
-    auction: auctionFromBids(dealer, bids),
-    seat,
-    evaluation: evaluateHand(h),
-  };
-}
 
 // ─── Stayman vs Gerber after 1NT ────────────────────────────
 
@@ -64,7 +47,7 @@ describe("Stayman vs Gerber after 1NT", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"], Seat.North);
 
     const staymanResult = evaluateBiddingRules(ctx, staymanConfig);
     const gerberResult = evaluateBiddingRules(ctx, gerberConfig);
@@ -103,7 +86,7 @@ describe("Stayman vs Gerber after 1NT", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"], Seat.North);
 
     const staymanResult = evaluateBiddingRules(ctx, staymanConfig);
     const gerberResult = evaluateBiddingRules(ctx, gerberConfig);
@@ -131,7 +114,7 @@ describe("Stayman vs Gerber after 1NT", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"], Seat.North);
 
     const staymanResult = evaluateBiddingRules(ctx, staymanConfig);
     const gerberResult = evaluateBiddingRules(ctx, gerberConfig);
@@ -158,7 +141,7 @@ describe("Stayman vs Gerber after 1NT", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"], Seat.North);
 
     expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
     expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
@@ -185,7 +168,7 @@ describe("Bergen isolation", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"], Seat.North);
 
     expect(evaluateBiddingRules(ctx, bergenConfig)).toBeNull();
   });
@@ -208,7 +191,7 @@ describe("Bergen isolation", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1H", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1H", "P"], Seat.North);
 
     const bergenResult = evaluateBiddingRules(ctx, bergenConfig);
     expect(bergenResult).not.toBeNull();
@@ -236,7 +219,7 @@ describe("Bergen isolation", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1S", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1S", "P"], Seat.North);
 
     const bergenResult = evaluateBiddingRules(ctx, bergenConfig);
     expect(bergenResult).not.toBeNull();
@@ -264,7 +247,7 @@ describe("Bergen isolation", () => {
       "C5",
       "C2",
     );
-    const ctx = makeBiddingContext(h, Seat.South, ["1H", "P"]);
+    const ctx = makeBiddingContext(h, Seat.South, ["1H", "P"], Seat.North);
 
     expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
   });
@@ -412,7 +395,7 @@ describe("Cross-convention edge cases", () => {
       "C3",
       "C2",
     );
-    const ctx = makeBiddingContext(bergenGameHand, Seat.South, ["1NT", "P"]);
+    const ctx = makeBiddingContext(bergenGameHand, Seat.South, ["1NT", "P"], Seat.North);
     expect(evaluateBiddingRules(ctx, bergenConfig)).toBeNull();
   });
 
@@ -433,7 +416,7 @@ describe("Cross-convention edge cases", () => {
       "C5",
       "C2",
     );
-    const ctx = makeBiddingContext(dontShape, Seat.South, ["1H", "P"]);
+    const ctx = makeBiddingContext(dontShape, Seat.South, ["1H", "P"], Seat.North);
     expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
   });
 });
@@ -462,7 +445,7 @@ describe("All 4 conventions registered", () => {
     const staymanCtx = makeBiddingContext(staymanHand, Seat.South, [
       "1NT",
       "P",
-    ]);
+    ], Seat.North);
     expect(
       evaluateBiddingRules(staymanCtx, staymanConfig),
     ).not.toBeNull();
@@ -490,7 +473,7 @@ describe("All 4 conventions registered", () => {
       "C3",
       "C2",
     );
-    const bergenCtx = makeBiddingContext(bergenHand, Seat.South, ["1H", "P"]);
+    const bergenCtx = makeBiddingContext(bergenHand, Seat.South, ["1H", "P"], Seat.North);
     expect(
       evaluateBiddingRules(bergenCtx, bergenConfig),
     ).not.toBeNull();
@@ -610,5 +593,442 @@ describe("All 4 conventions registered", () => {
         }
       }
     }
+  });
+});
+
+// ─── Convention Auction Isolation ──────────────────────────────
+
+describe("Convention auction isolation — conventions should not fire for each other's auctions", () => {
+  beforeEach(() => {
+    clearRegistry();
+    registerConvention(staymanConfig);
+    registerConvention(gerberConfig);
+    registerConvention(bergenConfig);
+    registerConvention(dontConfig);
+    registerConvention(landyConfig);
+  });
+
+  // A hand that qualifies for multiple conventions
+  const versatile = hand(
+    "SA", "SK", "SQ", "S7", "S2",
+    "HK", "HQ", "H5", "H3",
+    "DK",
+    "C5", "C3", "C2",
+  );
+
+  test("after 1H-P — Stayman does not fire (not after 1NT)", () => {
+    const ctx = makeBiddingContext(versatile, Seat.South, ["1H", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, staymanConfig);
+    expect(result).toBeNull();
+  });
+
+  test("after 1H-P — Gerber does not fire (not after NT)", () => {
+    const ctx = makeBiddingContext(versatile, Seat.South, ["1H", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, gerberConfig);
+    expect(result).toBeNull();
+  });
+
+  test("after 1NT-P — Bergen does not fire (not after 1M)", () => {
+    const ctx = makeBiddingContext(versatile, Seat.South, ["1NT", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, bergenConfig);
+    expect(result).toBeNull();
+  });
+
+  test("after 1NT-P — DONT does not fire (different auction shape)", () => {
+    // DONT expects ["1NT"] only (South after East opens), not ["1NT", "P"]
+    const ctx = makeBiddingContext(versatile, Seat.South, ["1NT", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, dontConfig);
+    expect(result).toBeNull();
+  });
+
+  test("after 1NT (no pass) — Stayman does not fire (auction too short for ask)", () => {
+    // Stayman needs ["1NT", "P"], just ["1NT"] is too short
+    const ctx = makeBiddingContext(versatile, Seat.South, ["1NT"], Seat.North);
+    const result = evaluateBiddingRules(ctx, staymanConfig);
+    expect(result).toBeNull();
+  });
+});
+
+// ─── General Robustness ─────────────────────────────────────
+
+describe("General robustness — degenerate auctions", () => {
+  beforeEach(() => {
+    clearRegistry();
+    registerConvention(staymanConfig);
+    registerConvention(gerberConfig);
+    registerConvention(bergenConfig);
+    registerConvention(dontConfig);
+    registerConvention(landyConfig);
+  });
+
+  const anyHand = hand(
+    "SA", "SK", "SQ", "S7", "S2",
+    "HK", "HQ", "H5", "H3",
+    "DK",
+    "C5", "C3", "C2",
+  );
+
+  test("all-pass auction — no convention fires", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["P", "P", "P"], Seat.North);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, bergenConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, landyConfig)).toBeNull();
+  });
+
+  test("empty auction — no convention fires", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, [], Seat.North);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, bergenConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, landyConfig)).toBeNull();
+  });
+
+  test("very long auction — no convention fires on unrecognized sequence", () => {
+    const bids = ["1C", "P", "1D", "P", "1H", "P", "1S", "P", "1NT", "P", "2C", "P"];
+    const ctx = makeBiddingContext(anyHand, Seat.South, bids, Seat.North);
+    // This 12-bid auction doesn't match any convention's expected pattern
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, landyConfig)).toBeNull();
+  });
+
+  test("double then redouble — no convention fires", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["1NT", "X", "XX"], Seat.North);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+  });
+});
+
+// ─── Cross-Convention — Same Hand Multiple Conventions ──────────
+
+describe("Cross-convention — same hand qualifies for multiple conventions", () => {
+  beforeEach(() => {
+    clearRegistry();
+    registerConvention(staymanConfig);
+    registerConvention(gerberConfig);
+    registerConvention(bergenConfig);
+    registerConvention(dontConfig);
+    registerConvention(landyConfig);
+  });
+
+  test("16+ HCP, 4-card major, no void after 1NT-P — both Stayman and Gerber could apply", () => {
+    // This hand qualifies for both Stayman ask (8+ HCP, 4M) and Gerber ask (16+ HCP, no void)
+    // Each convention is evaluated independently
+    // SA(4)+SK(3)+SQ(2)+HA(4)+HK(3) = 16 HCP, 4S + 2H
+    const h = hand(
+      "SA", "SK", "SQ", "S3",
+      "HA", "HK", "H5",
+      "DK", "D5", "D3",
+      "C5", "C3", "C2",
+    );
+    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P"], Seat.North);
+
+    const staymanResult = evaluateBiddingRules(ctx, staymanConfig);
+    const gerberResult = evaluateBiddingRules(ctx, gerberConfig);
+
+    // Both should independently fire for this hand+auction
+    expect(staymanResult).not.toBeNull();
+    expect(staymanResult!.rule).toBe("stayman-ask");
+    expect(gerberResult).not.toBeNull();
+    expect(gerberResult!.rule).toBe("gerber-ask");
+  });
+
+  test("DONT and Landy — same auction position after 1NT, different bids", () => {
+    // 12 HCP, 5S + 5H — qualifies for both DONT 2H (both majors) and Landy 2C
+    // SA(4) + SK(3) + HK(3) + HQ(2) = 12 HCP
+    const h = hand(
+      "SA", "SK", "S7", "S5", "S3",
+      "HK", "HQ", "H7", "H5", "H3",
+      "D5", "D3",
+      "C2",
+    );
+    const dontCtx = makeBiddingContext(h, Seat.South, ["1NT"], Seat.East);
+    const landyCtx = makeBiddingContext(h, Seat.South, ["1NT"], Seat.East);
+
+    const dontResult = evaluateBiddingRules(dontCtx, dontConfig);
+    const landyResult = evaluateBiddingRules(landyCtx, landyConfig);
+
+    // DONT bids 2H for both majors
+    expect(dontResult).not.toBeNull();
+    expect(dontResult!.rule).toBe("dont-2h");
+
+    // Landy bids 2C for both majors
+    expect(landyResult).not.toBeNull();
+    expect(landyResult!.rule).toBe("landy-2c");
+
+    // Different bids for same hand — conventions are correctly independent
+    expect((dontResult!.call as import("../../engine/types").ContractBid).strain).toBe(BidSuit.Spades === BidSuit.Spades ? BidSuit.Hearts : BidSuit.Hearts);
+    expect((landyResult!.call as import("../../engine/types").ContractBid).strain).toBe(BidSuit.Clubs);
+  });
+
+  test("after 1H-P — Bergen fires but Stayman/Gerber/DONT/Landy do not", () => {
+    // 8 HCP, 4 hearts — Bergen responder
+    const h = hand(
+      "SQ", "S5", "S2",
+      "HJ", "HT", "H6", "H2",
+      "DK", "D7", "D3",
+      "C5", "C3", "C2",
+    );
+    const ctx = makeBiddingContext(h, Seat.South, ["1H", "P"], Seat.North);
+
+    expect(evaluateBiddingRules(ctx, bergenConfig)).not.toBeNull();
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, landyConfig)).toBeNull();
+  });
+});
+
+// ─── Multi-Round Sequence Integrity ─────────────────────────────
+
+describe("Multi-round sequence integrity — conventions across 3+ rounds", () => {
+  beforeEach(() => {
+    clearRegistry();
+    registerConvention(staymanConfig);
+    registerConvention(gerberConfig);
+    registerConvention(bergenConfig);
+  });
+
+  test("[bridgebum/stayman] full 3-round Stayman: 1NT-P-2C-P-2H-P -> 4H (fit + game)", () => {
+    // Round 1: Responder asks
+    const responder = hand(
+      "SA", "S5", "S3",
+      "HK", "HQ", "H5", "H3",
+      "DK", "D5", "D3",
+      "C5", "C3", "C2",
+    );
+    const askCtx = makeBiddingContext(responder, Seat.South, ["1NT", "P"], Seat.North);
+    const askResult = evaluateBiddingRules(askCtx, staymanConfig);
+    expect(askResult).not.toBeNull();
+    expect(askResult!.rule).toBe("stayman-ask");
+
+    // Round 2: Opener responds 2H
+    const opener = hand(
+      "SK", "SQ", "S3",
+      "HA", "HK", "HJ", "H2",
+      "DQ", "D5", "D3",
+      "C5", "C3", "C2",
+    );
+    const respCtx = makeBiddingContext(opener, Seat.North, ["1NT", "P", "2C", "P"], Seat.North);
+    const respResult = evaluateBiddingRules(respCtx, staymanConfig);
+    expect(respResult).not.toBeNull();
+    expect(respResult!.rule).toBe("stayman-response-hearts");
+
+    // Round 3: Responder bids 4H (fit + game)
+    const rebidCtx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "2C", "P", "2H", "P"], Seat.North);
+    const rebidResult = evaluateBiddingRules(rebidCtx, staymanConfig);
+    expect(rebidResult).not.toBeNull();
+    expect(rebidResult!.rule).toBe("stayman-rebid-major-fit");
+    const call = rebidResult!.call as import("../../engine/types").ContractBid;
+    expect(call.level).toBe(4);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/gerber] full 4-round Gerber: ask -> ace resp -> king ask -> king resp", () => {
+    // Round 1: Responder asks 4C
+    const responder = hand(
+      "SA", "SK", "SQ", "S3",
+      "HA", "HK", "H5",
+      "DK", "D5", "D3",
+      "C5", "C3", "C2",
+    );
+    const askCtx = makeBiddingContext(responder, Seat.South, ["1NT", "P"], Seat.North);
+    const askResult = evaluateBiddingRules(askCtx, gerberConfig);
+    expect(askResult).not.toBeNull();
+    expect(askResult!.rule).toBe("gerber-ask");
+
+    // Round 2: Opener responds (2 aces -> 4S)
+    const opener = hand(
+      "SQ", "SJ", "S3",
+      "HQ", "HJ", "H7", "H2",
+      "DA", "D7", "D4",
+      "CA", "C7", "C4",
+    );
+    const respCtx = makeBiddingContext(opener, Seat.North, ["1NT", "P", "4C", "P"], Seat.North);
+    const respResult = evaluateBiddingRules(respCtx, gerberConfig);
+    expect(respResult).not.toBeNull();
+    expect(respResult!.rule).toBe("gerber-response-two");
+
+    // Round 3: Responder asks for kings (5C) — has 3+ aces total (3 own + 2 opener = 5)
+    const kingAskCtx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "4C", "P", "4S", "P"], Seat.North);
+    const kingAskResult = evaluateBiddingRules(kingAskCtx, gerberConfig);
+    expect(kingAskResult).not.toBeNull();
+    expect(kingAskResult!.rule).toBe("gerber-king-ask");
+
+    // Round 4: Opener responds with kings (2 kings -> 5S... but opener has 0 kings here)
+    // Let's fix opener to have 1 king for a more interesting test
+    const openerWithKing = hand(
+      "SK", "SJ", "S3",
+      "HQ", "HJ", "H7", "H2",
+      "DA", "D7", "D4",
+      "CA", "C7", "C4",
+    );
+    const kingRespCtx = makeBiddingContext(openerWithKing, Seat.North, ["1NT", "P", "4C", "P", "4S", "P", "5C", "P"], Seat.North);
+    const kingRespResult = evaluateBiddingRules(kingRespCtx, gerberConfig);
+    expect(kingRespResult).not.toBeNull();
+    expect(kingRespResult!.rule).toBe("gerber-king-response-one");
+    const kingCall = kingRespResult!.call as import("../../engine/types").ContractBid;
+    expect(kingCall.level).toBe(5);
+    expect(kingCall.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/bergen] full Bergen 3-round: 1H-P-3C-P-3D(try)-P-4H(accept)", () => {
+    // Round 1: Responder bids 3C constructive (7-10 HCP, 4 hearts)
+    // SK(3) + HJ(1) + DK(3) + CJ(1) = 8 HCP
+    const responder = hand(
+      "SK", "S5", "S2",
+      "HJ", "HT", "H6", "H2",
+      "DK", "D7", "D3",
+      "CJ", "C3", "C2",
+    );
+    const respCtx = makeBiddingContext(responder, Seat.South, ["1H", "P"], Seat.North);
+    const respResult = evaluateBiddingRules(respCtx, bergenConfig);
+    expect(respResult).not.toBeNull();
+    expect(respResult!.rule).toBe("bergen-constructive-raise");
+
+    // Round 2: Opener bids 3D game try (14-16 HCP)
+    // SA(4) + HA(4) + HK(3) + HQ(2) + DJ(1) = 14 HCP
+    const opener = hand(
+      "SA", "S5", "S2",
+      "HA", "HK", "HQ", "H7", "H3",
+      "DJ", "D3",
+      "C5", "C3", "C2",
+    );
+    const openerCtx = makeBiddingContext(opener, Seat.North, ["1H", "P", "3C", "P"], Seat.North);
+    const openerResult = evaluateBiddingRules(openerCtx, bergenConfig);
+    expect(openerResult).not.toBeNull();
+    expect(openerResult!.rule).toBe("bergen-rebid-try-after-constructive");
+
+    // Round 3: Responder with 9-10 HCP accepts game try -> 4H
+    // SA(4) + HJ(1) + DK(3) + CJ(1) = 9 HCP
+    const responder9 = hand(
+      "SA", "S5", "S2",
+      "HJ", "HT", "H6", "H2",
+      "DK", "D7", "D3",
+      "CJ", "C3", "C2",
+    );
+    const tryCtx = makeBiddingContext(responder9, Seat.South, ["1H", "P", "3C", "P", "3D", "P"], Seat.North);
+    const tryResult = evaluateBiddingRules(tryCtx, bergenConfig);
+    expect(tryResult).not.toBeNull();
+    expect(tryResult!.rule).toBe("bergen-try-accept");
+  });
+});
+
+// ─── Degenerate / Adversarial Auctions ──────────────────────────
+
+describe("Degenerate auctions — adversarial or unusual patterns", () => {
+  beforeEach(() => {
+    clearRegistry();
+    registerConvention(staymanConfig);
+    registerConvention(gerberConfig);
+    registerConvention(bergenConfig);
+    registerConvention(dontConfig);
+    registerConvention(landyConfig);
+  });
+
+  const anyHand = hand(
+    "SA", "SK", "SQ", "S7", "S2",
+    "HK", "HQ", "H5", "H3",
+    "DK",
+    "C5", "C3", "C2",
+  );
+
+  test("two consecutive doubles — no convention fires", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["1NT", "X"], Seat.East);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+  });
+
+  test("3NT opening — Stayman does not fire (only 1NT/2NT)", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["3NT", "P"], Seat.North);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+  });
+
+  test("3NT opening — Gerber does not fire (only 1NT/2NT)", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["3NT", "P"], Seat.North);
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+  });
+
+  test("2NT opening — DONT does not fire (DONT is only against 1NT)", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["2NT"], Seat.East);
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+  });
+
+  test("2NT opening — Landy does not fire (Landy is only against 1NT)", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["2NT"], Seat.East);
+    expect(evaluateBiddingRules(ctx, landyConfig)).toBeNull();
+  });
+
+  test("only passes — no convention fires for any", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["P", "P"], Seat.East);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, bergenConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, landyConfig)).toBeNull();
+  });
+
+  test("1NT then 4 passes — auction is over, no convention fires", () => {
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["1NT", "P", "P", "P"], Seat.North);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+    expect(evaluateBiddingRules(ctx, gerberConfig)).toBeNull();
+  });
+
+  test("opponent opens 1NT, partner passes, opponent's partner passes — DONT in balancing seat", () => {
+    // 1NT-P-P — South in balancing seat after 1NT, both opponents passed
+    const ctx = makeBiddingContext(anyHand, Seat.South, ["1NT", "P", "P"], Seat.East);
+    // DONT expects ["1NT"] only — 1NT-P-P doesn't match
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+  });
+
+  test("interference mid-convention kills entire Stayman sequence", () => {
+    // 1NT-P-2C-P-2D-2S(opp) — opponent bids in middle of Stayman round 3
+    const h = hand(
+      "SA", "SK", "S7", "S3",
+      "HK", "HQ", "H5", "H3",
+      "DK", "D5", "D3",
+      "C5", "C2",
+    );
+    const ctx = makeBiddingContext(h, Seat.South, ["1NT", "P", "2C", "P", "2D", "2S"], Seat.North);
+    expect(evaluateBiddingRules(ctx, staymanConfig)).toBeNull();
+  });
+
+  test("interference mid-convention kills entire Bergen sequence", () => {
+    // 1H-P-3C-3D(opp) — opponent bids after Bergen constructive
+    const opener = hand(
+      "SK", "S5", "S2",
+      "HA", "HK", "HQ", "H7", "H3",
+      "D5", "D3",
+      "C5", "C3", "C2",
+    );
+    const ctx = makeBiddingContext(opener, Seat.North, ["1H", "P", "3C", "3D"], Seat.North);
+    expect(evaluateBiddingRules(ctx, bergenConfig)).toBeNull();
+  });
+
+  test("interference mid-DONT — opponent bids after advancer relay", () => {
+    // 1NT-X-P-2C-2H(opp) — opponent interferes after relay
+    const overcaller = hand(
+      "SA", "SK", "SQ", "S7", "S5", "S3",
+      "H5", "H3",
+      "DK", "D5",
+      "C5", "C3", "C2",
+    );
+    const ctx = makeBiddingContext(overcaller, Seat.South, ["1NT", "X", "P", "2C", "2H"], Seat.East);
+    expect(evaluateBiddingRules(ctx, dontConfig)).toBeNull();
+  });
+
+  test("interference mid-Landy — opponent doubles Landy 2C", () => {
+    // 1NT-2C-X — opponent doubles the Landy bid
+    const advancer = hand(
+      "SQ", "SJ", "S7", "S5",
+      "HK", "H8", "H5", "H3",
+      "D7", "D5", "D3",
+      "C5", "C2",
+    );
+    const ctx = makeBiddingContext(advancer, Seat.North, ["1NT", "2C", "X"], Seat.East);
+    expect(evaluateBiddingRules(ctx, landyConfig)).toBeNull();
   });
 });

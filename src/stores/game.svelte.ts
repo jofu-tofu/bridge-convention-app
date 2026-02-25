@@ -1,3 +1,4 @@
+import { tick } from "svelte";
 import type { EnginePort } from "../engine/port";
 import type {
   Deal,
@@ -18,6 +19,7 @@ import type {
   ConditionDetail,
   PlayStrategy,
   PlayContext,
+  TreeEvalSummary,
 } from "../shared/types";
 import type { InferredHoldings } from "../shared/types";
 import type { InferenceEngine } from "../ai/inference/inference-engine";
@@ -44,6 +46,8 @@ export interface BidHistoryEntry {
   readonly isCorrect?: boolean;
   /** The expected correct bid when the user bid incorrectly (user bids only). */
   readonly expectedResult?: BidResult;
+  /** Tree traversal summary — available for convention bids using rule trees. */
+  readonly treePath?: TreeEvalSummary;
 }
 
 export interface PlayLogEntry {
@@ -271,6 +275,7 @@ export function createGameStore(engine: EnginePort) {
       // Passed out — skip to explanation
       transitionToExplanation();
     }
+    await tick();
   }
 
   function acceptDeclarerSwap() {
@@ -326,7 +331,7 @@ export function createGameStore(engine: EnginePort) {
     }
   }
 
-  async function userPlayCard(card: Card, seat: Seat) {
+  async function userPlayCardImpl(card: Card, seat: Seat) {
     if (isProcessing || !currentPlayer || !deal) return;
     if (seat !== currentPlayer) return;
     if (!isUserControlled(seat)) return;
@@ -342,11 +347,13 @@ export function createGameStore(engine: EnginePort) {
     if (!isLegal) return;
 
     addCardToTrick(card, seat);
+    await tick();
 
     if (currentTrick.length === 4) {
       await completeTrick();
     } else {
       currentPlayer = nextSeat(currentPlayer);
+      await tick();
       if (!isUserControlled(currentPlayer)) {
         await runAiPlays();
       }
@@ -381,6 +388,7 @@ export function createGameStore(engine: EnginePort) {
 
     // Brief pause to show completed trick (separate from isProcessing to avoid race)
     isShowingTrickResult = true;
+    await tick();
     await delay(TRICK_PAUSE);
     isShowingTrickResult = false;
 
@@ -396,6 +404,7 @@ export function createGameStore(engine: EnginePort) {
 
     // Winner leads next trick
     currentPlayer = winner;
+    await tick();
 
     // If next leader is AI, continue
     if (!isUserControlled(winner)) {
@@ -433,6 +442,9 @@ export function createGameStore(engine: EnginePort) {
       }
     } finally {
       isProcessing = false;
+      // Flush Svelte DOM updates — async $state mutations need an
+      // explicit tick to propagate after await chains.
+      await tick();
     }
   }
 
@@ -448,7 +460,7 @@ export function createGameStore(engine: EnginePort) {
     transitionToExplanation();
   }
 
-  async function skipToReview() {
+  async function skipToReviewImpl() {
     playAborted = true;
     if (!contract || !deal) return;
 
@@ -527,6 +539,7 @@ export function createGameStore(engine: EnginePort) {
             explanation: result.explanation,
             isUser: false,
             conditions: result.conditions,
+            treePath: result.treePath,
           },
         ];
 
@@ -545,7 +558,190 @@ export function createGameStore(engine: EnginePort) {
       }
     } finally {
       isProcessing = false;
+      // Flush Svelte DOM updates — async $state mutations (isProcessing,
+      // legalCalls) need an explicit tick to propagate after await chains.
+      await tick();
     }
+  }
+
+  async function userBidImpl(call: Call) {
+    if (isProcessing) return;
+    if (!currentTurn || !drillSession?.isUserSeat(currentTurn)) return;
+    if (!deal) return;
+
+    // Check correctness against convention strategy before proceeding
+    let expectedResult: BidResult | null = null;
+    if (conventionStrategy) {
+      const hand = deal.hands[currentTurn];
+      const evaluation = evaluateHand(hand);
+      expectedResult = conventionStrategy.suggest(
+        createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
+      );
+    }
+
+    const isCorrect = callsMatch(
+      call,
+      expectedResult?.call ?? { type: "pass" },
+    );
+
+    // Store feedback
+    bidFeedback = {
+      isCorrect,
+      userCall: call,
+      expectedResult: expectedResult ?? {
+        call: { type: "pass" },
+        ruleName: null,
+        explanation: "No convention bid applies — pass",
+      },
+    };
+
+    // Save pre-bid state for potential retry (wrong bids only)
+    const auctionBeforeUser = auction;
+    if (!isCorrect) {
+      preBidAuction = auction;
+      preBidTurn = currentTurn;
+      preBidHistory = [...bidHistory];
+    } else {
+      preBidAuction = null;
+      preBidTurn = null;
+      preBidHistory = null;
+    }
+
+    // Add bid to auction regardless of correctness
+    const userBidEntry = { seat: currentTurn, call };
+    auction = await engine.addCall(auction, userBidEntry);
+
+    // Process user bid through inference engine
+    if (nsInferenceEngine) nsInferenceEngine.processBid(userBidEntry, auctionBeforeUser);
+
+    bidHistory = [
+      ...bidHistory,
+      {
+        seat: currentTurn,
+        call,
+        ruleName: null,
+        explanation: "User bid",
+        isUser: true,
+        isCorrect,
+        expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
+        treePath: expectedResult?.treePath,
+      },
+    ];
+
+    currentTurn = nextSeat(currentTurn);
+
+    // If correct, auto-dismiss feedback after brief display and continue
+    if (isCorrect) {
+      const complete = await engine.isAuctionComplete(auction);
+      if (complete) {
+        await completeAuction();
+        bidFeedback = null;
+        await tick();
+        return;
+      }
+      await runAiBids();
+      // Clear correct feedback after AI bids complete (user has seen it)
+      bidFeedback = null;
+      await tick();
+      return;
+    }
+
+    // If wrong, pause — user must dismiss feedback before auction continues
+    // runAiBids() will be called by dismissBidFeedback()
+    // Flush DOM — state mutations after await (bidFeedback, bidHistory,
+    // currentTurn) need explicit tick to propagate.
+    await tick();
+  }
+
+  /** Dismiss bid feedback and continue auction (called after wrong bid acknowledged). */
+  async function dismissBidFeedbackImpl() {
+    bidFeedback = null;
+
+    const complete = await engine.isAuctionComplete(auction);
+    if (complete) {
+      await completeAuction();
+      return;
+    }
+
+    await runAiBids();
+    await tick();
+  }
+
+  /** Undo the wrong bid and let user try again on the same deal. */
+  async function retryBidImpl() {
+    if (isProcessing) return;
+    if (!preBidAuction || !preBidTurn || !preBidHistory) return;
+    auction = preBidAuction;
+    currentTurn = preBidTurn;
+    bidHistory = preBidHistory;
+    bidFeedback = null;
+    preBidAuction = null;
+    preBidTurn = null;
+    preBidHistory = null;
+
+    // Refresh legal calls for the restored turn
+    if (currentTurn) {
+      legalCalls = await engine.getLegalCalls(auction, currentTurn);
+    }
+
+    // Inference state for the undone bid is not rolled back — acceptable
+    // since inference is approximate and the user is retrying immediately
+    await tick();
+  }
+
+  /** Skip directly to explanation from bid feedback — completes auction first for DDS. */
+  async function skipFromFeedbackImpl() {
+    if (phase !== "BIDDING") return;
+    bidFeedback = null;
+
+    // Complete the auction with AI bids so contract is available for DDS
+    const complete = await engine.isAuctionComplete(auction);
+    if (!complete) {
+      await runAiBids();
+    }
+    // Extract contract (may be null for passout)
+    contract = await engine.getContract(auction);
+
+    transitionToExplanation();
+    await tick();
+  }
+
+  function resetImpl() {
+    playAborted = true;
+    deal = null;
+    auction = { entries: [], isComplete: false };
+    phase = "BIDDING";
+    currentTurn = null;
+    bidHistory = [];
+    contract = null;
+    isProcessing = false;
+    legalCalls = [];
+    drillSession = null;
+    bidFeedback = null;
+    conventionStrategy = null;
+    preBidAuction = null;
+    preBidTurn = null;
+    preBidHistory = null;
+    // Reset play state
+    tricks = [];
+    currentTrick = [];
+    currentPlayer = null;
+    declarerTricksWon = 0;
+    defenderTricksWon = 0;
+    dummySeat = null;
+    score = null;
+    trumpSuit = undefined;
+    effectiveUserSeat = null;
+    isShowingTrickResult = false;
+    // Reset inference + strategy state
+    nsInferenceEngine = null;
+    playInferences = null;
+    activePlayStrategy = null;
+    playLog = [];
+    // Reset DDS state
+    ddsSolution = null;
+    ddsSolving = false;
+    ddsError = null;
   }
 
   return {
@@ -652,8 +848,12 @@ export function createGameStore(engine: EnginePort) {
     /** Get remaining cards for a seat (hand minus played cards). */
     getRemainingCards,
 
-    userPlayCard,
-    skipToReview,
+    userPlayCard(card: Card, seat: Seat): void {
+      userPlayCardImpl(card, seat).catch((err) => console.error("[game] userPlayCard:", err));
+    },
+    skipToReview(): void {
+      skipToReviewImpl().catch((err) => console.error("[game] skipToReview:", err));
+    },
     acceptDeclarerSwap,
     declineDeclarerSwap,
     acceptDefend,
@@ -690,6 +890,14 @@ export function createGameStore(engine: EnginePort) {
       initialAuction?: Auction,
       strategy?: BiddingStrategy,
     ) {
+      // Eagerly load inference engine BEFORE any $state mutations —
+      // dynamic await import() breaks the Svelte 5 scheduler, causing
+      // subsequent $state mutations to not trigger DOM updates.
+      let inferenceFactory: typeof import("../ai/inference/inference-engine") | null = null;
+      if (session.config.nsInferenceConfig) {
+        inferenceFactory = await import("../ai/inference/inference-engine");
+      }
+
       deal = newDeal;
       drillSession = session;
       conventionStrategy = strategy ?? null;
@@ -724,15 +932,15 @@ export function createGameStore(engine: EnginePort) {
       // Set up inference engine if configured
       playInferences = null;
       playLog = [];
-      if (session.config.nsInferenceConfig) {
-        const { createInferenceEngine } = await import("../ai/inference/inference-engine");
-        nsInferenceEngine = createInferenceEngine(
+      if (inferenceFactory && session.config.nsInferenceConfig) {
+        nsInferenceEngine = inferenceFactory.createInferenceEngine(
           session.config.nsInferenceConfig,
           Seat.North,
         );
       } else {
         nsInferenceEngine = null;
       }
+
 
       if (initialAuction) {
         auction = initialAuction;
@@ -757,178 +965,35 @@ export function createGameStore(engine: EnginePort) {
         currentTurn = newDeal.dealer;
       }
 
+      // Flush initial state to DOM before AI bids start — ensures
+      // deal/phase/hand display updates before the async bid loop.
+      await tick();
       await runAiBids();
     },
 
-    async userBid(call: Call) {
-      if (isProcessing) return;
-      if (!currentTurn || !drillSession?.isUserSeat(currentTurn)) return;
-      if (!deal) return;
-
-      // Check correctness against convention strategy before proceeding
-      let expectedResult: BidResult | null = null;
-      if (conventionStrategy) {
-        const hand = deal.hands[currentTurn];
-        const evaluation = evaluateHand(hand);
-        expectedResult = conventionStrategy.suggest(
-          createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
-        );
-      }
-
-      const isCorrect = callsMatch(
-        call,
-        expectedResult?.call ?? { type: "pass" },
-      );
-
-      // Store feedback
-      bidFeedback = {
-        isCorrect,
-        userCall: call,
-        expectedResult: expectedResult ?? {
-          call: { type: "pass" },
-          ruleName: null,
-          explanation: "No convention bid applies — pass",
-        },
-      };
-
-      // Save pre-bid state for potential retry (wrong bids only)
-      const auctionBeforeUser = auction;
-      if (!isCorrect) {
-        preBidAuction = auction;
-        preBidTurn = currentTurn;
-        preBidHistory = [...bidHistory];
-      } else {
-        preBidAuction = null;
-        preBidTurn = null;
-        preBidHistory = null;
-      }
-
-      // Add bid to auction regardless of correctness
-      const userBidEntry = { seat: currentTurn, call };
-      auction = await engine.addCall(auction, userBidEntry);
-
-      // Process user bid through inference engine
-      if (nsInferenceEngine) nsInferenceEngine.processBid(userBidEntry, auctionBeforeUser);
-
-      bidHistory = [
-        ...bidHistory,
-        {
-          seat: currentTurn,
-          call,
-          ruleName: null,
-          explanation: "User bid",
-          isUser: true,
-          isCorrect,
-          expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
-        },
-      ];
-
-      currentTurn = nextSeat(currentTurn);
-
-      // If correct, auto-dismiss feedback after brief display and continue
-      if (isCorrect) {
-        const complete = await engine.isAuctionComplete(auction);
-        if (complete) {
-          await completeAuction();
-          bidFeedback = null;
-          return;
-        }
-        await runAiBids();
-        // Clear correct feedback after AI bids complete (user has seen it)
-        bidFeedback = null;
-        return;
-      }
-
-      // If wrong, pause — user must dismiss feedback before auction continues
-      // runAiBids() will be called by dismissBidFeedback()
+    /** User action: submit a bid. Returns void — safe for event handlers. */
+    userBid(call: Call): void {
+      userBidImpl(call).catch((err) => console.error("[game] userBid:", err));
     },
 
     /** Dismiss bid feedback and continue auction (called after wrong bid acknowledged). */
-    async dismissBidFeedback() {
-      bidFeedback = null;
-
-      const complete = await engine.isAuctionComplete(auction);
-      if (complete) {
-        await completeAuction();
-        return;
-      }
-
-      await runAiBids();
+    dismissBidFeedback(): void {
+      dismissBidFeedbackImpl().catch((err) => console.error("[game] dismissBidFeedback:", err));
     },
 
     /** Undo the wrong bid and let user try again on the same deal. */
-    async retryBid() {
-      if (isProcessing) return;
-      if (!preBidAuction || !preBidTurn || !preBidHistory) return;
-      auction = preBidAuction;
-      currentTurn = preBidTurn;
-      bidHistory = preBidHistory;
-      bidFeedback = null;
-      preBidAuction = null;
-      preBidTurn = null;
-      preBidHistory = null;
-
-      // Refresh legal calls for the restored turn
-      if (currentTurn) {
-        legalCalls = await engine.getLegalCalls(auction, currentTurn);
-      }
-
-      // Inference state for the undone bid is not rolled back — acceptable
-      // since inference is approximate and the user is retrying immediately
+    retryBid(): void {
+      retryBidImpl().catch((err) => console.error("[game] retryBid:", err));
     },
 
     /** Skip directly to explanation from bid feedback — completes auction first for DDS. */
-    async skipFromFeedback() {
-      if (phase !== "BIDDING") return;
-      bidFeedback = null;
-
-      // Complete the auction with AI bids so contract is available for DDS
-      const complete = await engine.isAuctionComplete(auction);
-      if (!complete) {
-        await runAiBids();
-      }
-      // Extract contract (may be null for passout)
-      contract = await engine.getContract(auction);
-
-      transitionToExplanation();
+    skipFromFeedback(): void {
+      skipFromFeedbackImpl().catch((err) => console.error("[game] skipFromFeedback:", err));
     },
 
-    async reset() {
-      playAborted = true;
-      deal = null;
-      auction = { entries: [], isComplete: false };
-      phase = "BIDDING";
-      currentTurn = null;
-      bidHistory = [];
-      contract = null;
-      isProcessing = false;
-      legalCalls = [];
-      drillSession = null;
-      bidFeedback = null;
-      conventionStrategy = null;
-      preBidAuction = null;
-      preBidTurn = null;
-      preBidHistory = null;
-      // Reset play state
-      tricks = [];
-      currentTrick = [];
-      currentPlayer = null;
-      declarerTricksWon = 0;
-      defenderTricksWon = 0;
-      dummySeat = null;
-      score = null;
-      trumpSuit = undefined;
-      effectiveUserSeat = null;
-      isShowingTrickResult = false;
-      // Reset inference + strategy state
-      nsInferenceEngine = null;
-      playInferences = null;
-      activePlayStrategy = null;
-      playLog = [];
-      // Reset DDS state
-      ddsSolution = null;
-      ddsSolving = false;
-      ddsError = null;
+    /** Reset all game state. Returns void — safe for event handlers. */
+    reset(): void {
+      resetImpl();
     },
   };
 }

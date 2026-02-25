@@ -13,6 +13,7 @@ import type {
 import { ConventionCategory } from "./types";
 import { buildAuction } from "../engine/auction-helpers";
 import { getSuitLength } from "../engine/hand-evaluator";
+import type { BiddingContext } from "./types";
 import {
   auctionMatches,
   bothMajors,
@@ -20,6 +21,7 @@ import {
   clubsPlusHigher,
   suitMin,
   hasSingleLongSuit,
+  anySuitMin,
 } from "./conditions";
 import { decision, bid, fallback } from "./rule-tree";
 import type { RuleNode, TreeConventionConfig } from "./rule-tree";
@@ -49,6 +51,50 @@ export const dontDealConstraints: DealConstraints = {
   ],
   dealer: Seat.East,
 };
+
+// ─── Helpers ──────────────────────────────────────────────────
+
+/** Find advancer's longest suit with 6+ cards and return a 2-level bid. */
+function advanceLongSuitCall(ctx: BiddingContext): Call {
+  const shape = ctx.hand.cards.reduce(
+    (acc, c) => {
+      const idx = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs].indexOf(
+        c.suit as unknown as BidSuit,
+      );
+      if (idx >= 0) acc[idx]!++;
+      return acc;
+    },
+    [0, 0, 0, 0],
+  );
+  const strains = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs];
+  let bestIdx = -1;
+  let bestLen = 0;
+  for (let i = 0; i < 4; i++) {
+    if (shape[i]! >= 6 && shape[i]! > bestLen) {
+      bestLen = shape[i]!;
+      bestIdx = i;
+    }
+  }
+  if (bestIdx === -1) return { type: "pass" };
+  return { type: "bid", level: 2, strain: strains[bestIdx]! };
+}
+
+/** Overcaller reveals their single long suit after partner's 2C relay. */
+function revealSuitCall(ctx: BiddingContext): Call {
+  const shape = getSuitLength(ctx.hand);
+  const strains = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs];
+  let bestIdx = -1;
+  let bestLen = 0;
+  for (let i = 0; i < 4; i++) {
+    if (shape[i]! >= 6 && shape[i]! > bestLen) {
+      bestLen = shape[i]!;
+      bestIdx = i;
+    }
+  }
+  // Clubs = pass (stay in 2C), other suits = bid at 2-level
+  if (bestIdx === -1 || bestIdx === 3) return { type: "pass" };
+  return { type: "bid", level: 2, strain: strains[bestIdx]! };
+}
 
 // ─── Rule Tree ────────────────────────────────────────────────
 
@@ -100,21 +146,47 @@ const advanceAfter2S: RuleNode = decision(
 );
 
 const advanceAfter2D: RuleNode = decision(
-  "diamonds-support",
-  suitMin(2, "diamonds", 3),
-  bid("dont-advance-pass", (): Call => ({ type: "pass" })),
-  bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+  "has-6-plus-spades-after-2d",
+  suitMin(0, "spades", 6),
+  bid("dont-advance-long-suit", advanceLongSuitCall),
+  decision(
+    "diamonds-support",
+    suitMin(2, "diamonds", 3),
+    bid("dont-advance-pass", (): Call => ({ type: "pass" })),
+    bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+  ),
 );
 
 const advanceAfter2C: RuleNode = decision(
-  "clubs-support",
-  suitMin(3, "clubs", 3),
-  bid("dont-advance-pass", (): Call => ({ type: "pass" })),
-  bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+  "has-6-plus-suit-after-2c",
+  anySuitMin(
+    [
+      { index: 0, name: "spades" },
+      { index: 1, name: "hearts" },
+    ],
+    6,
+  ),
+  bid("dont-advance-long-suit", advanceLongSuitCall),
+  decision(
+    "clubs-support",
+    suitMin(3, "clubs", 3),
+    bid("dont-advance-pass", (): Call => ({ type: "pass" })),
+    bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+  ),
 );
 
-const advanceAfterDouble: RuleNode = bid(
-  "dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs }),
+const advanceAfterDouble: RuleNode = decision(
+  "has-6-plus-suit",
+  anySuitMin(
+    [
+      { index: 0, name: "spades" },
+      { index: 1, name: "hearts" },
+      { index: 2, name: "diamonds" },
+    ],
+    6,
+  ),
+  bid("dont-advance-long-suit", advanceLongSuitCall),
+  bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
 );
 
 const advanceBranch: RuleNode = decision(
@@ -144,11 +216,24 @@ const advanceBranch: RuleNode = decision(
   ),
 );
 
+// Overcaller reveal after partner's 2C relay (1NT-X-P-2C-P)
+const overcallerRevealBranch: RuleNode = decision(
+  "clubs-long",
+  suitMin(3, "clubs", 6),
+  bid("dont-reveal-pass", (): Call => ({ type: "pass" })),
+  bid("dont-reveal-suit", revealSuitCall),
+);
+
 const dontRuleTree: RuleNode = decision(
   "after-1nt",
   auctionMatches(["1NT"]),
   overcallerBranch,
-  advanceBranch,
+  decision(
+    "after-1nt-x-p-2c-p",
+    auctionMatches(["1NT", "X", "P", "2C", "P"]),
+    overcallerRevealBranch,
+    advanceBranch,
+  ),
 );
 
 /** Overcaller position: East opened 1NT */

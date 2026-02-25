@@ -11,11 +11,14 @@ import {
   hcpMax,
   hcpRange,
   majorSupport,
+  hasShortage,
   and,
+  not,
   isOpener,
   isResponder,
   biddingRound,
   partnerBidAt,
+  opponentActed,
   seatFirstBidStrain,
   partnerOpeningStrain,
 } from "./conditions";
@@ -96,6 +99,15 @@ function openerRebidSignoff(ctx: BiddingContext): Call {
   const strain = asMajor(seatFirstBidStrain(ctx));
   if (!strain) return pass;
   return { type: "bid", level: 3, strain };
+}
+
+/** Dynamic call for splinter: 3S after 1H, 3H after 1S (the OTHER major). */
+function splinterCall(ctx: BiddingContext): Call {
+  const strain = asMajor(partnerOpeningStrain(ctx));
+  if (!strain) return pass;
+  // Splinter is the other major at the 3 level
+  const otherMajor = strain === BidSuit.Hearts ? BidSuit.Spades : BidSuit.Hearts;
+  return { type: "bid", level: 3, strain: otherMajor };
 }
 
 // ─── Local Conditions ───────────────────────────────────────
@@ -207,22 +219,27 @@ function partnerSignedOffInThreeMajor(): RuleCondition {
 
 // Responder initial bids (after 1M-P)
 const responderInitialBranch: RuleNode = decision(
-  "game-raise-hcp",
-  and(hcpMin(13), majorSupport()),
-  bid("bergen-game-raise", gameInOpenersMajor),
+  "splinter-hcp",
+  and(hcpMin(12), majorSupport(), hasShortage()),
+  bid("bergen-splinter", splinterCall),
   decision(
-    "limit-raise-hcp",
-    and(hcpRange(10, 12), majorSupport()),
-    bid("bergen-limit-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+    "game-raise-hcp",
+    and(hcpMin(13), majorSupport()),
+    bid("bergen-game-raise", gameInOpenersMajor),
     decision(
-      "constructive-hcp",
-      and(hcpRange(7, 9), majorSupport()),
-      bid("bergen-constructive-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+      "limit-raise-hcp",
+      and(hcpRange(10, 12), majorSupport()),
+      bid("bergen-limit-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
       decision(
-        "preemptive-hcp",
-        and(hcpMax(6), majorSupport()),
-        bid("bergen-preemptive-raise", threeOfOpenersMajor),
-        fallback(),
+        "constructive-hcp",
+        and(hcpRange(7, 10), majorSupport()),
+        bid("bergen-constructive-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+        decision(
+          "preemptive-hcp",
+          and(hcpMax(6), majorSupport()),
+          bid("bergen-preemptive-raise", threeOfOpenersMajor),
+          fallback(),
+        ),
       ),
     ),
   ),
@@ -305,15 +322,15 @@ const bergenRuleTree: RuleNode = decision(
   responderInitialBranch,
   decision(
     "is-opener-round1",
-    and(isOpener(), biddingRound(1)),
+    and(isOpener(), biddingRound(1), not(opponentActed())),
     openerRound1Branch,
     decision(
       "is-responder-round1",
-      and(isResponder(), biddingRound(1)),
+      and(isResponder(), biddingRound(1), not(opponentActed())),
       responderRound1Branch,
       decision(
         "is-opener-round2",
-        and(isOpener(), biddingRound(2)),
+        and(isOpener(), biddingRound(2), not(opponentActed())),
         bid("bergen-opener-accept-after-try", (): Call => ({ type: "pass" })),
         fallback(),
       ),

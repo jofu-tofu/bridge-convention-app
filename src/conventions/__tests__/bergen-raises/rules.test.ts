@@ -3,23 +3,23 @@
 // - ACBL Standard American Yellow Card [SAYC]
 
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit, Vulnerability } from "../../engine/types";
-import type { ContractBid, Hand, Deal } from "../../engine/types";
+import { Seat, BidSuit, Vulnerability } from "../../../engine/types";
+import type { ContractBid, Hand, Deal } from "../../../engine/types";
 import {
   calculateHcp,
   getSuitLength,
   evaluateHand,
-} from "../../engine/hand-evaluator";
-import { checkConstraints, generateDeal } from "../../engine/deal-generator";
+} from "../../../engine/hand-evaluator";
+import { checkConstraints, generateDeal } from "../../../engine/deal-generator";
 import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
   getConventionRules,
-} from "../registry";
-import { bergenConfig, bergenDealConstraints } from "../bergen-raises";
-import type { BiddingContext } from "../types";
-import { hand, auctionFromBids } from "./fixtures";
+} from "../../registry";
+import { bergenConfig, bergenDealConstraints } from "../../bergen-raises";
+import type { BiddingContext } from "../../types";
+import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {
   clearRegistry();
@@ -660,7 +660,7 @@ describe("Bergen Raises HCP boundary tests", () => {
     expect(result!.rule).toBe("bergen-preemptive-raise");
   });
 
-  test("exactly 7 HCP matches constructive (7-9)", () => {
+  test("[bridgebum/bergen] exactly 7 HCP matches constructive (7-10)", () => {
     // HK(3) + HQ(2) + DJ(1) + CJ(1) = 7 HCP, 4 hearts
     const responder = hand(
       "S8",
@@ -683,7 +683,7 @@ describe("Bergen Raises HCP boundary tests", () => {
     expect(result!.rule).toBe("bergen-constructive-raise");
   });
 
-  test("exactly 9 HCP matches constructive (7-9)", () => {
+  test("[bridgebum/bergen] exactly 9 HCP matches constructive (7-10)", () => {
     // HK(3) + HQ(2) + DK(3) + CJ(1) = 9 HCP, 4 hearts
     const responder = hand(
       "S8",
@@ -1420,11 +1420,12 @@ describe("Bergen Raises property-based invariants", () => {
     expect(auction!.entries[1]!.call).toEqual({ type: "pass" });
   });
 
-  test("[bridgebum/bergen invariant] all sixteen rules produce distinct names", () => {
+  test("[bridgebum/bergen invariant] all seventeen rules produce distinct names", () => {
     const rules = getConventionRules("bergen-raises");
-    expect(rules).toHaveLength(16);
+    expect(rules).toHaveLength(17);
     const names = rules.map((r) => r.name);
-    expect(new Set(names).size).toBe(16);
+    expect(new Set(names).size).toBe(17);
+    expect(names).toContain("bergen-splinter");
     expect(names).toContain("bergen-game-raise");
     expect(names).toContain("bergen-limit-raise");
     expect(names).toContain("bergen-constructive-raise");
@@ -2265,5 +2266,130 @@ describe("Bergen Raises — acceptance passes (closing the auction)", () => {
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("bergen-opener-accept-after-try");
     expect(result!.call.type).toBe("pass");
+  });
+});
+
+// ─── Splinter Bids ────────────────────────────────────────────
+
+describe("Bergen splinter bids [bridgebum/bergen]", () => {
+  test("[bridgebum/bergen] 12+ HCP with singleton bids 3S after 1H (splinter)", () => {
+    // 12 HCP, 4 hearts, singleton diamond: KQ=5, KQ=5, -=0, K=3 but need 12
+    // A=4, Q=2: spades=6, K=3 Q=2: hearts=5... let's build carefully
+    // SK SQ S5 S2 (5 HCP) + HK HJ H7 H3 (4 HCP) + D5 (0) + CQ C5 C3 (2 HCP) = 11
+    // Need 12: SK SQ S5 S2 (5) + HK HQ H7 H3 (5) + D5 (0) + CJ C5 (1) = 11
+    // SK SQ S5 (5) + HA HQ H7 H3 (6) + D5 (0) + C5 C3 C2 (0) = 11 -- nope
+    // A=4 K=3 Q=2 J=1. Target 12 HCP, 4 hearts, singleton diamond, 13 cards
+    // S: K Q 5 2 = 5 HCP, 4 cards. H: A J 7 3 = 5 HCP, 4 cards. D: 5 = 0, 1 card. C: Q 5 3 2 = 2, 4 cards. Total=12
+    const responder = hand(
+      "SK",
+      "SQ",
+      "S5",
+      "S2",
+      "HA",
+      "HJ",
+      "H7",
+      "H3",
+      "D5",
+      "CQ",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(12);
+    expect(getSuitLength(responder)[1]).toBe(4); // 4 hearts
+    expect(getSuitLength(responder)[2]).toBe(1); // singleton diamond
+    const result = callFromRules(responder, Seat.South, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-splinter");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Spades);
+  });
+
+  test("[bridgebum/bergen] 13+ HCP with void bids 3H after 1S (splinter)", () => {
+    // 13 HCP, 4 spades, void in clubs
+    // S: A K 7 3 = 7 HCP, 4 cards. H: Q J 5 2 = 3 HCP, 4 cards. D: K 7 5 2 = 3 HCP, 4 cards. C: 5 = 0 HCP, 1 card. Total=13. But need void...
+    // S: A K 7 3 = 7 HCP, 4 cards. H: Q J 5 = 3 HCP, 3 cards. D: K Q 7 5 2 = 5 HCP, 5 cards. C: (void) 0 cards. 4+3+5+0=12 cards -- need 13
+    // S: A K 7 3 = 7 HCP, 4 cards. H: Q J 5 2 = 3 HCP, 4 cards. D: K 7 5 3 2 = 3 HCP, 5 cards. C: (void). 4+4+5=13 cards. 7+3+3=13 HCP ✓
+    const responder = hand(
+      "SA",
+      "SK",
+      "S7",
+      "S3",
+      "HQ",
+      "HJ",
+      "H5",
+      "H2",
+      "DK",
+      "D7",
+      "D5",
+      "D3",
+      "D2",
+    );
+    expect(calculateHcp(responder)).toBe(13);
+    expect(getSuitLength(responder)[0]).toBe(4); // 4 spades
+    expect(getSuitLength(responder)[3]).toBe(0); // void clubs
+    const result = callFromRules(responder, Seat.South, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-splinter");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
+  });
+
+  test("[bridgebum/bergen] balanced 12 HCP without shortage bids limit raise, not splinter", () => {
+    // 12 HCP, 4 hearts, balanced (no singleton/void)
+    // S: K Q 5 = 5 HCP, 3 cards. H: K J 7 3 = 4 HCP, 4 cards. D: Q 5 3 = 2 HCP, 3 cards. C: J 5 3 = 1 HCP, 3 cards. Total=12
+    const responder = hand(
+      "SK",
+      "SQ",
+      "S5",
+      "HK",
+      "HJ",
+      "H7",
+      "H3",
+      "DQ",
+      "D5",
+      "D3",
+      "CJ",
+      "C5",
+      "C3",
+    );
+    expect(calculateHcp(responder)).toBe(12);
+    expect(getSuitLength(responder)[1]).toBe(4); // 4 hearts
+    // No suit with 0 or 1 cards
+    const shape = getSuitLength(responder);
+    expect(shape.every((s) => s >= 2)).toBe(true);
+    const result = callFromRules(responder, Seat.South, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-limit-raise");
+  });
+
+  test("[bridgebum/bergen] 15 HCP with shortage bids splinter over game raise", () => {
+    // 15 HCP, 4 spades, singleton heart
+    const responder = hand(
+      "SA",
+      "SK",
+      "SQ",
+      "S3",
+      "H5",
+      "DA",
+      "DQ",
+      "D7",
+      "D5",
+      "D2",
+      "C5",
+      "C3",
+      "C2",
+    );
+    expect(calculateHcp(responder)).toBe(15);
+    expect(getSuitLength(responder)[0]).toBe(4); // 4 spades
+    expect(getSuitLength(responder)[1]).toBe(1); // singleton heart
+    const result = callFromRules(responder, Seat.South, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("bergen-splinter");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(3);
+    expect(call.strain).toBe(BidSuit.Hearts);
   });
 });

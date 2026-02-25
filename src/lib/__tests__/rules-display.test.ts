@@ -4,7 +4,7 @@ import type { Hand, Deal, Call } from "../../engine/types";
 import type { BiddingRule, BiddingContext, ConventionConfig } from "../../conventions/types";
 import { ConventionCategory } from "../../conventions/types";
 import type { BidHistoryEntry } from "../../stores/game.svelte";
-import { prepareRulesForDisplay } from "../rules-display";
+import { prepareRulesForDisplay, groupBidsByRound } from "../rules-display";
 import { conditionedRule, hcpMin, suitMin, auctionMatches } from "../../conventions/conditions";
 
 // --- Fixtures ---
@@ -331,5 +331,91 @@ describe("prepareRulesForDisplay", () => {
       level: 2,
       strain: BidSuit.Clubs,
     });
+  });
+});
+
+// ─── groupBidsByRound ─────────────────────────────────────────
+
+describe("groupBidsByRound", () => {
+  function entry(seat: Seat, callStr: string, opts: Partial<BidHistoryEntry> = {}): BidHistoryEntry {
+    const call: Call = callStr === "P"
+      ? { type: "pass" }
+      : { type: "bid", level: Number(callStr[0]) as 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: callStr.slice(1) as never };
+    return {
+      seat,
+      call,
+      ruleName: opts.ruleName ?? null,
+      explanation: opts.explanation ?? "",
+      isUser: opts.isUser ?? false,
+      isCorrect: opts.isCorrect,
+      treePath: opts.treePath,
+      conditions: opts.conditions,
+    };
+  }
+
+  it("groups 8 entries into 2 rounds of 4", () => {
+    const history: BidHistoryEntry[] = [
+      entry(Seat.North, "1NT"),
+      entry(Seat.East, "P"),
+      entry(Seat.South, "2C", { isUser: true, ruleName: "stayman-ask" }),
+      entry(Seat.West, "P"),
+      entry(Seat.North, "2H", { ruleName: "stayman-response-hearts" }),
+      entry(Seat.East, "P"),
+      entry(Seat.South, "4H", { isUser: true, ruleName: "stayman-rebid-major-fit" }),
+      entry(Seat.West, "P"),
+    ];
+
+    const rounds = groupBidsByRound(history);
+    expect(rounds).toHaveLength(2);
+    expect(rounds[0]!.roundNumber).toBe(1);
+    expect(rounds[0]!.entries).toHaveLength(4);
+    expect(rounds[1]!.roundNumber).toBe(2);
+    expect(rounds[1]!.entries).toHaveLength(4);
+  });
+
+  it("handles partial last round (5 entries → 2 groups: 4 + 1)", () => {
+    const history: BidHistoryEntry[] = [
+      entry(Seat.North, "1NT"),
+      entry(Seat.East, "P"),
+      entry(Seat.South, "2C"),
+      entry(Seat.West, "P"),
+      entry(Seat.North, "2H"),
+    ];
+
+    const rounds = groupBidsByRound(history);
+    expect(rounds).toHaveLength(2);
+    expect(rounds[0]!.entries).toHaveLength(4);
+    expect(rounds[1]!.entries).toHaveLength(1);
+  });
+
+  it("returns empty array for empty bidHistory", () => {
+    expect(groupBidsByRound([])).toEqual([]);
+  });
+
+  it("passes through treePath and conditions from BidHistoryEntry", () => {
+    const treePath = {
+      matchedNodeName: "stayman-ask",
+      path: [],
+      visited: [],
+    };
+    const conditions = [{ name: "hcp-min", passed: true, description: "8+ HCP (has 12)" }];
+    const history: BidHistoryEntry[] = [
+      entry(Seat.North, "1NT", { treePath, conditions }),
+    ];
+
+    const rounds = groupBidsByRound(history);
+    expect(rounds[0]!.entries[0]!.treePath).toBe(treePath);
+    expect(rounds[0]!.entries[0]!.conditions).toBe(conditions);
+  });
+
+  it("maps isUser and isCorrect correctly", () => {
+    const history: BidHistoryEntry[] = [
+      entry(Seat.South, "2C", { isUser: true, isCorrect: true }),
+    ];
+
+    const rounds = groupBidsByRound(history);
+    const e = rounds[0]!.entries[0]!;
+    expect(e.isUser).toBe(true);
+    expect(e.isCorrect).toBe(true);
   });
 });

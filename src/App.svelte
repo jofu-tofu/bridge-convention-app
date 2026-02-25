@@ -1,9 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { TsEngine } from "./engine/ts-engine";
   import { TauriIpcEngine } from "./engine/tauri-ipc-engine";
   import { HttpEngine } from "./engine/http-engine";
-  import { createFallbackEngine } from "./engine/fallback-engine";
   import type { EnginePort } from "./engine/port";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -12,17 +10,14 @@
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
 
-  // Runtime engine detection: Tauri IPC → HTTP (Rust) → TS fallback
+  // Runtime engine detection: Tauri IPC (desktop) or HTTP (dev/browser)
   function createEngine(): EnginePort {
     if ((window as any).__TAURI__) {
       return new TauriIpcEngine();
     }
     // In dev mode, Vite proxies /api to the Rust server — use same origin
     const rustUrl = import.meta.env.DEV ? "" : "http://localhost:3001";
-    return createFallbackEngine(
-      new HttpEngine(rustUrl),
-      new TsEngine(),
-    );
+    return new HttpEngine(rustUrl);
   }
 
   const engine = createEngine();
@@ -75,8 +70,11 @@
         })
         .catch((err) => {
           if (err instanceof DOMException && err.name === "AbortError") return;
-          const status = `Rust engine: UNREACHABLE (${err.message}) | Using TS fallback — no DDS`;
+          const status = `Rust engine: UNREACHABLE (${err.message})`;
           appStore.setEngineStatus(status);
+          appStore.setEngineError(
+            "Rust server not running. Start it with: npm run dev:web",
+          );
           console.error(`[engine] ${status}`);
         });
 
@@ -86,6 +84,13 @@
 </script>
 
 <div class="h-screen overflow-hidden bg-bg-deepest text-text-primary font-sans">
+  {#if appStore.engineError}
+    <div
+      class="bg-red-700 text-white px-4 py-2 text-center text-sm font-medium"
+    >
+      {appStore.engineError}
+    </div>
+  {/if}
   {#if appStore.screen === "select"}
     <ConventionSelectScreen />
   {:else if appStore.screen === "game"}
