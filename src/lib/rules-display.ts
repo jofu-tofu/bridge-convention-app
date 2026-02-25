@@ -1,6 +1,5 @@
 import type {
-  BiddingRule,
-  ConditionedBiddingRule,
+  ConventionConfig,
 } from "../conventions/types";
 import type { BidHistoryEntry } from "../stores/game.svelte";
 import type { Deal, Call, Seat, Auction } from "../engine/types";
@@ -11,6 +10,7 @@ import {
 } from "../conventions/condition-evaluator";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { createBiddingContext } from "../conventions/context-factory";
+import { getEffectiveRules } from "../conventions/registry";
 import { formatRuleName } from "./format";
 
 export interface DisplayCondition {
@@ -36,10 +36,11 @@ export interface DisplayRule {
  * Reference rules get static condition labels only.
  */
 export function prepareRulesForDisplay(
-  rules: readonly BiddingRule[],
+  config: ConventionConfig,
   deal: Deal,
   bidHistory: readonly BidHistoryEntry[],
 ): { firedRules: DisplayRule[]; referenceRules: DisplayRule[] } {
+  const rules = getEffectiveRules(config);
   // Build map: ruleName → first bidHistory entry that used it (with index for ordering)
   const firedMap = new Map<
     string,

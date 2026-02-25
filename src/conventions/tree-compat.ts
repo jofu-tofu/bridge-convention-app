@@ -1,5 +1,6 @@
-// TODO(phase-1.5c): Remove after all conventions migrated to tree system.
-// This is a temporary compat adapter for the flat→tree migration period.
+// Tree compat adapter: flattenTree() produces ConditionedBiddingRule[] from
+// a RuleNode tree for consumers that need flat iteration (evaluateAllBiddingRules,
+// CLI, RulesPanel, inference engine positive inference path).
 
 import type { ConditionedBiddingRule, ConditionResult, RuleCondition, BiddingContext } from "./types";
 import type { RuleNode } from "./rule-tree";
@@ -73,8 +74,8 @@ export function flattenTree(tree: RuleNode): readonly ConditionedBiddingRule[] {
         // Yes branch: add the condition
         walk(node.yes, [...conditions, node.condition]);
         // No branch: add the negated condition (via a not() wrapper)
-        // Note: .inference is intentionally omitted — negated bounds need inverted
-        // inference types (e.g., not-hcp-min → hcp-max). Wire this in Phase 1.5(c) cleanup.
+        // Negated conditions intentionally omit .inference — the inference engine
+        // reads tree nodes directly via evaluateTree(), not flattened rules.
         const negated: RuleCondition = {
           name: `${NEGATION_PREFIX}${node.condition.name}`,
           label: `Not: ${node.condition.label}`,

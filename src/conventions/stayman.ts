@@ -11,7 +11,7 @@ import {
 } from "./conditions";
 import { decision, bid, fallback } from "./rule-tree";
 import type { RuleNode, TreeConventionConfig } from "./rule-tree";
-import { flattenTree } from "./tree-compat";
+
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
@@ -173,7 +173,6 @@ export const staymanConfig: TreeConventionConfig = {
   category: ConventionCategory.Asking,
   dealConstraints: staymanDealConstraints,
   ruleTree: staymanRuleTree,
-  biddingRules: flattenTree(staymanRuleTree),
   examples: [],
   defaultAuction: staymanDefaultAuction,
 };

@@ -21,7 +21,7 @@ import {
 } from "./conditions";
 import { decision, bid, fallback } from "./rule-tree";
 import type { RuleNode, TreeConventionConfig } from "./rule-tree";
-import { flattenTree } from "./tree-compat";
+
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
@@ -344,7 +344,6 @@ export const bergenConfig: TreeConventionConfig = {
   category: ConventionCategory.Constructive,
   dealConstraints: bergenDealConstraints,
   ruleTree: bergenRuleTree,
-  biddingRules: flattenTree(bergenRuleTree),
   examples: [],
   defaultAuction: bergenDefaultAuction,
 };

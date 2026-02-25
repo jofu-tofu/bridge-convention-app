@@ -15,6 +15,7 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
+  getConventionRules,
 } from "../registry";
 import { bergenConfig, bergenDealConstraints } from "../bergen-raises";
 import type { BiddingContext } from "../types";
@@ -48,7 +49,7 @@ function callFromRules(
   dealer: Seat = Seat.North,
 ) {
   const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(bergenConfig.biddingRules, context, bergenConfig);
+  return evaluateBiddingRules(context, bergenConfig);
 }
 
 // HCP reference: A=4, K=3, Q=2, J=1
@@ -1075,7 +1076,7 @@ describe("Bergen Raises property-based invariants", () => {
         openMajor,
         "P",
       ]);
-      const ruleResult = evaluateBiddingRules(bergenConfig.biddingRules, ctx, bergenConfig);
+      const ruleResult = evaluateBiddingRules(ctx, bergenConfig);
 
       // The responder has 0+ HCP and 4+ in at least one major, but
       // they may not have 4+ in the SPECIFIC major that was opened.
@@ -1420,7 +1421,7 @@ describe("Bergen Raises property-based invariants", () => {
   });
 
   test("[bridgebum/bergen invariant] all sixteen rules produce distinct names", () => {
-    const rules = bergenConfig.biddingRules;
+    const rules = getConventionRules("bergen-raises");
     expect(rules).toHaveLength(16);
     const names = rules.map((r) => r.name);
     expect(new Set(names).size).toBe(16);

@@ -39,7 +39,7 @@ function callFromRules(
   dealer: Seat = Seat.North,
 ) {
   const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(saycConfig.biddingRules, context, saycConfig);
+  return evaluateBiddingRules(context, saycConfig);
 }
 
 // ─── Opening Bids ───────────────────────────────────────────

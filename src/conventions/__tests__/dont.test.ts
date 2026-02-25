@@ -49,7 +49,7 @@ function callFromRules(
   dealer: Seat = Seat.East,
 ) {
   const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(dontConfig.biddingRules, context, dontConfig);
+  return evaluateBiddingRules(context, dontConfig);
 }
 
 // ─── Deal Constraints ───────────────────────────────────────
@@ -1406,7 +1406,7 @@ describe("DONT property-based invariants", () => {
       const result = generateDeal(dontDealConstraints);
       const southHand = result.deal.hands[Seat.South];
       const ctx = makeBiddingContext(southHand, Seat.South, ["1NT"]);
-      const ruleResult = evaluateBiddingRules(dontConfig.biddingRules, ctx, dontConfig);
+      const ruleResult = evaluateBiddingRules(ctx, dontConfig);
       if (ruleResult !== null) matchCount++;
     }
     // Most constrained deals should produce a valid DONT overcall
@@ -1418,7 +1418,7 @@ describe("DONT property-based invariants", () => {
       const result = generateDeal(dontDealConstraints);
       const southHand = result.deal.hands[Seat.South];
       const ctx = makeBiddingContext(southHand, Seat.South, ["1NT"]);
-      const ruleResult = evaluateBiddingRules(dontConfig.biddingRules, ctx, dontConfig);
+      const ruleResult = evaluateBiddingRules(ctx, dontConfig);
       if (ruleResult !== null && ruleResult.call.type === "bid") {
         const bid = ruleResult.call as ContractBid;
         expect(bid.level).toBeGreaterThanOrEqual(2);

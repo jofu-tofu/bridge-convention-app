@@ -18,6 +18,7 @@ export interface ConditionInference {
     | "suit-min"
     | "suit-max"
     | "balanced"
+    | "not-balanced"
     | "ace-count"
     | "king-count"
     | "two-suited";
@@ -123,7 +124,7 @@ export interface ConventionConfig {
   readonly description: string;
   readonly category: ConventionCategory;
   readonly dealConstraints: DealConstraints;
-  readonly biddingRules: readonly BiddingRule[];
+  readonly biddingRules?: readonly BiddingRule[];
   readonly examples: readonly ExampleHand[];
   /** Returns the default auction context for a given seat, or undefined for empty auction. */
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;

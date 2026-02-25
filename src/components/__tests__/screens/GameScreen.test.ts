@@ -6,6 +6,7 @@ import {
   registerConvention,
 } from "../../../conventions/registry";
 import { staymanConfig } from "../../../conventions/stayman";
+import { saycConfig } from "../../../conventions/sayc";
 import { createStubEngine, makeDeal } from "../test-helpers";
 
 // GameScreen uses Svelte context heavily — test the extracted logic
@@ -13,6 +14,7 @@ describe("GameScreen", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
+    registerConvention(saycConfig);
   });
 
   it("startDrill calls engine.generateDeal", async () => {
@@ -23,7 +25,14 @@ describe("GameScreen", () => {
     const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     await startDrill(engine, staymanConfig, Seat.South, gameStore);
-    expect(generateDeal).toHaveBeenCalledWith(staymanConfig.dealConstraints);
+    expect(generateDeal).toHaveBeenCalledTimes(1);
+    const calledConstraints = generateDeal.mock.calls[0]![0];
+    // Convention's own seat constraints are included
+    for (const seatConstraint of staymanConfig.dealConstraints.seats) {
+      expect(calledConstraints.seats).toContainEqual(
+        expect.objectContaining({ seat: seatConstraint.seat }),
+      );
+    }
   });
 
   it("startDrill calls gameStore.startDrill with deal and session", async () => {

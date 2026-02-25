@@ -8,7 +8,7 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 - **One file per convention.** Each convention exports a `ConventionConfig` (types in `types.ts`). See `stayman.ts` as the reference implementation.
 - **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`. Importing `conventions/index` activates all conventions.
 - **Rule name strings are public contract.** Rule names (e.g., `stayman-ask`, `stayman-response-hearts`) appear in CLI JSON output and are used in tests. Renaming a rule name is a breaking change.
-- **`evaluateBiddingRules` is first-match.** Rules are evaluated in array order; the first matching rule wins. Rule ordering in `biddingRules` arrays is significant.
+- **`evaluateBiddingRules(context, config)` is tree-only.** Takes `BiddingContext` and `ConventionConfig` (no `rules` param). Dispatches via tree evaluator for all conventions.
 
 ## Architecture
 
@@ -127,7 +127,7 @@ index.ts (auto-registration entry point)
 5. Test deal constraints with `checkConstraints()` — verify both acceptance and rejection
 6. Test bidding rules with `evaluateBiddingRules()` — verify rule matching, call output, and `conditionResults`
 
-## Tree System (Migration In Progress)
+## Tree System
 
 **Why Rule Trees?** The flat `conditionedRule()` system has 11 gaps (see `_output/contexts/260223-1730-audit-conditions-respect-unexpected-senarios-bridge/notes/condition-audit.md`). Most critically: (1) interference blindness — all 65 rules assume uncontested auctions; (2) no negative inference — flat condition lists can't express "this convention path was rejected, so these hand constraints DON'T apply." Three options were evaluated; Option C (rule trees) was chosen because tree path rejection data is the only architecture that enables negative inference. Both flat and tree systems coexist during migration.
 
@@ -139,12 +139,12 @@ index.ts (auto-registration entry point)
 - FallbackNode = "convention doesn't apply to this hand/auction"; BidNode = "convention fires with this call"
 - Strict tree constraint: do not reuse node object references across branches (breaks `flattenTree()` path accumulation)
 - Use `createBiddingContext()` factory from `context-factory.ts` for all new BiddingContext construction
-- `biddingRules` must be `flattenTree(ruleTree)`, NOT `[]` — CLI, RulesPanel, and inference engine iterate `biddingRules`
+- `biddingRules` is optional on tree conventions — use `getConventionRules(id)` from registry for flattened rules
 - `flattenTree()` splits accumulated conditions: pure auction conditions → `auctionConditions`, hand conditions → `handConditions`
 - `auctionMatches()` uses exact match (via `auctionMatchesExact()`), not prefix. `["1NT", "P"]` does NOT match when auction is `["1NT", "P", "2C", "P"]`. This is why chaining rounds off the NO branch works — longer auctions fall through to later checks.
 - Multiple BidNodes may share the same name (e.g., `dont-advance-pass` × 3). This is safe for all consumers (registry, inference, CLI, RulesPanel).
 
-**Migration status (Phase 2):** All conventions migrated to trees: ~~Landy~~ ~~DONT~~ ~~Stayman~~ ~~Gerber~~ ~~Bergen~~ ~~SAYC~~ → Phase 2c cleanup next (remove flat path, wire tree rejection data to inference engine)
+**Migration status:** Complete. All 6 conventions on trees. Flat dispatch path removed. Negative inference via `invertInference()` wired to inference engine.
 
 **SAYC tree pattern:** SAYC uses `saycPass()` factory at all terminal positions instead of `fallback()` because SAYC is a catch-all convention — any hand that enters produces a bid or pass. Other conventions use `fallback()` to indicate "convention doesn't apply."
 

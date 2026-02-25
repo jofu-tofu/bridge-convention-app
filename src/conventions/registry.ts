@@ -9,7 +9,6 @@ import { isLegalCall } from "../engine/auction";
 import {
   isConditionedRule,
   evaluateConditions,
-  buildExplanation,
 } from "./condition-evaluator";
 import type { TreeConventionConfig } from "./rule-tree";
 import { evaluateTree, evaluateTreeFast } from "./tree-evaluator";
@@ -48,6 +47,19 @@ export function listConventionIds(): string[] {
   return [...registry.keys()];
 }
 
+/** Get the flattened bidding rules from a config (computed from tree on demand). */
+export function getEffectiveRules(config: ConventionConfig): readonly BiddingRule[] {
+  if (isTreeConvention(config)) {
+    return flattenTree(config.ruleTree);
+  }
+  return config.biddingRules ?? [];
+}
+
+/** Get the flattened bidding rules for a convention by ID. */
+export function getConventionRules(id: string): readonly BiddingRule[] {
+  return getEffectiveRules(getConvention(id));
+}
+
 export interface BiddingRuleResult {
   readonly call: Call;
   readonly rule: string;
@@ -56,53 +68,26 @@ export interface BiddingRuleResult {
 }
 
 export function evaluateBiddingRules(
-  rules: readonly BiddingRule[],
   context: BiddingContext,
-  config?: ConventionConfig,
+  config: ConventionConfig,
 ): BiddingRuleResult | null {
-  // Tree convention dispatch: evaluates config.ruleTree, ignores `rules` param entirely.
-  // For tree conventions, biddingRules is vestigial — see TreeConventionConfig JSDoc.
-  if (config && isTreeConvention(config)) {
-    // Fast check first (no describe() calls) — only run full eval on match
-    const fastMatch = evaluateTreeFast(config.ruleTree, context);
-    if (!fastMatch) return null;
-    // Validate legality before paying the describe() cost
-    const call = fastMatch.call(context);
-    if (!isLegalCall(context.auction, call, context.seat)) return null;
-    // Full eval for explanation/conditionResults (describe() only called on matched path)
-    const treeResult = evaluateTree(config.ruleTree, context);
-    const result = treeResultToBiddingRuleResult(treeResult, context);
-    if (!result) return null;
-    return result;
+  if (!isTreeConvention(config)) {
+    throw new Error(
+      `Convention "${config.id}" is not a tree convention. All conventions must use rule trees.`,
+    );
   }
 
-  // Flat convention dispatch (existing path)
-  for (const rule of rules) {
-    if (rule.matches(context)) {
-      const call = rule.call(context);
-
-      // Skip rules that produce illegal bids (e.g., below current auction level)
-      if (!isLegalCall(context.auction, call, context.seat)) {
-        continue;
-      }
-
-      if (isConditionedRule(rule)) {
-        const conditionResults = evaluateConditions(rule, context);
-        return {
-          call,
-          rule: rule.name,
-          explanation: buildExplanation(conditionResults),
-          conditionResults,
-        };
-      }
-      return {
-        call,
-        rule: rule.name,
-        explanation: rule.explanation,
-      };
-    }
-  }
-  return null;
+  // Fast check first (no describe() calls) — only run full eval on match
+  const fastMatch = evaluateTreeFast(config.ruleTree, context);
+  if (!fastMatch) return null;
+  // Validate legality before paying the describe() cost
+  const call = fastMatch.call(context);
+  if (!isLegalCall(context.auction, call, context.seat)) return null;
+  // Full eval for explanation/conditionResults (describe() only called on matched path)
+  const treeResult = evaluateTree(config.ruleTree, context);
+  const result = treeResultToBiddingRuleResult(treeResult, context);
+  if (!result) return null;
+  return result;
 }
 
 export interface DebugRuleResult {
@@ -113,17 +98,12 @@ export interface DebugRuleResult {
   readonly conditionResults?: readonly ConditionResult[];
 }
 
-/** Evaluate ALL rules against a context, returning results for every rule (not just first match).
- *  For tree conventions, flattens the tree — `rules` param is ignored in favor of config.ruleTree. */
+/** Evaluate ALL rules against a context, returning results for every rule (not just first match). */
 export function evaluateAllBiddingRules(
-  rules: readonly BiddingRule[],
   context: BiddingContext,
-  config?: ConventionConfig,
+  config: ConventionConfig,
 ): DebugRuleResult[] {
-  // For tree conventions, flatten the tree and evaluate each flattened rule
-  const effectiveRules = config && isTreeConvention(config)
-    ? flattenTree(config.ruleTree)
-    : rules;
+  const effectiveRules = getEffectiveRules(config);
 
   return effectiveRules.map((rule) => {
     const matched = rule.matches(context);

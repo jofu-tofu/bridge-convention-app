@@ -16,7 +16,7 @@
   let { convention, deal, bidHistory }: Props = $props();
 
   const ruleData = $derived(
-    prepareRulesForDisplay(convention.biddingRules, deal, bidHistory),
+    prepareRulesForDisplay(convention, deal, bidHistory),
   );
 
   function callColorClass(rule: DisplayRule): string {
@@ -40,7 +40,7 @@
     </p>
   </div>
 
-  {#if convention.biddingRules.length === 0}
+  {#if ruleData.firedRules.length === 0 && ruleData.referenceRules.length === 0}
     <div
       class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
     >

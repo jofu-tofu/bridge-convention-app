@@ -48,7 +48,7 @@ function callFromRules(
   dealer: Seat = Seat.East,
 ) {
   const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(landyConfig.biddingRules, context, landyConfig);
+  return evaluateBiddingRules(context, landyConfig);
 }
 
 // ─── Deal Constraints ───────────────────────────────────────
@@ -637,7 +637,7 @@ describe("Landy property-based invariants", () => {
       const result = generateDeal(landyDealConstraints);
       const southHand = result.deal.hands[Seat.South];
       const ctx = makeBiddingContext(southHand, Seat.South, ["1NT"]);
-      const ruleResult = evaluateBiddingRules(landyConfig.biddingRules, ctx, landyConfig);
+      const ruleResult = evaluateBiddingRules(ctx, landyConfig);
       if (ruleResult !== null) matchCount++;
     }
     // All constrained deals should produce a Landy 2C (deal requires 5-4 majors)
@@ -649,7 +649,7 @@ describe("Landy property-based invariants", () => {
       const result = generateDeal(landyDealConstraints);
       const southHand = result.deal.hands[Seat.South];
       const ctx = makeBiddingContext(southHand, Seat.South, ["1NT"]);
-      const ruleResult = evaluateBiddingRules(landyConfig.biddingRules, ctx, landyConfig);
+      const ruleResult = evaluateBiddingRules(ctx, landyConfig);
       if (ruleResult !== null && ruleResult.call.type === "bid") {
         const bid = ruleResult.call as ContractBid;
         expect(bid.level).toBeGreaterThanOrEqual(2);

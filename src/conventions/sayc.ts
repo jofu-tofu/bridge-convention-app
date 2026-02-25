@@ -35,7 +35,7 @@ import {
 } from "./conditions";
 import { decision, bid } from "./rule-tree";
 import type { RuleNode, TreeConventionConfig } from "./rule-tree";
-import { flattenTree } from "./tree-compat";
+
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -377,6 +377,5 @@ export const saycConfig: TreeConventionConfig = {
   },
   defaultAuction: () => undefined,
   ruleTree: saycRuleTree,
-  biddingRules: flattenTree(saycRuleTree),
   examples: [], // No examples needed for internal convention
 };

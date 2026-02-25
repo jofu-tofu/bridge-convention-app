@@ -3,7 +3,6 @@ import { BidSuit } from "../../engine/types";
 import { decision, bid, fallback } from "../rule-tree";
 import { evaluateTree } from "../tree-evaluator";
 import { flattenTree, treeResultToBiddingRuleResult } from "../tree-compat";
-import { evaluateBiddingRules } from "../registry";
 import {
   alwaysTrue as condTrue,
   alwaysFalse as condFalse,
@@ -95,73 +94,6 @@ describe("flattenTree", () => {
   });
 });
 
-// ─── Round-trip equivalence ──────────────────────────────────
-
-describe("flattenTree round-trip equivalence", () => {
-  it("flattened tree evaluation matches tree evaluation for matching path", () => {
-    const tree = decision(
-      "check-a",
-      condTrue("a"),
-      decision(
-        "check-b",
-        condTrue("b"),
-        bid("target-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
-        fallback(),
-      ),
-      fallback(),
-    );
-
-    const ctx = makeCtx();
-
-    // Tree evaluation
-    const treeResult = evaluateTree(tree, ctx);
-    expect(treeResult.matched!.name).toBe("target-bid");
-
-    // Flat evaluation of flattened tree
-    const flatRules = flattenTree(tree);
-    const flatResult = evaluateBiddingRules(flatRules, ctx);
-    expect(flatResult).not.toBeNull();
-    expect(flatResult!.rule).toBe("target-bid");
-  });
-
-  it("flattened tree returns null when tree returns null", () => {
-    const tree = decision(
-      "check-a",
-      condFalse("a"),
-      bid("unreachable", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
-      fallback("nope"),
-    );
-
-    const ctx = makeCtx();
-
-    const treeResult = evaluateTree(tree, ctx);
-    expect(treeResult.matched).toBeNull();
-
-    const flatRules = flattenTree(tree);
-    const flatResult = evaluateBiddingRules(flatRules, ctx);
-    expect(flatResult).toBeNull();
-  });
-
-  it("both branches produce rules — only correct one matches in flat eval", () => {
-    const tree = decision(
-      "check-a",
-      condTrue("a"),
-      bid("yes-bid", () => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
-      bid("no-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
-    );
-
-    const ctx = makeCtx();
-
-    const treeResult = evaluateTree(tree, ctx);
-    expect(treeResult.matched!.name).toBe("yes-bid");
-
-    const flatRules = flattenTree(tree);
-    expect(flatRules).toHaveLength(2);
-    const flatResult = evaluateBiddingRules(flatRules, ctx);
-    expect(flatResult).not.toBeNull();
-    expect(flatResult!.rule).toBe("yes-bid");
-  });
-});
 
 // ─── treeResultToBiddingRuleResult ───────────────────────────
 

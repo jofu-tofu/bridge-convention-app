@@ -19,7 +19,7 @@ import {
 } from "./conditions";
 import { decision, bid, fallback } from "./rule-tree";
 import type { RuleNode, TreeConventionConfig } from "./rule-tree";
-import { flattenTree } from "./tree-compat";
+
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
@@ -108,7 +108,6 @@ export const landyConfig: TreeConventionConfig = {
   category: ConventionCategory.Defensive,
   dealConstraints: landyDealConstraints,
   ruleTree: landyRuleTree,
-  biddingRules: flattenTree(landyRuleTree),
   examples: [],
   defaultAuction: landyDefaultAuction,
 };

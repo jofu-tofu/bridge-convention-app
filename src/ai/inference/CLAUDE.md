@@ -15,8 +15,8 @@ Auction inference system — extracts hand information from bids with per-partne
 |------|------|
 | `types.ts` | Core interfaces: `HandInference`, `InferredHoldings`, `InferenceProvider`, `InferenceConfig` |
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
-| `convention-inference.ts` | Extracts inferences from `ConditionedBiddingRule.conditions[].inference` |
-| `condition-mapper.ts` | `extractInference()` reads `.inference` field, falls back to name parsing |
+| `convention-inference.ts` | Extracts positive inferences from flat rules + negative from tree rejection data via `evaluateTree()` |
+| `condition-mapper.ts` | `extractInference()`, `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
 | `merge.ts` | `mergeInferences()` — range intersection (narrowing), clamps contradictions |
 
@@ -40,10 +40,20 @@ These architectural guarantees are encoded as tests in `__tests__/inference-beha
 - **No-throw contract:** Throwing providers are swallowed; double/redouble don't break engine; empty auctions are safe.
 - **Determinism:** Incremental processing equals batch replay — same inputs → same outputs.
 
+## Negative Inference
+
+Tree rejection data enables negative inference: when a decision node's condition fails, the inverse tells us what the hand does NOT have.
+
+- **`invertInference(ci)`** — inverts a `ConditionInference`. `hcp-min:12` → `hcp-max:11`. `suit-min:4` → `suit-max:3`. `hcp-range` → disjunction. Returns null for uninvertible types (ace-count, king-count, two-suited).
+- **`resolveDisjunction(options, cumulative)`** — picks the first non-contradicting branch of a disjunction. Returns null if all branches contradict cumulative state (no false inference).
+- **Architecture invariant:** Inference calls `evaluateTree()` directly — never `evaluateBiddingRules()` — because the registry strips `rejectedDecisions` needed for negative inference.
+- **Example:** Stayman 2D denial → rejected `has-4-hearts` (suit-min hearts 4) → inverted to suit-max hearts 3. Rejected `has-4-spades` → suit-max spades 3.
+
 ## Gotchas
 
 - Inference errors never propagate to callers — `inferFromBid()` returns null, `mergeInferences()` clamps
-- Convention inference provider needs convention registry access — imports `getConvention()`
+- Convention inference provider needs convention registry access — imports `getConvention()` and `evaluateTree()`
 - `isOwnPartnership()` checks bidder seat vs observer seat + partner
+- Positive inferences use flat rules (call matching via `tryGetRuleCall`); negative inferences use tree eval (rejected decisions)
 
 <!-- context-layer: generated=2026-02-22 | version=1 -->

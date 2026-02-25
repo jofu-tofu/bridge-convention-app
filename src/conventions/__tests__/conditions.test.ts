@@ -6,6 +6,7 @@ import {
   registerConvention,
   clearRegistry,
   listConventions,
+  getConventionRules,
 } from "../registry";
 import { staymanConfig } from "../stayman";
 import { gerberConfig } from "../gerber";
@@ -139,7 +140,7 @@ describe("condition classification audit", () => {
     const conventions = listConventions();
 
     for (const config of conventions) {
-      for (const rule of config.biddingRules) {
+      for (const rule of getConventionRules(config.id)) {
         if (!isConditionedRule(rule)) continue;
         const conditioned = rule as ConditionedBiddingRule;
         for (const cond of conditioned.auctionConditions) {
@@ -163,7 +164,7 @@ describe("condition classification audit", () => {
     const conventions = listConventions();
 
     for (const config of conventions) {
-      for (const rule of config.biddingRules) {
+      for (const rule of getConventionRules(config.id)) {
         if (!isConditionedRule(rule)) continue;
         const conditioned = rule as ConditionedBiddingRule;
         for (const cond of conditioned.handConditions) {
@@ -182,7 +183,7 @@ describe("condition classification audit", () => {
     const conventions = listConventions();
 
     for (const config of conventions) {
-      for (const rule of config.biddingRules) {
+      for (const rule of getConventionRules(config.id)) {
         if (!isConditionedRule(rule)) continue;
         const conditioned = rule as ConditionedBiddingRule;
         for (const cond of conditioned.auctionConditions) {

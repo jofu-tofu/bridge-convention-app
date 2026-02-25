@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit, Rank, BidSuit, Vulnerability } from "../../engine/types";
-import type { Hand, Deal, Call, Auction } from "../../engine/types";
+import type { Hand, Deal, Call } from "../../engine/types";
 import type { BiddingRule, BiddingContext, ConventionConfig } from "../../conventions/types";
 import { ConventionCategory } from "../../conventions/types";
 import type { BidHistoryEntry } from "../../stores/game.svelte";
@@ -83,6 +83,16 @@ const rulePlain: BiddingRule = {
 
 const testRules: readonly BiddingRule[] = [ruleAsk, ruleResponse, rulePlain];
 
+const testConfig: ConventionConfig = {
+  id: "test-convention",
+  name: "Test Convention",
+  description: "Test convention for rules display",
+  category: ConventionCategory.Asking,
+  dealConstraints: { seats: [] },
+  biddingRules: testRules,
+  examples: [],
+};
+
 // --- Tests ---
 
 describe("prepareRulesForDisplay", () => {
@@ -111,7 +121,7 @@ describe("prepareRulesForDisplay", () => {
       },
     ];
 
-    const result = prepareRulesForDisplay(testRules, testDeal, bidHistory);
+    const result = prepareRulesForDisplay(testConfig, testDeal, bidHistory);
 
     expect(result.firedRules).toHaveLength(1);
     expect(result.firedRules[0]!.ruleName).toBe("test-ask");
@@ -148,7 +158,7 @@ describe("prepareRulesForDisplay", () => {
       },
     ];
 
-    const result = prepareRulesForDisplay(testRules, testDeal, bidHistory);
+    const result = prepareRulesForDisplay(testConfig, testDeal, bidHistory);
     const firedRule = result.firedRules[0]!;
 
     // Conditions should have been evaluated with real hand data
@@ -165,7 +175,7 @@ describe("prepareRulesForDisplay", () => {
   it("reference rules have static condition names", () => {
     const bidHistory: BidHistoryEntry[] = [];
 
-    const result = prepareRulesForDisplay(testRules, testDeal, bidHistory);
+    const result = prepareRulesForDisplay(testConfig, testDeal, bidHistory);
 
     // All rules should be reference (none fired)
     expect(result.firedRules).toHaveLength(0);
@@ -190,7 +200,7 @@ describe("prepareRulesForDisplay", () => {
   it("reference rules compute their call for badge display", () => {
     const bidHistory: BidHistoryEntry[] = [];
 
-    const result = prepareRulesForDisplay(testRules, testDeal, bidHistory);
+    const result = prepareRulesForDisplay(testConfig, testDeal, bidHistory);
 
     // test-ask should compute 2C
     const askRule = result.referenceRules.find(
@@ -224,14 +234,18 @@ describe("prepareRulesForDisplay", () => {
       },
     ];
 
-    const result = prepareRulesForDisplay(testRules, testDeal, bidHistory);
+    const result = prepareRulesForDisplay(testConfig, testDeal, bidHistory);
 
     expect(result.firedRules).toHaveLength(0);
     expect(result.referenceRules).toHaveLength(3);
   });
 
   it("returns empty arrays for empty rules", () => {
-    const result = prepareRulesForDisplay([], testDeal, []);
+    const emptyConfig: ConventionConfig = {
+      ...testConfig,
+      biddingRules: [],
+    };
+    const result = prepareRulesForDisplay(emptyConfig, testDeal, []);
 
     expect(result.firedRules).toHaveLength(0);
     expect(result.referenceRules).toHaveLength(0);
@@ -276,7 +290,7 @@ describe("prepareRulesForDisplay", () => {
       },
     ];
 
-    const result = prepareRulesForDisplay(testRules, testDeal, bidHistory);
+    const result = prepareRulesForDisplay(testConfig, testDeal, bidHistory);
 
     expect(result.firedRules).toHaveLength(2);
     // test-ask fired first (index 2), test-response second (index 4)
@@ -309,7 +323,7 @@ describe("prepareRulesForDisplay", () => {
       },
     ];
 
-    const result = prepareRulesForDisplay(testRules, testDeal, bidHistory);
+    const result = prepareRulesForDisplay(testConfig, testDeal, bidHistory);
     const firedRule = result.firedRules[0]!;
 
     expect(firedRule.call).toEqual({

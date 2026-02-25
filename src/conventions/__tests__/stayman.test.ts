@@ -45,7 +45,7 @@ function callFromRules(
   dealer: Seat = Seat.North,
 ) {
   const context = makeBiddingContext(h, seat, bids, dealer);
-  return evaluateBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
+  return evaluateBiddingRules(context, staymanConfig);
 }
 
 // ─── Deal Constraints ───────────────────────────────────────

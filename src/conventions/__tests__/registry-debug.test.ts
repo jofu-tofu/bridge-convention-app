@@ -3,6 +3,7 @@ import {
   registerConvention,
   clearRegistry,
   evaluateAllBiddingRules,
+  getConventionRules,
 } from "../registry";
 import { staymanConfig } from "../stayman";
 import { evaluateHand } from "../../engine/hand-evaluator";
@@ -53,8 +54,8 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
-    expect(results.length).toBe(staymanConfig.biddingRules.length);
+    const results = evaluateAllBiddingRules(context, staymanConfig);
+    expect(results.length).toBe(getConventionRules('stayman').length);
   });
 
   it("matching rule has matched: true and isLegal reflects legality", () => {
@@ -65,7 +66,7 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
+    const results = evaluateAllBiddingRules(context, staymanConfig);
     const staymanAsk = results.find((r) => r.ruleName === "stayman-ask");
     expect(staymanAsk).toBeDefined();
     expect(staymanAsk!.matched).toBe(true);
@@ -81,7 +82,7 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
+    const results = evaluateAllBiddingRules(context, staymanConfig);
     // Response rules shouldn't match for responder
     const nonMatching = results.filter((r) => !r.matched);
     expect(nonMatching.length).toBeGreaterThan(0);
@@ -98,7 +99,7 @@ describe("evaluateAllBiddingRules", () => {
       evaluation: evaluateHand(responderHand),
     });
 
-    const results = evaluateAllBiddingRules(staymanConfig.biddingRules, context, staymanConfig);
+    const results = evaluateAllBiddingRules(context, staymanConfig);
     // All Stayman rules use conditionedRule()
     const withConditions = results.filter((r) => r.conditionResults !== undefined);
     expect(withConditions.length).toBeGreaterThan(0);

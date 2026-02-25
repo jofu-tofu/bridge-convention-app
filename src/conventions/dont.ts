@@ -23,7 +23,7 @@ import {
 } from "./conditions";
 import { decision, bid, fallback } from "./rule-tree";
 import type { RuleNode, TreeConventionConfig } from "./rule-tree";
-import { flattenTree } from "./tree-compat";
+
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
@@ -168,7 +168,6 @@ export const dontConfig: TreeConventionConfig = {
   category: ConventionCategory.Defensive,
   dealConstraints: dontDealConstraints,
   ruleTree: dontRuleTree,
-  biddingRules: flattenTree(dontRuleTree),
   examples: [],
   defaultAuction: dontDefaultAuction,
 };

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { saycConfig } from "../sayc";
-import { clearRegistry, registerConvention } from "../registry";
+import { clearRegistry, registerConvention, getConventionRules } from "../registry";
+import { flattenTree } from "../tree-compat";
 import { generateDeal } from "../../engine/deal-generator";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { Seat, BidSuit } from "../../engine/types";
@@ -74,7 +75,8 @@ function parseCall(s: string): import("../../engine/types").Call {
 }
 
 // Exclude catch-all pass from overlap analysis (it overlaps with everything by design)
-const rulesWithoutPass = saycConfig.biddingRules.filter(
+const saycRules = flattenTree(saycConfig.ruleTree);
+const rulesWithoutPass = saycRules.filter(
   (r) => r.name !== "sayc-pass",
 );
 
@@ -196,7 +198,7 @@ describe("SAYC rule disjointness", () => {
   it("every rule is reachable (not shadowed by earlier rules)", () => {
     // Track which rules ever match first (in first-match order)
     const ruleHits = new Map<string, number>();
-    for (const rule of saycConfig.biddingRules) {
+    for (const rule of getConventionRules('sayc')) {
       ruleHits.set(rule.name, 0);
     }
 
@@ -234,7 +236,7 @@ describe("SAYC rule disjointness", () => {
       for (const { auction, seat } of auctionContexts) {
         const ctx = makeCtx(deal.hands[seat], seat, auction);
         // First-match evaluation
-        for (const rule of saycConfig.biddingRules) {
+        for (const rule of getConventionRules('sayc')) {
           if (rule.matches(ctx)) {
             const call = rule.call(ctx);
             if (isLegalCall(ctx.auction, call, ctx.seat)) {

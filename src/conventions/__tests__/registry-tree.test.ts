@@ -82,7 +82,7 @@ describe("evaluateBiddingRules tree dispatch", () => {
     const config = makeTreeConfig(tree);
     const ctx = makeMinimalContext();
 
-    const result = evaluateBiddingRules([], ctx, config);
+    const result = evaluateBiddingRules(ctx, config);
 
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("tree-bid");
@@ -99,7 +99,7 @@ describe("evaluateBiddingRules tree dispatch", () => {
     const config = makeTreeConfig(tree);
     const ctx = makeMinimalContext();
 
-    const result = evaluateBiddingRules([], ctx, config);
+    const result = evaluateBiddingRules(ctx, config);
     expect(result).toBeNull();
   });
 
@@ -112,34 +112,10 @@ describe("evaluateBiddingRules tree dispatch", () => {
     const baseCtx = makeMinimalContext();
     const ctx = { ...baseCtx, auction, seat: Seat.West };
 
-    const result = evaluateBiddingRules([], ctx, config);
+    const result = evaluateBiddingRules(ctx, config);
     expect(result).toBeNull();
   });
 
-  it("falls through to flat evaluation when config has no ruleTree", () => {
-    // Pass a flat config with one always-matching rule
-    const flatConfig = {
-      id: "flat-test",
-      name: "Flat Test",
-      description: "Test",
-      category: ConventionCategory.Asking,
-      dealConstraints: { seats: [] },
-      biddingRules: [
-        {
-          name: "flat-rule",
-          explanation: "always matches",
-          matches: () => true,
-          call: () => ({ type: "bid" as const, level: 1 as const, strain: BidSuit.NoTrump }),
-        },
-      ],
-      examples: [],
-    };
-    const ctx = makeMinimalContext();
-
-    const result = evaluateBiddingRules(flatConfig.biddingRules, ctx, flatConfig);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("flat-rule");
-  });
 });
 
 // ─── evaluateAllBiddingRules tree dispatch ───────────────────
@@ -155,7 +131,7 @@ describe("evaluateAllBiddingRules tree dispatch", () => {
     const config = makeTreeConfig(tree);
     const ctx = makeMinimalContext();
 
-    const results = evaluateAllBiddingRules([], ctx, config);
+    const results = evaluateAllBiddingRules(ctx, config);
 
     // Two paths: yes (condition passes) and no (negated condition fails)
     expect(results.length).toBe(2);
