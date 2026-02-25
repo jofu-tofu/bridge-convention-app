@@ -3,12 +3,7 @@
   "version": "0.1.0",
   "description": "Bridge convention practice app — drill Stayman, Gerber, DONT, Bergen Raises",
   "type": "module",
-  "bin": {
-    "bridge": "./dist/cli/index.js"
-  },
   "scripts": {
-    "build:cli": "tsc -p tsconfig.cli.json",
-    "cli": "npx tsx src/cli/index.ts",
     "dev": "vite dev",
     "dev:web": "concurrently \"cargo run --manifest-path src-tauri/Cargo.toml -p bridge-server\" \"VITE_RUST_ENGINE=1 vite dev\"",
     "dev:share": "bash scripts/dev-share.sh",

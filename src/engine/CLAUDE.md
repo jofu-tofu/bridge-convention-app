@@ -37,7 +37,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `play.ts`             | Trick play rules: legal plays (follow suit), lead suit, trick winner determination        |
 | `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
 | `auction-helpers.ts`  | Auction query utils: lastContractBid, bidsInSequence, auctionMatchesExact, buildAuction   |
-| `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
+| `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by test fixtures                 |
 | `bid-suggester.ts`    | Standalone `suggestBid()` — extracted from EnginePort (can't cross IPC/HTTP)              |
 | `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()`, strips `customCheck`/`rng`            |
 | `http-engine.ts`      | `HttpEngine` — EnginePort via HTTP `fetch()` to bridge-server, strips `customCheck`/`rng` |

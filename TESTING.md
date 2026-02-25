@@ -40,7 +40,7 @@
 | Functions | 90%       |
 | Lines     | 85%       |
 
-**Scope:** `src/engine/**`, `src/conventions/**`, `src/ai/**`, `src/cli/**`
+**Scope:** `src/engine/**`, `src/conventions/**`, `src/ai/**`
 
 Coverage is enforced in `vitest.config.ts`. Runs with `npm run test:coverage`.
 
