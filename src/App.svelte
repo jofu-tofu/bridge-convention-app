@@ -88,10 +88,10 @@
   }
 </script>
 
-<div class="h-screen overflow-hidden bg-bg-deepest text-text-primary font-sans">
+<div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">
   {#if appStore.engineError}
     <div
-      class="bg-red-700 text-white px-4 py-2 text-center text-sm font-medium"
+      class="bg-red-700 px-4 py-2 text-center text-sm font-medium text-white"
     >
       {appStore.engineError}
     </div>

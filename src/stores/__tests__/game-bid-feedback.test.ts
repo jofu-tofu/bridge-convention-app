@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { BidSuit } from "../../engine/types";
 import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
+import { createStubEngine } from "../../test-support/engine-stub";
 import type { BiddingStrategy, BidResult } from "../../shared/types";
-import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "./fixtures";
+import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "../../test-support/fixtures";
 
 /** Strategy that always suggests 2C (Stayman-like). */
 function make2CStrategy(): BiddingStrategy {

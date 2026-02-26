@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Seat, BidSuit, Vulnerability, Suit, Rank } from "../../engine/types";
 import type { Contract, Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
+import { createStubEngine } from "../../test-support/engine-stub";
 import type { DrillSession } from "../../drill/types";
 import type { EnginePort } from "../../engine/port";
 import type { InferenceConfig } from "../../inference/types";

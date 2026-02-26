@@ -61,7 +61,6 @@ components/
     Card.svelte                      70x98 visual playing card
     ConventionCallout.svelte         Rule badge + explanation
   __tests__/
-    test-helpers.ts                  Fixture factories, createStubEngine, makeDeal
     ContextWrapper.svelte            Context provider for screen tests
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests

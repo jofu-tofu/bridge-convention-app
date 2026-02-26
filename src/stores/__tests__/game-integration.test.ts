@@ -10,7 +10,7 @@ import { describe, it, expect } from "vitest";
 import { Seat, BidSuit, Vulnerability, Rank, Suit } from "../../engine/types";
 import type { Auction, AuctionEntry } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
+import { createStubEngine } from "../../test-support/engine-stub";
 import type { DrillSession } from "../../drill/types";
 
 function makeTestDeal() {

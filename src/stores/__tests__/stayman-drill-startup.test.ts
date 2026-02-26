@@ -9,7 +9,7 @@ import { tick } from "svelte";
 import { Seat, BidSuit } from "../../engine/types";
 import type { Deal, Call, Auction, AuctionEntry, Vulnerability } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
+import { createStubEngine } from "../../test-support/engine-stub";
 import { parseHand } from "../../engine/notation";
 import { clearRegistry, registerConvention, getConvention } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman";

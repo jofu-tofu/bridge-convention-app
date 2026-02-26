@@ -1,91 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../../engine/types";
+import { Seat, BidSuit, Suit, Rank } from "../../engine/types";
 import type { Card, Contract, Hand } from "../../engine/types";
 import { createGameStore, seatController } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
+import { createStubEngine } from "../../test-support/engine-stub";
+import { makeCard, makeSimpleTestDeal, makeDrillSession } from "../../test-support/fixtures";
 import type { DrillSession } from "../../drill/types";
 import type { EnginePort } from "../../engine/port";
-
-function makeCard(suit: Suit, rank: Rank): Card {
-  return { suit, rank };
-}
-
-/** Create a minimal drill session for testing. */
-function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
-  return {
-    config: {
-      conventionId: "test",
-      userSeat,
-      seatStrategies: {
-        [Seat.North]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.East]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.South]: "user",
-        [Seat.West]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-      },
-    },
-    getNextBid(seat) {
-      if (seat === userSeat) return null;
-      return { call: { type: "pass" }, ruleName: null, explanation: "AI pass" };
-    },
-    isUserSeat(seat) {
-      return seat === userSeat;
-    },
-  };
-}
-
-/** Create a simple deal where each seat has 13 cards of one suit. */
-function makeTestDeal() {
-  const ranks = [
-    Rank.Two,
-    Rank.Three,
-    Rank.Four,
-    Rank.Five,
-    Rank.Six,
-    Rank.Seven,
-    Rank.Eight,
-    Rank.Nine,
-    Rank.Ten,
-    Rank.Jack,
-    Rank.Queen,
-    Rank.King,
-    Rank.Ace,
-  ];
-
-  return {
-    hands: {
-      [Seat.North]: { cards: ranks.map((r) => makeCard(Suit.Clubs, r)) },
-      [Seat.East]: { cards: ranks.map((r) => makeCard(Suit.Diamonds, r)) },
-      [Seat.South]: { cards: ranks.map((r) => makeCard(Suit.Hearts, r)) },
-      [Seat.West]: { cards: ranks.map((r) => makeCard(Suit.Spades, r)) },
-    },
-    dealer: Seat.North,
-    vulnerability: Vulnerability.None,
-  };
-}
 
 // North declares so user (South) is dummy — play phase reachable via acceptDeclarerSwap
 const CONTRACT_1NT: Contract = {
@@ -159,7 +79,7 @@ describe("createGameStore play phase", () => {
    */
   async function startDrillWithTimers(
     drillStore: typeof store,
-    deal: ReturnType<typeof makeTestDeal>,
+    deal: ReturnType<typeof makeSimpleTestDeal>,
     session: DrillSession,
   ) {
     const promise = drillStore.startDrill(deal, session);
@@ -170,7 +90,7 @@ describe("createGameStore play phase", () => {
   }
 
   it("transitions to PLAYING after auction completes", async () => {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
@@ -180,7 +100,7 @@ describe("createGameStore play phase", () => {
   });
 
   it("sets opening leader as left of declarer", async () => {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
@@ -190,7 +110,7 @@ describe("createGameStore play phase", () => {
   });
 
   it("sets dummy as partner of declarer", async () => {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
@@ -200,7 +120,7 @@ describe("createGameStore play phase", () => {
   });
 
   it("skipToReview completes all tricks and transitions to EXPLANATION", async () => {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
@@ -214,7 +134,7 @@ describe("createGameStore play phase", () => {
   });
 
   it("getRemainingCards returns hand minus played cards", async () => {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
@@ -229,7 +149,7 @@ describe("createGameStore play phase", () => {
   });
 
   it("reset clears all play state", async () => {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
@@ -265,7 +185,7 @@ describe("play concurrency fixes", () => {
     store: ReturnType<typeof createGameStore>,
     _overrides: Partial<EnginePort> = {},
   ) {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
     const promise = store.startDrill(deal, session);
     await vi.advanceTimersByTimeAsync(600);

@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Seat, BidSuit } from "../../engine/types";
 import type { DDSolution } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
-import { makeDrillSession, makeSimpleTestDeal } from "./fixtures";
+import { createStubEngine } from "../../test-support/engine-stub";
+import { makeDrillSession, makeSimpleTestDeal } from "../../test-support/fixtures";
 
 const fakeDDSolution: DDSolution = {
   tricks: {

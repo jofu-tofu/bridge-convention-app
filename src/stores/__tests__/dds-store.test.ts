@@ -7,9 +7,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Seat, BidSuit } from "../../engine/types";
 import type { DDSolution } from "../../engine/types";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
+import { createStubEngine } from "../../test-support/engine-stub";
 import { createDDSStore } from "../dds.svelte";
-import { makeSimpleTestDeal, makeContract } from "./fixtures";
+import { makeSimpleTestDeal, makeContract } from "../../test-support/fixtures";
 
 const fakeDDSolution: DDSolution = {
   tricks: {

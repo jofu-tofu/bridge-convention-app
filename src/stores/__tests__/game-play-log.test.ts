@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Seat } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
+import { createStubEngine } from "../../test-support/engine-stub";
 import type { PlayStrategy, PlayContext, PlayResult } from "../../shared/types";
-import { makeDrillSession, makeSimpleTestDeal } from "./fixtures";
+import { makeDrillSession, makeSimpleTestDeal } from "../../test-support/fixtures";
 
 const testPlayStrategy: PlayStrategy = {
   id: "test-play",

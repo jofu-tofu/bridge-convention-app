@@ -1,6 +1,11 @@
 <script lang="ts">
   import { Seat } from "../../../engine/types";
-  import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
+  import type {
+    Contract,
+    DDSolution,
+    Vulnerability,
+    Deal,
+  } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core/types";
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
@@ -60,10 +65,10 @@
 
 <div class={phaseContainerClass}>
   {#if showAllCards}
-    <div class="flex-1 flex flex-col gap-3 p-4 overflow-auto min-w-0">
+    <div class="flex min-w-0 flex-1 flex-col gap-3 overflow-auto p-4">
       <div class="flex items-center justify-between">
         <div
-          class="bg-bg-card rounded-[--radius-lg] p-2 border border-border-subtle shadow-md"
+          class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-2 shadow-md"
         >
           <AuctionTable
             entries={auction.entries}
@@ -73,7 +78,7 @@
         </div>
         <button
           type="button"
-          class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[--size-touch-target] rounded-[--radius-md] border border-border-subtle bg-bg-card/80 shrink-0"
+          class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] shrink-0 rounded-[--radius-md] border px-3 py-2 text-sm transition-colors"
           onclick={() => (showAllCards = !showAllCards)}
           aria-expanded={showAllCards}
           aria-label="Toggle all hands visibility"
@@ -81,20 +86,17 @@
           Hide Hands
         </button>
       </div>
-      <div
-        class="grid grid-cols-2 gap-3"
-        style="--card-overlap-h: -38px;"
-      >
+      <div class="grid grid-cols-2 gap-3" style="--card-overlap-h: -38px;">
         {#each [Seat.North, Seat.East, Seat.South, Seat.West] as seat (seat)}
           <section
-            class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle"
+            class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3"
             aria-label="{seat} hand"
           >
-            <div class="flex items-center gap-2 mb-2">
+            <div class="mb-2 flex items-center gap-2">
               <span
-                class="text-sm font-bold tracking-wide px-2 py-0.5 rounded {seat ===
+                class="rounded px-2 py-0.5 text-sm font-bold tracking-wide {seat ===
                 userSeat
-                  ? 'bg-blue-600/30 text-blue-200'
+                  ? 'bg-accent-primary-subtle text-accent-primary'
                   : 'bg-bg-elevated text-text-primary'}"
               >
                 {seat}
@@ -106,11 +108,16 @@
       </div>
     </div>
   {:else}
-    <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
+    <ScaledTableArea
+      scale={tableScale}
+      origin={tableOrigin}
+      tableWidth={tableBaseW}
+      tableHeight={tableBaseH}
+    >
       <BridgeTable hands={deal.hands} {userSeat}>
-        <div class="flex flex-col gap-2 items-center">
+        <div class="flex flex-col items-center gap-2">
           <div
-            class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
+            class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
           >
             <AuctionTable
               entries={auction.entries}
@@ -120,7 +127,7 @@
           </div>
           <button
             type="button"
-            class="text-sm text-text-primary hover:text-blue-300 transition-colors px-3 py-2 min-h-[--size-touch-target] rounded-[--radius-md] border border-border-subtle bg-bg-card/80"
+            class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] rounded-[--radius-md] border px-3 py-2 text-sm transition-colors"
             onclick={() => (showAllCards = !showAllCards)}
             aria-expanded={showAllCards}
             aria-label="Toggle all hands visibility"

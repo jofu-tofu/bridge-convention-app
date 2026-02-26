@@ -1,4 +1,4 @@
-import type { EnginePort } from "../../engine/port";
+import type { EnginePort } from "../engine/port";
 import type {
   Deal,
   Hand,
@@ -12,8 +12,8 @@ import type {
   SuitLength,
   HandEvaluation,
   DDSolution,
-} from "../../engine/types";
-import { createDeck } from "../../engine/constants";
+} from "../engine/types";
+import { createDeck } from "../engine/constants";
 
 /**
  * Creates a stub EnginePort for component testing.

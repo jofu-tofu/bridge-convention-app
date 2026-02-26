@@ -7,7 +7,7 @@ import {
 } from "../../../conventions/core/registry";
 import { staymanConfig } from "../../../conventions/definitions/stayman";
 import { saycConfig } from "../../../conventions/definitions/sayc";
-import { createStubEngine, makeDeal } from "../test-helpers";
+import { createStubEngine, makeDeal } from "../../../test-support/engine-stub";
 
 // GameScreen uses Svelte context heavily — test the extracted logic
 describe("GameScreen", () => {

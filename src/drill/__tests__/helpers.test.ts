@@ -3,7 +3,7 @@ import { startDrill, buildOpponentPassConstraints } from "../helpers";
 import {
   createStubEngine,
   makeDeal,
-} from "../../components/__tests__/test-helpers";
+} from "../../test-support/engine-stub";
 import { Seat } from "../../engine/types";
 import type { SeatConstraint } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";

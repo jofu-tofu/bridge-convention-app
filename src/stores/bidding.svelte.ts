@@ -57,7 +57,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let isProcessing = $state(false);
   let legalCalls = $state<Call[]>([]);
   let bidFeedback = $state<BidFeedback | null>(null);
-  let conventionStrategy = $state<BiddingStrategy | null>(null);
+  let conventionStrategy: BiddingStrategy | null = null;
 
   // Retry state
   let preBidAuction = $state<Auction | null>(null);
@@ -281,14 +281,19 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
           case "bid":
             explanation = `Opening ${entry.call.level}${entry.call.strain} bid`;
             break;
+          case "pass":
+            explanation = "Pass";
+            break;
           case "double":
             explanation = "Double";
             break;
           case "redouble":
             explanation = "Redouble";
             break;
-          default:
-            explanation = "Pass";
+          default: {
+            const _exhaustive: never = entry.call;
+            throw new Error(`Unknown call type: ${(_exhaustive as { type: string }).type}`);
+          }
         }
         return {
           seat: entry.seat,

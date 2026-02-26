@@ -58,6 +58,7 @@ src/
   drill/           Drill lifecycle (session, config, helpers)
   display/         UI display utilities (format, tokens, sort-cards, seat-mapping, rules-display, hcp)
   util/            Zero-dep pure utilities (delay, seeded-rng)
+  test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, game-screen/GameScreen)
@@ -82,6 +83,7 @@ tests/
 - **Drill:** Unified drill lifecycle — `DrillConfig`/`DrillSession` types, session factory, config factory, `startDrill()` helper. (entry: `src/drill/types.ts`)
 - **Display:** UI display utilities — `formatCall()`, `formatRuleName()`, suit symbols, design tokens, `sortCards`, `computeTableScale`, `filterConventions`, `viewSeat`, `prepareRulesForDisplay`, `groupBidsByRound`, HCP display helpers. (entry: `src/display/format.ts`)
 - **Util:** Zero-dependency pure utilities — `delay()` async helper, `mulberry32` seedable PRNG. (entry: `src/util/delay.ts`)
+- **Test Support:** Shared test factories — `createStubEngine` (minimal EnginePort), `makeDeal`, `makeSimpleTestDeal`, `makeDrillSession`, `makeContract`, `makeCard`, flush helpers. Imports from `engine/`, `drill/`, `shared/` only. (entry: `src/test-support/engine-stub.ts`)
 - **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` phase router + `BiddingPhase`/`DeclarerPromptPhase`/`PlayingPhase`/`ExplanationPhase`), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea, AuctionRulesPanel, RulesPanel), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
 - **Stores:** App store (screen navigation, selected convention, dev seed state) + Game store coordinator/facade with sub-stores: `bidding.svelte.ts` (auction, bid history, feedback), `play.svelte.ts` (tricks, AI play loop), `dds.svelte.ts` (DDS solution). Phase state machine with `transitionTo()` guard. `context.ts` provides Svelte context DI. (entry: `src/stores/app.svelte.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
@@ -157,6 +159,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/display/CLAUDE.md` — display utility inventory, dependency rules
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
+- `src/test-support/CLAUDE.md` — shared test factories, dependency rules
 - `tests/CLAUDE.md` — E2E config, test running
 
 ---

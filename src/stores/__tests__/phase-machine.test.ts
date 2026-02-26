@@ -8,8 +8,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Seat } from "../../engine/types";
 import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { createStubEngine } from "../../components/__tests__/test-helpers";
-import { makeDrillSession, makeSimpleTestDeal, makeContract } from "./fixtures";
+import { createStubEngine } from "../../test-support/engine-stub";
+import { makeDrillSession, makeSimpleTestDeal, makeContract } from "../../test-support/fixtures";
 
 describe("phase state machine", () => {
   beforeEach(() => {

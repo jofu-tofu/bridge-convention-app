@@ -23,13 +23,17 @@ const TRICK_PAUSE = 1000;
 
 /** Map BidSuit to Suit for trump. NoTrump returns undefined. */
 function bidSuitToSuit(strain: BidSuit): Suit | undefined {
-  const map: Partial<Record<BidSuit, Suit>> = {
-    [BidSuit.Clubs]: Suit.Clubs,
-    [BidSuit.Diamonds]: Suit.Diamonds,
-    [BidSuit.Hearts]: Suit.Hearts,
-    [BidSuit.Spades]: Suit.Spades,
-  };
-  return map[strain];
+  switch (strain) {
+    case BidSuit.Clubs: return Suit.Clubs;
+    case BidSuit.Diamonds: return Suit.Diamonds;
+    case BidSuit.Hearts: return Suit.Hearts;
+    case BidSuit.Spades: return Suit.Spades;
+    case BidSuit.NoTrump: return undefined;
+    default: {
+      const _exhaustive: never = strain;
+      throw new Error(`Unknown BidSuit: ${_exhaustive}`);
+    }
+  }
 }
 
 /** Determine who controls a seat: 'user' or 'ai'. */
@@ -72,7 +76,7 @@ export function createPlayStore(engine: EnginePort) {
   let isShowingTrickResult = $state(false);
   let isProcessing = $state(false);
   let playLog = $state<PlayLogEntry[]>([]);
-  let activePlayStrategy = $state<PlayStrategy | null>(null);
+  let activePlayStrategy: PlayStrategy | null = null;
 
   // Config set at startPlay time — not reactive, plain vars
   let activeDeal: Deal | null = null;
@@ -109,18 +113,21 @@ export function createPlayStore(engine: EnginePort) {
     return currentTrick.length > 0 ? currentTrick[0]!.card.suit : undefined;
   }
 
-  /** Build a PlayContext for AI card selection. */
+  /** Build a PlayContext for AI card selection. Caller must ensure activeContract is set. */
   function buildPlayContext(
     seat: Seat,
     hand: Hand,
     legalCards: readonly Card[],
   ): PlayContext {
+    if (!activeContract) {
+      throw new Error("buildPlayContext called without an active contract");
+    }
     const dummyVisible = tricks.length > 0 || currentTrick.length > 0;
     return {
       hand,
       currentTrick: [...currentTrick],
       previousTricks: [...tricks],
-      contract: activeContract!,
+      contract: activeContract,
       seat,
       trumpSuit,
       legalPlays: legalCards,
@@ -281,7 +288,7 @@ export function createPlayStore(engine: EnginePort) {
             { cards: remaining },
             leadSuit,
           );
-          // Use first legal play and log as "skip" — not AI-attributed
+          if (legalPlays.length === 0) break;
           const card = legalPlays[0]!;
           playLog = [...playLog, { seat, card, reason: "skip", trickIndex: tricks.length }];
           currentTrick = [...currentTrick, { card, seat }];
