@@ -27,6 +27,8 @@ Playwright end-to-end smoke tests for user-facing behavior.
 | ------------------------------- | ------------------------------------------------------------------ |
 | `e2e/convention-select.spec.ts` | App loads with main content area; heading and description render   |
 | `e2e/play-phase.spec.ts`        | Play phase loads after bidding; skip-to-review reaches explanation |
+| `e2e/game-lifecycle.spec.ts`    | Full game lifecycle: start drill, bid, review, next deal           |
+| `e2e/stayman-bidding.spec.ts`   | Stayman-specific bidding flow with seeded deals                    |
 
 ## Constraints
 
@@ -48,7 +50,10 @@ the code, and it belongs at this scope (project-wide rule → root CLAUDE.md; WH
 how an agent acts here, remove it. If a convention here conflicts with the codebase,
 the codebase wins — update this file, do not work around it. Prune aggressively.
 
+**Track follow-up work:** After modifying files, evaluate whether changes create incomplete
+work or break an assumption tracked elsewhere. If so, create a task or update tracking before ending.
+
 **Staleness anchor:** This file assumes `e2e/convention-select.spec.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-22 | version=3 | dir-commits-at-audit=4 | tree-sig=dirs:1,files:3,exts:ts:2,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-25 | version=5 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:5,exts:ts:4,md:1 -->

@@ -16,9 +16,9 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { dontConfig, dontDealConstraints } from "../../dont";
-import type { BiddingContext } from "../../types";
+} from "../../core/registry";
+import { dontConfig, dontDealConstraints } from "../../definitions/dont";
+import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {

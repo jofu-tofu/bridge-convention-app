@@ -4,10 +4,10 @@ import {
   registerConvention,
   clearRegistry,
   listConventions,
-} from "../../registry";
-import { saycConfig } from "../../sayc";
-import { filterConventions } from "../../../lib/filter-conventions";
-import { createDrillConfig } from "../../../ai/drill-config-factory";
+} from "../../core/registry";
+import { saycConfig } from "../../definitions/sayc";
+import { filterConventions } from "../../../display/filter-conventions";
+import { createDrillConfig } from "../../../drill/config-factory";
 
 beforeEach(() => {
   clearRegistry();

@@ -1,8 +1,9 @@
 import { describe, test, expect } from "vitest";
-import { HttpEngine } from "../http-engine";
+import { HttpEngine, cleanConstraints } from "../http-engine";
 import type { EnginePort } from "../port";
-import type { Hand } from "../types";
+import type { Hand, Deal, DealConstraints } from "../types";
 import { Seat } from "../types";
+import { mulberry32 } from "../../util/seeded-rng";
 
 describe("HttpEngine", () => {
   test("implements EnginePort interface", () => {
@@ -31,7 +32,8 @@ describe("HttpEngine", () => {
       vulnerability: "None" as const,
     };
     // solveDeal delegates to the HTTP server — rejects with validation or network error
-    await expect(engine.solveDeal(deal as any)).rejects.toThrow();
+    // any: deal is intentionally incomplete to test error handling
+    await expect(engine.solveDeal(deal as unknown as Deal)).rejects.toThrow();
   });
 
   test("suggestPlay throws not available", async () => {
@@ -39,5 +41,47 @@ describe("HttpEngine", () => {
     await expect(
       engine.suggestPlay({ cards: [] }, [], null, []),
     ).rejects.toThrow("DDS not available");
+  });
+});
+
+describe("cleanConstraints", () => {
+  test("strips rng function from constraints", () => {
+    const constraints: DealConstraints = {
+      seats: [],
+      rng: mulberry32(42),
+    };
+    const cleaned = cleanConstraints(constraints);
+    expect(cleaned).not.toHaveProperty("rng");
+  });
+
+  test("includes seed field when rng and seed are present", () => {
+    const constraints: DealConstraints = {
+      seats: [],
+      rng: mulberry32(42),
+      seed: 42,
+    };
+    const cleaned = cleanConstraints(constraints);
+    expect(cleaned).toHaveProperty("seed", 42);
+    expect(cleaned).not.toHaveProperty("rng");
+  });
+
+  test("preserves other constraint fields", () => {
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.North, minHcp: 12 }],
+      maxAttempts: 5000,
+      seed: 99,
+    };
+    const cleaned = cleanConstraints(constraints);
+    expect(cleaned).toHaveProperty("maxAttempts", 5000);
+    expect(cleaned).toHaveProperty("seed", 99);
+  });
+
+  test("strips customCheck from seat constraints", () => {
+    const constraints: DealConstraints = {
+      seats: [{ seat: Seat.South, customCheck: () => true }],
+    };
+    const cleaned = cleanConstraints(constraints) as { seats: object[] };
+    expect(cleaned.seats[0]).not.toHaveProperty("customCheck");
+    expect(cleaned.seats[0]).toHaveProperty("seat", Seat.South);
   });
 });

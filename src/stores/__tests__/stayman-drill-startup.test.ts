@@ -7,20 +7,20 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { tick } from "svelte";
 import { Seat, BidSuit } from "../../engine/types";
-import type { Deal, Hand, Call, Auction, AuctionEntry, Vulnerability } from "../../engine/types";
+import type { Deal, Call, Auction, AuctionEntry, Vulnerability } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../components/__tests__/test-helpers";
 import { parseHand } from "../../engine/notation";
-import { clearRegistry, registerConvention, getConvention } from "../../conventions/registry";
-import { staymanConfig } from "../../conventions/stayman";
-import { gerberConfig } from "../../conventions/gerber";
-import { dontConfig } from "../../conventions/dont";
-import { landyConfig } from "../../conventions/landy";
-import { bergenConfig } from "../../conventions/bergen-raises";
-import { saycConfig } from "../../conventions/sayc";
-import { createDrillConfig } from "../../ai/drill-config-factory";
-import { createDrillSession } from "../../ai/drill-session";
-import { conventionToStrategy } from "../../ai/convention-strategy";
+import { clearRegistry, registerConvention, getConvention } from "../../conventions/core/registry";
+import { staymanConfig } from "../../conventions/definitions/stayman";
+import { gerberConfig } from "../../conventions/definitions/gerber";
+import { dontConfig } from "../../conventions/definitions/dont";
+import { landyConfig } from "../../conventions/definitions/landy";
+import { bergenConfig } from "../../conventions/definitions/bergen-raises";
+import { saycConfig } from "../../conventions/definitions/sayc";
+import { createDrillConfig } from "../../drill/config-factory";
+import { createDrillSession } from "../../drill/session";
+import { conventionToStrategy } from "../../strategy/bidding/convention-strategy";
 import { addCall, getLegalCalls, isAuctionComplete } from "../../engine/auction";
 
 function createRealAuctionEngine() {

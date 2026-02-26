@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { listConventions } from "../../conventions/registry";
-  import { ConventionCategory } from "../../conventions/types";
-  import type { ConventionConfig } from "../../conventions/types";
-  import { getAppStore } from "../../lib/context";
-  import { filterConventions } from "../../lib/filter-conventions";
+  import { listConventions } from "../../conventions/core/registry";
+  import { ConventionCategory } from "../../conventions/core/types";
+  import type { ConventionConfig } from "../../conventions/core/types";
+  import { getAppStore } from "../../stores/context";
+  import { filterConventions } from "../../display/filter-conventions";
 
   const appStore = getAppStore();
 

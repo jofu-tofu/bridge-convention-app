@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BidFeedback } from "../../stores/game.svelte";
-  import { formatCall } from "../../lib/format";
+  import { formatCall } from "../../display/format";
 
   interface Props {
     feedback: BidFeedback;

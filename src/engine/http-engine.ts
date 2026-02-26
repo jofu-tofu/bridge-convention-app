@@ -27,8 +27,9 @@ function cleanSeatConstraint(
   return rest;
 }
 
-/** Strip non-serializable fields (rng, customCheck) from constraints before HTTP. */
-function cleanConstraints(constraints: DealConstraints): object {
+/** Strip non-serializable fields (rng, customCheck) from constraints before HTTP.
+ *  Preserves `seed` for Rust-side deterministic generation. */
+export function cleanConstraints(constraints: DealConstraints): object {
   const { rng: _, ...rest } = constraints;
   return {
     ...rest,

@@ -12,8 +12,8 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { saycConfig } from "../../sayc";
+} from "../../core/registry";
+import { saycConfig } from "../../definitions/sayc";
 import { hand, makeBiddingContext } from "../fixtures";
 
 // ─── Helpers ────────────────────────────────────────────────

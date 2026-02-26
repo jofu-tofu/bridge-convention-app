@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { BidSuit, Seat } from "../../../engine/types";
-import { decision, bid, fallback } from "../../rule-tree";
-import type { TreeConventionConfig } from "../../rule-tree";
-import { ConventionCategory } from "../../types";
+import { decision, bid, fallback } from "../../core/rule-tree";
+import type { TreeConventionConfig } from "../../core/rule-tree";
+import { ConventionCategory } from "../../core/types";
 import {
   evaluateBiddingRules,
   evaluateAllBiddingRules,
   isTreeConvention,
   clearRegistry,
-} from "../../registry";
+} from "../../core/registry";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { alwaysTrue, alwaysFalse, makeMinimalContext } from "../tree-test-helpers";
 
@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 
 function makeTreeConfig(
-  ruleTree: import("../../rule-tree").RuleNode,
+  ruleTree: import("../../core/rule-tree").RuleNode,
 ): TreeConventionConfig {
   return {
     id: "test-tree",

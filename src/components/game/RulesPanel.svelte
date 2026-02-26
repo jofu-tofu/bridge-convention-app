@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { ConventionConfig } from "../../conventions/types";
+  import type { ConventionConfig } from "../../conventions/core/types";
   import type { Deal } from "../../engine/types";
   import type { BidHistoryEntry } from "../../stores/game.svelte";
-  import { prepareRulesForDisplay } from "../../lib/rules-display";
-  import type { DisplayRule } from "../../lib/rules-display";
-  import { formatCall } from "../../lib/format";
-  import { BID_SUIT_COLOR_CLASS } from "../../lib/tokens";
+  import { prepareRulesForDisplay } from "../../display/rules-display";
+  import type { DisplayRule } from "../../display/rules-display";
+  import { formatCall } from "../../display/format";
+  import { BID_SUIT_COLOR_CLASS } from "../../display/tokens";
 
   interface Props {
     convention: ConventionConfig;

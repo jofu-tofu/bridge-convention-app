@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { TauriIpcEngine } from "../tauri-ipc-engine";
-import type { Hand } from "../types";
+import type { Hand, Deal } from "../types";
 import { Seat } from "../types";
 
 describe("TauriIpcEngine", () => {
@@ -30,7 +30,8 @@ describe("TauriIpcEngine", () => {
       vulnerability: "None" as const,
     };
     // solveDeal delegates to Tauri invoke(), which isn't available in unit tests
-    await expect(engine.solveDeal(deal as any)).rejects.toThrow();
+    // any: deal is intentionally incomplete to test error handling
+    await expect(engine.solveDeal(deal as unknown as Deal)).rejects.toThrow();
   });
 
   test("suggestPlay throws not available", async () => {

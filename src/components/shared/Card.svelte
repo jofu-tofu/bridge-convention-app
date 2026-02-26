@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Card as CardType } from "../../engine/types";
-  import { SUIT_CARD_COLOR_CLASS } from "../../lib/tokens";
-  import { SUIT_SYMBOLS } from "../../lib/format";
+  import { SUIT_CARD_COLOR_CLASS } from "../../display/tokens";
+  import { SUIT_SYMBOLS } from "../../display/format";
 
   interface Props {
     card: CardType;

@@ -17,8 +17,8 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { staymanConfig } from "../../stayman";
+} from "../../core/registry";
+import { staymanConfig } from "../../definitions/stayman";
 import { hand, makeBiddingContext } from "../fixtures";
 
 // ─── Stayman — opponent interference ─────────────────────────

@@ -1,107 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Seat, BidSuit, Vulnerability, Suit, Rank } from "../../engine/types";
-import type { Contract, Hand } from "../../engine/types";
+import { Seat } from "../../engine/types";
+import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../components/__tests__/test-helpers";
-import type { DrillSession } from "../../ai/types";
 import type { EnginePort } from "../../engine/port";
-
-function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
-  return {
-    config: {
-      conventionId: "test",
-      userSeat,
-      seatStrategies: {
-        [Seat.North]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.East]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.South]: "user",
-        [Seat.West]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-      },
-    },
-    getNextBid(seat) {
-      if (seat === userSeat) return null;
-      return { call: { type: "pass" }, ruleName: null, explanation: "AI pass" };
-    },
-    isUserSeat(seat) {
-      return seat === userSeat;
-    },
-  };
-}
-
-function makeTestDeal() {
-  const ranks = [
-    Rank.Two,
-    Rank.Three,
-    Rank.Four,
-    Rank.Five,
-    Rank.Six,
-    Rank.Seven,
-    Rank.Eight,
-    Rank.Nine,
-    Rank.Ten,
-    Rank.Jack,
-    Rank.Queen,
-    Rank.King,
-    Rank.Ace,
-  ];
-  return {
-    hands: {
-      [Seat.North]: {
-        cards: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })),
-      },
-      [Seat.East]: {
-        cards: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })),
-      },
-      [Seat.South]: {
-        cards: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })),
-      },
-      [Seat.West]: {
-        cards: ranks.map((r) => ({ suit: Suit.Spades, rank: r })),
-      },
-    },
-    dealer: Seat.North,
-    vulnerability: Vulnerability.None,
-  };
-}
-
-function makeContract(declarer: Seat): Contract {
-  return {
-    level: 1,
-    strain: BidSuit.NoTrump,
-    doubled: false,
-    redoubled: false,
-    declarer,
-  };
-}
+import { makeDrillSession, makeSimpleTestDeal, makeContract } from "./fixtures";
 
 describe("DECLARER_PROMPT phase", () => {
   let engine: EnginePort;
   let store: ReturnType<typeof createGameStore>;
-  const deal = makeTestDeal();
+  const deal = makeSimpleTestDeal();
   const session = makeDrillSession();
 
   beforeEach(() => {

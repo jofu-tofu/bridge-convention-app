@@ -2,11 +2,11 @@
 <script lang="ts">
   import { Seat, Suit } from "../../engine/types";
   import type { Hand, Card } from "../../engine/types";
-  import { getGameStore, getAppStore } from "../../lib/context";
-  import { computeHcp } from "../../lib/hcp";
-  import { formatCall, SUIT_SYMBOLS } from "../../lib/format";
-  import { sortCards } from "../../lib/sort-cards";
-  import { computeBidEvalTraces } from "../../lib/debug-bid-eval";
+  import { getGameStore, getAppStore } from "../../stores/context";
+  import { computeHcp } from "../../display/hcp";
+  import { formatCall, SUIT_SYMBOLS } from "../../display/format";
+  import { sortCards } from "../../display/sort-cards";
+  import { computeBidEvalTraces } from "../../display/debug-bid-eval";
 
   interface Props {
     open: boolean;

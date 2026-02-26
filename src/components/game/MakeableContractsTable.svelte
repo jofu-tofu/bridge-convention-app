@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Seat, BidSuit } from "../../engine/types";
-  import { BID_SUIT_COLOR_CLASS } from "../../lib/tokens";
-  import { STRAIN_SYMBOLS } from "../../lib/format";
+  import { BID_SUIT_COLOR_CLASS } from "../../display/tokens";
+  import { STRAIN_SYMBOLS } from "../../display/format";
 
   interface Props {
     tricks: Record<Seat, Record<BidSuit, number>>;

@@ -27,12 +27,13 @@ Desktop app for drilling bridge bidding conventions (Stayman, Gerber, DONT, Berg
 
 - **URL routing:** `?convention=stayman` jumps to game screen with that convention (IDs: `stayman`, `gerber`, `dont`, `bergen-raises`, `landy`, `sayc`)
 - **Deterministic seed:** `?seed=42` seeds the PRNG for reproducible deals. Seed advances per deal (42, 43, 44...). Reload resets.
+- **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=stayman&autoplay=true`
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
 
 ## Conventions
 
-- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `ai/`. Engine imports `shared/types` for cross-boundary types (`BiddingStrategy`, `BidResult`)
-- **Shared types layer.** `src/shared/types.ts` contains types used by both `engine/` and `ai/`. Do not add types only used by one module.
+- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `strategy/`. Engine imports `shared/types` for cross-boundary types (`BiddingStrategy`, `BidResult`)
+- **Shared types layer.** `src/shared/types.ts` contains types used by both `engine/` and `strategy/`. Do not add types only used by one module.
 - **Registry pattern.** Use registries for conventions and strategies, not hardcoded switch statements
 - **EnginePort abstraction.** UI communicates with engine through `EnginePort` interface; engine never imports UI
 - **Svelte 5 runes.** Use `$state`, `$derived`, `$effect` — no legacy `$:` reactive statements
@@ -46,17 +47,22 @@ Desktop app for drilling bridge bidding conventions (Stayman, Gerber, DONT, Berg
 ```
 src/
   engine/          Pure TS game logic (zero platform deps)
-    __tests__/     Unit tests colocated with source
   shared/          Cross-boundary types (BidResult, BiddingStrategy, PlayStrategy, ConditionDetail)
-  conventions/     Convention definitions (registry, conditions, evaluator, Stayman, SAYC, types)
-  ai/              AI bidding + play strategies, auction inference engine
-    inference/     Auction inference system (per-partnership information asymmetry)
-  lib/             Display utilities, design tokens, pure functions (format, context, sort-cards, table-scale, filter-conventions, drill-helpers, seat-mapping, rules-display)
+  conventions/     Convention system
+    core/            Registry, evaluator, tree system, conditions (stable infrastructure)
+    definitions/     Convention files (stayman, gerber, dont, bergen-raises, landy, sayc)
+  inference/       Auction inference system (per-partnership information asymmetry)
+  strategy/        AI strategies
+    bidding/         Convention-to-strategy adapter, pass strategy
+    play/            Play strategies (random, heuristic; future: DDS, signal/discard)
+  drill/           Drill lifecycle (session, config, helpers)
+  display/         UI display utilities (format, tokens, sort-cards, seat-mapping, rules-display, hcp)
+  util/            Zero-dep pure utilities (delay, seeded-rng)
+  stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, game-screen/GameScreen)
     game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea, RulesPanel)
     shared/        Reusable components (Card, Button, ConventionCallout)
-  stores/          Svelte stores (app navigation, game drill state)
 src-tauri/         Cargo workspace with three crates
   crates/
     bridge-engine/   Pure Rust engine logic (types, hand eval, deal gen, auction, scoring, play)
@@ -68,36 +74,29 @@ tests/
 
 **Subsystems:**
 
-- **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `tauri-ipc-engine.ts` (desktop) and `http-engine.ts` (dev/browser) provide Rust-backed transports — no fallback, Rust server required. (entry: `src/engine/types.ts`)
-- **Conventions:** Registry of convention configs — all 6 conventions use hierarchical rule trees (`TreeConventionConfig`). Each tree built with `decision()`/`bid()`/`fallback()` from `rule-tree.ts`, flattened on demand via `getConventionRules()` for display consumers (RulesPanel). Registry dispatches via `isTreeConvention()` → `evaluateTreeFast()`. `evaluateBiddingRules(context, config)` — tree-only, no flat dispatch. Conditions carry optional `ConditionInference` metadata for the inference engine. (entry: `src/conventions/registry.ts`)
-- **Shared:** Cross-boundary type definitions used by both engine/ and ai/ — includes `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings`, `TreeEvalSummary`/`TreePathEntry`/`TreeForkPoint` (tree traversal DTOs) (entry: `src/shared/types.ts`)
-- **AI:** Bidding strategies + play AI + auction inference — `conventionToStrategy()` adapter, `passStrategy`, `DrillSession` + `DrillConfig` factory, `createHeuristicPlayStrategy()` with 7-heuristic chain, `randomPlay()` legacy fallback. `inference/` subsystem models per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). (entry: `src/ai/convention-strategy.ts`)
-- **Lib:** Display utilities + pure functions — `formatCall()`, `formatRuleName()`, suit symbols, typed Svelte context helpers, design tokens (`tokens.ts`), extracted logic (`sortCards`, `computeTableScale`, `filterConventions`, `startDrill`, `viewSeat`, `prepareRulesForDisplay`, `groupBidsByRound`), seedable PRNG (`seeded-rng.ts`) (entry: `src/lib/format.ts`)
-- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` + sub-components), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea, AuctionRulesPanel, RulesPanel), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
-- **Stores:** App store (screen navigation, selected convention, dev seed state) + Game store (deal, auction, bid history, phase transitions) via factory DI (entry: `src/stores/app.svelte.ts`)
+- **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `call-helpers.ts` provides canonical `callsMatch()`. `tauri-ipc-engine.ts` (desktop) and `http-engine.ts` (dev/browser) provide Rust-backed transports — no fallback, Rust server required. (entry: `src/engine/types.ts`)
+- **Conventions:** Split into `core/` (registry, evaluator, tree system, conditions — stable infrastructure) and `definitions/` (6 convention files — grows unboundedly). All conventions use hierarchical rule trees. `evaluateBiddingRules(context, config)` — tree-only. (entry: `src/conventions/core/registry.ts`)
+- **Shared:** Cross-boundary type definitions — `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings`, `TreeEvalSummary`/`TreePathEntry`/`TreeForkPoint` (tree traversal DTOs). (entry: `src/shared/types.ts`)
+- **Inference:** Auction inference system — per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). Negative inference via tree rejection data. (entry: `src/inference/inference-engine.ts`)
+- **Strategy:** Bidding strategies (`conventionToStrategy()` adapter, `passStrategy`) and play strategies (`createHeuristicPlayStrategy()` 7-heuristic chain, `randomPlayStrategy` fallback). (entry: `src/strategy/bidding/convention-strategy.ts`)
+- **Drill:** Unified drill lifecycle — `DrillConfig`/`DrillSession` types, session factory, config factory, `startDrill()` helper. (entry: `src/drill/types.ts`)
+- **Display:** UI display utilities — `formatCall()`, `formatRuleName()`, suit symbols, design tokens, `sortCards`, `computeTableScale`, `filterConventions`, `viewSeat`, `prepareRulesForDisplay`, `groupBidsByRound`, HCP display helpers. (entry: `src/display/format.ts`)
+- **Util:** Zero-dependency pure utilities — `delay()` async helper, `mulberry32` seedable PRNG. (entry: `src/util/delay.ts`)
+- **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, `game-screen/GameScreen` phase router + `BiddingPhase`/`DeclarerPromptPhase`/`PlayingPhase`/`ExplanationPhase`), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea, AuctionRulesPanel, RulesPanel), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
+- **Stores:** App store (screen navigation, selected convention, dev seed state) + Game store coordinator/facade with sub-stores: `bidding.svelte.ts` (auction, bid history, feedback), `play.svelte.ts` (tricks, AI play loop), `dds.svelte.ts` (DDS solution). Phase state machine with `transitionTo()` guard. `context.ts` provides Svelte context DI. (entry: `src/stores/app.svelte.ts`)
 - **Tests:** Vitest unit + Playwright E2E (entry: `tests/e2e/`)
 
-**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/lib/seat-mapping.ts`) or "Skip to Review". When E/W declares, DECLARER_PROMPT offers "Play as Defender" (user stays South) or "Skip to Review". When South declares, auction completes directly to EXPLANATION. Play phase entered via `acceptDeclarerSwap` (dummy) or `acceptDefend` (defender). AI plays using heuristic strategy (opening leads, second-hand-low, third-hand-high, trump management) with 500ms delay; falls back to random if no strategy configured.
+**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION (tracked in `stores/game.svelte.ts`). User always bids as South. When user is dummy (North declares), DECLARER_PROMPT offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/display/seat-mapping.ts`) or "Skip to Review". When E/W declares, DECLARER_PROMPT offers "Play as Defender" (user stays South) or "Skip to Review". When South declares, auction completes directly to EXPLANATION. Play phase entered via `acceptDeclarerSwap` (dummy) or `acceptDefend` (defender). AI plays using heuristic strategy (opening leads, second-hand-low, third-hand-high, trump management) with 500ms delay; falls back to random if no strategy configured.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
 ## Roadmap
 
-1. ~~**DDS Review Integration**~~ — Done. Tabbed ReviewSidePanel (Bidding + Analysis) with DDS via `dds-bridge` Rust FFI. Requires `libclang-dev`.
-1.5. **Rule Tree Migration** — Replace flat `conditionedRule()` system with hierarchical decision trees for negative inference support
-   - ~~(a) Tree infrastructure~~ — Done. Types (`rule-tree.ts`), evaluator (`tree-evaluator.ts`), compat adapter (`tree-compat.ts`), registry dispatch, `createBiddingContext()` factory (`context-factory.ts`), `BiddingContext` expanded with optional `vulnerability`/`dealer`
-   - ~~(b) Convention migration phase 2a~~ — Done. Landy, DONT, Stayman migrated to trees with `flattenTree()` compat
-   - ~~(b.2) Convention migration phase 2b~~ — Done. Gerber, Bergen Raises, SAYC migrated to trees. SAYC condition factories extracted to `conditions.ts`.
-   - ~~(c) Cleanup + negative inference~~ — Done. Flat dispatch removed from `evaluateBiddingRules()`. `biddingRules` now optional (computed lazily via `getConventionRules()`). Negative inference via `invertInference()` + `resolveDisjunction()`. `evaluateBiddingRules(context, config)` and `evaluateAllBiddingRules(context, config)` — no `rules` param.
-1.6. ~~**Bridge Bum Test Audit**~~ — Done. Verified all 6 conventions against Bridge Bum / ACBL references. Added citations, missing rules, and reference docs.
-   - ~~(a) Gerber~~ — Done. Citation cleanup (7 tests), 2 negative tests (non-jump 4C).
-   - ~~(b) Bergen Raises~~ — Done. Constructive HCP 7-10 (Bridge Bum), splinter bids (3S/3H, 12+ HCP with shortage).
-   - ~~(c) DONT~~ — Done. Advancer 6+ suit bypass after double/2C/2D, overcaller reveal after relay.
-   - ~~(d) Landy~~ — Done. 2NT inquiry (12+ HCP), invitational 3H/3S (10-12), overcaller rebids after 2NT.
-   - ~~(e) SAYC~~ — Done. Tests for weak 2D, jump raise, game raise, new suit 2-level, 2NT response, opener rebids, 1NT overcall.
-   - ~~(f) Stayman~~ — Done. Smolen (3H/3S after 2D denial), Stayman after 2NT opening (3C ask + responses).
+**Completed:** DDS Review Integration (1), Rule Tree Migration (1.5a-c), Bridge Bum Test Audit (1.6a-f), Rules Tab (2a).
+
+**Active/upcoming:**
+
 2. **User Learning Enhancements**
-   - ~~(a) Rules tab in ReviewSidePanel~~ — Done. Context-aware convention rules display during review phase. Fired rules show evaluated conditions with actual hand values; reference rules show static condition names.
    - (b) Dedicated learning screen — Browse full convention rule sets outside of game context. Accessible from ConventionSelectScreen. Reuses RulesPanel component.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard), wires `InferenceProvider` selection per partnership
 
@@ -121,7 +120,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 | `src/components/`              | `npx vitest run src/components/`  | Never for UI-only (CSS, props, layout) |
 | `src/stores/`                  | `npx vitest run src/stores/`      | If store interface changed             |
 | `src/engine/`                  | `npx vitest run src/engine/`      | If types/exports changed               |
-| `src/lib/`                     | `npx vitest run src/lib/`         | If shared utility signatures changed   |
+| `src/display/`                 | `npx vitest run src/display/`     | If shared utility signatures changed   |
 | CSS-only / layout tweaks       | `npm run check` (type-check only) | Never                                  |
 | Cross-cutting (types, exports) | `npm run test:run` (full suite)   | Always for type/interface changes      |
 
@@ -152,7 +151,10 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 
 - `src/engine/CLAUDE.md` — engine purity, module graph, key patterns
 - `src/conventions/CLAUDE.md` — registry pattern, convention rules reference, how to add conventions
-- `src/ai/CLAUDE.md` — strategy pattern, dependency rules, how to add strategies
+- `src/inference/CLAUDE.md` — inference architecture, negation, invariants
+- `src/strategy/CLAUDE.md` — strategy pattern, conventionToStrategy, play heuristics
+- `src/drill/CLAUDE.md` — DrillConfig, DrillSession, drill lifecycle
+- `src/display/CLAUDE.md` — display utility inventory, dependency rules
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
 - `tests/CLAUDE.md` — E2E config, test running
@@ -185,4 +187,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-22 | version=6 | dir-commits-at-audit=21 | tree-sig=dirs:9,files:120+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-25 | version=10 | dir-commits-at-audit=52 | tree-sig=dirs:16,files:180+ -->

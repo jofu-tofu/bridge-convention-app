@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Seat, BidSuit, Vulnerability, Suit, Rank } from "../../engine/types";
-import type { DDSolution, Hand } from "../../engine/types";
+import { Seat, BidSuit } from "../../engine/types";
+import type { DDSolution } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../components/__tests__/test-helpers";
-import type { DrillSession } from "../../ai/types";
+import { makeDrillSession, makeSimpleTestDeal } from "./fixtures";
 
 const fakeDDSolution: DDSolution = {
   tricks: {
@@ -50,76 +50,6 @@ const fakeDDSolution: DDSolution = {
   },
 };
 
-function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
-  return {
-    config: {
-      conventionId: "test",
-      userSeat,
-      seatStrategies: {
-        [Seat.North]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.East]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.South]: "user",
-        [Seat.West]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-      },
-    },
-    getNextBid(seat) {
-      if (seat === userSeat) return null;
-      return { call: { type: "pass" }, ruleName: null, explanation: "AI pass" };
-    },
-    isUserSeat(seat) {
-      return seat === userSeat;
-    },
-  };
-}
-
-function makeTestDeal() {
-  const ranks = [
-    Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six,
-    Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack,
-    Rank.Queen, Rank.King, Rank.Ace,
-  ];
-  const seatCards: Record<string, { suit: Suit; rank: Rank }[]> = {
-    [Seat.North]: ranks.map((r) => ({ suit: Suit.Spades, rank: r })),
-    [Seat.East]: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })),
-    [Seat.South]: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })),
-    [Seat.West]: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })),
-  };
-  return {
-    hands: {
-      [Seat.North]: { cards: seatCards[Seat.North]! },
-      [Seat.East]: { cards: seatCards[Seat.East]! },
-      [Seat.South]: { cards: seatCards[Seat.South]! },
-      [Seat.West]: { cards: seatCards[Seat.West]! },
-    },
-    dealer: Seat.North,
-    vulnerability: Vulnerability.None,
-  };
-}
-
 describe("game store DDS state", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -132,7 +62,7 @@ describe("game store DDS state", () => {
   /** Start drill and advance timers past AI bid delays. Skips DECLARER_PROMPT if reached. */
   async function startDrillWithTimers(
     store: ReturnType<typeof createGameStore>,
-    deal = makeTestDeal(),
+    deal = makeSimpleTestDeal(),
     session = makeDrillSession(),
     { skipPrompt = true }: { skipPrompt?: boolean } = {},
   ) {
@@ -180,7 +110,7 @@ describe("game store DDS state", () => {
     });
     const store = createGameStore(engine);
 
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     await startDrillWithTimers(store, deal);
 
     expect(store.phase).toBe("EXPLANATION");
@@ -282,7 +212,7 @@ describe("game store DDS state", () => {
     const store = createGameStore(engine);
 
     // Start drill with dealer=North. AI bids N(pass), E(pass), then it's user's turn (S).
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
     const startPromise = store.startDrill(deal, session);
     await vi.advanceTimersByTimeAsync(1200);

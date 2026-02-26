@@ -11,9 +11,9 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { staymanConfig, staymanDealConstraints } from "../../stayman";
-import type { BiddingContext } from "../../types";
+} from "../../core/registry";
+import { staymanConfig, staymanDealConstraints } from "../../definitions/stayman";
+import type { BiddingContext } from "../../core/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
 

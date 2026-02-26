@@ -16,9 +16,9 @@ import {
   clearRegistry,
   evaluateBiddingRules,
   getConventionRules,
-} from "../../registry";
-import { bergenConfig, bergenDealConstraints } from "../../bergen-raises";
-import type { BiddingContext } from "../../types";
+} from "../../core/registry";
+import { bergenConfig, bergenDealConstraints } from "../../definitions/bergen-raises";
+import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {

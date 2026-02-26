@@ -5,10 +5,10 @@ import {
   listConventions,
   listConventionIds,
   clearRegistry,
-} from "../../registry";
-import type { ConventionConfig } from "../../types";
-import { ConventionCategory } from "../../types";
-import type { BiddingRule } from "../../types";
+} from "../../core/registry";
+import type { ConventionConfig } from "../../core/types";
+import { ConventionCategory } from "../../core/types";
+import type { BiddingRule } from "../../core/types";
 /** Minimal convention config for testing registry mechanics. */
 function makeTestConfig(id: string, rules?: BiddingRule[]): ConventionConfig {
   return {

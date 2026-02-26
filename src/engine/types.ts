@@ -133,8 +133,10 @@ export interface DealConstraints {
   readonly vulnerability?: Vulnerability;
   readonly dealer?: Seat;
   readonly maxAttempts?: number;
-  /** Optional seedable PRNG for deterministic deal generation. */
+  /** Optional seedable PRNG for deterministic deal generation (TS engine). */
   readonly rng?: () => number;
+  /** Optional seed for deterministic deal generation (Rust engine via HTTP/IPC). */
+  readonly seed?: number;
 }
 
 export interface DealGeneratorResult {

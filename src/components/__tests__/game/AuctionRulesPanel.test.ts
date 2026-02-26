@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { render, screen } from "@testing-library/svelte";
+import { render } from "@testing-library/svelte";
 import AuctionRulesPanel from "../../game/AuctionRulesPanel.svelte";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";

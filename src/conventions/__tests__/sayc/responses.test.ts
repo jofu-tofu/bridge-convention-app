@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { ContractBid } from "../../../engine/types";
-import { registerConvention, clearRegistry } from "../../registry";
-import { saycConfig } from "../../sayc";
+import { registerConvention, clearRegistry } from "../../core/registry";
+import { saycConfig } from "../../definitions/sayc";
 import { hand } from "../fixtures";
 import { callFromRules } from "./helpers";
 

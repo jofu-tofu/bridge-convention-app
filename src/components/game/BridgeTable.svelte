@@ -2,8 +2,8 @@
   import type { Snippet } from "svelte";
   import type { Hand, Card as CardType } from "../../engine/types";
   import { Seat } from "../../engine/types";
-  import { viewSeat } from "../../lib/seat-mapping";
-  import { computeHcp } from "../../lib/hcp";
+  import { viewSeat } from "../../display/seat-mapping";
+  import { computeHcp } from "../../display/hcp";
   import HandFan from "./HandFan.svelte";
 
   interface Props {

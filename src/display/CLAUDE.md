@@ -1,0 +1,46 @@
+# Display
+
+UI display utilities and pure functions. Consumer of `engine/`, `conventions/core/`, `shared/`, `stores/`.
+
+## Architecture
+
+| File                   | Role                                                              |
+| ---------------------- | ----------------------------------------------------------------- |
+| `format.ts`            | `formatCall()`, `formatRuleName()`, `SUIT_SYMBOLS`, `STRAIN_SYMBOLS` |
+| `tokens.ts`            | CSS design tokens, suit color classes (`BID_SUIT_COLOR_CLASS`, `SUIT_CARD_COLOR_CLASS`) |
+| `sort-cards.ts`        | `sortCards()` — visual card ordering for hand display             |
+| `seat-mapping.ts`      | `viewSeat()` — logical-to-physical seat mapping for table rotation |
+| `hcp.ts`               | `computeHcp()` — HCP display helper                              |
+| `hcp-eval.ts`          | `evaluateHand` re-export shim (1 consumer: DebugPanel)            |
+| `rules-display.ts`     | `prepareRulesForDisplay()`, `groupBidsByRound()`, `DisplayRule` type |
+| `debug-bid-eval.ts`    | `computeBidEvalTraces()` — debug display utility                  |
+| `filter-conventions.ts`| `filterConventions()` — convention picker search/filter           |
+| `table-scale.ts`       | `computeTableScale()` — responsive table scaling                  |
+
+## Gotchas
+
+- Suit colors use 4-color scheme — card-face colors differ from on-dark-bg colors (see `tokens.ts`)
+- `filterConventions()` hides conventions with `internal: true`
+
+---
+
+## Context Maintenance
+
+**After modifying files in this directory:** scan the entries above — if any claim is now
+false or incomplete, update this file before ending the task. Do not defer.
+
+**Add** an entry only if an agent would fail without knowing it, it is not obvious from
+the code, and it belongs at this scope (project-wide rule → root CLAUDE.md; WHY decision
+→ inline comment or ADR; inferable from code → nowhere).
+
+**Remove** any entry that fails the falsifiability test: if removing it would not change
+how an agent acts here, remove it. If a convention here conflicts with the codebase,
+the codebase wins — update this file, do not work around it. Prune aggressively.
+
+**Track follow-up work:** After modifying files, evaluate whether changes create incomplete
+work or break an assumption tracked elsewhere. If so, create a task or update tracking before ending.
+
+**Staleness anchor:** This file assumes `format.ts` exists. If it doesn't, this file
+is stale — update or regenerate before relying on it.
+
+<!-- context-layer: generated=2026-02-25 | last-audited=2026-02-25 | version=2 | dir-commits-at-audit=0 | tree-sig=dirs:2,files:17,exts:ts:16,md:1 -->

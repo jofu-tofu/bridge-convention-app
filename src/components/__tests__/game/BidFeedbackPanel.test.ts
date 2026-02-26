@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from "vitest";
+import { describe, test, expect } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
 import type { BidFeedback } from "../../../stores/game.svelte";

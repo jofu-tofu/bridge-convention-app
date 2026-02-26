@@ -3,7 +3,7 @@ import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../../engine/types";
 import type { Card, Contract, Hand } from "../../engine/types";
 import { createGameStore, seatController } from "../game.svelte";
 import { createStubEngine } from "../../components/__tests__/test-helpers";
-import type { DrillSession } from "../../ai/types";
+import type { DrillSession } from "../../drill/types";
 import type { EnginePort } from "../../engine/port";
 
 function makeCard(suit: Suit, rank: Rank): Card {
@@ -249,9 +249,91 @@ describe("createGameStore play phase", () => {
   });
 });
 
+describe("play concurrency fixes", () => {
+  let engine: EnginePort;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** Start a drill and advance to PLAYING phase via acceptDeclarerSwap. */
+  async function startDrillPlaying(
+    store: ReturnType<typeof createGameStore>,
+    _overrides: Partial<EnginePort> = {},
+  ) {
+    const deal = makeTestDeal();
+    const session = makeDrillSession();
+    const promise = store.startDrill(deal, session);
+    await vi.advanceTimersByTimeAsync(600);
+    await promise;
+    store.acceptDeclarerSwap();
+  }
+
+  it("startPlay sets isProcessing synchronously before runAiPlays", async () => {
+    // North declares, East leads (AI) → isProcessing should be true immediately
+    engine = createStubEngine({
+      async getContract() { return CONTRACT_1NT; },
+      async isAuctionComplete() { return true; },
+      async getLegalPlays(hand: Hand) { return [...hand.cards]; },
+      async getTrickWinner() { return Seat.South; },
+      async calculateScore() { return 90; },
+    });
+    const store = createGameStore(engine);
+
+    await startDrillPlaying(store);
+    // East is AI opening leader → isProcessing must be true synchronously
+    expect(store.isProcessing).toBe(true);
+  });
+
+  it("skipToReview transitions to EXPLANATION even when engine throws", async () => {
+    let callCount = 0;
+    engine = createStubEngine({
+      async getContract() { return CONTRACT_1NT; },
+      async isAuctionComplete() { return true; },
+      async getLegalPlays(hand: Hand) {
+        callCount++;
+        if (callCount > 2) throw new Error("engine failure");
+        return [...hand.cards];
+      },
+      async getTrickWinner() { return Seat.South; },
+      async calculateScore() { return 90; },
+    });
+    const store = createGameStore(engine);
+
+    await startDrillPlaying(store);
+    store.skipToReview();
+    await vi.advanceTimersByTimeAsync(5000);
+
+    // Should still reach EXPLANATION despite engine error
+    expect(store.phase).toBe("EXPLANATION");
+  });
+
+  it("skipToReview handles null currentPlayer gracefully", async () => {
+    engine = createStubEngine({
+      async getContract() { return CONTRACT_1NT; },
+      async isAuctionComplete() { return true; },
+      async getLegalPlays(hand: Hand) { return [...hand.cards]; },
+      async getTrickWinner() { return Seat.South; },
+      async calculateScore() { return 90; },
+    });
+    const store = createGameStore(engine);
+
+    await startDrillPlaying(store);
+    // skipToReview should not throw even if currentPlayer becomes null during processing
+    store.skipToReview();
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(store.phase).toBe("EXPLANATION");
+  });
+});
+
 describe("randomPlayStrategy", () => {
   it("returns a card from the legal plays array", async () => {
-    const { randomPlayStrategy } = await import("../../ai/play-strategy");
+    const { randomPlayStrategy } = await import("../../strategy/play/random-play");
     const cards: Card[] = [
       makeCard(Suit.Hearts, Rank.Ace),
       makeCard(Suit.Spades, Rank.King),
@@ -269,7 +351,7 @@ describe("randomPlayStrategy", () => {
   });
 
   it("throws on empty legal plays", async () => {
-    const { randomPlayStrategy } = await import("../../ai/play-strategy");
+    const { randomPlayStrategy } = await import("../../strategy/play/random-play");
     expect(() => randomPlayStrategy.suggest({
       hand: { cards: [] },
       currentTrick: [],

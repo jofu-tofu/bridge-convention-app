@@ -1,26 +1,11 @@
 <!-- Bidding-phase suggested-bid display only. For full debug drawer, see DebugDrawer.svelte. -->
 <script lang="ts">
-  import type { ConventionConfig } from "../../conventions/types";
-  import type { Hand, Auction, Seat } from "../../engine/types";
-  import { evaluateHand } from "../../lib/hcp-eval";
-  import { conventionToStrategy } from "../../ai/convention-strategy";
-  import { createBiddingContext } from "../../conventions/context-factory";
-  import { formatCall } from "../../lib/format";
+  import { getGameStore } from "../../stores/context";
+  import { formatCall } from "../../display/format";
 
-  interface Props {
-    convention: ConventionConfig;
-    hand: Hand;
-    auction: Auction;
-    seat: Seat;
-  }
+  const gameStore = getGameStore();
 
-  let { convention, hand, auction, seat }: Props = $props();
-
-  const suggestion = $derived.by(() => {
-    const strategy = conventionToStrategy(convention);
-    const evaluation = evaluateHand(hand);
-    return strategy.suggest(createBiddingContext({ hand, auction, seat, evaluation }));
-  });
+  const suggestion = $derived(gameStore.getExpectedBid());
 </script>
 
 <div

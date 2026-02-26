@@ -10,13 +10,13 @@
  */
 
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../../engine/types";
+import { Seat } from "../../../engine/types";
 import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { landyConfig } from "../../landy";
+} from "../../core/registry";
+import { landyConfig } from "../../definitions/landy";
 import { hand, makeBiddingContext } from "../fixtures";
 
 // ─── Landy — opponent interference ───────────────────────────

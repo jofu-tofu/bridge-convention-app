@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Contract } from "../../engine/types";
   import { Seat } from "../../engine/types";
-  import { STRAIN_SYMBOLS } from "../../lib/format";
+  import { STRAIN_SYMBOLS } from "../../display/format";
 
   type PromptMode = "declarer-swap" | "defender" | "south-declarer";
 
@@ -39,7 +39,6 @@
 <div
   class="bg-bg-card/95 rounded-[--radius-lg] p-3 border border-border-subtle shadow-lg text-center max-w-[240px]"
   role="dialog"
-  aria-modal="true"
   aria-label={ariaLabel}
 >
   <p class="text-base font-mono text-text-primary mb-1">

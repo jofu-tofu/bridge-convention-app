@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { tick } from "svelte";
-import { Seat, BidSuit, Vulnerability, Rank, Suit } from "../../engine/types";
+import { BidSuit } from "../../engine/types";
 import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../components/__tests__/test-helpers";
-import type { DrillSession } from "../../ai/types";
 import type { BiddingStrategy, BidResult } from "../../shared/types";
+import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "./fixtures";
 
 /** Strategy that always suggests 2C (Stayman-like). */
 function make2CStrategy(): BiddingStrategy {
@@ -33,88 +32,6 @@ function makeNoOpStrategy(): BiddingStrategy {
   };
 }
 
-function makeTestDeal() {
-  const ranks = [
-    Rank.Two,
-    Rank.Three,
-    Rank.Four,
-    Rank.Five,
-    Rank.Six,
-    Rank.Seven,
-    Rank.Eight,
-    Rank.Nine,
-    Rank.Ten,
-    Rank.Jack,
-    Rank.Queen,
-    Rank.King,
-    Rank.Ace,
-  ];
-  return {
-    hands: {
-      [Seat.North]: {
-        cards: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })),
-      },
-      [Seat.East]: {
-        cards: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })),
-      },
-      [Seat.South]: {
-        cards: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })),
-      },
-      [Seat.West]: {
-        cards: ranks.map((r) => ({ suit: Suit.Spades, rank: r })),
-      },
-    },
-    dealer: Seat.North,
-    vulnerability: Vulnerability.None,
-  };
-}
-
-function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
-  return {
-    config: {
-      conventionId: "test",
-      userSeat,
-      seatStrategies: {
-        [Seat.North]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.East]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.South]: "user",
-        [Seat.West]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-      },
-    },
-    getNextBid(seat) {
-      if (seat === userSeat) return null;
-      return { call: { type: "pass" }, ruleName: null, explanation: "AI pass" };
-    },
-    isUserSeat(seat) {
-      return seat === userSeat;
-    },
-  };
-}
-
 beforeEach(() => {
   vi.useFakeTimers();
 });
@@ -123,12 +40,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-async function flushActions() {
-  for (let i = 0; i < 20; i++) {
-    await vi.runAllTimersAsync();
-  }
-  await tick();
-}
+const flushActions = flushWithFakeTimers;
 
 describe("bid feedback — user-facing behavior", () => {
   function makeStore() {
@@ -144,7 +56,7 @@ describe("bid feedback — user-facing behavior", () => {
     it("auction pauses so user can review their mistake", async () => {
       const store = makeStore();
       const _p = store.startDrill(
-        makeTestDeal(),
+        makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
         make2CStrategy(),
@@ -164,7 +76,7 @@ describe("bid feedback — user-facing behavior", () => {
     it("tells user what the correct bid was", async () => {
       const store = makeStore();
       const _p = store.startDrill(
-        makeTestDeal(),
+        makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
         make2CStrategy(),
@@ -189,7 +101,7 @@ describe("bid feedback — user-facing behavior", () => {
     it("auction resumes when user dismisses feedback", async () => {
       const store = makeStore();
       const _p = store.startDrill(
-        makeTestDeal(),
+        makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
         make2CStrategy(),
@@ -211,7 +123,7 @@ describe("bid feedback — user-facing behavior", () => {
     it("user can skip directly to review", async () => {
       const store = makeStore();
       const _p = store.startDrill(
-        makeTestDeal(),
+        makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
         make2CStrategy(),
@@ -232,7 +144,7 @@ describe("bid feedback — user-facing behavior", () => {
     it("auction continues without interruption", async () => {
       const store = makeStore();
       const _p = store.startDrill(
-        makeTestDeal(),
+        makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
         make2CStrategy(),
@@ -253,7 +165,7 @@ describe("bid feedback — user-facing behavior", () => {
     it("passing is correct when convention does not apply", async () => {
       const store = makeStore();
       const _p = store.startDrill(
-        makeTestDeal(),
+        makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
         makeNoOpStrategy(),
@@ -269,7 +181,7 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("works without a convention strategy (no correctness checking)", async () => {
       const store = makeStore();
-      const _p = store.startDrill(makeTestDeal(), makeDrillSession());
+      const _p = store.startDrill(makeSimpleTestDeal(), makeDrillSession());
       await flushActions();
 
       store.userBid({ type: "pass" });

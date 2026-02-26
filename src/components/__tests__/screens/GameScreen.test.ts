@@ -4,9 +4,9 @@ import type { Call } from "../../../engine/types";
 import {
   clearRegistry,
   registerConvention,
-} from "../../../conventions/registry";
-import { staymanConfig } from "../../../conventions/stayman";
-import { saycConfig } from "../../../conventions/sayc";
+} from "../../../conventions/core/registry";
+import { staymanConfig } from "../../../conventions/definitions/stayman";
+import { saycConfig } from "../../../conventions/definitions/sayc";
 import { createStubEngine, makeDeal } from "../test-helpers";
 
 // GameScreen uses Svelte context heavily — test the extracted logic
@@ -18,7 +18,7 @@ describe("GameScreen", () => {
   });
 
   it("startDrill calls engine.generateDeal", async () => {
-    const { startDrill } = await import("../../../lib/drill-helpers");
+    const { startDrill } = await import("../../../drill/helpers");
     const deal = makeDeal();
     const generateDeal = vi.fn().mockResolvedValue(deal);
     const engine = createStubEngine({ generateDeal });
@@ -36,7 +36,7 @@ describe("GameScreen", () => {
   });
 
   it("startDrill calls gameStore.startDrill with deal and session", async () => {
-    const { startDrill } = await import("../../../lib/drill-helpers");
+    const { startDrill } = await import("../../../drill/helpers");
     const deal = makeDeal();
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),
@@ -50,7 +50,7 @@ describe("GameScreen", () => {
   });
 
   it("computeTableScale produces valid scale for desktop", async () => {
-    const { computeTableScale } = await import("../../../lib/table-scale");
+    const { computeTableScale } = await import("../../../display/table-scale");
     const scale = computeTableScale(1200, 800);
     expect(scale).toBeGreaterThanOrEqual(0.35);
     expect(scale).toBeLessThanOrEqual(1.4);

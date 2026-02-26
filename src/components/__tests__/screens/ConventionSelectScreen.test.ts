@@ -3,11 +3,11 @@ import {
   clearRegistry,
   registerConvention,
   listConventions,
-} from "../../../conventions/registry";
-import { staymanConfig } from "../../../conventions/stayman";
-import { gerberConfig } from "../../../conventions/gerber";
-import { bergenConfig } from "../../../conventions/bergen-raises";
-import { dontConfig } from "../../../conventions/dont";
+} from "../../../conventions/core/registry";
+import { staymanConfig } from "../../../conventions/definitions/stayman";
+import { gerberConfig } from "../../../conventions/definitions/gerber";
+import { bergenConfig } from "../../../conventions/definitions/bergen-raises";
+import { dontConfig } from "../../../conventions/definitions/dont";
 
 // ConventionSelectScreen uses getContext so we test via registry + filter logic
 describe("ConventionSelectScreen", () => {
@@ -39,7 +39,7 @@ describe("ConventionSelectScreen", () => {
 
   it("filterConventions filters by search query", async () => {
     const { filterConventions } =
-      await import("../../../lib/filter-conventions");
+      await import("../../../display/filter-conventions");
     const conventions = listConventions();
     const result = filterConventions(conventions, "stayman", null);
     expect(result).toHaveLength(1);
@@ -48,8 +48,8 @@ describe("ConventionSelectScreen", () => {
 
   it("filterConventions filters by category", async () => {
     const { filterConventions } =
-      await import("../../../lib/filter-conventions");
-    const { ConventionCategory } = await import("../../../conventions/types");
+      await import("../../../display/filter-conventions");
+    const { ConventionCategory } = await import("../../../conventions/core/types");
     const conventions = listConventions();
     const result = filterConventions(
       conventions,
@@ -62,7 +62,7 @@ describe("ConventionSelectScreen", () => {
 
   it("shows empty state when no conventions match", async () => {
     const { filterConventions } =
-      await import("../../../lib/filter-conventions");
+      await import("../../../display/filter-conventions");
     const conventions = listConventions();
     const result = filterConventions(conventions, "nonexistent", null);
     expect(result).toHaveLength(0);

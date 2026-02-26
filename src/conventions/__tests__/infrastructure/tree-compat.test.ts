@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { BidSuit } from "../../../engine/types";
-import { decision, bid, fallback } from "../../rule-tree";
-import { evaluateTree } from "../../tree-evaluator";
-import { flattenTree, treeResultToBiddingRuleResult } from "../../tree-compat";
+import { decision, bid, fallback } from "../../core/rule-tree";
+import { evaluateTree } from "../../core/tree-evaluator";
+import { flattenTree, treeResultToBiddingRuleResult } from "../../core/tree-compat";
 import {
   alwaysTrue as condTrue,
   alwaysFalse as condFalse,

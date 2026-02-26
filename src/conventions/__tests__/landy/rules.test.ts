@@ -15,9 +15,9 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { landyConfig, landyDealConstraints } from "../../landy";
-import type { BiddingContext } from "../../types";
+} from "../../core/registry";
+import { landyConfig, landyDealConstraints } from "../../definitions/landy";
+import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {

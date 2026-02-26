@@ -1,6 +1,6 @@
 import type { BiddingStrategy, BidResult } from "../shared/types";
 import type { Hand, Auction } from "./types";
-import type { BiddingContext } from "../conventions/types";
+import type { BiddingContext } from "../conventions/core/types";
 import { Seat, Vulnerability } from "./types";
 import { evaluateHand } from "./hand-evaluator";
 

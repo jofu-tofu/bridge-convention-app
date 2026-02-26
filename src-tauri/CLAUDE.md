@@ -65,4 +65,25 @@ crates/
 - `DealConstraints` has no `customCheck`/`rng` fields (TS-only). Uses `seed: Option<u64>` instead.
 - `generate_deal` Tauri command returns `Deal` (not `DealGeneratorResult`) — matches TS `HttpEngine` which returns `Deal`
 
-<!-- context-layer: generated=2026-02-22 | version=1 -->
+---
+
+## Context Maintenance
+
+**After modifying files in this directory:** scan the entries above — if any claim is now
+false or incomplete, update this file before ending the task. Do not defer.
+
+**Add** an entry only if an agent would fail without knowing it, it is not obvious from
+the code, and it belongs at this scope (project-wide rule → root CLAUDE.md; WHY decision
+→ inline comment or ADR; inferable from code → nowhere).
+
+**Remove** any entry that fails the falsifiability test: if removing it would not change
+how an agent acts here, remove it. If a convention here conflicts with the codebase,
+the codebase wins — update this file, do not work around it. Prune aggressively.
+
+**Track follow-up work:** After modifying files, evaluate whether changes create incomplete
+work or break an assumption tracked elsewhere. If so, create a task or update tracking before ending.
+
+**Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
+is stale — update or regenerate before relying on it.
+
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-02-25 | version=2 | dir-commits-at-audit=8 | tree-sig=dirs:12,files:35,exts:rs:16,json:6,toml:5,png:3,md:1 -->

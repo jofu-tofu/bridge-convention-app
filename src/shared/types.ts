@@ -8,7 +8,7 @@ import type {
   PlayedCard,
   Trick,
 } from "../engine/types";
-import type { BiddingContext } from "../conventions/types";
+import type { BiddingContext } from "../conventions/core/types";
 
 export interface SuitInference {
   readonly minLength?: number;
@@ -86,7 +86,6 @@ export interface BidResult {
   readonly call: Call;
   readonly ruleName: string | null;
   readonly explanation: string;
-  readonly confidence?: number; // 0-1, future use (ML strategies)
   readonly conditions?: readonly ConditionDetail[];
   readonly treePath?: TreeEvalSummary;
 }
@@ -115,7 +114,6 @@ export interface PlayContext {
 export interface PlayResult {
   readonly card: Card;
   readonly reason: string;
-  readonly confidence?: number; // 0-1, for future DDS tiebreaking
 }
 
 export interface PlayStrategy {

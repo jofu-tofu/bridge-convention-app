@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BidHistoryEntry } from "../../stores/game.svelte";
-  import { formatCall } from "../../lib/format";
+  import { formatCall } from "../../display/format";
   import ConventionCallout from "../shared/ConventionCallout.svelte";
 
   interface Props {

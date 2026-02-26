@@ -11,68 +11,32 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 ## Architecture
 
-| File             | Role                                                                                               |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `app.svelte.ts`  | `createAppStore()` — screen navigation (`select`/`game`), selected convention, dev seed state      |
-| `game.svelte.ts` | `createGameStore(engine)` — deal, auction, bid history, phase transitions, AI bid loop, play phase |
+| File                 | Role                                                                                               |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| `app.svelte.ts`      | `createAppStore()` — screen navigation (`select`/`game`), selected convention, dev seed state, autoplay flag |
+| `game.svelte.ts`     | `createGameStore(engine)` — coordinator/facade, phase machine, drill lifecycle, delegates to sub-stores |
+| `bidding.svelte.ts`  | Bidding sub-store — auction state, bid history, feedback, AI bid loop, convention strategy          |
+| `play.svelte.ts`     | Play sub-store — trick state, AI play loop, score calculation, legal plays                         |
+| `dds.svelte.ts`      | DDS sub-store — async DDS solve with timeout, stale-result guard, generation counter               |
 
-**Game store key methods (bidding):**
+**Game store key methods:** `startDrill`, `userBid`, `dismissBidFeedback`, `skipFromFeedback`, `runAiBids`, `completeAuction`, `getExpectedBid` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `isDefenderPrompt` (declarer prompt); `startPlay`, `userPlayCard`, `runAiPlays`, `completeTrick`, `completePlay`, `skipToReview`, `triggerDDSSolve`, `getLegalPlaysForSeat`, `getRemainingCards` (play). See `game.svelte.ts` for signatures.
 
-- `startDrill(deal, session, initialAuction?, strategy?)` — initializes state, stores convention strategy, replays default auction, runs AI bids
-- `userBid(call)` — validates turn, checks correctness against convention strategy, adds bid; pauses on wrong bid (user must dismiss feedback), auto-continues on correct bid
-- `dismissBidFeedback()` — clears wrong bid feedback and resumes auction (runs AI bids)
-- `skipFromFeedback()` — clears feedback and jumps directly to EXPLANATION phase
-- `runAiBids()` — async loop: AI bids until user seat or auction complete
-- `completeAuction()` — gets contract, transitions to DECLARER_PROMPT (when user is dummy OR E/W declares) or EXPLANATION (when user is declarer or for passout)
+**Key state:** `effectiveUserSeat` — defaults to South, set to North on declarer swap. Reset by `startDrill()`. `isProcessing` + `playAborted` flags guard AI play loop races.
 
-**Game store key methods (declarer/defender prompt):**
+**Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 
-- `acceptDeclarerSwap()` — sets `effectiveUserSeat` to `contract.declarer` (North), calls `startPlay()`. Table rotates 180°.
-- `declineDeclarerSwap()` — skips play phase, goes straight to EXPLANATION. Used as "Skip to Review" in UI.
-- `acceptDefend()` — keeps `effectiveUserSeat` as South (defender), calls `startPlay()`. No table rotation.
-- `declineDefend()` — skips play phase, goes straight to EXPLANATION.
-- `isDefenderPrompt` (getter) — true when DECLARER_PROMPT is showing because E/W declares (user defends).
-
-**Game store key methods (play):**
-
-- `startPlay()` — called by `completeAuction()` or declarer swap methods, sets up play state, determines declarer/dummy/opening leader
-- `userPlayCard(card, seat)` — validates legality and seat control, adds to trick, triggers AI plays
-- `runAiPlays()` — async loop: AI plays with 500ms delay until user's turn or trick complete
-- `completeTrick()` — determines trick winner, updates counts, pauses 1s for UI
-- `completePlay()` — calculates score via engine, transitions to EXPLANATION via `transitionToExplanation()`
-- `skipToReview()` — sets `playAborted` flag, synchronously finishes all remaining tricks
-- `transitionToExplanation()` — sets phase to EXPLANATION and triggers async DDS solve
-- `triggerDDSSolve()` — calls `engine.solveDeal(deal)` with 10s timeout, stale-result guard, sets `ddsSolving`/`ddsSolution`/`ddsError`
-- `getLegalPlaysForSeat(seat)` — returns legal cards for a seat in current trick context
-- `getRemainingCards(seat)` — returns hand minus already-played cards
-
-**App store dev seed state (dev-only):**
-
-- `devSeed` (`number | null`) — seed for deterministic PRNG, set via `?seed=` URL param
-- `devDealCount` (`number`) — increments per deal; effective seed = `devSeed + devDealCount`
-- `setDevSeed(seed)` — sets seed and resets deal count to 0
-- `advanceDevDeal()` — increments deal count
-
-**Exported types:** `BidFeedback` (isCorrect, userCall, expectedResult), `BidHistoryEntry` (includes optional `treePath: TreeEvalSummary`), `GamePhase` (includes `"DECLARER_PROMPT"`), `PlayLogEntry` (seat, card, reason, trickIndex)
-
-**Exported helper:** `seatController(seat, declarer, userSeat)` → `'user' | 'ai'`
-
-**Key state:** `effectiveUserSeat` — defaults to `userSeat` (South), set to North when user accepts declarer swap. Used by `isUserControlled()` during play. Reset to `null` by `startDrill()`.
-
-**Debug observability getters (game store):** `playLog` (always-on array of PlayLogEntry, resets per drill), `playInferences` (Record<Seat, InferredHoldings> after auction), `inferenceTimeline` (readonly InferenceSnapshot[] from inference engine).
-
-**App store debug state:** `debugPanelOpen` (boolean), `toggleDebugPanel()`, `setDebugPanel(open)`. Set via `?debug=true` URL param in dev mode.
+**Exported types:** `BidFeedback`, `BidHistoryEntry`, `GamePhase`, `PlayLogEntry`, `seatController()`.
 
 **Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
 
 ## Gotchas
 
-- `EnginePort` methods are async (for V2 Tauri IPC).
-- `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
-- `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `treePath`) + `seat` and `isUser`
+- `EnginePort` methods are async (for V2 Tauri IPC). Rust backends (TauriIpcEngine, HttpEngine) are truly async.
+- `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/core/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
+- `context.ts` provides Svelte context DI helpers (`setEngine`, `setGameStore`, `setAppStore`, `getEngine`, `getGameStore`, `getAppStore`) — used by `App.svelte` and components
+- `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`) + `seat` and `isUser`
 - Default auction entries get generic explanations (e.g., "Opening 1NT bid") — richer explanations deferred to V2
 - `isUserTurn` is `$derived` — combines `currentTurn`, `drillSession.isUserSeat()`, and `!isProcessing`
-- **Sync public API for user actions.** `userBid`, `userPlayCard`, `dismissBidFeedback`, `retryBid`, `skipFromFeedback`, `skipToReview`, `reset` return `void` — async logic runs in private `*Impl` functions. This prevents the Svelte 5 "unawaited async in event handler" DOM refresh bug. Only `startDrill` and `getLegalPlaysForSeat` return Promises.
 
 ---
 
@@ -81,7 +45,18 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 **After modifying files in this directory:** scan the entries above — if any claim is now
 false or incomplete, update this file before ending the task. Do not defer.
 
+**Add** an entry only if an agent would fail without knowing it, it is not obvious from
+the code, and it belongs at this scope (project-wide rule → root CLAUDE.md; WHY decision
+→ inline comment or ADR; inferable from code → nowhere).
+
+**Remove** any entry that fails the falsifiability test: if removing it would not change
+how an agent acts here, remove it. If a convention here conflicts with the codebase,
+the codebase wins — update this file, do not work around it. Prune aggressively.
+
+**Track follow-up work:** After modifying files, evaluate whether changes create incomplete
+work or break an assumption tracked elsewhere. If so, create a task or update tracking before ending.
+
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-22 | version=5 | dir-commits-at-audit=4 | tree-sig=dirs:1,files:6,exts:ts:5,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-25 | version=9 | dir-commits-at-audit=13 | tree-sig=dirs:2,files:19,exts:ts:18,md:1 -->

@@ -15,8 +15,9 @@ export default defineConfig({
       include: [
         "src/engine/**",
         "src/conventions/**",
-        "src/ai/**",
-        "src/cli/**",
+        "src/strategy/**",
+        "src/drill/**",
+        "src/inference/**",
       ],
       thresholds: {
         branches: 90,

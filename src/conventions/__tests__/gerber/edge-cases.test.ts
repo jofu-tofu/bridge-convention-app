@@ -13,8 +13,8 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { gerberConfig } from "../../gerber";
+} from "../../core/registry";
+import { gerberConfig, countAces, countKings } from "../../definitions/gerber";
 import { hand, makeBiddingContext } from "../fixtures";
 
 // ─── Gerber — opponent interference ──────────────────────────
@@ -254,5 +254,92 @@ describe("Gerber — unusual scenarios [bridgebum/gerber]", () => {
     const result = evaluateBiddingRules(ctx, gerberConfig);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("gerber-response-two");
+  });
+});
+
+// ─── Gerber ace/king disambiguation correctness ──────────────
+
+describe("Gerber — ace/king disambiguation [bridgebum/gerber]", () => {
+  beforeEach(() => {
+    clearRegistry();
+    registerConvention(gerberConfig);
+  });
+
+  test("responder with 0 aces sees 4D response: infers opener has 4 aces", () => {
+    // Responder has 0 aces. 4D = 0 or 4. Since responder has 0, opener must have 4.
+    // Total = 0 + 4 = 4 aces (>= 3), so king-ask fires.
+    // SK(3)+SQ(2)+HK(3)+HQ(2)+DK(3)+DQ(2)+CK(3) = 18 HCP, 0 aces
+    const responder0 = hand(
+      "SK", "SQ", "S5",
+      "HK", "HQ", "H3",
+      "DK", "DQ", "D3",
+      "CK", "C5", "C3", "C2",
+    );
+    expect(countAces(responder0)).toBe(0);
+    const ctx = makeBiddingContext(responder0, Seat.South,
+      ["1NT", "P", "4C", "P", "4D", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, gerberConfig);
+    expect(result).not.toBeNull();
+    // With 4 total aces (>= 3), king-ask should fire
+    expect(result!.rule).toBe("gerber-king-ask");
+  });
+
+  test("responder with 4 aces sees 4D response: infers opener has 0 aces", () => {
+    // Responder has 4 aces. 4D = 0 or 4. Since responder has 4, opener must have 0.
+    // Total = 4 + 0 = 4 aces (>= 3), so king-ask fires.
+    // SA(4)+HA(4)+DA(4)+CA(4) = 16 HCP, 4 aces
+    const responder4 = hand(
+      "SA", "S5", "S2",
+      "HA", "H3",
+      "DA", "D5", "D3", "D2",
+      "CA", "C5", "C3", "C2",
+    );
+    expect(countAces(responder4)).toBe(4);
+    const ctx = makeBiddingContext(responder4, Seat.South,
+      ["1NT", "P", "4C", "P", "4D", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, gerberConfig);
+    expect(result).not.toBeNull();
+    // 4 total aces (>= 3), king-ask fires
+    expect(result!.rule).toBe("gerber-king-ask");
+  });
+
+  test("responder with 1 ace sees 4D response: infers opener has 0 aces, signs off", () => {
+    // Responder has 1 ace. 4D = 0 or 4.
+    // With correct disambiguation: responder != 0, so opener inferred as 0.
+    // Total = 1 + 0 = 1 (< 3), so should sign off, NOT king-ask.
+    // SA(4)+SK(3)+SQ(2)+HK(3)+DK(3)+CQ(2)+CJ(1) = 18 HCP, 1 ace
+    const responder1 = hand(
+      "SA", "SK", "SQ", "S2",
+      "HK", "H3",
+      "DK", "D5", "D3",
+      "CQ", "CJ", "C3", "C2",
+    );
+    expect(countAces(responder1)).toBe(1);
+    const ctx = makeBiddingContext(responder1, Seat.South,
+      ["1NT", "P", "4C", "P", "4D", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, gerberConfig);
+    expect(result).not.toBeNull();
+    // With only 1 total ace (< 3), should sign off, not king-ask
+    expect(result!.rule).toBe("gerber-signoff");
+  });
+
+  test("responder with 0 kings sees 5D response: infers opener has 4 kings", () => {
+    // After full Gerber sequence including king-ask.
+    // Responder has 0 kings. 5D = 0 or 4 kings. Since responder has 0, opener has 4.
+    // Total kings = 4 => signoff at high level.
+    // SA(4)+HA(4)+DA(4)+CA(4)+SQ(2) = 18 HCP, 0 kings, 4 aces
+    const responder0k = hand(
+      "SA", "SQ", "S2",
+      "HA", "H3",
+      "DA", "D5", "D3", "D2",
+      "CA", "C5", "C3", "C2",
+    );
+    expect(countKings(responder0k)).toBe(0);
+    const ctx = makeBiddingContext(responder0k, Seat.South,
+      ["1NT", "P", "4C", "P", "4D", "P", "5C", "P", "5D", "P"], Seat.North);
+    const result = evaluateBiddingRules(ctx, gerberConfig);
+    expect(result).not.toBeNull();
+    // After king response, signoff fires
+    expect(result!.rule).toBe("gerber-signoff");
   });
 });

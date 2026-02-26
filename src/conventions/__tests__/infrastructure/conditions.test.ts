@@ -1,27 +1,26 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat, BidSuit } from "../../../engine/types";
-import type { Hand } from "../../../engine/types";
+import { Seat } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import {
   registerConvention,
   clearRegistry,
   listConventions,
   getConventionRules,
-} from "../../registry";
-import { staymanConfig } from "../../stayman";
-import { gerberConfig } from "../../gerber";
-import { bergenConfig } from "../../bergen-raises";
-import { dontConfig } from "../../dont";
-import { saycConfig } from "../../sayc";
-import { isConditionedRule } from "../../condition-evaluator";
+} from "../../core/registry";
+import { staymanConfig } from "../../definitions/stayman";
+import { gerberConfig } from "../../definitions/gerber";
+import { bergenConfig } from "../../definitions/bergen-raises";
+import { dontConfig } from "../../definitions/dont";
+import { saycConfig } from "../../definitions/sayc";
+import { isConditionedRule } from "../../core/condition-evaluator";
 import {
   conditionedRule,
   auctionMatches,
   hcpMin,
   suitMin,
-} from "../../conditions";
-import type { BiddingContext, ConditionedBiddingRule } from "../../types";
-import { isAuctionCondition } from "../../tree-compat";
+} from "../../core/conditions";
+import type { BiddingContext, ConditionedBiddingRule } from "../../core/types";
+import { isAuctionCondition } from "../../core/tree-compat";
 import { hand, auctionFromBids } from "../fixtures";
 
 beforeEach(() => {
@@ -144,7 +143,7 @@ describe("condition classification audit", () => {
         if (!isConditionedRule(rule)) continue;
         const conditioned = rule as ConditionedBiddingRule;
         for (const cond of conditioned.auctionConditions) {
-          if (!isAuctionCondition(cond.name)) {
+          if (!isAuctionCondition(cond)) {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" in auctionConditions`);
           }
         }
@@ -168,8 +167,27 @@ describe("condition classification audit", () => {
         if (!isConditionedRule(rule)) continue;
         const conditioned = rule as ConditionedBiddingRule;
         for (const cond of conditioned.handConditions) {
-          if (isAuctionCondition(cond.name)) {
+          if (isAuctionCondition(cond)) {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" in handConditions`);
+          }
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  test("no handConditions have category 'auction'", () => {
+    const violations: string[] = [];
+    const conventions = listConventions();
+
+    for (const config of conventions) {
+      for (const rule of getConventionRules(config.id)) {
+        if (!isConditionedRule(rule)) continue;
+        const conditioned = rule as ConditionedBiddingRule;
+        for (const cond of conditioned.handConditions) {
+          if (cond.category === "auction") {
+            violations.push(`${config.id}/${rule.name}: "${cond.name}" has category:'auction' in handConditions`);
           }
         }
       }

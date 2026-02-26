@@ -1,10 +1,10 @@
 import { Seat, BidSuit } from "../../engine/types";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import { bid } from "../rule-tree";
-import type { BidNode } from "../rule-tree";
-import type { RuleCondition, BiddingContext } from "../types";
+import { bid } from "../core/rule-tree";
+import type { BidNode } from "../core/rule-tree";
+import type { RuleCondition, BiddingContext } from "../core/types";
 import { hand } from "../../engine/__tests__/fixtures";
-import { createBiddingContext } from "../context-factory";
+import { createBiddingContext } from "../core/context-factory";
 
 export function alwaysTrue(name: string): RuleCondition {
   return {

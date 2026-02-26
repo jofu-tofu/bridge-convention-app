@@ -20,6 +20,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
                         ↘ auction.ts → auction-helpers.ts       ↘
                         ↘ play.ts            → port.ts
          types.ts → scoring.ts
+         call-helpers.ts (standalone, no engine imports)
 ```
 
 **Key files:**
@@ -35,8 +36,9 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `play.ts`             | Trick play rules: legal plays (follow suit), lead suit, trick winner determination        |
 | `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
 | `auction-helpers.ts`  | Auction query utils: lastContractBid, bidsInSequence, auctionMatchesExact, buildAuction   |
-| `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by test fixtures                 |
+| `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
 | `bid-suggester.ts`    | Standalone `suggestBid()` — extracted from EnginePort (can't cross IPC/HTTP)              |
+| `call-helpers.ts`     | Canonical `callsMatch()` — call equality check shared by stores and inference             |
 | `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()`, strips `customCheck`/`rng`            |
 | `http-engine.ts`      | `HttpEngine` — EnginePort via HTTP `fetch()` to bridge-server, strips `customCheck`/`rng` |
 
@@ -58,10 +60,10 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Rust Backend Integration
 
-- **No fallback.** `TauriIpcEngine` (desktop) or `HttpEngine` (dev/browser). If Rust server isn't running, calls fail loudly.
+- **Engine transports:** `TauriIpcEngine` (desktop) and `HttpEngine` (dev:web, port 3001) — Rust server required, no TS fallback
 - **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
 - **Stateless HTTP:** Every request sends full state. No sessions. Error format: plain text body, 400 status code.
-- **`HttpEngine` strips** `customCheck` and `rng` from constraints before serialization. Rust uses `seed: Option<u64>` instead.
+- **`HttpEngine` strips** `customCheck` and `rng` from constraints before serialization. Preserves `seed` field for Rust-side deterministic generation (`seed: Option<u64>`). `DealConstraints` carries both `rng` (TS engine) and `seed` (Rust engine) — callers set both when deterministic deals are needed.
 
 ---
 
@@ -78,7 +80,10 @@ the code, and it belongs at this scope (project-wide rule → root CLAUDE.md; WH
 how an agent acts here, remove it. If a convention here conflicts with the codebase,
 the codebase wins — update this file, do not work around it. Prune aggressively.
 
+**Track follow-up work:** After modifying files, evaluate whether changes create incomplete
+work or break an assumption tracked elsewhere. If so, create a task or update tracking before ending.
+
 **Staleness anchor:** This file assumes `types.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-22 | version=4 | dir-commits-at-audit=13 | tree-sig=dirs:1,files:25,exts:ts:24,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-25 | version=7 | dir-commits-at-audit=23 | tree-sig=dirs:1,files:29,exts:ts:28,md:1 -->

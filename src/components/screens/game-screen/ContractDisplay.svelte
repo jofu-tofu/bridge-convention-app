@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Contract } from "../../../engine/types";
-  import { STRAIN_SYMBOLS } from "../../../lib/format";
+  import { STRAIN_SYMBOLS } from "../../../display/format";
 
   interface Props {
     contract: Contract;

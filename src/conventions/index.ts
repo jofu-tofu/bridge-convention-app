@@ -1,10 +1,10 @@
-import { staymanConfig } from "./stayman";
-import { gerberConfig } from "./gerber";
-import { bergenConfig } from "./bergen-raises";
-import { dontConfig } from "./dont";
-import { landyConfig } from "./landy";
-import { saycConfig } from "./sayc";
-import { registerConvention } from "./registry";
+import { staymanConfig } from "./definitions/stayman";
+import { gerberConfig } from "./definitions/gerber";
+import { bergenConfig } from "./definitions/bergen-raises";
+import { dontConfig } from "./definitions/dont";
+import { landyConfig } from "./definitions/landy";
+import { saycConfig } from "./definitions/sayc";
+import { registerConvention } from "./core/registry";
 
 registerConvention(staymanConfig);
 registerConvention(gerberConfig);

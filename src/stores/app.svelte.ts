@@ -1,4 +1,4 @@
-import type { ConventionConfig } from "../conventions/types";
+import type { ConventionConfig } from "../conventions/core/types";
 
 export type Screen = "select" | "game";
 
@@ -10,6 +10,7 @@ export function createAppStore() {
   let debugPanelOpen = $state(false);
   let engineStatus = $state<string | null>(null);
   let engineError = $state<string | null>(null);
+  let autoplay = $state(false);
 
   return {
     get screen() {
@@ -70,6 +71,14 @@ export function createAppStore() {
 
     setEngineError(msg: string | null) {
       engineError = msg;
+    },
+
+    get autoplay() {
+      return autoplay;
+    },
+
+    setAutoplay(on: boolean) {
+      autoplay = on;
     },
   };
 }

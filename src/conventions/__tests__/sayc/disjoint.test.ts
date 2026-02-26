@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { saycConfig } from "../../sayc";
-import { clearRegistry, registerConvention, getConventionRules } from "../../registry";
-import { flattenTree } from "../../tree-compat";
+import { saycConfig } from "../../definitions/sayc";
+import { clearRegistry, registerConvention, getConventionRules } from "../../core/registry";
+import { flattenTree } from "../../core/tree-compat";
 import { generateDeal } from "../../../engine/deal-generator";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Auction, Hand } from "../../../engine/types";
-import type { BiddingContext, BiddingRule } from "../../types";
-import { createBiddingContext } from "../../context-factory";
+import type { BiddingContext, BiddingRule } from "../../core/types";
+import { createBiddingContext } from "../../core/context-factory";
 import { SEATS } from "../../../engine/constants";
 import { isLegalCall } from "../../../engine/auction";
 
@@ -97,11 +97,6 @@ describe("SAYC rule disjointness", () => {
       }
     }
 
-    // Report overlaps (opening position)
-    for (const [pair, count] of overlaps) {
-      console.log(`Opening overlap (${count}x): ${pair}`);
-    }
-
     // Opening rules have intentional overlaps resolved by ordering
     // (e.g., 1NT checked before 1C/1D, 2NT before 1-level suits).
     // Verify no unexpected overlaps between unrelated rule groups.
@@ -117,10 +112,7 @@ describe("SAYC rule disjointness", () => {
       if (key.includes("sayc-open-weak-2h") && key.includes("sayc-open-weak-2s")) return false;
       return true;
     });
-    if (unexpectedOverlaps.length > 0) {
-      console.error("Unexpected overlaps:", unexpectedOverlaps);
-    }
-    expect(unexpectedOverlaps.length).toBe(0);
+    expect(unexpectedOverlaps).toEqual([]);
   });
 
   it("no non-trivial rule overlaps at responding position", () => {
@@ -143,15 +135,8 @@ describe("SAYC rule disjointness", () => {
       }
     }
 
-    for (const [pair, count] of overlaps) {
-      console.log(`Response overlap (${count}x): ${pair}`);
-    }
-
     // Some overlaps may be acceptable (different bids at same priority).
-    // Flag but don't fail — just ensure the first-match produces a reasonable bid.
-    if (overlaps.size > 0) {
-      console.log(`Found ${overlaps.size} response overlap pattern(s) — review for correctness`);
-    }
+    // First-match produces a reasonable bid; overlaps tracked for review.
   });
 
   it("no non-trivial rule overlaps at rebid position", () => {
@@ -186,13 +171,7 @@ describe("SAYC rule disjointness", () => {
       }
     }
 
-    for (const [pair, count] of overlaps) {
-      console.log(`Rebid overlap (${count}x): ${pair}`);
-    }
-
-    if (overlaps.size > 0) {
-      console.log(`Found ${overlaps.size} rebid overlap pattern(s) — review for correctness`);
-    }
+    // Overlaps tracked for review; first-match resolves conflicts.
   });
 
   it("every rule is reachable (not shadowed by earlier rules)", () => {
@@ -248,27 +227,16 @@ describe("SAYC rule disjointness", () => {
       }
     }
 
+    // Rules that require very specific auction states may not fire in random testing
+    const rareRules = new Set([
+      "sayc-rebid-1nt", // needs 12-14 balanced opener who opened a suit (rare: would have opened 1NT)
+    ]);
+
     const unreachable = [...ruleHits.entries()]
-      .filter(([, count]) => count === 0)
+      .filter(([name, count]) => count === 0 && !rareRules.has(name))
       .map(([name]) => name);
 
-    if (unreachable.length > 0) {
-      console.log("Unreachable rules:", unreachable);
-    }
-
-    // sayc-pass should rarely be the first match (most hands have an opening bid)
-    // Some rules may not fire in 500 random deals — log but don't fail hard
-    for (const [name, count] of ruleHits) {
-      if (count > 0) continue;
-      // These are acceptable to not hit in random testing
-      // (require very specific auction states)
-      const rareRules = [
-        "sayc-rebid-1nt", // needs 12-14 balanced opener who opened a suit (rare: would have opened 1NT)
-      ];
-      if (!rareRules.includes(name)) {
-        console.warn(`Rule "${name}" was never the first match in 500 deals`);
-      }
-    }
+    expect(unreachable).toEqual([]);
 
     // At minimum, opening rules and pass should always be reachable
     expect(ruleHits.get("sayc-pass")).toBeGreaterThan(0);

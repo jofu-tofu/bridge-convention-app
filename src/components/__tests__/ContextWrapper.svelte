@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { setEngine, setGameStore, setAppStore } from "../../lib/context";
+  import { setEngine, setGameStore, setAppStore } from "../../stores/context";
   import type { EnginePort } from "../../engine/port";
   import type { createGameStore } from "../../stores/game.svelte";
   import type { createAppStore } from "../../stores/app.svelte";

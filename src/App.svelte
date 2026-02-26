@@ -5,8 +5,8 @@
   import type { EnginePort } from "./engine/port";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
-  import { setEngine, setGameStore, setAppStore } from "./lib/context";
-  import { getConvention } from "./conventions/registry";
+  import { setEngine, setGameStore, setAppStore } from "./stores/context";
+  import { getConvention } from "./conventions/core/registry";
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
 
@@ -43,6 +43,11 @@
       const debugParam = params.get("debug");
       if (debugParam === "true") {
         appStore.setDebugPanel(true);
+      }
+
+      const autoplayParam = params.get("autoplay");
+      if (autoplayParam === "true") {
+        appStore.setAutoplay(true);
       }
 
       const conventionParam = params.get("convention");

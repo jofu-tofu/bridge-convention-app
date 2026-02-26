@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { BidHistoryEntry } from "../../stores/game.svelte";
-  import { groupBidsByRound } from "../../lib/rules-display";
-  import type { RoundEntry } from "../../lib/rules-display";
-  import { formatCall, formatRuleName } from "../../lib/format";
-  import { BID_SUIT_COLOR_CLASS } from "../../lib/tokens";
+  import { groupBidsByRound } from "../../display/rules-display";
+  import type { RoundEntry } from "../../display/rules-display";
+  import { formatCall, formatRuleName } from "../../display/format";
+  import { BID_SUIT_COLOR_CLASS } from "../../display/tokens";
   import type { BidSuit } from "../../engine/types";
 
   interface Props {

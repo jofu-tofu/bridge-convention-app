@@ -1,9 +1,9 @@
 import { Seat } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { evaluateBiddingRules } from "../../registry";
-import { saycConfig } from "../../sayc";
-import type { BiddingContext } from "../../types";
+import { evaluateBiddingRules } from "../../core/registry";
+import { saycConfig } from "../../definitions/sayc";
+import type { BiddingContext } from "../../core/types";
 import { auctionFromBids } from "../fixtures";
 
 export function makeBiddingContext(

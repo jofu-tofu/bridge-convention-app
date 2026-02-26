@@ -9,12 +9,12 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../registry";
-import { staymanConfig } from "../stayman";
-import { gerberConfig } from "../gerber";
-import { bergenConfig } from "../bergen-raises";
-import { dontConfig } from "../dont";
-import { landyConfig } from "../landy";
+} from "../core/registry";
+import { staymanConfig } from "../definitions/stayman";
+import { gerberConfig } from "../definitions/gerber";
+import { bergenConfig } from "../definitions/bergen-raises";
+import { dontConfig } from "../definitions/dont";
+import { landyConfig } from "../definitions/landy";
 import { hand, makeBiddingContext } from "./fixtures";
 
 beforeEach(() => {

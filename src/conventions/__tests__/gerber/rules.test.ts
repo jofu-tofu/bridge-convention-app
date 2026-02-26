@@ -11,9 +11,9 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { gerberConfig, gerberDealConstraints, countAces, countKings } from "../../gerber";
-import type { BiddingContext } from "../../types";
+} from "../../core/registry";
+import { gerberConfig, gerberDealConstraints, countAces, countKings } from "../../definitions/gerber";
+import type { BiddingContext } from "../../core/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
 
@@ -1338,11 +1338,11 @@ describe("Gerber reference hands", () => {
 // --- Edge Cases: Ace Disambiguation and Signoff Boundaries ---
 
 describe("Gerber edge cases — ace disambiguation", () => {
-  test("[bridgebum/gerber] responder with 1 ace sees 4D: infers opener=4, total=5 → king-ask", () => {
+  test("[bridgebum/gerber] responder with 1 ace sees 4D: infers opener=0, total=1 → signoff", () => {
     // Responder has 1 ace, opener showed 4D (0 or 4).
-    // Since responder != 4 aces, disambiguation says opener = 4.
-    // Total = 1 + 4 = 5 (impossible in real bridge — only 4 aces exist).
-    // With 3+ total aces, king-ask fires instead of direct signoff.
+    // Disambiguation: if responder has 0 aces, opener has 4; otherwise opener has 0.
+    // Responder has 1 ace (not 0), so opener has 0. Total = 1.
+    // With < 3 total aces, signoff fires.
     const responder1 = hand(
       "SA",
       "SK",
@@ -1368,10 +1368,7 @@ describe("Gerber edge cases — ace disambiguation", () => {
       "P",
     ]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("gerber-king-ask");
-    const call = result!.call as ContractBid;
-    expect(call.level).toBe(5);
-    expect(call.strain).toBe(BidSuit.Clubs);
+    expect(result!.rule).toBe("gerber-signoff");
   });
 
   test("[bridgebum/gerber] king-ask after 4S with exactly 1 responder ace: total=3 → 5C", () => {

@@ -1,7 +1,5 @@
 <script lang="ts">
   import type { Call } from "../../../engine/types";
-  import type { Seat, Hand, Auction } from "../../../engine/types";
-  import type { ConventionConfig } from "../../../conventions/types";
   import type { BidFeedback } from "../../../stores/game.svelte";
   import BidPanel from "../../game/BidPanel.svelte";
   import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
@@ -17,11 +15,6 @@
     onDismissFeedback: () => void;
     onSkipToReview: () => void;
     onRetry?: () => void;
-    /** DEV-only props for debug panel */
-    convention?: ConventionConfig | null;
-    hand?: Hand;
-    auction?: Auction;
-    seat?: Seat;
   }
 
   let {
@@ -34,16 +27,12 @@
     onDismissFeedback,
     onSkipToReview,
     onRetry,
-    convention,
-    hand,
-    auction,
-    seat,
   }: Props = $props();
 
   const DEV = import.meta.env.DEV;
 </script>
 
-<div class="min-w-0">
+<div class="min-w-0 shrink-0">
   <h2
     class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"
@@ -66,8 +55,8 @@
     {onRetry}
   />
 {/if}
-{#if DEV && convention && hand && auction && seat && !bidFeedback}
+{#if DEV && !bidFeedback}
   <div class="mt-auto">
-    <DebugPanel {convention} {hand} {auction} {seat} />
+    <DebugPanel />
   </div>
 {/if}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { reconstructBiddingContext } from "../../debug-utils";
+import { reconstructBiddingContext } from "../../core/debug-utils";
 import { Suit, Rank, Seat, BidSuit, Vulnerability } from "../../../engine/types";
 import type { Deal, Auction, Hand } from "../../../engine/types";
 

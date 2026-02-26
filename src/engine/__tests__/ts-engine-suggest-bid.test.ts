@@ -2,8 +2,8 @@ import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../types";
 import type { ContractBid } from "../types";
 import { suggestBid } from "../bid-suggester";
-import { registerConvention, clearRegistry } from "../../conventions/registry";
-import { staymanConfig } from "../../conventions/stayman";
+import { registerConvention, clearRegistry } from "../../conventions/core/registry";
+import { staymanConfig } from "../../conventions/definitions/stayman";
 import { hand } from "./fixtures";
 import {
   staymanResponder,
@@ -11,7 +11,7 @@ import {
   noMajorHand,
   auctionFromBids,
 } from "../../conventions/__tests__/fixtures";
-import { conventionToStrategy } from "../../ai/convention-strategy";
+import { conventionToStrategy } from "../../strategy/bidding/convention-strategy";
 import type { BiddingStrategy } from "../../shared/types";
 
 beforeEach(() => {

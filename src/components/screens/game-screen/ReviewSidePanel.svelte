@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
-  import type { ConventionConfig } from "../../../conventions/types";
+  import type { ConventionConfig } from "../../../conventions/core/types";
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
-  import { STRAIN_SYMBOLS } from "../../../lib/format";
+  import { STRAIN_SYMBOLS } from "../../../display/format";
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
@@ -68,7 +68,7 @@
   }
 </script>
 
-<div class="flex flex-col min-w-0 w-full min-h-0 flex-1">
+<div class="flex flex-col min-w-0 w-full min-h-0 flex-1 overflow-hidden">
 <!-- Tab bar -->
 <div class="flex gap-1 mb-3 shrink-0" role="tablist" aria-label="Review tabs">
   <button
@@ -179,7 +179,7 @@
 {/if}
 </div>
 
-<div class="flex flex-col gap-2 mt-2 shrink-0">
+<div class="flex flex-col gap-2 pt-3 shrink-0">
   {#if onPlayHand}
     <Button onclick={onPlayHand}>Play this Hand</Button>
   {/if}

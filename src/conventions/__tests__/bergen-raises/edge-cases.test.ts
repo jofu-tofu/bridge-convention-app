@@ -14,8 +14,8 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { bergenConfig } from "../../bergen-raises";
+} from "../../core/registry";
+import { bergenConfig } from "../../definitions/bergen-raises";
 import { hand, makeBiddingContext } from "../fixtures";
 
 // ─── Bergen Raises — opponent interference ───────────────────

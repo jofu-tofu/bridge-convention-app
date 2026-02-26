@@ -15,8 +15,8 @@ import {
   registerConvention,
   clearRegistry,
   evaluateBiddingRules,
-} from "../../registry";
-import { dontConfig } from "../../dont";
+} from "../../core/registry";
+import { dontConfig } from "../../definitions/dont";
 import { hand, makeBiddingContext } from "../fixtures";
 
 // ─── DONT — opponent interference ────────────────────────────

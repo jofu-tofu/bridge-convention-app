@@ -2,7 +2,7 @@ import type { Auction, ContractBid, Hand } from "../../engine/types";
 import { Seat } from "../../engine/types";
 import { buildAuction, parsePatternCall } from "../../engine/auction-helpers";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import type { BiddingContext } from "../types";
+import type { BiddingContext } from "../core/types";
 import { expect } from "vitest";
 
 // Re-export engine test helpers for convenience
