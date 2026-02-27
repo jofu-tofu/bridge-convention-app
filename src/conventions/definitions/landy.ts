@@ -59,15 +59,15 @@ const overcallerAfter2NT: RuleNode = decision(
   decision(
     "max-12+",
     hcpMin(12),
-    bid("landy-rebid-3nt", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-    bid("landy-rebid-3s", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+    bid("landy-rebid-3nt", "Shows 5-5 majors with maximum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+    bid("landy-rebid-3s", "Shows 5-5 majors with minimum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
   ),
   // 5-4 / 4-5: 3D=max, 3C=med
   decision(
     "max-12+-54",
     hcpMin(12),
-    bid("landy-rebid-3d", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
-    bid("landy-rebid-3c", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+    bid("landy-rebid-3d", "Shows unequal majors with maximum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+    bid("landy-rebid-3c", "Shows unequal majors with minimum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
   ),
 );
 
@@ -75,28 +75,28 @@ const overcallerAfter2NT: RuleNode = decision(
 const responderBranch: RuleNode = decision(
   "has-12-plus",
   hcpMin(12),
-  bid("landy-response-2nt", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+  bid("landy-response-2nt", "Asks overcaller to describe their major holdings", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
   decision(
     "invite-3h",
     and(hcpRange(10, 12), suitMin(1, "hearts", 4)),
-    bid("landy-response-3h", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
+    bid("landy-response-3h", "Shows an invitational raise with heart support", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
     decision(
       "invite-3s",
       and(hcpRange(10, 12), suitMin(0, "spades", 4)),
-      bid("landy-response-3s", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+      bid("landy-response-3s", "Shows an invitational raise with spade support", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
       decision(
         "has-5-clubs",
         suitMin(3, "clubs", 5),
-        bid("landy-response-pass", (): Call => ({ type: "pass" })),
+        bid("landy-response-pass", "Passes to play in clubs", (): Call => ({ type: "pass" })),
         decision(
           "has-4-hearts",
           suitMin(1, "hearts", 4),
-          bid("landy-response-2h", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+          bid("landy-response-2h", "Shows a preference for hearts", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
           decision(
             "has-4-spades",
             suitMin(0, "spades", 4),
-            bid("landy-response-2s", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
-            bid("landy-response-2d", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+            bid("landy-response-2s", "Shows a preference for spades", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+            bid("landy-response-2d", "Signs off with no major preference", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
           ),
         ),
       ),
@@ -111,7 +111,7 @@ const landyRuleTree: RuleNode = decision(
   decision(
     "both-majors",
     bothMajors(),
-    bid("landy-2c", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+    bid("landy-2c", "Shows both majors", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
     fallback("not-suited"),
   ),
   // NO: not after 1NT
@@ -143,6 +143,7 @@ export const landyConfig: TreeConventionConfig = {
     "Landy: 2C overcall over opponent's 1NT showing both major suits (5-4+)",
   category: ConventionCategory.Defensive,
   dealConstraints: landyDealConstraints,
+  allowedDealers: [Seat.East, Seat.West],
   ruleTree: landyRuleTree,
   defaultAuction: landyDefaultAuction,
 };

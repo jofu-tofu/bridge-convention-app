@@ -47,6 +47,7 @@ export interface ConditionDetail {
   readonly name: string;
   readonly passed: boolean;
   readonly description: string;
+  readonly category?: "auction" | "hand";
   /** For compound conditions (or/and): sub-condition details per branch. */
   readonly children?: readonly ConditionDetail[];
   /** For branches within an or(): true if this is the best-matching branch
@@ -75,18 +76,49 @@ export interface TreeForkPoint {
   readonly rejected: TreePathEntry;
 }
 
+export interface SiblingConditionDetail {
+  readonly name: string;
+  readonly description: string;
+}
+
+/** A bid that was available in the same auction context but rejected for this hand. */
+export interface SiblingBid {
+  readonly bidName: string;
+  readonly meaning: string;
+  readonly call: Call;
+  readonly failedConditions: readonly SiblingConditionDetail[];
+}
+
 export interface TreeEvalSummary {
   readonly matchedNodeName: string;
   readonly path: readonly TreePathEntry[];
   readonly visited: readonly TreePathEntry[];
   readonly forkPoint?: TreeForkPoint;
+  readonly siblings?: readonly SiblingBid[];
 }
 
 export interface BidResult {
   readonly call: Call;
   readonly ruleName: string | null;
   readonly explanation: string;
+  readonly meaning?: string;
+  readonly handSummary?: string;
   readonly conditions?: readonly ConditionDetail[];
+  readonly treePath?: TreeEvalSummary;
+}
+
+/** A single entry in the bid history, shown in review/feedback screens. */
+export interface BidHistoryEntry {
+  readonly seat: Seat;
+  readonly call: Call;
+  readonly ruleName: string | null;
+  readonly explanation: string;
+  readonly meaning?: string;
+  readonly handSummary?: string;
+  readonly isUser: boolean;
+  readonly conditions?: readonly ConditionDetail[];
+  readonly isCorrect?: boolean;
+  readonly expectedResult?: BidResult;
   readonly treePath?: TreeEvalSummary;
 }
 

@@ -1695,3 +1695,22 @@ describe("DONT advancer bypass — 6+ suit after 2-suited bid [bridgebum/dont]",
     expect(call.strain).toBe(BidSuit.Spades);
   });
 });
+
+// ─── Seat-blind tree evaluation (West-opens scenario) ─────
+
+describe("DONT seat-blind evaluation", () => {
+  test("tree works when North is overcaller (West opens 1NT)", () => {
+    // 11 HCP, 5 hearts + 4 diamonds → diamonds-plus-major overcall (2D)
+    // HK HQ HJ H8 H5 . DK DJ D9 D4 . S7 S4 . C8 C2
+    const overcaller = hand("HK", "HQ", "HJ", "H8", "H5", "DK", "DJ", "D9", "D4", "S7", "S4", "C8", "C2");
+    const context = makeBiddingContext(
+      overcaller,
+      Seat.North,
+      ["1NT"],
+      Seat.West,
+    );
+    const result = evaluateBiddingRules(context, dontConfig);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("dont-2d");
+  });
+});

@@ -17,8 +17,8 @@ describe("flattenTree", () => {
     const tree = decision(
       "check-a",
       condTrue("a"),
-      bid("bid-yes", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
-      bid("bid-no", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+      bid("bid-yes", "Test: bid-yes", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+      bid("bid-no", "Test: bid-no", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
     );
 
     const rules = flattenTree(tree);
@@ -41,7 +41,7 @@ describe("flattenTree", () => {
   });
 
   it("returns single rule for BidNode root", () => {
-    const tree = bid("direct", () => ({ type: "bid", level: 1, strain: BidSuit.NoTrump }));
+    const tree = bid("direct", "Test: direct", () => ({ type: "bid", level: 1, strain: BidSuit.NoTrump }));
 
     const rules = flattenTree(tree);
 
@@ -61,7 +61,7 @@ describe("flattenTree", () => {
       decision(
         "inner",
         condTrue("b"),
-        bid("deep-bid", () => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+        bid("deep-bid", "Test: deep-bid", () => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
         fallback(),
       ),
       fallback(),
@@ -81,7 +81,7 @@ describe("flattenTree", () => {
       "check",
       condTrue("a"),
       fallback("yes dead end"),
-      bid("no-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+      bid("no-bid", "Test: no-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
     );
 
     const rules = flattenTree(tree);
@@ -111,7 +111,7 @@ describe("treeResultToBiddingRuleResult", () => {
     const tree = decision(
       "check-a",
       condTrue("a"),
-      bid("the-bid", () => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+      bid("the-bid", "Test: the-bid", () => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
       fallback(),
     );
 
@@ -139,7 +139,7 @@ describe("treeResultToBiddingRuleResult", () => {
         decision(
           "C",
           condTrue("c"),
-          bid("target", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+          bid("target", "Test: target", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
           fallback(),
         ),
       ),
@@ -171,7 +171,7 @@ describe("treeResultToBiddingRuleResult", () => {
 
   it("forwards context to call function", () => {
     // Call function that reads ctx to pick strain
-    const tree = bid("ctx-bid", (ctx) => ({
+    const tree = bid("ctx-bid", "Test: ctx-bid", (ctx) => ({
       type: "bid" as const,
       level: 1 as const,
       strain: ctx.hand.cards.length > 10 ? BidSuit.NoTrump : BidSuit.Clubs,

@@ -4,6 +4,7 @@ import { Seat } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman";
 import { dontConfig } from "../../conventions/definitions/dont";
+import { landyConfig } from "../../conventions/definitions/landy";
 
 beforeEach(() => {
   clearRegistry();
@@ -18,23 +19,20 @@ describe("createDrillConfig", () => {
     expect(config.conventionId).toBe("stayman");
   });
 
-  it("assigns convention strategy to participant seats", () => {
+  it("assigns convention strategy to N/S partner (North)", () => {
     registerConvention(staymanConfig);
     const config = createDrillConfig("stayman", Seat.South);
-    // Stayman: North (opener) and South (responder) are participants
-    // South is user, so North should get convention strategy
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
-    expect(typeof northStrategy).toBe("object");
     if (northStrategy !== "user") {
       expect(northStrategy.id).toBe("convention:stayman");
     }
   });
 
-  it("assigns passStrategy to non-participant seats", () => {
+  it("assigns opponent strategy to E/W seats", () => {
     registerConvention(staymanConfig);
     const config = createDrillConfig("stayman", Seat.South);
-    // East and West are not participants in Stayman
+    // East and West are opponents — passStrategy by default
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
@@ -47,15 +45,37 @@ describe("createDrillConfig", () => {
     }
   });
 
-  it("works with DONT convention (different participant seats)", () => {
+  it("assigns convention strategy to North for defensive conventions (DONT)", () => {
     registerConvention(dontConfig);
     const config = createDrillConfig("dont", Seat.South);
-    // DONT: East (1NT opener) and South (overcaller) are participants
-    // South is user, East should get convention strategy
+    // North is South's partner — should use DONT for advancer responses
+    const northStrategy = config.seatStrategies[Seat.North];
+    expect(northStrategy).not.toBe("user");
+    if (northStrategy !== "user") {
+      expect(northStrategy.id).toBe("convention:dont");
+    }
+    // East is opponent — should NOT use DONT
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
-      expect(eastStrategy.id).toBe("convention:dont");
+      expect(eastStrategy.id).toBe("pass");
+    }
+  });
+
+  it("assigns convention strategy to North for Landy", () => {
+    registerConvention(landyConfig);
+    const config = createDrillConfig("landy", Seat.South);
+    // North is South's partner — should use Landy for advancer responses
+    const northStrategy = config.seatStrategies[Seat.North];
+    expect(northStrategy).not.toBe("user");
+    if (northStrategy !== "user") {
+      expect(northStrategy.id).toBe("convention:landy");
+    }
+    // East opens 1NT but is an opponent — should NOT use Landy
+    const eastStrategy = config.seatStrategies[Seat.East];
+    expect(eastStrategy).not.toBe("user");
+    if (eastStrategy !== "user") {
+      expect(eastStrategy.id).toBe("pass");
     }
   });
 });

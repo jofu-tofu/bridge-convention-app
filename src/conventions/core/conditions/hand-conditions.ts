@@ -48,7 +48,7 @@ export function hcpMin(min: number): RuleCondition {
       const hcp = ctx.evaluation.hcp;
       return hcp >= min
         ? `${hcp} HCP (${min}+ required)`
-        : `Only ${hcp} HCP (need ${min}+)`;
+        : `Need ${min}+ HCP (have ${hcp})`;
     },
   };
 }
@@ -67,7 +67,7 @@ export function hcpMax(max: number): RuleCondition {
       const hcp = ctx.evaluation.hcp;
       return hcp <= max
         ? `${hcp} HCP (${max} max)`
-        : `${hcp} HCP (${max} max exceeded)`;
+        : `Need ${max} or fewer HCP (have ${hcp})`;
     },
   };
 }
@@ -86,7 +86,7 @@ export function hcpRange(min: number, max: number): RuleCondition {
       const hcp = ctx.evaluation.hcp;
       return hcp >= min && hcp <= max
         ? `${hcp} HCP (${min}–${max} range)`
-        : `${hcp} HCP (need ${min}–${max})`;
+        : `Need ${min}–${max} HCP (have ${hcp})`;
     },
   };
 }
@@ -111,7 +111,7 @@ export function suitMin(
       const len = ctx.evaluation.shape[suitIndex]!;
       return len >= min
         ? `${len} ${suitName} (${min}+ required)`
-        : `Only ${len} ${suitName} (need ${min}+)`;
+        : `Need ${min}+ ${suitName} (have ${len})`;
     },
   };
 }
@@ -137,7 +137,7 @@ export function suitBelow(
       const len = ctx.evaluation.shape[suitIndex]!;
       return len < threshold
         ? `${len} ${suitName} (fewer than ${threshold})`
-        : `${len} ${suitName} (need fewer than ${threshold})`;
+        : `Need fewer than ${threshold} ${suitName} (have ${len})`;
     },
   };
 }
@@ -164,7 +164,7 @@ export function anySuitMin(
       const counts = suits
         .map((s) => `${ctx.evaluation.shape[s.index]!} ${s.name}`)
         .join(", ");
-      return `Only ${counts} (need ${min}+ in ${suitNames})`;
+      return `Need ${min}+ in ${suitNames} (have ${counts})`;
     },
   };
 }
@@ -185,7 +185,7 @@ export function aceCount(count: number): RuleCondition {
       const aces = countAcesInHand(ctx.hand);
       return aces === count
         ? `${aces} ace${aces !== 1 ? "s" : ""}`
-        : `${aces} ace${aces !== 1 ? "s" : ""} (need exactly ${count})`;
+        : `Need exactly ${count} ace${count !== 1 ? "s" : ""} (have ${aces})`;
     },
   };
 }
@@ -204,7 +204,7 @@ export function aceCountAny(counts: number[]): RuleCondition {
       const aces = countAcesInHand(ctx.hand);
       return counts.includes(aces)
         ? `${aces} ace${aces !== 1 ? "s" : ""} (${countsLabel})`
-        : `${aces} ace${aces !== 1 ? "s" : ""} (need ${countsLabel})`;
+        : `Need ${countsLabel} aces (have ${aces})`;
     },
   };
 }
@@ -223,7 +223,7 @@ export function kingCount(count: number): RuleCondition {
       const kings = countKingsInHand(ctx.hand);
       return kings === count
         ? `${kings} king${kings !== 1 ? "s" : ""}`
-        : `${kings} king${kings !== 1 ? "s" : ""} (need exactly ${count})`;
+        : `Need exactly ${count} king${count !== 1 ? "s" : ""} (have ${kings})`;
     },
   };
 }
@@ -242,7 +242,7 @@ export function kingCountAny(counts: number[]): RuleCondition {
       const kings = countKingsInHand(ctx.hand);
       return counts.includes(kings)
         ? `${kings} king${kings !== 1 ? "s" : ""} (${countsLabel})`
-        : `${kings} king${kings !== 1 ? "s" : ""} (need ${countsLabel})`;
+        : `Need ${countsLabel} kings (have ${kings})`;
     },
   };
 }
@@ -261,13 +261,13 @@ export function noVoid(): RuleCondition {
     describe(ctx) {
       const hasVoid = ctx.evaluation.shape.some((s) => s === 0);
       return hasVoid
-        ? `Has void (${ctx.evaluation.shape.join("-")})`
+        ? `Need no void (have ${ctx.evaluation.shape.join("-")})`
         : `No void suit (${ctx.evaluation.shape.join("-")})`;
     },
   };
 }
 
-/** Hand has no void (no suit with 0 cards). */
+/** Balanced hand: no void, no singleton, at most one doubleton. */
 export function isBalanced(): RuleCondition {
   return {
     name: "balanced",
@@ -289,10 +289,10 @@ export function isBalanced(): RuleCondition {
       if (!hasVoid && !hasSingleton && doubletonCount <= 1) {
         return `Balanced hand (${shape.join("-")})`;
       }
-      if (hasVoid) return `Unbalanced — has void (${shape.join("-")})`;
+      if (hasVoid) return `Need balanced hand (have void, ${shape.join("-")})`;
       if (hasSingleton)
-        return `Unbalanced — has singleton (${shape.join("-")})`;
-      return `Unbalanced — ${doubletonCount} doubletons (${shape.join("-")})`;
+        return `Need balanced hand (have singleton, ${shape.join("-")})`;
+      return `Need balanced hand (have ${doubletonCount} doubletons, ${shape.join("-")})`;
     },
   };
 }
@@ -316,7 +316,7 @@ export function hasShortage(): RuleCondition {
       if (shorts.length > 0) {
         return `Has shortage: ${shorts.join(", ")} (${shape.join("-")})`;
       }
-      return `No shortage (${shape.join("-")})`;
+      return `Need singleton or void (have ${shape.join("-")})`;
     },
   };
 }
@@ -336,8 +336,8 @@ export function noFiveCardMajor(): RuleCondition {
       if (spades < 5 && hearts < 5) {
         return `No 5-card major (${spades} spades, ${hearts} hearts)`;
       }
-      if (spades >= 5) return `Has 5+ spades (${spades})`;
-      return `Has 5+ hearts (${hearts})`;
+      if (spades >= 5) return `Need no 5-card major (have ${spades} spades)`;
+      return `Need no 5-card major (have ${hearts} hearts)`;
     },
   };
 }
@@ -367,8 +367,8 @@ export function longerMajor(
       if (thisLen >= 5 && thisLen >= otherLen) {
         return `${thisLen} ${suitName} (longer/equal major vs ${otherLen} ${otherName})`;
       }
-      if (thisLen < 5) return `Only ${thisLen} ${suitName} (need 5+)`;
-      return `${thisLen} ${suitName} shorter than ${otherLen} ${otherName}`;
+      if (thisLen < 5) return `Need 5+ ${suitName} (have ${thisLen})`;
+      return `Need ${suitName} longer than ${otherName} (have ${thisLen} vs ${otherLen})`;
     },
   };
 }
@@ -386,7 +386,7 @@ export function hasFourCardMajor(): RuleCondition {
       const s = ctx.evaluation.shape[0]!;
       const h = ctx.evaluation.shape[1]!;
       if (s >= 4 || h >= 4) return `Has 4-card major (${s}S, ${h}H)`;
-      return `No 4-card major (${s}S, ${h}H)`;
+      return `Need 4+ card major (have ${s}S, ${h}H)`;
     },
   };
 }
@@ -408,6 +408,7 @@ export function majorSupport(count: number = 4, orMore: boolean = false): RuleCo
   return {
     name: "major-support",
     label,
+    category: "hand",
     test(ctx) {
       const shape = ctx.evaluation.shape;
       if (auctionMatchesExact(ctx.auction, ["1H", "P"])) return check(shape[1]!);
@@ -421,13 +422,13 @@ export function majorSupport(count: number = 4, orMore: boolean = false): RuleCo
         const len = shape[1]!;
         return check(len)
           ? `${len} hearts (${suffix})`
-          : `${len} hearts (need ${suffix})`;
+          : `Need ${suffix} hearts (have ${len})`;
       }
       if (auctionMatchesExact(ctx.auction, ["1S", "P"])) {
         const len = shape[0]!;
         return check(len)
           ? `${len} spades (${suffix})`
-          : `${len} spades (need ${suffix})`;
+          : `Need ${suffix} spades (have ${len})`;
       }
       return "No major opening detected";
     },
@@ -476,9 +477,9 @@ export function hasSingleLongSuit(): RuleCondition {
       const foursPlus = [spades, hearts, diamonds, clubs].filter(
         (n) => n >= 4,
       ).length;
-      if (spades >= 6) return `${spades} spades (use 2S natural instead)`;
-      if (foursPlus > 1) return `Two suits with 4+ cards (not single-suited)`;
-      return `Longest suit only ${longest} (need 6+ single-suited)`;
+      if (spades >= 6) return `Need non-spade long suit (have ${spades} spades)`;
+      if (foursPlus > 1) return `Need single-suited hand (have two 4+ card suits)`;
+      return `Need 6+ card suit (have ${longest} as longest)`;
     },
   };
 }
@@ -506,7 +507,7 @@ export function isTwoSuited(minLong: number, minShort: number): RuleCondition {
         indexed.sort((a, b) => b.len - a.len);
         return `${indexed[0]!.len} ${indexed[0]!.name} + ${indexed[1]!.len} ${indexed[1]!.name} (${minLong}-${minShort}+ two-suited)`;
       }
-      return `Not ${minLong}-${minShort}+ two-suited (longest: ${sorted[0]}, second: ${sorted[1]})`;
+      return `Need ${minLong}-${minShort}+ two-suited (have longest: ${sorted[0]}, second: ${sorted[1]})`;
     },
   };
 }
@@ -598,7 +599,7 @@ export function gerberKingAskCondition(): RuleCondition {
       const total = responderAces + openerAces;
       return total >= 3
         ? `${total} total aces (3+ needed) — ask for kings`
-        : `Only ${total} total aces (need 3+ to ask for kings)`;
+        : `Need 3+ total aces (have ${total})`;
     },
   };
 }
@@ -701,7 +702,7 @@ export function advanceSupportFor(
       const len = ctx.evaluation.shape[suitIndex]!;
       return len >= minSupport
         ? `${len} ${suitName} (${minSupport}+ support)`
-        : `Only ${len} ${suitName} (need ${minSupport}+ support)`;
+        : `Need ${minSupport}+ ${suitName} (have ${len})`;
     },
   };
 }
@@ -727,8 +728,8 @@ export function advanceLackSupport(
       }
       const len = ctx.evaluation.shape[suitIndex]!;
       return len < threshold
-        ? `Only ${len} ${suitName} (under ${threshold}, ask for other suit)`
-        : `${len} ${suitName} (${threshold}+ support, no need to ask)`;
+        ? `${len} ${suitName} (under ${threshold}, ask for other suit)`
+        : `Need fewer than ${threshold} ${suitName} (have ${len})`;
     },
   };
 }
@@ -753,11 +754,11 @@ export function majorSupportN(n: number): RuleCondition {
       const strain = partnerOpeningStrain(ctx);
       if (strain === BidSuit.Hearts) {
         const len = ctx.evaluation.shape[1]!;
-        return len >= n ? `${len} hearts (${n}+ support)` : `Only ${len} hearts`;
+        return len >= n ? `${len} hearts (${n}+ support)` : `Need ${n}+ hearts (have ${len})`;
       }
       if (strain === BidSuit.Spades) {
         const len = ctx.evaluation.shape[0]!;
-        return len >= n ? `${len} spades (${n}+ support)` : `Only ${len} spades`;
+        return len >= n ? `${len} spades (${n}+ support)` : `Need ${n}+ spades (have ${len})`;
       }
       return "Partner did not open a major";
     },
@@ -817,7 +818,7 @@ export function partnerRespondedMajorWithSupport(): RuleCondition {
       const len = ctx.evaluation.shape[idx]!;
       return len >= 4
         ? `${len} ${partnerMajor} (4+ support for partner's response)`
-        : `Only ${len} ${partnerMajor}`;
+        : `Need 4+ ${partnerMajor} (have ${len})`;
     },
   };
 }
@@ -844,7 +845,7 @@ export function sixPlusInOpenedSuit(): RuleCondition {
       const len = ctx.evaluation.shape[suitIdx]!;
       return len >= 6
         ? `${len} ${ourStrain} (rebiddable)`
-        : `Only ${len} ${ourStrain} (need 6+)`;
+        : `Need 6+ ${ourStrain} (have ${len})`;
     },
   };
 }
@@ -878,7 +879,7 @@ export function goodSuitAtLevel(level: number): RuleCondition {
       const longest = Math.max(...ctx.evaluation.shape);
       return longest >= 5
         ? `Has ${longest}-card suit for ${level}-level overcall`
-        : `No 5+ card suit`;
+        : `Need 5+ card suit (have ${longest} as longest)`;
     },
   };
 }

@@ -1,4 +1,4 @@
-import type { Seat } from "../engine/types";
+import { Seat } from "../engine/types";
 import type { BiddingStrategy } from "../shared/types";
 import type { DrillConfig } from "./types";
 import type { InferenceConfig } from "../inference/types";
@@ -10,10 +10,13 @@ import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { createConventionInferenceProvider } from "../inference/convention-inference";
 import { SEATS } from "../engine/constants";
 
+// User always bids as South. N/S = user partnership, E/W = opponents.
+const NS_SEATS = new Set([Seat.North, Seat.South]);
+
 /**
  * Creates a DrillConfig for a given convention and user seat.
- * - Convention participant seats get the convention strategy
- * - Non-participant opponents get passStrategy (or SAYC when opponentBidding is true)
+ * - N/S partnership always uses the drilled convention strategy
+ * - E/W partnership always uses the opponent strategy (SAYC by default)
  * - User seat gets "user"
  * - Wires inference configs: N/S convention-aware, E/W natural
  * - Defaults to heuristic play strategy
@@ -29,10 +32,6 @@ export function createDrillConfig(
   const convention = getConvention(conventionId);
   const strategy = conventionToStrategy(convention);
 
-  const participantSeats = new Set(
-    convention.dealConstraints.seats.map((sc) => sc.seat),
-  );
-
   // Wire opponent strategy
   let opponentStrategy: BiddingStrategy = passStrategy;
   const opponentBidding = options?.opponentBidding ?? false;
@@ -47,11 +46,12 @@ export function createDrillConfig(
     }
   }
 
+  // N/S = convention, E/W = opponent, user seat = "user"
   const seatStrategies = {} as Record<Seat, BiddingStrategy | "user">;
   for (const seat of SEATS) {
     if (seat === userSeat) {
       seatStrategies[seat] = "user";
-    } else if (participantSeats.has(seat)) {
+    } else if (NS_SEATS.has(seat)) {
       seatStrategies[seat] = strategy;
     } else {
       seatStrategies[seat] = opponentStrategy;

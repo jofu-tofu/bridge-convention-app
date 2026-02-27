@@ -26,6 +26,10 @@ export interface DecisionNode {
 export interface BidNode {
   readonly type: "bid";
   readonly name: string;
+  /** What this bid communicates to partner. Self-contained sentence fragment starting
+   *  with an action verb (e.g., "Asks for a 4-card major"). No HCP numbers, no convention
+   *  name, no auction context — those are derivable from the tree path and config. */
+  readonly meaning: string;
   readonly call: (ctx: BiddingContext) => Call;
   readonly metadata?: NodeMetadata;
 }
@@ -63,10 +67,11 @@ export function decision(
 
 export function bid(
   name: string,
+  meaning: string,
   callFn: (ctx: BiddingContext) => Call,
   metadata?: NodeMetadata,
 ): BidNode {
-  return { type: "bid", name, call: callFn, metadata };
+  return { type: "bid", name, meaning, call: callFn, metadata };
 }
 
 export function fallback(reason?: string): FallbackNode {

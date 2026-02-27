@@ -14,16 +14,20 @@ drill/
   types.ts            DrillConfig, DrillSession interfaces
   session.ts          createDrillSession() — DrillSession implementation
   config-factory.ts   createDrillConfig() — builds DrillConfig from convention ID + user seat
-  helpers.ts          startDrill() — orchestrates deal generation, session creation, store init
+  helpers.ts          startDrill() + rotation utilities (rotateSeat180, rotateDealConstraints, rotateAuction)
   __tests__/          Tests for all drill files
 ```
 
 **Drill lifecycle flow:**
 1. `startDrill(engine, convention, userSeat, gameStore)` in `helpers.ts`
-2. Calls `createDrillConfig(conventionId, userSeat)` from `config-factory.ts`
-3. Generates a deal via `engine.generateDeal(constraints)`
-4. Creates session via `createDrillSession(config)` from `session.ts`
-5. Calls `gameStore.startDrill(deal, session, ...)`
+2. Resolves dealer from `convention.allowedDealers` (if set) — picks random dealer, rotates constraints 180° if different from base
+3. Calls `createDrillConfig(conventionId, userSeat)` from `config-factory.ts`
+4. Generates a deal via `engine.generateDeal(constraints)`
+5. Creates session via `createDrillSession(config)` from `session.ts`
+6. Rotates `initialAuction` if dealer was rotated
+7. Calls `gameStore.startDrill(deal, session, ...)`
+
+**Rotation utilities** (`helpers.ts`): `rotateSeat180(seat)` swaps N↔S, E↔W. `rotateDealConstraints(base, newDealer)` rotates all seat constraints. `rotateAuction(auction)` rotates all auction entry seats. Used by `startDrill()` when `allowedDealers` picks a non-base dealer.
 
 **Config factory wiring:** `createDrillConfig()` builds both `nsInferenceConfig` and `ewInferenceConfig`. Options: `opponentBidding` (enables E-W convention inference), `opponentConventionId` (defaults to "sayc", falls back to natural on invalid ID).
 

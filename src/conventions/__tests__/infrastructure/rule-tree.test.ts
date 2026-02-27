@@ -3,7 +3,7 @@ import { Seat, BidSuit } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { decision, bid, fallback } from "../../core/rule-tree";
 import type { RuleNode } from "../../core/rule-tree";
-import { evaluateTree, evaluateTreeFast } from "../../core/tree-evaluator";
+import { evaluateTree } from "../../core/tree-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { hcpMin, anySuitMin, isResponder } from "../../core/conditions";
@@ -173,81 +173,6 @@ describe("evaluateTree", () => {
   });
 });
 
-// ─── Fast/full equivalence ───────────────────────────────────
-
-describe("evaluateTreeFast", () => {
-  const trees: [string, RuleNode][] = [
-    [
-      "passing chain",
-      decision(
-        "a",
-        alwaysTrue("a"),
-        decision(
-          "b",
-          alwaysTrue("b"),
-          staticBid("match", 1, BidSuit.Clubs),
-          fallback(),
-        ),
-        fallback(),
-      ),
-    ],
-    ["single bid", staticBid("direct", 2, BidSuit.Hearts)],
-    ["fallback root", fallback("nothing")],
-    [
-      "failing root",
-      decision(
-        "fail",
-        alwaysFalse("x"),
-        staticBid("y", 1, BidSuit.Clubs),
-        fallback(),
-      ),
-    ],
-    [
-      "mixed path",
-      decision(
-        "a",
-        alwaysFalse("a"),
-        staticBid("a-yes", 1, BidSuit.Clubs),
-        decision(
-          "b",
-          alwaysTrue("b"),
-          staticBid("b-yes", 2, BidSuit.Diamonds),
-          fallback(),
-        ),
-      ),
-    ],
-  ];
-
-  it.each(trees)(
-    "fast matches full for tree: %s",
-    (_name, tree) => {
-      const ctx = makeMinimalContext();
-      const full = evaluateTree(tree, ctx);
-      const fast = evaluateTreeFast(tree, ctx);
-
-      if (full.matched === null) {
-        expect(fast).toBeNull();
-      } else {
-        expect(fast).not.toBeNull();
-        expect(fast!.name).toBe(full.matched.name);
-      }
-    },
-  );
-
-  it("does not invoke describe() on conditions", () => {
-    let describeCallCount = 0;
-    const spyCondition: RuleCondition = {
-      name: "spy",
-      label: "spy",
-      test: () => true,
-      describe: () => { describeCallCount++; return "spy passed"; },
-    };
-    const tree = decision("d", spyCondition, staticBid("b", 1, BidSuit.Clubs), fallback());
-    evaluateTreeFast(tree, makeMinimalContext());
-    expect(describeCallCount).toBe(0);
-  });
-});
-
 // ─── Negative inference POC (Stayman-like tree) ──────────────
 
 function makeStaymanTree() {
@@ -268,7 +193,7 @@ function makeStaymanTree() {
       decision(
         "has-enough-hcp",
         hcpMin(8),
-        bid("stayman-ask", () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+        bid("stayman-ask", "Test: stayman-ask", () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
         fallback("too weak"),
       ),
       fallback("no major"),

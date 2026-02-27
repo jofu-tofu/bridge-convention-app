@@ -56,16 +56,7 @@ export const dontDealConstraints: DealConstraints = {
 
 /** Find advancer's longest suit with 6+ cards and return a 2-level bid. */
 function advanceLongSuitCall(ctx: BiddingContext): Call {
-  const shape = ctx.hand.cards.reduce(
-    (acc, c) => {
-      const idx = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs].indexOf(
-        c.suit as unknown as BidSuit,
-      );
-      if (idx >= 0) acc[idx]!++;
-      return acc;
-    },
-    [0, 0, 0, 0],
-  );
+  const shape = getSuitLength(ctx.hand);
   const strains = [BidSuit.Spades, BidSuit.Hearts, BidSuit.Diamonds, BidSuit.Clubs];
   let bestIdx = -1;
   let bestLen = 0;
@@ -102,23 +93,23 @@ function revealSuitCall(ctx: BiddingContext): Call {
 const overcallerBranch: RuleNode = decision(
   "both-majors",
   bothMajors(),
-  bid("dont-2h", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+  bid("dont-2h", "Shows both majors", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
   decision(
     "diamonds-plus-major",
     diamondsPlusMajor(),
-    bid("dont-2d", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+    bid("dont-2d", "Shows diamonds plus a major", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
     decision(
       "clubs-plus-higher",
       clubsPlusHigher(),
-      bid("dont-2c", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+      bid("dont-2c", "Shows clubs plus a higher suit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
       decision(
         "6-plus-spades",
         suitMin(0, "spades", 6),
-        bid("dont-2s", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+        bid("dont-2s", "Shows a long spade suit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
         decision(
           "single-long-suit",
           hasSingleLongSuit(),
-          bid("dont-double", (): Call => ({ type: "double" })),
+          bid("dont-double", "Shows a long single suit", (): Call => ({ type: "double" })),
           fallback("not-suited"),
         ),
       ),
@@ -132,8 +123,8 @@ const overcallerBranch: RuleNode = decision(
 const advanceAfter2H: RuleNode = decision(
   "hearts-support",
   suitMin(1, "hearts", 3),
-  bid("dont-advance-pass", (): Call => ({ type: "pass" })),
-  bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+  bid("dont-advance-pass", "Accepts partner's shown suit", (): Call => ({ type: "pass" })),
+  bid("dont-advance-next-step", "Relays asking partner to clarify", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
 );
 
 // 2S is a natural 6+ spade bid — no relay mechanism available;
@@ -141,19 +132,19 @@ const advanceAfter2H: RuleNode = decision(
 const advanceAfter2S: RuleNode = decision(
   "spades-support",
   suitMin(0, "spades", 2),
-  bid("dont-advance-pass", (): Call => ({ type: "pass" })),
+  bid("dont-advance-pass", "Accepts partner's shown suit", (): Call => ({ type: "pass" })),
   fallback("no-advance-after-2s"),
 );
 
 const advanceAfter2D: RuleNode = decision(
   "has-6-plus-spades-after-2d",
   suitMin(0, "spades", 6),
-  bid("dont-advance-long-suit", advanceLongSuitCall),
+  bid("dont-advance-long-suit", "Bids a long suit directly, bypassing the relay", advanceLongSuitCall),
   decision(
     "diamonds-support",
     suitMin(2, "diamonds", 3),
-    bid("dont-advance-pass", (): Call => ({ type: "pass" })),
-    bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+    bid("dont-advance-pass", "Accepts partner's shown suit", (): Call => ({ type: "pass" })),
+    bid("dont-advance-next-step", "Relays asking partner to clarify", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
   ),
 );
 
@@ -166,12 +157,12 @@ const advanceAfter2C: RuleNode = decision(
     ],
     6,
   ),
-  bid("dont-advance-long-suit", advanceLongSuitCall),
+  bid("dont-advance-long-suit", "Bids a long suit directly, bypassing the relay", advanceLongSuitCall),
   decision(
     "clubs-support",
     suitMin(3, "clubs", 3),
-    bid("dont-advance-pass", (): Call => ({ type: "pass" })),
-    bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+    bid("dont-advance-pass", "Accepts partner's shown suit", (): Call => ({ type: "pass" })),
+    bid("dont-advance-next-step", "Relays asking partner to clarify", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
   ),
 );
 
@@ -185,8 +176,8 @@ const advanceAfterDouble: RuleNode = decision(
     ],
     6,
   ),
-  bid("dont-advance-long-suit", advanceLongSuitCall),
-  bid("dont-advance-next-step", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+  bid("dont-advance-long-suit", "Bids a long suit directly, bypassing the relay", advanceLongSuitCall),
+  bid("dont-advance-next-step", "Relays asking partner to clarify", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
 );
 
 const advanceBranch: RuleNode = decision(
@@ -220,8 +211,8 @@ const advanceBranch: RuleNode = decision(
 const overcallerRevealBranch: RuleNode = decision(
   "clubs-long",
   suitMin(3, "clubs", 6),
-  bid("dont-reveal-pass", (): Call => ({ type: "pass" })),
-  bid("dont-reveal-suit", revealSuitCall),
+  bid("dont-reveal-pass", "Confirms clubs as the long suit", (): Call => ({ type: "pass" })),
+  bid("dont-reveal-suit", "Reveals the actual long suit", revealSuitCall),
 );
 
 const dontRuleTree: RuleNode = decision(
@@ -252,6 +243,7 @@ export const dontConfig: TreeConventionConfig = {
     "DONT (Disturbing Opponent's No Trump): overcalls against 1NT openings",
   category: ConventionCategory.Defensive,
   dealConstraints: dontDealConstraints,
+  allowedDealers: [Seat.East, Seat.West],
   ruleTree: dontRuleTree,
   defaultAuction: dontDefaultAuction,
 };

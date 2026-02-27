@@ -76,7 +76,7 @@ describe("evaluateBiddingRules tree dispatch", () => {
     const tree = decision(
       "check",
       alwaysTrue("a"),
-      bid("tree-bid", () => ({ type: "bid", level: 1, strain: BidSuit.NoTrump })),
+      bid("tree-bid", "Test: tree-bid", () => ({ type: "bid", level: 1, strain: BidSuit.NoTrump })),
       fallback(),
     );
     const config = makeTreeConfig(tree);
@@ -93,7 +93,7 @@ describe("evaluateBiddingRules tree dispatch", () => {
     const tree = decision(
       "check",
       alwaysFalse("a"),
-      bid("unreachable", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+      bid("unreachable", "Test: unreachable", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
       fallback("nope"),
     );
     const config = makeTreeConfig(tree);
@@ -105,7 +105,7 @@ describe("evaluateBiddingRules tree dispatch", () => {
 
   it("returns null when tree bid is illegal (e.g., insufficient bid)", () => {
     // Tree produces a 1C bid, but auction already has a 1NT — 1C is insufficient
-    const tree = bid("low-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs }));
+    const tree = bid("low-bid", "Test: low-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs }));
     const config = makeTreeConfig(tree);
 
     const auction = buildAuction(Seat.North, ["1NT", "P", "P"]);
@@ -125,8 +125,8 @@ describe("evaluateAllBiddingRules tree dispatch", () => {
     const tree = decision(
       "check",
       alwaysTrue("a"),
-      bid("yes-bid", () => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
-      bid("no-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+      bid("yes-bid", "Test: yes-bid", () => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+      bid("no-bid", "Test: no-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
     );
     const config = makeTreeConfig(tree);
     const ctx = makeMinimalContext();

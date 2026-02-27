@@ -1,6 +1,6 @@
 # Display
 
-UI display utilities and pure functions. Consumer of `engine/`, `conventions/core/`, `shared/`, `stores/`.
+UI display utilities and pure functions. Consumer of `engine/`, `conventions/core/`, `shared/`.
 
 ## Architecture
 
@@ -15,6 +15,7 @@ UI display utilities and pure functions. Consumer of `engine/`, `conventions/cor
 | `rules-display.ts`     | `prepareRulesForDisplay()`, `groupBidsByRound()`, `DisplayRule` type |
 | `debug-bid-eval.ts`    | `computeBidEvalTraces()` — debug display utility                  |
 | `filter-conventions.ts`| `filterConventions()` — convention picker search/filter           |
+| `hand-summary.ts`      | Re-export of `formatHandSummary()` from `shared/hand-summary.ts`  |
 | `table-scale.ts`       | `computeTableScale()` — responsive table scaling                  |
 
 ## Gotchas

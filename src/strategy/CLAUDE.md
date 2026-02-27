@@ -21,9 +21,9 @@ strategy/
   __tests__/                 Tests for all strategies
 ```
 
-**Convention adapter:** `conventionToStrategy()` wraps a `ConventionConfig` as a `BiddingStrategy`. Maps `TreeEvalResult` to `TreeEvalSummary` DTO with depth/parent enrichment and fork point extraction. Exports `mapVisitedWithStructure()`, `extractForkPoint()` for tree-to-DTO mapping.
+**Convention adapter:** `conventionToStrategy()` wraps a `ConventionConfig` as a `BiddingStrategy`. Maps `TreeEvalResult` to `TreeEvalSummary` DTO with depth/parent enrichment, fork point extraction, and sibling alternatives. Exports `mapVisitedWithStructure()`, `extractForkPoint()` for tree-to-DTO mapping.
 
-**Tree DTO pipeline:** `TreeEvalResult` (conventions/core/) -> mapped by `mapTreeEvalResult()` -> `TreeEvalSummary` (shared/types.ts) -> `BidResult.treePath` -> `BidHistoryEntry.treePath` -> UI.
+**Tree DTO pipeline:** `TreeEvalResult` (conventions/core/) -> mapped by `mapTreeEvalResult(result, tree, context)` -> `TreeEvalSummary` (shared/types.ts) -> `BidResult.treePath` -> `BidHistoryEntry.treePath` -> UI. `mapTreeEvalResult` calls `findSiblingBids()` from conventions/core/ with try/catch for production safety.
 
 **Heuristic play chain** (first non-null wins): opening-lead -> second-hand-low -> third-hand-high -> cover-honor-with-honor -> trump-management -> discard-management -> default-lowest.
 

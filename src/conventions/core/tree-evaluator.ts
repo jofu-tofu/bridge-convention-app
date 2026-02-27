@@ -37,7 +37,7 @@ export function evaluateTree(
   let node: RuleNode = tree;
   let matched: BidNode | null = null;
 
-  // Iterative traversal — matches evaluateTreeFast's stack-safety approach
+  // Iterative traversal (stack-safe for deep trees)
   for (;;) {
     switch (node.type) {
       case "bid":
@@ -68,30 +68,3 @@ export function evaluateTree(
   }
 }
 
-// ─── Fast evaluation (match only, no path tracking) ──────────
-
-/**
- * Fast tree evaluation for AI bidding hot path.
- * Returns matched BidNode or null. No path tracking, no describe() calls.
- */
-export function evaluateTreeFast(
-  tree: RuleNode,
-  context: BiddingContext,
-): BidNode | null {
-  let node: RuleNode = tree;
-  for (;;) {
-    switch (node.type) {
-      case "bid":
-        return node;
-      case "fallback":
-        return null;
-      case "decision":
-        node = node.condition.test(context) ? node.yes : node.no;
-        break;
-      default: {
-        const _exhaustive: never = node;
-        throw new Error(`Unhandled RuleNode type: ${String(_exhaustive)}`);
-      }
-    }
-  }
-}

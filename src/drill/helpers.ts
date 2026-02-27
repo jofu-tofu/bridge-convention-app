@@ -16,6 +16,35 @@ import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
 import { getConvention } from "../conventions/core/registry";
 import { evaluateHand } from "../engine/hand-evaluator";
 
+/** 180° table rotation: N↔S, E↔W */
+export function rotateSeat180(seat: Seat): Seat {
+  switch (seat) {
+    case Seat.North: return Seat.South;
+    case Seat.South: return Seat.North;
+    case Seat.East: return Seat.West;
+    case Seat.West: return Seat.East;
+  }
+}
+
+export function rotateDealConstraints(
+  base: DealConstraints,
+  newDealer: Seat,
+): DealConstraints {
+  if (base.dealer === newDealer || base.dealer === undefined) return base;
+  return {
+    ...base,
+    dealer: newDealer,
+    seats: base.seats.map((sc) => ({ ...sc, seat: rotateSeat180(sc.seat) })),
+  };
+}
+
+export function rotateAuction(auction: Auction): Auction {
+  return {
+    ...auction,
+    entries: auction.entries.map((e) => ({ ...e, seat: rotateSeat180(e.seat) })),
+  };
+}
+
 /**
  * Analyze a convention's defaultAuction for E/W pass positions.
  * For each opponent pass, create a SeatConstraint with a customCheck
@@ -76,10 +105,26 @@ export async function startDrill(
   const session = createDrillSession(config);
   const strategy = conventionToStrategy(convention);
 
+  // Resolve dealer randomization
+  let resolvedConstraints = convention.dealConstraints;
+  let dealerRotated = false;
+  if (convention.allowedDealers && convention.allowedDealers.length > 1) {
+    const roll = rng ? rng() : Math.random();
+    const idx = Math.floor(roll * convention.allowedDealers.length);
+    const chosenDealer = convention.allowedDealers[idx]!;
+    if (chosenDealer !== convention.dealConstraints.dealer) {
+      resolvedConstraints = rotateDealConstraints(convention.dealConstraints, chosenDealer);
+      dealerRotated = true;
+    }
+  }
+
   // Build opponent pass constraints from defaultAuction
-  const previewAuction = convention.defaultAuction
+  let previewAuction = convention.defaultAuction
     ? convention.defaultAuction(userSeat)
     : undefined;
+  if (previewAuction && dealerRotated) {
+    previewAuction = rotateAuction(previewAuction);
+  }
   const opponentConvention = getConvention("sayc");
   const opponentStrategy = conventionToStrategy(opponentConvention);
   const passConstraints = buildOpponentPassConstraints(
@@ -87,17 +132,20 @@ export async function startDrill(
     opponentStrategy,
   );
 
-  // Compose: convention's N/S constraints + E/W pass constraints
+  // Compose: convention's constraints (possibly rotated) + E/W pass constraints
   const constraints: DealConstraints = {
-    ...convention.dealConstraints,
-    seats: [...convention.dealConstraints.seats, ...passConstraints],
+    ...resolvedConstraints,
+    seats: [...resolvedConstraints.seats, ...passConstraints],
     ...(rng ? { rng } : {}),
     ...(seed !== undefined ? { seed } : {}),
   };
 
   const deal = await engine.generateDeal(constraints);
-  const initialAuction = convention.defaultAuction
+  let initialAuction = convention.defaultAuction
     ? convention.defaultAuction(userSeat, deal)
     : undefined;
+  if (initialAuction && dealerRotated) {
+    initialAuction = rotateAuction(initialAuction);
+  }
   await gameStore.startDrill(deal, session, initialAuction, strategy);
 }

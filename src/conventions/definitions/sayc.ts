@@ -133,20 +133,20 @@ function overcall2LevelCall(ctx: BiddingContext): Call {
 
 // SAYC catch-all: every terminal in SAYC produces Pass (not fallback/null)
 // because SAYC is a catch-all convention — any hand that enters produces a bid or pass.
-const saycPass = (): RuleNode => bid("sayc-pass", (): Call => pass);
+const saycPass = (): RuleNode => bid("sayc-pass", "Passes with no suitable action available", (): Call => pass);
 
 const weakOpeningBranch: RuleNode = decision(
   "weak-6hearts",
   and(hcpRange(5, 11), suitMin(1, "hearts", 6)),
-  bid("sayc-open-weak-2h", (): Call => makeBid(2, BidSuit.Hearts)),
+  bid("sayc-open-weak-2h", "Opens showing a 6-card heart suit", (): Call => makeBid(2, BidSuit.Hearts)),
   decision(
     "weak-6spades",
     and(hcpRange(5, 11), suitMin(0, "spades", 6)),
-    bid("sayc-open-weak-2s", (): Call => makeBid(2, BidSuit.Spades)),
+    bid("sayc-open-weak-2s", "Opens showing a 6-card spade suit", (): Call => makeBid(2, BidSuit.Spades)),
     decision(
       "weak-6diamonds",
       and(hcpRange(5, 11), suitMin(2, "diamonds", 6)),
-      bid("sayc-open-weak-2d", (): Call => makeBid(2, BidSuit.Diamonds)),
+      bid("sayc-open-weak-2d", "Opens showing a 6-card diamond suit", (): Call => makeBid(2, BidSuit.Diamonds)),
       saycPass(),
     ),
   ),
@@ -156,11 +156,11 @@ const weakOpeningBranch: RuleNode = decision(
 const openMinorBranch: RuleNode = decision(
   "12+-4diamonds",
   and(hcpMin(12), suitBelow(0, "spades", 5), suitBelow(1, "hearts", 5), suitMin(2, "diamonds", 4)),
-  bid("sayc-open-1d", (): Call => makeBid(1, BidSuit.Diamonds)),
+  bid("sayc-open-1d", "Opens in the longer minor", (): Call => makeBid(1, BidSuit.Diamonds)),
   decision(
     "12+-3clubs",
     and(hcpMin(12), suitBelow(0, "spades", 5), suitBelow(1, "hearts", 5), suitMin(3, "clubs", 3)),
-    bid("sayc-open-1c", (): Call => makeBid(1, BidSuit.Clubs)),
+    bid("sayc-open-1c", "Opens the better minor", (): Call => makeBid(1, BidSuit.Clubs)),
     weakOpeningBranch,
   ),
 );
@@ -169,11 +169,11 @@ const openMinorBranch: RuleNode = decision(
 const openMajorBranch: RuleNode = decision(
   "12+-longer-spades",
   and(hcpMin(12), longerMajor(0, "spades")),
-  bid("sayc-open-1s", (): Call => makeBid(1, BidSuit.Spades)),
+  bid("sayc-open-1s", "Opens in the longest major", (): Call => makeBid(1, BidSuit.Spades)),
   decision(
     "12+-5hearts",
     and(hcpMin(12), suitMin(1, "hearts", 5)),
-    bid("sayc-open-1h", (): Call => makeBid(1, BidSuit.Hearts)),
+    bid("sayc-open-1h", "Opens showing 5+ hearts", (): Call => makeBid(1, BidSuit.Hearts)),
     openMinorBranch,
   ),
 );
@@ -181,15 +181,15 @@ const openMajorBranch: RuleNode = decision(
 const openingBranch: RuleNode = decision(
   "hcp-22+",
   hcpMin(22),
-  bid("sayc-open-2c", (): Call => makeBid(2, BidSuit.Clubs)),
+  bid("sayc-open-2c", "Opens artificial and forcing for one round", (): Call => makeBid(2, BidSuit.Clubs)),
   decision(
     "hcp-20-21-balanced",
     and(hcpRange(20, 21), isBalanced()),
-    bid("sayc-open-2nt", (): Call => makeBid(2, BidSuit.NoTrump)),
+    bid("sayc-open-2nt", "Opens showing a balanced hand", (): Call => makeBid(2, BidSuit.NoTrump)),
     decision(
       "hcp-15-17-bal-no5M",
       and(hcpRange(15, 17), isBalanced(), noFiveCardMajor()),
-      bid("sayc-open-1nt", (): Call => makeBid(1, BidSuit.NoTrump)),
+      bid("sayc-open-1nt", "Opens showing a balanced hand", (): Call => makeBid(1, BidSuit.NoTrump)),
       openMajorBranch,
     ),
   ),
@@ -198,11 +198,11 @@ const openingBranch: RuleNode = decision(
 const respond1NTBranch: RuleNode = decision(
   "8+-with-4M",
   and(hcpMin(8), hasFourCardMajor()),
-  bid("sayc-respond-1nt-stayman", (): Call => makeBid(2, BidSuit.Clubs)),
+  bid("sayc-respond-1nt-stayman", "Asks opener for a 4-card major", (): Call => makeBid(2, BidSuit.Clubs)),
   decision(
     "0-7-hcp",
     hcpRange(0, 7),
-    bid("sayc-respond-1nt-pass", (): Call => pass),
+    bid("sayc-respond-1nt-pass", "Declines to respond to the notrump opening", (): Call => pass),
     saycPass(),
   ),
 );
@@ -214,15 +214,15 @@ const respondNTBranch: RuleNode = decision(
   decision(
     "respond-1nt-6-10",
     hcpRange(6, 10),
-    bid("sayc-respond-1nt", (): Call => makeBid(1, BidSuit.NoTrump)),
+    bid("sayc-respond-1nt", "Responds showing a balanced hand", (): Call => makeBid(1, BidSuit.NoTrump)),
     decision(
       "respond-2nt-13-15",
       and(hcpRange(13, 15), isBalanced()),
-      bid("sayc-respond-2nt", (): Call => makeBid(2, BidSuit.NoTrump)),
+      bid("sayc-respond-2nt", "Shows an invitational balanced hand", (): Call => makeBid(2, BidSuit.NoTrump)),
       decision(
         "respond-3nt-16-18",
         and(hcpRange(16, 18), isBalanced()),
-        bid("sayc-respond-3nt", (): Call => makeBid(3, BidSuit.NoTrump)),
+        bid("sayc-respond-3nt", "Shows a game-forcing balanced hand", (): Call => makeBid(3, BidSuit.NoTrump)),
         saycPass(),
       ),
     ),
@@ -234,23 +234,23 @@ const respondNTBranch: RuleNode = decision(
 const respondNewSuitBranch: RuleNode = decision(
   "respond-1h-over-minor",
   and(hcpMin(6), suitMin(1, "hearts", 4), partnerOpenedMinor()),
-  bid("sayc-respond-1h-over-minor", (): Call => makeBid(1, BidSuit.Hearts)),
+  bid("sayc-respond-1h-over-minor", "Responds showing 4+ hearts", (): Call => makeBid(1, BidSuit.Hearts)),
   decision(
     "respond-1s-over-minor",
     and(hcpMin(6), suitMin(0, "spades", 4), partnerOpenedMinor()),
-    bid("sayc-respond-1s-over-minor", (): Call => makeBid(1, BidSuit.Spades)),
+    bid("sayc-respond-1s-over-minor", "Responds showing 4+ spades", (): Call => makeBid(1, BidSuit.Spades)),
     decision(
       "respond-1s-over-1h",
       and(hcpMin(6), suitMin(0, "spades", 4), partnerOpened(BidSuit.Hearts)),
-      bid("sayc-respond-1s-over-1h", (): Call => makeBid(1, BidSuit.Spades)),
+      bid("sayc-respond-1s-over-1h", "Responds showing 4+ spades", (): Call => makeBid(1, BidSuit.Spades)),
       decision(
         "respond-2c-over-major",
         and(hcpMin(12), suitMin(3, "clubs", 4), partnerOpenedMajor()),
-        bid("sayc-respond-2c-over-major", (): Call => makeBid(2, BidSuit.Clubs)),
+        bid("sayc-respond-2c-over-major", "Responds in a new suit, forcing", (): Call => makeBid(2, BidSuit.Clubs)),
         decision(
           "respond-2d-over-major",
           and(hcpMin(12), suitMin(2, "diamonds", 4), partnerOpenedMajor()),
-          bid("sayc-respond-2d-over-major", (): Call => makeBid(2, BidSuit.Diamonds)),
+          bid("sayc-respond-2d-over-major", "Responds in a new suit, forcing", (): Call => makeBid(2, BidSuit.Diamonds)),
           respondNTBranch,
         ),
       ),
@@ -264,15 +264,15 @@ const respondNewSuitBranch: RuleNode = decision(
 const respondSuitBranch: RuleNode = decision(
   "game-raise-13+",
   and(hcpMin(13), majorSupportN(4)),
-  bid("sayc-respond-game-raise-major", respondGameRaiseMajorCall),
+  bid("sayc-respond-game-raise-major", "Raises partner's major directly to game", respondGameRaiseMajorCall),
   decision(
     "jump-raise-10-12",
     and(hcpRange(10, 12), majorSupportN(4)),
-    bid("sayc-respond-jump-raise-major", respondJumpRaiseMajorCall),
+    bid("sayc-respond-jump-raise-major", "Makes a limit raise in partner's major", respondJumpRaiseMajorCall),
     decision(
       "simple-raise-6-10",
       and(hcpRange(6, 10), majorSupportN(3)),
-      bid("sayc-respond-raise-major", respondRaiseMajorCall),
+      bid("sayc-respond-raise-major", "Makes a simple raise in partner's major", respondRaiseMajorCall),
       respondNewSuitBranch,
     ),
   ),
@@ -281,15 +281,15 @@ const respondSuitBranch: RuleNode = decision(
 const competitiveBranch: RuleNode = decision(
   "1nt-overcall",
   and(not(isOpener()), not(isResponder()), hcpRange(15, 18), isBalanced()),
-  bid("sayc-1nt-overcall", (): Call => makeBid(1, BidSuit.NoTrump)),
+  bid("sayc-1nt-overcall", "Overcalls showing a balanced hand", (): Call => makeBid(1, BidSuit.NoTrump)),
   decision(
     "overcall-1level",
     and(hcpRange(8, 16), goodSuitAtLevel(1)),
-    bid("sayc-overcall-1level", overcall1LevelCall),
+    bid("sayc-overcall-1level", "Overcalls showing a good suit", overcall1LevelCall),
     decision(
       "overcall-2level",
       and(hcpRange(10, 16), goodSuitAtLevel(2)),
-      bid("sayc-overcall-2level", overcall2LevelCall),
+      bid("sayc-overcall-2level", "Overcalls showing a good suit", overcall2LevelCall),
       saycPass(),
     ),
   ),
@@ -299,19 +299,19 @@ const competitiveBranch: RuleNode = decision(
 const openerNonRaiseRebidBranch: RuleNode = decision(
   "rebid-raise-partner",
   and(hcpRange(12, 16), partnerRespondedMajorWithSupport()),
-  bid("sayc-rebid-raise-partner-major", rebidRaisePartnerMajorCall),
+  bid("sayc-rebid-raise-partner-major", "Raises partner's major suit response", rebidRaisePartnerMajorCall),
   decision(
     "rebid-own-suit",
     and(hcpRange(12, 17), sixPlusInOpenedSuit()),
-    bid("sayc-rebid-own-suit", rebidOwnSuitCall),
+    bid("sayc-rebid-own-suit", "Rebids showing a 6+ card suit", rebidOwnSuitCall),
     decision(
       "rebid-1nt",
       and(hcpRange(12, 14), isBalanced()),
-      bid("sayc-rebid-1nt", (): Call => makeBid(1, BidSuit.NoTrump)),
+      bid("sayc-rebid-1nt", "Rebids notrump showing a balanced hand", (): Call => makeBid(1, BidSuit.NoTrump)),
       decision(
         "rebid-2nt",
         and(hcpRange(18, 19), isBalanced()),
-        bid("sayc-rebid-2nt", (): Call => makeBid(2, BidSuit.NoTrump)),
+        bid("sayc-rebid-2nt", "Rebids notrump showing extra values", (): Call => makeBid(2, BidSuit.NoTrump)),
         saycPass(),
       ),
     ),
@@ -321,15 +321,15 @@ const openerNonRaiseRebidBranch: RuleNode = decision(
 const openerRebidBranch: RuleNode = decision(
   "rebid-4m-after-raise",
   and(hcpMin(19), partnerRaisedOurMajor()),
-  bid("sayc-rebid-4m-after-raise", rebid4mAfterRaiseCall),
+  bid("sayc-rebid-4m-after-raise", "Jumps to game in the raised major", rebid4mAfterRaiseCall),
   decision(
     "rebid-3m-invite",
     and(hcpRange(17, 18), partnerRaisedOurMajor()),
-    bid("sayc-rebid-3m-invite", rebid3mInviteCall),
+    bid("sayc-rebid-3m-invite", "Invites game in the raised major", rebid3mInviteCall),
     decision(
       "rebid-pass-raise",
       and(hcpRange(12, 16), partnerRaisedOurMajor()),
-      bid("sayc-rebid-pass-after-raise", (): Call => pass),
+      bid("sayc-rebid-pass-after-raise", "Accepts partner's raise", (): Call => pass),
       openerNonRaiseRebidBranch,
     ),
   ),
@@ -358,7 +358,7 @@ const saycRuleTree: RuleNode = decision(
         "is-opener-rebid",
         and(isOpener(), seatHasBid()),
         openerRebidBranch,
-        bid("sayc-pass", (): Call => pass),
+        bid("sayc-pass", "Passes with no suitable action available", (): Call => pass),
       ),
     ),
   ),

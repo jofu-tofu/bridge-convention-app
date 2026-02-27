@@ -25,7 +25,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 
-**Exported types:** `BidFeedback`, `BidHistoryEntry`, `GamePhase`, `PlayLogEntry`, `seatController()`.
+**Exported types:** `BidFeedback`, `BidHistoryEntry` (re-exported from `shared/types.ts`), `GamePhase`, `PlayLogEntry`, `seatController()`.
 
 **Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
 
@@ -34,7 +34,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `EnginePort` methods are async (for V2 Tauri IPC). Rust backends (TauriIpcEngine, HttpEngine) are truly async.
 - `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/core/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
 - `context.ts` provides Svelte context DI helpers (`setEngine`, `setGameStore`, `setAppStore`, `getEngine`, `getGameStore`, `getAppStore`) — used by `App.svelte` and components
-- `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`) + `seat` and `isUser`
+- `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `meaning`) + `seat` and `isUser`
 - Default auction entries get generic explanations (e.g., "Opening 1NT bid") — richer explanations deferred to V2
 - `isUserTurn` is `$derived` — combines `currentTurn`, `drillSession.isUserSeat()`, and `!isProcessing`
 

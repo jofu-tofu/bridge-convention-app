@@ -12,7 +12,7 @@ import {
 } from "./condition-evaluator";
 import type { TreeConventionConfig, RuleNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
-import { evaluateTree, evaluateTreeFast } from "./tree-evaluator";
+import { evaluateTree } from "./tree-evaluator";
 import { treeResultToBiddingRuleResult, flattenTree } from "./tree-compat";
 
 /** Type guard: does this convention use a rule tree? */
@@ -65,6 +65,7 @@ export interface BiddingRuleResult {
   readonly call: Call;
   readonly rule: string;
   readonly explanation: string;
+  readonly meaning?: string;
   readonly conditionResults?: readonly ConditionResult[];
   /** Raw tree evaluation result — available for conventions using rule trees.
    *  Carries DecisionNode references, so must not cross the shared/ boundary directly. */
@@ -83,16 +84,10 @@ export function evaluateBiddingRules(
     );
   }
 
-  // Fast check first (no describe() calls) — only run full eval on match
-  const fastMatch = evaluateTreeFast(config.ruleTree, context);
-  if (!fastMatch) return null;
-  // Validate legality before paying the describe() cost
-  const call = fastMatch.call(context);
-  if (!isLegalCall(context.auction, call, context.seat)) return null;
-  // Full eval for explanation/conditionResults (describe() only called on matched path)
   const treeResult = evaluateTree(config.ruleTree, context);
   const result = treeResultToBiddingRuleResult(treeResult, context);
   if (!result) return null;
+  if (!isLegalCall(context.auction, result.call, context.seat)) return null;
   return { ...result, treeEvalResult: treeResult, treeRoot: config.ruleTree };
 }
 

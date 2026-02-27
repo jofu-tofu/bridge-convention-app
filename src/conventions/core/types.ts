@@ -66,7 +66,7 @@ export interface RuleCondition {
   readonly label: string;
   /** Whether this condition checks auction state ('auction') or hand properties ('hand').
    *  Used by flattenTree() for auction/hand splitting. Set by condition factories. */
-  readonly category?: "auction" | "hand";
+  readonly category: "auction" | "hand";
   /** Test whether this condition is satisfied. */
   test(context: BiddingContext): boolean;
   /** Produce a human-readable description of what this condition found.
@@ -120,6 +120,11 @@ export interface ConventionConfig {
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   /** If true, convention is internal (e.g., SAYC for opponents) and hidden from UI picker. */
   readonly internal?: boolean;
+  /** If set, drill infrastructure picks a random dealer from this list.
+   *  When the chosen dealer differs from dealConstraints.dealer, all seat
+   *  constraints and auction entries are rotated 180° (N↔S, E↔W).
+   *  Entries should be from the same partnership pair (E+W or N+S). */
+  readonly allowedDealers?: readonly Seat[];
   /** Present on tree conventions only. See TreeConventionConfig in rule-tree.ts. */
   readonly ruleTree?: import("./rule-tree").RuleNode;
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteSet } from "svelte/reactivity";
   import type { BidFeedback } from "../../stores/game.svelte";
   import { formatCall } from "../../display/format";
 
@@ -12,16 +13,30 @@
   let { feedback, onContinue, onSkipToReview, onRetry }: Props = $props();
 
   let showAnswer = $state(false);
+  let expandedSiblings = new SvelteSet<number>();
   const forkPoint = $derived(feedback.expectedResult?.treePath?.forkPoint ?? null);
+  const siblings = $derived(feedback.expectedResult?.treePath?.siblings ?? []);
+  const handConditions = $derived(
+    feedback.expectedResult?.conditions?.filter(c => c.category !== "auction") ?? [],
+  );
 
-  // Reset showAnswer when feedback changes (new wrong bid)
+  // Reset showAnswer and expanded state when feedback changes (new wrong bid)
   let prevFeedback: BidFeedback | undefined;
   $effect.pre(() => {
     if (feedback !== prevFeedback) {
       showAnswer = false;
+      expandedSiblings.clear();
     }
     prevFeedback = feedback;
   });
+
+  function toggleSibling(index: number) {
+    if (expandedSiblings.has(index)) {
+      expandedSiblings.delete(index);
+    } else {
+      expandedSiblings.add(index);
+    }
+  }
 </script>
 
 {#if feedback.isCorrect}
@@ -34,11 +49,6 @@
     <p class="text-green-400 font-mono text-lg mt-1">
       {formatCall(feedback.userCall)}
     </p>
-    {#if feedback.expectedResult?.ruleName}
-      <p class="text-green-300/70 text-xs mt-1">
-        {feedback.expectedResult.ruleName}
-      </p>
-    {/if}
   </div>
 {:else}
   <!-- Wrong bid — red feedback -->
@@ -104,20 +114,31 @@
 
     {#if showAnswer && feedback.expectedResult}
       <div
-        class="bg-red-900/50 rounded px-3 py-2 mb-3 border border-red-500/30 min-w-0"
+        class="bg-red-900/50 rounded px-3 py-2 mb-3 border border-red-500/30 min-w-0 space-y-2"
       >
-        <p class="text-xs text-red-300/70 mb-1">Correct bid:</p>
-        <p class="font-mono font-bold text-base text-red-100">
-          {formatCall(feedback.expectedResult.call)}
-        </p>
-        {#if feedback.expectedResult.ruleName}
-          <p class="text-red-300/60 text-xs mt-1">
-            {feedback.expectedResult.ruleName}
+        <!-- 1. Correct bid + meaning -->
+        <div>
+          <p class="text-xs text-red-300/70 mb-0.5">Correct bid:</p>
+          <p class="font-mono font-bold text-base text-red-100">
+            {formatCall(feedback.expectedResult.call)}
+            {#if feedback.expectedResult.meaning}
+              <span class="font-sans font-normal text-sm text-red-200/80">— {feedback.expectedResult.meaning}</span>
+            {/if}
           </p>
+        </div>
+
+        <!-- 2. Hand summary -->
+        {#if feedback.expectedResult.handSummary}
+          <div>
+            <p class="text-xs text-red-300/70 mb-0.5">Your hand:</p>
+            <p class="font-mono text-sm text-red-200">{feedback.expectedResult.handSummary}</p>
+          </div>
         {/if}
-        {#if feedback.expectedResult.conditions}
-          <ul class="mt-2 space-y-1" role="list" aria-label="Bid conditions">
-            {#each feedback.expectedResult.conditions as cond, ci (cond.name + '-' + ci)}
+
+        <!-- 3. Conditions (hand only) -->
+        {#if handConditions.length > 0}
+          <ul class="space-y-1" role="list" aria-label="Bid conditions">
+            {#each handConditions as cond, ci (cond.name + '-' + ci)}
               {#if cond.children}
                 <li class="text-xs min-w-0">
                   <span class="text-red-200/70 break-words">{cond.description}</span>
@@ -165,12 +186,47 @@
             {/each}
           </ul>
         {:else if feedback.expectedResult.explanation}
-          <p class="text-red-200/50 text-xs mt-1 leading-tight">
+          <p class="text-red-200/50 text-xs leading-tight">
             {feedback.expectedResult.explanation}
           </p>
         {/if}
+
+        <!-- 4. Other Bids (sibling alternatives) -->
+        {#if siblings.length > 0}
+          <div class="pt-1 border-t border-red-500/20">
+            <p class="text-xs text-red-300/70 mb-1">Other bids:</p>
+            <div class="space-y-1">
+              {#each siblings as sibling, si (sibling.bidName + '-' + si)}
+                <div class="text-xs">
+                  <button
+                    type="button"
+                    class="flex items-center gap-1 text-left cursor-pointer hover:text-red-100 transition-colors w-full"
+                    onclick={() => toggleSibling(si)}
+                    aria-expanded={expandedSiblings.has(si)}
+                  >
+                    <span class="text-red-300/50 shrink-0">{expandedSiblings.has(si) ? "▾" : "▸"}</span>
+                    <span class="font-mono font-bold text-red-200/80">{formatCall(sibling.call)}</span>
+                    <span class="text-red-200/60">— {sibling.meaning}</span>
+                  </button>
+                  {#if expandedSiblings.has(si) && sibling.failedConditions.length > 0}
+                    <ul class="ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Failed conditions for {sibling.bidName}">
+                      {#each sibling.failedConditions as fc, fi (fc.name + '-' + fi)}
+                        <li class="flex items-center gap-1.5 text-red-300/50">
+                          <span class="text-accent-danger" aria-hidden="true">✗</span>
+                          <span>{fc.description}</span>
+                        </li>
+                      {/each}
+                    </ul>
+                  {/if}
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
+        <!-- 5. Fork point -->
         {#if forkPoint}
-          <div class="mt-2 pt-2 border-t border-red-500/20 space-y-1" data-testid="fork-point">
+          <div class="pt-1 border-t border-red-500/20 space-y-1" data-testid="fork-point">
             <p class="text-xs text-green-400/80 flex items-center gap-1.5">
               <span aria-hidden="true">&#10003;</span>
               <span>{forkPoint.matched.description}</span>

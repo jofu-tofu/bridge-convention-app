@@ -58,6 +58,7 @@ export function and(...conds: RuleCondition[]): RuleCondition {
   return {
     name: "and",
     label: conds.map((c) => c.label).join("; "),
+    category: "hand",
     test(ctx) {
       return conds.every((c) => c.test(ctx));
     },
@@ -85,6 +86,7 @@ export function or(...conds: RuleCondition[]): RuleCondition {
   return {
     name: "or",
     label: conds.map((c) => c.label).join(" or "),
+    category: "hand",
     test(ctx) {
       return conds.some((c) => c.test(ctx));
     },

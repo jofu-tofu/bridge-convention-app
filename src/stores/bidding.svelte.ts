@@ -6,8 +6,7 @@ import type { DrillSession } from "../drill/types";
 import type {
   BiddingStrategy,
   BidResult,
-  TreeEvalSummary,
-  ConditionDetail,
+  BidHistoryEntry,
 } from "../shared/types";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
@@ -15,17 +14,7 @@ import { callsMatch } from "../engine/call-helpers";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import type { GameStoreOptions } from "./game.svelte";
 
-export interface BidHistoryEntry {
-  readonly seat: Seat;
-  readonly call: Call;
-  readonly ruleName: string | null;
-  readonly explanation: string;
-  readonly isUser: boolean;
-  readonly conditions?: readonly ConditionDetail[];
-  readonly isCorrect?: boolean;
-  readonly expectedResult?: BidResult;
-  readonly treePath?: TreeEvalSummary;
-}
+export type { BidHistoryEntry } from "../shared/types";
 
 export interface BidFeedback {
   readonly isCorrect: boolean;
@@ -57,6 +46,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let isProcessing = $state(false);
   let legalCalls = $state<Call[]>([]);
   let bidFeedback = $state<BidFeedback | null>(null);
+  let error = $state<string | null>(null);
   let conventionStrategy: BiddingStrategy | null = null;
 
   // Retry state
@@ -109,6 +99,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
             call: result.call,
             ruleName: result.ruleName,
             explanation: result.explanation,
+            meaning: result.meaning,
+            handSummary: result.handSummary,
             isUser: false,
             conditions: result.conditions,
             treePath: result.treePath,
@@ -190,6 +182,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         call,
         ruleName: null,
         explanation: "User bid",
+        meaning: expectedResult?.meaning,
+        handSummary: expectedResult?.handSummary,
         isUser: true,
         isCorrect,
         expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
@@ -269,6 +263,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     onProcessBid = config.onProcessBid ?? null;
 
     bidFeedback = null;
+    error = null;
     preBidAuction = null;
     preBidTurn = null;
     preBidHistory = null;
@@ -323,6 +318,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     isProcessing = false;
     legalCalls = [];
     bidFeedback = null;
+    error = null;
     conventionStrategy = null;
     preBidAuction = null;
     preBidTurn = null;
@@ -342,19 +338,28 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     get isUserTurn() { return isUserTurn; },
     get legalCalls() { return legalCalls; },
     get bidFeedback() { return bidFeedback; },
+    get error() { return error; },
     init,
     reset,
     userBid(call: Call): void {
-      userBidImpl(call).catch(() => {});
+      userBidImpl(call).catch((e: unknown) => {
+        error = e instanceof Error ? e.message : "Unknown error during bid";
+      });
     },
     dismissBidFeedback(): void {
-      dismissBidFeedbackImpl().catch(() => {});
+      dismissBidFeedbackImpl().catch((e: unknown) => {
+        error = e instanceof Error ? e.message : "Unknown error dismissing feedback";
+      });
     },
     retryBid(): void {
-      retryBidImpl().catch(() => {});
+      retryBidImpl().catch((e: unknown) => {
+        error = e instanceof Error ? e.message : "Unknown error retrying bid";
+      });
     },
     skipFromFeedback(): void {
-      skipFromFeedbackImpl().catch(() => {});
+      skipFromFeedbackImpl().catch((e: unknown) => {
+        error = e instanceof Error ? e.message : "Unknown error skipping from feedback";
+      });
     },
     /** DEV: returns the expected bid result for the current user turn, or null */
     getExpectedBid(): BidResult | null {

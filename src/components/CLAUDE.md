@@ -48,10 +48,11 @@ components/
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Correct/incorrect bid feedback with show-answer toggle + tree fork display
-    BiddingReview.svelte             Bid history table with convention callouts
+    RoundBidList.svelte              Shared round-by-round bid list (configurable expand state, expected result, test IDs)
+    BiddingReview.svelte             Thin wrapper over RoundBidList (expanded siblings, shows expected)
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
-    AuctionRulesPanel.svelte         Round-by-round auction rules view (replaces RulesPanel in review)
+    AuctionRulesPanel.svelte         Thin wrapper over RoundBidList (collapsed siblings, test IDs)
     RulesPanel.svelte                Convention rules display: fired (evaluated) + reference (static) — kept for future learning screen
     DeclarerPrompt.svelte            Declarer/defender choice buttons (used by DeclarerPromptPhase)
     DebugDrawer.svelte               Full-lifecycle debug overlay (dev only)

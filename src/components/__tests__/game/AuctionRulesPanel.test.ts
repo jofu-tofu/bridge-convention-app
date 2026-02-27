@@ -1,9 +1,10 @@
 import { describe, test, expect } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, fireEvent } from "@testing-library/svelte";
 import AuctionRulesPanel from "../../game/AuctionRulesPanel.svelte";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import type { BidHistoryEntry } from "../../../stores/game.svelte";
+import type { SiblingBid } from "../../../shared/types";
 
 function entry(
   seat: Seat,
@@ -22,7 +23,7 @@ function entry(
     isUser: opts.isUser ?? false,
     isCorrect: opts.isCorrect,
     treePath: opts.treePath,
-    conditions: opts.conditions,
+    meaning: opts.meaning,
   };
 }
 
@@ -40,22 +41,10 @@ describe("AuctionRulesPanel", () => {
       props: { bidHistory: history },
     });
 
-    const headers = container.querySelectorAll("[data-testid^='round-header']");
+    const headers = container.querySelectorAll("[data-testid^='auction-rules-round-header']");
     expect(headers).toHaveLength(2);
     expect(headers[0]!.textContent).toContain("Round 1");
     expect(headers[1]!.textContent).toContain("Round 2");
-  });
-
-  test("convention bids show rule name", () => {
-    const history: BidHistoryEntry[] = [
-      entry(Seat.South, "2C", { ruleName: "stayman-ask", isUser: true, isCorrect: true }),
-    ];
-
-    const { container } = render(AuctionRulesPanel, {
-      props: { bidHistory: history },
-    });
-
-    expect(container.textContent).toContain("Stayman Ask");
   });
 
   test("user bids show correctness indicator", () => {
@@ -77,21 +66,46 @@ describe("AuctionRulesPanel", () => {
     expect(incorrectMarkers).toHaveLength(1);
   });
 
-  test("shows conditions when available", () => {
-    const conditions = [
-      { name: "hcp-min", passed: true, description: "8+ HCP (has 12)" },
-      { name: "has-4-major", passed: true, description: "Has 4+ card major (4 hearts)" },
-    ];
+  test("shows meaning for N/S bids", () => {
     const history: BidHistoryEntry[] = [
-      entry(Seat.South, "2C", { ruleName: "stayman-ask", conditions }),
+      entry(Seat.South, "2C", { meaning: "Stayman, asking for majors" }),
     ];
 
     const { container } = render(AuctionRulesPanel, {
       props: { bidHistory: history },
     });
 
-    expect(container.textContent).toContain("8+ HCP (has 12)");
-    expect(container.textContent).toContain("Has 4+ card major");
+    expect(container.textContent).toContain("Stayman, asking for majors");
+  });
+
+  test("shows expandable alternatives for N/S bids with siblings", async () => {
+    const siblings: SiblingBid[] = [
+      {
+        bidName: "jacoby-transfer",
+        meaning: "Transfer to hearts",
+        call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+        failedConditions: [{ name: "hearts-5", description: "Need 5+ hearts" }],
+      },
+    ];
+    const history: BidHistoryEntry[] = [
+      entry(Seat.South, "2C", {
+        meaning: "Stayman",
+        treePath: { matchedNodeName: "stayman-ask", path: [], visited: [], siblings },
+      }),
+    ];
+
+    const { container } = render(AuctionRulesPanel, {
+      props: { bidHistory: history },
+    });
+
+    expect(container.textContent).toContain("1 alternative");
+
+    // Expand to see details
+    const toggleBtn = container.querySelector("button[aria-expanded]")!;
+    await fireEvent.click(toggleBtn);
+
+    expect(container.textContent).toContain("Transfer to hearts");
+    expect(container.textContent).toContain("Need 5+ hearts");
   });
 
   test("renders empty state for empty bidHistory", () => {
@@ -99,6 +113,6 @@ describe("AuctionRulesPanel", () => {
       props: { bidHistory: [] },
     });
 
-    expect(container.textContent).toContain("No auction data");
+    expect(container.textContent).toContain("No bids yet");
   });
 });

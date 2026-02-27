@@ -893,3 +893,25 @@ describe("Landy overcaller rebids after 2NT [bridgebum/landy]", () => {
     expect(call.strain).toBe(BidSuit.Spades);
   });
 });
+
+// ─── Seat-blind tree evaluation (West-opens scenario) ─────
+
+describe("Landy seat-blind evaluation", () => {
+  test("tree works when North is overcaller (West opens 1NT)", () => {
+    // 12 HCP, 5 spades + 4 hearts → Landy 2C
+    // SA SK SJ S8 S4 . HK HQ H7 H3 . D9 D5 . C8 C2
+    const overcaller = hand("SA", "SK", "SJ", "S8", "S4", "HK", "HQ", "H7", "H3", "D9", "D5", "C8", "C2");
+    const context = makeBiddingContext(
+      overcaller,
+      Seat.North,
+      ["1NT"],
+      Seat.West,
+    );
+    const result = evaluateBiddingRules(context, landyConfig);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("landy-2c");
+    const call = result!.call as ContractBid;
+    expect(call.level).toBe(2);
+    expect(call.strain).toBe(BidSuit.Clubs);
+  });
+});

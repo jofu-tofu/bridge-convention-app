@@ -6,26 +6,28 @@ import type { RuleCondition, BiddingContext } from "../core/types";
 import { hand } from "../../engine/__tests__/fixtures";
 import { createBiddingContext } from "../core/context-factory";
 
-export function alwaysTrue(name: string): RuleCondition {
+export function alwaysTrue(name: string, category: "auction" | "hand" = "hand"): RuleCondition {
   return {
     name,
     label: `Always true: ${name}`,
+    category,
     test: () => true,
     describe: () => `${name} passed`,
   };
 }
 
-export function alwaysFalse(name: string): RuleCondition {
+export function alwaysFalse(name: string, category: "auction" | "hand" = "hand"): RuleCondition {
   return {
     name,
     label: `Always false: ${name}`,
+    category,
     test: () => false,
     describe: () => `${name} failed`,
   };
 }
 
 export function staticBid(name: string, level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): BidNode {
-  return bid(name, () => ({ type: "bid", level, strain }));
+  return bid(name, `Test: ${name}`, () => ({ type: "bid", level, strain }));
 }
 
 /** 4=3=3=3 shape, 28 HCP, empty auction, South seat. */

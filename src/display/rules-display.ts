@@ -1,8 +1,8 @@
 import type {
   ConventionConfig,
 } from "../conventions/core/types";
-import type { BidHistoryEntry } from "../stores/game.svelte";
-import type { ConditionDetail, TreeEvalSummary } from "../shared/types";
+import type { BidHistoryEntry } from "../shared/types";
+import type { BidResult, ConditionDetail, TreeEvalSummary } from "../shared/types";
 import type { Deal, Call, Seat, Auction } from "../engine/types";
 import { Seat as SeatEnum } from "../engine/types";
 import {
@@ -178,8 +178,11 @@ export interface RoundEntry {
   readonly seat: Seat;
   readonly call: Call;
   readonly ruleName: string | null;
+  readonly meaning?: string;
+  readonly handSummary?: string;
   readonly isUser: boolean;
   readonly isCorrect?: boolean;
+  readonly expectedResult?: BidResult;
   readonly treePath?: TreeEvalSummary;
   readonly conditions?: readonly ConditionDetail[];
 }
@@ -207,8 +210,11 @@ export function groupBidsByRound(
         seat: e.seat,
         call: e.call,
         ruleName: e.ruleName,
+        meaning: e.meaning,
+        handSummary: e.handSummary,
         isUser: e.isUser,
         isCorrect: e.isCorrect,
+        expectedResult: e.expectedResult,
         treePath: e.treePath,
         conditions: e.conditions,
       })),

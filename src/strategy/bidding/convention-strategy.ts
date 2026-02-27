@@ -1,7 +1,9 @@
-import type { ConventionConfig, ConditionResult } from "../../conventions/core/types";
+import type { ConventionConfig, ConditionResult, BiddingContext } from "../../conventions/core/types";
 import { evaluateBiddingRules } from "../../conventions/core/registry";
 import type { RuleNode, DecisionNode } from "../../conventions/core/rule-tree";
 import type { TreeEvalResult, PathEntry } from "../../conventions/core/tree-evaluator";
+import { findSiblingBids } from "../../conventions/core/sibling-finder";
+import { formatHandSummary } from "../../shared/hand-summary";
 import type {
   BiddingStrategy,
   BidResult,
@@ -9,6 +11,7 @@ import type {
   TreePathEntry,
   TreeEvalSummary,
   TreeForkPoint,
+  SiblingBid,
 } from "../../shared/types";
 
 export function mapConditionResult(cr: ConditionResult): ConditionDetail {
@@ -39,6 +42,7 @@ export function mapConditionResult(cr: ConditionResult): ConditionDetail {
       name: cr.condition.name,
       passed: cr.passed,
       description: cr.description,
+      category: cr.condition.category,
       children: childrenWithBest,
     };
   }
@@ -46,6 +50,7 @@ export function mapConditionResult(cr: ConditionResult): ConditionDetail {
     name: cr.condition.name,
     passed: cr.passed,
     description: cr.description,
+    category: cr.condition.category,
   };
 }
 
@@ -98,14 +103,26 @@ export function extractForkPoint(entries: readonly TreePathEntry[]): TreeForkPoi
   return undefined;
 }
 
-function mapTreeEvalResult(result: TreeEvalResult, tree: RuleNode): TreeEvalSummary {
+function mapTreeEvalResult(result: TreeEvalResult, tree: RuleNode, context: BiddingContext): TreeEvalSummary {
   const visited = mapVisitedWithStructure(result.visited, tree);
   const path = visited.filter((e) => e.passed);
+
+  let siblings: readonly SiblingBid[] | undefined;
+  try {
+    siblings = result.matched
+      ? findSiblingBids(tree, result.matched, context)
+      : undefined;
+  } catch {
+    // Invariant violation or unexpected error — degrade gracefully
+    siblings = undefined;
+  }
+
   return {
     matchedNodeName: result.matched?.name ?? "",
     path,
     visited,
     forkPoint: extractForkPoint(visited),
+    siblings,
   };
 }
 
@@ -122,11 +139,13 @@ export function conventionToStrategy(
         call: result.call,
         ruleName: result.rule,
         explanation: result.explanation,
+        meaning: result.meaning,
+        handSummary: formatHandSummary(context.evaluation),
         conditions: result.conditionResults
           ? result.conditionResults.map(mapConditionResult)
           : undefined,
         treePath: result.treeEvalResult && result.treeRoot
-          ? mapTreeEvalResult(result.treeEvalResult, result.treeRoot)
+          ? mapTreeEvalResult(result.treeEvalResult, result.treeRoot, context)
           : undefined,
       };
     },

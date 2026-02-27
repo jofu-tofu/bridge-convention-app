@@ -165,16 +165,16 @@ function gerberSignoffCall(ctx: BiddingContext): Call {
 const aceResponseBranch: RuleNode = decision(
   "ace-3",
   aceCount(3),
-  bid("gerber-response-three", (): Call => ({ type: "bid", level: 4, strain: BidSuit.NoTrump })),
+  bid("gerber-response-three", "Shows exactly 3 aces", (): Call => ({ type: "bid", level: 4, strain: BidSuit.NoTrump })),
   decision(
     "ace-2",
     aceCount(2),
-    bid("gerber-response-two", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Spades })),
+    bid("gerber-response-two", "Shows exactly 2 aces", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Spades })),
     decision(
       "ace-1",
       aceCount(1),
-      bid("gerber-response-one", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Hearts })),
-      bid("gerber-response-zero-four", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Diamonds })),
+      bid("gerber-response-one", "Shows exactly 1 ace", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Hearts })),
+      bid("gerber-response-zero-four", "Shows 0 or 4 aces", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Diamonds })),
     ),
   ),
 );
@@ -183,16 +183,16 @@ const aceResponseBranch: RuleNode = decision(
 const kingResponseBranch: RuleNode = decision(
   "king-3",
   kingCount(3),
-  bid("gerber-king-response-three", (): Call => ({ type: "bid", level: 5, strain: BidSuit.NoTrump })),
+  bid("gerber-king-response-three", "Shows exactly 3 kings", (): Call => ({ type: "bid", level: 5, strain: BidSuit.NoTrump })),
   decision(
     "king-2",
     kingCount(2),
-    bid("gerber-king-response-two", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Spades })),
+    bid("gerber-king-response-two", "Shows exactly 2 kings", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Spades })),
     decision(
       "king-1",
       kingCount(1),
-      bid("gerber-king-response-one", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Hearts })),
-      bid("gerber-king-response-zero-four", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Diamonds })),
+      bid("gerber-king-response-one", "Shows exactly 1 king", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Hearts })),
+      bid("gerber-king-response-zero-four", "Shows 0 or 4 kings", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Diamonds })),
     ),
   ),
 );
@@ -204,7 +204,7 @@ const gerberRuleTree: RuleNode = decision(
   decision(
     "hcp-and-no-void",
     and(hcpMin(16), noVoid()),
-    bid("gerber-ask", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Clubs })),
+    bid("gerber-ask", "Asks how many aces partner holds", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Clubs })),
     fallback(),
   ),
   // NO: not after NT-P
@@ -217,7 +217,7 @@ const gerberRuleTree: RuleNode = decision(
     decision(
       "king-ask-check",
       gerberKingAskCondition(),
-      bid("gerber-king-ask", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Clubs })),
+      bid("gerber-king-ask", "Asks how many kings partner holds", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Clubs })),
       // NO: not king-ask eligible
       decision(
         "after-king-ask",
@@ -228,7 +228,7 @@ const gerberRuleTree: RuleNode = decision(
         decision(
           "signoff-check",
           gerberSignoffCondition(),
-          bid("gerber-signoff", gerberSignoffCall),
+          bid("gerber-signoff", "Signs off at the appropriate notrump level", gerberSignoffCall),
           fallback(),
         ),
       ),

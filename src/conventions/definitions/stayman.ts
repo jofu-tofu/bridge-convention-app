@@ -55,7 +55,7 @@ const round1Ask: RuleNode = decision(
       ],
       4,
     ),
-    bid("stayman-ask", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+    bid("stayman-ask", "Asks for a 4-card major", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
     fallback("no-major"),
   ),
   fallback("too-weak"),
@@ -65,12 +65,12 @@ const round1Ask: RuleNode = decision(
 const round2Response: RuleNode = decision(
   "has-4-hearts",
   suitMin(1, "hearts", 4),
-  bid("stayman-response-hearts", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+  bid("stayman-response-hearts", "Shows 4+ hearts", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
   decision(
     "has-4-spades",
     suitMin(0, "spades", 4),
-    bid("stayman-response-spades", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
-    bid("stayman-response-denial", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+    bid("stayman-response-spades", "Shows 4+ spades but denies 4 hearts", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+    bid("stayman-response-denial", "Denies holding a 4-card major", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
   ),
 );
 
@@ -84,15 +84,15 @@ const rebidAfter2H: RuleNode = decision(
   decision(
     "game-hcp-fit-h",
     hcpMin(10),
-    bid("stayman-rebid-major-fit", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Hearts })),
-    bid("stayman-rebid-major-fit-invite", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
+    bid("stayman-rebid-major-fit", "Raises to game in the agreed major", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Hearts })),
+    bid("stayman-rebid-major-fit-invite", "Invites game in the agreed major", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
   ),
   // No fit: NT game or invite
   decision(
     "game-hcp-nofit-h",
     hcpMin(10),
-    bid("stayman-rebid-no-fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-    bid("stayman-rebid-no-fit-invite", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+    bid("stayman-rebid-no-fit", "Bids game in notrump without a major fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+    bid("stayman-rebid-no-fit-invite", "Invites game in notrump without a major fit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
   ),
 );
 
@@ -103,14 +103,14 @@ const rebidAfter2S: RuleNode = decision(
   decision(
     "game-hcp-fit-s",
     hcpMin(10),
-    bid("stayman-rebid-major-fit", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Spades })),
-    bid("stayman-rebid-major-fit-invite", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+    bid("stayman-rebid-major-fit", "Raises to game in the agreed major", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Spades })),
+    bid("stayman-rebid-major-fit-invite", "Invites game in the agreed major", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
   ),
   decision(
     "game-hcp-nofit-s",
     hcpMin(10),
-    bid("stayman-rebid-no-fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-    bid("stayman-rebid-no-fit-invite", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+    bid("stayman-rebid-no-fit", "Bids game in notrump without a major fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+    bid("stayman-rebid-no-fit-invite", "Invites game in notrump without a major fit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
   ),
 );
 
@@ -119,17 +119,17 @@ const rebidAfter2D: RuleNode = decision(
   "smolen-hearts",
   and(hcpMin(10), suitMin(0, "spades", 4), suitMin(1, "hearts", 5)),
   // 3H Smolen: shows 4S+5H, game-forcing
-  bid("stayman-rebid-smolen-hearts", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
+  bid("stayman-rebid-smolen-hearts", "Shows 5 hearts and 4 spades", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
   decision(
     "smolen-spades",
     and(hcpMin(10), suitMin(0, "spades", 5), suitMin(1, "hearts", 4)),
     // 3S Smolen: shows 5S+4H, game-forcing
-    bid("stayman-rebid-smolen-spades", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+    bid("stayman-rebid-smolen-spades", "Shows 5 spades and 4 hearts", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
     decision(
       "game-hcp-denial",
       hcpMin(10),
-      bid("stayman-rebid-no-fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-      bid("stayman-rebid-no-fit-invite", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+      bid("stayman-rebid-no-fit", "Bids game in notrump without a major fit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+      bid("stayman-rebid-no-fit-invite", "Invites game in notrump without a major fit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
     ),
   ),
 );
@@ -149,7 +149,7 @@ const round1Ask2NT: RuleNode = decision(
       ],
       4,
     ),
-    bid("stayman-ask", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+    bid("stayman-ask", "Asks for a 4-card major", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
     fallback("no-major-2nt"),
   ),
   fallback("too-weak-2nt"),
@@ -159,12 +159,12 @@ const round1Ask2NT: RuleNode = decision(
 const round2Response2NT: RuleNode = decision(
   "has-4-hearts-2nt",
   suitMin(1, "hearts", 4),
-  bid("stayman-response-hearts", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
+  bid("stayman-response-hearts", "Shows 4+ hearts", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
   decision(
     "has-4-spades-2nt",
     suitMin(0, "spades", 4),
-    bid("stayman-response-spades", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
-    bid("stayman-response-denial", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+    bid("stayman-response-spades", "Shows 4+ spades but denies 4 hearts", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+    bid("stayman-response-denial", "Denies holding a 4-card major", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
   ),
 );
 

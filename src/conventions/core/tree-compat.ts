@@ -122,6 +122,7 @@ export function treeResultToBiddingRuleResult(
     call: result.matched.call(context),
     rule: result.matched.name,
     explanation,
+    meaning: result.matched.meaning,
     conditionResults,
   };
 }

@@ -216,23 +216,23 @@ function partnerSignedOffInThreeMajor(): RuleCondition {
 const responderInitialBranch: RuleNode = decision(
   "splinter-hcp",
   and(hcpMin(12), majorSupport(), hasShortage()),
-  bid("bergen-splinter", splinterCall),
+  bid("bergen-splinter", "Shows a raise with a singleton or void", splinterCall),
   decision(
     "game-raise-hcp",
     and(hcpMin(13), majorSupport()),
-    bid("bergen-game-raise", gameInOpenersMajor),
+    bid("bergen-game-raise", "Raises directly to game with support", gameInOpenersMajor),
     decision(
       "limit-raise-hcp",
       and(hcpRange(10, 12), majorSupport()),
-      bid("bergen-limit-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+      bid("bergen-limit-raise", "Shows a limit raise with support", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
       decision(
         "constructive-hcp",
         and(hcpRange(7, 10), majorSupport()),
-        bid("bergen-constructive-raise", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+        bid("bergen-constructive-raise", "Shows a constructive raise with support", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
         decision(
           "preemptive-hcp",
           and(hcpMax(6), majorSupport()),
-          bid("bergen-preemptive-raise", threeOfOpenersMajor),
+          bid("bergen-preemptive-raise", "Makes a preemptive raise to consume bidding space", threeOfOpenersMajor),
           fallback(),
         ),
       ),
@@ -244,12 +244,12 @@ const responderInitialBranch: RuleNode = decision(
 const openerAfterConstructive: RuleNode = decision(
   "rebid-game-17+",
   hcpMin(17),
-  bid("bergen-rebid-game-after-constructive", openerRebidGame),
+  bid("bergen-rebid-game-after-constructive", "Accepts and raises to game", openerRebidGame),
   decision(
     "rebid-try-14-16",
     hcpRange(14, 16),
-    bid("bergen-rebid-try-after-constructive", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
-    bid("bergen-rebid-signoff-after-constructive", (): Call => ({ type: "pass" })),
+    bid("bergen-rebid-try-after-constructive", "Makes a game try", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+    bid("bergen-rebid-signoff-after-constructive", "Signs off over the constructive raise", (): Call => ({ type: "pass" })),
   ),
 );
 
@@ -257,16 +257,16 @@ const openerAfterConstructive: RuleNode = decision(
 const openerAfterLimit: RuleNode = decision(
   "rebid-game-15+",
   hcpMin(15),
-  bid("bergen-rebid-game-after-limit", openerRebidGame),
-  bid("bergen-rebid-signoff-after-limit", openerRebidSignoff),
+  bid("bergen-rebid-game-after-limit", "Accepts the limit raise and bids game", openerRebidGame),
+  bid("bergen-rebid-signoff-after-limit", "Declines the limit raise and signs off", openerRebidSignoff),
 );
 
 // Opener rebids after preemptive (1M P 3M P)
 const openerAfterPreemptive: RuleNode = decision(
   "rebid-game-18+",
   hcpMin(18),
-  bid("bergen-rebid-game-after-preemptive", openerRebidGame),
-  bid("bergen-rebid-pass-after-preemptive", (): Call => ({ type: "pass" })),
+  bid("bergen-rebid-game-after-preemptive", "Bids game over the preemptive raise", openerRebidGame),
+  bid("bergen-rebid-pass-after-preemptive", "Passes over the preemptive raise", (): Call => ({ type: "pass" })),
 );
 
 // Opener round 1 rebids
@@ -291,19 +291,19 @@ const openerRound1Branch: RuleNode = decision(
 const responderRound1Branch: RuleNode = decision(
   "partner-bid-game",
   partnerBidGameInMajor(),
-  bid("bergen-accept-game", (): Call => ({ type: "pass" })),
+  bid("bergen-accept-game", "Accepts partner's game bid", (): Call => ({ type: "pass" })),
   decision(
     "partner-signoff",
     partnerSignedOffInThreeMajor(),
-    bid("bergen-accept-signoff", (): Call => ({ type: "pass" })),
+    bid("bergen-accept-signoff", "Accepts partner's signoff", (): Call => ({ type: "pass" })),
     decision(
       "game-try-resp",
       partnerBidAt(3, BidSuit.Diamonds),
       decision(
         "try-accept-9-10",
         hcpRange(9, 10),
-        bid("bergen-try-accept", gameTryAcceptCall),
-        bid("bergen-try-reject", gameTryRejectCall),
+        bid("bergen-try-accept", "Accepts the game try and bids game", gameTryAcceptCall),
+        bid("bergen-try-reject", "Rejects the game try and signs off", gameTryRejectCall),
       ),
       fallback(),
     ),
@@ -326,7 +326,7 @@ const bergenRuleTree: RuleNode = decision(
       decision(
         "is-opener-round2",
         and(isOpener(), biddingRound(2), not(opponentActed())),
-        bid("bergen-opener-accept-after-try", (): Call => ({ type: "pass" })),
+        bid("bergen-opener-accept-after-try", "Accepts partner's decision on the game try", (): Call => ({ type: "pass" })),
         fallback(),
       ),
     ),

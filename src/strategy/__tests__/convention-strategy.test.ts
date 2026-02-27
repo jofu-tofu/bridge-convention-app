@@ -83,6 +83,32 @@ describe("conventionToStrategy", () => {
     }
   });
 
+  test("suggest includes siblings in treePath for opener response", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const opener = staymanOpener();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.treePath).toBeDefined();
+    expect(result!.treePath!.siblings).toBeDefined();
+    expect(result!.treePath!.siblings!.length).toBeGreaterThan(0);
+
+    // Each sibling has valid shape
+    for (const sibling of result!.treePath!.siblings!) {
+      expect(sibling.bidName).toBeTruthy();
+      expect(sibling.meaning).toBeTruthy();
+      expect(sibling.call).toBeDefined();
+      expect(Array.isArray(sibling.failedConditions)).toBe(true);
+    }
+  });
+
   test("suggest preserves rule metadata from evaluateBiddingRules", () => {
     const strategy = conventionToStrategy(staymanConfig);
     const opener = staymanOpener();
@@ -154,7 +180,7 @@ describe("extractForkPoint", () => {
 
 describe("mapConditionResult — bestBranch marking", () => {
   function makeCond(name: string) {
-    return { name, label: name, test: () => false, describe: () => "desc" };
+    return { name, label: name, category: "hand" as const, test: () => false, describe: () => "desc" };
   }
 
   test("no branch marked as best when all branches have 0 passing conditions", () => {
@@ -215,8 +241,8 @@ describe("mapConditionResult — bestBranch marking", () => {
 // ─── Task 3: buildNodeInfo duplicate name handling ──────────
 
 describe("mapVisitedWithStructure — duplicate DecisionNode names", () => {
-  const alwaysTrue = { name: "always", label: "always", test: () => true, describe: () => "yes" };
-  const alwaysFalse = { name: "never", label: "never", test: () => false, describe: () => "no" };
+  const alwaysTrue = { name: "always", label: "always", category: "hand" as const, test: () => true, describe: () => "yes" };
+  const alwaysFalse = { name: "never", label: "never", category: "hand" as const, test: () => false, describe: () => "no" };
 
   test("two DecisionNodes sharing the same name get correct depth and parent info", () => {
     // Build tree with duplicate "check-suit" names at different depths:
@@ -234,7 +260,7 @@ describe("mapVisitedWithStructure — duplicate DecisionNode names", () => {
     // instead of depth=2/parent="middle".
     const checkSuitDeep: DecisionNode = decision(
       "check-suit", alwaysTrue,
-      bid("bid-deep", () => ({ type: "pass" as const })),
+      bid("bid-deep", "Test: bid-deep", () => ({ type: "pass" as const })),
       fallback("no match"),
     );
     const middle: DecisionNode = decision(
@@ -244,7 +270,7 @@ describe("mapVisitedWithStructure — duplicate DecisionNode names", () => {
     );
     const checkSuitShallow: DecisionNode = decision(
       "check-suit", alwaysFalse,
-      bid("bid-shallow", () => ({ type: "pass" as const })),
+      bid("bid-shallow", "Test: bid-shallow", () => ({ type: "pass" as const })),
       fallback("no match"),
     );
     const root: DecisionNode = decision(
