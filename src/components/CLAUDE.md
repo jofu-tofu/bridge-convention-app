@@ -38,7 +38,7 @@ components/
       layout-props.ts                Shared LayoutProps interface (6 members)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, skip-to-review
-      ReviewSidePanel.svelte         Tabbed review: Bidding + Rules + Analysis, next deal / back to menu
+      ReviewSidePanel.svelte         Tabbed review: Bidding + Analysis, next deal / back to menu
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin
   game/
@@ -52,7 +52,6 @@ components/
     BiddingReview.svelte             Thin wrapper over RoundBidList (expanded siblings, shows expected)
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
-    AuctionRulesPanel.svelte         Thin wrapper over RoundBidList (collapsed siblings, test IDs)
     RulesPanel.svelte                Convention rules display: fired (evaluated) + reference (static) — kept for future learning screen
     DeclarerPrompt.svelte            Declarer/defender choice buttons (used by DeclarerPromptPhase)
     DebugDrawer.svelte               Full-lifecycle debug overlay (dev only)

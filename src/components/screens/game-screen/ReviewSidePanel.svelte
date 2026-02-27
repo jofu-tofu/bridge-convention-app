@@ -6,7 +6,6 @@
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
-  import AuctionRulesPanel from "../../game/AuctionRulesPanel.svelte";
   import Button from "../../shared/Button.svelte";
 
   interface Props {
@@ -43,7 +42,7 @@
     deal,
   }: Props = $props();
 
-  let activeTab = $state<"bidding" | "rules" | "analysis">("bidding");
+  let activeTab = $state<"bidding" | "analysis">("bidding");
 
   // Reset to bidding tab on new deal
   $effect(() => {
@@ -82,18 +81,6 @@
     onclick={() => (activeTab = "bidding")}
   >
     Bidding
-  </button>
-  <button
-    type="button"
-    role="tab"
-    aria-selected={activeTab === "rules"}
-    aria-controls="review-panel-rules"
-    class="flex-1 px-3 py-1.5 text-sm font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'rules'
-      ? 'bg-bg-elevated text-text-primary'
-      : 'text-text-muted hover:text-text-secondary'}"
-    onclick={() => (activeTab = "rules")}
-  >
-    Rules
   </button>
   <button
     type="button"
@@ -137,10 +124,6 @@
     {/if}
 
     <BiddingReview {bidHistory} />
-  </div>
-{:else if activeTab === "rules"}
-  <div id="review-panel-rules" role="tabpanel" aria-label="Convention rules">
-    <AuctionRulesPanel {bidHistory} />
   </div>
 {:else if activeTab === "analysis"}
   <div id="review-panel-analysis" role="tabpanel" aria-label="DDS analysis" class="min-w-0 overflow-x-hidden">
