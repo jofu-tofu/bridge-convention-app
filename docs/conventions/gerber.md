@@ -55,6 +55,11 @@
 
 Standard Gerber (0123 step responses). Roman Key Card Gerber (1430 responses) not implemented.
 
+## Known Limitations
+
+- **NT overcall trigger not supported:** Bridge Bum says Gerber applies after "any NT bid (or overcall)" but the implementation only handles 1NT/2NT openings. NT overcalls (e.g., 1H-1NT-P-4C) would require deal generation for overcall scenarios, which the drill infrastructure does not currently support.
+- **Jump rebid of 4C not supported:** Bridge Bum says "a jump rebid of 4C in response to a natural no-trump bid is Gerber" (e.g., 1NT-P-2C-P-2D-P-4C after Stayman). This is a cross-convention interaction that is out of scope because conventions drill independently.
+
 ## Simplifications
 
 - Signoff logic simplified: decisions based on ace/king totals only

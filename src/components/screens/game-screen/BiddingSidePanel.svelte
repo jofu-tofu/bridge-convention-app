@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Call } from "../../../engine/types";
   import type { BidFeedback } from "../../../stores/game.svelte";
+  import { getGameStore } from "../../../stores/context";
   import BidPanel from "../../game/BidPanel.svelte";
   import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
   import DebugPanel from "../../game/DebugPanel.svelte";
@@ -10,7 +11,6 @@
     onBid: (call: Call) => void;
     disabled: boolean;
     isUserTurn: boolean;
-    bidFeedback: BidFeedback | null;
     isFeedbackBlocking: boolean;
     onDismissFeedback: () => void;
     onSkipToReview: () => void;
@@ -22,7 +22,6 @@
     onBid,
     disabled,
     isUserTurn,
-    bidFeedback,
     isFeedbackBlocking,
     onDismissFeedback,
     onSkipToReview,
@@ -30,6 +29,17 @@
   }: Props = $props();
 
   const DEV = import.meta.env.DEV;
+
+  // WORKAROUND: Svelte 5 $derived doesn't reliably track through store
+  // getter chains after async operations. Using $effect for eager tracking
+  // and class:hidden instead of {#if} to keep elements in the DOM.
+  const gameStore = getGameStore();
+  // eslint-disable-next-line svelte/prefer-writable-derived -- $derived doesn't propagate through store getter chains
+  let bidFeedback = $state.raw<BidFeedback | null>(null);
+  $effect(() => {
+    bidFeedback = gameStore.bidFeedback;
+  });
+  const hasFeedback = $derived(bidFeedback !== null);
 </script>
 
 <div class="min-w-0 shrink-0">
@@ -37,7 +47,7 @@
     class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"
   >
-    {#if bidFeedback}
+    {#if hasFeedback}
       Your bid
     {:else if isUserTurn}
       Your bid
@@ -47,16 +57,18 @@
   </h2>
   <BidPanel {legalCalls} {onBid} {disabled} compact />
 </div>
-{#if bidFeedback}
-  <BidFeedbackPanel
-    feedback={bidFeedback}
-    onContinue={onDismissFeedback}
-    {onSkipToReview}
-    {onRetry}
-  />
-{/if}
-{#if DEV && !bidFeedback}
-  <div class="mt-auto">
+<div class:hidden={!hasFeedback}>
+  {#if bidFeedback}
+    <BidFeedbackPanel
+      feedback={bidFeedback}
+      onContinue={onDismissFeedback}
+      {onSkipToReview}
+      {onRetry}
+    />
+  {/if}
+</div>
+{#if DEV}
+  <div class="mt-auto shrink-0" class:hidden={hasFeedback}>
     <DebugPanel />
   </div>
 {/if}

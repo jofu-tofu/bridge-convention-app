@@ -18,6 +18,9 @@ dist/
 # Rust build artifacts
 src-tauri/target/
 
+# WASM build output
+src-tauri/crates/bridge-wasm/pkg/
+
 # Playwright artifacts
 test-results/
 playwright-report/

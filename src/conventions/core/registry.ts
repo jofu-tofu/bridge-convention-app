@@ -11,6 +11,7 @@ import {
   evaluateConditions,
 } from "./condition-evaluator";
 import type { TreeConventionConfig, RuleNode } from "./rule-tree";
+import { validateTree } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
 import { evaluateTree } from "./tree-evaluator";
 import { treeResultToBiddingRuleResult, flattenTree } from "./tree-compat";
@@ -27,6 +28,9 @@ const registry = new Map<string, ConventionConfig>();
 export function registerConvention(config: ConventionConfig): void {
   if (registry.has(config.id)) {
     throw new Error(`Convention "${config.id}" is already registered.`);
+  }
+  if (isTreeConvention(config)) {
+    validateTree(config.ruleTree);
   }
   registry.set(config.id, config);
 }

@@ -9,7 +9,7 @@ Pure TypeScript game logic. Zero platform dependencies.
 - All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
-- Phase 1.5 bidding/scoring/play implemented; `solveDeal` works via Rust backends (HttpEngine, TauriIpcEngine). `suggestPlay` throws everywhere.
+- Phase 1.5 bidding/scoring/play implemented; `solveDeal` works via Tauri IPC (desktop only). `suggestPlay` throws everywhere. DDS unavailable in WASM builds.
 
 ## Architecture
 
@@ -39,8 +39,9 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
 | `bid-suggester.ts`    | Standalone `suggestBid()` — extracted from EnginePort (can't cross IPC/HTTP)              |
 | `call-helpers.ts`     | Canonical `callsMatch()` — call equality check shared by stores and inference             |
-| `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()`, strips `customCheck`/`rng`            |
-| `http-engine.ts`      | `HttpEngine` — EnginePort via HTTP `fetch()` to bridge-server, strips `customCheck`/`rng` |
+| `constraint-utils.ts` | `cleanConstraints()` / `cleanSeatConstraint()` — strips non-serializable fields          |
+| `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()` (desktop)                              |
+| `wasm-engine.ts`      | `WasmEngine` + `initWasm()` — EnginePort via WASM bindings (browser)                     |
 
 ## Gotchas
 
@@ -60,10 +61,11 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Rust Backend Integration
 
-- **Engine transports:** `TauriIpcEngine` (desktop) and `HttpEngine` (dev:web, port 3001) — Rust server required, no TS fallback
+- **Engine transports:** `TauriIpcEngine` (desktop) and `WasmEngine` (browser). Both use `cleanConstraints()` from `constraint-utils.ts` to strip non-serializable fields.
+- **`initWasm()` required:** Must be called once before creating `WasmEngine`. Called by `App.svelte` during async engine init.
 - **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
-- **Stateless HTTP:** Every request sends full state. No sessions. Error format: plain text body, 400 status code.
-- **`HttpEngine` strips** `customCheck` and `rng` from constraints before serialization. Preserves `seed` field for Rust-side deterministic generation (`seed: Option<u64>`). `DealConstraints` carries both `rng` (TS engine) and `seed` (Rust engine) — callers set both when deterministic deals are needed.
+- **DDS desktop-only:** `WasmEngine.solveDeal()` and `suggestPlay()` throw "DDS not available in WASM build".
+- Both transports strip `customCheck` and `rng` from constraints before serialization. Preserves `seed` field for Rust-side deterministic generation (`seed: Option<u64>`).
 
 ---
 

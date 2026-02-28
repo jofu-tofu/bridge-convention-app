@@ -5,8 +5,8 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 ## Conventions
 
 - **Registry pattern.** All conventions register via `registerConvention()` in `core/registry.ts`. Never hardcode convention logic in switch statements.
-- **One file per convention.** Each convention in `definitions/` exports a `ConventionConfig` (types in `core/types.ts`). See `definitions/stayman.ts` as the reference implementation.
-- **Core vs definitions split.** `core/` contains stable infrastructure (registry, evaluator, tree system, conditions). `definitions/` contains convention files that grow unboundedly. When `definitions/` exceeds ~20 files, introduce category subdirectories (responses/, competitive/, slam/, etc.).
+- **One folder per convention.** Each convention in `definitions/` is a folder with `tree.ts`, `config.ts`, `explanations.ts`, `index.ts` (and optionally `helpers.ts`, `conditions.ts`). See `definitions/stayman/` as the reference implementation.
+- **Core vs definitions split.** `core/` contains stable infrastructure (registry, evaluator, tree system, conditions). `definitions/` contains convention folders that grow unboundedly. When `definitions/` exceeds ~20 folders, introduce category subdirectories (responses/, competitive/, slam/, etc.).
 - **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`. Importing `conventions/index` activates all conventions.
 - **Rule name strings are public contract.** Rule names (e.g., `stayman-ask`, `stayman-response-hearts`) appear in CLI JSON output and are used in tests. Renaming a rule name is a breaking change.
 - **`evaluateBiddingRules(context, config)` is tree-only.** Takes `BiddingContext` and `ConventionConfig` (no `rules` param). Dispatches via tree evaluator for all conventions.
@@ -17,12 +17,12 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 
 ```
 core/
-  types.ts (ConventionConfig, BiddingRule, BiddingContext, RuleCondition, ConditionedBiddingRule)
+  types.ts (ConventionConfig, ConventionTeaching, BiddingRule, BiddingContext, RuleCondition, AuctionCondition, HandCondition, ConditionedBiddingRule)
     ↑
   conditions/ (split subsystem: auction-conditions, hand-conditions, rule-builders)
   conditions.ts (barrel re-export for backward compat)
   condition-evaluator.ts (evaluateConditions, buildExplanation, isConditionedRule)
-  rule-tree.ts (RuleNode, DecisionNode, BidNode, FallbackNode, TreeConventionConfig, builder helpers)
+  rule-tree.ts (RuleNode, DecisionNode, AuctionDecisionNode, HandDecisionNode, AuctionNode, HandNode, BidNode, FallbackNode, TreeConventionConfig, DecisionMetadata, BidMetadata, ConventionExplanations, builder helpers: auctionDecision, handDecision, decision (deprecated), bid, fallback, validateTree)
   tree-evaluator.ts (evaluateTree, TreeEvalResult, PathEntry)
   tree-compat.ts (flattenTree, treeResultToBiddingRuleResult — temporary compat adapter)
   sibling-finder.ts (findSiblingBids — sibling bids in same auction context)
@@ -31,19 +31,19 @@ core/
   registry.ts (registerConvention, getConvention, evaluateBiddingRules — dispatches tree conventions)
     ↑
 definitions/
-  stayman.ts (staymanConfig, staymanDealConstraints)
-gerber.ts (gerberConfig, gerberDealConstraints)
-bergen-raises.ts (bergenConfig, bergenDealConstraints)
-dont.ts (dontConfig, dontDealConstraints)
-landy.ts (landyConfig, landyDealConstraints)
-sayc.ts (saycConfig — user-drillable, South 10+ HCP)
+  stayman/ (staymanConfig, staymanDealConstraints)
+  gerber/ (gerberConfig, gerberDealConstraints)
+  bergen-raises/ (bergenConfig, bergenDealConstraints)
+  dont/ (dontConfig, dontDealConstraints)
+  landy/ (landyConfig, landyDealConstraints)
+  sayc/ (saycConfig — user-drillable, South 10+ HCP)
   ↑
 index.ts (auto-registration entry point)
 ```
 
 **Key core files:** `types.ts` (all interfaces), `conditions/` (split subsystem: auction/hand/rule-builders), `condition-evaluator.ts` (evaluate + explain), `rule-tree.ts` (node types + builders), `tree-evaluator.ts` (evaluateTree), `tree-compat.ts` (flattenTree + result adapter), `sibling-finder.ts` (sibling alternatives), `context-factory.ts` (createBiddingContext), `registry.ts` (convention map + dispatch).
 
-**Definitions:** 6 conventions (stayman, gerber, bergen-raises, dont, landy, sayc). `index.ts` auto-registers all.
+**Definitions:** 6 convention folders (stayman, gerber, bergen-raises, dont, landy, sayc). Each folder has `tree.ts`, `config.ts`, `explanations.ts`, `index.ts`. `index.ts` auto-registers all.
 
 ## Convention Rules Reference
 
@@ -52,7 +52,7 @@ Per-convention rule details (deal constraints, rule names, priority order, HCP r
 - **Stayman/Gerber:** Respond to NT openings. Stayman includes Smolen + 2NT Stayman at 3-level.
 - **Bergen Raises:** Multi-round framework (constructive/limit/preemptive + opener rebids + game try continuations). Standard Bergen variant.
 - **Landy/DONT:** Both declare `allowedDealers: [East, West]` — drill infrastructure randomly picks dealer and rotates constraints 180° when West is chosen. Landy = 2C both majors. DONT = double/suited overcalls.
-- **SAYC:** User-drillable, also E/W opponent AI default. 40+ flattened rules covering openings, responses, rebids, competitive.
+- **SAYC:** User-drillable, also E/W opponent AI default. 55+ flattened rules covering openings (1-level suit/NT, 2C strong, 2NT, weak twos, 3-level preempts), responses (Jacoby transfers, Stayman, 2C/2NT/weak-two responses), rebids (transfer acceptance), competitive.
 
 **Bridge rules sources:** See `docs/bridge-rules-sources.md` for authoritative references and ambiguity resolution.
 
@@ -67,8 +67,8 @@ Per-convention rule details (deal constraints, rule names, priority order, HCP r
 
 ## Adding a Convention
 
-1. Create `src/conventions/definitions/{name}.ts` — export a `ConventionConfig` with `id`, `name`, `description`, `category`, `dealConstraints`, `biddingRules`, `examples`
-2. Use `conditionedRule()` from `core/conditions` for all bidding rules — compose from existing condition factories
+1. Create `src/conventions/definitions/{name}/` folder with `tree.ts` (rule tree), `config.ts` (deal constraints + convention config), `explanations.ts` (teaching metadata scaffold), `index.ts` (barrel exports). Optionally add `helpers.ts` (dynamic call functions) and `conditions.ts` (local RuleCondition factories).
+2. Use tree nodes (`decision`, `bid`, `fallback`) from `core/rule-tree` — compose conditions from existing factories in `core/conditions`
 3. Add `registerConvention({name}Config)` call in `index.ts`
 4. Create `src/conventions/__tests__/{name}/` with `rules.test.ts` and `edge-cases.test.ts`. Import shared helpers from `../fixtures` and `../tree-test-helpers`.
 5. Test deal constraints with `checkConstraints()` — verify both acceptance and rejection
@@ -93,6 +93,8 @@ __tests__/
   ├── infrastructure/        Shared engine primitives
   │   ├── rule-tree.test.ts, tree-compat.test.ts, registry*.test.ts
   │   ├── sibling-finder.test.ts  Sibling alternative unit + integration tests
+  │   ├── rule-builders.test.ts  and()/or() category derivation + mixed-condition rejection
+  │   ├── tree-validation.test.ts  validateTree() auction-before-hand invariant
   │   ├── conditions.test.ts, debug-utils.test.ts
   ├── cross-convention.test.ts  Multi-convention interaction tests
   ├── fixtures.ts            Shared helpers (hand, auctionFromBids, makeBiddingContext)
@@ -105,10 +107,14 @@ __tests__/
 **Why Rule Trees?** The flat `conditionedRule()` system had 11 gaps. Most critically: (1) interference blindness — rules assumed uncontested auctions; (2) no negative inference — flat condition lists can't express "this convention path was rejected, so these hand constraints DON'T apply." Rule trees were chosen because tree path rejection data is the only architecture that enables negative inference.
 
 **Tree Authoring Rules:**
+- Use `auctionDecision()` for auction conditions, `handDecision()` for hand conditions. `decision()` is deprecated (kept for test backward compat).
+- `and()`/`or()` throw at runtime if given mixed auction+hand conditions. All children must be same category.
+- `validateTree()` runs at `registerConvention()` time — auction conditions after hand conditions on any path will throw.
+- Prefer nested decisions over compound `and()` with mixed categories — each decision appears as a distinct step in `TreeEvalResult.visited`.
 - Auction checks = parent DecisionNodes, hand checks = child DecisionNodes (auction narrows first, then hand evaluates)
 - DecisionNode names: descriptive kebab-case slugs (e.g., `is-responder`, `has-4-card-major`)
 - FallbackNode = "convention doesn't apply to this hand/auction"; BidNode = "convention fires with this call"
-- Strict tree constraint: do not reuse node object references across branches (breaks `flattenTree()` path accumulation)
+- Strict tree constraint: do not reuse node object references across branches (breaks `flattenTree()` path accumulation). Use factory functions for shared subtrees.
 - Use `createBiddingContext()` factory from `context-factory.ts` for all new BiddingContext construction
 - `biddingRules` is optional on tree conventions — use `getConventionRules(id)` from registry for flattened rules
 - `flattenTree()` splits accumulated conditions: pure auction conditions → `auctionConditions`, hand conditions → `handConditions`
@@ -117,7 +123,9 @@ __tests__/
 
 **SAYC tree pattern:** SAYC uses `saycPass()` factory at terminal positions (catch-all convention). Other conventions use `fallback()` for "doesn't apply."
 
-**BidNode `meaning` field:** Every BidNode has a required `meaning: string` — a self-contained sentence fragment starting with an action verb (e.g., "Asks for a 4-card major", "Shows 4+ hearts"). Top-level on BidNode (not in optional `NodeMetadata`) so the compiler enforces completeness. `bid()` builder signature: `bid(name, meaning, callFn, metadata?)`. Phrasing rules: (1) start with action verb, (2) describe what the bid communicates to partner, (3) no convention name, (4) no HCP numbers or strength adjectives, (5) under ~15 words. Suit shape/distribution IS allowed. Threaded through pipeline: `BidNode.meaning` → `BiddingRuleResult.meaning` → `BidResult.meaning` → `BidHistoryEntry.meaning`.
+**BidNode `meaning` field:** Every BidNode has a required `meaning: string` — a self-contained sentence fragment starting with an action verb (e.g., "Asks for a 4-card major", "Shows 4+ hearts"). Top-level on BidNode (not in optional `BidMetadata`) so the compiler enforces completeness. `bid()` builder signature: `bid(name, meaning, callFn, metadata?)`. Phrasing rules: (1) start with action verb, (2) describe what the bid communicates to partner, (3) no convention name, (4) no HCP numbers or strength adjectives, (5) under ~15 words. Suit shape/distribution IS allowed. Threaded through pipeline: `BidNode.meaning` → `BiddingRuleResult.meaning` → `BidResult.meaning` → `BidHistoryEntry.meaning`.
+
+**Teaching metadata:** `DecisionMetadata` (whyThisMatters, commonMistake, denialImplication) on DecisionNodes, `BidMetadata` (whyThisBid, partnerExpects, isArtificial, forcingType, commonMistake) on BidNodes. `ConventionExplanations` in each convention's `explanations.ts` maps node names to metadata + provides convention-specific condition explanations. `ConventionTeaching` on `ConventionConfig.teaching` for convention-level purpose/whenToUse/tradeoff. `RuleCondition.teachingNote` for per-condition overrides. Stayman is fully populated; other conventions have empty scaffolds.
 
 **Sibling alternatives:** `findSiblingBids(tree, matched, context)` in `sibling-finder.ts` finds other BidNodes reachable in the same auction context. Walks auction conditions to find the hand subtree root, then explores all branches. Each `SiblingBid` has `bidName`, `meaning`, `call`, and `failedConditions` (hand conditions where actual result doesn't match the required branch direction). Branch-aware: tracks `{ condition, requiredResult }` pairs so conditions on the NO branch that pass are correctly reported as failed. **Invariant:** auction conditions must all precede hand conditions — interleaving throws. Wired into `mapTreeEvalResult()` in strategy/ with try/catch for production safety → `TreeEvalSummary.siblings`.
 
@@ -151,4 +159,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `core/registry.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-25 | version=7 | dir-commits-at-audit=27 | tree-sig=dirs:12,files:51,exts:ts:50,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-27 | version=8 | dir-commits-at-audit=52 | tree-sig=dirs:18,files:57,exts:ts:56,md:1 -->

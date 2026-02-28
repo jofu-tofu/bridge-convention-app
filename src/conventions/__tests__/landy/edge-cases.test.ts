@@ -300,7 +300,6 @@ describe("Landy — overcaller rebid unusual shapes [bridgebum/landy]", () => {
 
   test("overcaller with 5-5 and 6-9 HCP (minimum) — bids 3H after 2NT", () => {
     // Bridge Bum: 3H = 5-5 majors, minimum (6-bad 10 points)
-    // This maps to landy-rebid-3s in current tree (<12 HCP, 5-5)
     // HK(3) + HQ(2) + SK(3) + SJ(1) = 9 HCP, 5S + 5H
     const overcaller = hand(
       "SK", "SJ", "S7", "S5", "S3",
@@ -311,8 +310,8 @@ describe("Landy — overcaller rebid unusual shapes [bridgebum/landy]", () => {
     const ctx = makeBiddingContext(overcaller, Seat.South, ["1NT", "2C", "P", "2NT", "P"], Seat.East);
     const result = evaluateBiddingRules(ctx, landyConfig);
     expect(result).not.toBeNull();
-    // <12 HCP with 5-5: medium (3S per current tree)
-    expect(result!.rule).toBe("landy-rebid-3s");
+    // <12 HCP with 5-5: minimum strength rebid
+    expect(result!.rule).toBe("landy-rebid-3h");
   });
 
   test("overcaller with 5-4 and 15 HCP (maximum) — bids 3D after 2NT", () => {

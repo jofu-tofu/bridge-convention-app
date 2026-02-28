@@ -251,7 +251,6 @@
         onBid={handleBid}
         disabled={!gameStore.isUserTurn || isFeedbackBlocking || !!gameStore.bidFeedback}
         isUserTurn={gameStore.isUserTurn}
-        bidFeedback={gameStore.bidFeedback}
         {isFeedbackBlocking}
         onDismissFeedback={() => gameStore.dismissBidFeedback()}
         onSkipToReview={() => gameStore.skipFromFeedback()}

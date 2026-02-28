@@ -16,26 +16,9 @@ import type {
   Suit,
   Trick,
   Vulnerability,
-  SeatConstraint,
 } from "./types";
 import type { EnginePort } from "./port";
-
-/** Strip non-serializable fields from seat constraints. */
-function cleanSeatConstraint(
-  sc: SeatConstraint,
-): Omit<SeatConstraint, "customCheck"> {
-  const { customCheck: _, ...rest } = sc;
-  return rest;
-}
-
-/** Strip non-serializable fields (rng, customCheck) from constraints before IPC. */
-function cleanConstraints(constraints: DealConstraints): object {
-  const { rng: _, ...rest } = constraints;
-  return {
-    ...rest,
-    seats: rest.seats.map(cleanSeatConstraint),
-  };
-}
+import { cleanConstraints } from "./constraint-utils";
 
 export class TauriIpcEngine implements EnginePort {
   async generateDeal(constraints: DealConstraints): Promise<Deal> {

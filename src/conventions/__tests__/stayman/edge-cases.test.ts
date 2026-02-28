@@ -348,8 +348,8 @@ describe("Stayman — rebid edge cases after opener's response", () => {
     expect(result!.rule).toBe("stayman-rebid-smolen-spades");
   });
 
-  test("[bridgebum/stayman] Smolen requires 10+ HCP — 9 HCP with 5-4 gets invite instead", () => {
-    // 9 HCP, 5S + 4H — not enough for Smolen (game-forcing)
+  test("[bridgebum/stayman] Smolen requires 10+ HCP — 9 HCP with 5-4 gets invitational major bid", () => {
+    // 9 HCP, 5S + 4H — not enough for Smolen (game-forcing), but 5-4 shape bids the 5-card major
     // SK(3) + SQ(2) + HQ(2) + DQ(2) = 9 HCP
     const responder = hand(
       "SK", "SQ", "S7", "S5", "S3",
@@ -360,8 +360,8 @@ describe("Stayman — rebid edge cases after opener's response", () => {
     const ctx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "2C", "P", "2D", "P"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
-    // With 9 HCP, should get invite (2NT), not Smolen
-    expect(result!.rule).toBe("stayman-rebid-no-fit-invite");
+    // With 9 HCP and 5-4 majors, bids the 5-card major at 2-level (invitational)
+    expect(result!.rule).toBe("stayman-rebid-invite-major");
   });
 });
 

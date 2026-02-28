@@ -77,6 +77,23 @@ export interface RuleCondition {
   evaluateChildren?(context: BiddingContext): ConditionBranch[];
   /** Structured inference data for the auction inference engine. Optional — added incrementally. */
   readonly inference?: ConditionInference;
+  /** Per-condition teaching override. When present, takes priority over
+   *  the inference-type default in the condition explanation registry.
+   *  Use for convention-specific explanations of shared conditions. */
+  readonly teachingNote?: string;
+}
+
+/** A condition that checks auction state (e.g., who opened, auction pattern).
+ *  Inference intentionally omitted — auction conditions describe auction state,
+ *  not hand constraints. Enforced by test in conditions.test.ts. */
+export interface AuctionCondition extends RuleCondition {
+  readonly category: "auction";
+}
+
+/** A condition that checks hand properties (e.g., HCP, suit length, shape). */
+export interface HandCondition extends RuleCondition {
+  readonly category: "hand";
+  readonly inference?: ConditionInference;
 }
 
 export interface ConditionBranch {
@@ -108,11 +125,29 @@ export interface ConditionedBiddingRule extends BiddingRule {
   readonly conditions: readonly RuleCondition[];
 }
 
+/** Convention-level teaching metadata. */
+export interface ConventionTeaching {
+  /** Why this convention exists — the problem it solves. */
+  readonly purpose?: string;
+  /** When to use this convention — the trigger conditions in plain English. */
+  readonly whenToUse?: string;
+  /** When NOT to use this convention — common misapplications. */
+  readonly whenNotToUse?: readonly string[];
+  /** What you give up by using this convention. */
+  readonly tradeoff?: string;
+  /** The underlying bridge principle. */
+  readonly principle?: string;
+  /** Who controls the auction — captain/roles. */
+  readonly roles?: string;
+}
+
 export interface ConventionConfig {
   readonly id: string;
   readonly name: string;
   readonly description: string;
   readonly category: ConventionCategory;
+  /** Teaching metadata — optional, populated in explanations.ts per convention. */
+  readonly teaching?: ConventionTeaching;
   readonly dealConstraints: DealConstraints;
   readonly biddingRules?: readonly BiddingRule[];
   readonly examples?: readonly ExampleHand[];

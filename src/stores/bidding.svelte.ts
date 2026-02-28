@@ -45,7 +45,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let bidHistory = $state<BidHistoryEntry[]>([]);
   let isProcessing = $state(false);
   let legalCalls = $state<Call[]>([]);
-  let bidFeedback = $state<BidFeedback | null>(null);
+  let bidFeedback = $state.raw<BidFeedback | null>(null);
   let error = $state<string | null>(null);
   let conventionStrategy: BiddingStrategy | null = null;
 
@@ -120,8 +120,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         legalCalls = await engine.getLegalCalls(auction, currentTurn);
       }
     } finally {
-      isProcessing = false;
-      await tick();
+      isProcessing = false; await tick();
     }
   }
 
@@ -171,7 +170,18 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     }
 
     const userBidEntry = { seat: currentTurn, call };
-    auction = await engine.addCall(auction, userBidEntry);
+    let newAuction: Auction;
+    try {
+      newAuction = await engine.addCall(auction, userBidEntry);
+    } catch (e) {
+      // Roll back feedback state — the bid was never applied
+      bidFeedback = null;
+      preBidAuction = null;
+      preBidTurn = null;
+      preBidHistory = null;
+      throw e;
+    }
+    auction = newAuction;
 
     onProcessBid?.(userBidEntry, auctionBeforeUser);
 
@@ -197,13 +207,11 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       const complete = await engine.isAuctionComplete(auction);
       if (complete) {
         await onAuctionComplete?.(auction);
-        bidFeedback = null;
-        await tick();
+        bidFeedback = null; await tick();
         return;
       }
       await runAiBids();
-      bidFeedback = null;
-      await tick();
+      bidFeedback = null; await tick();
       return;
     }
 

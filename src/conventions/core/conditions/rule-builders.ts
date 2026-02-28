@@ -1,6 +1,8 @@
 import type {
   BiddingContext,
   RuleCondition,
+  AuctionCondition,
+  HandCondition,
   ConditionedBiddingRule,
   ConditionResult,
   ConditionBranch,
@@ -36,9 +38,30 @@ export function conditionedRule(config: {
   };
 }
 
+// ─── Category derivation ─────────────────────────────────────
+
+/** Derive category from children — throws if mixed. */
+function deriveCategory(
+  conds: RuleCondition[],
+  combinator: string,
+): "auction" | "hand" {
+  if (conds.length === 0) return "hand";
+  const first = conds[0]!.category;
+  for (const cond of conds) {
+    if (cond.category !== first) {
+      throw new Error(
+        `${combinator}(): cannot mix "${first}" and "${cond.category}" conditions. ` +
+          `"${cond.name}" is "${cond.category}".`,
+      );
+    }
+  }
+  return first;
+}
+
 // ─── Combinator factories ────────────────────────────────────
 
-/** Invert a condition. */
+/** Invert a condition. Preserves the narrowed type. */
+export function not<C extends RuleCondition>(cond: C): C;
 export function not(cond: RuleCondition): RuleCondition {
   return {
     name: `not-${cond.name}`,
@@ -53,12 +76,15 @@ export function not(cond: RuleCondition): RuleCondition {
   };
 }
 
-/** All conditions must pass. */
+/** All conditions must pass. Throws if mixing auction and hand conditions. */
+export function and(...conds: AuctionCondition[]): AuctionCondition;
+export function and(...conds: HandCondition[]): HandCondition;
+export function and(...conds: RuleCondition[]): RuleCondition;
 export function and(...conds: RuleCondition[]): RuleCondition {
   return {
     name: "and",
     label: conds.map((c) => c.label).join("; "),
-    category: "hand",
+    category: deriveCategory(conds, "and"),
     test(ctx) {
       return conds.every((c) => c.test(ctx));
     },
@@ -81,12 +107,15 @@ export function and(...conds: RuleCondition[]): RuleCondition {
  * INVARIANT: Always evaluates ALL branches — short-circuiting would break
  * the UI branch-highlighting feature that shows which branch matched best.
  */
+export function or(...conds: AuctionCondition[]): AuctionCondition;
+export function or(...conds: HandCondition[]): HandCondition;
+export function or(...conds: RuleCondition[]): RuleCondition;
 export function or(...conds: RuleCondition[]): RuleCondition {
   if (conds.length > 4) throw new Error("or() supports max 4 branches");
   return {
     name: "or",
     label: conds.map((c) => c.label).join(" or "),
-    category: "hand",
+    category: deriveCategory(conds, "or"),
     test(ctx) {
       return conds.some((c) => c.test(ctx));
     },

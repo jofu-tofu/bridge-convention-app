@@ -30,6 +30,7 @@ export {
   lastBid,
   bidIsHigher,
   // Pure auction condition factories
+  notPassedHand,
   opponentActed,
   partnerOpenedMajor,
   partnerOpenedMinor,

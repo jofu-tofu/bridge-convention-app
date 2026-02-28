@@ -2,11 +2,16 @@
 <script lang="ts">
   import { getGameStore } from "../../stores/context";
   import { formatCall } from "../../display/format";
+  import type { BidResult } from "../../shared/types";
 
   const gameStore = getGameStore();
 
-  const suggestion = $derived(gameStore.getExpectedBid());
-  const siblings = $derived(suggestion?.treePath?.siblings ?? []);
+  // WORKAROUND: $derived doesn't reliably track through store getter chains.
+  // eslint-disable-next-line svelte/prefer-writable-derived
+  let suggestion = $state.raw<BidResult | null>(null);
+  $effect(() => {
+    suggestion = gameStore.getExpectedBid();
+  });
 </script>
 
 <div
@@ -14,24 +19,11 @@
 >
   <div class="text-yellow-400/80 font-semibold mb-1">DEV: Correct Bid</div>
   {#if suggestion}
-    <div class="mt-0.5">
-      <!-- Matched bid (correct) -->
-      <div class="flex items-baseline gap-1">
-        <span class="text-sm font-bold text-green-300">{formatCall(suggestion.call)}</span>
-        {#if suggestion.meaning}
-          <span class="text-yellow-300/70">— {suggestion.meaning}</span>
-        {/if}
-      </div>
-      <!-- All other bids at this decision point -->
-      {#if siblings.length > 0}
-        <div class="text-yellow-400/60 mt-1">Other bids:</div>
+    <div class="flex items-baseline gap-1 mt-0.5">
+      <span class="text-sm font-bold text-green-300">{formatCall(suggestion.call)}</span>
+      {#if suggestion.meaning}
+        <span class="text-yellow-300/70">— {suggestion.meaning}</span>
       {/if}
-      {#each siblings as sibling (sibling.bidName)}
-        <div class="flex items-baseline gap-1 text-yellow-200/50">
-          <span class="font-bold">{formatCall(sibling.call)}</span>
-          <span class="text-yellow-300/40">— {sibling.meaning}</span>
-        </div>
-      {/each}
     </div>
   {:else}
     <span class="text-yellow-300/50 italic">No convention bid (pass)</span>

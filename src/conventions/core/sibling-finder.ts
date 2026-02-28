@@ -1,5 +1,5 @@
 import type { BiddingContext, RuleCondition } from "./types";
-import type { RuleNode, DecisionNode, BidNode } from "./rule-tree";
+import type { RuleNode, BidNode } from "./rule-tree";
 import type { SiblingBid, SiblingConditionDetail } from "../../shared/types";
 import { isAuctionCondition } from "./tree-compat";
 
@@ -62,6 +62,7 @@ function collectAlternatives(
       try {
         call = node.call(context);
       } catch (e) {
+        // eslint-disable-next-line no-console -- intentional: surface dynamic call errors in dev
         console.warn(`Sibling bid "${node.name}" call() threw:`, e);
         return;
       }

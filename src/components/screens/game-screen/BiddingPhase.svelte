@@ -2,7 +2,6 @@
   import { Seat } from "../../../engine/types";
   import type { Call, Deal } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
-  import type { BidFeedback } from "../../../stores/game.svelte";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -17,7 +16,6 @@
     onBid: (call: Call) => void;
     disabled: boolean;
     isUserTurn: boolean;
-    bidFeedback: BidFeedback | null;
     isFeedbackBlocking: boolean;
     onDismissFeedback: () => void;
     onSkipToReview: () => void;
@@ -38,7 +36,6 @@
     onBid,
     disabled,
     isUserTurn,
-    bidFeedback,
     isFeedbackBlocking,
     onDismissFeedback,
     onSkipToReview,
@@ -67,7 +64,6 @@
       {onBid}
       {disabled}
       {isUserTurn}
-      {bidFeedback}
       {isFeedbackBlocking}
       {onDismissFeedback}
       {onSkipToReview}

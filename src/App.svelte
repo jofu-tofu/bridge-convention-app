@@ -1,104 +1,110 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { TauriIpcEngine } from "./engine/tauri-ipc-engine";
-  import { HttpEngine } from "./engine/http-engine";
+  import { WasmEngine, initWasm } from "./engine/wasm-engine";
   import type { EnginePort } from "./engine/port";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
-  import { setEngine, setGameStore, setAppStore } from "./stores/context";
   import { getConvention } from "./conventions/core/registry";
-  import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
-  import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
+  import AppShell from "./AppShell.svelte";
 
-  // Runtime engine detection: Tauri IPC (desktop) or HTTP (dev/browser)
-  function createEngine(): EnginePort {
-    if ((window as any).__TAURI__) {
+  // Runtime engine detection: Tauri IPC (desktop) or WASM (browser)
+  async function createEngine(): Promise<EnginePort> {
+    if ((window as any).__TAURI__) { // any: Tauri runtime global, not typed
       return new TauriIpcEngine();
     }
-    // In dev mode, Vite proxies /api to the Rust server — use same origin
-    const rustUrl = import.meta.env.DEV ? "" : "http://localhost:3001";
-    return new HttpEngine(rustUrl);
+    await initWasm();
+    return new WasmEngine();
   }
 
-  const engine = createEngine();
-  const gameStore = createGameStore(engine);
-  const appStore = createAppStore();
+  let engineReady = $state(false);
+  let initError = $state<string | null>(null);
+  let resolvedEngine = $state<EnginePort | null>(null);
+  let resolvedGameStore = $state<ReturnType<typeof createGameStore> | null>(null);
+  let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
 
-  setEngine(engine);
-  setGameStore(gameStore);
-  setAppStore(appStore);
+  function applyDevParams(store: ReturnType<typeof createAppStore>): void {
+    if (!import.meta.env.DEV) return;
+    const params = new URLSearchParams(window.location.search);
 
-  if (import.meta.env.DEV) {
-    onMount(() => {
-      const params = new URLSearchParams(window.location.search);
-
-      const seedParam = params.get("seed");
-      if (seedParam != null) {
-        const seed = Number(seedParam);
-        if (Number.isFinite(seed)) {
-          appStore.setDevSeed(seed);
-        }
+    const seedParam = params.get("seed");
+    if (seedParam != null) {
+      const seed = Number(seedParam);
+      if (Number.isFinite(seed)) {
+        store.setDevSeed(seed);
       }
+    }
 
-      const debugParam = params.get("debug");
-      if (debugParam === "true") {
-        appStore.setDebugPanel(true);
+    const debugParam = params.get("debug");
+    if (debugParam === "true") {
+      store.setDebugPanel(true);
+    }
+
+    const autoplayParam = params.get("autoplay");
+    if (autoplayParam === "true") {
+      store.setAutoplay(true);
+    }
+
+    const conventionParam = params.get("convention");
+    const learnParam = params.get("learn");
+    if (learnParam) {
+      try {
+        const config = getConvention(learnParam);
+        store.navigateToLearning(config);
+      } catch (e) {
+        console.warn(`[dev] Unknown convention "${learnParam}":`, e);
       }
-
-      const autoplayParam = params.get("autoplay");
-      if (autoplayParam === "true") {
-        appStore.setAutoplay(true);
+    } else if (conventionParam) {
+      try {
+        const config = getConvention(conventionParam);
+        store.selectConvention(config);
+      } catch (e) {
+        console.warn(`[dev] Unknown convention "${conventionParam}":`, e);
       }
+    }
+  }
 
-      const conventionParam = params.get("convention");
-      if (conventionParam) {
-        try {
-          const config = getConvention(conventionParam);
-          appStore.selectConvention(config);
-        } catch (e) {
-          console.warn(`[dev] Unknown convention "${conventionParam}":`, e);
-        }
-      }
-
-      // Probe Rust server connectivity (via Vite proxy in dev)
-      const controller = new AbortController();
-      fetch("/api/evaluate_hand", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hand: { cards: [] } }),
-        signal: controller.signal,
-      })
-        .then((res) => {
-          const status = `Rust engine: ${res.ok ? "connected" : `HTTP ${res.status}`} | DDS: available`;
-          appStore.setEngineStatus(status);
-          console.log(`[engine] ${status}`);
-        })
-        .catch((err) => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          const status = `Rust engine: UNREACHABLE (${err.message})`;
-          appStore.setEngineStatus(status);
-          appStore.setEngineError(
-            "Rust server not running. Start it with: npm run dev:web",
-          );
-          console.error(`[engine] ${status}`);
-        });
-
-      return () => controller.abort();
+  createEngine()
+    .then((eng) => {
+      resolvedEngine = eng;
+      resolvedGameStore = createGameStore(eng);
+      const store = createAppStore();
+      appStore = store;
+      applyDevParams(store);
+      engineReady = true;
+    })
+    .catch((err: unknown) => {
+      initError = `Failed to load engine: ${err instanceof Error ? err.message : String(err)}`;
+      console.error("[engine] WASM init failed:", err);
     });
-  }
 </script>
 
-<div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">
-  {#if appStore.engineError}
-    <div
-      class="bg-red-700 px-4 py-2 text-center text-sm font-medium text-white"
-    >
-      {appStore.engineError}
-    </div>
-  {/if}
-  {#if appStore.screen === "select"}
-    <ConventionSelectScreen />
-  {:else if appStore.screen === "game"}
-    <GameScreen />
-  {/if}
-</div>
+{#if initError}
+  <div class="bg-bg-deepest text-red-400 flex h-screen flex-col items-center justify-center gap-4">
+    <p>{initError}</p>
+    <button
+      class="rounded bg-red-800 px-4 py-2 text-white hover:bg-red-700"
+      onclick={() => {
+        initError = null;
+        createEngine()
+          .then((eng) => {
+            resolvedEngine = eng;
+            resolvedGameStore = createGameStore(eng);
+            const store = createAppStore();
+            appStore = store;
+            applyDevParams(store);
+            engineReady = true;
+          })
+          .catch((err: unknown) => {
+            initError = `Failed to load engine: ${err instanceof Error ? err.message : String(err)}`;
+            console.error("[engine] WASM init retry failed:", err);
+          });
+      }}
+    >Retry</button>
+  </div>
+{:else if !engineReady || !resolvedEngine || !resolvedGameStore || !appStore}
+  <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
+    Loading engine...
+  </div>
+{:else}
+  <AppShell engine={resolvedEngine} gameStore={resolvedGameStore} {appStore} />
+{/if}

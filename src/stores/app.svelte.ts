@@ -1,6 +1,6 @@
 import type { ConventionConfig } from "../conventions/core/types";
 
-export type Screen = "select" | "game";
+export type Screen = "select" | "game" | "learning";
 
 export function createAppStore() {
   let currentScreen = $state<Screen>("select");
@@ -10,6 +10,7 @@ export function createAppStore() {
   let debugPanelOpen = $state(false);
   let engineStatus = $state<string | null>(null);
   let engineError = $state<string | null>(null);
+  let learningConvention = $state<ConventionConfig | null>(null);
   let autoplay = $state(false);
 
   return {
@@ -18,6 +19,9 @@ export function createAppStore() {
     },
     get selectedConvention() {
       return selectedConvention;
+    },
+    get learningConvention() {
+      return learningConvention;
     },
     get devSeed() {
       return devSeed;
@@ -28,11 +32,19 @@ export function createAppStore() {
 
     selectConvention(config: ConventionConfig) {
       selectedConvention = config;
+      learningConvention = null;
       currentScreen = "game";
+    },
+
+    navigateToLearning(config: ConventionConfig) {
+      learningConvention = config;
+      selectedConvention = null;
+      currentScreen = "learning";
     },
 
     navigateToMenu() {
       selectedConvention = null;
+      learningConvention = null;
       currentScreen = "select";
     },
 

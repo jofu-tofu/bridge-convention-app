@@ -58,7 +58,7 @@ describe("findSiblingBids", () => {
       fallback("no match"),
     );
 
-    const matched = bid("response-hearts", "Shows 4+ hearts", makeCall(2, BidSuit.Hearts));
+    const _matched = bid("response-hearts", "Shows 4+ hearts", makeCall(2, BidSuit.Hearts));
     // Use the actual BidNode from the tree
     const ctx = makeMinimalContext();
     const result = evaluateTree(tree, ctx);

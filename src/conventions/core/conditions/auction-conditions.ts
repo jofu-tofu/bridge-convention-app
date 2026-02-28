@@ -1,4 +1,4 @@
-import type { BiddingContext, RuleCondition } from "../types";
+import type { BiddingContext, AuctionCondition } from "../types";
 import type { ContractBid } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
 import { partnerSeat } from "../../../engine/constants";
@@ -7,7 +7,7 @@ import { auctionMatchesExact } from "../../../engine/auction-helpers";
 // ─── Leaf auction condition factories ────────────────────────
 
 /** Match auction entries exactly against a pattern. */
-export function auctionMatches(pattern: string[]): RuleCondition {
+export function auctionMatches(pattern: string[]): AuctionCondition {
   const patternLabel = pattern.join(" — ");
   return {
     name: "auction",
@@ -25,7 +25,7 @@ export function auctionMatches(pattern: string[]): RuleCondition {
 }
 
 /** Match auction against any of several patterns. */
-export function auctionMatchesAny(patterns: string[][]): RuleCondition {
+export function auctionMatchesAny(patterns: string[][]): AuctionCondition {
   const labels = patterns.map((p) => p.join(" — ")).join(" or ");
   return {
     name: "auction",
@@ -45,7 +45,7 @@ export function auctionMatchesAny(patterns: string[][]): RuleCondition {
 // ─── Relational condition factories ──────────────────────────
 
 /** Check if this seat made the first non-pass bid in the auction. */
-export function isOpener(): RuleCondition {
+export function isOpener(): AuctionCondition {
   return {
     name: "is-opener",
     label: "Opening bidder",
@@ -73,7 +73,7 @@ export function isOpener(): RuleCondition {
 }
 
 /** Check if partner made the first non-pass bid (this seat is responding). */
-export function isResponder(): RuleCondition {
+export function isResponder(): AuctionCondition {
   return {
     name: "is-responder",
     label: "Responding to partner's opening",
@@ -102,7 +102,7 @@ export function isResponder(): RuleCondition {
 }
 
 /** Check if partner opened in a specific strain, or any strain if not specified. */
-export function partnerOpened(strain?: BidSuit): RuleCondition {
+export function partnerOpened(strain?: BidSuit): AuctionCondition {
   const condName = strain ? `partner opened ${strain}` : "partner opened";
   return {
     name: condName,
@@ -137,7 +137,7 @@ export function partnerOpened(strain?: BidSuit): RuleCondition {
 }
 
 /** Check if partner opened at a specific level and strain. */
-export function partnerOpenedAt(level: number, strain: BidSuit): RuleCondition {
+export function partnerOpenedAt(level: number, strain: BidSuit): AuctionCondition {
   return {
     name: `partner-opened-${level}${strain}`,
     label: `Partner opened ${level}${strain}`,
@@ -174,7 +174,7 @@ export function partnerOpenedAt(level: number, strain: BidSuit): RuleCondition {
 
 
 /** Check if an opponent has made a contract bid. */
-export function opponentBid(): RuleCondition {
+export function opponentBid(): AuctionCondition {
   return {
     name: "opponent-bid",
     label: "Opponent has bid",
@@ -202,7 +202,7 @@ export function opponentBid(): RuleCondition {
 }
 
 /** No previous contract bid in the auction (everyone passed so far). */
-export function noPriorBid(): RuleCondition {
+export function noPriorBid(): AuctionCondition {
   return {
     name: "no-prior-bid",
     label: "No prior contract bids",
@@ -218,7 +218,7 @@ export function noPriorBid(): RuleCondition {
 }
 
 /** This seat is making their Nth contract bid (0-indexed). Round 0 = first bid, Round 1 = rebid. */
-export function biddingRound(n: number): RuleCondition {
+export function biddingRound(n: number): AuctionCondition {
   return {
     name: "bidding-round",
     label: `Bidding round ${n}`,
@@ -247,7 +247,7 @@ export function biddingRound(n: number): RuleCondition {
 }
 
 /** Partner bid at a specific level and strain at any point in the auction. */
-export function partnerBidAt(level: number, strain: BidSuit): RuleCondition {
+export function partnerBidAt(level: number, strain: BidSuit): AuctionCondition {
   return {
     name: `partner-bid-${level}${strain}`,
     label: `Partner bid ${level}${strain}`,
@@ -279,7 +279,7 @@ export function partnerBidAt(level: number, strain: BidSuit): RuleCondition {
 }
 
 /** This seat has made at least one contract bid in the auction. */
-export function seatHasBid(): RuleCondition {
+export function seatHasBid(): AuctionCondition {
   return {
     name: "seat-has-bid",
     label: "Has previously bid",
@@ -301,7 +301,7 @@ export function seatHasBid(): RuleCondition {
 }
 
 /** DONT advance after double: always relay 2C. */
-export function advanceAfterDouble(): RuleCondition {
+export function advanceAfterDouble(): AuctionCondition {
   return {
     name: "advance-after-double",
     label: "After partner's double, relay 2C",
@@ -387,7 +387,7 @@ export function bidIsHigher(
 }
 
 /** An opponent has made a non-pass action (bid, double, redouble). */
-export function opponentActed(): RuleCondition {
+export function opponentActed(): AuctionCondition {
   return {
     name: "opponent-acted",
     label: "Opponent acted (bid/double/redouble)",
@@ -414,8 +414,37 @@ export function opponentActed(): RuleCondition {
   };
 }
 
+/** This seat has NOT previously passed in the auction. */
+export function notPassedHand(): AuctionCondition {
+  return {
+    name: "not-passed-hand",
+    label: "Has not previously passed",
+    category: "auction",
+    test(ctx) {
+      // Check if this seat passed before making any contract bid
+      for (const entry of ctx.auction.entries) {
+        if (entry.seat === ctx.seat) {
+          if (entry.call.type === "pass") return false;
+          if (entry.call.type === "bid") return true;
+        }
+      }
+      // Seat hasn't acted yet — not a passed hand
+      return true;
+    },
+    describe(ctx) {
+      for (const entry of ctx.auction.entries) {
+        if (entry.seat === ctx.seat) {
+          if (entry.call.type === "pass") return "This seat previously passed — passed hand";
+          if (entry.call.type === "bid") return "This seat has not passed — not a passed hand";
+        }
+      }
+      return "Has not acted yet — not a passed hand";
+    },
+  };
+}
+
 /** Partner's first bid strain is Hearts or Spades. Pure auction check. */
-export function partnerOpenedMajor(): RuleCondition {
+export function partnerOpenedMajor(): AuctionCondition {
   return {
     name: "partner-opened-major",
     label: "Partner opened a major suit",
@@ -434,7 +463,7 @@ export function partnerOpenedMajor(): RuleCondition {
 }
 
 /** Partner's first bid strain is Clubs or Diamonds. Pure auction check. */
-export function partnerOpenedMinor(): RuleCondition {
+export function partnerOpenedMinor(): AuctionCondition {
   return {
     name: "partner-opened-minor",
     label: "Partner opened a minor suit",

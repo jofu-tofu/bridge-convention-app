@@ -1,7 +1,7 @@
 // TODO(phase-1.5c): Remove after all conventions migrated to tree system.
 // This is a temporary compat adapter for the flat→tree migration period.
 
-import type { ConditionedBiddingRule, ConditionResult, RuleCondition, BiddingContext } from "./types";
+import type { ConditionedBiddingRule, ConditionResult, RuleCondition, AuctionCondition, BiddingContext } from "./types";
 import type { RuleNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
 import type { BiddingRuleResult } from "./registry";
@@ -15,7 +15,7 @@ const NEGATION_PREFIX = "not-";
  * Check if a condition is a pure auction check using the `category` field.
  * Falls back to false when category is unset (hand conditions are the safe default).
  */
-export function isAuctionCondition(condition: RuleCondition): boolean {
+export function isAuctionCondition(condition: RuleCondition): condition is AuctionCondition {
   return condition.category === "auction";
 }
 

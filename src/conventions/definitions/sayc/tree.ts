@@ -1,0 +1,481 @@
+import type { Call } from "../../../engine/types";
+import { BidSuit } from "../../../engine/types";
+import {
+  hcpMin,
+  hcpRange,
+  suitMin,
+  suitBelow,
+  isOpener,
+  isResponder,
+  partnerOpened,
+  partnerOpenedAt,
+  opponentBid,
+  isBalanced,
+  noFiveCardMajor,
+  longerMajor,
+  noPriorBid,
+  seatHasBid,
+  not,
+  and,
+  or,
+  hasFourCardMajor,
+  partnerOpenedMajor,
+  partnerOpenedMinor,
+  majorSupportN,
+  partnerRaisedOurMajor,
+  partnerRespondedMajorWithSupport,
+  sixPlusInOpenedSuit,
+  goodSuitAtLevel,
+  auctionMatchesAny,
+} from "../../core/conditions";
+import { auctionDecision, handDecision, bid } from "../../core/rule-tree";
+import type { RuleNode, HandNode, AuctionNode } from "../../core/rule-tree";
+import {
+  respondRaiseMajorCall,
+  respondJumpRaiseMajorCall,
+  respondGameRaiseMajorCall,
+  rebid4mAfterRaiseCall,
+  rebid3mInviteCall,
+  rebidRaisePartnerMajorCall,
+  rebidOwnSuitCall,
+  overcall1LevelCall,
+  overcall2LevelCall,
+  saycPass,
+  respondWeakRaiseCall,
+  openerAcceptTransferCall,
+} from "./helpers";
+
+// ─── Opening subtrees ───────────────────────────────────────
+
+// Preempts (7+ card) checked BEFORE weak twos (6+ card) so 7-card hands open at 3-level
+const weakAndPreemptBranch: HandNode = handDecision(
+  "preempt-7spades",
+  and(hcpRange(5, 11), suitMin(0, "spades", 7)),
+  bid("sayc-open-3s", "Opens showing a 7-card spade suit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+  handDecision(
+    "preempt-7hearts",
+    and(hcpRange(5, 11), suitMin(1, "hearts", 7)),
+    bid("sayc-open-3h", "Opens showing a 7-card heart suit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
+    handDecision(
+      "preempt-7diamonds",
+      and(hcpRange(5, 11), suitMin(2, "diamonds", 7)),
+      bid("sayc-open-3d", "Opens showing a 7-card diamond suit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+      handDecision(
+        "preempt-7clubs",
+        and(hcpRange(5, 11), suitMin(3, "clubs", 7)),
+        bid("sayc-open-3c", "Opens showing a 7-card club suit", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+        handDecision(
+          "weak-6hearts",
+          and(hcpRange(5, 11), suitMin(1, "hearts", 6)),
+          bid("sayc-open-weak-2h", "Opens showing a 6-card heart suit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+          handDecision(
+            "weak-6spades",
+            and(hcpRange(5, 11), suitMin(0, "spades", 6)),
+            bid("sayc-open-weak-2s", "Opens showing a 6-card spade suit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+            handDecision(
+              "weak-6diamonds",
+              and(hcpRange(5, 11), suitMin(2, "diamonds", 6)),
+              bid("sayc-open-weak-2d", "Opens showing a 6-card diamond suit", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+              saycPass(),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+);
+
+// Minor-suit opening subtree (no 5-card major)
+// Priority: 4+ diamonds -> 1D, then 3+ clubs -> 1C, then 3D (for 4-4-3-2 with 3D-2C) -> 1D
+const openMinorBranch: HandNode = handDecision(
+  "12+-4diamonds",
+  and(hcpMin(12), suitBelow(0, "spades", 5), suitBelow(1, "hearts", 5), suitMin(2, "diamonds", 4)),
+  bid("sayc-open-1d", "Opens in the longer minor", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+  handDecision(
+    "12+-3clubs",
+    and(hcpMin(12), suitBelow(0, "spades", 5), suitBelow(1, "hearts", 5), suitMin(3, "clubs", 3)),
+    bid("sayc-open-1c", "Opens the better minor", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+    handDecision(
+      "12+-3diamonds-fallback",
+      and(hcpMin(12), suitBelow(0, "spades", 5), suitBelow(1, "hearts", 5), suitMin(2, "diamonds", 3)),
+      // Catches 4-4-3-2 hands with 3D-2C: open 1D with only 3 diamonds
+      bid("sayc-open-1d", "Opens the longer minor", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+      weakAndPreemptBranch,
+    ),
+  ),
+);
+
+// Major-suit opening subtree (12+ HCP)
+const openMajorBranch: HandNode = handDecision(
+  "12+-longer-spades",
+  and(hcpMin(12), longerMajor(0, "spades")),
+  bid("sayc-open-1s", "Opens in the longest major", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Spades })),
+  handDecision(
+    "12+-5hearts",
+    and(hcpMin(12), suitMin(1, "hearts", 5)),
+    bid("sayc-open-1h", "Opens showing 5+ hearts", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Hearts })),
+    openMinorBranch,
+  ),
+);
+
+const openingBranch: HandNode = handDecision(
+  "hcp-22+",
+  hcpMin(22),
+  bid("sayc-open-2c", "Opens artificial and forcing for one round", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+  handDecision(
+    "hcp-20-21-balanced",
+    and(hcpRange(20, 21), isBalanced()),
+    bid("sayc-open-2nt", "Opens showing a balanced hand", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+    handDecision(
+      "hcp-15-17-bal-no5M",
+      and(hcpRange(15, 17), isBalanced(), noFiveCardMajor()),
+      bid("sayc-open-1nt", "Opens showing a balanced hand", (): Call => ({ type: "bid", level: 1, strain: BidSuit.NoTrump })),
+      openMajorBranch,
+    ),
+  ),
+);
+
+// ─── Responses to 1NT opening ───────────────────────────────
+
+// Jacoby Transfers: 2D = 5+ hearts, 2H = 5+ spades (all HCP ranges)
+// Checked before Stayman so 5-4 hands with a major transfer first.
+// Weak hands (0-7) transfer then pass; invitational (8-9) transfer then 2NT; strong (10+) transfer then game.
+const respond1NTBranch: HandNode = handDecision(
+  "transfer-5+hearts",
+  suitMin(1, "hearts", 5),
+  bid("sayc-respond-1nt-transfer-hearts", "Transfers to hearts showing 5+ hearts", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+  handDecision(
+    "transfer-5+spades",
+    suitMin(0, "spades", 5),
+    bid("sayc-respond-1nt-transfer-spades", "Transfers to spades showing 5+ spades", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+    handDecision(
+      "8+-with-4M",
+      and(hcpMin(8), hasFourCardMajor()),
+      bid("sayc-respond-1nt-stayman", "Asks opener for a 4-card major", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+      handDecision(
+        "10-15-balanced-3nt",
+        and(hcpRange(10, 15), isBalanced()),
+        bid("sayc-respond-1nt-3nt", "Raises to game in notrump", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+        handDecision(
+          "8-9-balanced-invite",
+          and(hcpRange(8, 9), isBalanced()),
+          bid("sayc-respond-1nt-2nt", "Invites game in notrump", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+          handDecision(
+            "0-7-hcp",
+            hcpRange(0, 7),
+            bid("sayc-respond-1nt-pass", "Declines to respond to the notrump opening", (): Call => ({ type: "pass" })),
+            saycPass(),
+          ),
+        ),
+      ),
+    ),
+  ),
+);
+
+// ─── Responses to 2NT opening ───────────────────────────────
+
+const respond2NTBranch: HandNode = handDecision(
+  "resp-2nt-transfer-5+hearts",
+  and(hcpMin(4), suitMin(1, "hearts", 5)),
+  bid("sayc-respond-2nt-transfer-hearts", "Transfers to hearts showing 5+ hearts", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+  handDecision(
+    "resp-2nt-transfer-5+spades",
+    and(hcpMin(4), suitMin(0, "spades", 5)),
+    bid("sayc-respond-2nt-transfer-spades", "Transfers to spades showing 5+ spades", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
+    handDecision(
+      "resp-2nt-stayman",
+      and(hcpMin(4), hasFourCardMajor()),
+      bid("sayc-respond-2nt-stayman", "Asks opener for a 4-card major", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+      handDecision(
+        "resp-2nt-3nt",
+        and(hcpRange(4, 10), isBalanced()),
+        bid("sayc-respond-2nt-3nt", "Raises to game in notrump", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+        handDecision(
+          "resp-2nt-pass",
+          hcpRange(0, 3),
+          bid("sayc-respond-2nt-pass", "Declines to respond with a weak hand", (): Call => ({ type: "pass" })),
+          saycPass(),
+        ),
+      ),
+    ),
+  ),
+);
+
+// ─── Responses to strong 2C opening ─────────────────────────
+
+const respond2CBranch: HandNode = handDecision(
+  "resp-2c-positive-spades",
+  and(hcpMin(8), suitMin(0, "spades", 5)),
+  bid("sayc-respond-2c-positive-spades", "Shows a positive response with 5+ spades", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
+  handDecision(
+    "resp-2c-positive-hearts",
+    and(hcpMin(8), suitMin(1, "hearts", 5)),
+    bid("sayc-respond-2c-positive-hearts", "Shows a positive response with 5+ hearts", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+    handDecision(
+      "resp-2c-positive-diamonds",
+      and(hcpMin(8), suitMin(2, "diamonds", 5)),
+      bid("sayc-respond-2c-positive-diamonds", "Shows a positive response with 5+ diamonds", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+      handDecision(
+        "resp-2c-positive-clubs",
+        and(hcpMin(8), suitMin(3, "clubs", 5)),
+        bid("sayc-respond-2c-positive-clubs", "Shows a positive response with 5+ clubs", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+        handDecision(
+          "resp-2c-positive-2nt",
+          and(hcpMin(8), isBalanced()),
+          bid("sayc-respond-2c-2nt", "Shows a positive balanced hand", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+          // Default: 2D waiting (covers 0-7 HCP and 8+ without 5-card suit or balanced)
+          bid("sayc-respond-2c-2d-waiting", "Responds with an artificial waiting bid", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+        ),
+      ),
+    ),
+  ),
+);
+
+// ─── Responses to weak two bids ─────────────────────────────
+
+const respondWeakTwoBranch: HandNode = handDecision(
+  "resp-weak2-2nt-feature",
+  hcpMin(16),
+  bid("sayc-respond-weak2-2nt", "Asks opener to describe hand further", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+  handDecision(
+    "resp-weak2-raise",
+    and(hcpRange(6, 15), majorSupportN(3)),
+    bid("sayc-respond-weak2-raise", "Raises partner's weak two bid", respondWeakRaiseCall),
+    saycPass(),
+  ),
+);
+
+// ─── Responses to suit openings ─────────────────────────────
+
+// NT response subtree — pure hand conditions only.
+// Auction guard (not-NT-opening) omitted because parent branches already gate on partner's opening.
+// Factory: shared across multiple branches (tree constraint: no shared node references)
+function makeRespondNTBranch(): HandNode {
+  return handDecision(
+    "respond-1nt-6-10",
+    hcpRange(6, 10),
+    bid("sayc-respond-1nt", "Responds showing a balanced hand", (): Call => ({ type: "bid", level: 1, strain: BidSuit.NoTrump })),
+    handDecision(
+      "respond-2nt-13-15",
+      and(hcpRange(13, 15), isBalanced()),
+      bid("sayc-respond-2nt", "Shows an invitational balanced hand", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+      handDecision(
+        "respond-3nt-16-18",
+        and(hcpRange(16, 18), isBalanced()),
+        bid("sayc-respond-3nt", "Shows a game-forcing balanced hand", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+        saycPass(),
+      ),
+    ),
+  );
+}
+
+// ─── Response sub-branches (hand conditions only) ─────────
+
+// 2-over-1 new suit responses after a major opening (10+ HCP)
+// Factory: tree constraint requires no shared node references across branches
+function makeRespond2Over1Branch(): HandNode {
+  return handDecision(
+    "respond-2c-over-major",
+    and(hcpMin(10), suitMin(3, "clubs", 4)),
+    bid("sayc-respond-2c-over-major", "Responds in a new suit, forcing", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+    handDecision(
+      "respond-2d-over-major",
+      and(hcpMin(10), suitMin(2, "diamonds", 4)),
+      bid("sayc-respond-2d-over-major", "Responds in a new suit, forcing", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
+      makeRespondNTBranch(),
+    ),
+  );
+}
+
+// Major raise checks — factory because used in both hearts and spades branches
+function makeMajorRaiseBranch(noRaiseFallback: HandNode): HandNode {
+  return handDecision(
+    "game-raise-13+",
+    and(hcpMin(13), majorSupportN(4)),
+    bid("sayc-respond-game-raise-major", "Raises partner's major directly to game", respondGameRaiseMajorCall),
+    handDecision(
+      "jump-raise-10-12",
+      and(hcpRange(10, 12), majorSupportN(4)),
+      bid("sayc-respond-jump-raise-major", "Makes a limit raise in partner's major", respondJumpRaiseMajorCall),
+      handDecision(
+        "simple-raise-6-10",
+        and(hcpRange(6, 10), majorSupportN(3)),
+        bid("sayc-respond-raise-major", "Makes a simple raise in partner's major", respondRaiseMajorCall),
+        noRaiseFallback,
+      ),
+    ),
+  );
+}
+
+// Suit-opening responses — auction conditions gate before hand conditions
+// Structure: partner-opened-hearts → raises + 1S + 2-over-1 + NT
+//            partner-opened-spades → raises + 2-over-1 + NT (via partnerOpenedMajor)
+//            partner-opened-minor → 1-level new suit + NT
+const respondSuitBranch: AuctionNode = auctionDecision(
+  "partner-opened-hearts-resp",
+  partnerOpened(BidSuit.Hearts),
+  // Hearts: raise checks, then 1S, then 2-over-1, then NT
+  makeMajorRaiseBranch(
+    handDecision(
+      "respond-1s-over-1h",
+      and(hcpMin(6), suitMin(0, "spades", 4)),
+      bid("sayc-respond-1s-over-1h", "Responds showing 4+ spades", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Spades })),
+      makeRespond2Over1Branch(),
+    ),
+  ),
+  auctionDecision(
+    "partner-opened-major-resp",
+    partnerOpenedMajor(),
+    // Spades (only remaining major): raise checks, then 2-over-1, then NT
+    makeMajorRaiseBranch(makeRespond2Over1Branch()),
+    auctionDecision(
+      "partner-opened-minor-resp",
+      partnerOpenedMinor(),
+      // Minor: 1-level new suit, then NT
+      handDecision(
+        "respond-1h-over-minor",
+        and(hcpMin(6), suitMin(1, "hearts", 4)),
+        bid("sayc-respond-1h-over-minor", "Responds showing 4+ hearts", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Hearts })),
+        handDecision(
+          "respond-1s-over-minor",
+          and(hcpMin(6), suitMin(0, "spades", 4)),
+          bid("sayc-respond-1s-over-minor", "Responds showing 4+ spades", (): Call => ({ type: "bid", level: 1, strain: BidSuit.Spades })),
+          makeRespondNTBranch(),
+        ),
+      ),
+      // Not a 1-level opening we handle — pass
+      saycPass(),
+    ),
+  ),
+);
+
+// ─── Competitive bidding ────────────────────────────────────
+
+// Competitive bidding — auction guards extracted to avoid mixing auction+hand in and()
+const competitiveBranch: AuctionNode = auctionDecision(
+  "not-opener-not-responder",
+  and(not(isOpener()), not(isResponder())),
+  handDecision(
+    "1nt-overcall",
+    and(hcpRange(15, 18), isBalanced()),
+    bid("sayc-1nt-overcall", "Overcalls showing a balanced hand", (): Call => ({ type: "bid", level: 1, strain: BidSuit.NoTrump })),
+    handDecision(
+      "overcall-1level",
+      and(hcpRange(8, 16), goodSuitAtLevel(1)),
+      bid("sayc-overcall-1level", "Overcalls showing a good suit", overcall1LevelCall),
+      handDecision(
+        "overcall-2level",
+        and(hcpRange(10, 16), goodSuitAtLevel(2)),
+        bid("sayc-overcall-2level", "Overcalls showing a good suit", overcall2LevelCall),
+        saycPass(),
+      ),
+    ),
+  ),
+  saycPass(),
+);
+
+// ─── Opener rebids ──────────────────────────────────────────
+
+// Non-raise rebids (partner did not raise our major)
+function makeOpenerNonRaiseRebidBranch(): HandNode {
+  return handDecision(
+    "rebid-raise-partner",
+    and(hcpRange(12, 16), partnerRespondedMajorWithSupport()),
+    bid("sayc-rebid-raise-partner-major", "Raises partner's major suit response", rebidRaisePartnerMajorCall),
+    handDecision(
+      "rebid-own-suit",
+      and(hcpRange(12, 17), sixPlusInOpenedSuit()),
+      bid("sayc-rebid-own-suit", "Rebids showing a 6+ card suit", rebidOwnSuitCall),
+      handDecision(
+        "rebid-1nt",
+        and(hcpRange(12, 14), isBalanced()),
+        bid("sayc-rebid-1nt", "Rebids notrump showing a balanced hand", (): Call => ({ type: "bid", level: 1, strain: BidSuit.NoTrump })),
+        handDecision(
+          "rebid-2nt",
+          and(hcpRange(18, 19), isBalanced()),
+          bid("sayc-rebid-2nt", "Rebids notrump showing extra values", (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
+          saycPass(),
+        ),
+      ),
+    ),
+  );
+}
+
+function makeOpenerRebidBranch(): HandNode {
+  return handDecision(
+    "rebid-4m-after-raise",
+    and(hcpMin(19), partnerRaisedOurMajor()),
+    bid("sayc-rebid-4m-after-raise", "Jumps to game in the raised major", rebid4mAfterRaiseCall),
+    handDecision(
+      "rebid-3m-invite",
+      and(hcpRange(17, 18), partnerRaisedOurMajor()),
+      bid("sayc-rebid-3m-invite", "Invites game in the raised major", rebid3mInviteCall),
+      handDecision(
+        "rebid-pass-raise",
+        and(hcpRange(12, 16), partnerRaisedOurMajor()),
+        bid("sayc-rebid-pass-after-raise", "Accepts partner's raise", (): Call => ({ type: "pass" })),
+        makeOpenerNonRaiseRebidBranch(),
+      ),
+    ),
+  );
+}
+
+// After 1NT-P-2D-P or 1NT-P-2H-P, opener completes Jacoby transfer
+const openerTransferAcceptBranch: AuctionNode = auctionDecision(
+  "opener-1nt-transfer-accept",
+  auctionMatchesAny([
+    ["1NT", "P", "2D", "P"],
+    ["1NT", "P", "2H", "P"],
+  ]),
+  bid("sayc-opener-accept-transfer", "Completes the Jacoby transfer", openerAcceptTransferCall),
+  makeOpenerRebidBranch(),
+);
+
+// ─── Root tree ──────────────────────────────────────────────
+
+export const saycRuleTree: RuleNode = auctionDecision(
+  "is-opener-no-prior-bid",
+  and(isOpener(), noPriorBid()),
+  openingBranch,
+  auctionDecision(
+    "is-responder",
+    isResponder(),
+    auctionDecision(
+      "partner-opened-1nt-resp",
+      partnerOpenedAt(1, BidSuit.NoTrump),
+      respond1NTBranch,
+      auctionDecision(
+        "partner-opened-2nt-resp",
+        partnerOpenedAt(2, BidSuit.NoTrump),
+        respond2NTBranch,
+        auctionDecision(
+          "partner-opened-2c-resp",
+          partnerOpenedAt(2, BidSuit.Clubs),
+          respond2CBranch,
+          auctionDecision(
+            "partner-opened-weak2-resp",
+            or(
+              partnerOpenedAt(2, BidSuit.Diamonds),
+              partnerOpenedAt(2, BidSuit.Hearts),
+              partnerOpenedAt(2, BidSuit.Spades),
+            ),
+            respondWeakTwoBranch,
+            // 1-level suit openings (and 3-level preempts fall through to saycPass)
+            respondSuitBranch,
+          ),
+        ),
+      ),
+    ),
+    auctionDecision(
+      "opponent-bid",
+      opponentBid(),
+      competitiveBranch,
+      auctionDecision(
+        "is-opener-rebid",
+        and(isOpener(), seatHasBid()),
+        openerTransferAcceptBranch,
+        bid("sayc-pass", "Passes with no suitable action available", (): Call => ({ type: "pass" })),
+      ),
+    ),
+  ),
+);

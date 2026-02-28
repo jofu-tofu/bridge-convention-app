@@ -57,7 +57,7 @@ test.describe("game lifecycle — select, bid, navigate", () => {
     await expect(page.locator("h1")).toHaveText("Bridge Practice", { timeout: 5000 });
 
     // Re-select Stayman
-    const staymanCard = page.getByTestId("convention-stayman");
+    const staymanCard = page.getByTestId("practice-stayman");
     await staymanCard.click();
 
     // Game should load again with bidding phase

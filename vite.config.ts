@@ -1,5 +1,7 @@
 /// <reference types="node" />
+import path from "path";
 import { defineConfig } from "vite";
+import wasm from "vite-plugin-wasm";
 import tailwindcss from "@tailwindcss/vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
@@ -7,7 +9,16 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [tailwindcss(), svelte()],
+  plugins: [wasm(), tailwindcss(), svelte()],
+
+  resolve: {
+    alias: {
+      "bridge-wasm": path.resolve(
+        __dirname,
+        "src-tauri/crates/bridge-wasm/pkg",
+      ),
+    },
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   clearScreen: false,
@@ -23,12 +34,6 @@ export default defineConfig({
           port: 1421,
         }
       : undefined,
-    proxy: {
-      "/api": {
-        target: "http://127.0.0.1:3001",
-        changeOrigin: true,
-      },
-    },
     watch: {
       ignored: ["**/src-tauri/**"],
     },

@@ -24,7 +24,28 @@
 | Rule                     | Bid       | Condition                                | Source         |
 | ------------------------ | --------- | ---------------------------------------- | -------------- |
 | `dont-advance-pass`      | Pass      | Support for partner's shown/implied suit | bridgebum/dont |
-| `dont-advance-next-step` | Next step | Ask partner for second/actual suit       | bridgebum/dont |
+| `dont-advance-next-step` | Next step | Ask partner for second/actual suit (or prefer spades after 2H) | bridgebum/dont |
+| `dont-advance-long-suit` | Own suit  | 6+ card suit, bypasses relay at 2-level  | bridgebum/dont |
+| `dont-advance-3-level`   | 3-level   | 6+ card suit escape, non-forcing         | bridgebum/dont |
+
+### Overcaller Reveal (after 1NT-X-P-2C-P)
+
+| Rule               | Bid      | Condition          | Source         |
+| ------------------ | -------- | ------------------ | -------------- |
+| `dont-reveal-pass` | Pass     | 6+ clubs           | bridgebum/dont |
+| `dont-reveal-suit` | Own suit | Corrects to 6+ suit | bridgebum/dont |
+
+### 2NT Inquiry Rebid (after 1NT-2X-P-2NT-P)
+
+| Rule             | Bid     | Condition                              | Source         |
+| ---------------- | ------- | -------------------------------------- | -------------- |
+| `dont-2nt-rebid` | 3-level | Shows min/max and suit distribution    | bridgebum/dont |
+
+After 2C-P-2NT: 3C=min, 3D/3H/3S=max (showing second suit).
+After 2D-P-2NT: 3C=min+equal/shorter major, 3D=min+longer major, 3H/3S=max (showing which major).
+After 2H-P-2NT: 3C=min+equal/shorter spades, 3D=min+longer spades, 3H=max+equal/shorter spades, 3S=max+longer spades.
+
+Min/max split: 11 HCP threshold.
 
 ## Edge Cases
 
@@ -39,6 +60,8 @@
 | After double: advancer action     | Always bid 2C relay             | Can't leave the double in — must discover partner's suit                   |
 | After 2H: advancer with hearts    | Pass (accept hearts)            | 3+ hearts = adequate support                                               |
 | After 2H: advancer without hearts | Bid 2S (prefer spades)          | Shows spade preference of the two majors                                   |
+| After 2H: advancer with 6+ minor  | Bid 3C/3D escape                | Non-forcing escape to long minor                                           |
+| After 2S: advancer without support | 3-level escape or fallback     | Need 6+ suit to escape at 3-level                                          |
 
 ## Variant Decision
 
@@ -47,7 +70,7 @@
 ## Simplifications
 
 - Only handles direct seat overcall (South over East's 1NT). Balancing seat not implemented.
-- Advance rules simplified: pass with support or bid next step. No jump responses or cuebids.
+- Advancer 2NT inquiry bid is not in the tree (handled by AI strategy when available). Overcaller rebid responses to 2NT ARE implemented.
 - No vulnerability-dependent HCP adjustments
 - West (RHO of overcaller) assumed to pass — no handling of West's interference
 - Support thresholds: 3+ for suited bids, 2+ for natural 2S, always relay after double

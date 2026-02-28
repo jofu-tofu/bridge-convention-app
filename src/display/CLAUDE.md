@@ -16,6 +16,9 @@ UI display utilities and pure functions. Consumer of `engine/`, `conventions/cor
 | `debug-bid-eval.ts`    | `computeBidEvalTraces()` — debug display utility                  |
 | `filter-conventions.ts`| `filterConventions()` — convention picker search/filter           |
 | `hand-summary.ts`      | Re-export of `formatHandSummary()` from `shared/hand-summary.ts`  |
+| `tree-display.ts`      | `flattenTreeForDisplay()` — RuleNode tree to flat `TreeDisplayRow[]` for UI (accepts optional `ConventionExplanations` for teaching fields). `TreeDisplayRow` includes `denialImplication` pre-computed from parent DecisionNode for NO-branch children. |
+| `condition-explanations.ts` | `getConditionExplanation()`, `getConditionExplanationWithParams()`, `getFailureExplanation()` — condition teaching text from inference types |
+| `teaching-content.ts`  | `extractTeachingContent()`, `evaluateTeachingRound()` — extract structured teaching data from convention trees |
 | `table-scale.ts`       | `computeTableScale()` — responsive table scaling                  |
 
 ## Gotchas
@@ -44,4 +47,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `format.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-25 | last-audited=2026-02-25 | version=2 | dir-commits-at-audit=0 | tree-sig=dirs:2,files:17,exts:ts:16,md:1 -->
+<!-- context-layer: generated=2026-02-25 | last-audited=2026-02-27 | version=3 | dir-commits-at-audit=0 | tree-sig=dirs:2,files:19,exts:ts:18,md:1 -->

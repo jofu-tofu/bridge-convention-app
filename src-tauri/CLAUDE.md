@@ -4,13 +4,13 @@ Cargo workspace with three crates implementing the bridge engine in Rust.
 
 ## Commands
 
-| Command                       | Purpose                                  |
-| ----------------------------- | ---------------------------------------- |
-| `cargo build --workspace`     | Build all crates (run from `src-tauri/`) |
-| `cargo test --workspace`      | Run all Rust tests                       |
-| `cargo test -p bridge-engine` | Test engine crate only                   |
-| `cargo test -p bridge-server` | Test HTTP server crate only              |
-| `cargo run -p bridge-server`  | Start HTTP dev server on port 3001       |
+| Command                       | Purpose                                                     |
+| ----------------------------- | ----------------------------------------------------------- |
+| `cargo build --workspace`     | Build all crates (run from `src-tauri/`)                    |
+| `cargo test --workspace`      | Run all Rust tests                                          |
+| `cargo test -p bridge-engine` | Test engine crate only                                      |
+| `wasm-pack build crates/bridge-wasm --target web --out-dir pkg` | Build WASM package        |
+| `wasm-pack test --node crates/bridge-wasm` | Run WASM integration tests                   |
 
 ## Workspace Structure
 
@@ -18,15 +18,14 @@ Cargo workspace with three crates implementing the bridge engine in Rust.
 crates/
   bridge-engine/   Pure Rust game logic (types, eval, deal gen, auction, scoring, play)
   bridge-tauri/    Tauri v2 app — #[tauri::command] handlers delegating to bridge-engine
-  bridge-server/   Axum HTTP server — POST /api/{method} routes for browser dev mode
+  bridge-wasm/     WASM bindings via wasm-bindgen — wraps bridge-engine for browser deployment
 ```
 
 ## Conventions
 
 - **bridge-engine purity:** Zero platform deps (no tauri, axum, tokio). Only serde, rand, thiserror.
 - **Free functions, not a trait:** Engine functions called directly. Transport crates are the abstraction.
-- **Stateless HTTP:** Every request sends full state. No sessions, no shared mutable state.
-- **Error boundary:** `EngineError` for domain logic. HTTP returns `(400, error.to_string())`. Tauri returns `Result<T, String>`.
+- **Error boundary:** `EngineError` for domain logic. Tauri returns `Result<T, String>`. WASM returns `Result<JsValue, JsError>`.
 - **RNG:** ChaCha8Rng with `seed: Option<u64>`. Same seed = deterministic Rust output. NOT cross-engine portable with TS (different PRNG algorithms).
 - **Serde contract:**
   - Enums: `#[serde(rename = "C")]` etc. to match TS string values
@@ -35,27 +34,23 @@ crates/
   - `Deal.hands`: `HashMap<Seat, Hand>` → `{"N":{...},"E":{...},...}` (Seat has Ord derive)
   - `Option<Contract>`: `null` for passout
   - `leadSuit`: explicit `null` in JSON (never omitted), deserialized as `Option<Suit>`
+- **WASM serialization:** bridge-wasm uses `serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true)` so `HashMap<Seat, Hand>` produces a plain JS object, not a `Map`.
 
 ## Adding a New EnginePort Method
 
 1. Add function to `bridge-engine/src/{module}.rs`
 2. Add `#[tauri::command]` handler to `bridge-tauri/src/commands.rs`, wire in `lib.rs`
-3. Add POST route handler to `bridge-server/src/routes.rs`, wire in `api_routes()`
+3. Add `#[wasm_bindgen]` export to `bridge-wasm/src/lib.rs` with request struct
 4. Add request struct if new parameters needed
 5. Add tests in all three locations
 
-## Extensibility Traits (defined but not yet implemented)
-
-- `HandEvaluationStrategy` — V1: `HcpStrategy`. Future: Bergen, Zar, LTC.
-- `PlayStrategy` — Phase 7: heuristic → DDS-assisted play AI.
-- `DoubleDummySolver` — trait defined. Implementation in `bridge-engine/src/dds.rs` via `dds-bridge` v0.8 (feature-gated).
-
 ## DDS Integration
 
-- `dds-bridge` v0.8 optional dependency behind `dds` feature flag (default on in bridge-tauri and bridge-server)
+- `dds-bridge` v0.8 optional dependency behind `dds` feature flag (default on in bridge-tauri only)
 - `bridge-engine/src/dds.rs`: `to_dds_deal()`, `from_tricks_table()`, `solve_deal_with_par()` — type conversion + solver wrapper
-- `solve_deal` command/route returns `DDSolution { tricks, par }` with 4×5 tricks table and optional par info
+- `solve_deal` command returns `DDSolution { tricks, par }` with 4×5 tricks table and optional par info
 - Requires `libclang-dev` for `dds-bridge-sys` C++ compilation (bindgen)
+- DDS cannot compile to `wasm32-unknown-unknown` (C++ FFI) — desktop only
 
 ## Gotchas
 
@@ -63,7 +58,8 @@ crates/
 - Tauri `generate_context!()` requires RGBA PNG icons in `bridge-tauri/icons/`
 - `HashMap<Seat, Hand>` serde works because `Seat` has `Ord` derive and single-char renames
 - `DealConstraints` has no `customCheck`/`rng` fields (TS-only). Uses `seed: Option<u64>` instead.
-- `generate_deal` Tauri command returns `Deal` (not `DealGeneratorResult`) — matches TS `HttpEngine` which returns `Deal`
+- `generate_deal` Tauri/WASM returns `Deal` (not `DealGeneratorResult`)
+- **Never build bridge-wasm via `cargo build --workspace`**; always use `wasm-pack` to prevent `getrandom/js` feature from bleeding into native builds
 
 ---
 
@@ -86,4 +82,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-02-25 | version=2 | dir-commits-at-audit=8 | tree-sig=dirs:12,files:35,exts:rs:16,json:6,toml:5,png:3,md:1 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-02-27 | version=3 | dir-commits-at-audit=8 | tree-sig=dirs:12,files:35 -->

@@ -1420,11 +1420,11 @@ describe("Bergen Raises property-based invariants", () => {
     expect(auction!.entries[1]!.call).toEqual({ type: "pass" });
   });
 
-  test("[bridgebum/bergen invariant] all seventeen rules produce distinct names", () => {
+  test("[bridgebum/bergen invariant] all nineteen rules produce distinct names", () => {
     const rules = getConventionRules("bergen-raises");
-    expect(rules).toHaveLength(17);
+    expect(rules).toHaveLength(19);
     const names = rules.map((r) => r.name);
-    expect(new Set(names).size).toBe(17);
+    expect(new Set(names).size).toBe(19);
     expect(names).toContain("bergen-splinter");
     expect(names).toContain("bergen-game-raise");
     expect(names).toContain("bergen-limit-raise");

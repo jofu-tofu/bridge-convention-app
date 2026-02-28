@@ -192,6 +192,21 @@ describe("SAYC rule disjointness", () => {
         auction: auctionFromCalls(Seat.North, [opening, "P"]),
         seat: Seat.South,
       })),
+      // Responding to 2NT opening
+      ...[{
+        auction: auctionFromCalls(Seat.North, ["2NT", "P"]),
+        seat: Seat.South,
+      }],
+      // Responding to strong 2C opening
+      ...[{
+        auction: auctionFromCalls(Seat.North, ["2C", "P"]),
+        seat: Seat.South,
+      }],
+      // Responding to weak two bids
+      ...["2D", "2H", "2S"].map((opening) => ({
+        auction: auctionFromCalls(Seat.North, [opening, "P"]),
+        seat: Seat.South,
+      })),
       // Rebid positions
       ...([
         ["1H", "P", "2H", "P"],
@@ -199,6 +214,14 @@ describe("SAYC rule disjointness", () => {
         ["1H", "P", "1NT", "P"],
         ["1C", "P", "1H", "P"],
         ["1D", "P", "1S", "P"],
+      ] as string[][]).map((calls) => ({
+        auction: auctionFromCalls(Seat.North, calls),
+        seat: Seat.North,
+      })),
+      // Transfer acceptance rebid positions (opener completes Jacoby transfer)
+      ...([
+        ["1NT", "P", "2D", "P"],
+        ["1NT", "P", "2H", "P"],
       ] as string[][]).map((calls) => ({
         auction: auctionFromCalls(Seat.North, calls),
         seat: Seat.North,

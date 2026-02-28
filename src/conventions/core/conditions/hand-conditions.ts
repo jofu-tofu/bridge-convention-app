@@ -1,4 +1,4 @@
-import type { BiddingContext, RuleCondition } from "../types";
+import type { BiddingContext, HandCondition } from "../types";
 import type { Hand } from "../../../engine/types";
 import { Rank, BidSuit } from "../../../engine/types";
 import { partnerSeat } from "../../../engine/constants";
@@ -35,7 +35,7 @@ export function countKingsInHand(hand: Hand): number {
 // ─── HCP condition factories ─────────────────────────────────
 
 /** Minimum HCP check. */
-export function hcpMin(min: number): RuleCondition {
+export function hcpMin(min: number): HandCondition {
   return {
     name: "hcp-min",
     label: `${min}+ HCP`,
@@ -54,7 +54,7 @@ export function hcpMin(min: number): RuleCondition {
 }
 
 /** Maximum HCP check. */
-export function hcpMax(max: number): RuleCondition {
+export function hcpMax(max: number): HandCondition {
   return {
     name: "hcp-max",
     label: `${max} max HCP`,
@@ -73,7 +73,7 @@ export function hcpMax(max: number): RuleCondition {
 }
 
 /** HCP range check (inclusive). */
-export function hcpRange(min: number, max: number): RuleCondition {
+export function hcpRange(min: number, max: number): HandCondition {
   return {
     name: "hcp-range",
     label: `${min}–${max} HCP`,
@@ -98,7 +98,7 @@ export function suitMin(
   suitIndex: number,
   suitName: string,
   min: number,
-): RuleCondition {
+): HandCondition {
   return {
     name: `${suitName}-min`,
     label: `${min}+ ${suitName}`,
@@ -121,7 +121,7 @@ export function suitBelow(
   suitIndex: number,
   suitName: string,
   threshold: number,
-): RuleCondition {
+): HandCondition {
   return {
     name: `${suitName}-below`,
     label: `Fewer than ${threshold} ${suitName}`,
@@ -146,7 +146,7 @@ export function suitBelow(
 export function anySuitMin(
   suits: { index: number; name: string }[],
   min: number,
-): RuleCondition {
+): HandCondition {
   const suitNames = suits.map((s) => s.name).join("/");
   return {
     name: `any-${suitNames}-min`,
@@ -172,7 +172,7 @@ export function anySuitMin(
 // ─── Counting condition factories ────────────────────────────
 
 /** Exact ace count. */
-export function aceCount(count: number): RuleCondition {
+export function aceCount(count: number): HandCondition {
   return {
     name: "ace-count",
     label: `Exactly ${count} ace${count !== 1 ? "s" : ""}`,
@@ -191,7 +191,7 @@ export function aceCount(count: number): RuleCondition {
 }
 
 /** Ace count matches any of the given counts. */
-export function aceCountAny(counts: number[]): RuleCondition {
+export function aceCountAny(counts: number[]): HandCondition {
   const countsLabel = counts.join(" or ");
   return {
     name: "ace-count-any",
@@ -210,7 +210,7 @@ export function aceCountAny(counts: number[]): RuleCondition {
 }
 
 /** Exact king count. */
-export function kingCount(count: number): RuleCondition {
+export function kingCount(count: number): HandCondition {
   return {
     name: "king-count",
     label: `Exactly ${count} king${count !== 1 ? "s" : ""}`,
@@ -229,7 +229,7 @@ export function kingCount(count: number): RuleCondition {
 }
 
 /** King count matches any of the given counts. */
-export function kingCountAny(counts: number[]): RuleCondition {
+export function kingCountAny(counts: number[]): HandCondition {
   const countsLabel = counts.join(" or ");
   return {
     name: "king-count-any",
@@ -250,7 +250,7 @@ export function kingCountAny(counts: number[]): RuleCondition {
 // ─── Shape condition factories ───────────────────────────────
 
 /** Hand has no void (no suit with 0 cards). */
-export function noVoid(): RuleCondition {
+export function noVoid(): HandCondition {
   return {
     name: "no-void",
     label: "No void suit",
@@ -268,7 +268,7 @@ export function noVoid(): RuleCondition {
 }
 
 /** Balanced hand: no void, no singleton, at most one doubleton. */
-export function isBalanced(): RuleCondition {
+export function isBalanced(): HandCondition {
   return {
     name: "balanced",
     label: "Balanced hand",
@@ -298,7 +298,7 @@ export function isBalanced(): RuleCondition {
 }
 
 /** Has singleton or void in any suit (shortage for splinter bids). */
-export function hasShortage(): RuleCondition {
+export function hasShortage(): HandCondition {
   const suitNames = ["spades", "hearts", "diamonds", "clubs"];
   return {
     name: "has-shortage",
@@ -322,7 +322,7 @@ export function hasShortage(): RuleCondition {
 }
 
 /** No 5-card major. */
-export function noFiveCardMajor(): RuleCondition {
+export function noFiveCardMajor(): HandCondition {
   return {
     name: "no-5-card-major",
     label: "No 5-card major",
@@ -346,7 +346,7 @@ export function noFiveCardMajor(): RuleCondition {
 export function longerMajor(
   suitIndex: number,
   suitName: string,
-): RuleCondition {
+): HandCondition {
   return {
     name: `longer-major-${suitName}`,
     label: `5+ ${suitName} (longer/equal major)`,
@@ -374,7 +374,7 @@ export function longerMajor(
 }
 
 /** Has at least one 4-card major. */
-export function hasFourCardMajor(): RuleCondition {
+export function hasFourCardMajor(): HandCondition {
   return {
     name: "has-4-card-major",
     label: "Has 4+ card major",
@@ -399,7 +399,7 @@ export function hasFourCardMajor(): RuleCondition {
  * @param count — number of cards required (default 4)
  * @param orMore — if true, checks count+ (>=); if false, checks exactly count (===)
  */
-export function majorSupport(count: number = 4, orMore: boolean = false): RuleCondition {
+export function majorSupport(count: number = 4, orMore: boolean = false): HandCondition {
   const label = orMore ? `${count}+ cards in opened major` : `Exactly ${count} cards in opened major`;
   const check = orMore
     ? (len: number) => len >= count
@@ -439,7 +439,7 @@ export function majorSupport(count: number = 4, orMore: boolean = false): RuleCo
  * Check for a single long suit (6+ in one suit, no second suit 4+).
  * Excludes spades (use 2S natural instead).
  */
-export function hasSingleLongSuit(): RuleCondition {
+export function hasSingleLongSuit(): HandCondition {
   const suitNames = ["spades", "hearts", "diamonds", "clubs"];
   return {
     name: "single-long-suit",
@@ -487,7 +487,7 @@ export function hasSingleLongSuit(): RuleCondition {
 /**
  * Check for two-suited hand (5+ in longest, 4+ in second).
  */
-export function isTwoSuited(minLong: number, minShort: number): RuleCondition {
+export function isTwoSuited(minLong: number, minShort: number): HandCondition {
   const suitNames = ["spades", "hearts", "diamonds", "clubs"];
   return {
     name: "two-suited",
@@ -546,7 +546,7 @@ function gerberKingResponsePatterns(): string[][] {
 /**
  * Gerber signoff condition — reads ace response from auction.
  */
-export function gerberSignoffCondition(): RuleCondition {
+export function gerberSignoffCondition(): HandCondition {
   const acePatterns = gerberAceResponsePatterns();
   const kingPatterns = gerberKingResponsePatterns();
   return {
@@ -578,7 +578,7 @@ export function gerberSignoffCondition(): RuleCondition {
 }
 
 /** Condition for Gerber king-ask (5C): responder's turn after ace response with 3+ total aces. */
-export function gerberKingAskCondition(): RuleCondition {
+export function gerberKingAskCondition(): HandCondition {
   const patterns = gerberAceResponsePatterns();
   return {
     name: "gerber-king-ask",
@@ -645,7 +645,7 @@ function inferOpenerKingsFromAuction(ctx: BiddingContext): number {
 // ─── DONT-specific conditions ────────────────────────────────
 
 /** Both majors: hearts 5+ & spades 4+, or spades 5+ & hearts 4+. */
-export function bothMajors(): RuleCondition {
+export function bothMajors(): HandCondition {
   return or(
     and(suitMin(1, "hearts", 5), suitMin(0, "spades", 4)),
     and(suitMin(0, "spades", 5), suitMin(1, "hearts", 4)),
@@ -653,7 +653,7 @@ export function bothMajors(): RuleCondition {
 }
 
 /** Diamonds + a major (5-4 or 4-5 distribution). */
-export function diamondsPlusMajor(): RuleCondition {
+export function diamondsPlusMajor(): HandCondition {
   const majors = [
     { index: 0, name: "spades" },
     { index: 1, name: "hearts" },
@@ -665,7 +665,7 @@ export function diamondsPlusMajor(): RuleCondition {
 }
 
 /** Clubs + a higher-ranking suit (5-4 or 4-5 distribution). */
-export function clubsPlusHigher(): RuleCondition {
+export function clubsPlusHigher(): HandCondition {
   const higherSuits = [
     { index: 2, name: "diamonds" },
     { index: 1, name: "hearts" },
@@ -686,7 +686,7 @@ export function advanceSupportFor(
   suitIndex: number,
   suitName: string,
   minSupport: number,
-): RuleCondition {
+): HandCondition {
   return {
     name: `advance-support-${suitName}`,
     label: `${minSupport}+ ${suitName} support after ${auctionPattern.join(" — ")}`,
@@ -713,7 +713,7 @@ export function advanceLackSupport(
   suitIndex: number,
   suitName: string,
   threshold: number,
-): RuleCondition {
+): HandCondition {
   return {
     name: `advance-lack-${suitName}`,
     label: `Fewer than ${threshold} ${suitName} after ${auctionPattern.join(" — ")}`,
@@ -737,7 +737,7 @@ export function advanceLackSupport(
 // ─── SAYC-extracted condition factories ──────────────────────
 
 /** N+ cards in partner's opened major. Resolves partner's strain from auction. */
-export function majorSupportN(n: number): RuleCondition {
+export function majorSupportN(n: number): HandCondition {
   return {
     name: `major-support-${n}`,
     label: `${n}+ in partner's opened major`,
@@ -766,7 +766,7 @@ export function majorSupportN(n: number): RuleCondition {
 }
 
 /** Partner raised our major suit. Pure auction check + hand check. */
-export function partnerRaisedOurMajor(): RuleCondition {
+export function partnerRaisedOurMajor(): HandCondition {
   return {
     name: "partner-raised-our-major",
     label: "Partner raised our major suit",
@@ -800,7 +800,7 @@ function partnerRaisedOurSuit(ctx: BiddingContext): boolean {
 }
 
 /** Partner responded H/S + this seat has 4+ in that suit. */
-export function partnerRespondedMajorWithSupport(): RuleCondition {
+export function partnerRespondedMajorWithSupport(): HandCondition {
   return {
     name: "partner-responded-major-with-support",
     label: "4+ support for partner's major response",
@@ -824,7 +824,7 @@ export function partnerRespondedMajorWithSupport(): RuleCondition {
 }
 
 /** 6+ cards in the suit this seat opened. */
-export function sixPlusInOpenedSuit(): RuleCondition {
+export function sixPlusInOpenedSuit(): HandCondition {
   return {
     name: "6-plus-in-opened-suit",
     label: "6+ cards in opened suit",
@@ -851,7 +851,7 @@ export function sixPlusInOpenedSuit(): RuleCondition {
 }
 
 /** Has a 5+ card suit legally biddable at given level. */
-export function goodSuitAtLevel(level: number): RuleCondition {
+export function goodSuitAtLevel(level: number): HandCondition {
   return {
     name: `good-5-card-suit-at-${level}`,
     label: `5+ card suit biddable at ${level}-level`,

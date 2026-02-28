@@ -14,10 +14,18 @@
     filterConventions(listConventions(), searchQuery, activeCategory),
   );
 
-  const categories = Object.values(ConventionCategory);
+  const categories = $derived(
+    Object.values(ConventionCategory).filter(
+      (cat) => listConventions().some((c) => c.category === cat),
+    ),
+  );
 
   function handleSelect(config: ConventionConfig) {
     appStore.selectConvention(config);
+  }
+
+  function handleLearn(config: ConventionConfig) {
+    appStore.navigateToLearning(config);
   }
 
   function toggleCategory(cat: ConventionCategory) {
@@ -92,27 +100,66 @@
     {#if filteredConventions.length > 0}
       <div class="grid grid-cols-1 gap-3">
         {#each filteredConventions as convention (convention.id)}
-          <button
+          <div
             class="flex items-center justify-between text-left p-4 rounded-[--radius-lg] bg-bg-card
-              border-2 border-transparent hover:border-accent-primary
-              transition-colors cursor-pointer"
+              border-2 border-transparent hover:border-border-subtle
+              transition-colors"
             data-testid="convention-{convention.id}"
-            onclick={() => handleSelect(convention)}
           >
-            <div>
+            <div class="flex-1 min-w-0">
               <h2 class="text-lg font-semibold text-text-primary">
                 {convention.name}
               </h2>
-              <p class="text-sm text-text-secondary mt-1">
+              <p class="text-sm text-text-secondary mt-1 line-clamp-2">
                 {convention.description}
               </p>
             </div>
-            <span
-              class="rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1 ml-4 shrink-0"
-            >
-              {convention.category}
-            </span>
-          </button>
+            <div class="flex flex-col items-end gap-2 ml-4 shrink-0">
+              <span class="text-xs text-text-muted border border-border-subtle rounded-full px-2.5 py-0.5">
+                {convention.category}
+              </span>
+              <div class="flex items-center gap-2">
+              <button
+                class="p-2 rounded-xl bg-bg-hover text-text-secondary hover:text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer"
+                data-testid="learn-{convention.id}"
+                aria-label="Learn {convention.name}"
+                onclick={() => handleLearn(convention)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                ><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+              </button>
+              <button
+                class="p-2 rounded-xl bg-bg-hover text-text-secondary hover:text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer"
+                data-testid="practice-{convention.id}"
+                aria-label="Practice {convention.name}"
+                onclick={() => handleSelect(convention)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                ><polygon points="5 3 19 12 5 21 5 3" /></svg>
+              </button>
+              </div>
+            </div>
+          </div>
         {/each}
       </div>
     {:else}

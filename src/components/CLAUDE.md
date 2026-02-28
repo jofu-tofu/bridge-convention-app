@@ -28,7 +28,8 @@ Components use semantic HTML and ARIA attributes to support screen readers and a
 App.svelte                           Root — creates engine/stores, sets context, routes screens
 components/
   screens/
-    ConventionSelectScreen.svelte    Convention picker with search + category filter
+    ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
+    LearningScreen.svelte            Learning screen with sidebar, decision tree with layered depth modes (compact/study/learn), convention teaching header
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
       BiddingPhase.svelte            Bidding phase template (pure — data via props)
@@ -52,6 +53,7 @@ components/
     BiddingReview.svelte             Thin wrapper over RoundBidList (expanded siblings, shows expected)
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
+    DecisionTree.svelte              Interactive expand/collapse tree with depth modes (compact/study/learn) for progressive teaching disclosure
     RulesPanel.svelte                Convention rules display: fired (evaluated) + reference (static) — kept for future learning screen
     DeclarerPrompt.svelte            Declarer/defender choice buttons (used by DeclarerPromptPhase)
     DebugDrawer.svelte               Full-lifecycle debug overlay (dev only)
@@ -69,7 +71,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION)
+**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (browse convention rules with layered depth: compact/study/learn)
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 

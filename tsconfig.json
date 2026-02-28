@@ -11,7 +11,10 @@
     "sourceMap": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "paths": {
+      "bridge-wasm": ["./src-tauri/crates/bridge-wasm/pkg"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte"],
   "exclude": ["node_modules", "src-tauri"]
