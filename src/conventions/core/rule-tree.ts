@@ -20,6 +20,14 @@ export interface DecisionMetadata {
   readonly denialImplication?: string;
 }
 
+// ─── Alert metadata for bid nodes ───────────────────────────
+
+/** Alert information for conventional (non-natural) bids. */
+export interface BidAlert {
+  readonly artificial: boolean;
+  readonly forcingType: "forcing" | "game-forcing" | "invitational" | "signoff" | null;
+}
+
 // ─── Teaching metadata for bid nodes ────────────────────────
 
 /** Teaching metadata for bid nodes (terminal actions). */
@@ -52,6 +60,45 @@ export interface ConventionExplanations {
   readonly conditions?: Readonly<Record<string, string>>;
 }
 
+// ─── Auction slot types (multi-way dispatch) ─────────────────
+
+/** Role of the active bidder at an auction slot. */
+export enum ActiveRole {
+  Opener = "opener",
+  Responder = "responder",
+  Overcaller = "overcaller",
+  Advancer = "advancer",
+}
+
+/** Teaching metadata for slot dispatch nodes. */
+export interface SlotMetadata {
+  readonly description?: string;
+  readonly roundLabel?: string;
+}
+
+/** One branch of a multi-way auction dispatch. */
+export interface AuctionSlot {
+  readonly name: string;
+  readonly condition: AuctionCondition;
+  readonly child: AuctionSlotNode | HandNode;
+  readonly label?: string;
+  readonly role?: ActiveRole;
+  readonly metadata?: SlotMetadata;
+}
+
+/** Multi-way auction dispatch node. Slots evaluated in order; first match wins. */
+export interface AuctionSlotNode {
+  readonly type: "auction-slots";
+  readonly name: string;
+  readonly slots: readonly AuctionSlot[];
+  /** If no slot matches. Defaults to "convention doesn't apply." */
+  readonly defaultChild?: HandNode | FallbackNode;
+  readonly metadata?: SlotMetadata;
+}
+
+/** Root of a convention tree — either slot-based or legacy binary. */
+export type ConventionTreeRoot = AuctionSlotNode | RuleNode;
+
 // ─── Tree node types ─────────────────────────────────────────
 
 export interface DecisionNode {
@@ -72,6 +119,7 @@ export interface BidNode {
   readonly meaning: string;
   readonly call: (ctx: BiddingContext) => Call;
   readonly metadata?: BidMetadata;
+  readonly alert?: BidAlert;
 }
 
 export interface FallbackNode {
@@ -93,16 +141,6 @@ export interface HandDecisionNode extends DecisionNode {
   readonly no: HandNode;
 }
 
-/** A node that can appear in auction-condition or hand-condition subtrees. */
-export type AuctionNode = AuctionDecisionNode | HandNode;
-
-/** A decision node that checks auction state. Children can be auction or hand nodes. */
-export interface AuctionDecisionNode extends DecisionNode {
-  readonly condition: AuctionCondition;
-  readonly yes: AuctionNode;
-  readonly no: AuctionNode;
-}
-
 // ─── Tree convention config ──────────────────────────────────
 
 /**
@@ -112,7 +150,7 @@ export interface AuctionDecisionNode extends DecisionNode {
  * (CLI, RulesPanel, inference engine) iterate `biddingRules`.
  */
 export interface TreeConventionConfig extends ConventionConfig {
-  readonly ruleTree: RuleNode;
+  readonly ruleTree: ConventionTreeRoot;
   readonly explanations?: ConventionExplanations;
 }
 
@@ -125,17 +163,6 @@ export function decision(
   no: RuleNode,
   metadata?: DecisionMetadata,
 ): DecisionNode {
-  return { type: "decision", name, condition, yes, no, metadata };
-}
-
-/** Build a decision node that checks an auction condition. */
-export function auctionDecision(
-  name: string,
-  condition: AuctionCondition,
-  yes: AuctionNode,
-  no: AuctionNode,
-  metadata?: DecisionMetadata,
-): AuctionDecisionNode {
   return { type: "decision", name, condition, yes, no, metadata };
 }
 
@@ -161,6 +188,55 @@ export function bid(
 
 export function fallback(reason?: string): FallbackNode {
   return { type: "fallback", reason };
+}
+
+// ─── Slot tree builders ──────────────────────────────────────
+
+export function auctionSlots(
+  name: string,
+  slots: readonly AuctionSlot[],
+  defaultChild?: HandNode | FallbackNode,
+  metadata?: SlotMetadata,
+): AuctionSlotNode {
+  return { type: "auction-slots", name, slots, defaultChild, metadata };
+}
+
+export function slot(
+  name: string,
+  condition: AuctionCondition,
+  child: AuctionSlotNode | HandNode,
+  options?: { label?: string; role?: ActiveRole; metadata?: SlotMetadata },
+): AuctionSlot {
+  return {
+    name,
+    condition,
+    child,
+    label: options?.label,
+    role: options?.role,
+    metadata: options?.metadata,
+  };
+}
+
+// ─── Slot tree validation ────────────────────────────────────
+
+/**
+ * Validate that all slot conditions are auction conditions.
+ * Recursively checks nested AuctionSlotNode children.
+ * Throws if a non-auction condition is found in any slot.
+ */
+export function validateSlotTree(tree: AuctionSlotNode): void {
+  for (const s of tree.slots) {
+    if (s.condition.category !== "auction") {
+      throw new Error(
+        `Slot tree validation: slot "${s.name}" in "${tree.name}" has ` +
+          `condition "${s.condition.name}" with category "${s.condition.category}" — ` +
+          `expected "auction".`,
+      );
+    }
+    if (s.child.type === "auction-slots") {
+      validateSlotTree(s.child);
+    }
+  }
 }
 
 // ─── Tree validation ─────────────────────────────────────────

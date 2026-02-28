@@ -1,9 +1,9 @@
 import { Seat } from "../../../engine/types";
 import type { DealConstraints, Auction } from "../../../engine/types";
+import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
-import type { TreeConventionConfig } from "../../core/rule-tree";
-import { gerberRuleTree } from "./tree";
+import { gerberProtocol } from "./tree";
 import { gerberExplanations } from "./explanations";
 
 /** Gerber deal constraints: opener 15-17 balanced (standard 1NT), responder 16+ HCP */
@@ -34,14 +34,14 @@ function gerberDefaultAuction(
   return undefined;
 }
 
-export const gerberConfig: TreeConventionConfig = {
+export const gerberConfig: ConventionConfig = {
   id: "gerber",
   name: "Gerber",
   description:
     "Gerber convention: 4C response to NT opening asking for aces, then 5C for kings (slam exploration)",
   category: ConventionCategory.Asking,
   dealConstraints: gerberDealConstraints,
-  ruleTree: gerberRuleTree,
+  protocol: gerberProtocol,
   explanations: gerberExplanations,
   defaultAuction: gerberDefaultAuction,
 };

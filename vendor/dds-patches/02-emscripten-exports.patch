@@ -1,0 +1,27 @@
+--- a/src/Init.cpp
++++ b/src/Init.cpp
+@@ -14,6 +14,10 @@
+ #include "Init.h"
+ ...
+
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++#endif
++
+ Add EMSCRIPTEN_KEEPALIVE before SetResources definition.
+
+--- a/src/CalcTables.cpp
++++ b/src/CalcTables.cpp
+@@ -10,6 +10,10 @@
+ #include "CalcTables.h"
+ ...
+
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++#endif
++
+ Add EMSCRIPTEN_KEEPALIVE before CalcAllTablesPBN definition.
+
+NOTE: These patches are documentation for what changes are needed.
+The actual modifications are applied by the build script directly
+to the vendored source, or manually before building.

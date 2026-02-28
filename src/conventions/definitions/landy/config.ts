@@ -1,10 +1,10 @@
 import { Seat } from "../../../engine/types";
 import type { DealConstraints, Auction, Hand, Deal } from "../../../engine/types";
+import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { getSuitLength } from "../../../engine/hand-evaluator";
 import { buildAuction } from "../../../engine/auction-helpers";
-import type { TreeConventionConfig } from "../../core/rule-tree";
-import { landyRuleTree } from "./tree";
+import { landyProtocol } from "./tree";
 import { landyExplanations } from "./explanations";
 
 /** Landy deal constraints: East opens 1NT (15-17 balanced), South overcalls (10+, 5-4+ majors) */
@@ -38,7 +38,7 @@ function landyDefaultAuction(seat: Seat, _deal?: Deal): Auction | undefined {
   return undefined;
 }
 
-export const landyConfig: TreeConventionConfig = {
+export const landyConfig: ConventionConfig = {
   id: "landy",
   name: "Landy",
   description:
@@ -46,7 +46,7 @@ export const landyConfig: TreeConventionConfig = {
   category: ConventionCategory.Defensive,
   dealConstraints: landyDealConstraints,
   allowedDealers: [Seat.East, Seat.West],
-  ruleTree: landyRuleTree,
+  protocol: landyProtocol,
   explanations: landyExplanations,
   defaultAuction: landyDefaultAuction,
 };

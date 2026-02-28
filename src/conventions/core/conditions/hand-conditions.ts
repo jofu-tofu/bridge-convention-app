@@ -1,6 +1,6 @@
 import type { BiddingContext, HandCondition } from "../types";
 import type { Hand } from "../../../engine/types";
-import { Rank, BidSuit } from "../../../engine/types";
+import { Rank, BidSuit, Seat, Vulnerability } from "../../../engine/types";
 import { partnerSeat } from "../../../engine/constants";
 import { auctionMatchesExact } from "../../../engine/auction-helpers";
 import { and, or } from "./rule-builders";
@@ -89,6 +89,99 @@ export function hcpRange(min: number, max: number): HandCondition {
         : `Need ${min}–${max} HCP (have ${hcp})`;
     },
   };
+}
+
+// ─── Vulnerability condition factories ───────────────────────
+
+/** Check if a seat's side is vulnerable. */
+function sideIsVulnerable(seat: Seat, vulnerability: Vulnerability | undefined): boolean {
+  if (!vulnerability || vulnerability === Vulnerability.None) return false;
+  if (vulnerability === Vulnerability.Both) return true;
+  const isNS = seat === Seat.North || seat === Seat.South;
+  return isNS
+    ? vulnerability === Vulnerability.NorthSouth
+    : vulnerability === Vulnerability.EastWest;
+}
+
+/** True when the specified seat's side is vulnerable. */
+export function isVulnerable(seat: Seat): HandCondition {
+  return {
+    name: "is-vulnerable",
+    label: "Vulnerable",
+    category: "hand",
+    test(ctx) {
+      return sideIsVulnerable(seat, ctx.vulnerability);
+    },
+    describe(ctx) {
+      return sideIsVulnerable(seat, ctx.vulnerability)
+        ? "Vulnerable"
+        : "Not vulnerable";
+    },
+  };
+}
+
+/** True when the specified seat's side is NOT vulnerable. */
+export function isNotVulnerable(seat: Seat): HandCondition {
+  return {
+    name: "is-not-vulnerable",
+    label: "Not vulnerable",
+    category: "hand",
+    test(ctx) {
+      return !sideIsVulnerable(seat, ctx.vulnerability);
+    },
+    describe(ctx) {
+      return !sideIsVulnerable(seat, ctx.vulnerability)
+        ? "Not vulnerable"
+        : "Vulnerable";
+    },
+  };
+}
+
+/** True when our side is NOT vulnerable and their side IS vulnerable. */
+export function favorableVulnerability(): HandCondition {
+  return {
+    name: "favorable-vulnerability",
+    label: "Favorable vulnerability",
+    category: "hand",
+    test(ctx) {
+      return !sideIsVulnerable(ctx.seat, ctx.vulnerability) &&
+        sideIsVulnerable(opponentSeat(ctx.seat), ctx.vulnerability);
+    },
+    describe(ctx) {
+      const us = sideIsVulnerable(ctx.seat, ctx.vulnerability);
+      const them = sideIsVulnerable(opponentSeat(ctx.seat), ctx.vulnerability);
+      if (!us && them) return "Favorable vulnerability (we're not vul, they are)";
+      if (us && !them) return "Unfavorable (we're vul, they're not)";
+      if (us && them) return "Both vulnerable";
+      return "Neither vulnerable";
+    },
+  };
+}
+
+/** True when our side IS vulnerable and their side is NOT vulnerable. */
+export function unfavorableVulnerability(): HandCondition {
+  return {
+    name: "unfavorable-vulnerability",
+    label: "Unfavorable vulnerability",
+    category: "hand",
+    test(ctx) {
+      return sideIsVulnerable(ctx.seat, ctx.vulnerability) &&
+        !sideIsVulnerable(opponentSeat(ctx.seat), ctx.vulnerability);
+    },
+    describe(ctx) {
+      const us = sideIsVulnerable(ctx.seat, ctx.vulnerability);
+      const them = sideIsVulnerable(opponentSeat(ctx.seat), ctx.vulnerability);
+      if (us && !them) return "Unfavorable vulnerability (we're vul, they're not)";
+      if (!us && them) return "Favorable (we're not vul, they are)";
+      if (us && them) return "Both vulnerable";
+      return "Neither vulnerable";
+    },
+  };
+}
+
+/** Get an opponent seat (for vulnerability checks — any opponent works since both share vulnerability). */
+function opponentSeat(seat: Seat): Seat {
+  return seat === Seat.North || seat === Seat.South ? Seat.East : Seat.North;
 }
 
 // ─── Suit length condition factories ─────────────────────────

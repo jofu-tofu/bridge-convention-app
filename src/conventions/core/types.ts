@@ -160,6 +160,13 @@ export interface ConventionConfig {
    *  constraints and auction entries are rotated 180° (N↔S, E↔W).
    *  Entries should be from the same partnership pair (E+W or N+S). */
   readonly allowedDealers?: readonly Seat[];
+  /** Per-convention teaching explanations (keyed by node name). */
+  readonly explanations?: import("./rule-tree").ConventionExplanations;
   /** Present on tree conventions only. See TreeConventionConfig in rule-tree.ts. */
-  readonly ruleTree?: import("./rule-tree").RuleNode;
+  readonly ruleTree?: import("./rule-tree").ConventionTreeRoot;
+  /** Present on protocol conventions. Mutually exclusive with ruleTree.
+   *  Uses `any` type parameter because convention-specific EstablishedContext
+   *  subtypes are not assignable to the base type (function contravariance). */
+  // any: ConventionProtocol generic parameter varies per convention
+  readonly protocol?: import("./protocol").ConventionProtocol<any>;
 }

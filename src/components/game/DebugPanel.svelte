@@ -7,7 +7,7 @@
   const gameStore = getGameStore();
 
   // WORKAROUND: $derived doesn't reliably track through store getter chains.
-  // eslint-disable-next-line svelte/prefer-writable-derived
+   
   let suggestion = $state.raw<BidResult | null>(null);
   $effect(() => {
     suggestion = gameStore.getExpectedBid();

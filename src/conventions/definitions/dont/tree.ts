@@ -9,8 +9,10 @@ import {
   hasSingleLongSuit,
   anySuitMin,
 } from "../../core/conditions";
-import { auctionDecision, handDecision, bid, fallback } from "../../core/rule-tree";
-import type { RuleNode, HandNode, AuctionNode } from "../../core/rule-tree";
+import { handDecision, bid, fallback } from "../../core/rule-tree";
+import type { RuleNode, HandNode } from "../../core/rule-tree";
+import { protocol, round, semantic } from "../../core/protocol";
+import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
 import {
   advanceLongSuitCall,
   revealSuitCall,
@@ -21,6 +23,14 @@ import {
 } from "./helpers";
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
+
+// ─── Established context ────────────────────────────────────
+
+interface DontEstablished extends EstablishedContext {
+  slotName: string;
+}
+
+// ─── Hand subtrees (unchanged) ──────────────────────────────
 
 // Overcaller branch (South, after East opens 1NT)
 const overcallerBranch: HandNode = handDecision(
@@ -52,9 +62,6 @@ const overcallerBranch: HandNode = handDecision(
 
 // ─── Advance branches (North, after South overcalls) ────────
 
-// After 2H (both majors): pass with heart support, 6+ minor escape, or prefer spades
-// Note: advancer CAN bid 2NT (inquiry) with game interest — handled by AI strategy, not tree.
-// Overcaller's 2NT rebid response IS in the tree (see rebidAfter2H2NTBranch).
 const advanceAfter2H: HandNode = handDecision(
   "hearts-support",
   suitMin(1, "hearts", 3),
@@ -73,7 +80,6 @@ const advanceAfter2H: HandNode = handDecision(
   ),
 );
 
-// After 2S (natural 6+ spades): pass with support, 3-level escape, or fallback
 const advanceAfter2S: HandNode = handDecision(
   "spades-support",
   suitMin(0, "spades", 2),
@@ -93,8 +99,6 @@ const advanceAfter2S: HandNode = handDecision(
   ),
 );
 
-// After 2D (diamonds + major): 6+ spades bypass, pass with support, 6+ clubs escape, or relay
-// Note: advancer CAN bid 2NT (inquiry) — handled by AI strategy, not tree.
 const advanceAfter2D: HandNode = handDecision(
   "has-6-plus-spades-after-2d",
   suitMin(0, "spades", 6),
@@ -112,8 +116,6 @@ const advanceAfter2D: HandNode = handDecision(
   ),
 );
 
-// After 2C (clubs + higher): 6+ major bypass, pass with support, or relay
-// Note: advancer CAN bid 2NT (inquiry) — handled by AI strategy, not tree.
 const advanceAfter2C: HandNode = handDecision(
   "has-6-plus-suit-after-2c",
   anySuitMin(
@@ -132,7 +134,6 @@ const advanceAfter2C: HandNode = handDecision(
   ),
 );
 
-// After double (single long suit): 6+ suit bypass or 2C relay
 const advanceAfterDouble: HandNode = handDecision(
   "has-6-plus-suit",
   anySuitMin(
@@ -147,56 +148,24 @@ const advanceAfterDouble: HandNode = handDecision(
   bid("dont-advance-next-step", "Relays asking partner to clarify", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
 );
 
-// ─── 2NT Inquiry rebid branches (overcaller responds to advancer's 2NT) ────
+// ─── 2NT Inquiry rebid branches ─────────────────────────────
 
-// After 1NT-2C-P-2NT-P: overcaller shows min/max and second suit
 const rebidAfter2C2NTBranch: RuleNode = bid(
   "dont-2nt-rebid",
   "Shows strength and suit distribution after inquiry",
   rebidAfter2C2NT,
 );
 
-// After 1NT-2D-P-2NT-P: overcaller shows min/max and which major
 const rebidAfter2D2NTBranch: RuleNode = bid(
   "dont-2nt-rebid",
   "Shows strength and suit distribution after inquiry",
   rebidAfter2D2NT,
 );
 
-// After 1NT-2H-P-2NT-P: overcaller shows min/max and major distribution
 const rebidAfter2H2NTBranch: RuleNode = bid(
   "dont-2nt-rebid",
   "Shows strength and suit distribution after inquiry",
   rebidAfter2H2NT,
-);
-
-// ─── Advance branch dispatcher ──────────────────────────────
-
-const advanceBranch: AuctionNode = auctionDecision(
-  "after-1nt-2h-p",
-  auctionMatches(["1NT", "2H", "P"]),
-  advanceAfter2H,
-  auctionDecision(
-    "after-1nt-2s-p",
-    auctionMatches(["1NT", "2S", "P"]),
-    advanceAfter2S,
-    auctionDecision(
-      "after-1nt-2d-p",
-      auctionMatches(["1NT", "2D", "P"]),
-      advanceAfter2D,
-      auctionDecision(
-        "after-1nt-2c-p",
-        auctionMatches(["1NT", "2C", "P"]),
-        advanceAfter2C,
-        auctionDecision(
-          "after-1nt-x-p",
-          auctionMatches(["1NT", "X", "P"]),
-          advanceAfterDouble,
-          fallback("not-dont-auction"),
-        ),
-      ),
-    ),
-  ),
 );
 
 // Overcaller reveal after partner's 2C relay (1NT-X-P-2C-P)
@@ -207,29 +176,41 @@ const overcallerRevealBranch: HandNode = handDecision(
   bid("dont-reveal-suit", "Reveals the actual long suit", revealSuitCall),
 );
 
-export const dontRuleTree: AuctionNode = auctionDecision(
-  "after-1nt",
-  auctionMatches(["1NT"]),
-  overcallerBranch,
-  auctionDecision(
-    "after-1nt-x-p-2c-p",
-    auctionMatches(["1NT", "X", "P", "2C", "P"]),
-    overcallerRevealBranch,
-    auctionDecision(
-      "is-2nt-inquiry-rebid",
-      auctionMatches(["1NT", "2C", "P", "2NT", "P"]),
-      rebidAfter2C2NTBranch,
-      auctionDecision(
-        "is-2nt-inquiry-rebid-2d",
-        auctionMatches(["1NT", "2D", "P", "2NT", "P"]),
-        rebidAfter2D2NTBranch,
-        auctionDecision(
-          "is-2nt-inquiry-rebid-2h",
-          auctionMatches(["1NT", "2H", "P", "2NT", "P"]),
-          rebidAfter2H2NTBranch,
-          advanceBranch,
-        ),
-      ),
-    ),
-  ),
-);
+// ─── Hand tree dispatch ──────────────────────────────────────
+
+const handTreeMap: Record<string, HandNode> = {
+  "after-1nt": overcallerBranch,
+  "after-1nt-x-p-2c-p": overcallerRevealBranch,
+  "is-2nt-inquiry-rebid": rebidAfter2C2NTBranch as HandNode,
+  "is-2nt-inquiry-rebid-2d": rebidAfter2D2NTBranch as HandNode,
+  "is-2nt-inquiry-rebid-2h": rebidAfter2H2NTBranch as HandNode,
+  "after-1nt-2h-p": advanceAfter2H,
+  "after-1nt-2s-p": advanceAfter2S,
+  "after-1nt-2d-p": advanceAfter2D,
+  "after-1nt-2c-p": advanceAfter2C,
+  "after-1nt-x-p": advanceAfterDouble,
+};
+
+function resolveHandTree(est: DontEstablished): HandNode {
+  return handTreeMap[est.slotName] ?? fallback("unknown-slot");
+}
+
+// ─── Protocol ────────────────────────────────────────────────
+
+export const dontProtocol: ConventionProtocol<DontEstablished> = protocol<DontEstablished>("dont", [
+  round<DontEstablished>("dispatch", {
+    triggers: [
+      semantic<DontEstablished>(auctionMatches(["1NT"]), { slotName: "after-1nt" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "X", "P", "2C", "P"]), { slotName: "after-1nt-x-p-2c-p" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "2C", "P", "2NT", "P"]), { slotName: "is-2nt-inquiry-rebid" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "2D", "P", "2NT", "P"]), { slotName: "is-2nt-inquiry-rebid-2d" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "2H", "P", "2NT", "P"]), { slotName: "is-2nt-inquiry-rebid-2h" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "2H", "P"]), { slotName: "after-1nt-2h-p" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "2S", "P"]), { slotName: "after-1nt-2s-p" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "2D", "P"]), { slotName: "after-1nt-2d-p" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "2C", "P"]), { slotName: "after-1nt-2c-p" }),
+      semantic<DontEstablished>(auctionMatches(["1NT", "X", "P"]), { slotName: "after-1nt-x-p" }),
+    ],
+    handTree: resolveHandTree,
+  }),
+]);

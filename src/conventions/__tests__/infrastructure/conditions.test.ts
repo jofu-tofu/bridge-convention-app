@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { Seat } from "../../../engine/types";
+import { Seat, Vulnerability } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import {
   registerConvention,
@@ -18,6 +18,10 @@ import {
   auctionMatches,
   hcpMin,
   suitMin,
+  isVulnerable,
+  isNotVulnerable,
+  favorableVulnerability,
+  unfavorableVulnerability,
 } from "../../core/conditions";
 import type { BiddingContext, ConditionedBiddingRule } from "../../core/types";
 import { isAuctionCondition } from "../../core/tree-compat";
@@ -213,5 +217,116 @@ describe("condition classification audit", () => {
     }
 
     expect(violations).toEqual([]);
+  });
+});
+
+// ─── Vulnerability condition factories ───────────────────
+
+/** Helper to build a BiddingContext with specific vulnerability. */
+function vulnContext(seat: Seat, vulnerability: Vulnerability | undefined): BiddingContext {
+  const h = hand(
+    "SA", "SK", "SQ", "SJ",
+    "HA", "HK", "HQ",
+    "DA", "DK",
+    "CA", "CK", "CQ", "CJ",
+  );
+  return {
+    hand: h,
+    auction: { entries: [], isComplete: false },
+    seat,
+    evaluation: evaluateHand(h),
+    vulnerability,
+  };
+}
+
+describe("isVulnerable", () => {
+  test("South is vulnerable when NorthSouth", () => {
+    expect(isVulnerable(Seat.South).test(vulnContext(Seat.South, Vulnerability.NorthSouth))).toBe(true);
+  });
+
+  test("South is NOT vulnerable when EastWest", () => {
+    expect(isVulnerable(Seat.South).test(vulnContext(Seat.South, Vulnerability.EastWest))).toBe(false);
+  });
+
+  test("South is vulnerable when Both", () => {
+    expect(isVulnerable(Seat.South).test(vulnContext(Seat.South, Vulnerability.Both))).toBe(true);
+  });
+
+  test("South is NOT vulnerable when None", () => {
+    expect(isVulnerable(Seat.South).test(vulnContext(Seat.South, Vulnerability.None))).toBe(false);
+  });
+
+  test("South is NOT vulnerable when undefined (defaults to None)", () => {
+    expect(isVulnerable(Seat.South).test(vulnContext(Seat.South, undefined))).toBe(false);
+  });
+
+  test("East is vulnerable when EastWest", () => {
+    expect(isVulnerable(Seat.East).test(vulnContext(Seat.East, Vulnerability.EastWest))).toBe(true);
+  });
+
+  test("East is NOT vulnerable when NorthSouth", () => {
+    expect(isVulnerable(Seat.East).test(vulnContext(Seat.East, Vulnerability.NorthSouth))).toBe(false);
+  });
+
+  test("has category hand", () => {
+    expect(isVulnerable(Seat.South).category).toBe("hand");
+  });
+});
+
+describe("isNotVulnerable", () => {
+  test("South is NOT vulnerable when EastWest", () => {
+    expect(isNotVulnerable(Seat.South).test(vulnContext(Seat.South, Vulnerability.EastWest))).toBe(true);
+  });
+
+  test("South IS vulnerable when NorthSouth — returns false", () => {
+    expect(isNotVulnerable(Seat.South).test(vulnContext(Seat.South, Vulnerability.NorthSouth))).toBe(false);
+  });
+
+  test("South is NOT vulnerable when undefined (defaults to None)", () => {
+    expect(isNotVulnerable(Seat.South).test(vulnContext(Seat.South, undefined))).toBe(true);
+  });
+});
+
+describe("favorableVulnerability", () => {
+  test("favorable when we are not vul, they are vul (South, EastWest)", () => {
+    expect(favorableVulnerability().test(vulnContext(Seat.South, Vulnerability.EastWest))).toBe(true);
+  });
+
+  test("NOT favorable when we are vul (South, NorthSouth)", () => {
+    expect(favorableVulnerability().test(vulnContext(Seat.South, Vulnerability.NorthSouth))).toBe(false);
+  });
+
+  test("NOT favorable when nobody is vul (None)", () => {
+    expect(favorableVulnerability().test(vulnContext(Seat.South, Vulnerability.None))).toBe(false);
+  });
+
+  test("NOT favorable when both are vul", () => {
+    expect(favorableVulnerability().test(vulnContext(Seat.South, Vulnerability.Both))).toBe(false);
+  });
+
+  test("favorable from East perspective (East, NorthSouth)", () => {
+    expect(favorableVulnerability().test(vulnContext(Seat.East, Vulnerability.NorthSouth))).toBe(true);
+  });
+});
+
+describe("unfavorableVulnerability", () => {
+  test("unfavorable when we are vul, they are not (South, NorthSouth)", () => {
+    expect(unfavorableVulnerability().test(vulnContext(Seat.South, Vulnerability.NorthSouth))).toBe(true);
+  });
+
+  test("NOT unfavorable when they are vul (South, EastWest)", () => {
+    expect(unfavorableVulnerability().test(vulnContext(Seat.South, Vulnerability.EastWest))).toBe(false);
+  });
+
+  test("NOT unfavorable when nobody is vul (None)", () => {
+    expect(unfavorableVulnerability().test(vulnContext(Seat.South, Vulnerability.None))).toBe(false);
+  });
+
+  test("NOT unfavorable when both are vul", () => {
+    expect(unfavorableVulnerability().test(vulnContext(Seat.South, Vulnerability.Both))).toBe(false);
+  });
+
+  test("unfavorable from East perspective (East, EastWest)", () => {
+    expect(unfavorableVulnerability().test(vulnContext(Seat.East, Vulnerability.EastWest))).toBe(true);
   });
 });

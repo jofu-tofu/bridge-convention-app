@@ -23,6 +23,20 @@ export {
   partnerBidAt,
   seatHasBid,
   advanceAfterDouble,
+  // Seat-agnostic milestone conditions
+  bidMade,
+  doubleMade,
+  bidMadeAtLevel,
+  // Seat-specific conditions for seatFilters
+  opponentOpenedAt,
+  seatHasActed,
+  seatDoubled,
+  seatBidAt,
+  partnerLastBidAtLevel,
+  partnerDoubled,
+  // Interference protection conditions
+  passedAfter,
+  passedAfterDouble,
   // SAYC query helpers (data-returning)
   partnerOpeningStrain,
   seatFirstBidStrain,
@@ -34,12 +48,18 @@ export {
   opponentActed,
   partnerOpenedMajor,
   partnerOpenedMinor,
+  lastEntryIsPass,
 } from "./auction-conditions";
 
 export {
   // Counting helpers
   countAcesInHand,
   countKingsInHand,
+  // Vulnerability conditions
+  isVulnerable,
+  isNotVulnerable,
+  favorableVulnerability,
+  unfavorableVulnerability,
   // HCP conditions
   hcpMin,
   hcpMax,

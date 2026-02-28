@@ -18,6 +18,7 @@ import type {
   Vulnerability,
 } from "./types";
 import { cleanConstraints } from "./constraint-utils";
+import { isDDSAvailable, solveDealWasm } from "./dds-client";
 import init, * as wasm from "bridge-wasm";
 
 let wasmInitPromise: Promise<void> | null = null;
@@ -83,8 +84,9 @@ export class WasmEngine implements EnginePort {
     return wasm.get_trick_winner({ trick });
   }
 
-  async solveDeal(_deal: Deal): Promise<DDSolution> {
-    throw new Error("DDS not available in WASM build");
+  async solveDeal(deal: Deal): Promise<DDSolution> {
+    if (!isDDSAvailable()) throw new Error("DDS not available");
+    return solveDealWasm(deal);
   }
 
   async suggestPlay(

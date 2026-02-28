@@ -1,9 +1,9 @@
 import { Seat, Suit } from "../../../engine/types";
 import type { DealConstraints, Auction } from "../../../engine/types";
+import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
-import type { TreeConventionConfig } from "../../core/rule-tree";
-import { staymanRuleTree } from "./tree";
+import { staymanProtocol } from "./tree";
 import { staymanExplanations } from "./explanations";
 
 /** Stayman deal constraints: opener 15-17 balanced no 5M, responder 8+ with 4+M */
@@ -42,14 +42,14 @@ function staymanDefaultAuction(
   return undefined;
 }
 
-export const staymanConfig: TreeConventionConfig = {
+export const staymanConfig: ConventionConfig = {
   id: "stayman",
   name: "Stayman",
   description:
     "Stayman convention: 2C response to 1NT asking for 4-card majors",
   category: ConventionCategory.Asking,
   dealConstraints: staymanDealConstraints,
-  ruleTree: staymanRuleTree,
+  protocol: staymanProtocol,
   explanations: staymanExplanations,
   defaultAuction: staymanDefaultAuction,
 };

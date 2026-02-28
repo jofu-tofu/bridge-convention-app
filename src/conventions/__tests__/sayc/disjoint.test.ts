@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { saycConfig } from "../../definitions/sayc";
 import { clearRegistry, registerConvention, getConventionRules } from "../../core/registry";
-import { flattenTree } from "../../core/tree-compat";
+import { getEffectiveRules } from "../../core/registry";
 import { generateDeal } from "../../../engine/deal-generator";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, BidSuit } from "../../../engine/types";
@@ -75,7 +75,7 @@ function parseCall(s: string): import("../../../engine/types").Call {
 }
 
 // Exclude catch-all pass from overlap analysis (it overlaps with everything by design)
-const saycRules = flattenTree(saycConfig.ruleTree);
+const saycRules = getEffectiveRules(saycConfig);
 const rulesWithoutPass = saycRules.filter(
   (r) => r.name !== "sayc-pass",
 );

@@ -1,18 +1,31 @@
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import {
-  auctionMatches,
+  bidMade,
+  isResponder,
+  isOpener,
+  lastEntryIsPass,
   hcpMin,
   hcpRange,
   suitMin,
   anySuitMin,
   and,
 } from "../../core/conditions";
-import { auctionDecision, handDecision, bid, fallback } from "../../core/rule-tree";
-import type { RuleNode } from "../../core/rule-tree";
+import type { AuctionCondition } from "../../core/types";
+import { handDecision, bid, fallback } from "../../core/rule-tree";
+import type { HandNode } from "../../core/rule-tree";
+import { protocol, round, semantic } from "../../core/protocol";
+import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
-// ─── Rule Tree ────────────────────────────────────────────────
+// ─── Established context ────────────────────────────────────
+
+interface StaymanEstablished extends EstablishedContext {
+  openingLevel?: number;
+  showed?: "hearts" | "spades" | "denial";
+}
+
+// ─── Hand subtrees (unchanged from slot tree) ────────────────
 
 // Round 1: Responder asks 2C (after 1NT-P)
 // Note: Bridge Bum recommends avoiding Stayman with 4-3-3-3 shape, but this is stylistic
@@ -229,47 +242,48 @@ const round2Response2NT = handDecision(
   ),
 );
 
-// Full tree
-export const staymanRuleTree: RuleNode = auctionDecision(
-  "after-1nt-p",
-  auctionMatches(["1NT", "P"]),
-  // Round 1: Responder's Stayman ask
-  round1Ask,
-  // Not after 1NT-P
-  auctionDecision(
-    "after-2nt-p",
-    auctionMatches(["2NT", "P"]),
-    // 2NT Stayman: 3C ask
-    round1Ask2NT,
-    // Not after 2NT-P
-    auctionDecision(
-      "after-1nt-p-2c-p",
-      auctionMatches(["1NT", "P", "2C", "P"]),
-      // Round 2: Opener responds
-      round2Response,
-      // Not Round 2 — check Round 3 rebid positions
-      auctionDecision(
-        "after-2nt-p-3c-p",
-        auctionMatches(["2NT", "P", "3C", "P"]),
-        // 2NT Stayman Round 2: Opener responds
-        round2Response2NT,
-        auctionDecision(
-          "after-2h-response",
-          auctionMatches(["1NT", "P", "2C", "P", "2H", "P"]),
-          rebidAfter2H,
-          auctionDecision(
-            "after-2s-response",
-            auctionMatches(["1NT", "P", "2C", "P", "2S", "P"]),
-            rebidAfter2S,
-            auctionDecision(
-              "after-2d-denial",
-              auctionMatches(["1NT", "P", "2C", "P", "2D", "P"]),
-              rebidAfter2D,
-              fallback("not-stayman-auction"),
-            ),
-          ),
-        ),
-      ),
-    ),
-  ),
-);
+// ─── Protocol ────────────────────────────────────────────────
+
+export const staymanProtocol: ConventionProtocol<StaymanEstablished> = protocol<StaymanEstablished>("stayman", [
+  // Round 1: NT opening — responder decides whether to ask Stayman
+  // seatFilter: responder + no interference after the NT opening
+  round<StaymanEstablished>("nt-opening", {
+    triggers: [
+      semantic<StaymanEstablished>(bidMade(1, BidSuit.NoTrump), { openingLevel: 1 }),
+      semantic<StaymanEstablished>(bidMade(2, BidSuit.NoTrump), { openingLevel: 2 }),
+    ],
+    handTree: (est: StaymanEstablished): HandNode =>
+      est.openingLevel === 2 ? round1Ask2NT : round1Ask,
+    seatFilter: and(isResponder(), lastEntryIsPass()) as AuctionCondition,
+  }),
+  // Round 2: Stayman ask made — opener responds with major or denial
+  // seatFilter: opener + no interference after the Stayman ask
+  round<StaymanEstablished>("stayman-ask", {
+    triggers: [
+      semantic<StaymanEstablished>(bidMade(2, BidSuit.Clubs), {}),
+      semantic<StaymanEstablished>(bidMade(3, BidSuit.Clubs), {}),
+    ],
+    handTree: (est: StaymanEstablished): HandNode =>
+      est.openingLevel === 2 ? round2Response2NT : round2Response,
+    seatFilter: and(isOpener(), lastEntryIsPass()) as AuctionCondition,
+  }),
+  // Round 3: Opener responded — responder rebids based on what was shown
+  // seatFilter: responder + no interference after opener's response
+  round<StaymanEstablished>("opener-response", {
+    triggers: [
+      semantic<StaymanEstablished>(bidMade(2, BidSuit.Hearts), { showed: "hearts" }),
+      semantic<StaymanEstablished>(bidMade(2, BidSuit.Spades), { showed: "spades" }),
+      semantic<StaymanEstablished>(bidMade(2, BidSuit.Diamonds), { showed: "denial" }),
+      semantic<StaymanEstablished>(bidMade(3, BidSuit.Hearts), { showed: "hearts" }),
+      semantic<StaymanEstablished>(bidMade(3, BidSuit.Spades), { showed: "spades" }),
+      semantic<StaymanEstablished>(bidMade(3, BidSuit.Diamonds), { showed: "denial" }),
+    ],
+    handTree: (est: StaymanEstablished): HandNode => {
+      if (est.showed === "hearts") return rebidAfter2H;
+      if (est.showed === "spades") return rebidAfter2S;
+      if (est.showed === "denial") return rebidAfter2D;
+      return fallback("unknown-response");
+    },
+    seatFilter: and(isResponder(), lastEntryIsPass()) as AuctionCondition,
+  }),
+]);

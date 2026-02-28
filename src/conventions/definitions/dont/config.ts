@@ -4,11 +4,11 @@
 
 import { Seat } from "../../../engine/types";
 import type { DealConstraints, Hand, Auction, Deal } from "../../../engine/types";
+import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { getSuitLength } from "../../../engine/hand-evaluator";
-import type { TreeConventionConfig } from "../../core/rule-tree";
-import { dontRuleTree } from "./tree";
+import { dontProtocol } from "./tree";
 import { dontExplanations } from "./explanations";
 
 // ─── Deal Constraints ─────────────────────────────────────────
@@ -49,7 +49,7 @@ function dontDefaultAuction(seat: Seat, _deal?: Deal): Auction | undefined {
 
 // ─── Convention Config ────────────────────────────────────────
 
-export const dontConfig: TreeConventionConfig = {
+export const dontConfig: ConventionConfig = {
   id: "dont",
   name: "DONT",
   description:
@@ -57,7 +57,7 @@ export const dontConfig: TreeConventionConfig = {
   category: ConventionCategory.Defensive,
   dealConstraints: dontDealConstraints,
   allowedDealers: [Seat.East, Seat.West],
-  ruleTree: dontRuleTree,
+  protocol: dontProtocol,
   explanations: dontExplanations,
   defaultAuction: dontDefaultAuction,
 };

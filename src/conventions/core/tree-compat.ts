@@ -2,10 +2,11 @@
 // This is a temporary compat adapter for the flat→tree migration period.
 
 import type { ConditionedBiddingRule, ConditionResult, RuleCondition, AuctionCondition, BiddingContext } from "./types";
-import type { RuleNode } from "./rule-tree";
+import type { RuleNode, ConventionTreeRoot, AuctionSlotNode, HandNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
 import type { BiddingRuleResult } from "./registry";
 import { conditionedRule } from "./conditions";
+import type { ConventionProtocol, EstablishedContext } from "./protocol";
 
 // ─── flattenTree ─────────────────────────────────────────────
 
@@ -29,7 +30,94 @@ export function isAuctionCondition(condition: RuleCondition): condition is Aucti
  * Constraint: tree must be a strict tree (no shared node references across branches).
  * DAG structure would produce duplicate/incorrect flattened paths.
  */
-export function flattenTree(tree: RuleNode): readonly ConditionedBiddingRule[] {
+export function flattenTree(tree: ConventionTreeRoot): readonly ConditionedBiddingRule[] {
+  if (tree.type === "auction-slots") {
+    return flattenSlotTree(tree);
+  }
+  return flattenBinaryTree(tree);
+}
+
+function flattenSlotTree(tree: AuctionSlotNode): ConditionedBiddingRule[] {
+  const rules: ConditionedBiddingRule[] = [];
+
+  function walkSlots(
+    node: AuctionSlotNode,
+    auctionConds: RuleCondition[],
+  ): void {
+    for (const s of node.slots) {
+      const slotAuctionConds = [...auctionConds, s.condition];
+      if (s.child.type === "auction-slots") {
+        walkSlots(s.child, slotAuctionConds);
+      } else {
+        // Hand subtree — flatten it, prepending slot conditions
+        walkBinaryNode(s.child as RuleNode, slotAuctionConds, rules);
+      }
+    }
+    // Default child
+    if (node.defaultChild) {
+      walkBinaryNode(node.defaultChild as RuleNode, auctionConds, rules);
+    }
+  }
+
+  walkSlots(tree, []);
+  return rules;
+}
+
+function walkBinaryNode(
+  node: RuleNode,
+  auctionConditions: RuleCondition[],
+  rules: ConditionedBiddingRule[],
+): void {
+  function walk(n: RuleNode, conditions: RuleCondition[]): void {
+    switch (n.type) {
+      case "fallback":
+        return;
+      case "bid": {
+        const auctionConds: RuleCondition[] = [];
+        const handConds: RuleCondition[] = [];
+        for (const cond of conditions) {
+          if (isAuctionCondition(cond)) {
+            auctionConds.push(cond);
+          } else {
+            handConds.push(cond);
+          }
+        }
+        rules.push(
+          conditionedRule({
+            name: n.name,
+            auctionConditions: auctionConds,
+            handConditions: handConds,
+            call: n.call,
+          }),
+        );
+        return;
+      }
+      case "decision": {
+        walk(n.yes, [...conditions, n.condition]);
+        const negated: RuleCondition = {
+          name: `${NEGATION_PREFIX}${n.condition.name}`,
+          label: `Not: ${n.condition.label}`,
+          category: n.condition.category,
+          test(ctx: BiddingContext) {
+            return !n.condition.test(ctx);
+          },
+          describe(ctx: BiddingContext) {
+            return `Not: ${n.condition.describe(ctx)}`;
+          },
+        };
+        walk(n.no, [...conditions, negated]);
+        return;
+      }
+      default: {
+        const _exhaustive: never = n;
+        throw new Error(`Unhandled RuleNode type: ${String(_exhaustive)}`);
+      }
+    }
+  }
+  walk(node, [...auctionConditions]);
+}
+
+function flattenBinaryTree(tree: RuleNode): ConditionedBiddingRule[] {
   const rules: ConditionedBiddingRule[] = [];
 
   function walk(
@@ -92,6 +180,59 @@ export function flattenTree(tree: RuleNode): readonly ConditionedBiddingRule[] {
   return rules;
 }
 
+// ─── flattenProtocol ─────────────────────────────────────────
+
+/**
+ * Flatten a protocol into ConditionedBiddingRule[] for UI display.
+ * Recursively walks rounds, accumulating trigger conditions + seatFilters
+ * across rounds so each flattened rule has the full path of conditions
+ * from ALL rounds leading to it.
+ *
+ * For function-based hand trees, resolves them with the trigger's established
+ * context to produce the correct flattened rules per trigger variant.
+ */
+export function flattenProtocol(proto: ConventionProtocol): readonly ConditionedBiddingRule[] {
+  const rules: ConditionedBiddingRule[] = [];
+
+  function walkRounds(
+    roundIdx: number,
+    accConds: RuleCondition[],
+    accEst: EstablishedContext,
+  ): void {
+    if (roundIdx >= proto.rounds.length) return;
+    const r = proto.rounds[roundIdx]!;
+    for (const trigger of r.triggers) {
+      const pathConds = [...accConds, trigger.condition];
+      const est = { ...accEst, ...trigger.establishes } as EstablishedContext;
+
+      // Flatten this round's hand tree with accumulated trigger conditions
+      // plus ONLY this round's seatFilter (not accumulated from previous rounds,
+      // since seatFilters apply to different seats in multi-round protocols)
+      let handTree: HandNode | null;
+      if (typeof r.handTree === "function") {
+        try {
+          handTree = r.handTree(est);
+        } catch {
+          handTree = null;
+        }
+      } else {
+        handTree = r.handTree;
+      }
+
+      if (handTree) {
+        const handTreeConds = r.seatFilter ? [...pathConds, r.seatFilter] : pathConds;
+        walkBinaryNode(handTree as RuleNode, handTreeConds, rules);
+      }
+
+      // Recurse to next round with accumulated trigger conditions (no seatFilter)
+      walkRounds(roundIdx + 1, pathConds, est);
+    }
+  }
+
+  walkRounds(0, [], { role: "responder" as const } as EstablishedContext);
+  return rules;
+}
+
 // ─── treeResultToBiddingRuleResult ───────────────────────────
 
 /**
@@ -124,5 +265,6 @@ export function treeResultToBiddingRuleResult(
     explanation,
     meaning: result.matched.meaning,
     conditionResults,
+    alert: result.matched.alert,
   };
 }

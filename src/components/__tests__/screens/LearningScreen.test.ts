@@ -54,10 +54,11 @@ describe("LearningScreen", () => {
     expect(screen.getByRole("button", { name: "Gerber" })).toBeTruthy();
   });
 
-  it("has a Decision Tree section", () => {
+  it("protocol conventions show 'No decision tree' placeholder", () => {
+    // Stayman is now a protocol convention (no ruleTree), so the decision tree
+    // section shows a placeholder instead. Future: protocol-aware tree display.
     renderLearningScreen();
-    expect(screen.getByText("Decision Tree")).toBeTruthy();
-    expect(screen.getByRole("tree")).toBeTruthy();
+    expect(screen.getByText(/no decision tree/i)).toBeTruthy();
   });
 
   it("has a practice button", () => {

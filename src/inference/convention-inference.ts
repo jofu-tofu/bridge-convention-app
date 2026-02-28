@@ -2,9 +2,10 @@ import type { InferenceProvider, HandInference, SuitInference } from "./types";
 import type { Auction, AuctionEntry, Seat, Call } from "../engine/types";
 import type { Suit } from "../engine/types";
 import { callsMatch } from "../engine/call-helpers";
-import { getConvention, isTreeConvention } from "../conventions/core/registry";
-import { evaluateTree } from "../conventions/core/tree-evaluator";
-import { flattenTree, isAuctionCondition } from "../conventions/core/tree-compat";
+import { getConvention, isTreeConvention, isProtocolConvention } from "../conventions/core/registry";
+import { evaluateTree, evaluateSlotTree } from "../conventions/core/tree-evaluator";
+import { evaluateProtocol } from "../conventions/core/protocol-evaluator";
+import { flattenTree, flattenProtocol, isAuctionCondition } from "../conventions/core/tree-compat";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { isConditionedRule } from "../conventions/core/condition-evaluator";
@@ -55,6 +56,10 @@ export function createConventionInferenceProvider(
     } catch {
       return null;
     }
+    if (isProtocolConvention(convention) && convention.protocol) {
+      cachedRules = flattenProtocol(convention.protocol);
+      return cachedRules;
+    }
     if (!isTreeConvention(convention)) return null;
     cachedRules = flattenTree(convention.ruleTree);
     return cachedRules;
@@ -81,7 +86,7 @@ export function createConventionInferenceProvider(
         return null;
       }
 
-      if (!isTreeConvention(convention)) return null;
+      if (!isTreeConvention(convention) && !isProtocolConvention(convention)) return null;
       const handInferences: HandInference[] = [];
       let matchedRuleName: string | null = null;
 
@@ -124,7 +129,16 @@ export function createConventionInferenceProvider(
       if (!matchedRuleName) return null;
 
       // Negative inference: evaluate tree with auction context to get rejected decisions
-      const treeResult = evaluateTree(convention.ruleTree, auctionContext);
+      let treeResult;
+      if (isProtocolConvention(convention) && convention.protocol) {
+        treeResult = evaluateProtocol(convention.protocol, auctionContext).handResult;
+      } else if (isTreeConvention(convention)) {
+        treeResult = convention.ruleTree.type === "auction-slots"
+          ? evaluateSlotTree(convention.ruleTree, auctionContext).handResult
+          : evaluateTree(convention.ruleTree, auctionContext);
+      } else {
+        treeResult = { rejectedDecisions: [], path: [], visited: [], matched: null };
+      }
 
       // Extract negative inferences from rejected auction-condition decisions only.
       // V1: Hand-condition rejections are unreliable because the dummy hand (empty cards)

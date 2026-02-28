@@ -1,0 +1,17 @@
+--- a/src/System.cpp
++++ b/src/System.cpp
+@@ -179,6 +179,14 @@ void System::GetHardware(
+   int& ncores,
+   unsigned long long& kilobytesFree) const
+ {
++#ifdef __EMSCRIPTEN__
++  // Emscripten/WASM: no OS APIs available. Hardcode single-threaded
++  // with 50MB. With 1 core, DDS uses RunThreadsBasic() (inline, no
++  // thread creation). Mutex globals in ThreadMgr.cpp are never contended.
++  ncores = 1;
++  kilobytesFree = 50 * 1024; // 50 MB in KB
++  return;
++#endif
+   kilobytesFree = 0;
+   ncores = 1;
+   (void) System::GetCores(ncores);

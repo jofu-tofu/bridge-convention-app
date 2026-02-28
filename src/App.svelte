@@ -1,6 +1,7 @@
 <script lang="ts">
   import { TauriIpcEngine } from "./engine/tauri-ipc-engine";
   import { WasmEngine, initWasm } from "./engine/wasm-engine";
+  import { initDDS } from "./engine/dds-client";
   import type { EnginePort } from "./engine/port";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -13,6 +14,10 @@
       return new TauriIpcEngine();
     }
     await initWasm();
+    // Fire-and-forget: DDS loads in background via Web Worker.
+    // If user reaches EXPLANATION before worker is ready, isDDSAvailable()
+    // returns false, DDS store catches the error, UI shows gracefully.
+    initDDS().catch(() => {/* silent — isDDSAvailable() stays false, UI degrades gracefully */});
     return new WasmEngine();
   }
 
@@ -50,15 +55,15 @@
       try {
         const config = getConvention(learnParam);
         store.navigateToLearning(config);
-      } catch (e) {
-        console.warn(`[dev] Unknown convention "${learnParam}":`, e);
+      } catch {
+        // Invalid dev param — silently ignore
       }
     } else if (conventionParam) {
       try {
         const config = getConvention(conventionParam);
         store.selectConvention(config);
-      } catch (e) {
-        console.warn(`[dev] Unknown convention "${conventionParam}":`, e);
+      } catch {
+        // Invalid dev param — silently ignore
       }
     }
   }
@@ -74,7 +79,6 @@
     })
     .catch((err: unknown) => {
       initError = `Failed to load engine: ${err instanceof Error ? err.message : String(err)}`;
-      console.error("[engine] WASM init failed:", err);
     });
 </script>
 
@@ -96,7 +100,6 @@
           })
           .catch((err: unknown) => {
             initError = `Failed to load engine: ${err instanceof Error ? err.message : String(err)}`;
-            console.error("[engine] WASM init retry failed:", err);
           });
       }}
     >Retry</button>

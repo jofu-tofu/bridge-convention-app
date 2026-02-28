@@ -35,7 +35,7 @@ export interface BiddingStoreConfig {
   initialAuction?: Auction;
   onAuctionComplete: (auction: Auction) => Promise<void>;
   onSkipToExplanation: (auction: Auction) => Promise<void>;
-  onProcessBid?: (bid: AuctionEntry, auctionBefore: Auction) => void;
+  onProcessBid?: (bid: AuctionEntry, auctionBefore: Auction, bidResult: BidResult | null) => void;
 }
 
 export function createBiddingStore(engine: EnginePort, options?: GameStoreOptions) {
@@ -59,7 +59,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let activeSession = $state<DrillSession | null>(null);
   let onAuctionComplete: ((auction: Auction) => Promise<void>) | null = null;
   let onSkipToExplanation: ((auction: Auction) => Promise<void>) | null = null;
-  let onProcessBid: ((bid: AuctionEntry, auctionBefore: Auction) => void) | null = null;
+  let onProcessBid: ((bid: AuctionEntry, auctionBefore: Auction, bidResult: BidResult | null) => void) | null = null;
 
   const isUserTurn = $derived(
     currentTurn !== null &&
@@ -90,7 +90,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         }
         auction = newAuction;
 
-        onProcessBid?.(bidEntry, auctionBefore);
+        onProcessBid?.(bidEntry, auctionBefore, result);
 
         bidHistory = [
           ...bidHistory,
@@ -183,7 +183,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     }
     auction = newAuction;
 
-    onProcessBid?.(userBidEntry, auctionBeforeUser);
+    onProcessBid?.(userBidEntry, auctionBeforeUser, expectedResult);
 
     bidHistory = [
       ...bidHistory,

@@ -9,7 +9,7 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 - **Core vs definitions split.** `core/` contains stable infrastructure (registry, evaluator, tree system, conditions). `definitions/` contains convention folders that grow unboundedly. When `definitions/` exceeds ~20 folders, introduce category subdirectories (responses/, competitive/, slam/, etc.).
 - **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`. Importing `conventions/index` activates all conventions.
 - **Rule name strings are public contract.** Rule names (e.g., `stayman-ask`, `stayman-response-hearts`) appear in CLI JSON output and are used in tests. Renaming a rule name is a breaking change.
-- **`evaluateBiddingRules(context, config)` is tree-only.** Takes `BiddingContext` and `ConventionConfig` (no `rules` param). Dispatches via tree evaluator for all conventions.
+- **`evaluateBiddingRules(context, config)` dispatches protocol or tree.** Takes `BiddingContext` and `ConventionConfig`. Protocol conventions (all 6) dispatch via `evaluateProtocol()`. Legacy tree conventions dispatch via `evaluateSlotTree()`/`evaluateTree()`. Mutually exclusive: config has `protocol` XOR `ruleTree`.
 
 ## Architecture
 
@@ -22,13 +22,15 @@ core/
   conditions/ (split subsystem: auction-conditions, hand-conditions, rule-builders)
   conditions.ts (barrel re-export for backward compat)
   condition-evaluator.ts (evaluateConditions, buildExplanation, isConditionedRule)
-  rule-tree.ts (RuleNode, DecisionNode, AuctionDecisionNode, HandDecisionNode, AuctionNode, HandNode, BidNode, FallbackNode, TreeConventionConfig, DecisionMetadata, BidMetadata, ConventionExplanations, builder helpers: auctionDecision, handDecision, decision (deprecated), bid, fallback, validateTree)
-  tree-evaluator.ts (evaluateTree, TreeEvalResult, PathEntry)
-  tree-compat.ts (flattenTree, treeResultToBiddingRuleResult — temporary compat adapter)
+  rule-tree.ts (RuleNode, DecisionNode, HandDecisionNode, HandNode, BidNode, FallbackNode, AuctionSlotNode, AuctionSlot, ConventionTreeRoot, ActiveRole, SlotMetadata, TreeConventionConfig, DecisionMetadata, BidMetadata, ConventionExplanations, builder helpers: auctionSlots, slot, handDecision, decision (test compat), bid, fallback, validateTree, validateSlotTree)
+  tree-evaluator.ts (evaluateTree, evaluateSlotTree, TreeEvalResult, SlotTreeEvalResult, MatchedSlotEntry, PathEntry)
+  protocol.ts (ConventionProtocol, ProtocolRound, SemanticTrigger, EstablishedContext, ProtocolEvalResult, builders: protocol, round, semantic, validateProtocol)
+  protocol-evaluator.ts (evaluateProtocol, computeRole — protocol dispatch engine)
+  tree-compat.ts (flattenTree, flattenProtocol, treeResultToBiddingRuleResult — compat adapters)
   sibling-finder.ts (findSiblingBids — sibling bids in same auction context)
   context-factory.ts (createBiddingContext — canonical BiddingContext constructor)
     ↑
-  registry.ts (registerConvention, getConvention, evaluateBiddingRules — dispatches tree conventions)
+  registry.ts (registerConvention, getConvention, evaluateBiddingRules — dispatches protocol or tree conventions)
     ↑
 definitions/
   stayman/ (staymanConfig, staymanDealConstraints)
@@ -41,7 +43,7 @@ definitions/
 index.ts (auto-registration entry point)
 ```
 
-**Key core files:** `types.ts` (all interfaces), `conditions/` (split subsystem: auction/hand/rule-builders), `condition-evaluator.ts` (evaluate + explain), `rule-tree.ts` (node types + builders), `tree-evaluator.ts` (evaluateTree), `tree-compat.ts` (flattenTree + result adapter), `sibling-finder.ts` (sibling alternatives), `context-factory.ts` (createBiddingContext), `registry.ts` (convention map + dispatch).
+**Key core files:** `types.ts` (all interfaces), `conditions/` (split subsystem: auction/hand/rule-builders), `condition-evaluator.ts` (evaluate + explain), `rule-tree.ts` (node types + builders), `protocol.ts` (protocol types + builders), `protocol-evaluator.ts` (protocol dispatch), `tree-evaluator.ts` (evaluateTree for hand subtrees), `tree-compat.ts` (flattenTree/flattenProtocol + result adapter), `sibling-finder.ts` (sibling alternatives), `context-factory.ts` (createBiddingContext), `registry.ts` (convention map + dispatch).
 
 **Definitions:** 6 convention folders (stayman, gerber, bergen-raises, dont, landy, sayc). Each folder has `tree.ts`, `config.ts`, `explanations.ts`, `index.ts`. `index.ts` auto-registers all.
 
@@ -67,8 +69,8 @@ Per-convention rule details (deal constraints, rule names, priority order, HCP r
 
 ## Adding a Convention
 
-1. Create `src/conventions/definitions/{name}/` folder with `tree.ts` (rule tree), `config.ts` (deal constraints + convention config), `explanations.ts` (teaching metadata scaffold), `index.ts` (barrel exports). Optionally add `helpers.ts` (dynamic call functions) and `conditions.ts` (local RuleCondition factories).
-2. Use tree nodes (`decision`, `bid`, `fallback`) from `core/rule-tree` — compose conditions from existing factories in `core/conditions`
+1. Create `src/conventions/definitions/{name}/` folder with `tree.ts` (protocol + hand subtrees), `config.ts` (deal constraints + convention config with `protocol` field), `explanations.ts` (teaching metadata scaffold), `index.ts` (barrel exports). Optionally add `helpers.ts` (dynamic call functions) and `conditions.ts` (local RuleCondition factories).
+2. Build a `ConventionProtocol` using `protocol()`, `round()`, `semantic()` from `core/protocol`. Use hand subtree nodes (`handDecision`, `bid`, `fallback`) from `core/rule-tree`. Compose conditions from existing factories in `core/conditions`.
 3. Add `registerConvention({name}Config)` call in `index.ts`
 4. Create `src/conventions/__tests__/{name}/` with `rules.test.ts` and `edge-cases.test.ts`. Import shared helpers from `../fixtures` and `../tree-test-helpers`.
 5. Test deal constraints with `checkConstraints()` — verify both acceptance and rejection
@@ -102,24 +104,52 @@ __tests__/
   └── _convention-template.test.ts  Template for new conventions
 ```
 
-## Tree System
+## Protocol System
+
+**All 6 conventions use `ConventionProtocol`.** Convention dispatch uses `protocol()` + `round()` + `semantic()` builders from `core/protocol.ts`. The evaluator in `core/protocol-evaluator.ts` walks rounds sequentially, tests trigger conditions, and delegates to hand subtrees via `evaluateTree()`.
+
+**Protocol structure:** Each convention has a `ConventionProtocol` with one or more `ProtocolRound`s. Each round has `triggers` (semantic conditions), a `handTree` (static or function returning `HandNode`), and an optional `seatFilter` (AuctionCondition evaluated against the FULL context). Triggers are `AuctionCondition`s (e.g., `bidMade`, `bidMadeAtLevel`, `isOpener`, `auctionMatches`). The `handTree` function receives accumulated `EstablishedContext` from matched triggers.
+
+**Multi-round protocols with seatFilter:** Landy (3 rounds), Stayman (3 rounds), Bergen (4 rounds), and Gerber (5 rounds) use multi-round protocols. Each round has a `seatFilter` that determines which seat acts in that round. The evaluator advances the cursor for every matched round but only sets `activeRound` when the seatFilter passes. This separates WHAT happened (triggers) from WHO acts (seatFilter).
+
+**seatFilter mechanism:** `ProtocolRound.seatFilter` is an optional `AuctionCondition` evaluated against the FULL context (not cursor-windowed). If present and fails, cursor advances (the milestone happened) but `activeRound` is NOT updated. Common seatFilter patterns:
+- `isResponder()` / `isOpener()` — partnership role
+- `not(seatHasActed())` — seat hasn't bid/passed yet (for advancer/responder first action)
+- `seatHasBid()` — seat has previously made a contract bid
+- `biddingRound(n)` — seat has made exactly n prior bids (disambiguates rebids)
+- `passedAfter(level, strain)` — interference protection: checks pass follows specific bid
+- Combine with `and()`, `not()`, cast result `as AuctionCondition`
+
+**Milestone condition factories:** `bidMade(level, strain)`, `doubleMade()`, `bidMadeAtLevel(level)` — seat-agnostic conditions that detect WHAT happened in the auction. Used as triggers. `passedAfter(level, strain)`, `passedAfterDouble()` — used in seatFilters for interference protection.
+
+**Single-round conventions:** DONT (10 triggers) and SAYC (4 triggers) use single-round dispatch with `auctionMatches` or semantic conditions. These are already well-structured and don't benefit from multi-round conversion.
+
+**`ctx.seat` is fixed throughout evaluation.** The evaluating seat never changes between rounds. This is why seatFilter works correctly — it checks the evaluating seat's role in the FULL auction. Cursor-relative conditions like `lastPartnerBid()` would see the wrong partner in cross-partnership rounds, so triggers use seat-agnostic milestones instead.
+
+**Mutual exclusion:** `ConventionConfig` has `protocol` XOR `ruleTree`. `registerConvention()` throws if both set. Registry dispatches to `evaluateProtocol()` for protocol conventions, `evaluateSlotTree()`/`evaluateTree()` for legacy tree conventions.
+
+## Tree System (Legacy — Slot Tree Types Still Present)
 
 **Why Rule Trees?** The flat `conditionedRule()` system had 11 gaps. Most critically: (1) interference blindness — rules assumed uncontested auctions; (2) no negative inference — flat condition lists can't express "this convention path was rejected, so these hand constraints DON'T apply." Rule trees were chosen because tree path rejection data is the only architecture that enables negative inference.
 
-**Tree Authoring Rules:**
-- Use `auctionDecision()` for auction conditions, `handDecision()` for hand conditions. `decision()` is deprecated (kept for test backward compat).
+**Tree Authoring Rules (for hand subtrees within protocols):**
+- `handDecision()` for hand conditions — hand evaluation stays binary (preserves negative inference via `rejectedDecisions`).
 - `and()`/`or()` throw at runtime if given mixed auction+hand conditions. All children must be same category.
-- `validateTree()` runs at `registerConvention()` time — auction conditions after hand conditions on any path will throw.
+- `validateSlotTree()` runs at `registerConvention()` time for slot trees — checks all slot conditions have `category === "auction"`.
+- `validateTree()` runs at `registerConvention()` time for binary trees — auction conditions after hand conditions on any path will throw.
 - Prefer nested decisions over compound `and()` with mixed categories — each decision appears as a distinct step in `TreeEvalResult.visited`.
-- Auction checks = parent DecisionNodes, hand checks = child DecisionNodes (auction narrows first, then hand evaluates)
 - DecisionNode names: descriptive kebab-case slugs (e.g., `is-responder`, `has-4-card-major`)
 - FallbackNode = "convention doesn't apply to this hand/auction"; BidNode = "convention fires with this call"
 - Strict tree constraint: do not reuse node object references across branches (breaks `flattenTree()` path accumulation). Use factory functions for shared subtrees.
 - Use `createBiddingContext()` factory from `context-factory.ts` for all new BiddingContext construction
 - `biddingRules` is optional on tree conventions — use `getConventionRules(id)` from registry for flattened rules
 - `flattenTree()` splits accumulated conditions: pure auction conditions → `auctionConditions`, hand conditions → `handConditions`
-- `auctionMatches()` uses exact match (via `auctionMatchesExact()`), not prefix. `["1NT", "P"]` does NOT match when auction is `["1NT", "P", "2C", "P"]`. This is why chaining rounds off the NO branch works — longer auctions fall through to later checks.
+- `auctionMatches()` uses exact match (via `auctionMatchesExact()`), not prefix. `["1NT", "P"]` does NOT match when auction is `["1NT", "P", "2C", "P"]`. This is why slots with different `auctionMatches()` conditions are mutually exclusive.
 - Multiple BidNodes may share the same name (e.g., `dont-advance-pass` × 3). This is safe for all consumers (registry, inference, CLI, RulesPanel).
+
+**Protocol trigger ordering:** Pattern-based triggers (`auctionMatches`) are mutually exclusive (exact match). Semantic triggers (`isOpener`, `isResponder`) are order-dependent — first-match-wins. `validateProtocol()` ensures all triggers have `category === "auction"`.
+
+**Hand evaluation stays binary.** Hand decisions are genuinely binary discriminations ("8+ HCP?" yes/no, "4+ hearts?" yes/no). The NO branch encodes negative inference — the inference engine reads `rejectedDecisions` from `TreeEvalResult`. Multi-way hand branching would lose this structural negation. The "multi-way" display for hand options is handled by the sibling finder.
 
 **SAYC tree pattern:** SAYC uses `saycPass()` factory at terminal positions (catch-all convention). Other conventions use `fallback()` for "doesn't apply."
 

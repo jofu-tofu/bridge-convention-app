@@ -1,10 +1,9 @@
 import { Seat } from "../../../engine/types";
+import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
-import type { TreeConventionConfig } from "../../core/rule-tree";
-import { saycRuleTree } from "./tree";
-import { saycExplanations } from "./explanations";
+import { saycProtocol } from "./tree";
 
-export const saycConfig: TreeConventionConfig = {
+export const saycConfig: ConventionConfig = {
   id: "sayc",
   name: "Standard American Yellow Card",
   description:
@@ -18,6 +17,5 @@ export const saycConfig: TreeConventionConfig = {
     ],
   },
   defaultAuction: () => undefined,
-  ruleTree: saycRuleTree,
-  explanations: saycExplanations,
+  protocol: saycProtocol,
 };

@@ -63,10 +63,12 @@ describe("extractTeachingContent", () => {
     expect(artificialBids.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("returns non-null for DONT with separate overcaller + advancer rounds", () => {
+  it("returns non-null for DONT with bid options from all triggers", () => {
     const result = extractTeachingContent(dontConfig);
     expect(result).not.toBeNull();
-    expect(result!.rounds.length).toBeGreaterThanOrEqual(2);
+    // DONT single-round protocol groups all triggers under same auction context
+    expect(result!.rounds.length).toBeGreaterThanOrEqual(1);
+    expect(result!.totalBidOptions).toBeGreaterThan(0);
   });
 
   it("returns non-null for Gerber with ace/king response rounds", () => {

@@ -42,6 +42,9 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `constraint-utils.ts` | `cleanConstraints()` / `cleanSeatConstraint()` — strips non-serializable fields          |
 | `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()` (desktop)                              |
 | `wasm-engine.ts`      | `WasmEngine` + `initWasm()` — EnginePort via WASM bindings (browser)                     |
+| `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveWithModule()` — pure logic, no DOM/Worker  |
+| `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, solves deals on request          |
+| `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealWasm()` via Worker messages |
 
 ## Gotchas
 
@@ -64,7 +67,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 - **Engine transports:** `TauriIpcEngine` (desktop) and `WasmEngine` (browser). Both use `cleanConstraints()` from `constraint-utils.ts` to strip non-serializable fields.
 - **`initWasm()` required:** Must be called once before creating `WasmEngine`. Called by `App.svelte` during async engine init.
 - **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
-- **DDS desktop-only:** `WasmEngine.solveDeal()` and `suggestPlay()` throw "DDS not available in WASM build".
+- **DDS browser support:** `WasmEngine.solveDeal()` delegates to a DDS Web Worker (Emscripten-compiled C++ DDS). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `suggestPlay()` still throws in WASM builds.
 - Both transports strip `customCheck` and `rng` from constraints before serialization. Preserves `seed` field for Rust-side deterministic generation (`seed: Option<u64>`).
 
 ---

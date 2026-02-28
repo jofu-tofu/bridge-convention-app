@@ -3,6 +3,8 @@ import type {
   DecisionMetadata,
   BidMetadata,
   ConventionExplanations,
+  ConventionTreeRoot,
+  AuctionSlotNode,
 } from "../conventions/core/rule-tree";
 import type { BiddingContext } from "../conventions/core/types";
 import type { Call } from "../engine/types";
@@ -160,6 +162,85 @@ function computeIncrementalLabel(
  *  Auction condition labels are transformed: formatted with suit symbols and made
  *  incremental relative to the nearest ancestor auction node. */
 export function flattenTreeForDisplay(
+  tree: ConventionTreeRoot,
+  explanations?: ConventionExplanations,
+): TreeDisplayRow[] {
+  if (tree.type === "auction-slots") {
+    return flattenSlotTreeForDisplay(tree, explanations);
+  }
+  return flattenBinaryTreeForDisplay(tree, explanations);
+}
+
+function flattenSlotTreeForDisplay(
+  tree: AuctionSlotNode,
+  explanations?: ConventionExplanations,
+): TreeDisplayRow[] {
+  const rows: TreeDisplayRow[] = [];
+
+  function walkSlots(
+    node: AuctionSlotNode,
+    depth: number,
+    parentId: string | null,
+    ancestorAlts: string[][],
+  ): void {
+    for (const s of node.slots) {
+      const id = `row-${rows.length}`;
+      const rawLabel = s.label ?? s.condition.label;
+      const parsed = parseAuctionLabel(rawLabel);
+      let conditionLabel = rawLabel;
+      let childAncestorAlts = ancestorAlts;
+
+      if (parsed) {
+        conditionLabel = computeIncrementalLabel(parsed, ancestorAlts);
+        childAncestorAlts = parsed;
+      }
+
+      const slotTeaching =
+        explanations?.conditions?.[s.condition.name] ??
+        s.condition.teachingNote ??
+        null;
+
+      rows.push({
+        id,
+        depth,
+        type: "decision",
+        name: s.name,
+        conditionLabel,
+        conditionCategory: "auction",
+        fullConditionLabel: rawLabel,
+        meaning: null,
+        callResolver: null,
+        hasChildren: true,
+        parentId,
+        branch: null,
+        teachingExplanation: slotTeaching,
+        decisionMetadata: null,
+        bidMetadata: null,
+        denialImplication: null,
+      });
+
+      if (s.child.type === "auction-slots") {
+        walkSlots(s.child, depth + 1, id, childAncestorAlts);
+      } else {
+        // Hand subtree — flatten using binary tree display
+        const handRows = flattenBinaryTreeForDisplay(s.child as RuleNode, explanations);
+        for (const row of handRows) {
+          rows.push({
+            ...row,
+            id: `row-${rows.length}`,
+            depth: row.depth + depth + 1,
+            parentId: row.parentId === null ? id : row.parentId,
+          });
+        }
+      }
+    }
+  }
+
+  walkSlots(tree, 0, null, []);
+  return rows;
+}
+
+function flattenBinaryTreeForDisplay(
   tree: RuleNode,
   explanations?: ConventionExplanations,
 ): TreeDisplayRow[] {

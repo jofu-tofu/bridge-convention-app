@@ -1,43 +1,34 @@
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import {
-  auctionMatches,
+  bidMade,
   hcpMin,
   hcpRange,
   bothMajors,
   suitMin,
+  seatHasBid,
+  seatHasActed,
+  isResponder,
+  passedAfter,
+  not,
   and,
 } from "../../core/conditions";
-import { auctionDecision, handDecision, bid, fallback } from "../../core/rule-tree";
-import type { RuleNode, HandNode } from "../../core/rule-tree";
+import type { AuctionCondition } from "../../core/types";
+import { handDecision, bid, fallback } from "../../core/rule-tree";
+import type { HandNode } from "../../core/rule-tree";
+import { protocol, round, semantic } from "../../core/protocol";
+import type { ConventionProtocol } from "../../core/protocol";
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
-// Overcaller rebids after 2NT inquiry (1NT-2C-P-2NT-P)
-// Bridge Bum defines three tiers for 5-5: 3H=minimum (6-10), 3S=medium (10-12), 3NT=maximum (12+)
-// For 5-4/4-5: 3C=medium (<12), 3D=maximum (12+)
-const overcallerAfter2NT: HandNode = handDecision(
-  "5-5-majors",
-  and(suitMin(0, "spades", 5), suitMin(1, "hearts", 5)),
-  // 5-5+: 3NT=max, 3S=med, 3H=min
-  handDecision(
-    "max-12+",
-    hcpMin(12),
-    bid("landy-rebid-3nt", "Shows 5-5 majors with maximum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-    handDecision(
-      "med-10+",
-      hcpMin(10),
-      bid("landy-rebid-3s", "Shows 5-5 majors with medium values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
-      bid("landy-rebid-3h", "Shows 5-5 majors with minimum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
-    ),
-  ),
-  // 5-4 / 4-5: 3D=max, 3C=med
-  handDecision(
-    "max-12+-54",
-    hcpMin(12),
-    bid("landy-rebid-3d", "Shows unequal majors with maximum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
-    bid("landy-rebid-3c", "Shows unequal majors with medium values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
-  ),
+// ─── Hand subtrees ──────────────────────────────────────────
+
+// Overcaller's initial 2C bid (after opponent opens 1NT)
+const overcallerBranch: HandNode = handDecision(
+  "both-majors",
+  and(bothMajors(), hcpMin(10)),
+  bid("landy-2c", "Shows both majors", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+  fallback("not-suited"),
 );
 
 // Responder bids after 2C (1NT-2C-P)
@@ -73,26 +64,51 @@ const responderBranch: HandNode = handDecision(
   ),
 );
 
-export const landyRuleTree: RuleNode = auctionDecision(
-  "after-1nt",
-  auctionMatches(["1NT"]),
-  // YES: opponent opened 1NT
+// Overcaller rebids after 2NT inquiry (1NT-2C-P-2NT-P)
+const overcallerAfter2NT: HandNode = handDecision(
+  "5-5-majors",
+  and(suitMin(0, "spades", 5), suitMin(1, "hearts", 5)),
   handDecision(
-    "both-majors",
-    and(bothMajors(), hcpMin(10)),
-    bid("landy-2c", "Shows both majors", (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
-    fallback("not-suited"),
-  ),
-  // NO: not after 1NT
-  auctionDecision(
-    "after-1nt-2c-p-2nt-p",
-    auctionMatches(["1NT", "2C", "P", "2NT", "P"]),
-    overcallerAfter2NT,
-    auctionDecision(
-      "after-1nt-2c-p",
-      auctionMatches(["1NT", "2C", "P"]),
-      responderBranch,
-      fallback("not-landy-auction"),
+    "max-12+",
+    hcpMin(12),
+    bid("landy-rebid-3nt", "Shows 5-5 majors with maximum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+    handDecision(
+      "med-10+",
+      hcpMin(10),
+      bid("landy-rebid-3s", "Shows 5-5 majors with medium values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
+      bid("landy-rebid-3h", "Shows 5-5 majors with minimum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
     ),
   ),
+  handDecision(
+    "max-12+-54",
+    hcpMin(12),
+    bid("landy-rebid-3d", "Shows unequal majors with maximum values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
+    bid("landy-rebid-3c", "Shows unequal majors with medium values", (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
+  ),
 );
+
+// ─── Protocol ────────────────────────────────────────────────
+
+export const landyProtocol: ConventionProtocol = protocol("landy", [
+  // Round 1: Opponent opens 1NT — overcaller acts
+  // seatFilter: hasn't acted yet AND isn't partner of the opener
+  round("opponent-opens", {
+    triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+    handTree: overcallerBranch,
+    seatFilter: and(not(seatHasActed()), not(isResponder())) as AuctionCondition,
+  }),
+  // Round 2: Overcaller bid 2C — advancer (partner of overcaller) acts
+  // seatFilter: hasn't acted yet AND opponent passed after 2C (no interference)
+  round("landy-2c", {
+    triggers: [semantic(bidMade(2, BidSuit.Clubs), {})],
+    handTree: responderBranch,
+    seatFilter: and(not(seatHasActed()), passedAfter(2, BidSuit.Clubs)) as AuctionCondition,
+  }),
+  // Round 3: Advancer bid 2NT inquiry — overcaller rebids
+  // seatFilter: has previously bid AND opponent passed after 2NT (no interference)
+  round("inquiry", {
+    triggers: [semantic(bidMade(2, BidSuit.NoTrump), {})],
+    handTree: overcallerAfter2NT,
+    seatFilter: and(seatHasBid(), passedAfter(2, BidSuit.NoTrump)) as AuctionCondition,
+  }),
+]);

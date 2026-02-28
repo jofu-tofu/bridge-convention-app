@@ -8,6 +8,8 @@ import type {
   ConventionExplanations,
   BidMetadata,
   RuleNode,
+  ConventionTreeRoot,
+  AuctionSlotNode,
 } from "../conventions/core/rule-tree";
 import type { Call } from "../engine/types";
 import {
@@ -150,14 +152,90 @@ function roundKey(bid: CollectedBid): string {
   return bid.auctionDecisionNames.join("|");
 }
 
+function walkSlotTree(
+  node: AuctionSlotNode,
+  auctionAcc: readonly TeachingCondition[],
+  auctionNames: readonly string[],
+  explanations: ConventionExplanations | undefined,
+  collected: CollectedBid[],
+): void {
+  for (const s of node.slots) {
+    const tc = makeTeachingCondition(s.condition, explanations);
+    const slotAuctionAcc = [...auctionAcc, tc];
+    const slotAuctionNames = [...auctionNames, s.name];
+
+    if (s.child.type === "auction-slots") {
+      walkSlotTree(s.child, slotAuctionAcc, slotAuctionNames, explanations, collected);
+    } else {
+      // Hand subtree
+      walkTree(s.child as RuleNode, slotAuctionAcc, slotAuctionNames, [], explanations, collected);
+    }
+  }
+  // Default child
+  if (node.defaultChild) {
+    walkTree(node.defaultChild as RuleNode, auctionAcc, auctionNames, [], explanations, collected);
+  }
+}
+
 export function extractTeachingContent(
   config: ConventionConfig,
   explanations?: ConventionExplanations,
 ): TeachingContent | null {
-  if (!config.ruleTree) return null;
+  if (!config.ruleTree && !config.protocol) return null;
 
   const collected: CollectedBid[] = [];
-  walkTree(config.ruleTree, [], [], [], explanations, collected);
+  if (config.protocol) {
+    // Protocol conventions: recursively walk rounds, accumulating trigger
+    // conditions + seatFilters across rounds so teaching shows the full
+    // conversation context (e.g., "1NT was bid → Stayman 2C → Opener shows hearts").
+    type ProtoRound = (typeof config.protocol.rounds)[number];
+    function walkProtocolRounds(
+      roundIdx: number,
+      accConds: readonly TeachingCondition[],
+      accNames: readonly string[],
+      accEst: Record<string, unknown>,
+    ): void {
+      const rounds = config.protocol!.rounds;
+      if (roundIdx >= rounds.length) return;
+      const r = rounds[roundIdx] as ProtoRound;
+      for (const trigger of r.triggers) {
+        const pathConds = [...accConds, makeTeachingCondition(trigger.condition, explanations)];
+        const pathNames = [...accNames, trigger.condition.name];
+        // Add seatFilter as an auction condition if present
+        if (r.seatFilter) {
+          pathConds.push(makeTeachingCondition(r.seatFilter, explanations));
+          pathNames.push(r.seatFilter.name);
+        }
+        const est = { ...accEst, ...trigger.establishes };
+
+        // Flatten this round's hand tree with accumulated conditions
+        let handTree: import("../conventions/core/rule-tree").RuleNode | null;
+        if (typeof r.handTree === "function") {
+          try {
+            handTree = r.handTree(est as never) as import("../conventions/core/rule-tree").RuleNode;
+          } catch {
+            handTree = null;
+          }
+        } else {
+          handTree = r.handTree as import("../conventions/core/rule-tree").RuleNode;
+        }
+        if (handTree) {
+          walkTree(handTree, pathConds, pathNames, [], explanations, collected);
+        }
+
+        // Recurse to next round with accumulated conditions + context
+        walkProtocolRounds(roundIdx + 1, pathConds, pathNames, est);
+      }
+    }
+    walkProtocolRounds(0, [], [], { role: "responder" as const });
+  } else {
+    const tree: ConventionTreeRoot = config.ruleTree!;
+    if (tree.type === "auction-slots") {
+      walkSlotTree(tree, [], [], explanations, collected);
+    } else {
+      walkTree(tree, [], [], [], explanations, collected);
+    }
+  }
 
   // Group by auction context (round key)
   const roundMap = new Map<

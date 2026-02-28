@@ -1,30 +1,41 @@
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import {
-  auctionMatchesAny,
+  bidMade,
   hcpMin,
   and,
+  or,
+  not,
   aceCount,
   kingCount,
   noVoid,
   gerberSignoffCondition,
   gerberKingAskCondition,
+  isResponder,
+  isOpener,
+  seatHasActed,
+  passedAfter,
 } from "../../core/conditions";
-import { auctionDecision, handDecision, bid, fallback } from "../../core/rule-tree";
-import type { RuleNode, HandNode } from "../../core/rule-tree";
-import { gerberSignoffCall, gerberAceAuctionPatterns, gerberKingAskAuctionPatterns } from "./helpers";
+import type { AuctionCondition } from "../../core/types";
+import { handDecision, bid, fallback } from "../../core/rule-tree";
+import type { HandNode } from "../../core/rule-tree";
+import { protocol, round, semantic } from "../../core/protocol";
+import type { ConventionProtocol } from "../../core/protocol";
+import { gerberSignoffCall } from "./helpers";
 
-// ─── Rule Tree ────────────────────────────────────────────────
-//
+// ─── Hand subtrees (unchanged) ──────────────────────────────
+
 // Known limitations (documented in docs/conventions/gerber.md):
-// - NT overcall trigger: Bridge Bum says Gerber applies after "any NT bid
-//   (or overcall)" but we only handle 1NT/2NT openings. NT overcalls
-//   (e.g., 1H-1NT-P-4C) are not supported because the drill infrastructure
-//   generates hands where North opens 1NT/2NT — overcall sequences never arise.
-// - Jump rebid of 4C: Bridge Bum says "a jump rebid of 4C in response to a
-//   natural no-trump bid is Gerber" (e.g., 1NT-P-2C-P-2D-P-4C after Stayman).
-//   Not supported because conventions drill independently — cross-convention
-//   sequences (Stayman then Gerber) are out of scope for single-convention drills.
+// - NT overcall trigger not supported (drill only generates 1NT/2NT openings)
+// - Jump rebid of 4C after Stayman not supported (cross-convention out of scope)
+
+// Gerber ask subtree: responder with 16+ HCP and no void bids 4C
+const gerberAskBranch: HandNode = handDecision(
+  "hcp-and-no-void",
+  and(hcpMin(16), noVoid()),
+  bid("gerber-ask", "Asks how many aces partner holds", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Clubs })),
+  fallback(),
+);
 
 // Ace response subtree: chained binary decisions (3? → 2? → 1? → 0/4)
 const aceResponseBranch: HandNode = handDecision(
@@ -62,41 +73,75 @@ const kingResponseBranch: HandNode = handDecision(
   ),
 );
 
-export const gerberRuleTree: RuleNode = auctionDecision(
-  "after-nt-opening",
-  auctionMatchesAny([["1NT", "P"], ["2NT", "P"]]),
-  // YES: responder's turn after NT opening
+// Default hand tree (king-ask and signoff checks)
+const defaultBranch: HandNode = handDecision(
+  "king-ask-check",
+  gerberKingAskCondition(),
+  bid("gerber-king-ask", "Asks how many kings partner holds", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Clubs })),
   handDecision(
-    "hcp-and-no-void",
-    and(hcpMin(16), noVoid()),
-    bid("gerber-ask", "Asks how many aces partner holds", (): Call => ({ type: "bid", level: 4, strain: BidSuit.Clubs })),
+    "signoff-check",
+    gerberSignoffCondition(),
+    bid("gerber-signoff", "Signs off at the appropriate notrump level", gerberSignoffCall),
     fallback(),
   ),
-  // NO: not after NT-P — auction checks before hand checks
-  auctionDecision(
-    "after-ace-ask",
-    auctionMatchesAny(gerberAceAuctionPatterns),
-    // YES: opener responding to ace ask
-    aceResponseBranch,
-    // NO: not after ace ask
-    auctionDecision(
-      "after-king-ask",
-      auctionMatchesAny(gerberKingAskAuctionPatterns),
-      // YES: opener responding to king ask
-      kingResponseBranch,
-      // NO: not after king ask — hand conditions follow
-      handDecision(
-        "king-ask-check",
-        gerberKingAskCondition(),
-        bid("gerber-king-ask", "Asks how many kings partner holds", (): Call => ({ type: "bid", level: 5, strain: BidSuit.Clubs })),
-        // NO: not king-ask eligible
-        handDecision(
-          "signoff-check",
-          gerberSignoffCondition(),
-          bid("gerber-signoff", "Signs off at the appropriate notrump level", gerberSignoffCall),
-          fallback(),
-        ),
-      ),
-    ),
-  ),
 );
+
+// ─── Trigger conditions ──────────────────────────────────────
+
+// Ace response trigger: any 4-level bid EXCEPT 4C (which is the Gerber ask itself)
+const aceResponseMade: AuctionCondition = or(
+  bidMade(4, BidSuit.Diamonds),
+  bidMade(4, BidSuit.Hearts),
+  bidMade(4, BidSuit.Spades),
+  bidMade(4, BidSuit.NoTrump),
+) as AuctionCondition;
+
+// King response trigger: any 5-level bid EXCEPT 5C (which is the king ask itself)
+const kingResponseMade: AuctionCondition = or(
+  bidMade(5, BidSuit.Diamonds),
+  bidMade(5, BidSuit.Hearts),
+  bidMade(5, BidSuit.Spades),
+  bidMade(5, BidSuit.NoTrump),
+) as AuctionCondition;
+
+// ─── Protocol ────────────────────────────────────────────────
+
+export const gerberProtocol: ConventionProtocol = protocol("gerber", [
+  // Round 1: Partner opens 1NT or 2NT — responder considers Gerber ask
+  round("nt-opening", {
+    triggers: [
+      semantic(bidMade(1, BidSuit.NoTrump), {}),
+      semantic(bidMade(2, BidSuit.NoTrump), {}),
+    ],
+    handTree: gerberAskBranch,
+    seatFilter: and(
+      isResponder(),
+      not(seatHasActed()),
+      or(passedAfter(1, BidSuit.NoTrump), passedAfter(2, BidSuit.NoTrump)),
+    ) as AuctionCondition,
+  }),
+  // Round 2: Responder bid 4C (Gerber ask) — opener shows ace count
+  round("gerber-ask", {
+    triggers: [semantic(bidMade(4, BidSuit.Clubs), {})],
+    handTree: aceResponseBranch,
+    seatFilter: and(isOpener(), passedAfter(4, BidSuit.Clubs)) as AuctionCondition,
+  }),
+  // Round 3: Opener showed aces — responder decides king-ask or signoff
+  round("ace-response", {
+    triggers: [semantic(aceResponseMade, {})],
+    handTree: defaultBranch,
+    seatFilter: isResponder(),
+  }),
+  // Round 4: Responder bid 5C (king ask) — opener shows king count
+  round("king-ask", {
+    triggers: [semantic(bidMade(5, BidSuit.Clubs), {})],
+    handTree: kingResponseBranch,
+    seatFilter: and(isOpener(), passedAfter(5, BidSuit.Clubs)) as AuctionCondition,
+  }),
+  // Round 5: Opener showed kings — responder places final contract
+  round("king-response", {
+    triggers: [semantic(kingResponseMade, {})],
+    handTree: defaultBranch,
+    seatFilter: isResponder(),
+  }),
+]);

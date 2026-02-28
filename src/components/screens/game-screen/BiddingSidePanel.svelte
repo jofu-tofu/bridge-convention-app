@@ -34,7 +34,7 @@
   // getter chains after async operations. Using $effect for eager tracking
   // and class:hidden instead of {#if} to keep elements in the DOM.
   const gameStore = getGameStore();
-  // eslint-disable-next-line svelte/prefer-writable-derived -- $derived doesn't propagate through store getter chains
+   
   let bidFeedback = $state.raw<BidFeedback | null>(null);
   $effect(() => {
     bidFeedback = gameStore.bidFeedback;

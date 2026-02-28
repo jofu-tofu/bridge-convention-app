@@ -59,7 +59,7 @@ describe("WasmEngine", () => {
     });
 
     expect(result).toBe(mockDeal);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+     
     const passedArg = mockGenerateDeal.mock.calls[0]?.[0];
     expect(passedArg?.constraints?.seed).toBe(42);
     expect(passedArg?.constraints?.seats[0]?.minHcp).toBe(12);
@@ -80,7 +80,7 @@ describe("WasmEngine", () => {
   it("solveDeal rejects with DDS unavailable message", async () => {
     const stubDeal = {} as Deal;
     await expect(engine.solveDeal(stubDeal)).rejects.toThrow(
-      "DDS not available in WASM build",
+      "DDS not available",
     );
   });
 

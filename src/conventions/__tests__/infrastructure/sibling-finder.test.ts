@@ -8,6 +8,7 @@ import { findSiblingBids } from "../../core/sibling-finder";
 import { makeMinimalContext } from "../tree-test-helpers";
 import { staymanConfig } from "../../definitions/stayman";
 import { bergenConfig } from "../../definitions/bergen-raises";
+import { evaluateBiddingRules } from "../../core/registry";
 import { evaluateTree } from "../../core/tree-evaluator";
 import { createBiddingContext } from "../../core/context-factory";
 import { evaluateHand } from "../../../engine/hand-evaluator";
@@ -288,12 +289,13 @@ describe("findSiblingBids — integration with real conventions", () => {
       evaluation: evaluateHand(h),
     });
 
-    const tree = staymanConfig.ruleTree!;
-    const result = evaluateTree(tree, ctx);
-    expect(result.matched).not.toBeNull();
-    expect(result.matched!.name).toBe("stayman-response-hearts");
+    const result = evaluateBiddingRules(ctx, staymanConfig);
+    expect(result).not.toBeNull();
+    expect(result!.rule).toBe("stayman-response-hearts");
 
-    const siblings = findSiblingBids(tree, result.matched!, ctx);
+    // findSiblingBids works on the hand subtree
+    const handRoot = result!.treeRoot!;
+    const siblings = findSiblingBids(handRoot, result!.treeEvalResult!.matched!, ctx);
     expect(siblings.length).toBeGreaterThan(0);
     const siblingNames = siblings.map(s => s.bidName);
     expect(siblingNames).toContain("stayman-response-spades");
@@ -318,11 +320,12 @@ describe("findSiblingBids — integration with real conventions", () => {
       evaluation: evaluateHand(h),
     });
 
-    const tree = bergenConfig.ruleTree!;
-    const result = evaluateTree(tree, ctx);
+    const result = evaluateBiddingRules(ctx, bergenConfig);
     // Should match some Bergen response
-    if (result.matched) {
-      const siblings = findSiblingBids(tree, result.matched, ctx);
+    if (result) {
+      const handRoot = result.treeRoot!;
+      const matched = result.treeEvalResult!.matched!;
+      const siblings = findSiblingBids(handRoot, matched, ctx);
       // Structural assertion: siblings exist and have valid shape
       for (const s of siblings) {
         expect(s.bidName).toBeTruthy();

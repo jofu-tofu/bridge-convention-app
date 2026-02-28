@@ -17,9 +17,7 @@ import {
 import type { BiddingContext } from "../../conventions/core/types";
 import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
-import { gerberConfig } from "../../conventions/definitions/gerber";
-import { staymanConfig } from "../../conventions/definitions/stayman";
-import { isTreeConvention } from "../../conventions/core/registry";
+// gerberConfig, staymanConfig, isTreeConvention removed — all conventions migrated to protocol
 
 const makeCall =
   (level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit) =>
@@ -156,11 +154,21 @@ describe("flattenTreeForDisplay", () => {
     expect(rows[0]!.conditionLabel).toBeTruthy();
   });
 
-  it("flattens a real convention tree (Gerber) with nonzero rows", () => {
-    expect(isTreeConvention(gerberConfig)).toBe(true);
-    if (!isTreeConvention(gerberConfig)) return;
+  it("flattens a multi-level tree with nonzero rows", () => {
+    // Synthetic tree with auction + hand conditions (all conventions now use protocol)
+    const tree = decision(
+      "auction-check",
+      auctionMatches(["1NT", "P"]),
+      decision(
+        "hcp-check",
+        hcpMin(10),
+        bid("strong-bid", "Shows strength", makeCall(3, BidSuit.NoTrump)),
+        bid("weak-bid", "Shows weakness", makeCall(2, BidSuit.NoTrump)),
+      ),
+      fallback(),
+    );
 
-    const rows = flattenTreeForDisplay(gerberConfig.ruleTree);
+    const rows = flattenTreeForDisplay(tree);
 
     expect(rows.length).toBeGreaterThan(0);
     // All rows have valid types
@@ -436,11 +444,16 @@ describe("incremental auction labels", () => {
     expect(openerRow.conditionLabel).toBe("Opening bidder");
   });
 
-  it("real convention tree (Stayman) formats auction labels with suit symbols", () => {
-    expect(isTreeConvention(staymanConfig)).toBe(true);
-    if (!isTreeConvention(staymanConfig)) return;
+  it("auctionMatches formats auction labels with suit symbols", () => {
+    // Synthetic tree testing auction label formatting (all conventions now use protocol)
+    const tree = decision(
+      "auction-check",
+      auctionMatches(["1NT", "P", "2C", "P"]),
+      bid("test-bid", "Test bid", makeCall(2, BidSuit.Hearts)),
+      fallback(),
+    );
 
-    const rows = flattenTreeForDisplay(staymanConfig.ruleTree);
+    const rows = flattenTreeForDisplay(tree);
     const auctionRows = rows.filter(
       (r) => r.conditionCategory === "auction" && r.conditionLabel?.startsWith("After "),
     );
@@ -462,14 +475,26 @@ describe("incremental auction labels", () => {
     expect(hasSuitSymbol).toBe(true);
   });
 
-  it("real convention tree (Gerber) has multiple auction condition labels", () => {
-    expect(isTreeConvention(gerberConfig)).toBe(true);
-    if (!isTreeConvention(gerberConfig)) return;
+  it("nested auction conditions produce multiple auction condition labels", () => {
+    // Synthetic tree with nested auction conditions (all conventions now use protocol)
+    const tree = decision(
+      "auction-1",
+      auctionMatches(["1NT", "P"]),
+      decision(
+        "auction-2",
+        auctionMatches(["1NT", "P", "4C", "P"]),
+        bid("deep-bid", "Deep", makeCall(4, BidSuit.Diamonds)),
+        fallback(),
+      ),
+      decision(
+        "auction-3",
+        isOpener(),
+        bid("opener-bid", "Opener", makeCall(1, BidSuit.Clubs)),
+        fallback(),
+      ),
+    );
 
-    const rows = flattenTreeForDisplay(gerberConfig.ruleTree);
-    // After restructuring for auction/hand separation, all Gerber auction
-    // conditions are consecutive siblings at the same depth with "After" labels
-    // (no interleaved hand conditions to create depth for "Then" labels).
+    const rows = flattenTreeForDisplay(tree);
     const auctionRows = rows.filter(
       (r) => r.conditionCategory === "auction",
     );

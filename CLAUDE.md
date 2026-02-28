@@ -81,7 +81,7 @@ tests/
 **Subsystems:**
 
 - **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `call-helpers.ts` provides canonical `callsMatch()`. `tauri-ipc-engine.ts` (desktop) and `wasm-engine.ts` (browser) provide Rust-backed transports. `constraint-utils.ts` shared by both. (entry: `src/engine/types.ts`)
-- **Conventions:** Split into `core/` (registry, evaluator, tree system, conditions — stable infrastructure) and `definitions/` (6 convention folders — grows unboundedly). Each folder has `tree.ts`, `config.ts`, `explanations.ts`, `index.ts` (optionally `helpers.ts`, `conditions.ts`). All conventions use hierarchical rule trees. `evaluateBiddingRules(context, config)` — tree-only. Teaching metadata: `DecisionMetadata`/`BidMetadata` on nodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. (entry: `src/conventions/core/registry.ts`)
+- **Conventions:** Split into `core/` (registry, evaluator, protocol system, tree system, conditions — stable infrastructure) and `definitions/` (6 convention folders — grows unboundedly). Each folder has `tree.ts`, `config.ts`, `explanations.ts`, `index.ts` (optionally `helpers.ts`, `conditions.ts`). All conventions use `ConventionProtocol` (protocol dispatch via `protocol()`/`round()`/`semantic()`) with binary `HandDecisionNode` hand evaluation. Landy/Stayman/Bergen/Gerber use multi-round protocols with `seatFilter` (milestone triggers + seat-specific conditions). DONT/SAYC use single-round dispatch. `evaluateBiddingRules(context, config)` dispatches protocol or legacy tree. Teaching metadata: `DecisionMetadata`/`BidMetadata` on nodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. (entry: `src/conventions/core/registry.ts`)
 - **Shared:** Cross-boundary type definitions — `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings`, `BidHistoryEntry`, `TreeEvalSummary`/`TreePathEntry`/`TreeForkPoint`/`SiblingBid` (tree traversal DTOs). Also `hand-summary.ts` (`formatHandSummary`). (entry: `src/shared/types.ts`)
 - **Inference:** Auction inference system — per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). Negative inference via tree rejection data. (entry: `src/inference/inference-engine.ts`)
 - **Strategy:** Bidding strategies (`conventionToStrategy()` adapter, `passStrategy`) and play strategies (`createHeuristicPlayStrategy()` 7-heuristic chain, `randomPlayStrategy` fallback). (entry: `src/strategy/bidding/convention-strategy.ts`)
@@ -99,7 +99,7 @@ tests/
 
 ## Roadmap
 
-**Completed:** DDS Review Integration (1), Rule Tree Migration (1.5a-c), Bridge Bum Test Audit (1.6a-f), Rules Tab (2a), WASM Engine + Vercel Deployment.
+**Completed:** DDS Review Integration (1), Rule Tree Migration (1.5a-c), Bridge Bum Test Audit (1.6a-f), Rules Tab (2a), WASM Engine + Vercel Deployment, DDS Browser WASM Integration, Multi-Round Semantic Protocols with seatFilter (Landy/Stayman/Bergen/Gerber).
 
 **Active/upcoming:**
 
@@ -137,7 +137,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 
 - `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
 - WASM must build before Vite (`npm run dev` handles this automatically via `wasm:ensure`)
-- DDS is unavailable in browser/WASM builds (C++ FFI cannot target wasm32-unknown-unknown). Any feature using `solveDeal()` or `suggestPlay()` is desktop-only.
+- DDS `solveDeal()` works in browser via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). Par is always null in browser (mode=-1). `suggestPlay()` remains desktop-only. DDS WASM artifacts (`public/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
 - Never build bridge-wasm via `cargo build --workspace`; always use `wasm-pack` to isolate feature resolution and prevent `getrandom/js` from bleeding into native builds
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here

@@ -386,6 +386,310 @@ export function bidIsHigher(
   return false;
 }
 
+// ─── Seat-agnostic milestone conditions ─────────────────────
+
+/** Any player bid at this level/strain in the context. */
+export function bidMade(level: number, strain: BidSuit): AuctionCondition {
+  return {
+    name: `bid-made-${level}${strain}`,
+    label: `${level}${strain} was bid`,
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some(
+        (e) =>
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain,
+      );
+    },
+    describe(ctx) {
+      const found = ctx.auction.entries.some(
+        (e) =>
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain,
+      );
+      return found
+        ? `${level}${strain} was bid`
+        : `${level}${strain} was not bid`;
+    },
+  };
+}
+
+/** Any player doubled in the context. */
+export function doubleMade(): AuctionCondition {
+  return {
+    name: "double-made",
+    label: "A double was made",
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some((e) => e.call.type === "double");
+    },
+    describe(ctx) {
+      return ctx.auction.entries.some((e) => e.call.type === "double")
+        ? "A double was made"
+        : "No double was made";
+    },
+  };
+}
+
+/** Any player bid at this level (any strain) in the context. */
+export function bidMadeAtLevel(level: number): AuctionCondition {
+  return {
+    name: `bid-made-at-level-${level}`,
+    label: `A ${level}-level bid was made`,
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some(
+        (e) => e.call.type === "bid" && e.call.level === level,
+      );
+    },
+    describe(ctx) {
+      const found = ctx.auction.entries.find(
+        (e) => e.call.type === "bid" && e.call.level === level,
+      );
+      return found
+        ? `A ${level}-level bid was made`
+        : `No ${level}-level bid was made`;
+    },
+  };
+}
+
+// ─── Seat-specific conditions for seatFilters ───────────────
+
+/** An opponent made the first bid at this level and strain. */
+export function opponentOpenedAt(level: number, strain: BidSuit): AuctionCondition {
+  return {
+    name: `opponent-opened-${level}${strain}`,
+    label: `Opponent opened ${level}${strain}`,
+    category: "auction",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          return (
+            entry.seat !== ctx.seat &&
+            entry.seat !== partner &&
+            entry.call.level === level &&
+            entry.call.strain === strain
+          );
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (const entry of ctx.auction.entries) {
+        if (entry.call.type === "bid") {
+          if (entry.seat !== ctx.seat && entry.seat !== partner &&
+              entry.call.level === level && entry.call.strain === strain) {
+            return `Opponent opened ${level}${strain}`;
+          }
+          return `Opponent did not open ${level}${strain}`;
+        }
+      }
+      return "No bids yet";
+    },
+  };
+}
+
+/** This seat has made any action (pass, bid, double, redouble). */
+export function seatHasActed(): AuctionCondition {
+  return {
+    name: "seat-has-acted",
+    label: "Has previously acted",
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some((e) => e.seat === ctx.seat);
+    },
+    describe(ctx) {
+      return ctx.auction.entries.some((e) => e.seat === ctx.seat)
+        ? "This seat has previously acted"
+        : "This seat has not acted yet";
+    },
+  };
+}
+
+/** This seat previously made a double. */
+export function seatDoubled(): AuctionCondition {
+  return {
+    name: "seat-doubled",
+    label: "Has previously doubled",
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some(
+        (e) => e.call.type === "double" && e.seat === ctx.seat,
+      );
+    },
+    describe(ctx) {
+      return ctx.auction.entries.some(
+        (e) => e.call.type === "double" && e.seat === ctx.seat,
+      )
+        ? "This seat previously doubled"
+        : "This seat has not doubled";
+    },
+  };
+}
+
+/** This seat previously bid at this level/strain. */
+export function seatBidAt(level: number, strain: BidSuit): AuctionCondition {
+  return {
+    name: `seat-bid-${level}${strain}`,
+    label: `Has bid ${level}${strain}`,
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some(
+        (e) =>
+          e.seat === ctx.seat &&
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain,
+      );
+    },
+    describe(ctx) {
+      return ctx.auction.entries.some(
+        (e) =>
+          e.seat === ctx.seat &&
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain,
+      )
+        ? `This seat bid ${level}${strain}`
+        : `This seat has not bid ${level}${strain}`;
+    },
+  };
+}
+
+/** Partner's most recent bid was at this level (any strain). */
+export function partnerLastBidAtLevel(level: number): AuctionCondition {
+  return {
+    name: `partner-last-bid-level-${level}`,
+    label: `Partner's last bid was at level ${level}`,
+    category: "auction",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+        const entry = ctx.auction.entries[i]!;
+        if (entry.seat === partner && entry.call.type === "bid") {
+          return entry.call.level === level;
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+        const entry = ctx.auction.entries[i]!;
+        if (entry.seat === partner && entry.call.type === "bid") {
+          return entry.call.level === level
+            ? `Partner's last bid was at level ${level}`
+            : `Partner's last bid was at level ${entry.call.level}`;
+        }
+      }
+      return "Partner has not bid";
+    },
+  };
+}
+
+/** Partner's most recent action was a double. */
+export function partnerDoubled(): AuctionCondition {
+  return {
+    name: "partner-doubled",
+    label: "Partner doubled",
+    category: "auction",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+        const entry = ctx.auction.entries[i]!;
+        if (entry.seat === partner) {
+          return entry.call.type === "double";
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
+        const entry = ctx.auction.entries[i]!;
+        if (entry.seat === partner) {
+          return entry.call.type === "double"
+            ? "Partner doubled"
+            : "Partner did not double";
+        }
+      }
+      return "Partner has not acted";
+    },
+  };
+}
+
+/** Check that the entry immediately after a specific bid is a pass.
+ *  Used in seatFilters to block convention when opponent interferes.
+ *  Returns true if the bid was found and next entry is pass (or bid is last entry). */
+export function passedAfter(level: number, strain: BidSuit): AuctionCondition {
+  return {
+    name: `passed-after-${level}${strain}`,
+    label: `Pass followed ${level}${strain}`,
+    category: "auction",
+    test(ctx) {
+      for (let i = 0; i < ctx.auction.entries.length; i++) {
+        const entry = ctx.auction.entries[i]!;
+        if (entry.call.type === "bid" && entry.call.level === level && entry.call.strain === strain) {
+          const next = ctx.auction.entries[i + 1];
+          // No next entry yet = no interference (auction still in progress)
+          if (!next) return true;
+          return next.call.type === "pass";
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      for (let i = 0; i < ctx.auction.entries.length; i++) {
+        const entry = ctx.auction.entries[i]!;
+        if (entry.call.type === "bid" && entry.call.level === level && entry.call.strain === strain) {
+          const next = ctx.auction.entries[i + 1];
+          if (!next) return `${level}${strain} was bid, awaiting response`;
+          return next.call.type === "pass"
+            ? `Pass followed ${level}${strain}`
+            : `Opponent acted after ${level}${strain}`;
+        }
+      }
+      return `${level}${strain} was not bid`;
+    },
+  };
+}
+
+/** Check that the entry immediately after a double is a pass. */
+export function passedAfterDouble(): AuctionCondition {
+  return {
+    name: "passed-after-double",
+    label: "Pass followed double",
+    category: "auction",
+    test(ctx) {
+      for (let i = 0; i < ctx.auction.entries.length; i++) {
+        const entry = ctx.auction.entries[i]!;
+        if (entry.call.type === "double") {
+          const next = ctx.auction.entries[i + 1];
+          if (!next) return true;
+          return next.call.type === "pass";
+        }
+      }
+      return false;
+    },
+    describe(ctx) {
+      for (let i = 0; i < ctx.auction.entries.length; i++) {
+        if (ctx.auction.entries[i]!.call.type === "double") {
+          const next = ctx.auction.entries[i + 1];
+          if (!next) return "Double was made, awaiting response";
+          return next.call.type === "pass"
+            ? "Pass followed double"
+            : "Opponent acted after double";
+        }
+      }
+      return "No double was made";
+    },
+  };
+}
+
 /** An opponent has made a non-pass action (bid, double, redouble). */
 export function opponentActed(): AuctionCondition {
   return {
@@ -477,6 +781,30 @@ export function partnerOpenedMinor(): AuctionCondition {
       if (strain === BidSuit.Clubs || strain === BidSuit.Diamonds)
         return `Partner opened ${strain}`;
       return "Partner did not open a minor";
+    },
+  };
+}
+
+/** The most recent auction entry is a pass. Used in seatFilters to verify
+ *  no interference occurred before this seat's turn. Returns true if the
+ *  auction is empty (no entries yet). */
+export function lastEntryIsPass(): AuctionCondition {
+  return {
+    name: "last-entry-is-pass",
+    label: "Last action was a pass",
+    category: "auction",
+    test(ctx) {
+      const entries = ctx.auction.entries;
+      if (entries.length === 0) return true;
+      return entries[entries.length - 1]!.call.type === "pass";
+    },
+    describe(ctx) {
+      const entries = ctx.auction.entries;
+      if (entries.length === 0) return "No auction entries yet";
+      const last = entries[entries.length - 1]!;
+      return last.call.type === "pass"
+        ? "Last action was a pass"
+        : `Last action was ${last.call.type} (not a pass)`;
     },
   };
 }

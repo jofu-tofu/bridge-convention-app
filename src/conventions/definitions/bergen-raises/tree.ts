@@ -1,23 +1,28 @@
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import {
-  auctionMatchesAny,
+  bidMade,
+  bidMadeAtLevel,
+  biddingRound,
   hcpMin,
   hcpMax,
   hcpRange,
   majorSupport,
   hasShortage,
   and,
+  or,
   not,
   isOpener,
   isResponder,
-  biddingRound,
   partnerBidAt,
   opponentActed,
   notPassedHand,
 } from "../../core/conditions";
-import { auctionDecision, handDecision, bid, fallback } from "../../core/rule-tree";
-import type { RuleNode, HandNode, AuctionNode } from "../../core/rule-tree";
+import type { AuctionCondition } from "../../core/types";
+import { decision, handDecision, bid, fallback } from "../../core/rule-tree";
+import type { HandNode, RuleNode } from "../../core/rule-tree";
+import { protocol, round, semantic } from "../../core/protocol";
+import type { ConventionProtocol } from "../../core/protocol";
 import {
   gameInOpenersMajor,
   threeOfOpenersMajor,
@@ -39,6 +44,8 @@ import {
 } from "./conditions";
 
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
+
+// ─── Hand subtrees (unchanged) ──────────────────────────────
 
 // Responder initial bids (after 1M-P)
 const responderInitialBranch: HandNode = handDecision(
@@ -68,7 +75,7 @@ const responderInitialBranch: HandNode = handDecision(
   ),
 );
 
-// Opener rebids after constructive (1M P 3C P) — help-suit game try
+// Opener rebids after constructive (1M P 3C P)
 const openerAfterConstructive: HandNode = handDecision(
   "rebid-game-17+",
   hcpMin(17),
@@ -97,54 +104,51 @@ const openerAfterPreemptive: HandNode = handDecision(
   bid("bergen-rebid-pass-after-preemptive", "Passes over the preemptive raise", (): Call => ({ type: "pass" })),
 );
 
-// Opener rebids after splinter (1M P other-major P) — relay to ask for shortness
-const openerAfterSplinter: RuleNode = bid(
+// Opener rebids after splinter
+const openerAfterSplinter = bid(
   "bergen-splinter-relay",
   "Relays to ask responder to disclose shortage suit",
   splinterRelayCall,
 );
 
-// Opener round 1 rebids
-const openerRound1Branch: AuctionNode = auctionDecision(
-  "after-constructive",
+// Opener round 1 rebid dispatch — uses decision() for auction conditions
+const openerRound1Branch: RuleNode = decision(
+  "after-constructive-check",
   partnerBidAt(3, BidSuit.Clubs),
   openerAfterConstructive,
-  auctionDecision(
-    "after-limit",
+  decision(
+    "after-limit-check",
     partnerBidAt(3, BidSuit.Diamonds),
     openerAfterLimit,
-    auctionDecision(
-      "after-preemptive",
+    decision(
+      "after-preemptive-check",
       partnerRaisedToThreeOfMajor(),
       openerAfterPreemptive,
-      auctionDecision(
-        "after-splinter",
+      decision(
+        "after-splinter-check",
         partnerBidSplinter(),
         openerAfterSplinter,
-        fallback(),
+        fallback("no-opener-round1"),
       ),
     ),
   ),
 );
 
-// Responder round 1 continuation (after opener's rebid)
-const responderRound1Branch: AuctionNode = auctionDecision(
-  "partner-bid-game",
+// Responder round 1 continuation dispatch
+const responderRound1Branch: RuleNode = decision(
+  "partner-bid-game-check",
   partnerBidGameInMajor(),
   bid("bergen-accept-game", "Accepts partner's game bid", (): Call => ({ type: "pass" })),
-  auctionDecision(
-    "partner-signoff",
+  decision(
+    "partner-signoff-check",
     partnerSignedOffInThreeMajor(),
     bid("bergen-accept-signoff", "Accepts partner's signoff", (): Call => ({ type: "pass" })),
-    auctionDecision(
-      "splinter-relay-resp",
+    decision(
+      "splinter-relay-resp-check",
       partnerBidSplinterRelay(),
       bid("bergen-splinter-disclose", "Discloses the suit of shortage", splinterDisclosureCall),
-      auctionDecision(
-        "game-try-resp",
-        // Game try can be in any suit (help-suit), not just 3D
-        // We detect it as: partner made a bid at 3-level that isn't signoff, game, or splinter relay
-        // For simplicity, check if partner bid 3D, 3H (after 1S), or 3S (after 1H) as game try
+      decision(
+        "game-try-resp-check",
         partnerBidAt(3, BidSuit.Diamonds),
         handDecision(
           "try-accept-9-10",
@@ -152,31 +156,49 @@ const responderRound1Branch: AuctionNode = auctionDecision(
           bid("bergen-try-accept", "Accepts the game try and bids game", gameTryAcceptCall),
           bid("bergen-try-reject", "Rejects the game try and signs off", gameTryRejectCall),
         ),
-        fallback(),
+        fallback("no-responder-round1"),
       ),
     ),
   ),
 );
 
-// Root tree
-export const bergenRuleTree: RuleNode = auctionDecision(
-  "responder-initial",
-  and(auctionMatchesAny([["1H", "P"], ["1S", "P"]]), notPassedHand()),
-  responderInitialBranch,
-  auctionDecision(
-    "is-opener-round1",
-    and(isOpener(), biddingRound(1), not(opponentActed())),
-    openerRound1Branch,
-    auctionDecision(
-      "is-responder-round1",
-      and(isResponder(), biddingRound(1), not(opponentActed())),
-      responderRound1Branch,
-      auctionDecision(
-        "is-opener-round2",
-        and(isOpener(), biddingRound(2), not(opponentActed())),
-        bid("bergen-opener-accept-after-try", "Accepts partner's decision on the game try", (): Call => ({ type: "pass" })),
-        fallback(),
-      ),
-    ),
-  ),
-);
+// ─── Protocol ────────────────────────────────────────────────
+
+export const bergenProtocol: ConventionProtocol = protocol("bergen-raises", [
+  // Round 1: Partner opens 1M — responder bids Bergen raise
+  // seatFilter: responder who hasn't previously passed
+  round("opening", {
+    triggers: [
+      semantic(or(bidMade(1, BidSuit.Hearts), bidMade(1, BidSuit.Spades)) as AuctionCondition, {}),
+    ],
+    handTree: responderInitialBranch,
+    seatFilter: and(isResponder(), notPassedHand()) as AuctionCondition,
+  }),
+  // Round 2: Responder bid at 3-level — opener rebids (first rebid)
+  // seatFilter: opener on their first rebid, uncontested
+  round("response", {
+    triggers: [
+      semantic(bidMadeAtLevel(3), {}),
+    ],
+    handTree: openerRound1Branch as HandNode,
+    seatFilter: and(isOpener(), biddingRound(1), not(opponentActed())) as AuctionCondition,
+  }),
+  // Round 3: Opener rebid — responder continues (first continuation)
+  // seatFilter: responder on their first rebid, uncontested
+  round("opener-rebid", {
+    triggers: [
+      semantic(or(bidMadeAtLevel(3), bidMadeAtLevel(4)) as AuctionCondition, {}),
+    ],
+    handTree: responderRound1Branch as HandNode,
+    seatFilter: and(isResponder(), biddingRound(1), not(opponentActed())) as AuctionCondition,
+  }),
+  // Round 4: Responder made final decision — opener accepts (second rebid)
+  // seatFilter: opener on their second rebid, uncontested
+  round("continuation", {
+    triggers: [
+      semantic(or(bidMadeAtLevel(3), bidMadeAtLevel(4)) as AuctionCondition, {}),
+    ],
+    handTree: bid("bergen-opener-accept-after-try", "Accepts partner's decision on the game try", (): Call => ({ type: "pass" })),
+    seatFilter: and(isOpener(), biddingRound(2), not(opponentActed())) as AuctionCondition,
+  }),
+]);

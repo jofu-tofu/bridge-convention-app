@@ -6,10 +6,14 @@ import type {
 } from "../engine/types";
 import { Seat } from "../engine/types";
 import type { DrillSession } from "../drill/types";
-import type { BiddingStrategy } from "../shared/types";
+import type { BiddingStrategy, BidResult } from "../shared/types";
 import type { InferredHoldings } from "../shared/types";
 import type { InferenceEngine } from "../inference/inference-engine";
-import type { InferenceSnapshot } from "../inference/types";
+import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
+import { createInitialBeliefState, applyAnnotation } from "../inference/belief-accumulator";
+import { produceAnnotation } from "../inference/annotation-producer";
+import { protocolInferenceExtractor } from "../inference/protocol-inference-extractor";
+import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { partnerSeat } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
 import { createPlayStore } from "./play.svelte";
@@ -41,6 +45,20 @@ const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
   EXPLANATION: ["DECLARER_PROMPT"],
 };
 
+/**
+ * Adapt BidResult (shared DTO) to the BiddingRuleResult shape expected by InferenceExtractor.
+ * The extractor reads protocolResult/treeEvalResult which BidResult doesn't carry,
+ * so convention inferences will be empty. Natural inference still works via the provider.
+ */
+function toBiddingRuleResultLike(bidResult: BidResult): import("../conventions/core/registry").BiddingRuleResult {
+  return {
+    call: bidResult.call,
+    rule: bidResult.ruleName ?? "unknown",
+    explanation: bidResult.explanation,
+    meaning: bidResult.meaning,
+  };
+}
+
 export function createGameStore(engine: EnginePort, options?: GameStoreOptions) {
   // Coordinator state — owns phase, deal, contract, and cross-cutting concerns
   let deal = $state<Deal | null>(null);
@@ -53,6 +71,10 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
   let nsInferenceEngine = $state<InferenceEngine | null>(null);
   let ewInferenceEngine = $state<InferenceEngine | null>(null);
   let playInferences = $state<Record<Seat, InferredHoldings> | null>(null);
+
+  // Public belief state — kibitzer view, updated per bid
+  let publicBeliefState = $state<PublicBeliefState>(createInitialBeliefState());
+  const naturalProvider = createNaturalInferenceProvider();
 
   // Sub-stores
   const dds = createDDSStore(engine);
@@ -179,6 +201,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     nsInferenceEngine = null;
     ewInferenceEngine = null;
     playInferences = null;
+    publicBeliefState = createInitialBeliefState();
     // Reset sub-stores
     bidding.reset();
     play.reset();
@@ -300,6 +323,11 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       };
     },
 
+    // --- Public belief state ---
+    get publicBeliefState(): PublicBeliefState {
+      return publicBeliefState;
+    },
+
     // --- Debug observability getters ---
     get playLog() {
       return play.playLog;
@@ -367,6 +395,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       play.reset();
       dds.reset();
 
+      // Reset public belief state
+      publicBeliefState = createInitialBeliefState();
+
       // Set up inference engines if configured
       playInferences = null;
       if (inferenceFactory && session.config.nsInferenceConfig) {
@@ -394,12 +425,22 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
         initialAuction,
         onAuctionComplete: completeAuction,
         onSkipToExplanation: skipToExplanation,
-        onProcessBid: (nsInferenceEngine || ewInferenceEngine)
-          ? (bid, auctionBefore) => {
-              nsInferenceEngine?.processBid(bid, auctionBefore);
-              ewInferenceEngine?.processBid(bid, auctionBefore);
-            }
-          : undefined,
+        onProcessBid: (bid, auctionBefore, bidResult) => {
+          nsInferenceEngine?.processBid(bid, auctionBefore);
+          ewInferenceEngine?.processBid(bid, auctionBefore);
+
+          // Produce public belief annotation
+          const conventionId = session.config.conventionId ?? null;
+          const annotation = produceAnnotation(
+            bid,
+            bidResult ? toBiddingRuleResultLike(bidResult) : null,
+            bidResult?.ruleName ? conventionId : null,
+            protocolInferenceExtractor,
+            naturalProvider,
+            auctionBefore,
+          );
+          publicBeliefState = applyAnnotation(publicBeliefState, annotation);
+        },
       });
     },
 

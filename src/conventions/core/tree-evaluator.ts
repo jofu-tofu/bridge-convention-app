@@ -1,5 +1,5 @@
 import type { BiddingContext } from "./types";
-import type { RuleNode, DecisionNode, BidNode } from "./rule-tree";
+import type { RuleNode, DecisionNode, BidNode, AuctionSlotNode, AuctionSlot, HandNode } from "./rule-tree";
 
 // ─── Result types ────────────────────────────────────────────
 
@@ -17,6 +17,22 @@ export interface TreeEvalResult {
   readonly rejectedDecisions: PathEntry[];
   /** All visited decision nodes in traversal order (passing + rejected interleaved). */
   readonly visited: PathEntry[];
+}
+
+// ─── Slot tree result types ──────────────────────────────────
+
+/** Entry tracking which slot matched at each dispatch level. */
+export interface MatchedSlotEntry {
+  readonly slotNode: AuctionSlotNode;
+  readonly matchedSlot: AuctionSlot;
+  readonly triedBefore: readonly AuctionSlot[];
+}
+
+/** Result of evaluating a slot tree. */
+export interface SlotTreeEvalResult {
+  readonly matched: BidNode | null;
+  readonly matchedSlots: readonly MatchedSlotEntry[];
+  readonly handResult: TreeEvalResult;
 }
 
 // ─── Full evaluation (with path tracking) ────────────────────
@@ -66,5 +82,54 @@ export function evaluateTree(
       }
     }
   }
+}
+
+// ─── Slot tree evaluation ────────────────────────────────────
+
+function noMatchHandResult(): TreeEvalResult {
+  return { matched: null, path: [], rejectedDecisions: [], visited: [] };
+}
+
+/**
+ * Evaluate a slot tree against a bidding context.
+ * Iterates slots in order at each level; first match wins.
+ * Recurses through nested AuctionSlotNode children until reaching a HandNode,
+ * then delegates to evaluateTree() for hand evaluation.
+ */
+export function evaluateSlotTree(
+  root: AuctionSlotNode,
+  context: BiddingContext,
+): SlotTreeEvalResult {
+  const matchedSlots: MatchedSlotEntry[] = [];
+  let current: AuctionSlotNode | HandNode = root;
+
+  while (current.type === "auction-slots") {
+    const slotNode: AuctionSlotNode = current;
+    const triedBefore: AuctionSlot[] = [];
+    let found = false;
+
+    for (const s of slotNode.slots as readonly AuctionSlot[]) {
+      if (s.condition.test(context)) {
+        matchedSlots.push({ slotNode, matchedSlot: s, triedBefore: [...triedBefore] });
+        current = s.child;
+        found = true;
+        break;
+      }
+      triedBefore.push(s);
+    }
+
+    if (!found) {
+      // No slot matched — try defaultChild
+      if (slotNode.defaultChild) {
+        current = slotNode.defaultChild;
+        break;
+      }
+      return { matched: null, matchedSlots, handResult: noMatchHandResult() };
+    }
+  }
+
+  // current is now a HandNode — evaluate it
+  const handResult = evaluateTree(current as RuleNode, context);
+  return { matched: handResult.matched, matchedSlots, handResult };
 }
 

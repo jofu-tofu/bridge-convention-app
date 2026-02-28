@@ -1,10 +1,10 @@
 import { Seat, Suit } from "../../../engine/types";
 import type { DealConstraints, Auction, Deal } from "../../../engine/types";
+import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { getSuitLength } from "../../../engine/hand-evaluator";
-import type { TreeConventionConfig } from "../../core/rule-tree";
-import { bergenRuleTree } from "./tree";
+import { bergenProtocol } from "./tree";
 import { bergenExplanations } from "./explanations";
 
 // ─── Deal Constraints ─────────────────────────────────────────
@@ -43,14 +43,14 @@ function bergenDefaultAuction(seat: Seat, deal?: Deal): Auction | undefined {
 
 // ─── Convention Config ────────────────────────────────────────
 
-export const bergenConfig: TreeConventionConfig = {
+export const bergenConfig: ConventionConfig = {
   id: "bergen-raises",
   name: "Bergen Raises",
   description:
     "Bergen Raises: coded responses to 1M opening showing support and strength",
   category: ConventionCategory.Constructive,
   dealConstraints: bergenDealConstraints,
-  ruleTree: bergenRuleTree,
+  protocol: bergenProtocol,
   explanations: bergenExplanations,
   defaultAuction: bergenDefaultAuction,
 };

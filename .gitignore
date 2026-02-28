@@ -42,3 +42,5 @@ share-dev.ps1
 .windsurf/
 _output/
 .claude/
+.vercel
+.env*.local

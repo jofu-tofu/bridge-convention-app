@@ -13,12 +13,15 @@ Auction inference system — extracts hand information from bids with per-partne
 
 | File | Role |
 |------|------|
-| `types.ts` | Core interfaces: `HandInference`, `InferredHoldings`, `InferenceProvider`, `InferenceConfig` |
+| `types.ts` | Core interfaces: `HandInference`, `InferredHoldings`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`, `InferenceExtractor` |
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
 | `convention-inference.ts` | Extracts positive inferences from flat rules + negative from tree rejection data via `evaluateTree()` |
 | `condition-mapper.ts` | `extractInference()`, `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
 | `merge.ts` | `mergeInferences()` — range intersection (narrowing), clamps contradictions |
+| `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |
+| `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
+| `protocol-inference-extractor.ts` | `protocolInferenceExtractor` — `InferenceExtractor` adapter reading `TreeEvalResult` path/rejectedDecisions |
 
 ## Merge Algorithm
 
@@ -49,6 +52,18 @@ Tree rejection data enables negative inference: when a decision node's condition
 - **Architecture invariant:** Inference calls `evaluateTree()` directly — never `evaluateBiddingRules()` — because the registry strips `rejectedDecisions` needed for negative inference.
 - **Example:** Stayman 2D denial → rejected `has-4-hearts` (suit-min hearts 4) → inverted to suit-max hearts 3. Rejected `has-4-spades` → suit-max spades 3.
 
+## Public Belief State
+
+Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` narrowed monotonically as bids are made. Coexists with private per-partnership `InferenceEngine` instances (information asymmetry).
+
+- **`BidAnnotation`:** Per-bid record with call, seat, ruleName, conventionId, meaning, alert, inferences.
+- **`PublicBeliefState`:** `Record<Seat, InferredHoldings>` + `BidAnnotation[]`. Created fresh per deal via `createInitialBeliefState()`.
+- **`applyAnnotation()`:** Merges annotation inferences into seat's beliefs via `mergeInferences()`. Returns new immutable state.
+- **`InferenceExtractor`:** Adapter interface decoupling belief layer from evaluator internals. `protocolInferenceExtractor` reads `treeEvalResult.path`/`rejectedDecisions`. Extracts positive (path hand conditions) and negative (inverted rejected hand conditions) inferences.
+- **`produceAnnotation()`:** Convention bids → inferences from extractor. Natural bids → inferences from `naturalInferenceProvider`. Pass/double/redouble → empty inferences.
+- **Store wiring:** Game store owns `publicBeliefState`, resets per deal. Bidding store's `onProcessBid` fires `produceAnnotation()` → `applyAnnotation()`. Currently passes `BidResult` (shared DTO) which lacks `TreeEvalResult`, so convention inference extraction returns empty — natural inference works. Full tree data wiring is a follow-up.
+- **`BidAlert`:** Optional on `BidNode` in `rule-tree.ts`. Convention authors declare alerts at definition time. Threaded through `BiddingRuleResult.alert` → `BidAnnotation.alert`. Migration of existing conventions is a follow-up.
+
 ## Gotchas
 
 - Inference errors never propagate to callers — `inferFromBid()` returns null, `mergeInferences()` clamps
@@ -77,4 +92,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `inference-engine.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-02-25 | version=4 | dir-commits-at-audit=0 | tree-sig=dirs:2,files:14,exts:ts:13,md:1 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-02-28 | version=5 | dir-commits-at-audit=0 | tree-sig=dirs:2,files:17,exts:ts:16,md:1 -->
