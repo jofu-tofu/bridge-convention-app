@@ -22,6 +22,7 @@ Auction inference system — extracts hand information from bids with per-partne
 | `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
 | `protocol-inference-extractor.ts` | `protocolInferenceExtractor` — `InferenceExtractor` adapter reading `TreeEvalResult` path/rejectedDecisions |
+| `private-belief.ts` | `PrivateBeliefState`, `conditionOnOwnHand(publicBelief, seat, hand, eval)` — narrows partner suit lengths using own hand (13 minus own length caps partner max) |
 
 ## Merge Algorithm
 

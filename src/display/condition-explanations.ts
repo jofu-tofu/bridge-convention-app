@@ -1,6 +1,5 @@
 import type { RuleCondition, BiddingContext } from "../conventions/core/types";
 import type { ConventionExplanations } from "../conventions/core/rule-tree";
-import { Rank } from "../engine/types";
 
 const INFERENCE_TYPE_DEFAULTS: Record<string, string> = {
   "hcp-min": "Checks minimum high-card points",
@@ -10,8 +9,6 @@ const INFERENCE_TYPE_DEFAULTS: Record<string, string> = {
   "suit-max": "Checks maximum suit length",
   "balanced": "Checks for balanced hand shape",
   "not-balanced": "Checks for unbalanced hand shape",
-  "ace-count": "Checks number of aces held",
-  "king-count": "Checks number of kings held",
   "two-suited": "Checks for two-suited hand shape",
 };
 
@@ -84,10 +81,6 @@ export function getConditionExplanationWithParams(
       return "Requires a balanced hand shape";
     case "not-balanced":
       return "Requires an unbalanced hand shape";
-    case "ace-count":
-      return `Requires exactly ${params.count} aces`;
-    case "king-count":
-      return `Requires exactly ${params.count} kings`;
     case "two-suited":
       return "Requires a two-suited hand";
     default: {
@@ -128,27 +121,7 @@ export function getFailureExplanation(
       if (shortfall <= 0) return null;
       return `${shortfall} cards short of ${params.min} needed in ${params.suit}`;
     }
-    case "ace-count": {
-      const aces = countRank(context, Rank.Ace);
-      const needed = params.count as number;
-      if (aces === needed) return null;
-      return `Has ${aces} ${aces === 1 ? "ace" : "aces"}, needs exactly ${needed}`;
-    }
-    case "king-count": {
-      const kings = countRank(context, Rank.King);
-      const needed = params.count as number;
-      if (kings === needed) return null;
-      return `Has ${kings} ${kings === 1 ? "king" : "kings"}, needs exactly ${needed}`;
-    }
     default:
       return null;
   }
-}
-
-function countRank(context: BiddingContext, rank: Rank): number {
-  let count = 0;
-  for (const card of context.hand.cards) {
-    if (card.rank === rank) count++;
-  }
-  return count;
 }

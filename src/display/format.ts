@@ -26,7 +26,7 @@ export function formatCall(call: Call): string {
 }
 
 /** Known bridge abbreviations that should be fully uppercased. */
-const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp", "dont"]);
+const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp"]);
 
 /** Convert kebab-case rule name to Title Case display name.
  *  e.g., "stayman-ask" → "Stayman Ask", "sayc-open-1nt" → "SAYC Open 1NT" */

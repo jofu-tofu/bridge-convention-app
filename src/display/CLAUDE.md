@@ -11,11 +11,9 @@ UI display utilities and pure functions. Consumer of `engine/`, `conventions/cor
 | `sort-cards.ts`        | `sortCards()` — visual card ordering for hand display             |
 | `seat-mapping.ts`      | `viewSeat()` — logical-to-physical seat mapping for table rotation |
 | `hcp.ts`               | `computeHcp()` — HCP display helper                              |
-| `hcp-eval.ts`          | `evaluateHand` re-export shim (1 consumer: DebugPanel)            |
 | `rules-display.ts`     | `prepareRulesForDisplay()`, `groupBidsByRound()`, `DisplayRule` type |
 | `debug-bid-eval.ts`    | `computeBidEvalTraces()` — debug display utility                  |
 | `filter-conventions.ts`| `filterConventions()` — convention picker search/filter           |
-| `hand-summary.ts`      | Re-export of `formatHandSummary()` from `shared/hand-summary.ts`  |
 | `tree-display.ts`      | `flattenTreeForDisplay()` — RuleNode tree to flat `TreeDisplayRow[]` for UI (accepts optional `ConventionExplanations` for teaching fields). `TreeDisplayRow` includes `denialImplication` pre-computed from parent DecisionNode for NO-branch children. |
 | `condition-explanations.ts` | `getConditionExplanation()`, `getConditionExplanationWithParams()`, `getFailureExplanation()` — condition teaching text from inference types |
 | `teaching-content.ts`  | `extractTeachingContent()`, `evaluateTeachingRound()` — extract structured teaching data from convention trees |

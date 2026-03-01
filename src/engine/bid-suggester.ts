@@ -25,6 +25,7 @@ export function suggestBid(
     evaluation,
     vulnerability: Vulnerability.None,
     dealer: Seat.North,
+    opponentConventionIds: [],
   };
   const result = strategy.suggest(context);
   if (result) return result;

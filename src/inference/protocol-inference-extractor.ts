@@ -7,6 +7,7 @@ import {
   conditionToHandInference,
   invertInference,
   resolveDisjunction,
+  shouldInvertCondition,
 } from "./condition-mapper";
 
 
@@ -39,6 +40,7 @@ export const protocolInferenceExtractor: InferenceExtractor = {
     // Negative: walk rejectedDecisions, invert each
     for (const entry of handResult.rejectedDecisions) {
       if (entry.node.condition.category !== "hand") continue;
+      if (!shouldInvertCondition(entry.node.condition)) continue;
       const ci = extractInference(entry.node.condition);
       if (!ci) continue;
 

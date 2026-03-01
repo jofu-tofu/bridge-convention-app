@@ -3,10 +3,8 @@ import { Seat, Suit, Rank } from "../../engine/types";
 import type { BiddingContext } from "../../conventions/core/types";
 import { staymanConfig } from "../../conventions/definitions/stayman";
 import { staymanExplanations } from "../../conventions/definitions/stayman";
-import { dontConfig } from "../../conventions/definitions/dont";
-import { gerberConfig } from "../../conventions/definitions/gerber";
 import { bergenConfig } from "../../conventions/definitions/bergen-raises";
-import { landyConfig } from "../../conventions/definitions/landy";
+import { weakTwosConfig } from "../../conventions/definitions/weak-twos";
 import { saycConfig } from "../../conventions/definitions/sayc";
 import { ConventionCategory } from "../../conventions/core/types";
 import type { ConventionConfig } from "../../conventions/core/types";
@@ -63,18 +61,11 @@ describe("extractTeachingContent", () => {
     expect(artificialBids.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("returns non-null for DONT with bid options from all triggers", () => {
-    const result = extractTeachingContent(dontConfig);
+  it("returns non-null for Weak Twos with bid options from all triggers", () => {
+    const result = extractTeachingContent(weakTwosConfig);
     expect(result).not.toBeNull();
-    // DONT single-round protocol groups all triggers under same auction context
     expect(result!.rounds.length).toBeGreaterThanOrEqual(1);
     expect(result!.totalBidOptions).toBeGreaterThan(0);
-  });
-
-  it("returns non-null for Gerber with ace/king response rounds", () => {
-    const result = extractTeachingContent(gerberConfig);
-    expect(result).not.toBeNull();
-    expect(result!.rounds.length).toBeGreaterThanOrEqual(2);
   });
 
   it("returns null when config has no ruleTree", () => {
@@ -89,13 +80,11 @@ describe("extractTeachingContent", () => {
     expect(result).toBeNull();
   });
 
-  it("returns non-null for all 6 conventions", () => {
+  it("returns non-null for all conventions", () => {
     const configs = [
       staymanConfig,
-      gerberConfig,
-      dontConfig,
       bergenConfig,
-      landyConfig,
+      weakTwosConfig,
       saycConfig,
     ];
     for (const config of configs) {
@@ -148,6 +137,7 @@ describe("evaluateTeachingRound", () => {
         totalPoints: hcp,
         strategy: "hcp",
       },
+      opponentConventionIds: [],
     };
   }
 

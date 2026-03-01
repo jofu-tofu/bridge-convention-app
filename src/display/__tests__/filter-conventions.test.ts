@@ -26,16 +26,10 @@ const conventions: ConventionConfig[] = [
     category: ConventionCategory.Asking,
   }),
   makeConvention({
-    id: "gerber",
-    name: "Gerber",
-    description: "Ace asking convention",
-    category: ConventionCategory.Asking,
-  }),
-  makeConvention({
-    id: "dont",
-    name: "DONT",
-    description: "Disturb opponents notrump",
-    category: ConventionCategory.Defensive,
+    id: "weak-twos",
+    name: "Weak Twos",
+    description: "Preemptive opening bids",
+    category: ConventionCategory.Competitive,
   }),
   makeConvention({
     id: "bergen",
@@ -48,7 +42,7 @@ const conventions: ConventionConfig[] = [
 describe("filterConventions", () => {
   it("returns all conventions when query is empty and category is null", () => {
     const result = filterConventions(conventions, "", null);
-    expect(result).toHaveLength(4);
+    expect(result).toHaveLength(3);
   });
 
   it("filters by name substring, case-insensitive", () => {
@@ -58,9 +52,9 @@ describe("filterConventions", () => {
   });
 
   it("filters by description substring", () => {
-    const result = filterConventions(conventions, "notrump", null);
+    const result = filterConventions(conventions, "preemptive", null);
     expect(result).toHaveLength(1);
-    expect(result[0]!.id).toBe("dont");
+    expect(result[0]!.id).toBe("weak-twos");
   });
 
   it("filters by category", () => {
@@ -69,19 +63,18 @@ describe("filterConventions", () => {
       "",
       ConventionCategory.Asking,
     );
-    expect(result).toHaveLength(2);
+    expect(result).toHaveLength(1);
     expect(result.map((c) => c.id)).toContain("stayman");
-    expect(result.map((c) => c.id)).toContain("gerber");
   });
 
   it("combines search query and category filter (AND logic)", () => {
     const result = filterConventions(
       conventions,
-      "gerber",
-      ConventionCategory.Asking,
+      "bergen",
+      ConventionCategory.Constructive,
     );
     expect(result).toHaveLength(1);
-    expect(result[0]!.id).toBe("gerber");
+    expect(result[0]!.id).toBe("bergen");
   });
 
   it("returns empty array when nothing matches", () => {

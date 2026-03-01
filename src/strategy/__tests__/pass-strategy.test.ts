@@ -33,6 +33,7 @@ describe("passStrategy", () => {
       auction,
       seat: Seat.South,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
 
     const result = passStrategy.suggest(context);
@@ -63,6 +64,7 @@ describe("passStrategy", () => {
       auction: { entries: [], isComplete: false },
       seat: Seat.North,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
 
     const result = passStrategy.suggest(context);

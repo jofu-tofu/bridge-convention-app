@@ -75,6 +75,7 @@ export function buildOpponentPassConstraints(
             auction: auctionBefore,
             seat,
             evaluation,
+            opponentConventionIds: [],
           });
           return result === null || result.call.type === "pass";
         },

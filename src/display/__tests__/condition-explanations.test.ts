@@ -2,8 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { RuleCondition } from "../../conventions/core/types";
 import type { BiddingContext } from "../../conventions/core/types";
 import type { ConventionExplanations } from "../../conventions/core/rule-tree";
-import type { HandEvaluation, Hand } from "../../engine/types";
-import { Suit, Rank } from "../../engine/types";
+import type { HandEvaluation } from "../../engine/types";
 import {
   getConditionExplanation,
   getConditionExplanationWithParams,
@@ -24,7 +23,6 @@ function stubCondition(
 
 function stubContext(
   overrides: Partial<HandEvaluation> = {},
-  hand?: Hand,
 ): BiddingContext {
   const evaluation: HandEvaluation = {
     hcp: overrides.hcp ?? 10,
@@ -38,19 +36,7 @@ function stubContext(
     strategy: overrides.strategy ?? "hcp",
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial BiddingContext stub for testing
-  return { evaluation, hand: hand ?? { cards: [] } } as any;
-}
-
-function makeHandWithAces(count: number): Hand {
-  const suits = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs] as const;
-  const cards = suits.slice(0, count).map((suit) => ({ suit, rank: Rank.Ace }));
-  return { cards };
-}
-
-function makeHandWithKings(count: number): Hand {
-  const suits = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs] as const;
-  const cards = suits.slice(0, count).map((suit) => ({ suit, rank: Rank.King }));
-  return { cards };
+  return { evaluation, hand: { cards: [] } } as any;
 }
 
 describe("getConditionExplanation", () => {
@@ -63,8 +49,6 @@ describe("getConditionExplanation", () => {
       "suit-max",
       "balanced",
       "not-balanced",
-      "ace-count",
-      "king-count",
       "two-suited",
     ] as const;
 
@@ -192,26 +176,6 @@ describe("getConditionExplanationWithParams", () => {
     );
   });
 
-  it("interpolates ace-count", () => {
-    const condition = stubCondition({
-      name: "ace-check",
-      inference: { type: "ace-count", params: { count: 2 } },
-    });
-    expect(getConditionExplanationWithParams(condition)).toBe(
-      "Requires exactly 2 aces",
-    );
-  });
-
-  it("interpolates king-count", () => {
-    const condition = stubCondition({
-      name: "king-check",
-      inference: { type: "king-count", params: { count: 3 } },
-    });
-    expect(getConditionExplanationWithParams(condition)).toBe(
-      "Requires exactly 3 kings",
-    );
-  });
-
   it("returns two-suited explanation", () => {
     const condition = stubCondition({
       name: "two-suited-check",
@@ -312,40 +276,6 @@ describe("getFailureExplanation", () => {
     });
     const context = stubContext({ shape: [5, 3, 3, 2] });
     expect(getFailureExplanation(condition, context)).toBeNull();
-  });
-
-  it("returns ace-count distance", () => {
-    const condition = stubCondition({
-      name: "ace-check",
-      inference: { type: "ace-count", params: { count: 3 } },
-    });
-    const hand = makeHandWithAces(1);
-    const context = stubContext({}, hand);
-    expect(getFailureExplanation(condition, context)).toBe(
-      "Has 1 ace, needs exactly 3",
-    );
-  });
-
-  it("returns null for ace-count when hand matches", () => {
-    const condition = stubCondition({
-      name: "ace-check",
-      inference: { type: "ace-count", params: { count: 2 } },
-    });
-    const hand = makeHandWithAces(2);
-    const context = stubContext({}, hand);
-    expect(getFailureExplanation(condition, context)).toBeNull();
-  });
-
-  it("returns king-count distance", () => {
-    const condition = stubCondition({
-      name: "king-check",
-      inference: { type: "king-count", params: { count: 2 } },
-    });
-    const hand = makeHandWithKings(0);
-    const context = stubContext({}, hand);
-    expect(getFailureExplanation(condition, context)).toBe(
-      "Has 0 kings, needs exactly 2",
-    );
   });
 
   it("returns null for unsupported inference type", () => {

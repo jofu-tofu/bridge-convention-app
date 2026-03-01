@@ -5,6 +5,8 @@ import type { InferenceConfig } from "../inference/types";
 import { getConvention } from "../conventions/core/registry";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
 import { passStrategy } from "../strategy/bidding/pass-strategy";
+import { createStrategyChain } from "../strategy/bidding/strategy-chain";
+import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { createConventionInferenceProvider } from "../inference/convention-inference";
@@ -30,7 +32,10 @@ export function createDrillConfig(
   },
 ): DrillConfig {
   const convention = getConvention(conventionId);
-  const strategy = conventionToStrategy(convention);
+  const strategy = createStrategyChain([
+    conventionToStrategy(convention),
+    naturalFallbackStrategy,
+  ]);
 
   // Wire opponent strategy
   let opponentStrategy: BiddingStrategy = passStrategy;
@@ -39,7 +44,10 @@ export function createDrillConfig(
   if (opponentBidding) {
     try {
       const opponentConvention = getConvention(opponentConventionId);
-      opponentStrategy = conventionToStrategy(opponentConvention);
+      opponentStrategy = createStrategyChain([
+        conventionToStrategy(opponentConvention),
+        naturalFallbackStrategy,
+      ]);
     } catch {
       // Fall back to pass if opponent convention not found
       opponentStrategy = passStrategy;

@@ -6,6 +6,7 @@ import {
   conditionToHandInference,
   invertInference,
   resolveDisjunction,
+  shouldInvertCondition,
 } from "../condition-mapper";
 
 // ─── conditionToHandInference ────────────────────────────────
@@ -75,16 +76,6 @@ describe("invertInference", () => {
     expect(result).toEqual({ type: "balanced", params: {} });
   });
 
-  it("returns null for ace-count", () => {
-    const ci: ConditionInference = { type: "ace-count", params: { count: 2 } };
-    expect(invertInference(ci)).toBeNull();
-  });
-
-  it("returns null for king-count", () => {
-    const ci: ConditionInference = { type: "king-count", params: { count: 1 } };
-    expect(invertInference(ci)).toBeNull();
-  });
-
   it("returns null for two-suited", () => {
     const ci: ConditionInference = { type: "two-suited", params: {} };
     expect(invertInference(ci)).toBeNull();
@@ -108,6 +99,32 @@ describe("invertInference", () => {
   it("returns null when suit-max 13 would invert to min > domain max", () => {
     const ci: ConditionInference = { type: "suit-max", params: { max: 13, suitIndex: 0 } };
     expect(invertInference(ci)).toBeNull();
+  });
+
+  it("returns null for condition with negatable: false via shouldInvertCondition", () => {
+    const condition = {
+      name: "test",
+      label: "test",
+      category: "hand" as const,
+      negatable: false,
+      inference: { type: "balanced" as const, params: {} },
+      test: () => true,
+      describe: () => "test",
+    };
+    // shouldInvertCondition checks the negatable flag before invertInference
+    expect(shouldInvertCondition(condition)).toBe(false);
+  });
+
+  it("shouldInvertCondition returns true when negatable is undefined (default)", () => {
+    const condition = {
+      name: "test",
+      label: "test",
+      category: "hand" as const,
+      inference: { type: "balanced" as const, params: {} },
+      test: () => true,
+      describe: () => "test",
+    };
+    expect(shouldInvertCondition(condition)).toBe(true);
   });
 
   it("filters out-of-range branches from hcp-range disjunction", () => {

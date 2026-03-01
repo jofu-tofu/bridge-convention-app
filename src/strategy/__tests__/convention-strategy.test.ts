@@ -1,20 +1,43 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../engine/types";
 import type { ContractBid } from "../../engine/types";
 import { staymanConfig } from "../../conventions/definitions/stayman";
+import { bergenConfig } from "../../conventions/definitions/bergen-raises";
+import { weakTwosConfig } from "../../conventions/definitions/weak-twos";
+import { saycConfig } from "../../conventions/definitions/sayc";
 import {
   staymanResponder,
   staymanOpener,
+  bergenResponder,
   noMajorHand,
   auctionFromBids,
+  hand,
 } from "../../conventions/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import type { BiddingContext, ConditionResult } from "../../conventions/core/types";
+import { registerConvention, clearRegistry } from "../../conventions/core/registry";
 import { conventionToStrategy, extractForkPoint, mapVisitedWithStructure, mapConditionResult } from "../bidding/convention-strategy";
 import type { TreePathEntry } from "../../shared/types";
 import type { DecisionNode } from "../../conventions/core/rule-tree";
-import { decision, bid, fallback } from "../../conventions/core/rule-tree";
+import { decision, fallback } from "../../conventions/core/rule-tree";
+import { intentBid } from "../../conventions/core/intent/intent-node";
+import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
 import type { PathEntry } from "../../conventions/core/tree-evaluator";
+import type { ConventionOverlayPatch } from "../../conventions/core/overlay";
+import { ConventionCategory } from "../../conventions/core/types";
+import type { ConventionConfig } from "../../conventions/core/types";
+import { protocol, round, semantic } from "../../conventions/core/protocol";
+import { hcpMin, bidMade, isResponder } from "../../conventions/core/conditions";
+import { handDecision } from "../../conventions/core/rule-tree";
+import { buildAuction } from "../../engine/auction-helpers";
+
+beforeEach(() => {
+  clearRegistry();
+  registerConvention(staymanConfig);
+  registerConvention(bergenConfig);
+  registerConvention(weakTwosConfig);
+  registerConvention(saycConfig);
+});
 
 describe("conventionToStrategy", () => {
   test("returns BiddingStrategy with convention-prefixed id and name", () => {
@@ -32,6 +55,7 @@ describe("conventionToStrategy", () => {
       auction,
       seat: Seat.South,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
 
     const result = strategy.suggest(context);
@@ -53,6 +77,7 @@ describe("conventionToStrategy", () => {
       auction,
       seat: Seat.South,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
 
     const result = strategy.suggest(context);
@@ -68,6 +93,7 @@ describe("conventionToStrategy", () => {
       auction,
       seat: Seat.South,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
 
     const result = strategy.suggest(context);
@@ -92,6 +118,7 @@ describe("conventionToStrategy", () => {
       auction,
       seat: Seat.North,
       evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
     };
 
     const result = strategy.suggest(context);
@@ -118,6 +145,7 @@ describe("conventionToStrategy", () => {
       auction,
       seat: Seat.North,
       evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
     };
 
     const result = strategy.suggest(context);
@@ -260,7 +288,7 @@ describe("mapVisitedWithStructure — duplicate DecisionNode names", () => {
     // instead of depth=2/parent="middle".
     const checkSuitDeep: DecisionNode = decision(
       "check-suit", alwaysTrue,
-      bid("bid-deep", "Test: bid-deep", () => ({ type: "pass" as const })),
+      intentBid("bid-deep", "Test: bid-deep", { type: SemanticIntentType.Signoff, params: {} }, () => ({ type: "pass" as const })),
       fallback("no match"),
     );
     const middle: DecisionNode = decision(
@@ -270,7 +298,7 @@ describe("mapVisitedWithStructure — duplicate DecisionNode names", () => {
     );
     const checkSuitShallow: DecisionNode = decision(
       "check-suit", alwaysFalse,
-      bid("bid-shallow", "Test: bid-shallow", () => ({ type: "pass" as const })),
+      intentBid("bid-shallow", "Test: bid-shallow", { type: SemanticIntentType.Signoff, params: {} }, () => ({ type: "pass" as const })),
       fallback("no match"),
     );
     const root: DecisionNode = decision(
@@ -301,5 +329,220 @@ describe("mapVisitedWithStructure — duplicate DecisionNode names", () => {
     // Bug: name-keyed map overwrites with checkSuitShallow (depth 1, parent "root")
     expect(result[2]!.depth).toBe(2);
     expect(result[2]!.parentNodeName).toBe("middle");
+  });
+});
+
+// ─── Step 3 characterization tests: lock behavior before pipeline refactor ──
+
+describe("conventionToStrategy — candidate pipeline characterization", () => {
+  test("Stayman resolver path: opener responds 2H via intent resolution", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const opener = staymanOpener();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    // Resolved call: 2H (opener has 4 hearts)
+    expect(result!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
+    // Tree path preserved
+    expect(result!.treePath).toBeDefined();
+    expect(result!.treePath!.matchedNodeName).toBe("stayman-response-hearts");
+    expect(result!.treePath!.visited.length).toBeGreaterThan(0);
+    // Candidates present
+    expect(result!.treePath!.candidates).toBeDefined();
+    expect(result!.treePath!.candidates!.length).toBeGreaterThan(0);
+  });
+
+  test("Bergen protocol path: responder bids constructive raise", () => {
+    const strategy = conventionToStrategy(bergenConfig);
+    const h = bergenResponder(); // 8 HCP, 4 hearts
+    const auction = auctionFromBids(Seat.North, ["1H", "P"]);
+    const context: BiddingContext = {
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    // Bergen constructive raise resolves to 3H (ShowSupport → 3M via resolver)
+    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Hearts });
+    expect(result!.treePath).toBeDefined();
+    expect(result!.treePath!.matchedNodeName).toBeTruthy();
+    expect(result!.treePath!.siblings).toBeDefined();
+    expect(result!.treePath!.siblings!.length).toBeGreaterThan(0);
+  });
+
+  test("Weak Twos resolver path: Ogust response resolves correctly", () => {
+    const strategy = conventionToStrategy(weakTwosConfig);
+    // Opener: 7 HCP, good 6-card heart suit (K, Q) → 3D "min good" via Ogust
+    const opener = hand("S5", "S3", "S2", "HK", "HQ", "H9", "H7", "H5", "H3", "DQ", "C5", "C3", "C2");
+    const auction = auctionFromBids(Seat.North, ["2H", "P", "2NT", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    // Ogust 3D = min good
+    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Diamonds });
+    expect(result!.treePath).toBeDefined();
+    expect(result!.treePath!.matchedNodeName).toBeTruthy();
+  });
+
+  test("SAYC defaultCall path: opening bid uses defaultCall", () => {
+    const strategy = conventionToStrategy(saycConfig);
+    // 16 HCP balanced, 4 spades → 1NT opening
+    const h = hand("SA", "SK", "SQ", "S2", "HK", "H5", "H3", "DK", "D5", "D3", "C5", "C3", "C2");
+    const auction = auctionFromBids(Seat.South, []);
+    const context: BiddingContext = {
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.call).toEqual({ type: "bid", level: 1, strain: BidSuit.NoTrump });
+    expect(result!.treePath).toBeDefined();
+    expect(result!.treePath!.matchedNodeName).toBeTruthy();
+  });
+});
+
+// ─── Gap 3: suppress fallback — strategy returns null ────────
+
+// ─── Gap 8: resolvedCandidates on TreeEvalSummary ─────────
+
+describe("conventionToStrategy — resolvedCandidates (Gap 8)", () => {
+  test("resolvedCandidates populated when candidate pipeline runs", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const opener = staymanOpener();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.treePath).toBeDefined();
+    expect(result!.treePath!.resolvedCandidates).toBeDefined();
+    expect(result!.treePath!.resolvedCandidates!.length).toBeGreaterThan(0);
+
+    // Each DTO has expected shape
+    for (const rc of result!.treePath!.resolvedCandidates!) {
+      expect(rc.bidName).toBeTruthy();
+      expect(rc.meaning).toBeTruthy();
+      expect(rc.call).toBeDefined();
+      expect(rc.resolvedCall).toBeDefined();
+      expect(typeof rc.isDefaultCall).toBe("boolean");
+      expect(typeof rc.legal).toBe("boolean");
+      expect(typeof rc.isMatched).toBe("boolean");
+      expect(typeof rc.intentType).toBe("string");
+      expect(Array.isArray(rc.failedConditions)).toBe(true);
+    }
+  });
+
+  test("resolvedCandidates undefined when pipeline doesn't run (no IntentNode match)", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const h = noMajorHand();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
+    const context: BiddingContext = {
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    // No match → null result, no treePath
+    expect(result).toBeNull();
+  });
+
+  test("resolvedCandidates includes matched candidate first", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const opener = staymanOpener();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    const candidates = result!.treePath!.resolvedCandidates!;
+    // First candidate is the matched one
+    expect(candidates[0]!.isMatched).toBe(true);
+  });
+});
+
+describe("conventionToStrategy — suppression fallback", () => {
+  test("suggest returns null when overlay suppresses the matched candidate", () => {
+    const bid2C = { type: "bid" as const, level: 2 as const, strain: BidSuit.Clubs };
+    const testTree = handDecision(
+      "hcp-check",
+      hcpMin(8),
+      intentBid("ask-bid", "Ask bid",
+        { type: SemanticIntentType.AskForMajor, params: {} },
+        () => bid2C),
+      fallback("too-weak"),
+    );
+    const overlay: ConventionOverlayPatch = {
+      id: "suppress-all",
+      roundName: "test-round",
+      matches: () => true,
+      suppressIntent: () => true,
+    };
+    const testConfig: ConventionConfig = {
+      id: "suppress-test",
+      name: "Suppress Test",
+      description: "Test",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: protocol("suppress-test", [
+        round("test-round", {
+          triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+          handTree: testTree,
+          seatFilter: isResponder(),
+        }),
+      ]),
+      overlays: [overlay],
+    };
+    registerConvention(testConfig);
+
+    const strategy = conventionToStrategy(testConfig);
+    // 13 HCP hand → matches hcpMin(8) → ask-bid, but overlay suppresses it
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).toBeNull();
   });
 });

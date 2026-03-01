@@ -6,7 +6,7 @@ import {
 } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman";
 import { saycConfig } from "../../conventions/definitions/sayc";
-import { gerberConfig } from "../../conventions/definitions/gerber";
+import { bergenConfig } from "../../conventions/definitions/bergen-raises";
 import { Seat } from "../../engine/types";
 
 describe("Suite 5: DrillConfig Inference Integration", () => {
@@ -14,7 +14,7 @@ describe("Suite 5: DrillConfig Inference Integration", () => {
     clearRegistry();
     registerConvention(staymanConfig);
     registerConvention(saycConfig);
-    registerConvention(gerberConfig);
+    registerConvention(bergenConfig);
   });
 
   it("5.1 N-S own partnership is convention provider for the selected convention", () => {
@@ -60,10 +60,10 @@ describe("Suite 5: DrillConfig Inference Integration", () => {
   it("5.7 opponentConventionId → E-W uses custom convention", () => {
     const config = createDrillConfig("stayman", Seat.South, {
       opponentBidding: true,
-      opponentConventionId: "gerber",
+      opponentConventionId: "bergen-raises",
     });
     expect(config.ewInferenceConfig!.ownPartnership.id).toBe(
-      "convention:gerber",
+      "convention:bergen-raises",
     );
   });
 

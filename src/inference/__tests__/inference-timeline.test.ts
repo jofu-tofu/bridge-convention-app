@@ -1,10 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  createInferenceEngine,
-  createNaturalInferenceProvider,
-  createConventionInferenceProvider,
-} from "../index";
-import type { InferenceConfig, InferenceProvider } from "../index";
+import { createInferenceEngine } from "../inference-engine";
+import { createNaturalInferenceProvider } from "../natural-inference";
+import { createConventionInferenceProvider } from "../convention-inference";
+import type { InferenceConfig, InferenceProvider } from "../types";
 import { Seat, BidSuit } from "../../engine/types";
 import type { AuctionEntry, Auction } from "../../engine/types";
 import {

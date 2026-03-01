@@ -15,10 +15,10 @@ import type { SeatConstraint, DealConstraints } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman";
 import { saycConfig } from "../../conventions/definitions/sayc";
-import { dontConfig } from "../../conventions/definitions/dont";
 import { conventionToStrategy } from "../../strategy/bidding/convention-strategy";
 import { buildAuction } from "../../engine/auction-helpers";
 import { parseHand } from "../../engine/notation";
+import { ConventionCategory } from "../../conventions/core/types";
 import type { ConventionConfig } from "../../conventions/core/types";
 
 describe("buildOpponentPassConstraints", () => {
@@ -190,18 +190,26 @@ describe("startDrill", () => {
   });
 
   it("rotates constraints when allowedDealers picks a different dealer", async () => {
-    registerConvention(dontConfig);
+    // Synthetic convention with East-based constraints and allowedDealers
+    const rotationConvention: ConventionConfig = {
+      id: "rotation-test",
+      name: "Rotation Test",
+      description: "Test rotation",
+      category: ConventionCategory.Competitive,
+      dealConstraints: {
+        dealer: Seat.East,
+        seats: [{ seat: Seat.East, minHcp: 15 }],
+      },
+      allowedDealers: [Seat.East, Seat.West],
+      defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
+    };
+    registerConvention(rotationConvention);
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
     const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     // RNG returns 0.7 → floor(0.7 * 2) = 1 → picks West (second element)
-    const convention: ConventionConfig = {
-      ...dontConfig,
-      allowedDealers: [Seat.East, Seat.West],
-    };
-
-    await startDrill(engine, convention, Seat.South, gameStore, () => 0.7);
+    await startDrill(engine, rotationConvention, Seat.South, gameStore, () => 0.7);
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
     expect(constraints.dealer).toBe(Seat.West);
@@ -213,18 +221,25 @@ describe("startDrill", () => {
   });
 
   it("does not rotate when allowedDealers picks the base dealer", async () => {
-    registerConvention(dontConfig);
+    const rotationConvention: ConventionConfig = {
+      id: "rotation-test-2",
+      name: "Rotation Test 2",
+      description: "Test rotation",
+      category: ConventionCategory.Competitive,
+      dealConstraints: {
+        dealer: Seat.East,
+        seats: [{ seat: Seat.East, minHcp: 15 }],
+      },
+      allowedDealers: [Seat.East, Seat.West],
+      defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
+    };
+    registerConvention(rotationConvention);
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
     const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     // RNG returns 0.3 → floor(0.3 * 2) = 0 → picks East (first element, same as base)
-    const convention: ConventionConfig = {
-      ...dontConfig,
-      allowedDealers: [Seat.East, Seat.West],
-    };
-
-    await startDrill(engine, convention, Seat.South, gameStore, () => 0.3);
+    await startDrill(engine, rotationConvention, Seat.South, gameStore, () => 0.3);
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
     expect(constraints.dealer).toBe(Seat.East);
@@ -243,23 +258,30 @@ describe("startDrill", () => {
   });
 
   it("rotates initialAuction entries when dealer was rotated", async () => {
-    registerConvention(dontConfig);
+    const rotationConvention: ConventionConfig = {
+      id: "rotation-test-3",
+      name: "Rotation Test 3",
+      description: "Test rotation",
+      category: ConventionCategory.Competitive,
+      dealConstraints: {
+        dealer: Seat.East,
+        seats: [{ seat: Seat.East, minHcp: 15 }],
+      },
+      allowedDealers: [Seat.East, Seat.West],
+      defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
+    };
+    registerConvention(rotationConvention);
     const deal = makeDeal();
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),
     });
     const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
-    const convention: ConventionConfig = {
-      ...dontConfig,
-      allowedDealers: [Seat.East, Seat.West],
-    };
-
     // RNG picks West
-    await startDrill(engine, convention, Seat.South, gameStore, () => 0.7);
+    await startDrill(engine, rotationConvention, Seat.South, gameStore, () => 0.7);
 
     const [, , calledAuction] = gameStore.startDrill.mock.calls[0]!;
-    // DONT defaultAuction normally starts from East with "1NT"
+    // defaultAuction normally starts from East with "1NT"
     // After rotation, the entry should be from West
     expect(calledAuction).toBeDefined();
     expect(calledAuction.entries[0].seat).toBe(Seat.West);

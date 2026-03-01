@@ -8,8 +8,6 @@ import type {
   ConventionExplanations,
   BidMetadata,
   RuleNode,
-  ConventionTreeRoot,
-  AuctionSlotNode,
 } from "../conventions/core/rule-tree";
 import type { Call } from "../engine/types";
 import {
@@ -128,8 +126,8 @@ function walkTree(
       }
       break;
     }
-    case "bid": {
-      const bidMeta =
+    case "intent": {
+      const intentMeta =
         explanations?.bids?.[node.name] ?? node.metadata ?? null;
       collected.push({
         auctionConditions: auctionAcc,
@@ -137,8 +135,8 @@ function walkTree(
         handConditions: handAcc,
         bidName: node.name,
         meaning: node.meaning,
-        bidMetadata: bidMeta,
-        callResolver: node.call,
+        bidMetadata: intentMeta,
+        callResolver: node.defaultCall,
       });
       break;
     }
@@ -152,36 +150,11 @@ function roundKey(bid: CollectedBid): string {
   return bid.auctionDecisionNames.join("|");
 }
 
-function walkSlotTree(
-  node: AuctionSlotNode,
-  auctionAcc: readonly TeachingCondition[],
-  auctionNames: readonly string[],
-  explanations: ConventionExplanations | undefined,
-  collected: CollectedBid[],
-): void {
-  for (const s of node.slots) {
-    const tc = makeTeachingCondition(s.condition, explanations);
-    const slotAuctionAcc = [...auctionAcc, tc];
-    const slotAuctionNames = [...auctionNames, s.name];
-
-    if (s.child.type === "auction-slots") {
-      walkSlotTree(s.child, slotAuctionAcc, slotAuctionNames, explanations, collected);
-    } else {
-      // Hand subtree
-      walkTree(s.child as RuleNode, slotAuctionAcc, slotAuctionNames, [], explanations, collected);
-    }
-  }
-  // Default child
-  if (node.defaultChild) {
-    walkTree(node.defaultChild as RuleNode, auctionAcc, auctionNames, [], explanations, collected);
-  }
-}
-
 export function extractTeachingContent(
   config: ConventionConfig,
   explanations?: ConventionExplanations,
 ): TeachingContent | null {
-  if (!config.ruleTree && !config.protocol) return null;
+  if (!config.protocol) return null;
 
   const collected: CollectedBid[] = [];
   if (config.protocol) {
@@ -228,13 +201,6 @@ export function extractTeachingContent(
       }
     }
     walkProtocolRounds(0, [], [], { role: "responder" as const });
-  } else {
-    const tree: ConventionTreeRoot = config.ruleTree!;
-    if (tree.type === "auction-slots") {
-      walkSlotTree(tree, [], [], explanations, collected);
-    } else {
-      walkTree(tree, [], [], [], explanations, collected);
-    }
   }
 
   // Group by auction context (round key)

@@ -2,10 +2,9 @@ import type { InferenceProvider, HandInference, SuitInference } from "./types";
 import type { Auction, AuctionEntry, Seat, Call } from "../engine/types";
 import type { Suit } from "../engine/types";
 import { callsMatch } from "../engine/call-helpers";
-import { getConvention, isTreeConvention, isProtocolConvention } from "../conventions/core/registry";
-import { evaluateTree, evaluateSlotTree } from "../conventions/core/tree-evaluator";
+import { getConvention } from "../conventions/core/registry";
 import { evaluateProtocol } from "../conventions/core/protocol-evaluator";
-import { flattenTree, flattenProtocol, isAuctionCondition } from "../conventions/core/tree-compat";
+import { flattenProtocol, isAuctionCondition } from "../conventions/core/tree-compat";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { isConditionedRule } from "../conventions/core/condition-evaluator";
@@ -15,6 +14,7 @@ import {
   conditionToHandInference,
   invertInference,
   resolveDisjunction,
+  shouldInvertCondition,
 } from "./condition-mapper";
 
 /**
@@ -56,13 +56,11 @@ export function createConventionInferenceProvider(
     } catch {
       return null;
     }
-    if (isProtocolConvention(convention) && convention.protocol) {
+    if (convention.protocol) {
       cachedRules = flattenProtocol(convention.protocol);
       return cachedRules;
     }
-    if (!isTreeConvention(convention)) return null;
-    cachedRules = flattenTree(convention.ruleTree);
-    return cachedRules;
+    return null;
   }
 
   return {
@@ -86,7 +84,7 @@ export function createConventionInferenceProvider(
         return null;
       }
 
-      if (!isTreeConvention(convention) && !isProtocolConvention(convention)) return null;
+      if (!convention.protocol) return null;
       const handInferences: HandInference[] = [];
       let matchedRuleName: string | null = null;
 
@@ -130,12 +128,8 @@ export function createConventionInferenceProvider(
 
       // Negative inference: evaluate tree with auction context to get rejected decisions
       let treeResult;
-      if (isProtocolConvention(convention) && convention.protocol) {
+      if (convention.protocol) {
         treeResult = evaluateProtocol(convention.protocol, auctionContext).handResult;
-      } else if (isTreeConvention(convention)) {
-        treeResult = convention.ruleTree.type === "auction-slots"
-          ? evaluateSlotTree(convention.ruleTree, auctionContext).handResult
-          : evaluateTree(convention.ruleTree, auctionContext);
       } else {
         treeResult = { rejectedDecisions: [], path: [], visited: [], matched: null };
       }
@@ -149,6 +143,7 @@ export function createConventionInferenceProvider(
 
       for (const rejected of treeResult.rejectedDecisions) {
         if (!isAuctionCondition(rejected.node.condition)) continue;
+        if (!shouldInvertCondition(rejected.node.condition)) continue;
 
         const ci = extractInference(rejected.node.condition);
         if (!ci) continue;

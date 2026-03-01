@@ -72,13 +72,18 @@ export function conditionToHandInference(
       return { seat, isBalanced: true, suits: {}, source };
     case "not-balanced":
       return { seat, isBalanced: false, suits: {}, source };
-    case "ace-count":
-      return { seat, suits: {}, source }; // Ace count doesn't map to HCP/suit inference
-    case "king-count":
-      return { seat, suits: {}, source }; // King count doesn't map to HCP/suit inference
     case "two-suited":
       return { seat, suits: {}, source }; // Two-suited noted but no specific suit known
   }
+}
+
+/**
+ * Check whether a condition's inference should be inverted for negative inference.
+ * Returns false when `condition.negatable` is explicitly false (e.g., `isBalanced()`
+ * where NO ≠ unbalanced — could be semi-balanced). Defaults to true.
+ */
+export function shouldInvertCondition(condition: RuleCondition): boolean {
+  return condition.negatable !== false;
 }
 
 /**
@@ -129,8 +134,6 @@ export function invertInference(
       return { type: "not-balanced", params: {} };
     case "not-balanced":
       return { type: "balanced", params: {} };
-    case "ace-count":
-    case "king-count":
     case "two-suited":
       return null; // No useful inverse
   }
@@ -186,8 +189,6 @@ function contradicts(ci: ConditionInference, cumulative: HandInference): boolean
       return cumulative.isBalanced === false;
     case "not-balanced":
       return cumulative.isBalanced === true;
-    case "ace-count":
-    case "king-count":
     case "two-suited":
       return false; // No contradiction check available
   }

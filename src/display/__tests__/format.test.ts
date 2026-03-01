@@ -24,8 +24,8 @@ describe("formatRuleName", () => {
     expect(formatRuleName("sayc-open-1nt")).toBe("SAYC Open 1NT");
   });
 
-  it("uppercases DONT", () => {
-    expect(formatRuleName("dont-2h")).toBe("DONT 2h");
+  it("formats dont as Title Case (not an abbreviation)", () => {
+    expect(formatRuleName("dont-2h")).toBe("Dont 2h");
   });
 
   it("uppercases HCP", () => {

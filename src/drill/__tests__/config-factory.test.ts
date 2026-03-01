@@ -3,8 +3,8 @@ import { createDrillConfig } from "../config-factory";
 import { Seat } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman";
-import { dontConfig } from "../../conventions/definitions/dont";
-import { landyConfig } from "../../conventions/definitions/landy";
+import { bergenConfig } from "../../conventions/definitions/bergen-raises";
+import { saycConfig } from "../../conventions/definitions/sayc";
 
 beforeEach(() => {
   clearRegistry();
@@ -25,7 +25,7 @@ describe("createDrillConfig", () => {
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
     if (northStrategy !== "user") {
-      expect(northStrategy.id).toBe("convention:stayman");
+      expect(northStrategy.id).toContain("convention:stayman");
     }
   });
 
@@ -45,16 +45,16 @@ describe("createDrillConfig", () => {
     }
   });
 
-  it("assigns convention strategy to North for defensive conventions (DONT)", () => {
-    registerConvention(dontConfig);
-    const config = createDrillConfig("dont", Seat.South);
-    // North is South's partner — should use DONT for advancer responses
+  it("assigns convention strategy to North for constructive conventions (Bergen)", () => {
+    registerConvention(bergenConfig);
+    const config = createDrillConfig("bergen-raises", Seat.South);
+    // North is South's partner — should use Bergen for opener rebids
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
     if (northStrategy !== "user") {
-      expect(northStrategy.id).toBe("convention:dont");
+      expect(northStrategy.id).toContain("convention:bergen-raises");
     }
-    // East is opponent — should NOT use DONT
+    // East is opponent — should NOT use Bergen
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
@@ -62,20 +62,32 @@ describe("createDrillConfig", () => {
     }
   });
 
-  it("assigns convention strategy to North for Landy", () => {
-    registerConvention(landyConfig);
-    const config = createDrillConfig("landy", Seat.South);
-    // North is South's partner — should use Landy for advancer responses
+  it("wraps N/S convention strategy in a chain with natural fallback", () => {
+    registerConvention(staymanConfig);
+    const config = createDrillConfig("stayman", Seat.South);
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
     if (northStrategy !== "user") {
-      expect(northStrategy.id).toBe("convention:landy");
+      expect(northStrategy.id).toContain("chain:");
+      expect(northStrategy.id).toContain("convention:stayman");
+      expect(northStrategy.id).toContain("natural-fallback");
     }
-    // East opens 1NT but is an opponent — should NOT use Landy
+  });
+
+  it("wraps E/W opponent strategy in a chain when opponent bidding enabled", () => {
+    registerConvention(staymanConfig);
+    registerConvention(saycConfig);
+    const config = createDrillConfig("stayman", Seat.South, {
+      opponentBidding: true,
+      opponentConventionId: "sayc",
+    });
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
-      expect(eastStrategy.id).toBe("pass");
+      expect(eastStrategy.id).toContain("chain:");
+      expect(eastStrategy.id).toContain("convention:sayc");
+      expect(eastStrategy.id).toContain("natural-fallback");
     }
   });
+
 });
