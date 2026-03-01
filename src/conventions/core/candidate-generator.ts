@@ -55,14 +55,17 @@ export function generateCandidates(
   handResult: TreeEvalResult,
   effectiveCtx: EffectiveConventionContext,
 ): CandidateGenerationResult {
-  const overlay = effectiveCtx.activeOverlay;
+  const overlays = effectiveCtx.activeOverlays;
 
-  // Step 1: Overlay tree replacement
+  // Step 1: Overlay tree replacement — first overlay's replacementTree wins
   let activeRoot = handTreeRoot;
   let activeResult = handResult;
-  if (overlay?.replacementTree) {
-    activeRoot = overlay.replacementTree;
-    activeResult = evaluateTree(activeRoot, effectiveCtx.raw);
+  for (const overlay of overlays) {
+    if (overlay.replacementTree) {
+      activeRoot = overlay.replacementTree;
+      activeResult = evaluateTree(activeRoot, effectiveCtx.raw);
+      break;
+    }
   }
 
   const { raw, config, protocolResult, dialogueState } = effectiveCtx;
@@ -78,28 +81,32 @@ export function generateCandidates(
   // Collect all intent proposals from the hand subtree
   let proposals = collectIntentProposals(activeRoot, raw);
 
-  // Step 2: suppressIntent hook — track whether matched proposal is removed
+  // Step 2: suppressIntent from ALL overlays (any overlay can suppress)
   let matchedIntentSuppressed = false;
-  if (overlay?.suppressIntent) {
-    try {
-      const hadMatched = proposals.some(p => p.sourceNode !== undefined && p.sourceNode.nodeId === matched.nodeId);
-      proposals = proposals.filter(p => !overlay.suppressIntent!(p, effectiveCtx));
-      const stillHasMatched = proposals.some(p => p.sourceNode !== undefined && p.sourceNode.nodeId === matched.nodeId);
-      matchedIntentSuppressed = hadMatched && !stillHasMatched;
-    } catch (e) {
-      // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-      console.warn(`Overlay "${overlay.id}" suppressIntent threw:`, e);
+  for (const overlay of overlays) {
+    if (overlay.suppressIntent) {
+      try {
+        const hadMatched = proposals.some(p => p.sourceNode !== undefined && p.sourceNode.nodeId === matched.nodeId);
+        proposals = proposals.filter(p => !overlay.suppressIntent!(p, effectiveCtx));
+        const stillHasMatched = proposals.some(p => p.sourceNode !== undefined && p.sourceNode.nodeId === matched.nodeId);
+        if (hadMatched && !stillHasMatched) matchedIntentSuppressed = true;
+      } catch (e) {
+        // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
+        console.warn(`Overlay "${overlay.id}" suppressIntent threw:`, e);
+      }
     }
   }
 
-  // Step 3: addIntents hook
-  if (overlay?.addIntents) {
-    try {
-      const added = overlay.addIntents(effectiveCtx);
-      proposals = [...proposals, ...added];
-    } catch (e) {
-      // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-      console.warn(`Overlay "${overlay.id}" addIntents threw:`, e);
+  // Step 3: addIntents from ALL overlays (concatenate in config order)
+  for (const overlay of overlays) {
+    if (overlay.addIntents) {
+      try {
+        const added = overlay.addIntents(effectiveCtx);
+        proposals = [...proposals, ...added];
+      } catch (e) {
+        // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
+        console.warn(`Overlay "${overlay.id}" addIntents threw:`, e);
+      }
     }
   }
 
@@ -112,14 +119,17 @@ export function generateCandidates(
       && matched.type === "intent"
       && proposal.sourceNode.nodeId === matched.nodeId;
 
-    // Step 4: overrideResolver hook
+    // Step 4: overrideResolver — first non-null wins across all overlays
     let overrideCall: Call | null = null;
-    if (overlay?.overrideResolver) {
-      try {
-        overrideCall = overlay.overrideResolver(proposal.intent, effectiveCtx);
-      } catch (e) {
-        // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-        console.warn(`Overlay "${overlay.id}" overrideResolver threw:`, e);
+    for (const overlay of overlays) {
+      if (overlay.overrideResolver) {
+        try {
+          overrideCall = overlay.overrideResolver(proposal.intent, effectiveCtx);
+          if (overrideCall !== null) break;
+        } catch (e) {
+          // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
+          console.warn(`Overlay "${overlay.id}" overrideResolver threw:`, e);
+        }
       }
     }
 
