@@ -1,13 +1,9 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
   import { listConventions } from "../../conventions/core/registry";
-  import { isTreeConvention } from "../../conventions/core/registry";
   import type { ConventionConfig } from "../../conventions/core/types";
   import type { ConventionTeaching } from "../../conventions/core/types";
-  import type { TreeConventionConfig } from "../../conventions/core/rule-tree";
   import { filterConventions } from "../../display/filter-conventions";
-  import { flattenTreeForDisplay } from "../../display/tree-display";
-  import DecisionTree from "../game/DecisionTree.svelte";
 
   const appStore = getAppStore();
 
@@ -21,18 +17,8 @@
     filterConventions(listConventions(), searchQuery, null),
   );
 
-  const treeConfig = $derived(
-    config && isTreeConvention(config) ? (config as TreeConventionConfig) : null,
-  );
-
-  const treeRows = $derived(
-    treeConfig
-      ? flattenTreeForDisplay(treeConfig.ruleTree, treeConfig.explanations)
-      : [],
-  );
-
   const conventionTeaching = $derived<ConventionTeaching | null>(
-    treeConfig?.explanations?.convention ?? config?.explanations?.convention ?? config?.teaching ?? null,
+    config?.explanations?.convention ?? config?.teaching ?? null,
   );
 
   function handleConventionClick(conv: ConventionConfig) {
@@ -201,17 +187,11 @@
 
         <hr class="border-border-subtle" />
 
-        <!-- Decision Tree -->
-        {#if treeConfig}
-          <section>
-            <h2 class="text-xl font-semibold text-text-primary mb-4">Decision Tree</h2>
-            <DecisionTree rows={treeRows} depth={depthMode} />
-          </section>
-        {:else}
-          <div class="text-text-muted italic py-8 text-center">
-            No decision tree available for this convention.
-          </div>
-        {/if}
+        <!-- Decision Tree placeholder — protocol conventions don't produce a single tree root.
+             Future: protocol-aware tree display. -->
+        <div class="text-text-muted italic py-8 text-center">
+          No decision tree available for this convention.
+        </div>
 
         <hr class="border-border-subtle" />
 

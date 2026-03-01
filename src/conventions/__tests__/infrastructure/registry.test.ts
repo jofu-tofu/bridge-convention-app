@@ -4,11 +4,13 @@ import {
   getConvention,
   listConventions,
   listConventionIds,
+  isTreeConvention,
   clearRegistry,
 } from "../../core/registry";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import type { BiddingRule } from "../../core/types";
+import type { ConventionProtocol } from "../../core/protocol";
 /** Minimal convention config for testing registry mechanics. */
 function makeTestConfig(id: string, rules?: BiddingRule[]): ConventionConfig {
   return {
@@ -72,5 +74,18 @@ describe("convention registry", () => {
     clearRegistry();
     expect(listConventions()).toHaveLength(0);
   });
-});
 
+  test("isTreeConvention returns true for protocol conventions", () => {
+    const protocolConfig: ConventionConfig = {
+      ...makeTestConfig("proto"),
+      protocol: {} as ConventionProtocol,
+    };
+
+    expect(isTreeConvention(protocolConfig)).toBe(true);
+  });
+
+  test("isTreeConvention returns false for non-protocol conventions", () => {
+    const legacyConfig = makeTestConfig("legacy");
+    expect(isTreeConvention(legacyConfig)).toBe(false);
+  });
+});

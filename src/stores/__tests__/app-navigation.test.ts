@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createAppStore } from "../app.svelte";
 import { staymanConfig } from "../../conventions/definitions/stayman";
-import { gerberConfig } from "../../conventions/definitions/gerber";
+import { bergenConfig } from "../../conventions/definitions/bergen-raises";
 
 describe("app store learning navigation", () => {
   it("learningConvention is null initially", () => {
@@ -28,17 +28,17 @@ describe("app store learning navigation", () => {
     const store = createAppStore();
     store.selectConvention(staymanConfig);
     expect(store.selectedConvention).not.toBeNull();
-    store.navigateToLearning(gerberConfig);
+    store.navigateToLearning(bergenConfig);
     expect(store.selectedConvention).toBeNull();
-    expect(store.learningConvention?.id).toBe("gerber");
+    expect(store.learningConvention?.id).toBe("bergen-raises");
   });
 
   it("selectConvention clears learningConvention", () => {
     const store = createAppStore();
     store.navigateToLearning(staymanConfig);
     expect(store.learningConvention).not.toBeNull();
-    store.selectConvention(gerberConfig);
+    store.selectConvention(bergenConfig);
     expect(store.learningConvention).toBeNull();
-    expect(store.selectedConvention?.id).toBe("gerber");
+    expect(store.selectedConvention?.id).toBe("bergen-raises");
   });
 });

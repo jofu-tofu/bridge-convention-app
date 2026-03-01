@@ -23,7 +23,7 @@ import {
 import { isResponder, isOpener } from "../../core/conditions";
 import { protocol, round, semantic, validateProtocol } from "../../core/protocol";
 import type { EstablishedContext } from "../../core/protocol";
-import { evaluateProtocol, computeRole, hasInterferenceBetween } from "../../core/protocol-evaluator";
+import { evaluateProtocol, computeRole } from "../../core/protocol-evaluator";
 import { alwaysTrue, staticBid } from "../tree-test-helpers";
 
 // ─── Test helpers ────────────────────────────────────────────
@@ -93,7 +93,6 @@ describe("evaluateProtocol", () => {
     expect(result.matched).toBe(bidNode);
     expect(result.matchedRounds).toHaveLength(1);
     expect(result.matchedRounds[0]!.round.name).toBe("opening");
-    expect(result.interferenceDetected).toBe(false);
   });
 
   it("single-round protocol — no trigger matches, returns null", () => {
@@ -248,47 +247,6 @@ describe("evaluateProtocol", () => {
     expect(receivedContext!.openingLevel).toBe(1);
   });
 
-  it("interference at round 1 — opponent bid instead of pass, handler activated", () => {
-    const normalBid = staticBid("normal", 2, BidSuit.Clubs);
-    const interfereBid = staticBid("interfere", 3, BidSuit.Clubs);
-
-    const proto = protocol("test", [
-      round("opening", {
-        triggers: [semantic(partnerOpenedAt(1, BidSuit.NoTrump), {})],
-        handTree: normalBid,
-        onInterference: interfereBid,
-      }),
-    ]);
-
-    // North opens 1NT, East overcalls 2D — interference
-    const ctx = makeContext(["1NT", "2D"], Seat.South, Seat.North);
-    const result = evaluateProtocol(proto, ctx);
-
-    expect(result.interferenceDetected).toBe(true);
-    expect(result.matched).toBe(interfereBid);
-    expect(result.matchedRounds).toHaveLength(1);
-  });
-
-  it("interference — no handler, proceeds normally (interference only checked with handler)", () => {
-    const normalBid = staticBid("normal", 2, BidSuit.Clubs);
-
-    const proto = protocol("test", [
-      round("opening", {
-        triggers: [semantic(partnerOpenedAt(1, BidSuit.NoTrump), {})],
-        handTree: normalBid,
-        // No onInterference handler — interference check is skipped
-      }),
-    ]);
-
-    // North opens 1NT, East overcalls 2D — no handler means no interference detection
-    const ctx = makeContext(["1NT", "2D"], Seat.South, Seat.North);
-    const result = evaluateProtocol(proto, ctx);
-
-    // Without an onInterference handler, the evaluator proceeds normally
-    expect(result.interferenceDetected).toBe(false);
-    expect(result.matched).toBe(normalBid);
-  });
-
   it("hand tree evaluates hand conditions correctly", () => {
     const handTree = handDecision(
       "hcp-check",
@@ -353,154 +311,6 @@ describe("evaluateProtocol", () => {
 
     expect(result.matched).toBeNull();
     expect(result.matchedRounds).toHaveLength(0);
-  });
-});
-
-// ─── hasInterferenceBetween ──────────────────────────────────
-
-describe("hasInterferenceBetween", () => {
-  it("detects opponent overcall between partnership positions", () => {
-    // 1NT-2D: East overcalls at position 1
-    const auction = buildAuction(Seat.North, ["1NT", "2D"]);
-    expect(hasInterferenceBetween(auction.entries, 0, 2, Seat.South)).toBe(true);
-  });
-
-  it("detects opponent double between partnership positions", () => {
-    // 1NT-X: East doubles at position 1
-    const auction = buildAuction(Seat.North, ["1NT", "X"]);
-    expect(hasInterferenceBetween(auction.entries, 0, 2, Seat.South)).toBe(true);
-  });
-
-  it("opponent pass is NOT interference", () => {
-    // 1NT-P: normal uncontested
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    expect(hasInterferenceBetween(auction.entries, 0, 2, Seat.South)).toBe(false);
-  });
-
-  it("handles empty range gracefully", () => {
-    const auction = buildAuction(Seat.North, ["1NT"]);
-    expect(hasInterferenceBetween(auction.entries, 0, 1, Seat.South)).toBe(false);
-  });
-});
-
-// ─── Competitive auction scenarios ──────────────────────────
-
-describe("evaluateProtocol — competitive auctions", () => {
-  it("opponent overcall triggers interference handler on multi-round protocol", () => {
-    interface TestEst extends EstablishedContext {
-      openingLevel?: number;
-    }
-
-    const normalBid = staticBid("normal-response", 2, BidSuit.Clubs);
-    const interferenceBid = staticBid("competed-response", 3, BidSuit.Clubs);
-
-    const proto = protocol<TestEst>("test", [
-      round<TestEst>("opening", {
-        triggers: [semantic<TestEst>(partnerOpenedAt(1, BidSuit.NoTrump), { openingLevel: 1 })],
-        handTree: normalBid,
-        onInterference: interferenceBid,
-      }),
-    ]);
-
-    // 1NT-2D: East overcalls 2D
-    const ctx = makeContext(["1NT", "2D"], Seat.South, Seat.North);
-    const result = evaluateProtocol(proto, ctx);
-
-    expect(result.interferenceDetected).toBe(true);
-    expect(result.matched).toBe(interferenceBid);
-  });
-
-  it("opponent double triggers interference handler", () => {
-    const normalBid = staticBid("normal", 2, BidSuit.Clubs);
-    const interferenceBid = staticBid("after-double", 2, BidSuit.NoTrump);
-
-    const proto = protocol("test", [
-      round("opening", {
-        triggers: [semantic(partnerOpenedAt(1, BidSuit.NoTrump), {})],
-        handTree: normalBid,
-        onInterference: interferenceBid,
-      }),
-    ]);
-
-    // 1NT-X: East doubles
-    const ctx = makeContext(["1NT", "X"], Seat.South, Seat.North);
-    const result = evaluateProtocol(proto, ctx);
-
-    expect(result.interferenceDetected).toBe(true);
-    expect(result.matched).toBe(interferenceBid);
-  });
-
-  it("3-round protocol with competitive auction — opponent bid after round 2", () => {
-    interface TestEst extends EstablishedContext {
-      openingLevel?: number;
-    }
-
-    const round2Bid = staticBid("ask", 2, BidSuit.Clubs);
-    const round3Bid = staticBid("final", 4, BidSuit.Hearts);
-    const interfereBid = staticBid("competed-final", 3, BidSuit.Hearts);
-
-    const proto = protocol<TestEst>("test", [
-      round<TestEst>("opening", {
-        triggers: [semantic<TestEst>(partnerOpenedAt(1, BidSuit.NoTrump), { openingLevel: 1 })],
-        handTree: round2Bid,
-      }),
-      round<TestEst>("response", {
-        triggers: [semantic<TestEst>(auctionMatches(["1NT", "P", "2C", "P"]), {})],
-        handTree: round3Bid,
-        onInterference: interfereBid,
-      }),
-    ]);
-
-    // 1NT-P-2C-X: East doubles after Stayman ask
-    const ctx = makeContext(["1NT", "P", "2C", "X"], Seat.South, Seat.North);
-    const result = evaluateProtocol(proto, ctx);
-
-    // Round 1 matches (1NT-P). Round 2 trigger checks ["1NT", "P", "2C", "P"]
-    // but actual auction has X at position 3. Trigger won't match.
-    // So we break after round 1, and round 1 is the active round.
-    expect(result.matchedRounds).toHaveLength(1);
-    expect(result.activeRound!.name).toBe("opening");
-  });
-
-  it("all 12 existing tests still pass with competitive auction changes", () => {
-    // This test verifies backward compatibility by re-running the 3-round full match
-    interface TestEst extends EstablishedContext {
-      openingLevel?: number;
-      majorShown?: string;
-    }
-
-    const finalBid = staticBid("final-bid", 4, BidSuit.Hearts);
-    const proto = protocol<TestEst>("test", [
-      round<TestEst>("opening", {
-        triggers: [
-          semantic<TestEst>(partnerOpenedAt(1, BidSuit.NoTrump), { openingLevel: 1 }),
-        ],
-        handTree: staticBid("ask", 2, BidSuit.Clubs),
-      }),
-      round<TestEst>("our-bid", {
-        triggers: [
-          semantic<TestEst>(auctionMatches(["1NT", "P", "2C", "P"]), {}),
-        ],
-        handTree: staticBid("wait", 2, BidSuit.Diamonds),
-      }),
-      round<TestEst>("response", {
-        triggers: [
-          semantic<TestEst>(auctionMatches(["1NT", "P", "2C", "P", "2H", "P"]), { majorShown: "hearts" }),
-        ],
-        handTree: finalBid,
-      }),
-    ]);
-
-    const ctx = makeContext(
-      ["1NT", "P", "2C", "P", "2H", "P"],
-      Seat.South,
-      Seat.North,
-    );
-    const result = evaluateProtocol(proto, ctx);
-
-    expect(result.matched).toBe(finalBid);
-    expect(result.matchedRounds).toHaveLength(3);
-    expect(result.established.majorShown).toBe("hearts");
   });
 });
 

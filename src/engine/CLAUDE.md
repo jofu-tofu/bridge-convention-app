@@ -9,7 +9,7 @@ Pure TypeScript game logic. Zero platform dependencies.
 - All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
-- Phase 1.5 bidding/scoring/play implemented; `solveDeal` works via Tauri IPC (desktop only). `suggestPlay` throws everywhere. DDS unavailable in WASM builds.
+- All bidding/scoring/play methods implemented. `solveDeal` works via Tauri IPC (desktop) and DDS Web Worker (browser WASM). `suggestPlay` throws in all builds — not yet implemented.
 
 ## Architecture
 

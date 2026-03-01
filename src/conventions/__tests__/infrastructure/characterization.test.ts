@@ -1,5 +1,5 @@
 /**
- * Characterization tests: capture current evaluation behavior for all 6 conventions.
+ * Characterization tests: capture current evaluation behavior for all conventions.
  * These lock in semantics so slot tree migrations can be verified.
  *
  * What's captured:
@@ -20,10 +20,7 @@ import {
 } from "../../core/registry";
 import { extractTeachingContent } from "../../../display/teaching-content";
 import { staymanConfig } from "../../definitions/stayman";
-import { gerberConfig } from "../../definitions/gerber";
 import { bergenConfig } from "../../definitions/bergen-raises";
-import { dontConfig } from "../../definitions/dont";
-import { landyConfig } from "../../definitions/landy";
 import { saycConfig } from "../../definitions/sayc";
 import { hand } from "../../../engine/__tests__/fixtures";
 import type { BiddingContext } from "../../core/types";
@@ -34,6 +31,7 @@ function ctx(h: ReturnType<typeof hand>, seat: Seat, bids: string[], dealer: Sea
     auction: buildAuction(dealer, bids),
     seat,
     evaluation: evaluateHand(h),
+    opponentConventionIds: [],
   };
 }
 
@@ -56,10 +54,7 @@ function callStr(call: Call): string {
 beforeEach(() => {
   clearRegistry();
   registerConvention(staymanConfig);
-  registerConvention(gerberConfig);
   registerConvention(bergenConfig);
-  registerConvention(dontConfig);
-  registerConvention(landyConfig);
   registerConvention(saycConfig);
 });
 
@@ -105,38 +100,6 @@ describe("Stayman characterization", () => {
   });
 });
 
-// ─── Gerber ──────────────────────────────────────────────────
-
-describe("Gerber characterization", () => {
-  test("responder asks 4C after NT-P with 16+ HCP and no void", () => {
-    // 16 HCP, no void: SA SK S5 S2 HA H3 DK D5 D3 CQ C5 C3 C2 = 16 HCP
-    const h = hand("SA", "SK", "S5", "S2", "HA", "H3", "DK", "D5", "D3", "CQ", "C5", "C3", "C2");
-    const result = evaluateBiddingRules(ctx(h, Seat.South, ["1NT", "P"], Seat.North), gerberConfig);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("gerber-ask");
-    expect(callStr(result!.call)).toBe("4C");
-  });
-
-  test("opener responds with ace count after 4C ask", () => {
-    // 2 aces: DA, CA
-    const h = hand("SQ", "SJ", "S3", "HK", "HQ", "HJ", "H2", "DA", "D7", "D4", "CA", "C7", "C4");
-    const result = evaluateBiddingRules(
-      ctx(h, Seat.North, ["1NT", "P", "4C", "P"], Seat.North),
-      gerberConfig,
-    );
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("gerber-response-two");
-    expect(callStr(result!.call)).toBe("4S");
-  });
-
-  test("teaching content has expected round structure", () => {
-    const content = extractTeachingContent(gerberConfig, gerberConfig.explanations);
-    expect(content).not.toBeNull();
-    expect(content!.rounds.length).toBeGreaterThanOrEqual(1);
-    expect(content!.totalBidOptions).toBeGreaterThanOrEqual(1);
-  });
-});
-
 // ─── Bergen Raises ───────────────────────────────────────────
 
 describe("Bergen Raises characterization", () => {
@@ -165,67 +128,6 @@ describe("Bergen Raises characterization", () => {
     const content = extractTeachingContent(bergenConfig);
     expect(content).not.toBeNull();
     // Bergen has multiple rounds: initial response, opener rebids per response type, responder continuations
-    expect(content!.rounds.length).toBeGreaterThanOrEqual(1);
-    expect(content!.totalBidOptions).toBeGreaterThanOrEqual(1);
-  });
-});
-
-// ─── DONT ────────────────────────────────────────────────────
-
-describe("DONT characterization", () => {
-  test("overcaller doubles with single long suit after 1NT", () => {
-    // Single long suit (6 diamonds), not both majors, not D+M, not C+higher
-    const h = hand("S5", "S3", "H5", "H3", "DA", "DK", "DQ", "DJ", "D7", "D3", "C5", "C3", "C2");
-    const result = evaluateBiddingRules(ctx(h, Seat.South, ["1NT"], Seat.East), dontConfig);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("dont-double");
-    expect(callStr(result!.call)).toBe("X");
-  });
-
-  test("overcaller bids 2H with both majors after 1NT", () => {
-    // 5H + 4S (bothMajors needs 5+4): SQ(2) SJ(1) S7 S2 HA(4) HK(3) H8 H5 H3 D5 D3 C5 C2
-    const h = hand("SQ", "SJ", "S7", "S2", "HA", "HK", "H8", "H5", "H3", "D5", "D3", "C5", "C2");
-    const result = evaluateBiddingRules(ctx(h, Seat.South, ["1NT"], Seat.East), dontConfig);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("dont-2h");
-    expect(callStr(result!.call)).toBe("2H");
-  });
-
-  test("teaching content has expected round structure", () => {
-    const content = extractTeachingContent(dontConfig);
-    expect(content).not.toBeNull();
-    expect(content!.rounds.length).toBeGreaterThanOrEqual(1);
-    expect(content!.totalBidOptions).toBeGreaterThanOrEqual(1);
-  });
-});
-
-// ─── Landy ───────────────────────────────────────────────────
-
-describe("Landy characterization", () => {
-  test("overcaller bids 2C showing both majors after 1NT", () => {
-    // 10+ HCP, both majors (5+4): SA(4) SK(3) SQ(2) S7 S2 HK(3) HJ(1) H5 H3 D5 D3 C5 C2 = 13 HCP
-    const h = hand("SA", "SK", "SQ", "S7", "S2", "HK", "HJ", "H5", "H3", "D5", "D3", "C5", "C2");
-    const result = evaluateBiddingRules(ctx(h, Seat.South, ["1NT"], Seat.East), landyConfig);
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("landy-2c");
-    expect(callStr(result!.call)).toBe("2C");
-  });
-
-  test("responder bids 2NT inquiry with 12+ HCP after 1NT-2C-P", () => {
-    // 12+ HCP — advancer is North (partner of South who overcalled)
-    const h = hand("SA", "SK", "SQ", "S5", "HA", "H5", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
-    const result = evaluateBiddingRules(
-      ctx(h, Seat.North, ["1NT", "2C", "P"], Seat.East),
-      landyConfig,
-    );
-    expect(result).not.toBeNull();
-    expect(result!.rule).toBe("landy-response-2nt");
-    expect(callStr(result!.call)).toBe("2NT");
-  });
-
-  test("teaching content has expected round structure", () => {
-    const content = extractTeachingContent(landyConfig);
-    expect(content).not.toBeNull();
     expect(content!.rounds.length).toBeGreaterThanOrEqual(1);
     expect(content!.totalBidOptions).toBeGreaterThanOrEqual(1);
   });

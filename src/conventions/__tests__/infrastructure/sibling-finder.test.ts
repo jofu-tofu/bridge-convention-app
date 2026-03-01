@@ -2,9 +2,11 @@ import { describe, test, expect, vi } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import type { RuleCondition } from "../../core/types";
-import { decision, bid, fallback } from "../../core/rule-tree";
+import { decision, fallback } from "../../core/rule-tree";
 import type { RuleNode } from "../../core/rule-tree";
-import { findSiblingBids } from "../../core/sibling-finder";
+import { intentBid } from "../../core/intent/intent-node";
+import { SemanticIntentType } from "../../core/intent/semantic-intent";
+import { findSiblingBids, findCandidateBids } from "../../core/sibling-finder";
 import { makeMinimalContext } from "../tree-test-helpers";
 import { staymanConfig } from "../../definitions/stayman";
 import { bergenConfig } from "../../definitions/bergen-raises";
@@ -49,17 +51,16 @@ describe("findSiblingBids", () => {
       "auction-check", auctionCondition("auction", true),
       decision(
         "has-4-hearts", handCondition("has-4-hearts", true),
-        bid("response-hearts", "Shows 4+ hearts", makeCall(2, BidSuit.Hearts)),
+        intentBid("response-hearts", "Shows 4+ hearts", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Hearts)),
         decision(
           "has-4-spades", handCondition("has-4-spades", false),
-          bid("response-spades", "Shows 4+ spades", makeCall(2, BidSuit.Spades)),
-          bid("response-denial", "Denies a 4-card major", makeCall(2, BidSuit.Diamonds)),
+          intentBid("response-spades", "Shows 4+ spades", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Spades)),
+          intentBid("response-denial", "Denies a 4-card major", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Diamonds)),
         ),
       ),
       fallback("no match"),
     );
 
-    const _matched = bid("response-hearts", "Shows 4+ hearts", makeCall(2, BidSuit.Hearts));
     // Use the actual BidNode from the tree
     const ctx = makeMinimalContext();
     const result = evaluateTree(tree, ctx);
@@ -93,8 +94,8 @@ describe("findSiblingBids", () => {
       "auction-check", auctionCondition("auction", true),
       decision(
         "is-strong", handCondition("is-strong", true),
-        bid("strong-bid", "Shows strong hand", makeCall(2, BidSuit.Clubs)),
-        bid("weak-bid", "Shows weak hand", makeCall(1, BidSuit.Clubs)),
+        intentBid("strong-bid", "Shows strong hand", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Clubs)),
+        intentBid("weak-bid", "Shows weak hand", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(1, BidSuit.Clubs)),
       ),
       fallback("no match"),
     );
@@ -121,13 +122,13 @@ describe("findSiblingBids", () => {
         "check-a", handCondition("check-a", false),
         decision(
           "check-b", handCondition("check-b", false),
-          bid("bid-ab", "Both A and B", makeCall(3, BidSuit.Clubs)),
-          bid("bid-a-not-b", "A but not B", makeCall(2, BidSuit.Clubs)),
+          intentBid("bid-ab", "Both A and B", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(3, BidSuit.Clubs)),
+          intentBid("bid-a-not-b", "A but not B", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Clubs)),
         ),
         decision(
           "check-c", handCondition("check-c", true),
-          bid("bid-c", "Has C", makeCall(2, BidSuit.Hearts)),
-          bid("bid-none", "Default bid", makeCall(1, BidSuit.Clubs)),
+          intentBid("bid-c", "Has C", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Hearts)),
+          intentBid("bid-none", "Default bid", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(1, BidSuit.Clubs)),
         ),
       ),
       fallback("no match"),
@@ -160,7 +161,7 @@ describe("findSiblingBids", () => {
   test("no hand conditions (bid directly after auction) returns empty array", () => {
     const tree: RuleNode = decision(
       "auction-check", auctionCondition("auction", true),
-      bid("direct-bid", "Direct bid", makeCall(1, BidSuit.Clubs)),
+      intentBid("direct-bid", "Direct bid", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(1, BidSuit.Clubs)),
       fallback("no match"),
     );
 
@@ -177,7 +178,7 @@ describe("findSiblingBids", () => {
       "auction-check", auctionCondition("auction", true),
       decision(
         "check-hand", handCondition("check-hand", true),
-        bid("good-bid", "Good hand", makeCall(2, BidSuit.Clubs)),
+        intentBid("good-bid", "Good hand", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Clubs)),
         fallback("not applicable"),
       ),
       fallback("no match"),
@@ -198,7 +199,7 @@ describe("findSiblingBids", () => {
         "hand-check", handCondition("hand-check", true),
         decision(
           "auction-check-2", auctionCondition("auction-2", true),
-          bid("bad-bid", "Bad structure", makeCall(1, BidSuit.Clubs)),
+          intentBid("bad-bid", "Bad structure", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(1, BidSuit.Clubs)),
           fallback("no match"),
         ),
         fallback("no match"),
@@ -220,11 +221,11 @@ describe("findSiblingBids", () => {
       "auction-check", auctionCondition("auction", true),
       decision(
         "check-hand", handCondition("check-hand", true),
-        bid("good-bid", "Good hand", makeCall(2, BidSuit.Clubs)),
+        intentBid("good-bid", "Good hand", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Clubs)),
         decision(
           "check-other", handCondition("check-other", false),
-          bid("error-bid", "Errors out", () => { throw new Error("boom"); }),
-          bid("fallback-bid", "Fallback", makeCall(1, BidSuit.Clubs)),
+          intentBid("error-bid", "Errors out", { type: SemanticIntentType.NaturalBid, params: {} }, () => { throw new Error("boom"); }),
+          intentBid("fallback-bid", "Fallback", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(1, BidSuit.Clubs)),
         ),
       ),
       fallback("no match"),
@@ -257,8 +258,8 @@ describe("findSiblingBids", () => {
       "auction-check", auctionCondition("auction", true),
       decision(
         "compound-node", compoundCondition,
-        bid("after-compound", "After compound", makeCall(2, BidSuit.Clubs)),
-        bid("not-compound", "Not compound", makeCall(1, BidSuit.Clubs)),
+        intentBid("after-compound", "After compound", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(2, BidSuit.Clubs)),
+        intentBid("not-compound", "Not compound", { type: SemanticIntentType.NaturalBid, params: {} }, makeCall(1, BidSuit.Clubs)),
       ),
       fallback("no match"),
     );
@@ -334,5 +335,82 @@ describe("findSiblingBids — integration with real conventions", () => {
         expect(Array.isArray(s.failedConditions)).toBe(true);
       }
     }
+  });
+});
+
+// ─── Duplicate name keying fix ─────────────────────────────────
+
+describe("findCandidateBids — duplicate IntentNode names", () => {
+  test("three IntentNodes sharing a name: all non-matched siblings get correct metadata", () => {
+    // Three IntentNodes share name "raise-to-game" but differ in nodeId/params.
+    // With name-based keying, later entries overwrite earlier ones in the Map,
+    // so sibling lookup returns wrong intent metadata for earlier entries.
+    const tree: RuleNode = decision(
+      "auction-check", auctionCondition("auction", true),
+      decision(
+        "check-a", handCondition("check-a", false),
+        decision(
+          "check-b", handCondition("check-b", false),
+          // Matched: check-a YES → check-b YES → hearts (but both fail, so not matched)
+          intentBid("raise-to-game", "Raises to hearts game", { type: SemanticIntentType.RaiseToGame, params: { suit: "hearts" } }, makeCall(4, BidSuit.Hearts)),
+          // check-a YES → check-b NO → spades
+          intentBid("raise-to-game", "Raises to spades game", { type: SemanticIntentType.RaiseToGame, params: { suit: "spades" } }, makeCall(4, BidSuit.Spades)),
+        ),
+        decision(
+          "check-c", handCondition("check-c", true),
+          // check-a NO → check-c YES → diamonds (this is the matched node)
+          intentBid("raise-to-game", "Raises to diamond game", { type: SemanticIntentType.RaiseToGame, params: { suit: "diamonds" } }, makeCall(5, BidSuit.Diamonds)),
+          fallback("no match inner"),
+        ),
+      ),
+      fallback("no match"),
+    );
+
+    const ctx = makeMinimalContext();
+    const result = evaluateTree(tree, ctx);
+    // check-a(false) → NO → check-c(true) → YES → diamonds matched
+    expect(result.matched).not.toBeNull();
+    expect(result.matched!.name).toBe("raise-to-game");
+    expect((result.matched! as import("../../core/intent/intent-node").IntentNode).intent.params).toEqual({ suit: "diamonds" });
+
+    const candidates = findCandidateBids(tree, result.matched!, ctx, "test-convention");
+
+    // Both non-matched siblings (hearts and spades) should appear
+    expect(candidates).toHaveLength(2);
+    const paramSuits = candidates.map(c => c.intent.params["suit"]).sort();
+    expect(paramSuits).toEqual(["hearts", "spades"]);
+  });
+});
+
+// ─── Gap 4: nodeId matching in sibling finder ────────────────
+
+describe("sibling-finder nodeId matching", () => {
+  test("skips matched node by nodeId, not reference identity", () => {
+    const passCall: Call = { type: "pass" };
+    const node1 = intentBid("bid-a", "Bid A",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => passCall);
+    const node2 = intentBid("bid-b", "Bid B",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => passCall);
+
+    const tree: RuleNode = decision(
+      "hand-check", handCondition("check", true),
+      node1, node2,
+    );
+
+    const ctx = makeMinimalContext();
+    const result = evaluateTree(tree, ctx);
+    expect(result.matched).toBe(node1);
+
+    // Spread-copy the matched node: different reference, same nodeId
+    const copy = { ...node1 };
+    expect(copy).not.toBe(node1);
+    expect(copy.nodeId).toBe(node1.nodeId);
+
+    // findSiblingBids should skip the matched node by nodeId even with a copy
+    const siblings = findSiblingBids(tree, copy, ctx);
+    expect(siblings).toHaveLength(1);
+    expect(siblings[0]!.bidName).toBe("bid-b");
   });
 });

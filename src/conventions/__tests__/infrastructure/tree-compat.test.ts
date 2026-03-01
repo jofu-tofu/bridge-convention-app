@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { BidSuit } from "../../../engine/types";
-import { decision, bid, fallback } from "../../core/rule-tree";
+import { decision, fallback } from "../../core/rule-tree";
+import { intentBid } from "../../core/intent/intent-node";
+import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { evaluateTree } from "../../core/tree-evaluator";
 import { flattenTree, treeResultToBiddingRuleResult } from "../../core/tree-compat";
 import {
@@ -17,8 +19,8 @@ describe("flattenTree", () => {
     const tree = decision(
       "check-a",
       condTrue("a"),
-      bid("bid-yes", "Test: bid-yes", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
-      bid("bid-no", "Test: bid-no", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+      intentBid("bid-yes", "Test: bid-yes", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+      intentBid("bid-no", "Test: bid-no", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
     );
 
     const rules = flattenTree(tree);
@@ -41,7 +43,7 @@ describe("flattenTree", () => {
   });
 
   it("returns single rule for BidNode root", () => {
-    const tree = bid("direct", "Test: direct", () => ({ type: "bid", level: 1, strain: BidSuit.NoTrump }));
+    const tree = intentBid("direct", "Test: direct", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 1, strain: BidSuit.NoTrump }));
 
     const rules = flattenTree(tree);
 
@@ -61,7 +63,7 @@ describe("flattenTree", () => {
       decision(
         "inner",
         condTrue("b"),
-        bid("deep-bid", "Test: deep-bid", () => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+        intentBid("deep-bid", "Test: deep-bid", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
         fallback(),
       ),
       fallback(),
@@ -81,7 +83,7 @@ describe("flattenTree", () => {
       "check",
       condTrue("a"),
       fallback("yes dead end"),
-      bid("no-bid", "Test: no-bid", () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+      intentBid("no-bid", "Test: no-bid", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
     );
 
     const rules = flattenTree(tree);
@@ -111,7 +113,7 @@ describe("treeResultToBiddingRuleResult", () => {
     const tree = decision(
       "check-a",
       condTrue("a"),
-      bid("the-bid", "Test: the-bid", () => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+      intentBid("the-bid", "Test: the-bid", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
       fallback(),
     );
 
@@ -139,7 +141,7 @@ describe("treeResultToBiddingRuleResult", () => {
         decision(
           "C",
           condTrue("c"),
-          bid("target", "Test: target", () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+          intentBid("target", "Test: target", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
           fallback(),
         ),
       ),
@@ -171,7 +173,7 @@ describe("treeResultToBiddingRuleResult", () => {
 
   it("forwards context to call function", () => {
     // Call function that reads ctx to pick strain
-    const tree = bid("ctx-bid", "Test: ctx-bid", (ctx) => ({
+    const tree = intentBid("ctx-bid", "Test: ctx-bid", { type: SemanticIntentType.NaturalBid, params: {} }, (ctx) => ({
       type: "bid" as const,
       level: 1 as const,
       strain: ctx.hand.cards.length > 10 ? BidSuit.NoTrump : BidSuit.Clubs,

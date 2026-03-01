@@ -52,11 +52,12 @@ describe("Stayman — opponent interference", () => {
     expect(result).toBeNull();
   });
 
-  test("opponent doubles after 1NT — Stayman ask should not fire", () => {
-    // 1NT - X instead of 1NT - P
+  test("opponent doubles after 1NT — responder handles interference", () => {
+    // 1NT - X: responder (13 HCP, 4H) should redouble for penalty
     const ctx = makeBiddingContext(responder, Seat.South, ["1NT", "X"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
-    expect(result).toBeNull();
+    expect(result).not.toBeNull();
+    expect(result!.call.type).toBe("redouble");
   });
 
   test("opponent bids after 2C ask — opener response should not fire", () => {

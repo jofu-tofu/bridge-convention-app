@@ -94,6 +94,65 @@ describe("BidFeedbackPanel", () => {
     expect(forkSection).toBeNull();
   });
 
+  test("shows divergence note when resolvedCandidate has isDefaultCall: false", async () => {
+    const treePath: TreeEvalSummary = {
+      ...makeTreePath(),
+      resolvedCandidates: [
+        {
+          bidName: "stayman-ask",
+          meaning: "Asks for a 4-card major",
+          call: { type: "bid", level: 2, strain: "C" as never },
+          resolvedCall: { type: "bid", level: 2, strain: "D" as never },
+          isDefaultCall: false,
+          legal: true,
+          isMatched: true,
+          intentType: "AskForMajor",
+          failedConditions: [],
+        },
+      ],
+    };
+    const feedback = makeWrongBidFeedback(treePath);
+    const { container } = render(BidFeedbackPanel, {
+      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
+    });
+
+    const showBtn = screen.getByLabelText("Show answer");
+    await fireEvent.click(showBtn);
+
+    const note = container.querySelector("[data-testid='divergence-note']");
+    expect(note).not.toBeNull();
+    expect(note!.textContent).toContain("resolves differently");
+  });
+
+  test("no divergence note when resolvedCandidate has isDefaultCall: true", async () => {
+    const treePath: TreeEvalSummary = {
+      ...makeTreePath(),
+      resolvedCandidates: [
+        {
+          bidName: "stayman-ask",
+          meaning: "Asks for a 4-card major",
+          call: { type: "bid", level: 2, strain: "C" as never },
+          resolvedCall: { type: "bid", level: 2, strain: "C" as never },
+          isDefaultCall: true,
+          legal: true,
+          isMatched: true,
+          intentType: "AskForMajor",
+          failedConditions: [],
+        },
+      ],
+    };
+    const feedback = makeWrongBidFeedback(treePath);
+    const { container } = render(BidFeedbackPanel, {
+      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
+    });
+
+    const showBtn = screen.getByLabelText("Show answer");
+    await fireEvent.click(showBtn);
+
+    const note = container.querySelector("[data-testid='divergence-note']");
+    expect(note).toBeNull();
+  });
+
   test("shows correct bid display for correct feedback", () => {
     const feedback: BidFeedback = {
       isCorrect: true,

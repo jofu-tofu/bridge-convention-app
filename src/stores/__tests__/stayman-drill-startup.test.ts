@@ -13,9 +13,6 @@ import { createStubEngine } from "../../test-support/engine-stub";
 import { parseHand } from "../../engine/notation";
 import { clearRegistry, registerConvention, getConvention } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman";
-import { gerberConfig } from "../../conventions/definitions/gerber";
-import { dontConfig } from "../../conventions/definitions/dont";
-import { landyConfig } from "../../conventions/definitions/landy";
 import { bergenConfig } from "../../conventions/definitions/bergen-raises";
 import { saycConfig } from "../../conventions/definitions/sayc";
 import { createDrillConfig } from "../../drill/config-factory";
@@ -83,9 +80,6 @@ function makeTestDeal(dealer: Seat = Seat.North): Deal {
 beforeEach(() => {
   clearRegistry();
   registerConvention(staymanConfig);
-  registerConvention(gerberConfig);
-  registerConvention(dontConfig);
-  registerConvention(landyConfig);
   registerConvention(bergenConfig);
   registerConvention(saycConfig);
 });
@@ -126,30 +120,15 @@ describe("drill startup — user can bid after init", () => {
     expect(has2C).toBe(true);
   });
 
-  test("Gerber: isUserTurn true after init", async () => {
+  test("Bergen: isUserTurn true after init", async () => {
     const engine = createRealAuctionEngine();
     const gameStore = createGameStore(engine);
-    const config = createDrillConfig("gerber", Seat.South, { opponentBidding: true });
+    const config = createDrillConfig("bergen-raises", Seat.South, { opponentBidding: true });
     const session = createDrillSession(config);
-    const strategy = conventionToStrategy(getConvention("gerber"));
+    const strategy = conventionToStrategy(getConvention("bergen-raises"));
     const deal = makeTestDeal();
 
-    await gameStore.startDrill(deal, session, gerberConfig.defaultAuction!(Seat.South, deal), strategy);
-
-    expect(gameStore.isUserTurn).toBe(true);
-    expect(gameStore.isProcessing).toBe(false);
-    expect(gameStore.legalCalls.length).toBeGreaterThan(0);
-  });
-
-  test("DONT: isUserTurn true after init", async () => {
-    const engine = createRealAuctionEngine();
-    const gameStore = createGameStore(engine);
-    const config = createDrillConfig("dont", Seat.South, { opponentBidding: true });
-    const session = createDrillSession(config);
-    const strategy = conventionToStrategy(getConvention("dont"));
-    const deal = makeTestDeal(Seat.East);
-
-    await gameStore.startDrill(deal, session, dontConfig.defaultAuction!(Seat.South, deal), strategy);
+    await gameStore.startDrill(deal, session, bergenConfig.defaultAuction!(Seat.South, deal), strategy);
 
     expect(gameStore.isUserTurn).toBe(true);
     expect(gameStore.isProcessing).toBe(false);

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { decision, bid, fallback, validateTree } from "../../core/rule-tree";
+import { decision, fallback, validateTree } from "../../core/rule-tree";
+import { intentBid } from "../../core/intent/intent-node";
+import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { hcpMin, isOpener, isResponder } from "../../core/conditions";
 
-const dummyBid = bid("test-bid", "Test bid", () => ({ type: "pass" as const }));
+const dummyBid = intentBid("test-bid", "Test bid", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "pass" as const }));
 
 describe("validateTree()", () => {
   it("accepts a tree with only auction conditions", () => {

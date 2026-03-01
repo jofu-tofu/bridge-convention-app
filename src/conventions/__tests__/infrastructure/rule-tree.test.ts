@@ -1,15 +1,29 @@
 import { describe, it, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { decision, bid, fallback } from "../../core/rule-tree";
+import { decision, fallback } from "../../core/rule-tree";
 import type { RuleNode } from "../../core/rule-tree";
+import type { TreeConventionConfig } from "../../core/rule-tree";
+import { intentBid } from "../../core/intent/intent-node";
+import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { evaluateTree } from "../../core/tree-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { hcpMin, anySuitMin, isResponder } from "../../core/conditions";
 import { createBiddingContext } from "../../core/context-factory";
+import { ConventionCategory } from "../../core/types";
 import type { RuleCondition } from "../../core/types";
 import { alwaysTrue, alwaysFalse, staticBid, makeMinimalContext } from "../tree-test-helpers";
+
+const compatibilityConfigExample: TreeConventionConfig = {
+  id: "compatibility-example",
+  name: "Compatibility Example",
+  description: "Ensures TreeConventionConfig remains exported for legacy imports.",
+  category: ConventionCategory.Asking,
+  dealConstraints: { seats: [] },
+};
+
+void compatibilityConfigExample;
 
 // ─── Basic tree evaluation ───────────────────────────────────
 
@@ -193,7 +207,7 @@ function makeStaymanTree() {
       decision(
         "has-enough-hcp",
         hcpMin(8),
-        bid("stayman-ask", "Test: stayman-ask", () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+        intentBid("stayman-ask", "Test: stayman-ask", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
         fallback("too weak"),
       ),
       fallback("no major"),
@@ -255,5 +269,37 @@ describe("negative inference POC", () => {
       "has-enough-hcp",
     ]);
     expect(result.rejectedDecisions).toHaveLength(0);
+  });
+});
+
+// ─── Gap 4: intentBid nodeId ─────────────────────────────────
+
+describe("intentBid nodeId", () => {
+  it("returns a node with a nodeId string property", () => {
+    const node = intentBid("test", "Test bid",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "pass" as const }));
+    expect(typeof node.nodeId).toBe("string");
+    expect(node.nodeId.length).toBeGreaterThan(0);
+  });
+
+  it("two intentBid calls produce different nodeIds", () => {
+    const a = intentBid("bid-a", "A",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "pass" as const }));
+    const b = intentBid("bid-b", "B",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "pass" as const }));
+    expect(a.nodeId).not.toBe(b.nodeId);
+  });
+
+  it("intentBid with same name still produces different nodeIds", () => {
+    const a = intentBid("weak-two-opening", "Open weak two",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "pass" as const }));
+    const b = intentBid("weak-two-opening", "Open weak two",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "pass" as const }));
+    expect(a.nodeId).not.toBe(b.nodeId);
   });
 });

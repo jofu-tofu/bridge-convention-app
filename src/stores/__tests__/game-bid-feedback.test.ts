@@ -55,7 +55,7 @@ describe("bid feedback — user-facing behavior", () => {
   describe("when user bids incorrectly", () => {
     it("auction pauses so user can review their mistake", async () => {
       const store = makeStore();
-      const _p = store.startDrill(
+      store.startDrill(
         makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
@@ -75,7 +75,7 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("tells user what the correct bid was", async () => {
       const store = makeStore();
-      const _p = store.startDrill(
+      store.startDrill(
         makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
@@ -100,7 +100,7 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("auction resumes when user dismisses feedback", async () => {
       const store = makeStore();
-      const _p = store.startDrill(
+      store.startDrill(
         makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
@@ -122,7 +122,7 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("user can skip directly to review", async () => {
       const store = makeStore();
-      const _p = store.startDrill(
+      store.startDrill(
         makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
@@ -143,7 +143,7 @@ describe("bid feedback — user-facing behavior", () => {
   describe("when user bids correctly", () => {
     it("auction continues without interruption", async () => {
       const store = makeStore();
-      const _p = store.startDrill(
+      store.startDrill(
         makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
@@ -164,7 +164,7 @@ describe("bid feedback — user-facing behavior", () => {
   describe("edge cases", () => {
     it("passing is correct when convention does not apply", async () => {
       const store = makeStore();
-      const _p = store.startDrill(
+      store.startDrill(
         makeSimpleTestDeal(),
         makeDrillSession(),
         undefined,
@@ -181,7 +181,7 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("works without a convention strategy (no correctness checking)", async () => {
       const store = makeStore();
-      const _p = store.startDrill(makeSimpleTestDeal(), makeDrillSession());
+      store.startDrill(makeSimpleTestDeal(), makeDrillSession());
       await flushActions();
 
       store.userBid({ type: "pass" });

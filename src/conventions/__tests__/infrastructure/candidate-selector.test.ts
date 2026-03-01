@@ -10,6 +10,7 @@ function makeCandidate(
   const call: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
   return {
     bidName: "test-bid",
+    nodeId: overrides.bidName ?? "test-bid",
     meaning: "Test",
     call,
     failedConditions: [],
@@ -73,8 +74,21 @@ describe("selectMatchedCandidate", () => {
       expect(result).toBe(preferred);
     });
 
-    test("null when only alternative+legal (alternatives not auto-selected)", () => {
+    test("alternative+legal selected when no matched and no preferred", () => {
       const alt = makeCandidate({ isMatched: false, legal: true, bidName: "alt", priority: "alternative" });
+      const result = selectMatchedCandidate([alt]);
+      expect(result).toBe(alt);
+    });
+
+    test("alternative NOT selected when preferred exists", () => {
+      const preferred = makeCandidate({ isMatched: false, legal: true, bidName: "preferred", priority: "preferred" });
+      const alt = makeCandidate({ isMatched: false, legal: true, bidName: "alt", priority: "alternative" });
+      const result = selectMatchedCandidate([alt, preferred]);
+      expect(result).toBe(preferred);
+    });
+
+    test("alternative+illegal skipped", () => {
+      const alt = makeCandidate({ isMatched: false, legal: false, bidName: "alt", priority: "alternative" });
       const result = selectMatchedCandidate([alt]);
       expect(result).toBeNull();
     });
@@ -84,6 +98,36 @@ describe("selectMatchedCandidate", () => {
       const other = makeCandidate({ isMatched: false, legal: true });
       const result = selectMatchedCandidate([other, matched]);
       expect(result).toBe(matched);
+    });
+  });
+
+  describe("ranking seam", () => {
+    test("without ranker: behavior unchanged", () => {
+      const candidates = [
+        makeCandidate({ isMatched: true, legal: true, bidName: "first" }),
+        makeCandidate({ isMatched: true, legal: true, bidName: "second" }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result!.bidName).toBe("first");
+    });
+
+    test("with ranker: ranker reorders before selection", () => {
+      const candidates = [
+        makeCandidate({ isMatched: true, legal: true, bidName: "first" }),
+        makeCandidate({ isMatched: true, legal: true, bidName: "second" }),
+      ];
+      const ranker = (cs: readonly ResolvedCandidate[]) => [...cs].reverse();
+      const result = selectMatchedCandidate(candidates, ranker);
+      expect(result!.bidName).toBe("second");
+    });
+
+    test("ranker returns empty array: returns null", () => {
+      const candidates = [
+        makeCandidate({ isMatched: true, legal: true }),
+      ];
+      const ranker = () => [] as ResolvedCandidate[];
+      const result = selectMatchedCandidate(candidates, ranker);
+      expect(result).toBeNull();
     });
   });
 });

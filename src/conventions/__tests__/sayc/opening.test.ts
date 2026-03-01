@@ -243,4 +243,19 @@ describe("SAYC edge cases - opening", () => {
     expect(call.level).toBe(2);
     expect(call.strain).toBe(BidSuit.Diamonds);
   });
+
+  test("all SAYC matched nodes are IntentNode (type=intent)", () => {
+    // 16 HCP, balanced, no 5M — opens 1NT
+    const opener = hand(
+      "SA", "SK", "SQ", "S2",
+      "HK", "H5", "H3",
+      "DK", "D5", "D3",
+      "C5", "C3", "C2",
+    );
+    const result = callFromRules(opener, Seat.North, []);
+    expect(result).not.toBeNull();
+    expect(result!.protocolResult).toBeDefined();
+    expect(result!.protocolResult!.handResult.matched).toBeDefined();
+    expect(result!.protocolResult!.handResult.matched!.type).toBe("intent");
+  });
 });

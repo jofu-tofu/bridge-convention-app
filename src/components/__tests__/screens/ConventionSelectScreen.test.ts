@@ -5,27 +5,24 @@ import {
   listConventions,
 } from "../../../conventions/core/registry";
 import { staymanConfig } from "../../../conventions/definitions/stayman";
-import { gerberConfig } from "../../../conventions/definitions/gerber";
 import { bergenConfig } from "../../../conventions/definitions/bergen-raises";
-import { dontConfig } from "../../../conventions/definitions/dont";
+import { saycConfig } from "../../../conventions/definitions/sayc";
 
 // ConventionSelectScreen uses getContext so we test via registry + filter logic
 describe("ConventionSelectScreen", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
-    registerConvention(gerberConfig);
     registerConvention(bergenConfig);
-    registerConvention(dontConfig);
+    registerConvention(saycConfig);
   });
 
   it("lists all registered conventions from registry", () => {
     const conventions = listConventions();
-    expect(conventions).toHaveLength(4);
+    expect(conventions).toHaveLength(3);
     expect(conventions.map((c) => c.id)).toContain("stayman");
-    expect(conventions.map((c) => c.id)).toContain("gerber");
     expect(conventions.map((c) => c.id)).toContain("bergen-raises");
-    expect(conventions.map((c) => c.id)).toContain("dont");
+    expect(conventions.map((c) => c.id)).toContain("sayc");
   });
 
   it("each convention has name, description, and category", () => {
@@ -54,10 +51,11 @@ describe("ConventionSelectScreen", () => {
     const result = filterConventions(
       conventions,
       "",
-      ConventionCategory.Defensive,
+      ConventionCategory.Constructive,
     );
-    expect(result).toHaveLength(1);
-    expect(result[0]!.id).toBe("dont");
+    expect(result).toHaveLength(2);
+    expect(result.map((c) => c.id)).toContain("bergen-raises");
+    expect(result.map((c) => c.id)).toContain("sayc");
   });
 
   it("shows empty state when no conventions match", async () => {

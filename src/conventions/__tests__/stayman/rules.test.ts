@@ -35,6 +35,7 @@ function makeBiddingContext(
     auction: auctionFromBids(dealer, bids),
     seat,
     evaluation: evaluateHand(h),
+    opponentConventionIds: [],
   };
 }
 

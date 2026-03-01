@@ -9,14 +9,14 @@ import {
   clearRegistry,
   registerConvention,
 } from "../../../conventions/core/registry";
-import { gerberConfig } from "../../../conventions/definitions/gerber";
+import { bergenConfig } from "../../../conventions/definitions/bergen-raises";
 import { saycConfig } from "../../../conventions/definitions/sayc";
 
 describe("LearningScreen", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
-    registerConvention(gerberConfig);
+    registerConvention(bergenConfig);
     registerConvention(saycConfig);
   });
 
@@ -51,7 +51,7 @@ describe("LearningScreen", () => {
     expect(nav).toBeTruthy();
     // All three registered conventions should appear in sidebar
     expect(screen.getByRole("button", { name: "Stayman" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Gerber" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Bergen Raises" })).toBeTruthy();
   });
 
   it("protocol conventions show 'No decision tree' placeholder", () => {

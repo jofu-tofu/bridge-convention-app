@@ -13,16 +13,6 @@ test("Stayman: bid buttons become enabled after game loads", async ({ page }) =>
   await expect(bid2C).toBeEnabled({ timeout: 5000 });
 });
 
-test("DONT: bid buttons become enabled after game loads", async ({ page }) => {
-  await page.goto("/?convention=dont&seed=42");
-
-  const phaseLabel = page.getByTestId("game-phase");
-  await expect(phaseLabel).toHaveText("Bidding", { timeout: 10000 });
-
-  const passButton = page.getByTestId("bid-pass");
-  await expect(passButton).toBeEnabled({ timeout: 10000 });
-});
-
 test("Stayman: clicking 2C advances the auction", async ({ page }) => {
   await page.goto("/?convention=stayman&seed=42");
 

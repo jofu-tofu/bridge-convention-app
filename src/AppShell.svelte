@@ -13,21 +13,19 @@
     appStore: ReturnType<typeof createAppStore>;
   }
 
-  let { engine, gameStore, appStore }: Props = $props();
+  const props: Props = $props();
 
-  // setContext() called synchronously during this component's init.
-  // Props are stable (App.svelte only mounts AppShell once engine is resolved).
-  setEngine(engine);
-  setGameStore(gameStore);
-  setAppStore(appStore);
+  setEngine(props.engine);
+  setGameStore(props.gameStore);
+  setAppStore(props.appStore);
 </script>
 
 <div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">
-  {#if appStore.screen === "select"}
+  {#if props.appStore.screen === "select"}
     <ConventionSelectScreen />
-  {:else if appStore.screen === "game"}
+  {:else if props.appStore.screen === "game"}
     <GameScreen />
-  {:else if appStore.screen === "learning"}
+  {:else if props.appStore.screen === "learning"}
     <LearningScreen />
   {/if}
 </div>

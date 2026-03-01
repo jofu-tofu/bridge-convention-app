@@ -20,6 +20,13 @@
     feedback.expectedResult?.conditions?.filter(c => c.category !== "auction") ?? [],
   );
 
+  // Divergence note: when a resolver produced a different call than the default
+  const divergedCandidate = $derived(
+    feedback.expectedResult?.treePath?.resolvedCandidates?.find(
+      c => c.isMatched && !c.isDefaultCall,
+    ) ?? null,
+  );
+
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
   let prevFeedback: BidFeedback | undefined;
   $effect.pre(() => {
@@ -224,7 +231,14 @@
           </div>
         {/if}
 
-        <!-- 5. Fork point -->
+        <!-- 5. Divergence note: resolver produced a different call -->
+        {#if divergedCandidate}
+          <p class="text-xs text-amber-300/70 italic" data-testid="divergence-note">
+            Under interference, bid resolves differently from the default ({formatCall(divergedCandidate.call)} &rarr; {formatCall(divergedCandidate.resolvedCall)}).
+          </p>
+        {/if}
+
+        <!-- 6. Fork point -->
         {#if forkPoint}
           <div class="pt-1 border-t border-red-500/20 space-y-1" data-testid="fork-point">
             <p class="text-xs text-green-400/80 flex items-center gap-1.5">

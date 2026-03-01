@@ -8,9 +8,7 @@ import {
   getConventionRules,
 } from "../../core/registry";
 import { staymanConfig } from "../../definitions/stayman";
-import { gerberConfig } from "../../definitions/gerber";
 import { bergenConfig } from "../../definitions/bergen-raises";
-import { dontConfig } from "../../definitions/dont";
 import { saycConfig } from "../../definitions/sayc";
 import { isConditionedRule } from "../../core/condition-evaluator";
 import {
@@ -22,17 +20,17 @@ import {
   isNotVulnerable,
   favorableVulnerability,
   unfavorableVulnerability,
+  partnerBidMade,
+  opponentBidMade,
 } from "../../core/conditions";
 import type { BiddingContext, ConditionedBiddingRule } from "../../core/types";
 import { isAuctionCondition } from "../../core/tree-compat";
-import { hand, auctionFromBids } from "../fixtures";
+import { hand, auctionFromBids, makeBiddingContext } from "../fixtures";
 
 beforeEach(() => {
   clearRegistry();
   registerConvention(staymanConfig);
-  registerConvention(gerberConfig);
   registerConvention(bergenConfig);
-  registerConvention(dontConfig);
   registerConvention(saycConfig);
 });
 
@@ -85,6 +83,7 @@ describe("conditionedRule factory", () => {
       auction: auctionFromBids(Seat.North, ["1H", "P"]),
       seat: Seat.South,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
     expect(rule.matches(ctx)).toBe(false);
   });
@@ -107,6 +106,7 @@ describe("conditionedRule factory", () => {
       auction: auctionFromBids(Seat.North, ["1NT", "P"]),
       seat: Seat.South,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
     expect(rule.matches(ctx)).toBe(false);
   });
@@ -129,6 +129,7 @@ describe("conditionedRule factory", () => {
       auction: { entries: [], isComplete: false },
       seat: Seat.South,
       evaluation: evaluateHand(h),
+      opponentConventionIds: [],
     };
     expect(rule.matches(ctx)).toBe(true);
     expect(rule.conditions).toHaveLength(0);
@@ -235,6 +236,7 @@ function vulnContext(seat: Seat, vulnerability: Vulnerability | undefined): Bidd
     auction: { entries: [], isComplete: false },
     seat,
     evaluation: evaluateHand(h),
+    opponentConventionIds: [],
     vulnerability,
   };
 }
@@ -328,5 +330,105 @@ describe("unfavorableVulnerability", () => {
 
   test("unfavorable from East perspective (East, EastWest)", () => {
     expect(unfavorableVulnerability().test(vulnContext(Seat.East, Vulnerability.EastWest))).toBe(true);
+  });
+});
+
+// ─── Partnership-aware bid conditions ─────────────────────
+
+import { BidSuit } from "../../../engine/types";
+
+describe("partnerBidMade", () => {
+  test("returns false when opponent (East) bid 1NT, evaluating as South", () => {
+    // East opens 1NT — East is opponent of South
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.South,
+      ["1NT"],
+      Seat.East,
+    );
+    expect(partnerBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(false);
+  });
+
+  test("returns true when partner (North) bid 1NT, evaluating as South", () => {
+    // North opens 1NT — North is partner of South
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.South,
+      ["1NT"],
+      Seat.North,
+    );
+    expect(partnerBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(true);
+  });
+
+  test("works when evaluating as West (partner is East)", () => {
+    // East opens 1NT — East is partner of West
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.West,
+      ["1NT"],
+      Seat.East,
+    );
+    expect(partnerBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(true);
+  });
+
+  test("returns false when nobody bid the specified level/strain", () => {
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.South,
+      ["1H"],
+      Seat.North,
+    );
+    expect(partnerBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(false);
+  });
+
+  test("has category auction", () => {
+    expect(partnerBidMade(1, BidSuit.NoTrump).category).toBe("auction");
+  });
+});
+
+describe("opponentBidMade", () => {
+  test("returns true when opponent (East) bid 1NT, evaluating as South", () => {
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.South,
+      ["1NT"],
+      Seat.East,
+    );
+    expect(opponentBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(true);
+  });
+
+  test("returns false when partner (North) bid 1NT, evaluating as South", () => {
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.South,
+      ["1NT"],
+      Seat.North,
+    );
+    expect(opponentBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(false);
+  });
+
+  test("works when evaluating as North (opponents are East/West)", () => {
+    // East opens 1NT — East is opponent of North
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.North,
+      ["1NT"],
+      Seat.East,
+    );
+    expect(opponentBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(true);
+  });
+
+  test("returns false when nobody bid the specified level/strain", () => {
+    const ctx = makeBiddingContext(
+      hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "HQ", "DA", "DK", "CA", "CK", "CQ"),
+      Seat.South,
+      ["1H"],
+      Seat.East,
+    );
+    expect(opponentBidMade(1, BidSuit.NoTrump).test(ctx)).toBe(false);
+  });
+
+  test("has category auction", () => {
+    expect(opponentBidMade(1, BidSuit.NoTrump).category).toBe("auction");
   });
 });

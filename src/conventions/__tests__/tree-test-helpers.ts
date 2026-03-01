@@ -1,7 +1,8 @@
 import { Seat, BidSuit } from "../../engine/types";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import { bid } from "../core/rule-tree";
-import type { BidNode } from "../core/rule-tree";
+import { intentBid } from "../core/intent/intent-node";
+import type { IntentNode } from "../core/intent/intent-node";
+import { SemanticIntentType } from "../core/intent/semantic-intent";
 import type { RuleCondition, BiddingContext } from "../core/types";
 import { hand } from "../../engine/__tests__/fixtures";
 import { createBiddingContext } from "../core/context-factory";
@@ -26,8 +27,8 @@ export function alwaysFalse(name: string, category: "auction" | "hand" = "hand")
   };
 }
 
-export function staticBid(name: string, level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): BidNode {
-  return bid(name, `Test: ${name}`, () => ({ type: "bid", level, strain }));
+export function staticBid(name: string, level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): IntentNode {
+  return intentBid(name, `Test: ${name}`, { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level, strain }));
 }
 
 /** 4=3=3=3 shape, 28 HCP, empty auction, South seat. */

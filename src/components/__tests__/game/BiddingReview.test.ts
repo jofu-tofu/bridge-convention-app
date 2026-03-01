@@ -82,12 +82,14 @@ describe("BiddingReview", () => {
     const siblings: SiblingBid[] = [
       {
         bidName: "jacoby-transfer",
+        nodeId: "jacoby-transfer",
         meaning: "Transfer to hearts",
         call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
         failedConditions: [{ name: "hearts-5", description: "Need 5+ hearts" }],
       },
       {
         bidName: "stayman-ask",
+        nodeId: "stayman-ask",
         meaning: "Stayman",
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
         failedConditions: [],
@@ -118,6 +120,7 @@ describe("BiddingReview", () => {
     const siblings: SiblingBid[] = [
       {
         bidName: "jacoby-transfer",
+        nodeId: "jacoby-transfer",
         meaning: "Transfer to hearts",
         call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
         failedConditions: [{ name: "hearts-5", description: "Need 5+ hearts" }],
