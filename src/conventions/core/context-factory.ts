@@ -14,6 +14,7 @@ export function createBiddingContext(params: {
   evaluation: HandEvaluation;
   vulnerability?: Vulnerability;
   dealer?: Seat;
+  opponentConventionIds?: readonly string[];
 }): BiddingContext {
   return {
     hand: params.hand,
@@ -22,7 +23,8 @@ export function createBiddingContext(params: {
     evaluation: params.evaluation,
     vulnerability: params.vulnerability ?? Vulnerability.None,
     // Default North is arbitrary — callers should pass actual dealer for conventions
-    // that gate on auction position (DONT, Landy). See Phase 2(b) migration.
+    // that gate on auction position.
     dealer: params.dealer ?? Seat.North,
+    opponentConventionIds: params.opponentConventionIds ?? [],
   };
 }

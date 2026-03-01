@@ -3,6 +3,7 @@ import type { ContractBid } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
 import { partnerSeat } from "../../../engine/constants";
 import { auctionMatchesExact } from "../../../engine/auction-helpers";
+import { areSamePartnership } from "../dialogue/helpers";
 
 // ─── Leaf auction condition factories ────────────────────────
 
@@ -300,7 +301,7 @@ export function seatHasBid(): AuctionCondition {
   };
 }
 
-/** DONT advance after double: always relay 2C. */
+/** Advance after double: relay 2C after 1NT-X-P. */
 export function advanceAfterDouble(): AuctionCondition {
   return {
     name: "advance-after-double",
@@ -412,6 +413,68 @@ export function bidMade(level: number, strain: BidSuit): AuctionCondition {
       return found
         ? `${level}${strain} was bid`
         : `${level}${strain} was not bid`;
+    },
+  };
+}
+
+/** A partner bid at this level/strain in the auction. */
+export function partnerBidMade(level: number, strain: BidSuit): AuctionCondition {
+  return {
+    name: `partner-bid-made-${level}${strain}`,
+    label: `Partner bid ${level}${strain}`,
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some(
+        (e) =>
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain &&
+          areSamePartnership(e.seat, ctx.seat) &&
+          e.seat !== ctx.seat,
+      );
+    },
+    describe(ctx) {
+      const found = ctx.auction.entries.find(
+        (e) =>
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain &&
+          areSamePartnership(e.seat, ctx.seat) &&
+          e.seat !== ctx.seat,
+      );
+      return found
+        ? `Partner bid ${level}${strain}`
+        : `Partner did not bid ${level}${strain}`;
+    },
+  };
+}
+
+/** An opponent bid at this level/strain in the auction. */
+export function opponentBidMade(level: number, strain: BidSuit): AuctionCondition {
+  return {
+    name: `opponent-bid-made-${level}${strain}`,
+    label: `Opponent bid ${level}${strain}`,
+    category: "auction",
+    test(ctx) {
+      return ctx.auction.entries.some(
+        (e) =>
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain &&
+          !areSamePartnership(e.seat, ctx.seat),
+      );
+    },
+    describe(ctx) {
+      const found = ctx.auction.entries.find(
+        (e) =>
+          e.call.type === "bid" &&
+          e.call.level === level &&
+          e.call.strain === strain &&
+          !areSamePartnership(e.seat, ctx.seat),
+      );
+      return found
+        ? `Opponent bid ${level}${strain}`
+        : `Opponent did not bid ${level}${strain}`;
     },
   };
 }
@@ -714,6 +777,34 @@ export function opponentActed(): AuctionCondition {
           e.seat !== partner,
       );
       return found ? `Opponent (${found.seat}) acted` : "No opponent action";
+    },
+  };
+}
+
+/** An opponent doubled (any opponent made a double call). */
+export function opponentDoubled(): AuctionCondition {
+  return {
+    name: "opponent-doubled",
+    label: "Opponent doubled",
+    category: "auction",
+    test(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      return ctx.auction.entries.some(
+        (e) =>
+          e.call.type === "double" &&
+          e.seat !== ctx.seat &&
+          e.seat !== partner,
+      );
+    },
+    describe(ctx) {
+      const partner = partnerSeat(ctx.seat);
+      const found = ctx.auction.entries.find(
+        (e) =>
+          e.call.type === "double" &&
+          e.seat !== ctx.seat &&
+          e.seat !== partner,
+      );
+      return found ? `Opponent (${found.seat}) doubled` : "No opponent double";
     },
   };
 }

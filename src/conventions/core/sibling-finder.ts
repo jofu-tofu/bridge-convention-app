@@ -1,7 +1,8 @@
 import type { BiddingContext, RuleCondition } from "./types";
-import type { RuleNode, BidNode } from "./rule-tree";
-import type { SiblingBid, SiblingConditionDetail } from "../../shared/types";
-import { isAuctionCondition } from "./tree-compat";
+import type { RuleNode, IntentNode } from "./rule-tree";
+import type { SiblingBid, SiblingConditionDetail, CandidateBid } from "../../shared/types";
+import { isAuctionCondition, findHandSubtreeRoot } from "./tree-compat";
+import { toCandidateBid } from "./candidate-builder";
 
 /** A condition on the path to a sibling, with the branch direction it requires. */
 interface PathConditionEntry {
@@ -11,30 +12,7 @@ interface PathConditionEntry {
 }
 
 /**
- * Find the root of the hand-condition subtree by walking auction conditions
- * and following the evaluated path (YES/NO as the condition dictates).
- *
- * Throws if an auction condition appears after a hand condition (invariant violation).
- */
-function findHandSubtreeRoot(tree: RuleNode, context: BiddingContext): RuleNode {
-  let node: RuleNode = tree;
-
-  for (;;) {
-    if (node.type !== "decision") return node;
-
-    if (isAuctionCondition(node.condition)) {
-      // Follow the evaluated path through auction conditions
-      node = node.condition.test(context) ? node.yes : node.no;
-    } else {
-      // First non-auction condition — this is the hand subtree root
-      // Auction/hand interleaving invariant enforced by collectAlternatives (line 98-102)
-      return node;
-    }
-  }
-}
-
-/**
- * Recursively collect all BidNode alternatives from the hand subtree,
+ * Recursively collect all IntentNode alternatives from the hand subtree,
  * tracking which conditions on each path don't match the hand.
  *
  * A condition "fails" for a sibling when the hand's actual result doesn't match
@@ -44,23 +22,25 @@ function findHandSubtreeRoot(tree: RuleNode, context: BiddingContext): RuleNode 
  */
 function collectAlternatives(
   node: RuleNode,
-  matched: BidNode,
+  matched: IntentNode,
   context: BiddingContext,
   pathEntries: readonly PathConditionEntry[],
   results: SiblingBid[],
+  intentNodes?: Map<string, IntentNode>,
 ): void {
   switch (node.type) {
     case "fallback":
       // Not a valid bid — skip
       return;
 
-    case "bid": {
-      if (node === matched) return; // Skip the matched bid
+    case "intent": {
+      // Collect IntentNode ref before skip check — same skip + keying as former collectIntentNodes()
+      if (intentNodes && node.nodeId !== matched.nodeId) intentNodes.set(node.nodeId, node);
+      if (node.nodeId === matched.nodeId) return; // Skip the matched node (by nodeId)
 
-      // Resolve the call — skip on error
       let call;
       try {
-        call = node.call(context);
+        call = node.defaultCall(context);
       } catch (e) {
         // eslint-disable-next-line no-console -- intentional: surface dynamic call errors in dev
         console.warn(`Sibling bid "${node.name}" call() threw:`, e);
@@ -81,6 +61,7 @@ function collectAlternatives(
 
       results.push({
         bidName: node.name,
+        nodeId: node.nodeId,
         meaning: node.meaning,
         call,
         failedConditions,
@@ -98,8 +79,8 @@ function collectAlternatives(
 
       const yesPath: PathConditionEntry[] = [...pathEntries, { condition: node.condition, requiredResult: true }];
       const noPath: PathConditionEntry[] = [...pathEntries, { condition: node.condition, requiredResult: false }];
-      collectAlternatives(node.yes, matched, context, yesPath, results);
-      collectAlternatives(node.no, matched, context, noPath, results);
+      collectAlternatives(node.yes, matched, context, yesPath, results, intentNodes);
+      collectAlternatives(node.no, matched, context, noPath, results, intentNodes);
       return;
     }
 
@@ -114,22 +95,60 @@ function collectAlternatives(
  * Find sibling alternatives for a matched bid within a convention rule tree.
  *
  * Walks the tree to find the hand-condition subtree root (past all auction conditions),
- * then explores all branches to find other BidNodes that could have been reached
+ * then explores all branches to find other IntentNodes that could have been reached
  * in the same auction context.
  *
  * @throws If auction conditions are interleaved after hand conditions (invariant violation).
  */
 export function findSiblingBids(
   tree: RuleNode,
-  matched: BidNode,
+  matched: IntentNode,
   context: BiddingContext,
 ): SiblingBid[] {
   const handSubtreeRoot = findHandSubtreeRoot(tree, context);
 
-  // If hand subtree root is a BidNode or FallbackNode, there are no siblings
+  // If hand subtree root is an IntentNode or FallbackNode, there are no siblings
   if (handSubtreeRoot.type !== "decision") return [];
 
   const results: SiblingBid[] = [];
   collectAlternatives(handSubtreeRoot, matched, context, [], results);
   return results;
+}
+
+/**
+ * Find candidate bids with intent + source metadata for a matched bid.
+ * Wraps findSiblingBids results with CandidateBid enrichment.
+ *
+ * @throws If auction conditions are interleaved after hand conditions (invariant violation).
+ */
+export function findCandidateBids(
+  tree: RuleNode,
+  matched: IntentNode,
+  context: BiddingContext,
+  conventionId: string,
+  roundName?: string,
+): CandidateBid[] {
+  const handSubtreeRoot = findHandSubtreeRoot(tree, context);
+  if (handSubtreeRoot.type !== "decision") return [];
+
+  const siblingResults: SiblingBid[] = [];
+  const intentNodes = new Map<string, IntentNode>();
+  collectAlternatives(handSubtreeRoot, matched, context, [], siblingResults, intentNodes);
+
+  const candidates: CandidateBid[] = [];
+  for (const sibling of siblingResults) {
+    const intentNode = intentNodes.get(sibling.nodeId);
+    if (intentNode) {
+      const candidate = toCandidateBid(
+        intentNode,
+        context,
+        conventionId,
+        roundName,
+        sibling.failedConditions,
+      );
+      if (candidate) candidates.push(candidate);
+    }
+  }
+
+  return candidates;
 }

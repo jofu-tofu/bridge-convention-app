@@ -19,8 +19,6 @@ export interface ConditionInference {
     | "suit-max"
     | "balanced"
     | "not-balanced"
-    | "ace-count"
-    | "king-count"
     | "two-suited";
   readonly params: Record<string, number | string | boolean>;
 }
@@ -41,6 +39,10 @@ export interface BiddingContext {
   readonly vulnerability?: Vulnerability;
   /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
   readonly dealer?: Seat;
+  /** Convention IDs opponents are known to play (from alerts, pre-game card).
+   *  Empty array = natural bidding only. Used by evaluation pipeline to compute
+   *  opponent inferences from the auction + convention rules. */
+  readonly opponentConventionIds: readonly string[];
 }
 
 export interface BiddingRule {
@@ -81,6 +83,10 @@ export interface RuleCondition {
    *  the inference-type default in the condition explanation registry.
    *  Use for convention-specific explanations of shared conditions. */
   readonly teachingNote?: string;
+  /** Whether the NO branch of this condition can be meaningfully negated for inference.
+   *  Defaults to true. Set to false for conditions like `isBalanced()` where
+   *  the NO branch doesn't imply a clean inverse (could be semi-balanced). */
+  readonly negatable?: boolean;
 }
 
 /** A condition that checks auction state (e.g., who opened, auction pattern).
@@ -162,11 +168,33 @@ export interface ConventionConfig {
   readonly allowedDealers?: readonly Seat[];
   /** Per-convention teaching explanations (keyed by node name). */
   readonly explanations?: import("./rule-tree").ConventionExplanations;
-  /** Present on tree conventions only. See TreeConventionConfig in rule-tree.ts. */
-  readonly ruleTree?: import("./rule-tree").ConventionTreeRoot;
-  /** Present on protocol conventions. Mutually exclusive with ruleTree.
+  /** Present on protocol conventions. All conventions must use protocols.
    *  Uses `any` type parameter because convention-specific EstablishedContext
    *  subtypes are not assignable to the base type (function contravariance). */
-  // any: ConventionProtocol generic parameter varies per convention
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Protocol generic must stay erased at registry boundary.
   readonly protocol?: import("./protocol").ConventionProtocol<any>;
+  /** Dialogue transition rules for IntentNode-based conventions.
+   *  When `baselineRules` is also set, this array contains ONLY convention-specific rules.
+   *  When `baselineRules` is NOT set, this array is composed as [...familyRules, ...baselineTransitionRules].
+   *  Required when hand trees contain IntentNode leaves. */
+  readonly transitionRules?: readonly import("./dialogue/dialogue-transitions").TransitionRule[];
+  /** Baseline transition rules (universal patterns like NT detection, interference, pass).
+   *  When set, `computeDialogueState` uses two-pass mode: convention rules fire first,
+   *  baseline rules backfill only the fields convention rules didn't set.
+   *  Convention values always win over baseline values. */
+  readonly baselineRules?: readonly import("./dialogue/dialogue-transitions").TransitionRule[];
+  /** Intent resolvers for IntentNode-based conventions.
+   *  Maps SemanticIntentType to resolver functions.
+   *  Required when hand trees contain IntentNode leaves. */
+  readonly intentResolvers?: import("./intent/intent-resolver").IntentResolverMap;
+  /** Overlays that replace the hand tree for specific protocol rounds based on dialogue state.
+   *  First matching overlay wins. Validated against protocol round names at registration time. */
+  readonly overlays?: readonly import("./overlay").ConventionOverlayPatch[];
+  /** Optional candidate ranker for reordering before selection.
+   *  Operates across ALL candidates before tier filtering.
+   *  No conventions use this yet — seam for future difficulty/style preferences. */
+  readonly rankCandidates?: (
+    candidates: readonly import("./candidate-generator").ResolvedCandidate[],
+    context: import("./effective-context").EffectiveConventionContext,
+  ) => readonly import("./candidate-generator").ResolvedCandidate[];
 }

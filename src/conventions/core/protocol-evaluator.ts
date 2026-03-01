@@ -55,35 +55,6 @@ export function computeRole(entries: readonly AuctionEntry[], seat: Seat): Aucti
 // ─── Cursor-based context ────────────────────────────────────
 
 /**
- * Check if an entry at a given position is an opponent's non-pass action.
- * "Opponent" = not seat and not partner.
- */
-function isOpponentAction(entry: AuctionEntry, seat: Seat): boolean {
-  const partner = partnerSeat(seat);
-  return entry.seat !== seat && entry.seat !== partner && entry.call.type !== "pass";
-}
-
-/**
- * Scan for opponent non-pass actions between two partnership positions.
- * In bridge, partnership bids are always 2 positions apart (N→E→S→W clockwise),
- * so the range (fromIdx, toIdx) exclusive contains exactly the opponent entries
- * between consecutive partnership turns.
- */
-export function hasInterferenceBetween(
-  entries: readonly AuctionEntry[],
-  fromIdx: number,
-  toIdx: number,
-  seat: Seat,
-): boolean {
-  for (let i = fromIdx + 1; i < toIdx && i < entries.length; i++) {
-    if (isOpponentAction(entries[i]!, seat)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
  * Create a BiddingContext view where the auction starts from a cursor position.
  * The trigger condition evaluates against this "windowed" context.
  */
@@ -129,6 +100,7 @@ function noMatchHandResult(): TreeEvalResult {
 export function evaluateProtocol<T extends EstablishedContext>(
   proto: ConventionProtocol<T>,
   context: BiddingContext,
+  triggerOverrides?: ReadonlyMap<string, readonly SemanticTrigger[]>,
 ): ProtocolEvalResult<T> {
   const role = computeRole(context.auction.entries, context.seat);
   let established = { role } as T;
@@ -142,7 +114,10 @@ export function evaluateProtocol<T extends EstablishedContext>(
 
     const cursorCtx = contextAtCursor(context, cursor);
 
-    for (const trigger of r.triggers) {
+    // Use override triggers if provided, else original
+    const effectiveTriggers = (triggerOverrides?.get(r.name) ?? r.triggers) as readonly SemanticTrigger<T>[];
+
+    for (const trigger of effectiveTriggers) {
       if (trigger.condition.test(cursorCtx)) {
         matchedTrigger = trigger;
         break;
@@ -152,43 +127,6 @@ export function evaluateProtocol<T extends EstablishedContext>(
     if (!matchedTrigger) {
       // No trigger matched — auction hasn't reached this round
       break;
-    }
-
-    // Check for interference: scan all entries between current cursor and
-    // the next partnership position (cursor+2) for opponent non-pass actions.
-    // Bridge partnerships are always 2 positions apart (N→E→S→W clockwise),
-    // so cursor+1 contains the opponent's action between consecutive turns.
-    if (r.onInterference && hasInterferenceBetween(
-      context.auction.entries, cursor, cursor + 2, context.seat,
-    )) {
-      // Interference detected
-      try {
-        const handTree = resolveHandTree(r.onInterference, {
-          ...established,
-          ...matchedTrigger.establishes,
-        } as T);
-        const handResult = evaluateTree(handTree, context);
-        return {
-          matched: handResult.matched,
-          matchedRounds: [...matchedRounds, { round: r, trigger: matchedTrigger }],
-          established: { ...established, ...matchedTrigger.establishes } as T,
-          handResult,
-          activeRound: r,
-          interferenceDetected: true,
-          handTreeRoot: handTree,
-        };
-      } catch {
-        // Handler threw — fall through to no-match
-        return {
-          matched: null,
-          matchedRounds,
-          established,
-          handResult: noMatchHandResult(),
-          activeRound: null,
-          interferenceDetected: true,
-          handTreeRoot: null,
-        };
-      }
     }
 
     // Advance cursor and accumulate context
@@ -217,7 +155,7 @@ export function evaluateProtocol<T extends EstablishedContext>(
       established,
       handResult: noMatchHandResult(),
       activeRound: null,
-      interferenceDetected: false,
+
       handTreeRoot: null,
     };
   }
@@ -231,7 +169,7 @@ export function evaluateProtocol<T extends EstablishedContext>(
       established,
       handResult,
       activeRound,
-      interferenceDetected: false,
+
       handTreeRoot: handTree,
     };
   } catch {
@@ -244,7 +182,7 @@ export function evaluateProtocol<T extends EstablishedContext>(
       established,
       handResult: noMatchHandResult(),
       activeRound,
-      interferenceDetected: false,
+
       handTreeRoot: null,
     };
   }

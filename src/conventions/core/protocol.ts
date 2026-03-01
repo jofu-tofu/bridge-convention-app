@@ -1,5 +1,5 @@
 import type { AuctionCondition } from "./types";
-import type { HandNode, BidNode } from "./rule-tree";
+import type { HandNode, IntentNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
 
 // ─── Established context ─────────────────────────────────────
@@ -32,8 +32,6 @@ export interface ProtocolRound<T extends EstablishedContext = EstablishedContext
   readonly triggers: readonly SemanticTrigger<T>[];
   /** Resolves the hand subtree for this round given accumulated context. */
   readonly handTree: HandNode | ((established: T) => HandNode);
-  /** Optional handler for opponent interference after the trigger bid. */
-  readonly onInterference?: HandNode | ((established: T) => HandNode);
   /** Optional seat filter — evaluated against the FULL context (not windowed).
    *  If present and fails, cursor still advances (the milestone happened) but
    *  activeRound is NOT updated (this seat doesn't act in this round). */
@@ -60,8 +58,8 @@ export interface MatchedRoundEntry<T extends EstablishedContext = EstablishedCon
 
 /** Result of evaluating a convention protocol. */
 export interface ProtocolEvalResult<T extends EstablishedContext = EstablishedContext> {
-  /** The matched BidNode (null if convention doesn't apply). */
-  readonly matched: BidNode | null;
+  /** The matched IntentNode (null if convention doesn't apply). */
+  readonly matched: IntentNode | null;
   /** Rounds that matched sequentially. */
   readonly matchedRounds: readonly MatchedRoundEntry<T>[];
   /** The accumulated established context. */
@@ -70,8 +68,6 @@ export interface ProtocolEvalResult<T extends EstablishedContext = EstablishedCo
   readonly handResult: TreeEvalResult;
   /** The active round (last matched round). Null if no rounds matched. */
   readonly activeRound: ProtocolRound<T> | null;
-  /** Whether interference was detected. */
-  readonly interferenceDetected: boolean;
   /** The resolved hand tree root (for sibling finder). */
   readonly handTreeRoot: HandNode | null;
 }
@@ -92,7 +88,6 @@ export function round<T extends EstablishedContext = EstablishedContext>(
   config: {
     triggers: readonly SemanticTrigger<T>[];
     handTree: HandNode | ((established: T) => HandNode);
-    onInterference?: HandNode | ((established: T) => HandNode);
     seatFilter?: AuctionCondition;
   },
 ): ProtocolRound<T> {
@@ -100,7 +95,6 @@ export function round<T extends EstablishedContext = EstablishedContext>(
     name,
     triggers: config.triggers,
     handTree: config.handTree,
-    onInterference: config.onInterference,
     seatFilter: config.seatFilter,
   };
 }

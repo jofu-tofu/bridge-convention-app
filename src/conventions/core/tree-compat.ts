@@ -1,16 +1,70 @@
-// TODO(phase-1.5c): Remove after all conventions migrated to tree system.
-// This is a temporary compat adapter for the flat→tree migration period.
+// Compatibility layer for legacy evaluator paths.
+// Kept intentionally for protocol hand-tree evaluation and migration-adjacent flows.
 
 import type { ConditionedBiddingRule, ConditionResult, RuleCondition, AuctionCondition, BiddingContext } from "./types";
-import type { RuleNode, ConventionTreeRoot, AuctionSlotNode, HandNode } from "./rule-tree";
+import type { RuleNode, HandNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
 import type { BiddingRuleResult } from "./registry";
 import { conditionedRule } from "./conditions";
 import type { ConventionProtocol, EstablishedContext } from "./protocol";
 
+// ─── findHandSubtreeRoot ─────────────────────────────────
+
+/**
+ * Walk past auction conditions to find the hand subtree root.
+ * Follows the evaluated path (YES/NO as the condition dictates).
+ *
+ * Shared by sibling-finder and intent-collector.
+ */
+export function findHandSubtreeRoot(tree: RuleNode, context: BiddingContext): RuleNode {
+  let node: RuleNode = tree;
+
+  for (;;) {
+    if (node.type !== "decision") return node;
+
+    if (isAuctionCondition(node.condition)) {
+      node = node.condition.test(context) ? node.yes : node.no;
+    } else {
+      return node;
+    }
+  }
+}
+
 // ─── flattenTree ─────────────────────────────────────────────
 
 const NEGATION_PREFIX = "not-";
+
+function splitConditionGroups(conditions: RuleCondition[]): {
+  auctionConds: RuleCondition[];
+  handConds: RuleCondition[];
+} {
+  const auctionConds: RuleCondition[] = [];
+  const handConds: RuleCondition[] = [];
+
+  for (const cond of conditions) {
+    if (isAuctionCondition(cond)) {
+      auctionConds.push(cond);
+    } else {
+      handConds.push(cond);
+    }
+  }
+
+  return { auctionConds, handConds };
+}
+
+function negateCondition(condition: RuleCondition): RuleCondition {
+  return {
+    name: `${NEGATION_PREFIX}${condition.name}`,
+    label: `Not: ${condition.label}`,
+    category: condition.category,
+    test(ctx: BiddingContext) {
+      return !condition.test(ctx);
+    },
+    describe(ctx: BiddingContext) {
+      return `Not: ${condition.describe(ctx)}`;
+    },
+  };
+}
 
 /**
  * Check if a condition is a pure auction check using the `category` field.
@@ -21,7 +75,7 @@ export function isAuctionCondition(condition: RuleCondition): condition is Aucti
 }
 
 /**
- * Walk all paths to BidNodes, collecting accumulated conditions along each path.
+ * Walk all paths to IntentNodes, collecting accumulated conditions along each path.
  * Returns ConditionedBiddingRule[] compatible with the flat evaluation system.
  *
  * Conditions are split: pure auction conditions (auctionMatches, isOpener, etc.)
@@ -30,37 +84,8 @@ export function isAuctionCondition(condition: RuleCondition): condition is Aucti
  * Constraint: tree must be a strict tree (no shared node references across branches).
  * DAG structure would produce duplicate/incorrect flattened paths.
  */
-export function flattenTree(tree: ConventionTreeRoot): readonly ConditionedBiddingRule[] {
-  if (tree.type === "auction-slots") {
-    return flattenSlotTree(tree);
-  }
+export function flattenTree(tree: RuleNode): readonly ConditionedBiddingRule[] {
   return flattenBinaryTree(tree);
-}
-
-function flattenSlotTree(tree: AuctionSlotNode): ConditionedBiddingRule[] {
-  const rules: ConditionedBiddingRule[] = [];
-
-  function walkSlots(
-    node: AuctionSlotNode,
-    auctionConds: RuleCondition[],
-  ): void {
-    for (const s of node.slots) {
-      const slotAuctionConds = [...auctionConds, s.condition];
-      if (s.child.type === "auction-slots") {
-        walkSlots(s.child, slotAuctionConds);
-      } else {
-        // Hand subtree — flatten it, prepending slot conditions
-        walkBinaryNode(s.child as RuleNode, slotAuctionConds, rules);
-      }
-    }
-    // Default child
-    if (node.defaultChild) {
-      walkBinaryNode(node.defaultChild as RuleNode, auctionConds, rules);
-    }
-  }
-
-  walkSlots(tree, []);
-  return rules;
 }
 
 function walkBinaryNode(
@@ -72,40 +97,21 @@ function walkBinaryNode(
     switch (n.type) {
       case "fallback":
         return;
-      case "bid": {
-        const auctionConds: RuleCondition[] = [];
-        const handConds: RuleCondition[] = [];
-        for (const cond of conditions) {
-          if (isAuctionCondition(cond)) {
-            auctionConds.push(cond);
-          } else {
-            handConds.push(cond);
-          }
-        }
+      case "intent": {
+        const { auctionConds, handConds } = splitConditionGroups(conditions);
         rules.push(
           conditionedRule({
             name: n.name,
             auctionConditions: auctionConds,
             handConditions: handConds,
-            call: n.call,
+            call: n.defaultCall,
           }),
         );
         return;
       }
       case "decision": {
         walk(n.yes, [...conditions, n.condition]);
-        const negated: RuleCondition = {
-          name: `${NEGATION_PREFIX}${n.condition.name}`,
-          label: `Not: ${n.condition.label}`,
-          category: n.condition.category,
-          test(ctx: BiddingContext) {
-            return !n.condition.test(ctx);
-          },
-          describe(ctx: BiddingContext) {
-            return `Not: ${n.condition.describe(ctx)}`;
-          },
-        };
-        walk(n.no, [...conditions, negated]);
+        walk(n.no, [...conditions, negateCondition(n.condition)]);
         return;
       }
       default: {
@@ -128,23 +134,15 @@ function flattenBinaryTree(tree: RuleNode): ConditionedBiddingRule[] {
       case "fallback":
         // Dead end — no rule produced
         return;
-      case "bid": {
-        // Reached a bid leaf — split accumulated conditions by type
-        const auctionConds: RuleCondition[] = [];
-        const handConds: RuleCondition[] = [];
-        for (const cond of conditions) {
-          if (isAuctionCondition(cond)) {
-            auctionConds.push(cond);
-          } else {
-            handConds.push(cond);
-          }
-        }
+      case "intent": {
+        // IntentNode uses defaultCall for flatten compatibility
+        const { auctionConds, handConds } = splitConditionGroups(conditions);
         rules.push(
           conditionedRule({
             name: node.name,
             auctionConditions: auctionConds,
             handConditions: handConds,
-            call: node.call,
+            call: node.defaultCall,
           }),
         );
         return;
@@ -155,18 +153,7 @@ function flattenBinaryTree(tree: RuleNode): ConditionedBiddingRule[] {
         // No branch: add the negated condition (via a not() wrapper)
         // Note: .inference is intentionally omitted — negated bounds need inverted
         // inference types (e.g., not-hcp-min → hcp-max). Wire this in Phase 1.5(c) cleanup.
-        const negated: RuleCondition = {
-          name: `${NEGATION_PREFIX}${node.condition.name}`,
-          label: `Not: ${node.condition.label}`,
-          category: node.condition.category,
-          test(ctx: BiddingContext) {
-            return !node.condition.test(ctx);
-          },
-          describe(ctx: BiddingContext) {
-            return `Not: ${node.condition.describe(ctx)}`;
-          },
-        };
-        walk(node.no, [...conditions, negated]);
+        walk(node.no, [...conditions, negateCondition(node.condition)]);
         return;
       }
       default: {
@@ -237,7 +224,7 @@ export function flattenProtocol(proto: ConventionProtocol): readonly Conditioned
 
 /**
  * Maps a TreeEvalResult to the existing BiddingRuleResult shape.
- * Returns null if no BidNode matched.
+ * Returns null if no IntentNode matched.
  *
  * Uses `visited` (all decisions in traversal order) for conditionResults and explanation,
  * matching the flat system's buildExplanation() format (both ✓ passing and ✗ failing).
@@ -259,8 +246,10 @@ export function treeResultToBiddingRuleResult(
     .map((r) => `${r.passed ? "✓" : "✗"} ${r.description}`)
     .join("; ");
 
+  const call = result.matched.defaultCall(context);
+
   return {
-    call: result.matched.call(context),
+    call,
     rule: result.matched.name,
     explanation,
     meaning: result.matched.meaning,

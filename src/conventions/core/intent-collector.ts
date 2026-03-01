@@ -7,7 +7,7 @@ import type { RuleNode } from "./rule-tree";
 import type { IntentNode } from "./intent/intent-node";
 import type { SemanticIntent } from "./intent/semantic-intent";
 import type { BidMetadata, BidAlert } from "./rule-tree";
-import { isAuctionCondition } from "./tree-compat";
+import { isAuctionCondition, findHandSubtreeRoot } from "./tree-compat";
 
 /** A hand condition on the path to an intent, with the branch direction required. */
 export interface PathConditionEntry {
@@ -31,25 +31,6 @@ export interface CollectedIntent {
   /** Priority for selection. "preferred" = selected when no matched candidate.
    *  "alternative" = never auto-selected (informational only). */
   readonly priority?: "preferred" | "alternative";
-}
-
-/**
- * Walk past auction conditions to find the hand subtree root.
- * Follows the evaluated path (YES/NO as the condition dictates).
- * Replicates findHandSubtreeRoot from sibling-finder.ts to avoid coupling.
- */
-function findHandSubtreeRoot(tree: RuleNode, context: BiddingContext): RuleNode {
-  let node: RuleNode = tree;
-
-  for (;;) {
-    if (node.type !== "decision") return node;
-
-    if (isAuctionCondition(node.condition)) {
-      node = node.condition.test(context) ? node.yes : node.no;
-    } else {
-      return node;
-    }
-  }
 }
 
 /**

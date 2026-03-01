@@ -27,6 +27,9 @@ export {
   bidMade,
   doubleMade,
   bidMadeAtLevel,
+  // Partnership-aware milestone conditions
+  partnerBidMade,
+  opponentBidMade,
   // Seat-specific conditions for seatFilters
   opponentOpenedAt,
   seatHasActed,
@@ -46,15 +49,13 @@ export {
   // Pure auction condition factories
   notPassedHand,
   opponentActed,
+  opponentDoubled,
   partnerOpenedMajor,
   partnerOpenedMinor,
   lastEntryIsPass,
 } from "./auction-conditions";
 
 export {
-  // Counting helpers
-  countAcesInHand,
-  countKingsInHand,
   // Vulnerability conditions
   isVulnerable,
   isNotVulnerable,
@@ -68,11 +69,6 @@ export {
   suitMin,
   suitBelow,
   anySuitMin,
-  // Counting conditions
-  aceCount,
-  aceCountAny,
-  kingCount,
-  kingCountAny,
   // Shape conditions
   hasShortage,
   noVoid,
@@ -84,15 +80,8 @@ export {
   majorSupport,
   hasSingleLongSuit,
   isTwoSuited,
-  // Gerber-specific compound conditions
-  gerberSignoffCondition,
-  gerberKingAskCondition,
-  // DONT-specific conditions
-  bothMajors,
-  diamondsPlusMajor,
-  clubsPlusHigher,
-  advanceSupportFor,
-  advanceLackSupport,
+  // Suit quality
+  suitQuality,
   // SAYC-extracted condition factories
   majorSupportN,
   partnerRaisedOurMajor,
