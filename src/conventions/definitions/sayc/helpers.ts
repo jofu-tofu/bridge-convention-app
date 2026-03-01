@@ -8,8 +8,9 @@ import {
   lastBid,
   bidIsHigher,
 } from "../../core/conditions";
-import { bid } from "../../core/rule-tree";
-import type { BidNode } from "../../core/rule-tree";
+import { intentBid } from "../../core/intent/intent-node";
+import type { IntentNode } from "../../core/intent/intent-node";
+import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { auctionMatchesExact } from "../../../engine/auction-helpers";
 
 const pass: Call = { type: "pass" };
@@ -126,4 +127,4 @@ export function openerAcceptTransferCall(ctx: BiddingContext): Call {
 
 // SAYC catch-all: every terminal in SAYC produces Pass (not fallback/null)
 // because SAYC is a catch-all convention — any hand that enters produces a bid or pass.
-export const saycPass = (): BidNode => bid("sayc-pass", "Passes with no suitable action available", (): Call => pass);
+export const saycPass = (): IntentNode => intentBid("sayc-pass", "Passes with no suitable action available", { type: SemanticIntentType.Signoff, params: {} }, (): Call => pass);

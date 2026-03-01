@@ -5,6 +5,10 @@ import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { staymanProtocol } from "./tree";
 import { staymanExplanations } from "./explanations";
+import { staymanTransitionRules } from "./transitions";
+import { baselineTransitionRules } from "../../core/dialogue/baseline-transitions";
+import { staymanResolvers } from "./resolvers";
+import { staymanOverlays } from "./overlays";
 
 /** Stayman deal constraints: opener 15-17 balanced no 5M, responder 8+ with 4+M */
 export const staymanDealConstraints: DealConstraints = {
@@ -52,4 +56,8 @@ export const staymanConfig: ConventionConfig = {
   protocol: staymanProtocol,
   explanations: staymanExplanations,
   defaultAuction: staymanDefaultAuction,
+  transitionRules: staymanTransitionRules,
+  baselineRules: baselineTransitionRules,
+  intentResolvers: staymanResolvers,
+  overlays: staymanOverlays,
 };

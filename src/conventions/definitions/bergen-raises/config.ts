@@ -6,6 +6,9 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { getSuitLength } from "../../../engine/hand-evaluator";
 import { bergenProtocol } from "./tree";
 import { bergenExplanations } from "./explanations";
+import { bergenTransitionRules } from "./transitions";
+import { baselineTransitionRules } from "../../core/dialogue/baseline-transitions";
+import { bergenResolvers } from "./resolvers";
 
 // ─── Deal Constraints ─────────────────────────────────────────
 
@@ -53,4 +56,7 @@ export const bergenConfig: ConventionConfig = {
   protocol: bergenProtocol,
   explanations: bergenExplanations,
   defaultAuction: bergenDefaultAuction,
+  transitionRules: bergenTransitionRules,
+  baselineRules: baselineTransitionRules,
+  intentResolvers: bergenResolvers,
 };
