@@ -1,15 +1,28 @@
 import type {
   RuleNode,
+  HandNode,
   DecisionMetadata,
   BidMetadata,
   ConventionExplanations,
-  ConventionTreeRoot,
-  AuctionSlotNode,
 } from "../conventions/core/rule-tree";
 import type { BiddingContext } from "../conventions/core/types";
 import type { Call } from "../engine/types";
 import { STRAIN_SYMBOLS } from "./format";
 import { BidSuit } from "../engine/types";
+
+/** Context for overlay-aware tree display. */
+export interface TreeDisplayOverlayContext {
+  /** Replacement tree from active overlay (flattened instead of base tree). */
+  readonly replacementTree?: HandNode;
+  /** Whether the system is off (overlay disabled standard responses). */
+  readonly systemOff?: boolean;
+  /** Intent node names suppressed by overlay hooks. Display marks these as inactive. */
+  readonly suppressedIntents?: ReadonlySet<string>;
+  /** Intent node names with overridden calls (resolver override changed the bid). */
+  readonly overriddenIntents?: ReadonlySet<string>;
+  /** Intent names added by overlay hooks (not in the base tree). */
+  readonly addedIntents?: readonly { readonly name: string; readonly meaning: string }[];
+}
 
 export interface TreeDisplayRow {
   readonly id: string;
@@ -33,6 +46,12 @@ export interface TreeDisplayRow {
   readonly bidMetadata: BidMetadata | null;
   /** Denial implication from parent decision node (only on NO-branch rows). */
   readonly denialImplication: string | null;
+  /** Whether the convention system is off for this display context. */
+  readonly systemOff?: boolean;
+  /** Whether this intent was suppressed by an overlay hook. */
+  readonly suppressedByOverlay?: boolean;
+  /** Whether this intent's call was overridden by an overlay resolver. */
+  readonly overriddenByOverlay?: boolean;
 }
 
 interface StackEntry {
@@ -162,87 +181,61 @@ function computeIncrementalLabel(
  *  Auction condition labels are transformed: formatted with suit symbols and made
  *  incremental relative to the nearest ancestor auction node. */
 export function flattenTreeForDisplay(
-  tree: ConventionTreeRoot,
+  tree: RuleNode,
   explanations?: ConventionExplanations,
+  overlayContext?: TreeDisplayOverlayContext,
 ): TreeDisplayRow[] {
-  if (tree.type === "auction-slots") {
-    return flattenSlotTreeForDisplay(tree, explanations);
+  const effectiveTree = overlayContext?.replacementTree ?? tree;
+  const systemOff = overlayContext?.systemOff;
+  const rows = flattenBinaryTreeForDisplay(effectiveTree, explanations, systemOff);
+
+  // Mark suppressed/overridden intents from overlay context
+  if (overlayContext?.suppressedIntents || overlayContext?.overriddenIntents) {
+    const suppressed = overlayContext.suppressedIntents;
+    const overridden = overlayContext.overriddenIntents;
+    return rows.map(row => {
+      if (row.type !== "bid") return row;
+      return {
+        ...row,
+        suppressedByOverlay: suppressed?.has(row.name) || undefined,
+        overriddenByOverlay: overridden?.has(row.name) || undefined,
+      };
+    });
   }
-  return flattenBinaryTreeForDisplay(tree, explanations);
-}
 
-function flattenSlotTreeForDisplay(
-  tree: AuctionSlotNode,
-  explanations?: ConventionExplanations,
-): TreeDisplayRow[] {
-  const rows: TreeDisplayRow[] = [];
-
-  function walkSlots(
-    node: AuctionSlotNode,
-    depth: number,
-    parentId: string | null,
-    ancestorAlts: string[][],
-  ): void {
-    for (const s of node.slots) {
-      const id = `row-${rows.length}`;
-      const rawLabel = s.label ?? s.condition.label;
-      const parsed = parseAuctionLabel(rawLabel);
-      let conditionLabel = rawLabel;
-      let childAncestorAlts = ancestorAlts;
-
-      if (parsed) {
-        conditionLabel = computeIncrementalLabel(parsed, ancestorAlts);
-        childAncestorAlts = parsed;
-      }
-
-      const slotTeaching =
-        explanations?.conditions?.[s.condition.name] ??
-        s.condition.teachingNote ??
-        null;
-
+  // Append added intents from overlay as additional bid rows
+  if (overlayContext?.addedIntents && overlayContext.addedIntents.length > 0) {
+    const maxDepth = rows.reduce((max, r) => Math.max(max, r.depth), 0);
+    for (const added of overlayContext.addedIntents) {
       rows.push({
-        id,
-        depth,
-        type: "decision",
-        name: s.name,
-        conditionLabel,
-        conditionCategory: "auction",
-        fullConditionLabel: rawLabel,
-        meaning: null,
+        id: `row-${rows.length}`,
+        depth: maxDepth,
+        type: "bid",
+        name: added.name,
+        conditionLabel: null,
+        conditionCategory: null,
+        fullConditionLabel: null,
+        meaning: added.meaning,
         callResolver: null,
-        hasChildren: true,
-        parentId,
+        hasChildren: false,
+        parentId: null,
         branch: null,
-        teachingExplanation: slotTeaching,
+        teachingExplanation: null,
         decisionMetadata: null,
         bidMetadata: null,
         denialImplication: null,
+        systemOff,
       });
-
-      if (s.child.type === "auction-slots") {
-        walkSlots(s.child, depth + 1, id, childAncestorAlts);
-      } else {
-        // Hand subtree — flatten using binary tree display
-        const handRows = flattenBinaryTreeForDisplay(s.child as RuleNode, explanations);
-        for (const row of handRows) {
-          rows.push({
-            ...row,
-            id: `row-${rows.length}`,
-            depth: row.depth + depth + 1,
-            parentId: row.parentId === null ? id : row.parentId,
-          });
-        }
-      }
     }
   }
 
-  walkSlots(tree, 0, null, []);
   return rows;
 }
 
 function flattenBinaryTreeForDisplay(
   tree: RuleNode,
   explanations?: ConventionExplanations,
+  systemOff?: boolean,
 ): TreeDisplayRow[] {
   const rows: TreeDisplayRow[] = [];
   const stack: StackEntry[] = [
@@ -312,6 +305,7 @@ function flattenBinaryTreeForDisplay(
           decisionMetadata: resolvedMetadata,
           bidMetadata: null,
           denialImplication,
+          systemOff,
         });
         // NO branch first (pushed first = popped last in DFS), then YES
         // Auction chains: flatten NO-branch auction siblings to same depth
@@ -356,7 +350,7 @@ function flattenBinaryTreeForDisplay(
         break;
       }
 
-      case "bid":
+      case "intent":
         rows.push({
           id,
           depth,
@@ -366,7 +360,7 @@ function flattenBinaryTreeForDisplay(
           conditionCategory: null,
           fullConditionLabel: null,
           meaning: node.meaning,
-          callResolver: node.call,
+          callResolver: node.defaultCall,
           hasChildren: false,
           parentId,
           branch,
@@ -375,6 +369,7 @@ function flattenBinaryTreeForDisplay(
           bidMetadata:
             explanations?.bids?.[node.name] ?? node.metadata ?? null,
           denialImplication,
+          systemOff,
         });
         break;
 
@@ -397,6 +392,7 @@ function flattenBinaryTreeForDisplay(
             decisionMetadata: null,
             bidMetadata: null,
             denialImplication,
+            systemOff,
           });
         }
         break;

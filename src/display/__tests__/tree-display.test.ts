@@ -2,11 +2,13 @@ import { describe, it, expect } from "vitest";
 import { flattenTreeForDisplay, formatBidToken } from "../tree-display";
 import type { TreeDisplayRow as _TreeDisplayRow } from "../tree-display";
 import {
-  bid,
   decision,
   fallback,
+  handDecision,
 } from "../../conventions/core/rule-tree";
 import type { ConventionExplanations } from "../../conventions/core/rule-tree";
+import { intentBid } from "../../conventions/core/intent/intent-node";
+import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
 import {
   hcpMin,
   suitMin,
@@ -17,7 +19,6 @@ import {
 import type { BiddingContext } from "../../conventions/core/types";
 import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
-// gerberConfig, staymanConfig, isTreeConvention removed — all conventions migrated to protocol
 
 const makeCall =
   (level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit) =>
@@ -26,6 +27,12 @@ const makeCall =
     level,
     strain,
   });
+
+/** Test helper: wraps intentBid with a default Signoff intent for tree-display tests. */
+import type { BidMetadata } from "../../conventions/core/rule-tree";
+function bid(name: string, meaning: string, callFn: (ctx: BiddingContext) => Call, metadata?: BidMetadata) {
+  return intentBid(name, meaning, { type: SemanticIntentType.Signoff, params: {} }, callFn, metadata);
+}
 
 describe("flattenTreeForDisplay", () => {
   it("returns one row for a single BidNode", () => {
@@ -781,5 +788,104 @@ describe("explanations parameter", () => {
     expect(decisionRow.decisionMetadata).toEqual({
       whyThisMatters: "Explanations file decision metadata wins",
     });
+  });
+});
+
+describe("overlay context support", () => {
+  const baseTree = handDecision(
+    "base-check",
+    hcpMin(8),
+    intentBid("base-bid", "Base bid",
+      { type: SemanticIntentType.Signoff, params: {} },
+      (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+    fallback("base-weak"),
+  );
+
+  const replacementTree = handDecision(
+    "overlay-check",
+    hcpMin(5),
+    intentBid("overlay-bid", "Overlay bid",
+      { type: SemanticIntentType.EscapeRescue, params: {} },
+      (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
+    fallback("overlay-weak"),
+  );
+
+  it("with replacementTree: rows come from replacement tree", () => {
+    const rows = flattenTreeForDisplay(baseTree, undefined, {
+      replacementTree: replacementTree,
+    });
+    const bidRow = rows.find(r => r.type === "bid");
+    expect(bidRow).toBeDefined();
+    expect(bidRow!.name).toBe("overlay-bid");
+    // No rows from base tree
+    expect(rows.find(r => r.name === "base-bid")).toBeUndefined();
+  });
+
+  it("with overlayContext but no replacementTree: base tree used", () => {
+    const rows = flattenTreeForDisplay(baseTree, undefined, {});
+    const bidRow = rows.find(r => r.type === "bid");
+    expect(bidRow).toBeDefined();
+    expect(bidRow!.name).toBe("base-bid");
+  });
+
+  it("without overlayContext: unchanged (backward compat)", () => {
+    const rows = flattenTreeForDisplay(baseTree);
+    const bidRow = rows.find(r => r.type === "bid");
+    expect(bidRow).toBeDefined();
+    expect(bidRow!.name).toBe("base-bid");
+  });
+
+  it("systemOff indicator present when set", () => {
+    const rows = flattenTreeForDisplay(baseTree, undefined, {
+      systemOff: true,
+    });
+    // All rows should have systemOff: true
+    for (const row of rows) {
+      expect(row.systemOff).toBe(true);
+    }
+  });
+
+  it("systemOff defaults to false when not in overlayContext", () => {
+    const rows = flattenTreeForDisplay(baseTree);
+    for (const row of rows) {
+      expect(row.systemOff).toBeUndefined();
+    }
+  });
+
+  it("suppressedIntents marks matching bid rows", () => {
+    const rows = flattenTreeForDisplay(baseTree, undefined, {
+      suppressedIntents: new Set(["base-bid"]),
+    });
+    const bidRow = rows.find(r => r.type === "bid" && r.name === "base-bid");
+    expect(bidRow).toBeDefined();
+    expect(bidRow!.suppressedByOverlay).toBe(true);
+  });
+
+  it("overriddenIntents marks matching bid rows", () => {
+    const rows = flattenTreeForDisplay(baseTree, undefined, {
+      overriddenIntents: new Set(["base-bid"]),
+    });
+    const bidRow = rows.find(r => r.type === "bid" && r.name === "base-bid");
+    expect(bidRow).toBeDefined();
+    expect(bidRow!.overriddenByOverlay).toBe(true);
+  });
+
+  it("non-matching intent names are not marked", () => {
+    const rows = flattenTreeForDisplay(baseTree, undefined, {
+      suppressedIntents: new Set(["nonexistent-bid"]),
+    });
+    const bidRow = rows.find(r => r.type === "bid" && r.name === "base-bid");
+    expect(bidRow).toBeDefined();
+    expect(bidRow!.suppressedByOverlay).toBeUndefined();
+  });
+
+  it("addedIntents appear as extra bid rows", () => {
+    const rows = flattenTreeForDisplay(baseTree, undefined, {
+      addedIntents: [{ name: "emergency-bid", meaning: "Emergency escape" }],
+    });
+    const addedRow = rows.find(r => r.name === "emergency-bid");
+    expect(addedRow).toBeDefined();
+    expect(addedRow!.type).toBe("bid");
+    expect(addedRow!.meaning).toBe("Emergency escape");
   });
 });

@@ -146,7 +146,7 @@ describe("generateCandidates", () => {
 
     // Create a config with a resolver that returns a different call
     const resolvers: IntentResolverMap = new Map([
-      [SemanticIntentType.AskForMajor, () => ({ call: bid2H })],
+      [SemanticIntentType.AskForMajor, () => ({ status: "resolved" as const, calls: [{ call: bid2H }] })],
     ]);
     const configWithResolver = {
       ...staymanConfig,
@@ -478,7 +478,7 @@ describe("multi-encoding resolvers", () => {
   it("resolver returns [2C, 3C], 2C illegal → 3C selected", () => {
     // Auction "1NT P 2H P" makes 2C illegal (below 2H)
     const resolvers: IntentResolverMap = new Map([
-      ["multi-test", () => [{ call: bid2C }, { call: bid3C }]],
+      ["multi-test", () => ({ status: "resolved" as const, calls: [{ call: bid2C }, { call: bid3C }] })],
     ]);
     const node = makeNode("multi-test", bid2C);
     const { effective, treeResult } = makeEffective(node, ["1NT", "P", "2H", "P"], resolvers);
@@ -494,7 +494,7 @@ describe("multi-encoding resolvers", () => {
   it("resolver returns [2C, 3C], both legal → first (2C) used", () => {
     // Auction "1NT P" — both 2C and 3C are legal
     const resolvers: IntentResolverMap = new Map([
-      ["multi-test", () => [{ call: bid2C }, { call: bid3C }]],
+      ["multi-test", () => ({ status: "resolved" as const, calls: [{ call: bid2C }, { call: bid3C }] })],
     ]);
     const node = makeNode("multi-test", bid2C);
     const { effective, treeResult } = makeEffective(node, ["1NT", "P"], resolvers);
@@ -506,9 +506,9 @@ describe("multi-encoding resolvers", () => {
     expect(candidates[0]!.isDefaultCall).toBe(false);
   });
 
-  it("single ResolvedIntent backward compat", () => {
+  it("single resolved call", () => {
     const resolvers: IntentResolverMap = new Map([
-      ["multi-test", () => ({ call: bid2H })],
+      ["multi-test", () => ({ status: "resolved" as const, calls: [{ call: bid2H }] })],
     ]);
     const node = makeNode("multi-test", bid2C);
     const { effective, treeResult } = makeEffective(node, ["1NT", "P"], resolvers);
@@ -520,9 +520,9 @@ describe("multi-encoding resolvers", () => {
     expect(candidates[0]!.isDefaultCall).toBe(false);
   });
 
-  it("null return → defaultCall used", () => {
+  it("use_default → defaultCall used", () => {
     const resolvers: IntentResolverMap = new Map([
-      ["multi-test", () => null],
+      ["multi-test", () => ({ status: "use_default" as const })],
     ]);
     const node = makeNode("multi-test", bid2C);
     const { effective, treeResult } = makeEffective(node, ["1NT", "P"], resolvers);
@@ -534,9 +534,9 @@ describe("multi-encoding resolvers", () => {
     expect(candidates[0]!.isDefaultCall).toBe(true);
   });
 
-  it("empty array → treated as null, defaultCall used", () => {
+  it("resolved with empty calls → treated as use_default, defaultCall used", () => {
     const resolvers: IntentResolverMap = new Map([
-      ["multi-test", () => []],
+      ["multi-test", () => ({ status: "resolved" as const, calls: [] })],
     ]);
     const node = makeNode("multi-test", bid2C);
     const { effective, treeResult } = makeEffective(node, ["1NT", "P"], resolvers);

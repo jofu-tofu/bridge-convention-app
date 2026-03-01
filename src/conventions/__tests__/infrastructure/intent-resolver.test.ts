@@ -164,13 +164,15 @@ describe("IntentNode + Intent Resolver", () => {
       const resolvers: IntentResolverMap = new Map([
         [
           SemanticIntentType.ShowHeldSuit,
-          (i, _state, _ctx) => ({
-            call: {
-              type: "bid" as const,
-              level: 2 as const,
-              strain: i.params["suit"] === "hearts" ? BidSuit.Hearts : BidSuit.Spades,
-            },
-            effect: {},
+          (i) => ({
+            status: "resolved" as const,
+            calls: [{
+              call: {
+                type: "bid" as const,
+                level: 2 as const,
+                strain: i.params["suit"] === "hearts" ? BidSuit.Hearts : BidSuit.Spades,
+              },
+            }],
           }),
         ],
       ]);
@@ -179,7 +181,10 @@ describe("IntentNode + Intent Resolver", () => {
       const result = resolveIntent(intent, ntDialogueState, ctx, resolvers);
 
       expect(result).not.toBeNull();
-      expect(result![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
+      expect(result!.status).toBe("resolved");
+      if (result!.status === "resolved") {
+        expect(result!.calls[0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
+      }
     });
 
     it("returns null for unregistered intent type", () => {
@@ -196,20 +201,21 @@ describe("IntentNode + Intent Resolver", () => {
       expect(result).toBeNull();
     });
 
-    it("returns null when resolver returns null", () => {
+    it("returns declined when resolver declines", () => {
       const intent: SemanticIntent = {
         type: SemanticIntentType.AskForMajor,
         params: {},
       };
 
       const resolvers: IntentResolverMap = new Map([
-        [SemanticIntentType.AskForMajor, () => null],
+        [SemanticIntentType.AskForMajor, () => ({ status: "declined" as const })],
       ]);
 
       const ctx = makeContext(responderHand(), ["1NT", "P"]);
       const result = resolveIntent(intent, ntDialogueState, ctx, resolvers);
 
-      expect(result).toBeNull();
+      expect(result).not.toBeNull();
+      expect(result!.status).toBe("declined");
     });
   });
 
@@ -235,7 +241,10 @@ describe("IntentNode + Intent Resolver", () => {
       const result = resolveIntent(intent, doubledState, ctx, staymanResolvers);
 
       expect(result).not.toBeNull();
-      expect(result![0]!.call).toEqual({ type: "redouble" });
+      expect(result!.status).toBe("resolved");
+      if (result!.status === "resolved") {
+        expect(result!.calls[0]!.call).toEqual({ type: "redouble" });
+      }
     });
 
     it("EscapeRescue resolves to 2-level suit bid", () => {
@@ -247,7 +256,10 @@ describe("IntentNode + Intent Resolver", () => {
       const result = resolveIntent(intent, doubledState, ctx, staymanResolvers);
 
       expect(result).not.toBeNull();
-      expect(result![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
+      expect(result!.status).toBe("resolved");
+      if (result!.status === "resolved") {
+        expect(result!.calls[0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
+      }
     });
 
     it("CompetitivePass resolves to pass", () => {
@@ -259,7 +271,10 @@ describe("IntentNode + Intent Resolver", () => {
       const result = resolveIntent(intent, doubledState, ctx, staymanResolvers);
 
       expect(result).not.toBeNull();
-      expect(result![0]!.call).toEqual({ type: "pass" });
+      expect(result!.status).toBe("resolved");
+      if (result!.status === "resolved") {
+        expect(result!.calls[0]!.call).toEqual({ type: "pass" });
+      }
     });
 
     it("AskForMajor resolves to 2C under Modified", () => {
@@ -271,10 +286,13 @@ describe("IntentNode + Intent Resolver", () => {
       const result = resolveIntent(intent, doubledState, ctx, staymanResolvers);
 
       expect(result).not.toBeNull();
-      expect(result![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
+      expect(result!.status).toBe("resolved");
+      if (result!.status === "resolved") {
+        expect(result!.calls[0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
+      }
     });
 
-    it("AskForMajor returns null under Off (system disabled)", () => {
+    it("AskForMajor returns declined under Off (system disabled)", () => {
       const intent: SemanticIntent = {
         type: SemanticIntentType.AskForMajor,
         params: {},
@@ -282,7 +300,8 @@ describe("IntentNode + Intent Resolver", () => {
       const ctx = makeContext(responderHand(), ["1NT", "2H"]);
       const result = resolveIntent(intent, overcalledState, ctx, staymanResolvers);
 
-      expect(result).toBeNull();
+      expect(result).not.toBeNull();
+      expect(result!.status).toBe("declined");
     });
   });
 

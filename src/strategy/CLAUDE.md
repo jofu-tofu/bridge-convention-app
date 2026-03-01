@@ -14,6 +14,8 @@ AI bidding and play strategies. Consumer of `conventions/core/`, `engine/`, `inf
 strategy/
   bidding/
     convention-strategy.ts   conventionToStrategy() — wraps ConventionConfig as BiddingStrategy
+    strategy-chain.ts        createStrategyChain() — tries strategies in order, first non-null wins
+    natural-fallback.ts      naturalFallbackStrategy — 6+ HCP with 5+ suit → bid cheapest legal
     pass-strategy.ts         Always-pass placeholder strategy
   play/
     random-play.ts           randomPlay() + randomPlayStrategy (PlayStrategy wrapper)
@@ -21,9 +23,9 @@ strategy/
   __tests__/                 Tests for all strategies
 ```
 
-**Convention adapter:** `conventionToStrategy()` wraps a `ConventionConfig` as a `BiddingStrategy`. Maps `TreeEvalResult` to `TreeEvalSummary` DTO with depth/parent enrichment, fork point extraction, and sibling alternatives. Exports `mapVisitedWithStructure()`, `extractForkPoint()` for tree-to-DTO mapping.
+**Convention adapter:** `conventionToStrategy()` wraps a `ConventionConfig` as a `BiddingStrategy`. Maps `TreeEvalResult` to `TreeEvalSummary` DTO with depth/parent enrichment, fork point extraction, sibling alternatives, and candidate bids. Exports `mapVisitedWithStructure()`, `extractForkPoint()` for tree-to-DTO mapping. **Candidate pipeline:** Uses `buildEffectiveContext()` to bundle context + dialogue state + active overlays, then `generateCandidates()` to resolve all candidates through the intent system (returns `CandidateGenerationResult` with `matchedIntentSuppressed` flag), then `selectMatchedCandidate()` to pick the matched candidate's resolved call. When `matchedIntentSuppressed && !selected`, returns `null` (convention declines to bid, deferring to next strategy). Falls back to `defaultCall` if no candidate is selected or resolver returns null/illegal/throws. Imports from `conventions/core/`: `buildEffectiveContext`, `generateCandidates`, `selectMatchedCandidate`.
 
-**Tree DTO pipeline:** `TreeEvalResult` (conventions/core/) -> mapped by `mapTreeEvalResult(result, tree, context)` -> `TreeEvalSummary` (shared/types.ts) -> `BidResult.treePath` -> `BidHistoryEntry.treePath` -> UI. `mapTreeEvalResult` calls `findSiblingBids()` from conventions/core/ with try/catch for production safety.
+**Tree DTO pipeline:** `TreeEvalResult` (conventions/core/) -> mapped by `mapTreeEvalResult(result, tree, context, conventionId?, roundName?)` -> `TreeEvalSummary` (shared/types.ts) -> `BidResult.treePath` -> `BidHistoryEntry.treePath` -> UI. `mapTreeEvalResult` calls `findSiblingBids()` and `findCandidateBids()` from conventions/core/ with try/catch for production safety. `TreeEvalSummary.candidates` carries `CandidateBid[]` with intent + source metadata alongside backward-compatible `siblings`.
 
 **Heuristic play chain** (first non-null wins): opening-lead -> second-hand-low -> third-hand-high -> cover-honor-with-honor -> trump-management -> discard-management -> default-lowest.
 
@@ -35,6 +37,8 @@ strategy/
 ## Gotchas
 
 - `conventionToStrategy` maps `BiddingRuleResult.rule` to `BidResult.ruleName` (field name change)
+- **`systemMode` guard in resolvers:** Convention `IntentResolverFn` implementations that produce conventional/artificial calls must check `state.systemMode === SystemMode.Off` and return `{ status: "declined" }` — this excludes the candidate entirely when the system is off (e.g., after an opponent overcall). Do NOT return `{ status: "use_default" }` which would leak the defaultCall. See `stayman/resolvers.ts` for the pattern.
+- **EvaluationTrace:** `conventionToStrategy()` attaches an `EvaluationTrace` DTO to every `BidResult`. `createStrategyChain()` records strategy attempts on the trace. Always-on (not DEV-gated). `TraceCollector` builder in `trace-collector.ts`.
 - Tests use `clearRegistry()`/`registerConvention()` in `beforeEach` for isolation
 
 ---
@@ -58,4 +62,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `bidding/convention-strategy.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-25 | last-audited=2026-02-25 | version=2 | dir-commits-at-audit=0 | tree-sig=dirs:4,files:8,exts:ts:7,md:1 -->
+<!-- context-layer: generated=2026-02-25 | last-audited=2026-03-01 | version=4 | dir-commits-at-audit=0 | tree-sig=dirs:4,files:8,exts:ts:7,md:1 -->

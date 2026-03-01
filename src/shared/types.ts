@@ -84,8 +84,38 @@ export interface SiblingConditionDetail {
 /** A bid that was available in the same auction context but rejected for this hand. */
 export interface SiblingBid {
   readonly bidName: string;
+  readonly nodeId: string;
   readonly meaning: string;
   readonly call: Call;
+  readonly failedConditions: readonly SiblingConditionDetail[];
+}
+
+/** A semantically enriched bid candidate — extends SiblingBid with intent + source metadata. */
+export interface CandidateBid extends SiblingBid {
+  readonly intent: {
+    readonly type: string; // SemanticIntentType value — consumers import enum from conventions/ for matching
+    readonly params: Readonly<Record<string, string | number | boolean>>;
+  };
+  readonly source: {
+    readonly conventionId: string;
+    readonly roundName?: string; // from ProtocolRound.name
+    readonly nodeName: string; // from IntentNode.name
+  };
+  readonly explanation?: string; // from ConventionExplanations if available
+}
+
+/** Strategy-resolved candidate — what the system actually considered for this auction+hand.
+ *  Serializable DTO (no function refs) from ResolvedCandidate in candidate-generator. */
+export interface ResolvedCandidateDTO {
+  readonly bidName: string;
+  readonly meaning: string;
+  readonly call: Call;
+  readonly resolvedCall: Call;
+  readonly isDefaultCall: boolean;
+  readonly legal: boolean;
+  readonly isMatched: boolean;
+  readonly priority?: "preferred" | "alternative";
+  readonly intentType: string;
   readonly failedConditions: readonly SiblingConditionDetail[];
 }
 
@@ -94,7 +124,25 @@ export interface TreeEvalSummary {
   readonly path: readonly TreePathEntry[];
   readonly visited: readonly TreePathEntry[];
   readonly forkPoint?: TreeForkPoint;
+  /** Teaching view: base tree, defaultCall — what COULD you bid with a different hand. */
   readonly siblings?: readonly SiblingBid[];
+  readonly candidates?: readonly CandidateBid[];
+  /** Strategy view: overlay-aware, resolver-aware — what DID the system consider. */
+  readonly resolvedCandidates?: readonly ResolvedCandidateDTO[];
+}
+
+/** Structured trace of how the convention pipeline evaluated a bid.
+ *  Always-on (not DEV-gated). Plain DTO — no convention-core imports. */
+export interface EvaluationTrace {
+  readonly conventionId: string;
+  readonly protocolMatched: boolean;
+  readonly activeRound?: string;
+  readonly overlaysActivated: readonly string[];
+  readonly overlayErrors: readonly { readonly overlayId: string; readonly hook: string; readonly error: string }[];
+  readonly resolverOutcome?: "resolved" | "use_default" | "declined" | "no_resolver" | "error";
+  readonly candidateCount: number;
+  readonly selectedTier?: "matched" | "preferred" | "alternative" | "none";
+  readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "error" }[];
 }
 
 export interface BidResult {
@@ -105,6 +153,7 @@ export interface BidResult {
   readonly handSummary?: string;
   readonly conditions?: readonly ConditionDetail[];
   readonly treePath?: TreeEvalSummary;
+  readonly evaluationTrace?: EvaluationTrace;
 }
 
 /** A single entry in the bid history, shown in review/feedback screens. */

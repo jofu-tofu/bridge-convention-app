@@ -27,10 +27,16 @@ import { baselineTransitionRules } from "../../core/dialogue/baseline-transition
 import { bergenConfig } from "../../definitions/bergen-raises/config";
 import { weakTwosConfig } from "../../definitions/weak-twos/config";
 
-// Composed rules the way convention configs do
-const staymanRules = [...staymanTransitionRules, ...baselineTransitionRules];
-const bergenRules = bergenConfig.transitionRules!;
-const weakTwoRules = weakTwosConfig.transitionRules!;
+// Two-pass helpers matching production config pattern
+function computeStaymanState(auction: import("../../../engine/types").Auction) {
+  return computeDialogueState(auction, staymanTransitionRules, baselineTransitionRules);
+}
+function computeBergenState(auction: import("../../../engine/types").Auction) {
+  return computeDialogueState(auction, bergenConfig.transitionRules!, bergenConfig.baselineRules!);
+}
+function computeWeakTwoState(auction: import("../../../engine/types").Auction) {
+  return computeDialogueState(auction, weakTwosConfig.transitionRules!, weakTwosConfig.baselineRules!);
+}
 
 beforeEach(() => {
   clearRegistry();
@@ -53,7 +59,7 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
     });
 
     const protoResult = evaluateProtocol(staymanConfig.protocol!, ctx);
-    const dialogueState = computeDialogueState(auction, staymanRules);
+    const dialogueState = computeStaymanState(auction);
 
     // Protocol found an active round (responder's turn)
     expect(protoResult.activeRound).not.toBeNull();
@@ -65,7 +71,7 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
 
   it("1NT-X: dialogue competitionMode=Doubled, Stayman systemMode=Modified", () => {
     const auction = buildAuction(Seat.North, ["1NT", "X"]);
-    const dialogueState = computeDialogueState(auction, staymanRules);
+    const dialogueState = computeStaymanState(auction);
 
     expect(dialogueState.familyId).toBe("1nt");
     expect(dialogueState.competitionMode).toBe(CompetitionMode.Doubled);
@@ -75,7 +81,7 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
   it("1NT-2H overcall: dialogue systemMode=Off", () => {
     const auction = buildAuction(Seat.North, ["1NT", "2H"]);
 
-    const dialogueState = computeDialogueState(auction, staymanRules);
+    const dialogueState = computeStaymanState(auction);
 
     expect(dialogueState.familyId).toBe("1nt");
     expect(dialogueState.competitionMode).toBe(CompetitionMode.Overcalled);
@@ -93,7 +99,7 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
     });
 
     const protoResult = evaluateProtocol(bergenConfig.protocol!, ctx);
-    const dialogueState = computeDialogueState(auction, bergenRules);
+    const dialogueState = computeBergenState(auction);
 
     expect(protoResult.activeRound).not.toBeNull();
     expect(dialogueState.familyId).toBe("bergen");
@@ -102,7 +108,7 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
   it("1H-2S (Bergen interference): dialogue systemMode=Off", () => {
     const auction = buildAuction(Seat.North, ["1H", "2S"]);
 
-    const dialogueState = computeDialogueState(auction, bergenRules);
+    const dialogueState = computeBergenState(auction);
 
     // Bergen baseline: opponent overcall → system off
     expect(dialogueState.systemMode).toBe(SystemMode.Off);
@@ -128,7 +134,7 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
 
     // After opener bids 2H, dialogue should detect weak-two family
     const auctionAfterBid = buildAuction(Seat.North, ["2H"]);
-    const dialogueState = computeDialogueState(auctionAfterBid, weakTwoRules);
+    const dialogueState = computeWeakTwoState(auctionAfterBid);
     expect(dialogueState.familyId).toBe("weak-two");
   });
 });
@@ -155,7 +161,7 @@ describe("Invariant 2: Resolve-then-replay", () => {
     expect(matched?.type).toBe("intent");
 
     // Resolve intent to concrete call
-    const state = computeDialogueState(auction, staymanRules);
+    const state = computeStaymanState(auction);
     const resolved = resolveIntent(
       (matched as IntentNode).intent,
       state,
@@ -163,11 +169,14 @@ describe("Invariant 2: Resolve-then-replay", () => {
       staymanResolvers,
     );
     expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
+    expect(resolved!.status).toBe("resolved");
+    if (resolved!.status === "resolved") {
+      expect(resolved!.calls[0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
+    }
 
     // Append the resolved call and replay dialogue
     const auctionAfter = buildAuction(Seat.North, ["1NT", "P", "2C"]);
-    const stateAfter = computeDialogueState(auctionAfter, staymanRules);
+    const stateAfter = computeStaymanState(auctionAfter);
     expect(stateAfter.pendingAction).toBe(PendingAction.ShowMajor);
   });
 
@@ -189,14 +198,17 @@ describe("Invariant 2: Resolve-then-replay", () => {
     expect(matched.type).toBe("intent");
 
     // Resolve
-    const state = computeDialogueState(auction, staymanRules);
+    const state = computeStaymanState(auction);
     const resolved = resolveIntent(matched.intent, state, ctx, staymanResolvers);
     expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call.type).toBe("bid");
+    expect(resolved!.status).toBe("resolved");
+    if (resolved!.status === "resolved") {
+      expect(resolved!.calls[0]!.call.type).toBe("bid");
+    }
 
     // Append and replay
     const auctionAfter = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2H"]);
-    const stateAfter = computeDialogueState(auctionAfter, staymanRules);
+    const stateAfter = computeStaymanState(auctionAfter);
     expect(stateAfter.agreedStrain).toEqual({
       type: "suit",
       suit: "H",
@@ -222,14 +234,17 @@ describe("Invariant 2: Resolve-then-replay", () => {
     expect(matched.type).toBe("intent");
 
     // Resolve
-    const state = computeDialogueState(auction, staymanRules);
+    const state = computeStaymanState(auction);
     const resolved = resolveIntent(matched.intent, state, ctx, staymanResolvers);
     expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
+    expect(resolved!.status).toBe("resolved");
+    if (resolved!.status === "resolved") {
+      expect(resolved!.calls[0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
+    }
 
     // Append and replay
     const auctionAfter = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2D"]);
-    const stateAfter = computeDialogueState(auctionAfter, staymanRules);
+    const stateAfter = computeStaymanState(auctionAfter);
     expect(stateAfter.agreedStrain).toEqual({ type: "none" });
   });
 });
@@ -240,7 +255,7 @@ describe("Invariant 3: Cross-family competition consistency", () => {
   it("1NT-X: Stayman rules set Modified, baseline rules set Off", () => {
     const auction = buildAuction(Seat.North, ["1NT", "X"]);
 
-    const staymanState = computeDialogueState(auction, staymanRules);
+    const staymanState = computeStaymanState(auction);
     const baselineState = computeDialogueState(auction, baselineTransitionRules);
 
     // Both agree on competitionMode
@@ -256,7 +271,7 @@ describe("Invariant 3: Cross-family competition consistency", () => {
   it("1NT-2H: all rule sets agree on competitionMode=Overcalled, systemMode=Off", () => {
     const auction = buildAuction(Seat.North, ["1NT", "2H"]);
 
-    const staymanState = computeDialogueState(auction, staymanRules);
+    const staymanState = computeStaymanState(auction);
     const baselineState = computeDialogueState(auction, baselineTransitionRules);
 
     expect(staymanState.competitionMode).toBe(CompetitionMode.Overcalled);
@@ -271,7 +286,7 @@ describe("Invariant 3: Cross-family competition consistency", () => {
 describe("Invariant 4: Baseline fact preservation", () => {
   it("1NT→2C: familyId and openerSeat survive Stayman ask transition", () => {
     const auction = buildAuction(Seat.North, ["1NT", "P", "2C"]);
-    const state = computeDialogueState(auction, staymanRules);
+    const state = computeStaymanState(auction);
 
     expect(state.familyId).toBe("1nt");
     expect(state.conventionData["openerSeat"]).toBe(Seat.North);
@@ -280,7 +295,7 @@ describe("Invariant 4: Baseline fact preservation", () => {
 
   it("1NT→X: familyId and openerSeat survive interference transition", () => {
     const auction = buildAuction(Seat.North, ["1NT", "X"]);
-    const state = computeDialogueState(auction, staymanRules);
+    const state = computeStaymanState(auction);
 
     expect(state.familyId).toBe("1nt");
     expect(state.conventionData["openerSeat"]).toBe(Seat.North);
@@ -288,7 +303,7 @@ describe("Invariant 4: Baseline fact preservation", () => {
 
   it("1H→3C (Bergen constructive): familyId and openerMajor survive response transition", () => {
     const auction = buildAuction(Seat.North, ["1H", "P", "3C"]);
-    const state = computeDialogueState(auction, bergenRules);
+    const state = computeBergenState(auction);
 
     expect(state.familyId).toBe("bergen");
     expect(state.conventionData["openerMajor"]).toBe("H");
@@ -297,7 +312,7 @@ describe("Invariant 4: Baseline fact preservation", () => {
 
   it("2H→2NT (Weak Two Ogust): familyId and openingSuit survive ask transition", () => {
     const auction = buildAuction(Seat.North, ["2H", "P", "2NT"]);
-    const state = computeDialogueState(auction, weakTwoRules);
+    const state = computeWeakTwoState(auction);
 
     expect(state.familyId).toBe("weak-two");
     expect(state.conventionData["openingSuit"]).toBe("H");

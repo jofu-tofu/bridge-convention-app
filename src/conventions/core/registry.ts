@@ -10,50 +10,57 @@ import {
   isConditionedRule,
   evaluateConditions,
 } from "./condition-evaluator";
-import type { TreeConventionConfig, RuleNode, ConventionTreeRoot, BidAlert } from "./rule-tree";
-import { validateTree, validateSlotTree } from "./rule-tree";
-import type { TreeEvalResult, SlotTreeEvalResult } from "./tree-evaluator";
-import { evaluateTree, evaluateSlotTree } from "./tree-evaluator";
-import { treeResultToBiddingRuleResult, flattenTree, flattenProtocol } from "./tree-compat";
-import type { ProtocolEvalResult } from "./protocol";
+import type { RuleNode, BidAlert } from "./rule-tree";
+import type { TreeEvalResult } from "./tree-evaluator";
+import { evaluateTree } from "./tree-evaluator";
+import { treeResultToBiddingRuleResult, flattenProtocol } from "./tree-compat";
+import type { ProtocolEvalResult, SemanticTrigger } from "./protocol";
 import { validateProtocol } from "./protocol";
+import { validateOverlayPatches, collectTriggerOverrides } from "./overlay";
 import { evaluateProtocol } from "./protocol-evaluator";
-
-/** Type guard: does this convention use a rule tree? */
-export function isTreeConvention(
-  config: ConventionConfig,
-): config is TreeConventionConfig {
-  return config.ruleTree != null;
-}
-
-/** Type guard: does this convention use a protocol? */
-export function isProtocolConvention(
-  config: ConventionConfig,
-): boolean {
-  return config.protocol != null;
-}
+import { buildEffectiveContext } from "./effective-context";
+import { computeDialogueState } from "./dialogue/dialogue-manager";
+import { baselineTransitionRules } from "./dialogue/baseline-transitions";
+import { analyzeConvention } from "./diagnostics";
+import type { DiagnosticWarning } from "./diagnostics";
 
 const registry = new Map<string, ConventionConfig>();
+const diagnosticsCache = new Map<string, DiagnosticWarning[]>();
 
 export function registerConvention(config: ConventionConfig): void {
   if (registry.has(config.id)) {
     throw new Error(`Convention "${config.id}" is already registered.`);
   }
-  if (config.protocol && config.ruleTree) {
-    throw new Error(
-      `Convention "${config.id}" has both protocol and ruleTree set. Use one or the other.`,
-    );
-  }
   if (config.protocol) {
     validateProtocol(config.protocol);
-  } else if (isTreeConvention(config)) {
-    if (config.ruleTree.type === "auction-slots") {
-      validateSlotTree(config.ruleTree);
-    } else {
-      validateTree(config.ruleTree);
+  }
+  if (config.baselineRules && config.transitionRules) {
+    const baselineIds = new Set(config.baselineRules.map(r => r.id));
+    for (const rule of config.transitionRules) {
+      if (baselineIds.has(rule.id)) {
+        throw new Error(
+          `Convention "${config.id}": rule "${rule.id}" appears in both ` +
+          `transitionRules and baselineRules. When using two-pass mode, ` +
+          `transitionRules must not contain baseline rules.`,
+        );
+      }
     }
   }
+  if (config.overlays) {
+    if (!config.protocol) {
+      throw new Error(`Convention "${config.id}" has overlays but no protocol.`);
+    }
+    validateOverlayPatches(config.overlays, config.protocol);
+  }
+  // Run diagnostics at registration time (cached for test/dev consumption)
+  diagnosticsCache.set(config.id, analyzeConvention(config));
+
   registry.set(config.id, config);
+}
+
+/** Get registration-time diagnostics for a convention. Returns [] if no issues. */
+export function getDiagnostics(conventionId: string): readonly DiagnosticWarning[] {
+  return diagnosticsCache.get(conventionId) ?? [];
 }
 
 export function getConvention(id: string): ConventionConfig {
@@ -73,13 +80,15 @@ export function listConventionIds(): string[] {
   return [...registry.keys()];
 }
 
-/** Get the flattened bidding rules from a config (computed from tree on demand). */
+/** Backward-compatible helper retained for callers migrating from tree-based APIs. */
+export function isTreeConvention(config: ConventionConfig): boolean {
+  return config.protocol !== undefined;
+}
+
+/** Get the flattened bidding rules from a config (computed from protocol on demand). */
 export function getEffectiveRules(config: ConventionConfig): readonly BiddingRule[] {
   if (config.protocol) {
     return flattenProtocol(config.protocol);
-  }
-  if (isTreeConvention(config)) {
-    return flattenTree(config.ruleTree as ConventionTreeRoot);
   }
   return config.biddingRules ?? [];
 }
@@ -100,12 +109,9 @@ export interface BiddingRuleResult {
   readonly treeEvalResult?: TreeEvalResult;
   /** The tree root used for evaluation — needed by mappers that compute depth/parent info. */
   readonly treeRoot?: RuleNode;
-  /** Full slot tree evaluation result — available for slot-based conventions.
-   *  Preserved for future inference work (auction-level rejection data). */
-  readonly slotTreeResult?: SlotTreeEvalResult;
   /** Full protocol evaluation result — available for protocol-based conventions. */
   readonly protocolResult?: ProtocolEvalResult;
-  /** Alert metadata from matched BidNode — for conventional (non-natural) bids. */
+  /** Alert metadata from matched IntentNode — for conventional (non-natural) bids. */
   readonly alert?: BidAlert;
 }
 
@@ -115,52 +121,46 @@ export function evaluateBiddingRules(
 ): BiddingRuleResult | null {
   // Protocol convention dispatch
   if (config.protocol) {
-    const protoResult = evaluateProtocol(config.protocol, context);
-    const result = treeResultToBiddingRuleResult(protoResult.handResult, context);
+    // Pre-compute trigger overrides from matching overlays before protocol evaluation
+    let triggerOverrides: ReadonlyMap<string, readonly SemanticTrigger[]> | undefined;
+    if (config.overlays) {
+      const dialogueState = config.baselineRules
+        ? computeDialogueState(context.auction, config.transitionRules ?? [], config.baselineRules)
+        : computeDialogueState(context.auction, config.transitionRules ?? baselineTransitionRules);
+
+      triggerOverrides = collectTriggerOverrides(config.overlays, dialogueState);
+    }
+
+    const protoResult = evaluateProtocol(config.protocol, context, triggerOverrides);
+
+    // Apply overlay tree replacement if active
+    let handResult = protoResult.handResult;
+    let treeRoot = protoResult.handTreeRoot as RuleNode | undefined;
+    if (config.overlays && protoResult.activeRound) {
+      const effectiveCtx = buildEffectiveContext(context, config, protoResult);
+      // First overlay with replacementTree wins
+      const overlayWithTree = effectiveCtx.activeOverlays.find(o => o.replacementTree);
+      if (overlayWithTree?.replacementTree) {
+        treeRoot = overlayWithTree.replacementTree;
+        handResult = evaluateTree(treeRoot, context);
+      }
+    }
+
+    const result = treeResultToBiddingRuleResult(handResult, context);
     if (!result) return null;
     if (!isLegalCall(context.auction, result.call, context.seat)) return null;
 
-    const treeRoot = protoResult.handTreeRoot as RuleNode | undefined;
     return {
       ...result,
-      treeEvalResult: protoResult.handResult,
+      treeEvalResult: handResult,
       treeRoot,
       protocolResult: protoResult,
     };
   }
 
-  if (!isTreeConvention(config)) {
-    throw new Error(
-      `Convention "${config.id}" is not a tree or protocol convention. All conventions must use rule trees or protocols.`,
-    );
-  }
-
-  if (config.ruleTree.type === "auction-slots") {
-    // Slot tree evaluation
-    const slotResult = evaluateSlotTree(config.ruleTree, context);
-    const result = treeResultToBiddingRuleResult(slotResult.handResult, context);
-    if (!result) return null;
-    if (!isLegalCall(context.auction, result.call, context.seat)) return null;
-
-    // Extract hand subtree root from last matched slot's child
-    let treeRoot: RuleNode | undefined;
-    if (slotResult.matchedSlots.length > 0) {
-      const lastSlot = slotResult.matchedSlots[slotResult.matchedSlots.length - 1]!;
-      const child = lastSlot.matchedSlot.child;
-      if (child.type !== "auction-slots") {
-        treeRoot = child as RuleNode;
-      }
-    }
-
-    return { ...result, treeEvalResult: slotResult.handResult, treeRoot, slotTreeResult: slotResult };
-  }
-
-  // Legacy binary tree evaluation
-  const treeResult = evaluateTree(config.ruleTree, context);
-  const result = treeResultToBiddingRuleResult(treeResult, context);
-  if (!result) return null;
-  if (!isLegalCall(context.auction, result.call, context.seat)) return null;
-  return { ...result, treeEvalResult: treeResult, treeRoot: config.ruleTree };
+  throw new Error(
+    `Convention "${config.id}" has no protocol. All conventions must use protocols.`,
+  );
 }
 
 export interface DebugRuleResult {
@@ -198,4 +198,5 @@ export function evaluateAllBiddingRules(
 
 export function clearRegistry(): void {
   registry.clear();
+  diagnosticsCache.clear();
 }

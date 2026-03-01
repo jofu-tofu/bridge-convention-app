@@ -33,7 +33,7 @@ core/
   candidate-generator.ts (generateCandidates — resolves CollectedIntent proposals through intent system → ResolvedCandidate[], applies overlay patches including suppressIntent/addIntents/overrideResolver hooks)
   candidate-selector.ts (selectMatchedCandidate — picks matched candidate's resolved call from ResolvedCandidate[])
   effective-context.ts (EffectiveConventionContext — bundles raw context + config + protocol result + dialogue state + active overlay + optional BeliefData. buildEffectiveContext() factory)
-  overlay.ts (ConventionOverlayPatch type, validateOverlayPatches — overlay patches for interference/competition with optional hooks: suppressIntent, addIntents, overrideResolver)
+  overlay.ts (ConventionOverlayPatch type, validateOverlayPatches, collectTriggerOverrides — overlay patches for interference/competition with optional hooks: suppressIntent, addIntents, overrideResolver, triggerOverrides)
   context-factory.ts (createBiddingContext — canonical BiddingContext constructor)
     ↑
   registry.ts (registerConvention, getConvention, evaluateBiddingRules — dispatches protocol conventions)
@@ -124,7 +124,7 @@ __tests__/
 - `passedAfter(level, strain)` — interference protection: checks pass follows specific bid
 - Combine with `and()`, `not()`, cast result `as AuctionCondition`
 
-**Milestone condition factories:** `bidMade(level, strain)`, `doubleMade()`, `bidMadeAtLevel(level)` — seat-agnostic conditions that detect WHAT happened in the auction. Used as triggers. `passedAfter(level, strain)`, `passedAfterDouble()` — used in seatFilters for interference protection.
+**Milestone condition factories:** `bidMade(level, strain)`, `doubleMade()`, `bidMadeAtLevel(level)` — seat-agnostic conditions that detect WHAT happened in the auction. Used as triggers. `partnerBidMade(level, strain)`, `opponentBidMade(level, strain)` — actor-aware variants using `areSamePartnership()` to check WHO made the bid. Stayman uses `partnerBidMade` for NT opening triggers. `passedAfter(level, strain)`, `passedAfterDouble()` — used in seatFilters for interference protection.
 
 **Single-round conventions:** SAYC (4 triggers) uses single-round dispatch with `auctionMatches` or semantic conditions.
 
@@ -145,10 +145,11 @@ __tests__/
 - `IntentNode` — `{ type: "intent", nodeId, name, meaning, intent, defaultCall, metadata?, alert? }` (`nodeId` auto-assigned by `intentBid()` builder)
 - `SemanticIntent` — `{ type: SemanticIntentType, params }` (not a fixed universe)
 - `ResolvedIntent` — `{ call: Call }` (no effect field — DialogueState is replay-based)
-- `IntentResolverFn` — returns `ResolvedIntent | readonly ResolvedIntent[] | null`. Multi-encoding: array of alternatives tried in order (first legal wins). `resolveIntent()` normalizes to `readonly ResolvedIntent[] | null`.
+- `ResolverResult` — discriminated union: `{ status: "resolved", calls: ResolvedIntent[] }` | `{ status: "use_default" }` | `{ status: "declined" }`. "declined" excludes the candidate entirely (not a fallback to defaultCall). Do not use null to mean "declined intent" — use `{ status: "declined" }` explicitly.
+- `IntentResolverFn` — returns `ResolverResult`. `resolveIntent()` returns `ResolverResult | null` (null = no resolver registered → use defaultCall).
 - `IntentResolverMap` — `ReadonlyMap<string, IntentResolverFn>` (plain data, no global state)
 
-**Convention config fields:** `transitionRules?: readonly TransitionRule[]`, `intentResolvers?: IntentResolverMap`, and `overlays?: readonly ConventionOverlayPatch[]` — explicit data on ConventionConfig, not global registries. `transitionRules` and `intentResolvers` required when hand trees contain IntentNode leaves. `overlays` optional — for interference/competition tree replacement. Composed as `[...familyRules, ...baselineTransitionRules]`.
+**Convention config fields:** `transitionRules?: readonly TransitionRule[]`, `baselineRules?: readonly TransitionRule[]`, `intentResolvers?: IntentResolverMap`, and `overlays?: readonly ConventionOverlayPatch[]` — explicit data on ConventionConfig, not global registries. `transitionRules` and `intentResolvers` required when hand trees contain IntentNode leaves. `overlays` optional — for interference/competition tree replacement. **Two-pass mode:** When `baselineRules` is set, `computeDialogueState` runs convention rules first (first-match-wins), then baseline rules but only sets fields the convention rule didn't touch (backfill). Convention values always win. All 4 conventions use two-pass mode. When `baselineRules` is not set, falls back to single-pass with the flat `transitionRules` array. Registration validates no rule ID appears in both arrays.
 
 **File locations:**
 - `core/dialogue/dialogue-state.ts` — enums + DialogueState interface
@@ -190,7 +191,7 @@ __tests__/
 
 **IntentNode `meaning` field:** Every IntentNode has a required `meaning: string` — a self-contained sentence fragment starting with an action verb (e.g., "Asks for a 4-card major", "Shows 4+ hearts"). Phrasing rules: (1) start with action verb, (2) describe what the bid communicates to partner, (3) no convention name, (4) no HCP numbers or strength adjectives, (5) under ~15 words. Suit shape/distribution IS allowed. Threaded through pipeline: `IntentNode.meaning` → `BiddingRuleResult.meaning` → `BidResult.meaning` → `BidHistoryEntry.meaning`.
 
-**Teaching metadata:** `DecisionMetadata` (whyThisMatters, commonMistake, denialImplication) on DecisionNodes, `BidMetadata` (whyThisBid, partnerExpects, isArtificial, forcingType, commonMistake) on IntentNodes. `ConventionExplanations` in each convention's `explanations.ts` maps node names to metadata + provides convention-specific condition explanations. `ConventionTeaching` on `ConventionConfig.teaching` for convention-level purpose/whenToUse/tradeoff. `RuleCondition.teachingNote` for per-condition overrides. Stayman is fully populated; other conventions have empty scaffolds.
+**Teaching metadata:** `DecisionMetadata` (whyThisMatters, commonMistake, denialImplication) on DecisionNodes, `BidMetadata` (whyThisBid, partnerExpects, isArtificial, forcingType, commonMistake) on IntentNodes. `ConventionExplanations` in each convention's `explanations.ts` maps node names to metadata + provides convention-specific condition explanations. `ConventionTeaching` on `ConventionConfig.teaching` for convention-level purpose/whenToUse/tradeoff. `RuleCondition.teachingNote` for per-condition overrides. `RuleCondition.negatable?: boolean` — defaults to true; set to false for conditions where the NO branch doesn't imply a clean inverse (e.g., `isBalanced()` where NOT balanced ≠ unbalanced). Inference's `shouldInvertCondition()` checks this before calling `invertInference()`. Stayman is fully populated; other conventions have empty scaffolds.
 
 **Sibling alternatives:** `findSiblingBids(tree, matched, context)` in `sibling-finder.ts` finds other IntentNodes reachable in the same auction context. Walks auction conditions to find the hand subtree root, then explores all branches. Each `SiblingBid` has `bidName`, `meaning`, `call`, and `failedConditions` (hand conditions where actual result doesn't match the required branch direction). Branch-aware: tracks `{ condition, requiredResult }` pairs so conditions on the NO branch that pass are correctly reported as failed. **Invariant:** auction conditions must all precede hand conditions — interleaving throws. Wired into `mapTreeEvalResult()` in strategy/ with try/catch for production safety → `TreeEvalSummary.siblings`.
 
@@ -200,7 +201,7 @@ __tests__/
 
 **ResolvedCandidate:** `generateCandidates(handTreeRoot, handResult, effectiveCtx)` in `candidate-generator.ts` resolves `CollectedIntent` proposals through the intent system. Returns `CandidateGenerationResult { candidates: ResolvedCandidate[], matchedIntentSuppressed: boolean }`. `ResolvedCandidate extends CandidateBid` with `resolvedCall`, `isDefaultCall`, `legal`, `isMatched`. Uses `collectIntentProposals()` for traversal — decoupled from display/teaching path. Applies overlay patch hooks (suppress, add, override). Matched node first, then others. `matchedIntentSuppressed` tracks whether `suppressIntent` specifically removed the matched intent's proposal. Error handling: resolver throws → falls back to defaultCall. Wired into `conventionToStrategy()` via `selectMatchedCandidate()`.
 
-**Candidate selection:** `selectMatchedCandidate(candidates)` in `candidate-selector.ts` picks the matched candidate's resolved call from a `ResolvedCandidate[]`. Returns the `resolvedCall` of the first candidate where `isMatched === true`, or `null` if none found. Wired into `conventionToStrategy()`.
+**Candidate selection:** `selectMatchedCandidate(candidates, ranker?)` in `candidate-selector.ts` — tiered selection: Tier 1 matched+legal, Tier 2 preferred+legal, Tier 3 alternative+legal, Tier 4 null. Optional ranker reorders within tiers. Wired into `conventionToStrategy()`.
 
 ## Overlay System
 
@@ -210,7 +211,7 @@ __tests__/
 - `addIntents?(ctx)` — add intents not in the tree (returned intents have no `sourceNode`, never matched)
 - `overrideResolver?(intent, ctx)` — override standard resolver (return `Call` to override, `null` to fallthrough)
 
-**Hook application order** in `generateCandidates()`: (1) `replacementTree` if set, (2) `suppressIntent` filters, (3) `addIntents` appends, (4) `overrideResolver` before standard resolver. Hook errors → `console.warn`, graceful degradation.
+**Hook application order** in `generateCandidates()`: (1) `replacementTree` if set, (2) `suppressIntent` filters, (3) `addIntents` appends, (4) `overrideResolver` before standard resolver. Hook errors → `onOverlayError` callback if provided, else `console.warn`. Graceful degradation.
 
 **Overlay resolution:** `buildEffectiveContext()` in `effective-context.ts` resolves active overlays — filters config overlays by `roundName` matching the active protocol round and `matches()` returning true for the computed dialogue state. All matching overlays are collected into `activeOverlays: readonly ConventionOverlayPatch[]` on `EffectiveConventionContext`.
 

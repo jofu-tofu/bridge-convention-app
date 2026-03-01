@@ -11,6 +11,7 @@ import { evaluateTree } from "./tree-evaluator";
 import { collectIntentProposals } from "./intent-collector";
 import type { CollectedIntent } from "./intent-collector";
 import { resolveIntent } from "./intent/intent-resolver";
+import type { ResolverResult } from "./intent/intent-resolver";
 
 /**
  * A CandidateBid enriched with resolver output and legality.
@@ -47,13 +48,14 @@ export interface CandidateGenerationResult {
  * 3. addIntents: append proposals (no sourceNode, never matched)
  * 4. overrideResolver: override standard resolver for an intent
  *
- * Error handling: hook throws → console.warn, graceful degradation.
+ * Error handling: hook throws → onOverlayError callback (if provided) or console.warn.
  * resolver throws → falls back to defaultCall. defaultCall throws → candidate excluded.
  */
 export function generateCandidates(
   handTreeRoot: RuleNode,
   handResult: TreeEvalResult,
   effectiveCtx: EffectiveConventionContext,
+  onOverlayError?: (overlayId: string, hook: string, error: string) => void,
 ): CandidateGenerationResult {
   const overlays = effectiveCtx.activeOverlays;
 
@@ -91,8 +93,10 @@ export function generateCandidates(
         const stillHasMatched = proposals.some(p => p.sourceNode !== undefined && p.sourceNode.nodeId === matched.nodeId);
         if (hadMatched && !stillHasMatched) matchedIntentSuppressed = true;
       } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (onOverlayError) onOverlayError(overlay.id, "suppressIntent", msg);
         // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-        console.warn(`Overlay "${overlay.id}" suppressIntent threw:`, e);
+        else console.warn(`Overlay "${overlay.id}" suppressIntent threw:`, e);
       }
     }
   }
@@ -104,8 +108,10 @@ export function generateCandidates(
         const added = overlay.addIntents(effectiveCtx);
         proposals = [...proposals, ...added];
       } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (onOverlayError) onOverlayError(overlay.id, "addIntents", msg);
         // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-        console.warn(`Overlay "${overlay.id}" addIntents threw:`, e);
+        else console.warn(`Overlay "${overlay.id}" addIntents threw:`, e);
       }
     }
   }
@@ -120,21 +126,23 @@ export function generateCandidates(
       && proposal.sourceNode.nodeId === matched.nodeId;
 
     // Step 4: overrideResolver — first non-null wins across all overlays
-    let overrideCall: Call | null = null;
+    let overrideResult: ResolverResult | null = null;
     for (const overlay of overlays) {
       if (overlay.overrideResolver) {
         try {
-          overrideCall = overlay.overrideResolver(proposal.intent, effectiveCtx);
-          if (overrideCall !== null) break;
+          overrideResult = overlay.overrideResolver(proposal.intent, effectiveCtx);
+          if (overrideResult !== null) break;
         } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (onOverlayError) onOverlayError(overlay.id, "overrideResolver", msg);
           // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-          console.warn(`Overlay "${overlay.id}" overrideResolver threw:`, e);
+          else console.warn(`Overlay "${overlay.id}" overrideResolver threw:`, e);
         }
       }
     }
 
     const resolved = resolveCollectedIntent(
-      proposal, isMatched, raw, dialogueState, resolvers, conventionId, roundName, overrideCall,
+      proposal, isMatched, raw, dialogueState, resolvers, conventionId, roundName, overrideResult,
     );
     if (resolved) {
       if (isMatched) {
@@ -148,6 +156,31 @@ export function generateCandidates(
   return { candidates: results, matchedIntentSuppressed };
 }
 
+function applyResolverResult(
+  result: ResolverResult,
+  raw: EffectiveConventionContext["raw"],
+): { resolvedCall: Call; isDefaultCall: boolean } | "declined" | "use_default" {
+  switch (result.status) {
+    case "declined":
+      return "declined";
+    case "use_default":
+      return "use_default";
+    case "resolved": {
+      if (result.calls.length === 0) return "use_default";
+      // Encoding order policy: resolvers return alternatives in priority order.
+      // We pick the first LEGAL encoding. The order comes from the resolver,
+      // so resolver authors control which encoding is preferred.
+      for (const encoding of result.calls) {
+        if (isLegalCall(raw.auction, encoding.call, raw.seat)) {
+          return { resolvedCall: encoding.call, isDefaultCall: false };
+        }
+      }
+      // If none are legal, use the first encoding (will be marked illegal downstream)
+      return { resolvedCall: result.calls[0]!.call, isDefaultCall: false };
+    }
+  }
+}
+
 function resolveCollectedIntent(
   proposal: CollectedIntent,
   isMatched: boolean,
@@ -156,7 +189,7 @@ function resolveCollectedIntent(
   resolvers: NonNullable<EffectiveConventionContext["config"]["intentResolvers"]>,
   conventionId: string,
   roundName: string | undefined,
-  overrideCall: Call | null,
+  overrideResult: ResolverResult | null,
 ): ResolvedCandidate | null {
   // Get the default call
   let call: Call;
@@ -178,27 +211,23 @@ function resolveCollectedIntent(
   let resolvedCall = call;
   let isDefaultCall = true;
 
-  if (overrideCall) {
-    resolvedCall = overrideCall;
-    isDefaultCall = false;
+  if (overrideResult) {
+    const outcome = applyResolverResult(overrideResult, raw);
+    if (outcome === "declined") return null;
+    if (outcome !== "use_default") {
+      resolvedCall = outcome.resolvedCall;
+      isDefaultCall = outcome.isDefaultCall;
+    }
   } else {
     try {
-      const resolved = resolveIntent(proposal.intent, dialogueState, raw, resolvers);
-      if (resolved && resolved.length > 0) {
-        // Try encodings in order — use first legal one
-        let foundLegal = false;
-        for (const encoding of resolved) {
-          if (isLegalCall(raw.auction, encoding.call, raw.seat)) {
-            resolvedCall = encoding.call;
-            isDefaultCall = false;
-            foundLegal = true;
-            break;
-          }
-        }
-        // If none are legal, use the first encoding (will be marked illegal downstream)
-        if (!foundLegal) {
-          resolvedCall = resolved[0]!.call;
-          isDefaultCall = false;
+      const result = resolveIntent(proposal.intent, dialogueState, raw, resolvers);
+      // null = no resolver registered → use defaultCall
+      if (result !== null) {
+        const outcome = applyResolverResult(result, raw);
+        if (outcome === "declined") return null;
+        if (outcome !== "use_default") {
+          resolvedCall = outcome.resolvedCall;
+          isDefaultCall = outcome.isDefaultCall;
         }
       }
     } catch {
@@ -210,6 +239,7 @@ function resolveCollectedIntent(
 
   return {
     bidName: proposal.nodeName,
+    nodeId: proposal.sourceNode?.nodeId ?? proposal.nodeName,
     meaning: proposal.meaning,
     call,
     failedConditions,

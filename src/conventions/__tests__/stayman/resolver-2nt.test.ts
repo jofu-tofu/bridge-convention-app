@@ -2,15 +2,14 @@
  * Stayman 2NT resolver tests.
  *
  * Verifies that resolvers produce correct bid levels for 2NT Stayman
- * (3-level bids) vs 1NT Stayman (2-level bids). The bug: resolvers
- * read `state.conventionData["openerLevel"]` which is never set.
- * Fix: use `state.familyId` to determine the Stayman level.
+ * (3-level bids) vs 1NT Stayman (2-level bids).
  */
 
 import { describe, test, expect } from "vitest";
 import { BidSuit, Seat } from "../../../engine/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { resolveIntent } from "../../core/intent/intent-resolver";
+import type { ResolverResult } from "../../core/intent/intent-resolver";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import type { SemanticIntent } from "../../core/intent/semantic-intent";
 import { computeDialogueState } from "../../core/dialogue";
@@ -38,82 +37,61 @@ function stateAfter(bids: string[], dealer: Seat = Seat.North): ReturnType<typeo
   return computeDialogueState(auction, transitionRules);
 }
 
+/** Extract the first resolved call from a ResolverResult. */
+function expectResolvedCall(result: ResolverResult | null) {
+  expect(result).not.toBeNull();
+  expect(result!.status).toBe("resolved");
+  if (result!.status !== "resolved") throw new Error("unreachable");
+  return result!.calls[0]!.call;
+}
+
 describe("Stayman 2NT resolvers", () => {
   test("askForMajor after 2NT → 3C (not 2C)", () => {
     const state = stateAfter(["2NT", "P"]);
-    const intent: SemanticIntent = {
-      type: SemanticIntentType.AskForMajor,
-      params: {},
-    };
+    const intent: SemanticIntent = { type: SemanticIntentType.AskForMajor, params: {} };
     const resolved = resolveIntent(intent, state, dummyContext, staymanResolvers);
-    expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Clubs });
+    expect(expectResolvedCall(resolved)).toEqual({ type: "bid", level: 3, strain: BidSuit.Clubs });
   });
 
   test("showHeldSuit (hearts) after 2NT → 3H (not 2H)", () => {
-    // State after 2NT-P-3C-P (Stayman asked, opener responds)
     const state = stateAfter(["2NT", "P", "3C", "P"]);
-    const intent: SemanticIntent = {
-      type: SemanticIntentType.ShowHeldSuit,
-      params: { suit: "hearts" },
-    };
+    const intent: SemanticIntent = { type: SemanticIntentType.ShowHeldSuit, params: { suit: "hearts" } };
     const resolved = resolveIntent(intent, state, dummyContext, staymanResolvers);
-    expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Hearts });
+    expect(expectResolvedCall(resolved)).toEqual({ type: "bid", level: 3, strain: BidSuit.Hearts });
   });
 
   test("showHeldSuit (spades) after 2NT → 3S (not 2S)", () => {
     const state = stateAfter(["2NT", "P", "3C", "P"]);
-    const intent: SemanticIntent = {
-      type: SemanticIntentType.ShowHeldSuit,
-      params: { suit: "spades" },
-    };
+    const intent: SemanticIntent = { type: SemanticIntentType.ShowHeldSuit, params: { suit: "spades" } };
     const resolved = resolveIntent(intent, state, dummyContext, staymanResolvers);
-    expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Spades });
+    expect(expectResolvedCall(resolved)).toEqual({ type: "bid", level: 3, strain: BidSuit.Spades });
   });
 
   test("denyHeldSuit after 2NT → 3D (not 2D)", () => {
     const state = stateAfter(["2NT", "P", "3C", "P"]);
-    const intent: SemanticIntent = {
-      type: SemanticIntentType.DenyHeldSuit,
-      params: {},
-    };
+    const intent: SemanticIntent = { type: SemanticIntentType.DenyHeldSuit, params: {} };
     const resolved = resolveIntent(intent, state, dummyContext, staymanResolvers);
-    expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Diamonds });
+    expect(expectResolvedCall(resolved)).toEqual({ type: "bid", level: 3, strain: BidSuit.Diamonds });
   });
 
   test("askForMajor after 1NT → still 2C (regression)", () => {
     const state = stateAfter(["1NT", "P"]);
-    const intent: SemanticIntent = {
-      type: SemanticIntentType.AskForMajor,
-      params: {},
-    };
+    const intent: SemanticIntent = { type: SemanticIntentType.AskForMajor, params: {} };
     const resolved = resolveIntent(intent, state, dummyContext, staymanResolvers);
-    expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
+    expect(expectResolvedCall(resolved)).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
   });
 
   test("showHeldSuit (hearts) after 1NT → still 2H (regression)", () => {
     const state = stateAfter(["1NT", "P", "2C", "P"]);
-    const intent: SemanticIntent = {
-      type: SemanticIntentType.ShowHeldSuit,
-      params: { suit: "hearts" },
-    };
+    const intent: SemanticIntent = { type: SemanticIntentType.ShowHeldSuit, params: { suit: "hearts" } };
     const resolved = resolveIntent(intent, state, dummyContext, staymanResolvers);
-    expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
+    expect(expectResolvedCall(resolved)).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
   });
 
   test("denyHeldSuit after 1NT → still 2D (regression)", () => {
     const state = stateAfter(["1NT", "P", "2C", "P"]);
-    const intent: SemanticIntent = {
-      type: SemanticIntentType.DenyHeldSuit,
-      params: {},
-    };
+    const intent: SemanticIntent = { type: SemanticIntentType.DenyHeldSuit, params: {} };
     const resolved = resolveIntent(intent, state, dummyContext, staymanResolvers);
-    expect(resolved).not.toBeNull();
-    expect(resolved![0]!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
+    expect(expectResolvedCall(resolved)).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
   });
 });

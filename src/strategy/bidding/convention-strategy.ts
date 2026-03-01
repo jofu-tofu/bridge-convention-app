@@ -2,8 +2,12 @@ import type { ConventionConfig, ConditionResult, BiddingContext } from "../../co
 import { evaluateBiddingRules } from "../../conventions/core/registry";
 import type { RuleNode, DecisionNode } from "../../conventions/core/rule-tree";
 import type { TreeEvalResult, PathEntry } from "../../conventions/core/tree-evaluator";
-import { findSiblingBids } from "../../conventions/core/sibling-finder";
+import { findSiblingBids, findCandidateBids } from "../../conventions/core/sibling-finder";
 import { formatHandSummary } from "../../shared/hand-summary";
+import { buildEffectiveContext } from "../../conventions/core/effective-context";
+import { generateCandidates } from "../../conventions/core/candidate-generator";
+import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
+import { selectMatchedCandidate } from "../../conventions/core/candidate-selector";
 import type {
   BiddingStrategy,
   BidResult,
@@ -12,7 +16,10 @@ import type {
   TreeEvalSummary,
   TreeForkPoint,
   SiblingBid,
+  CandidateBid,
+  ResolvedCandidateDTO,
 } from "../../shared/types";
+import { TraceCollector } from "./trace-collector";
 
 export function mapConditionResult(cr: ConditionResult): ConditionDetail {
   if (cr.branches && cr.branches.length > 0) {
@@ -103,18 +110,48 @@ export function extractForkPoint(entries: readonly TreePathEntry[]): TreeForkPoi
   return undefined;
 }
 
-function mapTreeEvalResult(result: TreeEvalResult, tree: RuleNode, context: BiddingContext): TreeEvalSummary {
+/** Map ResolvedCandidate[] to ResolvedCandidateDTO[] (serializable, no function refs). */
+function mapResolvedCandidates(
+  generated: readonly ResolvedCandidate[],
+): ResolvedCandidateDTO[] {
+  return generated.map(c => ({
+    bidName: c.bidName,
+    meaning: c.meaning,
+    call: c.call,
+    resolvedCall: c.resolvedCall,
+    isDefaultCall: c.isDefaultCall,
+    legal: c.legal,
+    isMatched: c.isMatched,
+    priority: c.priority,
+    intentType: c.intent.type,
+    failedConditions: c.failedConditions,
+  }));
+}
+
+function mapTreeEvalResult(
+  result: TreeEvalResult,
+  tree: RuleNode,
+  context: BiddingContext,
+  conventionId?: string,
+  roundName?: string,
+  resolvedCandidates?: readonly ResolvedCandidate[],
+): TreeEvalSummary {
   const visited = mapVisitedWithStructure(result.visited, tree);
   const path = visited.filter((e) => e.passed);
 
   let siblings: readonly SiblingBid[] | undefined;
+  let candidates: readonly CandidateBid[] | undefined;
   try {
-    siblings = result.matched
-      ? findSiblingBids(tree, result.matched, context)
-      : undefined;
+    if (result.matched) {
+      siblings = findSiblingBids(tree, result.matched, context);
+      if (conventionId) {
+        candidates = findCandidateBids(tree, result.matched, context, conventionId, roundName);
+      }
+    }
   } catch {
     // Invariant violation or unexpected error — degrade gracefully
     siblings = undefined;
+    candidates = undefined;
   }
 
   return {
@@ -123,6 +160,10 @@ function mapTreeEvalResult(result: TreeEvalResult, tree: RuleNode, context: Bidd
     visited,
     forkPoint: extractForkPoint(visited),
     siblings,
+    candidates,
+    resolvedCandidates: resolvedCandidates
+      ? mapResolvedCandidates(resolvedCandidates)
+      : undefined,
   };
 }
 
@@ -133,10 +174,61 @@ export function conventionToStrategy(
     id: `convention:${config.id}`,
     name: config.name,
     suggest(context): BidResult | null {
+      const trace = new TraceCollector();
+      trace.setConventionId(config.id);
+
       const result = evaluateBiddingRules(context, config);
-      if (!result) return null;
+      if (!result) {
+        trace.setProtocolMatched(false);
+        return null;
+      }
+
+      trace.setProtocolMatched(!!result.protocolResult?.matched);
+      if (result.protocolResult?.activeRound) {
+        trace.setActiveRound(result.protocolResult.activeRound.name);
+      }
+
+      // Candidate generation pipeline: resolve intent through EffectiveConventionContext
+      let call = result.call;
+      let pipelineCandidates: readonly ResolvedCandidate[] | undefined;
+      if (result.treeEvalResult?.matched?.type === "intent" && result.treeRoot && result.protocolResult) {
+        const effectiveCtx = buildEffectiveContext(context, config, result.protocolResult);
+
+        // Record activated overlays
+        for (const overlay of effectiveCtx.activeOverlays) {
+          trace.addOverlayActivated(overlay.id);
+        }
+
+        const { candidates: generated, matchedIntentSuppressed } = generateCandidates(
+          result.treeRoot,
+          result.treeEvalResult,
+          effectiveCtx,
+          (overlayId, hook, error) => trace.addOverlayError(overlayId, hook, error),
+        );
+        pipelineCandidates = generated;
+        trace.setCandidateCount(generated.length);
+
+        const ranker = config.rankCandidates
+          ? (cs: readonly ResolvedCandidate[]) => config.rankCandidates!(cs, effectiveCtx)
+          : undefined;
+        const selected = selectMatchedCandidate(generated, ranker);
+
+        if (selected) {
+          trace.setSelectedTier(
+            selected.isMatched ? "matched"
+              : selected.priority === "preferred" ? "preferred"
+              : selected.priority === "alternative" ? "alternative"
+              : "matched",
+          );
+          call = selected.resolvedCall;
+        } else {
+          trace.setSelectedTier("none");
+          if (matchedIntentSuppressed) return null;
+        }
+      }
+
       return {
-        call: result.call,
+        call,
         ruleName: result.rule,
         explanation: result.explanation,
         meaning: result.meaning,
@@ -145,8 +237,16 @@ export function conventionToStrategy(
           ? result.conditionResults.map(mapConditionResult)
           : undefined,
         treePath: result.treeEvalResult && result.treeRoot
-          ? mapTreeEvalResult(result.treeEvalResult, result.treeRoot, context)
+          ? mapTreeEvalResult(
+              result.treeEvalResult,
+              result.treeRoot,
+              context,
+              config.id,
+              result.protocolResult?.activeRound?.name,
+              pipelineCandidates,
+            )
           : undefined,
+        evaluationTrace: trace.build(),
       };
     },
   };

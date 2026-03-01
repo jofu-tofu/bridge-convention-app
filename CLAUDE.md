@@ -1,6 +1,6 @@
 # Bridge Practice App
 
-Bridge bidding convention practice app (Stayman, Gerber, DONT, Bergen Raises). Tauri 2 desktop + WASM browser (Vercel). Svelte 5 (runes) + TypeScript strict.
+Bridge bidding convention practice app (Stayman, Bergen Raises, SAYC, Weak Twos). Tauri 2 desktop + WASM browser (Vercel). Svelte 5 (runes) + TypeScript strict.
 
 ## Commands
 
@@ -26,7 +26,7 @@ Bridge bidding convention practice app (Stayman, Gerber, DONT, Bergen Raises). T
 
 ## Dev Tools (dev server only)
 
-- **URL routing:** `?convention=stayman` jumps to game screen with that convention (IDs: `stayman`, `gerber`, `dont`, `bergen-raises`, `landy`, `sayc`). `?learn=stayman` jumps to learning screen.
+- **URL routing:** `?convention=stayman` jumps to game screen with that convention (IDs: `stayman`, `bergen-raises`, `sayc`, `weak-twos`). `?learn=stayman` jumps to learning screen.
 - **Deterministic seed:** `?seed=42` seeds the PRNG for reproducible deals. Seed advances per deal (42, 43, 44...). Reload resets.
 - **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=stayman&autoplay=true`
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
@@ -55,7 +55,7 @@ src/
   shared/          Cross-boundary types (BidResult, BiddingStrategy, PlayStrategy, ConditionDetail)
   conventions/     Convention system
     core/            Registry, evaluator, tree system, conditions (stable infrastructure)
-    definitions/     Convention folders (stayman/, gerber/, dont/, bergen-raises/, landy/, sayc/) each with tree.ts, config.ts, explanations.ts, index.ts
+    definitions/     Convention folders (stayman/, bergen-raises/, sayc/, weak-twos/) each with tree.ts, config.ts, explanations.ts, index.ts
   inference/       Auction inference system (per-partnership information asymmetry)
   strategy/        AI strategies
     bidding/         Convention-to-strategy adapter, pass strategy
@@ -81,12 +81,12 @@ tests/
 **Subsystems:**
 
 - **Engine:** Pure TS game logic — types, hand evaluation, deal generation, auction, scoring, play rules, EnginePort. `bid-suggester.ts` is standalone (not on EnginePort). `call-helpers.ts` provides canonical `callsMatch()`. `tauri-ipc-engine.ts` (desktop) and `wasm-engine.ts` (browser) provide Rust-backed transports. `constraint-utils.ts` shared by both. (entry: `src/engine/types.ts`)
-- **Conventions:** Split into `core/` (registry, evaluator, protocol system, tree system, conditions — stable infrastructure) and `definitions/` (6 convention folders — grows unboundedly). Each folder has `tree.ts`, `config.ts`, `explanations.ts`, `index.ts` (optionally `helpers.ts`, `conditions.ts`). All conventions use `ConventionProtocol` (protocol dispatch via `protocol()`/`round()`/`semantic()`) with binary `HandDecisionNode` hand evaluation. Landy/Stayman/Bergen/Gerber use multi-round protocols with `seatFilter` (milestone triggers + seat-specific conditions). DONT/SAYC use single-round dispatch. `evaluateBiddingRules(context, config)` dispatches protocol or legacy tree. Teaching metadata: `DecisionMetadata`/`BidMetadata` on nodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. (entry: `src/conventions/core/registry.ts`)
+- **Conventions:** Split into `core/` (registry, evaluator, protocol system, tree system, conditions, dialogue state, intent system, overlay system — stable infrastructure) and `definitions/` (4 convention folders — grows unboundedly). Each folder has `tree.ts`, `config.ts`, `explanations.ts`, `index.ts` (optionally `helpers.ts`, `conditions.ts`, `transitions.ts`, `resolvers.ts`, `overlays.ts`). All conventions use `ConventionProtocol` (protocol dispatch via `protocol()`/`round()`/`semantic()`) with binary `HandDecisionNode` hand evaluation and `IntentNode` leaves (semantic intents + `defaultCall`). Stayman handles interference via overlays (`stayman-doubled` for doubled+modified, `stayman-overcalled` for overcalled+system-off). Stayman/Bergen/Weak Twos use multi-round protocols with `seatFilter`. SAYC uses single-round dispatch. `evaluateBiddingRules(context, config)` dispatches protocol and applies active overlays; throws if no protocol. `conventionToStrategy()` uses `buildEffectiveContext()` + `generateCandidates()` (returns `CandidateGenerationResult` with `matchedIntentSuppressed`) + `selectMatchedCandidate()` pipeline. Returns null when matched intent suppressed and no alternative selected. Teaching metadata: `DecisionMetadata`/`BidMetadata` on nodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. (entry: `src/conventions/core/registry.ts`)
 - **Shared:** Cross-boundary type definitions — `BiddingStrategy`, `PlayStrategy`, `PlayContext`, `InferredHoldings`, `BidHistoryEntry`, `TreeEvalSummary`/`TreePathEntry`/`TreeForkPoint`/`SiblingBid` (tree traversal DTOs). Also `hand-summary.ts` (`formatHandSummary`). (entry: `src/shared/types.ts`)
 - **Inference:** Auction inference system — per-partnership information asymmetry with `InferenceProvider` spectrum (natural → convention-aware → full knowledge = difficulty axis). Negative inference via tree rejection data. (entry: `src/inference/inference-engine.ts`)
-- **Strategy:** Bidding strategies (`conventionToStrategy()` adapter, `passStrategy`) and play strategies (`createHeuristicPlayStrategy()` 7-heuristic chain, `randomPlayStrategy` fallback). (entry: `src/strategy/bidding/convention-strategy.ts`)
+- **Strategy:** Bidding strategies (`conventionToStrategy()` adapter, `passStrategy`, `createStrategyChain()` for fallback chains, `naturalFallbackStrategy` for competitive protection) and play strategies (`createHeuristicPlayStrategy()` 7-heuristic chain, `randomPlayStrategy` fallback). (entry: `src/strategy/bidding/convention-strategy.ts`)
 - **Drill:** Unified drill lifecycle — `DrillConfig`/`DrillSession` types, session factory, config factory, `startDrill()` helper. (entry: `src/drill/types.ts`)
-- **Display:** UI display utilities — `formatCall()`, `formatRuleName()`, suit symbols, design tokens, `sortCards`, `computeTableScale`, `filterConventions`, `viewSeat`, `prepareRulesForDisplay`, `groupBidsByRound`, HCP display helpers. Teaching layer: `condition-explanations.ts` (condition teaching text from inference types), `teaching-content.ts` (`extractTeachingContent()`, `evaluateTeachingRound()`), `tree-display.ts` (`flattenTreeForDisplay()` with optional `ConventionExplanations`). (entry: `src/display/format.ts`)
+- **Display:** UI display utilities — `formatCall()`, `formatRuleName()`, suit symbols, design tokens, `sortCards`, `computeTableScale`, `filterConventions`, `viewSeat`, `prepareRulesForDisplay`, `groupBidsByRound`, HCP display helpers. Teaching layer: `condition-explanations.ts` (condition teaching text from inference types), `teaching-content.ts` (`extractTeachingContent()`, `evaluateTeachingRound()`), `tree-display.ts` (`flattenTreeForDisplay()` with optional `ConventionExplanations` and `TreeDisplayOverlayContext` for overlay-aware display). (entry: `src/display/format.ts`)
 - **Util:** Zero-dependency pure utilities — `delay()` async helper, `mulberry32` seedable PRNG. (entry: `src/util/delay.ts`)
 - **Test Support:** Shared test factories — `createStubEngine` (minimal EnginePort), `makeDeal`, `makeSimpleTestDeal`, `makeDrillSession`, `makeContract`, `makeCard`, flush helpers. Imports from `engine/`, `drill/`, `shared/` only. (entry: `src/test-support/engine-stub.ts`)
 - **Components:** Svelte 5 UI organized in `screens/` (ConventionSelectScreen, LearningScreen, `game-screen/GameScreen` phase router + `BiddingPhase`/`DeclarerPromptPhase`/`PlayingPhase`/`ExplanationPhase`), `game/` (BridgeTable, HandFan, AuctionTable, BidPanel, BidFeedbackPanel, BiddingReview, TrickArea, RulesPanel), `shared/` (Card, Button, ConventionCallout). Midnight Table dark theme via CSS custom properties + Tailwind.
@@ -99,13 +99,17 @@ tests/
 
 ## Roadmap
 
-**Completed:** DDS Review Integration (1), Rule Tree Migration (1.5a-c), Bridge Bum Test Audit (1.6a-f), Rules Tab (2a), WASM Engine + Vercel Deployment, DDS Browser WASM Integration, Multi-Round Semantic Protocols with seatFilter (Landy/Stayman/Bergen/Gerber).
+**Completed:** DDS Review Integration (1), Rule Tree Migration (1.5a-c), Bridge Bum Test Audit (1.6a-f), Rules Tab (2a), WASM Engine + Vercel Deployment, DDS Browser WASM Integration, Multi-Round Semantic Protocols with seatFilter (Stayman/Bergen/Weak Twos), Convention Suite Overhaul (drop Gerber/Landy, add Weak Twos then drop DONT/Michaels/Negative Doubles), Full IntentNode Migration + BidNode Removal, Competitive Auction Hardening 5a-5d (all 9 gaps closed).
 
 **Active/upcoming:**
 
 2. **User Learning Enhancements**
    - (b) Dedicated learning screen — Decision tree with layered depth modes (compact/study/learn), convention teaching header card, sidebar. Read-only mode; hand evaluation / active-path highlighting deferred. Future: Spotlight Walk, Decision Cards, Dual Pane views.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard), wires `InferenceProvider` selection per partnership
+4. **Decision Model Architecture** — DialogueState (protocol memory) + IntentNode (semantic intents) + resolver pipeline. Complete: all 4 conventions migrated to IntentNode, BidNode type removed. SAYC uses empty resolvers (deterministic via defaultCall). Typed DialogueEffect (`set*` prefix fields), CandidateBid DTO (extends SiblingBid with intent+source), event classifier, cross-engine invariant tests — all wired. **Candidate generation pipeline (Steps 1-6 complete):** `EffectiveConventionContext` bundles raw context + dialogue state + active overlays + optional `BeliefData`, `generateCandidates()` resolves `CollectedIntent` proposals through intent system (via `collectIntentProposals()`) → `ResolvedCandidate[]`, `selectMatchedCandidate()` picks resolved call with tiered selection (matched > preferred > null). `conventionToStrategy()` wired to full pipeline. **Authority refactor complete:** `ConventionOverlayPatch` type in `core/overlay.ts` with `validateOverlayPatches()` (checked at registration) + optional hooks (`suppressIntent`, `addIntents`, `overrideResolver`, `triggerOverrides`). Intent collector (`core/intent-collector.ts`) decouples production decision path from display/teaching sibling-finder. `PrivateBeliefState` in `inference/private-belief.ts` narrows partner holdings using own hand. Stayman interference extracted into overlays (`stayman/overlays.ts`). `evaluateBiddingRules()` also applies overlays. Deferred: nextState projection (not yet planned).
+5. **Competitive Auction Hardening** [COMPLETE] — All 9 gaps closed across 4 sub-phases (5a-5d). Key capabilities: `InterferenceDetail` on DialogueState (Gap 6), multi-overlay composition with precedence model (Gap 1), selectable injected intents with priority tiers (Gap 2), multi-encoding resolvers (Gap 8), protocol trigger overlays (Gap 5), teaching under overlays with `TreeDisplayOverlayContext` (Gap 7), ranking seam on `ConventionConfig` (Gap 9). Earlier: suppression fallback (Gap 3), stable node IDs (Gap 4).
+6. **Boundary Hardening** [COMPLETE] — 10 gaps across 5 phases. Actor-aware trigger conditions (`partnerBidMade`/`opponentBidMade`), causality contract (`entryIndex` on `TransitionRule`), alternative tier in candidate selection, overlay replacement tree validation, overlay priority sorting, `InterferenceKind` enum, strategy fallback chain (`createStrategyChain` + `naturalFallbackStrategy`), `ResolvedCandidateDTO` on `TreeEvalSummary`. Stayman triggers migrated to `partnerBidMade`. Deferred: family handoff (Gap 5), belief pipeline wiring (Gap 10).
+7. **Architectural Gap Resolution** [Phases 7a-7d COMPLETE] — `ResolverResult` discriminated union (declined/use_default/resolved) replacing null ambiguity on `IntentResolverFn`, `EvaluationTrace` DTO on `BidResult` with `TraceCollector` builder, registration-time diagnostics (`getDiagnostics()` for nodeId/overlay-priority checks), overlay-aware display alignment (`suppressedByOverlay`/`overriddenByOverlay` on `TreeDisplayRow`). Deferred: 7e SystemMode granularity, 7f belief wiring, 7g ranker layer.
 
 ## Test-Driven Development
 
@@ -142,7 +146,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here
 - No vendored bridge libraries — clean-room implementation only
-- DONT uses Standard DONT (original Marty Bergen) variant. Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
+- Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
@@ -154,7 +158,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 
 - `docs/architecture-reference.md` — convention constraints, AI heuristics, screen flow, phase details
 - `docs/bridge-rules-sources.md` — authoritative bridge rules sources, ambiguity resolution
-- `docs/conventions/` — per-convention reference docs (gerber.md, bergen-raises.md, dont.md) with sources, rules, edge cases
+- `docs/conventions/` — per-convention reference docs (bergen-raises.md, dont.md) with sources, rules, edge cases
 - `docs/learning/research-summary.md` — learning screen design vision: four views (guided flow, explorable map, cheat sheet, quiz), learning science principles, what's built vs needed
 
 **Context tree** (read the relevant one before working in that directory):
