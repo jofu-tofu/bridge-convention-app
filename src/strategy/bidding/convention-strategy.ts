@@ -1,174 +1,45 @@
-import type { ConventionConfig, ConditionResult, BiddingContext } from "../../conventions/core/types";
+import type { ConventionConfig, BiddingContext } from "../../conventions/core/types";
 import { evaluateBiddingRules } from "../../conventions/core/registry";
-import type { RuleNode, DecisionNode } from "../../conventions/core/rule-tree";
-import type { TreeEvalResult, PathEntry } from "../../conventions/core/tree-evaluator";
-import { findSiblingBids, findCandidateBids } from "../../conventions/core/sibling-finder";
-import { formatHandSummary } from "../../shared/hand-summary";
 import { buildEffectiveContext } from "../../conventions/core/effective-context";
+import type { BeliefData, EffectiveConventionContext } from "../../conventions/core/effective-context";
 import { generateCandidates } from "../../conventions/core/candidate-generator";
 import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
 import { selectMatchedCandidate } from "../../conventions/core/candidate-selector";
+import { ForcingState } from "../../conventions/core/dialogue/dialogue-state";
 import type {
   BiddingStrategy,
   BidResult,
-  ConditionDetail,
-  TreePathEntry,
-  TreeEvalSummary,
-  TreeForkPoint,
-  SiblingBid,
-  CandidateBid,
-  ResolvedCandidateDTO,
 } from "../../shared/types";
+import { formatHandSummary } from "../../shared/hand-summary";
 import { TraceCollector } from "./trace-collector";
+import { computePracticalRecommendation } from "./practical-recommender";
+import { generatePragmaticCandidates } from "./pragmatic-generator";
+import type { PrivateBeliefState } from "../../inference/private-belief";
+import { partnerSeat, SUIT_ORDER } from "../../engine/constants";
+import {
+  mapConditionResult,
+  mapTreeEvalResult,
+  mapResolvedCandidates,
+  extractTreeInferenceData,
+  callKeyForDedup,
+} from "./tree-eval-mapper";
 
-export function mapConditionResult(cr: ConditionResult): ConditionDetail {
-  if (cr.branches && cr.branches.length > 0) {
-    // Compound condition (or/and): compute best branch (first with highest passing count wins)
-    let bestIdx = 0;
-    let bestCount = 0;
-    const children = cr.branches.map((branch, i) => {
-      const passingCount = branch.results.filter((r) => r.passed).length;
-      if (passingCount > bestCount) {
-        bestCount = passingCount;
-        bestIdx = i;
-      }
-      const branchDesc = branch.results.map((r) => r.description).join("; ");
-      return {
-        name: `branch-${i + 1}`,
-        passed: branch.passed,
-        description: branch.passed ? branchDesc : `Not matched: ${branchDesc}`,
-        children: branch.results.map(mapConditionResult),
-      };
-    });
-    // Mark best branch
-    const childrenWithBest = children.map((child, i) => ({
-      ...child,
-      isBestBranch: bestCount > 0 && i === bestIdx,
-    }));
-    return {
-      name: cr.condition.name,
-      passed: cr.passed,
-      description: cr.description,
-      category: cr.condition.category,
-      children: childrenWithBest,
-    };
-  }
-  return {
-    name: cr.condition.name,
-    passed: cr.passed,
-    description: cr.description,
-    category: cr.condition.category,
-  };
-}
+// Re-export mapper functions for downstream consumers
+export { mapConditionResult, mapVisitedWithStructure, extractForkPoint, enrichSiblingsWithResolvedCalls, mapTreeEvalResult, mapResolvedCandidates, extractTreeInferenceData, callKeyForDedup } from "./tree-eval-mapper";
 
-// ─── Tree eval → DTO mapper ──────────────────────────────────
-
-/** Walk a RuleNode tree to build depth/parentName lookup for all DecisionNodes.
- *  Keyed by DecisionNode reference (not name) to handle duplicate names correctly. */
-function buildNodeInfo(tree: RuleNode): Map<DecisionNode, { depth: number; parentName: string | null }> {
-  const info = new Map<DecisionNode, { depth: number; parentName: string | null }>();
-  function walk(node: RuleNode, depth: number, parentName: string | null) {
-    if (node.type === "decision") {
-      info.set(node, { depth, parentName });
-      walk(node.yes, depth + 1, node.name);
-      walk(node.no, depth + 1, node.name);
-    }
-  }
-  walk(tree, 0, null);
-  return info;
-}
-
-/** Map PathEntry[] to TreePathEntry[] with depth/parentNodeName from tree structure. */
-export function mapVisitedWithStructure(
-  visited: readonly PathEntry[],
-  tree: RuleNode,
-): TreePathEntry[] {
-  const nodeInfo = buildNodeInfo(tree);
-  return visited.map((e) => {
-    const info = nodeInfo.get(e.node);
-    return {
-      nodeName: e.node.name,
-      passed: e.passed,
-      description: e.description,
-      depth: info?.depth ?? 0,
-      parentNodeName: info?.parentName ?? null,
-    };
-  });
-}
-
-/** Find the last (deepest) adjacent pass/fail pair that are true siblings (same parent). */
-export function extractForkPoint(entries: readonly TreePathEntry[]): TreeForkPoint | undefined {
-  for (let i = entries.length - 1; i >= 1; i--) {
-    const curr = entries[i]!;
-    const prev = entries[i - 1]!;
-    if (curr.passed !== prev.passed && curr.parentNodeName === prev.parentNodeName) {
-      const matched = curr.passed ? curr : prev;
-      const rejected = curr.passed ? prev : curr;
-      return { matched, rejected };
-    }
-  }
-  return undefined;
-}
-
-/** Map ResolvedCandidate[] to ResolvedCandidateDTO[] (serializable, no function refs). */
-function mapResolvedCandidates(
-  generated: readonly ResolvedCandidate[],
-): ResolvedCandidateDTO[] {
-  return generated.map(c => ({
-    bidName: c.bidName,
-    meaning: c.meaning,
-    call: c.call,
-    resolvedCall: c.resolvedCall,
-    isDefaultCall: c.isDefaultCall,
-    legal: c.legal,
-    isMatched: c.isMatched,
-    priority: c.priority,
-    intentType: c.intent.type,
-    failedConditions: c.failedConditions,
-  }));
-}
-
-function mapTreeEvalResult(
-  result: TreeEvalResult,
-  tree: RuleNode,
-  context: BiddingContext,
-  conventionId?: string,
-  roundName?: string,
-  resolvedCandidates?: readonly ResolvedCandidate[],
-): TreeEvalSummary {
-  const visited = mapVisitedWithStructure(result.visited, tree);
-  const path = visited.filter((e) => e.passed);
-
-  let siblings: readonly SiblingBid[] | undefined;
-  let candidates: readonly CandidateBid[] | undefined;
-  try {
-    if (result.matched) {
-      siblings = findSiblingBids(tree, result.matched, context);
-      if (conventionId) {
-        candidates = findCandidateBids(tree, result.matched, context, conventionId, roundName);
-      }
-    }
-  } catch {
-    // Invariant violation or unexpected error — degrade gracefully
-    siblings = undefined;
-    candidates = undefined;
-  }
-
-  return {
-    matchedNodeName: result.matched?.name ?? "",
-    path,
-    visited,
-    forkPoint: extractForkPoint(visited),
-    siblings,
-    candidates,
-    resolvedCandidates: resolvedCandidates
-      ? mapResolvedCandidates(resolvedCandidates)
-      : undefined,
-  };
+/** Options for customizing convention strategy behavior. */
+export interface ConventionStrategyOptions {
+  /** Provides public belief data for the effective context. Called per-suggest; exceptions are caught. */
+  beliefProvider?: (ctx: BiddingContext) => BeliefData | undefined;
+  /** Additional ranker applied after config.rankCandidates (if any). Both compose: config first, then options. */
+  ranker?: (candidates: readonly ResolvedCandidate[], ctx: EffectiveConventionContext) => readonly ResolvedCandidate[];
+  /** Inference provider for partner interpretation model. When present, misunderstandingRisk is computed per candidate. */
+  interpretationProvider?: import("../../inference/types").InferenceProvider;
 }
 
 export function conventionToStrategy(
   config: ConventionConfig,
+  options?: ConventionStrategyOptions,
 ): BiddingStrategy {
   return {
     id: `convention:${config.id}`,
@@ -191,8 +62,16 @@ export function conventionToStrategy(
       // Candidate generation pipeline: resolve intent through EffectiveConventionContext
       let call = result.call;
       let pipelineCandidates: readonly ResolvedCandidate[] | undefined;
+      let publicBelief: BeliefData | undefined;
       if (result.treeEvalResult?.matched?.type === "intent" && result.treeRoot && result.protocolResult) {
-        const effectiveCtx = buildEffectiveContext(context, config, result.protocolResult);
+        if (options?.beliefProvider) {
+          try {
+            publicBelief = options.beliefProvider(context);
+          } catch {
+            publicBelief = undefined;
+          }
+        }
+        const effectiveCtx = buildEffectiveContext(context, config, result.protocolResult, publicBelief);
 
         // Record activated overlays
         for (const overlay of effectiveCtx.activeOverlays) {
@@ -208,10 +87,20 @@ export function conventionToStrategy(
         pipelineCandidates = generated;
         trace.setCandidateCount(generated.length);
 
-        const ranker = config.rankCandidates
+        // Compose ranker: config.rankCandidates first, then options.ranker
+        const configRanker = config.rankCandidates
           ? (cs: readonly ResolvedCandidate[]) => config.rankCandidates!(cs, effectiveCtx)
           : undefined;
-        const selected = selectMatchedCandidate(generated, ranker);
+        const optionsRanker = options?.ranker
+          ? (cs: readonly ResolvedCandidate[]) => options.ranker!(cs, effectiveCtx)
+          : undefined;
+        let ranker: ((cs: readonly ResolvedCandidate[]) => readonly ResolvedCandidate[]) | undefined;
+        if (configRanker && optionsRanker) {
+          ranker = (cs) => optionsRanker(configRanker(cs));
+        } else {
+          ranker = configRanker ?? optionsRanker;
+        }
+        const selected = selectMatchedCandidate(generated, ranker, effectiveCtx.dialogueState.forcingState);
 
         if (selected) {
           trace.setSelectedTier(
@@ -220,11 +109,77 @@ export function conventionToStrategy(
               : selected.priority === "alternative" ? "alternative"
               : "matched",
           );
+          if (!selected.isMatched || !selected.isDefaultCall) {
+            trace.setEffectivePath({
+              candidateBidName: selected.bidName,
+              wasOverlayReplaced: effectiveCtx.activeOverlays.some(o => o.replacementTree !== undefined),
+              wasResolverRemapped: !selected.isDefaultCall,
+            });
+          }
           call = selected.resolvedCall;
         } else {
           trace.setSelectedTier("none");
+          const forcingState = effectiveCtx.dialogueState.forcingState;
+          if (
+            forcingState === ForcingState.GameForcing
+            || forcingState === ForcingState.ForcingOneRound
+          ) {
+            trace.setForcingDeclined(true);
+          }
           if (matchedIntentSuppressed) return null;
         }
+      }
+
+      // Compute practical recommendation if belief data available
+      let practicalRecommendation: import("../../shared/types").PracticalRecommendation | undefined;
+      if (publicBelief && pipelineCandidates) {
+        const resolvedDTOs = mapResolvedCandidates(pipelineCandidates);
+
+        // Generate pragmatic candidates when belief data is available
+        let pragmaticCandidates: import("./pragmatic-generator").PragmaticCandidate[] | undefined;
+        try {
+          const partner = partnerSeat(context.seat);
+          const partnerBeliefs = publicBelief.beliefs[partner];
+          const privatePosterior: PrivateBeliefState = {
+            seat: context.seat,
+            partnerSeat: partner,
+            partnerHcpRange: {
+              min: Math.max(partnerBeliefs.hcpRange.min, 0),
+              max: Math.min(partnerBeliefs.hcpRange.max, 40 - context.evaluation.hcp),
+            },
+            partnerSuitLengths: Object.fromEntries(
+              SUIT_ORDER.map((suit, i) => [
+                suit,
+                {
+                  min: Math.max(partnerBeliefs.suitLengths[suit].min, 0),
+                  max: Math.min(partnerBeliefs.suitLengths[suit].max, 13 - (context.evaluation.shape[i] ?? 0)),
+                },
+              ]),
+            ) as PrivateBeliefState["partnerSuitLengths"],
+          };
+          const existingCalls = new Set(resolvedDTOs.map(c => callKeyForDedup(c.resolvedCall)));
+
+          const rawPragmatic = generatePragmaticCandidates(context, privatePosterior, existingCalls);
+          // Forcing guard: exclude pragmatic Pass candidates when forcing state is active
+          const effectiveForcingState = result.protocolResult
+            ? buildEffectiveContext(context, config, result.protocolResult, publicBelief).dialogueState.forcingState
+            : undefined;
+          if (effectiveForcingState === ForcingState.ForcingOneRound || effectiveForcingState === ForcingState.GameForcing) {
+            pragmaticCandidates = rawPragmatic.filter(c => c.call.type !== "pass");
+          } else {
+            pragmaticCandidates = rawPragmatic;
+          }
+        } catch {
+          // Pragmatic generation errors don't block recommendation
+          pragmaticCandidates = undefined;
+        }
+
+        practicalRecommendation = computePracticalRecommendation(
+          resolvedDTOs, context, publicBelief, call,
+          (err) => trace.setPracticalError(err.message),
+          options?.interpretationProvider,
+          pragmaticCandidates,
+        ) ?? undefined;
       }
 
       return {
@@ -247,6 +202,10 @@ export function conventionToStrategy(
             )
           : undefined,
         evaluationTrace: trace.build(),
+        treeInferenceData: result.treeEvalResult
+          ? extractTreeInferenceData(result.treeEvalResult)
+          : undefined,
+        practicalRecommendation,
       };
     },
   };
