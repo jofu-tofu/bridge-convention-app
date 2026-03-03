@@ -40,12 +40,6 @@ export {
   // Interference protection conditions
   passedAfter,
   passedAfterDouble,
-  // SAYC query helpers (data-returning)
-  partnerOpeningStrain,
-  seatFirstBidStrain,
-  partnerRespondedMajor,
-  lastBid,
-  bidIsHigher,
   // Pure auction condition factories
   notPassedHand,
   opponentActed,
@@ -89,3 +83,13 @@ export {
   sixPlusInOpenedSuit,
   goodSuitAtLevel,
 } from "./hand-conditions";
+
+export {
+  // Data-returning query helpers (not condition factories)
+  partnerOpeningStrain,
+  seatFirstBidStrain,
+  partnerRespondedMajor,
+  lastBid,
+  bidIsHigher,
+  STRAIN_ORDER,
+} from "./auction-query";

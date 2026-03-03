@@ -8,7 +8,7 @@ import {
   partnerRespondedMajor,
   lastBid,
   bidIsHigher,
-} from "./auction-conditions";
+} from "./auction-query";
 
 // ─── HCP condition factories ─────────────────────────────────
 
