@@ -8,10 +8,11 @@ import {
   PendingAction,
   SystemMode,
 } from "../../core/dialogue/dialogue-state";
+import { STAYMAN_CAPABILITY } from "./constants";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import type { Call, Seat } from "../../../engine/types";
 import { Suit } from "../../../engine/types";
-import { areSamePartnership } from "../../core/dialogue/helpers";
+import { areSamePartnership, partnerOfOpener, isOpenerSeat } from "../../core/dialogue/helpers";
 
 function is2C(call: Call): boolean {
   return call.type === "bid" && call.level === 2 && call.strain === "C";
@@ -51,7 +52,8 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // via two-pass mode (config.baselineRules is set).
   {
     id: "1nt-doubled",
-    matches(state: DialogueState, call: Call, seat: Seat) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return (
         state.familyId === "1nt" &&
         call.type === "double" &&
@@ -60,16 +62,17 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
     },
     effects() {
       return {
-        setSystemMode: SystemMode.Modified,
+        setSystemCapability: { [STAYMAN_CAPABILITY]: SystemMode.Modified },
       };
     },
   },
 
-  // Stayman ask: 2C after 1NT family
+  // Stayman ask: 2C after 1NT family (partner of opener only)
   {
     id: "1nt-stayman-ask",
-    matches(state: DialogueState, call: Call) {
-      return state.familyId === "1nt" && is2C(call);
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
+      return state.familyId === "1nt" && is2C(call) && partnerOfOpener(state, seat);
     },
     effects() {
       return {
@@ -79,11 +82,12 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
     },
   },
 
-  // Stayman ask: 3C after 2NT family
+  // Stayman ask: 3C after 2NT family (partner of opener only)
   {
     id: "2nt-stayman-ask",
-    matches(state: DialogueState, call: Call) {
-      return state.familyId === "2nt" && is3C(call);
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
+      return state.familyId === "2nt" && is3C(call) && partnerOfOpener(state, seat);
     },
     effects() {
       return {
@@ -96,11 +100,13 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Opener responds with hearts (shows 4+ hearts)
   {
     id: "1nt-response-hearts",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return (
         state.familyId === "1nt" &&
         state.pendingAction === PendingAction.ShowMajor &&
-        (is2H(call) || is3H(call))
+        (is2H(call) || is3H(call)) &&
+        isOpenerSeat(state, seat)
       );
     },
     effects() {
@@ -116,11 +122,13 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Opener responds with spades (shows 4+ spades, denies hearts)
   {
     id: "1nt-response-spades",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return (
         state.familyId === "1nt" &&
         state.pendingAction === PendingAction.ShowMajor &&
-        (is2S(call) || is3S(call))
+        (is2S(call) || is3S(call)) &&
+        isOpenerSeat(state, seat)
       );
     },
     effects() {
@@ -136,11 +144,13 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Opener responds with denial (2D/3D — no 4-card major)
   {
     id: "1nt-response-denial",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return (
         state.familyId === "1nt" &&
         state.pendingAction === PendingAction.ShowMajor &&
-        (is2D(call) || is3D(call))
+        (is2D(call) || is3D(call)) &&
+        isOpenerSeat(state, seat)
       );
     },
     effects() {

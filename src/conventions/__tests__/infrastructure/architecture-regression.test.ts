@@ -16,7 +16,9 @@ import { evaluateProtocol } from "../../core/protocol-evaluator";
 import {
   CompetitionMode,
   SystemMode,
+  getSystemModeFor,
 } from "../../core/dialogue/dialogue-state";
+import { STAYMAN_CAPABILITY } from "../../definitions/stayman/constants";
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import { baselineTransitionRules } from "../../core/dialogue/baseline-transitions";
 import { staymanConfig } from "../../definitions/stayman/config";
@@ -100,8 +102,8 @@ describe("Test 4 (C14): Causality windowed auction", () => {
     const auctionLengthsAtIndex: number[] = [];
     const spyRule: TransitionRule = {
       id: "spy-causality",
-      matches(_state, _call, _seat, auction, entryIndex) {
-        seenIndices.push(entryIndex!);
+      matches(_state, _entry, auction, entryIndex) {
+        seenIndices.push(entryIndex);
         auctionLengthsAtIndex.push(auction.entries.length);
         return false;
       },
@@ -126,12 +128,12 @@ describe("Test 5 (C15): entryIndex passed to effects()", () => {
     const effectIdx: number[] = [];
     const spyRule: TransitionRule = {
       id: "spy-entry-index",
-      matches(_state, _call, _seat, _auction, entryIndex) {
-        matchIdx.push(entryIndex!);
+      matches(_state, _entry, _auction, entryIndex) {
+        matchIdx.push(entryIndex);
         return true;
       },
-      effects(_state, _call, _seat, _auction, entryIndex) {
-        effectIdx.push(entryIndex!);
+      effects(_state, _entry, _auction, entryIndex) {
+        effectIdx.push(entryIndex);
         return {};
       },
     };
@@ -154,7 +156,8 @@ describe("Test 6 (D19): Stayman doubled overlay activation", () => {
     const effective = buildEffectiveContext(ctx, staymanConfig, protoResult);
 
     expect(effective.dialogueState.competitionMode).toBe(CompetitionMode.Doubled);
-    expect(effective.dialogueState.systemMode).toBe(SystemMode.Modified);
+    expect(effective.dialogueState.systemMode).toBe(SystemMode.Off);
+    expect(getSystemModeFor(effective.dialogueState, STAYMAN_CAPABILITY)).toBe(SystemMode.Modified);
     const overlayIds = effective.activeOverlays.map(o => o.id);
     expect(overlayIds).toContain("stayman-doubled");
   });

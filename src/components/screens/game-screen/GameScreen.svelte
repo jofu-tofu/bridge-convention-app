@@ -3,9 +3,12 @@
   import { Seat } from "../../../engine/types";
   import type { Call, Card as CardType } from "../../../engine/types";
   import { getEngine, getGameStore, getAppStore } from "../../../stores/context";
+  import { BidGrade } from "../../../stores/bidding.svelte";
   import { startDrill } from "../../../drill/helpers";
   import { computeTableScale } from "../../../display/table-scale";
   import { mulberry32 } from "../../../util/seeded-rng";
+  import { toBeliefData } from "../../../inference/belief-converter";
+  import { conditionOnOwnHand } from "../../../inference/private-belief";
   import BiddingPhase from "./BiddingPhase.svelte";
   import DeclarerPromptPhase from "./DeclarerPromptPhase.svelte";
   import PlayingPhase from "./PlayingPhase.svelte";
@@ -91,7 +94,16 @@
     const convention = appStore.selectedConvention;
     if (!convention) return;
     dealNumber++;
-    await startDrill(engine, convention, userSeat, gameStore, makeDevRng());
+    await startDrill(engine, convention, userSeat, gameStore, makeDevRng(), undefined, {
+      beliefProvider: (ctx) => {
+        try {
+          const priv = conditionOnOwnHand(gameStore.publicBeliefState, ctx.seat, ctx.hand, ctx.evaluation);
+          return toBeliefData(gameStore.publicBeliefState, priv);
+        } catch {
+          return undefined;
+        }
+      },
+    });
   }
 
   onMount(() => {
@@ -130,7 +142,7 @@
 
   // Whether feedback is showing and blocking input
   const isFeedbackBlocking = $derived(
-    gameStore.bidFeedback !== null && !gameStore.bidFeedback.isCorrect,
+    gameStore.bidFeedback !== null && gameStore.bidFeedback.grade === BidGrade.Incorrect,
   );
 
   // Responsive table scaling — measure actual available space

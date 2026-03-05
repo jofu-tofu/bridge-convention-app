@@ -20,11 +20,13 @@ import {
 import type { AuctionCondition } from "../../core/types";
 import { handDecision, fallback } from "../../core/rule-tree";
 import type { HandNode } from "../../core/rule-tree";
-import { intentBid } from "../../core/intent/intent-node";
+import { createIntentBidFactory } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { protocol, round, semantic } from "../../core/protocol";
 import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
 import { raiseToGame, raiseToThree, strainToSuitIndex, strainToSuitName } from "./helpers";
+
+const bid = createIntentBidFactory("weak-twos");
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
 // ─── Established context ────────────────────────────────────
@@ -38,19 +40,19 @@ interface WeakTwoEstablished extends EstablishedContext {
 const openingTree: HandNode = handDecision(
   "has-6-hearts",
   and(suitMin(1, "hearts", 6), hcpRange(5, 11)),
-  intentBid("weak-two-opening", "Opens with a weak hand and long hearts",
+  bid("weak-two-opening-h", "Opens with a weak hand and long hearts",
     { type: SemanticIntentType.PreemptiveOpen, params: { suit: "hearts" } },
     (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
   handDecision(
     "has-6-spades",
     and(suitMin(0, "spades", 6), hcpRange(5, 11)),
-    intentBid("weak-two-opening", "Opens with a weak hand and long spades",
+    bid("weak-two-opening-s", "Opens with a weak hand and long spades",
       { type: SemanticIntentType.PreemptiveOpen, params: { suit: "spades" } },
       (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
     handDecision(
       "has-6-diamonds",
       and(suitMin(2, "diamonds", 6), hcpRange(5, 11)),
-      intentBid("weak-two-opening", "Opens with a weak hand and long diamonds",
+      bid("weak-two-opening-d", "Opens with a weak hand and long diamonds",
         { type: SemanticIntentType.PreemptiveOpen, params: { suit: "diamonds" } },
         (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
       fallback("no-weak-two"),
@@ -88,19 +90,19 @@ function partnerSuitSupport(n: number): import("../../core/types").HandCondition
 const responseTree: HandNode = handDecision(
   "game-strength-with-fit",
   and(hcpMin(16), partnerSuitSupport(3)),
-  intentBid("weak-two-game-raise", "Raises to game with a strong hand and support",
+  bid("weak-two-game-raise", "Raises to game with a strong hand and support",
     { type: SemanticIntentType.RaiseToGame, params: {} },
     raiseToGame),
   handDecision(
     "ogust-ask",
     hcpMin(16),
-    intentBid("weak-two-ogust-ask", "Asks about hand quality using Ogust",
+    bid("weak-two-ogust-ask", "Asks about hand quality using Ogust",
       { type: SemanticIntentType.AskHandQuality, params: {} },
       (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
     handDecision(
       "invite-with-fit",
       and(hcpRange(14, 15), partnerSuitSupport(3)),
-      intentBid("weak-two-invite", "Makes an invitational raise",
+      bid("weak-two-invite", "Makes an invitational raise",
         { type: SemanticIntentType.InviteGame, params: {} },
         raiseToThree),
       fallback("weak-pass"),
@@ -138,7 +140,7 @@ function ogustRebidTree(): HandNode {
   return handDecision(
     "solid-suit",
     openedSuitQuality(3),
-    intentBid("ogust-solid", "Shows a solid suit with AKQ",
+    bid("ogust-solid", "Shows a solid suit with AKQ",
       { type: SemanticIntentType.ShowHandQuality, params: { strength: "max", suitQuality: "solid" } },
       (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
     // min HCP range
@@ -149,10 +151,10 @@ function ogustRebidTree(): HandNode {
       handDecision(
         "min-good-suit",
         openedSuitQuality(2),
-        intentBid("ogust-min-good", "Shows minimum strength with a good suit",
+        bid("ogust-min-good", "Shows minimum strength with a good suit",
           { type: SemanticIntentType.ShowHandQuality, params: { strength: "min", suitQuality: "good" } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
-        intentBid("ogust-min-bad", "Shows minimum strength with a weak suit",
+        bid("ogust-min-bad", "Shows minimum strength with a weak suit",
           { type: SemanticIntentType.ShowHandQuality, params: { strength: "min", suitQuality: "bad" } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
       ),
@@ -160,10 +162,10 @@ function ogustRebidTree(): HandNode {
       handDecision(
         "max-good-suit",
         openedSuitQuality(2),
-        intentBid("ogust-max-good", "Shows maximum strength with a good suit",
+        bid("ogust-max-good", "Shows maximum strength with a good suit",
           { type: SemanticIntentType.ShowHandQuality, params: { strength: "max", suitQuality: "good" } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
-        intentBid("ogust-max-bad", "Shows maximum strength with a weak suit",
+        bid("ogust-max-bad", "Shows maximum strength with a weak suit",
           { type: SemanticIntentType.ShowHandQuality, params: { strength: "max", suitQuality: "bad" } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
       ),

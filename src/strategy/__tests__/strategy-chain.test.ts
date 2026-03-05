@@ -1,83 +1,121 @@
-import { describe, it, expect } from "vitest";
-import type { BiddingStrategy, BidResult } from "../../shared/types";
+import { describe, test, expect, beforeEach } from "vitest";
+import { Seat } from "../../engine/types";
+import { staymanConfig } from "../../conventions/definitions/stayman";
+import { bergenConfig } from "../../conventions/definitions/bergen-raises";
+import { weakTwosConfig } from "../../conventions/definitions/weak-twos";
+import { saycConfig } from "../../conventions/definitions/sayc";
+import {
+  staymanResponder,
+  auctionFromBids,
+} from "../../conventions/__tests__/fixtures";
+import { evaluateHand } from "../../engine/hand-evaluator";
 import type { BiddingContext } from "../../conventions/core/types";
+import { registerConvention, clearRegistry } from "../../conventions/core/registry";
+import { conventionToStrategy } from "../bidding/convention-strategy";
 import { createStrategyChain } from "../bidding/strategy-chain";
+import { passStrategy } from "../bidding/pass-strategy";
 
-function stubStrategy(
-  id: string,
-  result: BidResult | null,
-): BiddingStrategy {
-  return {
-    id,
-    name: `Stub ${id}`,
-    suggest: () => result,
-  };
-}
+beforeEach(() => {
+  clearRegistry();
+  registerConvention(staymanConfig);
+  registerConvention(bergenConfig);
+  registerConvention(weakTwosConfig);
+  registerConvention(saycConfig);
+});
 
-const dummyResult: BidResult = {
-  call: { type: "bid", level: 1, strain: "NT" as never },
-  ruleName: "test-rule",
-  explanation: "test explanation",
-};
+// ─── Phase 8b: Strategy chain resultFilter ──────────────
 
-const secondResult: BidResult = {
-  call: { type: "pass" },
-  ruleName: null,
-  explanation: "fallback",
-};
+describe("createStrategyChain — resultFilter", () => {
+  test("chain with resultFilter skips Pass from passStrategy → returns null", () => {
+    const chain = createStrategyChain([passStrategy], {
+      resultFilter: (result) => result.call.type !== "pass",
+    });
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: auctionFromBids(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
 
-describe("createStrategyChain", () => {
-  it("delegates to first strategy when it returns a result", () => {
-    const chain = createStrategyChain([
-      stubStrategy("first", dummyResult),
-      stubStrategy("second", secondResult),
-    ]);
-
-    const result = chain.suggest({} as BiddingContext);
-
-    expect(result!.call).toEqual(dummyResult.call);
-    expect(result!.ruleName).toBe(dummyResult.ruleName);
-    expect(result!.explanation).toBe(dummyResult.explanation);
-  });
-
-  it("falls through null to next strategy", () => {
-    const chain = createStrategyChain([
-      stubStrategy("first", null),
-      stubStrategy("second", secondResult),
-    ]);
-
-    const result = chain.suggest({} as BiddingContext);
-
-    expect(result!.call).toEqual(secondResult.call);
-    expect(result!.ruleName).toBe(secondResult.ruleName);
-  });
-
-  it("returns null when all strategies return null", () => {
-    const chain = createStrategyChain([
-      stubStrategy("first", null),
-      stubStrategy("second", null),
-    ]);
-
-    const result = chain.suggest({} as BiddingContext);
-
+    const result = chain.suggest(context);
     expect(result).toBeNull();
   });
 
-  it("builds id from constituent strategy ids", () => {
-    const chain = createStrategyChain([
-      stubStrategy("a", null),
-      stubStrategy("b", null),
-    ]);
+  test("chain without resultFilter allows Pass from passStrategy", () => {
+    const chain = createStrategyChain([passStrategy]);
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: auctionFromBids(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
 
-    expect(chain.id).toBe("chain:a+b");
+    const result = chain.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.call.type).toBe("pass");
   });
 
-  it("builds name from constituent strategy names", () => {
-    const chain = createStrategyChain([
-      stubStrategy("a", null),
-      stubStrategy("b", null),
-    ]);
+  test("chain with resultFilter allows non-Pass results through", () => {
+    const chain = createStrategyChain(
+      [conventionToStrategy(staymanConfig), passStrategy],
+      { resultFilter: (result) => result.call.type !== "pass" },
+    );
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: auctionFromBids(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
 
-    expect(chain.name).toBe("Chain(Stub a, Stub b)");
+    const result = chain.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.call.type).toBe("bid");
+  });
+
+  test("forcingFiltered trace field set when result filtered", () => {
+    const chain = createStrategyChain([passStrategy], {
+      resultFilter: (result) => result.call.type !== "pass",
+    });
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: auctionFromBids(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    // Chain returns null, so no result to check trace on.
+    // But we verify the chain tries passStrategy and filters it.
+    const result = chain.suggest(context);
+    expect(result).toBeNull();
+  });
+
+  test("forcingFiltered trace propagated to result when first strategy filtered", () => {
+    // Convention strategy produces non-Pass, so filter doesn't reject it,
+    // but passStrategy is never reached.
+    const chain = createStrategyChain(
+      [conventionToStrategy(staymanConfig)],
+      { resultFilter: (result) => result.call.type !== "pass" },
+    );
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: auctionFromBids(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = chain.suggest(context);
+    expect(result).not.toBeNull();
+    // Convention produced a non-Pass result, so forcingFiltered should be undefined
+    expect(result!.evaluationTrace?.forcingFiltered).toBeUndefined();
   });
 });

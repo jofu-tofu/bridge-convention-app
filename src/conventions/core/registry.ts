@@ -2,17 +2,19 @@ import type {
   ConventionConfig,
   BiddingRule,
   BiddingContext,
+  BiddingRuleResult,
   ConditionResult,
+  ConventionLookup,
 } from "./types";
+export type { BiddingRuleResult } from "./types";
 import type { Call } from "../../engine/types";
 import { isLegalCall } from "../../engine/auction";
 import {
   isConditionedRule,
   evaluateConditions,
 } from "./condition-evaluator";
-import type { RuleNode, BidAlert } from "./rule-tree";
-import type { TreeEvalResult } from "./tree-evaluator";
-import { evaluateTree } from "./tree-evaluator";
+import type { RuleNode } from "./rule-tree";
+import { applyOverlayTreeReplacement } from "./overlay-tree-replacement";
 import { treeResultToBiddingRuleResult, flattenProtocol } from "./tree-compat";
 import type { ProtocolEvalResult, SemanticTrigger } from "./protocol";
 import { validateProtocol } from "./protocol";
@@ -23,6 +25,7 @@ import { computeDialogueState } from "./dialogue/dialogue-manager";
 import { baselineTransitionRules } from "./dialogue/baseline-transitions";
 import { analyzeConvention } from "./diagnostics";
 import type { DiagnosticWarning } from "./diagnostics";
+import type { Auction } from "../../engine/types";
 
 const registry = new Map<string, ConventionConfig>();
 const diagnosticsCache = new Map<string, DiagnosticWarning[]>();
@@ -98,53 +101,21 @@ export function getConventionRules(id: string): readonly BiddingRule[] {
   return getEffectiveRules(getConvention(id));
 }
 
-export interface BiddingRuleResult {
-  readonly call: Call;
-  readonly rule: string;
-  readonly explanation: string;
-  readonly meaning?: string;
-  readonly conditionResults?: readonly ConditionResult[];
-  /** Raw tree evaluation result — available for conventions using rule trees.
-   *  Carries DecisionNode references, so must not cross the shared/ boundary directly. */
-  readonly treeEvalResult?: TreeEvalResult;
-  /** The tree root used for evaluation — needed by mappers that compute depth/parent info. */
-  readonly treeRoot?: RuleNode;
-  /** Full protocol evaluation result — available for protocol-based conventions. */
-  readonly protocolResult?: ProtocolEvalResult;
-  /** Alert metadata from matched IntentNode — for conventional (non-natural) bids. */
-  readonly alert?: BidAlert;
-}
-
 export function evaluateBiddingRules(
   context: BiddingContext,
   config: ConventionConfig,
+  lookupConvention?: ConventionLookup,
 ): BiddingRuleResult | null {
   // Protocol convention dispatch
   if (config.protocol) {
-    // Pre-compute trigger overrides from matching overlays before protocol evaluation
-    let triggerOverrides: ReadonlyMap<string, readonly SemanticTrigger[]> | undefined;
-    if (config.overlays) {
-      const dialogueState = config.baselineRules
-        ? computeDialogueState(context.auction, config.transitionRules ?? [], config.baselineRules)
-        : computeDialogueState(context.auction, config.transitionRules ?? baselineTransitionRules);
-
-      triggerOverrides = collectTriggerOverrides(config.overlays, dialogueState);
-    }
-
+    const triggerOverrides = computeTriggerOverridesForConfig(config, context.auction);
     const protoResult = evaluateProtocol(config.protocol, context, triggerOverrides);
-
-    // Apply overlay tree replacement if active
-    let handResult = protoResult.handResult;
-    let treeRoot = protoResult.handTreeRoot as RuleNode | undefined;
-    if (config.overlays && protoResult.activeRound) {
-      const effectiveCtx = buildEffectiveContext(context, config, protoResult);
-      // First overlay with replacementTree wins
-      const overlayWithTree = effectiveCtx.activeOverlays.find(o => o.replacementTree);
-      if (overlayWithTree?.replacementTree) {
-        treeRoot = overlayWithTree.replacementTree;
-        handResult = evaluateTree(treeRoot, context);
-      }
-    }
+    const { handResult, treeRoot } = applyProtocolOverlays(
+      config,
+      context,
+      protoResult,
+      lookupConvention,
+    );
 
     const result = treeResultToBiddingRuleResult(handResult, context);
     if (!result) return null;
@@ -161,6 +132,46 @@ export function evaluateBiddingRules(
   throw new Error(
     `Convention "${config.id}" has no protocol. All conventions must use protocols.`,
   );
+}
+
+/**
+ * @internal Computes trigger overrides from active overlays for a convention/auction pair.
+ */
+export function computeTriggerOverridesForConfig(
+  config: ConventionConfig,
+  auction: Auction,
+): ReadonlyMap<string, readonly SemanticTrigger[]> | undefined {
+  if (!config.overlays) return undefined;
+  const dialogueState = config.baselineRules
+    ? computeDialogueState(auction, config.transitionRules ?? [], config.baselineRules)
+    : computeDialogueState(auction, config.transitionRules ?? baselineTransitionRules);
+
+  return collectTriggerOverrides(config.overlays, dialogueState);
+}
+
+/**
+ * @internal Applies active overlay tree replacements to protocol evaluation output.
+ */
+export function applyProtocolOverlays(
+  config: ConventionConfig,
+  context: BiddingContext,
+  protoResult: ProtocolEvalResult,
+  lookupConvention?: ConventionLookup,
+): { handResult: ProtocolEvalResult["handResult"]; treeRoot: RuleNode | undefined } {
+  let handResult = protoResult.handResult;
+  let treeRoot = protoResult.handTreeRoot as RuleNode | undefined;
+  if (config.overlays && protoResult.activeRound) {
+    const effectiveCtx = buildEffectiveContext(context, config, protoResult, undefined, lookupConvention);
+    const replaced = applyOverlayTreeReplacement(
+      effectiveCtx.activeOverlays,
+      treeRoot!,
+      context,
+      handResult,
+    );
+    treeRoot = replaced.root;
+    handResult = replaced.result;
+  }
+  return { handResult, treeRoot };
 }
 
 export interface DebugRuleResult {

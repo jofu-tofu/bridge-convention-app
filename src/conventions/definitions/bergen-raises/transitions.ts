@@ -5,6 +5,7 @@
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import type { Call } from "../../../engine/types";
+import { partnerOfOpener } from "../../core/dialogue/helpers";
 
 function isMajorOpening(call: Call): boolean {
   return (
@@ -15,30 +16,34 @@ function isMajorOpening(call: Call): boolean {
 }
 
 export const bergenTransitionRules: readonly TransitionRule[] = [
-  // Detect 1H/1S opening — sets familyId and stores opener's major
+  // Detect 1H/1S opening — sets familyId, stores opener's major and openerSeat
   {
     id: "bergen-major-opening",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call } = entry;
       return state.familyId === null && isMajorOpening(call);
     },
-    effects(_state: DialogueState, call: Call) {
+    effects(_state: DialogueState, entry) {
+      const { call, seat } = entry;
       const strain = call.type === "bid" ? call.strain : null;
       return {
         setFamilyId: "bergen",
-        mergeConventionData: { openerMajor: strain },
+        mergeConventionData: { openerMajor: strain, openerSeat: seat },
       };
     },
   },
 
-  // Bergen responses set agreed strain
+  // Bergen responses set agreed strain (partner of opener only)
   {
     id: "bergen-constructive",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return (
         state.familyId === "bergen" &&
         call.type === "bid" &&
         call.level === 3 &&
-        call.strain === "C"
+        call.strain === "C" &&
+        partnerOfOpener(state, seat)
       );
     },
     effects(state: DialogueState) {
@@ -53,12 +58,14 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
 
   {
     id: "bergen-limit",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return (
         state.familyId === "bergen" &&
         call.type === "bid" &&
         call.level === 3 &&
-        call.strain === "D"
+        call.strain === "D" &&
+        partnerOfOpener(state, seat)
       );
     },
     effects(state: DialogueState) {

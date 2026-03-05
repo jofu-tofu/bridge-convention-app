@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { Seat } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { buildAuction } from "../../../engine/auction-helpers";
@@ -7,15 +7,70 @@ import type { BiddingContext } from "../../core/types";
 import { buildEffectiveContext } from "../../core/effective-context";
 import { evaluateProtocol } from "../../core/protocol-evaluator";
 import { staymanConfig } from "../../definitions/stayman";
-import { registerConvention, clearRegistry } from "../../core/registry";
-import { SystemMode } from "../../core/dialogue/dialogue-state";
-
-beforeEach(() => {
-  clearRegistry();
-  registerConvention(staymanConfig);
-});
+import { InterferenceKind, SystemMode } from "../../core/dialogue/dialogue-state";
+import { ConventionCategory } from "../../core/types";
+import type { ConventionConfig } from "../../core/types";
 
 describe("buildEffectiveContext", () => {
+  it("uses injected lookup and works without registry setup", () => {
+    const opponentConvention: ConventionConfig = {
+      id: "opponent-local-map",
+      name: "Opponent Local Map",
+      description: "Synthetic opponent convention for injected lookup tests",
+      category: ConventionCategory.Competitive,
+      dealConstraints: { seats: [] },
+      protocol: staymanConfig.protocol,
+      interferenceSignatures: [
+        {
+          kind: InterferenceKind.TakeoutDouble,
+          isNatural: false,
+          matches(call) {
+            return call.type === "double";
+          },
+        },
+      ],
+    };
+    const localLookup = (id: string): ConventionConfig => {
+      if (id === opponentConvention.id) return opponentConvention;
+      throw new Error(`missing local convention: ${id}`);
+    };
+
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [opponentConvention.id],
+    };
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, context);
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult, undefined, localLookup);
+
+    expect(effective.dialogueState.interferenceDetail).toBeDefined();
+    expect(effective.dialogueState.interferenceDetail!.kind).toBe(InterferenceKind.TakeoutDouble);
+    expect(effective.dialogueState.interferenceDetail!.isNatural).toBe(false);
+  });
+
+  it("propagates errors from injected lookup for missing IDs", () => {
+    const throwingLookup = (id: string): ConventionConfig => {
+      throw new Error(`injected lookup failed: ${id}`);
+    };
+
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: ["missing-injected"],
+    };
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, context);
+
+    expect(() =>
+      buildEffectiveContext(context, staymanConfig, protoResult, undefined, throwingLookup))
+      .toThrowError("injected lookup failed: missing-injected");
+  });
+
   it("produces correct dialogueState for Stayman 1NT-P-2C auction", () => {
     // Opener's perspective after 1NT-P-2C-P (opener responds to Stayman)
     const h = staymanOpener();
@@ -99,5 +154,61 @@ describe("buildEffectiveContext", () => {
 
     expect(effective.protocolResult.established).toBeDefined();
     expect(effective.protocolResult.established.role).toBeDefined();
+  });
+
+  it("classifies interference from registered opponent convention signatures", () => {
+    const opponentConvention: ConventionConfig = {
+      id: "opponent-test-signatures",
+      name: "Opponent Test Signatures",
+      description: "Synthetic opponent convention for interference classification",
+      category: ConventionCategory.Competitive,
+      dealConstraints: { seats: [] },
+      protocol: staymanConfig.protocol,
+      interferenceSignatures: [
+        {
+          kind: InterferenceKind.TakeoutDouble,
+          isNatural: false,
+          matches(call) {
+            return call.type === "double";
+          },
+        },
+      ],
+    };
+    const localLookup = (id: string): ConventionConfig => {
+      if (id === opponentConvention.id) return opponentConvention;
+      throw new Error(`missing local convention: ${id}`);
+    };
+
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: ["opponent-test-signatures"],
+    };
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, context);
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult, undefined, localLookup);
+
+    expect(effective.dialogueState.interferenceDetail).toBeDefined();
+    expect(effective.dialogueState.interferenceDetail!.kind).toBe(InterferenceKind.TakeoutDouble);
+    expect(effective.dialogueState.interferenceDetail!.isNatural).toBe(false);
+  });
+
+  it("no-op classification when opponentConventionIds is empty", () => {
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, context);
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+
+    expect(effective.dialogueState.interferenceDetail).toBeDefined();
+    expect(effective.dialogueState.interferenceDetail!.kind).toBe(InterferenceKind.Unknown);
+    expect(effective.dialogueState.interferenceDetail!.isNatural).toBe(true);
   });
 });

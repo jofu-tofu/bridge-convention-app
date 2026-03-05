@@ -3,18 +3,12 @@
 
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { SystemMode } from "../../core/dialogue/dialogue-state";
+import { SystemMode, getSystemModeFor } from "../../core/dialogue/dialogue-state";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import type { IntentResolverFn, IntentResolverMap } from "../../core/intent/intent-resolver";
-
-const STRAIN_TO_BIDSUIT: Record<string, BidSuit> = {
-  clubs: BidSuit.Clubs,
-  diamonds: BidSuit.Diamonds,
-  hearts: BidSuit.Hearts,
-  spades: BidSuit.Spades,
-  notrump: BidSuit.NoTrump,
-};
+import { STAYMAN_CAPABILITY } from "./constants";
+import { STRAIN_TO_BIDSUIT } from "../shared-helpers";
 
 /** Stayman bid level: 2 after 1NT, 3 after 2NT. Defaults to 2 (common case). */
 function staymanLevel(state: DialogueState): 2 | 3 {
@@ -23,7 +17,7 @@ function staymanLevel(state: DialogueState): 2 | 3 {
 
 const askForMajor: IntentResolverFn = (_intent, state) => {
   // System off → intent invalid, exclude candidate entirely
-  if (state.systemMode === SystemMode.Off) return { status: "declined" };
+  if (getSystemModeFor(state, STAYMAN_CAPABILITY) === SystemMode.Off) return { status: "declined" };
   const level = staymanLevel(state);
   return {
     status: "resolved",
@@ -32,7 +26,7 @@ const askForMajor: IntentResolverFn = (_intent, state) => {
 };
 
 const showHeldSuit: IntentResolverFn = (intent, state) => {
-  if (state.systemMode === SystemMode.Off) return { status: "declined" };
+  if (getSystemModeFor(state, STAYMAN_CAPABILITY) === SystemMode.Off) return { status: "declined" };
   const suit = intent.params["suit"] as string;
   const strain = STRAIN_TO_BIDSUIT[suit];
   if (!strain) return { status: "declined" };
@@ -44,7 +38,7 @@ const showHeldSuit: IntentResolverFn = (intent, state) => {
 };
 
 const denyHeldSuit: IntentResolverFn = (_intent, state) => {
-  if (state.systemMode === SystemMode.Off) return { status: "declined" };
+  if (getSystemModeFor(state, STAYMAN_CAPABILITY) === SystemMode.Off) return { status: "declined" };
   const level = staymanLevel(state);
   return {
     status: "resolved",

@@ -7,19 +7,30 @@ import type {
   BiddingStrategy,
   BidResult,
   BidHistoryEntry,
+  PracticalRecommendation,
 } from "../shared/types";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callsMatch } from "../engine/call-helpers";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import type { GameStoreOptions } from "./game.svelte";
+import {
+  BidGrade,
+  resolveTeachingAnswer,
+  gradeBid,
+} from "../drill/teaching-resolution";
+import type { TeachingResolution } from "../drill/teaching-resolution";
 
 export type { BidHistoryEntry } from "../shared/types";
+export { BidGrade } from "../drill/teaching-resolution";
+export type { TeachingResolution } from "../drill/teaching-resolution";
 
 export interface BidFeedback {
-  readonly isCorrect: boolean;
+  readonly grade: BidGrade;
   readonly userCall: Call;
   readonly expectedResult: BidResult | null;
+  readonly teachingResolution: TeachingResolution | null;
+  readonly practicalRecommendation?: PracticalRecommendation;
 }
 
 const AI_BID_DELAY = 300;
@@ -143,19 +154,28 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       );
     }
 
-    const isCorrect = callsMatch(
-      call,
-      expectedResult?.call ?? { type: "pass" },
-    );
+    let teachingResolution: TeachingResolution | null = null;
+    let grade: BidGrade;
+    if (expectedResult) {
+      teachingResolution = resolveTeachingAnswer(expectedResult);
+      grade = gradeBid(call, teachingResolution);
+    } else {
+      grade = callsMatch(call, { type: "pass" })
+        ? BidGrade.Correct
+        : BidGrade.Incorrect;
+    }
+    const isCorrect = grade === BidGrade.Correct || grade === BidGrade.Acceptable;
 
     bidFeedback = {
-      isCorrect,
+      grade,
       userCall: call,
       expectedResult: expectedResult ?? {
         call: { type: "pass" },
         ruleName: null,
         explanation: "No convention bid applies — pass",
       },
+      teachingResolution,
+      practicalRecommendation: expectedResult?.practicalRecommendation,
     };
 
     const auctionBeforeUser = auction;

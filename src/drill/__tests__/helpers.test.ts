@@ -90,6 +90,44 @@ describe("startDrill", () => {
     registerConvention(saycConfig);
   });
 
+  it("supports injected lookup without registry setup", async () => {
+    clearRegistry();
+    const localLookup = (id: string): ConventionConfig => {
+      if (id === "stayman") return staymanConfig;
+      if (id === "sayc") return saycConfig;
+      throw new Error(`missing local convention: ${id}`);
+    };
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
+
+    await startDrill(engine, staymanConfig, Seat.South, gameStore, undefined, undefined, {
+      lookupConvention: localLookup,
+    });
+
+    expect(gameStore.startDrill).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates errors from injected lookup for missing IDs", async () => {
+    clearRegistry();
+    const throwingLookup = (id: string): ConventionConfig => {
+      if (id === "stayman") return staymanConfig;
+      throw new Error(`injected lookup failed: ${id}`);
+    };
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
+
+    await expect(
+      startDrill(engine, staymanConfig, Seat.South, gameStore, undefined, undefined, {
+        lookupConvention: throwingLookup,
+      }),
+    )
+      .rejects.toThrowError("injected lookup failed: sayc");
+  });
+
   it("includes opponent pass constraints in generateDeal call", async () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });

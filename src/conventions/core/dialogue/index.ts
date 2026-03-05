@@ -6,6 +6,7 @@ export {
   CompetitionMode,
   CaptainRole,
   SystemMode,
+  getSystemModeFor,
 } from "./dialogue-state";
 export type { DialogueState, AgreedStrain, InterferenceDetail } from "./dialogue-state";
 
@@ -14,7 +15,7 @@ export { applyEffect, applyBackfillEffect, getEffectKeys } from "./dialogue-tran
 
 export { computeDialogueState, INITIAL_DIALOGUE_STATE } from "./dialogue-manager";
 export { baselineTransitionRules } from "./baseline-transitions";
-export { areSamePartnership } from "./helpers";
+export { areSamePartnership, partnerOfOpener, isOpenerSeat } from "./helpers";
 
 export type { ClassifiedEntry } from "./event-classifier";
 export { classifyAuctionEntry } from "./event-classifier";

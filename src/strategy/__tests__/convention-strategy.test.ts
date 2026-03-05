@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from "vitest";
+import { describe, test, expect } from "vitest";
 import { Seat, BidSuit } from "../../engine/types";
 import type { ContractBid } from "../../engine/types";
 import { staymanConfig } from "../../conventions/definitions/stayman";
@@ -14,32 +14,75 @@ import {
   hand,
 } from "../../conventions/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import type { BiddingContext, ConditionResult } from "../../conventions/core/types";
-import { registerConvention, clearRegistry } from "../../conventions/core/registry";
-import { conventionToStrategy, extractForkPoint, mapVisitedWithStructure, mapConditionResult } from "../bidding/convention-strategy";
-import type { TreePathEntry } from "../../shared/types";
-import type { DecisionNode } from "../../conventions/core/rule-tree";
-import { decision, fallback } from "../../conventions/core/rule-tree";
-import { intentBid } from "../../conventions/core/intent/intent-node";
-import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
-import type { PathEntry } from "../../conventions/core/tree-evaluator";
+import type { BiddingContext } from "../../conventions/core/types";
+import { conventionToStrategy } from "../bidding/convention-strategy";
 import type { ConventionOverlayPatch } from "../../conventions/core/overlay";
 import { ConventionCategory } from "../../conventions/core/types";
 import type { ConventionConfig } from "../../conventions/core/types";
+import { InterferenceKind } from "../../conventions/core/dialogue/dialogue-state";
 import { protocol, round, semantic } from "../../conventions/core/protocol";
 import { hcpMin, bidMade, isResponder } from "../../conventions/core/conditions";
-import { handDecision } from "../../conventions/core/rule-tree";
+import { handDecision, fallback } from "../../conventions/core/rule-tree";
 import { buildAuction } from "../../engine/auction-helpers";
-
-beforeEach(() => {
-  clearRegistry();
-  registerConvention(staymanConfig);
-  registerConvention(bergenConfig);
-  registerConvention(weakTwosConfig);
-  registerConvention(saycConfig);
-});
+import type { IntentResolverMap } from "../../conventions/core/intent/intent-resolver";
+import { intentBid } from "../../conventions/core/intent/intent-node";
+import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
 
 describe("conventionToStrategy", () => {
+  test("supports injected lookup without registry setup", () => {
+    const opponentConvention: ConventionConfig = {
+      id: "opponent-local-map",
+      name: "Opponent Local Map",
+      description: "Synthetic opponent convention for injected lookup tests",
+      category: ConventionCategory.Competitive,
+      dealConstraints: { seats: [] },
+      protocol: staymanConfig.protocol,
+      interferenceSignatures: [
+        {
+          kind: InterferenceKind.TakeoutDouble,
+          isNatural: false,
+          matches(call) {
+            return call.type === "double";
+          },
+        },
+      ],
+    };
+    const localLookup = (id: string): ConventionConfig => {
+      if (id === opponentConvention.id) return opponentConvention;
+      throw new Error(`missing local convention: ${id}`);
+    };
+    const strategy = conventionToStrategy(staymanConfig, { lookupConvention: localLookup });
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: auctionFromBids(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [opponentConvention.id],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.ruleName).toBe("stayman-penalty-redouble");
+  });
+
+  test("propagates errors from injected lookup for missing IDs", () => {
+    const throwingLookup = (id: string): ConventionConfig => {
+      throw new Error(`injected lookup failed: ${id}`);
+    };
+    const strategy = conventionToStrategy(staymanConfig, { lookupConvention: throwingLookup });
+    const h = staymanResponder();
+    const context: BiddingContext = {
+      hand: h,
+      auction: auctionFromBids(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: ["missing-injected"],
+    };
+
+    expect(() => strategy.suggest(context)).toThrowError("injected lookup failed: missing-injected");
+  });
+
   test("returns BiddingStrategy with convention-prefixed id and name", () => {
     const strategy = conventionToStrategy(staymanConfig);
     expect(strategy.id).toBe("convention:stayman");
@@ -152,183 +195,6 @@ describe("conventionToStrategy", () => {
     expect(result).not.toBeNull();
     expect(result!.ruleName).toBe("stayman-response-hearts");
     expect(result!.explanation).toContain("heart");
-  });
-});
-
-describe("extractForkPoint", () => {
-  function entry(
-    nodeName: string,
-    passed: boolean,
-    parentNodeName: string | null,
-    depth = 0,
-  ): TreePathEntry {
-    return { nodeName, passed, description: `${nodeName} desc`, depth, parentNodeName };
-  }
-
-  test("finds last adjacent pass/fail pair with same parent", () => {
-    const entries: TreePathEntry[] = [
-      entry("a", true, null, 0),
-      entry("b", true, "a", 1),
-      entry("c", false, "b", 2),   // rejected sibling
-      entry("d", true, "b", 2),    // matched sibling
-    ];
-    const fork = extractForkPoint(entries);
-    expect(fork).toBeDefined();
-    expect(fork!.matched.nodeName).toBe("d");
-    expect(fork!.rejected.nodeName).toBe("c");
-  });
-
-  test("returns undefined when all entries pass", () => {
-    const entries: TreePathEntry[] = [
-      entry("a", true, null, 0),
-      entry("b", true, "a", 1),
-    ];
-    expect(extractForkPoint(entries)).toBeUndefined();
-  });
-
-  test("returns undefined for empty array", () => {
-    expect(extractForkPoint([])).toBeUndefined();
-  });
-
-  test("ignores adjacent pass/fail from different parents", () => {
-    const entries: TreePathEntry[] = [
-      entry("a", true, null, 0),
-      entry("b", false, "a", 1),  // parent is "a"
-      entry("c", true, "x", 1),   // parent is "x" — different parent, not siblings
-    ];
-    // Only a/b are adjacent with different pass values, and they share parent null/a
-    // b has parent "a", c has parent "x" — not siblings
-    const fork = extractForkPoint(entries);
-    // a(true, null) and b(false, "a") — different parents, not siblings
-    expect(fork).toBeUndefined();
-  });
-});
-
-// ─── Task 2: bestBranch marking when all branches fail ──────
-
-describe("mapConditionResult — bestBranch marking", () => {
-  function makeCond(name: string) {
-    return { name, label: name, category: "hand" as const, test: () => false, describe: () => "desc" };
-  }
-
-  test("no branch marked as best when all branches have 0 passing conditions", () => {
-    const cr: ConditionResult = {
-      condition: makeCond("or-test"),
-      passed: false,
-      description: "all branches fail",
-      branches: [
-        {
-          passed: false,
-          results: [
-            { condition: makeCond("c1"), passed: false, description: "c1 fail" },
-          ],
-        },
-        {
-          passed: false,
-          results: [
-            { condition: makeCond("c2"), passed: false, description: "c2 fail" },
-          ],
-        },
-      ],
-    };
-
-    const detail = mapConditionResult(cr);
-    // When all branches score 0, no branch should be marked as best
-    for (const child of detail.children ?? []) {
-      expect(child.isBestBranch).toBe(false);
-    }
-  });
-
-  test("best branch marked correctly when one branch has passing conditions", () => {
-    const cr: ConditionResult = {
-      condition: makeCond("or-test"),
-      passed: true,
-      description: "one branch passes",
-      branches: [
-        {
-          passed: false,
-          results: [
-            { condition: makeCond("c1"), passed: false, description: "c1 fail" },
-          ],
-        },
-        {
-          passed: true,
-          results: [
-            { condition: makeCond("c2"), passed: true, description: "c2 pass" },
-          ],
-        },
-      ],
-    };
-
-    const detail = mapConditionResult(cr);
-    expect(detail.children![0]!.isBestBranch).toBe(false);
-    expect(detail.children![1]!.isBestBranch).toBe(true);
-  });
-});
-
-// ─── Task 3: buildNodeInfo duplicate name handling ──────────
-
-describe("mapVisitedWithStructure — duplicate DecisionNode names", () => {
-  const alwaysTrue = { name: "always", label: "always", category: "hand" as const, test: () => true, describe: () => "yes" };
-  const alwaysFalse = { name: "never", label: "never", category: "hand" as const, test: () => false, describe: () => "no" };
-
-  test("two DecisionNodes sharing the same name get correct depth and parent info", () => {
-    // Build tree with duplicate "check-suit" names at different depths:
-    //   root (depth 0)
-    //     YES -> middle (depth 1)
-    //              YES -> "check-suit" at depth 2, parent "middle"
-    //              NO  -> fallback
-    //     NO  -> "check-suit" at depth 1, parent "root"
-    //
-    // DFS visits YES branch first: root -> middle -> checkSuitDeep (depth 2, parent "middle")
-    // Then NO branch: checkSuitShallow (depth 1, parent "root")
-    //
-    // With name-keyed map, checkSuitShallow (visited second in DFS) overwrites checkSuitDeep.
-    // If visited entries reference checkSuitDeep, lookup by name returns depth=1/parent="root"
-    // instead of depth=2/parent="middle".
-    const checkSuitDeep: DecisionNode = decision(
-      "check-suit", alwaysTrue,
-      intentBid("bid-deep", "Test: bid-deep", { type: SemanticIntentType.Signoff, params: {} }, () => ({ type: "pass" as const })),
-      fallback("no match"),
-    );
-    const middle: DecisionNode = decision(
-      "middle", alwaysTrue,
-      checkSuitDeep,
-      fallback("no match"),
-    );
-    const checkSuitShallow: DecisionNode = decision(
-      "check-suit", alwaysFalse,
-      intentBid("bid-shallow", "Test: bid-shallow", { type: SemanticIntentType.Signoff, params: {} }, () => ({ type: "pass" as const })),
-      fallback("no match"),
-    );
-    const root: DecisionNode = decision(
-      "root", alwaysTrue,
-      middle,
-      checkSuitShallow,
-    );
-
-    // Simulate visited: root(pass) -> middle(pass) -> checkSuitDeep(pass)
-    // This is the YES path through the tree
-    const visited: PathEntry[] = [
-      { node: root, passed: true, description: "root passed" },
-      { node: middle, passed: true, description: "middle passed" },
-      { node: checkSuitDeep, passed: true, description: "check-suit passed" },
-    ];
-
-    const result = mapVisitedWithStructure(visited, root);
-
-    // root: depth 0, parent null
-    expect(result[0]!.depth).toBe(0);
-    expect(result[0]!.parentNodeName).toBeNull();
-
-    // middle: depth 1, parent "root"
-    expect(result[1]!.depth).toBe(1);
-    expect(result[1]!.parentNodeName).toBe("root");
-
-    // checkSuitDeep: should be depth 2, parent "middle"
-    // Bug: name-keyed map overwrites with checkSuitShallow (depth 1, parent "root")
-    expect(result[2]!.depth).toBe(2);
-    expect(result[2]!.parentNodeName).toBe("middle");
   });
 });
 
@@ -495,6 +361,26 @@ describe("conventionToStrategy — resolvedCandidates (Gap 8)", () => {
     // First candidate is the matched one
     expect(candidates[0]!.isMatched).toBe(true);
   });
+
+  test("resolvedCandidates DTO includes provenance", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const opener = staymanOpener();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    const candidates = result!.treePath!.resolvedCandidates!;
+    const matched = candidates.find(c => c.isMatched);
+
+    expect(matched).toBeDefined();
+    expect(matched!.provenance).toEqual({ origin: "tree" });
+  });
 });
 
 describe("conventionToStrategy — suppression fallback", () => {
@@ -529,7 +415,6 @@ describe("conventionToStrategy — suppression fallback", () => {
       ]),
       overlays: [overlay],
     };
-    registerConvention(testConfig);
 
     const strategy = conventionToStrategy(testConfig);
     // 13 HCP hand → matches hcpMin(8) → ask-bid, but overlay suppresses it
@@ -544,5 +429,431 @@ describe("conventionToStrategy — suppression fallback", () => {
 
     const result = strategy.suggest(context);
     expect(result).toBeNull();
+  });
+});
+
+describe("conventionToStrategy — forcing-obligation trace", () => {
+  function makeDecliningStaymanConfig(): ConventionConfig {
+    const decliningResolvers: IntentResolverMap = new Map([
+      [SemanticIntentType.AskForMajor, () => ({ status: "declined" as const })],
+      [SemanticIntentType.ShowHeldSuit, () => ({ status: "declined" as const })],
+      [SemanticIntentType.DenyHeldSuit, () => ({ status: "declined" as const })],
+    ]);
+    return {
+      ...staymanConfig,
+      id: "stayman-declining-test",
+      name: "Stayman Declining Test",
+      intentResolvers: decliningResolvers,
+    };
+  }
+
+  test("trace records forcingDeclined when protocol matched, no candidate selected, and forcing", () => {
+    const decliningConfig = makeDecliningStaymanConfig();
+
+    const strategy = conventionToStrategy(decliningConfig);
+    const opener = staymanOpener();
+    const context: BiddingContext = {
+      hand: opener,
+      auction: auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]),
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.evaluationTrace).toBeDefined();
+    expect(result!.evaluationTrace!.protocolMatched).toBe(true);
+    expect(result!.evaluationTrace!.selectedTier).toBe("none");
+    expect(result!.evaluationTrace!.forcingDeclined).toBe(true);
+  });
+
+  test("trace does not record forcingDeclined when auction is non-forcing", () => {
+    const decliningConfig = makeDecliningStaymanConfig();
+
+    const strategy = conventionToStrategy(decliningConfig);
+    const responder = staymanResponder();
+    const context: BiddingContext = {
+      hand: responder,
+      auction: auctionFromBids(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(responder),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.evaluationTrace).toBeDefined();
+    expect(result!.evaluationTrace!.protocolMatched).toBe(true);
+    expect(result!.evaluationTrace!.selectedTier).toBe("none");
+    expect(result!.evaluationTrace!.forcingDeclined).toBeUndefined();
+  });
+
+  test("trace does not record forcingDeclined when protocol does not match", () => {
+    const decliningConfig = makeDecliningStaymanConfig();
+
+    const strategy = conventionToStrategy(decliningConfig);
+    const opener = staymanOpener();
+    const context: BiddingContext = {
+      hand: opener,
+      auction: auctionFromBids(Seat.North, ["1C", "P"]),
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).toBeNull();
+  });
+});
+
+describe("conventionToStrategy — effectivePath trace", () => {
+  function makeRemapConfig(id: string, withResolver: boolean): ConventionConfig {
+    const tree = handDecision(
+      "hcp-check",
+      hcpMin(8),
+      intentBid("ask-bid", "Ask bid",
+        { type: SemanticIntentType.AskForMajor, params: {} },
+        () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+      fallback("too-weak"),
+    );
+
+    return {
+      id,
+      name: id,
+      description: "Test convention",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: protocol(id, [
+        round("test-round", {
+          triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+          handTree: tree,
+          seatFilter: isResponder(),
+        }),
+      ]),
+      intentResolvers: withResolver
+        ? new Map([
+            [SemanticIntentType.AskForMajor, () => ({
+              status: "resolved" as const,
+              calls: [{ call: { type: "bid" as const, level: 2 as const, strain: BidSuit.Diamonds } }],
+            })],
+          ])
+        : undefined,
+    };
+  }
+
+  test("effectivePath populated when resolver remaps selected candidate", () => {
+    const config = makeRemapConfig("effective-path-remap", true);
+    const strategy = conventionToStrategy(config);
+
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.evaluationTrace?.effectivePath).toEqual({
+      candidateBidName: "ask-bid",
+      wasOverlayReplaced: false,
+      wasResolverRemapped: true,
+    });
+  });
+
+  test("effectivePath remains undefined for matched default-call selection", () => {
+    const config = makeRemapConfig("effective-path-default", false);
+    const strategy = conventionToStrategy(config);
+
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.evaluationTrace?.effectivePath).toBeUndefined();
+  });
+});
+
+// ─── Phase 2a: treeInferenceData on BidResult ────────────────
+
+describe("conventionToStrategy — treeInferenceData", () => {
+  test("populates pathConditions from matched tree path hand conditions", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const h = staymanResponder(); // Has 4-card major, 8+ HCP
+    const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
+    const context: BiddingContext = {
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.treeInferenceData).toBeDefined();
+    expect(result!.treeInferenceData!.pathConditions.length).toBeGreaterThan(0);
+
+    // Each entry has type and params from the condition's .inference field
+    for (const entry of result!.treeInferenceData!.pathConditions) {
+      expect(typeof entry.type).toBe("string");
+      expect(entry.params).toBeDefined();
+      expect(typeof entry.params).toBe("object");
+    }
+  });
+
+  test("includes rejected conditions from unmatched tree branches", () => {
+    // Build a tree with two hand branches: hcpMin(15) fails, hcpMin(5) succeeds
+    // The hcpMin(15) branch is rejected and should appear in rejectedConditions
+    const testTree = handDecision(
+      "high-hcp-check",
+      hcpMin(15),
+      intentBid("strong-bid", "Strong bid",
+        { type: SemanticIntentType.Signoff, params: {} },
+        () => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
+      handDecision(
+        "low-hcp-check",
+        hcpMin(5),
+        intentBid("weak-bid", "Weak bid",
+          { type: SemanticIntentType.Signoff, params: {} },
+          () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+        fallback("too-weak"),
+      ),
+    );
+    const testConfig: ConventionConfig = {
+      id: "rejected-test",
+      name: "Rejected Test",
+      description: "Test",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: protocol("rejected-test", [
+        round("test-round", {
+          triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+          handTree: testTree,
+          seatFilter: isResponder(),
+        }),
+      ]),
+    };
+
+    const strategy = conventionToStrategy(testConfig);
+    // 10 HCP hand → fails hcpMin(15), passes hcpMin(5) → weak-bid
+    const h = hand("SA", "SK", "S5", "S3", "H5", "H3", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.treeInferenceData).toBeDefined();
+    expect(result!.treeInferenceData!.rejectedConditions.length).toBeGreaterThan(0);
+
+    // Should contain the rejected hcpMin(15) condition
+    const rejectedHcp = result!.treeInferenceData!.rejectedConditions.find(e => e.type === "hcp-min");
+    expect(rejectedHcp).toBeDefined();
+    expect(rejectedHcp!.params).toEqual({ min: 15 });
+  });
+
+  test("is undefined when convention returns null (no match)", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const h = noMajorHand();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
+    const context: BiddingContext = {
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    // No match → null → no treeInferenceData
+    expect(result).toBeNull();
+  });
+
+  test("includes negatable flag from condition", () => {
+    // Use a convention where isBalanced (negatable: false) appears in the tree
+    const strategy = conventionToStrategy(staymanConfig);
+    const h = staymanResponder();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
+    const context: BiddingContext = {
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    if (result!.treeInferenceData) {
+      // All entries should have negatable as boolean or undefined
+      for (const entry of [
+        ...result!.treeInferenceData!.pathConditions,
+        ...result!.treeInferenceData!.rejectedConditions,
+      ]) {
+        expect(entry.negatable === undefined || typeof entry.negatable === "boolean").toBe(true);
+      }
+    }
+  });
+
+  test("skips auction conditions (only includes hand conditions)", () => {
+    // Use a simple test convention with mixed conditions
+    const testTree = handDecision(
+      "hcp-check",
+      hcpMin(10),
+      intentBid("test-bid", "Test bid",
+        { type: SemanticIntentType.Signoff, params: {} },
+        () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+      fallback("too-weak"),
+    );
+    const testConfig: ConventionConfig = {
+      id: "inference-test",
+      name: "Inference Test",
+      description: "Test",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: protocol("inference-test", [
+        round("test-round", {
+          triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+          handTree: testTree,
+          seatFilter: isResponder(),
+        }),
+      ]),
+    };
+
+    const strategy = conventionToStrategy(testConfig);
+    // 15 HCP hand → matches hcpMin(10)
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.treeInferenceData).toBeDefined();
+
+    // pathConditions should contain hcpMin(10) inference
+    const hcpEntry = result!.treeInferenceData!.pathConditions.find(e => e.type === "hcp-min");
+    expect(hcpEntry).toBeDefined();
+    expect(hcpEntry!.params).toEqual({ min: 10 });
+  });
+});
+
+// ─── Phase 2b: ConventionStrategyOptions ─────────────────────
+
+describe("conventionToStrategy — ConventionStrategyOptions", () => {
+  test("beliefProvider is called and result threaded to pipeline", () => {
+    let providerCalled = false;
+    const strategy = conventionToStrategy(staymanConfig, {
+      beliefProvider: () => {
+        providerCalled = true;
+        return undefined;
+      },
+    });
+    const opener = staymanOpener();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(providerCalled).toBe(true);
+  });
+
+  test("beliefProvider exception does not crash strategy", () => {
+    const strategy = conventionToStrategy(staymanConfig, {
+      beliefProvider: () => {
+        throw new Error("belief provider failed");
+      },
+    });
+    const opener = staymanOpener();
+    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
+    const context: BiddingContext = {
+      hand: opener,
+      auction,
+      seat: Seat.North,
+      evaluation: evaluateHand(opener),
+      opponentConventionIds: [],
+    };
+
+    // Should not throw, should still produce a result
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.call).toBeDefined();
+  });
+
+  test("options.ranker composes with config.rankCandidates", () => {
+    const callLog: string[] = [];
+
+    const testTree = handDecision(
+      "hcp-check",
+      hcpMin(8),
+      intentBid("ask-bid", "Ask bid",
+        { type: SemanticIntentType.AskForMajor, params: {} },
+        () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+      fallback("too-weak"),
+    );
+
+    const testConfig: ConventionConfig = {
+      id: "ranker-compose-test",
+      name: "Ranker Compose Test",
+      description: "Test",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: protocol("ranker-compose-test", [
+        round("test-round", {
+          triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+          handTree: testTree,
+          seatFilter: isResponder(),
+        }),
+      ]),
+      rankCandidates: (cs) => {
+        callLog.push("config-ranker");
+        return cs;
+      },
+    };
+
+    const strategy = conventionToStrategy(testConfig, {
+      ranker: (cs) => {
+        callLog.push("options-ranker");
+        return cs;
+      },
+    });
+
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    // Both rankers should have been called, config first, then options
+    expect(callLog).toEqual(["config-ranker", "options-ranker"]);
   });
 });

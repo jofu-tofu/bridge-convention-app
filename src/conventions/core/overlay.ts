@@ -54,6 +54,17 @@ export function validateOverlayPatches(
     if (overlay.replacementTree) {
       validateTree(overlay.replacementTree);
     }
+    if (overlay.triggerOverrides) {
+      for (const key of overlay.triggerOverrides.keys()) {
+        if (!roundNames.has(key)) {
+          throw new Error(
+            `Overlay "${overlay.id}" triggerOverrides references round "${key}" ` +
+            `which does not exist in protocol "${proto.id}". ` +
+            `Available rounds: ${[...roundNames].join(", ")}`,
+          );
+        }
+      }
+    }
   }
 }
 

@@ -1,7 +1,5 @@
 import type { Seat, Auction, AuctionEntry, Call } from "../engine/types";
-import type { HandInference, InferredHoldings } from "../shared/types";
-import type { BidAlert } from "../conventions/core/rule-tree";
-import type { BiddingRuleResult } from "../conventions/core/registry";
+import type { HandInference, InferredHoldings, BidAlert } from "../shared/types";
 
 // Re-export ConditionInference from its canonical location
 export type { ConditionInference } from "../conventions/core/types";
@@ -51,6 +49,19 @@ export interface PublicBeliefState {
   readonly annotations: readonly BidAnnotation[];
 }
 
+/** Narrow input for inference extraction — minimal typed contract, no conventions/core import.
+ *  Captures the fields that annotation-producer and stores read directly.
+ *  The extractor implementation may internally narrow to richer types. */
+export interface InferenceExtractorInput {
+  readonly rule: string;
+  readonly explanation: string;
+  readonly meaning?: string;
+  readonly alert?: BidAlert | null;
+  /** Opaque to the interface boundary — extractor implementations know the concrete shape. */
+  readonly protocolResult?: unknown;
+  readonly treeEvalResult?: unknown;
+}
+
 /**
  * Stable adapter for extracting HandInference[] from convention evaluation results.
  * Decouples public belief layer from evaluator internals (protocol/tree result shapes).
@@ -58,7 +69,7 @@ export interface PublicBeliefState {
  * Future: state machine evaluator provides its own implementation.
  */
 export interface InferenceExtractor {
-  extractInferences(result: BiddingRuleResult, seat: Seat): readonly HandInference[];
+  extractInferences(result: InferenceExtractorInput, seat: Seat): readonly HandInference[];
 }
 
 /** Per-observer configuration: how does THIS observer interpret bids? */

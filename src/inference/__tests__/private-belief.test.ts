@@ -52,19 +52,74 @@ describe("conditionOnOwnHand", () => {
     expect(result.partnerSuitLengths[Suit.Spades].min).toBe(3);
   });
 
-  it("partner HCP range passed through unchanged", () => {
+  it("partner HCP max capped by 40 minus own HCP (own 18 HCP → partner max 22)", () => {
+    // SA(4)+SK(3)+SQ(2)+SJ(1)+ST(0)+HA(4)+HK(3)+DA(4)+DK(3)+CA(4)+CK(3)+CQ(2)+CJ(1) = 34 HCP
     const h = hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "DA", "DK", "CA", "CK", "CQ", "CJ");
     const eval_ = evaluateHand(h);
+    // This hand has 34 HCP, so partner max = 40 - 34 = 6
 
     const publicBelief = makeBeliefState({
       [Seat.North]: {
-        hcpRange: { min: 6, max: 18 },
+        hcpRange: { min: 6, max: 37 },
       },
     });
 
     const result = conditionOnOwnHand(publicBelief, Seat.South, h, eval_);
 
-    expect(result.partnerHcpRange).toEqual({ min: 6, max: 18 });
+    // Public max (37) > 40 - 34 (6), so clamped to 6
+    expect(result.partnerHcpRange.max).toBe(6);
+    expect(result.partnerHcpRange.min).toBe(6);
+  });
+
+  it("partner HCP max unchanged when public already tighter", () => {
+    // SA(4)+SJ(1)+S7+S5+S3 + HK(3) + H5 + DK(3) + D6 + D3 + CQ(2) + C4 + C2 = 13 HCP
+    const h = hand("SA", "SJ", "S7", "S5", "S3", "HK", "H5", "DK", "D6", "D3", "CQ", "C4", "C2");
+    const eval_ = evaluateHand(h);
+    // Own HCP: 13. Partner max cap = 40 - 13 = 27
+
+    const publicBelief = makeBeliefState({
+      [Seat.North]: {
+        hcpRange: { min: 5, max: 17 }, // public max 17 < 27
+      },
+    });
+
+    const result = conditionOnOwnHand(publicBelief, Seat.South, h, eval_);
+
+    // Public max (17) is already tighter than 40 - 13 = 27, so no change
+    expect(result.partnerHcpRange).toEqual({ min: 5, max: 17 });
+  });
+
+  it("own 0 HCP → partner max stays at public value (no narrowing)", () => {
+    // All spot cards: 0 HCP
+    const h = hand("S9", "S8", "S7", "S6", "H9", "H8", "H7", "H6", "D9", "D8", "D7", "C9", "C8");
+    const eval_ = evaluateHand(h);
+
+    const publicBelief = makeBeliefState({
+      [Seat.North]: {
+        hcpRange: { min: 0, max: 30 },
+      },
+    });
+
+    const result = conditionOnOwnHand(publicBelief, Seat.South, h, eval_);
+
+    // 40 - 0 = 40, public max 30 is tighter
+    expect(result.partnerHcpRange).toEqual({ min: 0, max: 30 });
+  });
+
+  it("monotonicity: higher own HCP → lower or equal partner max", () => {
+    const lowHcpHand = hand("SA", "S9", "S8", "S7", "H9", "H8", "H7", "H6", "D9", "D8", "D7", "C9", "C8");
+    const highHcpHand = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "HQ", "HJ", "DA", "DK", "DQ", "CA", "CK");
+
+    const publicBelief = makeBeliefState({
+      [Seat.North]: {
+        hcpRange: { min: 0, max: 40 },
+      },
+    });
+
+    const lowResult = conditionOnOwnHand(publicBelief, Seat.South, lowHcpHand, evaluateHand(lowHcpHand));
+    const highResult = conditionOnOwnHand(publicBelief, Seat.South, highHcpHand, evaluateHand(highHcpHand));
+
+    expect(highResult.partnerHcpRange.max).toBeLessThanOrEqual(lowResult.partnerHcpRange.max);
   });
 
   it("own hand has 0 of a suit → partner max unchanged by own hand", () => {
@@ -87,8 +142,9 @@ describe("conditionOnOwnHand", () => {
   });
 
   it("uses correct partner seat (South → North)", () => {
-    const h = hand("SA", "SK", "SQ", "SJ", "ST", "HA", "HK", "DA", "DK", "CA", "CK", "CQ", "CJ");
-    const eval_ = evaluateHand(h);
+    // Low HCP hand so partner HCP isn't clamped by own hand
+    const h = hand("S9", "S8", "S7", "S6", "S5", "H9", "H8", "H7", "D9", "D8", "D7", "C9", "C8");
+    const eval_ = evaluateHand(h); // 0 HCP
 
     const publicBelief = makeBeliefState({
       [Seat.North]: {
@@ -100,6 +156,7 @@ describe("conditionOnOwnHand", () => {
 
     expect(result.seat).toBe(Seat.South);
     expect(result.partnerSeat).toBe(Seat.North);
+    // 40 - 0 = 40 > 15, so public range unchanged
     expect(result.partnerHcpRange).toEqual({ min: 10, max: 15 });
   });
 

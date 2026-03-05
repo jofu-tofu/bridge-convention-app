@@ -213,3 +213,112 @@ describe("overlay priority conflict detection", () => {
     expect(conflicts).toHaveLength(0);
   });
 });
+
+describe("missing resolver diagnostics", () => {
+  test("warns when IntentNode type has no registered resolver", () => {
+    const config = makeMinimalConfig({
+      id: "missing-resolver",
+      intentResolvers: new Map(), // NaturalBid leaf has no resolver key in this map
+    });
+
+    registerConvention(config);
+    const diagnostics = getDiagnostics("missing-resolver");
+    const warnings = diagnostics.filter(d => d.type === "missing-resolver");
+
+    expect(warnings.length).toBeGreaterThan(0);
+    expect(warnings[0]!.severity).toBe("warning");
+  });
+
+  test("no warning for conventions without intentResolvers (SAYC pattern)", () => {
+    const config = makeMinimalConfig({ id: "no-resolver-map", intentResolvers: undefined });
+    registerConvention(config);
+
+    const diagnostics = getDiagnostics("no-resolver-map");
+    const warnings = diagnostics.filter(d => d.type === "missing-resolver");
+    expect(warnings).toHaveLength(0);
+  });
+});
+
+describe("trigger overlap diagnostics", () => {
+  test("warns on trigger overlap between protocol rounds", () => {
+    const repeatedCondition: AuctionCondition = {
+      name: "bidMade(2,C)",
+      label: "2C happened",
+      category: "auction",
+      test: () => true,
+      describe: () => "2C happened",
+    };
+    const repeatedTrigger: SemanticTrigger = {
+      condition: repeatedCondition,
+      establishes: {},
+    };
+    const tree = intentBid(
+      "test-bid",
+      "Test",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "bid", level: 1, strain: BidSuit.Clubs }),
+    );
+
+    const config = makeMinimalConfig({
+      id: "trigger-overlap",
+      protocol: {
+        id: "trigger-overlap-protocol",
+        rounds: [
+          { name: "round1", triggers: [repeatedTrigger], handTree: () => tree },
+          { name: "round2", triggers: [repeatedTrigger], handTree: () => tree },
+        ],
+      },
+    });
+
+    registerConvention(config);
+    const diagnostics = getDiagnostics("trigger-overlap");
+    const overlaps = diagnostics.filter(d => d.type === "trigger-overlap");
+    expect(overlaps.length).toBeGreaterThan(0);
+    expect(overlaps[0]!.severity).toBe("warning");
+  });
+
+  test("no warning when triggers are distinct", () => {
+    const triggerA: SemanticTrigger = {
+      condition: {
+        name: "bidMade(2,C)",
+        label: "2C happened",
+        category: "auction",
+        test: () => true,
+        describe: () => "2C happened",
+      },
+      establishes: {},
+    };
+    const triggerB: SemanticTrigger = {
+      condition: {
+        name: "bidMade(2,D)",
+        label: "2D happened",
+        category: "auction",
+        test: () => true,
+        describe: () => "2D happened",
+      },
+      establishes: {},
+    };
+    const tree = intentBid(
+      "test-bid",
+      "Test",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "bid", level: 1, strain: BidSuit.Clubs }),
+    );
+
+    const config = makeMinimalConfig({
+      id: "trigger-distinct",
+      protocol: {
+        id: "trigger-distinct-protocol",
+        rounds: [
+          { name: "round1", triggers: [triggerA], handTree: () => tree },
+          { name: "round2", triggers: [triggerB], handTree: () => tree },
+        ],
+      },
+    });
+
+    registerConvention(config);
+    const diagnostics = getDiagnostics("trigger-distinct");
+    const overlaps = diagnostics.filter(d => d.type === "trigger-overlap");
+    expect(overlaps).toHaveLength(0);
+  });
+});

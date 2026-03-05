@@ -13,9 +13,9 @@ Auction inference system — extracts hand information from bids with per-partne
 
 | File | Role |
 |------|------|
-| `types.ts` | Core interfaces: `HandInference`, `InferredHoldings`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`, `InferenceExtractor` |
+| `types.ts` | Core interfaces: `InferenceExtractorInput`, `InferenceExtractor`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`. No imports from `conventions/core/` — uses narrow `InferenceExtractorInput` instead of `BiddingRuleResult`. |
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
-| `convention-inference.ts` | Extracts positive inferences from flat rules + negative from tree rejection data via `evaluateTree()` |
+| `convention-inference.ts` | Extracts positive/negative inferences via `evaluateForInference()` from `conventions/core/inference-api.ts` (DTO boundary over protocol internals) |
 | `condition-mapper.ts` | `extractInference()`, `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
 | `merge.ts` | `mergeInferences()` — range intersection (narrowing), clamps contradictions |
@@ -23,6 +23,7 @@ Auction inference system — extracts hand information from bids with per-partne
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
 | `protocol-inference-extractor.ts` | `protocolInferenceExtractor` — `InferenceExtractor` adapter reading `TreeEvalResult` path/rejectedDecisions |
 | `private-belief.ts` | `PrivateBeliefState`, `conditionOnOwnHand(publicBelief, seat, hand, eval)` — narrows partner suit lengths using own hand (13 minus own length caps partner max) |
+| `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` (HCP deviation) and `continuationAwkwardness` (suit length shortfall). Consumed by `practical-recommender.ts` |
 
 ## Merge Algorithm
 
@@ -50,7 +51,7 @@ Tree rejection data enables negative inference: when a decision node's condition
 
 - **`invertInference(ci)`** — inverts a `ConditionInference`. `hcp-min:12` → `hcp-max:11`. `suit-min:4` → `suit-max:3`. `hcp-range` → disjunction. Returns null for uninvertible types (ace-count, king-count, two-suited).
 - **`resolveDisjunction(options, cumulative)`** — picks the first non-contradicting branch of a disjunction. Returns null if all branches contradict cumulative state (no false inference).
-- **Architecture invariant:** Inference calls `evaluateTree()` directly — never `evaluateBiddingRules()` — because the registry strips `rejectedDecisions` needed for negative inference.
+- **Architecture invariant:** Inference uses `evaluateForInference()` (not `evaluateBiddingRules()`) because it needs rejected-decision data for negative inference.
 - **Example:** Stayman 2D denial → rejected `has-4-hearts` (suit-min hearts 4) → inverted to suit-max hearts 3. Rejected `has-4-spades` → suit-max spades 3.
 
 ## Public Belief State
@@ -62,15 +63,16 @@ Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` 
 - **`applyAnnotation()`:** Merges annotation inferences into seat's beliefs via `mergeInferences()`. Returns new immutable state.
 - **`InferenceExtractor`:** Adapter interface decoupling belief layer from evaluator internals. `protocolInferenceExtractor` reads `treeEvalResult.path`/`rejectedDecisions`. Extracts positive (path hand conditions) and negative (inverted rejected hand conditions) inferences.
 - **`produceAnnotation()`:** Convention bids → inferences from extractor. Natural bids → inferences from `naturalInferenceProvider`. Pass/double/redouble → empty inferences.
-- **Store wiring:** Game store owns `publicBeliefState`, resets per deal. Bidding store's `onProcessBid` fires `produceAnnotation()` → `applyAnnotation()`. Currently passes `BidResult` (shared DTO) which lacks `TreeEvalResult`, so convention inference extraction returns empty — natural inference works. Full tree data wiring is a follow-up.
+- **Store wiring:** Game store owns `publicBeliefState`, resets per deal. Bidding store's `onProcessBid` fires `produceAnnotation()` → `applyAnnotation()`. Convention inference now works via `treeInferenceData` DTO on `BidResult` — `produceAnnotation()` accepts optional `TreeInferenceData` param and extracts inferences via `extractInferencesFromDTO()` from `tree-inference-extractor.ts`, bypassing the hollow `BiddingRuleResult` adapter.
+- **HCP narrowing:** `conditionOnOwnHand()` caps partner HCP max at `40 - ownHcp` (conservative bound). `toBeliefData()` uses narrowed `partnerHcpRange` for partner seat when private override present.
 - **`BidAlert`:** Optional on `BidNode` in `rule-tree.ts`. Convention authors declare alerts at definition time. Threaded through `BiddingRuleResult.alert` → `BidAnnotation.alert`. Migration of existing conventions is a follow-up.
 
 ## Gotchas
 
 - Inference errors never propagate to callers — `inferFromBid()` returns null, `mergeInferences()` clamps
-- Convention inference provider needs convention registry access — imports `getConvention()` and `evaluateTree()`
+- `createConventionInferenceProvider(conventionId, lookupConvention?)` defaults to registry lookup but accepts injected `ConventionLookup` for unit-test DI
 - `isOwnPartnership()` checks bidder seat vs observer seat + partner
-- Positive inferences use flat rules (call matching via `tryGetRuleCall`); negative inferences use tree eval (rejected decisions)
+- Positive inferences use flattened inference rules (call matching via `tryGetRuleCall`); negative inferences use `treeResult.rejectedDecisions` from the inference API
 
 ---
 

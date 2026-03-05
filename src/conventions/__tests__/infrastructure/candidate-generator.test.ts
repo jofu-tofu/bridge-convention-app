@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, test, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
@@ -18,7 +18,6 @@ import { bergenConfig } from "../../definitions/bergen-raises";
 import { saycConfig } from "../../definitions/sayc";
 import { weakTwosConfig } from "../../definitions/weak-twos";
 import { conventionToStrategy } from "../../../strategy/bidding/convention-strategy";
-import { registerConvention, clearRegistry } from "../../core/registry";
 import type { IntentResolverMap } from "../../core/intent/intent-resolver";
 import type { ConventionOverlayPatch } from "../../core/overlay";
 import type { ConventionConfig } from "../../core/types";
@@ -26,14 +25,6 @@ import { ConventionCategory } from "../../core/types";
 import { protocol, round, semantic } from "../../core/protocol";
 import type { ProtocolEvalResult, ProtocolRound, ConventionProtocol } from "../../core/protocol";
 import { bidMade, isResponder } from "../../core/conditions";
-
-beforeEach(() => {
-  clearRegistry();
-  registerConvention(staymanConfig);
-  registerConvention(bergenConfig);
-  registerConvention(saycConfig);
-  registerConvention(weakTwosConfig);
-});
 
 describe("generateCandidates", () => {
   // Helper to build a simple intent node
@@ -666,6 +657,66 @@ describe("matchedIntentSuppressed tracking", () => {
 
 // ─── Gap 4: nodeId matching in candidate generator ───────────
 
+// ─── 8e-baseline: replacementTree timing regression ─────────
+
+describe("replacementTree timing (8e-baseline)", () => {
+  it("1NT-(X) Stayman doubled overlay: bid comes from replacement tree", () => {
+    // Scenario: 1NT opening, opponent doubles → stayman-doubled overlay activates.
+    // The overlay provides round1AskAfterDouble as replacementTree.
+    // generateCandidates() should replace the tree FIRST, then evaluate against it.
+    // Hand: 10+ HCP → should match "stayman-penalty-redouble" in the replacement tree.
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, context);
+    expect(protoResult.handTreeRoot).toBeDefined();
+
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+    // stayman-doubled overlay should be active
+    expect(effective.activeOverlays.length).toBeGreaterThan(0);
+    expect(effective.activeOverlays.some(o => o.id === "stayman-doubled")).toBe(true);
+
+    const { candidates, matchedIntentSuppressed } = generateCandidates(
+      protoResult.handTreeRoot!,
+      protoResult.handResult,
+      effective,
+    );
+
+    expect(matchedIntentSuppressed).toBe(false);
+    expect(candidates.length).toBeGreaterThan(0);
+
+    const matched = candidates.find(c => c.isMatched);
+    expect(matched).toBeDefined();
+    // 13 HCP → redouble from replacement tree
+    expect(matched!.bidName).toBe("stayman-penalty-redouble");
+    expect(matched!.resolvedCall.type).toBe("redouble");
+    expect(matched!.legal).toBe(true);
+  });
+
+  it("1NT-(X) end-to-end: conventionToStrategy uses replacement tree bid", () => {
+    const strategy = conventionToStrategy(staymanConfig);
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "X"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    const result = strategy.suggest(context);
+    expect(result).not.toBeNull();
+    expect(result!.call.type).toBe("redouble");
+    expect(result!.evaluationTrace?.overlaysActivated).toContain("stayman-doubled");
+  });
+});
+
 describe("candidate-generator nodeId matching", () => {
   it("isMatched uses nodeId comparison, not object reference identity", () => {
     const node = intentBid("test-node", "Test bid",
@@ -706,5 +757,172 @@ describe("candidate-generator nodeId matching", () => {
 
     expect(candidates).toHaveLength(1);
     expect(candidates[0]!.isMatched).toBe(true);
+  });
+});
+
+describe("candidate provenance (Phase 1)", () => {
+  const bid1C: Call = { type: "bid", level: 1, strain: BidSuit.Clubs };
+  const bid1D: Call = { type: "bid", level: 1, strain: BidSuit.Diamonds };
+  const bid1H: Call = { type: "bid", level: 1, strain: BidSuit.Hearts };
+  const bid1S: Call = { type: "bid", level: 1, strain: BidSuit.Spades };
+
+  function makeContext(): BiddingContext {
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    return {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+  }
+
+  function makeProtocolFor(handTree: ConventionProtocol["rounds"][number]["handTree"]): ConventionProtocol {
+    return protocol("provenance-test", [
+      round("opening", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree,
+        seatFilter: isResponder(),
+      }),
+    ]);
+  }
+
+  test("tree-origin candidates are tagged with origin=tree", () => {
+    const tree = intentBid(
+      "tree-origin",
+      "Tree origin",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1C,
+    );
+    const config: ConventionConfig = {
+      ...staymanConfig,
+      id: "prov-tree",
+      protocol: makeProtocolFor(tree),
+      overlays: undefined,
+      transitionRules: undefined,
+      baselineRules: undefined,
+    };
+    const context = makeContext();
+    const protoResult = evaluateProtocol(config.protocol!, context);
+    const effective = buildEffectiveContext(context, config, protoResult);
+
+    const { candidates } = generateCandidates(tree, protoResult.handResult, effective);
+
+    const provenance = (candidates[0] as { provenance?: { origin: string } }).provenance;
+    expect(provenance).toEqual({ origin: "tree" });
+  });
+
+  test("replacement-tree candidates are tagged with origin=replacement-tree and overlay id", () => {
+    const originalTree = intentBid(
+      "original-tree",
+      "Original tree",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1C,
+    );
+    const replacementTree = intentBid(
+      "replacement-tree",
+      "Replacement tree",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1D,
+    );
+    const overlay: ConventionOverlayPatch = {
+      id: "replacement-overlay",
+      roundName: "opening",
+      matches: () => true,
+      replacementTree,
+    };
+    const config: ConventionConfig = {
+      ...staymanConfig,
+      id: "prov-replacement",
+      protocol: makeProtocolFor(originalTree),
+      overlays: [overlay],
+      transitionRules: undefined,
+      baselineRules: undefined,
+    };
+    const context = makeContext();
+    const protoResult = evaluateProtocol(config.protocol!, context);
+    const effective = buildEffectiveContext(context, config, protoResult);
+
+    const { candidates } = generateCandidates(originalTree, protoResult.handResult, effective);
+
+    expect(candidates[0]!.bidName).toBe("replacement-tree");
+    const provenance = (candidates[0] as { provenance?: { origin: string; overlayId?: string } }).provenance;
+    expect(provenance).toEqual({ origin: "replacement-tree", overlayId: "replacement-overlay" });
+  });
+
+  test("overlay-added candidates are tagged with origin=overlay-injected and overlay id", () => {
+    const tree = intentBid(
+      "tree-base",
+      "Tree base",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1C,
+    );
+    const overlay: ConventionOverlayPatch = {
+      id: "inject-overlay",
+      roundName: "opening",
+      matches: () => true,
+      addIntents: () => [
+        {
+          intent: { type: SemanticIntentType.NaturalBid, params: {} },
+          nodeName: "overlay-added",
+          meaning: "Overlay added",
+          defaultCall: () => bid1H,
+          pathConditions: [],
+          priority: "preferred",
+        },
+      ],
+    };
+    const config: ConventionConfig = {
+      ...staymanConfig,
+      id: "prov-overlay-injected",
+      protocol: makeProtocolFor(tree),
+      overlays: [overlay],
+      transitionRules: undefined,
+      baselineRules: undefined,
+    };
+    const context = makeContext();
+    const protoResult = evaluateProtocol(config.protocol!, context);
+    const effective = buildEffectiveContext(context, config, protoResult);
+
+    const { candidates } = generateCandidates(tree, protoResult.handResult, effective);
+    const injected = candidates.find(c => c.bidName === "overlay-added");
+    expect(injected).toBeDefined();
+    const provenance = (injected as { provenance?: { origin: string; overlayId?: string } }).provenance;
+    expect(provenance).toEqual({ origin: "overlay-injected", overlayId: "inject-overlay" });
+  });
+
+  test("resolver overrides are tagged with origin=overlay-override and overlay id", () => {
+    const tree = intentBid(
+      "override-base",
+      "Override base",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1C,
+    );
+    const overlay: ConventionOverlayPatch = {
+      id: "override-overlay",
+      roundName: "opening",
+      matches: () => true,
+      overrideResolver: () => ({
+        status: "resolved",
+        calls: [{ call: bid1S }],
+      }),
+    };
+    const config: ConventionConfig = {
+      ...staymanConfig,
+      id: "prov-overlay-override",
+      protocol: makeProtocolFor(tree),
+      overlays: [overlay],
+      transitionRules: undefined,
+      baselineRules: undefined,
+    };
+    const context = makeContext();
+    const protoResult = evaluateProtocol(config.protocol!, context);
+    const effective = buildEffectiveContext(context, config, protoResult);
+
+    const { candidates } = generateCandidates(tree, protoResult.handResult, effective);
+
+    expect(candidates[0]!.resolvedCall).toEqual(bid1S);
+    const provenance = (candidates[0] as { provenance?: { origin: string; overlayId?: string } }).provenance;
+    expect(provenance).toEqual({ origin: "overlay-override", overlayId: "override-overlay" });
   });
 });

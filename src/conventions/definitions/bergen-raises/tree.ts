@@ -21,7 +21,7 @@ import {
 import type { AuctionCondition } from "../../core/types";
 import { decision, handDecision, fallback } from "../../core/rule-tree";
 import type { HandNode, RuleNode } from "../../core/rule-tree";
-import { intentBid } from "../../core/intent/intent-node";
+import { createIntentBidFactory } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { protocol, round, semantic } from "../../core/protocol";
 import type { ConventionProtocol } from "../../core/protocol";
@@ -45,6 +45,8 @@ import {
   partnerBidSplinterRelay,
 } from "./conditions";
 
+const bid = createIntentBidFactory("bergen");
+
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 
 // ─── Hand subtrees ──────────────────────────────────────────
@@ -53,31 +55,31 @@ import {
 const responderInitialBranch: HandNode = handDecision(
   "splinter-hcp",
   and(hcpMin(12), majorSupport(), hasShortage()),
-  intentBid("bergen-splinter", "Shows a raise with a singleton or void",
+  bid("bergen-splinter", "Shows a raise with a singleton or void",
     { type: SemanticIntentType.ShowShortage, params: {} },
     splinterCall),
   handDecision(
     "game-raise-hcp",
     and(hcpMin(13), majorSupport()),
-    intentBid("bergen-game-raise", "Raises directly to game with support",
+    bid("bergen-game-raise", "Raises directly to game with support",
       { type: SemanticIntentType.ShowSupport, params: { strength: "game" } },
       gameInOpenersMajor),
     handDecision(
       "limit-raise-hcp",
       and(hcpRange(10, 12), majorSupport()),
-      intentBid("bergen-limit-raise", "Shows a limit raise with support",
+      bid("bergen-limit-raise", "Shows a limit raise with support",
         { type: SemanticIntentType.ShowSupport, params: { strength: "limit" } },
         (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
       handDecision(
         "constructive-hcp",
         and(hcpRange(7, 10), majorSupport()),
-        intentBid("bergen-constructive-raise", "Shows a constructive raise with support",
+        bid("bergen-constructive-raise", "Shows a constructive raise with support",
           { type: SemanticIntentType.ShowSupport, params: { strength: "constructive" } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
         handDecision(
           "preemptive-hcp",
           and(hcpMax(6), majorSupport()),
-          intentBid("bergen-preemptive-raise", "Makes a preemptive raise to consume bidding space",
+          bid("bergen-preemptive-raise", "Makes a preemptive raise to consume bidding space",
             { type: SemanticIntentType.ShowSupport, params: { strength: "preemptive" } },
             threeOfOpenersMajor),
           fallback(),
@@ -91,16 +93,16 @@ const responderInitialBranch: HandNode = handDecision(
 const openerAfterConstructive: HandNode = handDecision(
   "rebid-game-17+",
   hcpMin(17),
-  intentBid("bergen-rebid-game-after-constructive", "Accepts and raises to game",
+  bid("bergen-rebid-game-after-constructive", "Accepts and raises to game",
     { type: SemanticIntentType.AcceptInvitation, params: {} },
     openerRebidGame),
   handDecision(
     "rebid-try-14-16",
     hcpRange(14, 16),
-    intentBid("bergen-rebid-try-after-constructive", "Makes a help-suit game try in weakest side suit",
+    bid("bergen-rebid-try-after-constructive", "Makes a help-suit game try in weakest side suit",
       { type: SemanticIntentType.HelpSuitGameTry, params: {} },
       helpSuitGameTryCall),
-    intentBid("bergen-rebid-signoff-after-constructive", "Signs off over the constructive raise",
+    bid("bergen-rebid-signoff-after-constructive", "Signs off over the constructive raise",
       { type: SemanticIntentType.DeclineInvitation, params: {} },
       (): Call => ({ type: "pass" })),
   ),
@@ -110,10 +112,10 @@ const openerAfterConstructive: HandNode = handDecision(
 const openerAfterLimit: HandNode = handDecision(
   "rebid-game-15+",
   hcpMin(15),
-  intentBid("bergen-rebid-game-after-limit", "Accepts the limit raise and bids game",
+  bid("bergen-rebid-game-after-limit", "Accepts the limit raise and bids game",
     { type: SemanticIntentType.AcceptInvitation, params: {} },
     openerRebidGame),
-  intentBid("bergen-rebid-signoff-after-limit", "Declines the limit raise and signs off",
+  bid("bergen-rebid-signoff-after-limit", "Declines the limit raise and signs off",
     { type: SemanticIntentType.DeclineInvitation, params: {} },
     openerRebidSignoff),
 );
@@ -122,16 +124,16 @@ const openerAfterLimit: HandNode = handDecision(
 const openerAfterPreemptive: HandNode = handDecision(
   "rebid-game-18+",
   hcpMin(18),
-  intentBid("bergen-rebid-game-after-preemptive", "Bids game over the preemptive raise",
+  bid("bergen-rebid-game-after-preemptive", "Bids game over the preemptive raise",
     { type: SemanticIntentType.RaiseToGame, params: {} },
     openerRebidGame),
-  intentBid("bergen-rebid-pass-after-preemptive", "Passes over the preemptive raise",
+  bid("bergen-rebid-pass-after-preemptive", "Passes over the preemptive raise",
     { type: SemanticIntentType.AcceptPartnerDecision, params: {} },
     (): Call => ({ type: "pass" })),
 );
 
 // Opener rebids after splinter
-const openerAfterSplinter = intentBid(
+const openerAfterSplinter = bid(
   "bergen-splinter-relay",
   "Relays to ask responder to disclose shortage suit",
   { type: SemanticIntentType.AskShortage, params: {} },
@@ -165,19 +167,19 @@ const openerRound1Branch: RuleNode = decision(
 const responderRound1Branch: RuleNode = decision(
   "partner-bid-game-check",
   partnerBidGameInMajor(),
-  intentBid("bergen-accept-game", "Accepts partner's game bid",
+  bid("bergen-accept-game", "Accepts partner's game bid",
     { type: SemanticIntentType.AcceptPartnerDecision, params: {} },
     (): Call => ({ type: "pass" })),
   decision(
     "partner-signoff-check",
     partnerSignedOffInThreeMajor(),
-    intentBid("bergen-accept-signoff", "Accepts partner's signoff",
+    bid("bergen-accept-signoff", "Accepts partner's signoff",
       { type: SemanticIntentType.AcceptPartnerDecision, params: {} },
       (): Call => ({ type: "pass" })),
     decision(
       "splinter-relay-resp-check",
       partnerBidSplinterRelay(),
-      intentBid("bergen-splinter-disclose", "Discloses the suit of shortage",
+      bid("bergen-splinter-disclose", "Discloses the suit of shortage",
         { type: SemanticIntentType.ShowShortage, params: {} },
         splinterDisclosureCall),
       decision(
@@ -186,10 +188,10 @@ const responderRound1Branch: RuleNode = decision(
         handDecision(
           "try-accept-9-10",
           hcpRange(9, 10),
-          intentBid("bergen-try-accept", "Accepts the game try and bids game",
+          bid("bergen-try-accept", "Accepts the game try and bids game",
             { type: SemanticIntentType.AcceptInvitation, params: {} },
             gameTryAcceptCall),
-          intentBid("bergen-try-reject", "Rejects the game try and signs off",
+          bid("bergen-try-reject", "Rejects the game try and signs off",
             { type: SemanticIntentType.DeclineInvitation, params: {} },
             gameTryRejectCall),
         ),
@@ -235,7 +237,7 @@ export const bergenProtocol: ConventionProtocol = protocol("bergen-raises", [
     triggers: [
       semantic(or(bidMadeAtLevel(3), bidMadeAtLevel(4)) as AuctionCondition, {}),
     ],
-    handTree: intentBid("bergen-opener-accept-after-try", "Accepts partner's decision on the game try",
+    handTree: bid("bergen-opener-accept-after-try", "Accepts partner's decision on the game try",
       { type: SemanticIntentType.AcceptPartnerDecision, params: {} },
       (): Call => ({ type: "pass" })),
     seatFilter: and(isOpener(), biddingRound(2), not(opponentActed())) as AuctionCondition,

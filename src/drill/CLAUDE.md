@@ -21,7 +21,7 @@ drill/
 **Drill lifecycle flow:**
 1. `startDrill(engine, convention, userSeat, gameStore)` in `helpers.ts`
 2. Resolves dealer from `convention.allowedDealers` (if set) — picks random dealer, rotates constraints 180° if different from base
-3. Calls `createDrillConfig(conventionId, userSeat)` from `config-factory.ts`
+3. Calls `createDrillConfig(conventionId, userSeat, options?)` from `config-factory.ts`
 4. Generates a deal via `engine.generateDeal(constraints)`
 5. Creates session via `createDrillSession(config)` from `session.ts`
 6. Rotates `initialAuction` if dealer was rotated
@@ -29,7 +29,19 @@ drill/
 
 **Rotation utilities** (`helpers.ts`): `rotateSeat180(seat)` swaps N↔S, E↔W. `rotateDealConstraints(base, newDealer)` rotates all seat constraints. `rotateAuction(auction)` rotates all auction entry seats. Used by `startDrill()` when `allowedDealers` picks a non-base dealer.
 
-**Config factory wiring:** `createDrillConfig()` builds both `nsInferenceConfig` and `ewInferenceConfig`. Options: `opponentBidding` (enables E-W convention inference), `opponentConventionId` (defaults to "sayc", falls back to natural on invalid ID).
+**Config factory wiring:** `createDrillConfig()` builds both `nsInferenceConfig` and `ewInferenceConfig`. Options: `opponentBidding` (enables E-W convention inference), `opponentConventionId` (defaults to "sayc", falls back to natural on invalid ID), `beliefProvider` (for convention strategy), and `lookupConvention` (DI seam replacing global registry lookup in drill/strategy/inference wiring).
+
+## Teaching Resolution
+
+`teaching-resolution.ts` defines the multi-grade bid feedback layer:
+
+- **`BidGrade`** enum: `Correct`, `Acceptable`, `Incorrect`
+- **`AcceptableBid`**: a non-primary candidate that's legal, hand-satisfied, and has `preferred` or `alternative` priority
+- **`TeachingResolution`**: wraps `primaryBid` + `acceptableBids[]` + `gradingType` (exact/primary_plus_acceptable/intent_based) + `ambiguityScore` (0..1)
+- **`resolveTeachingAnswer(bidResult)`**: extracts acceptable alternatives from `BidResult.treePath.resolvedCandidates`. Gracefully degrades to exact grading when candidates empty.
+- **`gradeBid(userCall, resolution)`**: returns `BidGrade` — primary match → Correct, acceptable match → Acceptable, else Incorrect.
+
+**Dependency:** `drill/ → shared/ + engine/` only (reads DTOs, uses `callsMatch`). No inverse: `strategy/` does NOT import from `drill/`. Store re-exports `BidGrade` and `TeachingResolution` for component consumption.
 
 ## Gotchas
 

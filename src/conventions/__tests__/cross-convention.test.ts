@@ -464,7 +464,7 @@ describe("Multi-round sequence integrity — conventions across 3+ rounds", () =
     const rebidCtx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "2C", "P", "2H", "P"], Seat.North);
     const rebidResult = evaluateBiddingRules(rebidCtx, staymanConfig);
     expect(rebidResult).not.toBeNull();
-    expect(rebidResult!.rule).toBe("stayman-rebid-major-fit");
+    expect(rebidResult!.rule).toBe("stayman-rebid-major-fit-h");
     const call = rebidResult!.call as import("../../engine/types").ContractBid;
     expect(call.level).toBe(4);
     expect(call.strain).toBe(BidSuit.Hearts);

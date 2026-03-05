@@ -34,10 +34,12 @@ export const baselineTransitionRules: readonly TransitionRule[] = [
   // Detect 1NT opening (no family active yet)
   {
     id: "detect-1nt-opening",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call } = entry;
       return state.familyId === null && is1NT(call);
     },
-    effects(_state: DialogueState, _call: Call, seat: Seat) {
+    effects(_state: DialogueState, entry) {
+      const { seat } = entry;
       return {
         setFamilyId: "1nt",
         setCaptain: CaptainRole.Responder,
@@ -50,10 +52,12 @@ export const baselineTransitionRules: readonly TransitionRule[] = [
   // Detect 2NT opening (no family active yet)
   {
     id: "detect-2nt-opening",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call } = entry;
       return state.familyId === null && is2NT(call);
     },
-    effects(_state: DialogueState, _call: Call, seat: Seat) {
+    effects(_state: DialogueState, entry) {
+      const { seat } = entry;
       return {
         setFamilyId: "2nt",
         setCaptain: CaptainRole.Responder,
@@ -66,10 +70,12 @@ export const baselineTransitionRules: readonly TransitionRule[] = [
   // Opponent doubles while system is active — system off
   {
     id: "opponent-double",
-    matches(state: DialogueState, call: Call, seat: Seat) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return call.type === "double" && isOpponentOfOpener(state, seat);
     },
-    effects(_state: DialogueState, call: Call, seat: Seat) {
+    effects(_state: DialogueState, entry) {
+      const { call, seat } = entry;
       return {
         setCompetitionMode: CompetitionMode.Doubled,
         setSystemMode: SystemMode.Off,
@@ -81,7 +87,8 @@ export const baselineTransitionRules: readonly TransitionRule[] = [
   // Opponent makes a contract bid while system is active — system off
   {
     id: "opponent-overcall",
-    matches(state: DialogueState, call: Call, seat: Seat) {
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
       return (
         state.familyId !== null &&
         state.systemMode === SystemMode.On &&
@@ -89,7 +96,8 @@ export const baselineTransitionRules: readonly TransitionRule[] = [
         isOpponentOfOpener(state, seat)
       );
     },
-    effects(_state: DialogueState, call: Call, seat: Seat) {
+    effects(_state: DialogueState, entry) {
+      const { call, seat } = entry;
       return {
         setCompetitionMode: CompetitionMode.Overcalled,
         setSystemMode: SystemMode.Off,
@@ -101,7 +109,8 @@ export const baselineTransitionRules: readonly TransitionRule[] = [
   // Pass — no state change
   {
     id: "pass-no-change",
-    matches(_state: DialogueState, call: Call) {
+    matches(_state: DialogueState, entry) {
+      const { call } = entry;
       return call.type === "pass";
     },
     effects() {

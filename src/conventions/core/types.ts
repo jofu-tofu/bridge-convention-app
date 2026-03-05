@@ -8,6 +8,10 @@ import type {
   Vulnerability,
 } from "../../engine/types";
 import { Seat } from "../../engine/types";
+import type { InterferenceKind } from "./dialogue/dialogue-state";
+import type { RuleNode, BidAlert } from "./rule-tree";
+import type { TreeEvalResult } from "./tree-evaluator";
+import type { ProtocolEvalResult } from "./protocol";
 
 /** Structured inference data attached to a RuleCondition. */
 export interface ConditionInference {
@@ -21,6 +25,14 @@ export interface ConditionInference {
     | "not-balanced"
     | "two-suited";
   readonly params: Record<string, number | string | boolean>;
+}
+
+/** Pattern describing how an opponent convention bid should be classified. */
+export interface InterferenceSignature {
+  readonly kind: InterferenceKind;
+  /** Override natural/artificial classification when this signature matches. */
+  readonly isNatural?: boolean;
+  matches(call: Call): boolean;
 }
 
 export enum ConventionCategory {
@@ -190,6 +202,8 @@ export interface ConventionConfig {
   /** Overlays that replace the hand tree for specific protocol rounds based on dialogue state.
    *  First matching overlay wins. Validated against protocol round names at registration time. */
   readonly overlays?: readonly import("./overlay").ConventionOverlayPatch[];
+  /** Bid signatures this convention uses that opponents may classify as interference. */
+  readonly interferenceSignatures?: readonly InterferenceSignature[];
   /** Optional candidate ranker for reordering before selection.
    *  Operates across ALL candidates before tier filtering.
    *  No conventions use this yet — seam for future difficulty/style preferences. */
@@ -197,4 +211,24 @@ export interface ConventionConfig {
     candidates: readonly import("./candidate-generator").ResolvedCandidate[],
     context: import("./effective-context").EffectiveConventionContext,
   ) => readonly import("./candidate-generator").ResolvedCandidate[];
+}
+
+/** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */
+export type ConventionLookup = (id: string) => ConventionConfig;
+
+export interface BiddingRuleResult {
+  readonly call: Call;
+  readonly rule: string;
+  readonly explanation: string;
+  readonly meaning?: string;
+  readonly conditionResults?: readonly ConditionResult[];
+  /** Raw tree evaluation result — available for conventions using rule trees.
+   *  Carries DecisionNode references, so must not cross the shared/ boundary directly. */
+  readonly treeEvalResult?: TreeEvalResult;
+  /** The tree root used for evaluation — needed by mappers that compute depth/parent info. */
+  readonly treeRoot?: RuleNode;
+  /** Full protocol evaluation result — available for protocol-based conventions. */
+  readonly protocolResult?: ProtocolEvalResult;
+  /** Alert metadata from matched IntentNode — for conventional (non-natural) bids. */
+  readonly alert?: BidAlert;
 }

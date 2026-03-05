@@ -2,7 +2,8 @@ import { describe, test, expect } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
 import type { BidFeedback } from "../../../stores/game.svelte";
-import type { TreeEvalSummary, TreeForkPoint, TreePathEntry } from "../../../shared/types";
+import { BidGrade } from "../../../stores/bidding.svelte";
+import type { TreeEvalSummary, TreeForkPoint, TreePathEntry, PracticalRecommendation } from "../../../shared/types";
 
 function makeForkPoint(): TreeForkPoint {
   const matched: TreePathEntry = {
@@ -37,7 +38,7 @@ function makeTreePath(forkPoint?: TreeForkPoint): TreeEvalSummary {
 
 function makeWrongBidFeedback(treePath?: TreeEvalSummary): BidFeedback {
   return {
-    isCorrect: false,
+    grade: BidGrade.Incorrect,
     userCall: { type: "pass" },
     expectedResult: {
       call: { type: "bid", level: 2, strain: "C" as never },
@@ -45,6 +46,7 @@ function makeWrongBidFeedback(treePath?: TreeEvalSummary): BidFeedback {
       explanation: "Stayman convention ask",
       treePath,
     },
+    teachingResolution: null,
   };
 }
 
@@ -155,18 +157,156 @@ describe("BidFeedbackPanel", () => {
 
   test("shows correct bid display for correct feedback", () => {
     const feedback: BidFeedback = {
-      isCorrect: true,
+      grade: BidGrade.Correct,
       userCall: { type: "bid", level: 2, strain: "C" as never },
       expectedResult: {
         call: { type: "bid", level: 2, strain: "C" as never },
         ruleName: "stayman-ask",
         explanation: "Stayman",
       },
+      teachingResolution: null,
     };
     render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop },
     });
 
     expect(screen.getByText("Correct!")).toBeTruthy();
+  });
+
+  test("shows Acceptable feedback with teal styling and auto-dismiss", () => {
+    const feedback: BidFeedback = {
+      grade: BidGrade.Acceptable,
+      userCall: { type: "bid", level: 2, strain: "D" as never },
+      expectedResult: {
+        call: { type: "bid", level: 2, strain: "C" as never },
+        ruleName: "stayman-ask",
+        explanation: "Stayman",
+      },
+      teachingResolution: {
+        primaryBid: { type: "bid", level: 2, strain: "C" as never },
+        acceptableBids: [
+          {
+            call: { type: "bid", level: 2, strain: "D" as never },
+            bidName: "stayman-alt",
+            meaning: "Alternative treatment",
+            reason: "preferred alternative: Alternative treatment",
+            fullCredit: true,
+            tier: "preferred",
+          },
+        ],
+        gradingType: "primary_plus_acceptable",
+        ambiguityScore: 0.6,
+      },
+    };
+    render(BidFeedbackPanel, {
+      props: { feedback, onContinue: noop, onSkipToReview: noop },
+    });
+
+    expect(screen.getByText("Acceptable!")).toBeTruthy();
+    expect(screen.getByText("Textbook bid is")).toBeTruthy();
+  });
+
+  test("shows practical note when agreesWithTeaching is false", () => {
+    const practicalRecommendation: PracticalRecommendation = {
+      topCandidateBidName: "competitive-overcall",
+      topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
+      topScore: 8.5,
+      agreesWithTeaching: false,
+      rationale: "Strong heart suit with competitive advantage",
+    };
+    const feedback: BidFeedback = {
+      grade: BidGrade.Correct,
+      userCall: { type: "bid", level: 2, strain: "C" as never },
+      expectedResult: {
+        call: { type: "bid", level: 2, strain: "C" as never },
+        ruleName: "stayman-ask",
+        explanation: "Stayman",
+      },
+      teachingResolution: null,
+      practicalRecommendation,
+    };
+    const { container } = render(BidFeedbackPanel, {
+      props: { feedback, onContinue: noop, onSkipToReview: noop },
+    });
+
+    const note = container.querySelector("[data-testid='practical-note']");
+    expect(note).not.toBeNull();
+    expect(note!.textContent).toContain("Experienced players might prefer");
+    expect(note!.textContent).toContain("Strong heart suit");
+  });
+
+  test("does not show practical note when agreesWithTeaching is true", () => {
+    const practicalRecommendation: PracticalRecommendation = {
+      topCandidateBidName: "stayman-ask",
+      topCandidateCall: { type: "bid", level: 2, strain: "C" as never },
+      topScore: 12.0,
+      agreesWithTeaching: true,
+      rationale: "Stayman is correct here",
+    };
+    const feedback: BidFeedback = {
+      grade: BidGrade.Correct,
+      userCall: { type: "bid", level: 2, strain: "C" as never },
+      expectedResult: {
+        call: { type: "bid", level: 2, strain: "C" as never },
+        ruleName: "stayman-ask",
+        explanation: "Stayman",
+      },
+      teachingResolution: null,
+      practicalRecommendation,
+    };
+    const { container } = render(BidFeedbackPanel, {
+      props: { feedback, onContinue: noop, onSkipToReview: noop },
+    });
+
+    const note = container.querySelector("[data-testid='practical-note']");
+    expect(note).toBeNull();
+  });
+
+  test("does not show practical note when practicalRecommendation is undefined", () => {
+    const feedback: BidFeedback = {
+      grade: BidGrade.Correct,
+      userCall: { type: "bid", level: 2, strain: "C" as never },
+      expectedResult: {
+        call: { type: "bid", level: 2, strain: "C" as never },
+        ruleName: "stayman-ask",
+        explanation: "Stayman",
+      },
+      teachingResolution: null,
+    };
+    const { container } = render(BidFeedbackPanel, {
+      props: { feedback, onContinue: noop, onSkipToReview: noop },
+    });
+
+    const note = container.querySelector("[data-testid='practical-note']");
+    expect(note).toBeNull();
+  });
+
+  test("shows practical note on incorrect feedback too", async () => {
+    const practicalRecommendation: PracticalRecommendation = {
+      topCandidateBidName: "competitive-overcall",
+      topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
+      topScore: 8.5,
+      agreesWithTeaching: false,
+      rationale: "Strong heart suit",
+    };
+    const feedback: BidFeedback = {
+      grade: BidGrade.Incorrect,
+      userCall: { type: "pass" },
+      expectedResult: {
+        call: { type: "bid", level: 2, strain: "C" as never },
+        ruleName: "stayman-ask",
+        explanation: "Stayman",
+      },
+      teachingResolution: null,
+      practicalRecommendation,
+    };
+    const { container } = render(BidFeedbackPanel, {
+      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
+    });
+
+    // Practical note on incorrect should show without needing to reveal answer
+    const note = container.querySelector("[data-testid='practical-note']");
+    expect(note).not.toBeNull();
+    expect(note!.textContent).toContain("Experienced players might prefer");
   });
 });

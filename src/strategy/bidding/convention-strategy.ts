@@ -1,11 +1,11 @@
-import type { ConventionConfig, BiddingContext } from "../../conventions/core/types";
+import type { ConventionConfig, BiddingContext, ConventionLookup } from "../../conventions/core/types";
 import { evaluateBiddingRules } from "../../conventions/core/registry";
 import { buildEffectiveContext } from "../../conventions/core/effective-context";
 import type { BeliefData, EffectiveConventionContext } from "../../conventions/core/effective-context";
 import { generateCandidates } from "../../conventions/core/candidate-generator";
 import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
 import { selectMatchedCandidate } from "../../conventions/core/candidate-selector";
-import { ForcingState } from "../../conventions/core/dialogue/dialogue-state";
+import { ForcingState } from "../../shared/types";
 import type {
   BiddingStrategy,
   BidResult,
@@ -31,6 +31,8 @@ export { mapConditionResult, mapVisitedWithStructure, extractForkPoint, enrichSi
 export interface ConventionStrategyOptions {
   /** Provides public belief data for the effective context. Called per-suggest; exceptions are caught. */
   beliefProvider?: (ctx: BiddingContext) => BeliefData | undefined;
+  /** Optional convention lookup override for DI-based tests. */
+  lookupConvention?: ConventionLookup;
   /** Additional ranker applied after config.rankCandidates (if any). Both compose: config first, then options. */
   ranker?: (candidates: readonly ResolvedCandidate[], ctx: EffectiveConventionContext) => readonly ResolvedCandidate[];
   /** Inference provider for partner interpretation model. When present, misunderstandingRisk is computed per candidate. */
@@ -48,7 +50,7 @@ export function conventionToStrategy(
       const trace = new TraceCollector();
       trace.setConventionId(config.id);
 
-      const result = evaluateBiddingRules(context, config);
+      const result = evaluateBiddingRules(context, config, options?.lookupConvention);
       if (!result) {
         trace.setProtocolMatched(false);
         return null;
@@ -71,7 +73,13 @@ export function conventionToStrategy(
             publicBelief = undefined;
           }
         }
-        const effectiveCtx = buildEffectiveContext(context, config, result.protocolResult, publicBelief);
+        const effectiveCtx = buildEffectiveContext(
+          context,
+          config,
+          result.protocolResult,
+          publicBelief,
+          options?.lookupConvention,
+        );
 
         // Record activated overlays
         for (const overlay of effectiveCtx.activeOverlays) {
@@ -162,7 +170,13 @@ export function conventionToStrategy(
           const rawPragmatic = generatePragmaticCandidates(context, privatePosterior, existingCalls);
           // Forcing guard: exclude pragmatic Pass candidates when forcing state is active
           const effectiveForcingState = result.protocolResult
-            ? buildEffectiveContext(context, config, result.protocolResult, publicBelief).dialogueState.forcingState
+            ? buildEffectiveContext(
+                context,
+                config,
+                result.protocolResult,
+                publicBelief,
+                options?.lookupConvention,
+              ).dialogueState.forcingState
             : undefined;
           if (effectiveForcingState === ForcingState.ForcingOneRound || effectiveForcingState === ForcingState.GameForcing) {
             pragmaticCandidates = rawPragmatic.filter(c => c.call.type !== "pass");

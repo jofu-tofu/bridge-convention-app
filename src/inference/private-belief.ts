@@ -16,7 +16,7 @@ export interface PrivateBeliefState {
 /**
  * Narrow partner's public beliefs using own hand knowledge.
  *
- * HCP: Pass through partner's public HCP range unchanged (v0).
+ * HCP: Cap partner's max at 40 - own HCP (conservative bound — ignores opponent HCP).
  * Suit lengths: Cap partner's max at 13 - own suit length.
  */
 export function conditionOnOwnHand(
@@ -39,10 +39,14 @@ export function conditionOnOwnHand(
     };
   }
 
+  const pubHcp = partnerBeliefs.hcpRange;
   return {
     seat,
     partnerSeat: partner,
-    partnerHcpRange: { ...partnerBeliefs.hcpRange },
+    partnerHcpRange: {
+      min: Math.max(pubHcp.min, 0),
+      max: Math.min(pubHcp.max, 40 - evaluation.hcp),
+    },
     partnerSuitLengths,
   };
 }

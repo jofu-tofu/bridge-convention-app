@@ -749,6 +749,31 @@ describe("protocol trigger overlays (triggerOverrides)", () => {
     expect(() => validateOverlayPatches([overlay], triggerProtocol)).not.toThrow();
   });
 
+  test("validateOverlayPatches throws when triggerOverrides key references non-existent round", () => {
+    const overlay: ConventionOverlayPatch = {
+      id: "bad-trigger-override",
+      roundName: "opening",
+      matches: () => true,
+      triggerOverrides: new Map([
+        ["nonexistent-round", [semantic(bidMade(2, BidSuit.NoTrump), {})]],
+      ]),
+    };
+    expect(() => validateOverlayPatches([overlay], triggerProtocol)).toThrow(/nonexistent-round/);
+  });
+
+  test("validateOverlayPatches allows triggerOverrides with valid round names", () => {
+    // triggerProtocol has round "opening"
+    const overlay: ConventionOverlayPatch = {
+      id: "valid-trigger-keys",
+      roundName: "opening",
+      matches: () => true,
+      triggerOverrides: new Map([
+        ["opening", [semantic(bidMade(2, BidSuit.NoTrump), {})]],
+      ]),
+    };
+    expect(() => validateOverlayPatches([overlay], triggerProtocol)).not.toThrow();
+  });
+
   test("collectTriggerOverrides: two overlays for different round names both contribute", () => {
     const overlay1: ConventionOverlayPatch = {
       id: "override-round1",

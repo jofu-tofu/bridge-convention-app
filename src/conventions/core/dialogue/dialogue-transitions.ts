@@ -1,7 +1,7 @@
 // Dialogue transition rules — how each bid changes the dialogue state.
 
-import type { Call, Seat, Auction } from "../../../engine/types";
-import type { DialogueState, InterferenceDetail } from "./dialogue-state";
+import type { AuctionEntry, Auction } from "../../../engine/types";
+import type { DialogueState, DialogueFrame, InterferenceDetail } from "./dialogue-state";
 import {
   ForcingState,
   PendingAction,
@@ -27,8 +27,11 @@ export interface DialogueEffect {
   readonly setCompetitionMode?: CompetitionMode;
   readonly setCaptain?: CaptainRole;
   readonly setSystemMode?: SystemMode;
+  readonly setSystemCapability?: Readonly<Record<string, SystemMode>>;
   readonly mergeConventionData?: Readonly<Record<string, unknown>>;
   readonly setInterferenceDetail?: InterferenceDetail;
+  readonly pushFrame?: DialogueFrame;
+  readonly popFrame?: boolean;
   readonly activateOverlay?: string | null;
 }
 
@@ -43,8 +46,8 @@ export interface DialogueEffect {
  */
 export interface TransitionRule {
   readonly id: string;
-  matches(state: DialogueState, call: Call, seat: Seat, auction: Auction, entryIndex?: number): boolean;
-  effects(state: DialogueState, call: Call, seat: Seat, auction: Auction, entryIndex?: number): DialogueEffect;
+  matches(state: DialogueState, entry: AuctionEntry, auction: Auction, entryIndex: number): boolean;
+  effects(state: DialogueState, entry: AuctionEntry, auction: Auction, entryIndex: number): DialogueEffect;
 }
 
 /**
@@ -62,6 +65,12 @@ export function getEffectKeys(effect: DialogueEffect): ReadonlySet<string> {
   if (effect.mergeConventionData !== undefined) {
     keys.add("mergeConventionData");
   }
+  if (effect.pushFrame !== undefined) {
+    keys.add("pushFrame");
+  }
+  if (effect.popFrame !== undefined) {
+    keys.add("popFrame");
+  }
   return keys;
 }
 
@@ -78,6 +87,14 @@ export function applyBackfillEffect(
   effect: DialogueEffect,
   alreadySet: ReadonlySet<string>,
 ): DialogueState {
+  let frames = [...(state.frames ?? [])];
+  if (!alreadySet.has("popFrame") && effect.popFrame) {
+    frames = frames.slice(0, -1);
+  }
+  if (!alreadySet.has("pushFrame") && effect.pushFrame) {
+    frames = [...frames, effect.pushFrame];
+  }
+
   return {
     familyId: !alreadySet.has("setFamilyId") && effect.setFamilyId !== undefined
       ? effect.setFamilyId
@@ -100,6 +117,12 @@ export function applyBackfillEffect(
     systemMode: !alreadySet.has("setSystemMode") && effect.setSystemMode !== undefined
       ? effect.setSystemMode
       : state.systemMode,
+    systemCapabilities: effect.setSystemCapability
+      ? (alreadySet.has("setSystemCapability")
+        // Convention already set capabilities — baseline fills only NEW keys
+        ? { ...effect.setSystemCapability, ...state.systemCapabilities }
+        : { ...state.systemCapabilities, ...effect.setSystemCapability })
+      : state.systemCapabilities,
     conventionData: effect.mergeConventionData
       ? (alreadySet.has("mergeConventionData")
         // Convention already merged data — baseline contributes only NEW keys
@@ -109,6 +132,7 @@ export function applyBackfillEffect(
     interferenceDetail: !alreadySet.has("setInterferenceDetail") && effect.setInterferenceDetail !== undefined
       ? effect.setInterferenceDetail
       : state.interferenceDetail,
+    frames,
     // activateOverlay: intentionally ignored — future seam
   };
 }
@@ -132,6 +156,14 @@ function extractConventionDataFromState(
 
 /** Apply a DialogueEffect to produce a new DialogueState (immutable). */
 export function applyEffect(state: DialogueState, effect: DialogueEffect): DialogueState {
+  let frames = [...(state.frames ?? [])];
+  if (effect.popFrame) {
+    frames = frames.slice(0, -1);
+  }
+  if (effect.pushFrame) {
+    frames = [...frames, effect.pushFrame];
+  }
+
   return {
     familyId: effect.setFamilyId !== undefined ? effect.setFamilyId : state.familyId,
     forcingState: effect.setForcingState ?? state.forcingState,
@@ -140,12 +172,16 @@ export function applyEffect(state: DialogueState, effect: DialogueEffect): Dialo
     competitionMode: effect.setCompetitionMode ?? state.competitionMode,
     captain: effect.setCaptain ?? state.captain,
     systemMode: effect.setSystemMode ?? state.systemMode,
+    systemCapabilities: effect.setSystemCapability
+      ? { ...state.systemCapabilities, ...effect.setSystemCapability }
+      : state.systemCapabilities,
     conventionData: effect.mergeConventionData
       ? { ...state.conventionData, ...effect.mergeConventionData }
       : state.conventionData,
     interferenceDetail: effect.setInterferenceDetail !== undefined
       ? effect.setInterferenceDetail
       : state.interferenceDetail,
+    frames,
     // activateOverlay: intentionally ignored — future seam
   };
 }

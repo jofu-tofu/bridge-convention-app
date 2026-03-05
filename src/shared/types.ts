@@ -10,6 +10,19 @@ import type {
 } from "../engine/types";
 import type { BiddingContext } from "../conventions/core/types";
 
+export enum ForcingState {
+  Nonforcing = "nonforcing",
+  ForcingOneRound = "forcing-one-round",
+  GameForcing = "game-forcing",
+  PassForcing = "pass-forcing",
+}
+
+/** Alert information for conventional (non-natural) bids. */
+export interface BidAlert {
+  readonly artificial: boolean;
+  readonly forcingType: "forcing" | "game-forcing" | "invitational" | "signoff" | null;
+}
+
 export interface SuitInference {
   readonly minLength?: number;
   readonly maxLength?: number;
@@ -115,6 +128,10 @@ export interface ResolvedCandidateDTO {
   readonly legal: boolean;
   readonly isMatched: boolean;
   readonly priority?: "preferred" | "alternative";
+  readonly provenance?: {
+    readonly origin: "tree" | "replacement-tree" | "overlay-injected" | "overlay-override";
+    readonly overlayId?: string;
+  };
   readonly intentType: string;
   readonly failedConditions: readonly SiblingConditionDetail[];
 }
@@ -142,7 +159,41 @@ export interface EvaluationTrace {
   readonly resolverOutcome?: "resolved" | "use_default" | "declined" | "no_resolver" | "error";
   readonly candidateCount: number;
   readonly selectedTier?: "matched" | "preferred" | "alternative" | "none";
-  readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "error" }[];
+  /** True when convention matched but no candidate could be selected in a forcing auction. */
+  readonly forcingDeclined?: boolean;
+  readonly effectivePath?: {
+    readonly candidateBidName: string;
+    readonly wasOverlayReplaced: boolean;
+    readonly wasResolverRemapped: boolean;
+  };
+  /** True when a strategy result was rejected by the chain's resultFilter. */
+  readonly forcingFiltered?: boolean;
+  /** Error message from the practical recommendation pipeline, if it failed. */
+  readonly practicalError?: string;
+  readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "filtered" | "error" }[];
+}
+
+/** A single condition entry extracted from the tree evaluation for inference consumption. */
+export interface TreeInferenceConditionEntry {
+  readonly type: string;
+  readonly params: Record<string, number | string | boolean>;
+  readonly negatable?: boolean;
+}
+
+/** Inference-ready data extracted from tree evaluation path and rejected branches. */
+export interface TreeInferenceData {
+  readonly pathConditions: readonly TreeInferenceConditionEntry[];
+  readonly rejectedConditions: readonly TreeInferenceConditionEntry[];
+}
+
+/** Practical recommendation — what an experienced player might prefer given imperfect information.
+ *  Separate from teaching grading (which is deterministic and unchanged by this). */
+export interface PracticalRecommendation {
+  readonly topCandidateBidName: string;
+  readonly topCandidateCall: Call;
+  readonly topScore: number;
+  readonly agreesWithTeaching: boolean;
+  readonly rationale: string;
 }
 
 export interface BidResult {
@@ -154,6 +205,12 @@ export interface BidResult {
   readonly conditions?: readonly ConditionDetail[];
   readonly treePath?: TreeEvalSummary;
   readonly evaluationTrace?: EvaluationTrace;
+  /** Structured inference data from tree evaluation — hand conditions on the matched path
+   *  and rejected branches. Used by the inference engine for positive/negative inference. */
+  readonly treeInferenceData?: TreeInferenceData;
+  /** Practical recommendation — what an experienced player might prefer.
+   *  Undefined when no belief data available or practical pipeline errors. */
+  readonly practicalRecommendation?: PracticalRecommendation;
 }
 
 /** A single entry in the bid history, shown in review/feedback screens. */

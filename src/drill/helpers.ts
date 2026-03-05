@@ -1,5 +1,5 @@
 import type { EnginePort } from "../engine/port";
-import type { ConventionConfig } from "../conventions/core/types";
+import type { ConventionConfig, BiddingContext, ConventionLookup } from "../conventions/core/types";
 import {
   Seat,
   type Deal,
@@ -15,6 +15,7 @@ import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
 import { getConvention } from "../conventions/core/registry";
 import { evaluateHand } from "../engine/hand-evaluator";
+import type { BeliefData } from "../conventions/core/effective-context";
 
 /** 180° table rotation: N↔S, E↔W */
 export function rotateSeat180(seat: Seat): Seat {
@@ -99,12 +100,19 @@ export async function startDrill(
   },
   rng?: () => number,
   seed?: number,
+  options?: {
+    beliefProvider?: (ctx: BiddingContext) => BeliefData | undefined;
+    lookupConvention?: ConventionLookup;
+  },
 ) {
+  const lookup = options?.lookupConvention ?? getConvention;
   const config = createDrillConfig(convention.id, userSeat, {
     opponentBidding: true,
+    beliefProvider: options?.beliefProvider,
+    lookupConvention: options?.lookupConvention,
   });
   const session = createDrillSession(config);
-  const strategy = conventionToStrategy(convention);
+  const strategy = conventionToStrategy(convention, { lookupConvention: options?.lookupConvention });
 
   // Resolve dealer randomization
   let resolvedConstraints = convention.dealConstraints;
@@ -126,8 +134,11 @@ export async function startDrill(
   if (previewAuction && dealerRotated) {
     previewAuction = rotateAuction(previewAuction);
   }
-  const opponentConvention = getConvention("sayc");
-  const opponentStrategy = conventionToStrategy(opponentConvention);
+  const opponentConvention = lookup("sayc");
+  const opponentStrategy = conventionToStrategy(
+    opponentConvention,
+    { lookupConvention: options?.lookupConvention },
+  );
   const passConstraints = buildOpponentPassConstraints(
     previewAuction,
     opponentStrategy,

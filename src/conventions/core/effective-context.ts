@@ -2,12 +2,14 @@
 // Replaces ad-hoc construction in conventionToStrategy.
 
 import type { Seat, Suit } from "../../engine/types";
-import type { BiddingContext, ConventionConfig } from "./types";
+import type { BiddingContext, ConventionConfig, ConventionLookup } from "./types";
 import type { ProtocolEvalResult } from "./protocol";
 import type { DialogueState } from "./dialogue/dialogue-state";
 import { computeDialogueState } from "./dialogue/dialogue-manager";
 import { baselineTransitionRules } from "./dialogue/baseline-transitions";
 import type { ConventionOverlayPatch } from "./overlay";
+import { classifyInterference } from "./interference-classifier";
+import { getConvention } from "./registry";
 
 /** Belief data passed from inference layer. Structural match avoids import coupling. */
 export interface BeliefData {
@@ -27,6 +29,9 @@ export interface EffectiveConventionContext {
   readonly publicBelief?: BeliefData;
 }
 
+// Re-export for backward compatibility — callers that imported from here continue working.
+export { classifyInterference } from "./interference-classifier";
+
 /**
  * Build an EffectiveConventionContext by computing DialogueState from the auction.
  * Uses config.transitionRules if present, otherwise falls back to baseline transitions.
@@ -37,10 +42,18 @@ export function buildEffectiveContext(
   config: ConventionConfig,
   protocolResult: ProtocolEvalResult,
   publicBelief?: BeliefData,
+  lookupConvention?: ConventionLookup,
 ): EffectiveConventionContext {
-  const dialogueState = config.baselineRules
+  const dialogueStateBase = config.baselineRules
     ? computeDialogueState(raw.auction, config.transitionRules ?? [], config.baselineRules)
     : computeDialogueState(raw.auction, config.transitionRules ?? baselineTransitionRules);
+  const lookup = lookupConvention ?? getConvention;
+  if (dialogueStateBase.interferenceDetail && raw.opponentConventionIds.length > 0) {
+    for (const conventionId of raw.opponentConventionIds) {
+      lookup(conventionId);
+    }
+  }
+  const dialogueState = classifyInterference(dialogueStateBase, raw.opponentConventionIds, lookup);
 
   const filtered = config.overlays?.filter(
     o => o.roundName === protocolResult.activeRound?.name && o.matches(dialogueState),

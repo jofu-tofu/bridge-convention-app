@@ -4,7 +4,7 @@
 import type { ConditionedBiddingRule, ConditionResult, RuleCondition, AuctionCondition, BiddingContext } from "./types";
 import type { RuleNode, HandNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
-import type { BiddingRuleResult } from "./registry";
+import type { BiddingRuleResult } from "./types";
 import { conditionedRule } from "./conditions";
 import type { ConventionProtocol, EstablishedContext } from "./protocol";
 

@@ -10,6 +10,7 @@ export interface DiagnosticWarning {
     | "duplicate-node-id"
     | "overlay-priority-conflict"
     | "trigger-overlap"
+    | "missing-resolver"
     | "unreachable-node";
   readonly severity: "error" | "warning";
   readonly message: string;
@@ -30,6 +31,21 @@ function collectNodeIds(node: RuleNode, seen: Map<string, string[]>): void {
     case "decision":
       collectNodeIds(node.yes, seen);
       collectNodeIds(node.no, seen);
+      return;
+    case "fallback":
+      return;
+  }
+}
+
+/** Collect all semantic intent types referenced by IntentNode leaves. */
+function collectIntentTypes(node: RuleNode, seen: Set<string>): void {
+  switch (node.type) {
+    case "intent":
+      seen.add(node.intent.type);
+      return;
+    case "decision":
+      collectIntentTypes(node.yes, seen);
+      collectIntentTypes(node.no, seen);
       return;
     case "fallback":
       return;
@@ -112,11 +128,74 @@ export function analyzeOverlayConflicts(overlays: readonly ConventionOverlayPatc
   return warnings;
 }
 
+/** Check for intent types in protocol trees that have no configured resolver. */
+export function analyzeMissingResolvers(config: ConventionConfig): DiagnosticWarning[] {
+  if (!config.protocol || config.intentResolvers === undefined) return [];
+
+  const intentTypes = new Set<string>();
+
+  for (const round of config.protocol.rounds) {
+    const tree = typeof round.handTree === "function" ? round.handTree({}) : round.handTree;
+    collectIntentTypes(tree as RuleNode, intentTypes);
+  }
+
+  if (config.overlays) {
+    for (const overlay of config.overlays) {
+      if (overlay.replacementTree) {
+        collectIntentTypes(overlay.replacementTree as RuleNode, intentTypes);
+      }
+    }
+  }
+
+  const warnings: DiagnosticWarning[] = [];
+  for (const intentType of intentTypes) {
+    if (!config.intentResolvers.has(intentType)) {
+      warnings.push({
+        type: "missing-resolver",
+        severity: "warning",
+        message: `Intent type "${intentType}" has no resolver in convention "${config.id}"`,
+      });
+    }
+  }
+  return warnings;
+}
+
+/** Check whether two or more rounds reuse the same trigger condition name. */
+export function analyzeTriggerOverlaps(config: ConventionConfig): DiagnosticWarning[] {
+  if (!config.protocol) return [];
+
+  const triggerToRounds = new Map<string, Set<string>>();
+  for (const round of config.protocol.rounds) {
+    for (const trigger of round.triggers) {
+      const existing = triggerToRounds.get(trigger.condition.name);
+      if (existing) {
+        existing.add(round.name);
+      } else {
+        triggerToRounds.set(trigger.condition.name, new Set([round.name]));
+      }
+    }
+  }
+
+  const warnings: DiagnosticWarning[] = [];
+  for (const [triggerName, rounds] of triggerToRounds) {
+    if (rounds.size > 1) {
+      warnings.push({
+        type: "trigger-overlap",
+        severity: "warning",
+        message: `Trigger "${triggerName}" appears in multiple rounds: ${[...rounds].join(", ")}`,
+      });
+    }
+  }
+  return warnings;
+}
+
 /** Run all diagnostic analyzers on a convention config. */
 export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[] {
   const warnings: DiagnosticWarning[] = [];
 
   warnings.push(...analyzeNodeIdUniqueness(config));
+  warnings.push(...analyzeMissingResolvers(config));
+  warnings.push(...analyzeTriggerOverlaps(config));
 
   if (config.overlays) {
     warnings.push(...analyzeOverlayConflicts(config.overlays));

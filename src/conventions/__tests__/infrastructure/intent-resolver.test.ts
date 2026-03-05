@@ -223,7 +223,8 @@ describe("IntentNode + Intent Resolver", () => {
     const doubledState: DialogueState = {
       ...ntDialogueState,
       competitionMode: CompetitionMode.Doubled,
-      systemMode: SystemMode.Modified,
+      systemMode: SystemMode.Off,
+      systemCapabilities: { stayman: SystemMode.Modified },
     };
 
     const overcalledState: DialogueState = {

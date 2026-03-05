@@ -1,7 +1,9 @@
 import { CompetitionMode, SystemMode } from "../../core/dialogue/dialogue-state";
+import { getSystemModeFor } from "../../core/dialogue/dialogue-state";
 import type { ConventionOverlayPatch } from "../../core/overlay";
 import { round1AskAfterDouble } from "./tree";
 import { fallback } from "../../core/rule-tree";
+import { STAYMAN_CAPABILITY } from "./constants";
 
 export const staymanOverlays: readonly ConventionOverlayPatch[] = [
   {
@@ -9,7 +11,7 @@ export const staymanOverlays: readonly ConventionOverlayPatch[] = [
     roundName: "nt-opening",
     matches: (state) =>
       state.competitionMode === CompetitionMode.Doubled &&
-      state.systemMode === SystemMode.Modified,
+      getSystemModeFor(state, STAYMAN_CAPABILITY) === SystemMode.Modified,
     replacementTree: round1AskAfterDouble,
   },
   {
@@ -17,7 +19,7 @@ export const staymanOverlays: readonly ConventionOverlayPatch[] = [
     roundName: "nt-opening",
     matches: (state) =>
       state.competitionMode !== CompetitionMode.Uncontested &&
-      state.systemMode === SystemMode.Off,
+      getSystemModeFor(state, STAYMAN_CAPABILITY) === SystemMode.Off,
     replacementTree: fallback("system-off-overcall"),
   },
 ];

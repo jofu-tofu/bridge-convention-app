@@ -23,6 +23,7 @@ export const INITIAL_DIALOGUE_STATE: DialogueState = {
   captain: CaptainRole.Neither,
   systemMode: SystemMode.Off,
   conventionData: {},
+  frames: [],
 };
 
 /**
@@ -55,8 +56,8 @@ export function computeDialogueState(
     if (!baselineRules) {
       // Single-pass mode: original behavior
       for (const rule of conventionRules) {
-        if (rule.matches(state, entry.call, entry.seat, auction, i)) {
-          const effect = rule.effects(state, entry.call, entry.seat, auction, i);
+        if (rule.matches(state, entry, auction, i)) {
+          const effect = rule.effects(state, entry, auction, i);
           state = applyEffect(state, effect);
           break;
         }
@@ -67,8 +68,8 @@ export function computeDialogueState(
 
       // Pass 1: convention rules (first-match-wins)
       for (const rule of conventionRules) {
-        if (rule.matches(state, entry.call, entry.seat, auction, i)) {
-          const effect = rule.effects(state, entry.call, entry.seat, auction, i);
+        if (rule.matches(state, entry, auction, i)) {
+          const effect = rule.effects(state, entry, auction, i);
           alreadySet = new Set(getEffectKeys(effect));
           state = applyEffect(state, effect);
           break;
@@ -77,8 +78,8 @@ export function computeDialogueState(
 
       // Pass 2: baseline rules (first-match-wins, backfill only)
       for (const rule of baselineRules) {
-        if (rule.matches(state, entry.call, entry.seat, auction, i)) {
-          const effect = rule.effects(state, entry.call, entry.seat, auction, i);
+        if (rule.matches(state, entry, auction, i)) {
+          const effect = rule.effects(state, entry, auction, i);
           state = applyBackfillEffect(state, effect, alreadySet);
           break;
         }

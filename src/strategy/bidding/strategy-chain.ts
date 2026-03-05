@@ -2,8 +2,14 @@ import type { BiddingStrategy, BidResult } from "../../shared/types";
 import type { BiddingContext } from "../../conventions/core/types";
 import { TraceCollector } from "./trace-collector";
 
+export interface StrategyChainOptions {
+  /** When provided, results failing this predicate are treated as "declined". */
+  resultFilter?: (result: BidResult, context: BiddingContext) => boolean;
+}
+
 export function createStrategyChain(
   strategies: readonly BiddingStrategy[],
+  options?: StrategyChainOptions,
 ): BiddingStrategy {
   return {
     id: `chain:${strategies.map((s) => s.id).join("+")}`,
@@ -15,21 +21,27 @@ export function createStrategyChain(
         try {
           const result = strategy.suggest(context);
           if (result !== null) {
+            if (options?.resultFilter && !options.resultFilter(result, context)) {
+              trace.addStrategyAttempt(strategy.id, "filtered");
+              trace.setForcingFiltered(true);
+              continue;
+            }
             trace.addStrategyAttempt(strategy.id, "suggested");
 
             // Merge: if the result already has a trace (from conventionToStrategy),
             // augment it with the chain path. Otherwise, build a new one.
             const existingTrace = result.evaluationTrace;
-            const chainPath = trace.build().strategyChainPath;
+            const builtTrace = trace.build();
 
             return {
               ...result,
               evaluationTrace: existingTrace
                 ? {
                     ...existingTrace,
-                    strategyChainPath: [...chainPath],
+                    strategyChainPath: [...builtTrace.strategyChainPath],
+                    forcingFiltered: builtTrace.forcingFiltered,
                   }
-                : trace.build(),
+                : builtTrace,
             };
           }
           trace.addStrategyAttempt(strategy.id, "declined");

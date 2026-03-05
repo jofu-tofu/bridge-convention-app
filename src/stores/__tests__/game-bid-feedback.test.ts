@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { BidSuit } from "../../engine/types";
 import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
+import { BidGrade } from "../bidding.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import type { BiddingStrategy, BidResult } from "../../shared/types";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "../../test-support/fixtures";
@@ -28,6 +29,40 @@ function makeNoOpStrategy(): BiddingStrategy {
     name: "No-Op",
     suggest(): null {
       return null;
+    },
+  };
+}
+
+/** Strategy with a primary bid plus a preferred acceptable alternative. */
+function makePrimaryWithAcceptableAlternativeStrategy(): BiddingStrategy {
+  return {
+    id: "test-with-alternative",
+    name: "Test With Alternative",
+    suggest(): BidResult {
+      return {
+        call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+        ruleName: "stayman-ask",
+        explanation: "Bid 2C to ask for a 4-card major",
+        treePath: {
+          matchedNodeName: "stayman-ask",
+          path: [],
+          visited: [],
+          resolvedCandidates: [
+            {
+              bidName: "stayman-2d-alt",
+              meaning: "Alternative treatment",
+              call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+              resolvedCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+              isDefaultCall: true,
+              legal: true,
+              isMatched: false,
+              priority: "preferred",
+              intentType: "Alternative",
+              failedConditions: [],
+            },
+          ],
+        },
+      };
     },
   };
 }
@@ -87,7 +122,7 @@ describe("bid feedback — user-facing behavior", () => {
 
       // Feedback contains the correct bid the user should have made
       const feedback = store.bidFeedback!;
-      expect(feedback.isCorrect).toBe(false);
+      expect(feedback.grade).toBe(BidGrade.Incorrect);
       expect(feedback.expectedResult!.call).toEqual({
         type: "bid",
         level: 2,
@@ -189,6 +224,67 @@ describe("bid feedback — user-facing behavior", () => {
 
       // No strategy → compares against pass → correct → no feedback
       expect(store.bidFeedback).toBeNull();
+    });
+  });
+
+  describe("multi-grade feedback", () => {
+    it("acceptable bid gets Acceptable grade and auction continues (no retry)", async () => {
+      const store = makeStore();
+      store.startDrill(
+        makeSimpleTestDeal(),
+        makeDrillSession(),
+        undefined,
+        makePrimaryWithAcceptableAlternativeStrategy(),
+      );
+      await flushActions();
+
+      store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
+      expect(store.bidFeedback?.grade).toBe(BidGrade.Acceptable);
+      await flushActions();
+
+      expect(store.bidFeedback).toBeNull();
+      expect(store.isUserTurn).toBe(true);
+    });
+
+    it("incorrect bid gets Incorrect grade with retry offered", async () => {
+      const store = makeStore();
+      store.startDrill(
+        makeSimpleTestDeal(),
+        makeDrillSession(),
+        undefined,
+        makePrimaryWithAcceptableAlternativeStrategy(),
+      );
+      await flushActions();
+
+      store.userBid({ type: "bid", level: 3, strain: BidSuit.Clubs });
+      await flushActions();
+
+      expect(store.bidFeedback?.grade).toBe(BidGrade.Incorrect);
+      expect(store.isUserTurn).toBe(false);
+
+      store.retryBid();
+      await flushActions();
+      expect(store.bidFeedback).toBeNull();
+      expect(store.isUserTurn).toBe(true);
+    });
+
+    it("BidFeedback.grade is the single source of truth for correctness", async () => {
+      const store = makeStore();
+      store.startDrill(
+        makeSimpleTestDeal(),
+        makeDrillSession(),
+        undefined,
+        makePrimaryWithAcceptableAlternativeStrategy(),
+      );
+      await flushActions();
+
+      store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
+      await flushActions();
+
+      const userEntries = store.bidHistory.filter((entry) => entry.isUser);
+      expect(userEntries).toHaveLength(1);
+      expect(userEntries[0]?.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
+      expect(userEntries[0]?.isCorrect).toBe(true);
     });
   });
 });

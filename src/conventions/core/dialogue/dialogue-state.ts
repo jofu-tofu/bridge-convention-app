@@ -1,14 +1,11 @@
 // DialogueState types — protocol memory for what the auction means
 // under the partnership agreement, independent of any specific hand.
 
-import type { Suit, Call, Seat } from "../../../engine/types";
+import type { BidSuit, Suit, Call, Seat } from "../../../engine/types";
+import { ForcingState } from "../../../shared/types";
 
-export enum ForcingState {
-  Nonforcing = "nonforcing",
-  ForcingOneRound = "forcing-one-round",
-  GameForcing = "game-forcing",
-  PassForcing = "pass-forcing",
-}
+// Re-export from canonical location for backward compatibility
+export { ForcingState } from "../../../shared/types";
 
 export enum PendingAction {
   None = "none",
@@ -59,6 +56,18 @@ export interface AgreedStrain {
   readonly confidence?: "tentative" | "agreed" | "forced";
 }
 
+/** Open set of frame kinds. Convention definitions own specific string values. */
+export type FrameKind = string;
+
+/** Conversation frame stack entry for multi-step convention obligations. */
+export interface DialogueFrame {
+  readonly kind: FrameKind;
+  readonly owner: "opener" | "responder";
+  readonly targetStrain?: BidSuit;
+  readonly targetLevel?: number;
+  readonly pushedAt: number;
+}
+
 export interface DialogueState {
   readonly familyId: string | null;
   readonly forcingState: ForcingState;
@@ -67,6 +76,14 @@ export interface DialogueState {
   readonly competitionMode: CompetitionMode;
   readonly captain: CaptainRole;
   readonly systemMode: SystemMode;
+  readonly systemCapabilities?: Readonly<Record<string, SystemMode>>;
   readonly conventionData: Readonly<Record<string, unknown>>;
   readonly interferenceDetail?: InterferenceDetail;
+  readonly frames?: readonly DialogueFrame[];
+}
+
+/** Get effective system mode for a specific capability.
+ *  Checks systemCapabilities first, falls back to systemMode. */
+export function getSystemModeFor(state: DialogueState, capability: string): SystemMode {
+  return state.systemCapabilities?.[capability] ?? state.systemMode;
 }

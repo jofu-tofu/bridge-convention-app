@@ -8,6 +8,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
 - **Minimal engine imports.** Stores import `EnginePort` type, `nextSeat`/`partnerSeat` from constants, and `evaluateHand` from hand-evaluator (for bid correctness checking). Never import `auction`, `scoring`, etc.
+- **No conventions/core imports.** `game.svelte.ts` uses `InferenceExtractorInput` from `inference/types` (not `BiddingRuleResult` from `conventions/core/registry`). The `toExtractorInput()` adapter builds a narrow DTO for annotation production.
 
 ## Architecture
 
@@ -25,9 +26,24 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 
-**Exported types:** `BidFeedback`, `BidHistoryEntry` (re-exported from `shared/types.ts`), `GamePhase`, `PlayLogEntry`, `seatController()`.
+**Exported types:** `BidFeedback` (with `grade: BidGrade`, `teachingResolution: TeachingResolution | null`, `practicalRecommendation?: PracticalRecommendation`), `BidGrade`, `TeachingResolution` (re-exported from `drill/teaching-resolution`), `BidHistoryEntry` (re-exported from `shared/types.ts`), `GamePhase`, `PlayLogEntry`, `seatController()`.
 
 **Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
+
+## Game Phases
+
+**Phase machine:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. Tracked in `game.svelte.ts` via `transitionTo()` guard.
+
+**User always bids as South.** The `effectiveUserSeat` handles play-phase seat swaps.
+
+**DECLARER_PROMPT conditions:**
+- **North declares (user is dummy):** Offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/display/seat-mapping.ts`) or "Skip to Review"
+- **E/W declares:** Offers "Play as Defender" (user stays South) or "Skip to Review"
+- **South declares:** Skips directly to EXPLANATION (no prompt needed)
+
+**Play phase entry:** `acceptDeclarerSwap` (when user is dummy and chooses to play as declarer) or `acceptDefend` (when opponent declares and user chooses to defend).
+
+**AI play behavior:** Heuristic strategy chain (opening leads, second-hand-low, third-hand-high, cover honor, trump management, discard, fallback) with 500ms delay between plays. Falls back to random play if no strategy configured.
 
 ## Gotchas
 

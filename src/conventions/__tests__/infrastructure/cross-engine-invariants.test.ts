@@ -19,7 +19,9 @@ import {
   CompetitionMode,
   SystemMode,
   PendingAction,
+  getSystemModeFor,
 } from "../../core/dialogue/dialogue-state";
+import { STAYMAN_CAPABILITY } from "../../definitions/stayman/constants";
 import { staymanConfig } from "../../definitions/stayman/config";
 import { staymanTransitionRules } from "../../definitions/stayman/transitions";
 import { staymanResolvers } from "../../definitions/stayman/resolvers";
@@ -69,13 +71,14 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
     expect(protoResult.established.role).toBe(computeRole(auction.entries, Seat.South));
   });
 
-  it("1NT-X: dialogue competitionMode=Doubled, Stayman systemMode=Modified", () => {
+  it("1NT-X: dialogue competitionMode=Doubled, Stayman capability Modified", () => {
     const auction = buildAuction(Seat.North, ["1NT", "X"]);
     const dialogueState = computeStaymanState(auction);
 
     expect(dialogueState.familyId).toBe("1nt");
     expect(dialogueState.competitionMode).toBe(CompetitionMode.Doubled);
-    expect(dialogueState.systemMode).toBe(SystemMode.Modified);
+    expect(dialogueState.systemMode).toBe(SystemMode.Off);
+    expect(getSystemModeFor(dialogueState, STAYMAN_CAPABILITY)).toBe(SystemMode.Modified);
   });
 
   it("1NT-2H overcall: dialogue systemMode=Off", () => {
@@ -262,8 +265,9 @@ describe("Invariant 3: Cross-family competition consistency", () => {
     expect(staymanState.competitionMode).toBe(CompetitionMode.Doubled);
     expect(baselineState.competitionMode).toBe(CompetitionMode.Doubled);
 
-    // Stayman-specific: Modified (convention still partially available)
-    expect(staymanState.systemMode).toBe(SystemMode.Modified);
+    // Stayman: global systemMode is Off, but stayman capability is Modified
+    expect(staymanState.systemMode).toBe(SystemMode.Off);
+    expect(getSystemModeFor(staymanState, STAYMAN_CAPABILITY)).toBe(SystemMode.Modified);
     // Baseline: Off (no convention-specific override)
     expect(baselineState.systemMode).toBe(SystemMode.Off);
   });

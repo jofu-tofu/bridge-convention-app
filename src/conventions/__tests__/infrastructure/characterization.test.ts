@@ -87,7 +87,7 @@ describe("Stayman characterization", () => {
       staymanConfig,
     );
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("stayman-rebid-major-fit");
+    expect(result!.rule).toBe("stayman-rebid-major-fit-h");
     expect(callStr(result!.call)).toBe("4H");
   });
 

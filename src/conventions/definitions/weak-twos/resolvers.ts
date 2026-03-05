@@ -4,17 +4,11 @@ import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import type { IntentResolverFn, IntentResolverMap } from "../../core/intent/intent-resolver";
-
-const SUIT_TO_STRAIN: Record<string, BidSuit> = {
-  hearts: BidSuit.Hearts,
-  spades: BidSuit.Spades,
-  diamonds: BidSuit.Diamonds,
-  clubs: BidSuit.Clubs,
-};
+import { STRAIN_TO_BIDSUIT } from "../shared-helpers";
 
 const preemptiveOpen: IntentResolverFn = (intent) => {
   const suit = intent.params["suit"] as string;
-  const strain = SUIT_TO_STRAIN[suit];
+  const strain = STRAIN_TO_BIDSUIT[suit];
   if (!strain) return { status: "declined" };
   return {
     status: "resolved",

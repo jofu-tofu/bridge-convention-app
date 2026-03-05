@@ -11,6 +11,31 @@ beforeEach(() => {
 });
 
 describe("createDrillConfig", () => {
+  it("supports injected lookup without registry setup", () => {
+    const localLookup = (id: string) => {
+      if (id === "stayman") return staymanConfig;
+      if (id === "sayc") return saycConfig;
+      throw new Error(`missing local convention: ${id}`);
+    };
+
+    const config = createDrillConfig("stayman", Seat.South, { lookupConvention: localLookup });
+    expect(config.seatStrategies[Seat.South]).toBe("user");
+    const northStrategy = config.seatStrategies[Seat.North];
+    expect(northStrategy).not.toBe("user");
+    if (northStrategy !== "user") {
+      expect(northStrategy.id).toContain("convention:stayman");
+    }
+  });
+
+  it("propagates errors from injected lookup for missing IDs", () => {
+    const throwingLookup = (id: string) => {
+      throw new Error(`injected lookup failed: ${id}`);
+    };
+
+    expect(() => createDrillConfig("missing-injected", Seat.South, { lookupConvention: throwingLookup }))
+      .toThrowError("injected lookup failed: missing-injected");
+  });
+
   it("assigns user seat as 'user'", () => {
     registerConvention(staymanConfig);
     const config = createDrillConfig("stayman", Seat.South);

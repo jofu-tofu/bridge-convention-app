@@ -19,6 +19,8 @@ import { evaluateBiddingRules, registerConvention, clearRegistry } from "../../c
 import { hand } from "../../../engine/__tests__/fixtures";
 import { auctionFromBids } from "../fixtures";
 import { staymanConfig } from "../../definitions/stayman/config";
+import { buildEffectiveContext } from "../../core/effective-context";
+import { generateCandidates, throwingOverlayErrorHandler } from "../../core/candidate-generator";
 
 function auctionCondition(name: string, passes: boolean): RuleCondition {
   return {
@@ -188,5 +190,48 @@ describe("findCandidateBids", () => {
       expect(c.source.conventionId).toBe("stayman");
       expect(c.source.roundName).toBe("opener-response");
     }
+  });
+});
+
+describe("overlay error handling", () => {
+  test("throwingOverlayErrorHandler causes generateCandidates to throw", () => {
+    clearRegistry();
+
+    const throwingConfig = {
+      ...staymanConfig,
+      id: "stayman-throwing-overlay",
+      name: "Stayman Throwing Overlay",
+      overlays: [
+        {
+          id: "throwing-overlay",
+          roundName: "nt-opening",
+          matches: () => true,
+          suppressIntent: () => {
+            throw new Error("boom");
+          },
+        },
+      ],
+    };
+    registerConvention(throwingConfig);
+
+    const h = hand("SK", "S5", "S2", "HA", "HK", "HQ", "H3", "D5", "D3", "D2", "C5", "C3", "C2");
+    const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
+    const ctx = createBiddingContext({
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+    });
+
+    const evaluated = evaluateBiddingRules(ctx, throwingConfig);
+    expect(evaluated).not.toBeNull();
+
+    const effective = buildEffectiveContext(ctx, throwingConfig, evaluated!.protocolResult!);
+    expect(() => generateCandidates(
+      evaluated!.treeRoot!,
+      evaluated!.treeEvalResult!,
+      effective,
+      throwingOverlayErrorHandler,
+    )).toThrow('Overlay "throwing-overlay" suppressIntent error: boom');
   });
 });

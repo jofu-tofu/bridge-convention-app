@@ -45,14 +45,11 @@ const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
   EXPLANATION: ["DECLARER_PROMPT"],
 };
 
-/**
- * Adapt BidResult (shared DTO) to the BiddingRuleResult shape expected by InferenceExtractor.
- * The extractor reads protocolResult/treeEvalResult which BidResult doesn't carry,
- * so convention inferences will be empty. Natural inference still works via the provider.
- */
-function toBiddingRuleResultLike(bidResult: BidResult): import("../conventions/core/registry").BiddingRuleResult {
+/** Adapt BidResult (shared DTO) to InferenceExtractorInput.
+ *  BidResult doesn't carry protocolResult/treeEvalResult,
+ *  so convention inferences will be empty. Natural inference still works via the provider. */
+function toExtractorInput(bidResult: BidResult): import("../inference/types").InferenceExtractorInput {
   return {
-    call: bidResult.call,
     rule: bidResult.ruleName ?? "unknown",
     explanation: bidResult.explanation,
     meaning: bidResult.meaning,
@@ -433,11 +430,12 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
           const conventionId = session.config.conventionId ?? null;
           const annotation = produceAnnotation(
             bid,
-            bidResult ? toBiddingRuleResultLike(bidResult) : null,
+            bidResult ? toExtractorInput(bidResult) : null,
             bidResult?.ruleName ? conventionId : null,
             protocolInferenceExtractor,
             naturalProvider,
             auctionBefore,
+            bidResult?.treeInferenceData,
           );
           publicBeliefState = applyAnnotation(publicBeliefState, annotation);
         },

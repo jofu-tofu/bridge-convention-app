@@ -6,13 +6,13 @@
 
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
-import type { Call } from "../../../engine/types";
 
 export const saycTransitionRules: readonly TransitionRule[] = [
   // Detect 1NT opening
   {
     id: "sayc-1nt-opening",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call } = entry;
       return (
         state.familyId === null &&
         call.type === "bid" &&
@@ -27,7 +27,8 @@ export const saycTransitionRules: readonly TransitionRule[] = [
   // Detect suit opening at 1-level
   {
     id: "sayc-suit-opening",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call } = entry;
       return (
         state.familyId === null &&
         call.type === "bid" &&
@@ -35,7 +36,8 @@ export const saycTransitionRules: readonly TransitionRule[] = [
         call.strain !== "NT"
       );
     },
-    effects(_state: DialogueState, call: Call) {
+    effects(_state: DialogueState, entry) {
+      const { call } = entry;
       const strain = call.type === "bid" ? call.strain : null;
       return { setFamilyId: "sayc-suit", mergeConventionData: { openingSuit: strain } };
     },
@@ -43,7 +45,8 @@ export const saycTransitionRules: readonly TransitionRule[] = [
   // Detect 2C strong opening
   {
     id: "sayc-2c-opening",
-    matches(state: DialogueState, call: Call) {
+    matches(state: DialogueState, entry) {
+      const { call } = entry;
       return (
         state.familyId === null &&
         call.type === "bid" &&

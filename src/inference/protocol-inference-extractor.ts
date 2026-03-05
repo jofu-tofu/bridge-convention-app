@@ -1,7 +1,8 @@
 import type { Seat } from "../engine/types";
 import type { HandInference } from "../shared/types";
-import type { BiddingRuleResult } from "../conventions/core/registry";
-import type { InferenceExtractor } from "./types";
+import type { TreeEvalResult } from "../conventions/core/tree-evaluator";
+import type { ProtocolEvalResult } from "../conventions/core/protocol";
+import type { InferenceExtractor, InferenceExtractorInput } from "./types";
 import {
   extractInference,
   conditionToHandInference,
@@ -17,8 +18,11 @@ import {
  * Graceful degradation: missing data → empty array. Never throws.
  */
 export const protocolInferenceExtractor: InferenceExtractor = {
-  extractInferences(result: BiddingRuleResult, seat: Seat): readonly HandInference[] {
-    const handResult = result.protocolResult?.handResult ?? result.treeEvalResult;
+  extractInferences(result: InferenceExtractorInput, seat: Seat): readonly HandInference[] {
+    // Narrow opaque fields to their concrete types — this implementation knows the shape
+    const proto = result.protocolResult as ProtocolEvalResult | undefined;
+    const treeEval = result.treeEvalResult as TreeEvalResult | undefined;
+    const handResult = proto?.handResult ?? treeEval;
     if (!handResult) return [];
 
     const inferences: HandInference[] = [];

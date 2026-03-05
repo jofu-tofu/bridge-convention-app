@@ -27,7 +27,44 @@ export interface IntentNode {
   readonly alert?: BidAlert;
 }
 
-/** Build an IntentNode leaf. */
+/**
+ * Creates a scoped IntentNode builder with deterministic `prefix/name` nodeIds.
+ * Duplicate names within the same prefix throw at construction time.
+ * Use one factory per convention (e.g., `createIntentBidFactory("stayman")`).
+ */
+export function createIntentBidFactory(prefix: string) {
+  const seen = new Set<string>();
+  return function scopedIntentBid(
+    name: string,
+    meaning: string,
+    intent: SemanticIntent,
+    defaultCallFn: (ctx: BiddingContext) => Call,
+    metadata?: BidMetadata,
+    alert?: BidAlert,
+  ): IntentNode {
+    if (seen.has(name)) {
+      throw new Error(
+        `Duplicate IntentNode name "${name}" in factory "${prefix}". Names must be unique per convention.`,
+      );
+    }
+    seen.add(name);
+    return {
+      type: "intent",
+      nodeId: `${prefix}/${name}`,
+      name,
+      meaning,
+      intent,
+      defaultCall: defaultCallFn,
+      metadata,
+      alert,
+    };
+  };
+}
+
+/**
+ * Build an IntentNode leaf with auto-generated nodeId.
+ * @deprecated Use `createIntentBidFactory(prefix)` for deterministic, stable IDs.
+ */
 export function intentBid(
   name: string,
   meaning: string,

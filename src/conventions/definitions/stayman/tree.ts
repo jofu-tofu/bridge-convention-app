@@ -17,11 +17,13 @@ import {
 import type { AuctionCondition } from "../../core/types";
 import { handDecision, fallback } from "../../core/rule-tree";
 import type { HandNode } from "../../core/rule-tree";
-import { intentBid } from "../../core/intent/intent-node";
+import { createIntentBidFactory } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { protocol, round, semantic } from "../../core/protocol";
 import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
+
+const bid = createIntentBidFactory("stayman");
 
 // ─── Established context ────────────────────────────────────
 
@@ -47,7 +49,7 @@ const round1Ask = handDecision(
       ],
       4,
     ),
-    intentBid("stayman-ask", "Asks for a 4-card major",
+    bid("stayman-ask", "Asks for a 4-card major",
       { type: SemanticIntentType.AskForMajor, params: {} },
       (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
     fallback("no-major"),
@@ -59,16 +61,16 @@ const round1Ask = handDecision(
 const round2Response = handDecision(
   "has-4-hearts",
   suitMin(1, "hearts", 4),
-  intentBid("stayman-response-hearts", "Shows 4+ hearts",
+  bid("stayman-response-hearts", "Shows 4+ hearts",
     { type: SemanticIntentType.ShowHeldSuit, params: { suit: "hearts" } },
     (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
   handDecision(
     "has-4-spades",
     suitMin(0, "spades", 4),
-    intentBid("stayman-response-spades", "Shows 4+ spades but denies 4 hearts",
+    bid("stayman-response-spades", "Shows 4+ spades but denies 4 hearts",
       { type: SemanticIntentType.ShowHeldSuit, params: { suit: "spades" } },
       (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
-    intentBid("stayman-response-denial", "Denies holding a 4-card major",
+    bid("stayman-response-denial", "Denies holding a 4-card major",
       { type: SemanticIntentType.DenyHeldSuit, params: { suit: "major" } },
       (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
   ),
@@ -84,10 +86,10 @@ const rebidAfter2H = handDecision(
   handDecision(
     "game-hcp-fit-h",
     hcpMin(10),
-    intentBid("stayman-rebid-major-fit", "Raises to game in the agreed major",
+    bid("stayman-rebid-major-fit-h", "Raises to game in the agreed major",
       { type: SemanticIntentType.ForceGame, params: { strain: "hearts", fit: true } },
       (): Call => ({ type: "bid", level: 4, strain: BidSuit.Hearts })),
-    intentBid("stayman-rebid-major-fit-invite", "Invites game in the agreed major",
+    bid("stayman-rebid-major-fit-invite-h", "Invites game in the agreed major",
       { type: SemanticIntentType.InviteGame, params: { strain: "hearts", fit: true } },
       (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
   ),
@@ -99,11 +101,11 @@ const rebidAfter2H = handDecision(
       "game-hcp-cross-major-h",
       hcpMin(10),
       // 3S game-forcing: 5S+4H shape, opener may have spade support
-      intentBid("stayman-rebid-cross-major-gf", "Shows 5+ spades with game-forcing values",
+      bid("stayman-rebid-cross-major-gf", "Shows 5+ spades with game-forcing values",
         { type: SemanticIntentType.ForceGame, params: { strain: "spades", crossMajor: true } },
         (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
       // 2S invitational: 5S+4H shape, non-forcing
-      intentBid("stayman-rebid-cross-major-invite", "Shows 5+ spades, invitational",
+      bid("stayman-rebid-cross-major-invite", "Shows 5+ spades, invitational",
         { type: SemanticIntentType.InviteGame, params: { strain: "spades", crossMajor: true } },
         (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
     ),
@@ -111,23 +113,23 @@ const rebidAfter2H = handDecision(
     handDecision(
       "minor-gf-after-2h",
       and(hcpMin(10), suitMin(2, "diamonds", 5)),
-      intentBid("stayman-rebid-minor-gf", "Shows 5+ diamonds, game-forcing",
+      bid("stayman-rebid-diamonds-gf-h", "Shows 5+ diamonds, game-forcing",
         { type: SemanticIntentType.ForceGame, params: { strain: "diamonds" } },
         (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
       handDecision(
         "clubs-gf-after-2h",
         and(hcpMin(10), suitMin(3, "clubs", 5)),
-        intentBid("stayman-rebid-minor-gf", "Shows 5+ clubs, game-forcing",
+        bid("stayman-rebid-clubs-gf-h", "Shows 5+ clubs, game-forcing",
           { type: SemanticIntentType.ForceGame, params: { strain: "clubs" } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
         // No special shape — NT game or invite
         handDecision(
           "game-hcp-nofit-h",
           hcpMin(10),
-          intentBid("stayman-rebid-no-fit", "Bids game in notrump without a major fit",
+          bid("stayman-rebid-no-fit-h", "Bids game in notrump without a major fit",
             { type: SemanticIntentType.ForceGame, params: { strain: "notrump" } },
             (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-          intentBid("stayman-rebid-no-fit-invite", "Invites game in notrump without a major fit",
+          bid("stayman-rebid-no-fit-invite-h", "Invites game in notrump without a major fit",
             { type: SemanticIntentType.InviteGame, params: { strain: "notrump" } },
             (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
         ),
@@ -143,10 +145,10 @@ const rebidAfter2S = handDecision(
   handDecision(
     "game-hcp-fit-s",
     hcpMin(10),
-    intentBid("stayman-rebid-major-fit", "Raises to game in the agreed major",
+    bid("stayman-rebid-major-fit-s", "Raises to game in the agreed major",
       { type: SemanticIntentType.ForceGame, params: { strain: "spades", fit: true } },
       (): Call => ({ type: "bid", level: 4, strain: BidSuit.Spades })),
-    intentBid("stayman-rebid-major-fit-invite", "Invites game in the agreed major",
+    bid("stayman-rebid-major-fit-invite-s", "Invites game in the agreed major",
       { type: SemanticIntentType.InviteGame, params: { strain: "spades", fit: true } },
       (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
   ),
@@ -158,12 +160,12 @@ const rebidAfter2S = handDecision(
       "game-hcp-cross-major-s",
       hcpMin(10),
       // 3H game-forcing: 5H+4S shape (opener denied hearts but may have 3)
-      intentBid("stayman-rebid-cross-major-gf", "Shows 5+ hearts with game-forcing values",
+      bid("stayman-rebid-cross-major-gf-s", "Shows 5+ hearts with game-forcing values",
         { type: SemanticIntentType.ForceGame, params: { strain: "hearts", crossMajor: true } },
         (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
       // No invitational cross-major after 2S — 2H would be below 2S, so not available
       // Fall through to NT
-      intentBid("stayman-rebid-no-fit-invite", "Invites game in notrump without a major fit",
+      bid("stayman-rebid-no-fit-invite-s-cross", "Invites game in notrump without a major fit",
         { type: SemanticIntentType.InviteGame, params: { strain: "notrump" } },
         (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
     ),
@@ -171,23 +173,23 @@ const rebidAfter2S = handDecision(
     handDecision(
       "minor-gf-after-2s",
       and(hcpMin(10), suitMin(2, "diamonds", 5)),
-      intentBid("stayman-rebid-minor-gf", "Shows 5+ diamonds, game-forcing",
+      bid("stayman-rebid-diamonds-gf-s", "Shows 5+ diamonds, game-forcing",
         { type: SemanticIntentType.ForceGame, params: { strain: "diamonds" } },
         (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
       handDecision(
         "clubs-gf-after-2s",
         and(hcpMin(10), suitMin(3, "clubs", 5)),
-        intentBid("stayman-rebid-minor-gf", "Shows 5+ clubs, game-forcing",
+        bid("stayman-rebid-clubs-gf-s", "Shows 5+ clubs, game-forcing",
           { type: SemanticIntentType.ForceGame, params: { strain: "clubs" } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
         // No special shape — NT game or invite
         handDecision(
           "game-hcp-nofit-s",
           hcpMin(10),
-          intentBid("stayman-rebid-no-fit", "Bids game in notrump without a major fit",
+          bid("stayman-rebid-no-fit-s", "Bids game in notrump without a major fit",
             { type: SemanticIntentType.ForceGame, params: { strain: "notrump" } },
             (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-          intentBid("stayman-rebid-no-fit-invite", "Invites game in notrump without a major fit",
+          bid("stayman-rebid-no-fit-invite-s", "Invites game in notrump without a major fit",
             { type: SemanticIntentType.InviteGame, params: { strain: "notrump" } },
             (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
         ),
@@ -201,41 +203,41 @@ const rebidAfter2D = handDecision(
   "has-6-4-majors-after-denial",
   and(hcpMin(10), suitMin(1, "hearts", 6), suitMin(0, "spades", 4)),
   // 4H signoff: 6H+4S, game values, bid game directly
-  intentBid("stayman-rebid-major-game-64", "Bids game with 6-4 major shape",
+  bid("stayman-rebid-major-game-64-h", "Bids game with 6-4 major shape",
     { type: SemanticIntentType.Signoff, params: { strain: "hearts", level: 4 } },
     (): Call => ({ type: "bid", level: 4, strain: BidSuit.Hearts })),
   handDecision(
     "has-6-4-spades-after-denial",
     and(hcpMin(10), suitMin(0, "spades", 6), suitMin(1, "hearts", 4)),
     // 4S signoff: 6S+4H, game values, bid game directly
-    intentBid("stayman-rebid-major-game-64", "Bids game with 6-4 major shape",
+    bid("stayman-rebid-major-game-64-s", "Bids game with 6-4 major shape",
       { type: SemanticIntentType.Signoff, params: { strain: "spades", level: 4 } },
       (): Call => ({ type: "bid", level: 4, strain: BidSuit.Spades })),
     handDecision(
       "smolen-hearts",
       and(hcpMin(10), suitMin(0, "spades", 4), suitMin(1, "hearts", 5)),
       // 3H Smolen: shows 4S+5H, game-forcing
-      intentBid("stayman-rebid-smolen-hearts", "Shows 5 hearts and 4 spades",
+      bid("stayman-rebid-smolen-hearts", "Shows 5 hearts and 4 spades",
         { type: SemanticIntentType.ShowHeldSuit, params: { suit: "hearts", smolen: true } },
         (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
       handDecision(
         "smolen-spades",
         and(hcpMin(10), suitMin(0, "spades", 5), suitMin(1, "hearts", 4)),
         // 3S Smolen: shows 5S+4H, game-forcing
-        intentBid("stayman-rebid-smolen-spades", "Shows 5 spades and 4 hearts",
+        bid("stayman-rebid-smolen-spades", "Shows 5 spades and 4 hearts",
           { type: SemanticIntentType.ShowHeldSuit, params: { suit: "spades", smolen: true } },
           (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
         // Check minor suit GF after denial
         handDecision(
           "minor-gf-after-2d",
           and(hcpMin(10), suitMin(2, "diamonds", 5)),
-          intentBid("stayman-rebid-minor-gf", "Shows 5+ diamonds, game-forcing",
+          bid("stayman-rebid-diamonds-gf-d", "Shows 5+ diamonds, game-forcing",
             { type: SemanticIntentType.ForceGame, params: { strain: "diamonds" } },
             (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
           handDecision(
             "clubs-gf-after-2d",
             and(hcpMin(10), suitMin(3, "clubs", 5)),
-            intentBid("stayman-rebid-minor-gf", "Shows 5+ clubs, game-forcing",
+            bid("stayman-rebid-clubs-gf-d", "Shows 5+ clubs, game-forcing",
               { type: SemanticIntentType.ForceGame, params: { strain: "clubs" } },
               (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
             // Check invitational 2H/2S with 5-4 majors (8-9 HCP)
@@ -243,24 +245,24 @@ const rebidAfter2D = handDecision(
               "invite-hearts-after-denial",
               and(hcpRange(8, 9), suitMin(1, "hearts", 5), suitMin(0, "spades", 4)),
               // 2H invitational: 5H+4S, non-forcing (invitational counterpart to Smolen)
-              intentBid("stayman-rebid-invite-major", "Shows 5 hearts and 4 spades, invitational",
+              bid("stayman-rebid-invite-major-h", "Shows 5 hearts and 4 spades, invitational",
                 { type: SemanticIntentType.InviteGame, params: { strain: "hearts" } },
                 (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
               handDecision(
                 "invite-spades-after-denial",
                 and(hcpRange(8, 9), suitMin(0, "spades", 5), suitMin(1, "hearts", 4)),
                 // 2S invitational: 5S+4H, non-forcing (invitational counterpart to Smolen)
-                intentBid("stayman-rebid-invite-major", "Shows 5 spades and 4 hearts, invitational",
+                bid("stayman-rebid-invite-major-s", "Shows 5 spades and 4 hearts, invitational",
                   { type: SemanticIntentType.InviteGame, params: { strain: "spades" } },
                   (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
                 // Default: NT game or invite
                 handDecision(
                   "game-hcp-denial",
                   hcpMin(10),
-                  intentBid("stayman-rebid-no-fit", "Bids game in notrump without a major fit",
+                  bid("stayman-rebid-no-fit-d", "Bids game in notrump without a major fit",
                     { type: SemanticIntentType.ForceGame, params: { strain: "notrump" } },
                     (): Call => ({ type: "bid", level: 3, strain: BidSuit.NoTrump })),
-                  intentBid("stayman-rebid-no-fit-invite", "Invites game in notrump without a major fit",
+                  bid("stayman-rebid-no-fit-invite-d", "Invites game in notrump without a major fit",
                     { type: SemanticIntentType.InviteGame, params: { strain: "notrump" } },
                     (): Call => ({ type: "bid", level: 2, strain: BidSuit.NoTrump })),
                 ),
@@ -288,7 +290,7 @@ const round1Ask2NT = handDecision(
       ],
       4,
     ),
-    intentBid("stayman-ask", "Asks for a 4-card major",
+    bid("stayman-ask-2nt", "Asks for a 4-card major",
       { type: SemanticIntentType.AskForMajor, params: {} },
       (): Call => ({ type: "bid", level: 3, strain: BidSuit.Clubs })),
     fallback("no-major-2nt"),
@@ -300,16 +302,16 @@ const round1Ask2NT = handDecision(
 const round2Response2NT = handDecision(
   "has-4-hearts-2nt",
   suitMin(1, "hearts", 4),
-  intentBid("stayman-response-hearts", "Shows 4+ hearts",
+  bid("stayman-response-hearts-2nt", "Shows 4+ hearts",
     { type: SemanticIntentType.ShowHeldSuit, params: { suit: "hearts" } },
     (): Call => ({ type: "bid", level: 3, strain: BidSuit.Hearts })),
   handDecision(
     "has-4-spades-2nt",
     suitMin(0, "spades", 4),
-    intentBid("stayman-response-spades", "Shows 4+ spades but denies 4 hearts",
+    bid("stayman-response-spades-2nt", "Shows 4+ spades but denies 4 hearts",
       { type: SemanticIntentType.ShowHeldSuit, params: { suit: "spades" } },
       (): Call => ({ type: "bid", level: 3, strain: BidSuit.Spades })),
-    intentBid("stayman-response-denial", "Denies holding a 4-card major",
+    bid("stayman-response-denial-2nt", "Denies holding a 4-card major",
       { type: SemanticIntentType.DenyHeldSuit, params: { suit: "major" } },
       (): Call => ({ type: "bid", level: 3, strain: BidSuit.Diamonds })),
   ),
@@ -325,13 +327,13 @@ const round2Response2NT = handDecision(
 export const round1AskAfterDouble: HandNode = handDecision(
   "redouble-hcp",
   hcpMin(10),
-  intentBid("stayman-penalty-redouble", "Redoubles showing 10+ HCP for penalty",
+  bid("stayman-penalty-redouble", "Redoubles showing 10+ HCP for penalty",
     { type: SemanticIntentType.PenaltyRedouble, params: {} },
     (): Call => ({ type: "redouble" })),
   handDecision(
     "stayman-after-double",
     and(hcpMin(8), anySuitMin([{ index: 0, name: "spades" }, { index: 1, name: "hearts" }], 4)),
-    intentBid("stayman-ask", "Asks for a 4-card major",
+    bid("stayman-ask-dbl", "Asks for a 4-card major",
       { type: SemanticIntentType.AskForMajor, params: {} },
       (): Call => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
     handDecision(
@@ -345,22 +347,22 @@ export const round1AskAfterDouble: HandNode = handDecision(
       handDecision(
         "escape-spades",
         suitMin(0, "spades", 5),
-        intentBid("stayman-escape-rescue", "Escapes to a long suit after opponent's double",
+        bid("stayman-escape-rescue-s", "Escapes to a long suit after opponent's double",
           { type: SemanticIntentType.EscapeRescue, params: { suit: "spades" } },
           (): Call => ({ type: "bid", level: 2, strain: BidSuit.Spades })),
         handDecision(
           "escape-hearts",
           suitMin(1, "hearts", 5),
-          intentBid("stayman-escape-rescue", "Escapes to a long suit after opponent's double",
+          bid("stayman-escape-rescue-h", "Escapes to a long suit after opponent's double",
             { type: SemanticIntentType.EscapeRescue, params: { suit: "hearts" } },
             (): Call => ({ type: "bid", level: 2, strain: BidSuit.Hearts })),
-          intentBid("stayman-escape-rescue", "Escapes to a long suit after opponent's double",
+          bid("stayman-escape-rescue-d", "Escapes to a long suit after opponent's double",
             { type: SemanticIntentType.EscapeRescue, params: { suit: "diamonds" } },
             (): Call => ({ type: "bid", level: 2, strain: BidSuit.Diamonds })),
         ),
       ),
       // No 5+ suit, not enough for Stayman or redouble → pass
-      intentBid("stayman-competitive-pass", "Passes with no good bid after opponent's double",
+      bid("stayman-competitive-pass", "Passes with no good bid after opponent's double",
         { type: SemanticIntentType.CompetitivePass, params: {} },
         (): Call => ({ type: "pass" })),
     ),

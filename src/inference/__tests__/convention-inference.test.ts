@@ -7,6 +7,7 @@ import {
   clearRegistry,
 } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman";
+import type { ConventionConfig } from "../../conventions/core/types";
 
 function makeEntry(seat: Seat, call: AuctionEntry["call"]): AuctionEntry {
   return { seat, call };
@@ -16,6 +17,51 @@ describe("createConventionInferenceProvider", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
+  });
+
+  it("supports injected lookup without registry setup", () => {
+    clearRegistry();
+    const localLookup = (id: string): ConventionConfig => {
+      if (id === "stayman") return staymanConfig;
+      throw new Error(`missing local convention: ${id}`);
+    };
+    const provider = createConventionInferenceProvider("stayman", localLookup);
+    const entry = makeEntry(Seat.South, {
+      type: "bid",
+      level: 2,
+      strain: BidSuit.Clubs,
+    });
+    const auctionBefore: Auction = {
+      entries: [
+        makeEntry(Seat.North, {
+          type: "bid",
+          level: 1,
+          strain: BidSuit.NoTrump,
+        }),
+        makeEntry(Seat.East, { type: "pass" }),
+      ],
+      isComplete: false,
+    };
+
+    const result = provider.inferFromBid(entry, auctionBefore, Seat.South);
+    expect(result).not.toBeNull();
+    expect(result!.minHcp).toBe(8);
+    expect(result!.source).toBe("stayman-ask");
+  });
+
+  it("propagates errors from injected lookup for missing IDs", () => {
+    clearRegistry();
+    const throwingLookup = (id: string): ConventionConfig => {
+      throw new Error(`injected lookup failed: ${id}`);
+    };
+    const provider = createConventionInferenceProvider("missing-injected", throwingLookup);
+    const entry = makeEntry(Seat.South, { type: "pass" });
+
+    expect(() => provider.inferFromBid(
+      entry,
+      { entries: [], isComplete: false },
+      Seat.South,
+    )).toThrowError("injected lookup failed: missing-injected");
   });
 
   it("extracts HCP and suit inferences from Stayman ask rule", () => {

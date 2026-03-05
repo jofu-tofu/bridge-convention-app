@@ -271,7 +271,7 @@ describe("Stayman — rebid edge cases after opener's response", () => {
     const ctx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "2C", "P", "2H", "P"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("stayman-rebid-major-fit");
+    expect(result!.rule).toBe("stayman-rebid-major-fit-h");
   });
 
   test("[bridgebum/stayman] responder with 4S no 4H after 2H — bids 3NT (game, no fit)", () => {
@@ -286,7 +286,7 @@ describe("Stayman — rebid edge cases after opener's response", () => {
     const ctx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "2C", "P", "2H", "P"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("stayman-rebid-no-fit");
+    expect(result!.rule).toBe("stayman-rebid-no-fit-h");
   });
 
   test("[bridgebum/stayman] responder invitational (8-9 HCP) after 2S — fits spades -> 3S invite", () => {
@@ -301,7 +301,7 @@ describe("Stayman — rebid edge cases after opener's response", () => {
     const ctx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "2C", "P", "2S", "P"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("stayman-rebid-major-fit-invite");
+    expect(result!.rule).toBe("stayman-rebid-major-fit-invite-s");
   });
 
   test("[bridgebum/stayman] responder invitational after 2D denial — bids 2NT invite", () => {
@@ -316,7 +316,7 @@ describe("Stayman — rebid edge cases after opener's response", () => {
     const ctx = makeBiddingContext(responder, Seat.South, ["1NT", "P", "2C", "P", "2D", "P"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("stayman-rebid-no-fit-invite");
+    expect(result!.rule).toBe("stayman-rebid-no-fit-invite-d");
   });
 
   test("[bridgebum/stayman] Smolen 3H: 4S + 5H after 2D denial, game-forcing", () => {
@@ -362,7 +362,7 @@ describe("Stayman — rebid edge cases after opener's response", () => {
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
     // With 9 HCP and 5-4 majors, bids the 5-card major at 2-level (invitational)
-    expect(result!.rule).toBe("stayman-rebid-invite-major");
+    expect(result!.rule).toBe("stayman-rebid-invite-major-s");
   });
 });
 
@@ -384,7 +384,7 @@ describe("Stayman — 2NT opening Stayman", () => {
     const ctx = makeBiddingContext(responder, Seat.South, ["2NT", "P"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("stayman-ask");
+    expect(result!.rule).toBe("stayman-ask-2nt");
     const call = result!.call as import("../../../engine/types").ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Clubs);
@@ -402,7 +402,7 @@ describe("Stayman — 2NT opening Stayman", () => {
     const ctx = makeBiddingContext(opener, Seat.North, ["2NT", "P", "3C", "P"], Seat.North);
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("stayman-response-hearts");
+    expect(result!.rule).toBe("stayman-response-hearts-2nt");
     const call = result!.call as import("../../../engine/types").ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Hearts);

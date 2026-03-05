@@ -12,7 +12,11 @@ export class TraceCollector {
   private resolverOutcome?: EvaluationTrace["resolverOutcome"];
   private candidateCount = 0;
   private selectedTier?: EvaluationTrace["selectedTier"];
-  private strategyChainPath: { strategyId: string; result: "suggested" | "declined" | "error" }[] = [];
+  private forcingDeclined?: boolean;
+  private effectivePath?: EvaluationTrace["effectivePath"];
+  private forcingFiltered?: boolean;
+  private practicalError?: string;
+  private strategyChainPath: { strategyId: string; result: "suggested" | "declined" | "filtered" | "error" }[] = [];
 
   setConventionId(id: string): void {
     this.conventionId = id;
@@ -46,7 +50,23 @@ export class TraceCollector {
     this.selectedTier = tier;
   }
 
-  addStrategyAttempt(strategyId: string, result: "suggested" | "declined" | "error"): void {
+  setForcingDeclined(value: boolean): void {
+    this.forcingDeclined = value;
+  }
+
+  setEffectivePath(path: NonNullable<EvaluationTrace["effectivePath"]>): void {
+    this.effectivePath = path;
+  }
+
+  setForcingFiltered(value: boolean): void {
+    this.forcingFiltered = value;
+  }
+
+  setPracticalError(error: string): void {
+    this.practicalError = error;
+  }
+
+  addStrategyAttempt(strategyId: string, result: "suggested" | "declined" | "filtered" | "error"): void {
     this.strategyChainPath.push({ strategyId, result });
   }
 
@@ -60,6 +80,10 @@ export class TraceCollector {
       resolverOutcome: this.resolverOutcome,
       candidateCount: this.candidateCount,
       selectedTier: this.selectedTier,
+      forcingDeclined: this.forcingDeclined,
+      forcingFiltered: this.forcingFiltered,
+      practicalError: this.practicalError,
+      effectivePath: this.effectivePath,
       strategyChainPath: [...this.strategyChainPath],
     };
   }

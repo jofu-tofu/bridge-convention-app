@@ -13,6 +13,8 @@ export enum SemanticIntentType {
   NaturalBid = "natural-bid",
   PenaltyRedouble = "penalty-redouble",
   EscapeRescue = "escape-rescue",
+  PenaltyDouble = "penalty-double",
+  ArtificialRelay = "artificial-relay",
   CompetitivePass = "competitive-pass",
   PreemptiveOpen = "preemptive-open",
   ShowHandQuality = "show-hand-quality",

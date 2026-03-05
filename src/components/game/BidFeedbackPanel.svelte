@@ -1,7 +1,10 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
+  import type { Call } from "../../engine/types";
   import type { BidFeedback } from "../../stores/game.svelte";
+  import { BidGrade } from "../../stores/bidding.svelte";
   import { formatCall } from "../../display/format";
+  import type { PracticalRecommendation } from "../../shared/types";
 
   interface Props {
     feedback: BidFeedback;
@@ -16,6 +19,7 @@
   let expandedSiblings = new SvelteSet<number>();
   const forkPoint = $derived(feedback.expectedResult?.treePath?.forkPoint ?? null);
   const siblings = $derived(feedback.expectedResult?.treePath?.siblings ?? []);
+  const acceptableBids = $derived(feedback.teachingResolution?.acceptableBids ?? []);
   const handConditions = $derived(
     feedback.expectedResult?.conditions?.filter(c => c.category !== "auction") ?? [],
   );
@@ -44,9 +48,24 @@
       expandedSiblings.add(index);
     }
   }
+
+  function callsEqual(a: Call, b: Call): boolean {
+    if (a.type !== b.type) return false;
+    if (a.type === "bid" && b.type === "bid") {
+      return a.level === b.level && a.strain === b.strain;
+    }
+    return true;
+  }
+
+  const practicalRec: PracticalRecommendation | undefined = $derived(feedback.practicalRecommendation);
+  const showPracticalNote = $derived(practicalRec?.agreesWithTeaching === false);
+
+  function isAcceptableSibling(call: typeof siblings[number]["call"]): boolean {
+    return acceptableBids.some((acceptable) => callsEqual(acceptable.call, call));
+  }
 </script>
 
-{#if feedback.isCorrect}
+{#if feedback.grade === BidGrade.Correct}
   <!-- Correct bid — green flash -->
   <div
     class="rounded-[--radius-md] border-2 border-green-500/60 bg-green-950/80 px-3 py-3 text-center min-w-0"
@@ -56,6 +75,32 @@
     <p class="text-green-400 font-mono text-lg mt-1">
       {formatCall(feedback.userCall)}
     </p>
+    {#if showPracticalNote && practicalRec}
+      <p class="text-amber-300/70 text-xs mt-2 italic" data-testid="practical-note">
+        Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
+      </p>
+    {/if}
+  </div>
+{:else if feedback.grade === BidGrade.Acceptable}
+  <!-- Acceptable bid — teal flash -->
+  <div
+    class="rounded-[--radius-md] border-2 border-teal-500/60 bg-teal-950/80 px-3 py-3 text-center min-w-0"
+    role="alert"
+  >
+    <p class="text-teal-300 font-semibold text-sm">Acceptable!</p>
+    <p class="text-teal-400 font-mono text-lg mt-1">
+      {formatCall(feedback.userCall)}
+    </p>
+    {#if feedback.teachingResolution}
+      <p class="text-teal-200 text-xs mt-1">
+        Textbook bid is <span class="font-mono">{formatCall(feedback.teachingResolution.primaryBid)}</span>
+      </p>
+    {/if}
+    {#if showPracticalNote && practicalRec}
+      <p class="text-amber-300/70 text-xs mt-2 italic" data-testid="practical-note">
+        Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
+      </p>
+    {/if}
   </div>
 {:else}
   <!-- Wrong bid — red feedback -->
@@ -214,6 +259,11 @@
                     <span class="text-red-300/50 shrink-0">{expandedSiblings.has(si) ? "▾" : "▸"}</span>
                     <span class="font-mono font-bold text-red-200/80">{formatCall(sibling.call)}</span>
                     <span class="text-red-200/60">— {sibling.meaning}</span>
+                    {#if isAcceptableSibling(sibling.call)}
+                      <span class="ml-1 rounded bg-teal-900/70 border border-teal-500/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-teal-200">
+                        acceptable
+                      </span>
+                    {/if}
                   </button>
                   {#if expandedSiblings.has(si) && sibling.failedConditions.length > 0}
                     <ul class="ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Failed conditions for {sibling.bidName}">
@@ -252,6 +302,12 @@
           </div>
         {/if}
       </div>
+    {/if}
+
+    {#if showPracticalNote && practicalRec}
+      <p class="text-amber-300/70 text-xs mt-2 italic" data-testid="practical-note">
+        Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
+      </p>
     {/if}
 
   </div>

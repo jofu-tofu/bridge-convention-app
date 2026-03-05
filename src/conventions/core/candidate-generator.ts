@@ -7,11 +7,12 @@ import { isLegalCall } from "../../engine/auction";
 import type { EffectiveConventionContext } from "./effective-context";
 import type { RuleNode } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
-import { evaluateTree } from "./tree-evaluator";
+import { applyOverlayTreeReplacement } from "./overlay-tree-replacement";
 import { collectIntentProposals } from "./intent-collector";
 import type { CollectedIntent } from "./intent-collector";
 import { resolveIntent } from "./intent/intent-resolver";
 import type { ResolverResult } from "./intent/intent-resolver";
+import type { ConventionOverlayPatch } from "./overlay";
 
 /**
  * A CandidateBid enriched with resolver output and legality.
@@ -23,7 +24,14 @@ export interface ResolvedCandidate extends CandidateBid {
   readonly legal: boolean;
   readonly isMatched: boolean;
   readonly priority?: "preferred" | "alternative";
+  readonly provenance?: CandidateProvenance;
 }
+
+export type CandidateProvenance =
+  | { readonly origin: "tree" }
+  | { readonly origin: "replacement-tree"; readonly overlayId: string }
+  | { readonly origin: "overlay-injected"; readonly overlayId: string }
+  | { readonly origin: "overlay-override"; readonly overlayId: string };
 
 /**
  * Result of candidate generation, including suppression tracking.
@@ -35,125 +43,112 @@ export interface CandidateGenerationResult {
   readonly matchedIntentSuppressed: boolean;
 }
 
-/**
- * Resolve all candidates from a matched hand subtree through the intent system.
- * Uses collectIntentProposals() for traversal — decoupled from display/teaching path.
- *
- * Returns candidates with matched first, then others in tree traversal order.
- * Tracks whether the matched intent was specifically suppressed by an overlay.
- *
- * Overlay patch hooks applied in order:
- * 1. replacementTree: full tree replacement (if set)
- * 2. suppressIntent: filter out proposals
- * 3. addIntents: append proposals (no sourceNode, never matched)
- * 4. overrideResolver: override standard resolver for an intent
- *
- * Error handling: hook throws → onOverlayError callback (if provided) or console.warn.
- * resolver throws → falls back to defaultCall. defaultCall throws → candidate excluded.
- */
-export function generateCandidates(
-  handTreeRoot: RuleNode,
-  handResult: TreeEvalResult,
-  effectiveCtx: EffectiveConventionContext,
-  onOverlayError?: (overlayId: string, hook: string, error: string) => void,
-): CandidateGenerationResult {
-  const overlays = effectiveCtx.activeOverlays;
+/** Overlay error handler that throws immediately (fail-fast for tests/dev tooling). */
+export const throwingOverlayErrorHandler = (
+  overlayId: string,
+  hook: string,
+  error: string,
+): never => {
+  throw new Error(`Overlay "${overlayId}" ${hook} error: ${error}`);
+};
 
-  // Step 1: Overlay tree replacement — first overlay's replacementTree wins
-  let activeRoot = handTreeRoot;
-  let activeResult = handResult;
+// ─── Internal helpers ────────────────────────────────────────
+
+type CollectedIntentWithProvenance = CollectedIntent & { provenance?: CandidateProvenance };
+type OverlayErrorHandler = (overlayId: string, hook: string, error: string) => void;
+
+/** Step 1: Apply first overlay's replacementTree (first wins). */
+function applyReplacementTreeStep(
+  root: RuleNode,
+  result: TreeEvalResult,
+  overlays: readonly ConventionOverlayPatch[],
+  raw: EffectiveConventionContext["raw"],
+): { activeRoot: RuleNode; activeResult: TreeEvalResult; provenance: CandidateProvenance } {
+  const replaced = applyOverlayTreeReplacement(overlays, root, raw, result);
+  const provenance: CandidateProvenance = replaced.overlayId
+    ? { origin: "replacement-tree", overlayId: replaced.overlayId }
+    : { origin: "tree" };
+  return { activeRoot: replaced.root, activeResult: replaced.result, provenance };
+}
+
+/** Step 2: Apply suppressIntent from ALL overlays (any can suppress). */
+function applySuppressHooks(
+  proposals: CollectedIntentWithProvenance[],
+  overlays: readonly ConventionOverlayPatch[],
+  matchedNodeId: string,
+  ctx: EffectiveConventionContext,
+  onError?: OverlayErrorHandler,
+): { proposals: CollectedIntentWithProvenance[]; matchedSuppressed: boolean } {
+  let filtered = proposals;
+  let matchedSuppressed = false;
+
   for (const overlay of overlays) {
-    if (overlay.replacementTree) {
-      activeRoot = overlay.replacementTree;
-      activeResult = evaluateTree(activeRoot, effectiveCtx.raw);
-      break;
+    if (!overlay.suppressIntent) continue;
+    try {
+      const hadMatched = filtered.some(p => p.sourceNode?.nodeId === matchedNodeId);
+      filtered = filtered.filter(p => !overlay.suppressIntent!(p, ctx));
+      const stillHasMatched = filtered.some(p => p.sourceNode?.nodeId === matchedNodeId);
+      if (hadMatched && !stillHasMatched) matchedSuppressed = true;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (onError) onError(overlay.id, "suppressIntent", msg);
+      // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
+      else console.warn(`Overlay "${overlay.id}" suppressIntent threw:`, e);
     }
   }
 
-  const { raw, config, protocolResult, dialogueState } = effectiveCtx;
-  const matched = activeResult.matched;
+  return { proposals: filtered, matchedSuppressed };
+}
 
-  // No matched IntentNode → no candidates
-  if (!matched || matched.type !== "intent") return { candidates: [], matchedIntentSuppressed: false };
+/** Step 3: Apply addIntents from ALL overlays (concatenate in config order). */
+function applyAddIntentHooks(
+  proposals: CollectedIntentWithProvenance[],
+  overlays: readonly ConventionOverlayPatch[],
+  ctx: EffectiveConventionContext,
+  onError?: OverlayErrorHandler,
+): CollectedIntentWithProvenance[] {
+  let result = proposals;
 
-  const conventionId = config.id;
-  const roundName = protocolResult.activeRound?.name;
-  const resolvers = config.intentResolvers ?? new Map();
-
-  // Collect all intent proposals from the hand subtree
-  let proposals = collectIntentProposals(activeRoot, raw);
-
-  // Step 2: suppressIntent from ALL overlays (any overlay can suppress)
-  let matchedIntentSuppressed = false;
   for (const overlay of overlays) {
-    if (overlay.suppressIntent) {
-      try {
-        const hadMatched = proposals.some(p => p.sourceNode !== undefined && p.sourceNode.nodeId === matched.nodeId);
-        proposals = proposals.filter(p => !overlay.suppressIntent!(p, effectiveCtx));
-        const stillHasMatched = proposals.some(p => p.sourceNode !== undefined && p.sourceNode.nodeId === matched.nodeId);
-        if (hadMatched && !stillHasMatched) matchedIntentSuppressed = true;
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        if (onOverlayError) onOverlayError(overlay.id, "suppressIntent", msg);
-        // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-        else console.warn(`Overlay "${overlay.id}" suppressIntent threw:`, e);
-      }
+    if (!overlay.addIntents) continue;
+    try {
+      const added = overlay.addIntents(ctx);
+      const tagged = added.map<CollectedIntentWithProvenance>(p => ({
+        ...p,
+        provenance: { origin: "overlay-injected", overlayId: overlay.id },
+      }));
+      result = [...result, ...tagged];
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (onError) onError(overlay.id, "addIntents", msg);
+      // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
+      else console.warn(`Overlay "${overlay.id}" addIntents threw:`, e);
     }
   }
 
-  // Step 3: addIntents from ALL overlays (concatenate in config order)
+  return result;
+}
+
+/** Step 4 (per-proposal): Find first non-null overrideResolver result. */
+function findOverrideResult(
+  intent: CollectedIntent["intent"],
+  overlays: readonly ConventionOverlayPatch[],
+  ctx: EffectiveConventionContext,
+  onError?: OverlayErrorHandler,
+): { result: ResolverResult; overlayId: string } | null {
   for (const overlay of overlays) {
-    if (overlay.addIntents) {
-      try {
-        const added = overlay.addIntents(effectiveCtx);
-        proposals = [...proposals, ...added];
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        if (onOverlayError) onOverlayError(overlay.id, "addIntents", msg);
-        // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-        else console.warn(`Overlay "${overlay.id}" addIntents threw:`, e);
-      }
+    if (!overlay.overrideResolver) continue;
+    try {
+      const maybe = overlay.overrideResolver(intent, ctx);
+      if (maybe !== null) return { result: maybe, overlayId: overlay.id };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (onError) onError(overlay.id, "overrideResolver", msg);
+      // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
+      else console.warn(`Overlay "${overlay.id}" overrideResolver threw:`, e);
     }
   }
-
-  // Resolve each proposal, matched first
-  const results: ResolvedCandidate[] = [];
-
-  for (const proposal of proposals) {
-    // Match by nodeId (value comparison) — survives spread copies / reconstructions
-    const isMatched = proposal.sourceNode !== undefined
-      && matched.type === "intent"
-      && proposal.sourceNode.nodeId === matched.nodeId;
-
-    // Step 4: overrideResolver — first non-null wins across all overlays
-    let overrideResult: ResolverResult | null = null;
-    for (const overlay of overlays) {
-      if (overlay.overrideResolver) {
-        try {
-          overrideResult = overlay.overrideResolver(proposal.intent, effectiveCtx);
-          if (overrideResult !== null) break;
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
-          if (onOverlayError) onOverlayError(overlay.id, "overrideResolver", msg);
-          // eslint-disable-next-line no-console -- intentional: surface hook errors in dev
-          else console.warn(`Overlay "${overlay.id}" overrideResolver threw:`, e);
-        }
-      }
-    }
-
-    const resolved = resolveCollectedIntent(
-      proposal, isMatched, raw, dialogueState, resolvers, conventionId, roundName, overrideResult,
-    );
-    if (resolved) {
-      if (isMatched) {
-        results.unshift(resolved);
-      } else {
-        results.push(resolved);
-      }
-    }
-  }
-
-  return { candidates: results, matchedIntentSuppressed };
+  return null;
 }
 
 function applyResolverResult(
@@ -167,31 +162,28 @@ function applyResolverResult(
       return "use_default";
     case "resolved": {
       if (result.calls.length === 0) return "use_default";
-      // Encoding order policy: resolvers return alternatives in priority order.
-      // We pick the first LEGAL encoding. The order comes from the resolver,
-      // so resolver authors control which encoding is preferred.
       for (const encoding of result.calls) {
         if (isLegalCall(raw.auction, encoding.call, raw.seat)) {
           return { resolvedCall: encoding.call, isDefaultCall: false };
         }
       }
-      // If none are legal, use the first encoding (will be marked illegal downstream)
       return { resolvedCall: result.calls[0]!.call, isDefaultCall: false };
     }
   }
 }
 
+/** Resolve a single collected intent proposal into a ResolvedCandidate. */
 function resolveCollectedIntent(
-  proposal: CollectedIntent,
+  proposal: CollectedIntentWithProvenance,
   isMatched: boolean,
-  raw: EffectiveConventionContext["raw"],
-  dialogueState: EffectiveConventionContext["dialogueState"],
-  resolvers: NonNullable<EffectiveConventionContext["config"]["intentResolvers"]>,
-  conventionId: string,
-  roundName: string | undefined,
-  overrideResult: ResolverResult | null,
+  effectiveCtx: EffectiveConventionContext,
+  overrideResult: { result: ResolverResult; overlayId: string } | null,
 ): ResolvedCandidate | null {
-  // Get the default call
+  const { raw, config, protocolResult, dialogueState } = effectiveCtx;
+  const resolvers = config.intentResolvers ?? new Map();
+  const conventionId = config.id;
+  const roundName = protocolResult.activeRound?.name;
+
   let call: Call;
   try {
     call = proposal.defaultCall(raw);
@@ -199,7 +191,6 @@ function resolveCollectedIntent(
     return null;
   }
 
-  // Build failed conditions from path (conditions where actual != required)
   const failedConditions = isMatched ? [] : proposal.pathConditions
     .filter(entry => entry.condition.test(raw) !== entry.requiredResult)
     .map(entry => ({
@@ -207,21 +198,21 @@ function resolveCollectedIntent(
       description: entry.condition.describe(raw),
     }));
 
-  // Resolve through intent system (override takes precedence)
   let resolvedCall = call;
   let isDefaultCall = true;
+  let provenance = proposal.provenance;
 
   if (overrideResult) {
-    const outcome = applyResolverResult(overrideResult, raw);
+    const outcome = applyResolverResult(overrideResult.result, raw);
     if (outcome === "declined") return null;
     if (outcome !== "use_default") {
       resolvedCall = outcome.resolvedCall;
       isDefaultCall = outcome.isDefaultCall;
+      provenance = { origin: "overlay-override", overlayId: overrideResult.overlayId };
     }
   } else {
     try {
       const result = resolveIntent(proposal.intent, dialogueState, raw, resolvers);
-      // null = no resolver registered → use defaultCall
       if (result !== null) {
         const outcome = applyResolverResult(result, raw);
         if (outcome === "declined") return null;
@@ -257,5 +248,58 @@ function resolveCollectedIntent(
     legal,
     isMatched,
     priority: proposal.priority,
+    provenance,
   };
+}
+
+// ─── Public API ──────────────────────────────────────────────
+
+/**
+ * Resolve all candidates from a matched hand subtree through the intent system.
+ *
+ * Overlay patch hooks applied in order:
+ * 1. replacementTree: full tree replacement (first wins)
+ * 2. suppressIntent: filter out proposals (all compose)
+ * 3. addIntents: append proposals (all concatenate)
+ * 4. overrideResolver: override standard resolver (first non-null wins)
+ */
+export function generateCandidates(
+  handTreeRoot: RuleNode,
+  handResult: TreeEvalResult,
+  effectiveCtx: EffectiveConventionContext,
+  onOverlayError?: OverlayErrorHandler,
+): CandidateGenerationResult {
+  const { activeRoot, activeResult, provenance } =
+    applyReplacementTreeStep(handTreeRoot, handResult, effectiveCtx.activeOverlays, effectiveCtx.raw);
+
+  const matched = activeResult.matched;
+  if (!matched || matched.type !== "intent") {
+    return { candidates: [], matchedIntentSuppressed: false };
+  }
+
+  let proposals: CollectedIntentWithProvenance[] = collectIntentProposals(activeRoot, effectiveCtx.raw)
+    .map(p => ({ ...p, provenance }));
+
+  const { proposals: afterSuppress, matchedSuppressed } =
+    applySuppressHooks(proposals, effectiveCtx.activeOverlays, matched.nodeId, effectiveCtx, onOverlayError);
+  proposals = afterSuppress;
+
+  proposals = applyAddIntentHooks(proposals, effectiveCtx.activeOverlays, effectiveCtx, onOverlayError);
+
+  const results: ResolvedCandidate[] = [];
+  for (const proposal of proposals) {
+    const isMatched = proposal.sourceNode !== undefined
+      && matched.type === "intent"
+      && proposal.sourceNode.nodeId === matched.nodeId;
+
+    const overrideResult = findOverrideResult(proposal.intent, effectiveCtx.activeOverlays, effectiveCtx, onOverlayError);
+    const resolved = resolveCollectedIntent(proposal, isMatched, effectiveCtx, overrideResult);
+
+    if (resolved) {
+      if (isMatched) results.unshift(resolved);
+      else results.push(resolved);
+    }
+  }
+
+  return { candidates: results, matchedIntentSuppressed: matchedSuppressed };
 }

@@ -29,11 +29,8 @@ export interface DecisionMetadata {
 
 // ─── Alert metadata for bid nodes ───────────────────────────
 
-/** Alert information for conventional (non-natural) bids. */
-export interface BidAlert {
-  readonly artificial: boolean;
-  readonly forcingType: "forcing" | "game-forcing" | "invitational" | "signoff" | null;
-}
+// Re-export from canonical location in shared/types for backward compatibility
+export type { BidAlert } from "../../shared/types";
 
 // ─── Teaching metadata for bid nodes ────────────────────────
 

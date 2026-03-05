@@ -7,7 +7,7 @@ import {
 import { staymanConfig } from "../../conventions/definitions/stayman";
 import { saycConfig } from "../../conventions/definitions/sayc";
 import { bergenConfig } from "../../conventions/definitions/bergen-raises";
-import { Seat } from "../../engine/types";
+import { Seat, BidSuit } from "../../engine/types";
 
 describe("Suite 5: DrillConfig Inference Integration", () => {
   beforeEach(() => {
@@ -73,5 +73,34 @@ describe("Suite 5: DrillConfig Inference Integration", () => {
       opponentConventionId: "nonexistent-convention",
     });
     expect(config.ewInferenceConfig!.ownPartnership.id).toBe("natural");
+  });
+
+  it("5.9 lookupConvention is threaded to convention inference providers", () => {
+    clearRegistry();
+    const localLookup = (id: string) => {
+      if (id === "stayman") return staymanConfig;
+      if (id === "sayc") return saycConfig;
+      throw new Error(`missing local convention: ${id}`);
+    };
+    const config = createDrillConfig("stayman", Seat.South, {
+      opponentBidding: true,
+      lookupConvention: localLookup,
+    });
+    const entry = {
+      seat: Seat.South,
+      call: { type: "bid" as const, level: 2 as const, strain: BidSuit.Clubs },
+    };
+    const auctionBefore = {
+      entries: [
+        { seat: Seat.North, call: { type: "bid" as const, level: 1 as const, strain: BidSuit.NoTrump } },
+        { seat: Seat.East, call: { type: "pass" as const } },
+      ],
+      isComplete: false,
+    };
+
+    expect(config.nsInferenceConfig).toBeDefined();
+    const result = config.nsInferenceConfig!.ownPartnership.inferFromBid(entry, auctionBefore, Seat.South);
+    expect(result).not.toBeNull();
+    expect(result!.source).toBe("stayman-ask");
   });
 });
