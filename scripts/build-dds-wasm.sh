@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build DDS (double dummy solver) C++ source to WASM via Emscripten.
-# Produces public/dds/dds.js + public/dds/dds.wasm.
+# Produces static/dds/dds.js + static/dds/dds.wasm.
 #
 # Prerequisites: Emscripten SDK (emcc) must be on PATH.
 # Usage: bash scripts/build-dds-wasm.sh
@@ -10,7 +10,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 VENDOR_DDS="$PROJECT_DIR/vendor/dds"
-OUT_DIR="$PROJECT_DIR/public/dds"
+OUT_DIR="$PROJECT_DIR/static/dds"
 
 if ! command -v emcc &>/dev/null; then
   echo "ERROR: emcc not found. Install Emscripten SDK first." >&2

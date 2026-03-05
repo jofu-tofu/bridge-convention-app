@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-OUT_DIR="$PROJECT_DIR/public/dds"
+OUT_DIR="$PROJECT_DIR/static/dds"
 
 if [ -f "$OUT_DIR/dds.wasm" ] && [ -f "$OUT_DIR/dds.js" ]; then
   echo "DDS WASM artifacts found, skipping build."
