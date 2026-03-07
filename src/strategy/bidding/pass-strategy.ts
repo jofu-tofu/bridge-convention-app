@@ -1,4 +1,4 @@
-import type { BiddingStrategy, BidResult } from "../../shared/types";
+import type { BiddingStrategy, BidResult } from "../../contracts";
 
 export const passStrategy: BiddingStrategy = {
   id: "pass",

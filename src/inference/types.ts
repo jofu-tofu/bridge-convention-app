@@ -1,15 +1,15 @@
 import type { Seat, Auction, AuctionEntry, Call } from "../engine/types";
-import type { HandInference, InferredHoldings, BidAlert } from "../shared/types";
+import type { HandInference, InferredHoldings, BidAlert } from "../contracts";
 
 // Re-export ConditionInference from its canonical location
 export type { ConditionInference } from "../conventions/core/types";
 
-// Re-export inference DTOs from shared (canonical location for cross-boundary types)
+// Re-export inference DTOs from contracts (canonical location for cross-boundary types)
 export type {
   SuitInference,
   HandInference,
   InferredHoldings,
-} from "../shared/types";
+} from "../contracts";
 
 /** Snapshot of inference state after a single bid is processed. */
 export interface InferenceSnapshot {

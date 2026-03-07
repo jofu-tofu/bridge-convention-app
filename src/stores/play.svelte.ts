@@ -7,14 +7,15 @@ import type {
   PlayedCard,
   Trick,
   Hand,
+  Seat,
 } from "../engine/types";
-import { BidSuit, Suit, Seat } from "../engine/types";
+import { BidSuit, Suit } from "../engine/types";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import type {
   PlayStrategy,
   PlayContext,
   InferredHoldings,
-} from "../shared/types";
+} from "../contracts";
 import { randomPlayStrategy } from "../strategy/play/random-play";
 import { delay } from "../util/delay";
 
@@ -31,7 +32,7 @@ function bidSuitToSuit(strain: BidSuit): Suit | undefined {
     case BidSuit.NoTrump: return undefined;
     default: {
       const _exhaustive: never = strain;
-      throw new Error(`Unknown BidSuit: ${_exhaustive}`);
+      throw new Error(`Unknown BidSuit: ${String(_exhaustive)}`);
     }
   }
 }

@@ -2,7 +2,7 @@
 <script lang="ts">
   import { getGameStore } from "../../stores/context";
   import { formatCall } from "../../display/format";
-  import type { BidResult } from "../../shared/types";
+  import type { BidResult } from "../../contracts";
 
   const gameStore = getGameStore();
 

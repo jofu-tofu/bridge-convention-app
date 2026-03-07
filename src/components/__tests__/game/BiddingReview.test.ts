@@ -4,7 +4,7 @@ import { fireEvent } from "@testing-library/svelte";
 import BiddingReview from "../../game/BiddingReview.svelte";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { BidHistoryEntry } from "../../../stores/game.svelte";
-import type { SiblingBid } from "../../../shared/types";
+import type { SiblingBid } from "../../../contracts";
 
 function makeEntry(overrides: Partial<BidHistoryEntry> = {}): BidHistoryEntry {
   return {

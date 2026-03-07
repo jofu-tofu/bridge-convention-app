@@ -2,8 +2,8 @@
 // Import boundary: engine/ types, inference/ PrivateBeliefState, and BiddingContext type only.
 // NO runtime imports from conventions/core/ — only type imports.
 
-import { BidSuit, Seat } from "../../engine/types";
-import type { Auction, Call, ContractBid } from "../../engine/types";
+import { BidSuit } from "../../engine/types";
+import type { Auction, Call, ContractBid, Seat } from "../../engine/types";
 import { isLegalCall } from "../../engine/auction";
 import { SUIT_ORDER, partnerSeat } from "../../engine/constants";
 import type { BiddingContext } from "../../conventions/core/types";
@@ -38,8 +38,7 @@ const SUIT_INDEX_TO_BIDSUIT: readonly BidSuit[] = [
 /** Serialize a Call to a string key for deduplication. */
 function callKey(call: Call): string {
   if (call.type === "bid") {
-    const c = call as ContractBid;
-    return `${c.level}${c.strain}`;
+    return `${call.level}${call.strain}`;
   }
   if (call.type === "double") return "X";
   if (call.type === "redouble") return "XX";
@@ -75,8 +74,8 @@ function findPartnerNTBid(auction: Auction, seat: Seat): ContractBid | undefined
   const partner = partnerSeat(seat);
   for (let i = auction.entries.length - 1; i >= 0; i--) {
     const e = auction.entries[i]!;
-    if (e.seat === partner && e.call.type === "bid" && (e.call as ContractBid).strain === BidSuit.NoTrump) {
-      return e.call as ContractBid;
+    if (e.seat === partner && e.call.type === "bid" && e.call.strain === BidSuit.NoTrump) {
+      return e.call;
     }
   }
   return undefined;
@@ -204,7 +203,7 @@ function tryProtectiveDouble(
   const partner = partnerSeat(context.seat);
   if (opponentBid.seat === context.seat || opponentBid.seat === partner) return null;
 
-  const opponentCall = opponentBid.call as ContractBid;
+  const opponentCall = opponentBid.call;
   if (opponentCall.level > 3) return null;
 
   const doubleCall: Call = { type: "double" };

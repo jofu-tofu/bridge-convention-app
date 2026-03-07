@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createHeuristicPlayStrategy } from "../play/heuristic-play";
-import type { PlayContext } from "../../shared/types";
+import type { PlayContext } from "../../contracts";
 import { Suit, Rank, Seat, BidSuit } from "../../engine/types";
 import type { Card, Contract, PlayedCard } from "../../engine/types";
 

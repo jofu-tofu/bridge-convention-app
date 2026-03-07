@@ -3,7 +3,7 @@ import { Seat, Suit, Rank, BidSuit, Vulnerability } from "../../engine/types";
 import type { Hand, Deal, Call } from "../../engine/types";
 import type { BiddingRule, ConventionConfig } from "../../conventions/core/types";
 import { ConventionCategory } from "../../conventions/core/types";
-import type { BidHistoryEntry } from "../../shared/types";
+import type { BidHistoryEntry } from "../../contracts";
 import { prepareRulesForDisplay, groupBidsByRound } from "../rules-display";
 import { conditionedRule, hcpMin, suitMin, auctionMatches } from "../../conventions/core/conditions";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import type { BidHistoryEntry } from "../../shared/types";
+  import type { BidHistoryEntry } from "../../contracts";
   import { groupBidsByRound } from "../../display/rules-display";
   import { formatCall } from "../../display/format";
   import { BID_SUIT_COLOR_CLASS } from "../../display/tokens";

@@ -1,11 +1,11 @@
 # Strategy
 
-AI bidding and play strategies. Consumer of `conventions/core/`, `engine/`, `inference/`, and `shared/types`.
+AI bidding and play strategies. Consumer of `conventions/core/`, `engine/`, `inference/`, and `contracts/`.
 
 ## Conventions
 
-- **Dependency direction:** `strategy/ → shared/ + conventions/core/ + engine/ + inference/`. Engine never imports from strategy/. Conventions never import from strategy/.
-- **Strategy pattern.** `BiddingStrategy` and `PlayStrategy` (defined in `shared/types.ts`) are the core interfaces. Strategies are passed to callers by the drill system.
+- **Dependency direction:** `strategy/ → contracts/ + conventions/core/ + engine/ + inference/`. Engine never imports from strategy/. Conventions never import from strategy/.
+- **Strategy pattern.** `BiddingStrategy` and `PlayStrategy` (defined in `contracts/`) are the core interfaces. Strategies are passed to callers by the drill system.
 - **`null` means "no opinion."** A strategy returning `null` defers to the next strategy in a chain.
 
 ## Architecture
@@ -19,7 +19,7 @@ strategy/
     pass-strategy.ts         Always-pass placeholder strategy
     practical-recommender.ts computePracticalRecommendation() — fail-closed practical recommendation from candidates + belief. Accepts optional interpretationProvider and pragmaticCandidates.
     practical-scorer.ts      scoreCandidatePractically(), buildPracticalRecommendation() — pure scoring functions. Accepts ScorableCandidate (normative or pragmatic) union type.
-    practical-types.ts       PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate — local types (not shared/)
+    practical-types.ts       PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate — local types (not contracts/)
     pragmatic-generator.ts   generatePragmaticCandidates() — heuristic tactical bids (NT downgrade, competitive overcall, protective double). Import boundary: engine/ + inference/ types only (no conventions/core/ runtime imports).
     tree-eval-mapper.ts      mapVisitedWithStructure(), extractForkPoint(), mapConditionResult() — TreeEvalResult-to-DTO mapping
   play/
@@ -28,16 +28,16 @@ strategy/
   __tests__/                 Tests (convention-strategy.test.ts, tree-eval-mapper.test.ts, strategy-chain.test.ts, etc.)
 ```
 
-**Convention adapter:** `conventionToStrategy(config, options?)` wraps a `ConventionConfig` as a `BiddingStrategy`. Optional `ConventionStrategyOptions` provides `beliefProvider` (called per-suggest, exceptions caught → undefined), `lookupConvention` (DI seam for registry-free tests), and `ranker` (composes after `config.rankCandidates`: config first, then options). Maps `TreeEvalResult` to `TreeEvalSummary` DTO with depth/parent enrichment, fork point extraction, sibling alternatives, and candidate bids. `mapVisitedWithStructure()`, `extractForkPoint()`, `mapConditionResult()` extracted to `tree-eval-mapper.ts`. Also populates `BidResult.treeInferenceData` (`TreeInferenceData` in `shared/types.ts`) — extracts hand conditions with `.inference` from the tree evaluation path and rejected branches for positive/negative inference. **Candidate pipeline:** Uses `evaluateBiddingRules(context, config, options?.lookupConvention)`, then `buildEffectiveContext(..., publicBelief?, options?.lookupConvention)` to bundle context + dialogue state + active overlays + optional `BeliefData`, then `generateCandidates()` to resolve all candidates through the intent system (returns `CandidateGenerationResult` with `matchedIntentSuppressed` flag), then `selectMatchedCandidate(candidates, ranker?, forcingState?)` to pick the matched candidate's resolved call. Forcing rules: `ForcingOneRound`/`GameForcing` exclude Pass; `PassForcing` allows only Pass. `generateCandidates()` annotates each `ResolvedCandidate` with optional `provenance` (`tree` | `replacement-tree` | `overlay-injected` | `overlay-override`) and `conventionToStrategy()` maps it onto `ResolvedCandidateDTO`. When `matchedIntentSuppressed && !selected`, returns `null` (convention declines to bid, deferring to next strategy). Falls back to `defaultCall` if no candidate is selected or resolver returns null/illegal/throws. Imports from `conventions/core/`: `buildEffectiveContext`, `generateCandidates`, `selectMatchedCandidate`.
+**Convention adapter:** `conventionToStrategy(config, options?)` wraps a `ConventionConfig` as a `BiddingStrategy`. Optional `ConventionStrategyOptions` provides `beliefProvider` (called per-suggest, exceptions caught → undefined), `lookupConvention` (DI seam for registry-free tests), and `ranker` (composes after `config.rankCandidates`: config first, then options). Maps `TreeEvalResult` to `TreeEvalSummary` DTO with depth/parent enrichment, fork point extraction, sibling alternatives, and candidate bids. `mapVisitedWithStructure()`, `extractForkPoint()`, `mapConditionResult()` extracted to `tree-eval-mapper.ts`. Also populates `BidResult.treeInferenceData` (`TreeInferenceData` in `contracts/inference.ts`) — extracts hand conditions with `.inference` from the tree evaluation path and rejected branches for positive/negative inference. **Candidate pipeline:** Uses `evaluateBiddingRules(context, config, options?.lookupConvention)`, then `buildEffectiveContext(..., publicBelief?, options?.lookupConvention)` to bundle context + dialogue state + active overlays + optional `BeliefData`, then `generateCandidates()` to resolve all candidates through the intent system (returns `CandidateGenerationResult` with `matchedIntentSuppressed` flag), then `selectMatchedCandidate(candidates, ranker?, forcingState?)` to pick the matched candidate's resolved call. Forcing rules: `ForcingOneRound`/`GameForcing` exclude Pass; `PassForcing` allows only Pass. `generateCandidates()` annotates each `ResolvedCandidate` with optional `provenance` (`tree` | `replacement-tree` | `overlay-injected` | `overlay-override`) and `conventionToStrategy()` maps it onto `ResolvedCandidateDTO`. When `matchedIntentSuppressed && !selected`, returns `null` (convention declines to bid, deferring to next strategy). Falls back to `defaultCall` if no candidate is selected or resolver returns null/illegal/throws. Imports from `conventions/core/`: `buildEffectiveContext`, `generateCandidates`, `selectMatchedCandidate`. `formatHandSummary()` now lives in `src/display/hand-summary.ts`.
 
-**Tree DTO pipeline:** `TreeEvalResult` (conventions/core/) -> mapped by `mapTreeEvalResult(result, tree, context, conventionId?, roundName?)` -> `TreeEvalSummary` (shared/types.ts) -> `BidResult.treePath` -> `BidHistoryEntry.treePath` -> UI. `mapTreeEvalResult` calls `findSiblingBids()` and `findCandidateBids()` from conventions/core/ with try/catch for production safety. `TreeEvalSummary.candidates` carries `CandidateBid[]` with intent + source metadata alongside backward-compatible `siblings`.
+**Tree DTO pipeline:** `TreeEvalResult` (conventions/core/) -> mapped by `mapTreeEvalResult(result, tree, context, conventionId?, roundName?)` -> `TreeEvalSummary` (`contracts/tree-evaluation.ts`) -> `BidResult.treePath` -> `BidHistoryEntry.treePath` -> UI. `mapTreeEvalResult` calls `findSiblingBids()` and `findCandidateBids()` from conventions/core/ with try/catch for production safety. `TreeEvalSummary.candidates` carries `CandidateBid[]` with intent + source metadata alongside backward-compatible `siblings`.
 
 **Heuristic play chain** (first non-null wins): opening-lead -> second-hand-low -> third-hand-high -> cover-honor-with-honor -> trump-management -> discard-management -> default-lowest.
 
 - `second-hand-low` only fires when following suit (defers to trump/discard when void)
 - `trump-management` won't ruff partner's winning trick
 - All heuristics return cards from `legalPlays` only; fallback always returns lowest legal card
-- `strategy/play/` depends only on `engine/` and `shared/` — deliberately isolated for independent testing
+- `strategy/play/` depends only on `engine/` and `contracts/` — deliberately isolated for independent testing
 
 ## Gotchas
 

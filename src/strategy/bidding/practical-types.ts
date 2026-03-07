@@ -1,7 +1,7 @@
 // Practical scorer types — local to strategy/bidding/.
-// Only PracticalRecommendation crosses to shared/types.ts.
+// Only PracticalRecommendation crosses to contracts/.
 
-import type { ResolvedCandidateDTO } from "../../shared/types";
+import type { ResolvedCandidateDTO } from "../../contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 
 export interface PracticalScoreBreakdown {
@@ -17,9 +17,16 @@ export type ScorableCandidate =
   | { readonly kind: "normative"; readonly candidate: ResolvedCandidateDTO }
   | { readonly kind: "pragmatic"; readonly candidate: PragmaticCandidate };
 
-export interface PracticalScoredCandidate {
-  readonly candidate: ResolvedCandidateDTO | PragmaticCandidate;
-  readonly practicalScore: number;
-  readonly scoreBreakdown: PracticalScoreBreakdown;
-  readonly source: "normative" | "pragmatic";
-}
+export type PracticalScoredCandidate =
+  | {
+      readonly candidate: ResolvedCandidateDTO;
+      readonly practicalScore: number;
+      readonly scoreBreakdown: PracticalScoreBreakdown;
+      readonly source: "normative";
+    }
+  | {
+      readonly candidate: PragmaticCandidate;
+      readonly practicalScore: number;
+      readonly scoreBreakdown: PracticalScoreBreakdown;
+      readonly source: "pragmatic";
+    };

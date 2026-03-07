@@ -3,7 +3,7 @@
 // Reuses condition-mapper logic for ConditionInference → HandInference conversion.
 
 import type { Seat } from "../engine/types";
-import type { HandInference, TreeInferenceData, TreeInferenceConditionEntry } from "../shared/types";
+import type { HandInference, TreeInferenceData, TreeInferenceConditionEntry } from "../contracts";
 import {
   conditionToHandInference,
   invertInference,

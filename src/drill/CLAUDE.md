@@ -4,7 +4,7 @@ Unified drill lifecycle — session management, config construction, and game st
 
 ## Conventions
 
-- **Dependency direction:** `drill/ → engine/ + conventions/core/ + shared/ + strategy/ + inference/`. Nothing imports from drill/ except `stores/` and `components/`.
+- **Dependency direction:** `drill/ → engine/ + conventions/core/ + contracts/ + strategy/ + inference/`. Nothing imports from drill/ except `stores/` and `components/`.
 - **DrillSession is the bridge between strategy and stores.** It wraps a `DrillConfig` and provides `getNextBid()` per seat (returns `null` for user seats, wraps null strategy results as pass for AI seats).
 
 ## Architecture
@@ -41,7 +41,7 @@ drill/
 - **`resolveTeachingAnswer(bidResult)`**: extracts acceptable alternatives from `BidResult.treePath.resolvedCandidates`. Gracefully degrades to exact grading when candidates empty.
 - **`gradeBid(userCall, resolution)`**: returns `BidGrade` — primary match → Correct, acceptable match → Acceptable, else Incorrect.
 
-**Dependency:** `drill/ → shared/ + engine/` only (reads DTOs, uses `callsMatch`). No inverse: `strategy/` does NOT import from `drill/`. Store re-exports `BidGrade` and `TeachingResolution` for component consumption.
+**Dependency:** `drill/ → contracts/ + engine/` only (reads DTOs, uses `callsMatch`). No inverse: `strategy/` does NOT import from `drill/`. Store re-exports `BidGrade` and `TeachingResolution` for component consumption.
 
 ## Gotchas
 

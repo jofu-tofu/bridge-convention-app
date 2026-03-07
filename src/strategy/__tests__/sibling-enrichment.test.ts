@@ -6,7 +6,7 @@ import { intentBid } from "../../conventions/core/intent/intent-node";
 import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
 import type { BiddingContext } from "../../conventions/core/types";
 import type { TreeEvalResult } from "../../conventions/core/tree-evaluator";
-import type { SiblingBid, ResolvedCandidateDTO } from "../../shared/types";
+import type { SiblingBid, ResolvedCandidateDTO } from "../../contracts";
 import { hand } from "../../engine/__tests__/fixtures";
 import {
   enrichSiblingsWithResolvedCalls,

@@ -4,7 +4,7 @@
   import type { BidFeedback } from "../../stores/game.svelte";
   import { BidGrade } from "../../stores/bidding.svelte";
   import { formatCall } from "../../display/format";
-  import type { PracticalRecommendation } from "../../shared/types";
+  import type { PracticalRecommendation } from "../../contracts";
 
   interface Props {
     feedback: BidFeedback;

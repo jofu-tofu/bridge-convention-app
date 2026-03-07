@@ -1,8 +1,8 @@
 import type {
   ConventionConfig,
 } from "../conventions/core/types";
-import type { BidHistoryEntry } from "../shared/types";
-import type { BidResult, ConditionDetail, TreeEvalSummary } from "../shared/types";
+import type { BidHistoryEntry } from "../contracts";
+import type { BidResult, ConditionDetail, TreeEvalSummary } from "../contracts";
 import type { Deal, Call, Seat, Auction } from "../engine/types";
 import { Seat as SeatEnum } from "../engine/types";
 import {

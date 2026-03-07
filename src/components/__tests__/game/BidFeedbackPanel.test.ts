@@ -3,7 +3,7 @@ import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
 import type { BidFeedback } from "../../../stores/game.svelte";
 import { BidGrade } from "../../../stores/bidding.svelte";
-import type { TreeEvalSummary, TreeForkPoint, TreePathEntry, PracticalRecommendation } from "../../../shared/types";
+import type { TreeEvalSummary, TreeForkPoint, TreePathEntry, PracticalRecommendation } from "../../../contracts";
 
 function makeForkPoint(): TreeForkPoint {
   const matched: TreePathEntry = {

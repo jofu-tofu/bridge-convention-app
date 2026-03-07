@@ -9,7 +9,7 @@ import { tick } from "svelte";
 import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../engine/types";
 import type { Card, Contract, Deal } from "../engine/types";
 import type { DrillSession } from "../drill/types";
-import type { PlayStrategy } from "../shared/types";
+import type { PlayStrategy } from "../contracts";
 
 export function makeCard(suit: Suit, rank: Rank): Card {
   return { suit, rank };

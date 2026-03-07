@@ -5,16 +5,19 @@ import type { BeliefData, EffectiveConventionContext } from "../../conventions/c
 import { generateCandidates } from "../../conventions/core/candidate-generator";
 import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
 import { selectMatchedCandidate } from "../../conventions/core/candidate-selector";
-import { ForcingState } from "../../shared/types";
+import { ForcingState } from "../../contracts";
 import type {
   BiddingStrategy,
   BidResult,
-} from "../../shared/types";
-import { formatHandSummary } from "../../shared/hand-summary";
+  PracticalRecommendation,
+} from "../../contracts";
+import { formatHandSummary } from "../../display/hand-summary";
 import { TraceCollector } from "./trace-collector";
 import { computePracticalRecommendation } from "./practical-recommender";
 import { generatePragmaticCandidates } from "./pragmatic-generator";
+import type { PragmaticCandidate } from "./pragmatic-generator";
 import type { PrivateBeliefState } from "../../inference/private-belief";
+import type { InferenceProvider } from "../../inference/types";
 import { partnerSeat, SUIT_ORDER } from "../../engine/constants";
 import {
   mapConditionResult,
@@ -36,7 +39,7 @@ export interface ConventionStrategyOptions {
   /** Additional ranker applied after config.rankCandidates (if any). Both compose: config first, then options. */
   ranker?: (candidates: readonly ResolvedCandidate[], ctx: EffectiveConventionContext) => readonly ResolvedCandidate[];
   /** Inference provider for partner interpretation model. When present, misunderstandingRisk is computed per candidate. */
-  interpretationProvider?: import("../../inference/types").InferenceProvider;
+  interpretationProvider?: InferenceProvider;
 }
 
 export function conventionToStrategy(
@@ -139,12 +142,12 @@ export function conventionToStrategy(
       }
 
       // Compute practical recommendation if belief data available
-      let practicalRecommendation: import("../../shared/types").PracticalRecommendation | undefined;
+      let practicalRecommendation: PracticalRecommendation | undefined;
       if (publicBelief && pipelineCandidates) {
         const resolvedDTOs = mapResolvedCandidates(pipelineCandidates);
 
         // Generate pragmatic candidates when belief data is available
-        let pragmaticCandidates: import("./pragmatic-generator").PragmaticCandidate[] | undefined;
+        let pragmaticCandidates: PragmaticCandidate[] | undefined;
         try {
           const partner = partnerSeat(context.seat);
           const partnerBeliefs = publicBelief.beliefs[partner];

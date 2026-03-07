@@ -13,7 +13,7 @@ const UNUSED_IMPORTS_VAR_RULE = [
   { args: "all", argsIgnorePattern: "^_", vars: "all", varsIgnorePattern: "^_" },
 ];
 
-// Shared forbidden-import patterns for module boundary enforcement
+// Reused forbidden-import patterns for module boundary enforcement
 const svelteImports = [
   { name: "svelte", message: "Module boundary violation: no svelte imports" },
   {
@@ -189,10 +189,10 @@ export default tseslint.config(
     },
   },
 
-  // ── Module boundary: shared/ ──
+  // ── Module boundary: contracts/ ──
   {
-    files: ["src/shared/**/*.ts"],
-    ignores: ["src/shared/__tests__/**", "src/shared/**/*.test.ts"],
+    files: ["src/contracts/**/*.ts"],
+    ignores: ["src/contracts/__tests__/**", "src/contracts/**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -204,32 +204,32 @@ export default tseslint.config(
             ...strategyImports,
             {
               name: "../conventions/*",
-              message: "shared/ must not import conventions/",
+              message: "contracts/ must not import conventions/",
             },
             {
               name: "../../conventions/*",
-              message: "shared/ must not import conventions/",
+              message: "contracts/ must not import conventions/",
             },
             {
               name: "../display/*",
-              message: "shared/ must not import display/",
+              message: "contracts/ must not import display/",
             },
             {
               name: "../../display/*",
-              message: "shared/ must not import display/",
+              message: "contracts/ must not import display/",
             },
-            { name: "../drill/*", message: "shared/ must not import drill/" },
+            { name: "../drill/*", message: "contracts/ must not import drill/" },
             {
               name: "../../drill/*",
-              message: "shared/ must not import drill/",
+              message: "contracts/ must not import drill/",
             },
             {
               name: "../inference/*",
-              message: "shared/ must not import inference/",
+              message: "contracts/ must not import inference/",
             },
             {
               name: "../../inference/*",
-              message: "shared/ must not import inference/",
+              message: "contracts/ must not import inference/",
             },
           ],
         },

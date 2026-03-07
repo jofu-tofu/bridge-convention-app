@@ -6,10 +6,15 @@ import type {
 } from "../engine/types";
 import { Seat } from "../engine/types";
 import type { DrillSession } from "../drill/types";
-import type { BiddingStrategy, BidResult } from "../shared/types";
-import type { InferredHoldings } from "../shared/types";
+import type { BiddingStrategy, BidResult } from "../contracts";
+import type { InferredHoldings } from "../contracts";
 import type { InferenceEngine } from "../inference/inference-engine";
-import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
+import type * as InferenceEngineModule from "../inference/inference-engine";
+import type {
+  InferenceExtractorInput,
+  InferenceSnapshot,
+  PublicBeliefState,
+} from "../inference/types";
 import { createInitialBeliefState, applyAnnotation } from "../inference/belief-accumulator";
 import { produceAnnotation } from "../inference/annotation-producer";
 import { protocolInferenceExtractor } from "../inference/protocol-inference-extractor";
@@ -48,7 +53,7 @@ const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
 /** Adapt BidResult (shared DTO) to InferenceExtractorInput.
  *  BidResult doesn't carry protocolResult/treeEvalResult,
  *  so convention inferences will be empty. Natural inference still works via the provider. */
-function toExtractorInput(bidResult: BidResult): import("../inference/types").InferenceExtractorInput {
+function toExtractorInput(bidResult: BidResult): InferenceExtractorInput {
   return {
     rule: bidResult.ruleName ?? "unknown",
     explanation: bidResult.explanation,
@@ -103,7 +108,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
   function transitionToExplanation() {
     if (!transitionTo("EXPLANATION")) return;
     if (deal && contract) {
-      dds.triggerSolve(deal, contract);
+      void dds.triggerSolve(deal, contract);
     }
   }
 
@@ -376,7 +381,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       // Eagerly load inference engine BEFORE any $state mutations —
       // dynamic await import() breaks the Svelte 5 scheduler, causing
       // subsequent $state mutations to not trigger DOM updates.
-      let inferenceFactory: typeof import("../inference/inference-engine") | null = null;
+      let inferenceFactory: typeof InferenceEngineModule | null = null;
       const needsInference = session.config.nsInferenceConfig || session.config.ewInferenceConfig;
       if (needsInference) {
         inferenceFactory = await import("../inference/inference-engine");

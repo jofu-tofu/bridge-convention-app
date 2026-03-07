@@ -4,7 +4,7 @@
 import { describe, test, expect } from "vitest";
 import { BidSuit } from "../../engine/types";
 import type { Call, ContractBid } from "../../engine/types";
-import type { ResolvedCandidateDTO } from "../../shared/types";
+import type { ResolvedCandidateDTO } from "../../contracts";
 import {
   scoreCandidatePractically,
   buildPracticalRecommendation,

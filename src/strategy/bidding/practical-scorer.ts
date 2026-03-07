@@ -1,10 +1,11 @@
 // Practical scorer — scores normative and pragmatic candidates by fit, HCP, and convention distance.
 // Pure functions. No side effects.
 
-import type { Call, ContractBid } from "../../engine/types";
+import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
 import { callsMatch } from "../../engine/call-helpers";
-import type { ResolvedCandidateDTO, PracticalRecommendation } from "../../shared/types";
+import type { ResolvedCandidateDTO, PracticalRecommendation } from "../../contracts";
+import type { PragmaticCandidate } from "./pragmatic-generator";
 import type { PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate } from "./practical-types";
 
 export const LEVEL_HCP_TABLE: Record<number, number> = {
@@ -54,8 +55,8 @@ export function scoreCandidatePractically(
 }
 
 function normalizeToScorable(input: ResolvedCandidateDTO | ScorableCandidate): ScorableCandidate {
-  if ("kind" in input) return input as ScorableCandidate;
-  return { kind: "normative", candidate: input as ResolvedCandidateDTO };
+  if ("kind" in input) return input;
+  return { kind: "normative", candidate: input };
 }
 
 function scoreNormative(
@@ -94,10 +95,7 @@ function scoreNormative(
   return { candidate, practicalScore: totalScore, scoreBreakdown: breakdown, source: "normative" };
 }
 
-function scorePragmatic(
-  candidate: import("./pragmatic-generator").PragmaticCandidate,
-  belief: ScoringInput,
-): PracticalScoredCandidate {
+function scorePragmatic(candidate: PragmaticCandidate, belief: ScoringInput): PracticalScoredCandidate {
   const call = candidate.call;
 
   // Pass/double/redouble → score 0
@@ -108,7 +106,7 @@ function scorePragmatic(
     return { candidate, practicalScore: WEIGHTS.conventionDistance * 3, scoreBreakdown: breakdown, source: "pragmatic" };
   }
 
-  const bid = call as ContractBid;
+  const bid = call;
   const isSuitBid = bid.strain !== BidSuit.NoTrump;
   const fitScore = isSuitBid ? (belief.ownSuitLength + belief.partnerMinSuitLength) : 0;
   const hcpScore = (belief.ownHcp + belief.partnerMinHcp) - (LEVEL_HCP_TABLE[bid.level] ?? 20);
@@ -153,22 +151,21 @@ export function buildPracticalRecommendation(
 
 function getCallFromCandidate(scored: PracticalScoredCandidate): Call {
   if (scored.source === "normative") {
-    return (scored.candidate as ResolvedCandidateDTO).resolvedCall;
+    return scored.candidate.resolvedCall;
   }
-  return (scored.candidate as import("./pragmatic-generator").PragmaticCandidate).call;
+  return scored.candidate.call;
 }
 
 function getBidNameFromCandidate(scored: PracticalScoredCandidate): string {
   if (scored.source === "normative") {
-    return (scored.candidate as ResolvedCandidateDTO).bidName;
+    return scored.candidate.bidName;
   }
-  const pragmatic = scored.candidate as import("./pragmatic-generator").PragmaticCandidate;
-  return pragmatic.distortionType;
+  return scored.candidate.distortionType;
 }
 
 function getMeaningFromCandidate(scored: PracticalScoredCandidate): string {
   if (scored.source === "normative") {
-    return (scored.candidate as ResolvedCandidateDTO).meaning;
+    return scored.candidate.meaning;
   }
-  return (scored.candidate as import("./pragmatic-generator").PragmaticCandidate).rationale;
+  return scored.candidate.rationale;
 }

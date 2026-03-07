@@ -1,4 +1,4 @@
-import type { BiddingStrategy, BidResult } from "../../shared/types";
+import type { BiddingStrategy, BidResult } from "../../contracts";
 import type { BiddingContext } from "../../conventions/core/types";
 import { TraceCollector } from "./trace-collector";
 

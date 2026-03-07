@@ -4,7 +4,7 @@
 
 import type { Call, Seat, Auction, AuctionEntry } from "../engine/types";
 import type { InferenceProvider } from "./types";
-import type { SuitInference } from "../shared/types";
+import type { SuitInference } from "../contracts";
 
 /** What partner would infer from a candidate bid, and how well our actual hand matches. */
 export interface PartnerInterpretationDTO {
@@ -62,7 +62,8 @@ export function computePartnerInterpretation(
 
   // Map suit inferences to expected ranges
   const partnerExpectedSuits: Partial<Record<string, { min: number; max: number }>> = {};
-  for (const [suit, si] of Object.entries(inference.suits) as [string, SuitInference][]) {
+  for (const [suit, si] of Object.entries(inference.suits)) {
+    if (!si) continue;
     partnerExpectedSuits[suit] = {
       min: si.minLength ?? 0,
       max: si.maxLength ?? 13,
@@ -99,7 +100,9 @@ function computeSuitAwkwardness(
   shape: readonly number[],
   suitExpectations: Partial<Record<string, SuitInference>>,
 ): number {
-  const entries = Object.entries(suitExpectations) as [string, SuitInference][];
+  const entries = Object.entries(suitExpectations).filter(
+    (entry): entry is [string, SuitInference] => entry[1] !== undefined,
+  );
   if (entries.length === 0) return 0;
 
   let totalShortfall = 0;

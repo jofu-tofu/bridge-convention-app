@@ -1,6 +1,6 @@
 import type { Seat } from "../engine/types";
 import { Seat as SeatEnum } from "../engine/types";
-import type { InferredHoldings } from "../shared/types";
+import type { InferredHoldings } from "../contracts";
 import type { BidAnnotation, PublicBeliefState } from "./types";
 import { mergeInferences } from "./merge";
 

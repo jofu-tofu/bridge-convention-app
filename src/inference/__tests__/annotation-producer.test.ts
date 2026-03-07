@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { Seat } from "../../engine/types";
 import type { AuctionEntry, Auction } from "../../engine/types";
-import type { HandInference } from "../../shared/types";
+import type { HandInference } from "../../contracts";
 import type { BiddingRuleResult } from "../../conventions/core/registry";
 import type { InferenceExtractor, InferenceProvider } from "../types";
 import type { BidAlert } from "../../conventions/core/rule-tree";

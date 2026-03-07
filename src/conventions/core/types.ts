@@ -5,13 +5,18 @@ import type {
   DealConstraints,
   Deal,
 } from "../../engine/types";
-import { Seat } from "../../engine/types";
-import type { BiddingContext } from "../../shared/types";
-export type { BiddingContext } from "../../shared/types";
+import type { Seat } from "../../engine/types";
+import type { BiddingContext } from "../../contracts";
+export type { BiddingContext } from "../../contracts";
 import type { InterferenceKind } from "./dialogue/dialogue-state";
-import type { RuleNode, BidAlert } from "./rule-tree";
+import type { TransitionRule } from "./dialogue/dialogue-transitions";
+import type { EffectiveConventionContext } from "./effective-context";
+import type { ResolvedCandidate } from "./candidate-generator";
+import type { IntentResolverMap } from "./intent/intent-resolver";
+import type { ConventionOverlayPatch } from "./overlay";
+import type { ProtocolEvalResult, ConventionProtocol } from "./protocol";
+import type { RuleNode, BidAlert, ConventionExplanations } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
-import type { ProtocolEvalResult } from "./protocol";
 
 /** Structured inference data attached to a RuleCondition. */
 export interface ConditionInference {
@@ -164,38 +169,38 @@ export interface ConventionConfig {
    *  Entries should be from the same partnership pair (E+W or N+S). */
   readonly allowedDealers?: readonly Seat[];
   /** Per-convention teaching explanations (keyed by node name). */
-  readonly explanations?: import("./rule-tree").ConventionExplanations;
+  readonly explanations?: ConventionExplanations;
   /** Present on protocol conventions. All conventions must use protocols.
    *  Uses `any` type parameter because convention-specific EstablishedContext
    *  subtypes are not assignable to the base type (function contravariance). */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Protocol generic must stay erased at registry boundary.
-  readonly protocol?: import("./protocol").ConventionProtocol<any>;
+  readonly protocol?: ConventionProtocol<any>;
   /** Dialogue transition rules for IntentNode-based conventions.
    *  When `baselineRules` is also set, this array contains ONLY convention-specific rules.
    *  When `baselineRules` is NOT set, this array is composed as [...familyRules, ...baselineTransitionRules].
    *  Required when hand trees contain IntentNode leaves. */
-  readonly transitionRules?: readonly import("./dialogue/dialogue-transitions").TransitionRule[];
+  readonly transitionRules?: readonly TransitionRule[];
   /** Baseline transition rules (universal patterns like NT detection, interference, pass).
    *  When set, `computeDialogueState` uses two-pass mode: convention rules fire first,
    *  baseline rules backfill only the fields convention rules didn't set.
    *  Convention values always win over baseline values. */
-  readonly baselineRules?: readonly import("./dialogue/dialogue-transitions").TransitionRule[];
+  readonly baselineRules?: readonly TransitionRule[];
   /** Intent resolvers for IntentNode-based conventions.
    *  Maps SemanticIntentType to resolver functions.
    *  Required when hand trees contain IntentNode leaves. */
-  readonly intentResolvers?: import("./intent/intent-resolver").IntentResolverMap;
+  readonly intentResolvers?: IntentResolverMap;
   /** Overlays that replace the hand tree for specific protocol rounds based on dialogue state.
    *  First matching overlay wins. Validated against protocol round names at registration time. */
-  readonly overlays?: readonly import("./overlay").ConventionOverlayPatch[];
+  readonly overlays?: readonly ConventionOverlayPatch[];
   /** Bid signatures this convention uses that opponents may classify as interference. */
   readonly interferenceSignatures?: readonly InterferenceSignature[];
   /** Optional candidate ranker for reordering before selection.
    *  Operates across ALL candidates before tier filtering.
    *  No conventions use this yet — seam for future difficulty/style preferences. */
   readonly rankCandidates?: (
-    candidates: readonly import("./candidate-generator").ResolvedCandidate[],
-    context: import("./effective-context").EffectiveConventionContext,
-  ) => readonly import("./candidate-generator").ResolvedCandidate[];
+    candidates: readonly ResolvedCandidate[],
+    context: EffectiveConventionContext,
+  ) => readonly ResolvedCandidate[];
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */
@@ -208,7 +213,7 @@ export interface BiddingRuleResult {
   readonly meaning?: string;
   readonly conditionResults?: readonly ConditionResult[];
   /** Raw tree evaluation result — available for conventions using rule trees.
-   *  Carries DecisionNode references, so must not cross the shared/ boundary directly. */
+   *  Carries DecisionNode references, so must not cross the contracts/ boundary directly. */
   readonly treeEvalResult?: TreeEvalResult;
   /** The tree root used for evaluation — needed by mappers that compute depth/parent info. */
   readonly treeRoot?: RuleNode;

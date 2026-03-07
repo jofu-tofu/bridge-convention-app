@@ -3,7 +3,7 @@ import type {
   BiddingStrategy,
   BidResult,
   PlayStrategy,
-} from "../shared/types";
+} from "../contracts";
 import type { InferenceConfig } from "../inference/types";
 
 export interface DrillConfig {

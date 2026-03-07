@@ -1,14 +1,13 @@
 import { tick } from "svelte";
 import type { EnginePort } from "../engine/port";
-import type { Deal, Call, Auction, AuctionEntry } from "../engine/types";
-import { Seat } from "../engine/types";
+import type { Deal, Call, Auction, AuctionEntry, Seat } from "../engine/types";
 import type { DrillSession } from "../drill/types";
 import type {
   BiddingStrategy,
   BidResult,
   BidHistoryEntry,
   PracticalRecommendation,
-} from "../shared/types";
+} from "../contracts";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callsMatch } from "../engine/call-helpers";
@@ -21,7 +20,7 @@ import {
 } from "../drill/teaching-resolution";
 import type { TeachingResolution } from "../drill/teaching-resolution";
 
-export type { BidHistoryEntry } from "../shared/types";
+export type { BidHistoryEntry } from "../contracts";
 export { BidGrade } from "../drill/teaching-resolution";
 export type { TeachingResolution } from "../drill/teaching-resolution";
 

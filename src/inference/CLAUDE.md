@@ -25,6 +25,11 @@ Auction inference system — extracts hand information from bids with per-partne
 | `private-belief.ts` | `PrivateBeliefState`, `conditionOnOwnHand(publicBelief, seat, hand, eval)` — narrows partner suit lengths using own hand (13 minus own length caps partner max) |
 | `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` (HCP deviation) and `continuationAwkwardness` (suit length shortfall). Consumed by `practical-recommender.ts` |
 
+## Contracts Boundary
+
+- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `TreeInferenceData`, and `BidAlert`, live in `src/contracts/`.
+- `inference/types.ts` remains the subsystem-local interface layer; use `contracts/` for shared DTOs and `inference/types.ts` for inference-only protocols.
+
 ## Merge Algorithm
 
 Range intersection: `min = max(all minHcp)`, `max = min(all maxHcp)`. Suit lengths same per suit. Contradictions clamp to last inference's values and log warning. Never throws.

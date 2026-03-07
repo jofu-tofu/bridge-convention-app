@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit, Seat } from "../../engine/types";
-import type { BidResult } from "../../shared/types";
+import type { BidResult } from "../../contracts";
 import type { BiddingRuleResult } from "../../conventions/core/registry";
 import { protocolInferenceExtractor } from "../../inference/protocol-inference-extractor";
 

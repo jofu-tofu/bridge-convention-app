@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { formatHandSummary } from "../../shared/hand-summary";
+import { formatHandSummary } from "../hand-summary";
 import type { HandEvaluation } from "../../engine/types";
 
 function makeEval(shape: readonly [number, number, number, number], hcp: number): HandEvaluation {

@@ -4,7 +4,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { Seat } from "../../engine/types";
-import type { TreeInferenceData } from "../../shared/types";
+import type { TreeInferenceData } from "../../contracts";
 import { extractInferencesFromDTO } from "../tree-inference-extractor";
 
 describe("extractInferencesFromDTO", () => {

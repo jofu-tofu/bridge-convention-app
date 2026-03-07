@@ -9,7 +9,7 @@ import {
   type Hand,
 } from "../engine/types";
 import type { DrillSession } from "./types";
-import type { BiddingStrategy } from "../shared/types";
+import type { BiddingStrategy } from "../contracts";
 import { createDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";

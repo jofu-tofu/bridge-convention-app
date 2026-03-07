@@ -41,8 +41,8 @@ Bridge bidding convention practice app (Stayman, Bergen Raises, SAYC, Weak Twos,
 
 ## Conventions
 
-- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `strategy/`. Engine imports `shared/types` for cross-boundary types (`BiddingStrategy`, `BidResult`)
-- **Shared types layer.** `src/shared/types.ts` contains types used by both `engine/` and `strategy/`. Do not add types only used by one module.
+- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `strategy/`. Engine imports `contracts/` for cross-boundary types (`BiddingStrategy`, `BidResult`)
+- **Contracts layer.** `src/contracts/` contains cross-boundary DTOs and strategy interfaces shared across module boundaries. Keep files domain-grouped; do not add types used by only one subsystem.
 - **Registry pattern.** Use registries for conventions and strategies, not hardcoded switch statements
 - **EnginePort abstraction.** UI communicates with engine through `EnginePort` interface; engine never imports UI
 - **Svelte 5 runes.** Use `$state`, `$derived`, `$effect` — no legacy `$:` reactive statements
@@ -56,7 +56,7 @@ Bridge bidding convention practice app (Stayman, Bergen Raises, SAYC, Weak Twos,
 ```
 src/
   engine/          Pure TS game logic (zero platform deps)
-  shared/          Cross-boundary types (BidResult, BiddingStrategy, PlayStrategy, ConditionDetail)
+  contracts/       Cross-boundary DTOs and strategy interfaces (bidding, inference, tree evaluation, play, recommendation)
   conventions/     Convention system
     core/            Registry, evaluator, tree system, conditions (stable infrastructure)
     definitions/     Convention folders (stayman/, bergen-raises/, sayc/, weak-twos/, lebensohl-lite/) each with tree.ts, config.ts, explanations.ts, index.ts
@@ -65,7 +65,7 @@ src/
     bidding/         Convention-to-strategy adapter, pass strategy
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
   drill/           Drill lifecycle (session, config, helpers)
-  display/         UI display utilities (format, tokens, sort-cards, seat-mapping, rules-display, hcp)
+  display/         UI display utilities (format, hand-summary, tokens, sort-cards, seat-mapping, rules-display, hcp)
   util/            Zero-dep pure utilities (delay, seeded-rng)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
@@ -88,7 +88,7 @@ tests/
 |-----------|-------|---------|
 | Engine | `src/engine/types.ts` | Pure TS game logic |
 | Conventions | `src/conventions/core/registry.ts` | Convention system (core/ + definitions/) |
-| Shared | `src/shared/types.ts` | Cross-boundary types |
+| Contracts | `src/contracts/index.ts` | Cross-boundary DTOs and strategy interfaces |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/convention-strategy.ts` | AI strategies |
 | Drill | `src/drill/types.ts` | Drill lifecycle + teaching resolution |
@@ -149,11 +149,11 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 | `src/components/`              | `npx vitest run src/components/`  | Never for UI-only (CSS, props, layout) |
 | `src/stores/`                  | `npx vitest run src/stores/`      | If store interface changed             |
 | `src/engine/`                  | `npx vitest run src/engine/`      | If types/exports changed               |
-| `src/display/`                 | `npx vitest run src/display/`     | If shared utility signatures changed   |
+| `src/display/`                 | `npx vitest run src/display/`     | If display utility signatures changed  |
 | CSS-only / layout tweaks       | `npm run check` (type-check only) | Never                                  |
 | Cross-cutting (types, exports) | `npm run test:run` (full suite)   | Always for type/interface changes      |
 
-**Rule:** If you only changed `.svelte` files, CSS values, or added optional props — run targeted tests or just type-check. Full suite (`npm run test:run`) only when changing shared types, store interfaces, or engine logic.
+**Rule:** If you only changed `.svelte` files, CSS values, or added optional props — run targeted tests or just type-check. Full suite (`npm run test:run`) only when changing contracts types, store interfaces, or engine logic.
 
 ## Gotchas
 
@@ -182,6 +182,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 **Context tree** (read the relevant one before working in that directory):
 
 - `src/engine/CLAUDE.md` — engine purity, module graph, key patterns
+- `src/contracts/CLAUDE.md` — cross-boundary contract inventory and dependency rules
 - `src/conventions/CLAUDE.md` — registry pattern, shared conventions
 - `src/conventions/core/CLAUDE.md` — protocol, dialogue, intent, tree, overlay systems
 - `src/conventions/definitions/CLAUDE.md` — convention authoring guide, rules reference

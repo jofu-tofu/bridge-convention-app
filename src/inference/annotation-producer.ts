@@ -1,5 +1,5 @@
 import type { AuctionEntry, Auction } from "../engine/types";
-import type { TreeInferenceData } from "../shared/types";
+import type { TreeInferenceData } from "../contracts";
 import type { BidAnnotation, InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "./types";
 import { extractInferencesFromDTO } from "./tree-inference-extractor";
 
