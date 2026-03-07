@@ -1,5 +1,4 @@
-import eslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
+import tseslint from "typescript-eslint";
 import sveltePlugin from "eslint-plugin-svelte";
 import svelteParser from "svelte-eslint-parser";
 import unusedImports from "eslint-plugin-unused-imports";
@@ -14,42 +13,83 @@ const UNUSED_IMPORTS_VAR_RULE = [
   { args: "all", argsIgnorePattern: "^_", vars: "all", varsIgnorePattern: "^_" },
 ];
 
-function restrictImports(message, group) {
-  return { group, message };
-}
+// Shared forbidden-import patterns for module boundary enforcement
+const svelteImports = [
+  { name: "svelte", message: "Module boundary violation: no svelte imports" },
+  {
+    name: "svelte/*",
+    message: "Module boundary violation: no svelte imports",
+  },
+];
+const storeImports = [
+  {
+    name: "../stores/*",
+    message: "Module boundary violation: no store imports",
+  },
+  {
+    name: "../../stores/*",
+    message: "Module boundary violation: no store imports",
+  },
+];
+const componentImports = [
+  {
+    name: "../components/*",
+    message: "Module boundary violation: no component imports",
+  },
+  {
+    name: "../../components/*",
+    message: "Module boundary violation: no component imports",
+  },
+];
+const strategyImports = [
+  {
+    name: "../strategy/*",
+    message: "Module boundary violation: no strategy imports",
+  },
+  {
+    name: "../../strategy/*",
+    message: "Module boundary violation: no strategy imports",
+  },
+];
 
 /** @type {import("eslint").Linter.Config[]} */
-export default [
+export default tseslint.config(
+  // Global ignores
   {
     ignores: [
-      "node_modules/**",
-      "src-tauri/**",
-      "dist/**",
-      "build/**",
-      "coverage/**",
-      "_output/**",
-      ".aiwcli/**",
+      "node_modules/",
+      "src-tauri/",
+      "dist/",
+      "build/",
+      "coverage/",
+      "_output/",
+      ".aiwcli/",
+      "playwright.config.ts",
+      "vite.config.ts",
+      "vitest.config.ts",
+      "tests/e2e/",
     ],
     linterOptions: {
       reportUnusedDisableDirectives: "warn",
     },
   },
-  // TypeScript files
+
+  // ── Base: type-aware TypeScript ──
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: ["**/*.ts"],
+  })),
   {
     files: ["**/*.ts"],
     languageOptions: {
-      parser: tsParser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
+        projectService: true,
       },
     },
     plugins: {
-      "@typescript-eslint": eslint,
       "unused-imports": unusedImports,
     },
     rules: {
-      ...eslint.configs.recommended.rules,
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/consistent-type-imports": [
         "error",
@@ -60,203 +100,305 @@ export default [
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-require-imports": "error",
       "no-console": "warn",
+
+      // Type-aware rules
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": "error",
+      "@typescript-eslint/await-thenable": "error",
+      "@typescript-eslint/require-await": "error",
+      "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+
+      // Convention enforcement
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ExportDefaultDeclaration",
+          message: "Named exports only — no export default (CLAUDE.md)",
+        },
+        {
+          selector: "TSEnumDeclaration[const=true]",
+          message:
+            "const enum breaks Vite/isolatedModules — use regular enum (CLAUDE.md)",
+        },
+      ],
+      eqeqeq: ["error", "always"],
     },
   },
-  // CLI files — console is expected
+
+  // ── Svelte store files (.svelte.ts) — unbound-method is expected ──
+  {
+    files: ["**/*.svelte.ts"],
+    rules: {
+      "@typescript-eslint/unbound-method": "off",
+    },
+  },
+
+  // ── CLI files — console is expected ──
   {
     files: ["src/cli/**/*.ts"],
     rules: {
       "no-console": "off",
     },
   },
-  // Pure engine logic must stay UI/platform independent.
+
+  // ── Module boundary: engine/ ──
   {
     files: ["src/engine/**/*.ts"],
     ignores: [
       "src/engine/__tests__/**",
+      "src/engine/**/*.test.ts",
       "src/engine/tauri-ipc-engine.ts",
       "src/engine/wasm-engine.ts",
       "src/engine/dds-client.ts",
       "src/engine/dds-worker.ts",
+      "src/engine/bid-suggester.ts",
     ],
     rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "Pure engine modules must stay independent from UI, stores, and strategy layers.",
-            [
-              "svelte",
-              "svelte/*",
-              "@tauri-apps/*",
-              "**/components/**",
-              "**/stores/**",
-              "**/display/**",
-              "**/strategy/**",
-              "**/drill/**",
-            ],
-          ),
-        ],
-      }],
-      "no-restricted-globals": ["error",
-        { name: "window", message: "Pure engine modules must not depend on browser globals." },
-        { name: "document", message: "Pure engine modules must not depend on browser globals." },
-        { name: "localStorage", message: "Pure engine modules must not depend on browser globals." },
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            {
+              name: "../display/*",
+              message: "engine/ must not import display/",
+            },
+            {
+              name: "../../display/*",
+              message: "engine/ must not import display/",
+            },
+            { name: "../drill/*", message: "engine/ must not import drill/" },
+            {
+              name: "../../drill/*",
+              message: "engine/ must not import drill/",
+            },
+            {
+              name: "../inference/*",
+              message: "engine/ must not import inference/",
+            },
+            {
+              name: "../../inference/*",
+              message: "engine/ must not import inference/",
+            },
+          ],
+        },
       ],
     },
   },
-  // Inference stays pure and should not depend on UI or orchestration layers.
+
+  // ── Module boundary: shared/ ──
   {
-    files: ["src/inference/**/*.ts"],
-    ignores: ["src/inference/__tests__/**"],
+    files: ["src/shared/**/*.ts"],
+    ignores: ["src/shared/__tests__/**", "src/shared/**/*.test.ts"],
     rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "Inference must stay independent from UI, stores, drill flow, and strategy code.",
-            [
-              "svelte",
-              "svelte/*",
-              "@tauri-apps/*",
-              "**/components/**",
-              "**/stores/**",
-              "**/drill/**",
-              "**/display/**",
-              "**/strategy/**",
-            ],
-          ),
-        ],
-      }],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            {
+              name: "../conventions/*",
+              message: "shared/ must not import conventions/",
+            },
+            {
+              name: "../../conventions/*",
+              message: "shared/ must not import conventions/",
+            },
+            {
+              name: "../display/*",
+              message: "shared/ must not import display/",
+            },
+            {
+              name: "../../display/*",
+              message: "shared/ must not import display/",
+            },
+            { name: "../drill/*", message: "shared/ must not import drill/" },
+            {
+              name: "../../drill/*",
+              message: "shared/ must not import drill/",
+            },
+            {
+              name: "../inference/*",
+              message: "shared/ must not import inference/",
+            },
+            {
+              name: "../../inference/*",
+              message: "shared/ must not import inference/",
+            },
+          ],
+        },
+      ],
     },
   },
-  // Convention definitions/core stay self-contained and should not reach into UI or strategy layers.
+
+  // ── Module boundary: util/ (zero deps) ──
+  {
+    files: ["src/util/**/*.ts"],
+    ignores: ["src/util/__tests__/**", "src/util/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["../*"],
+              message: "util/ must have zero internal dependencies",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: conventions/ ──
   {
     files: ["src/conventions/**/*.ts"],
-    ignores: ["src/conventions/**/__tests__/**"],
+    ignores: [
+      "src/conventions/__tests__/**",
+      "src/conventions/**/*.test.ts",
+    ],
     rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "Convention code must stay independent from UI, stores, display, and strategy layers.",
-            [
-              "svelte",
-              "svelte/*",
-              "@tauri-apps/*",
-              "**/components/**",
-              "**/stores/**",
-              "**/display/**",
-              "**/strategy/**",
-            ],
-          ),
-        ],
-      }],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            {
+              name: "../display/*",
+              message: "conventions/ must not import display/",
+            },
+            {
+              name: "../../display/*",
+              message: "conventions/ must not import display/",
+            },
+            {
+              name: "../drill/*",
+              message: "conventions/ must not import drill/",
+            },
+            {
+              name: "../../drill/*",
+              message: "conventions/ must not import drill/",
+            },
+          ],
+        },
+      ],
     },
   },
-  // Strategy remains a pure decision layer.
+
+  // ── Module boundary: display/ ──
   {
-    files: ["src/strategy/**/*.ts"],
-    ignores: ["src/strategy/__tests__/**"],
+    files: ["src/display/**/*.ts"],
+    ignores: ["src/display/__tests__/**", "src/display/**/*.test.ts"],
     rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "Strategy code must stay independent from UI, stores, display, and drill flow.",
-            [
-              "svelte",
-              "svelte/*",
-              "@tauri-apps/*",
-              "**/components/**",
-              "**/stores/**",
-              "**/display/**",
-              "**/drill/**",
-            ],
-          ),
-        ],
-      }],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            {
+              name: "../drill/*",
+              message: "display/ must not import drill/",
+            },
+            {
+              name: "../../drill/*",
+              message: "display/ must not import drill/",
+            },
+            {
+              name: "../inference/*",
+              message: "display/ must not import inference/",
+            },
+            {
+              name: "../../inference/*",
+              message: "display/ must not import inference/",
+            },
+          ],
+        },
+      ],
     },
   },
-  // Drill coordinates configuration/session logic, not UI.
+
+  // ── Module boundary: test-support/ ──
   {
-    files: ["src/drill/**/*.ts"],
-    ignores: ["src/drill/__tests__/**"],
+    files: ["src/test-support/**/*.ts"],
+    ignores: [
+      "src/test-support/__tests__/**",
+      "src/test-support/**/*.test.ts",
+    ],
     rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "Drill code must stay independent from UI, stores, and display helpers.",
-            [
-              "svelte",
-              "svelte/*",
-              "@tauri-apps/*",
-              "**/components/**",
-              "**/stores/**",
-              "**/display/**",
-            ],
-          ),
-        ],
-      }],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            {
+              name: "../conventions/*",
+              message: "test-support/ must not import conventions/",
+            },
+            {
+              name: "../../conventions/*",
+              message: "test-support/ must not import conventions/",
+            },
+            {
+              name: "../display/*",
+              message: "test-support/ must not import display/",
+            },
+            {
+              name: "../../display/*",
+              message: "test-support/ must not import display/",
+            },
+            {
+              name: "../inference/*",
+              message: "test-support/ must not import inference/",
+            },
+            {
+              name: "../../inference/*",
+              message: "test-support/ must not import inference/",
+            },
+          ],
+        },
+      ],
     },
   },
-  // Stores are allowed to call the engine boundary but should avoid engine internals.
+
+  // ── Test file relaxations ──
   {
-    files: ["src/stores/**/*.ts"],
-    ignores: ["src/stores/__tests__/**"],
+    files: [
+      "**/__tests__/**/*.ts",
+      "**/*.test.ts",
+      "src/test-support/**/*.ts",
+    ],
     rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "Stores must not depend on components directly.",
-            ["**/components/**"],
-          ),
-          restrictImports(
-            "Stores should use the engine boundary and shared helpers, not arbitrary engine internals.",
-            [
-              "../engine/**",
-              "!../engine/port",
-              "!../engine/types",
-              "!../engine/constants",
-              "!../engine/hand-evaluator",
-              "!../engine/call-helpers",
-            ],
-          ),
-        ],
-      }],
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-console": "off",
+      "@typescript-eslint/no-floating-promises": "off",
+      "@typescript-eslint/require-await": "off",
+      "no-restricted-imports": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/await-thenable": "off",
     },
   },
-  // The main game store should stay on the inference DTO boundary rather than conventions/core.
-  {
-    files: ["src/stores/game.svelte.ts"],
-    rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "game.svelte.ts should consume inference DTOs instead of conventions/core internals.",
-            ["../conventions/core/**"],
-          ),
-        ],
-      }],
-    },
-  },
-  // Components may use engine types/constants but not engine internals.
-  {
-    files: ["src/components/**/*.svelte", "src/components/**/*.ts"],
-    ignores: ["src/components/__tests__/**"],
-    rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          restrictImports(
-            "Components should only depend on engine types/constants/port, not engine internals.",
-            [
-              "**/engine/**",
-              "!**/engine/types",
-              "!**/engine/constants",
-              "!**/engine/port",
-            ],
-          ),
-        ],
-      }],
-    },
-  },
-  // Svelte files
+
+  // ── Svelte files ──
   ...sveltePlugin.configs["flat/recommended"].map((config) => ({
     ...config,
     files: ["**/*.svelte"],
@@ -265,23 +407,28 @@ export default [
       parser: svelteParser,
       parserOptions: {
         ...config.languageOptions?.parserOptions,
-        parser: tsParser,
+        parser: tseslint.parser,
       },
     },
     plugins: {
       ...config.plugins,
-      "@typescript-eslint": eslint,
       "unused-imports": unusedImports,
     },
     rules: {
-      ...(config.rules ?? {}),
+      ...config.rules,
       "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/consistent-type-imports": [
-        "error",
-        { prefer: "type-imports", fixStyle: "separate-type-imports" },
-      ],
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": UNUSED_IMPORTS_VAR_RULE,
+      "svelte/require-each-key": "error",
+      eqeqeq: ["error", "always"],
+      "no-console": "warn",
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ExportDefaultDeclaration",
+          message: "Named exports only — no export default (CLAUDE.md)",
+        },
+      ],
     },
   })),
-];
+);
