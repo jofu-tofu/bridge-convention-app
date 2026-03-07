@@ -22,7 +22,7 @@
     onBid,
     disabled,
     isUserTurn,
-    isFeedbackBlocking,
+    isFeedbackBlocking: _isFeedbackBlocking,
     onDismissFeedback,
     onSkipToReview,
     onRetry,
@@ -34,7 +34,7 @@
   // getter chains after async operations. Using $effect for eager tracking
   // and class:hidden instead of {#if} to keep elements in the DOM.
   const gameStore = getGameStore();
-   
+
   let bidFeedback = $state.raw<BidFeedback | null>(null);
   $effect(() => {
     bidFeedback = gameStore.bidFeedback;

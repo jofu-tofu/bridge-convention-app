@@ -15,7 +15,7 @@
   let {
     currentTrick,
     currentPlayer,
-    trumpSuit,
+    trumpSuit: _trumpSuit,
     rotated = false,
   }: Props = $props();
 

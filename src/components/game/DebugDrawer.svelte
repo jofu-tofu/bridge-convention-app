@@ -1,7 +1,7 @@
 <!-- Full-lifecycle debug drawer. See also: DebugPanel.svelte (bidding-phase-only suggested bid display in BiddingSidePanel). -->
 <script lang="ts">
   import { Seat, Suit } from "../../engine/types";
-  import type { Hand, Card } from "../../engine/types";
+  import type { Card } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../stores/context";
   import { computeHcp } from "../../display/hcp";
   import { formatCall, SUIT_SYMBOLS } from "../../display/format";

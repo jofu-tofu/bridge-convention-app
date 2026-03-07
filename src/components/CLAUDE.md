@@ -54,7 +54,6 @@ components/
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
     DecisionTree.svelte              Interactive expand/collapse tree with depth modes (compact/study/learn) for progressive teaching disclosure
-    RulesPanel.svelte                Convention rules display: fired (evaluated) + reference (static) — kept for future learning screen
     DeclarerPrompt.svelte            Declarer/defender choice buttons (used by DeclarerPromptPhase)
     DebugDrawer.svelte               Full-lifecycle debug overlay (dev only)
     DebugPanel.svelte                Bidding-phase suggested bid display in BiddingSidePanel
@@ -63,7 +62,6 @@ components/
     Card.svelte                      70x98 visual playing card
     ConventionCallout.svelte         Rule badge + explanation
   __tests__/
-    ContextWrapper.svelte            Context provider for screen tests
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests
     shared/                          Shared component tests

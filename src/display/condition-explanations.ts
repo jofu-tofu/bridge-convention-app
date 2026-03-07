@@ -84,7 +84,6 @@ export function getConditionExplanationWithParams(
     case "two-suited":
       return "Requires a two-suited hand";
     default: {
-      const _exhaustive: never = type;
       return null;
     }
   }

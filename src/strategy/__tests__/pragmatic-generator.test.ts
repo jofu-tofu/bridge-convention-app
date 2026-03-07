@@ -27,7 +27,6 @@ function bid(level: number, strain: BidSuit): ContractBid {
 }
 
 const pass: Call = { type: "pass" };
-const _double: Call = { type: "double" };
 
 function makeEval(hcp: number, shape: readonly number[] = [3, 3, 3, 4]): HandEvaluation {
   return {

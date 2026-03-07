@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { flattenTreeForDisplay, formatBidToken } from "../tree-display";
-import type { TreeDisplayRow as _TreeDisplayRow } from "../tree-display";
 import {
   decision,
   fallback,

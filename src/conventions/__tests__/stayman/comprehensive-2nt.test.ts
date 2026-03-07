@@ -86,11 +86,6 @@ const smolen5H4S = () =>
 const smolen5S4H = () =>
   hand("SA", "SK", "S7", "S5", "S3", "HQ", "H7", "H5", "H3", "DQ", "D3", "C5", "C2");
 
-// Responder: 4 HCP, 4S + minimum (should pass even over 2NT)
-// HQ(2) + DQ(2) = 4 HCP
-const _responderMinimum4S = () =>
-  hand("S7", "S5", "S3", "S2", "HQ", "H5", "H3", "DQ", "D5", "D3", "C7", "C5", "C2");
-
 // ─── Round 1: Interference over 2NT opening ─────────────
 
 describe("2NT Round 1: interference handling", () => {

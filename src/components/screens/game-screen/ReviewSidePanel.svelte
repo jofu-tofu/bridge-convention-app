@@ -33,13 +33,13 @@
     ddsSolution,
     ddsSolving,
     ddsError,
-    vulnerability,
+    vulnerability: _vulnerability,
     dealNumber,
     onNextDeal,
     onBackToMenu,
     onPlayHand,
-    convention,
-    deal,
+    convention: _convention,
+    deal: _deal,
   }: Props = $props();
 
   let activeTab = $state<"bidding" | "analysis">("bidding");

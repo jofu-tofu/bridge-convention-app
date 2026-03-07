@@ -144,7 +144,6 @@ describe("Teaching regression: SAYC", () => {
   test("opener with 13 HCP and 5 spades opens 1S", () => {
     const strategy = conventionToStrategy(saycConfig);
     // SA(4)+SK(3)+HK(3)+DK(3)=13 HCP, 5 spades
-    const _h = hand("SA", "SK", "SQ", "S7", "S3", "HK", "H5", "DK", "D6", "D3", "C8", "C4", "C2");
     // SA(4)+SK(3)+SQ(2)+HK(3)+DK(3)=15... too much.
     // SA(4)+SJ(1)+S7+S5+S3 + HK(3)+H5 + DK(3)+D6+D3 + CQ(2)+C4+C2 = 13 HCP, 5 spades
     const h2 = hand("SA", "SJ", "S7", "S5", "S3", "HK", "H5", "DK", "D6", "D3", "CQ", "C4", "C2");

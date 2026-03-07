@@ -19,6 +19,8 @@ Bridge bidding convention practice app (Stayman, Bergen Raises, SAYC, Weak Twos,
 | `npm run test:all`        | Unit + E2E together                                        |
 | `npm run lint`            | ESLint check                                               |
 | `npm run lint:fix`        | ESLint auto-fix                                            |
+| `npm run lint:dead`       | Report unused files/dead references via Knip                  |
+| `npm run lint:full`       | `npm run lint` plus dead-reference check                     |
 | `npm run format`          | Prettier format all files                                  |
 | `npm run format:check`    | Prettier check (CI)                                        |
 | `cargo test --workspace`  | Run all Rust tests (from src-tauri/)                       |
@@ -34,6 +36,8 @@ Bridge bidding convention practice app (Stayman, Bergen Raises, SAYC, Weak Twos,
 ## Code Hygiene
 
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
+- **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
+- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `drill/`, `stores/`, `components/`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
 
 ## Conventions
 
@@ -67,7 +71,7 @@ src/
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
-    game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea, RulesPanel)
+    game/          Game components (BridgeTable, HandFan, AuctionTable, BidPanel, BiddingReview, TrickArea)
     shared/        Reusable components (Card, Button, ConventionCallout)
 src-tauri/         Cargo workspace with three crates
   crates/

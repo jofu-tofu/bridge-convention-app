@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AuctionEntry } from "../../engine/types";
-  import { Seat, BidSuit } from "../../engine/types";
+  import { Seat } from "../../engine/types";
   import { SEAT_INDEX } from "../../engine/constants";
   import { formatCall } from "../../display/format";
   import { BID_SUIT_COLOR_CLASS } from "../../display/tokens";

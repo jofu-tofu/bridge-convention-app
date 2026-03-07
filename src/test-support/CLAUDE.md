@@ -17,7 +17,7 @@ Shared test factories and stubs used across module boundaries (stores, component
 
 ## Gotchas
 
-- Component test wrappers (ContextWrapper, ButtonTestWrapper, BridgeTableTestWrapper) stay in `components/__tests__/` — moving them here would create a backwards dependency on `components/`.
+- Component test wrappers (`ButtonTestWrapper`, `BridgeTableTestWrapper`) stay in `components/__tests__/` — moving them here would create a backwards dependency on `components/`.
 
 ---
 
