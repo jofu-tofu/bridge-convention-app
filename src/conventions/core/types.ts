@@ -2,12 +2,12 @@ import type {
   Hand,
   Auction,
   Call,
-  HandEvaluation,
   DealConstraints,
   Deal,
-  Vulnerability,
 } from "../../engine/types";
 import { Seat } from "../../engine/types";
+import type { BiddingContext } from "../../shared/types";
+export type { BiddingContext } from "../../shared/types";
 import type { InterferenceKind } from "./dialogue/dialogue-state";
 import type { RuleNode, BidAlert } from "./rule-tree";
 import type { TreeEvalResult } from "./tree-evaluator";
@@ -40,21 +40,6 @@ export enum ConventionCategory {
   Defensive = "Defensive",
   Constructive = "Constructive",
   Competitive = "Competitive",
-}
-
-export interface BiddingContext {
-  readonly hand: Hand;
-  readonly auction: Auction;
-  readonly seat: Seat;
-  readonly evaluation: HandEvaluation;
-  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
-  readonly vulnerability?: Vulnerability;
-  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
-  readonly dealer?: Seat;
-  /** Convention IDs opponents are known to play (from alerts, pre-game card).
-   *  Empty array = natural bidding only. Used by evaluation pipeline to compute
-   *  opponent inferences from the auction + convention rules. */
-  readonly opponentConventionIds: readonly string[];
 }
 
 export interface BiddingRule {

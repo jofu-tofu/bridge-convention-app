@@ -1,14 +1,31 @@
 import type {
+  Auction,
   Call,
   Card,
   Hand,
+  HandEvaluation,
   Suit,
   Seat,
   Contract,
   PlayedCard,
   Trick,
+  Vulnerability,
 } from "../engine/types";
-import type { BiddingContext } from "../conventions/core/types";
+
+export interface BiddingContext {
+  readonly hand: Hand;
+  readonly auction: Auction;
+  readonly seat: Seat;
+  readonly evaluation: HandEvaluation;
+  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
+  readonly vulnerability?: Vulnerability;
+  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
+  readonly dealer?: Seat;
+  /** Convention IDs opponents are known to play (from alerts, pre-game card).
+   *  Empty array = natural bidding only. Used by evaluation pipeline to compute
+   *  opponent inferences from the auction + convention rules. */
+  readonly opponentConventionIds: readonly string[];
+}
 
 export enum ForcingState {
   Nonforcing = "nonforcing",
