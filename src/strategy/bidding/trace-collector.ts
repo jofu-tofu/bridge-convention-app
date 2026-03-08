@@ -12,7 +12,6 @@ export class TraceCollector {
   private resolverOutcome?: EvaluationTrace["resolverOutcome"];
   private candidateCount = 0;
   private selectedTier?: EvaluationTrace["selectedTier"];
-  private forcingDeclined?: boolean;
   private effectivePath?: EvaluationTrace["effectivePath"];
   private forcingFiltered?: boolean;
   private practicalError?: string;
@@ -50,10 +49,6 @@ export class TraceCollector {
     this.selectedTier = tier;
   }
 
-  setForcingDeclined(value: boolean): void {
-    this.forcingDeclined = value;
-  }
-
   setEffectivePath(path: NonNullable<EvaluationTrace["effectivePath"]>): void {
     this.effectivePath = path;
   }
@@ -80,7 +75,6 @@ export class TraceCollector {
       resolverOutcome: this.resolverOutcome,
       candidateCount: this.candidateCount,
       selectedTier: this.selectedTier,
-      forcingDeclined: this.forcingDeclined,
       forcingFiltered: this.forcingFiltered,
       practicalError: this.practicalError,
       effectivePath: this.effectivePath,

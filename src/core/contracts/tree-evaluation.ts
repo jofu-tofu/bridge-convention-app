@@ -108,8 +108,6 @@ export interface EvaluationTrace {
   readonly resolverOutcome?: "resolved" | "use_default" | "declined" | "no_resolver" | "error";
   readonly candidateCount: number;
   readonly selectedTier?: "matched" | "preferred" | "alternative" | "none";
-  /** True when convention matched but no candidate could be selected in a forcing auction. */
-  readonly forcingDeclined?: boolean;
   readonly effectivePath?: {
     readonly candidateBidName: string;
     readonly wasOverlayReplaced: boolean;

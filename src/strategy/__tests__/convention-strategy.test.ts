@@ -432,7 +432,7 @@ describe("conventionToStrategy — suppression fallback", () => {
   });
 });
 
-describe("conventionToStrategy — forcing-obligation trace", () => {
+describe("conventionToStrategy — post-selection null (no defaultCall leak)", () => {
   function makeDecliningStaymanConfig(): ConventionConfig {
     const decliningResolvers: IntentResolverMap = new Map([
       [SemanticIntentType.AskForMajor, () => ({ status: "declined" as const })],
@@ -447,7 +447,7 @@ describe("conventionToStrategy — forcing-obligation trace", () => {
     };
   }
 
-  test("trace records forcingDeclined when protocol matched, no candidate selected, and forcing", () => {
+  test("returns null when pipeline runs but selection yields no candidate (forcing auction)", () => {
     const decliningConfig = makeDecliningStaymanConfig();
 
     const strategy = conventionToStrategy(decliningConfig);
@@ -460,15 +460,13 @@ describe("conventionToStrategy — forcing-obligation trace", () => {
       opponentConventionIds: [],
     };
 
+    // All resolvers decline → zero candidates → selection null → should return null
+    // (not a BidResult carrying the raw defaultCall)
     const result = strategy.suggest(context);
-    expect(result).not.toBeNull();
-    expect(result!.evaluationTrace).toBeDefined();
-    expect(result!.evaluationTrace!.protocolMatched).toBe(true);
-    expect(result!.evaluationTrace!.selectedTier).toBe("none");
-    expect(result!.evaluationTrace!.forcingDeclined).toBe(true);
+    expect(result).toBeNull();
   });
 
-  test("trace does not record forcingDeclined when auction is non-forcing", () => {
+  test("returns null when pipeline runs but selection yields no candidate (non-forcing auction)", () => {
     const decliningConfig = makeDecliningStaymanConfig();
 
     const strategy = conventionToStrategy(decliningConfig);
@@ -481,15 +479,12 @@ describe("conventionToStrategy — forcing-obligation trace", () => {
       opponentConventionIds: [],
     };
 
+    // All resolvers decline → zero candidates → selection null → should return null
     const result = strategy.suggest(context);
-    expect(result).not.toBeNull();
-    expect(result!.evaluationTrace).toBeDefined();
-    expect(result!.evaluationTrace!.protocolMatched).toBe(true);
-    expect(result!.evaluationTrace!.selectedTier).toBe("none");
-    expect(result!.evaluationTrace!.forcingDeclined).toBeUndefined();
+    expect(result).toBeNull();
   });
 
-  test("trace does not record forcingDeclined when protocol does not match", () => {
+  test("returns null when protocol does not match (unchanged)", () => {
     const decliningConfig = makeDecliningStaymanConfig();
 
     const strategy = conventionToStrategy(decliningConfig);
@@ -502,6 +497,54 @@ describe("conventionToStrategy — forcing-obligation trace", () => {
       opponentConventionIds: [],
     };
 
+    const result = strategy.suggest(context);
+    expect(result).toBeNull();
+  });
+
+  test("returns null when resolver resolves to illegal bid and selection fails", () => {
+    // Build a config where the resolver resolves to an illegal bid (too low for auction)
+    const illegalResolverConfig: ConventionConfig = {
+      id: "illegal-resolve-test",
+      name: "Illegal Resolve Test",
+      description: "Test",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: protocol("illegal-resolve-test", [
+        round("test-round", {
+          triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+          handTree: handDecision(
+            "hcp-check",
+            hcpMin(8),
+            intentBid("ask-bid", "Ask bid",
+              { type: SemanticIntentType.AskForMajor, params: {} },
+              // defaultCall is 2C
+              () => ({ type: "bid", level: 2, strain: BidSuit.Clubs })),
+            fallback("too-weak"),
+          ),
+          seatFilter: isResponder(),
+        }),
+      ]),
+      intentResolvers: new Map([
+        [SemanticIntentType.AskForMajor, () => ({
+          status: "resolved" as const,
+          // Resolve to 1C — illegal after 1NT auction (too low)
+          calls: [{ call: { type: "bid" as const, level: 1 as const, strain: BidSuit.Clubs } }],
+        })],
+      ]),
+    };
+
+    const strategy = conventionToStrategy(illegalResolverConfig);
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+
+    // Resolver resolves to 1C (illegal), candidate marked legal: false,
+    // selection returns null → should return null (not fall through with defaultCall 2C)
     const result = strategy.suggest(context);
     expect(result).toBeNull();
   });

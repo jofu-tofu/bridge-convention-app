@@ -89,7 +89,7 @@ export function conventionToStrategy(
           trace.addOverlayActivated(overlay.id);
         }
 
-        const { candidates: generated, matchedIntentSuppressed } = generateCandidates(
+        const { candidates: generated } = generateCandidates(
           result.treeRoot,
           result.treeEvalResult,
           effectiveCtx,
@@ -130,14 +130,10 @@ export function conventionToStrategy(
           call = selected.resolvedCall;
         } else {
           trace.setSelectedTier("none");
-          const forcingState = effectiveCtx.dialogueState.forcingState;
-          if (
-            forcingState === ForcingState.GameForcing
-            || forcingState === ForcingState.ForcingOneRound
-          ) {
-            trace.setForcingDeclined(true);
-          }
-          if (matchedIntentSuppressed) return null;
+          // No valid candidate survived selection — defer to next strategy.
+          // defaultCall already had its chance inside resolution (use_default path);
+          // emitting it here would bypass legality and selection gates.
+          return null;
         }
       }
 
