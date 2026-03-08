@@ -118,7 +118,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 - `addIntents?(ctx)` — inject intents not in the tree (no `sourceNode`, never matched)
 - `overrideResolver?(intent, ctx)` — override resolver (return `Call` to override, null to fallthrough)
 
-**Application order in `generateCandidates()`:** (1) first `replacementTree` wins, (2) all `suppressIntent` compose, (3) all `addIntents` concatenate, (4) first non-null `overrideResolver` wins. Hook errors → `onOverlayError` callback, graceful degradation.
+**Application order in `generateCandidates()`:** (1) first `replacementTree` wins, (2) all `suppressIntent` compose, (3) all `addIntents` concatenate, (4) first non-null `overrideResolver` wins. Hook errors → `onOverlayError` callback, graceful degradation. When the tree yields no intent match (null or non-intent matched node), `addIntents` hooks still run and can rescue the empty candidate pool — tree collection and suppression are skipped, only overlay-injected candidates are produced (all with `isMatched: false`). If no overlay has `addIntents`, the result is still empty.
 
 **Validation:** `validateOverlayPatches()` checks `roundName`, `replacementTree` structure, and `triggerOverrides` keys against protocol round names. Called at registration time.
 

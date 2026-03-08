@@ -273,8 +273,24 @@ export function generateCandidates(
     applyReplacementTreeStep(handTreeRoot, handResult, effectiveCtx.activeOverlays, effectiveCtx.raw);
 
   const matched = activeResult.matched;
-  if (!matched || matched.type !== "intent") {
-    return { candidates: [], matchedIntentSuppressed: false };
+  const hasTreeMatch = matched !== null && matched.type === "intent";
+
+  if (!hasTreeMatch) {
+    // No tree match — skip tree collection/suppression, but let addIntents rescue
+    const overlayProposals = applyAddIntentHooks([], effectiveCtx.activeOverlays, effectiveCtx, onOverlayError);
+    if (overlayProposals.length === 0) {
+      return { candidates: [], matchedIntentSuppressed: false };
+    }
+
+    // Resolve overlay-injected intents only
+    const results: ResolvedCandidate[] = [];
+    for (const proposal of overlayProposals) {
+      const overrideResult = findOverrideResult(proposal.intent, effectiveCtx.activeOverlays, effectiveCtx, onOverlayError);
+      const resolved = resolveCollectedIntent(proposal, false, effectiveCtx, overrideResult);
+      if (resolved) results.push(resolved);
+    }
+
+    return { candidates: results, matchedIntentSuppressed: false };
   }
 
   let proposals: CollectedIntentWithProvenance[] = collectIntentProposals(activeRoot, effectiveCtx.raw)

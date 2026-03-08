@@ -926,3 +926,202 @@ describe("candidate provenance (Phase 1)", () => {
     expect(provenance).toEqual({ origin: "overlay-override", overlayId: "override-overlay" });
   });
 });
+
+// ─── Overlay addIntents rescue (no tree match) ──────────────
+
+describe("overlay addIntents rescue (no tree match)", () => {
+  const bid1H: Call = { type: "bid", level: 1, strain: BidSuit.Hearts };
+  const bid1S: Call = { type: "bid", level: 1, strain: BidSuit.Spades };
+
+  // A fallback-only tree — evaluateTree returns matched: null
+  const fallbackTree = fallback();
+
+  const rescueProtocol: ConventionProtocol = protocol("rescue-test", [
+    round("opening", {
+      triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+      handTree: fallbackTree,
+      seatFilter: isResponder(),
+    }),
+  ]);
+
+  function makeRescueConfig(overlays?: readonly ConventionOverlayPatch[]): ConventionConfig {
+    return {
+      id: "rescue-test",
+      name: "Rescue Test",
+      description: "Test overlay rescue with no tree match",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: rescueProtocol,
+      overlays,
+    };
+  }
+
+  function makeRescueContext(): BiddingContext {
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    return {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+  }
+
+  function makeRescueProtoResult(): { protoResult: ProtocolEvalResult; treeResult: ReturnType<typeof evaluateTree> } {
+    const ctx = makeRescueContext();
+    const treeResult = evaluateTree(fallbackTree, ctx);
+    expect(treeResult.matched).toBeNull();
+    const protoResult: ProtocolEvalResult = {
+      matched: null,
+      matchedRounds: [],
+      established: { role: "responder" as const },
+      handResult: treeResult,
+      activeRound: rescueProtocol.rounds.find(r => r.name === "opening") ?? null,
+      handTreeRoot: fallbackTree,
+    };
+    return { protoResult, treeResult };
+  }
+
+  it("fallback tree + overlay with addIntents → overlay candidates produced", () => {
+    const overlay: ConventionOverlayPatch = {
+      id: "rescue-overlay",
+      roundName: "opening",
+      matches: () => true,
+      addIntents: () => [
+        {
+          intent: { type: SemanticIntentType.NaturalBid, params: {} },
+          nodeName: "rescue-bid",
+          meaning: "Rescue bid injected by overlay",
+          defaultCall: () => bid1H,
+          pathConditions: [],
+          priority: "preferred",
+        },
+      ],
+    };
+    const config = makeRescueConfig([overlay]);
+    const ctx = makeRescueContext();
+    const { protoResult, treeResult } = makeRescueProtoResult();
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+
+    const { candidates } = generateCandidates(fallbackTree, treeResult, effective);
+
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates[0]!.bidName).toBe("rescue-bid");
+    expect(candidates[0]!.provenance).toEqual({ origin: "overlay-injected", overlayId: "rescue-overlay" });
+  });
+
+  it("fallback tree + overlay addIntents → candidates are never isMatched", () => {
+    const overlay: ConventionOverlayPatch = {
+      id: "rescue-overlay",
+      roundName: "opening",
+      matches: () => true,
+      addIntents: () => [
+        {
+          intent: { type: SemanticIntentType.NaturalBid, params: {} },
+          nodeName: "rescue-bid",
+          meaning: "Rescue bid",
+          defaultCall: () => bid1H,
+          pathConditions: [],
+          priority: "preferred",
+        },
+        {
+          intent: { type: SemanticIntentType.NaturalBid, params: {} },
+          nodeName: "rescue-bid-2",
+          meaning: "Another rescue bid",
+          defaultCall: () => bid1S,
+          pathConditions: [],
+          priority: "alternative",
+        },
+      ],
+    };
+    const config = makeRescueConfig([overlay]);
+    const ctx = makeRescueContext();
+    const { protoResult, treeResult } = makeRescueProtoResult();
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+
+    const { candidates } = generateCandidates(fallbackTree, treeResult, effective);
+
+    expect(candidates.length).toBe(2);
+    expect(candidates.every(c => c.isMatched === false)).toBe(true);
+  });
+
+  it("fallback tree + no overlays → still empty (regression guard)", () => {
+    const config = makeRescueConfig();
+    const ctx = makeRescueContext();
+    const { protoResult, treeResult } = makeRescueProtoResult();
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+
+    const { candidates, matchedIntentSuppressed } = generateCandidates(fallbackTree, treeResult, effective);
+
+    expect(candidates).toHaveLength(0);
+    expect(matchedIntentSuppressed).toBe(false);
+  });
+
+  it("fallback tree + overlay addIntents → matchedIntentSuppressed is false", () => {
+    const overlay: ConventionOverlayPatch = {
+      id: "rescue-overlay",
+      roundName: "opening",
+      matches: () => true,
+      addIntents: () => [
+        {
+          intent: { type: SemanticIntentType.NaturalBid, params: {} },
+          nodeName: "rescue-bid",
+          meaning: "Rescue bid",
+          defaultCall: () => bid1H,
+          pathConditions: [],
+          priority: "preferred",
+        },
+      ],
+    };
+    const config = makeRescueConfig([overlay]);
+    const ctx = makeRescueContext();
+    const { protoResult, treeResult } = makeRescueProtoResult();
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+
+    const { matchedIntentSuppressed } = generateCandidates(fallbackTree, treeResult, effective);
+
+    expect(matchedIntentSuppressed).toBe(false);
+  });
+
+  it("non-intent match type + overlay with addIntents → overlay candidates produced", () => {
+    // Defensive test: construct a TreeEvalResult where matched has type !== "intent".
+    // This can't happen with current type system (matched is IntentNode | null),
+    // but the gate handles it defensively. Use type assertions to simulate.
+    const ctx = makeRescueContext();
+    const fb = fallback();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- defensive test: simulating non-intent matched node
+    const treeResult = { matched: fb as any, rejectedDecisions: [], path: [], visited: [] };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- defensive test
+    const protoResult: ProtocolEvalResult = {
+      matched: fb as any,
+      matchedRounds: [],
+      established: { role: "responder" as const },
+      handResult: treeResult,
+      activeRound: rescueProtocol.rounds.find(r => r.name === "opening") ?? null,
+      handTreeRoot: fb,
+    };
+    const overlay: ConventionOverlayPatch = {
+      id: "rescue-non-intent",
+      roundName: "opening",
+      matches: () => true,
+      addIntents: () => [
+        {
+          intent: { type: SemanticIntentType.NaturalBid, params: {} },
+          nodeName: "non-intent-rescue",
+          meaning: "Rescue for non-intent match",
+          defaultCall: () => bid1H,
+          pathConditions: [],
+          priority: "preferred",
+        },
+      ],
+    };
+    const config = makeRescueConfig([overlay]);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+
+    const { candidates } = generateCandidates(fb, treeResult, effective);
+
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates[0]!.bidName).toBe("non-intent-rescue");
+    expect(candidates[0]!.isMatched).toBe(false);
+  });
+});
