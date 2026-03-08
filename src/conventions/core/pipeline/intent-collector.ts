@@ -31,16 +31,22 @@ export interface CollectedIntent {
   /** Priority for selection. "preferred" = selected when no matched candidate.
    *  "alternative" = never auto-selected (informational only). */
   readonly priority?: "preferred" | "alternative";
+  /** DFS traversal order — monotonic key assigned during collection.
+   *  YES branch gets lower key than NO. Used for deterministic tie-breaking within selection tiers.
+   *  Optional for overlay-injected intents — assigned generous gap (10_000 + index) during pipeline. */
+  readonly orderKey?: number;
 }
 
 /**
  * Recursively collect all IntentNode leaves from the hand subtree,
  * tracking path conditions for each leaf.
+ * Counter tracks DFS order for deterministic tie-breaking.
  */
 function collectLeaves(
   node: RuleNode,
   pathEntries: readonly PathConditionEntry[],
   results: CollectedIntent[],
+  counter: { value: number },
 ): void {
   switch (node.type) {
     case "fallback":
@@ -56,6 +62,7 @@ function collectLeaves(
         sourceNode: node,
         metadata: node.metadata,
         alert: node.alert,
+        orderKey: counter.value++,
       });
       return;
 
@@ -74,8 +81,8 @@ function collectLeaves(
         ...pathEntries,
         { condition: node.condition as HandCondition, requiredResult: false },
       ];
-      collectLeaves(node.yes, yesPath, results);
-      collectLeaves(node.no, noPath, results);
+      collectLeaves(node.yes, yesPath, results, counter);
+      collectLeaves(node.no, noPath, results, counter);
       return;
     }
 
@@ -98,6 +105,6 @@ export function collectIntentProposals(
 ): CollectedIntent[] {
   const root = findHandSubtreeRoot(handTreeRoot, context);
   const results: CollectedIntent[] = [];
-  collectLeaves(root, [], results);
+  collectLeaves(root, [], results, { value: 0 });
   return results;
 }

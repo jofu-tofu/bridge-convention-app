@@ -17,6 +17,8 @@ export class TraceCollector {
   private practicalError?: string;
   private tierPeerCount?: number;
   private tierPeerBidNames?: readonly string[];
+  private preRankingPeerCount?: number;
+  private preRankingPeerBidNames?: readonly string[];
   private rankerResolved?: boolean;
   private strategyChainPath: { strategyId: string; result: "suggested" | "declined" | "filtered" | "error" }[] = [];
 
@@ -72,6 +74,14 @@ export class TraceCollector {
     this.tierPeerBidNames = names;
   }
 
+  setPreRankingPeerCount(count: number): void {
+    this.preRankingPeerCount = count;
+  }
+
+  setPreRankingPeerBidNames(names: readonly string[]): void {
+    this.preRankingPeerBidNames = names;
+  }
+
   setRankerResolved(value: boolean): void {
     this.rankerResolved = value;
   }
@@ -94,6 +104,8 @@ export class TraceCollector {
       practicalError: this.practicalError,
       tierPeerCount: this.tierPeerCount,
       tierPeerBidNames: this.tierPeerBidNames,
+      preRankingPeerCount: this.preRankingPeerCount,
+      preRankingPeerBidNames: this.preRankingPeerBidNames,
       rankerResolved: this.rankerResolved,
       effectivePath: this.effectivePath,
       strategyChainPath: [...this.strategyChainPath],

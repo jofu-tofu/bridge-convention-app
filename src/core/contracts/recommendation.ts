@@ -1,6 +1,6 @@
 import type { Call } from "../../engine/types";
 import type { BiddingStrategy } from "./bidding";
-import type { AlternativeGroup } from "./tree-evaluation";
+import type { AlternativeGroup, IntentFamily } from "./tree-evaluation";
 
 /** Practical recommendation — what an experienced player might prefer given imperfect information.
  *  Separate from teaching grading (which is deterministic and unchanged by this). */
@@ -18,4 +18,7 @@ export interface ConventionBiddingStrategy extends BiddingStrategy {
   /** Convention-level alternative groups for teaching grading.
    *  Returns the groups from the convention config, or undefined if not set. */
   getAcceptableAlternatives(): readonly AlternativeGroup[] | undefined;
+  /** Convention-level intent families for relationship-aware grading.
+   *  Returns the families from the convention config, or undefined if not set. */
+  getIntentFamilies(): readonly IntentFamily[] | undefined;
 }

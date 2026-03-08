@@ -21,6 +21,7 @@ import {
   seatBidAt,
   partnerLastBidAtLevel,
   partnerDoubled,
+  cursorReached,
 } from "../../core/conditions/auction-conditions";
 import { isResponder, isOpener } from "../../core/conditions";
 import { protocol, round, semantic, validateProtocol } from "../../core/protocol/protocol";
@@ -707,5 +708,273 @@ describe("evaluateProtocol — seatFilter", () => {
     expect(result.matched).toBe(finalBid);
     expect(result.activeRound!.name).toBe("opener-response");
     expect(result.matchedRounds).toHaveLength(3);
+  });
+});
+
+// ─── Variable-arity span ────────────────────────────────────
+
+describe("evaluateProtocol — variable span", () => {
+  it("span=1 round consumes 1 entry (single-entry event)", () => {
+    // A span=1 round sees only 1 auction entry at the cursor position.
+    // Auction: [1NT, P, 2C, P]. Round 1 (span=1) should see [1NT] only,
+    // then round 2 (span=1) should see [P] at cursor 1.
+    const round1Bid = staticBid("round1", 1, BidSuit.NoTrump);
+    const round2Bid = staticBid("round2", 2, BidSuit.Clubs);
+
+    const proto = protocol("test", [
+      round("opening", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: round1Bid,
+        span: 1,
+      }),
+      round("response", {
+        triggers: [semantic(bidMade(2, BidSuit.Clubs), {})],
+        handTree: round2Bid,
+        span: 1,
+      }),
+    ]);
+
+    // Auction: [1NT, P, 2C, P]. span=1 means round 1 sees [1NT], cursor→1.
+    // Round 2 sees [P] at cursor 1 — no 2C bid, so round 2 should NOT match.
+    const ctx = makeContext(["1NT", "P", "2C", "P"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    expect(result.matchedRounds).toHaveLength(1);
+    expect(result.matchedRounds[0]!.round.name).toBe("opening");
+  });
+
+  it("span=3 round consumes 3 entries (triple-entry window)", () => {
+    // A span=3 round sees entries [cursor, cursor+3).
+    // Auction: [1NT, X, 2C, P, 2H]. Round 1 (span=3) sees [1NT, X, 2C].
+    // bidMade(1, NT) should match within that window.
+    const round1Bid = staticBid("round1", 2, BidSuit.Clubs);
+    const round2Bid = staticBid("round2", 2, BidSuit.Hearts);
+
+    const proto = protocol("test", [
+      round("opening", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: round1Bid,
+        span: 3,
+      }),
+      round("response", {
+        triggers: [semantic(bidMade(2, BidSuit.Hearts), {})],
+        handTree: round2Bid,
+        span: 2,
+      }),
+    ]);
+
+    // Auction: [1NT, X, 2C, P, 2H]. Round 1 (span=3) sees [1NT, X, 2C], cursor→3.
+    // Round 2 (span=2) sees [P, 2H] at cursor 3 — bidMade(2H) should match.
+    const ctx = makeContext(["1NT", "X", "2C", "P", "2H"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    expect(result.matchedRounds).toHaveLength(2);
+    expect(result.matchedRounds[0]!.round.name).toBe("opening");
+    expect(result.matchedRounds[1]!.round.name).toBe("response");
+  });
+
+  it("span=0 virtual round doesn't advance cursor", () => {
+    // A span=0 round checks the current cursor position but doesn't consume entries.
+    // The next round should see the same entries.
+    const virtualBid = staticBid("virtual", 2, BidSuit.Clubs);
+    const realBid = staticBid("real", 2, BidSuit.Hearts);
+
+    const proto = protocol("test", [
+      round("virtual-check", {
+        triggers: [semantic(cursorReached(), {})],
+        handTree: virtualBid,
+        span: 0,
+      }),
+      round("opening", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: realBid,
+      }),
+    ]);
+
+    // Auction: [1NT, P]. Virtual round (span=0) matches at cursor 0 (cursorReached always true),
+    // cursor stays at 0. Next round sees [1NT, P] (default span=2) and matches.
+    const ctx = makeContext(["1NT", "P"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    expect(result.matchedRounds).toHaveLength(2);
+    expect(result.matchedRounds[0]!.round.name).toBe("virtual-check");
+    expect(result.matchedRounds[1]!.round.name).toBe("opening");
+    // Active round should be "opening" (last matched with passing seatFilter)
+    expect(result.activeRound!.name).toBe("opening");
+  });
+
+  it("default span (no span field) still advances by 2 (backwards compat)", () => {
+    // No span field — should behave identically to the old hard-coded cursor += 2.
+    const round1Bid = staticBid("round1", 2, BidSuit.Clubs);
+    const round2Bid = staticBid("round2", 2, BidSuit.Hearts);
+
+    const proto = protocol("test", [
+      round("opening", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: round1Bid,
+        // no span — defaults to 2
+      }),
+      round("response", {
+        triggers: [semantic(bidMade(2, BidSuit.Clubs), {})],
+        handTree: round2Bid,
+        // no span — defaults to 2
+      }),
+    ]);
+
+    // Auction: [1NT, P, 2C, P]. Round 1 sees [1NT, P] → cursor 2.
+    // Round 2 sees [2C, P] → matches.
+    const ctx = makeContext(["1NT", "P", "2C", "P"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    expect(result.matchedRounds).toHaveLength(2);
+    expect(result.matchedRounds[0]!.round.name).toBe("opening");
+    expect(result.matchedRounds[1]!.round.name).toBe("response");
+  });
+
+  it("mixed spans within a protocol", () => {
+    // Protocol with rounds of different spans: span=1, then span=2, then span=1.
+    const bid1 = staticBid("r1", 1, BidSuit.NoTrump);
+    const bid2 = staticBid("r2", 2, BidSuit.Clubs);
+    const bid3 = staticBid("r3", 2, BidSuit.Hearts);
+
+    const proto = protocol("test", [
+      round("r1", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: bid1,
+        span: 1,
+      }),
+      round("r2", {
+        triggers: [semantic(bidMade(2, BidSuit.Clubs), {})],
+        handTree: bid2,
+        span: 2,
+      }),
+      round("r3", {
+        triggers: [semantic(bidMade(2, BidSuit.Hearts), {})],
+        handTree: bid3,
+        span: 1,
+      }),
+    ]);
+
+    // Auction: [1NT, 2C, P, 2H].
+    // Round 1 (span=1) sees [1NT] at cursor 0 → matches, cursor→1.
+    // Round 2 (span=2) sees [2C, P] at cursor 1 → matches, cursor→3.
+    // Round 3 (span=1) sees [2H] at cursor 3 → matches, cursor→4.
+    const ctx = makeContext(["1NT", "2C", "P", "2H"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    expect(result.matchedRounds).toHaveLength(3);
+    expect(result.matchedRounds[0]!.round.name).toBe("r1");
+    expect(result.matchedRounds[1]!.round.name).toBe("r2");
+    expect(result.matchedRounds[2]!.round.name).toBe("r3");
+  });
+
+  it("span=0 loop guard breaks after 1 span=0 match (prevents infinite loops)", () => {
+    // Two consecutive span=0 rounds. The guard should prevent the second from matching
+    // at the same cursor position.
+    const bid1 = staticBid("virtual1", 2, BidSuit.Clubs);
+    const bid2 = staticBid("virtual2", 2, BidSuit.Hearts);
+    const bid3 = staticBid("real", 2, BidSuit.Diamonds);
+
+    const proto = protocol("test", [
+      round("virtual1", {
+        triggers: [semantic(cursorReached(), {})],
+        handTree: bid1,
+        span: 0,
+      }),
+      round("virtual2", {
+        triggers: [semantic(cursorReached(), {})],
+        handTree: bid2,
+        span: 0,
+      }),
+      round("real", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: bid3,
+      }),
+    ]);
+
+    // Only virtual1 should match (loop guard breaks after 1 span=0 match).
+    // virtual2 and real are skipped.
+    const ctx = makeContext(["1NT", "P"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    expect(result.matchedRounds).toHaveLength(1);
+    expect(result.matchedRounds[0]!.round.name).toBe("virtual1");
+  });
+
+  it("cursorStart/cursorEnd populated correctly on MatchedRoundEntry", () => {
+    const bid1 = staticBid("r1", 1, BidSuit.NoTrump);
+    const bid2 = staticBid("r2", 2, BidSuit.Clubs);
+
+    const proto = protocol("test", [
+      round("opening", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: bid1,
+        span: 1,
+      }),
+      round("response", {
+        triggers: [semantic(bidMade(2, BidSuit.Clubs), {})],
+        handTree: bid2,
+        span: 3,
+      }),
+    ]);
+
+    // Auction: [1NT, P, 2C, P].
+    // Round 1 (span=1): cursorStart=0, cursorEnd=1.
+    // Round 2 (span=3): cursorStart=1, cursorEnd=4.
+    const ctx = makeContext(["1NT", "P", "2C", "P"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    expect(result.matchedRounds).toHaveLength(2);
+    expect(result.matchedRounds[0]!.cursorStart).toBe(0);
+    expect(result.matchedRounds[0]!.cursorEnd).toBe(1);
+    expect(result.matchedRounds[1]!.cursorStart).toBe(1);
+    expect(result.matchedRounds[1]!.cursorEnd).toBe(4);
+  });
+});
+
+// ─── validateProtocol — span validation ─────────────────────
+
+describe("validateProtocol — span validation", () => {
+  it("rejects negative span", () => {
+    const proto = protocol("test", [
+      round("bad", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: staticBid("test", 2, BidSuit.Clubs),
+        span: -1,
+      }),
+    ]);
+    expect(() => validateProtocol(proto)).toThrow("invalid span");
+  });
+
+  it("rejects non-integer span", () => {
+    const proto = protocol("test", [
+      round("bad", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: staticBid("test", 2, BidSuit.Clubs),
+        span: 1.5,
+      }),
+    ]);
+    expect(() => validateProtocol(proto)).toThrow("invalid span");
+  });
+
+  it("accepts span=0 (virtual round)", () => {
+    const proto = protocol("test", [
+      round("virtual", {
+        triggers: [semantic(cursorReached(), {})],
+        handTree: staticBid("test", 2, BidSuit.Clubs),
+        span: 0,
+      }),
+    ]);
+    expect(() => validateProtocol(proto)).not.toThrow();
+  });
+
+  it("accepts omitted span (default)", () => {
+    const proto = protocol("test", [
+      round("normal", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: staticBid("test", 2, BidSuit.Clubs),
+      }),
+    ]);
+    expect(() => validateProtocol(proto)).not.toThrow();
   });
 });

@@ -90,6 +90,43 @@ describe("enrichSiblingsWithResolvedCalls", () => {
     expect(enriched).toBe(siblings);
   });
 
+  test("populates resolverContext when resolver diverged", () => {
+    const siblings: readonly SiblingBid[] = [
+      makeSibling("stayman-ask", { type: "bid", level: 2, strain: BidSuit.Clubs }),
+    ];
+    const resolvedCandidates: readonly ResolvedCandidateDTO[] = [
+      makeResolvedCandidate(
+        "stayman-ask",
+        { type: "bid", level: 2, strain: BidSuit.Clubs },
+        { type: "bid", level: 2, strain: BidSuit.Diamonds },
+        false,
+      ),
+    ];
+
+    const enriched = enrichSiblingsWithResolvedCalls(siblings, resolvedCandidates);
+    expect(enriched[0]?.resolverContext).toBeDefined();
+    expect(enriched[0]?.resolverContext?.wasRemapped).toBe(true);
+    expect(enriched[0]?.resolverContext?.intentType).toBe(SemanticIntentType.Signoff);
+  });
+
+  test("no resolverContext when resolver did not diverge", () => {
+    const siblings: readonly SiblingBid[] = [
+      makeSibling("stayman-ask", { type: "bid", level: 2, strain: BidSuit.Clubs }),
+    ];
+    const resolvedCandidates: readonly ResolvedCandidateDTO[] = [
+      makeResolvedCandidate(
+        "stayman-ask",
+        { type: "bid", level: 2, strain: BidSuit.Clubs },
+        { type: "bid", level: 2, strain: BidSuit.Clubs },
+        true,
+      ),
+    ];
+
+    const enriched = enrichSiblingsWithResolvedCalls(siblings, resolvedCandidates);
+    // No enrichment happened (early return), so no resolverContext
+    expect(enriched).toEqual(siblings);
+  });
+
   test("preserves siblings with no matching candidate (guard clause for overlay-injected intents)", () => {
     const siblings: readonly SiblingBid[] = [
       makeSibling("stayman-ask", { type: "bid", level: 2, strain: BidSuit.Clubs }),
@@ -196,6 +233,7 @@ describe("enrichSiblingsWithResolvedCalls", () => {
           isDefaultCall: false,
           legal: true,
           isMatched: false,
+          orderKey: 0,
           eligibility: buildEligibility([], true),
         },
       ],

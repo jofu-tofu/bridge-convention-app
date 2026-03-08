@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { selectMatchedCandidate, isSelectable } from "../../core/pipeline/candidate-selector";
+import { selectMatchedCandidate, isSelectable, isPedagogicallyAcceptable } from "../../core/pipeline/candidate-selector";
 import type { ResolvedCandidate } from "../../core/pipeline/candidate-generator";
 import { buildEligibility } from "../../core/pipeline/candidate-generator";
 import { BidSuit } from "../../../engine/types";
@@ -24,6 +24,7 @@ function makeCandidate(
     resolvedCall: call,
     isDefaultCall: true,
     eligibility: buildEligibility(failedConditions, legal),
+    orderKey: 0,
     ...overrides,
   };
 }
@@ -442,6 +443,26 @@ describe("selectMatchedCandidate", () => {
     });
   });
 
+  describe("orderKey-based selection within tier", () => {
+    test("same-tier candidates: lower orderKey wins", () => {
+      const candidates = [
+        makeCandidate({ bidName: "second", isMatched: true, legal: true, orderKey: 2 }),
+        makeCandidate({ bidName: "first", isMatched: true, legal: true, orderKey: 1 }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.selected!.bidName).toBe("first");
+    });
+
+    test("preferred tier: lower orderKey wins", () => {
+      const candidates = [
+        makeCandidate({ bidName: "pref-b", isMatched: false, legal: true, priority: "preferred", orderKey: 5 }),
+        makeCandidate({ bidName: "pref-a", isMatched: false, legal: true, priority: "preferred", orderKey: 3 }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.selected!.bidName).toBe("pref-a");
+    });
+  });
+
   describe("tier-peer detection", () => {
     test("single matched → tierPeers empty", () => {
       const candidates = [
@@ -498,6 +519,40 @@ describe("selectMatchedCandidate", () => {
       expect(result.tierPeers[0]!.bidName).toBe("alt-b");
     });
 
+    test("2+ matched with ranker → preRankingPeers contains all matched, tierPeers empty", () => {
+      const candidates = [
+        makeCandidate({ bidName: "first-match", isMatched: true, legal: true, orderKey: 0 }),
+        makeCandidate({ bidName: "second-match", isMatched: true, legal: true, orderKey: 1 }),
+      ];
+      const ranker = (cs: readonly ResolvedCandidate[]) => [...cs].reverse();
+      const result = selectMatchedCandidate(candidates, ranker);
+      expect(result.selected!.bidName).toBe("second-match");
+      expect(result.tierPeers).toEqual([]);
+      expect(result.preRankingPeers).toHaveLength(2);
+      expect(result.preRankingPeers.map(c => c.bidName)).toContain("first-match");
+      expect(result.preRankingPeers.map(c => c.bidName)).toContain("second-match");
+    });
+
+    test("no ranker → preRankingPeers equals tierPeers + selected", () => {
+      const candidates = [
+        makeCandidate({ bidName: "first-match", isMatched: true, legal: true, orderKey: 0 }),
+        makeCandidate({ bidName: "second-match", isMatched: true, legal: true, orderKey: 1 }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.selected!.bidName).toBe("first-match");
+      expect(result.tierPeers).toHaveLength(1);
+      // Without ranker, preRankingPeers equals the full tier set
+      expect(result.preRankingPeers).toHaveLength(2);
+    });
+
+    test("single candidate → preRankingPeers has 1 entry", () => {
+      const candidates = [
+        makeCandidate({ bidName: "sole", isMatched: true, legal: true }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.preRankingPeers).toHaveLength(1);
+    });
+
     test("rankerApplied true even with single candidate when ranker provided", () => {
       const candidates = [
         makeCandidate({ bidName: "sole", isMatched: true, legal: true }),
@@ -540,7 +595,7 @@ describe("isSelectable", () => {
     expect(isSelectable(c)).toBe(false);
   });
 
-  test("pedagogically unacceptable → not selectable", () => {
+  test("pedagogically unacceptable → still selectable (pedagogy is post-selection annotation)", () => {
     const c = makeCandidate({
       isMatched: true,
       legal: true,
@@ -551,7 +606,7 @@ describe("isSelectable", () => {
         pedagogical: { acceptable: false, reasons: ["not teachable"] },
       },
     });
-    expect(isSelectable(c)).toBe(false);
+    expect(isSelectable(c)).toBe(true);
   });
 
   test("multiple dimensions unsatisfied → not selectable", () => {
@@ -561,5 +616,26 @@ describe("isSelectable", () => {
       failedConditions: [{ name: "hcp", description: "Need 10+ HCP" }],
     });
     expect(isSelectable(c)).toBe(false);
+  });
+});
+
+describe("isPedagogicallyAcceptable", () => {
+  test("acceptable pedagogical dimension → true", () => {
+    const c = makeCandidate({ isMatched: true, legal: true });
+    expect(isPedagogicallyAcceptable(c)).toBe(true);
+  });
+
+  test("unacceptable pedagogical dimension → false", () => {
+    const c = makeCandidate({
+      isMatched: true,
+      legal: true,
+      eligibility: {
+        hand: { satisfied: true, failedConditions: [] },
+        protocol: { satisfied: true, reasons: [] },
+        encoding: { legal: true },
+        pedagogical: { acceptable: false, reasons: ["not teachable"] },
+      },
+    });
+    expect(isPedagogicallyAcceptable(c)).toBe(false);
   });
 });

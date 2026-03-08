@@ -25,6 +25,7 @@ function makeCandidate(
     isDefaultCall: true,
     legal: true,
     isMatched: false,
+    orderKey: 0,
     eligibility: buildEligibility([], true),
   };
 }

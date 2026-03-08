@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { isDtoSelectable } from "../tree-evaluation";
+import { isDtoSelectable, isDtoPedagogicallyAcceptable } from "../tree-evaluation";
 import type { ResolvedCandidateDTO, CandidateEligibility } from "../tree-evaluation";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
@@ -67,13 +67,13 @@ describe("isDtoSelectable", () => {
       expect(isDtoSelectable(dto)).toBe(false);
     });
 
-    test("pedagogically unacceptable → not selectable", () => {
+    test("pedagogically unacceptable → still selectable (pedagogy is post-selection)", () => {
       const dto = makeDto({
         eligibility: makeEligibility({
           pedagogical: { acceptable: false, reasons: ["not teachable"] },
         }),
       });
-      expect(isDtoSelectable(dto)).toBe(false);
+      expect(isDtoSelectable(dto)).toBe(true);
     });
   });
 
@@ -95,5 +95,26 @@ describe("isDtoSelectable", () => {
       });
       expect(isDtoSelectable(dto)).toBe(false);
     });
+  });
+});
+
+describe("isDtoPedagogicallyAcceptable", () => {
+  test("acceptable → true", () => {
+    const dto = makeDto({ eligibility: makeEligibility() });
+    expect(isDtoPedagogicallyAcceptable(dto)).toBe(true);
+  });
+
+  test("unacceptable → false", () => {
+    const dto = makeDto({
+      eligibility: makeEligibility({
+        pedagogical: { acceptable: false, reasons: ["not teachable"] },
+      }),
+    });
+    expect(isDtoPedagogicallyAcceptable(dto)).toBe(false);
+  });
+
+  test("no eligibility → true (default)", () => {
+    const dto = makeDto();
+    expect(isDtoPedagogicallyAcceptable(dto)).toBe(true);
   });
 });

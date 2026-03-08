@@ -56,8 +56,9 @@ export interface TransitionRuleDescriptor {
 
 export interface TransitionRule {
   readonly id: string;
-  /** Structured metadata for overlap analysis. Optional — rules without
-   *  descriptors are silently skipped by diagnostics. */
+  /** Structured metadata for overlap analysis. Required for convention
+   *  transition rules (validated at registration). Optional only for
+   *  baseline rules and test fixtures. */
   readonly matchDescriptor?: TransitionRuleDescriptor;
   matches(state: DialogueState, entry: AuctionEntry, auction: Auction, entryIndex: number): boolean;
   effects(state: DialogueState, entry: AuctionEntry, auction: Auction, entryIndex: number): DialogueEffect;

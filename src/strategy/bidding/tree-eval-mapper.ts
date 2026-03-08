@@ -120,6 +120,7 @@ export function mapResolvedCandidates(
     intentType: c.intent.type,
     failedConditions: c.failedConditions,
     eligibility: c.eligibility,
+    orderKey: c.orderKey,
   }));
 }
 
@@ -131,18 +132,28 @@ export function enrichSiblingsWithResolvedCalls(
   siblings: readonly SiblingBid[],
   resolvedCandidates: readonly ResolvedCandidateDTO[],
 ): readonly SiblingBid[] {
-  const resolvedMap = new Map<string, SiblingBid["call"]>();
+  const resolvedMap = new Map<string, { call: SiblingBid["call"]; intentType?: string }>();
   for (const candidate of resolvedCandidates) {
     if (!candidate.isDefaultCall) {
-      resolvedMap.set(candidate.bidName, candidate.resolvedCall);
+      resolvedMap.set(candidate.bidName, {
+        call: candidate.resolvedCall,
+        intentType: candidate.intentType,
+      });
     }
   }
   if (resolvedMap.size === 0) return siblings;
 
   return siblings.map((sibling) => {
-    const resolvedCall = resolvedMap.get(sibling.bidName);
-    if (!resolvedCall) return sibling;
-    return { ...sibling, call: resolvedCall };
+    const resolved = resolvedMap.get(sibling.bidName);
+    if (!resolved) return sibling;
+    return {
+      ...sibling,
+      call: resolved.call,
+      resolverContext: {
+        intentType: resolved.intentType ?? "",
+        wasRemapped: true,
+      },
+    };
   });
 }
 

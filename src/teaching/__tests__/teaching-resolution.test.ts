@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../engine/types";
-import type { BidResult, ResolvedCandidateDTO, AlternativeGroup } from "../../core/contracts";
+import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, IntentFamily } from "../../core/contracts";
 import { BidGrade, gradeBid, resolveTeachingAnswer } from "../teaching-resolution";
 
 function makeCandidate(overrides: Partial<ResolvedCandidateDTO> = {}): ResolvedCandidateDTO {
@@ -619,5 +619,106 @@ describe("gradeBid", () => {
 
     const grade = gradeBid({ type: "bid", level: 3, strain: BidSuit.Clubs }, resolution);
     expect(grade).toBe(BidGrade.Incorrect);
+  });
+});
+
+describe("IntentFamily-aware grading", () => {
+  const matchedCandidate = makeCandidate({
+    bidName: "relay-a",
+    isMatched: true,
+    call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+    resolvedCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
+  });
+
+  const altCandidate = makeCandidate({
+    bidName: "relay-b",
+    isMatched: false,
+    priority: undefined, // not picked up by Phase 1 priority filter
+    call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+    resolvedCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+    legal: true,
+  });
+
+  const group: AlternativeGroup = {
+    label: "Relay paths",
+    members: ["relay-a", "relay-b"],
+    tier: "alternative",
+  };
+
+  test("equivalent_encoding family → fullCredit true for group members", () => {
+    const family: IntentFamily = {
+      id: "relay-paths-family",
+      label: "Relay Paths",
+      members: ["relay-a", "relay-b"],
+      relationship: "equivalent_encoding",
+      description: "Same intent, different relay path",
+    };
+
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([matchedCandidate, altCandidate]),
+      [group],
+      [family],
+    );
+
+    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
+    expect(alt).toBeDefined();
+    expect(alt!.fullCredit).toBe(true);
+    expect(alt!.relationship).toBe("equivalent_encoding");
+  });
+
+  test("mutually_exclusive family → tier from AlternativeGroup preserved", () => {
+    const family: IntentFamily = {
+      id: "raise-strengths",
+      label: "Raise Strengths",
+      members: ["relay-a", "relay-b"],
+      relationship: "mutually_exclusive",
+      description: "Different strength levels",
+    };
+
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([matchedCandidate, altCandidate]),
+      [group],
+      [family],
+    );
+
+    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
+    expect(alt).toBeDefined();
+    // mutually_exclusive: group tier stands, fullCredit from group config (alternative → false)
+    expect(alt!.fullCredit).toBe(false);
+    expect(alt!.relationship).toBe("mutually_exclusive");
+  });
+
+  test("no family found → backward-compatible behavior", () => {
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([matchedCandidate, altCandidate]),
+      [group],
+      [], // empty families
+    );
+
+    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
+    expect(alt).toBeDefined();
+    expect(alt!.fullCredit).toBe(false); // alternative tier → false
+    expect(alt!.relationship).toBeUndefined();
+  });
+
+  test("policy_alternative family → fullCredit false", () => {
+    const family: IntentFamily = {
+      id: "style-choices",
+      label: "Style Choices",
+      members: ["relay-a", "relay-b"],
+      relationship: "policy_alternative",
+      description: "Both valid, convention policy prefers one",
+    };
+
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([matchedCandidate, altCandidate]),
+      [group],
+      [family],
+    );
+
+    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
+    expect(alt).toBeDefined();
+    expect(alt!.fullCredit).toBe(false);
+    expect(alt!.relationship).toBe("policy_alternative");
   });
 });

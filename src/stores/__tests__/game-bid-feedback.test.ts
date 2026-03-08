@@ -14,6 +14,7 @@ function make2CStrategy(): ConventionBiddingStrategy {
     name: "Test Convention",
     getLastPracticalRecommendation() { return null; },
     getAcceptableAlternatives() { return undefined; },
+    getIntentFamilies() { return undefined; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
@@ -31,6 +32,7 @@ function makeNoOpStrategy(): ConventionBiddingStrategy {
     name: "No-Op",
     getLastPracticalRecommendation() { return null; },
     getAcceptableAlternatives() { return undefined; },
+    getIntentFamilies() { return undefined; },
     suggest(): null {
       return null;
     },
@@ -44,6 +46,7 @@ function makePrimaryWithAcceptableAlternativeStrategy(): ConventionBiddingStrate
     name: "Test With Alternative",
     getLastPracticalRecommendation() { return null; },
     getAcceptableAlternatives() { return undefined; },
+    getIntentFamilies() { return undefined; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },

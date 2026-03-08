@@ -46,9 +46,11 @@ Every subsystem here (protocol, overlay, intent, dialogue, pipeline) exists beca
 
 All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round()` + `semantic()` builders. The evaluator (`protocol-evaluator.ts`) walks rounds sequentially, tests trigger conditions, and delegates to hand subtrees via `evaluateTree()`.
 
-**Protocol structure:** Each `ProtocolRound` has `triggers` (AuctionConditions like `bidMade`, `partnerBidMade`), a `handTree` (static or function receiving `EstablishedContext`), and optional `seatFilter` (AuctionCondition evaluated against the FULL context).
+**Protocol structure:** Each `ProtocolRound` has `triggers` (AuctionConditions like `bidMade`, `partnerBidMade`), a `handTree` (static or function receiving `EstablishedContext`), optional `seatFilter` (AuctionCondition evaluated against the FULL context), and optional `span` (how many auction entries this round's event covers; default 2).
 
-**Event-local trigger scope:** Triggers see only the current 2-entry event span (`entries.slice(cursor, cursor+2)`), not the full auction prefix. This prevents stale events from prior rounds matching later triggers. Milestone conditions (`bidMade`, `bidMadeAtLevel`, `doubleMade`, `partnerBidMade`, `opponentBidMade`) have `triggerScope: "event"`. For rounds that don't need to detect a new event (the cursor advancing is sufficient), use `cursorReached()`. `seatFilters` see the full context (unchanged).
+**Variable-arity span:** Each round has `span?: number` (default 2). `span=1` for single-entry events, `span=3` for triple-entry windows, `span=0` for virtual rounds that don't advance the cursor. `MatchedRoundEntry` carries `cursorStart`/`cursorEnd` for each matched round. A span=0 loop guard breaks after 1 consecutive span=0 match to prevent infinite loops. All 5 existing conventions omit `span` (default 2 — backwards compatible).
+
+**Event-local trigger scope:** Triggers see only the current event span (`entries.slice(cursor, cursor+span)`), not the full auction prefix. This prevents stale events from prior rounds matching later triggers. Milestone conditions (`bidMade`, `bidMadeAtLevel`, `doubleMade`, `partnerBidMade`, `opponentBidMade`) have `triggerScope: "event"`. For rounds that don't need to detect a new event (the cursor advancing is sufficient), use `cursorReached()`. `seatFilters` see the full context (unchanged).
 
 **Architectural constraint:** Do NOT add protocol-specific fields (like `triggerSpan`) to `BiddingContext` — it is a cross-boundary DTO in `src/core/contracts/`. The evaluator-only fix keeps protocol concerns inside the protocol layer.
 
@@ -76,7 +78,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 **Key types:**
 - `TransitionRule` — `{ id, matches(state, entry, auction, entryIndex), effects(state, entry, auction, entryIndex) }` where `entry: AuctionEntry` bundles `{ call, seat }`
 - `DialogueEffect` — typed `set*` prefix fields (e.g., `setFamilyId`, `mergeConventionData`)
-- `ResolverResult` — discriminated union: `resolved` (with calls), `use_default`, `declined` (excludes candidate)
+- `ResolverResult` — discriminated union: `resolved` (with calls), `use_default`, `declined` (kept with `protocol.satisfied=false`, filtered at selection time)
 - `IntentResolverFn` → `ResolverResult`. `resolveIntent()` returns `ResolverResult | null` (null = no resolver)
 
 **Two-pass mode:** Convention `transitionRules` fire first-match-wins, then `baselineRules` backfill untouched fields. Registration validates no rule ID in both arrays.
@@ -102,13 +104,13 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 - Prefer nested decisions over compound `and()` with mixed categories
 - No reusing node object references across branches (breaks `flattenTree()`)
 
-**Sibling finder:** `findSiblingBids(tree, matched, context)` walks auction conditions to find hand subtree root, explores all branches. Each `SiblingBid` has `failedConditions` (branch-aware). Invariant: auction conditions must precede hand conditions.
+**Sibling finder:** `findSiblingBids(tree, matched, context)` walks auction conditions to find hand subtree root, explores all branches. Each `SiblingBid` has `failedConditions` (branch-aware) and optional `resolverContext` (`{ intentType, wasRemapped }`) populated by `enrichSiblingsWithResolvedCalls()` when the resolver remapped the call. Invariant: auction conditions must precede hand conditions.
 
-**Candidate pipeline:** `collectIntentProposals()` → `generateCandidates()` → `selectMatchedCandidate()`. Selection tiers: matched+legal > preferred+legal+satisfiable > alternative+legal+satisfiable > null. Pass excluded when `forcingState` active.
+**Candidate pipeline:** `collectIntentProposals()` → `generateCandidates()` → `selectMatchedCandidate()`. `CollectedIntent` carries `orderKey` (DFS counter) for deterministic tie-breaking. `ResolvedCandidate` carries required `orderKey`. Selection tiers: matched+legal > preferred+legal+satisfiable > alternative+legal+satisfiable > null. Within each tier, candidates sorted by `orderKey` (lower = higher priority) when no ranker applied. Overlay-injected intents get `10_000 + index`. Pass excluded when `forcingState` active. `SelectionResult` includes `preRankingPeers` (full tier set before ranking) alongside `tierPeers` (cleared when ranker applied).
 
-**Eligibility model:** Every `ResolvedCandidate` carries a `CandidateEligibility` with four orthogonal dimensions: hand (failedConditions), protocol (suppressed/declined), encoding (legality), and pedagogical (convention hook). `isSelectable(c)` checks all four. Architectural rule: eligibility is intrinsic candidate state; `allowed()` (forcing/obligation) remains a selection-time policy in the selector. Candidates array now includes protocol-ineligible candidates (suppressed/declined) — array presence does NOT mean selectability.
+**Eligibility model:** Every `ResolvedCandidate` carries a `CandidateEligibility` with four orthogonal dimensions: hand (failedConditions), protocol (suppressed/declined), encoding (legality with optional `reason`), and pedagogical (convention hook). `isSelectable(c)` checks three dimensions (hand, protocol, encoding) — pedagogical is NOT a selection gate; it's a post-selection annotation for teaching. `isPedagogicallyAcceptable(c)` is exported separately for teaching-layer consumers. `encoding.reason` distinguishes `"all_encodings_illegal"` (all resolver encodings failed) from `"illegal_in_auction"` (single call illegal). Architectural rule: eligibility is intrinsic candidate state; `allowed()` (forcing/obligation) remains a selection-time policy in the selector. Candidates array now includes protocol-ineligible candidates (suppressed/declined) — array presence does NOT mean selectability.
 
-**Teaching metadata:** `DecisionMetadata` on DecisionNodes, `BidMetadata` on IntentNodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. `RuleCondition.teachingNote` for per-condition overrides. `negatable?: boolean` controls inference inversion. `pedagogicalCheck` on `ConventionConfig` — optional hook for convention-level pedagogical eligibility (feeds the pedagogical dimension of `CandidateEligibility`).
+**Teaching metadata:** `DecisionMetadata` on DecisionNodes, `BidMetadata` on IntentNodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. `RuleCondition.teachingNote` for per-condition overrides. `negatable?: boolean` controls inference inversion. `pedagogicalCheck` on `ConventionConfig` — optional hook for convention-level pedagogical eligibility (feeds the pedagogical dimension of `CandidateEligibility`). Checked via `isPedagogicallyAcceptable()` (post-selection annotation, not a selection gate).
 
 ## Overlay System
 
@@ -130,7 +132,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 Two systems extract semantic facts from the auction. They answer different questions and must not be unified.
 
-- **`EstablishedContext<T>`** (per-convention generic, empty marker interface) selects hand trees in protocol dispatch. Convention extensions add optional fields (like `showed`, `openingSuit`). Computed by the protocol evaluator via cursor-based 2-entry windowing (partnership-scoped). Only consumed by `evaluateProtocol()` for tree selection. **Do NOT add global role/position fields** — semantic role authority lives in `DialogueState` (obligation, captain, frames). Use `getLocalRoles(state, seat)` to derive local semantic roles.
+- **`EstablishedContext<T>`** (per-convention generic, empty marker interface) selects hand trees in protocol dispatch. Convention extensions add optional fields (like `showed`, `openingSuit`). Computed by the protocol evaluator via cursor-based windowing (span-sized per round, default 2). Only consumed by `evaluateProtocol()` for tree selection. **Do NOT add global role/position fields** — semantic role authority lives in `DialogueState` (obligation, captain, frames). Use `getLocalRoles(state, seat)` to derive local semantic roles.
 - **`DialogueState`** (fixed universal schema) carries semantic meaning for downstream consumers: overlays, candidate pipeline, forcing filter, resolvers, teaching. Computed by replaying entries one-by-one through `TransitionRule[]`.
 
 **Some facts intentionally exist in both systems:**
@@ -139,7 +141,7 @@ Two systems extract semantic facts from the auction. They answer different quest
 
 **Synchrony rule:** When a protocol trigger's `establishes` field sets a semantic fact that downstream consumers also need, the convention's transition rules MUST set the same fact in `conventionData`. This is verified by cross-engine invariant tests (Invariant 5).
 
-**Rejected alternatives:** (a) Shared event model — iteration strategies differ (cursor+2 vs entry-by-entry), adapter cost exceeds benefit. (b) Merge `EstablishedContext` into `DialogueState` — introduces dependency cycle (`EstablishedContext` is generic `<T>` per convention; `DialogueState` is fixed schema). (c) Bootstrap integration — bootstrap is assembly, not per-bid evaluation.
+**Rejected alternatives:** (a) Shared event model — iteration strategies differ (cursor+span vs entry-by-entry), adapter cost exceeds benefit. (b) Merge `EstablishedContext` into `DialogueState` — introduces dependency cycle (`EstablishedContext` is generic `<T>` per convention; `DialogueState` is fixed schema). (c) Bootstrap integration — bootstrap is assembly, not per-bid evaluation.
 
 ## Inference API
 
@@ -156,7 +158,8 @@ Two systems extract semantic facts from the auction. They answer different quest
 - **`trigger-shadow`** — intra-round: earlier trigger subsumes a later one (first-match-wins shadowing)
 - **`unreachable-node`** — cross-round: all triggers in a later round are subsumed by an earlier round (suppressed when seatFilters are disjoint, e.g., Bergen opener vs responder)
 - **`transition-rule-overlap`** — two transition rules match the same (state, entry) pair
-- `duplicate-node-id`, `overlay-priority-conflict`, `missing-resolver`, `full-scope-trigger` — existing checks
+- **`orphan-family-member`** — `IntentFamily` member references a bidName not found in any protocol tree or overlay replacement tree
+- `duplicate-node-id`, `overlay-priority-conflict`, `missing-resolver`, `full-scope-trigger`, `orphan-family-member` — existing checks
 
 **TriggerDescriptor system** (`trigger-descriptor.ts`): Structured metadata on `RuleCondition.descriptor` enables semantic overlap/subsumption analysis. Condition factories attach descriptors; `not()`/`and()`/`or()` compose them. Conditions without descriptors (or with `{kind: "opaque"}`) are silently skipped — never produce false positives.
 

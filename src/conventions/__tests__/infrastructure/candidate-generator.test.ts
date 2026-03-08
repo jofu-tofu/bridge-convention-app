@@ -540,6 +540,91 @@ describe("multi-encoding resolvers", () => {
   });
 });
 
+// ─── encoding.reason tracking ─────────────────────────────────
+
+describe("encoding.reason", () => {
+  const bid2C: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
+  const bid3C: Call = { type: "bid", level: 3, strain: BidSuit.Clubs };
+
+  function makeReasonNode(resolverType: string, defaultCall: Call) {
+    return intentBid(
+      "enc-reason-node",
+      "Encoding reason test",
+      { type: resolverType as SemanticIntentType, params: {} },
+      () => defaultCall,
+    );
+  }
+
+  function makeReasonEffective(
+    node: ReturnType<typeof makeReasonNode>,
+    auctionBids: string[],
+    resolvers: IntentResolverMap,
+  ) {
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.South, auctionBids),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const treeResult = evaluateTree(node, context);
+    const protoResult = {
+      matched: node,
+      matchedRounds: [],
+      established: { role: "responder" as const },
+      handResult: treeResult,
+      activeRound: null,
+      handTreeRoot: node,
+    };
+    const configWithResolvers: ConventionConfig = {
+      ...staymanConfig,
+      intentResolvers: resolvers,
+    };
+    const effective = buildEffectiveContext(context, configWithResolvers, protoResult);
+    return { effective, treeResult, node };
+  }
+
+  it("resolver returns all-illegal encodings → encoding.reason='all_encodings_illegal'", () => {
+    // Auction "1NT P 2H P" makes 2C illegal (below 2H)
+    // Resolver returns only [2C] → all illegal
+    const resolvers: IntentResolverMap = new Map([
+      ["enc-reason-test", () => ({ status: "resolved" as const, calls: [{ call: bid2C }] })],
+    ]);
+    const node = makeReasonNode("enc-reason-test", bid2C);
+    const { effective, treeResult } = makeReasonEffective(node, ["1NT", "P", "2H", "P"], resolvers);
+
+    const { candidates } = generateCandidates(node, treeResult, effective);
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]!.legal).toBe(false);
+    expect(candidates[0]!.eligibility.encoding).toEqual({ legal: false, reason: "all_encodings_illegal" });
+  });
+
+  it("single illegal call from defaultCall → encoding.reason='illegal_in_auction'", () => {
+    // No resolver → uses defaultCall (2C), which is illegal after 2H
+    const node = makeReasonNode("no-resolver", bid2C);
+    const { effective, treeResult } = makeReasonEffective(node, ["1NT", "P", "2H", "P"], new Map());
+
+    const { candidates } = generateCandidates(node, treeResult, effective);
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]!.legal).toBe(false);
+    expect(candidates[0]!.eligibility.encoding).toEqual({ legal: false, reason: "illegal_in_auction" });
+  });
+
+  it("legal call → no encoding.reason", () => {
+    const node = makeReasonNode("no-resolver", bid3C);
+    const { effective, treeResult } = makeReasonEffective(node, ["1NT", "P", "2H", "P"], new Map());
+
+    const { candidates } = generateCandidates(node, treeResult, effective);
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]!.legal).toBe(true);
+    expect(candidates[0]!.eligibility.encoding).toEqual({ legal: true });
+  });
+});
+
 // ─── Gap 3: matchedIntentSuppressed tracking ─────────────────
 
 describe("matchedIntentSuppressed tracking", () => {

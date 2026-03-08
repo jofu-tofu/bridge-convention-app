@@ -171,4 +171,47 @@ describe("collectIntentProposals", () => {
 
     expect(proposals[0]!.defaultCall(ctx)).toEqual(bid1C);
   });
+
+  it("assigns monotonic orderKeys — YES branch gets lower key than NO", () => {
+    const strongNode = makeIntent("strong", "Strong opening", bid1C);
+    const weakNode = makeIntent("weak", "Weak opening", bid1D);
+    const tree = handDecision("has-12-hcp", hcpMin(12), strongNode, weakNode);
+    const ctx = makeContext();
+
+    const proposals = collectIntentProposals(tree, ctx);
+
+    expect(proposals).toHaveLength(2);
+    const strong = proposals.find(p => p.nodeName === "strong")!;
+    const weak = proposals.find(p => p.nodeName === "weak")!;
+    expect(strong.orderKey).toBeDefined();
+    expect(weak.orderKey).toBeDefined();
+    expect(strong.orderKey).toBeLessThan(weak.orderKey!);
+  });
+
+  it("single IntentNode has orderKey 0", () => {
+    const node = makeIntent("open-1c", "Opens 1C", bid1C);
+    const ctx = makeContext();
+
+    const proposals = collectIntentProposals(node, ctx);
+
+    expect(proposals[0]!.orderKey).toBe(0);
+  });
+
+  it("nested decisions assign sequential orderKeys in DFS order", () => {
+    const leaf1 = makeIntent("strong-hearts", "Strong with hearts", bid1H);
+    const leaf2 = makeIntent("strong-other", "Strong other", bid1C);
+    const leaf3 = makeIntent("weak", "Weak", bid1D);
+    const innerDecision = handDecision("has-4-hearts", suitMin(1, "hearts", 4), leaf1, leaf2);
+    const tree = handDecision("has-12-hcp", hcpMin(12), innerDecision, leaf3);
+    const ctx = makeContext();
+
+    const proposals = collectIntentProposals(tree, ctx);
+
+    expect(proposals).toHaveLength(3);
+    const hearts = proposals.find(p => p.nodeName === "strong-hearts")!;
+    const other = proposals.find(p => p.nodeName === "strong-other")!;
+    const weak = proposals.find(p => p.nodeName === "weak")!;
+    expect(hearts.orderKey).toBeLessThan(other.orderKey!);
+    expect(other.orderKey).toBeLessThan(weak.orderKey!);
+  });
 });

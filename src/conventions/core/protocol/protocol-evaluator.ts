@@ -15,15 +15,15 @@ import { evaluateTree } from "../tree/tree-evaluator";
 
 /**
  * Create a BiddingContext view with only the event-local span at the cursor.
- * The trigger condition evaluates against entries [cursor, cursor+2) — the
- * current 2-entry event span, not the full prefix.
+ * The trigger condition evaluates against entries [cursor, cursor+span) — the
+ * current event span, not the full prefix.
  */
-function contextAtCursor(context: BiddingContext, cursor: number): BiddingContext {
+function contextAtCursor(context: BiddingContext, cursor: number, span: number): BiddingContext {
   return {
     ...context,
     auction: {
       ...context.auction,
-      entries: context.auction.entries.slice(cursor, cursor + 2),
+      entries: context.auction.entries.slice(cursor, cursor + span),
     },
   };
 }
@@ -67,12 +67,21 @@ export function evaluateProtocol<T extends EstablishedContext>(
   let cursor = 0;
   let activeRound: ProtocolRound<T> | null = null;
   const matchedRounds: MatchedRoundEntry<T>[] = [];
+  let lastSpanZro = false; // span=0 loop guard
 
   for (const r of proto.rounds) {
+    const span = r.span ?? 2;
+
+    // span=0 loop guard: after a span=0 round matches, break immediately
+    // to prevent infinite loops from consecutive span=0 rounds
+    if (lastSpanZro && span === 0) {
+      break;
+    }
+
     // Test trigger variants from cursor position
     let matchedTrigger: SemanticTrigger<T> | null = null;
 
-    const cursorCtx = contextAtCursor(context, cursor);
+    const cursorCtx = contextAtCursor(context, cursor, span);
 
     // Use override triggers if provided, else original
     const effectiveTriggers = (triggerOverrides?.get(r.name) ?? r.triggers) as readonly SemanticTrigger<T>[];
@@ -90,12 +99,11 @@ export function evaluateProtocol<T extends EstablishedContext>(
     }
 
     // Advance cursor and accumulate context
-    // Bridge partnerships are always 2 positions apart in the clockwise
-    // auction (N→E→S→W). cursor += 2 advances to the next position where
-    // this partnership would bid, regardless of opponent actions.
-    cursor += 2;
+    const cursorStart = cursor;
+    cursor += span;
+    lastSpanZro = span === 0;
     established = { ...established, ...matchedTrigger.establishes } as T;
-    matchedRounds.push({ round: r, trigger: matchedTrigger });
+    matchedRounds.push({ round: r, trigger: matchedTrigger, cursorStart, cursorEnd: cursor });
 
     // seatFilter: evaluated against the FULL context (not windowed).
     // If present and fails, cursor still advances (the milestone happened)

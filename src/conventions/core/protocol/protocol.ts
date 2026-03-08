@@ -35,6 +35,11 @@ export interface ProtocolRound<T extends EstablishedContext = EstablishedContext
    *  If present and fails, cursor still advances (the milestone happened) but
    *  activeRound is NOT updated (this seat doesn't act in this round). */
   readonly seatFilter?: AuctionCondition;
+  /** How many auction entries this round's event spans.
+   *  Default: 2 (one partnership turn pair).
+   *  Use 1 for single-entry events, 3 for events spanning extra actions,
+   *  0 for virtual rounds that don't advance the cursor. */
+  readonly span?: number;
 }
 
 // ─── Convention protocol ─────────────────────────────────────
@@ -53,6 +58,10 @@ export interface ConventionProtocol<T extends EstablishedContext = EstablishedCo
 export interface MatchedRoundEntry<T extends EstablishedContext = EstablishedContext> {
   readonly round: ProtocolRound<T>;
   readonly trigger: SemanticTrigger<T>;
+  /** Cursor position at the start of this round's event span. */
+  readonly cursorStart: number;
+  /** Cursor position after this round's event span (cursorStart + span). */
+  readonly cursorEnd: number;
 }
 
 /** Result of evaluating a convention protocol. */
@@ -88,6 +97,7 @@ export function round<T extends EstablishedContext = EstablishedContext>(
     triggers: readonly SemanticTrigger<T>[];
     handTree: HandNode | ((established: T) => HandNode);
     seatFilter?: AuctionCondition;
+    span?: number;
   },
 ): ProtocolRound<T> {
   return {
@@ -95,6 +105,7 @@ export function round<T extends EstablishedContext = EstablishedContext>(
     triggers: config.triggers,
     handTree: config.handTree,
     seatFilter: config.seatFilter,
+    span: config.span,
   };
 }
 
@@ -117,6 +128,11 @@ export function validateProtocol(proto: ConventionProtocol): void {
     if (r.triggers.length === 0) {
       throw new Error(
         `Protocol "${proto.id}" round "${r.name}" has zero triggers.`,
+      );
+    }
+    if (r.span !== undefined && (r.span < 0 || !Number.isInteger(r.span))) {
+      throw new Error(
+        `Protocol "${proto.id}" round "${r.name}" has invalid span: ${r.span}.`,
       );
     }
     for (const trigger of r.triggers) {

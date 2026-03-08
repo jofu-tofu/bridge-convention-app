@@ -7,7 +7,7 @@ export type {
   CandidateGenerationResult,
 } from "./candidate-generator";
 
-export { selectMatchedCandidate, isSelectable } from "./candidate-selector";
+export { selectMatchedCandidate, isSelectable, isPedagogicallyAcceptable } from "./candidate-selector";
 export type { CandidateRankerFn, SelectionResult } from "./candidate-selector";
 
 export { collectIntentProposals } from "./intent-collector";

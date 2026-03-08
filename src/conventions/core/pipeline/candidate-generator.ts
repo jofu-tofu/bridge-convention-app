@@ -26,6 +26,8 @@ export interface ResolvedCandidate extends CandidateBid {
   readonly priority?: "preferred" | "alternative";
   readonly provenance?: CandidateProvenance;
   readonly eligibility: CandidateEligibility;
+  /** DFS traversal order from intent collection. Used for deterministic tie-breaking within selection tiers. */
+  readonly orderKey: number;
 }
 
 export type CandidateProvenance =
@@ -69,6 +71,7 @@ export function buildEligibility(
   protocolReasons: readonly string[] = [],
   pedagogicalAcceptable: boolean = true,
   pedagogicalReasons: readonly string[] = [],
+  encodingReason?: "all_encodings_illegal" | "illegal_in_auction",
 ): CandidateEligibility {
   return {
     hand: {
@@ -79,9 +82,9 @@ export function buildEligibility(
       satisfied: protocolSatisfied,
       reasons: protocolReasons,
     },
-    encoding: {
-      legal,
-    },
+    encoding: encodingReason
+      ? { legal, reason: encodingReason }
+      : { legal },
     pedagogical: {
       acceptable: pedagogicalAcceptable,
       reasons: pedagogicalReasons,
@@ -136,7 +139,8 @@ function applySuppressHooks(
   return { proposals, matchedSuppressed };
 }
 
-/** Step 3: Apply addIntents from ALL overlays (concatenate in config order). */
+/** Step 3: Apply addIntents from ALL overlays (concatenate in config order).
+ *  Overlay-injected intents get orderKey = 10_000 + index (generous gap — no real tree exceeds ~30 leaves). */
 function applyAddIntentHooks(
   proposals: CollectedIntentWithProvenance[],
   overlays: readonly ConventionOverlayPatch[],
@@ -144,6 +148,7 @@ function applyAddIntentHooks(
   onError?: OverlayErrorHandler,
 ): CollectedIntentWithProvenance[] {
   let result = proposals;
+  let overlayIndex = 0;
 
   for (const overlay of overlays) {
     if (!overlay.addIntents) continue;
@@ -151,6 +156,7 @@ function applyAddIntentHooks(
       const added = overlay.addIntents(ctx);
       const tagged = added.map<CollectedIntentWithProvenance>(p => ({
         ...p,
+        orderKey: p.orderKey ?? 10_000 + overlayIndex++,
         provenance: { origin: "overlay-injected", overlayId: overlay.id },
       }));
       result = [...result, ...tagged];
@@ -187,10 +193,16 @@ function findOverrideResult(
   return null;
 }
 
+type ResolverOutcome =
+  | { resolvedCall: Call; isDefaultCall: boolean; encodingFailed?: undefined }
+  | { resolvedCall: Call; isDefaultCall: boolean; encodingFailed: true }
+  | "declined"
+  | "use_default";
+
 function applyResolverResult(
   result: ResolverResult,
   raw: EffectiveConventionContext["raw"],
-): { resolvedCall: Call; isDefaultCall: boolean } | "declined" | "use_default" {
+): ResolverOutcome {
   switch (result.status) {
     case "declined":
       return "declined";
@@ -203,7 +215,8 @@ function applyResolverResult(
           return { resolvedCall: encoding.call, isDefaultCall: false };
         }
       }
-      return { resolvedCall: result.calls[0]!.call, isDefaultCall: false };
+      // All resolver encodings are illegal — keep first for diagnostics
+      return { resolvedCall: result.calls[0]!.call, isDefaultCall: false, encodingFailed: true };
     }
   }
 }
@@ -238,6 +251,7 @@ function resolveCollectedIntent(
   let resolvedCall = call;
   let isDefaultCall = true;
   let provenance = proposal.provenance;
+  let allEncodingsIllegal = false;
   const protocolReasons: string[] = [];
 
   // Carry over suppression info from overlay hooks
@@ -254,6 +268,7 @@ function resolveCollectedIntent(
     } else if (outcome !== "use_default") {
       resolvedCall = outcome.resolvedCall;
       isDefaultCall = outcome.isDefaultCall;
+      if (outcome.encodingFailed) allEncodingsIllegal = true;
       provenance = { origin: "overlay-override", overlayId: overrideResult.overlayId };
     }
   } else {
@@ -266,6 +281,7 @@ function resolveCollectedIntent(
         } else if (outcome !== "use_default") {
           resolvedCall = outcome.resolvedCall;
           isDefaultCall = outcome.isDefaultCall;
+          if (outcome.encodingFailed) allEncodingsIllegal = true;
         }
       }
     } catch {
@@ -275,6 +291,12 @@ function resolveCollectedIntent(
 
   const legal = isLegalCall(raw.auction, resolvedCall, raw.seat);
   const protocolSatisfied = protocolReasons.length === 0;
+
+  // Determine encoding reason when illegal
+  let encodingReason: "all_encodings_illegal" | "illegal_in_auction" | undefined;
+  if (!legal) {
+    encodingReason = allEncodingsIllegal ? "all_encodings_illegal" : "illegal_in_auction";
+  }
 
   // Pedagogical dimension — convention hook (fail-open)
   let pedagogicalAcceptable = true;
@@ -313,7 +335,8 @@ function resolveCollectedIntent(
     isMatched,
     priority: proposal.priority,
     provenance,
-    eligibility: buildEligibility(failedConditions, legal, protocolSatisfied, protocolReasons, pedagogicalAcceptable, pedagogicalReasons),
+    eligibility: buildEligibility(failedConditions, legal, protocolSatisfied, protocolReasons, pedagogicalAcceptable, pedagogicalReasons, encodingReason),
+    orderKey: proposal.orderKey ?? 0,
   };
 }
 

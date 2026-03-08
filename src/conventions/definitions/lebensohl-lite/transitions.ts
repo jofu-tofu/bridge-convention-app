@@ -26,6 +26,7 @@ function hasRelayOrPlaceContractFrame(state: DialogueState): boolean {
 export const lebensohlTransitionRules: readonly TransitionRule[] = [
   {
     id: "lebensohl-relay-request",
+    matchDescriptor: { familyId: "1nt", callType: "bid", level: 2, strain: BidSuit.NoTrump, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -50,6 +51,7 @@ export const lebensohlTransitionRules: readonly TransitionRule[] = [
   },
   {
     id: "lebensohl-relay-complete",
+    matchDescriptor: { familyId: "1nt", callType: "bid", level: 3, strain: BidSuit.Clubs, actorRelation: "opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       const frame = topFrame(state);
@@ -74,6 +76,7 @@ export const lebensohlTransitionRules: readonly TransitionRule[] = [
   },
   {
     id: "lebensohl-place-contract",
+    matchDescriptor: { familyId: "1nt", callType: "bid", actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       const frame = topFrame(state);
@@ -93,6 +96,7 @@ export const lebensohlTransitionRules: readonly TransitionRule[] = [
   },
   {
     id: "lebensohl-direct-gf",
+    matchDescriptor: { familyId: "1nt", callType: "bid", level: 3, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (

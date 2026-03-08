@@ -32,6 +32,7 @@ Every convention must satisfy all items before being considered complete:
 5. **Non-empty explanations.** `explanations.ts` must have both `convention` (purpose, whenToUse, whenNotToUse, tradeoff, principle, roles) and `decisions` entries for every `handDecision()` node ID in the tree.
 6. **`acceptableAlternatives` AlternativeGroup array.** Define in config for adjacent-boundary hands where multiple bids are reasonable. Members reference IntentNode IDs. Tier is `"preferred"` or `"alternative"`.
 7. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate. Include `dealer` when the convention requires a specific opening position.
+8. **`intentFamilies` array (if applicable).** If the convention has multiple IntentNode leaves that form conceptual groups (e.g., equivalent encodings for the same semantic meaning), define IntentFamily entries in config. analyzeIntentFamilies() diagnostic checks member references against protocol trees/overlays.
 
 ## ConventionConfig Field Guide
 
@@ -57,7 +58,8 @@ All fields from `ConventionConfig` in `core/types.ts`:
 | `teaching` | No | `ConventionTeaching` | Convention-level teaching metadata (purpose, whenToUse, etc.). Usually set in `explanations.convention` instead. |
 | `interferenceSignatures` | No | `readonly InterferenceSignature[]` | Bid signatures opponents may classify as interference. |
 | `rankCandidates` | No | `(candidates, context) => candidates` | Optional candidate ranker. No conventions use this yet (future seam). |
-| `pedagogicalCheck` | No | `(candidate, ctx) => { acceptable, reasons }` | Optional pedagogical filter. No conventions use this yet (future seam). |
+| `pedagogicalCheck` | No | `(candidate, ctx) => { acceptable, reasons }` | Optional pedagogical filter — feeds the pedagogical dimension of CandidateEligibility. Checked via isPedagogicallyAcceptable() (post-selection annotation, not a selection gate). No conventions use this yet. |
+| `intentFamilies` | No | `readonly IntentFamily[]` | Groups of semantically related IntentNode leaves for diagnostics and family-aware teaching grading. Members reference IntentNode names. IntentRelationship: mutually_exclusive, equivalent_encoding, policy_alternative. |
 
 *Required in practice for a complete convention, though TypeScript marks them optional.
 

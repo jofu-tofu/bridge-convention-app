@@ -69,6 +69,7 @@ export {
   generateCandidates,
   selectMatchedCandidate,
   isSelectable,
+  isPedagogicallyAcceptable,
   collectIntentProposals,
 } from "./pipeline";
 export type {

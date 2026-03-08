@@ -360,3 +360,156 @@ describe("cross-round unreachable detection", () => {
     expect(unreachable).toHaveLength(0);
   });
 });
+
+describe("validateTransitionRuleDescriptors", () => {
+  test("throws when a transition rule lacks matchDescriptor", () => {
+    const config = makeMinimalConfig({
+      id: "missing-desc",
+      transitionRules: [
+        {
+          id: "rule-no-desc",
+          matches: () => false,
+          effects: () => ({}),
+        },
+      ],
+    });
+
+    expect(() => registerConvention(config)).toThrow("rule-no-desc");
+  });
+
+  test("passes when all transition rules have matchDescriptor", () => {
+    const config = makeMinimalConfig({
+      id: "all-descs",
+      transitionRules: [
+        {
+          id: "rule-with-desc",
+          matchDescriptor: { callType: "bid", level: 1, strain: BidSuit.Clubs },
+          matches: () => false,
+          effects: () => ({}),
+        },
+      ],
+    });
+
+    expect(() => registerConvention(config)).not.toThrow();
+  });
+
+  test("reports all missing rule IDs in a single error", () => {
+    const config = makeMinimalConfig({
+      id: "multi-missing",
+      transitionRules: [
+        {
+          id: "rule-a",
+          matches: () => false,
+          effects: () => ({}),
+        },
+        {
+          id: "rule-b",
+          matchDescriptor: { callType: "bid" },
+          matches: () => false,
+          effects: () => ({}),
+        },
+        {
+          id: "rule-c",
+          matches: () => false,
+          effects: () => ({}),
+        },
+      ],
+    });
+
+    expect(() => registerConvention(config)).toThrow(/rule-a.*rule-c|rule-c.*rule-a/);
+  });
+
+  test("registerConvention throws when transition rules lack descriptors", () => {
+    const config = makeMinimalConfig({
+      id: "reg-throw",
+      transitionRules: [
+        {
+          id: "bad-rule",
+          matches: () => false,
+          effects: () => ({}),
+        },
+      ],
+    });
+
+    expect(() => registerConvention(config)).toThrow("matchDescriptor");
+  });
+
+  test("all 5 conventions produce zero missing-descriptor errors", async () => {
+    clearRegistry();
+
+    const { validateTransitionRuleDescriptors } = await import("../../core/diagnostics");
+    const { staymanConfig } = await import("../../definitions/stayman/config");
+    const { bergenConfig } = await import("../../definitions/bergen-raises/config");
+    const { saycConfig } = await import("../../definitions/sayc/config");
+    const { weakTwosConfig } = await import("../../definitions/weak-twos/config");
+    const { lebensohlLiteConfig } = await import("../../definitions/lebensohl-lite/config");
+
+    expect(() => validateTransitionRuleDescriptors(staymanConfig)).not.toThrow();
+    expect(() => validateTransitionRuleDescriptors(bergenConfig)).not.toThrow();
+    expect(() => validateTransitionRuleDescriptors(saycConfig)).not.toThrow();
+    expect(() => validateTransitionRuleDescriptors(weakTwosConfig)).not.toThrow();
+    expect(() => validateTransitionRuleDescriptors(lebensohlLiteConfig)).not.toThrow();
+  });
+});
+
+describe("intentFamily diagnostics", () => {
+  test("valid family with all members in tree produces no warnings", () => {
+    const tree = handDecision(
+      "choice",
+      alwaysTrue("choice-condition", "hand") as HandCondition,
+      intentBid("bid-a", "Bid A", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+      intentBid("bid-b", "Bid B", { type: SemanticIntentType.NaturalBid, params: {} }, () => ({ type: "bid", level: 1, strain: BidSuit.Diamonds })),
+    );
+
+    const config = makeMinimalConfig({
+      id: "family-valid",
+      protocol: {
+        id: "family-valid-protocol",
+        rounds: [{ name: "round1", triggers: [dummyTrigger], handTree: () => tree }],
+      },
+      intentFamilies: [{
+        id: "test-family",
+        label: "Test Family",
+        members: ["bid-a", "bid-b"],
+        relationship: "mutually_exclusive",
+        description: "Test family",
+      }],
+    });
+
+    registerConvention(config);
+    const diagnostics = getDiagnostics("family-valid");
+    const orphan = diagnostics.filter(d => d.type === "orphan-family-member");
+    expect(orphan).toHaveLength(0);
+  });
+
+  test("orphan family member emits diagnostic warning", () => {
+    const tree = intentBid(
+      "bid-a", "Bid A",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "bid", level: 1, strain: BidSuit.Clubs }),
+    );
+
+    const config = makeMinimalConfig({
+      id: "family-orphan",
+      protocol: {
+        id: "family-orphan-protocol",
+        rounds: [{ name: "round1", triggers: [dummyTrigger], handTree: () => tree }],
+      },
+      intentFamilies: [{
+        id: "test-family",
+        label: "Test Family",
+        members: ["bid-a", "nonexistent-bid"],
+        relationship: "policy_alternative",
+        description: "Test family with orphan",
+      }],
+    });
+
+    registerConvention(config);
+    const diagnostics = getDiagnostics("family-orphan");
+    const orphan = diagnostics.filter(d => d.type === "orphan-family-member");
+    expect(orphan).toHaveLength(1);
+    expect(orphan[0]!.severity).toBe("warning");
+    expect(orphan[0]!.message).toContain("nonexistent-bid");
+    expect(orphan[0]!.message).toContain("test-family");
+  });
+});

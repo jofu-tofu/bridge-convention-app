@@ -53,6 +53,7 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
   // Detect weak two opening — sets familyId, stores opening suit and openerSeat
   {
     id: "weak-two-opening",
+    matchDescriptor: { familyId: null, callType: "bid", level: 2 },
     matches(state: DialogueState, entry) {
       const { call } = entry;
       return state.familyId === null && isWeakTwoOpening(call);
@@ -71,6 +72,7 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
   // Ogust 2NT ask after weak two — sets pending action (partner of opener only)
   {
     id: "weak-two-ogust-ask",
+    matchDescriptor: { familyId: "weak-two", callType: "bid", level: 2, strain: BidSuit.NoTrump, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return state.familyId === "weak-two" && is2NT(call) && partnerOfOpener(state, seat);
@@ -85,6 +87,7 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
   // Ogust response classification — opener responds to 2NT ask with hand quality
   {
     id: "weak-two-ogust-response",
+    matchDescriptor: { familyId: "weak-two", obligationKind: ObligationKind.ShowSuit, callType: "bid", level: 3, actorRelation: "opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -110,6 +113,7 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
   // Direct raise tracking — partner raises opener's suit directly to game
   {
     id: "weak-two-direct-raise",
+    matchDescriptor: { familyId: "weak-two", callType: "bid", actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -128,6 +132,7 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
   // Invite tracking — partner raises opener's suit to the 3-level (invitational)
   {
     id: "weak-two-invite",
+    matchDescriptor: { familyId: "weak-two", callType: "bid", level: 3, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (

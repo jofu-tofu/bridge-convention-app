@@ -15,7 +15,8 @@ export interface DiagnosticWarning {
     | "missing-resolver"
     | "unreachable-node"
     | "full-scope-trigger"
-    | "transition-rule-overlap";
+    | "transition-rule-overlap"
+    | "orphan-family-member";
   readonly severity: "error" | "warning";
   readonly message: string;
 }
@@ -50,6 +51,21 @@ function collectIntentTypes(node: RuleNode, seen: Set<string>): void {
     case "decision":
       collectIntentTypes(node.yes, seen);
       collectIntentTypes(node.no, seen);
+      return;
+    case "fallback":
+      return;
+  }
+}
+
+/** Collect all IntentNode names (bidNames) from a tree. */
+function collectIntentNames(node: RuleNode, names: Set<string>): void {
+  switch (node.type) {
+    case "intent":
+      names.add(node.name);
+      return;
+    case "decision":
+      collectIntentNames(node.yes, names);
+      collectIntentNames(node.no, names);
       return;
     case "fallback":
       return;
@@ -229,6 +245,22 @@ export function analyzeCrossRoundUnreachable(config: ConventionConfig): Diagnost
   return warnings;
 }
 
+/** Validate that all transition rules have matchDescriptor set. Throws at registration time. */
+export function validateTransitionRuleDescriptors(config: ConventionConfig): void {
+  if (!config.transitionRules) return;
+
+  const missing = config.transitionRules
+    .filter(r => r.matchDescriptor === undefined)
+    .map(r => r.id);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Convention "${config.id}": transition rules missing matchDescriptor: ${missing.join(", ")}. ` +
+      `All transition rules must have a matchDescriptor for overlap diagnostics.`,
+    );
+  }
+}
+
 /** Check if two transition rule descriptors could match the same (state, entry) pair. */
 function transitionDescriptorsOverlap(a: TransitionRuleDescriptor, b: TransitionRuleDescriptor): boolean {
   // Two descriptors are disjoint if any shared field has different non-undefined values
@@ -252,6 +284,8 @@ export function analyzeTransitionRuleOverlap(config: ConventionConfig): Diagnost
     for (let j = i + 1; j < rules.length; j++) {
       const descA = rules[i]!.matchDescriptor;
       const descB = rules[j]!.matchDescriptor;
+      // Registration-time validation guarantees convention rules have descriptors.
+      // Skip pairs where either descriptor is missing (baseline rules, test fixtures).
       if (!descA || !descB) continue;
 
       if (transitionDescriptorsOverlap(descA, descB)) {
@@ -309,6 +343,38 @@ export function analyzeOverlayTriggerScope(overlays: readonly ConventionOverlayP
   return warnings;
 }
 
+/** Check that all IntentFamily members reference existing IntentNode names. */
+export function analyzeIntentFamilies(config: ConventionConfig): DiagnosticWarning[] {
+  if (!config.intentFamilies || config.intentFamilies.length === 0 || !config.protocol) return [];
+
+  // Collect all IntentNode names across all protocol rounds and overlays
+  const allNames = new Set<string>();
+  for (const round of config.protocol.rounds) {
+    const tree = typeof round.handTree === "function" ? round.handTree({}) : round.handTree;
+    if (tree) collectIntentNames(tree as RuleNode, allNames);
+  }
+  if (config.overlays) {
+    for (const overlay of config.overlays) {
+      if (overlay.replacementTree) {
+        collectIntentNames(overlay.replacementTree as RuleNode, allNames);
+      }
+    }
+  }
+
+  const warnings: DiagnosticWarning[] = [];
+  for (const family of config.intentFamilies) {
+    const orphans = family.members.filter(m => !allNames.has(m));
+    if (orphans.length > 0) {
+      warnings.push({
+        type: "orphan-family-member",
+        severity: "warning",
+        message: `IntentFamily "${family.id}" references unknown members: ${orphans.join(", ")}`,
+      });
+    }
+  }
+  return warnings;
+}
+
 /** Run all diagnostic analyzers on a convention config. */
 export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[] {
   const warnings: DiagnosticWarning[] = [];
@@ -319,6 +385,7 @@ export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[]
   warnings.push(...analyzeCrossRoundUnreachable(config));
   warnings.push(...analyzeTransitionRuleOverlap(config));
   warnings.push(...analyzeTriggerScope(config));
+  warnings.push(...analyzeIntentFamilies(config));
 
   if (config.overlays) {
     warnings.push(...analyzeOverlayConflicts(config.overlays));

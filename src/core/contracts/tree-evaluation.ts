@@ -50,6 +50,12 @@ export interface SiblingBid {
   readonly meaning: string;
   readonly call: Call;
   readonly failedConditions: readonly SiblingConditionDetail[];
+  /** Present when the resolver remapped the call from defaultCall.
+   *  Enables UI to explain "why is this bid different from the textbook?" */
+  readonly resolverContext?: {
+    readonly intentType: string;
+    readonly wasRemapped: boolean;
+  };
 }
 
 /** A semantically enriched bid candidate — extends SiblingBid with intent + source metadata. */
@@ -79,6 +85,7 @@ export interface CandidateEligibility {
   };
   readonly encoding: {
     readonly legal: boolean;
+    readonly reason?: "all_encodings_illegal" | "illegal_in_auction";
   };
   readonly pedagogical: {
     readonly acceptable: boolean;
@@ -104,16 +111,23 @@ export interface ResolvedCandidateDTO {
   readonly intentType: string;
   readonly failedConditions: readonly SiblingConditionDetail[];
   readonly eligibility?: CandidateEligibility;
+  /** DFS traversal order from intent collection. Used for deterministic tie-breaking within selection tiers. */
+  readonly orderKey?: number;
 }
 
-/** Check whether a ResolvedCandidateDTO is selectable.
+/** Check three eligibility dimensions for DTO — pedagogical is post-selection annotation, not a gate.
  *  Falls back to legacy `legal` + `failedConditions` when eligibility is absent. */
 export function isDtoSelectable(c: ResolvedCandidateDTO): boolean {
   if (!c.eligibility) return c.legal && c.failedConditions.length === 0;
   return c.eligibility.hand.satisfied
     && c.eligibility.protocol.satisfied
-    && c.eligibility.encoding.legal
-    && c.eligibility.pedagogical.acceptable;
+    && c.eligibility.encoding.legal;
+}
+
+/** Check pedagogical acceptability on DTO — post-selection annotation for teaching consumers. */
+export function isDtoPedagogicallyAcceptable(c: ResolvedCandidateDTO): boolean {
+  if (!c.eligibility) return true;
+  return c.eligibility.pedagogical.acceptable;
 }
 
 /** Groups of intents that are acceptable alternatives to each other for grading.
@@ -154,6 +168,23 @@ export interface CandidateSet {
   readonly resolvedCandidates?: readonly ResolvedCandidateDTO[];
 }
 
+/** Discriminator for how IntentNode members within a family are related. */
+export type IntentRelationship =
+  | "mutually_exclusive"    // Only one applies per hand (e.g., game vs limit raise)
+  | "equivalent_encoding"   // Same intent, different call (e.g., relay paths)
+  | "policy_alternative";   // Both valid, convention policy prefers one
+
+/** Declares that multiple IntentNode leaves belong to the same conceptual family.
+ *  Members reference IntentNode names (bidName). Convention-level grouping for
+ *  diagnostics, teaching, and relationship-aware grading. */
+export interface IntentFamily {
+  readonly id: string;
+  readonly label: string;
+  readonly members: readonly string[];
+  readonly relationship: IntentRelationship;
+  readonly description: string;
+}
+
 /** Structured trace of how the convention pipeline evaluated a bid.
  *  Always-on (not DEV-gated). Plain DTO — no convention-core imports. */
 export interface EvaluationTrace {
@@ -176,6 +207,10 @@ export interface EvaluationTrace {
   readonly practicalError?: string;
   readonly tierPeerCount?: number;
   readonly tierPeerBidNames?: readonly string[];
+  /** Pre-ranking peer count: all candidates in the winning tier BEFORE ranker reordering.
+   *  Preserved even when ranker clears tierPeers. */
+  readonly preRankingPeerCount?: number;
+  readonly preRankingPeerBidNames?: readonly string[];
   readonly rankerResolved?: boolean;
   readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "filtered" | "error" }[];
 }

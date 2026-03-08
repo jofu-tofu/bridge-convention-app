@@ -23,7 +23,7 @@ import { evaluateProtocol } from "./protocol/protocol-evaluator";
 import { buildEffectiveContext } from "./pipeline/effective-context";
 import { computeDialogueState } from "./dialogue/dialogue-manager";
 import { baselineTransitionRules } from "./dialogue/baseline-transitions";
-import { analyzeConvention } from "./diagnostics";
+import { analyzeConvention, validateTransitionRuleDescriptors } from "./diagnostics";
 import type { DiagnosticWarning } from "./diagnostics";
 import type { Auction } from "../../engine/types";
 
@@ -50,6 +50,7 @@ export function registerConvention(config: ConventionConfig): void {
       }
     }
   }
+  validateTransitionRuleDescriptors(config);
   if (config.overlays) {
     if (!config.protocol) {
       throw new Error(`Convention "${config.id}" has overlays but no protocol.`);

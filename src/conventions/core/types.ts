@@ -6,7 +6,7 @@ import type {
   Deal,
 } from "../../engine/types";
 import type { Seat } from "../../engine/types";
-import type { BiddingContext, AlternativeGroup } from "../../core/contracts";
+import type { BiddingContext, AlternativeGroup, IntentFamily } from "../../core/contracts";
 export type { BiddingContext } from "../../core/contracts";
 import type { InterferenceKind } from "./dialogue/dialogue-state";
 import type { TransitionRule } from "./dialogue/dialogue-transitions";
@@ -199,6 +199,10 @@ export interface ConventionConfig {
    *  Maps SemanticIntentType to resolver functions.
    *  Required when hand trees contain IntentNode leaves. */
   readonly intentResolvers?: IntentResolverMap;
+  /** Declares conceptual families of IntentNode leaves and their relationships.
+   *  Used by diagnostics (orphan-family-member check) and teaching resolution
+   *  (relationship-aware grading). Members reference IntentNode names (bidName). */
+  readonly intentFamilies?: readonly IntentFamily[];
   /** Overlays that replace the hand tree for specific protocol rounds based on dialogue state.
    *  First matching overlay wins. Validated against protocol round names at registration time. */
   readonly overlays?: readonly ConventionOverlayPatch[];

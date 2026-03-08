@@ -1,6 +1,6 @@
 import { callsMatch } from "../engine/call-helpers";
 import type { Call } from "../engine/types";
-import type { BidResult, ResolvedCandidateDTO, AlternativeGroup } from "../core/contracts";
+import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, IntentFamily, IntentRelationship } from "../core/contracts";
 
 export enum BidGrade {
   Correct = "correct",
@@ -15,6 +15,8 @@ export interface AcceptableBid {
   readonly reason: string;
   readonly fullCredit: boolean;
   readonly tier: "preferred" | "alternative";
+  /** Intent family relationship, if the bid belongs to an IntentFamily. */
+  readonly relationship?: IntentRelationship;
 }
 
 export interface TeachingResolution {
@@ -25,7 +27,9 @@ export interface TeachingResolution {
 }
 
 /** Check if a candidate is eligible for teaching.
- *  Uses eligibility model when available, falls back to legacy fields. */
+ *  Uses eligibility model when available, falls back to legacy fields.
+ *  Includes pedagogical check — pedagogically unacceptable bids can be selected
+ *  by the pipeline but are excluded from acceptable teaching alternatives. */
 function isTeachingEligible(c: ResolvedCandidateDTO): boolean {
   if (c.eligibility) {
     return c.eligibility.hand.satisfied
@@ -36,9 +40,15 @@ function isTeachingEligible(c: ResolvedCandidateDTO): boolean {
   return c.legal && c.failedConditions.length === 0;
 }
 
+/** Look up the IntentFamily containing a given bidName. */
+function findFamilyForBid(bidName: string, families: readonly IntentFamily[]): IntentFamily | undefined {
+  return families.find(f => f.members.includes(bidName));
+}
+
 export function resolveTeachingAnswer(
   bidResult: BidResult,
   alternativeGroups?: readonly AlternativeGroup[],
+  intentFamilies?: readonly IntentFamily[],
 ): TeachingResolution {
   const primaryBid = bidResult.call;
   const candidates = bidResult.candidateSet?.resolvedCandidates ?? [];
@@ -80,19 +90,34 @@ export function resolveTeachingAnswer(
       for (const group of alternativeGroups) {
         if (!group.members.includes(matchedName)) continue;
         if (group.whenMatched && !group.whenMatched.includes(matchedName)) continue;
+
+        // Look up IntentFamily for relationship-aware credit
+        const family = intentFamilies?.length
+          ? findFamilyForBid(matchedName, intentFamilies)
+          : undefined;
+
         for (const memberName of group.members) {
           if (memberName === matchedName) continue;
           const memberCandidate = candidates.find(c => c.bidName === memberName);
           if (!memberCandidate) continue;
           if (memberCandidate.isMatched) continue;
           if (!memberCandidate.legal) continue;
+
+          // Credit logic: equivalent_encoding → fullCredit, otherwise group tier
+          let fullCredit = group.tier === "preferred";
+          if (family && family.members.includes(memberName)) {
+            if (family.relationship === "equivalent_encoding") fullCredit = true;
+            // mutually_exclusive and policy_alternative: keep group tier
+          }
+
           groupBids.push({
             call: memberCandidate.resolvedCall,
             bidName: memberCandidate.bidName,
             meaning: memberCandidate.meaning,
             reason: `${group.label}: ${memberCandidate.meaning}`,
-            fullCredit: group.tier === "preferred",
+            fullCredit,
             tier: group.tier,
+            relationship: family?.members.includes(memberName) ? family.relationship : undefined,
           });
         }
       }

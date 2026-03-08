@@ -49,6 +49,7 @@ export function conventionToStrategy(
     name: config.name,
     getLastPracticalRecommendation() { return lastPracticalRecommendation; },
     getAcceptableAlternatives() { return config.acceptableAlternatives; },
+    getIntentFamilies() { return config.intentFamilies; },
     suggest(context): BidResult | null {
       lastPracticalRecommendation = null;
       const trace = new TraceCollector();
@@ -112,7 +113,7 @@ export function conventionToStrategy(
         } else {
           ranker = configRanker ?? optionsRanker;
         }
-        const { selected, tierPeers, rankerApplied } = selectMatchedCandidate(generated, ranker, effectiveCtx.dialogueState.forcingState, effectiveCtx.dialogueState.obligation);
+        const { selected, tierPeers, preRankingPeers, rankerApplied } = selectMatchedCandidate(generated, ranker, effectiveCtx.dialogueState.forcingState, effectiveCtx.dialogueState.obligation);
 
         // Record tier-peer ambiguity in trace
         if (tierPeers.length > 0 || rankerApplied) {
@@ -122,6 +123,11 @@ export function conventionToStrategy(
             trace.setTierPeerCount(peerCount);
             trace.setTierPeerBidNames([selected.bidName, ...tierPeers.map(p => p.bidName)]);
           }
+        }
+        // Always record pre-ranking peers for teaching diagnostics
+        if (preRankingPeers.length > 1) {
+          trace.setPreRankingPeerCount(preRankingPeers.length);
+          trace.setPreRankingPeerBidNames(preRankingPeers.map(p => p.bidName));
         }
 
         if (selected) {

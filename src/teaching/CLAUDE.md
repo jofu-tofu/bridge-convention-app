@@ -8,12 +8,16 @@ Convention evaluation and teaching content extraction. Consumer of `conventions/
 | -------------------------- | ----------------------------------------------------------------- |
 | `teaching-content.ts`      | `extractTeachingContent()`, `evaluateTeachingRound()` — extract structured teaching data from convention trees |
 | `condition-explanations.ts` | `getConditionExplanation()`, `getConditionExplanationWithParams()`, `getFailureExplanation()` — condition teaching text from inference types |
-| `teaching-resolution.ts`   | `BidGrade`, `AcceptableBid`, `TeachingResolution`, `resolveTeachingAnswer()`, `gradeBid()` — multi-grade bid feedback layer |
+| `teaching-resolution.ts`   | `BidGrade`, `AcceptableBid` (with optional `relationship: IntentRelationship`), `TeachingResolution`, `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)`, `gradeBid()` — multi-grade bid feedback layer with IntentFamily-aware grading |
 
 ## Boundary Rules
 
 - **Allowed imports:** `conventions/core/`, `engine/`, `core/contracts/`, `core/util/`
 - **Blocked imports:** `components/`, `stores/`, `core/display/`, `strategy/`, `bootstrap/`, `inference/`
+
+## Pedagogical Separation
+
+Pedagogical acceptability is NOT a selection gate in the candidate pipeline (`isSelectable()` checks 3 dims: hand, protocol, encoding). Instead, `isPedagogicallyAcceptable()` (pipeline) and `isDtoPedagogicallyAcceptable()` (contracts) are post-selection annotations. `isTeachingEligible()` in `teaching-resolution.ts` checks hand+protocol+encoding for teaching candidate filtering.
 
 ---
 

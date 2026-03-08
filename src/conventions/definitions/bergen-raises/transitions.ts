@@ -21,6 +21,7 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
   // Detect 1H/1S opening — sets familyId, stores opener's major and openerSeat
   {
     id: "bergen-major-opening",
+    matchDescriptor: { familyId: null, callType: "bid", level: 1 },
     matches(state: DialogueState, entry) {
       const { call } = entry;
       return state.familyId === null && isMajorOpening(call);
@@ -39,6 +40,7 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
   // Bergen responses set agreed strain (partner of opener only)
   {
     id: "bergen-constructive",
+    matchDescriptor: { familyId: "bergen", callType: "bid", level: 3, strain: BidSuit.Clubs, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -61,6 +63,7 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
 
   {
     id: "bergen-limit",
+    matchDescriptor: { familyId: "bergen", callType: "bid", level: 3, strain: BidSuit.Diamonds, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -84,6 +87,7 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
   // Preemptive raise: responder jumps to 3M (0-6 HCP, 4+ trump support)
   {
     id: "bergen-preemptive",
+    matchDescriptor: { familyId: "bergen", callType: "bid", level: 3, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (

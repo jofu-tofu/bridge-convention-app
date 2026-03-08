@@ -540,6 +540,7 @@ describe("Phase 4: red-team tests for new behavior", () => {
       source: { conventionId: "test", nodeName: "test-bid" },
       resolvedCall: call,
       isDefaultCall: true,
+      orderKey: 0,
       eligibility: buildEligibility(failedConditions, legal),
       ...overrides,
     };

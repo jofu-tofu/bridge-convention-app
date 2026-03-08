@@ -157,6 +157,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       teachingResolution = resolveTeachingAnswer(
         expectedResult,
         conventionStrategy?.getAcceptableAlternatives(),
+        conventionStrategy?.getIntentFamilies(),
       );
       grade = gradeBid(call, teachingResolution);
     } else {
