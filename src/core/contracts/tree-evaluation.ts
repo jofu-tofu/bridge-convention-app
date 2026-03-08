@@ -137,13 +137,18 @@ export interface AlternativeGroup {
   readonly whenMatched?: readonly string[];
 }
 
-export interface TreeEvalSummary {
+/** Why did the tree match? Decision path trace through the convention tree. */
+export interface DecisionTrace {
   readonly matchedNodeName: string;
   readonly path: readonly TreePathEntry[];
   readonly visited: readonly TreePathEntry[];
   readonly forkPoint?: TreeForkPoint;
+}
+
+/** What else was in the candidate universe? All bids considered for this auction+hand. */
+export interface CandidateSet {
   /** Teaching view: base tree, defaultCall — what COULD you bid with a different hand. */
-  readonly siblings?: readonly SiblingBid[];
+  readonly siblings: readonly SiblingBid[];
   readonly candidates?: readonly CandidateBid[];
   /** Strategy view: overlay-aware, resolver-aware — what DID the system consider. */
   readonly resolvedCandidates?: readonly ResolvedCandidateDTO[];
@@ -169,5 +174,8 @@ export interface EvaluationTrace {
   readonly forcingFiltered?: boolean;
   /** Error message from the practical recommendation pipeline, if it failed. */
   readonly practicalError?: string;
+  readonly tierPeerCount?: number;
+  readonly tierPeerBidNames?: readonly string[];
+  readonly rankerResolved?: boolean;
   readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "filtered" | "error" }[];
 }

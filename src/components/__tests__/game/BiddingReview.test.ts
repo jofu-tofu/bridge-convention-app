@@ -99,10 +99,12 @@ describe("BiddingReview", () => {
       makeEntry({
         seat: Seat.South,
         meaning: "Pass",
-        treePath: {
+        decisionTrace: {
           matchedNodeName: "pass",
           path: [],
           visited: [],
+        },
+        candidateSet: {
           siblings,
         },
       }),
@@ -130,10 +132,12 @@ describe("BiddingReview", () => {
       makeEntry({
         seat: Seat.South,
         meaning: "Pass",
-        treePath: {
+        decisionTrace: {
           matchedNodeName: "pass",
           path: [],
           visited: [],
+        },
+        candidateSet: {
           siblings,
         },
       }),

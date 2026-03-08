@@ -201,8 +201,8 @@ describe("enrichSiblingsWithResolvedCalls", () => {
       ],
     );
 
-    expect(summary.siblings).toBeDefined();
-    expect(summary.siblings?.[0]?.bidName).toBe("stayman-response-diamond");
-    expect(summary.siblings?.[0]?.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
+    expect(summary.candidateSet.siblings).toBeDefined();
+    expect(summary.candidateSet.siblings[0]?.bidName).toBe("stayman-response-diamond");
+    expect(summary.candidateSet.siblings[0]?.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
   });
 });

@@ -127,7 +127,7 @@ describe("conventionToStrategy", () => {
     expect(result).toBeNull();
   });
 
-  test("suggest includes treePath with forkPoint when tree matches", () => {
+  test("suggest includes decisionTrace with forkPoint when tree matches", () => {
     const strategy = conventionToStrategy(staymanConfig);
     const h = staymanResponder();
     const auction = auctionFromBids(Seat.North, ["1NT", "P"]);
@@ -141,18 +141,18 @@ describe("conventionToStrategy", () => {
 
     const result = strategy.suggest(context);
     expect(result).not.toBeNull();
-    expect(result!.treePath).toBeDefined();
-    expect(result!.treePath!.matchedNodeName).toBe("stayman-ask");
-    expect(result!.treePath!.path.length).toBeGreaterThan(0);
-    expect(result!.treePath!.visited.length).toBeGreaterThan(0);
+    expect(result!.decisionTrace).toBeDefined();
+    expect(result!.decisionTrace!.matchedNodeName).toBe("stayman-ask");
+    expect(result!.decisionTrace!.path.length).toBeGreaterThan(0);
+    expect(result!.decisionTrace!.visited.length).toBeGreaterThan(0);
     // Every visited entry has depth and parentNodeName
-    for (const entry of result!.treePath!.visited) {
+    for (const entry of result!.decisionTrace!.visited) {
       expect(typeof entry.depth).toBe("number");
       expect(entry.depth).toBeGreaterThanOrEqual(0);
     }
   });
 
-  test("suggest includes siblings in treePath for opener response", () => {
+  test("suggest includes siblings in candidateSet for opener response", () => {
     const strategy = conventionToStrategy(staymanConfig);
     const opener = staymanOpener();
     const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
@@ -166,12 +166,11 @@ describe("conventionToStrategy", () => {
 
     const result = strategy.suggest(context);
     expect(result).not.toBeNull();
-    expect(result!.treePath).toBeDefined();
-    expect(result!.treePath!.siblings).toBeDefined();
-    expect(result!.treePath!.siblings!.length).toBeGreaterThan(0);
+    expect(result!.candidateSet).toBeDefined();
+    expect(result!.candidateSet!.siblings.length).toBeGreaterThan(0);
 
     // Each sibling has valid shape
-    for (const sibling of result!.treePath!.siblings!) {
+    for (const sibling of result!.candidateSet!.siblings) {
       expect(sibling.bidName).toBeTruthy();
       expect(sibling.meaning).toBeTruthy();
       expect(sibling.call).toBeDefined();
@@ -217,13 +216,13 @@ describe("conventionToStrategy — candidate pipeline characterization", () => {
     expect(result).not.toBeNull();
     // Resolved call: 2H (opener has 4 hearts)
     expect(result!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Hearts });
-    // Tree path preserved
-    expect(result!.treePath).toBeDefined();
-    expect(result!.treePath!.matchedNodeName).toBe("stayman-response-hearts");
-    expect(result!.treePath!.visited.length).toBeGreaterThan(0);
+    // Decision trace preserved
+    expect(result!.decisionTrace).toBeDefined();
+    expect(result!.decisionTrace!.matchedNodeName).toBe("stayman-response-hearts");
+    expect(result!.decisionTrace!.visited.length).toBeGreaterThan(0);
     // Candidates present
-    expect(result!.treePath!.candidates).toBeDefined();
-    expect(result!.treePath!.candidates!.length).toBeGreaterThan(0);
+    expect(result!.candidateSet).toBeDefined();
+    expect(result!.candidateSet!.candidates!.length).toBeGreaterThan(0);
   });
 
   test("Bergen protocol path: responder bids constructive raise", () => {
@@ -242,10 +241,10 @@ describe("conventionToStrategy — candidate pipeline characterization", () => {
     expect(result).not.toBeNull();
     // Bergen constructive raise resolves to 3H (ShowSupport → 3M via resolver)
     expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Hearts });
-    expect(result!.treePath).toBeDefined();
-    expect(result!.treePath!.matchedNodeName).toBeTruthy();
-    expect(result!.treePath!.siblings).toBeDefined();
-    expect(result!.treePath!.siblings!.length).toBeGreaterThan(0);
+    expect(result!.decisionTrace).toBeDefined();
+    expect(result!.decisionTrace!.matchedNodeName).toBeTruthy();
+    expect(result!.candidateSet).toBeDefined();
+    expect(result!.candidateSet!.siblings.length).toBeGreaterThan(0);
   });
 
   test("Weak Twos resolver path: Ogust response resolves correctly", () => {
@@ -265,8 +264,8 @@ describe("conventionToStrategy — candidate pipeline characterization", () => {
     expect(result).not.toBeNull();
     // Ogust 3D = min good
     expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Diamonds });
-    expect(result!.treePath).toBeDefined();
-    expect(result!.treePath!.matchedNodeName).toBeTruthy();
+    expect(result!.decisionTrace).toBeDefined();
+    expect(result!.decisionTrace!.matchedNodeName).toBeTruthy();
   });
 
   test("SAYC defaultCall path: opening bid uses defaultCall", () => {
@@ -285,14 +284,14 @@ describe("conventionToStrategy — candidate pipeline characterization", () => {
     const result = strategy.suggest(context);
     expect(result).not.toBeNull();
     expect(result!.call).toEqual({ type: "bid", level: 1, strain: BidSuit.NoTrump });
-    expect(result!.treePath).toBeDefined();
-    expect(result!.treePath!.matchedNodeName).toBeTruthy();
+    expect(result!.decisionTrace).toBeDefined();
+    expect(result!.decisionTrace!.matchedNodeName).toBeTruthy();
   });
 });
 
 // ─── Gap 3: suppress fallback — strategy returns null ────────
 
-// ─── Gap 8: resolvedCandidates on TreeEvalSummary ─────────
+// ─── Gap 8: resolvedCandidates on CandidateSet ─────────
 
 describe("conventionToStrategy — resolvedCandidates (Gap 8)", () => {
   test("resolvedCandidates populated when candidate pipeline runs", () => {
@@ -309,12 +308,12 @@ describe("conventionToStrategy — resolvedCandidates (Gap 8)", () => {
 
     const result = strategy.suggest(context);
     expect(result).not.toBeNull();
-    expect(result!.treePath).toBeDefined();
-    expect(result!.treePath!.resolvedCandidates).toBeDefined();
-    expect(result!.treePath!.resolvedCandidates!.length).toBeGreaterThan(0);
+    expect(result!.candidateSet).toBeDefined();
+    expect(result!.candidateSet!.resolvedCandidates).toBeDefined();
+    expect(result!.candidateSet!.resolvedCandidates!.length).toBeGreaterThan(0);
 
     // Each DTO has expected shape
-    for (const rc of result!.treePath!.resolvedCandidates!) {
+    for (const rc of result!.candidateSet!.resolvedCandidates!) {
       expect(rc.bidName).toBeTruthy();
       expect(rc.meaning).toBeTruthy();
       expect(rc.call).toBeDefined();
@@ -340,7 +339,7 @@ describe("conventionToStrategy — resolvedCandidates (Gap 8)", () => {
     };
 
     const result = strategy.suggest(context);
-    // No match → null result, no treePath
+    // No match → null result, no decisionTrace/candidateSet
     expect(result).toBeNull();
   });
 
@@ -357,7 +356,7 @@ describe("conventionToStrategy — resolvedCandidates (Gap 8)", () => {
     };
 
     const result = strategy.suggest(context);
-    const candidates = result!.treePath!.resolvedCandidates!;
+    const candidates = result!.candidateSet!.resolvedCandidates!;
     // First candidate is the matched one
     expect(candidates[0]!.isMatched).toBe(true);
   });
@@ -375,7 +374,7 @@ describe("conventionToStrategy — resolvedCandidates (Gap 8)", () => {
     };
 
     const result = strategy.suggest(context);
-    const candidates = result!.treePath!.resolvedCandidates!;
+    const candidates = result!.candidateSet!.resolvedCandidates!;
     const matched = candidates.find(c => c.isMatched);
 
     expect(matched).toBeDefined();

@@ -1,6 +1,6 @@
 import type { ConventionConfig } from "../../conventions/core";
 import type { BidHistoryEntry } from "../../core/contracts";
-import type { BidResult, ConditionDetail, TreeEvalSummary } from "../../core/contracts";
+import type { BidResult, CandidateSet, ConditionDetail, DecisionTrace } from "../../core/contracts";
 import type { Deal, Call, Seat, Auction } from "../../engine/types";
 import { Seat as SeatEnum } from "../../engine/types";
 import {
@@ -181,7 +181,8 @@ export interface RoundEntry {
   readonly isUser: boolean;
   readonly isCorrect?: boolean;
   readonly expectedResult?: BidResult;
-  readonly treePath?: TreeEvalSummary;
+  readonly decisionTrace?: DecisionTrace;
+  readonly candidateSet?: CandidateSet;
   readonly conditions?: readonly ConditionDetail[];
 }
 
@@ -213,7 +214,8 @@ export function groupBidsByRound(
         isUser: e.isUser,
         isCorrect: e.isCorrect,
         expectedResult: e.expectedResult,
-        treePath: e.treePath,
+        decisionTrace: e.decisionTrace,
+        candidateSet: e.candidateSet,
         conditions: e.conditions,
       })),
     });

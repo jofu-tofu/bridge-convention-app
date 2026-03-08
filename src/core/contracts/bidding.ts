@@ -8,9 +8,10 @@ import type {
 } from "../../engine/types";
 import type { TreeInferenceData } from "./inference";
 import type {
+  CandidateSet,
   ConditionDetail,
+  DecisionTrace,
   EvaluationTrace,
-  TreeEvalSummary,
 } from "./tree-evaluation";
 
 export interface BiddingContext {
@@ -48,7 +49,8 @@ export interface BidResult {
   readonly meaning?: string;
   readonly handSummary?: string;
   readonly conditions?: readonly ConditionDetail[];
-  readonly treePath?: TreeEvalSummary;
+  readonly decisionTrace?: DecisionTrace;
+  readonly candidateSet?: CandidateSet;
   readonly evaluationTrace?: EvaluationTrace;
   /** Structured inference data from tree evaluation — hand conditions on the matched path
    *  and rejected branches. Used by the inference engine for positive/negative inference. */
@@ -67,7 +69,8 @@ export interface BidHistoryEntry {
   readonly conditions?: readonly ConditionDetail[];
   readonly isCorrect?: boolean;
   readonly expectedResult?: BidResult;
-  readonly treePath?: TreeEvalSummary;
+  readonly decisionTrace?: DecisionTrace;
+  readonly candidateSet?: CandidateSet;
 }
 
 export interface BiddingStrategy {

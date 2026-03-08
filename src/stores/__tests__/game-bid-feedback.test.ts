@@ -49,10 +49,8 @@ function makePrimaryWithAcceptableAlternativeStrategy(): ConventionBiddingStrate
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
         ruleName: "stayman-ask",
         explanation: "Bid 2C to ask for a 4-card major",
-        treePath: {
-          matchedNodeName: "stayman-ask",
-          path: [],
-          visited: [],
+        candidateSet: {
+          siblings: [],
           resolvedCandidates: [
             {
               bidName: "stayman-2d-alt",

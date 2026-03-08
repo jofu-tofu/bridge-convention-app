@@ -1,9 +1,10 @@
 import type { ConditionResult, BiddingContext, RuleNode, DecisionNode, TreeEvalResult, PathEntry, ResolvedCandidate } from "../../conventions/core";
 import { findSiblingBids, findCandidateBids } from "../../conventions/core";
 import type {
+  CandidateSet,
   ConditionDetail,
+  DecisionTrace,
   TreePathEntry,
-  TreeEvalSummary,
   TreeForkPoint,
   TreeInferenceData,
   TreeInferenceConditionEntry,
@@ -152,7 +153,7 @@ export function mapTreeEvalResult(
   conventionId?: string,
   roundName?: string,
   resolvedCandidates?: readonly ResolvedCandidate[],
-): TreeEvalSummary {
+): { decisionTrace: DecisionTrace; candidateSet: CandidateSet } {
   const visited = mapVisitedWithStructure(result.visited, tree);
   const path = visited.filter((e) => e.passed);
 
@@ -178,13 +179,17 @@ export function mapTreeEvalResult(
     : siblings;
 
   return {
-    matchedNodeName: result.matched?.name ?? "",
-    path,
-    visited,
-    forkPoint: extractForkPoint(visited),
-    siblings: enrichedSiblings,
-    candidates,
-    resolvedCandidates: mappedResolvedCandidates,
+    decisionTrace: {
+      matchedNodeName: result.matched?.name ?? "",
+      path,
+      visited,
+      forkPoint: extractForkPoint(visited),
+    },
+    candidateSet: {
+      siblings: enrichedSiblings ?? [],
+      candidates,
+      resolvedCandidates: mappedResolvedCandidates,
+    },
   };
 }
 

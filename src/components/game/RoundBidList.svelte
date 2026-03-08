@@ -69,7 +69,7 @@
 
       {#each round.entries as entry (entry.seat + "-" + round.roundNumber)}
         {@const entryKey = entry.seat + "-" + round.roundNumber}
-        {@const siblings = entry.treePath?.siblings ?? []}
+        {@const siblings = entry.candidateSet?.siblings ?? []}
         <div class="flex flex-col gap-0.5 pl-2">
           <!-- Bid line -->
           <div class="flex min-w-0 items-center gap-2">

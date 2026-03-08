@@ -112,7 +112,17 @@ export function conventionToStrategy(
         } else {
           ranker = configRanker ?? optionsRanker;
         }
-        const selected = selectMatchedCandidate(generated, ranker, effectiveCtx.dialogueState.forcingState, effectiveCtx.dialogueState.obligation);
+        const { selected, tierPeers, rankerApplied } = selectMatchedCandidate(generated, ranker, effectiveCtx.dialogueState.forcingState, effectiveCtx.dialogueState.obligation);
+
+        // Record tier-peer ambiguity in trace
+        if (tierPeers.length > 0 || rankerApplied) {
+          trace.setRankerResolved(rankerApplied);
+          if (selected) {
+            const peerCount = 1 + tierPeers.length;
+            trace.setTierPeerCount(peerCount);
+            trace.setTierPeerBidNames([selected.bidName, ...tierPeers.map(p => p.bidName)]);
+          }
+        }
 
         if (selected) {
           trace.setSelectedTier(
@@ -195,6 +205,17 @@ export function conventionToStrategy(
         );
       }
 
+      const mapped = result.treeEvalResult && result.treeRoot
+        ? mapTreeEvalResult(
+            result.treeEvalResult,
+            result.treeRoot,
+            context,
+            config.id,
+            result.protocolResult?.activeRound?.name,
+            pipelineCandidates,
+          )
+        : undefined;
+
       return {
         call,
         ruleName: result.rule,
@@ -204,16 +225,8 @@ export function conventionToStrategy(
         conditions: result.conditionResults
           ? result.conditionResults.map(mapConditionResult)
           : undefined,
-        treePath: result.treeEvalResult && result.treeRoot
-          ? mapTreeEvalResult(
-              result.treeEvalResult,
-              result.treeRoot,
-              context,
-              config.id,
-              result.protocolResult?.activeRound?.name,
-              pipelineCandidates,
-            )
-          : undefined,
+        decisionTrace: mapped?.decisionTrace,
+        candidateSet: mapped?.candidateSet,
         evaluationTrace: trace.build(),
         treeInferenceData: result.treeEvalResult
           ? extractTreeInferenceData(result.treeEvalResult)

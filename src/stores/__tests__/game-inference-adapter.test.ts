@@ -46,7 +46,7 @@ describe("game inference adapter characterization", () => {
   test("with tree/display fields present: adapter still emits hollow shape", () => {
     const bidResult = makeBidResult({
       ruleName: null,
-      treePath: {
+      decisionTrace: {
         matchedNodeName: "ask-for-major",
         path: [],
         visited: [],

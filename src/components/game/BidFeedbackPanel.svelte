@@ -16,8 +16,8 @@
 
   let showAnswer = $state(false);
   let expandedSiblings = new SvelteSet<number>();
-  const forkPoint = $derived(feedback.expectedResult?.treePath?.forkPoint ?? null);
-  const siblings = $derived(feedback.expectedResult?.treePath?.siblings ?? []);
+  const forkPoint = $derived(feedback.expectedResult?.decisionTrace?.forkPoint ?? null);
+  const siblings = $derived(feedback.expectedResult?.candidateSet?.siblings ?? []);
   const acceptableBids = $derived(feedback.teachingResolution?.acceptableBids ?? []);
   const handConditions = $derived(
     feedback.expectedResult?.conditions?.filter(c => c.category !== "auction") ?? [],
@@ -25,7 +25,7 @@
 
   // Divergence note: when a resolver produced a different call than the default
   const divergedCandidate = $derived(
-    feedback.expectedResult?.treePath?.resolvedCandidates?.find(
+    feedback.expectedResult?.candidateSet?.resolvedCandidates?.find(
       c => c.isMatched && !c.isDefaultCall,
     ) ?? null,
   );

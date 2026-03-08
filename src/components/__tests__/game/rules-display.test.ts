@@ -348,7 +348,8 @@ describe("groupBidsByRound", () => {
       explanation: opts.explanation ?? "",
       isUser: opts.isUser ?? false,
       isCorrect: opts.isCorrect,
-      treePath: opts.treePath,
+      decisionTrace: opts.decisionTrace,
+      candidateSet: opts.candidateSet,
       conditions: opts.conditions,
     };
   }
@@ -392,19 +393,19 @@ describe("groupBidsByRound", () => {
     expect(groupBidsByRound([])).toEqual([]);
   });
 
-  it("passes through treePath and conditions from BidHistoryEntry", () => {
-    const treePath = {
+  it("passes through decisionTrace, candidateSet and conditions from BidHistoryEntry", () => {
+    const decisionTrace = {
       matchedNodeName: "stayman-ask",
       path: [],
       visited: [],
     };
     const conditions = [{ name: "hcp-min", passed: true, description: "8+ HCP (has 12)" }];
     const history: BidHistoryEntry[] = [
-      entry(Seat.North, "1NT", { treePath, conditions }),
+      entry(Seat.North, "1NT", { decisionTrace, conditions }),
     ];
 
     const rounds = groupBidsByRound(history);
-    expect(rounds[0]!.entries[0]!.treePath).toBe(treePath);
+    expect(rounds[0]!.entries[0]!.decisionTrace).toBe(decisionTrace);
     expect(rounds[0]!.entries[0]!.conditions).toBe(conditions);
   });
 

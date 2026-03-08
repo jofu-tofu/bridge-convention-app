@@ -41,7 +41,7 @@ export function resolveTeachingAnswer(
   alternativeGroups?: readonly AlternativeGroup[],
 ): TeachingResolution {
   const primaryBid = bidResult.call;
-  const candidates = bidResult.treePath?.resolvedCandidates ?? [];
+  const candidates = bidResult.candidateSet?.resolvedCandidates ?? [];
 
   if (candidates.length === 0) {
     return {
@@ -121,13 +121,19 @@ export function resolveTeachingAnswer(
       ? "primary_plus_acceptable"
       : "exact";
 
-  const ambiguityScore = acceptableBids.length === 0
+  let ambiguityScore = acceptableBids.length === 0
     ? 0
     : preferredCount >= 2
       ? 0.8
       : preferredCount >= 1
         ? 0.6
         : 0.3;
+
+  // Tier-peer boost: when multiple candidates tied for first place within winning tier
+  const trace = bidResult.evaluationTrace;
+  if (trace?.tierPeerCount !== undefined && trace.tierPeerCount >= 2 && !trace.rankerResolved) {
+    ambiguityScore = Math.min(ambiguityScore + 0.2, 1.0);
+  }
 
   return {
     primaryBid,

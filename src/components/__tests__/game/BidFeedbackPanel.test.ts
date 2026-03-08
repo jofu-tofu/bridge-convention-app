@@ -3,7 +3,7 @@ import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
 import type { BidFeedback } from "../../../stores/game.svelte";
 import { BidGrade } from "../../../stores/bidding.svelte";
-import type { TreeEvalSummary, TreeForkPoint, TreePathEntry, PracticalRecommendation } from "../../../core/contracts";
+import type { DecisionTrace, CandidateSet, TreeForkPoint, TreePathEntry, PracticalRecommendation } from "../../../core/contracts";
 
 function makeForkPoint(): TreeForkPoint {
   const matched: TreePathEntry = {
@@ -23,7 +23,7 @@ function makeForkPoint(): TreeForkPoint {
   return { matched, rejected };
 }
 
-function makeTreePath(forkPoint?: TreeForkPoint): TreeEvalSummary {
+function makeTreePath(forkPoint?: TreeForkPoint): DecisionTrace {
   return {
     matchedNodeName: "stayman-ask",
     path: [
@@ -36,7 +36,7 @@ function makeTreePath(forkPoint?: TreeForkPoint): TreeEvalSummary {
   };
 }
 
-function makeWrongBidFeedback(treePath?: TreeEvalSummary): BidFeedback {
+function makeWrongBidFeedback(decisionTrace?: DecisionTrace, candidateSet?: CandidateSet): BidFeedback {
   return {
     grade: BidGrade.Incorrect,
     userCall: { type: "pass" },
@@ -44,7 +44,8 @@ function makeWrongBidFeedback(treePath?: TreeEvalSummary): BidFeedback {
       call: { type: "bid", level: 2, strain: "C" as never },
       ruleName: "stayman-ask",
       explanation: "Stayman convention ask",
-      treePath,
+      decisionTrace,
+      candidateSet,
     },
     teachingResolution: null,
   };
@@ -53,7 +54,7 @@ function makeWrongBidFeedback(treePath?: TreeEvalSummary): BidFeedback {
 describe("BidFeedbackPanel", () => {
   const noop = () => {};
 
-  test("shows fork point when treePath.forkPoint exists and answer is revealed", async () => {
+  test("shows fork point when decisionTrace.forkPoint exists and answer is revealed", async () => {
     const feedback = makeWrongBidFeedback(makeTreePath(makeForkPoint()));
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
@@ -70,7 +71,7 @@ describe("BidFeedbackPanel", () => {
     expect(forkSection!.textContent).toContain("Hand is balanced");
   });
 
-  test("does not show fork point when treePath is undefined", async () => {
+  test("does not show fork point when decisionTrace is undefined", async () => {
     const feedback = makeWrongBidFeedback(undefined);
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
@@ -97,8 +98,9 @@ describe("BidFeedbackPanel", () => {
   });
 
   test("shows divergence note when resolvedCandidate has isDefaultCall: false", async () => {
-    const treePath: TreeEvalSummary = {
-      ...makeTreePath(),
+    const decisionTrace: DecisionTrace = makeTreePath();
+    const candidateSet: CandidateSet = {
+      siblings: [],
       resolvedCandidates: [
         {
           bidName: "stayman-ask",
@@ -113,7 +115,7 @@ describe("BidFeedbackPanel", () => {
         },
       ],
     };
-    const feedback = makeWrongBidFeedback(treePath);
+    const feedback = makeWrongBidFeedback(decisionTrace, candidateSet);
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
     });
@@ -127,8 +129,9 @@ describe("BidFeedbackPanel", () => {
   });
 
   test("no divergence note when resolvedCandidate has isDefaultCall: true", async () => {
-    const treePath: TreeEvalSummary = {
-      ...makeTreePath(),
+    const decisionTrace: DecisionTrace = makeTreePath();
+    const candidateSet: CandidateSet = {
+      siblings: [],
       resolvedCandidates: [
         {
           bidName: "stayman-ask",
@@ -143,7 +146,7 @@ describe("BidFeedbackPanel", () => {
         },
       ],
     };
-    const feedback = makeWrongBidFeedback(treePath);
+    const feedback = makeWrongBidFeedback(decisionTrace, candidateSet);
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
     });

@@ -110,7 +110,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
             handSummary: result.handSummary,
             isUser: false,
             conditions: result.conditions,
-            treePath: result.treePath,
+            decisionTrace: result.decisionTrace,
+            candidateSet: result.candidateSet,
           },
         ];
 
@@ -216,7 +217,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         isUser: true,
         isCorrect,
         expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
-        treePath: expectedResult?.treePath,
+        decisionTrace: expectedResult?.decisionTrace,
+        candidateSet: expectedResult?.candidateSet,
       },
     ];
 
