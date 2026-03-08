@@ -89,6 +89,10 @@ export interface RuleCondition {
    *  Defaults to true. Set to false for conditions like `isBalanced()` where
    *  the NO branch doesn't imply a clean inverse (could be semi-balanced). */
   readonly negatable?: boolean;
+  /** Whether this condition evaluates against an event-local span ("event")
+   *  or needs the full auction history ("full"). Used by diagnostics to warn
+   *  when a full-scope condition is used as a protocol trigger. */
+  readonly triggerScope?: "event" | "full";
 }
 
 /** A condition that checks auction state (e.g., who opened, auction pattern).

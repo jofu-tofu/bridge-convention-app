@@ -55,16 +55,16 @@ export function computeRole(entries: readonly AuctionEntry[], seat: Seat): Aucti
 // ─── Cursor-based context ────────────────────────────────────
 
 /**
- * Create a BiddingContext view where the auction starts from a cursor position.
- * The trigger condition evaluates against this "windowed" context.
+ * Create a BiddingContext view with only the event-local span at the cursor.
+ * The trigger condition evaluates against entries [cursor, cursor+2) — the
+ * current 2-entry event span, not the full prefix.
  */
 function contextAtCursor(context: BiddingContext, cursor: number): BiddingContext {
-  if (cursor === 0) return context;
   return {
     ...context,
     auction: {
       ...context.auction,
-      entries: context.auction.entries.slice(0, cursor + 2),
+      entries: context.auction.entries.slice(cursor, cursor + 2),
     },
   };
 }

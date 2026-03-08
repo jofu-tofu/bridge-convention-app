@@ -43,6 +43,12 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 **Protocol structure:** Each `ProtocolRound` has `triggers` (AuctionConditions like `bidMade`, `partnerBidMade`), a `handTree` (static or function receiving `EstablishedContext`), and optional `seatFilter` (AuctionCondition evaluated against the FULL context).
 
+**Event-local trigger scope:** Triggers see only the current 2-entry event span (`entries.slice(cursor, cursor+2)`), not the full auction prefix. This prevents stale events from prior rounds matching later triggers. Milestone conditions (`bidMade`, `bidMadeAtLevel`, `doubleMade`, `partnerBidMade`, `opponentBidMade`) have `triggerScope: "event"`. For rounds that don't need to detect a new event (the cursor advancing is sufficient), use `cursorReached()`. `seatFilters` see the full context (unchanged).
+
+**Architectural constraint:** Do NOT add protocol-specific fields (like `triggerSpan`) to `BiddingContext` — it is a cross-boundary DTO in `src/core/contracts/`. The evaluator-only fix keeps protocol concerns inside the protocol layer.
+
+**Trigger vs seatFilter:** Triggers answer "what just happened in this event span"; seatFilters answer "given the full auction state, does this round apply to me." If a condition genuinely needs full auction history (e.g., `isOpener()`, `biddingRound()`), it belongs in a seatFilter, not a trigger. The `triggerScope` property on `RuleCondition` marks this distinction; diagnostics (`analyzeTriggerScope`) warn on `triggerScope: "full"` conditions used as triggers.
+
 **Multi-round with seatFilter:** Stayman (3 rounds), Bergen (4 rounds), Weak Twos (3 rounds), Lebensohl Lite use multi-round protocols. The evaluator advances the cursor for every matched round but only sets `activeRound` when seatFilter passes — separates WHAT happened from WHO acts.
 
 **seatFilter patterns:**
@@ -52,7 +58,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 - `passedAfter(level, strain)` — interference protection
 - Combine with `and()`, `not()`, cast as `AuctionCondition`
 
-**Milestone conditions:** `bidMade(level, strain)`, `doubleMade()` — seat-agnostic. `partnerBidMade(level, strain)`, `opponentBidMade(level, strain)` — actor-aware via `areSamePartnership()`.
+**Milestone conditions:** `bidMade(level, strain)`, `doubleMade()`, `bidMadeAtLevel(level)` — seat-agnostic, `triggerScope: "event"`. `partnerBidMade(level, strain)`, `opponentBidMade(level, strain)` — actor-aware via `areSamePartnership()`, `triggerScope: "event"`. `cursorReached()` — always-true trigger for continuation rounds that rely on seatFilter for applicability.
 
 **Single-round:** SAYC uses single-round dispatch with semantic conditions.
 

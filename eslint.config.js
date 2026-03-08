@@ -2,6 +2,7 @@ import tseslint from "typescript-eslint";
 import sveltePlugin from "eslint-plugin-svelte";
 import svelteParser from "svelte-eslint-parser";
 import unusedImports from "eslint-plugin-unused-imports";
+import { rule as noFullScopeTrigger } from "./eslint-rules/no-full-scope-trigger.js";
 
 const UNUSED_VAR_RULE = [
   "warn",
@@ -334,6 +335,18 @@ export default tseslint.config(
           ],
         },
       ],
+    },
+  },
+
+  // ── Protocol trigger scope: convention files ──
+  {
+    files: ["src/conventions/definitions/**/*.ts", "src/conventions/core/**/*.ts"],
+    ignores: ["**/__tests__/**", "**/*.test.ts"],
+    plugins: {
+      local: { rules: { "no-full-scope-trigger": noFullScopeTrigger } },
+    },
+    rules: {
+      "local/no-full-scope-trigger": "warn",
     },
   },
 

@@ -11,7 +11,8 @@ export interface DiagnosticWarning {
     | "overlay-priority-conflict"
     | "trigger-overlap"
     | "missing-resolver"
-    | "unreachable-node";
+    | "unreachable-node"
+    | "full-scope-trigger";
   readonly severity: "error" | "warning";
   readonly message: string;
 }
@@ -189,6 +190,48 @@ export function analyzeTriggerOverlaps(config: ConventionConfig): DiagnosticWarn
   return warnings;
 }
 
+/** Check for full-scope conditions used as protocol triggers. */
+export function analyzeTriggerScope(config: ConventionConfig): DiagnosticWarning[] {
+  if (!config.protocol) return [];
+
+  const warnings: DiagnosticWarning[] = [];
+  for (const r of config.protocol.rounds) {
+    for (const trigger of r.triggers) {
+      if (trigger.condition.triggerScope === "full") {
+        warnings.push({
+          type: "full-scope-trigger",
+          severity: "warning",
+          message: `Protocol "${config.id}" round "${r.name}" trigger "${trigger.condition.name}" ` +
+            `has triggerScope "full" — protocol triggers should use event-local conditions. ` +
+            `Use seatFilter for full-history conditions.`,
+        });
+      }
+    }
+  }
+  return warnings;
+}
+
+/** Check for full-scope conditions used as overlay trigger overrides. */
+export function analyzeOverlayTriggerScope(overlays: readonly ConventionOverlayPatch[]): DiagnosticWarning[] {
+  const warnings: DiagnosticWarning[] = [];
+  for (const overlay of overlays) {
+    if (!overlay.triggerOverrides) continue;
+    for (const [_roundName, triggers] of overlay.triggerOverrides) {
+      for (const trigger of triggers) {
+        if (trigger.condition.triggerScope === "full") {
+          warnings.push({
+            type: "full-scope-trigger",
+            severity: "warning",
+            message: `Overlay "${overlay.id}" trigger "${trigger.condition.name}" ` +
+              `has triggerScope "full" — protocol triggers should use event-local conditions.`,
+          });
+        }
+      }
+    }
+  }
+  return warnings;
+}
+
 /** Run all diagnostic analyzers on a convention config. */
 export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[] {
   const warnings: DiagnosticWarning[] = [];
@@ -196,9 +239,11 @@ export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[]
   warnings.push(...analyzeNodeIdUniqueness(config));
   warnings.push(...analyzeMissingResolvers(config));
   warnings.push(...analyzeTriggerOverlaps(config));
+  warnings.push(...analyzeTriggerScope(config));
 
   if (config.overlays) {
     warnings.push(...analyzeOverlayConflicts(config.overlays));
+    warnings.push(...analyzeOverlayTriggerScope(config.overlays));
   }
 
   return warnings;

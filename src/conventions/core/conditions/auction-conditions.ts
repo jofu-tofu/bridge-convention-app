@@ -14,6 +14,7 @@ export function auctionMatches(pattern: string[]): AuctionCondition {
     name: "auction",
     label: `After ${patternLabel}`,
     category: "auction",
+    triggerScope: "full" as const,
     test(ctx) {
       return auctionMatchesExact(ctx.auction, pattern);
     },
@@ -318,6 +319,22 @@ export function advanceAfterDouble(): AuctionCondition {
   };
 }
 
+// ─── Protocol cursor conditions ─────────────────────────────
+
+/** Always matches — used for protocol rounds that don't need to detect a new
+ *  event in their span. The cursor advancing past earlier rounds is sufficient;
+ *  the seatFilter determines which seat acts. */
+export function cursorReached(): AuctionCondition {
+  return {
+    name: "cursor-reached",
+    label: "Protocol cursor advanced to this round",
+    category: "auction",
+    triggerScope: "event" as const,
+    test: () => true,
+    describe: () => "Protocol cursor reached this round",
+  };
+}
+
 // ─── Seat-agnostic milestone conditions ─────────────────────
 
 /** Any player bid at this level/strain in the context. */
@@ -326,6 +343,7 @@ export function bidMade(level: number, strain: BidSuit): AuctionCondition {
     name: `bid-made-${level}${strain}`,
     label: `${level}${strain} was bid`,
     category: "auction",
+    triggerScope: "event" as const,
     test(ctx) {
       return ctx.auction.entries.some(
         (e) =>
@@ -354,6 +372,7 @@ export function partnerBidMade(level: number, strain: BidSuit): AuctionCondition
     name: `partner-bid-made-${level}${strain}`,
     label: `Partner bid ${level}${strain}`,
     category: "auction",
+    triggerScope: "event" as const,
     test(ctx) {
       return ctx.auction.entries.some(
         (e) =>
@@ -386,6 +405,7 @@ export function opponentBidMade(level: number, strain: BidSuit): AuctionConditio
     name: `opponent-bid-made-${level}${strain}`,
     label: `Opponent bid ${level}${strain}`,
     category: "auction",
+    triggerScope: "event" as const,
     test(ctx) {
       return ctx.auction.entries.some(
         (e) =>
@@ -416,6 +436,7 @@ export function doubleMade(): AuctionCondition {
     name: "double-made",
     label: "A double was made",
     category: "auction",
+    triggerScope: "event" as const,
     test(ctx) {
       return ctx.auction.entries.some((e) => e.call.type === "double");
     },
@@ -433,6 +454,7 @@ export function bidMadeAtLevel(level: number): AuctionCondition {
     name: `bid-made-at-level-${level}`,
     label: `A ${level}-level bid was made`,
     category: "auction",
+    triggerScope: "event" as const,
     test(ctx) {
       return ctx.auction.entries.some(
         (e) => e.call.type === "bid" && e.call.level === level,

@@ -1,9 +1,9 @@
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import {
-  bidMade,
   bidMadeAtLevel,
   noPriorBid,
+  cursorReached,
   isOpener,
   isResponder,
   lastEntryIsPass,
@@ -188,18 +188,21 @@ export const weakTwosProtocol: ConventionProtocol<WeakTwoEstablished> = protocol
     handTree: openingTree,
     seatFilter: and(isOpener(), biddingRound(0)),
   }),
-  // Round 2: Response — responder decides to raise, ask Ogust, or pass
+  // Round 2: Response — responder decides to raise, ask Ogust, or pass.
+  // cursorReached() because the triggering event (the 2-level opening) is in
+  // round 1's span, not this round's. seatFilter guards applicability.
   round<WeakTwoEstablished>("response", {
     triggers: [
-      semantic<WeakTwoEstablished>(bidMadeAtLevel(2), {}),
+      semantic<WeakTwoEstablished>(cursorReached(), {}),
     ],
     handTree: responseTree,
     seatFilter: and(isResponder(), lastEntryIsPass()),
   }),
-  // Round 3: Ogust rebid — opener classifies hand quality
+  // Round 3: Ogust rebid — opener classifies hand quality.
+  // cursorReached() because the 2NT Ogust ask is in round 2's span.
   round<WeakTwoEstablished>("ogust-rebid", {
     triggers: [
-      semantic<WeakTwoEstablished>(bidMade(2, BidSuit.NoTrump), {}),
+      semantic<WeakTwoEstablished>(cursorReached(), {}),
     ],
     handTree: ogustRebidTree(),
     seatFilter: and(isOpener(), passedAfter(2, BidSuit.NoTrump)),

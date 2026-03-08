@@ -4,7 +4,9 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { createBiddingContext } from "../../core/context-factory";
-import type { BiddingContext, AuctionCondition } from "../../core/types";
+import type { BiddingContext, AuctionCondition, ConventionConfig } from "../../core/types";
+import { ConventionCategory } from "../../core/types";
+import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
 import { handDecision } from "../../core/tree/rule-tree";
 import { hcpMin } from "../../core/conditions";
 import {
@@ -25,6 +27,7 @@ import { protocol, round, semantic, validateProtocol } from "../../core/protocol
 import type { EstablishedContext } from "../../core/protocol/protocol";
 import { evaluateProtocol, computeRole } from "../../core/protocol/protocol-evaluator";
 import { alwaysTrue, staticBid } from "../tree-test-helpers";
+import { analyzeTriggerScope, analyzeOverlayTriggerScope } from "../../core/diagnostics";
 
 // ─── Test helpers ────────────────────────────────────────────
 
@@ -129,13 +132,13 @@ describe("evaluateProtocol", () => {
       }),
       round<TestEst>("our-bid", {
         triggers: [
-          semantic<TestEst>(auctionMatches(["1NT", "P", "2C", "P"]), {}),
+          semantic<TestEst>(bidMade(2, BidSuit.Clubs), {}),
         ],
         handTree: staticBid("wait", 2, BidSuit.Diamonds),
       }),
       round<TestEst>("response", {
         triggers: [
-          semantic<TestEst>(auctionMatches(["1NT", "P", "2C", "P", "2H", "P"]), { majorShown: "hearts" }),
+          semantic<TestEst>(bidMade(2, BidSuit.Hearts), { majorShown: "hearts" }),
         ],
         handTree: finalBid,
       }),
@@ -170,13 +173,13 @@ describe("evaluateProtocol", () => {
       }),
       round<TestEst>("our-bid", {
         triggers: [
-          semantic<TestEst>(auctionMatches(["1NT", "P", "2C", "P"]), {}),
+          semantic<TestEst>(bidMade(2, BidSuit.Clubs), {}),
         ],
         handTree: round2Bid,
       }),
       round<TestEst>("response", {
         triggers: [
-          semantic<TestEst>(auctionMatches(["1NT", "P", "2C", "P", "2H", "P"]), {}),
+          semantic<TestEst>(bidMade(2, BidSuit.Hearts), {}),
         ],
         handTree: staticBid("final", 4, BidSuit.Hearts),
       }),
@@ -461,6 +464,177 @@ describe("seat-specific conditions", () => {
     // East opens 1NT, South passes, West passes, North doubles
     const ctx = makeContext(["1NT", "P", "P", "X"], Seat.South, Seat.East);
     expect(partnerDoubled().test(ctx)).toBe(true);
+  });
+});
+
+// ─── Event-local trigger scope ──────────────────────────────
+
+describe("evaluateProtocol — event-local trigger scope", () => {
+  it("trigger does NOT match stale event from prior round", () => {
+    // 2-round protocol: both rounds trigger on bidMade(1, NT).
+    // Auction: [1NT, P, 2C, P]. Round 2's event span [2C, P] has no 1NT.
+    // Only round 1 should match.
+    const round1Bid = staticBid("round1", 2, BidSuit.Clubs);
+    const round2Bid = staticBid("round2", 2, BidSuit.Hearts);
+
+    const proto = protocol("test", [
+      round("opening", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: round1Bid,
+      }),
+      round("response", {
+        triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+        handTree: round2Bid,
+      }),
+    ]);
+
+    const ctx = makeContext(["1NT", "P", "2C", "P"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    // Round 2 should NOT match — 1NT is in the prefix but not in the event span
+    expect(result.matchedRounds).toHaveLength(1);
+    expect(result.matchedRounds[0]!.round.name).toBe("opening");
+  });
+
+  it("bidMadeAtLevel triggers match only their own event span", () => {
+    // Bergen-like: 3 rounds where rounds 2 and 3 both trigger on bidMadeAtLevel(3).
+    // Auction: [1H, P, 3C, P]. Round 3's span is empty → should NOT match.
+    const round1Bid = staticBid("opening", 1, BidSuit.Hearts);
+    const round2Bid = staticBid("response", 3, BidSuit.Clubs);
+    const round3Bid = staticBid("rebid", 3, BidSuit.Hearts);
+
+    const proto = protocol("test", [
+      round("opening", {
+        triggers: [semantic(bidMadeAtLevel(1), {})],
+        handTree: round1Bid,
+      }),
+      round("response", {
+        triggers: [semantic(bidMadeAtLevel(3), {})],
+        handTree: round2Bid,
+      }),
+      round("rebid", {
+        triggers: [semantic(bidMadeAtLevel(3), {})],
+        handTree: round3Bid,
+      }),
+    ]);
+
+    const ctx = makeContext(["1H", "P", "3C", "P"], Seat.South, Seat.North);
+    const result = evaluateProtocol(proto, ctx);
+
+    // Only rounds 1 and 2 should match — round 3's span has no 3-level bid
+    expect(result.matchedRounds).toHaveLength(2);
+    expect(result.matchedRounds[0]!.round.name).toBe("opening");
+    expect(result.matchedRounds[1]!.round.name).toBe("response");
+  });
+});
+
+// ─── triggerScope diagnostics ────────────────────────────────
+
+describe("analyzeTriggerScope", () => {
+  it("warns when a full-scope condition is used as a protocol trigger", () => {
+
+    const config = {
+      id: "test",
+      name: "Test",
+      description: "",
+      category: ConventionCategory.Asking,
+      dealConstraints: {},
+      protocol: protocol("test", [
+        round("opening", {
+          triggers: [semantic(auctionMatches(["1NT", "P"]), {})],
+          handTree: staticBid("test", 2, BidSuit.Clubs),
+        }),
+      ]),
+    } as ConventionConfig;
+
+    const warnings = analyzeTriggerScope(config);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]!.type).toBe("full-scope-trigger");
+    expect(warnings[0]!.severity).toBe("warning");
+  });
+
+  it("does not warn for event-scope conditions", () => {
+
+    const config = {
+      id: "test",
+      name: "Test",
+      description: "",
+      category: ConventionCategory.Asking,
+      dealConstraints: {},
+      protocol: protocol("test", [
+        round("opening", {
+          triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+          handTree: staticBid("test", 2, BidSuit.Clubs),
+        }),
+      ]),
+    } as ConventionConfig;
+
+    const warnings = analyzeTriggerScope(config);
+    expect(warnings).toHaveLength(0);
+  });
+
+  it("does not warn for untagged conditions (backward compat)", () => {
+
+    const untagged: AuctionCondition = {
+      name: "custom",
+      label: "Custom",
+      category: "auction",
+      test: () => true,
+      describe: () => "custom",
+    };
+    const config = {
+      id: "test",
+      name: "Test",
+      description: "",
+      category: ConventionCategory.Asking,
+      dealConstraints: {},
+      protocol: protocol("test", [
+        round("opening", {
+          triggers: [semantic(untagged, {})],
+          handTree: staticBid("test", 2, BidSuit.Clubs),
+        }),
+      ]),
+    } as ConventionConfig;
+
+    const warnings = analyzeTriggerScope(config);
+    expect(warnings).toHaveLength(0);
+  });
+});
+
+describe("analyzeOverlayTriggerScope", () => {
+  it("warns when overlay triggerOverrides use full-scope conditions", () => {
+
+    const overlays: ConventionOverlayPatch[] = [
+      {
+        id: "test-overlay",
+        roundName: "opening",
+        matches: () => true,
+        triggerOverrides: new Map([
+          ["opening", [semantic(auctionMatches(["1NT", "P"]), {})]],
+        ]),
+      },
+    ];
+
+    const warnings = analyzeOverlayTriggerScope(overlays);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]!.type).toBe("full-scope-trigger");
+  });
+
+  it("does not warn for event-scope overlay triggers", () => {
+
+    const overlays: ConventionOverlayPatch[] = [
+      {
+        id: "test-overlay",
+        roundName: "opening",
+        matches: () => true,
+        triggerOverrides: new Map([
+          ["opening", [semantic(bidMade(1, BidSuit.NoTrump), {})]],
+        ]),
+      },
+    ];
+
+    const warnings = analyzeOverlayTriggerScope(overlays);
+    expect(warnings).toHaveLength(0);
   });
 });
 

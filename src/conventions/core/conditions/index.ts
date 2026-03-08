@@ -23,6 +23,8 @@ export {
   partnerBidAt,
   seatHasBid,
   advanceAfterDouble,
+  // Protocol cursor conditions
+  cursorReached,
   // Seat-agnostic milestone conditions
   bidMade,
   doubleMade,
