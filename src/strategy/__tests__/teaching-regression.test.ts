@@ -22,7 +22,7 @@ import {
   auctionFromBids,
 } from "../../conventions/__tests__/fixtures";
 import type { BiddingContext } from "../../conventions/core/types";
-import type { BidResult } from "../../core/contracts";
+import type { BidResult, AlternativeGroup } from "../../core/contracts";
 
 beforeEach(() => {
   clearRegistry();
@@ -42,8 +42,8 @@ function makeContext(h: ReturnType<typeof hand>, bids: string[], seat: Seat, dea
   };
 }
 
-function getTeaching(result: BidResult) {
-  const resolution = resolveTeachingAnswer(result);
+function getTeaching(result: BidResult, alternativeGroups?: readonly AlternativeGroup[]) {
+  const resolution = resolveTeachingAnswer(result, alternativeGroups);
   return { resolution, result };
 }
 

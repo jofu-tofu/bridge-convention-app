@@ -48,6 +48,7 @@ export function conventionToStrategy(
     id: `convention:${config.id}`,
     name: config.name,
     getLastPracticalRecommendation() { return lastPracticalRecommendation; },
+    getAcceptableAlternatives() { return config.acceptableAlternatives; },
     suggest(context): BidResult | null {
       lastPracticalRecommendation = null;
       const trace = new TraceCollector();

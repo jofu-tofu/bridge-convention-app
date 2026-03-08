@@ -6,7 +6,7 @@ import type {
   Deal,
 } from "../../engine/types";
 import type { Seat } from "../../engine/types";
-import type { BiddingContext } from "../../core/contracts";
+import type { BiddingContext, AlternativeGroup } from "../../core/contracts";
 export type { BiddingContext } from "../../core/contracts";
 import type { InterferenceKind } from "./dialogue/dialogue-state";
 import type { TransitionRule } from "./dialogue/dialogue-transitions";
@@ -218,6 +218,10 @@ export interface ConventionConfig {
     candidate: { intentType: string; call: Call; resolvedCall: Call; isMatched: boolean },
     ctx: EffectiveConventionContext,
   ) => { acceptable: boolean; reasons: string[] };
+  /** Groups of intents that are acceptable alternatives to each other for grading.
+   *  When the matched intent is in a group, other group members become acceptable bids.
+   *  Bypasses tree path-condition exclusivity — these are semantic, not structural, neighbors. */
+  readonly acceptableAlternatives?: readonly AlternativeGroup[];
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */

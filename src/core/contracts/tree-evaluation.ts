@@ -116,6 +116,27 @@ export function isDtoSelectable(c: ResolvedCandidateDTO): boolean {
     && c.eligibility.pedagogical.acceptable;
 }
 
+/** Groups of intents that are acceptable alternatives to each other for grading.
+ *  When the matched intent is in a group, other group members become acceptable bids.
+ *  Bypasses tree path-condition exclusivity — these are semantic, not structural, neighbors. */
+export interface AlternativeGroup {
+  /** Human-readable label for the group (e.g., "Bergen strength raises") */
+  readonly label: string;
+  /** bidNames (IntentNode.name) of intents in this group.
+   *  Uses bidName (e.g., "bergen-game-raise") NOT nodeId ("bergen/bergen-game-raise")
+   *  because ResolvedCandidateDTO carries bidName, not nodeId. */
+  readonly members: readonly string[];
+  /** Whether alternatives get full credit or partial.
+   *  "preferred" → fullCredit: true (teal, same as correct).
+   *  "alternative" → fullCredit: false (teal, partial credit).
+   *  Maps to existing AcceptableBid.fullCredit in teaching-resolution.ts. */
+  readonly tier: "preferred" | "alternative";
+  /** Optional: only activate when matched intent is one of these specific bidNames.
+   *  If omitted, any member match activates all other members as alternatives.
+   *  If present, ONLY matching one of these members activates the group. */
+  readonly whenMatched?: readonly string[];
+}
+
 export interface TreeEvalSummary {
   readonly matchedNodeName: string;
   readonly path: readonly TreePathEntry[];

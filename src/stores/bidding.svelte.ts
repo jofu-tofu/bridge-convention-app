@@ -153,7 +153,10 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     let teachingResolution: TeachingResolution | null = null;
     let grade: BidGrade;
     if (expectedResult) {
-      teachingResolution = resolveTeachingAnswer(expectedResult);
+      teachingResolution = resolveTeachingAnswer(
+        expectedResult,
+        conventionStrategy?.getAcceptableAlternatives(),
+      );
       grade = gradeBid(call, teachingResolution);
     } else {
       grade = callsMatch(call, { type: "pass" })

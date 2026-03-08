@@ -1,6 +1,6 @@
 import { callsMatch } from "../engine/call-helpers";
 import type { Call } from "../engine/types";
-import type { BidResult, ResolvedCandidateDTO } from "../core/contracts";
+import type { BidResult, ResolvedCandidateDTO, AlternativeGroup } from "../core/contracts";
 
 export enum BidGrade {
   Correct = "correct",
@@ -36,7 +36,10 @@ function isTeachingEligible(c: ResolvedCandidateDTO): boolean {
   return c.legal && c.failedConditions.length === 0;
 }
 
-export function resolveTeachingAnswer(bidResult: BidResult): TeachingResolution {
+export function resolveTeachingAnswer(
+  bidResult: BidResult,
+  alternativeGroups?: readonly AlternativeGroup[],
+): TeachingResolution {
   const primaryBid = bidResult.call;
   const candidates = bidResult.treePath?.resolvedCandidates ?? [];
 
@@ -49,7 +52,8 @@ export function resolveTeachingAnswer(bidResult: BidResult): TeachingResolution 
     };
   }
 
-  const acceptableBids: AcceptableBid[] = candidates
+  // Phase 1: existing priority-based filter
+  const priorityBids: AcceptableBid[] = candidates
     .filter(candidate =>
       !candidate.isMatched
       && isTeachingEligible(candidate)
@@ -66,6 +70,47 @@ export function resolveTeachingAnswer(bidResult: BidResult): TeachingResolution 
         tier,
       };
     });
+
+  // Phase 2: alternative group lookup (bypasses tree path-condition exclusivity)
+  const groupBids: AcceptableBid[] = [];
+  if (alternativeGroups && alternativeGroups.length > 0) {
+    const matchedCandidate = candidates.find(c => c.isMatched);
+    if (matchedCandidate) {
+      const matchedName = matchedCandidate.bidName;
+      for (const group of alternativeGroups) {
+        if (!group.members.includes(matchedName)) continue;
+        if (group.whenMatched && !group.whenMatched.includes(matchedName)) continue;
+        for (const memberName of group.members) {
+          if (memberName === matchedName) continue;
+          const memberCandidate = candidates.find(c => c.bidName === memberName);
+          if (!memberCandidate) continue;
+          if (memberCandidate.isMatched) continue;
+          if (!memberCandidate.legal) continue;
+          groupBids.push({
+            call: memberCandidate.resolvedCall,
+            bidName: memberCandidate.bidName,
+            meaning: memberCandidate.meaning,
+            reason: `${group.label}: ${memberCandidate.meaning}`,
+            fullCredit: group.tier === "preferred",
+            tier: group.tier,
+          });
+        }
+      }
+    }
+  }
+
+  // Phase 3: deduplicate — higher-credit version wins
+  const acceptableMap = new Map<string, AcceptableBid>();
+  for (const bid of priorityBids) {
+    acceptableMap.set(bid.bidName, bid);
+  }
+  for (const bid of groupBids) {
+    const existing = acceptableMap.get(bid.bidName);
+    if (!existing || (!existing.fullCredit && bid.fullCredit)) {
+      acceptableMap.set(bid.bidName, bid);
+    }
+  }
+  const acceptableBids = [...acceptableMap.values()];
 
   const matchedCandidate = candidates.find(candidate => candidate.isMatched);
   const preferredCount = acceptableBids.filter(candidate => candidate.tier === "preferred").length;

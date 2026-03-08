@@ -2,6 +2,7 @@ import { Seat, Suit } from "../../../engine/types";
 import type { DealConstraints, Auction, Deal } from "../../../engine/types";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
+import type { AlternativeGroup } from "../../../core/contracts";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { getSuitLength } from "../../../engine/hand-evaluator";
 import { bergenProtocol } from "./tree";
@@ -44,6 +45,22 @@ function bergenDefaultAuction(seat: Seat, deal?: Deal): Auction | undefined {
   return buildAuction(Seat.North, [openMajor, "P"]);
 }
 
+// ─── Acceptable Alternatives ──────────────────────────────────
+
+const bergenAlternativeGroups: readonly AlternativeGroup[] = [
+  {
+    label: "Bergen strength raises",
+    members: [
+      "bergen-game-raise",
+      "bergen-limit-raise",
+      "bergen-constructive-raise",
+    ],
+    tier: "alternative",
+    // Adjacent HCP boundaries (13/10/7) mean borderline hands could go either way.
+    // Splinter and preemptive excluded — structurally distinct (shortage / very weak).
+  },
+];
+
 // ─── Convention Config ────────────────────────────────────────
 
 export const bergenConfig: ConventionConfig = {
@@ -59,4 +76,5 @@ export const bergenConfig: ConventionConfig = {
   transitionRules: bergenTransitionRules,
   baselineRules: baselineTransitionRules,
   intentResolvers: bergenResolvers,
+  acceptableAlternatives: bergenAlternativeGroups,
 };
