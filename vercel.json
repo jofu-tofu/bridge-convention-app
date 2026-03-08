@@ -1,5 +1,5 @@
 {
-  "buildCommand": "bash scripts/ensure-wasm-stubs.sh && vite build",
+  "buildCommand": "bash scripts/vercel-build.sh",
   "outputDirectory": "dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
