@@ -1,4 +1,5 @@
 {
+  "buildCommand": "bash scripts/ensure-wasm-stubs.sh && vite build",
   "outputDirectory": "dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
