@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { Seat, Suit, BidSuit } from "../../engine/types";
 import type { Call, HandEvaluation } from "../../engine/types";
 import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
-import type { EffectiveConventionContext, BeliefData } from "../../conventions/core/effective-context";
+import type { EffectiveConventionContext } from "../../conventions/core/effective-context";
+import type { BeliefData } from "../../core/contracts";
 import type { BiddingContext } from "../../conventions/core/types";
 import { createFitConfidenceRanker } from "../bidding/fit-ranker";
 

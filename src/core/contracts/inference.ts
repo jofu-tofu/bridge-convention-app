@@ -40,3 +40,11 @@ export interface TreeInferenceData {
   readonly pathConditions: readonly TreeInferenceConditionEntry[];
   readonly rejectedConditions: readonly TreeInferenceConditionEntry[];
 }
+
+/** Belief data for convention pipeline. Per-seat HCP ranges and suit length ranges. */
+export interface BeliefData {
+  readonly beliefs: Record<Seat, {
+    readonly hcpRange: { readonly min: number; readonly max: number };
+    readonly suitLengths: Record<Suit, { readonly min: number; readonly max: number }>;
+  }>;
+}

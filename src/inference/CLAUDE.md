@@ -21,7 +21,8 @@ Auction inference system — extracts hand information from bids with per-partne
 | `merge.ts` | `mergeInferences()` — range intersection (narrowing), clamps contradictions |
 | `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
-| `protocol-inference-extractor.ts` | `protocolInferenceExtractor` — `InferenceExtractor` adapter reading `TreeEvalResult` path/rejectedDecisions |
+| `noop-extractor.ts` | `noopExtractor` — no-op `InferenceExtractor` used by the store (production inference uses `treeInferenceData` DTOs instead) |
+| `protocol-inference-extractor.ts` | `protocolInferenceExtractor` — `InferenceExtractor` adapter reading `TreeEvalResult` path/rejectedDecisions (test/integration utility only, not used in production store path) |
 | `private-belief.ts` | `PrivateBeliefState`, `conditionOnOwnHand(publicBelief, seat, hand, eval)` — narrows partner suit lengths using own hand (13 minus own length caps partner max) |
 | `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` (HCP deviation) and `continuationAwkwardness` (suit length shortfall). Consumed by `practical-recommender.ts` |
 
@@ -68,7 +69,7 @@ Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` 
 - **`applyAnnotation()`:** Merges annotation inferences into seat's beliefs via `mergeInferences()`. Returns new immutable state.
 - **`InferenceExtractor`:** Adapter interface decoupling belief layer from evaluator internals. `protocolInferenceExtractor` reads `treeEvalResult.path`/`rejectedDecisions`. Extracts positive (path hand conditions) and negative (inverted rejected hand conditions) inferences.
 - **`produceAnnotation()`:** Convention bids → inferences from extractor. Natural bids → inferences from `naturalInferenceProvider`. Pass/double/redouble → empty inferences.
-- **Store wiring:** Game store owns `publicBeliefState`, resets per deal. Bidding store's `onProcessBid` fires `produceAnnotation()` → `applyAnnotation()`. Convention inference now works via `treeInferenceData` DTO on `BidResult` — `produceAnnotation()` accepts optional `TreeInferenceData` param and extracts inferences via `extractInferencesFromDTO()` from `tree-inference-extractor.ts`, bypassing the hollow `BiddingRuleResult` adapter.
+- **Store wiring:** Game store owns `publicBeliefState`, resets per deal. Bidding store's `onProcessBid` fires `produceAnnotation()` → `applyAnnotation()`. Store passes `noopExtractor` (always returns `[]`) since the real inference path uses `treeInferenceData` DTOs via `extractInferencesFromDTO()` from `tree-inference-extractor.ts`. `protocolInferenceExtractor` remains available as a test/integration utility.
 - **HCP narrowing:** `conditionOnOwnHand()` caps partner HCP max at `40 - ownHcp` (conservative bound). `toBeliefData()` uses narrowed `partnerHcpRange` for partner seat when private override present.
 - **`BidAlert`:** Optional on `BidNode` in `rule-tree.ts`. Convention authors declare alerts at definition time. Threaded through `BiddingRuleResult.alert` → `BidAnnotation.alert`. Migration of existing conventions is a follow-up.
 

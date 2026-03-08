@@ -15,7 +15,7 @@ import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
 import { getConvention } from "../conventions/core/registry";
 import { evaluateHand } from "../engine/hand-evaluator";
-import type { BeliefData } from "../conventions/core/effective-context";
+import type { BeliefData } from "../core/contracts";
 
 /** 180° table rotation: N↔S, E↔W */
 export function rotateSeat180(seat: Seat): Seat {

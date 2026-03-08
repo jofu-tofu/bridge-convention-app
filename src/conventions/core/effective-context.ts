@@ -1,7 +1,6 @@
 // EffectiveConventionContext — bundles raw BiddingContext + protocol result + dialogue state.
 // Replaces ad-hoc construction in conventionToStrategy.
 
-import type { Seat, Suit } from "../../engine/types";
 import type { BiddingContext, ConventionConfig, ConventionLookup } from "./types";
 import type { ProtocolEvalResult } from "./protocol";
 import type { DialogueState } from "./dialogue/dialogue-state";
@@ -11,13 +10,8 @@ import type { ConventionOverlayPatch } from "./overlay";
 import { classifyInterference } from "./interference-classifier";
 import { getConvention } from "./registry";
 
-/** Belief data passed from inference layer. Structural match avoids import coupling. */
-export interface BeliefData {
-  readonly beliefs: Record<Seat, {
-    readonly hcpRange: { readonly min: number; readonly max: number };
-    readonly suitLengths: Record<Suit, { readonly min: number; readonly max: number }>;
-  }>;
-}
+import type { BeliefData } from "../../core/contracts";
+export type { BeliefData } from "../../core/contracts";
 
 export interface EffectiveConventionContext {
   readonly raw: BiddingContext;

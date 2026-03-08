@@ -1,7 +1,7 @@
 import type { ConventionConfig, BiddingContext, ConventionLookup } from "../../conventions/core/types";
 import { evaluateBiddingRules } from "../../conventions/core/registry";
 import { buildEffectiveContext } from "../../conventions/core/effective-context";
-import type { BeliefData, EffectiveConventionContext } from "../../conventions/core/effective-context";
+import type { EffectiveConventionContext } from "../../conventions/core/effective-context";
 import { generateCandidates } from "../../conventions/core/candidate-generator";
 import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
 import { selectMatchedCandidate } from "../../conventions/core/candidate-selector";
@@ -9,6 +9,7 @@ import { ForcingState } from "../../core/contracts";
 import type {
   BiddingStrategy,
   BidResult,
+  BeliefData,
   PracticalRecommendation,
 } from "../../core/contracts";
 import { formatHandSummary } from "../../core/display/hand-summary";

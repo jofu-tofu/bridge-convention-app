@@ -4,7 +4,7 @@ import { SUIT_ORDER, SEATS } from "../../engine/constants";
 import { createInitialBeliefState } from "../belief-accumulator";
 import type { PublicBeliefState } from "../types";
 import type { PrivateBeliefState } from "../private-belief";
-import type { BeliefData } from "../../conventions/core/effective-context";
+import type { BeliefData } from "../../core/contracts";
 import { toBeliefData } from "../belief-converter";
 
 function makePublicBelief(overrides?: Partial<Record<Seat, {

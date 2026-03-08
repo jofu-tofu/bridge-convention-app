@@ -1,3 +1,7 @@
+// Test/integration utility only — not used in the production store path.
+// The store uses noopExtractor; real inference flows through treeInferenceData DTOs
+// via extractInferencesFromDTO() in tree-inference-extractor.ts.
+
 import type { Seat } from "../engine/types";
 import type { HandInference } from "../core/contracts";
 import type { TreeEvalResult } from "../conventions/core/tree-evaluator";

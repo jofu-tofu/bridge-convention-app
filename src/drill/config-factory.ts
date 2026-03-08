@@ -16,7 +16,7 @@ import { createConventionInferenceProvider } from "../inference/convention-infer
 import { computeDialogueState } from "../conventions/core/dialogue/dialogue-manager";
 import { ForcingState } from "../core/contracts";
 import { SEATS } from "../engine/constants";
-import type { BeliefData } from "../conventions/core/effective-context";
+import type { BeliefData } from "../core/contracts";
 import { createFitConfidenceRanker } from "../strategy/bidding/fit-ranker";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.

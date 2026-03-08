@@ -17,7 +17,7 @@ import type {
 } from "../inference/types";
 import { createInitialBeliefState, applyAnnotation } from "../inference/belief-accumulator";
 import { produceAnnotation } from "../inference/annotation-producer";
-import { protocolInferenceExtractor } from "../inference/protocol-inference-extractor";
+import { noopExtractor } from "../inference/noop-extractor";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { partnerSeat } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
@@ -437,7 +437,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
             bid,
             bidResult ? toExtractorInput(bidResult) : null,
             bidResult?.ruleName ? conventionId : null,
-            protocolInferenceExtractor,
+            noopExtractor,
             naturalProvider,
             auctionBefore,
             bidResult?.treeInferenceData,

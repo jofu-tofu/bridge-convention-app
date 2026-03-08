@@ -7,6 +7,7 @@ AI bidding and play strategies. Consumer of `conventions/core/`, `engine/`, `inf
 - **Dependency direction:** `strategy/ → contracts/ + conventions/core/ + engine/ + inference/`. Engine never imports from strategy/. Conventions never import from strategy/.
 - **Strategy pattern.** `BiddingStrategy` and `PlayStrategy` (defined in `contracts/`) are the core interfaces. Strategies are passed to callers by the drill system.
 - **`null` means "no opinion."** A strategy returning `null` defers to the next strategy in a chain.
+- **Boundary adapter pattern.** `convention-strategy.ts`, `tree-eval-mapper.ts`, and `fit-ranker.ts` are boundary adapters that legitimately import from `conventions/core/` (`ResolvedCandidate`, `TreeEvalResult`, `EffectiveConventionContext`, `PathEntry`). Their job is to map core types to contract DTOs (`ResolvedCandidateDTO`, `TreeEvalSummary`, `BeliefData`). Do not convert ranker signatures to `ResolvedCandidateDTO` — this would require map→rank→map-back inside the adapter for zero benefit.
 
 ## Architecture
 

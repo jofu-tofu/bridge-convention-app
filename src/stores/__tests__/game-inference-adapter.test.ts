@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { BidSuit, Seat } from "../../engine/types";
 import type { BidResult } from "../../core/contracts";
 import type { BiddingRuleResult } from "../../conventions/core/registry";
-import { protocolInferenceExtractor } from "../../inference/protocol-inference-extractor";
+import { noopExtractor } from "../../inference/noop-extractor";
 
 /**
  * Characterization seam: mirrors current `toBiddingRuleResultLike()` in game.svelte.ts.
@@ -74,10 +74,10 @@ describe("game inference adapter characterization", () => {
     expect("treeRoot" in adapted).toBe(false);
   });
 
-  test("protocolInferenceExtractor returns empty for hollow adapter (current behavior)", () => {
+  test("noopExtractor returns empty for any input", () => {
     const adapted = adaptBidResultLikeGameStore(makeBidResult());
 
-    const inferences = protocolInferenceExtractor.extractInferences(adapted, Seat.South);
+    const inferences = noopExtractor.extractInferences(adapted, Seat.South);
 
     expect(inferences).toEqual([]);
   });
