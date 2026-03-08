@@ -14,7 +14,8 @@ core/
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   inference-api.ts      evaluateForInference() + inference DTOs for inference/; re-exports createBiddingContext + isAuctionCondition
   registry.ts           registerConvention, getConvention, evaluateBiddingRules(context, config, lookupConvention?), computeTriggerOverridesForConfig(@internal), applyProtocolOverlays(@internal)
-  diagnostics.ts        analyzeConvention, getDiagnostics — registration-time checks
+  diagnostics.ts        analyzeConvention, getDiagnostics — registration-time checks (trigger-shadow, unreachable-node, transition-rule-overlap)
+  trigger-descriptor.ts TriggerDescriptor union type, descriptorOverlaps/Subsumes/Disjoint — semantic overlap analysis
   tree/                 Tree system
     rule-tree.ts          RuleNode, DecisionNode, HandDecisionNode, IntentNode (re-exported), builders
     tree-evaluator.ts     evaluateTree → TreeEvalResult (hand subtrees within protocols)
@@ -36,6 +37,10 @@ core/
   dialogue/             DialogueState, transitions, manager, baseline rules
   intent/               SemanticIntent, IntentNode, intentBid builder, resolver
 ```
+
+## Convention-Universality Validation
+
+Every subsystem here (protocol, overlay, intent, dialogue, pipeline) exists because simpler designs failed the convention-universality test. When modifying any abstraction in this directory, validate the change against all 5 conventions — not just the one motivating the change. If a change would require a convention-specific `if` branch in core infrastructure, the abstraction needs rethinking.
 
 ## Protocol System
 
@@ -141,6 +146,19 @@ Two systems extract semantic facts from the auction. They answer different quest
 - `evaluateForInference(config, context)` returns only what inference needs: flattened conditioned rules + rejected decisions
 - DTO boundary avoids inference importing `flattenProtocol`, `evaluateProtocol`, and other deep core modules directly
 - `createBiddingContext` and `isAuctionCondition` are re-exported here for inference callers
+
+## Diagnostics
+
+`diagnostics.ts` runs registration-time analyzers via `analyzeConvention()`. Warning types:
+
+- **`trigger-shadow`** — intra-round: earlier trigger subsumes a later one (first-match-wins shadowing)
+- **`unreachable-node`** — cross-round: all triggers in a later round are subsumed by an earlier round (suppressed when seatFilters are disjoint, e.g., Bergen opener vs responder)
+- **`transition-rule-overlap`** — two transition rules match the same (state, entry) pair
+- `duplicate-node-id`, `overlay-priority-conflict`, `missing-resolver`, `full-scope-trigger` — existing checks
+
+**TriggerDescriptor system** (`trigger-descriptor.ts`): Structured metadata on `RuleCondition.descriptor` enables semantic overlap/subsumption analysis. Condition factories attach descriptors; `not()`/`and()`/`or()` compose them. Conditions without descriptors (or with `{kind: "opaque"}`) are silently skipped — never produce false positives.
+
+**TransitionRuleDescriptor** (`dialogue-transitions.ts`): Optional `matchDescriptor` on `TransitionRule` with fields `familyId`, `obligationKind`, `callType`, `level`, `strain`, `actorRelation`. Two descriptors overlap unless any shared field explicitly contradicts.
 
 ## Registry Pipeline Helpers
 

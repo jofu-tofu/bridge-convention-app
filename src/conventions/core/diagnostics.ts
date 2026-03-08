@@ -1,18 +1,21 @@
 // Diagnostics — registration-time analysis for convention structural issues.
 // Returns warnings/errors, not enforcement. Consumed by tests and dev tools.
 
-import type { ConventionConfig } from "./types";
+import type { AuctionCondition, ConventionConfig } from "./types";
 import type { ConventionOverlayPatch } from "./overlay/overlay";
 import type { RuleNode } from "./tree/rule-tree";
+import type { TransitionRuleDescriptor } from "./dialogue/dialogue-transitions";
+import { descriptorSubsumes, descriptorsDisjoint } from "./trigger-descriptor";
 
 export interface DiagnosticWarning {
   readonly type:
     | "duplicate-node-id"
     | "overlay-priority-conflict"
-    | "trigger-overlap"
+    | "trigger-shadow"
     | "missing-resolver"
     | "unreachable-node"
-    | "full-scope-trigger";
+    | "full-scope-trigger"
+    | "transition-rule-overlap";
   readonly severity: "error" | "warning";
   readonly message: string;
 }
@@ -161,30 +164,104 @@ export function analyzeMissingResolvers(config: ConventionConfig): DiagnosticWar
   return warnings;
 }
 
-/** Check whether two or more rounds reuse the same trigger condition name. */
-export function analyzeTriggerOverlaps(config: ConventionConfig): DiagnosticWarning[] {
+/** Detect when an earlier trigger in a round subsumes a later one (intra-round shadowing). */
+export function analyzeIntraRoundShadowing(config: ConventionConfig): DiagnosticWarning[] {
   if (!config.protocol) return [];
 
-  const triggerToRounds = new Map<string, Set<string>>();
+  const warnings: DiagnosticWarning[] = [];
   for (const round of config.protocol.rounds) {
-    for (const trigger of round.triggers) {
-      const existing = triggerToRounds.get(trigger.condition.name);
-      if (existing) {
-        existing.add(round.name);
-      } else {
-        triggerToRounds.set(trigger.condition.name, new Set([round.name]));
+    for (let i = 0; i < round.triggers.length; i++) {
+      for (let j = i + 1; j < round.triggers.length; j++) {
+        const descA = round.triggers[i]!.condition.descriptor;
+        const descB = round.triggers[j]!.condition.descriptor;
+        if (descriptorSubsumes(descA, descB)) {
+          warnings.push({
+            type: "trigger-shadow",
+            severity: "warning",
+            message: `Protocol "${config.id}" round "${round.name}": trigger[${i}] "${round.triggers[i]!.condition.name}" ` +
+              `subsumes trigger[${j}] "${round.triggers[j]!.condition.name}" — trigger[${j}] is shadowed and unreachable.`,
+          });
+        }
       }
     }
   }
+  return warnings;
+}
+
+/** Check if two seatFilters are provably disjoint via their descriptors. */
+function seatFilterDisjoint(a?: AuctionCondition, b?: AuctionCondition): boolean {
+  if (!a || !b) return false;
+  return descriptorsDisjoint(a.descriptor, b.descriptor);
+}
+
+/** Detect when a later round's triggers are all subsumed by an earlier round (cross-round unreachable). */
+export function analyzeCrossRoundUnreachable(config: ConventionConfig): DiagnosticWarning[] {
+  if (!config.protocol) return [];
 
   const warnings: DiagnosticWarning[] = [];
-  for (const [triggerName, rounds] of triggerToRounds) {
-    if (rounds.size > 1) {
+  const rounds = config.protocol.rounds;
+
+  for (let i = 0; i < rounds.length; i++) {
+    for (let j = i + 1; j < rounds.length; j++) {
+      const roundI = rounds[i]!;
+      const roundJ = rounds[j]!;
+
+      // Check if every trigger in round j is subsumed by some trigger in round i
+      const allSubsumed = roundJ.triggers.every(trigJ =>
+        roundI.triggers.some(trigI =>
+          descriptorSubsumes(trigI.condition.descriptor, trigJ.condition.descriptor),
+        ),
+      );
+
+      if (!allSubsumed) continue;
+
+      // Suppress if seatFilters are disjoint (intentional pattern, e.g., Bergen opener vs responder)
+      if (seatFilterDisjoint(roundI.seatFilter, roundJ.seatFilter)) continue;
+
       warnings.push({
-        type: "trigger-overlap",
+        type: "unreachable-node",
         severity: "warning",
-        message: `Trigger "${triggerName}" appears in multiple rounds: ${[...rounds].join(", ")}`,
+        message: `Protocol "${config.id}" round "${roundJ.name}" is unreachable — ` +
+          `all its triggers are subsumed by earlier round "${roundI.name}".`,
       });
+    }
+  }
+  return warnings;
+}
+
+/** Check if two transition rule descriptors could match the same (state, entry) pair. */
+function transitionDescriptorsOverlap(a: TransitionRuleDescriptor, b: TransitionRuleDescriptor): boolean {
+  // Two descriptors are disjoint if any shared field has different non-undefined values
+  if (a.familyId !== undefined && b.familyId !== undefined && a.familyId !== b.familyId) return false;
+  if (a.obligationKind !== undefined && b.obligationKind !== undefined && a.obligationKind !== b.obligationKind) return false;
+  if (a.callType !== undefined && b.callType !== undefined && a.callType !== b.callType) return false;
+  if (a.level !== undefined && b.level !== undefined && a.level !== b.level) return false;
+  if (a.strain !== undefined && b.strain !== undefined && a.strain !== b.strain) return false;
+  if (a.actorRelation !== undefined && b.actorRelation !== undefined && a.actorRelation !== b.actorRelation) return false;
+  return true;
+}
+
+/** Detect when two transition rules could match the same (state, entry) pair. */
+export function analyzeTransitionRuleOverlap(config: ConventionConfig): DiagnosticWarning[] {
+  if (!config.transitionRules) return [];
+
+  const warnings: DiagnosticWarning[] = [];
+  const rules = config.transitionRules;
+
+  for (let i = 0; i < rules.length; i++) {
+    for (let j = i + 1; j < rules.length; j++) {
+      const descA = rules[i]!.matchDescriptor;
+      const descB = rules[j]!.matchDescriptor;
+      if (!descA || !descB) continue;
+
+      if (transitionDescriptorsOverlap(descA, descB)) {
+        warnings.push({
+          type: "transition-rule-overlap",
+          severity: "warning",
+          message: `Transition rule "${rules[i]!.id}" may shadow "${rules[j]!.id}" — ` +
+            `their match descriptors overlap.`,
+        });
+      }
     }
   }
   return warnings;
@@ -238,7 +315,9 @@ export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[]
 
   warnings.push(...analyzeNodeIdUniqueness(config));
   warnings.push(...analyzeMissingResolvers(config));
-  warnings.push(...analyzeTriggerOverlaps(config));
+  warnings.push(...analyzeIntraRoundShadowing(config));
+  warnings.push(...analyzeCrossRoundUnreachable(config));
+  warnings.push(...analyzeTransitionRuleOverlap(config));
   warnings.push(...analyzeTriggerScope(config));
 
   if (config.overlays) {

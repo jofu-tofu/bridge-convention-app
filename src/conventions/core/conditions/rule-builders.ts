@@ -67,6 +67,7 @@ export function not(cond: RuleCondition): RuleCondition {
     name: `not-${cond.name}`,
     label: `Not: ${cond.label}`,
     category: cond.category,
+    descriptor: cond.descriptor ? { kind: "negation", child: cond.descriptor } : undefined,
     test(ctx) {
       return !cond.test(ctx);
     },
@@ -81,10 +82,12 @@ export function and(...conds: AuctionCondition[]): AuctionCondition;
 export function and(...conds: HandCondition[]): HandCondition;
 export function and(...conds: RuleCondition[]): RuleCondition;
 export function and(...conds: RuleCondition[]): RuleCondition {
+  const children = conds.map(c => c.descriptor).filter((d): d is NonNullable<typeof d> => d !== undefined);
   return {
     name: "and",
     label: conds.map((c) => c.label).join("; "),
     category: deriveCategory(conds, "and"),
+    descriptor: children.length === conds.length ? { kind: "compound-and", children } : undefined,
     test(ctx) {
       return conds.every((c) => c.test(ctx));
     },
@@ -112,10 +115,12 @@ export function or(...conds: HandCondition[]): HandCondition;
 export function or(...conds: RuleCondition[]): RuleCondition;
 export function or(...conds: RuleCondition[]): RuleCondition {
   if (conds.length > 4) throw new Error("or() supports max 4 branches");
+  const children = conds.map(c => c.descriptor).filter((d): d is NonNullable<typeof d> => d !== undefined);
   return {
     name: "or",
     label: conds.map((c) => c.label).join(" or "),
     category: deriveCategory(conds, "or"),
+    descriptor: children.length === conds.length ? { kind: "compound-or", children } : undefined,
     test(ctx) {
       return conds.some((c) => c.test(ctx));
     },

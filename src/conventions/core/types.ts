@@ -17,6 +17,7 @@ import type { ConventionOverlayPatch } from "./overlay/overlay";
 import type { ProtocolEvalResult, ConventionProtocol } from "./protocol/protocol";
 import type { RuleNode, BidAlert, ConventionExplanations } from "./tree/rule-tree";
 import type { TreeEvalResult } from "./tree/tree-evaluator";
+import type { TriggerDescriptor } from "./trigger-descriptor";
 
 /** Structured inference data attached to a RuleCondition. */
 export interface ConditionInference {
@@ -93,6 +94,11 @@ export interface RuleCondition {
    *  or needs the full auction history ("full"). Used by diagnostics to warn
    *  when a full-scope condition is used as a protocol trigger. */
   readonly triggerScope?: "event" | "full";
+  /** Structured metadata for semantic overlap/subsumption analysis.
+   *  Used by registration-time diagnostics to detect trigger shadowing
+   *  and unreachable rounds. Optional — conditions without descriptors
+   *  are treated as opaque and silently skipped. */
+  readonly descriptor?: TriggerDescriptor;
 }
 
 /** A condition that checks auction state (e.g., who opened, auction pattern).

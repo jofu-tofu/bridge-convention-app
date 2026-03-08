@@ -239,12 +239,13 @@ describe("missing resolver diagnostics", () => {
   });
 });
 
-describe("trigger overlap diagnostics", () => {
-  test("warns on trigger overlap between protocol rounds", () => {
+describe("cross-round unreachable detection", () => {
+  test("warns when same trigger with descriptor appears in two rounds (no seatFilter)", () => {
     const repeatedCondition: AuctionCondition = {
       name: "bidMade(2,C)",
       label: "2C happened",
       category: "auction",
+      descriptor: { kind: "bid-made", level: 2, strain: BidSuit.Clubs, actor: "any" },
       test: () => true,
       describe: () => "2C happened",
     };
@@ -272,9 +273,9 @@ describe("trigger overlap diagnostics", () => {
 
     registerConvention(config);
     const diagnostics = getDiagnostics("trigger-overlap");
-    const overlaps = diagnostics.filter(d => d.type === "trigger-overlap");
-    expect(overlaps.length).toBeGreaterThan(0);
-    expect(overlaps[0]!.severity).toBe("warning");
+    const unreachable = diagnostics.filter(d => d.type === "unreachable-node");
+    expect(unreachable.length).toBeGreaterThan(0);
+    expect(unreachable[0]!.severity).toBe("warning");
   });
 
   test("no warning when triggers are distinct", () => {
@@ -283,6 +284,7 @@ describe("trigger overlap diagnostics", () => {
         name: "bidMade(2,C)",
         label: "2C happened",
         category: "auction",
+        descriptor: { kind: "bid-made", level: 2, strain: BidSuit.Clubs, actor: "any" },
         test: () => true,
         describe: () => "2C happened",
       },
@@ -293,6 +295,7 @@ describe("trigger overlap diagnostics", () => {
         name: "bidMade(2,D)",
         label: "2D happened",
         category: "auction",
+        descriptor: { kind: "bid-made", level: 2, strain: BidSuit.Diamonds, actor: "any" },
         test: () => true,
         describe: () => "2D happened",
       },
@@ -318,7 +321,42 @@ describe("trigger overlap diagnostics", () => {
 
     registerConvention(config);
     const diagnostics = getDiagnostics("trigger-distinct");
-    const overlaps = diagnostics.filter(d => d.type === "trigger-overlap");
-    expect(overlaps).toHaveLength(0);
+    const unreachable = diagnostics.filter(d => d.type === "unreachable-node");
+    expect(unreachable).toHaveLength(0);
+  });
+
+  test("no warning when triggers lack descriptors (conservative)", () => {
+    const triggerNoDesc: SemanticTrigger = {
+      condition: {
+        name: "something",
+        label: "Something",
+        category: "auction",
+        test: () => true,
+        describe: () => "something",
+      },
+      establishes: {},
+    };
+    const tree = intentBid(
+      "test-bid",
+      "Test",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => ({ type: "bid", level: 1, strain: BidSuit.Clubs }),
+    );
+
+    const config = makeMinimalConfig({
+      id: "no-desc",
+      protocol: {
+        id: "no-desc-protocol",
+        rounds: [
+          { name: "round1", triggers: [triggerNoDesc], handTree: () => tree },
+          { name: "round2", triggers: [triggerNoDesc], handTree: () => tree },
+        ],
+      },
+    });
+
+    registerConvention(config);
+    const diagnostics = getDiagnostics("no-desc");
+    const unreachable = diagnostics.filter(d => d.type === "unreachable-node");
+    expect(unreachable).toHaveLength(0);
   });
 });

@@ -52,6 +52,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // via two-pass mode (config.baselineRules is set).
   {
     id: "1nt-doubled",
+    matchDescriptor: { familyId: "1nt", callType: "double", actorRelation: "opponent" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -70,6 +71,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Stayman ask: 2C after 1NT family (partner of opener only)
   {
     id: "1nt-stayman-ask",
+    matchDescriptor: { familyId: "1nt", callType: "bid", level: 2, strain: BidSuit.Clubs, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return state.familyId === "1nt" && is2C(call) && partnerOfOpener(state, seat);
@@ -85,6 +87,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Stayman ask: 3C after 2NT family (partner of opener only)
   {
     id: "2nt-stayman-ask",
+    matchDescriptor: { familyId: "2nt", callType: "bid", level: 3, strain: BidSuit.Clubs, actorRelation: "partner-of-opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return state.familyId === "2nt" && is3C(call) && partnerOfOpener(state, seat);
@@ -100,6 +103,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Opener responds with hearts (shows 4+ hearts)
   {
     id: "1nt-response-hearts",
+    matchDescriptor: { familyId: "1nt", obligationKind: ObligationKind.ShowMajor, callType: "bid", strain: BidSuit.Hearts, actorRelation: "opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -122,6 +126,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Opener responds with spades (shows 4+ spades, denies hearts)
   {
     id: "1nt-response-spades",
+    matchDescriptor: { familyId: "1nt", obligationKind: ObligationKind.ShowMajor, callType: "bid", strain: BidSuit.Spades, actorRelation: "opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (
@@ -144,6 +149,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
   // Opener responds with denial (2D/3D — no 4-card major)
   {
     id: "1nt-response-denial",
+    matchDescriptor: { familyId: "1nt", obligationKind: ObligationKind.ShowMajor, callType: "bid", strain: BidSuit.Diamonds, actorRelation: "opener" },
     matches(state: DialogueState, entry) {
       const { call, seat } = entry;
       return (

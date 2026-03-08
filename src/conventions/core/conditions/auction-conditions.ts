@@ -4,6 +4,7 @@ import { partnerSeat } from "../../../engine/constants";
 import { auctionMatchesExact } from "../../../engine/auction-helpers";
 import { areSamePartnership } from "../dialogue/helpers";
 import { partnerOpeningStrain } from "./auction-query";
+import type { TriggerDescriptor } from "../trigger-descriptor";
 
 // ─── Leaf auction condition factories ────────────────────────
 
@@ -15,6 +16,7 @@ export function auctionMatches(pattern: string[]): AuctionCondition {
     label: `After ${patternLabel}`,
     category: "auction",
     triggerScope: "full" as const,
+    descriptor: { kind: "opaque" },
     test(ctx) {
       return auctionMatchesExact(ctx.auction, pattern);
     },
@@ -33,6 +35,7 @@ export function auctionMatchesAny(patterns: string[][]): AuctionCondition {
     name: "auction",
     label: `After ${labels}`,
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       return patterns.some((p) => auctionMatchesExact(ctx.auction, p));
     },
@@ -52,6 +55,7 @@ export function isOpener(): AuctionCondition {
     name: "is-opener",
     label: "Opening bidder",
     category: "auction",
+    descriptor: { kind: "role", role: "opener" },
     test(ctx) {
       for (const entry of ctx.auction.entries) {
         if (entry.call.type === "bid") {
@@ -80,6 +84,7 @@ export function isResponder(): AuctionCondition {
     name: "is-responder",
     label: "Responding to partner's opening",
     category: "auction",
+    descriptor: { kind: "role", role: "responder" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (const entry of ctx.auction.entries) {
@@ -110,6 +115,7 @@ export function partnerOpened(strain?: BidSuit): AuctionCondition {
     name: condName,
     label: strain ? `Partner opened ${strain}` : "Partner opened",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (const entry of ctx.auction.entries) {
@@ -144,6 +150,7 @@ export function partnerOpenedAt(level: number, strain: BidSuit): AuctionConditio
     name: `partner-opened-${level}${strain}`,
     label: `Partner opened ${level}${strain}`,
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (const entry of ctx.auction.entries) {
@@ -181,6 +188,7 @@ export function opponentBid(): AuctionCondition {
     name: "opponent-bid",
     label: "Opponent has bid",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       return ctx.auction.entries.some(
@@ -209,6 +217,7 @@ export function noPriorBid(): AuctionCondition {
     name: "no-prior-bid",
     label: "No prior contract bids",
     category: "auction",
+    descriptor: { kind: "no-prior-bid" },
     test(ctx) {
       return ctx.auction.entries.every((e) => e.call.type !== "bid");
     },
@@ -225,6 +234,7 @@ export function biddingRound(n: number): AuctionCondition {
     name: "bidding-round",
     label: `Bidding round ${n}`,
     category: "auction",
+    descriptor: { kind: "bidding-round", n },
     test(ctx) {
       let count = 0;
       for (const entry of ctx.auction.entries) {
@@ -254,6 +264,7 @@ export function partnerBidAt(level: number, strain: BidSuit): AuctionCondition {
     name: `partner-bid-${level}${strain}`,
     label: `Partner bid ${level}${strain}`,
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       return ctx.auction.entries.some(
@@ -286,6 +297,7 @@ export function seatHasBid(): AuctionCondition {
     name: "seat-has-bid",
     label: "Has previously bid",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       return ctx.auction.entries.some(
         (e) => e.call.type === "bid" && e.seat === ctx.seat,
@@ -308,6 +320,7 @@ export function advanceAfterDouble(): AuctionCondition {
     name: "advance-after-double",
     label: "After partner's double, relay 2C",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       return auctionMatchesExact(ctx.auction, ["1NT", "X", "P"]);
     },
@@ -330,6 +343,7 @@ export function cursorReached(): AuctionCondition {
     label: "Protocol cursor advanced to this round",
     category: "auction",
     triggerScope: "event" as const,
+    descriptor: { kind: "cursor-reached" },
     test: () => true,
     describe: () => "Protocol cursor reached this round",
   };
@@ -344,6 +358,7 @@ export function bidMade(level: number, strain: BidSuit): AuctionCondition {
     label: `${level}${strain} was bid`,
     category: "auction",
     triggerScope: "event" as const,
+    descriptor: { kind: "bid-made", level, strain, actor: "any" } as TriggerDescriptor,
     test(ctx) {
       return ctx.auction.entries.some(
         (e) =>
@@ -373,6 +388,7 @@ export function partnerBidMade(level: number, strain: BidSuit): AuctionCondition
     label: `Partner bid ${level}${strain}`,
     category: "auction",
     triggerScope: "event" as const,
+    descriptor: { kind: "bid-made", level, strain, actor: "partner" } as TriggerDescriptor,
     test(ctx) {
       return ctx.auction.entries.some(
         (e) =>
@@ -406,6 +422,7 @@ export function opponentBidMade(level: number, strain: BidSuit): AuctionConditio
     label: `Opponent bid ${level}${strain}`,
     category: "auction",
     triggerScope: "event" as const,
+    descriptor: { kind: "bid-made", level, strain, actor: "opponent" } as TriggerDescriptor,
     test(ctx) {
       return ctx.auction.entries.some(
         (e) =>
@@ -437,6 +454,7 @@ export function doubleMade(): AuctionCondition {
     label: "A double was made",
     category: "auction",
     triggerScope: "event" as const,
+    descriptor: { kind: "double", actor: "any" },
     test(ctx) {
       return ctx.auction.entries.some((e) => e.call.type === "double");
     },
@@ -455,6 +473,7 @@ export function bidMadeAtLevel(level: number): AuctionCondition {
     label: `A ${level}-level bid was made`,
     category: "auction",
     triggerScope: "event" as const,
+    descriptor: { kind: "bid-at-level", level, actor: "any" },
     test(ctx) {
       return ctx.auction.entries.some(
         (e) => e.call.type === "bid" && e.call.level === level,
@@ -479,6 +498,7 @@ export function opponentOpenedAt(level: number, strain: BidSuit): AuctionConditi
     name: `opponent-opened-${level}${strain}`,
     label: `Opponent opened ${level}${strain}`,
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (const entry of ctx.auction.entries) {
@@ -515,6 +535,7 @@ export function seatHasActed(): AuctionCondition {
     name: "seat-has-acted",
     label: "Has previously acted",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       return ctx.auction.entries.some((e) => e.seat === ctx.seat);
     },
@@ -532,6 +553,7 @@ export function seatDoubled(): AuctionCondition {
     name: "seat-doubled",
     label: "Has previously doubled",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       return ctx.auction.entries.some(
         (e) => e.call.type === "double" && e.seat === ctx.seat,
@@ -553,6 +575,7 @@ export function seatBidAt(level: number, strain: BidSuit): AuctionCondition {
     name: `seat-bid-${level}${strain}`,
     label: `Has bid ${level}${strain}`,
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       return ctx.auction.entries.some(
         (e) =>
@@ -582,6 +605,7 @@ export function partnerLastBidAtLevel(level: number): AuctionCondition {
     name: `partner-last-bid-level-${level}`,
     label: `Partner's last bid was at level ${level}`,
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
@@ -613,6 +637,7 @@ export function partnerDoubled(): AuctionCondition {
     name: "partner-doubled",
     label: "Partner doubled",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       for (let i = ctx.auction.entries.length - 1; i >= 0; i--) {
@@ -646,6 +671,7 @@ export function passedAfter(level: number, strain: BidSuit): AuctionCondition {
     name: `passed-after-${level}${strain}`,
     label: `Pass followed ${level}${strain}`,
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       for (let i = 0; i < ctx.auction.entries.length; i++) {
         const entry = ctx.auction.entries[i]!;
@@ -680,6 +706,7 @@ export function passedAfterDouble(): AuctionCondition {
     name: "passed-after-double",
     label: "Pass followed double",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       for (let i = 0; i < ctx.auction.entries.length; i++) {
         const entry = ctx.auction.entries[i]!;
@@ -712,6 +739,7 @@ export function opponentActed(): AuctionCondition {
     name: "opponent-acted",
     label: "Opponent acted (bid/double/redouble)",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       return ctx.auction.entries.some(
@@ -740,6 +768,7 @@ export function opponentDoubled(): AuctionCondition {
     name: "opponent-doubled",
     label: "Opponent doubled",
     category: "auction",
+    descriptor: { kind: "double", actor: "opponent" },
     test(ctx) {
       const partner = partnerSeat(ctx.seat);
       return ctx.auction.entries.some(
@@ -768,6 +797,7 @@ export function notPassedHand(): AuctionCondition {
     name: "not-passed-hand",
     label: "Has not previously passed",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       // Check if this seat passed before making any contract bid
       for (const entry of ctx.auction.entries) {
@@ -797,6 +827,7 @@ export function partnerOpenedMajor(): AuctionCondition {
     name: "partner-opened-major",
     label: "Partner opened a major suit",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const strain = partnerOpeningStrain(ctx);
       return strain === BidSuit.Hearts || strain === BidSuit.Spades;
@@ -816,6 +847,7 @@ export function partnerOpenedMinor(): AuctionCondition {
     name: "partner-opened-minor",
     label: "Partner opened a minor suit",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const strain = partnerOpeningStrain(ctx);
       return strain === BidSuit.Clubs || strain === BidSuit.Diamonds;
@@ -837,6 +869,7 @@ export function lastEntryIsPass(): AuctionCondition {
     name: "last-entry-is-pass",
     label: "Last action was a pass",
     category: "auction",
+    descriptor: { kind: "opaque" },
     test(ctx) {
       const entries = ctx.auction.entries;
       if (entries.length === 0) return true;

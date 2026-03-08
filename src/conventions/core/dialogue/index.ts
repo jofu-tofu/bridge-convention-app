@@ -10,7 +10,7 @@ export {
 } from "./dialogue-state";
 export type { DialogueState, AgreedStrain, InterferenceDetail, Obligation } from "./dialogue-state";
 
-export type { DialogueEffect, TransitionRule } from "./dialogue-transitions";
+export type { DialogueEffect, TransitionRule, TransitionRuleDescriptor } from "./dialogue-transitions";
 export { applyEffect, applyBackfillEffect, getEffectKeys, obligationFromFrame } from "./dialogue-transitions";
 
 export { computeDialogueState, INITIAL_DIALOGUE_STATE } from "./dialogue-manager";

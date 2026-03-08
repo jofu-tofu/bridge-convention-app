@@ -1,6 +1,6 @@
 // Dialogue transition rules — how each bid changes the dialogue state.
 
-import type { AuctionEntry, Auction } from "../../../engine/types";
+import type { AuctionEntry, Auction, BidSuit } from "../../../engine/types";
 import type { DialogueState, DialogueFrame, InterferenceDetail, Obligation } from "./dialogue-state";
 import type {
   ForcingState,
@@ -44,8 +44,21 @@ export interface DialogueEffect {
  * Rules MUST NOT examine auction entries beyond `entryIndex` — doing so
  * violates the causality contract (no peeking at future bids).
  */
+/** Structured descriptor for transition rule overlap analysis. */
+export interface TransitionRuleDescriptor {
+  readonly familyId?: string | null;
+  readonly obligationKind?: ObligationKind;
+  readonly callType?: "bid" | "pass" | "double" | "redouble";
+  readonly level?: number;
+  readonly strain?: BidSuit;
+  readonly actorRelation?: "opener" | "partner-of-opener" | "opponent" | "any";
+}
+
 export interface TransitionRule {
   readonly id: string;
+  /** Structured metadata for overlap analysis. Optional — rules without
+   *  descriptors are silently skipped by diagnostics. */
+  readonly matchDescriptor?: TransitionRuleDescriptor;
   matches(state: DialogueState, entry: AuctionEntry, auction: Auction, entryIndex: number): boolean;
   effects(state: DialogueState, entry: AuctionEntry, auction: Auction, entryIndex: number): DialogueEffect;
 }
