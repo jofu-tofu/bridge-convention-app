@@ -65,8 +65,8 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Rust Backend Integration
 
-- **Engine transports:** `TauriIpcEngine` (desktop) and `WasmEngine` (browser). Both use `cleanConstraints()` from `constraint-utils.ts` to strip non-serializable fields.
-- **`initWasm()` required:** Must be called once before creating `WasmEngine`. Called by `App.svelte` during async engine init.
+- **Engine transports:** `TauriIpcEngine` (desktop) and `WasmEngine` (browser). Both use `cleanConstraints()` from `constraint-utils.ts` to strip non-serializable fields. **There is no pure-TS `EnginePort` implementation.** If `initWasm()` fails in the browser, the app shows an error screen — no fallback. The TS modules (`deal-generator.ts`, `auction.ts`, `scoring.ts`, `play.ts`) contain all the logic but are not wired into an `EnginePort` adapter.
+- **`initWasm()` required:** Must be called once before creating `WasmEngine`. Called by `App.svelte` during async engine init. On Vercel (no wasm-pack), WASM stubs let the build succeed but the app is non-functional at runtime.
 - **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
 - **DDS browser support:** `WasmEngine.solveDeal()` delegates to a DDS Web Worker (Emscripten-compiled C++ DDS). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `suggestPlay()` still throws in WASM builds.
 - Both transports strip `customCheck` and `rng` from constraints before serialization. Preserves `seed` field for Rust-side deterministic generation (`seed: Option<u64>`).

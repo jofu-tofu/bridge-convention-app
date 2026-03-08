@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Create WASM stub files for browser builds when wasm-pack is not available.
-# The stubs let Vite resolve the bridge-wasm alias; at runtime, initWasm()
-# throws and the app falls back to the pure-TS engine.
+# The stubs let Vite resolve the bridge-wasm alias so the build succeeds.
+# At runtime, initWasm() fails and the app shows an error screen — there is
+# no pure-TS EnginePort implementation for browser fallback (yet).
 
 set -euo pipefail
 

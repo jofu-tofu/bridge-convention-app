@@ -61,7 +61,7 @@ src/
     display/         UI display utilities (format, hand-summary, tokens, sort-cards, seat-mapping, hcp)
     util/            Zero-dep pure utilities (delay, seeded-rng)
   conventions/     Convention system
-    core/            Registry, evaluator, tree system, conditions (stable infrastructure)
+    core/            Registry, evaluator, tree/protocol/overlay/pipeline subsystems, conditions (public API via index.ts barrel)
     definitions/     Convention folders (stayman/, bergen-raises/, sayc/, weak-twos/, lebensohl-lite/) each with tree.ts, config.ts, explanations.ts, index.ts
   teaching/        Convention evaluation for teaching (teaching-content, condition-explanations)
   inference/       Auction inference system (per-partnership information asymmetry)
@@ -93,7 +93,7 @@ tests/
 | Contracts | `src/core/contracts/index.ts` | Cross-boundary DTOs and strategy interfaces |
 | Display | `src/core/display/format.ts` | UI display utilities |
 | Util | `src/core/util/delay.ts` | Zero-dep pure utilities |
-| Conventions | `src/conventions/core/registry.ts` | Convention system (core/ + definitions/) |
+| Conventions | `src/conventions/core/index.ts` | Convention system (core/ + definitions/) |
 | Teaching | `src/teaching/teaching-content.ts` | Convention evaluation for teaching |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/convention-strategy.ts` | AI strategies |
@@ -163,6 +163,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 
 - `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
 - WASM must build before Vite (`npm run dev` handles this automatically via `wasm:ensure`)
+- **No pure-TS EnginePort exists.** Browser builds require WASM (`WasmEngine`); desktop uses Tauri IPC (`TauriIpcEngine`). If `initWasm()` fails, the app shows an error screen — there is no fallback. The TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) contain all the logic but are not wired into an `EnginePort` adapter. Vercel deploys use WASM stubs that let the build succeed but the app is non-functional at runtime without a real WASM build.
 - DDS `solveDeal()` works in browser via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). Par is always null in browser (mode=-1). `suggestPlay()` remains desktop-only. DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
 - Never build bridge-wasm via `cargo build --workspace`; always use `wasm-pack` to isolate feature resolution and prevent `getrandom/js` from bleeding into native builds
 - Read a subsystem's CLAUDE.md before working in that directory
