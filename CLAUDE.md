@@ -51,6 +51,12 @@ Bridge bidding convention practice app (Stayman, Bergen Raises, SAYC, Weak Twos,
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
 
+## Design Philosophy
+
+- **Convention-universality is the litmus test.** When choosing between design approaches, ask: "does this work for all conventions — including ones we haven't written yet?" If you can imagine a convention where approach A breaks, A is the wrong approach. Never optimize for a single convention at the expense of generality.
+- **Universal-but-complex beats simple-but-convention-specific.** Accept complexity when it buys universality across all conventions. The overlay system, intent resolvers, and dialogue state exist because simpler designs couldn't handle the full convention spectrum. Rejecting a complex-but-general solution in favor of a simple-but-partial one creates technical debt that compounds with every new convention.
+- **Contain complexity through modularity.** The trade-off for accepting complexity is strict containment: low impact radius (changes to one convention don't ripple), clean module boundaries (protocol/overlay/intent/pipeline are separate subsystems), and convention-agnostic infrastructure in `core/` that never assumes convention-specific structure.
+
 ## Architecture
 
 ```

@@ -32,6 +32,7 @@ Shared across conventions: `shared-helpers.ts` — `STRAIN_TO_BIDSUIT` lookup an
 
 ## Authoring Rules
 
+- **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}/`, not in `core/`. See root `CLAUDE.md` § Design Philosophy.
 - **Established↔conventionData synchrony.** When a protocol trigger's `establishes` field sets a semantic fact that downstream consumers need (resolvers, overlays, teaching), the convention's transition rules MUST set the same fact in `conventionData`. Add a synchrony test in `cross-engine-invariants.test.ts` (Invariant 5) for each such shared fact.
 
 ## Test Organization

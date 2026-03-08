@@ -7,6 +7,7 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 - **Registry pattern.** All conventions register via `registerConvention()` in `core/registry.ts`. Never hardcode convention logic in switch statements.
 - **Contract boundary.** Cross-module DTOs such as `BiddingContext` come from `src/core/contracts/`; convention internals must not leak `core/` types across that boundary.
 - **One folder per convention.** Each convention in `definitions/` is a folder with `tree.ts`, `config.ts`, `explanations.ts`, `index.ts` (and optionally `helpers.ts`, `conditions.ts`, `transitions.ts`, `resolvers.ts`). See `definitions/stayman/` as the reference implementation.
+- **Convention-universal infrastructure.** Every abstraction in `core/` must work for all conventions — current and future. If a proposed change to core would break or not apply to any convention, the design is wrong. Convention-specific logic belongs in `definitions/`, never in `core/`. See root `CLAUDE.md` § Design Philosophy.
 - **Core vs definitions split.** `core/` contains stable infrastructure (registry, evaluator, tree system, conditions). `definitions/` contains convention folders that grow unboundedly. When `definitions/` exceeds ~20 folders, introduce category subdirectories.
 - **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`. Importing `conventions/index` activates all conventions.
 - **Rule name strings are public contract.** Rule names appear in CLI JSON output and tests. Renaming is a breaking change.

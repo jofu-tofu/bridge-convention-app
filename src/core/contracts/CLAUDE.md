@@ -7,6 +7,7 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 - `contracts/` is the fan-in/fan-out boundary for types shared by `engine/`, `conventions/`, `strategy/`, `inference/`, `bootstrap/`, `stores/`, and UI code.
 - Keep files domain-grouped. Prefer adding to an existing contract file (`bidding.ts`, `inference.ts`, `tree-evaluation.ts`, `play.ts`, `recommendation.ts`) over recreating a monolith.
 - `contracts/` may import `engine/types` and other `contracts/` files only. Do not import from `conventions/`, `display/`, `bootstrap/`, `inference/`, `strategy/`, `stores/`, or `components/`.
+- **Convention-universal by definition.** Never add a type or field that only one convention would use. Every contract type must make sense across all conventions. If a type is convention-specific, it belongs in `conventions/definitions/`, not here.
 
 ## Architecture
 
