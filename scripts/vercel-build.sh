@@ -25,9 +25,12 @@ if ! command -v rustup &>/dev/null; then
 else
   echo "==> rustup found, updating to latest stable..."
   rustup update stable --no-self-update
+  # Vercel's image may default to an older pinned toolchain (e.g. 1.92.0) even
+  # after updating stable to 1.94.0. Ensure the default is actually "stable".
+  rustup default stable
 fi
 
-# Now add the wasm32 target to whatever toolchain is current
+# Now add the wasm32 target to the active default toolchain
 if ! rustup target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown; then
   echo "==> Adding wasm32-unknown-unknown target..."
   rustup target add wasm32-unknown-unknown
