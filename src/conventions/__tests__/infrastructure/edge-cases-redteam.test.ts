@@ -211,7 +211,7 @@ describe("edge cases red team", () => {
     expect(effective.dialogueState.competitionMode).toBe(CompetitionMode.Doubled);
   });
 
-  test("F: interrupted Ogust preserves pending action (competition remains uncontested without openerSeat)", () => {
+  test("F: interrupted Ogust detects opponent overcall via transition rules", () => {
     registerConvention(weakTwosConfig);
 
     const opener = hand(
@@ -232,7 +232,8 @@ describe("edge cases red team", () => {
 
     expect(effective.dialogueState.familyId).toBe("weak-two");
     expect(effective.dialogueState.obligation).toEqual({ kind: ObligationKind.ShowSuit, obligatedSide: "opener" });
-    expect(effective.dialogueState.competitionMode).toBe(CompetitionMode.Uncontested);
+    // 3C by opponent is correctly detected as an overcall by transition rules
+    expect(effective.dialogueState.competitionMode).toBe(CompetitionMode.Overcalled);
   });
 
   test("G: equal-priority overlay conflict yields diagnostic warning", () => {

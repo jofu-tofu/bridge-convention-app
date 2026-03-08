@@ -1,5 +1,6 @@
 import { Seat, Suit } from "../../../engine/types";
 import type { Auction, Deal, DealConstraints } from "../../../engine/types";
+import type { AlternativeGroup } from "../../../core/contracts";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
@@ -39,6 +40,29 @@ function lebensohlLiteDefaultAuction(
   return undefined;
 }
 
+const lebensohlAlternativeGroups: readonly AlternativeGroup[] = [
+  {
+    label: "Weak relay signoff paths",
+    members: [
+      "lebensohl-weak-relay-clubs",
+      "lebensohl-weak-relay-diamonds",
+      "lebensohl-weak-relay-hearts",
+      "lebensohl-weak-relay-spades",
+    ],
+    tier: "alternative",
+    // All produce 2NT relay; distinction is the intended signoff suit after 3C.
+  },
+  {
+    label: "Competitive borderline actions",
+    members: [
+      "lebensohl-penalty-double",
+      "lebensohl-weak-signoff",
+    ],
+    tier: "alternative",
+    // Borderline 9-10 HCP hands with 4+ in overcall suit could defensibly double or pass.
+  },
+];
+
 export const lebensohlLiteConfig: ConventionConfig = {
   id: "lebensohl-lite",
   name: "Lebensohl (Lite)",
@@ -52,6 +76,7 @@ export const lebensohlLiteConfig: ConventionConfig = {
   baselineRules: baselineTransitionRules,
   transitionRules: lebensohlTransitionRules,
   intentResolvers: lebensohlResolvers,
+  acceptableAlternatives: lebensohlAlternativeGroups,
   teaching: {
     purpose: "Distinguish weak hands, relay actions, and penalty doubles after interference over 1NT",
     whenToUse: "Partner opens 1NT and an opponent overcalls 2D, 2H, or 2S",

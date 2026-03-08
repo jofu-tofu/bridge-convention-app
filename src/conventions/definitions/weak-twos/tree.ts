@@ -6,7 +6,6 @@ import {
   cursorReached,
   isOpener,
   isResponder,
-  lastEntryIsPass,
   passedAfter,
   biddingRound,
   hcpMin,
@@ -196,7 +195,7 @@ export const weakTwosProtocol: ConventionProtocol<WeakTwoEstablished> = protocol
       semantic<WeakTwoEstablished>(cursorReached(), {}),
     ],
     handTree: responseTree,
-    seatFilter: and(isResponder(), lastEntryIsPass()),
+    seatFilter: isResponder(),
   }),
   // Round 3: Ogust rebid — opener classifies hand quality.
   // cursorReached() because the 2NT Ogust ask is in round 2's span.

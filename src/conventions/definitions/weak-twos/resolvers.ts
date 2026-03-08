@@ -67,10 +67,28 @@ const inviteGame: IntentResolverFn = (_intent, state) => {
   };
 };
 
+const showSupport: IntentResolverFn = (_intent, state) => {
+  const strain = state.conventionData["openingSuit"] as BidSuit | undefined;
+  if (!strain) return { status: "declined" };
+  return {
+    status: "resolved",
+    calls: [{ call: { type: "bid", level: 3, strain } as Call }],
+  };
+};
+
+const penaltyRedouble: IntentResolverFn = () => {
+  return {
+    status: "resolved",
+    calls: [{ call: { type: "redouble" } as Call }],
+  };
+};
+
 export const weakTwoResolvers: IntentResolverMap = new Map<string, IntentResolverFn>([
   [SemanticIntentType.PreemptiveOpen, preemptiveOpen],
   [SemanticIntentType.ShowHandQuality, showHandQuality],
   [SemanticIntentType.RaiseToGame, raiseToGame],
   [SemanticIntentType.AskHandQuality, askHandQuality],
   [SemanticIntentType.InviteGame, inviteGame],
+  [SemanticIntentType.ShowSupport, showSupport],
+  [SemanticIntentType.PenaltyRedouble, penaltyRedouble],
 ]);

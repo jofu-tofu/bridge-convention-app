@@ -1,3 +1,9 @@
+// Lebensohl Lite intent resolvers.
+// Only AcceptTransfer and Signoff need resolvers because they depend on
+// DialogueState (frame kind/owner). The remaining intent types used in
+// the tree — PenaltyDouble, ForceGame, ArtificialRelay, CompetitivePass —
+// are fully deterministic via defaultCall and need no resolver.
+
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";

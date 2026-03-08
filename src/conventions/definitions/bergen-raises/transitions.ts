@@ -4,6 +4,7 @@
 
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
+import { SystemMode } from "../../core/dialogue/dialogue-state";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { partnerOfOpener } from "../../core/dialogue/helpers";
@@ -29,6 +30,7 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
       const strain = call.type === "bid" ? call.strain : null;
       return {
         setFamilyId: "bergen",
+        setSystemMode: SystemMode.On,
         mergeConventionData: { openerMajor: strain, openerSeat: seat },
       };
     },
@@ -74,6 +76,29 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
         mergeConventionData: {
           ...state.conventionData,
           responseType: "limit",
+        },
+      };
+    },
+  },
+
+  // Preemptive raise: responder jumps to 3M (0-6 HCP, 4+ trump support)
+  {
+    id: "bergen-preemptive",
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
+      return (
+        state.familyId === "bergen" &&
+        call.type === "bid" &&
+        call.level === 3 &&
+        call.strain === state.conventionData["openerMajor"] &&
+        partnerOfOpener(state, seat)
+      );
+    },
+    effects(state: DialogueState) {
+      return {
+        mergeConventionData: {
+          ...state.conventionData,
+          responseType: "preemptive",
         },
       };
     },

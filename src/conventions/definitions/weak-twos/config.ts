@@ -2,11 +2,13 @@ import { Seat, Suit } from "../../../engine/types";
 import type { Auction, Deal, DealConstraints } from "../../../engine/types";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
+import type { AlternativeGroup } from "../../../core/contracts";
 import { weakTwosProtocol } from "./tree";
 import { weakTwosExplanations } from "./explanations";
 import { weakTwoTransitionRules } from "./transitions";
 import { baselineTransitionRules } from "../../core/dialogue/baseline-transitions";
 import { weakTwoResolvers } from "./resolvers";
+import { weakTwoOverlays } from "./overlays";
 
 // ─── Deal Constraints ─────────────────────────────────────────
 
@@ -42,6 +44,21 @@ function weakTwosDefaultAuction(
   return undefined;
 }
 
+// ─── Acceptable Alternatives ──────────────────────────────────
+
+const weakTwoAlternativeGroups: readonly AlternativeGroup[] = [
+  {
+    label: "Strong response options",
+    members: [
+      "weak-two-game-raise",
+      "weak-two-ogust-ask",
+    ],
+    tier: "alternative",
+    // With 16+ HCP, both game raise (with fit) and Ogust ask (without fit) are
+    // valid approaches. Borderline hands with marginal support could go either way.
+  },
+];
+
 // ─── Convention Config ────────────────────────────────────────
 
 export const weakTwosConfig: ConventionConfig = {
@@ -58,4 +75,6 @@ export const weakTwosConfig: ConventionConfig = {
   transitionRules: weakTwoTransitionRules,
   baselineRules: baselineTransitionRules,
   intentResolvers: weakTwoResolvers,
+  overlays: weakTwoOverlays,
+  acceptableAlternatives: weakTwoAlternativeGroups,
 };

@@ -3,11 +3,11 @@
 //   transitionRules: [...weakTwoTransitionRules, ...baselineTransitionRules]
 
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
-import { ObligationKind } from "../../core/dialogue/dialogue-state";
+import { ObligationKind, SystemMode } from "../../core/dialogue/dialogue-state";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { partnerOfOpener } from "../../core/dialogue/helpers";
+import { partnerOfOpener, isOpenerSeat } from "../../core/dialogue/helpers";
 
 function isWeakTwoOpening(call: Call): boolean {
   return (
@@ -19,6 +19,34 @@ function isWeakTwoOpening(call: Call): boolean {
 
 function is2NT(call: Call): boolean {
   return call.type === "bid" && call.level === 2 && call.strain === BidSuit.NoTrump;
+}
+
+/** Ogust response classification: maps 3-level response to ogustResponse value. */
+const OGUST_RESPONSE_MAP: Record<string, string> = {
+  [BidSuit.Clubs]: "min-bad",
+  [BidSuit.Diamonds]: "min-good",
+  [BidSuit.Hearts]: "max-bad",
+  [BidSuit.Spades]: "max-good",
+};
+
+function isOgustResponse(call: Call): boolean {
+  return (
+    call.type === "bid" &&
+    ((call.level === 3 && call.strain !== undefined) ||
+      (call.level === 3 && call.strain === BidSuit.NoTrump))
+  );
+}
+
+function isDirectRaise(call: Call, openingSuit: unknown): boolean {
+  if (call.type !== "bid" || openingSuit === null || openingSuit === undefined) return false;
+  const isMinor = openingSuit === BidSuit.Clubs || openingSuit === BidSuit.Diamonds;
+  const gameLevel = isMinor ? 5 : 4;
+  return call.level === gameLevel && call.strain === openingSuit;
+}
+
+function isInviteRaise(call: Call, openingSuit: unknown): boolean {
+  if (call.type !== "bid" || openingSuit === null || openingSuit === undefined) return false;
+  return call.level === 3 && call.strain === openingSuit;
 }
 
 export const weakTwoTransitionRules: readonly TransitionRule[] = [
@@ -34,6 +62,7 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
       const strain = call.type === "bid" ? call.strain : null;
       return {
         setFamilyId: "weak-two",
+        setSystemMode: SystemMode.On,
         mergeConventionData: { openingSuit: strain, openerSeat: seat },
       };
     },
@@ -49,6 +78,67 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
     effects() {
       return {
         setObligation: { kind: ObligationKind.ShowSuit, obligatedSide: "opener" as const },
+      };
+    },
+  },
+
+  // Ogust response classification — opener responds to 2NT ask with hand quality
+  {
+    id: "weak-two-ogust-response",
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
+      return (
+        state.familyId === "weak-two" &&
+        state.obligation.kind === ObligationKind.ShowSuit &&
+        isOpenerSeat(state, seat) &&
+        isOgustResponse(call)
+      );
+    },
+    effects(_state: DialogueState, entry) {
+      const { call } = entry;
+      if (call.type !== "bid") return {};
+      // 3NT = solid, otherwise use OGUST_RESPONSE_MAP
+      const ogustResponse =
+        call.strain === BidSuit.NoTrump ? "solid" : OGUST_RESPONSE_MAP[call.strain] ?? null;
+      return {
+        setObligation: { kind: ObligationKind.None, obligatedSide: "opener" as const },
+        ...(ogustResponse ? { mergeConventionData: { ogustResponse } } : {}),
+      };
+    },
+  },
+
+  // Direct raise tracking — partner raises opener's suit directly to game
+  {
+    id: "weak-two-direct-raise",
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
+      return (
+        state.familyId === "weak-two" &&
+        partnerOfOpener(state, seat) &&
+        isDirectRaise(call, state.conventionData["openingSuit"])
+      );
+    },
+    effects() {
+      return {
+        mergeConventionData: { directRaise: true },
+      };
+    },
+  },
+
+  // Invite tracking — partner raises opener's suit to the 3-level (invitational)
+  {
+    id: "weak-two-invite",
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
+      return (
+        state.familyId === "weak-two" &&
+        partnerOfOpener(state, seat) &&
+        isInviteRaise(call, state.conventionData["openingSuit"])
+      );
+    },
+    effects() {
+      return {
+        mergeConventionData: { inviteMade: true },
       };
     },
   },

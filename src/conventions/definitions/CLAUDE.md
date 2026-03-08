@@ -21,14 +21,404 @@ Shared across conventions: `shared-helpers.ts` — `STRAIN_TO_BIDSUIT` lookup an
 - **Weak Twos:** Preemptive opening (2D/2H/2S, 6+ suit, 5-11 HCP), Ogust response system, vulnerability awareness.
 - **Lebensohl Lite:** Uses deprecated `intentBid()` (dynamic tree patterns).
 
+## Convention Parity Checklist
+
+Every convention must satisfy all items before being considered complete:
+
+1. **Factory IDs.** Use `createIntentBidFactory("<convention-id>")` for deterministic `prefix/name` nodeIds. Never use deprecated `intentBid()` (counter-based, non-deterministic). Lebensohl Lite is the only remaining exception.
+2. **`intentResolvers` map.** Cover every `SemanticIntentType` used in the tree. If resolvers are empty (all intents use `defaultCall`), document the reason in config (see SAYC: deterministic via `defaultCall`).
+3. **`transitionRules` with `baselineRules`.** Convention-specific rules in `transitionRules`, plus `baselineRules: baselineTransitionRules` for two-pass mode. At minimum 4+ convention-specific rules covering the opening/ask/response/denial cycle.
+4. **At least one overlay for opponent interference.** Define in `overlays.ts`. Use `matches(state)` predicate with `competitionMode` and/or `getSystemModeFor()` checks. Minimum: handle doubled and overcalled states.
+5. **Non-empty explanations.** `explanations.ts` must have both `convention` (purpose, whenToUse, whenNotToUse, tradeoff, principle, roles) and `decisions` entries for every `handDecision()` node ID in the tree.
+6. **`acceptableAlternatives` AlternativeGroup array.** Define in config for adjacent-boundary hands where multiple bids are reasonable. Members reference IntentNode IDs. Tier is `"preferred"` or `"alternative"`.
+7. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate. Include `dealer` when the convention requires a specific opening position.
+
+## ConventionConfig Field Guide
+
+All fields from `ConventionConfig` in `core/types.ts`:
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | Yes | `string` | Unique convention identifier (kebab-case). Used as registry key and URL parameter. |
+| `name` | Yes | `string` | Human-readable display name. |
+| `description` | Yes | `string` | One-line description for UI display. |
+| `category` | Yes | `ConventionCategory` | One of `Asking`, `Defensive`, `Constructive`, `Competitive`. |
+| `dealConstraints` | Yes | `DealConstraints` | Seat-specific HCP, shape, and balanced constraints for deal generation. |
+| `protocol` | Yes* | `ConventionProtocol<any>` | Protocol definition from `protocol()` builder. All conventions must use protocols. |
+| `explanations` | Yes* | `ConventionExplanations` | Teaching metadata keyed by node name. Has `convention`, `decisions`, `bids`, `conditions` sections. |
+| `defaultAuction` | No | `(seat, deal?) => Auction \| undefined` | Returns pre-filled auction for drill start position. Return `undefined` for empty auction. |
+| `transitionRules` | Yes* | `readonly TransitionRule[]` | Convention-specific dialogue state transitions. Required when tree has IntentNode leaves. |
+| `baselineRules` | No | `readonly TransitionRule[]` | Set to `baselineTransitionRules` for two-pass mode (convention rules first, baseline backfills). |
+| `intentResolvers` | Yes* | `IntentResolverMap` | `Map<string, IntentResolverFn>` keyed by `SemanticIntentType`. Required when tree has IntentNode leaves. |
+| `overlays` | No | `readonly ConventionOverlayPatch[]` | Overlay patches for interference handling. Validated against protocol round names at registration. |
+| `acceptableAlternatives` | No | `readonly AlternativeGroup[]` | Groups of semantically interchangeable intents for grading. |
+| `internal` | No | `boolean` | If `true`, hidden from UI picker (e.g., SAYC as opponent AI). |
+| `allowedDealers` | No | `readonly Seat[]` | Random dealer selection; constraints rotate 180 degrees when dealer differs from `dealConstraints.dealer`. |
+| `teaching` | No | `ConventionTeaching` | Convention-level teaching metadata (purpose, whenToUse, etc.). Usually set in `explanations.convention` instead. |
+| `interferenceSignatures` | No | `readonly InterferenceSignature[]` | Bid signatures opponents may classify as interference. |
+| `rankCandidates` | No | `(candidates, context) => candidates` | Optional candidate ranker. No conventions use this yet (future seam). |
+| `pedagogicalCheck` | No | `(candidate, ctx) => { acceptable, reasons }` | Optional pedagogical filter. No conventions use this yet (future seam). |
+
+*Required in practice for a complete convention, though TypeScript marks them optional.
+
+**Examples:**
+
+Stayman config (full-featured with overlays):
+```ts
+export const staymanConfig: ConventionConfig = {
+  id: "stayman",
+  name: "Stayman",
+  description: "Stayman convention: 2C response to 1NT asking for 4-card majors",
+  category: ConventionCategory.Asking,
+  dealConstraints: staymanDealConstraints,
+  protocol: staymanProtocol,
+  explanations: staymanExplanations,
+  defaultAuction: staymanDefaultAuction,
+  transitionRules: staymanTransitionRules,
+  baselineRules: baselineTransitionRules,
+  intentResolvers: staymanResolvers,
+  overlays: staymanOverlays,
+};
+```
+
+SAYC config (empty resolvers, no overlays at convention level):
+```ts
+export const saycConfig: ConventionConfig = {
+  id: "sayc",
+  name: "Standard American Yellow Card",
+  description: "Standard American Yellow Card — full bidding system...",
+  category: ConventionCategory.Constructive,
+  dealConstraints: { seats: [{ seat: Seat.South, minHcp: 10 }] },
+  defaultAuction: () => undefined,
+  protocol: saycProtocol,
+  transitionRules: saycTransitionRules,
+  baselineRules: baselineTransitionRules,
+  intentResolvers: saycResolvers,
+  overlays: saycOverlays,
+  acceptableAlternatives: saycAlternativeGroups,
+};
+```
+
+## File Templates
+
+Skeleton templates based on Stayman (reference implementation). Replace `{name}` with convention ID (kebab-case) and `{Name}` with PascalCase name.
+
+### tree.ts
+
+```ts
+import { BidSuit } from "../../../engine/types";
+import type { Call } from "../../../engine/types";
+import {
+  bidMade, isResponder, isOpener, lastEntryIsPass,
+  hcpMin, hcpRange, suitMin, anySuitMin, and,
+} from "../../core/conditions";
+import { handDecision, fallback } from "../../core/tree/rule-tree";
+import type { HandNode } from "../../core/tree/rule-tree";
+import { createIntentBidFactory } from "../../core/intent/intent-node";
+import { SemanticIntentType } from "../../core/intent/semantic-intent";
+import { protocol, round, semantic } from "../../core/protocol/protocol";
+import type { ConventionProtocol, EstablishedContext } from "../../core/protocol/protocol";
+
+const bid = createIntentBidFactory("{name}");
+
+// ─── Established context ────────────────────────────────────
+interface {Name}Established extends EstablishedContext {
+  // Convention-specific fields set by semantic() triggers
+}
+
+// ─── Hand subtrees ──────────────────────────────────────────
+const round1Tree: HandNode = handDecision(
+  "decision-id",
+  hcpMin(/* threshold */),
+  bid("{name}-intent-name", "Describes what this bid communicates",
+    { type: SemanticIntentType.NaturalBid, params: {} },
+    (): Call => ({ type: "bid", level: 1, strain: BidSuit.Clubs })),
+  fallback("fallback-id"),
+);
+
+// ─── Protocol ────────────────────────────────────────────────
+export const {name}Protocol: ConventionProtocol<{Name}Established> =
+  protocol<{Name}Established>("{name}", [
+    round<{Name}Established>("round-1-name", {
+      triggers: [
+        semantic<{Name}Established>(bidMade(1, BidSuit.NoTrump), { /* established */ }),
+      ],
+      handTree: round1Tree,
+      seatFilter: and(isResponder(), lastEntryIsPass()),
+    }),
+    // Additional rounds...
+  ]);
+```
+
+### resolvers.ts
+
+```ts
+import { BidSuit } from "../../../engine/types";
+import type { Call } from "../../../engine/types";
+import { SystemMode, getSystemModeFor } from "../../core/dialogue/dialogue-state";
+import type { DialogueState } from "../../core/dialogue/dialogue-state";
+import { SemanticIntentType } from "../../core/intent/semantic-intent";
+import type { IntentResolverFn, IntentResolverMap } from "../../core/intent/intent-resolver";
+// import { {NAME}_CAPABILITY } from "./constants";  // if using per-capability system mode
+
+const myResolver: IntentResolverFn = (intent, state) => {
+  // System mode check (if convention has per-capability mode):
+  // if (getSystemModeFor(state, {NAME}_CAPABILITY) === SystemMode.Off) return { status: "declined" };
+
+  // ResolverResult union: "resolved" | "use_default" | "declined"
+  return {
+    status: "resolved",
+    calls: [{ call: { type: "bid", level: 2, strain: BidSuit.Clubs } }],
+  };
+};
+
+export const {name}Resolvers: IntentResolverMap = new Map<string, IntentResolverFn>([
+  [SemanticIntentType.NaturalBid, myResolver],
+  // Map every SemanticIntentType used in tree.ts
+]);
+```
+
+### transitions.ts
+
+```ts
+import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
+import { ForcingState, ObligationKind } from "../../core/dialogue/dialogue-state";
+import type { DialogueState } from "../../core/dialogue/dialogue-state";
+import type { Seat } from "../../../engine/types";
+import { BidSuit } from "../../../engine/types";
+import { areSamePartnership, partnerOfOpener, isOpenerSeat } from "../../core/dialogue/helpers";
+
+export const {name}TransitionRules: readonly TransitionRule[] = [
+  // Rule 1: Opening / triggering bid
+  {
+    id: "{name}-opening",
+    matchDescriptor: { familyId: "1nt", callType: "bid", level: 1, strain: BidSuit.NoTrump },
+    matches(state: DialogueState, entry) {
+      const { call } = entry;
+      return call.type === "bid" && call.level === 1 && call.strain === BidSuit.NoTrump;
+    },
+    effects() {
+      return {
+        setFamilyId: "1nt",
+        setForcingState: ForcingState.ForcingOneRound,
+      };
+    },
+  },
+  // Rule 2: Convention ask
+  {
+    id: "{name}-ask",
+    matchDescriptor: { /* ... */ },
+    matches(state: DialogueState, entry) { /* ... */ return false; },
+    effects() { return { setForcingState: ForcingState.ForcingOneRound }; },
+  },
+  // Rule 3: Response
+  {
+    id: "{name}-response",
+    matchDescriptor: { /* ... */ },
+    matches(state: DialogueState, entry) { /* ... */ return false; },
+    effects() { return { setForcingState: ForcingState.Nonforcing }; },
+  },
+  // Rule 4: Interference handling
+  {
+    id: "{name}-interference",
+    matchDescriptor: { callType: "double", actorRelation: "opponent" },
+    matches(state: DialogueState, entry) {
+      const { call, seat } = entry;
+      return call.type === "double" &&
+        !areSamePartnership(seat, state.conventionData["openerSeat"] as Seat);
+    },
+    effects() { return { /* setSystemCapability, etc. */ }; },
+  },
+];
+```
+
+### overlays.ts
+
+```ts
+import { CompetitionMode, SystemMode } from "../../core/dialogue/dialogue-state";
+import { getSystemModeFor } from "../../core/dialogue/dialogue-state";
+import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
+import { fallback } from "../../core/tree/rule-tree";
+// import { {NAME}_CAPABILITY } from "./constants";
+
+export const {name}Overlays: readonly ConventionOverlayPatch[] = [
+  {
+    id: "{name}-doubled",
+    roundName: "round-1-name",  // must match a protocol round name
+    matches: (state) =>
+      state.competitionMode === CompetitionMode.Doubled,
+      // && getSystemModeFor(state, {NAME}_CAPABILITY) === SystemMode.Modified,
+    // Hook options: replacementTree, suppressIntent, addIntents, overrideResolver
+    replacementTree: fallback("system-off"),  // or a real hand tree
+  },
+  {
+    id: "{name}-overcalled",
+    roundName: "round-1-name",
+    matches: (state) =>
+      state.competitionMode !== CompetitionMode.Uncontested,
+      // && getSystemModeFor(state, {NAME}_CAPABILITY) === SystemMode.Off,
+    replacementTree: fallback("system-off-overcall"),
+  },
+];
+```
+
+### explanations.ts
+
+```ts
+import type { ConventionExplanations } from "../../core/tree/rule-tree";
+
+export const {name}Explanations: ConventionExplanations = {
+  convention: {
+    purpose: "What problem this convention solves",
+    whenToUse: "Trigger conditions in plain English",
+    whenNotToUse: [
+      "Situation where this convention should not be used",
+    ],
+    tradeoff: "What you give up by playing this convention",
+    principle: "The underlying bridge principle",
+    roles: "Who controls the auction (captain/describer)",
+  },
+
+  // One entry per handDecision() node ID in tree.ts
+  decisions: {
+    "decision-id": {
+      whyThisMatters: "Why this decision point exists",
+      commonMistake: "What beginners get wrong here",
+      // Optional: denialImplication
+    },
+  },
+
+  // One entry per intentBid() node ID in tree.ts
+  bids: {
+    "{name}-intent-name": {
+      whyThisBid: "Why this specific call is made",
+      partnerExpects: "What partner should do next",
+      forcingType: "forcing",  // "forcing" | "game-forcing" | "invitational" | "signoff"
+      // Optional: isArtificial, commonMistake
+    },
+  },
+
+  // Condition-type explanations (optional, shared across conditions of same type)
+  conditions: {
+    "hcp-min": "Why the HCP threshold matters in this convention",
+    "suit-min": "Why the suit length requirement exists",
+  },
+};
+```
+
+## Common Pitfalls
+
+1. **Using deprecated `intentBid()` instead of factory.** `intentBid()` generates counter-based nodeIds that are non-deterministic across builds. Always use `createIntentBidFactory("{convention-id}")` which produces stable `prefix/name` IDs. Duplicates within a factory throw at construction time.
+
+2. **Missing `baselineRules` in config.** Without `baselineRules: baselineTransitionRules`, the dialogue manager runs single-pass mode and baseline patterns (NT family detection, interference classification, pass handling) are not applied. Always set `baselineRules` for two-pass mode.
+
+3. **Forgetting system mode checks in resolvers.** When interference modifies or disables the convention, resolvers must check `getSystemModeFor(state, CAPABILITY)` and return `{ status: "declined" }` when the system is off. Without this, the resolver produces bids that conflict with the overlay's intent. Define capability constants in `constants.ts` (not `index.ts`) to avoid circular dependencies.
+
+4. **Empty `decisions` in explanations.** Every `handDecision("node-id", ...)` in the tree must have a corresponding entry in `explanations.decisions["node-id"]`. Missing entries cause the teaching UI to show blank explanation panels.
+
+5. **Overlay `roundName` mismatch.** The `roundName` in an overlay must exactly match a `round()` name in the protocol. Mismatches are caught by `validateOverlayPatches()` at registration time, but typos cause silent failures during development.
+
+6. **Reusing node object references across tree branches.** Each `handDecision()` / `intentBid()` node must be a unique object instance. Sharing references breaks `flattenTree()` traversal. Create separate instances even if the logic is identical.
+
+7. **Mixing auction and hand conditions in `and()`/`or()`.** Compound conditions throw if they mix `category: "auction"` and `category: "hand"`. Use nested `handDecision()` nodes instead.
+
+8. **Not wiring `establishes`/`conventionData` synchrony.** When a protocol trigger sets a field via `establishes`, the same field must be set in `conventionData` via transition rules. Add a synchrony test in `cross-engine-invariants.test.ts` (Invariant 5).
+
+## Authoring Guides
+
+### Resolver Authoring
+
+Resolvers map `SemanticIntent` to concrete `Call` objects. They receive `(intent, state)` and must return a `ResolverResult`:
+
+- **`{ status: "resolved", calls: [{ call }] }`** — one or more concrete encodings. First legal call wins.
+- **`{ status: "use_default" }`** — fall back to the IntentNode's `defaultCall`.
+- **`{ status: "declined" }`** — intent is invalid in this context; exclude the candidate entirely.
+
+**Pattern:**
+```ts
+const myResolver: IntentResolverFn = (intent, state) => {
+  // 1. Check system mode (if applicable)
+  if (getSystemModeFor(state, CAPABILITY) === SystemMode.Off) return { status: "declined" };
+
+  // 2. Extract intent params
+  const suit = intent.params["suit"] as string;
+
+  // 3. Compute the call
+  const strain = STRAIN_TO_BIDSUIT[suit];
+  if (!strain) return { status: "declined" };
+
+  return { status: "resolved", calls: [{ call: { type: "bid", level: 2, strain } }] };
+};
+```
+
+**Rules:**
+- Cover every `SemanticIntentType` used in the tree, or the candidate pipeline will use `defaultCall` only.
+- Return `"declined"` (not `"use_default"`) when the intent is semantically invalid (e.g., system off).
+- Use `STRAIN_TO_BIDSUIT` from `shared-helpers.ts` for suit-to-BidSuit conversion.
+- For deterministic conventions (SAYC), resolvers can be empty Maps — all intents use `defaultCall`.
+
+### Overlay Authoring
+
+Overlays patch protocol rounds for interference. Each `ConventionOverlayPatch` has:
+
+- **`id`** — unique overlay identifier.
+- **`roundName`** — must exactly match a `round()` name in the protocol.
+- **`matches(state)`** — predicate on `DialogueState`. Check `competitionMode`, `systemMode`, `interferenceDetail`, etc.
+- **`priority?`** — lower number = higher precedence. Default is 0. Only matters when multiple overlays match the same round.
+
+**Hook types** (applied in order in `generateCandidates()`):
+1. `replacementTree` — replaces the entire hand tree for the round. First matching overlay wins.
+2. `suppressIntent(intent, ctx)` — return `true` to suppress an intent. All overlays compose (all suppressions apply).
+3. `addIntents(ctx)` — inject intents not in the tree. All overlays concatenate. Can rescue empty candidate pools.
+4. `overrideResolver(intent, ctx)` — return a `Call` to override, `null` to fallthrough. First non-null wins.
+
+**Pattern:**
+```ts
+{
+  id: "{name}-doubled",
+  roundName: "nt-opening",
+  matches: (state) =>
+    state.competitionMode === CompetitionMode.Doubled &&
+    getSystemModeFor(state, CAPABILITY) === SystemMode.Modified,
+  replacementTree: modifiedHandTree,  // or use hooks for finer control
+}
+```
+
+### Transition Rule Authoring
+
+Transition rules define how the dialogue state evolves as the auction progresses. Each `TransitionRule` has:
+
+- **`id`** — unique rule identifier (convention-scoped, appears in diagnostics).
+- **`matchDescriptor?`** — optional `TransitionRuleDescriptor` with fields `familyId`, `obligationKind`, `callType`, `level`, `strain`, `actorRelation`. Used by diagnostics to detect overlapping rules.
+- **`matches(state, entry, auction, entryIndex)`** — predicate on current state + auction entry. `entry: AuctionEntry` bundles `{ call, seat }`.
+- **`effects(state, entry, auction, entryIndex)`** — returns a `DialogueEffect` with `set*` prefix fields.
+
+**Key `DialogueEffect` fields:**
+- `setFamilyId` — convention family (e.g., `"1nt"`, `"2nt"`)
+- `setForcingState` — `ForcingState.ForcingOneRound`, `Nonforcing`, `GameForcing`
+- `setObligation` — `{ kind: ObligationKind, obligatedSide: "opener" | "responder" }`
+- `setAgreedStrain` — `{ type: "suit", suit, confidence }` or `{ type: "none" }`
+- `setSystemCapability` — `Record<string, SystemMode>` for per-capability mode
+- `mergeConventionData` — `Record<string, unknown>` merged into `conventionData`
+
+**Causality contract:** Use actor-aware helpers (`areSamePartnership`, `partnerOfOpener`, `isOpenerSeat`) to prevent opponent bids from triggering partnership effects. Always check the seat relationship in `matches()`.
+
+**Two-pass mode:** Convention rules fire first-match-wins, then `baselineRules` backfill untouched fields. Registration validates no rule ID appears in both arrays.
+
 ## Adding a Convention
 
-1. Create `definitions/{name}/` folder with `tree.ts`, `config.ts`, `explanations.ts`, `index.ts`. Optionally add `helpers.ts`, `conditions.ts`, `transitions.ts`, `resolvers.ts`.
-2. Build a `ConventionProtocol` using `protocol()`, `round()`, `semantic()` from `core/protocol`. Use `handDecision()`, `intentBid()`/`createIntentBidFactory()`, `fallback()` from `core/rule-tree` and `core/intent/`.
-3. Add `registerConvention({name}Config)` in `index.ts`.
-4. Create `__tests__/{name}/` with `rules.test.ts` and `edge-cases.test.ts`. Import shared helpers from `../fixtures` and `../tree-test-helpers`.
-5. Test deal constraints with `checkConstraints()` — verify acceptance and rejection.
-6. Test bidding rules with `evaluateBiddingRules()` — verify rule matching, call output, and `conditionResults`.
+1. Create `definitions/{name}/` folder with `tree.ts`, `config.ts`, `explanations.ts`, `index.ts`. Optionally add `helpers.ts`, `conditions.ts`, `transitions.ts`, `resolvers.ts`, `overlays.ts`, `constants.ts`.
+2. Build a `ConventionProtocol` using `protocol()`, `round()`, `semantic()` from `core/protocol`. Use `handDecision()`, `createIntentBidFactory()`, `fallback()` from `core/rule-tree` and `core/intent/`.
+3. Wire resolvers for every `SemanticIntentType` used in the tree.
+4. Write transition rules with `baselineRules` for two-pass mode.
+5. Add at least one overlay for opponent interference.
+6. Populate `explanations.ts` with `convention`, `decisions`, and `bids` entries.
+7. Define `acceptableAlternatives` for adjacent-boundary intents.
+8. Add `registerConvention({name}Config)` in `index.ts` and import in `definitions/index.ts`.
+9. Create `__tests__/{name}/` with `rules.test.ts` and `edge-cases.test.ts`. Import shared helpers from `../fixtures` and `../tree-test-helpers`.
+10. Test deal constraints with `checkConstraints()` — verify acceptance and rejection.
+11. Test bidding rules with `evaluateBiddingRules()` — verify rule matching, call output, and `conditionResults`.
+12. Run the parity checklist above before considering the convention complete.
 
 ## Authoring Rules
 
@@ -68,4 +458,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `stayman/index.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-03 | version=1 | dir-commits-at-audit=52 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-08 | version=2 | dir-commits-at-audit=55 | tree-sig=dirs:22,files:110,exts:ts:109,md:3 -->
