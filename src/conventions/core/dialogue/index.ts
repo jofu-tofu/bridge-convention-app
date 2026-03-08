@@ -15,7 +15,8 @@ export { applyEffect, applyBackfillEffect, getEffectKeys, obligationFromFrame } 
 
 export { computeDialogueState, INITIAL_DIALOGUE_STATE } from "./dialogue-manager";
 export { baselineTransitionRules } from "./baseline-transitions";
-export { areSamePartnership, partnerOfOpener, isOpenerSeat } from "./helpers";
+export { areSamePartnership, partnerOfOpener, isOpenerSeat, getLocalRoles } from "./helpers";
+export type { LocalRole } from "./helpers";
 
 export type { ClassifiedEntry } from "./event-classifier";
 export { classifyAuctionEntry } from "./event-classifier";

@@ -1,7 +1,5 @@
 import type { BiddingContext } from "../types";
-import type { AuctionEntry, Seat } from "../../../engine/types";
 import type { HandNode } from "../tree/rule-tree";
-import { partnerSeat } from "../../../engine/constants";
 import type {
   EstablishedContext,
   ConventionProtocol,
@@ -9,48 +7,9 @@ import type {
   SemanticTrigger,
   ProtocolEvalResult,
   MatchedRoundEntry,
-  AuctionRole,
 } from "./protocol";
 import type { TreeEvalResult } from "../tree/tree-evaluator";
 import { evaluateTree } from "../tree/tree-evaluator";
-
-// ─── Role computation ────────────────────────────────────────
-
-/**
- * Compute the role of a seat in the auction.
- * - opener: seat made (or will make) the first non-pass bid
- * - responder: partner made the first non-pass bid
- * - competitive: an opponent made the first non-pass bid and seat hasn't bid
- * - rebidder: seat has already made a bid (for future rounds)
- */
-export function computeRole(entries: readonly AuctionEntry[], seat: Seat): AuctionRole {
-  let seatHasBid = false;
-  let firstBidder: Seat | null = null;
-
-  for (const entry of entries) {
-    if (entry.call.type === "bid") {
-      if (!firstBidder) firstBidder = entry.seat;
-      if (entry.seat === seat) seatHasBid = true;
-    }
-  }
-
-  if (seatHasBid && firstBidder === seat) {
-    // We opened and have already bid — count our bids
-    let bidCount = 0;
-    for (const entry of entries) {
-      if (entry.call.type === "bid" && entry.seat === seat) bidCount++;
-    }
-    return bidCount > 1 ? "rebidder" : "opener";
-  }
-
-  if (seatHasBid) return "rebidder";
-
-  // Seat hasn't bid yet
-  if (!firstBidder) return "opener"; // No bids yet — we could open
-  if (firstBidder === seat) return "opener"; // Should not happen (seatHasBid would be true)
-  if (firstBidder === partnerSeat(seat)) return "responder";
-  return "competitive";
-}
 
 // ─── Cursor-based context ────────────────────────────────────
 
@@ -102,8 +61,9 @@ export function evaluateProtocol<T extends EstablishedContext>(
   context: BiddingContext,
   triggerOverrides?: ReadonlyMap<string, readonly SemanticTrigger[]>,
 ): ProtocolEvalResult<T> {
-  const role = computeRole(context.auction.entries, context.seat);
-  let established = { role } as T;
+  // Double cast: T extends EstablishedContext (empty marker), convention extensions
+  // add optional fields populated by trigger.establishes merges below.
+  let established = {} as unknown as T;
   let cursor = 0;
   let activeRound: ProtocolRound<T> | null = null;
   const matchedRounds: MatchedRoundEntry<T>[] = [];

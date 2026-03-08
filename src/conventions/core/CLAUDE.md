@@ -24,7 +24,7 @@ core/
     candidate-builder.ts  IntentNode → CandidateBid DTO
   protocol/             Protocol system
     protocol.ts           ConventionProtocol, ProtocolRound, SemanticTrigger, builders
-    protocol-evaluator.ts evaluateProtocol, computeRole — protocol dispatch engine
+    protocol-evaluator.ts evaluateProtocol — protocol dispatch engine
   overlay/              Overlay system
     overlay.ts            ConventionOverlayPatch, validateOverlayPatches, collectTriggerOverrides
     overlay-tree-replacement.ts  applyOverlayTreeReplacement() — shared by registry + candidate-generator
@@ -81,7 +81,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 **Two-pass mode:** Convention `transitionRules` fire first-match-wins, then `baselineRules` backfill untouched fields. Registration validates no rule ID in both arrays.
 
-**Actor-aware helpers** (`dialogue/helpers.ts`): `partnerOfOpener(state, seat)`, `isOpenerSeat(state, seat)` — prevent opponent bids from triggering partnership effects.
+**Actor-aware helpers** (`dialogue/helpers.ts`): `partnerOfOpener(state, seat)`, `isOpenerSeat(state, seat)` — prevent opponent bids from triggering partnership effects. `getLocalRoles(state, seat)` derives a composite array of `LocalRole` values (`"captain"`, `"obligated-bidder"`, `"frame-owner"`, `"waiting"`, `"participant"`) from DialogueState — purely computed, no new state.
 
 **Per-capability SystemMode:** `systemCapabilities?: Record<string, SystemMode>` overrides global `systemMode`. `getSystemModeFor(state, capability)` checks capabilities first, falls back to global. Conventions define capability constants in `constants.ts` (not `index.ts`, avoids circular deps).
 
@@ -128,7 +128,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 Two systems extract semantic facts from the auction. They answer different questions and must not be unified.
 
-- **`EstablishedContext<T>`** (per-convention generic) selects hand trees in protocol dispatch. Computed by the protocol evaluator via cursor-based 2-entry windowing (partnership-scoped). Only consumed by `evaluateProtocol()` for tree selection.
+- **`EstablishedContext<T>`** (per-convention generic, empty marker interface) selects hand trees in protocol dispatch. Convention extensions add optional fields (like `showed`, `openingSuit`). Computed by the protocol evaluator via cursor-based 2-entry windowing (partnership-scoped). Only consumed by `evaluateProtocol()` for tree selection. **Do NOT add global role/position fields** — semantic role authority lives in `DialogueState` (obligation, captain, frames). Use `getLocalRoles(state, seat)` to derive local semantic roles.
 - **`DialogueState`** (fixed universal schema) carries semantic meaning for downstream consumers: overlays, candidate pipeline, forcing filter, resolvers, teaching. Computed by replaying entries one-by-one through `TransitionRule[]`.
 
 **Some facts intentionally exist in both systems:**

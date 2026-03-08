@@ -2,7 +2,6 @@
 
 export { protocol, round, semantic, validateProtocol } from "./protocol";
 export type {
-  AuctionRole,
   ConventionProtocol,
   ProtocolRound,
   SemanticTrigger,
@@ -11,4 +10,4 @@ export type {
   ProtocolEvalResult,
 } from "./protocol";
 
-export { evaluateProtocol, computeRole } from "./protocol-evaluator";
+export { evaluateProtocol } from "./protocol-evaluator";

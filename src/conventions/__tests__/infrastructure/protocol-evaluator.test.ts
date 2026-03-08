@@ -25,7 +25,7 @@ import {
 import { isResponder, isOpener } from "../../core/conditions";
 import { protocol, round, semantic, validateProtocol } from "../../core/protocol/protocol";
 import type { EstablishedContext } from "../../core/protocol/protocol";
-import { evaluateProtocol, computeRole } from "../../core/protocol/protocol-evaluator";
+import { evaluateProtocol } from "../../core/protocol/protocol-evaluator";
 import { alwaysTrue, staticBid } from "../tree-test-helpers";
 import { analyzeTriggerScope, analyzeOverlayTriggerScope } from "../../core/diagnostics";
 
@@ -45,37 +45,6 @@ function makeContext(bids: string[], seat: Seat, dealer: Seat): BiddingContext {
     evaluation: evaluateHand(h),
   });
 }
-
-// ─── computeRole ─────────────────────────────────────────────
-
-describe("computeRole", () => {
-  it("returns opener when seat made the first bid", () => {
-    const auction = buildAuction(Seat.North, ["1NT"]);
-    expect(computeRole(auction.entries, Seat.North)).toBe("opener");
-  });
-
-  it("returns opener when no bids yet", () => {
-    const auction = buildAuction(Seat.North, []);
-    expect(computeRole(auction.entries, Seat.North)).toBe("opener");
-  });
-
-  it("returns responder when partner made the first bid", () => {
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    expect(computeRole(auction.entries, Seat.South)).toBe("responder");
-  });
-
-  it("returns competitive when opponent made the first bid", () => {
-    const auction = buildAuction(Seat.East, ["1NT", "P"]);
-    // South hasn't bid, East (opponent) opened
-    expect(computeRole(auction.entries, Seat.South)).toBe("competitive");
-  });
-
-  it("returns rebidder when seat has already made a bid and is not the opener's first turn", () => {
-    const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2H"]);
-    // North opened 1NT and now bid 2H — rebidder
-    expect(computeRole(auction.entries, Seat.North)).toBe("rebidder");
-  });
-});
 
 // ─── evaluateProtocol ────────────────────────────────────────
 
@@ -246,7 +215,6 @@ describe("evaluateProtocol", () => {
     evaluateProtocol(proto, ctx);
 
     expect(receivedContext).not.toBeNull();
-    expect(receivedContext!.role).toBe("responder");
     expect(receivedContext!.openingLevel).toBe(1);
   });
 

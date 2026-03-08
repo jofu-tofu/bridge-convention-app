@@ -4,13 +4,12 @@ import type { TreeEvalResult } from "../tree/tree-evaluator";
 
 // ─── Established context ─────────────────────────────────────
 
-/** Role of the active bidder, computed from auction + seat. */
-export type AuctionRole = "opener" | "responder" | "competitive" | "rebidder";
-
-/** Base context accumulated across protocol rounds. */
-export interface EstablishedContext {
-  readonly role: AuctionRole;
-}
+/** Base context accumulated across protocol rounds.
+ *  Empty marker interface — convention-specific fields (like `showed`,
+ *  `openingSuit`) live in per-convention extensions. Semantic role authority
+ *  lives in DialogueState (obligation, captain, frames). */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- marker interface for generic constraint
+export interface EstablishedContext {}
 
 // ─── Semantic triggers ───────────────────────────────────────
 

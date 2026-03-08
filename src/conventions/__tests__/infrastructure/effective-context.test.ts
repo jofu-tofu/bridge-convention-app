@@ -153,7 +153,6 @@ describe("buildEffectiveContext", () => {
     const effective = buildEffectiveContext(context, staymanConfig, protoResult);
 
     expect(effective.protocolResult.established).toBeDefined();
-    expect(effective.protocolResult.established.role).toBeDefined();
   });
 
   it("classifies interference from registered opponent convention signatures", () => {
