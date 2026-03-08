@@ -3,7 +3,6 @@
 
 import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
-import { callsMatch } from "../../engine/call-helpers";
 import type { ResolvedCandidateDTO, PracticalRecommendation } from "../../core/contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 import type { PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate } from "./practical-types";
@@ -127,7 +126,6 @@ function scorePragmatic(candidate: PragmaticCandidate, belief: ScoringInput): Pr
 
 export function buildPracticalRecommendation(
   scored: readonly PracticalScoredCandidate[],
-  teachingCall: Call,
 ): PracticalRecommendation | null {
   if (scored.length === 0) return null;
 
@@ -144,7 +142,6 @@ export function buildPracticalRecommendation(
     topCandidateBidName: topBidName,
     topCandidateCall: topCall,
     topScore: top.practicalScore,
-    agreesWithTeaching: callsMatch(topCall, teachingCall),
     rationale: topMeaning,
   };
 }

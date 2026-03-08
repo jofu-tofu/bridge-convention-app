@@ -6,7 +6,7 @@ import type {
 } from "../engine/types";
 import { Seat } from "../engine/types";
 import type { DrillSession } from "../drill/types";
-import type { BiddingStrategy, BidResult } from "../core/contracts";
+import type { ConventionBiddingStrategy, BidResult } from "../core/contracts";
 import type { InferredHoldings } from "../core/contracts";
 import type { InferenceEngine } from "../inference/inference-engine";
 import type * as InferenceEngineModule from "../inference/inference-engine";
@@ -376,7 +376,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       newDeal: Deal,
       session: DrillSession,
       initialAuction?: Auction,
-      strategy?: BiddingStrategy,
+      strategy?: ConventionBiddingStrategy,
     ) {
       // Eagerly load inference engine BEFORE any $state mutations —
       // dynamic await import() breaks the Svelte 5 scheduler, causing

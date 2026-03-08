@@ -7,10 +7,10 @@ import type { ResolvedCandidate } from "../../conventions/core/candidate-generat
 import { selectMatchedCandidate } from "../../conventions/core/candidate-selector";
 import { ForcingState } from "../../core/contracts";
 import type {
-  BiddingStrategy,
   BidResult,
   BeliefData,
   PracticalRecommendation,
+  ConventionBiddingStrategy,
 } from "../../core/contracts";
 import { formatHandSummary } from "../../core/display/hand-summary";
 import { TraceCollector } from "./trace-collector";
@@ -46,11 +46,15 @@ export interface ConventionStrategyOptions {
 export function conventionToStrategy(
   config: ConventionConfig,
   options?: ConventionStrategyOptions,
-): BiddingStrategy {
+): ConventionBiddingStrategy {
+  let lastPracticalRecommendation: PracticalRecommendation | null = null;
+
   return {
     id: `convention:${config.id}`,
     name: config.name,
+    getLastPracticalRecommendation() { return lastPracticalRecommendation; },
     suggest(context): BidResult | null {
+      lastPracticalRecommendation = null;
       const trace = new TraceCollector();
       trace.setConventionId(config.id);
 
@@ -143,7 +147,6 @@ export function conventionToStrategy(
       }
 
       // Compute practical recommendation if belief data available
-      let practicalRecommendation: PracticalRecommendation | undefined;
       if (publicBelief && pipelineCandidates) {
         const resolvedDTOs = mapResolvedCandidates(pipelineCandidates);
 
@@ -192,12 +195,12 @@ export function conventionToStrategy(
           pragmaticCandidates = undefined;
         }
 
-        practicalRecommendation = computePracticalRecommendation(
-          resolvedDTOs, context, publicBelief, call,
+        lastPracticalRecommendation = computePracticalRecommendation(
+          resolvedDTOs, context, publicBelief,
           (err) => trace.setPracticalError(err.message),
           options?.interpretationProvider,
           pragmaticCandidates,
-        ) ?? undefined;
+        );
       }
 
       return {
@@ -223,7 +226,6 @@ export function conventionToStrategy(
         treeInferenceData: result.treeEvalResult
           ? extractTreeInferenceData(result.treeEvalResult)
           : undefined,
-        practicalRecommendation,
       };
     },
   };

@@ -4,14 +4,15 @@ import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { BidGrade } from "../bidding.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { BiddingStrategy, BidResult } from "../../core/contracts";
+import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "../../test-support/fixtures";
 
 /** Strategy that always suggests 2C (Stayman-like). */
-function make2CStrategy(): BiddingStrategy {
+function make2CStrategy(): ConventionBiddingStrategy {
   return {
     id: "test-strategy",
     name: "Test Convention",
+    getLastPracticalRecommendation() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
@@ -23,10 +24,11 @@ function make2CStrategy(): BiddingStrategy {
 }
 
 /** Strategy that never applies (returns null → correct bid is pass). */
-function makeNoOpStrategy(): BiddingStrategy {
+function makeNoOpStrategy(): ConventionBiddingStrategy {
   return {
     id: "noop",
     name: "No-Op",
+    getLastPracticalRecommendation() { return null; },
     suggest(): null {
       return null;
     },
@@ -34,10 +36,11 @@ function makeNoOpStrategy(): BiddingStrategy {
 }
 
 /** Strategy with a primary bid plus a preferred acceptable alternative. */
-function makePrimaryWithAcceptableAlternativeStrategy(): BiddingStrategy {
+function makePrimaryWithAcceptableAlternativeStrategy(): ConventionBiddingStrategy {
   return {
     id: "test-with-alternative",
     name: "Test With Alternative",
+    getLastPracticalRecommendation() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },

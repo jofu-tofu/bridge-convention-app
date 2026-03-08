@@ -199,38 +199,24 @@ describe("scoreCandidatePractically with ScorableCandidate", () => {
 });
 
 describe("buildPracticalRecommendation", () => {
-  test("agreesWithTeaching true when top candidate matches teaching call", () => {
+  test("returns top candidate fields when candidates present", () => {
     const scored = [{
       candidate: makeCandidate({ resolvedCall: suitBid(2, BidSuit.Clubs), bidName: "stayman-ask", meaning: "Asks for a 4-card major" }),
       practicalScore: 10,
       scoreBreakdown: { fitScore: 0, hcpScore: 5, conventionDistance: 0, misunderstandingRisk: 0, totalScore: 10 },
       source: "normative" as const,
     }];
-    const teachingCall: Call = suitBid(2, BidSuit.Clubs);
 
-    const result = buildPracticalRecommendation(scored, teachingCall);
-
-    expect(result).not.toBeNull();
-    expect(result!.agreesWithTeaching).toBe(true);
-  });
-
-  test("agreesWithTeaching false when top candidate differs from teaching call", () => {
-    const scored = [{
-      candidate: makeCandidate({ resolvedCall: suitBid(3, BidSuit.NoTrump), bidName: "3nt-bid", meaning: "Game bid" }),
-      practicalScore: 15,
-      scoreBreakdown: { fitScore: 0, hcpScore: 10, conventionDistance: 1, misunderstandingRisk: 0, totalScore: 15 },
-      source: "normative" as const,
-    }];
-    const teachingCall: Call = suitBid(2, BidSuit.Clubs);
-
-    const result = buildPracticalRecommendation(scored, teachingCall);
+    const result = buildPracticalRecommendation(scored);
 
     expect(result).not.toBeNull();
-    expect(result!.agreesWithTeaching).toBe(false);
+    expect(result!.topCandidateBidName).toBe("stayman-ask");
+    expect(result!.topCandidateCall).toEqual(suitBid(2, BidSuit.Clubs));
+    expect(result!.topScore).toBe(10);
   });
 
   test("returns null for empty scored candidates", () => {
-    const result = buildPracticalRecommendation([], suitBid(2, BidSuit.Clubs));
+    const result = buildPracticalRecommendation([]);
     expect(result).toBeNull();
   });
 
@@ -247,13 +233,11 @@ describe("buildPracticalRecommendation", () => {
       scoreBreakdown: { fitScore: 8, hcpScore: -1, conventionDistance: 3, misunderstandingRisk: 0, totalScore: 5 },
       source: "pragmatic" as const,
     }];
-    const teachingCall: Call = suitBid(2, BidSuit.Clubs);
 
-    const result = buildPracticalRecommendation(scored, teachingCall);
+    const result = buildPracticalRecommendation(scored);
 
     expect(result).not.toBeNull();
     expect(result!.topCandidateBidName).toBe(DistortionType.CompetitiveOvercall);
     expect(result!.rationale).toBe("5-card heart suit overcall");
-    expect(result!.agreesWithTeaching).toBe(false);
   });
 });

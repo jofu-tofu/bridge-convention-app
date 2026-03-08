@@ -206,12 +206,11 @@ describe("BidFeedbackPanel", () => {
     expect(screen.getByText("Textbook bid is")).toBeTruthy();
   });
 
-  test("shows practical note when agreesWithTeaching is false", () => {
+  test("shows practical note when practical call differs from teaching call", () => {
     const practicalRecommendation: PracticalRecommendation = {
       topCandidateBidName: "competitive-overcall",
       topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
       topScore: 8.5,
-      agreesWithTeaching: false,
       rationale: "Strong heart suit with competitive advantage",
     };
     const feedback: BidFeedback = {
@@ -235,12 +234,11 @@ describe("BidFeedbackPanel", () => {
     expect(note!.textContent).toContain("Strong heart suit");
   });
 
-  test("does not show practical note when agreesWithTeaching is true", () => {
+  test("does not show practical note when practical call matches teaching call", () => {
     const practicalRecommendation: PracticalRecommendation = {
       topCandidateBidName: "stayman-ask",
       topCandidateCall: { type: "bid", level: 2, strain: "C" as never },
       topScore: 12.0,
-      agreesWithTeaching: true,
       rationale: "Stayman is correct here",
     };
     const feedback: BidFeedback = {
@@ -286,7 +284,6 @@ describe("BidFeedbackPanel", () => {
       topCandidateBidName: "competitive-overcall",
       topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
       topScore: 8.5,
-      agreesWithTeaching: false,
       rationale: "Strong heart suit",
     };
     const feedback: BidFeedback = {

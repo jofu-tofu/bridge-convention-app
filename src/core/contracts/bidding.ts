@@ -12,7 +12,6 @@ import type {
   EvaluationTrace,
   TreeEvalSummary,
 } from "./tree-evaluation";
-import type { PracticalRecommendation } from "./recommendation";
 
 export interface BiddingContext {
   readonly hand: Hand;
@@ -54,9 +53,6 @@ export interface BidResult {
   /** Structured inference data from tree evaluation — hand conditions on the matched path
    *  and rejected branches. Used by the inference engine for positive/negative inference. */
   readonly treeInferenceData?: TreeInferenceData;
-  /** Practical recommendation — what an experienced player might prefer.
-   *  Undefined when no belief data available or practical pipeline errors. */
-  readonly practicalRecommendation?: PracticalRecommendation;
 }
 
 /** A single entry in the bid history, shown in review/feedback screens. */

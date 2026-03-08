@@ -4,7 +4,6 @@
   import type { BidFeedback } from "../../stores/game.svelte";
   import { BidGrade } from "../../stores/bidding.svelte";
   import { formatCall } from "../../core/display/format";
-  import type { PracticalRecommendation } from "../../core/contracts";
 
   interface Props {
     feedback: BidFeedback;
@@ -57,8 +56,12 @@
     return true;
   }
 
-  const practicalRec: PracticalRecommendation | undefined = $derived(feedback.practicalRecommendation);
-  const showPracticalNote = $derived(practicalRec?.agreesWithTeaching === false);
+  const practicalRec = $derived(feedback.practicalRecommendation);
+  const showPracticalNote = $derived(
+    practicalRec != null &&
+    feedback.expectedResult != null &&
+    !callsEqual(practicalRec.topCandidateCall, feedback.expectedResult.call)
+  );
 
   function isAcceptableSibling(call: typeof siblings[number]["call"]): boolean {
     return acceptableBids.some((acceptable) => callsEqual(acceptable.call, call));

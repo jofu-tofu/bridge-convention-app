@@ -17,7 +17,7 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | `inference.ts` | `SuitInference`, `HandInference`, `InferredHoldings`, `TreeInferenceConditionEntry`, `TreeInferenceData`, `BeliefData` |
 | `tree-evaluation.ts` | `ConditionDetail`, `TreePathEntry`, `TreeForkPoint`, `SiblingConditionDetail`, `SiblingBid`, `CandidateBid`, `ResolvedCandidateDTO`, `TreeEvalSummary`, `EvaluationTrace` |
 | `play.ts` | `PlayContext`, `PlayResult`, `PlayStrategy` |
-| `recommendation.ts` | `PracticalRecommendation` |
+| `recommendation.ts` | `PracticalRecommendation`, `ConventionBiddingStrategy` |
 
 ## Gotchas
 

@@ -3,10 +3,10 @@ import type { EnginePort } from "../engine/port";
 import type { Deal, Call, Auction, AuctionEntry, Seat } from "../engine/types";
 import type { DrillSession } from "../drill/types";
 import type {
-  BiddingStrategy,
   BidResult,
   BidHistoryEntry,
   PracticalRecommendation,
+  ConventionBiddingStrategy,
 } from "../core/contracts";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
@@ -41,7 +41,7 @@ function defaultDelay(ms: number): Promise<void> {
 export interface BiddingStoreConfig {
   deal: Deal;
   session: DrillSession;
-  strategy: BiddingStrategy | null;
+  strategy: ConventionBiddingStrategy | null;
   initialAuction?: Auction;
   onAuctionComplete: (auction: Auction) => Promise<void>;
   onSkipToExplanation: (auction: Auction) => Promise<void>;
@@ -57,7 +57,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let legalCalls = $state<Call[]>([]);
   let bidFeedback = $state.raw<BidFeedback | null>(null);
   let error = $state<string | null>(null);
-  let conventionStrategy: BiddingStrategy | null = null;
+  let conventionStrategy: ConventionBiddingStrategy | null = null;
 
   // Retry state
   let preBidAuction = $state<Auction | null>(null);
@@ -174,7 +174,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         explanation: "No convention bid applies — pass",
       },
       teachingResolution,
-      practicalRecommendation: expectedResult?.practicalRecommendation,
+      practicalRecommendation: conventionStrategy?.getLastPracticalRecommendation() ?? undefined,
     };
 
     const auctionBeforeUser = auction;

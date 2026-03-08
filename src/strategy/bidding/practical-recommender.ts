@@ -36,7 +36,6 @@ export function computePracticalRecommendation(
   candidates: readonly ResolvedCandidateDTO[],
   context: BiddingContext,
   publicBelief: BeliefData,
-  teachingCall: Call,
   onError?: (error: Error) => void,
   interpretationProvider?: InferenceProvider,
   pragmaticCandidates?: readonly PragmaticCandidate[],
@@ -86,7 +85,7 @@ export function computePracticalRecommendation(
       }
     }
 
-    return buildPracticalRecommendation(scored, teachingCall);
+    return buildPracticalRecommendation(scored);
   } catch (e) {
     onError?.(e instanceof Error ? e : new Error(String(e)));
     return null;

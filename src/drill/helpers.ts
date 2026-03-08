@@ -9,7 +9,7 @@ import {
   type Hand,
 } from "../engine/types";
 import type { DrillSession } from "./types";
-import type { BiddingStrategy } from "../core/contracts";
+import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
 import { createDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
@@ -95,7 +95,7 @@ export async function startDrill(
       deal: Deal,
       session: DrillSession,
       initialAuction?: Auction,
-      strategy?: BiddingStrategy,
+      strategy?: ConventionBiddingStrategy,
     ) => Promise<void>;
   },
   rng?: () => number,
