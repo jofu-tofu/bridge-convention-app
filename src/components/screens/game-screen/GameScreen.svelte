@@ -4,7 +4,7 @@
   import type { Call, Card as CardType } from "../../../engine/types";
   import { getEngine, getGameStore, getAppStore } from "../../../stores/context";
   import { BidGrade } from "../../../stores/bidding.svelte";
-  import { startDrill } from "../../../drill/helpers";
+  import { startDrill } from "../../../bootstrap/start-drill";
   import { computeTableScale } from "../../../core/display/table-scale";
   import { mulberry32 } from "../../../core/util/seeded-rng";
   import { toBeliefData } from "../../../inference/belief-converter";
@@ -94,7 +94,7 @@
     const convention = appStore.selectedConvention;
     if (!convention) return;
     dealNumber++;
-    await startDrill(engine, convention, userSeat, gameStore, makeDevRng(), undefined, {
+    const bundle = await startDrill(engine, convention, userSeat, makeDevRng(), undefined, {
       beliefProvider: (ctx) => {
         try {
           const priv = conditionOnOwnHand(gameStore.publicBeliefState, ctx.seat, ctx.hand, ctx.evaluation);
@@ -104,6 +104,7 @@
         }
       },
     });
+    await gameStore.startDrill(bundle);
   }
 
   onMount(() => {

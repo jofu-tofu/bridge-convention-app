@@ -13,7 +13,7 @@ Shared test factories and stubs used across module boundaries (stores, component
 
 - **Engine stub:** Creates minimal `EnginePort` with safe defaults (pass-only, balanced hand). Override per test.
 - **Fixtures:** Create minimal valid domain objects. No test-specific logic.
-- **Dependency rule:** Imports from `engine/`, `drill/`, `contracts/` only — never from `components/`, `stores/`, or `conventions/`.
+- **Dependency rule:** Imports from `engine/`, `bootstrap/`, `contracts/` only — never from `components/`, `stores/`, or `conventions/`.
 
 ## Gotchas
 

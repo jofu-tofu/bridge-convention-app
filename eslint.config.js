@@ -189,10 +189,10 @@ export default tseslint.config(
               name: "../../core/display/*",
               message: "engine/ must not import display/",
             },
-            { name: "../drill/*", message: "engine/ must not import drill/" },
+            { name: "../bootstrap/*", message: "engine/ must not import bootstrap/" },
             {
-              name: "../../drill/*",
-              message: "engine/ must not import drill/",
+              name: "../../bootstrap/*",
+              message: "engine/ must not import bootstrap/",
             },
             {
               name: "../inference/*",
@@ -245,10 +245,10 @@ export default tseslint.config(
               name: "../../display/*",
               message: "contracts/ must not import display/",
             },
-            { name: "../../drill/*", message: "contracts/ must not import drill/" },
+            { name: "../../bootstrap/*", message: "contracts/ must not import bootstrap/" },
             {
-              name: "../../../drill/*",
-              message: "contracts/ must not import drill/",
+              name: "../../../bootstrap/*",
+              message: "contracts/ must not import bootstrap/",
             },
             {
               name: "../../inference/*",
@@ -316,12 +316,12 @@ export default tseslint.config(
               message: "conventions/ must not import display/",
             },
             {
-              name: "../drill/*",
-              message: "conventions/ must not import drill/",
+              name: "../bootstrap/*",
+              message: "conventions/ must not import bootstrap/",
             },
             {
-              name: "../../drill/*",
-              message: "conventions/ must not import drill/",
+              name: "../../bootstrap/*",
+              message: "conventions/ must not import bootstrap/",
             },
             {
               name: "../teaching/*",
@@ -351,12 +351,12 @@ export default tseslint.config(
             ...componentImports,
             ...strategyImports,
             {
-              name: "../../drill/*",
-              message: "display/ must not import drill/",
+              name: "../../bootstrap/*",
+              message: "display/ must not import bootstrap/",
             },
             {
-              name: "../../../drill/*",
-              message: "display/ must not import drill/",
+              name: "../../../bootstrap/*",
+              message: "display/ must not import bootstrap/",
             },
             {
               name: "../../inference/*",
@@ -407,12 +407,12 @@ export default tseslint.config(
               message: "teaching/ must not import display/",
             },
             {
-              name: "../drill/*",
-              message: "teaching/ must not import drill/",
+              name: "../bootstrap/*",
+              message: "teaching/ must not import bootstrap/",
             },
             {
-              name: "../../drill/*",
-              message: "teaching/ must not import drill/",
+              name: "../../bootstrap/*",
+              message: "teaching/ must not import bootstrap/",
             },
             {
               name: "../inference/*",
@@ -436,7 +436,7 @@ export default tseslint.config(
   // ── Barrel enforcement: conventions/core/ ──
   {
     files: [
-      "src/strategy/**/*.ts", "src/inference/**/*.ts", "src/drill/**/*.ts",
+      "src/strategy/**/*.ts", "src/inference/**/*.ts", "src/bootstrap/**/*.ts",
       "src/stores/**/*.ts", "src/stores/**/*.svelte.ts",
       "src/components/**/*.ts", "src/components/**/*.svelte",
       "src/engine/**/*.ts",

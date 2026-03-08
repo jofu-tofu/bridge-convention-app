@@ -10,7 +10,7 @@ import { Seat, BidSuit, Vulnerability, Suit, Rank } from "../../engine/types";
 import type { Contract, Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { DrillSession } from "../../drill/types";
+import type { DrillSession } from "../../bootstrap/types";
 import type { EnginePort } from "../../engine/port";
 import type { InferenceConfig } from "../../inference/types";
 
@@ -124,7 +124,7 @@ describe("unified acceptPlay / declinePlay API", () => {
   }
 
   async function startDrillWithTimers() {
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
     await promise;
   }
@@ -246,7 +246,7 @@ describe("playThisHand mutation ordering", () => {
     });
     store = createGameStore(engine);
 
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
     await promise;
 
@@ -333,7 +333,7 @@ describe("namespaced sub-store accessors (finding #1)", () => {
     const deal = makeTestDeal();
     const session = makeDrillSession();
 
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
     await promise;
 
@@ -357,6 +357,9 @@ describe("E/W inference engine wiring (finding #5)", () => {
   it("creates E/W inference engine when ewInferenceConfig is provided", async () => {
     const { createNaturalInferenceProvider } = await import(
       "../../inference/natural-inference"
+    );
+    const { createInferenceEngine } = await import(
+      "../../inference/inference-engine"
     );
     const ewConfig: InferenceConfig = {
       ownPartnership: createNaturalInferenceProvider(),
@@ -427,9 +430,10 @@ describe("E/W inference engine wiring (finding #5)", () => {
     });
     const store = createGameStore(engine);
 
-    // Dynamic import inside startDrill needs real timer resolution
     vi.useRealTimers();
-    const promise = store.startDrill(makeTestDeal(), session);
+    const nsInferenceEngine = createInferenceEngine(nsConfig, Seat.North);
+    const ewInferenceEngine = createInferenceEngine(ewConfig, Seat.East);
+    const promise = store.startDrill({ deal: makeTestDeal(), session, nsInferenceEngine, ewInferenceEngine });
     await promise;
 
     // After auction completes, playInferences should have all 4 seats

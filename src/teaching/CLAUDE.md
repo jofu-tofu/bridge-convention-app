@@ -8,11 +8,12 @@ Convention evaluation and teaching content extraction. Consumer of `conventions/
 | -------------------------- | ----------------------------------------------------------------- |
 | `teaching-content.ts`      | `extractTeachingContent()`, `evaluateTeachingRound()` — extract structured teaching data from convention trees |
 | `condition-explanations.ts` | `getConditionExplanation()`, `getConditionExplanationWithParams()`, `getFailureExplanation()` — condition teaching text from inference types |
+| `teaching-resolution.ts`   | `BidGrade`, `AcceptableBid`, `TeachingResolution`, `resolveTeachingAnswer()`, `gradeBid()` — multi-grade bid feedback layer |
 
 ## Boundary Rules
 
 - **Allowed imports:** `conventions/core/`, `engine/`, `core/contracts/`, `core/util/`
-- **Blocked imports:** `components/`, `stores/`, `core/display/`, `strategy/`, `drill/`, `inference/`
+- **Blocked imports:** `components/`, `stores/`, `core/display/`, `strategy/`, `bootstrap/`, `inference/`
 
 ---
 

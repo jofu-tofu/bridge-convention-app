@@ -15,8 +15,8 @@ import { clearRegistry, registerConvention, getConvention } from "../../conventi
 import { staymanConfig } from "../../conventions/definitions/stayman";
 import { bergenConfig } from "../../conventions/definitions/bergen-raises";
 import { saycConfig } from "../../conventions/definitions/sayc";
-import { createDrillConfig } from "../../drill/config-factory";
-import { createDrillSession } from "../../drill/session";
+import { createDrillConfig } from "../../bootstrap/config-factory";
+import { createDrillSession } from "../../bootstrap/session";
 import { conventionToStrategy } from "../../strategy/bidding/convention-strategy";
 import { addCall, getLegalCalls, isAuctionComplete } from "../../engine/auction";
 
@@ -95,7 +95,7 @@ describe("drill startup — user can bid after init", () => {
     const deal = makeTestDeal();
     const initialAuction = staymanConfig.defaultAuction!(Seat.South, deal);
 
-    await gameStore.startDrill(deal, session, initialAuction, strategy);
+    await gameStore.startDrill({ deal, session, initialAuction, strategy, nsInferenceEngine: null, ewInferenceEngine: null });
 
     expect(gameStore.phase).toBe("BIDDING");
     expect(gameStore.currentTurn).toBe(Seat.South);
@@ -112,7 +112,7 @@ describe("drill startup — user can bid after init", () => {
     const strategy = conventionToStrategy(getConvention("stayman"));
     const deal = makeTestDeal();
 
-    await gameStore.startDrill(deal, session, staymanConfig.defaultAuction!(Seat.South, deal), strategy);
+    await gameStore.startDrill({ deal, session, initialAuction: staymanConfig.defaultAuction!(Seat.South, deal), strategy, nsInferenceEngine: null, ewInferenceEngine: null });
 
     const has2C = gameStore.legalCalls.some(
       (c: Call) => c.type === "bid" && c.level === 2 && c.strain === BidSuit.Clubs,
@@ -128,7 +128,7 @@ describe("drill startup — user can bid after init", () => {
     const strategy = conventionToStrategy(getConvention("bergen-raises"));
     const deal = makeTestDeal();
 
-    await gameStore.startDrill(deal, session, bergenConfig.defaultAuction!(Seat.South, deal), strategy);
+    await gameStore.startDrill({ deal, session, initialAuction: bergenConfig.defaultAuction!(Seat.South, deal), strategy, nsInferenceEngine: null, ewInferenceEngine: null });
 
     expect(gameStore.isUserTurn).toBe(true);
     expect(gameStore.isProcessing).toBe(false);
@@ -143,7 +143,7 @@ describe("drill startup — user can bid after init", () => {
     const strategy = conventionToStrategy(getConvention("stayman"));
     const deal = makeTestDeal();
 
-    await gameStore.startDrill(deal, session, staymanConfig.defaultAuction!(Seat.South, deal), strategy);
+    await gameStore.startDrill({ deal, session, initialAuction: staymanConfig.defaultAuction!(Seat.South, deal), strategy, nsInferenceEngine: null, ewInferenceEngine: null });
 
     gameStore.userBid({ type: "bid", level: 2, strain: BidSuit.Clubs });
     // AI_BID_DELAY is 300ms × up to 4 AI bids = 1200ms
@@ -165,7 +165,7 @@ describe("drill startup — user can bid after init", () => {
     const deal = makeTestDeal();
 
     const start = Date.now();
-    await gameStore.startDrill(deal, session, staymanConfig.defaultAuction!(Seat.South, deal), strategy);
+    await gameStore.startDrill({ deal, session, initialAuction: staymanConfig.defaultAuction!(Seat.South, deal), strategy, nsInferenceEngine: null, ewInferenceEngine: null });
     expect(Date.now() - start).toBeLessThan(2000);
   });
 });

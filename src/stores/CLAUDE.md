@@ -26,7 +26,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 
-**Exported types:** `BidFeedback` (with `grade: BidGrade`, `teachingResolution: TeachingResolution | null`, `practicalRecommendation?: PracticalRecommendation` sourced from `ConventionBiddingStrategy.getLastPracticalRecommendation()`, not from `BidResult`), `BidGrade`, `TeachingResolution` (re-exported from `drill/teaching-resolution`), `BidHistoryEntry` (re-exported from `contracts/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
+**Exported types:** `BidFeedback` (with `grade: BidGrade`, `teachingResolution: TeachingResolution | null`, `practicalRecommendation?: PracticalRecommendation` sourced from `ConventionBiddingStrategy.getLastPracticalRecommendation()`, not from `BidResult`), `BidGrade`, `TeachingResolution` (re-exported from `teaching/teaching-resolution`), `BidHistoryEntry` (re-exported from `contracts/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
 
 **Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
 

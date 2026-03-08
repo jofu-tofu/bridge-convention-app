@@ -32,7 +32,7 @@ describe("phase state machine", () => {
     const store = createGameStore(engine);
     const session = makeDrillSession();
     const deal = makeSimpleTestDeal();
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(1200);
     await promise;
     expect(store.phase).toBe("DECLARER_PROMPT");
@@ -67,7 +67,7 @@ describe("phase state machine", () => {
         async getContract() { return null; }, // passout
       });
       const store = createGameStore(engine);
-      const promise = store.startDrill(makeSimpleTestDeal(), makeDrillSession());
+      const promise = store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
       await vi.advanceTimersByTimeAsync(1200);
       await promise;
       expect(store.phase).toBe("EXPLANATION");

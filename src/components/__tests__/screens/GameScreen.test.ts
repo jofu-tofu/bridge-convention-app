@@ -18,13 +18,12 @@ describe("GameScreen", () => {
   });
 
   it("startDrill calls engine.generateDeal", async () => {
-    const { startDrill } = await import("../../../drill/helpers");
+    const { startDrill } = await import("../../../bootstrap/start-drill");
     const deal = makeDeal();
     const generateDeal = vi.fn().mockResolvedValue(deal);
     const engine = createStubEngine({ generateDeal });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
-    await startDrill(engine, staymanConfig, Seat.South, gameStore);
+    await startDrill(engine, staymanConfig, Seat.South);
     expect(generateDeal).toHaveBeenCalledTimes(1);
     const calledConstraints = generateDeal.mock.calls[0]![0];
     // Convention's own seat constraints are included
@@ -35,18 +34,16 @@ describe("GameScreen", () => {
     }
   });
 
-  it("startDrill calls gameStore.startDrill with deal and session", async () => {
-    const { startDrill } = await import("../../../drill/helpers");
+  it("startDrill returns bundle with deal and session", async () => {
+    const { startDrill } = await import("../../../bootstrap/start-drill");
     const deal = makeDeal();
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),
     });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
-    await startDrill(engine, staymanConfig, Seat.South, gameStore);
-    expect(gameStore.startDrill).toHaveBeenCalledTimes(1);
-    const [calledDeal] = gameStore.startDrill.mock.calls[0]!;
-    expect(calledDeal).toBe(deal);
+    const bundle = await startDrill(engine, staymanConfig, Seat.South);
+    expect(bundle.deal).toBe(deal);
+    expect(bundle.session).toBeDefined();
   });
 
   it("computeTableScale produces valid scale for desktop", async () => {

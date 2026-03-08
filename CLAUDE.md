@@ -37,7 +37,7 @@ Bridge bidding convention practice app (Stayman, Bergen Raises, SAYC, Weak Twos,
 
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
 - **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
-- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `drill/`, `stores/`, `components/`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
+- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `bootstrap/`, `stores/`, `components/`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
 
 ## Conventions
 
@@ -63,12 +63,12 @@ src/
   conventions/     Convention system
     core/            Registry, evaluator, tree/protocol/overlay/pipeline subsystems, conditions (public API via index.ts barrel)
     definitions/     Convention folders (stayman/, bergen-raises/, sayc/, weak-twos/, lebensohl-lite/) each with tree.ts, config.ts, explanations.ts, index.ts
-  teaching/        Convention evaluation for teaching (teaching-content, condition-explanations)
+  teaching/        Convention evaluation for teaching (teaching-content, condition-explanations, teaching-resolution)
   inference/       Auction inference system (per-partnership information asymmetry)
   strategy/        AI strategies
     bidding/         Convention-to-strategy adapter, pass strategy
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
-  drill/           Drill lifecycle (session, config, helpers)
+  bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
   components/      Svelte UI components
@@ -97,7 +97,7 @@ tests/
 | Teaching | `src/teaching/teaching-content.ts` | Convention evaluation for teaching |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/convention-strategy.ts` | AI strategies |
-| Drill | `src/drill/types.ts` | Drill lifecycle + teaching resolution |
+| Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
 | Components | — | Svelte UI (screens/game/shared) |
@@ -112,7 +112,7 @@ tests/
 The app separates two concerns: **deterministic convention teaching** and **probabilistic realism**.
 
 - **Teaching core** (convention tree + resolver) defines the canonical answer key. The tree is the convention's "textbook" — `defaultCall` is what you'd teach, resolved calls are hand-specific.
-- **`TeachingResolution`** (`src/drill/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), Acceptable (preferred/alternative tier candidates), Incorrect. `resolveTeachingAnswer()` extracts acceptable alternatives from `ResolvedCandidateDTO[]` on `TreeEvalSummary`. `gradeBid()` grades user input.
+- **`TeachingResolution`** (`src/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), Acceptable (preferred/alternative tier candidates), Incorrect. `resolveTeachingAnswer()` extracts acceptable alternatives from `ResolvedCandidateDTO[]` on `TreeEvalSummary`. `gradeBid()` grades user input.
 - **Sibling enrichment** (`enrichSiblingsWithResolvedCalls()` in `strategy/bidding/convention-strategy.ts`) joins display siblings with resolved calls so the UI shows the hand-specific bid, not just `defaultCall`.
 - **Three layers:** (1) convention truth (tree structure), (2) practical preference (resolver + context), (3) world uncertainty (belief/inference — future). Randomness lives in deal generation, not grading.
 - **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
@@ -130,7 +130,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 5. **Competitive Auction Hardening** [COMPLETE] — All 9 gaps closed across 4 sub-phases (5a-5d). Key capabilities: `InterferenceDetail` on DialogueState (Gap 6), multi-overlay composition with precedence model (Gap 1), selectable injected intents with priority tiers (Gap 2), multi-encoding resolvers (Gap 8), protocol trigger overlays (Gap 5), teaching under overlays with `TreeDisplayOverlayContext` (Gap 7), ranking seam on `ConventionConfig` (Gap 9). Earlier: suppression fallback (Gap 3), stable node IDs (Gap 4).
 6. **Boundary Hardening** [COMPLETE] — 10 gaps across 5 phases. Actor-aware trigger conditions (`partnerBidMade`/`opponentBidMade`), causality contract (`entryIndex` on `TransitionRule`), alternative tier in candidate selection, overlay replacement tree validation, overlay priority sorting, `InterferenceKind` enum, strategy fallback chain (`createStrategyChain` + `naturalFallbackStrategy`), `ResolvedCandidateDTO` on `TreeEvalSummary`. Stayman triggers migrated to `partnerBidMade`. Deferred: family handoff (Gap 5), belief pipeline wiring (Gap 10).
 7. **Architectural Gap Resolution** [Phases 7a-7e COMPLETE] — `ResolverResult` discriminated union (declined/use_default/resolved) replacing null ambiguity on `IntentResolverFn`, `EvaluationTrace` DTO on `BidResult` with `TraceCollector` builder, registration-time diagnostics (`getDiagnostics()` for nodeId/overlay-priority checks), overlay-aware display alignment (`suppressedByOverlay`/`overriddenByOverlay` on `TreeDisplayRow`). (7e) Per-capability SystemMode: `systemCapabilities?: Record<string, SystemMode>` on `DialogueState` with `getSystemModeFor(state, capability)` helper. Stayman migrated as proof case. Deferred: 7f belief wiring, 7g ranker layer.
-8. **Teaching Resolution Layer** [COMPLETE] — (9a) `enrichSiblingsWithResolvedCalls()` in `convention-strategy.ts` fixes Gap 3 (defaultCall/resolved call mismatch in sibling display). (9b) `TeachingResolution` in `drill/teaching-resolution.ts` with `BidGrade` (Correct/Acceptable/Incorrect), `resolveTeachingAnswer()`, `gradeBid()`. Store `BidFeedback.grade` replaces binary `isCorrect`. BidFeedbackPanel shows three-branch feedback (green/teal/red). Acceptable bids auto-advance auction. Context philosophy documented.
+8. **Teaching Resolution Layer** [COMPLETE] — (9a) `enrichSiblingsWithResolvedCalls()` in `convention-strategy.ts` fixes Gap 3 (defaultCall/resolved call mismatch in sibling display). (9b) `TeachingResolution` in `teaching/teaching-resolution.ts` with `BidGrade` (Correct/Acceptable/Incorrect), `resolveTeachingAnswer()`, `gradeBid()`. Store `BidFeedback.grade` replaces binary `isCorrect`. BidFeedbackPanel shows three-branch feedback (green/teal/red). Acceptable bids auto-advance auction. Context philosophy documented.
 9. **Practical Bidder Layer** [COMPLETE] — (Phase 0) Teaching regression harness freezes grading behavior. (Phase 1) Convention inference fixed via `tree-inference-extractor.ts` (DTO-based, bypasses hollow adapter). HCP narrowing in `private-belief.ts` (`40 - ownHcp`), wired through `belief-converter.ts`. (Phase 2) `PracticalRecommendation` via `ConventionBiddingStrategy.getLastPracticalRecommendation()` accessor (decoupled from `BidResult`, which is now purely normative) — `practical-scorer.ts` scores candidates by fit+HCP+convention distance, `practical-recommender.ts` computes recommendation from resolved candidates + belief data. Fail-closed, isolated from teaching. `EvaluationTrace.practicalError` for diagnostics. `agreesWithTeaching` removed from `PracticalRecommendation`; comparison moved to consumer. (Phase 3) Partner interpretation model — `computePartnerInterpretation()` in `inference/partner-interpretation.ts` computes `misunderstandingRisk` (HCP deviation) and `continuationAwkwardness` (suit length shortfall) per candidate via `InferenceProvider.inferFromBid()`. Wired into practical-recommender via optional `interpretationProvider`, threaded through `ConventionStrategyOptions` and `config-factory.ts`. Fail-open (null inference → risk=0). (Phase 4) Pragmatic candidate generator — `pragmatic-generator.ts` produces tactical bids (ConservativeNTDowngrade, CompetitiveOvercall, ProtectiveDouble). `ScorableCandidate` union in `practical-types.ts`, scorer handles both kinds with convention distance 3 for pragmatic. Wired into recommender and convention-strategy with forcing guard. (Phase 5) UI integration — `BidFeedback.practicalRecommendation` sourced from `ConventionBiddingStrategy` accessor through store. BidFeedbackPanel shows amber "Experienced players might prefer..." note when practical call differs from teaching call. Never changes grade color.
 
 ## Test-Driven Development
@@ -194,7 +194,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/conventions/definitions/CLAUDE.md` — convention authoring guide, rules reference
 - `src/inference/CLAUDE.md` — inference architecture, negation, invariants
 - `src/strategy/CLAUDE.md` — strategy pattern, conventionToStrategy, play heuristics
-- `src/drill/CLAUDE.md` — DrillConfig, DrillSession, drill lifecycle
+- `src/bootstrap/CLAUDE.md` — DrillConfig, DrillSession, DrillBundle, drill lifecycle
 - `src/core/display/CLAUDE.md` — display utility inventory, dependency rules
 - `src/teaching/CLAUDE.md` — convention evaluation for teaching
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns

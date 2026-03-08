@@ -5,7 +5,7 @@ import {
   rotateSeat180,
   rotateDealConstraints,
   rotateAuction,
-} from "../helpers";
+} from "../start-drill";
 import {
   createStubEngine,
   makeDeal,
@@ -100,13 +100,13 @@ describe("startDrill", () => {
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(makeDeal()),
     });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
-    await startDrill(engine, staymanConfig, Seat.South, gameStore, undefined, undefined, {
+    const bundle = await startDrill(engine, staymanConfig, Seat.South, undefined, undefined, {
       lookupConvention: localLookup,
     });
 
-    expect(gameStore.startDrill).toHaveBeenCalledTimes(1);
+    expect(bundle.deal).toBeDefined();
+    expect(bundle.session).toBeDefined();
   });
 
   it("propagates errors from injected lookup for missing IDs", async () => {
@@ -118,10 +118,9 @@ describe("startDrill", () => {
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(makeDeal()),
     });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     await expect(
-      startDrill(engine, staymanConfig, Seat.South, gameStore, undefined, undefined, {
+      startDrill(engine, staymanConfig, Seat.South, undefined, undefined, {
         lookupConvention: throwingLookup,
       }),
     )
@@ -131,9 +130,8 @@ describe("startDrill", () => {
   it("includes opponent pass constraints in generateDeal call", async () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
-    await startDrill(engine, staymanConfig, Seat.South, gameStore);
+    await startDrill(engine, staymanConfig, Seat.South);
 
     const constraints = generateDeal.mock.calls[0]![0];
     // Stayman has defaultAuction with East pass, so seats should include
@@ -148,28 +146,24 @@ describe("startDrill", () => {
     expect(typeof eastConstraint!.customCheck).toBe("function");
   });
 
-  it("calls gameStore.startDrill with generated deal and session", async () => {
+  it("returns bundle with generated deal and session", async () => {
     const deal = makeDeal();
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),
     });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
-    await startDrill(engine, staymanConfig, Seat.South, gameStore);
+    const bundle = await startDrill(engine, staymanConfig, Seat.South);
 
-    expect(gameStore.startDrill).toHaveBeenCalledTimes(1);
-    const [calledDeal, calledSession] = gameStore.startDrill.mock.calls[0]!;
-    expect(calledDeal).toBe(deal);
-    expect(calledSession).toBeDefined();
-    expect(typeof calledSession.getNextBid).toBe("function");
+    expect(bundle.deal).toBe(deal);
+    expect(bundle.session).toBeDefined();
+    expect(typeof bundle.session.getNextBid).toBe("function");
   });
 
-  it("passes initialAuction from convention.defaultAuction when defined", async () => {
+  it("includes initialAuction from convention.defaultAuction when defined", async () => {
     const deal = makeDeal();
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),
     });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     // Create a test convention with a defaultAuction that has no E/W passes
     const mockAuction = { entries: [], isComplete: false };
@@ -178,21 +172,19 @@ describe("startDrill", () => {
       defaultAuction: vi.fn().mockReturnValue(mockAuction),
     };
 
-    await startDrill(engine, conventionWithDefault, Seat.South, gameStore);
+    const bundle = await startDrill(engine, conventionWithDefault, Seat.South);
 
     expect(conventionWithDefault.defaultAuction).toHaveBeenCalledWith(
       Seat.South,
       deal,
     );
-    const [, , calledAuction] = gameStore.startDrill.mock.calls[0]!;
-    expect(calledAuction).toBe(mockAuction);
+    expect(bundle.initialAuction).toBe(mockAuction);
   });
 
-  it("passes undefined initialAuction when convention has no defaultAuction", async () => {
+  it("returns undefined initialAuction when convention has no defaultAuction", async () => {
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(makeDeal()),
     });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     // Create convention without defaultAuction
     const { defaultAuction: _, ...conventionNoDefault } = staymanConfig;
@@ -202,16 +194,14 @@ describe("startDrill", () => {
       id: "stayman-no-default",
     } as typeof staymanConfig;
 
-    await startDrill(engine, config, Seat.South, gameStore);
+    const bundle = await startDrill(engine, config, Seat.South);
 
-    const [, , calledAuction] = gameStore.startDrill.mock.calls[0]!;
-    expect(calledAuction).toBeUndefined();
+    expect(bundle.initialAuction).toBeUndefined();
   });
 
   it("does not add opponent constraints when convention has no defaultAuction", async () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     const { defaultAuction: _, ...conventionNoDefault } = staymanConfig;
     const config = {
@@ -220,7 +210,7 @@ describe("startDrill", () => {
     } as typeof staymanConfig;
     registerConvention(config);
 
-    await startDrill(engine, config, Seat.South, gameStore);
+    await startDrill(engine, config, Seat.South);
 
     const constraints = generateDeal.mock.calls[0]![0];
     // Without defaultAuction, seats should match convention's own constraints exactly
@@ -244,10 +234,9 @@ describe("startDrill", () => {
     registerConvention(rotationConvention);
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     // RNG returns 0.7 → floor(0.7 * 2) = 1 → picks West (second element)
-    await startDrill(engine, rotationConvention, Seat.South, gameStore, () => 0.7);
+    await startDrill(engine, rotationConvention, Seat.South, () => 0.7);
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
     expect(constraints.dealer).toBe(Seat.West);
@@ -274,10 +263,9 @@ describe("startDrill", () => {
     registerConvention(rotationConvention);
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     // RNG returns 0.3 → floor(0.3 * 2) = 0 → picks East (first element, same as base)
-    await startDrill(engine, rotationConvention, Seat.South, gameStore, () => 0.3);
+    await startDrill(engine, rotationConvention, Seat.South, () => 0.3);
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
     expect(constraints.dealer).toBe(Seat.East);
@@ -286,9 +274,8 @@ describe("startDrill", () => {
   it("uses base constraints when allowedDealers is not set", async () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
-    await startDrill(engine, staymanConfig, Seat.South, gameStore);
+    await startDrill(engine, staymanConfig, Seat.South);
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
     // Stayman base dealer is North (from dealConstraints)
@@ -313,16 +300,25 @@ describe("startDrill", () => {
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),
     });
-    const gameStore = { startDrill: vi.fn().mockResolvedValue(undefined) };
 
     // RNG picks West
-    await startDrill(engine, rotationConvention, Seat.South, gameStore, () => 0.7);
+    const bundle = await startDrill(engine, rotationConvention, Seat.South, () => 0.7);
 
-    const [, , calledAuction] = gameStore.startDrill.mock.calls[0]!;
     // defaultAuction normally starts from East with "1NT"
     // After rotation, the entry should be from West
-    expect(calledAuction).toBeDefined();
-    expect(calledAuction.entries[0].seat).toBe(Seat.West);
+    expect(bundle.initialAuction).toBeDefined();
+    expect(bundle.initialAuction!.entries[0]!.seat).toBe(Seat.West);
+  });
+
+  it("returns inference engines in the bundle", async () => {
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+
+    const bundle = await startDrill(engine, staymanConfig, Seat.South);
+
+    expect(bundle.nsInferenceEngine).not.toBeNull();
+    expect(bundle.ewInferenceEngine).not.toBeNull();
   });
 });
 

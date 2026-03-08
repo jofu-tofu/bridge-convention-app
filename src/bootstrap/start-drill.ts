@@ -2,20 +2,20 @@ import type { EnginePort } from "../engine/port";
 import type { ConventionConfig, BiddingContext, ConventionLookup } from "../conventions/core";
 import {
   Seat,
-  type Deal,
   type Auction,
   type DealConstraints,
   type SeatConstraint,
   type Hand,
 } from "../engine/types";
-import type { DrillSession } from "./types";
-import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
+import type { DrillBundle } from "./types";
+import type { BiddingStrategy } from "../core/contracts";
 import { createDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
 import { getConvention } from "../conventions/core";
 import { evaluateHand } from "../engine/hand-evaluator";
 import type { BeliefData } from "../core/contracts";
+import { createInferenceEngine } from "../inference/inference-engine";
 
 /** 180° table rotation: N↔S, E↔W */
 export function rotateSeat180(seat: Seat): Seat {
@@ -90,21 +90,13 @@ export async function startDrill(
   engine: EnginePort,
   convention: ConventionConfig,
   userSeat: Seat,
-  gameStore: {
-    startDrill: (
-      deal: Deal,
-      session: DrillSession,
-      initialAuction?: Auction,
-      strategy?: ConventionBiddingStrategy,
-    ) => Promise<void>;
-  },
   rng?: () => number,
   seed?: number,
   options?: {
     beliefProvider?: (ctx: BiddingContext) => BeliefData | undefined;
     lookupConvention?: ConventionLookup;
   },
-) {
+): Promise<DrillBundle> {
   const lookup = options?.lookupConvention ?? getConvention;
   const config = createDrillConfig(convention.id, userSeat, {
     opponentBidding: true,
@@ -159,5 +151,21 @@ export async function startDrill(
   if (initialAuction && dealerRotated) {
     initialAuction = rotateAuction(initialAuction);
   }
-  await gameStore.startDrill(deal, session, initialAuction, strategy);
+
+  // Create inference engines
+  const nsInferenceEngine = config.nsInferenceConfig
+    ? createInferenceEngine(config.nsInferenceConfig, Seat.North)
+    : null;
+  const ewInferenceEngine = config.ewInferenceConfig
+    ? createInferenceEngine(config.ewInferenceConfig, Seat.East)
+    : null;
+
+  return {
+    deal,
+    session,
+    initialAuction,
+    strategy,
+    nsInferenceEngine,
+    ewInferenceEngine,
+  };
 }

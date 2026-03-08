@@ -43,7 +43,7 @@ describe("DECLARER_PROMPT phase", () => {
 
   /** Start drill and advance timers past AI bid delays only. */
   async function startDrillWithTimers() {
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
     await promise;
   }
@@ -153,7 +153,7 @@ describe("DECLARER_PROMPT phase", () => {
     // Start a new drill — reset engine to prevent immediate auction completion
     engine.isAuctionComplete = async () => false;
     engine.getLegalCalls = async () => [{ type: "pass" }];
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
     await promise;
     expect(store.effectiveUserSeat).toBeNull();

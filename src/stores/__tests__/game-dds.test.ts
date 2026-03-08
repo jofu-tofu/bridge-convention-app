@@ -66,7 +66,7 @@ describe("game store DDS state", () => {
     session = makeDrillSession(),
     { skipPrompt = true }: { skipPrompt?: boolean } = {},
   ) {
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     // Advance past AI bid delays (3 AI seats × 300ms each)
     await vi.advanceTimersByTimeAsync(1200);
     await promise;
@@ -214,7 +214,7 @@ describe("game store DDS state", () => {
     // Start drill with dealer=North. AI bids N(pass), E(pass), then it's user's turn (S).
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
-    const startPromise = store.startDrill(deal, session);
+    const startPromise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(1200);
     await startPromise;
 

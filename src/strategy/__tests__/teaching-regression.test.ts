@@ -13,7 +13,7 @@ import { bergenConfig } from "../../conventions/definitions/bergen-raises";
 import { weakTwosConfig } from "../../conventions/definitions/weak-twos";
 import { saycConfig } from "../../conventions/definitions/sayc";
 import { conventionToStrategy } from "../bidding/convention-strategy";
-import { BidGrade, resolveTeachingAnswer, gradeBid } from "../../drill/teaching-resolution";
+import { BidGrade, resolveTeachingAnswer, gradeBid } from "../../teaching/teaching-resolution";
 import {
   hand,
   staymanResponder,

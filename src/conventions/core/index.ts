@@ -1,5 +1,5 @@
 // ── conventions/core public API barrel ──────────────────────────────────
-// External consumers (strategy/, inference/, drill/, stores/, components/,
+// External consumers (strategy/, inference/, bootstrap/, stores/, components/,
 // teaching/, core/display/, engine/) import from here.
 // Internal files within conventions/ use direct paths.
 

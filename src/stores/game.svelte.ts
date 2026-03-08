@@ -5,11 +5,10 @@ import type {
   Contract,
 } from "../engine/types";
 import { Seat } from "../engine/types";
-import type { DrillSession } from "../drill/types";
-import type { ConventionBiddingStrategy, BidResult } from "../core/contracts";
+import type { DrillSession, DrillBundle } from "../bootstrap/types";
+import type { BidResult } from "../core/contracts";
 import type { InferredHoldings } from "../core/contracts";
 import type { InferenceEngine } from "../inference/inference-engine";
-import type * as InferenceEngineModule from "../inference/inference-engine";
 import type {
   InferenceExtractorInput,
   InferenceSnapshot,
@@ -372,23 +371,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       transitionTo("DECLARER_PROMPT");
     },
 
-    async startDrill(
-      newDeal: Deal,
-      session: DrillSession,
-      initialAuction?: Auction,
-      strategy?: ConventionBiddingStrategy,
-    ) {
-      // Eagerly load inference engine BEFORE any $state mutations —
-      // dynamic await import() breaks the Svelte 5 scheduler, causing
-      // subsequent $state mutations to not trigger DOM updates.
-      let inferenceFactory: typeof InferenceEngineModule | null = null;
-      const needsInference = session.config.nsInferenceConfig || session.config.ewInferenceConfig;
-      if (needsInference) {
-        inferenceFactory = await import("../inference/inference-engine");
-      }
-
-      deal = newDeal;
-      drillSession = session;
+    async startDrill(bundle: DrillBundle) {
+      deal = bundle.deal;
+      drillSession = bundle.session;
       contract = null;
       phase = "BIDDING";
       effectiveUserSeat = null;
@@ -400,31 +385,17 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       // Reset public belief state
       publicBeliefState = createInitialBeliefState();
 
-      // Set up inference engines if configured
+      // Set up inference engines from bundle
       playInferences = null;
-      if (inferenceFactory && session.config.nsInferenceConfig) {
-        nsInferenceEngine = inferenceFactory.createInferenceEngine(
-          session.config.nsInferenceConfig,
-          Seat.North,
-        );
-      } else {
-        nsInferenceEngine = null;
-      }
-      if (inferenceFactory && session.config.ewInferenceConfig) {
-        ewInferenceEngine = inferenceFactory.createInferenceEngine(
-          session.config.ewInferenceConfig,
-          Seat.East,
-        );
-      } else {
-        ewInferenceEngine = null;
-      }
+      nsInferenceEngine = bundle.nsInferenceEngine;
+      ewInferenceEngine = bundle.ewInferenceEngine;
 
       // Initialize bidding sub-store with callbacks
       await bidding.init({
-        deal: newDeal,
-        session,
-        strategy: strategy ?? null,
-        initialAuction,
+        deal: bundle.deal,
+        session: bundle.session,
+        strategy: bundle.strategy ?? null,
+        initialAuction: bundle.initialAuction,
         onAuctionComplete: completeAuction,
         onSkipToExplanation: skipToExplanation,
         onProcessBid: (bid, auctionBefore, bidResult) => {
@@ -432,7 +403,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
           ewInferenceEngine?.processBid(bid, auctionBefore);
 
           // Produce public belief annotation
-          const conventionId = session.config.conventionId ?? null;
+          const conventionId = bundle.session.config.conventionId ?? null;
           const annotation = produceAnnotation(
             bid,
             bidResult ? toExtractorInput(bidResult) : null,

@@ -11,7 +11,7 @@ import { Seat, BidSuit, Vulnerability, Rank, Suit } from "../../engine/types";
 import type { Auction, AuctionEntry } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { DrillSession } from "../../drill/types";
+import type { DrillSession } from "../../bootstrap/types";
 
 function makeTestDeal() {
   const ranks = [
@@ -69,7 +69,7 @@ describe("Task 1: DEV-mode assertion on uninitialized store", () => {
     const store = createGameStore(engine);
 
     // Calling startDrill initializes the store — should not throw
-    await store.startDrill(makeTestDeal(), makeDrillSession());
+    await store.startDrill({ deal: makeTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
     expect(store.deal).not.toBeNull();
   });
 });
@@ -90,7 +90,7 @@ describe("Task 2: runAiBids() error recovery keeps state consistent", () => {
 
     // Use a deal where North is dealer, so AI bids N, E, then user is S
     // The 2nd addCall (East's bid) will fail
-    await store.startDrill(makeTestDeal(), makeDrillSession());
+    await store.startDrill({ deal: makeTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
 
     // After error recovery: bidHistory length should match auction entries length
     expect(store.bidHistory.length).toBe(store.auction.entries.length);
@@ -110,7 +110,7 @@ describe("Task 3: init() handles double/redouble in explanation mapping", () => 
       isComplete: false,
     };
 
-    await store.startDrill(makeTestDeal(), makeDrillSession(), initialAuction);
+    await store.startDrill({ deal: makeTestDeal(), session: makeDrillSession(), initialAuction, nsInferenceEngine: null, ewInferenceEngine: null });
 
     // The double entry should NOT have "Pass" as its explanation
     const doubleEntry = store.bidHistory.find(
@@ -133,7 +133,7 @@ describe("Task 3: init() handles double/redouble in explanation mapping", () => 
       isComplete: false,
     };
 
-    await store.startDrill(makeTestDeal(), makeDrillSession(), initialAuction);
+    await store.startDrill({ deal: makeTestDeal(), session: makeDrillSession(), initialAuction, nsInferenceEngine: null, ewInferenceEngine: null });
 
     const redoubleEntry = store.bidHistory.find(
       (e) => e.call.type === "redouble",
@@ -150,7 +150,7 @@ describe("Task 4: injectable AI_BID_DELAY via delayFn", () => {
     const store = createGameStore(engine, { delayFn: async () => { await Promise.resolve(); } });
 
     // With no-op delay, startDrill should complete AI bids instantly (no fake timers needed)
-    await store.startDrill(makeTestDeal(), makeDrillSession());
+    await store.startDrill({ deal: makeTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
 
     // AI bids happened: North (dealer) and East bid before South's turn
     expect(store.bidHistory.length).toBe(2);

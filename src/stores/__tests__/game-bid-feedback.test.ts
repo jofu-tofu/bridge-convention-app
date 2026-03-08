@@ -93,12 +93,13 @@ describe("bid feedback — user-facing behavior", () => {
   describe("when user bids incorrectly", () => {
     it("auction pauses so user can review their mistake", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        make2CStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: make2CStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
 
       // User is on turn
@@ -113,12 +114,13 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("tells user what the correct bid was", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        make2CStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: make2CStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
       store.userBid({ type: "pass" });
       await flushActions();
@@ -138,12 +140,13 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("auction resumes when user dismisses feedback", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        make2CStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: make2CStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
       store.userBid({ type: "pass" });
       await flushActions();
@@ -160,12 +163,13 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("user can skip directly to review", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        make2CStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: make2CStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
       store.userBid({ type: "pass" });
       await flushActions();
@@ -181,12 +185,13 @@ describe("bid feedback — user-facing behavior", () => {
   describe("when user bids correctly", () => {
     it("auction continues without interruption", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        make2CStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: make2CStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
 
       const correctBid: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
@@ -202,12 +207,13 @@ describe("bid feedback — user-facing behavior", () => {
   describe("edge cases", () => {
     it("passing is correct when convention does not apply", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        makeNoOpStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: makeNoOpStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
 
       store.userBid({ type: "pass" });
@@ -219,7 +225,7 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("works without a convention strategy (no correctness checking)", async () => {
       const store = makeStore();
-      store.startDrill(makeSimpleTestDeal(), makeDrillSession());
+      store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
       await flushActions();
 
       store.userBid({ type: "pass" });
@@ -233,12 +239,13 @@ describe("bid feedback — user-facing behavior", () => {
   describe("multi-grade feedback", () => {
     it("acceptable bid gets Acceptable grade and auction continues (no retry)", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        makePrimaryWithAcceptableAlternativeStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: makePrimaryWithAcceptableAlternativeStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
 
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
@@ -251,12 +258,13 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("incorrect bid gets Incorrect grade with retry offered", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        makePrimaryWithAcceptableAlternativeStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: makePrimaryWithAcceptableAlternativeStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
 
       store.userBid({ type: "bid", level: 3, strain: BidSuit.Clubs });
@@ -273,12 +281,13 @@ describe("bid feedback — user-facing behavior", () => {
 
     it("BidFeedback.grade is the single source of truth for correctness", async () => {
       const store = makeStore();
-      store.startDrill(
-        makeSimpleTestDeal(),
-        makeDrillSession(),
-        undefined,
-        makePrimaryWithAcceptableAlternativeStrategy(),
-      );
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: makePrimaryWithAcceptableAlternativeStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
       await flushActions();
 
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });

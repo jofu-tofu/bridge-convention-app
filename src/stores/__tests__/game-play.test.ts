@@ -4,7 +4,7 @@ import type { Card, Contract, Hand } from "../../engine/types";
 import { createGameStore, seatController } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeCard, makeSimpleTestDeal, makeDrillSession } from "../../test-support/fixtures";
-import type { DrillSession } from "../../drill/types";
+import type { DrillSession } from "../../bootstrap/types";
 import type { EnginePort } from "../../engine/port";
 
 // North declares so user (South) is dummy — play phase reachable via acceptDeclarerSwap
@@ -82,7 +82,7 @@ describe("createGameStore play phase", () => {
     deal: ReturnType<typeof makeSimpleTestDeal>,
     session: DrillSession,
   ) {
-    const promise = drillStore.startDrill(deal, session);
+    const promise = drillStore.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
     await promise;
     // North declares → DECLARER_PROMPT; accept swap to enter PLAYING
@@ -187,7 +187,7 @@ describe("play concurrency fixes", () => {
   ) {
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
-    const promise = store.startDrill(deal, session);
+    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
     await promise;
     store.acceptDeclarerSwap();

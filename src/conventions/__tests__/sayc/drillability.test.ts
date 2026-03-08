@@ -7,7 +7,7 @@ import {
 } from "../../core/registry";
 import { saycConfig } from "../../definitions/sayc";
 import { filterConventions } from "../../../core/display/filter-conventions";
-import { createDrillConfig } from "../../../drill/config-factory";
+import { createDrillConfig } from "../../../bootstrap/config-factory";
 
 beforeEach(() => {
   clearRegistry();

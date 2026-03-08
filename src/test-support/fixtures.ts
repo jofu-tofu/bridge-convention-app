@@ -8,7 +8,7 @@ import { vi } from "vitest";
 import { tick } from "svelte";
 import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../engine/types";
 import type { Card, Contract, Deal } from "../engine/types";
-import type { DrillSession } from "../drill/types";
+import type { DrillSession } from "../bootstrap/types";
 import type { PlayStrategy } from "../core/contracts";
 
 export function makeCard(suit: Suit, rank: Rank): Card {

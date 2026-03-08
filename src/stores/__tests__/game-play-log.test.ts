@@ -27,7 +27,7 @@ describe("game store playLog", () => {
     const store = createGameStore(engine);
     const session = makeDrillSession(Seat.South, testPlayStrategy);
 
-    const drillPromise = store.startDrill(makeSimpleTestDeal(), session);
+    const drillPromise = store.startDrill({ deal: makeSimpleTestDeal(), session, nsInferenceEngine: null, ewInferenceEngine: null });
     // Advance past AI bid delays (3 AI seats × 300ms each)
     await vi.advanceTimersByTimeAsync(1000);
     await drillPromise;
