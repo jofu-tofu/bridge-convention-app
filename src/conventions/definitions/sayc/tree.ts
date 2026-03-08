@@ -22,16 +22,20 @@ interface SAYCEstablished extends EstablishedContext {
 
 // ─── Hand tree dispatch ──────────────────────────────────────
 
+// Pre-create fallback to avoid duplicate nodeId errors when resolveHandTree
+// is called multiple times by diagnostics or test infrastructure.
+const unknownSlotFallback = saycPass("unknown-slot");
+
 const handTreeMap: Record<string, RuleNode> = {
   "is-opener-no-prior-bid": openingBranch,
   "is-responder": makeResponderHandTree(),
   "opponent-bid": makeCompetitiveBranch(),
   "is-opener-rebid": makeOpenerTransferOrRebid(),
-  "default": saycPass(),
+  "default": saycPass("default-slot"),
 };
 
 function resolveHandTree(est: SAYCEstablished): HandNode {
-  return (handTreeMap[est.slotName] ?? saycPass()) as HandNode;
+  return (handTreeMap[est.slotName] ?? unknownSlotFallback) as HandNode;
 }
 
 // ─── Protocol ────────────────────────────────────────────────

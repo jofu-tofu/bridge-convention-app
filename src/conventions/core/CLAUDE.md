@@ -89,7 +89,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 `IntentNode` (`intent/`) is the only tree leaf type — carries `SemanticIntent` + `defaultCall`. Downstream consumers (flatten, sibling finder, inference) use `defaultCall` only. Only `conventionToStrategy()` calls the resolver.
 
-**`createIntentBidFactory(prefix)`** generates deterministic `prefix/name` nodeIds. Duplicates within a factory throw at construction. Stayman/Bergen/Weak Twos use factories; SAYC/Lebensohl Lite use deprecated `intentBid()` (counter-based).
+**`createIntentBidFactory(prefix)`** generates deterministic `prefix/name` nodeIds. Duplicates within a factory throw at construction. Stayman/Bergen/Weak Twos/SAYC use factories; Lebensohl Lite uses deprecated `intentBid()` (counter-based).
 
 **IntentNode `meaning` field:** Self-contained sentence fragment starting with action verb (e.g., "Asks for a 4-card major"). No convention name, no HCP numbers. Under ~15 words.
 

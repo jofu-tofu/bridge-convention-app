@@ -3,8 +3,16 @@ import { Seat, BidSuit } from "../../../engine/types";
 import type { ContractBid } from "../../../engine/types";
 import { registerConvention, clearRegistry } from "../../core/registry";
 import { saycConfig } from "../../definitions/sayc";
+import { saycOverlays } from "../../definitions/sayc/overlays";
 import { hand } from "../fixtures";
 import { callFromRules } from "./helpers";
+import { CompetitionMode, SystemMode } from "../../core/dialogue/dialogue-state";
+import type { DialogueState } from "../../core/dialogue/dialogue-state";
+import { INITIAL_DIALOGUE_STATE } from "../../core/dialogue/dialogue-manager";
+
+function stateWith(overrides: Partial<DialogueState>): DialogueState {
+  return { ...INITIAL_DIALOGUE_STATE, ...overrides };
+}
 
 beforeEach(() => {
   clearRegistry();
@@ -78,7 +86,78 @@ describe("SAYC competitive bids", () => {
     // 6 HCP, no 5-card suit — passes
     const result = callFromRules(overcaller, Seat.East, ["1S"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-pass");
+    expect(result!.rule).toBe("sayc-pass-no-overcall");
     expect(result!.call.type).toBe("pass");
+  });
+});
+
+describe("SAYC overlay registration", () => {
+  test("overlays validate against protocol on registration", () => {
+    // Registration should not throw — overlays reference valid round "dispatch"
+    expect(() => {
+      clearRegistry();
+      registerConvention(saycConfig);
+    }).not.toThrow();
+  });
+});
+
+describe("SAYC overlay matching", () => {
+  test("sayc-1nt-doubled activates when 1NT is doubled", () => {
+    const state = stateWith({
+      familyId: "sayc-1nt",
+      competitionMode: CompetitionMode.Doubled,
+      systemMode: SystemMode.Off,
+    });
+    const overlay = saycOverlays.find(o => o.id === "sayc-1nt-doubled");
+    expect(overlay).toBeDefined();
+    expect(overlay!.matches(state)).toBe(true);
+  });
+
+  test("sayc-1nt-doubled does NOT activate in uncontested auction", () => {
+    const state = stateWith({
+      familyId: "sayc-1nt",
+      competitionMode: CompetitionMode.Uncontested,
+      systemMode: SystemMode.On,
+    });
+    const overlay = saycOverlays.find(o => o.id === "sayc-1nt-doubled");
+    expect(overlay!.matches(state)).toBe(false);
+  });
+
+  test("sayc-1nt-doubled does NOT activate for other families", () => {
+    const state = stateWith({
+      familyId: "sayc-suit",
+      competitionMode: CompetitionMode.Doubled,
+    });
+    const overlay = saycOverlays.find(o => o.id === "sayc-1nt-doubled");
+    expect(overlay!.matches(state)).toBe(false);
+  });
+
+  test("sayc-overcalled activates when suit opening is overcalled", () => {
+    const state = stateWith({
+      familyId: "sayc-suit",
+      competitionMode: CompetitionMode.Overcalled,
+      systemMode: SystemMode.Off,
+    });
+    const overlay = saycOverlays.find(o => o.id === "sayc-overcalled");
+    expect(overlay).toBeDefined();
+    expect(overlay!.matches(state)).toBe(true);
+  });
+
+  test("sayc-overcalled does NOT activate in uncontested auction", () => {
+    const state = stateWith({
+      familyId: "sayc-suit",
+      competitionMode: CompetitionMode.Uncontested,
+    });
+    const overlay = saycOverlays.find(o => o.id === "sayc-overcalled");
+    expect(overlay!.matches(state)).toBe(false);
+  });
+
+  test("sayc-overcalled does NOT activate for 1NT family", () => {
+    const state = stateWith({
+      familyId: "sayc-1nt",
+      competitionMode: CompetitionMode.Overcalled,
+    });
+    const overlay = saycOverlays.find(o => o.id === "sayc-overcalled");
+    expect(overlay!.matches(state)).toBe(false);
   });
 });

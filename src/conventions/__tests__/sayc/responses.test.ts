@@ -23,7 +23,7 @@ describe("SAYC responses to 1-level suit openings", () => {
     // 3 + 3 + 3 + 0 = 9 HCP. In 6-10 range.
     const result = callFromRules(responder, Seat.South, ["1H", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-raise-major");
+    expect(result!.rule).toBe("sayc-respond-raise-major-over-h");
     const call = result!.call as ContractBid;
     expect(call.level).toBe(2);
     expect(call.strain).toBe(BidSuit.Hearts);
@@ -39,7 +39,7 @@ describe("SAYC responses to 1-level suit openings", () => {
     // 8 HCP
     const result = callFromRules(responder, Seat.South, ["1S", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-raise-major");
+    expect(result!.rule).toBe("sayc-respond-raise-major-over-s");
     const call = result!.call as ContractBid;
     expect(call.level).toBe(2);
     expect(call.strain).toBe(BidSuit.Spades);
@@ -87,7 +87,7 @@ describe("SAYC responses to 1-level suit openings", () => {
     // 7 HCP, 2 hearts — can't raise 1H, no 4+ spades to bid 1S
     const result = callFromRules(responder, Seat.South, ["1H", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-1nt");
+    expect(result!.rule).toBe("sayc-respond-1nt-2o1-over-h");
     const call = result!.call as ContractBid;
     expect(call.level).toBe(1);
     expect(call.strain).toBe(BidSuit.NoTrump);
@@ -167,7 +167,7 @@ describe("SAYC edge cases - responses", () => {
     );
     const result = callFromRules(responder, Seat.South, ["1H", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-jump-raise-major");
+    expect(result!.rule).toBe("sayc-respond-jump-raise-major-over-h");
     const call = result!.call as ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Hearts);
@@ -184,7 +184,7 @@ describe("SAYC edge cases - responses", () => {
     );
     const result = callFromRules(responder, Seat.South, ["1S", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-game-raise-major");
+    expect(result!.rule).toBe("sayc-respond-game-raise-major-over-s");
     const call = result!.call as ContractBid;
     expect(call.level).toBe(4);
     expect(call.strain).toBe(BidSuit.Spades);
@@ -201,7 +201,7 @@ describe("SAYC edge cases - responses", () => {
     );
     const result = callFromRules(responder, Seat.South, ["1H", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-2c-over-major");
+    expect(result!.rule).toBe("sayc-respond-2c-over-major-over-h");
     const call = result!.call as ContractBid;
     expect(call.level).toBe(2);
     expect(call.strain).toBe(BidSuit.Clubs);
@@ -218,7 +218,7 @@ describe("SAYC edge cases - responses", () => {
     );
     const result = callFromRules(responder, Seat.South, ["1D", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-respond-2nt");
+    expect(result!.rule).toBe("sayc-respond-2nt-over-m");
     const call = result!.call as ContractBid;
     expect(call.level).toBe(2);
     expect(call.strain).toBe(BidSuit.NoTrump);

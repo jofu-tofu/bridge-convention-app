@@ -165,7 +165,7 @@ describe("SAYC opening bids", () => {
     );
     const result = callFromRules(opener, Seat.North, []);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-pass");
+    expect(result!.rule).toBe("sayc-pass-no-preempt");
     expect(result!.call.type).toBe("pass");
   });
 });
@@ -194,7 +194,7 @@ describe("SAYC edge cases - opening", () => {
     );
     const result = callFromRules(opener, Seat.North, []);
     expect(result).not.toBeNull();
-    expect(result!.rule).toBe("sayc-pass");
+    expect(result!.rule).toBe("sayc-pass-no-preempt");
   });
 
   test("opener after passes: still opens", () => {

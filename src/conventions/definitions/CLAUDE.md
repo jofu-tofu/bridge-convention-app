@@ -17,7 +17,7 @@ Shared across conventions: `shared-helpers.ts` — `STRAIN_TO_BIDSUIT` lookup an
 
 - **Stayman:** Responds to NT openings (1NT and 2NT). Smolen (3H=4S+5H GF, 3S=5S+4H GF). Multi-round protocol with interference via overlays (`overlays.ts`: `stayman-doubled`, `stayman-overcalled`).
 - **Bergen Raises:** Multi-round (constructive/limit/preemptive + opener rebids + game try). Standard Bergen variant (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter 12+).
-- **SAYC:** User-drillable + E/W opponent AI default. 55+ flattened rules. All IntentNode leaves with empty resolvers (deterministic via defaultCall). Uses deprecated `intentBid()` (dynamic tree patterns).
+- **SAYC:** User-drillable + E/W opponent AI default. 55+ flattened rules. All IntentNode leaves with empty resolvers (deterministic via defaultCall). Uses `createIntentBidFactory("sayc")` for deterministic nodeIds (`sayc/{name}`).
 - **Weak Twos:** Preemptive opening (2D/2H/2S, 6+ suit, 5-11 HCP), Ogust response system, vulnerability awareness.
 - **Lebensohl Lite:** Uses deprecated `intentBid()` (dynamic tree patterns).
 
@@ -47,6 +47,8 @@ __tests__/
     opening.test.ts, responses.test.ts, rebids.test.ts, competitive.test.ts
     disjoint.test.ts         Rule overlap + reachability checks
     edge-cases.test.ts
+    factory-migration.test.ts  Factory pattern + explanations population checks
+    transitions.test.ts      Dialogue state transition tests
   infrastructure/            Shared engine primitives (rule-tree, tree-compat, registry, etc.)
   cross-convention.test.ts   Multi-convention interaction tests
   fixtures.ts                Shared helpers (hand, auctionFromBids, makeBiddingContext)

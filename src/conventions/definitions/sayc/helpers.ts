@@ -8,9 +8,12 @@ import {
   lastBid,
   bidIsHigher,
 } from "../../core/conditions";
-import { intentBid } from "../../core/intent/intent-node";
+import { createIntentBidFactory } from "../../core/intent/intent-node";
 import type { IntentNode } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
+
+export const saycBid = createIntentBidFactory("sayc");
+
 import { auctionMatchesExact } from "../../../engine/auction-helpers";
 
 const pass: Call = { type: "pass" };
@@ -127,4 +130,5 @@ export function openerAcceptTransferCall(ctx: BiddingContext): Call {
 
 // SAYC catch-all: every terminal in SAYC produces Pass (not fallback/null)
 // because SAYC is a catch-all convention — any hand that enters produces a bid or pass.
-export const saycPass = (): IntentNode => intentBid("sayc-pass", "Passes with no suitable action available", { type: SemanticIntentType.Signoff, params: {} }, (): Call => pass);
+// Each call site passes a unique context string to avoid duplicate nodeId errors.
+export const saycPass = (context: string): IntentNode => saycBid(`sayc-pass-${context}`, "Passes with no suitable action available", { type: SemanticIntentType.Signoff, params: {} }, (): Call => pass);
