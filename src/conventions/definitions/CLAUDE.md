@@ -18,7 +18,7 @@ Shared across conventions: `shared-helpers.ts` — `STRAIN_TO_BIDSUIT` lookup an
 - **Stayman:** Responds to NT openings (1NT and 2NT). Smolen (3H=4S+5H GF, 3S=5S+4H GF). Multi-round protocol with interference via overlays (`overlays.ts`: `stayman-doubled`, `stayman-overcalled`).
 - **Bergen Raises:** Multi-round (constructive/limit/preemptive + opener rebids + game try). Standard Bergen variant (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter 12+).
 - **SAYC:** User-drillable + E/W opponent AI default. 55+ flattened rules. All IntentNode leaves with empty resolvers (deterministic via defaultCall). Uses `createIntentBidFactory("sayc")` for deterministic nodeIds (`sayc/{name}`).
-- **Weak Twos:** Preemptive opening (2D/2H/2S, 6+ suit, 5-11 HCP), Ogust response system, vulnerability awareness.
+- **Weak Twos:** Preemptive opening (2D/2H/2S, 6+ suit, 5-11 HCP), Ogust response system, vulnerability awareness. Interference via protocol branches on `"response"` round (doubled + overcalled), not overlays.
 - **Lebensohl Lite:** Uses deprecated `intentBid()` (dynamic tree patterns).
 
 ## Convention Parity Checklist
@@ -28,7 +28,7 @@ Every convention must satisfy all items before being considered complete:
 1. **Factory IDs.** Use `createIntentBidFactory("<convention-id>")` for deterministic `prefix/name` nodeIds. Never use deprecated `intentBid()` (counter-based, non-deterministic). Lebensohl Lite is the only remaining exception.
 2. **`intentResolvers` map.** Cover every `SemanticIntentType` used in the tree. If resolvers are empty (all intents use `defaultCall`), document the reason in config (see SAYC: deterministic via `defaultCall`).
 3. **`transitionRules` with `baselineRules`.** Convention-specific rules in `transitionRules`, plus `baselineRules: baselineTransitionRules` for two-pass mode. At minimum 4+ convention-specific rules covering the opening/ask/response/denial cycle.
-4. **At least one overlay for opponent interference.** Define in `overlays.ts`. Use `matches(state)` predicate with `competitionMode` and/or `getSystemModeFor()` checks. Minimum: handle doubled and overcalled states.
+4. **Interference handling (overlay or branch).** Handle at least doubled and overcalled states. Preferred: use `ProtocolBranch` on the round for full tree replacements that students should learn (e.g., Weak Twos `"response"` round). Alternative: use overlay patches in `overlays.ts` for fine-grained hooks (suppress, add, override). Use `matches(state)` predicate with `competitionMode` and/or `getSystemModeFor()` checks.
 5. **Non-empty explanations.** `explanations.ts` must have both `convention` (purpose, whenToUse, whenNotToUse, tradeoff, principle, roles) and `decisions` entries for every `handDecision()` node ID in the tree.
 6. **`acceptableAlternatives` AlternativeGroup array.** Define in config for adjacent-boundary hands where multiple bids are reasonable. Members reference IntentNode IDs. Tier is `"preferred"` or `"alternative"`.
 7. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate. Include `dealer` when the convention requires a specific opening position.
@@ -386,12 +386,14 @@ Overlays patch protocol rounds for interference. Each `ConventionOverlayPatch` h
 }
 ```
 
+**Branch vs overlay heuristic:** Use a `ProtocolBranch` (on the round's `branches` array) when ALL three conditions hold: (1) the overlay has `replacementTree` with >1 hand decision node, (2) it represents a named interference scenario a student should learn (e.g., "after opponent doubles"), and (3) the convention already has 3+ overlays on the same round. Use an overlay for everything else (suppress, addIntents, overrideResolver, trivial fallback trees, single-node replacement trees). Branches are first-class protocol variants with teaching labels; overlays are local patches. Branch `handTree` takes precedence over overlay `replacementTree` on the same round.
+
 ### Transition Rule Authoring
 
 Transition rules define how the dialogue state evolves as the auction progresses. Each `TransitionRule` has:
 
 - **`id`** — unique rule identifier (convention-scoped, appears in diagnostics).
-- **`matchDescriptor?`** — optional `TransitionRuleDescriptor` with fields `familyId`, `obligationKind`, `callType`, `level`, `strain`, `actorRelation`. Used by diagnostics to detect overlapping rules.
+- **`matchDescriptor`** — required `TransitionRuleDescriptor` on all convention transition rules (validated at registration; missing descriptors throw). Fields: `familyId`, `obligationKind`, `callType`, `level`, `strain`, `actorRelation`. Used by diagnostics to detect overlapping rules. Optional only for baseline rules and test fixtures.
 - **`matches(state, entry, auction, entryIndex)`** — predicate on current state + auction entry. `entry: AuctionEntry` bundles `{ call, seat }`.
 - **`effects(state, entry, auction, entryIndex)`** — returns a `DialogueEffect` with `set*` prefix fields.
 
@@ -460,4 +462,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `stayman/index.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-08 | version=2 | dir-commits-at-audit=55 | tree-sig=dirs:22,files:110,exts:ts:109,md:3 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-08 | version=3 | dir-commits-at-audit=55 | tree-sig=dirs:22,files:110,exts:ts:109,md:3 -->

@@ -13,7 +13,7 @@ core/
   condition-evaluator.ts  evaluateConditions, buildExplanation
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   inference-api.ts      evaluateForInference() + inference DTOs for inference/; re-exports createBiddingContext + isAuctionCondition
-  registry.ts           registerConvention, getConvention, evaluateBiddingRules(context, config, lookupConvention?), computeTriggerOverridesForConfig(@internal), applyProtocolOverlays(@internal)
+  registry.ts           registerConvention, getConvention, evaluateBiddingRules(context, config, lookupConvention?), computeDialogueStateForConfig(config, auction), computeTriggerOverridesForConfig(@internal), applyProtocolOverlays(@internal)
   diagnostics.ts        analyzeConvention, getDiagnostics — registration-time checks (trigger-shadow, unreachable-node, transition-rule-overlap)
   trigger-descriptor.ts TriggerDescriptor union type, descriptorOverlaps/Subsumes/Disjoint — semantic overlap analysis
   tree/                 Tree system
@@ -23,7 +23,7 @@ core/
     sibling-finder.ts     findSiblingBids, findCandidateBids — display/teaching path
     candidate-builder.ts  IntentNode → CandidateBid DTO
   protocol/             Protocol system
-    protocol.ts           ConventionProtocol, ProtocolRound, SemanticTrigger, builders
+    protocol.ts           ConventionProtocol, ProtocolRound, ProtocolBranch, SemanticTrigger, builders, resolveBranch()
     protocol-evaluator.ts evaluateProtocol — protocol dispatch engine
   overlay/              Overlay system
     overlay.ts            ConventionOverlayPatch, validateOverlayPatches, collectTriggerOverrides
@@ -66,6 +66,8 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 - Combine with `and()`, `not()`, cast as `AuctionCondition`
 
 **Milestone conditions:** `bidMade(level, strain)`, `doubleMade()`, `bidMadeAtLevel(level)` — seat-agnostic, `triggerScope: "event"`. `partnerBidMade(level, strain)`, `opponentBidMade(level, strain)` — actor-aware via `areSamePartnership()`, `triggerScope: "event"`. `cursorReached()` — always-true trigger for continuation rounds that rely on seatFilter for applicability.
+
+**Protocol branches:** `ProtocolBranch` on `ProtocolRound.branches` provides named variants activated by `DialogueState` (e.g., "after opponent doubles"). Each branch has `name`, `label` (teaching UI), `matches(state)` predicate, and a replacement `handTree` (static or function). `resolveBranch(protoResult, dialogueState, context)` selects the first matching branch OUTSIDE the protocol evaluator — keeps `evaluateProtocol()` pure, no dialogue state dependency. Branch `handTree` takes precedence over overlay `replacementTree`; other overlay hooks (suppress, add, override) still compose on top. Use branches when: (1) overlay has `replacementTree` with >1 hand decision node, (2) it's a named interference scenario students should learn, (3) convention already has 3+ overlays on same round. Use overlays for everything else.
 
 **Single-round:** SAYC uses single-round dispatch with semantic conditions.
 
@@ -159,7 +161,8 @@ Two systems extract semantic facts from the auction. They answer different quest
 - **`unreachable-node`** — cross-round: all triggers in a later round are subsumed by an earlier round (suppressed when seatFilters are disjoint, e.g., Bergen opener vs responder)
 - **`transition-rule-overlap`** — two transition rules match the same (state, entry) pair
 - **`orphan-family-member`** — `IntentFamily` member references a bidName not found in any protocol tree or overlay replacement tree
-- `duplicate-node-id`, `overlay-priority-conflict`, `missing-resolver`, `full-scope-trigger`, `orphan-family-member` — existing checks
+- **`branch-overlay-conflict`** — a round has both `branches` and overlay `replacementTree` targeting the same round (branch takes precedence; the overlay replacementTree is redundant)
+- `duplicate-node-id`, `overlay-priority-conflict`, `missing-resolver`, `full-scope-trigger` — existing checks
 
 **TriggerDescriptor system** (`trigger-descriptor.ts`): Structured metadata on `RuleCondition.descriptor` enables semantic overlap/subsumption analysis. Condition factories attach descriptors; `not()`/`and()`/`or()` compose them. Conditions without descriptors (or with `{kind: "opaque"}`) are silently skipped — never produce false positives.
 
@@ -167,10 +170,11 @@ Two systems extract semantic facts from the auction. They answer different quest
 
 ## Registry Pipeline Helpers
 
-`evaluateBiddingRules()` remains the stable entrypoint. Two extracted helpers are exported for unit testing and marked `@internal`:
+`evaluateBiddingRules()` remains the stable entrypoint. Shared helper and two extracted `@internal` helpers:
 
-- `computeTriggerOverridesForConfig(config, auction)` — dialogue state + overlay trigger override stage
-- `applyProtocolOverlays(config, context, protoResult, lookupConvention?)` — overlay replacement-tree stage
+- `computeDialogueStateForConfig(config, auction)` — shared dialogue state computation (two-pass or single-pass based on `baselineRules`), used by both `evaluateBiddingRules()` (for branch resolution) and `computeTriggerOverridesForConfig()` (for overlay filtering)
+- `computeTriggerOverridesForConfig(config, auction)` — `@internal` dialogue state + overlay trigger override stage
+- `applyProtocolOverlays(config, context, protoResult, lookupConvention?)` — `@internal` overlay replacement-tree stage
 
 ---
 
@@ -188,4 +192,4 @@ how an agent acts here, remove it.
 **Staleness anchor:** This file assumes `core/registry.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-03 | version=1 | dir-commits-at-audit=52 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-08 | version=2 | dir-commits-at-audit=55 -->

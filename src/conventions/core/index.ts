@@ -94,11 +94,12 @@ export type { ConventionOverlayPatch } from "./overlay";
 // ── Protocol (sub-barrel) ────────────────────────────────────────────────
 export {
   protocol, round, semantic, validateProtocol,
-  evaluateProtocol,
+  evaluateProtocol, resolveBranch,
 } from "./protocol";
 export type {
   ConventionProtocol,
   ProtocolRound,
+  ProtocolBranch,
   SemanticTrigger,
   EstablishedContext,
   MatchedRoundEntry,

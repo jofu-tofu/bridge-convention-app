@@ -1,6 +1,9 @@
-import type { AuctionCondition } from "../types";
+import type { AuctionCondition, BiddingContext } from "../types";
 import type { HandNode, IntentNode } from "../tree/rule-tree";
+import { validateTree } from "../tree/rule-tree";
 import type { TreeEvalResult } from "../tree/tree-evaluator";
+import { evaluateTree } from "../tree/tree-evaluator";
+import type { DialogueState } from "../dialogue/dialogue-state";
 
 // ─── Established context ─────────────────────────────────────
 
@@ -19,6 +22,25 @@ export interface SemanticTrigger<T extends EstablishedContext = EstablishedConte
   readonly condition: AuctionCondition;
   /** What this conversation event establishes (merged into accumulated context). */
   readonly establishes: Partial<T>;
+}
+
+// ─── Protocol branches ───────────────────────────────────────
+
+/** A named branch variant of a protocol round, activated by dialogue state.
+ *  Use branches for interference scenarios that replace the entire hand tree
+ *  with substantive logic a student should learn (e.g., "after opponent doubles").
+ *  For simpler patches (suppress, addIntents, trivial fallback), use overlays. */
+export interface ProtocolBranch {
+  /** Branch name (e.g., "doubled", "overcalled"). */
+  readonly name: string;
+  /** Display label for teaching UI (e.g., "After opponent doubles"). */
+  readonly label: string;
+  /** Predicate: activate this branch based on dialogue state. */
+  matches(state: DialogueState): boolean;
+  /** Replacement hand tree for this branch. */
+  readonly handTree: HandNode | ((established: EstablishedContext) => HandNode);
+  /** Optional replacement triggers for this branch. */
+  readonly triggers?: readonly SemanticTrigger[];
 }
 
 // ─── Protocol rounds ─────────────────────────────────────────
@@ -40,6 +62,10 @@ export interface ProtocolRound<T extends EstablishedContext = EstablishedContext
    *  Use 1 for single-entry events, 3 for events spanning extra actions,
    *  0 for virtual rounds that don't advance the cursor. */
   readonly span?: number;
+  /** Named branch variants activated by dialogue state. First matching branch wins.
+   *  Branches replace the round's handTree; overlay replacementTree hooks are skipped
+   *  when a branch is active (other overlay hooks still apply). */
+  readonly branches?: readonly ProtocolBranch[];
 }
 
 // ─── Convention protocol ─────────────────────────────────────
@@ -78,6 +104,9 @@ export interface ProtocolEvalResult<T extends EstablishedContext = EstablishedCo
   readonly activeRound: ProtocolRound<T> | null;
   /** The resolved hand tree root (for sibling finder). */
   readonly handTreeRoot: HandNode | null;
+  /** Active protocol branch (null if no branch matched or round has no branches).
+   *  Optional for backward compatibility — defaults to null when omitted. */
+  readonly activeBranch?: ProtocolBranch | null;
 }
 
 // ─── Builder helpers ─────────────────────────────────────────
@@ -98,6 +127,7 @@ export function round<T extends EstablishedContext = EstablishedContext>(
     handTree: HandNode | ((established: T) => HandNode);
     seatFilter?: AuctionCondition;
     span?: number;
+    branches?: readonly ProtocolBranch[];
   },
 ): ProtocolRound<T> {
   return {
@@ -106,6 +136,7 @@ export function round<T extends EstablishedContext = EstablishedContext>(
     handTree: config.handTree,
     seatFilter: config.seatFilter,
     span: config.span,
+    branches: config.branches,
   };
 }
 
@@ -115,6 +146,43 @@ export function semantic<T extends EstablishedContext = EstablishedContext>(
   establishes: Partial<T>,
 ): SemanticTrigger<T> {
   return { condition, establishes };
+}
+
+// ─── Branch resolution ──────────────────────────────────────
+
+/**
+ * Resolve the active branch for a protocol evaluation result.
+ * Called AFTER evaluateProtocol(), outside the evaluator — keeps the
+ * protocol evaluator free of dialogue state dependency.
+ *
+ * If the active round has branches, tests each branch predicate against
+ * dialogue state. First matching branch replaces the hand evaluation result.
+ * Other overlay hooks (suppress, add, override) still apply on top.
+ */
+export function resolveBranch(
+  protoResult: ProtocolEvalResult,
+  dialogueState: DialogueState,
+  context: BiddingContext,
+): ProtocolEvalResult {
+  if (!protoResult.activeRound?.branches) {
+    return { ...protoResult, activeBranch: null };
+  }
+  for (const branch of protoResult.activeRound.branches) {
+    if (branch.matches(dialogueState)) {
+      const handTree = typeof branch.handTree === "function"
+        ? branch.handTree(protoResult.established)
+        : branch.handTree;
+      const handResult = evaluateTree(handTree, context);
+      return {
+        ...protoResult,
+        activeBranch: branch,
+        handResult,
+        handTreeRoot: handTree,
+        matched: handResult.matched,
+      };
+    }
+  }
+  return { ...protoResult, activeBranch: null };
 }
 
 // ─── Validation ──────────────────────────────────────────────
@@ -148,6 +216,32 @@ export function validateProtocol(proto: ConventionProtocol): void {
         `Protocol "${proto.id}" round "${r.name}" seatFilter ` +
           `"${String(r.seatFilter.name)}" has category "${String(r.seatFilter.category)}" — expected "auction".`,
       );
+    }
+    // Validate branches
+    if (r.branches) {
+      const branchNames = new Set<string>();
+      for (const branch of r.branches) {
+        if (branchNames.has(branch.name)) {
+          throw new Error(
+            `Protocol "${proto.id}" round "${r.name}" has duplicate branch name "${branch.name}".`,
+          );
+        }
+        branchNames.add(branch.name);
+        // Validate branch handTree
+        const tree = typeof branch.handTree === "function" ? branch.handTree({}) : branch.handTree;
+        validateTree(tree);
+        // Validate branch triggers if provided
+        if (branch.triggers) {
+          for (const trigger of branch.triggers) {
+            if (trigger.condition.category !== "auction") {
+              throw new Error(
+                `Protocol "${proto.id}" round "${r.name}" branch "${branch.name}" trigger condition ` +
+                  `"${String(trigger.condition.name)}" has category "${String(trigger.condition.category)}" — expected "auction".`,
+              );
+            }
+          }
+        }
+      }
     }
   }
 }

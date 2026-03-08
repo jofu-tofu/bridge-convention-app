@@ -7,6 +7,9 @@ import type { EffectiveConventionContext } from "../pipeline/effective-context";
 import type { SemanticIntent } from "../intent/semantic-intent";
 import type { ResolverResult } from "../intent/intent-resolver";
 
+// Architecture tripwire: overlays are for local patches (suppress/add/repair).
+// For full tree replacements representing named interference scenarios, use
+// ProtocolBranch on the round instead. See protocol feedback analysis 2026-03-08.
 export interface ConventionOverlayPatch {
   readonly id: string;
   /** Which protocol round this overlay applies to (must match a ProtocolRound.name). */

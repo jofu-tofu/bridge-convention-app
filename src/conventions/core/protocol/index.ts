@@ -1,9 +1,10 @@
 // Protocol subsystem barrel — auction protocol system.
 
-export { protocol, round, semantic, validateProtocol } from "./protocol";
+export { protocol, round, semantic, validateProtocol, resolveBranch } from "./protocol";
 export type {
   ConventionProtocol,
   ProtocolRound,
+  ProtocolBranch,
   SemanticTrigger,
   EstablishedContext,
   MatchedRoundEntry,

@@ -24,6 +24,11 @@ export interface TreeDisplayOverlayContext {
   readonly overriddenIntents?: ReadonlySet<string>;
   /** Intent names added by overlay hooks (not in the base tree). */
   readonly addedIntents?: readonly { readonly name: string; readonly meaning: string }[];
+  /** Active protocol branch info for teaching banner display. */
+  readonly activeBranch?: {
+    readonly name: string;
+    readonly label: string;
+  };
 }
 
 export interface TreeDisplayRow {

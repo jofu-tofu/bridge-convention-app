@@ -14,16 +14,19 @@ import {
   suitQuality,
   and,
   seatFirstBidStrain,
-  partnerOpeningStrain,
 } from "../../core/conditions";
 import { handDecision, fallback } from "../../core/tree/rule-tree";
 import type { HandNode } from "../../core/tree/rule-tree";
 import type { HandCondition } from "../../core/types";
 import { createIntentBidFactory } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
+import { CompetitionMode } from "../../core/dialogue/dialogue-state";
 import { protocol, round, semantic } from "../../core/protocol/protocol";
 import type { ConventionProtocol, EstablishedContext } from "../../core/protocol/protocol";
-import { raiseToGame, raiseToThree, strainToSuitIndex, strainToSuitName } from "./helpers";
+import {
+  raiseToGame, raiseToThree, partnerSuitSupport,
+  strainToSuitIndex, strainToSuitName,
+} from "./helpers";
 
 const bid = createIntentBidFactory("weak-twos");
 // SUIT_ORDER indices: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
@@ -60,31 +63,6 @@ const openingTree: HandNode = handDecision(
 );
 
 // ─── Round 2: Response ──────────────────────────────────────
-
-/** N+ cards in partner's opened suit (works for any suit, not just majors). */
-function partnerSuitSupport(n: number): HandCondition {
-  return {
-    name: `partner-suit-support-${n}`,
-    label: `${n}+ in partner's opened suit`,
-    category: "hand",
-    test(ctx) {
-      const strain = partnerOpeningStrain(ctx);
-      const idx = strainToSuitIndex(strain);
-      if (idx < 0) return false;
-      return ctx.evaluation.shape[idx]! >= n;
-    },
-    describe(ctx) {
-      const strain = partnerOpeningStrain(ctx);
-      const idx = strainToSuitIndex(strain);
-      const suitName = strainToSuitName(strain);
-      if (idx < 0) return "Partner did not open a suit";
-      const len = ctx.evaluation.shape[idx]!;
-      return len >= n
-        ? `${len} ${suitName} (${n}+ support)`
-        : `Need ${n}+ ${suitName} (have ${len})`;
-    },
-  };
-}
 
 const responseTree: HandNode = handDecision(
   "game-strength-with-fit",
@@ -172,6 +150,51 @@ function ogustRebidTree(): HandNode {
   );
 }
 
+// ─── Response branches (interference) ───────────────────────
+
+const branchBid = createIntentBidFactory("weak-twos-overlay");
+
+/** After opponent doubles weak two: redouble (10+ HCP), raise with fit, or pass. */
+const responseAfterDouble: HandNode = handDecision(
+  "doubled-game-values",
+  and(hcpMin(16), partnerSuitSupport(3)),
+  branchBid("weak-two-doubled-game-raise", "Raises to game despite the double — strong hand with fit",
+    { type: SemanticIntentType.RaiseToGame, params: {} },
+    raiseToGame),
+  handDecision(
+    "doubled-competitive-raise",
+    and(hcpMin(8), partnerSuitSupport(3)),
+    branchBid("weak-two-doubled-compete", "Competitive raise after double — support with some values",
+      { type: SemanticIntentType.ShowSupport, params: {} },
+      raiseToThree),
+    handDecision(
+      "doubled-redouble",
+      hcpMin(10),
+      branchBid("weak-two-penalty-redouble", "Redouble shows 10+ HCP — penalty-oriented",
+        { type: SemanticIntentType.PenaltyRedouble, params: {} },
+        (): Call => ({ type: "redouble" })),
+      fallback("doubled-pass"),
+    ),
+  ),
+);
+
+/** After opponent overcalls weak two: raise with fit, or pass. */
+const responseAfterOvercall: HandNode = handDecision(
+  "overcalled-game-values",
+  and(hcpMin(16), partnerSuitSupport(3)),
+  branchBid("weak-two-overcalled-game-raise", "Raises to game despite overcall — strong hand with fit",
+    { type: SemanticIntentType.RaiseToGame, params: {} },
+    raiseToGame),
+  handDecision(
+    "overcalled-competitive-raise",
+    and(hcpMin(8), partnerSuitSupport(3)),
+    branchBid("weak-two-overcalled-compete", "Competitive raise after overcall — support with values",
+      { type: SemanticIntentType.ShowSupport, params: {} },
+      raiseToThree),
+    fallback("overcalled-pass"),
+  ),
+);
+
 // ─── Protocol ───────────────────────────────────────────────
 
 export const weakTwosProtocol: ConventionProtocol<WeakTwoEstablished> = protocol<WeakTwoEstablished>("weak-twos", [
@@ -196,6 +219,20 @@ export const weakTwosProtocol: ConventionProtocol<WeakTwoEstablished> = protocol
     ],
     handTree: responseTree,
     seatFilter: isResponder(),
+    branches: [
+      {
+        name: "doubled",
+        label: "After opponent doubles",
+        matches: (state) => state.competitionMode === CompetitionMode.Doubled,
+        handTree: responseAfterDouble,
+      },
+      {
+        name: "overcalled",
+        label: "After opponent overcalls",
+        matches: (state) => state.competitionMode === CompetitionMode.Overcalled,
+        handTree: responseAfterOvercall,
+      },
+    ],
   }),
   // Round 3: Ogust rebid — opener classifies hand quality.
   // cursorReached() because the 2NT Ogust ask is in round 2's span.

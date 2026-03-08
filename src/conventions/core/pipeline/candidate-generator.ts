@@ -92,13 +92,21 @@ export function buildEligibility(
   };
 }
 
-/** Step 1: Apply first overlay's replacementTree (first wins). */
+/** Step 1: Apply first overlay's replacementTree (first wins).
+ *  When a protocol branch is active (activeBranch non-null), overlay replacementTree
+ *  hooks are skipped — the branch already provides the replacement tree.
+ *  Other overlay hooks (suppress, add, override) still apply on top. */
 function applyReplacementTreeStep(
   root: RuleNode,
   result: TreeEvalResult,
   overlays: readonly ConventionOverlayPatch[],
   raw: EffectiveConventionContext["raw"],
+  hasBranch: boolean,
 ): { activeRoot: RuleNode; activeResult: TreeEvalResult; provenance: CandidateProvenance } {
+  if (hasBranch) {
+    // Branch already replaced the tree — skip overlay replacementTree hooks
+    return { activeRoot: root, activeResult: result, provenance: { origin: "tree" } };
+  }
   const replaced = applyOverlayTreeReplacement(overlays, root, raw, result);
   const provenance: CandidateProvenance = replaced.overlayId
     ? { origin: "replacement-tree", overlayId: replaced.overlayId }
@@ -357,8 +365,9 @@ export function generateCandidates(
   effectiveCtx: EffectiveConventionContext,
   onOverlayError?: OverlayErrorHandler,
 ): CandidateGenerationResult {
+  const hasBranch = effectiveCtx.protocolResult.activeBranch != null;
   const { activeRoot, activeResult, provenance } =
-    applyReplacementTreeStep(handTreeRoot, handResult, effectiveCtx.activeOverlays, effectiveCtx.raw);
+    applyReplacementTreeStep(handTreeRoot, handResult, effectiveCtx.activeOverlays, effectiveCtx.raw, hasBranch);
 
   const matched = activeResult.matched;
   const hasTreeMatch = matched !== null && matched.type === "intent";

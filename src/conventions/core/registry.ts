@@ -17,9 +17,10 @@ import type { RuleNode } from "./tree/rule-tree";
 import { applyOverlayTreeReplacement } from "./overlay/overlay-tree-replacement";
 import { treeResultToBiddingRuleResult, flattenProtocol } from "./tree/tree-compat";
 import type { ProtocolEvalResult, SemanticTrigger } from "./protocol/protocol";
-import { validateProtocol } from "./protocol/protocol";
+import { validateProtocol, resolveBranch } from "./protocol/protocol";
 import { validateOverlayPatches, collectTriggerOverrides } from "./overlay/overlay";
 import { evaluateProtocol } from "./protocol/protocol-evaluator";
+import type { DialogueState } from "./dialogue/dialogue-state";
 import { buildEffectiveContext } from "./pipeline/effective-context";
 import { computeDialogueState } from "./dialogue/dialogue-manager";
 import { baselineTransitionRules } from "./dialogue/baseline-transitions";
@@ -112,13 +113,17 @@ export function evaluateBiddingRules(
 ): BiddingRuleResult | null {
   // Protocol convention dispatch
   if (config.protocol) {
-    const triggerOverrides = computeTriggerOverridesForConfig(config, context.auction);
+    const dialogueState = computeDialogueStateForConfig(config, context.auction);
+    const triggerOverrides = config.overlays
+      ? collectTriggerOverrides(config.overlays, dialogueState)
+      : undefined;
     const protoResult = evaluateProtocol(config.protocol, context, triggerOverrides);
+    const branchResult = resolveBranch(protoResult, dialogueState, context);
     const { handResult, treeRoot } = applyProtocolOverlays(
       config,
       context,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- ProtocolEvalResult<any> propagates from protocol generic
-      protoResult,
+      branchResult,
       lookupConvention,
     );
 
@@ -130,13 +135,30 @@ export function evaluateBiddingRules(
       ...result,
       treeEvalResult: handResult,
       treeRoot,
-      protocolResult: protoResult,
+      protocolResult: branchResult,
     };
   }
 
   throw new Error(
     `Convention "${config.id}" has no protocol. All conventions must use protocols.`,
   );
+}
+
+// Note: trigger override collection depends on dialogue state, which depends on
+// auction + transition rules — NOT on protocol dispatch output. This is a linear
+// pipeline (auction → dialogue state → overlay filter → trigger overrides → protocol),
+// not a circular dependency. Evaluated and confirmed 2026-03-08.
+/**
+ * @internal Compute dialogue state for a convention/auction pair.
+ * Shared helper used by both trigger override and branch resolution paths.
+ */
+export function computeDialogueStateForConfig(
+  config: ConventionConfig,
+  auction: Auction,
+): DialogueState {
+  return config.baselineRules
+    ? computeDialogueState(auction, config.transitionRules ?? [], config.baselineRules)
+    : computeDialogueState(auction, config.transitionRules ?? baselineTransitionRules);
 }
 
 /**
@@ -147,10 +169,7 @@ export function computeTriggerOverridesForConfig(
   auction: Auction,
 ): ReadonlyMap<string, readonly SemanticTrigger[]> | undefined {
   if (!config.overlays) return undefined;
-  const dialogueState = config.baselineRules
-    ? computeDialogueState(auction, config.transitionRules ?? [], config.baselineRules)
-    : computeDialogueState(auction, config.transitionRules ?? baselineTransitionRules);
-
+  const dialogueState = computeDialogueStateForConfig(config, auction);
   return collectTriggerOverrides(config.overlays, dialogueState);
 }
 

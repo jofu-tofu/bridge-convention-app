@@ -1,6 +1,6 @@
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import type { BiddingContext } from "../../core/types";
+import type { BiddingContext, HandCondition } from "../../core/types";
 import { partnerOpeningStrain } from "../../core/conditions";
 
 const pass: Call = { type: "pass" };
@@ -36,4 +36,29 @@ export function raiseToThree(ctx: BiddingContext): Call {
   const strain = partnerOpeningStrain(ctx);
   if (!strain || strain === BidSuit.NoTrump) return pass;
   return { type: "bid", level: 3, strain };
+}
+
+/** N+ cards in partner's opened suit (works for any suit, not just majors). */
+export function partnerSuitSupport(n: number): HandCondition {
+  return {
+    name: `partner-suit-support-${n}`,
+    label: `${n}+ in partner's opened suit`,
+    category: "hand",
+    test(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      const idx = strainToSuitIndex(strain);
+      if (idx < 0) return false;
+      return ctx.evaluation.shape[idx]! >= n;
+    },
+    describe(ctx) {
+      const strain = partnerOpeningStrain(ctx);
+      const idx = strainToSuitIndex(strain);
+      const suitName = strainToSuitName(strain);
+      if (idx < 0) return "Partner did not open a suit";
+      const len = ctx.evaluation.shape[idx]!;
+      return len >= n
+        ? `${len} ${suitName} (${n}+ support)`
+        : `Need ${n}+ ${suitName} (have ${len})`;
+    },
+  };
 }

@@ -123,8 +123,8 @@ export function evaluateProtocol<T extends EstablishedContext>(
       established,
       handResult: noMatchHandResult(),
       activeRound: null,
-
       handTreeRoot: null,
+      activeBranch: null,
     };
   }
 
@@ -137,8 +137,8 @@ export function evaluateProtocol<T extends EstablishedContext>(
       established,
       handResult,
       activeRound,
-
       handTreeRoot: handTree,
+      activeBranch: null,
     };
   } catch {
     // handTree function threw — log warning and return no match
@@ -150,8 +150,8 @@ export function evaluateProtocol<T extends EstablishedContext>(
       established,
       handResult: noMatchHandResult(),
       activeRound,
-
       handTreeRoot: null,
+      activeBranch: null,
     };
   }
 }

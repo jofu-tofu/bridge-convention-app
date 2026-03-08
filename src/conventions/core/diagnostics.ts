@@ -16,7 +16,8 @@ export interface DiagnosticWarning {
     | "unreachable-node"
     | "full-scope-trigger"
     | "transition-rule-overlap"
-    | "orphan-family-member";
+    | "orphan-family-member"
+    | "branch-overlay-conflict";
   readonly severity: "error" | "warning";
   readonly message: string;
 }
@@ -81,6 +82,13 @@ export function analyzeNodeIdUniqueness(config: ConventionConfig): DiagnosticWar
     // handTree can be a function or a static node — call if function
     const tree = typeof round.handTree === "function" ? round.handTree({}) : round.handTree;
     if (tree) collectNodeIds(tree as RuleNode, seen);
+    // Also check branch hand trees
+    if (round.branches) {
+      for (const branch of round.branches) {
+        const branchTree = typeof branch.handTree === "function" ? branch.handTree({}) : branch.handTree;
+        if (branchTree) collectNodeIds(branchTree as RuleNode, seen);
+      }
+    }
   }
 
   // Also check overlay replacement trees
@@ -157,6 +165,12 @@ export function analyzeMissingResolvers(config: ConventionConfig): DiagnosticWar
   for (const round of config.protocol.rounds) {
     const tree = typeof round.handTree === "function" ? round.handTree({}) : round.handTree;
     collectIntentTypes(tree as RuleNode, intentTypes);
+    if (round.branches) {
+      for (const branch of round.branches) {
+        const branchTree = typeof branch.handTree === "function" ? branch.handTree({}) : branch.handTree;
+        collectIntentTypes(branchTree as RuleNode, intentTypes);
+      }
+    }
   }
 
   if (config.overlays) {
@@ -347,11 +361,17 @@ export function analyzeOverlayTriggerScope(overlays: readonly ConventionOverlayP
 export function analyzeIntentFamilies(config: ConventionConfig): DiagnosticWarning[] {
   if (!config.intentFamilies || config.intentFamilies.length === 0 || !config.protocol) return [];
 
-  // Collect all IntentNode names across all protocol rounds and overlays
+  // Collect all IntentNode names across all protocol rounds, branches, and overlays
   const allNames = new Set<string>();
   for (const round of config.protocol.rounds) {
     const tree = typeof round.handTree === "function" ? round.handTree({}) : round.handTree;
     if (tree) collectIntentNames(tree as RuleNode, allNames);
+    if (round.branches) {
+      for (const branch of round.branches) {
+        const branchTree = typeof branch.handTree === "function" ? branch.handTree({}) : branch.handTree;
+        if (branchTree) collectIntentNames(branchTree as RuleNode, allNames);
+      }
+    }
   }
   if (config.overlays) {
     for (const overlay of config.overlays) {
@@ -375,6 +395,29 @@ export function analyzeIntentFamilies(config: ConventionConfig): DiagnosticWarni
   return warnings;
 }
 
+/** Warn if a round has both branches and overlays with replacementTree targeting the same round. */
+export function analyzeBranchOverlayConflicts(config: ConventionConfig): DiagnosticWarning[] {
+  if (!config.protocol || !config.overlays) return [];
+
+  const warnings: DiagnosticWarning[] = [];
+  for (const round of config.protocol.rounds) {
+    if (!round.branches || round.branches.length === 0) continue;
+    const conflicting = config.overlays.filter(
+      o => o.roundName === round.name && o.replacementTree,
+    );
+    if (conflicting.length > 0) {
+      warnings.push({
+        type: "branch-overlay-conflict",
+        severity: "warning",
+        message: `Round "${round.name}" has both branches and overlay replacementTree ` +
+          `(${conflicting.map(o => `"${o.id}"`).join(", ")}). Branch takes precedence — ` +
+          `overlay replacementTree hooks will be skipped when a branch is active.`,
+      });
+    }
+  }
+  return warnings;
+}
+
 /** Run all diagnostic analyzers on a convention config. */
 export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[] {
   const warnings: DiagnosticWarning[] = [];
@@ -386,6 +429,7 @@ export function analyzeConvention(config: ConventionConfig): DiagnosticWarning[]
   warnings.push(...analyzeTransitionRuleOverlap(config));
   warnings.push(...analyzeTriggerScope(config));
   warnings.push(...analyzeIntentFamilies(config));
+  warnings.push(...analyzeBranchOverlayConflicts(config));
 
   if (config.overlays) {
     warnings.push(...analyzeOverlayConflicts(config.overlays));
