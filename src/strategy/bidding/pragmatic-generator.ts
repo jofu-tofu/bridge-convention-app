@@ -8,6 +8,8 @@ import { isLegalCall } from "../../engine/auction";
 import { SUIT_ORDER, partnerSeat } from "../../engine/constants";
 import type { BiddingContext } from "../../conventions/core";
 import type { PrivateBeliefState } from "../../inference/private-belief";
+import { LEVEL_HCP_TABLE } from "./practical-scorer";
+import { callKeyForDedup } from "./tree-eval-mapper";
 
 export enum DistortionType {
   ConservativeNTDowngrade = "conservative-nt-downgrade",
@@ -22,11 +24,6 @@ export interface PragmaticCandidate {
   readonly legal: boolean;
 }
 
-/** HCP floors per bid level (same as practical-scorer). */
-const LEVEL_HCP_TABLE: Record<number, number> = {
-  1: 20, 2: 23, 3: 26, 4: 26, 5: 29, 6: 33, 7: 37,
-};
-
 /** Map SUIT_ORDER index to BidSuit. SUIT_ORDER = [S, H, D, C]. */
 const SUIT_INDEX_TO_BIDSUIT: readonly BidSuit[] = [
   BidSuit.Spades,
@@ -34,16 +31,6 @@ const SUIT_INDEX_TO_BIDSUIT: readonly BidSuit[] = [
   BidSuit.Diamonds,
   BidSuit.Clubs,
 ];
-
-/** Serialize a Call to a string key for deduplication. */
-function callKey(call: Call): string {
-  if (call.type === "bid") {
-    return `${call.level}${call.strain}`;
-  }
-  if (call.type === "double") return "X";
-  if (call.type === "redouble") return "XX";
-  return "P";
-}
 
 /**
  * Generate pragmatic (tactical) candidates that convention trees don't produce.
@@ -107,7 +94,7 @@ function tryConservativeNTDowngrade(
     strain: BidSuit.NoTrump,
   };
 
-  const key = callKey(downgradedCall);
+  const key = callKeyForDedup(downgradedCall);
   if (existingCalls.has(key)) return null;
 
   const legal = isLegalCall(context.auction, downgradedCall, context.seat);
@@ -150,7 +137,7 @@ function tryCompetitiveOvercalls(
     const overcall = findCheapestLegalBidInSuit(context.auction, context.seat, bidSuit);
     if (!overcall) continue;
 
-    const key = callKey(overcall);
+    const key = callKeyForDedup(overcall);
     if (existingCalls.has(key)) continue;
 
     results.push({

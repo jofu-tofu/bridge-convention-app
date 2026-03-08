@@ -9,6 +9,7 @@ import {
   invertInference,
   resolveDisjunction,
 } from "./condition-mapper";
+import { mergeToCumulative } from "./merge";
 import type { ConditionInference } from "./types";
 
 /**
@@ -60,31 +61,4 @@ export function extractInferencesFromDTO(
 
 function entryToConditionInference(entry: TreeInferenceConditionEntry): ConditionInference {
   return { type: entry.type, params: entry.params } as ConditionInference;
-}
-
-/** Simple merge for cumulative tracking during extraction. */
-function mergeToCumulative(
-  inferences: HandInference[],
-  seat: Seat,
-  source: string,
-): HandInference {
-  let minHcp: number | undefined;
-  let maxHcp: number | undefined;
-  const suits: HandInference["suits"] = {};
-
-  for (const inf of inferences) {
-    if (inf.minHcp !== undefined) {
-      minHcp = minHcp !== undefined ? Math.max(minHcp, inf.minHcp) : inf.minHcp;
-    }
-    if (inf.maxHcp !== undefined) {
-      maxHcp = maxHcp !== undefined ? Math.min(maxHcp, inf.maxHcp) : inf.maxHcp;
-    }
-    for (const [s, si] of Object.entries(inf.suits)) {
-      if (!suits[s as keyof typeof suits]) {
-        suits[s as keyof typeof suits] = { ...si };
-      }
-    }
-  }
-
-  return { seat, minHcp, maxHcp, suits, source };
 }

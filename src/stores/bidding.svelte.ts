@@ -1,7 +1,8 @@
 import { tick } from "svelte";
 import type { EnginePort } from "../engine/port";
 import type { Deal, Call, Auction, AuctionEntry, Seat } from "../engine/types";
-import type { DrillSession } from "../drill/types";
+import type { DrillSession } from "../bootstrap/types";
+import { delay } from "../core/util/delay";
 import type {
   BidResult,
   BidHistoryEntry,
@@ -17,12 +18,12 @@ import {
   BidGrade,
   resolveTeachingAnswer,
   gradeBid,
-} from "../drill/teaching-resolution";
-import type { TeachingResolution } from "../drill/teaching-resolution";
+} from "../teaching/teaching-resolution";
+import type { TeachingResolution } from "../teaching/teaching-resolution";
 
 export type { BidHistoryEntry } from "../core/contracts";
-export { BidGrade } from "../drill/teaching-resolution";
-export type { TeachingResolution } from "../drill/teaching-resolution";
+export { BidGrade } from "../teaching/teaching-resolution";
+export type { TeachingResolution } from "../teaching/teaching-resolution";
 
 export interface BidFeedback {
   readonly grade: BidGrade;
@@ -33,10 +34,6 @@ export interface BidFeedback {
 }
 
 const AI_BID_DELAY = 300;
-
-function defaultDelay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 export interface BiddingStoreConfig {
   deal: Deal;
@@ -49,7 +46,7 @@ export interface BiddingStoreConfig {
 }
 
 export function createBiddingStore(engine: EnginePort, options?: GameStoreOptions) {
-  const delay = options?.delayFn ?? defaultDelay;
+  const delayFn = options?.delayFn ?? delay;
   let auction = $state<Auction>({ entries: [], isComplete: false });
   let currentTurn = $state<Seat | null>(null);
   let bidHistory = $state<BidHistoryEntry[]>([]);
@@ -83,7 +80,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     isProcessing = true;
     try {
       while (currentTurn && !activeSession.isUserSeat(currentTurn)) {
-        await delay(AI_BID_DELAY);
+        await delayFn(AI_BID_DELAY);
 
         const hand = activeDeal.hands[currentTurn];
         const result = activeSession.getNextBid(currentTurn, hand, auction);
