@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { TreeDisplayRow } from "../../display/tree-display";
+  import type { TreeDisplayRow } from "./DecisionTree";
   import type { Call } from "../../engine/types";
-  import { createDummyContext } from "../../display/dummy-context";
-  import { formatCall, formatRuleName } from "../../display/format";
+  import { createDummyContext } from "./DecisionTree";
+  import { formatCall, formatRuleName } from "../../core/display/format";
   import { SvelteSet, SvelteMap } from "svelte/reactivity";
 
   type DepthMode = "compact" | "study" | "learn";

@@ -30,6 +30,10 @@ const storeImports = [
     name: "../../stores/*",
     message: "Module boundary violation: no store imports",
   },
+  {
+    name: "../../../stores/*",
+    message: "Module boundary violation: no store imports",
+  },
 ];
 const componentImports = [
   {
@@ -40,6 +44,10 @@ const componentImports = [
     name: "../../components/*",
     message: "Module boundary violation: no component imports",
   },
+  {
+    name: "../../../components/*",
+    message: "Module boundary violation: no component imports",
+  },
 ];
 const strategyImports = [
   {
@@ -48,6 +56,10 @@ const strategyImports = [
   },
   {
     name: "../../strategy/*",
+    message: "Module boundary violation: no strategy imports",
+  },
+  {
+    name: "../../../strategy/*",
     message: "Module boundary violation: no strategy imports",
   },
 ];
@@ -163,11 +175,11 @@ export default tseslint.config(
             ...componentImports,
             ...strategyImports,
             {
-              name: "../display/*",
+              name: "../core/display/*",
               message: "engine/ must not import display/",
             },
             {
-              name: "../../display/*",
+              name: "../../core/display/*",
               message: "engine/ must not import display/",
             },
             { name: "../drill/*", message: "engine/ must not import drill/" },
@@ -183,16 +195,24 @@ export default tseslint.config(
               name: "../../inference/*",
               message: "engine/ must not import inference/",
             },
+            {
+              name: "../teaching/*",
+              message: "engine/ must not import teaching/",
+            },
+            {
+              name: "../../teaching/*",
+              message: "engine/ must not import teaching/",
+            },
           ],
         },
       ],
     },
   },
 
-  // ── Module boundary: contracts/ ──
+  // ── Module boundary: core/contracts/ ──
   {
-    files: ["src/contracts/**/*.ts"],
-    ignores: ["src/contracts/__tests__/**", "src/contracts/**/*.test.ts"],
+    files: ["src/core/contracts/**/*.ts"],
+    ignores: ["src/core/contracts/__tests__/**", "src/core/contracts/**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -203,11 +223,11 @@ export default tseslint.config(
             ...componentImports,
             ...strategyImports,
             {
-              name: "../conventions/*",
+              name: "../../conventions/*",
               message: "contracts/ must not import conventions/",
             },
             {
-              name: "../../conventions/*",
+              name: "../../../conventions/*",
               message: "contracts/ must not import conventions/",
             },
             {
@@ -218,18 +238,26 @@ export default tseslint.config(
               name: "../../display/*",
               message: "contracts/ must not import display/",
             },
-            { name: "../drill/*", message: "contracts/ must not import drill/" },
+            { name: "../../drill/*", message: "contracts/ must not import drill/" },
             {
-              name: "../../drill/*",
+              name: "../../../drill/*",
               message: "contracts/ must not import drill/",
-            },
-            {
-              name: "../inference/*",
-              message: "contracts/ must not import inference/",
             },
             {
               name: "../../inference/*",
               message: "contracts/ must not import inference/",
+            },
+            {
+              name: "../../../inference/*",
+              message: "contracts/ must not import inference/",
+            },
+            {
+              name: "../../teaching/*",
+              message: "contracts/ must not import teaching/",
+            },
+            {
+              name: "../../../teaching/*",
+              message: "contracts/ must not import teaching/",
             },
           ],
         },
@@ -237,10 +265,10 @@ export default tseslint.config(
     },
   },
 
-  // ── Module boundary: util/ (zero deps) ──
+  // ── Module boundary: core/util/ (zero deps) ──
   {
-    files: ["src/util/**/*.ts"],
-    ignores: ["src/util/__tests__/**", "src/util/**/*.test.ts"],
+    files: ["src/core/util/**/*.ts"],
+    ignores: ["src/core/util/__tests__/**", "src/core/util/**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -273,11 +301,11 @@ export default tseslint.config(
             ...componentImports,
             ...strategyImports,
             {
-              name: "../display/*",
+              name: "../core/display/*",
               message: "conventions/ must not import display/",
             },
             {
-              name: "../../display/*",
+              name: "../../core/display/*",
               message: "conventions/ must not import display/",
             },
             {
@@ -288,16 +316,24 @@ export default tseslint.config(
               name: "../../drill/*",
               message: "conventions/ must not import drill/",
             },
+            {
+              name: "../teaching/*",
+              message: "conventions/ must not import teaching/",
+            },
+            {
+              name: "../../teaching/*",
+              message: "conventions/ must not import teaching/",
+            },
           ],
         },
       ],
     },
   },
 
-  // ── Module boundary: display/ ──
+  // ── Module boundary: core/display/ ──
   {
-    files: ["src/display/**/*.ts"],
-    ignores: ["src/display/__tests__/**", "src/display/**/*.test.ts"],
+    files: ["src/core/display/**/*.ts"],
+    ignores: ["src/core/display/__tests__/**", "src/core/display/**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -308,20 +344,71 @@ export default tseslint.config(
             ...componentImports,
             ...strategyImports,
             {
-              name: "../drill/*",
-              message: "display/ must not import drill/",
-            },
-            {
               name: "../../drill/*",
               message: "display/ must not import drill/",
             },
             {
-              name: "../inference/*",
-              message: "display/ must not import inference/",
+              name: "../../../drill/*",
+              message: "display/ must not import drill/",
             },
             {
               name: "../../inference/*",
               message: "display/ must not import inference/",
+            },
+            {
+              name: "../../../inference/*",
+              message: "display/ must not import inference/",
+            },
+            {
+              name: "../../teaching/*",
+              message: "display/ must not import teaching/",
+            },
+            {
+              name: "../../../teaching/*",
+              message: "display/ must not import teaching/",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: teaching/ ──
+  {
+    files: ["src/teaching/**/*.ts"],
+    ignores: ["src/teaching/__tests__/**", "src/teaching/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            {
+              name: "../core/display/*",
+              message: "teaching/ must not import display/",
+            },
+            {
+              name: "../../core/display/*",
+              message: "teaching/ must not import display/",
+            },
+            {
+              name: "../drill/*",
+              message: "teaching/ must not import drill/",
+            },
+            {
+              name: "../../drill/*",
+              message: "teaching/ must not import drill/",
+            },
+            {
+              name: "../inference/*",
+              message: "teaching/ must not import inference/",
+            },
+            {
+              name: "../../inference/*",
+              message: "teaching/ must not import inference/",
             },
           ],
         },
@@ -353,11 +440,11 @@ export default tseslint.config(
               message: "test-support/ must not import conventions/",
             },
             {
-              name: "../display/*",
+              name: "../core/display/*",
               message: "test-support/ must not import display/",
             },
             {
-              name: "../../display/*",
+              name: "../../core/display/*",
               message: "test-support/ must not import display/",
             },
             {
@@ -367,6 +454,14 @@ export default tseslint.config(
             {
               name: "../../inference/*",
               message: "test-support/ must not import inference/",
+            },
+            {
+              name: "../teaching/*",
+              message: "test-support/ must not import teaching/",
+            },
+            {
+              name: "../../teaching/*",
+              message: "test-support/ must not import teaching/",
             },
           ],
         },

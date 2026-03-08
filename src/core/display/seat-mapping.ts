@@ -1,4 +1,4 @@
-import { Seat } from "../engine/types";
+import { Seat } from "../../engine/types";
 
 /**
  * Maps a logical seat to its visual screen position.

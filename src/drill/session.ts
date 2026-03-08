@@ -1,5 +1,5 @@
 import type { DrillConfig, DrillSession } from "./types";
-import type { BidResult } from "../contracts";
+import type { BidResult } from "../core/contracts";
 import type { Hand, Auction, Seat } from "../engine/types";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { isLegalCall } from "../engine/auction";

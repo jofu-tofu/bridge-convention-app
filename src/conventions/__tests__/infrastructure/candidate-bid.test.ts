@@ -8,7 +8,7 @@ import type { RuleNode } from "../../core/rule-tree";
 import { decision, fallback } from "../../core/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
-import type { SiblingBid } from "../../../contracts";
+import type { SiblingBid } from "../../../core/contracts";
 import { toCandidateBid } from "../../core/candidate-builder";
 import { findCandidateBids } from "../../core/sibling-finder";
 import { evaluateTree } from "../../core/tree-evaluator";

@@ -5,8 +5,8 @@
   import { getEngine, getGameStore, getAppStore } from "../../../stores/context";
   import { BidGrade } from "../../../stores/bidding.svelte";
   import { startDrill } from "../../../drill/helpers";
-  import { computeTableScale } from "../../../display/table-scale";
-  import { mulberry32 } from "../../../util/seeded-rng";
+  import { computeTableScale } from "../../../core/display/table-scale";
+  import { mulberry32 } from "../../../core/util/seeded-rng";
   import { toBeliefData } from "../../../inference/belief-converter";
   import { conditionOnOwnHand } from "../../../inference/private-belief";
   import BiddingPhase from "./BiddingPhase.svelte";

@@ -1,7 +1,7 @@
 // Candidate generator — resolves intent proposals through the intent system.
 // Uses collectIntentProposals() for traversal, decoupled from sibling-finder display path.
 
-import type { CandidateBid } from "../../contracts";
+import type { CandidateBid } from "../../core/contracts";
 import type { Call } from "../../engine/types";
 import { isLegalCall } from "../../engine/auction";
 import type { EffectiveConventionContext } from "./effective-context";

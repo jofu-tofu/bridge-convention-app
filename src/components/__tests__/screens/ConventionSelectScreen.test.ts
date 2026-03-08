@@ -36,7 +36,7 @@ describe("ConventionSelectScreen", () => {
 
   it("filterConventions filters by search query", async () => {
     const { filterConventions } =
-      await import("../../../display/filter-conventions");
+      await import("../../../core/display/filter-conventions");
     const conventions = listConventions();
     const result = filterConventions(conventions, "stayman", null);
     expect(result).toHaveLength(1);
@@ -45,7 +45,7 @@ describe("ConventionSelectScreen", () => {
 
   it("filterConventions filters by category", async () => {
     const { filterConventions } =
-      await import("../../../display/filter-conventions");
+      await import("../../../core/display/filter-conventions");
     const { ConventionCategory } = await import("../../../conventions/core/types");
     const conventions = listConventions();
     const result = filterConventions(
@@ -60,7 +60,7 @@ describe("ConventionSelectScreen", () => {
 
   it("shows empty state when no conventions match", async () => {
     const { filterConventions } =
-      await import("../../../display/filter-conventions");
+      await import("../../../core/display/filter-conventions");
     const conventions = listConventions();
     const result = filterConventions(conventions, "nonexistent", null);
     expect(result).toHaveLength(0);

@@ -18,7 +18,7 @@ import {
   registerConvention,
   evaluateBiddingRules,
 } from "../../core/registry";
-import { extractTeachingContent } from "../../../display/teaching-content";
+import { extractTeachingContent } from "../../../teaching/teaching-content";
 import { staymanConfig } from "../../definitions/stayman";
 import { bergenConfig } from "../../definitions/bergen-raises";
 import { saycConfig } from "../../definitions/sayc";

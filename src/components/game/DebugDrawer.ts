@@ -1,9 +1,9 @@
-import type { ConventionConfig } from "../conventions/core/types";
-import type { Deal, Auction, Call, Seat } from "../engine/types";
-import type { ConditionResult } from "../conventions/core/types";
-import type { BidHistoryEntry } from "../contracts";
-import { evaluateAllBiddingRules } from "../conventions/core/registry";
-import { reconstructBiddingContext } from "../conventions/core/debug-utils";
+import type { ConventionConfig } from "../../conventions/core/types";
+import type { Deal, Auction, Call, Seat } from "../../engine/types";
+import type { ConditionResult } from "../../conventions/core/types";
+import type { BidHistoryEntry } from "../../core/contracts";
+import { evaluateAllBiddingRules } from "../../conventions/core/registry";
+import { reconstructBiddingContext } from "../../conventions/core/debug-utils";
 
 export interface BidEvalTrace {
   readonly entry: BidHistoryEntry;

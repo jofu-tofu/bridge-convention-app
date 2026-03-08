@@ -30,7 +30,7 @@ export interface DecisionMetadata {
 // ─── Alert metadata for bid nodes ───────────────────────────
 
 // Re-export from canonical location in contracts for backward compatibility
-export type { BidAlert } from "../../contracts";
+export type { BidAlert } from "../../core/contracts";
 
 // ─── Teaching metadata for bid nodes ────────────────────────
 

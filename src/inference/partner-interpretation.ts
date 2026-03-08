@@ -4,7 +4,7 @@
 
 import type { Call, Seat, Auction, AuctionEntry } from "../engine/types";
 import type { InferenceProvider } from "./types";
-import type { SuitInference } from "../contracts";
+import type { SuitInference } from "../core/contracts";
 
 /** What partner would infer from a candidate bid, and how well our actual hand matches. */
 export interface PartnerInterpretationDTO {

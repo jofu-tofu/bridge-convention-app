@@ -13,7 +13,7 @@ import type {
   SiblingBid,
   CandidateBid,
   ResolvedCandidateDTO,
-} from "../../contracts";
+} from "../../core/contracts";
 import type { Call } from "../../engine/types";
 
 export function mapConditionResult(cr: ConditionResult): ConditionDetail {

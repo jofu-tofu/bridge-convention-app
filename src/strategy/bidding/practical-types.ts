@@ -1,7 +1,7 @@
 // Practical scorer types — local to strategy/bidding/.
 // Only PracticalRecommendation crosses to contracts/.
 
-import type { ResolvedCandidateDTO } from "../../contracts";
+import type { ResolvedCandidateDTO } from "../../core/contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 
 export interface PracticalScoreBreakdown {

@@ -2,7 +2,7 @@
   import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core/types";
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
-  import { STRAIN_SYMBOLS } from "../../../display/format";
+  import { STRAIN_SYMBOLS } from "../../../core/display/format";
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";

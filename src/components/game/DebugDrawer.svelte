@@ -3,10 +3,10 @@
   import { Seat, Suit } from "../../engine/types";
   import type { Card } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../stores/context";
-  import { computeHcp } from "../../display/hcp";
-  import { formatCall, SUIT_SYMBOLS } from "../../display/format";
-  import { sortCards } from "../../display/sort-cards";
-  import { computeBidEvalTraces } from "../../display/debug-bid-eval";
+  import { computeHcp } from "../../core/display/hcp";
+  import { formatCall, SUIT_SYMBOLS } from "../../core/display/format";
+  import { sortCards } from "../../core/display/sort-cards";
+  import { computeBidEvalTraces } from "./DebugDrawer";
 
   interface Props {
     open: boolean;

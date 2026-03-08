@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ConditionDetail } from "../../contracts";
+  import type { ConditionDetail } from "../../core/contracts";
 
   interface Props {
     ruleName: string;

@@ -12,7 +12,7 @@ import {
   auctionFromBids,
 } from "../../conventions/__tests__/fixtures";
 import { conventionToStrategy } from "../../strategy/bidding/convention-strategy";
-import type { BiddingStrategy } from "../../contracts";
+import type { BiddingStrategy } from "../../core/contracts";
 
 beforeEach(() => {
   clearRegistry();

@@ -1,5 +1,5 @@
 import { Seat } from "../engine/types";
-import type { BiddingStrategy, BidResult } from "../contracts";
+import type { BiddingStrategy, BidResult } from "../core/contracts";
 import type { DrillConfig } from "./types";
 import type { InferenceConfig } from "../inference/types";
 import { getConvention } from "../conventions/core/registry";
@@ -14,7 +14,7 @@ import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { createConventionInferenceProvider } from "../inference/convention-inference";
 import { computeDialogueState } from "../conventions/core/dialogue/dialogue-manager";
-import { ForcingState } from "../contracts";
+import { ForcingState } from "../core/contracts";
 import { SEATS } from "../engine/constants";
 import type { BeliefData } from "../conventions/core/effective-context";
 import { createFitConfidenceRanker } from "../strategy/bidding/fit-ranker";

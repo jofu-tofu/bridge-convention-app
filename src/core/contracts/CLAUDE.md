@@ -22,7 +22,7 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 ## Gotchas
 
 - `index.ts` is the public entry point for most consumers; prefer importing from `../contracts` unless a narrower file import materially improves clarity.
-- `hand-summary.ts` is intentionally not here; it moved to `src/display/hand-summary.ts` because it is formatting logic, not a contract.
+- `hand-summary.ts` is intentionally not here; it moved to `src/core/display/hand-summary.ts` because it is formatting logic, not a contract.
 
 ---
 

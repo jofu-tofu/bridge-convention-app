@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Card as CardType } from "../../engine/types";
   import Card from "../shared/Card.svelte";
-  import { sortCards } from "../../display/sort-cards";
+  import { sortCards } from "../../core/display/sort-cards";
 
   interface Props {
     cards: readonly CardType[];

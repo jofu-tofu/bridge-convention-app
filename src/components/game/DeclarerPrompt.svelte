@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Contract } from "../../engine/types";
   import { Seat } from "../../engine/types";
-  import { STRAIN_SYMBOLS } from "../../display/format";
+  import { STRAIN_SYMBOLS } from "../../core/display/format";
 
   type PromptMode = "declarer-swap" | "defender" | "south-declarer";
 

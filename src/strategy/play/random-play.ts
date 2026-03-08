@@ -1,4 +1,4 @@
-import type { PlayStrategy, PlayResult } from "../../contracts";
+import type { PlayStrategy, PlayResult } from "../../core/contracts";
 
 export const randomPlayStrategy: PlayStrategy = {
   id: "random",

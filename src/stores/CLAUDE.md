@@ -37,7 +37,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 **User always bids as South.** The `effectiveUserSeat` handles play-phase seat swaps.
 
 **DECLARER_PROMPT conditions:**
-- **North declares (user is dummy):** Offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/display/seat-mapping.ts`) or "Skip to Review"
+- **North declares (user is dummy):** Offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/core/display/seat-mapping.ts`) or "Skip to Review"
 - **E/W declares:** Offers "Play as Defender" (user stays South) or "Skip to Review"
 - **South declares:** Skips directly to EXPLANATION (no prompt needed)
 

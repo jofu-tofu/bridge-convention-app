@@ -1,4 +1,4 @@
-import type { Seat, Suit } from "../engine/types";
+import type { Seat, Suit } from "../../engine/types";
 
 export interface SuitInference {
   readonly minLength?: number;

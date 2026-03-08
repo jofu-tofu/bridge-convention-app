@@ -11,7 +11,7 @@ import { createStrategyChain } from "../bidding/strategy-chain";
 import { TraceCollector } from "../bidding/trace-collector";
 import { registerConvention, clearRegistry } from "../../conventions/core/registry";
 import { staymanConfig } from "../../conventions/definitions/stayman/config";
-import type { BiddingStrategy, BidResult } from "../../contracts";
+import type { BiddingStrategy, BidResult } from "../../core/contracts";
 import type { BiddingContext } from "../../conventions/core/types";
 
 beforeEach(() => {

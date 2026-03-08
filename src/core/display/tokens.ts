@@ -1,4 +1,4 @@
-import { Suit, BidSuit } from "../engine/types";
+import { Suit, BidSuit } from "../../engine/types";
 
 export const SUIT_COLOR_CLASS: Record<Suit, string> = {
   [Suit.Spades]: "text-suit-spades",

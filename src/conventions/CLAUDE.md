@@ -5,7 +5,7 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 ## Conventions
 
 - **Registry pattern.** All conventions register via `registerConvention()` in `core/registry.ts`. Never hardcode convention logic in switch statements.
-- **Contract boundary.** Cross-module DTOs such as `BiddingContext` come from `src/contracts/`; convention internals must not leak `core/` types across that boundary.
+- **Contract boundary.** Cross-module DTOs such as `BiddingContext` come from `src/core/contracts/`; convention internals must not leak `core/` types across that boundary.
 - **One folder per convention.** Each convention in `definitions/` is a folder with `tree.ts`, `config.ts`, `explanations.ts`, `index.ts` (and optionally `helpers.ts`, `conditions.ts`, `transitions.ts`, `resolvers.ts`). See `definitions/stayman/` as the reference implementation.
 - **Core vs definitions split.** `core/` contains stable infrastructure (registry, evaluator, tree system, conditions). `definitions/` contains convention folders that grow unboundedly. When `definitions/` exceeds ~20 folders, introduce category subdirectories.
 - **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`. Importing `conventions/index` activates all conventions.
@@ -31,7 +31,7 @@ Convention definitions for bridge bidding practice. Each convention is a self-co
 - Deal constraint `minLengthAny` is OR (any suit meets minimum), not AND
 - Shape indices follow `SUIT_ORDER`: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 - Bergen Raises variant is Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
-- Conventions with `internal: true` are filtered from the UI by `filterConventions()` in `src/display/filter-conventions.ts`
+- Conventions with `internal: true` are filtered from the UI by `filterConventions()` in `src/core/display/filter-conventions.ts`
 
 ---
 

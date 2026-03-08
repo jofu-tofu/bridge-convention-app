@@ -1,4 +1,4 @@
-import type { Call } from "../engine/types";
+import type { Call } from "../../engine/types";
 
 /**
  * Plain DTO for condition evaluation results crossing the conventions/ → ai/ → store → UI boundary.

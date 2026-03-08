@@ -3,8 +3,8 @@
   import type { Call } from "../../engine/types";
   import type { BidFeedback } from "../../stores/game.svelte";
   import { BidGrade } from "../../stores/bidding.svelte";
-  import { formatCall } from "../../display/format";
-  import type { PracticalRecommendation } from "../../contracts";
+  import { formatCall } from "../../core/display/format";
+  import type { PracticalRecommendation } from "../../core/contracts";
 
   interface Props {
     feedback: BidFeedback;

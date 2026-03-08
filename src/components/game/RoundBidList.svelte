@@ -1,9 +1,9 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import type { BidHistoryEntry } from "../../contracts";
-  import { groupBidsByRound } from "../../display/rules-display";
-  import { formatCall } from "../../display/format";
-  import { BID_SUIT_COLOR_CLASS } from "../../display/tokens";
+  import type { BidHistoryEntry } from "../../core/contracts";
+  import { groupBidsByRound } from "./RoundBidList";
+  import { formatCall } from "../../core/display/format";
+  import { BID_SUIT_COLOR_CLASS } from "../../core/display/tokens";
   import type { BidSuit, Call } from "../../engine/types";
   import { Seat } from "../../engine/types";
 

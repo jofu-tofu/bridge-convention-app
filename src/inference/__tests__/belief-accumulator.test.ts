@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit } from "../../engine/types";
-import type { HandInference } from "../../contracts";
+import type { HandInference } from "../../core/contracts";
 import type { BidAnnotation } from "../types";
 import {
   createInitialBeliefState,

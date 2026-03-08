@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { sortCards } from "../sort-cards";
-import { Suit, Rank } from "../../engine/types";
-import type { Card } from "../../engine/types";
+import { Suit, Rank } from "../../../engine/types";
+import type { Card } from "../../../engine/types";
 
 function card(suit: Suit, rank: Rank): Card {
   return { suit, rank };

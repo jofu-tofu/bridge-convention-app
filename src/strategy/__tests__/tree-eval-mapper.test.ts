@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
 import type { ConditionResult } from "../../conventions/core/types";
 import { extractForkPoint, mapVisitedWithStructure, mapConditionResult } from "../bidding/tree-eval-mapper";
-import type { TreePathEntry } from "../../contracts";
+import type { TreePathEntry } from "../../core/contracts";
 import type { DecisionNode } from "../../conventions/core/rule-tree";
 import { decision, fallback } from "../../conventions/core/rule-tree";
 import { intentBid } from "../../conventions/core/intent/intent-node";

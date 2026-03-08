@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../engine/types";
-import type { BidResult, ResolvedCandidateDTO } from "../../contracts";
+import type { BidResult, ResolvedCandidateDTO } from "../../core/contracts";
 import { BidGrade, gradeBid, resolveTeachingAnswer } from "../teaching-resolution";
 
 function makeCandidate(overrides: Partial<ResolvedCandidateDTO> = {}): ResolvedCandidateDTO {

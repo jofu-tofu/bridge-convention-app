@@ -1,23 +1,23 @@
 import { describe, it, expect } from "vitest";
-import { flattenTreeForDisplay, formatBidToken } from "../tree-display";
+import { flattenTreeForDisplay, formatBidToken } from "../../game/DecisionTree";
 import {
   decision,
   fallback,
   handDecision,
-} from "../../conventions/core/rule-tree";
-import type { ConventionExplanations } from "../../conventions/core/rule-tree";
-import { intentBid } from "../../conventions/core/intent/intent-node";
-import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
+} from "../../../conventions/core/rule-tree";
+import type { ConventionExplanations } from "../../../conventions/core/rule-tree";
+import { intentBid } from "../../../conventions/core/intent/intent-node";
+import { SemanticIntentType } from "../../../conventions/core/intent/semantic-intent";
 import {
   hcpMin,
   suitMin,
   auctionMatches,
   auctionMatchesAny,
   isOpener,
-} from "../../conventions/core/conditions";
-import type { BiddingContext } from "../../conventions/core/types";
-import type { Call } from "../../engine/types";
-import { BidSuit } from "../../engine/types";
+} from "../../../conventions/core/conditions";
+import type { BiddingContext } from "../../../conventions/core/types";
+import type { Call } from "../../../engine/types";
+import { BidSuit } from "../../../engine/types";
 
 const makeCall =
   (level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit) =>
@@ -28,7 +28,7 @@ const makeCall =
   });
 
 /** Test helper: wraps intentBid with a default Signoff intent for tree-display tests. */
-import type { BidMetadata } from "../../conventions/core/rule-tree";
+import type { BidMetadata } from "../../../conventions/core/rule-tree";
 function bid(name: string, meaning: string, callFn: (ctx: BiddingContext) => Call, metadata?: BidMetadata) {
   return intentBid(name, meaning, { type: SemanticIntentType.Signoff, params: {} }, callFn, metadata);
 }

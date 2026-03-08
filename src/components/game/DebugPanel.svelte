@@ -1,8 +1,8 @@
 <!-- Bidding-phase suggested-bid display only. For full debug drawer, see DebugDrawer.svelte. -->
 <script lang="ts">
   import { getGameStore } from "../../stores/context";
-  import { formatCall } from "../../display/format";
-  import type { BidResult } from "../../contracts";
+  import { formatCall } from "../../core/display/format";
+  import type { BidResult } from "../../core/contracts";
 
   const gameStore = getGameStore();
 

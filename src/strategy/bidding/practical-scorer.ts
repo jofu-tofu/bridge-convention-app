@@ -4,7 +4,7 @@
 import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
 import { callsMatch } from "../../engine/call-helpers";
-import type { ResolvedCandidateDTO, PracticalRecommendation } from "../../contracts";
+import type { ResolvedCandidateDTO, PracticalRecommendation } from "../../core/contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 import type { PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate } from "./practical-types";
 

@@ -1,4 +1,4 @@
-import type { BiddingStrategy, BidResult } from "../../contracts";
+import type { BiddingStrategy, BidResult } from "../../core/contracts";
 import type { BiddingContext } from "../../conventions/core/types";
 import { BidSuit } from "../../engine/types";
 import type { ContractBid } from "../../engine/types";

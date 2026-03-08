@@ -4,7 +4,7 @@ import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { BidGrade } from "../bidding.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { BiddingStrategy, BidResult } from "../../contracts";
+import type { BiddingStrategy, BidResult } from "../../core/contracts";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "../../test-support/fixtures";
 
 /** Strategy that always suggests 2C (Stayman-like). */

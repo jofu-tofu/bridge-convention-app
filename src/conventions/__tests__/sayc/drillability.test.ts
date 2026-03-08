@@ -6,7 +6,7 @@ import {
   listConventions,
 } from "../../core/registry";
 import { saycConfig } from "../../definitions/sayc";
-import { filterConventions } from "../../../display/filter-conventions";
+import { filterConventions } from "../../../core/display/filter-conventions";
 import { createDrillConfig } from "../../../drill/config-factory";
 
 beforeEach(() => {

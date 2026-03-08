@@ -1,6 +1,6 @@
 import { callsMatch } from "../engine/call-helpers";
 import type { Call } from "../engine/types";
-import type { BidResult } from "../contracts";
+import type { BidResult } from "../core/contracts";
 
 export enum BidGrade {
   Correct = "correct",

@@ -7,7 +7,7 @@ import type {
   BidResult,
   BidHistoryEntry,
   PracticalRecommendation,
-} from "../contracts";
+} from "../core/contracts";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callsMatch } from "../engine/call-helpers";
@@ -20,7 +20,7 @@ import {
 } from "../drill/teaching-resolution";
 import type { TeachingResolution } from "../drill/teaching-resolution";
 
-export type { BidHistoryEntry } from "../contracts";
+export type { BidHistoryEntry } from "../core/contracts";
 export { BidGrade } from "../drill/teaching-resolution";
 export type { TeachingResolution } from "../drill/teaching-resolution";
 

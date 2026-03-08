@@ -6,8 +6,8 @@ import type {
   Deal,
 } from "../../engine/types";
 import type { Seat } from "../../engine/types";
-import type { BiddingContext } from "../../contracts";
-export type { BiddingContext } from "../../contracts";
+import type { BiddingContext } from "../../core/contracts";
+export type { BiddingContext } from "../../core/contracts";
 import type { InterferenceKind } from "./dialogue/dialogue-state";
 import type { TransitionRule } from "./dialogue/dialogue-transitions";
 import type { EffectiveConventionContext } from "./effective-context";

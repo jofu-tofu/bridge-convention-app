@@ -10,7 +10,8 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 - **EnginePort boundary.** Components never import engine internals (`hand-evaluator`, `deal-generator`, `auction`, `scoring`, `play`). Import types from `engine/types.ts` and constants from `engine/constants.ts` only. Engine access goes through `EnginePort` via context.
 - **Context for DI.** Engine, game store, and app store provided via Svelte context (set in App.svelte, retrieved via `src/stores/context.ts` helpers).
 - **Tailwind CSS + design tokens.** Tailwind utility classes augmented with CSS custom properties defined via `@theme` in `src/app.css`. Midnight Table dark theme. No `<style>` blocks in new components except for CSS that Tailwind can't express (e.g., HandFan overlap/rotation).
-- **Pure function extraction.** Complex logic extracted to `src/display/` and `src/drill/` for testability: `sortCards`, `computeTableScale`, `filterConventions` (display/), `startDrill` (drill/).
+- **Pure function extraction.** Complex logic extracted to `src/core/display/` and `src/drill/` for testability: `sortCards`, `computeTableScale`, `filterConventions` (display/), `startDrill` (drill/).
+- **Companion `.ts` files.** Components with non-trivial logic co-locate a PascalCase `.ts` file next to the `.svelte` file (e.g., `DecisionTree.ts` + `DecisionTree.svelte`). The `.ts` file holds pure functions and types; the `.svelte` file handles rendering. If a second component needs the same logic, move the `.ts` file to `core/display/` or `teaching/`. Tests go in `__tests__/game/` with the original descriptive name (e.g., `tree-display.test.ts`).
 
 ## Accessibility
 
@@ -73,7 +74,7 @@ components/
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
-**Design tokens:** Suit colors use 4-color scheme — card-face colors differ from on-dark-bg colors. See `src/display/tokens.ts`.
+**Design tokens:** Suit colors use 4-color scheme — card-face colors differ from on-dark-bg colors. See `src/core/display/tokens.ts`.
 
 ## Gotchas
 
@@ -81,7 +82,7 @@ components/
 - **Autoplay effect:** GameScreen has a DEV-only `$effect` for `?autoplay=true` that uses `requestAnimationFrame` to defer actions per frame (not `tick()` which causes infinite microtask loops, not `setTimeout` which is a real timer).
 - **Store methods:** `userBid`, `userPlayCard`, `dismissBidFeedback`, `skipFromFeedback`, `skipToReview` return `void` (safe for onclick). Only `startDrill` and `getLegalPlaysForSeat` return Promises.
 - GameScreen routes phases to extracted pure components (BiddingPhase, DeclarerPromptPhase, PlayingPhase, ExplanationPhase). GameScreen owns the legal-plays `$effect`.
-- BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/display/seat-mapping.ts`, not CSS rotation.
+- BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/core/display/seat-mapping.ts`, not CSS rotation.
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.
 - User seat hardcoded to `Seat.South` — future: configurable.
 - Dev-mode seeded RNG via `appStore.devSeed`; seed advances per deal.

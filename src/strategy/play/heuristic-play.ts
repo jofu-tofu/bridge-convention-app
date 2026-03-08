@@ -1,4 +1,4 @@
-import type { PlayStrategy, PlayContext, PlayResult } from "../../contracts";
+import type { PlayStrategy, PlayContext, PlayResult } from "../../core/contracts";
 import type { Card, Suit, Seat, PlayedCard } from "../../engine/types";
 import { Rank } from "../../engine/types";
 import { RANK_INDEX, partnerSeat } from "../../engine/constants";

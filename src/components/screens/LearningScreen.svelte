@@ -3,7 +3,7 @@
   import { listConventions } from "../../conventions/core/registry";
   import type { ConventionConfig } from "../../conventions/core/types";
   import type { ConventionTeaching } from "../../conventions/core/types";
-  import { filterConventions } from "../../display/filter-conventions";
+  import { filterConventions } from "../../core/display/filter-conventions";
 
   const appStore = getAppStore();
 

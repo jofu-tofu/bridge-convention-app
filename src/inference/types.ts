@@ -1,5 +1,5 @@
 import type { Seat, Auction, AuctionEntry, Call } from "../engine/types";
-import type { HandInference, InferredHoldings, BidAlert } from "../contracts";
+import type { HandInference, InferredHoldings, BidAlert } from "../core/contracts";
 
 // Re-export ConditionInference from its canonical location
 export type { ConditionInference } from "../conventions/core/types";
@@ -9,7 +9,7 @@ export type {
   SuitInference,
   HandInference,
   InferredHoldings,
-} from "../contracts";
+} from "../core/contracts";
 
 /** Snapshot of inference state after a single bid is processed. */
 export interface InferenceSnapshot {

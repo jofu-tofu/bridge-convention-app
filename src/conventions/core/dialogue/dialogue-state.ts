@@ -2,10 +2,10 @@
 // under the partnership agreement, independent of any specific hand.
 
 import type { BidSuit, Suit, Call, Seat } from "../../../engine/types";
-import type { ForcingState } from "../../../contracts";
+import type { ForcingState } from "../../../core/contracts";
 
 // Re-export from canonical location for backward compatibility
-export { ForcingState } from "../../../contracts";
+export { ForcingState } from "../../../core/contracts";
 
 export enum PendingAction {
   None = "none",

@@ -6,8 +6,8 @@ import type {
 } from "../engine/types";
 import { Seat } from "../engine/types";
 import type { DrillSession } from "../drill/types";
-import type { BiddingStrategy, BidResult } from "../contracts";
-import type { InferredHoldings } from "../contracts";
+import type { BiddingStrategy, BidResult } from "../core/contracts";
+import type { InferredHoldings } from "../core/contracts";
 import type { InferenceEngine } from "../inference/inference-engine";
 import type * as InferenceEngineModule from "../inference/inference-engine";
 import type {

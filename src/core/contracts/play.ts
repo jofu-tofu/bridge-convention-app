@@ -6,7 +6,7 @@ import type {
   Seat,
   Suit,
   Trick,
-} from "../engine/types";
+} from "../../engine/types";
 import type { InferredHoldings } from "./inference";
 
 /** Context passed to play strategies for card selection. */

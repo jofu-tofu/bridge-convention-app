@@ -1,5 +1,5 @@
-import { Suit, BidSuit } from "../engine/types";
-import type { Call } from "../engine/types";
+import { Suit, BidSuit } from "../../engine/types";
+import type { Call } from "../../engine/types";
 
 export const SUIT_SYMBOLS: Record<Suit, string> = {
   [Suit.Spades]: "\u2660",

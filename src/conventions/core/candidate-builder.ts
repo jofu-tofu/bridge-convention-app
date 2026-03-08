@@ -2,7 +2,7 @@
 
 import type { BiddingContext } from "./types";
 import type { IntentNode } from "./intent/intent-node";
-import type { CandidateBid, SiblingConditionDetail } from "../../contracts";
+import type { CandidateBid, SiblingConditionDetail } from "../../core/contracts";
 
 /**
  * Convert an IntentNode into a CandidateBid with intent + source metadata.

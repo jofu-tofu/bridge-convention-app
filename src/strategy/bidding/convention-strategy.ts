@@ -5,13 +5,13 @@ import type { BeliefData, EffectiveConventionContext } from "../../conventions/c
 import { generateCandidates } from "../../conventions/core/candidate-generator";
 import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
 import { selectMatchedCandidate } from "../../conventions/core/candidate-selector";
-import { ForcingState } from "../../contracts";
+import { ForcingState } from "../../core/contracts";
 import type {
   BiddingStrategy,
   BidResult,
   PracticalRecommendation,
-} from "../../contracts";
-import { formatHandSummary } from "../../display/hand-summary";
+} from "../../core/contracts";
+import { formatHandSummary } from "../../core/display/hand-summary";
 import { TraceCollector } from "./trace-collector";
 import { computePracticalRecommendation } from "./practical-recommender";
 import { generatePragmaticCandidates } from "./pragmatic-generator";

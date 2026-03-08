@@ -22,7 +22,7 @@ import {
   auctionFromBids,
 } from "../../conventions/__tests__/fixtures";
 import type { BiddingContext } from "../../conventions/core/types";
-import type { BidResult } from "../../contracts";
+import type { BidResult } from "../../core/contracts";
 
 beforeEach(() => {
   clearRegistry();

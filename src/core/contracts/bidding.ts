@@ -5,7 +5,7 @@ import type {
   HandEvaluation,
   Seat,
   Vulnerability,
-} from "../engine/types";
+} from "../../engine/types";
 import type { TreeInferenceData } from "./inference";
 import type {
   ConditionDetail,

@@ -27,7 +27,7 @@ Auction inference system — extracts hand information from bids with per-partne
 
 ## Contracts Boundary
 
-- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `TreeInferenceData`, and `BidAlert`, live in `src/contracts/`.
+- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `TreeInferenceData`, and `BidAlert`, live in `src/core/contracts/`.
 - `inference/types.ts` remains the subsystem-local interface layer; use `contracts/` for shared DTOs and `inference/types.ts` for inference-only protocols.
 
 ## Merge Algorithm

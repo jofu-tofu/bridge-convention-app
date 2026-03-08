@@ -15,9 +15,9 @@ import type {
   PlayStrategy,
   PlayContext,
   InferredHoldings,
-} from "../contracts";
+} from "../core/contracts";
 import { randomPlayStrategy } from "../strategy/play/random-play";
-import { delay } from "../util/delay";
+import { delay } from "../core/util/delay";
 
 const AI_PLAY_DELAY = 500;
 const TRICK_PAUSE = 1000;
