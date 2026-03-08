@@ -5,9 +5,9 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { clearRegistry, evaluateBiddingRules, registerConvention } from "../../core/registry";
 import type { BiddingContext, ConventionConfig } from "../../core/types";
-import { buildEffectiveContext } from "../../core/effective-context";
-import { generateCandidates } from "../../core/candidate-generator";
-import { selectMatchedCandidate } from "../../core/candidate-selector";
+import { buildEffectiveContext } from "../../core/pipeline/effective-context";
+import { generateCandidates } from "../../core/pipeline/candidate-generator";
+import { selectMatchedCandidate } from "../../core/pipeline/candidate-selector";
 import { lebensohlLiteConfig } from "../../definitions/lebensohl-lite";
 
 beforeEach(() => {

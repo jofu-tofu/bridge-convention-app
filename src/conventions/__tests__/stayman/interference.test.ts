@@ -9,7 +9,7 @@ import { staymanConfig } from "../../definitions/stayman";
 import { staymanProtocol } from "../../definitions/stayman/tree";
 import type { BiddingContext } from "../../core/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { evaluateProtocol } from "../../core/protocol-evaluator";
+import { evaluateProtocol } from "../../core/protocol/protocol-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
 import { conventionToStrategy } from "../../../strategy/bidding/convention-strategy";
 

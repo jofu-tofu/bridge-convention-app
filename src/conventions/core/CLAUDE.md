@@ -6,29 +6,33 @@ Stable infrastructure for the convention system: registry, evaluator, protocol e
 
 ```
 core/
-  index.ts              Barrel re-export — optional convenience, deep imports still work
+  index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
   types.ts              ConventionConfig, ConventionLookup, BiddingContext, RuleCondition, BiddingRuleResult
   conditions/           Split subsystem: auction-conditions, hand-conditions, rule-builders
   conditions.ts         Barrel re-export
   condition-evaluator.ts  evaluateConditions, buildExplanation
-  rule-tree.ts          RuleNode, DecisionNode, HandDecisionNode, IntentNode (re-exported), builders
-  tree-evaluator.ts     evaluateTree → TreeEvalResult (hand subtrees within protocols)
-  protocol.ts           ConventionProtocol, ProtocolRound, SemanticTrigger, builders
-  protocol-evaluator.ts evaluateProtocol, computeRole — protocol dispatch engine
-  inference-api.ts      evaluateForInference() + inference DTOs for inference/; re-exports createBiddingContext + isAuctionCondition
-  tree-compat.ts        flattenTree, flattenProtocol — compat adapters
-  sibling-finder.ts     findSiblingBids, findCandidateBids — display/teaching path
-  candidate-builder.ts  IntentNode → CandidateBid DTO
-  intent-collector.ts   collectIntentProposals — production decision path
-  candidate-generator.ts  generateCandidates → ResolvedCandidate[], applies overlay patches
-  candidate-selector.ts selectMatchedCandidate — tiered selection
-  effective-context.ts  EffectiveConventionContext, buildEffectiveContext(raw, config, proto, belief?, lookupConvention?)
-  interference-classifier.ts  classifyInterference() — DI-based, breaks registry↔effective-context cycle
-  overlay.ts            ConventionOverlayPatch, validateOverlayPatches, collectTriggerOverrides
-  overlay-tree-replacement.ts  applyOverlayTreeReplacement() — shared by registry + candidate-generator
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
+  inference-api.ts      evaluateForInference() + inference DTOs for inference/; re-exports createBiddingContext + isAuctionCondition
   registry.ts           registerConvention, getConvention, evaluateBiddingRules(context, config, lookupConvention?), computeTriggerOverridesForConfig(@internal), applyProtocolOverlays(@internal)
   diagnostics.ts        analyzeConvention, getDiagnostics — registration-time checks
+  tree/                 Tree system
+    rule-tree.ts          RuleNode, DecisionNode, HandDecisionNode, IntentNode (re-exported), builders
+    tree-evaluator.ts     evaluateTree → TreeEvalResult (hand subtrees within protocols)
+    tree-compat.ts        flattenTree, flattenProtocol — compat adapters
+    sibling-finder.ts     findSiblingBids, findCandidateBids — display/teaching path
+    candidate-builder.ts  IntentNode → CandidateBid DTO
+  protocol/             Protocol system
+    protocol.ts           ConventionProtocol, ProtocolRound, SemanticTrigger, builders
+    protocol-evaluator.ts evaluateProtocol, computeRole — protocol dispatch engine
+  overlay/              Overlay system
+    overlay.ts            ConventionOverlayPatch, validateOverlayPatches, collectTriggerOverrides
+    overlay-tree-replacement.ts  applyOverlayTreeReplacement() — shared by registry + candidate-generator
+  pipeline/             Candidate pipeline
+    candidate-generator.ts  generateCandidates → ResolvedCandidate[], applies overlay patches
+    candidate-selector.ts selectMatchedCandidate — tiered selection
+    intent-collector.ts   collectIntentProposals — production decision path
+    effective-context.ts  EffectiveConventionContext, buildEffectiveContext(raw, config, proto, belief?, lookupConvention?)
+    interference-classifier.ts  classifyInterference() — DI-based, breaks registry↔effective-context cycle
   dialogue/             DialogueState, transitions, manager, baseline rules
   intent/               SemanticIntent, IntentNode, intentBid builder, resolver
 ```

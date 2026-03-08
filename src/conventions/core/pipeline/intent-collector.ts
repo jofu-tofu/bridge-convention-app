@@ -1,13 +1,13 @@
 // Intent collector — traverses a hand subtree and gathers all semantic intent proposals.
 // Decoupled from tree node structure — no resolution, no overlays, no legality.
 
-import type { Call } from "../../engine/types";
-import type { BiddingContext, HandCondition } from "./types";
-import type { RuleNode } from "./rule-tree";
-import type { IntentNode } from "./intent/intent-node";
-import type { SemanticIntent } from "./intent/semantic-intent";
-import type { BidMetadata, BidAlert } from "./rule-tree";
-import { isAuctionCondition, findHandSubtreeRoot } from "./tree-compat";
+import type { Call } from "../../../engine/types";
+import type { BiddingContext, HandCondition } from "../types";
+import type { RuleNode } from "../tree/rule-tree";
+import type { IntentNode } from "../intent/intent-node";
+import type { SemanticIntent } from "../intent/semantic-intent";
+import type { BidMetadata, BidAlert } from "../tree/rule-tree";
+import { isAuctionCondition, findHandSubtreeRoot } from "../tree/tree-compat";
 
 /** A hand condition on the path to an intent, with the branch direction required. */
 export interface PathConditionEntry {

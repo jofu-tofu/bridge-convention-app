@@ -10,13 +10,13 @@ import type { BiddingContext } from "../../core/contracts";
 export type { BiddingContext } from "../../core/contracts";
 import type { InterferenceKind } from "./dialogue/dialogue-state";
 import type { TransitionRule } from "./dialogue/dialogue-transitions";
-import type { EffectiveConventionContext } from "./effective-context";
-import type { ResolvedCandidate } from "./candidate-generator";
+import type { EffectiveConventionContext } from "./pipeline/effective-context";
+import type { ResolvedCandidate } from "./pipeline/candidate-generator";
 import type { IntentResolverMap } from "./intent/intent-resolver";
-import type { ConventionOverlayPatch } from "./overlay";
-import type { ProtocolEvalResult, ConventionProtocol } from "./protocol";
-import type { RuleNode, BidAlert, ConventionExplanations } from "./rule-tree";
-import type { TreeEvalResult } from "./tree-evaluator";
+import type { ConventionOverlayPatch } from "./overlay/overlay";
+import type { ProtocolEvalResult, ConventionProtocol } from "./protocol/protocol";
+import type { RuleNode, BidAlert, ConventionExplanations } from "./tree/rule-tree";
+import type { TreeEvalResult } from "./tree/tree-evaluator";
 
 /** Structured inference data attached to a RuleCondition. */
 export interface ConditionInference {

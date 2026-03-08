@@ -2,8 +2,7 @@
 // score = own suit length + partner min suit length (fit floor).
 // When publicBelief is undefined, returns candidates unchanged (no-op).
 
-import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
-import type { EffectiveConventionContext } from "../../conventions/core/effective-context";
+import type { ResolvedCandidate, EffectiveConventionContext } from "../../conventions/core";
 import { BidSuit } from "../../engine/types";
 import { partnerSeat } from "../../engine/constants";
 import { SUIT_ORDER } from "../../engine/constants";

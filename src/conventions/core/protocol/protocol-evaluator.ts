@@ -1,7 +1,7 @@
-import type { BiddingContext } from "./types";
-import type { AuctionEntry, Seat } from "../../engine/types";
-import type { HandNode } from "./rule-tree";
-import { partnerSeat } from "../../engine/constants";
+import type { BiddingContext } from "../types";
+import type { AuctionEntry, Seat } from "../../../engine/types";
+import type { HandNode } from "../tree/rule-tree";
+import { partnerSeat } from "../../../engine/constants";
 import type {
   EstablishedContext,
   ConventionProtocol,
@@ -11,8 +11,8 @@ import type {
   MatchedRoundEntry,
   AuctionRole,
 } from "./protocol";
-import type { TreeEvalResult } from "./tree-evaluator";
-import { evaluateTree } from "./tree-evaluator";
+import type { TreeEvalResult } from "../tree/tree-evaluator";
+import { evaluateTree } from "../tree/tree-evaluator";
 
 // ─── Role computation ────────────────────────────────────────
 

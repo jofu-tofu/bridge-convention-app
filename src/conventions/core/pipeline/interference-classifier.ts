@@ -2,8 +2,8 @@
 // the effective-context.ts ↔ registry.ts circular dependency.
 // Uses dependency injection (lookupConvention param) instead of importing getConvention.
 
-import type { ConventionConfig } from "./types";
-import type { DialogueState } from "./dialogue/dialogue-state";
+import type { ConventionConfig } from "../types";
+import type { DialogueState } from "../dialogue/dialogue-state";
 
 /** Classify detected interference using registered opponent convention signatures.
  *  Uses a lookup function instead of importing getConvention directly to avoid

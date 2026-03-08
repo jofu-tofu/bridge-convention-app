@@ -1,6 +1,4 @@
-import type {
-  ConventionConfig,
-} from "../../conventions/core/types";
+import type { ConventionConfig } from "../../conventions/core";
 import type { BidHistoryEntry } from "../../core/contracts";
 import type { BidResult, ConditionDetail, TreeEvalSummary } from "../../core/contracts";
 import type { Deal, Call, Seat, Auction } from "../../engine/types";
@@ -8,10 +6,10 @@ import { Seat as SeatEnum } from "../../engine/types";
 import {
   isConditionedRule,
   evaluateConditions,
-} from "../../conventions/core/condition-evaluator";
+  createBiddingContext,
+  getEffectiveRules,
+} from "../../conventions/core";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import { createBiddingContext } from "../../conventions/core/context-factory";
-import { getEffectiveRules } from "../../conventions/core/registry";
 import { formatRuleName } from "../../core/display/format";
 
 export interface DisplayCondition {

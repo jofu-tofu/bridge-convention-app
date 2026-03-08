@@ -4,8 +4,8 @@ import {
   decision,
   fallback,
   handDecision,
-} from "../../../conventions/core/rule-tree";
-import type { ConventionExplanations } from "../../../conventions/core/rule-tree";
+} from "../../../conventions/core/tree/rule-tree";
+import type { ConventionExplanations } from "../../../conventions/core/tree/rule-tree";
 import { intentBid } from "../../../conventions/core/intent/intent-node";
 import { SemanticIntentType } from "../../../conventions/core/intent/semantic-intent";
 import {
@@ -28,7 +28,7 @@ const makeCall =
   });
 
 /** Test helper: wraps intentBid with a default Signoff intent for tree-display tests. */
-import type { BidMetadata } from "../../../conventions/core/rule-tree";
+import type { BidMetadata } from "../../../conventions/core/tree/rule-tree";
 function bid(name: string, meaning: string, callFn: (ctx: BiddingContext) => Call, metadata?: BidMetadata) {
   return intentBid(name, meaning, { type: SemanticIntentType.Signoff, params: {} }, callFn, metadata);
 }

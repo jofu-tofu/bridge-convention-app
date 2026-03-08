@@ -3,11 +3,11 @@ import type {
   HandCondition,
   ConventionTeaching,
   ConventionConfig,
-} from "./types";
-import type { IntentNode } from "./intent/intent-node";
+} from "../types";
+import type { IntentNode } from "../intent/intent-node";
 
 // Re-export IntentNode for consumers that import from rule-tree
-export type { IntentNode } from "./intent/intent-node";
+export type { IntentNode } from "../intent/intent-node";
 
 /**
  * Backward-compatible alias for callers that still import this type from rule-tree.
@@ -30,7 +30,7 @@ export interface DecisionMetadata {
 // ─── Alert metadata for bid nodes ───────────────────────────
 
 // Re-export from canonical location in contracts for backward compatibility
-export type { BidAlert } from "../../core/contracts";
+export type { BidAlert } from "../../../core/contracts";
 
 // ─── Teaching metadata for bid nodes ────────────────────────
 

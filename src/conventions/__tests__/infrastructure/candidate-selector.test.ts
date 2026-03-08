@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { selectMatchedCandidate } from "../../core/candidate-selector";
-import type { ResolvedCandidate } from "../../core/candidate-generator";
+import { selectMatchedCandidate } from "../../core/pipeline/candidate-selector";
+import type { ResolvedCandidate } from "../../core/pipeline/candidate-generator";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { ForcingState } from "../../core/dialogue/dialogue-state";

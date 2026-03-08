@@ -1,5 +1,5 @@
 import type { ResolvedCandidate } from "./candidate-generator";
-import { ForcingState } from "./dialogue/dialogue-state";
+import { ForcingState } from "../dialogue/dialogue-state";
 
 /** Ranker function type — reorders candidates before tiered selection. */
 export type CandidateRankerFn = (

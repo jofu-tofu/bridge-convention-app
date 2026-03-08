@@ -2,8 +2,8 @@
 // Returns warnings/errors, not enforcement. Consumed by tests and dev tools.
 
 import type { ConventionConfig } from "./types";
-import type { ConventionOverlayPatch } from "./overlay";
-import type { RuleNode } from "./rule-tree";
+import type { ConventionOverlayPatch } from "./overlay/overlay";
+import type { RuleNode } from "./tree/rule-tree";
 
 export interface DiagnosticWarning {
   readonly type:

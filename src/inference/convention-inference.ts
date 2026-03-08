@@ -3,19 +3,19 @@ import { Seat } from "../engine/types";
 import type { Auction, AuctionEntry, Call } from "../engine/types";
 import type { Suit } from "../engine/types";
 import { callsMatch } from "../engine/call-helpers";
-import { getConvention } from "../conventions/core/registry";
 import {
+  getConvention,
   evaluateForInference,
   createBiddingContext,
   isAuctionCondition,
-} from "../conventions/core/inference-api";
+} from "../conventions/core";
 import { evaluateHand } from "../engine/hand-evaluator";
 import type {
   BiddingContext,
   ConventionConfig,
   ConventionLookup,
-} from "../conventions/core/types";
-import type { InferenceRuleDTO } from "../conventions/core/inference-api";
+  InferenceRuleDTO,
+} from "../conventions/core";
 import {
   extractInference,
   conditionToHandInference,

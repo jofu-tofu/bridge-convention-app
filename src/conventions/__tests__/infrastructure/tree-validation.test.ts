@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decision, fallback, validateTree } from "../../core/rule-tree";
+import { decision, fallback, validateTree } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { hcpMin, isOpener, isResponder } from "../../core/conditions";

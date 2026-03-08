@@ -2,7 +2,7 @@ import type { Seat, Auction, AuctionEntry, Call } from "../engine/types";
 import type { HandInference, InferredHoldings, BidAlert } from "../core/contracts";
 
 // Re-export ConditionInference from its canonical location
-export type { ConditionInference } from "../conventions/core/types";
+export type { ConditionInference } from "../conventions/core";
 
 // Re-export inference DTOs from contracts (canonical location for cross-boundary types)
 export type {

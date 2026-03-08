@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit, Seat } from "../../engine/types";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import { decision } from "../../conventions/core/rule-tree";
+import { decision } from "../../conventions/core/tree/rule-tree";
 import { intentBid } from "../../conventions/core/intent/intent-node";
 import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
 import type { BiddingContext } from "../../conventions/core/types";
-import type { TreeEvalResult } from "../../conventions/core/tree-evaluator";
+import type { TreeEvalResult } from "../../conventions/core/tree/tree-evaluator";
 import type { SiblingBid, ResolvedCandidateDTO } from "../../core/contracts";
 import { hand } from "../../engine/__tests__/fixtures";
 import {

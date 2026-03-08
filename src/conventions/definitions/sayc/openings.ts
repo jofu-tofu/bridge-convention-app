@@ -10,8 +10,8 @@ import {
   isBalanced,
   and,
 } from "../../core/conditions";
-import { handDecision } from "../../core/rule-tree";
-import type { HandNode } from "../../core/rule-tree";
+import { handDecision } from "../../core/tree/rule-tree";
+import type { HandNode } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { saycPass } from "./helpers";

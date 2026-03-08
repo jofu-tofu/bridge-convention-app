@@ -7,8 +7,8 @@ import { BidSuit, Seat } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
-import { generateCandidates } from "../../core/candidate-generator";
-import type { EffectiveConventionContext } from "../../core/effective-context";
+import { generateCandidates } from "../../core/pipeline/candidate-generator";
+import type { EffectiveConventionContext } from "../../core/pipeline/effective-context";
 import { ConventionCategory } from "../../core/types";
 import type { ConventionConfig, BiddingContext } from "../../core/types";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
@@ -19,8 +19,8 @@ import {
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import type { IntentResolverFn, IntentResolverMap } from "../../core/intent/intent-resolver";
-import { evaluateTree } from "../../core/tree-evaluator";
-import type { ConventionOverlayPatch } from "../../core/overlay";
+import { evaluateTree } from "../../core/tree/tree-evaluator";
+import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
 
 // --- Shared test infrastructure ---
 

@@ -4,14 +4,14 @@ import { describe, test, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import type { RuleCondition } from "../../core/types";
-import type { RuleNode } from "../../core/rule-tree";
-import { decision, fallback } from "../../core/rule-tree";
+import type { RuleNode } from "../../core/tree/rule-tree";
+import { decision, fallback } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import type { SiblingBid } from "../../../core/contracts";
-import { toCandidateBid } from "../../core/candidate-builder";
-import { findCandidateBids } from "../../core/sibling-finder";
-import { evaluateTree } from "../../core/tree-evaluator";
+import { toCandidateBid } from "../../core/tree/candidate-builder";
+import { findCandidateBids } from "../../core/tree/sibling-finder";
+import { evaluateTree } from "../../core/tree/tree-evaluator";
 import { makeMinimalContext } from "../tree-test-helpers";
 import { createBiddingContext } from "../../core/context-factory";
 import { evaluateHand } from "../../../engine/hand-evaluator";
@@ -19,8 +19,8 @@ import { evaluateBiddingRules, registerConvention, clearRegistry } from "../../c
 import { hand } from "../../../engine/__tests__/fixtures";
 import { auctionFromBids } from "../fixtures";
 import { staymanConfig } from "../../definitions/stayman/config";
-import { buildEffectiveContext } from "../../core/effective-context";
-import { generateCandidates, throwingOverlayErrorHandler } from "../../core/candidate-generator";
+import { buildEffectiveContext } from "../../core/pipeline/effective-context";
+import { generateCandidates, throwingOverlayErrorHandler } from "../../core/pipeline/candidate-generator";
 
 function auctionCondition(name: string, passes: boolean): RuleCondition {
   return {

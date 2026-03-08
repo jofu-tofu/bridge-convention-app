@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { BidSuit } from "../../../engine/types";
-import { decision, fallback } from "../../core/rule-tree";
+import { decision, fallback } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
-import { evaluateTree } from "../../core/tree-evaluator";
-import { flattenTree, treeResultToBiddingRuleResult } from "../../core/tree-compat";
+import { evaluateTree } from "../../core/tree/tree-evaluator";
+import { flattenTree, treeResultToBiddingRuleResult } from "../../core/tree/tree-compat";
 import {
   alwaysTrue as condTrue,
   alwaysFalse as condFalse,

@@ -1,19 +1,19 @@
 import { describe, test, expect, vi } from "vitest";
 import { Seat } from "../../../engine/types";
-import type { ConventionOverlayPatch } from "../../core/overlay";
-import { validateOverlayPatches, collectTriggerOverrides } from "../../core/overlay";
-import { buildEffectiveContext } from "../../core/effective-context";
+import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
+import { validateOverlayPatches, collectTriggerOverrides } from "../../core/overlay/overlay";
+import { buildEffectiveContext } from "../../core/pipeline/effective-context";
 import { evaluateBiddingRules } from "../../core/registry";
-import { generateCandidates } from "../../core/candidate-generator";
-import { selectMatchedCandidate } from "../../core/candidate-selector";
-import { protocol, round, semantic } from "../../core/protocol";
-import type { ConventionProtocol, ProtocolEvalResult } from "../../core/protocol";
-import { handDecision, decision, fallback } from "../../core/rule-tree";
-import type { HandNode } from "../../core/rule-tree";
+import { generateCandidates } from "../../core/pipeline/candidate-generator";
+import { selectMatchedCandidate } from "../../core/pipeline/candidate-selector";
+import { protocol, round, semantic } from "../../core/protocol/protocol";
+import type { ConventionProtocol, ProtocolEvalResult } from "../../core/protocol/protocol";
+import { handDecision, decision, fallback } from "../../core/tree/rule-tree";
+import type { HandNode } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { hcpMin, bidMade, isResponder } from "../../core/conditions";
-import { evaluateTree } from "../../core/tree-evaluator";
+import { evaluateTree } from "../../core/tree/tree-evaluator";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import type { BiddingContext, ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
@@ -21,7 +21,7 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import type { CollectedIntent } from "../../core/intent-collector";
+import type { CollectedIntent } from "../../core/pipeline/intent-collector";
 
 // ─── Test fixtures ──────────────────────────────────────────
 

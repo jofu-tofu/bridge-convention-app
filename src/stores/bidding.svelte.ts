@@ -11,7 +11,7 @@ import type {
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callsMatch } from "../engine/call-helpers";
-import { createBiddingContext } from "../conventions/core/context-factory";
+import { createBiddingContext } from "../conventions/core";
 import type { GameStoreOptions } from "./game.svelte";
 import {
   BidGrade,

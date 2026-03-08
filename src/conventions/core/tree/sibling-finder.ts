@@ -1,6 +1,6 @@
-import type { BiddingContext, RuleCondition } from "./types";
+import type { BiddingContext, RuleCondition } from "../types";
 import type { RuleNode, IntentNode } from "./rule-tree";
-import type { SiblingBid, SiblingConditionDetail, CandidateBid } from "../../core/contracts";
+import type { SiblingBid, SiblingConditionDetail, CandidateBid } from "../../../core/contracts";
 import { isAuctionCondition, findHandSubtreeRoot } from "./tree-compat";
 import { toCandidateBid } from "./candidate-builder";
 

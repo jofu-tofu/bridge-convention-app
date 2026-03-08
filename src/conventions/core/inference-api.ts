@@ -1,10 +1,10 @@
 import type { Call } from "../../engine/types";
 import type { BiddingContext, ConventionConfig, RuleCondition } from "./types";
-import type { ConventionProtocol } from "./protocol";
+import type { ConventionProtocol } from "./protocol/protocol";
 import { isConditionedRule } from "./condition-evaluator";
 import { createBiddingContext } from "./context-factory";
-import { evaluateProtocol } from "./protocol-evaluator";
-import { flattenProtocol, isAuctionCondition } from "./tree-compat";
+import { evaluateProtocol } from "./protocol/protocol-evaluator";
+import { flattenProtocol, isAuctionCondition } from "./tree/tree-compat";
 
 export interface InferenceRuleDTO {
   readonly name: string;

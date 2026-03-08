@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
-  import type { ConventionConfig } from "../../../conventions/core/types";
+  import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
   import { STRAIN_SYMBOLS } from "../../../core/display/format";
   import ContractDisplay from "./ContractDisplay.svelte";

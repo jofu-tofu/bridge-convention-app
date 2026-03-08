@@ -1,4 +1,4 @@
-import type { BiddingContext } from "./types";
+import type { BiddingContext } from "../types";
 import type { RuleNode, DecisionNode, IntentNode } from "./rule-tree";
 
 // ─── Result types ────────────────────────────────────────────

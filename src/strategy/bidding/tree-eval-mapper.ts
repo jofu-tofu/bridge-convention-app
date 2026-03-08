@@ -1,8 +1,5 @@
-import type { ConditionResult, BiddingContext } from "../../conventions/core/types";
-import type { RuleNode, DecisionNode } from "../../conventions/core/rule-tree";
-import type { TreeEvalResult, PathEntry } from "../../conventions/core/tree-evaluator";
-import { findSiblingBids, findCandidateBids } from "../../conventions/core/sibling-finder";
-import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
+import type { ConditionResult, BiddingContext, RuleNode, DecisionNode, TreeEvalResult, PathEntry, ResolvedCandidate } from "../../conventions/core";
+import { findSiblingBids, findCandidateBids } from "../../conventions/core";
 import type {
   ConditionDetail,
   TreePathEntry,

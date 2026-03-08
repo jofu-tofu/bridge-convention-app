@@ -4,7 +4,7 @@ import type { AuctionEntry, Auction } from "../../engine/types";
 import type { HandInference } from "../../core/contracts";
 import type { BiddingRuleResult } from "../../conventions/core/registry";
 import type { InferenceExtractor, InferenceProvider } from "../types";
-import type { BidAlert } from "../../conventions/core/rule-tree";
+import type { BidAlert } from "../../conventions/core/tree/rule-tree";
 import type { ConditionInference } from "../../conventions/core/types";
 import { produceAnnotation } from "../annotation-producer";
 import { protocolInferenceExtractor } from "../protocol-inference-extractor";

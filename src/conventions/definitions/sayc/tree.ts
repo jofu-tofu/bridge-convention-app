@@ -6,9 +6,9 @@ import {
   seatHasBid,
   and,
 } from "../../core/conditions";
-import type { HandNode, RuleNode } from "../../core/rule-tree";
-import { protocol, round, semantic } from "../../core/protocol";
-import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
+import type { HandNode, RuleNode } from "../../core/tree/rule-tree";
+import { protocol, round, semantic } from "../../core/protocol/protocol";
+import type { ConventionProtocol, EstablishedContext } from "../../core/protocol/protocol";
 import { saycPass } from "./helpers";
 import { openingBranch } from "./openings";
 import { makeResponderHandTree, makeCompetitiveBranch } from "./responses";

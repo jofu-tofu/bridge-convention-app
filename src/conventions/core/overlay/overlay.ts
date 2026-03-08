@@ -1,11 +1,11 @@
-import { validateTree } from "./rule-tree";
-import type { HandNode } from "./rule-tree";
-import type { DialogueState } from "./dialogue/dialogue-state";
-import type { ConventionProtocol, SemanticTrigger } from "./protocol";
-import type { CollectedIntent } from "./intent-collector";
-import type { EffectiveConventionContext } from "./effective-context";
-import type { SemanticIntent } from "./intent/semantic-intent";
-import type { ResolverResult } from "./intent/intent-resolver";
+import { validateTree } from "../tree/rule-tree";
+import type { HandNode } from "../tree/rule-tree";
+import type { DialogueState } from "../dialogue/dialogue-state";
+import type { ConventionProtocol, SemanticTrigger } from "../protocol/protocol";
+import type { CollectedIntent } from "../pipeline/intent-collector";
+import type { EffectiveConventionContext } from "../pipeline/effective-context";
+import type { SemanticIntent } from "../intent/semantic-intent";
+import type { ResolverResult } from "../intent/intent-resolver";
 
 export interface ConventionOverlayPatch {
   readonly id: string;

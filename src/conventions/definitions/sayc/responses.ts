@@ -18,8 +18,8 @@ import {
   or,
   goodSuitAtLevel,
 } from "../../core/conditions";
-import { decision, handDecision } from "../../core/rule-tree";
-import type { HandNode, RuleNode } from "../../core/rule-tree";
+import { decision, handDecision } from "../../core/tree/rule-tree";
+import type { HandNode, RuleNode } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import {

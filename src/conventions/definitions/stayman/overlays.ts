@@ -1,8 +1,8 @@
 import { CompetitionMode, SystemMode } from "../../core/dialogue/dialogue-state";
 import { getSystemModeFor } from "../../core/dialogue/dialogue-state";
-import type { ConventionOverlayPatch } from "../../core/overlay";
+import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
 import { round1AskAfterDouble } from "./tree";
-import { fallback } from "../../core/rule-tree";
+import { fallback } from "../../core/tree/rule-tree";
 import { STAYMAN_CAPABILITY } from "./constants";
 
 export const staymanOverlays: readonly ConventionOverlayPatch[] = [

@@ -1,5 +1,4 @@
-import type { ConventionConfig } from "../../conventions/core/types";
-import type { ConventionCategory } from "../../conventions/core/types";
+import type { ConventionConfig, ConventionCategory } from "../../conventions/core";
 
 export function filterConventions(
   conventions: readonly ConventionConfig[],

@@ -5,11 +5,11 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 import type { BiddingContext } from "../../core/types";
-import { handDecision, fallback } from "../../core/rule-tree";
-import type { HandNode, RuleNode } from "../../core/rule-tree";
-import { evaluateTree } from "../../core/tree-evaluator";
-import { flattenTree } from "../../core/tree-compat";
-import { findSiblingBids } from "../../core/sibling-finder";
+import { handDecision, fallback } from "../../core/tree/rule-tree";
+import type { HandNode, RuleNode } from "../../core/tree/rule-tree";
+import { evaluateTree } from "../../core/tree/tree-evaluator";
+import { flattenTree } from "../../core/tree/tree-compat";
+import { findSiblingBids } from "../../core/tree/sibling-finder";
 import { hcpMin, suitMin } from "../../core/conditions";
 import {
   SemanticIntentType,

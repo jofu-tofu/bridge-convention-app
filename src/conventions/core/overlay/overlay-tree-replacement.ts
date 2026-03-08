@@ -2,10 +2,10 @@
 // Shared by both registry.ts (evaluateBiddingRules) and candidate-generator.ts.
 // Imports only from leaf modules (tree-evaluator, rule-tree) to avoid coupling direction issues.
 
-import type { RuleNode } from "./rule-tree";
-import type { TreeEvalResult } from "./tree-evaluator";
-import { evaluateTree } from "./tree-evaluator";
-import type { BiddingContext } from "./types";
+import type { RuleNode } from "../tree/rule-tree";
+import type { TreeEvalResult } from "../tree/tree-evaluator";
+import { evaluateTree } from "../tree/tree-evaluator";
+import type { BiddingContext } from "../types";
 import type { ConventionOverlayPatch } from "./overlay";
 
 export interface OverlayTreeReplacementResult {

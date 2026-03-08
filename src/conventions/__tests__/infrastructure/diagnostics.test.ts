@@ -5,14 +5,14 @@ import { describe, test, expect, beforeEach } from "vitest";
 import { BidSuit } from "../../../engine/types";
 import { registerConvention, clearRegistry, getDiagnostics } from "../../core/registry";
 import { intentBid } from "../../core/intent/intent-node";
-import { handDecision } from "../../core/rule-tree";
+import { handDecision } from "../../core/tree/rule-tree";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { ConventionCategory } from "../../core/types";
 import type { ConventionConfig } from "../../core/types";
-import type { ConventionOverlayPatch } from "../../core/overlay";
+import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
 import { alwaysTrue } from "../tree-test-helpers";
 import type { HandCondition } from "../../core/types";
-import type { SemanticTrigger } from "../../core/protocol";
+import type { SemanticTrigger } from "../../core/protocol/protocol";
 import type { AuctionCondition } from "../../core/types";
 
 const dummyCondition: AuctionCondition = {

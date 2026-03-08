@@ -5,7 +5,7 @@
 import type { Call } from "../../../engine/types";
 import type { BiddingContext } from "../types";
 import type { SemanticIntent } from "./semantic-intent";
-import type { BidMetadata, BidAlert } from "../rule-tree";
+import type { BidMetadata, BidAlert } from "../tree/rule-tree";
 
 let nextNodeId = 1;
 

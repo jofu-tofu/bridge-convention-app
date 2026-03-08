@@ -16,15 +16,15 @@ import { bergenConfig } from "../../definitions/bergen-raises";
 import { weakTwosConfig } from "../../definitions/weak-twos";
 import { saycConfig } from "../../definitions/sayc";
 import { lebensohlLiteConfig } from "../../definitions/lebensohl-lite";
-import { buildEffectiveContext } from "../../core/effective-context";
-import { generateCandidates } from "../../core/candidate-generator";
-import type { ResolvedCandidate } from "../../core/candidate-generator";
-import { selectMatchedCandidate } from "../../core/candidate-selector";
+import { buildEffectiveContext } from "../../core/pipeline/effective-context";
+import { generateCandidates } from "../../core/pipeline/candidate-generator";
+import type { ResolvedCandidate } from "../../core/pipeline/candidate-generator";
+import { selectMatchedCandidate } from "../../core/pipeline/candidate-selector";
 import type { BiddingContext, ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { computeDialogueState } from "../../core/dialogue/dialogue-manager";
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
-import { protocol, round, semantic } from "../../core/protocol";
+import { protocol, round, semantic } from "../../core/protocol/protocol";
 import {
   and,
   bidMade,
@@ -34,13 +34,13 @@ import {
   partnerBidMade,
   suitMin,
 } from "../../core/conditions";
-import { handDecision, fallback } from "../../core/rule-tree";
+import { handDecision, fallback } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
-import { evaluateProtocol } from "../../core/protocol-evaluator";
-import { evaluateTree } from "../../core/tree-evaluator";
+import { evaluateProtocol } from "../../core/protocol/protocol-evaluator";
+import { evaluateTree } from "../../core/tree/tree-evaluator";
 import { ForcingState, CompetitionMode, PendingAction } from "../../core/dialogue/dialogue-state";
-import type { ConventionOverlayPatch } from "../../core/overlay";
+import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
 import { protocolInferenceExtractor } from "../../../inference/protocol-inference-extractor";
 import { createFitConfidenceRanker } from "../../../strategy/bidding/fit-ranker";
 

@@ -1,6 +1,6 @@
-import type { AuctionCondition } from "./types";
-import type { HandNode, IntentNode } from "./rule-tree";
-import type { TreeEvalResult } from "./tree-evaluator";
+import type { AuctionCondition } from "../types";
+import type { HandNode, IntentNode } from "../tree/rule-tree";
+import type { TreeEvalResult } from "../tree/tree-evaluator";
 
 // ─── Established context ─────────────────────────────────────
 

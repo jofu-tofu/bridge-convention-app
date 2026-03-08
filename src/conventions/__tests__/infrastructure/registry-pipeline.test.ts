@@ -5,8 +5,8 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../fixtures";
 import type { BiddingContext, ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
-import { evaluateProtocol } from "../../core/protocol-evaluator";
-import { treeResultToBiddingRuleResult } from "../../core/tree-compat";
+import { evaluateProtocol } from "../../core/protocol/protocol-evaluator";
+import { treeResultToBiddingRuleResult } from "../../core/tree/tree-compat";
 import {
   evaluateBiddingRules,
   computeTriggerOverridesForConfig,

@@ -24,7 +24,7 @@ import {
   opponentBidMade,
 } from "../../core/conditions";
 import type { BiddingContext } from "../../core/types";
-import { isAuctionCondition } from "../../core/tree-compat";
+import { isAuctionCondition } from "../../core/tree/tree-compat";
 import { hand, auctionFromBids, makeBiddingContext } from "../fixtures";
 
 beforeEach(() => {

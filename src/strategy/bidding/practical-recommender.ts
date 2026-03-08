@@ -4,7 +4,7 @@
 import type { Call, Suit } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
 import { partnerSeat, SUIT_ORDER } from "../../engine/constants";
-import type { BiddingContext } from "../../conventions/core/types";
+import type { BiddingContext } from "../../conventions/core";
 import type { ResolvedCandidateDTO, PracticalRecommendation, BeliefData } from "../../core/contracts";
 import type { InferenceProvider } from "../../inference/types";
 import { computePartnerInterpretation } from "../../inference/partner-interpretation";

@@ -1,4 +1,4 @@
-import type { RuleCondition, ConditionInference } from "../conventions/core/types";
+import type { RuleCondition, ConditionInference } from "../conventions/core";
 import type { HandInference } from "./types";
 import type { Suit, Seat } from "../engine/types";
 import { Suit as SuitEnum } from "../engine/types";

@@ -375,6 +375,11 @@ export default tseslint.config(
               message: "display/ must not import teaching/",
             },
           ],
+          patterns: [{
+            group: ["*/conventions/core/*", "*/conventions/core/conditions/*",
+                    "*/conventions/core/dialogue/*", "*/conventions/core/intent/*"],
+            message: "Import from 'conventions/core' barrel instead of deep paths",
+          }],
         },
       ],
     },
@@ -418,8 +423,33 @@ export default tseslint.config(
               message: "teaching/ must not import inference/",
             },
           ],
+          patterns: [{
+            group: ["*/conventions/core/*", "*/conventions/core/conditions/*",
+                    "*/conventions/core/dialogue/*", "*/conventions/core/intent/*"],
+            message: "Import from 'conventions/core' barrel instead of deep paths",
+          }],
         },
       ],
+    },
+  },
+
+  // ── Barrel enforcement: conventions/core/ ──
+  {
+    files: [
+      "src/strategy/**/*.ts", "src/inference/**/*.ts", "src/drill/**/*.ts",
+      "src/stores/**/*.ts", "src/stores/**/*.svelte.ts",
+      "src/components/**/*.ts", "src/components/**/*.svelte",
+      "src/engine/**/*.ts",
+    ],
+    ignores: ["**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{
+          group: ["*/conventions/core/*", "*/conventions/core/conditions/*",
+                  "*/conventions/core/dialogue/*", "*/conventions/core/intent/*"],
+          message: "Import from 'conventions/core' barrel instead of deep paths",
+        }],
+      }],
     },
   },
 

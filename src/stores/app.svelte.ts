@@ -1,4 +1,4 @@
-import type { ConventionConfig } from "../conventions/core/types";
+import type { ConventionConfig } from "../conventions/core";
 
 export type Screen = "select" | "game" | "learning";
 

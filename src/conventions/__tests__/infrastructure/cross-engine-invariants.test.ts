@@ -13,7 +13,7 @@ import { createBiddingContext } from "../../core/context-factory";
 import { evaluateBiddingRules } from "../../core/registry";
 import { registerConvention, clearRegistry } from "../../core/registry";
 import { computeDialogueState } from "../../core/dialogue/dialogue-manager";
-import { evaluateProtocol, computeRole } from "../../core/protocol-evaluator";
+import { evaluateProtocol, computeRole } from "../../core/protocol/protocol-evaluator";
 import { resolveIntent } from "../../core/intent/intent-resolver";
 import type { IntentNode } from "../../core/intent/intent-node";
 import {

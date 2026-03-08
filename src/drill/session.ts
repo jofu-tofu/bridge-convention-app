@@ -3,7 +3,7 @@ import type { BidResult } from "../core/contracts";
 import type { Hand, Auction, Seat } from "../engine/types";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { isLegalCall } from "../engine/auction";
-import { createBiddingContext } from "../conventions/core/context-factory";
+import { createBiddingContext } from "../conventions/core";
 
 /**
  * Creates a DrillSession that manages bidding for a drill.

@@ -1,17 +1,17 @@
 // EffectiveConventionContext — bundles raw BiddingContext + protocol result + dialogue state.
 // Replaces ad-hoc construction in conventionToStrategy.
 
-import type { BiddingContext, ConventionConfig, ConventionLookup } from "./types";
-import type { ProtocolEvalResult } from "./protocol";
-import type { DialogueState } from "./dialogue/dialogue-state";
-import { computeDialogueState } from "./dialogue/dialogue-manager";
-import { baselineTransitionRules } from "./dialogue/baseline-transitions";
-import type { ConventionOverlayPatch } from "./overlay";
+import type { BiddingContext, ConventionConfig, ConventionLookup } from "../types";
+import type { ProtocolEvalResult } from "../protocol/protocol";
+import type { DialogueState } from "../dialogue/dialogue-state";
+import { computeDialogueState } from "../dialogue/dialogue-manager";
+import { baselineTransitionRules } from "../dialogue/baseline-transitions";
+import type { ConventionOverlayPatch } from "../overlay/overlay";
 import { classifyInterference } from "./interference-classifier";
-import { getConvention } from "./registry";
+import { getConvention } from "../registry";
 
-import type { BeliefData } from "../../core/contracts";
-export type { BeliefData } from "../../core/contracts";
+import type { BeliefData } from "../../../core/contracts";
+export type { BeliefData } from "../../../core/contracts";
 
 export interface EffectiveConventionContext {
   readonly raw: BiddingContext;

@@ -3,12 +3,10 @@ import type {
   BiddingContext,
   ConventionConfig,
   ConventionTeaching,
-} from "../conventions/core/types";
-import type {
   ConventionExplanations,
   BidMetadata,
   RuleNode,
-} from "../conventions/core/rule-tree";
+} from "../conventions/core";
 import type { Call } from "../engine/types";
 import {
   getConditionExplanation,

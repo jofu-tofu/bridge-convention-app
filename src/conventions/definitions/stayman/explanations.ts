@@ -1,4 +1,4 @@
-import type { ConventionExplanations } from "../../core/rule-tree";
+import type { ConventionExplanations } from "../../core/tree/rule-tree";
 
 export const staymanExplanations: ConventionExplanations = {
   convention: {

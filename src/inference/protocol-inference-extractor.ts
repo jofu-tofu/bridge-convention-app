@@ -4,8 +4,7 @@
 
 import type { Seat } from "../engine/types";
 import type { HandInference } from "../core/contracts";
-import type { TreeEvalResult } from "../conventions/core/tree-evaluator";
-import type { ProtocolEvalResult } from "../conventions/core/protocol";
+import type { TreeEvalResult, ProtocolEvalResult } from "../conventions/core";
 import type { InferenceExtractor, InferenceExtractorInput } from "./types";
 import {
   extractInference,

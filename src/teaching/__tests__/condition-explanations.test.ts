@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { RuleCondition } from "../../conventions/core/types";
 import type { BiddingContext } from "../../conventions/core/types";
-import type { ConventionExplanations } from "../../conventions/core/rule-tree";
+import type { ConventionExplanations } from "../../conventions/core/tree/rule-tree";
 import type { HandEvaluation } from "../../engine/types";
 import {
   getConditionExplanation,

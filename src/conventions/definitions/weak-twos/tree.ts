@@ -17,13 +17,13 @@ import {
   seatFirstBidStrain,
   partnerOpeningStrain,
 } from "../../core/conditions";
-import { handDecision, fallback } from "../../core/rule-tree";
-import type { HandNode } from "../../core/rule-tree";
+import { handDecision, fallback } from "../../core/tree/rule-tree";
+import type { HandNode } from "../../core/tree/rule-tree";
 import type { HandCondition } from "../../core/types";
 import { createIntentBidFactory } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
-import { protocol, round, semantic } from "../../core/protocol";
-import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
+import { protocol, round, semantic } from "../../core/protocol/protocol";
+import type { ConventionProtocol, EstablishedContext } from "../../core/protocol/protocol";
 import { raiseToGame, raiseToThree, strainToSuitIndex, strainToSuitName } from "./helpers";
 
 const bid = createIntentBidFactory("weak-twos");

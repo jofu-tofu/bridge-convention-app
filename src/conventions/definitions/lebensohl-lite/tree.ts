@@ -14,12 +14,12 @@ import {
   suitQuality,
 } from "../../core/conditions";
 import type { HandCondition } from "../../core/types";
-import { handDecision } from "../../core/rule-tree";
-import type { HandNode } from "../../core/rule-tree";
+import { handDecision } from "../../core/tree/rule-tree";
+import type { HandNode } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
-import { protocol, round, semantic } from "../../core/protocol";
-import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
+import { protocol, round, semantic } from "../../core/protocol/protocol";
+import type { ConventionProtocol, EstablishedContext } from "../../core/protocol/protocol";
 
 const bid = intentBid;
 

@@ -16,13 +16,13 @@ import {
 import { evaluateHand } from "../../engine/hand-evaluator";
 import type { BiddingContext } from "../../conventions/core/types";
 import { conventionToStrategy } from "../bidding/convention-strategy";
-import type { ConventionOverlayPatch } from "../../conventions/core/overlay";
+import type { ConventionOverlayPatch } from "../../conventions/core/overlay/overlay";
 import { ConventionCategory } from "../../conventions/core/types";
 import type { ConventionConfig } from "../../conventions/core/types";
 import { InterferenceKind } from "../../conventions/core/dialogue/dialogue-state";
-import { protocol, round, semantic } from "../../conventions/core/protocol";
+import { protocol, round, semantic } from "../../conventions/core/protocol/protocol";
 import { hcpMin, bidMade, isResponder } from "../../conventions/core/conditions";
-import { handDecision, fallback } from "../../conventions/core/rule-tree";
+import { handDecision, fallback } from "../../conventions/core/tree/rule-tree";
 import { buildAuction } from "../../engine/auction-helpers";
 import type { IntentResolverMap } from "../../conventions/core/intent/intent-resolver";
 import { intentBid } from "../../conventions/core/intent/intent-node";

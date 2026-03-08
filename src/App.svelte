@@ -5,7 +5,7 @@
   import type { EnginePort } from "./engine/port";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
-  import { getConvention } from "./conventions/core/registry";
+  import { getConvention } from "./conventions/core";
   import AppShell from "./AppShell.svelte";
 
   // Runtime engine detection: Tauri IPC (desktop) or WASM (browser)

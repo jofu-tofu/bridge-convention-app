@@ -5,14 +5,14 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../fixtures";
 import type { BiddingContext } from "../../core/types";
-import { handDecision, fallback } from "../../core/rule-tree";
-import { decision } from "../../core/rule-tree";
+import { handDecision, fallback } from "../../core/tree/rule-tree";
+import { decision } from "../../core/tree/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
 import { hcpMin, suitMin } from "../../core/conditions/hand-conditions";
 // Suit indices: [0]=S, [1]=H, [2]=D, [3]=C
 import { isOpener } from "../../core/conditions/auction-conditions";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
-import { collectIntentProposals } from "../../core/intent-collector";
+import { collectIntentProposals } from "../../core/pipeline/intent-collector";
 
 const bid1C: Call = { type: "bid", level: 1, strain: BidSuit.Clubs };
 const bid1D: Call = { type: "bid", level: 1, strain: BidSuit.Diamonds };

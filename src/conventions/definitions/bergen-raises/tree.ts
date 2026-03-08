@@ -18,12 +18,12 @@ import {
   opponentActed,
   notPassedHand,
 } from "../../core/conditions";
-import { decision, handDecision, fallback } from "../../core/rule-tree";
-import type { HandNode, RuleNode } from "../../core/rule-tree";
+import { decision, handDecision, fallback } from "../../core/tree/rule-tree";
+import type { HandNode, RuleNode } from "../../core/tree/rule-tree";
 import { createIntentBidFactory } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
-import { protocol, round, semantic } from "../../core/protocol";
-import type { ConventionProtocol } from "../../core/protocol";
+import { protocol, round, semantic } from "../../core/protocol/protocol";
+import type { ConventionProtocol } from "../../core/protocol/protocol";
 import {
   gameInOpenersMajor,
   threeOfOpenersMajor,

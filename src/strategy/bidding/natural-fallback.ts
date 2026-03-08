@@ -1,5 +1,5 @@
 import type { BiddingStrategy, BidResult } from "../../core/contracts";
-import type { BiddingContext } from "../../conventions/core/types";
+import type { BiddingContext } from "../../conventions/core";
 import { BidSuit } from "../../engine/types";
 import type { ContractBid } from "../../engine/types";
 import { isLegalCall } from "../../engine/auction";

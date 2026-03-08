@@ -13,14 +13,14 @@ import {
   isConditionedRule,
   evaluateConditions,
 } from "./condition-evaluator";
-import type { RuleNode } from "./rule-tree";
-import { applyOverlayTreeReplacement } from "./overlay-tree-replacement";
-import { treeResultToBiddingRuleResult, flattenProtocol } from "./tree-compat";
-import type { ProtocolEvalResult, SemanticTrigger } from "./protocol";
-import { validateProtocol } from "./protocol";
-import { validateOverlayPatches, collectTriggerOverrides } from "./overlay";
-import { evaluateProtocol } from "./protocol-evaluator";
-import { buildEffectiveContext } from "./effective-context";
+import type { RuleNode } from "./tree/rule-tree";
+import { applyOverlayTreeReplacement } from "./overlay/overlay-tree-replacement";
+import { treeResultToBiddingRuleResult, flattenProtocol } from "./tree/tree-compat";
+import type { ProtocolEvalResult, SemanticTrigger } from "./protocol/protocol";
+import { validateProtocol } from "./protocol/protocol";
+import { validateOverlayPatches, collectTriggerOverrides } from "./overlay/overlay";
+import { evaluateProtocol } from "./protocol/protocol-evaluator";
+import { buildEffectiveContext } from "./pipeline/effective-context";
 import { computeDialogueState } from "./dialogue/dialogue-manager";
 import { baselineTransitionRules } from "./dialogue/baseline-transitions";
 import { analyzeConvention } from "./diagnostics";

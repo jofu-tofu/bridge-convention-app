@@ -1,18 +1,18 @@
 // Candidate generator — resolves intent proposals through the intent system.
 // Uses collectIntentProposals() for traversal, decoupled from sibling-finder display path.
 
-import type { CandidateBid } from "../../core/contracts";
-import type { Call } from "../../engine/types";
-import { isLegalCall } from "../../engine/auction";
+import type { CandidateBid } from "../../../core/contracts";
+import type { Call } from "../../../engine/types";
+import { isLegalCall } from "../../../engine/auction";
 import type { EffectiveConventionContext } from "./effective-context";
-import type { RuleNode } from "./rule-tree";
-import type { TreeEvalResult } from "./tree-evaluator";
-import { applyOverlayTreeReplacement } from "./overlay-tree-replacement";
+import type { RuleNode } from "../tree/rule-tree";
+import type { TreeEvalResult } from "../tree/tree-evaluator";
+import { applyOverlayTreeReplacement } from "../overlay/overlay-tree-replacement";
 import { collectIntentProposals } from "./intent-collector";
 import type { CollectedIntent } from "./intent-collector";
-import { resolveIntent } from "./intent/intent-resolver";
-import type { ResolverResult } from "./intent/intent-resolver";
-import type { ConventionOverlayPatch } from "./overlay";
+import { resolveIntent } from "../intent/intent-resolver";
+import type { ResolverResult } from "../intent/intent-resolver";
+import type { ConventionOverlayPatch } from "../overlay/overlay";
 
 /**
  * A CandidateBid enriched with resolver output and legality.

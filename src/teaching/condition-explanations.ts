@@ -1,5 +1,4 @@
-import type { RuleCondition, BiddingContext } from "../conventions/core/types";
-import type { ConventionExplanations } from "../conventions/core/rule-tree";
+import type { RuleCondition, BiddingContext, ConventionExplanations } from "../conventions/core";
 
 const INFERENCE_TYPE_DEFAULTS: Record<string, string> = {
   "hcp-min": "Checks minimum high-card points",

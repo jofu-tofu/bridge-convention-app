@@ -1,5 +1,5 @@
 import type { EnginePort } from "../engine/port";
-import type { ConventionConfig, BiddingContext, ConventionLookup } from "../conventions/core/types";
+import type { ConventionConfig, BiddingContext, ConventionLookup } from "../conventions/core";
 import {
   Seat,
   type Deal,
@@ -13,7 +13,7 @@ import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contrac
 import { createDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
-import { getConvention } from "../conventions/core/registry";
+import { getConvention } from "../conventions/core";
 import { evaluateHand } from "../engine/hand-evaluator";
 import type { BeliefData } from "../core/contracts";
 

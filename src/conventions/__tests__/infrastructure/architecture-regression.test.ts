@@ -11,8 +11,8 @@ import { createBiddingContext } from "../../core/context-factory";
 import type { BiddingContext } from "../../core/types";
 import { registerConvention, clearRegistry } from "../../core/registry";
 import { computeDialogueState } from "../../core/dialogue/dialogue-manager";
-import { buildEffectiveContext } from "../../core/effective-context";
-import { evaluateProtocol } from "../../core/protocol-evaluator";
+import { buildEffectiveContext } from "../../core/pipeline/effective-context";
+import { evaluateProtocol } from "../../core/protocol/protocol-evaluator";
 import {
   CompetitionMode,
   SystemMode,

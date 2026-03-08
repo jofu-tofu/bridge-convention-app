@@ -1,8 +1,7 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listConventions } from "../../conventions/core/registry";
-  import type { ConventionConfig } from "../../conventions/core/types";
-  import type { ConventionTeaching } from "../../conventions/core/types";
+  import { listConventions } from "../../conventions/core";
+  import type { ConventionConfig, ConventionTeaching } from "../../conventions/core";
   import { filterConventions } from "../../core/display/filter-conventions";
 
   const appStore = getAppStore();

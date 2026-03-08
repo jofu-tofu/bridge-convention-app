@@ -5,7 +5,7 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { createBiddingContext } from "../../core/context-factory";
 import type { BiddingContext, AuctionCondition } from "../../core/types";
-import { handDecision } from "../../core/rule-tree";
+import { handDecision } from "../../core/tree/rule-tree";
 import { hcpMin } from "../../core/conditions";
 import {
   partnerOpenedAt,
@@ -21,9 +21,9 @@ import {
   partnerDoubled,
 } from "../../core/conditions/auction-conditions";
 import { isResponder, isOpener } from "../../core/conditions";
-import { protocol, round, semantic, validateProtocol } from "../../core/protocol";
-import type { EstablishedContext } from "../../core/protocol";
-import { evaluateProtocol, computeRole } from "../../core/protocol-evaluator";
+import { protocol, round, semantic, validateProtocol } from "../../core/protocol/protocol";
+import type { EstablishedContext } from "../../core/protocol/protocol";
+import { evaluateProtocol, computeRole } from "../../core/protocol/protocol-evaluator";
 import { alwaysTrue, staticBid } from "../tree-test-helpers";
 
 // ─── Test helpers ────────────────────────────────────────────
