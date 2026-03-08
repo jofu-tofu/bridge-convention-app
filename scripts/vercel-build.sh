@@ -7,21 +7,13 @@ set -euo pipefail
 # --- Rust + wasm32 target ---
 # Vercel's build image may have Rust pre-installed at /rust/bin WITHOUT the
 # wasm32-unknown-unknown target and WITHOUT rustup. We need both rustc AND the
-# wasm target, so check for the target — not just rustc.
+# wasm target. Additionally, rustup may auto-update the toolchain when cargo
+# runs, so we must update to latest stable BEFORE adding the wasm32 target —
+# otherwise the target gets installed for the old toolchain and cargo uses the
+# new one.
 
-needs_rustup=false
-
-if ! command -v rustc &>/dev/null; then
-  needs_rustup=true
-elif ! rustc --print target-list 2>/dev/null | grep -q wasm32-unknown-unknown; then
-  needs_rustup=true
-elif ! command -v rustup &>/dev/null; then
-  # rustc exists and knows about wasm32 but no rustup to add the target
-  needs_rustup=true
-fi
-
-if $needs_rustup; then
-  echo "==> Installing Rust toolchain via rustup (need wasm32 target)..."
+if ! command -v rustup &>/dev/null; then
+  echo "==> Installing Rust toolchain via rustup..."
   curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
   # Source env from wherever rustup placed it
   for env_file in "$HOME/.cargo/env" "/rust/env"; do
@@ -30,15 +22,17 @@ if $needs_rustup; then
       break
     fi
   done
+else
+  echo "==> rustup found, updating to latest stable..."
+  rustup update stable --no-self-update
+fi
+
+# Now add the wasm32 target to whatever toolchain is current
+if ! rustup target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown; then
+  echo "==> Adding wasm32-unknown-unknown target..."
   rustup target add wasm32-unknown-unknown
 else
-  echo "==> Rust + wasm32 target already available."
-  # Ensure the compiled target is installed (rustc knows about it but it may
-  # not be installed in the sysroot)
-  if ! rustup target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown; then
-    echo "==> Adding wasm32-unknown-unknown target..."
-    rustup target add wasm32-unknown-unknown
-  fi
+  echo "==> wasm32-unknown-unknown target already installed."
 fi
 echo "    rustc $(rustc --version)"
 
