@@ -39,7 +39,7 @@ import { intentBid } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { evaluateProtocol } from "../../core/protocol/protocol-evaluator";
 import { evaluateTree } from "../../core/tree/tree-evaluator";
-import { ForcingState, CompetitionMode, PendingAction } from "../../core/dialogue/dialogue-state";
+import { ForcingState, CompetitionMode, ObligationKind } from "../../core/dialogue/dialogue-state";
 import type { ConventionOverlayPatch } from "../../core/overlay/overlay";
 import { protocolInferenceExtractor } from "../../../inference/protocol-inference-extractor";
 import { createFitConfidenceRanker } from "../../../strategy/bidding/fit-ranker";
@@ -231,7 +231,7 @@ describe("edge cases red team", () => {
     const effective = buildEffectiveContext(context, weakTwosConfig, proto);
 
     expect(effective.dialogueState.familyId).toBe("weak-two");
-    expect(effective.dialogueState.pendingAction).toBe(PendingAction.ShowSuit);
+    expect(effective.dialogueState.obligation).toEqual({ kind: ObligationKind.ShowSuit, obligatedSide: "opener" });
     expect(effective.dialogueState.competitionMode).toBe(CompetitionMode.Uncontested);
   });
 
@@ -334,24 +334,24 @@ describe("edge cases red team", () => {
   });
 
   describe("Phase 0 characterization — pre-existing behaviors", () => {
-    test("pendingAction overwrite is single-slot: last write wins", () => {
+    test("obligation overwrite is single-slot: last write wins", () => {
       const rules: readonly TransitionRule[] = [
         {
           id: "set-show-major",
           matches: (_state, entry) => { const { call } = entry; return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Clubs; },
-          effects: () => ({ setPendingAction: PendingAction.ShowMajor }),
+          effects: () => ({ setObligation: { kind: ObligationKind.ShowMajor, obligatedSide: "opener" as const } }),
         },
         {
           id: "set-show-suit",
           matches: (_state, entry) => { const { call } = entry; return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Diamonds; },
-          effects: () => ({ setPendingAction: PendingAction.ShowSuit }),
+          effects: () => ({ setObligation: { kind: ObligationKind.ShowSuit, obligatedSide: "opener" as const } }),
         },
       ];
 
       const state = computeDialogueState(buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2D"]), rules);
 
-      expect(state.pendingAction).toBe(PendingAction.ShowSuit);
-      expect(state.pendingAction).not.toBe(PendingAction.ShowMajor);
+      expect(state.obligation).toEqual({ kind: ObligationKind.ShowSuit, obligatedSide: "opener" });
+      expect(state.obligation.kind).not.toBe(ObligationKind.ShowMajor);
     });
 
     test("rejected or() disjunction does not imply all branches failed (no forced inversion)", () => {

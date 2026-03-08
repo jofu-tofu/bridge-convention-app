@@ -66,7 +66,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 ## Dialogue State
 
-`DialogueState` (`dialogue/`) is protocol memory — what the auction means, independent of any hand. Tracks: `familyId`, `forcingState`, `agreedStrain`, `pendingAction`, `competitionMode`, `captain`, `systemMode`, optional `systemCapabilities`, and `conventionData`. Built by replaying the auction through `TransitionRule[]` (first-match-wins). Deterministic.
+`DialogueState` (`dialogue/`) is protocol memory — what the auction means, independent of any hand. Tracks: `familyId`, `forcingState`, `agreedStrain`, `obligation` (`Obligation` with `ObligationKind` + `obligatedSide`), `competitionMode`, `captain`, `systemMode`, optional `systemCapabilities`, and `conventionData`. Built by replaying the auction through `TransitionRule[]` (first-match-wins). Deterministic.
 
 **Key types:**
 - `TransitionRule` — `{ id, matches(state, entry, auction, entryIndex), effects(state, entry, auction, entryIndex) }` where `entry: AuctionEntry` bundles `{ call, seat }`
@@ -118,6 +118,21 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 **Validation:** `validateOverlayPatches()` checks `roundName`, `replacementTree` structure, and `triggerOverrides` keys against protocol round names. Called at registration time.
 
 **Two consumers:** `generateCandidates()` applies hooks; `evaluateBiddingRules()` in registry applies replacement trees by re-evaluating the protocol.
+
+## EstablishedContext vs DialogueState
+
+Two systems extract semantic facts from the auction. They answer different questions and must not be unified.
+
+- **`EstablishedContext<T>`** (per-convention generic) selects hand trees in protocol dispatch. Computed by the protocol evaluator via cursor-based 2-entry windowing (partnership-scoped). Only consumed by `evaluateProtocol()` for tree selection.
+- **`DialogueState`** (fixed universal schema) carries semantic meaning for downstream consumers: overlays, candidate pipeline, forcing filter, resolvers, teaching. Computed by replaying entries one-by-one through `TransitionRule[]`.
+
+**Some facts intentionally exist in both systems:**
+- Stayman: `showed` ("hearts"|"spades"|"denial") — protocol uses it to select the rebid hand tree; dialogue uses it for resolver context and overlay matching.
+- Weak Twos: `openingSuit` — dialogue uses it for resolver context (protocol doesn't establish this one; the opening tree is static).
+
+**Synchrony rule:** When a protocol trigger's `establishes` field sets a semantic fact that downstream consumers also need, the convention's transition rules MUST set the same fact in `conventionData`. This is verified by cross-engine invariant tests (Invariant 5).
+
+**Rejected alternatives:** (a) Shared event model — iteration strategies differ (cursor+2 vs entry-by-entry), adapter cost exceeds benefit. (b) Merge `EstablishedContext` into `DialogueState` — introduces dependency cycle (`EstablishedContext` is generic `<T>` per convention; `DialogueState` is fixed schema). (c) Bootstrap integration — bootstrap is assembly, not per-bid evaluation.
 
 ## Inference API
 

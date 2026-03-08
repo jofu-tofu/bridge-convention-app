@@ -1,15 +1,15 @@
 // Dialogue transition rules — how each bid changes the dialogue state.
 
 import type { AuctionEntry, Auction } from "../../../engine/types";
-import type { DialogueState, DialogueFrame, InterferenceDetail } from "./dialogue-state";
+import type { DialogueState, DialogueFrame, InterferenceDetail, Obligation } from "./dialogue-state";
 import type {
   ForcingState,
-  PendingAction,
   CompetitionMode,
   CaptainRole,
   SystemMode,
 } from "./dialogue-state";
 import type { AgreedStrain } from "./dialogue-state";
+import { ObligationKind } from "./dialogue-state";
 
 /**
  * A typed update to DialogueState. Uses `set*` prefix to prevent accidental
@@ -23,7 +23,7 @@ export interface DialogueEffect {
   readonly setFamilyId?: string | null;
   readonly setForcingState?: ForcingState;
   readonly setAgreedStrain?: AgreedStrain;
-  readonly setPendingAction?: PendingAction;
+  readonly setObligation?: Obligation;
   readonly setCompetitionMode?: CompetitionMode;
   readonly setCaptain?: CaptainRole;
   readonly setSystemMode?: SystemMode;
@@ -75,6 +75,22 @@ export function getEffectKeys(effect: DialogueEffect): ReadonlySet<string> {
 }
 
 /**
+ * Derive an obligation from the top frame on the stack.
+ * Used after frame push/pop to automatically set obligation from frame context.
+ */
+export function obligationFromFrame(frame: DialogueFrame | undefined): Obligation {
+  if (!frame) return { kind: ObligationKind.None, obligatedSide: "opener" };
+  switch (frame.kind) {
+    case "relay":
+      return { kind: ObligationKind.CompleteRelay, obligatedSide: frame.owner };
+    case "place-contract":
+      return { kind: ObligationKind.PlaceContract, obligatedSide: frame.owner };
+    default:
+      return { kind: ObligationKind.None, obligatedSide: frame.owner };
+  }
+}
+
+/**
  * Apply a DialogueEffect as a backfill — only sets fields NOT in `alreadySet`.
  * Used in two-pass mode: convention rules run first, baseline rules backfill gaps.
  *
@@ -88,11 +104,23 @@ export function applyBackfillEffect(
   alreadySet: ReadonlySet<string>,
 ): DialogueState {
   let frames = [...(state.frames ?? [])];
+  const hasFrameOp = (!alreadySet.has("popFrame") && effect.popFrame)
+    || (!alreadySet.has("pushFrame") && effect.pushFrame);
   if (!alreadySet.has("popFrame") && effect.popFrame) {
     frames = frames.slice(0, -1);
   }
   if (!alreadySet.has("pushFrame") && effect.pushFrame) {
     frames = [...frames, effect.pushFrame];
+  }
+
+  // Obligation precedence: explicit setObligation > frame-derived > existing
+  let obligation = state.obligation;
+  if (!alreadySet.has("setObligation")) {
+    if (effect.setObligation) {
+      obligation = effect.setObligation;
+    } else if (hasFrameOp) {
+      obligation = obligationFromFrame(frames[frames.length - 1]);
+    }
   }
 
   return {
@@ -105,9 +133,7 @@ export function applyBackfillEffect(
     agreedStrain: !alreadySet.has("setAgreedStrain") && effect.setAgreedStrain !== undefined
       ? effect.setAgreedStrain
       : state.agreedStrain,
-    pendingAction: !alreadySet.has("setPendingAction") && effect.setPendingAction !== undefined
-      ? effect.setPendingAction
-      : state.pendingAction,
+    obligation,
     competitionMode: !alreadySet.has("setCompetitionMode") && effect.setCompetitionMode !== undefined
       ? effect.setCompetitionMode
       : state.competitionMode,
@@ -157,6 +183,7 @@ function extractConventionDataFromState(
 /** Apply a DialogueEffect to produce a new DialogueState (immutable). */
 export function applyEffect(state: DialogueState, effect: DialogueEffect): DialogueState {
   let frames = [...(state.frames ?? [])];
+  const hasFrameOp = !!effect.popFrame || !!effect.pushFrame;
   if (effect.popFrame) {
     frames = frames.slice(0, -1);
   }
@@ -164,11 +191,21 @@ export function applyEffect(state: DialogueState, effect: DialogueEffect): Dialo
     frames = [...frames, effect.pushFrame];
   }
 
+  // Obligation precedence: explicit setObligation > frame-derived > existing
+  let obligation: typeof state.obligation;
+  if (effect.setObligation) {
+    obligation = effect.setObligation;
+  } else if (hasFrameOp) {
+    obligation = obligationFromFrame(frames[frames.length - 1]);
+  } else {
+    obligation = state.obligation;
+  }
+
   return {
     familyId: effect.setFamilyId !== undefined ? effect.setFamilyId : state.familyId,
     forcingState: effect.setForcingState ?? state.forcingState,
     agreedStrain: effect.setAgreedStrain ?? state.agreedStrain,
-    pendingAction: effect.setPendingAction ?? state.pendingAction,
+    obligation,
     competitionMode: effect.setCompetitionMode ?? state.competitionMode,
     captain: effect.setCaptain ?? state.captain,
     systemMode: effect.setSystemMode ?? state.systemMode,

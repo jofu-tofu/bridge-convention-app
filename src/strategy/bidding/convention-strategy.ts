@@ -111,7 +111,7 @@ export function conventionToStrategy(
         } else {
           ranker = configRanker ?? optionsRanker;
         }
-        const selected = selectMatchedCandidate(generated, ranker, effectiveCtx.dialogueState.forcingState);
+        const selected = selectMatchedCandidate(generated, ranker, effectiveCtx.dialogueState.forcingState, effectiveCtx.dialogueState.obligation);
 
         if (selected) {
           trace.setSelectedTier(

@@ -13,7 +13,7 @@ import { ConventionCategory } from "../../core/types";
 import type { ConventionConfig, BiddingContext } from "../../core/types";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import {
-  ForcingState, PendingAction, CompetitionMode,
+  ForcingState, ObligationKind, CompetitionMode,
   CaptainRole, SystemMode,
 } from "../../core/dialogue/dialogue-state";
 import { intentBid } from "../../core/intent/intent-node";
@@ -28,7 +28,7 @@ const defaultDialogueState: DialogueState = {
   familyId: null,
   forcingState: ForcingState.Nonforcing,
   agreedStrain: { type: "none" },
-  pendingAction: PendingAction.None,
+  obligation: { kind: ObligationKind.None, obligatedSide: "opener" as const },
   competitionMode: CompetitionMode.Uncontested,
   captain: CaptainRole.Neither,
   systemMode: SystemMode.On,

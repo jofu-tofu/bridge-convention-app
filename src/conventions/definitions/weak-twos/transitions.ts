@@ -3,7 +3,7 @@
 //   transitionRules: [...weakTwoTransitionRules, ...baselineTransitionRules]
 
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
-import { PendingAction } from "../../core/dialogue/dialogue-state";
+import { ObligationKind } from "../../core/dialogue/dialogue-state";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
@@ -48,7 +48,7 @@ export const weakTwoTransitionRules: readonly TransitionRule[] = [
     },
     effects() {
       return {
-        setPendingAction: PendingAction.ShowSuit,
+        setObligation: { kind: ObligationKind.ShowSuit, obligatedSide: "opener" as const },
       };
     },
   },

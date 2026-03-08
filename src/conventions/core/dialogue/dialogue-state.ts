@@ -7,10 +7,32 @@ import type { ForcingState } from "../../../core/contracts";
 // Re-export from canonical location for backward compatibility
 export { ForcingState } from "../../../core/contracts";
 
-export enum PendingAction {
+export enum ObligationKind {
   None = "none",
+  /** Show a 4+ card major (Stayman). */
   ShowMajor = "show-major",
+  /** Show a suit (general, e.g., Weak Twos Ogust). */
   ShowSuit = "show-suit",
+  /**
+   * Act constructively — excludes Pass, allows NT for strong hands.
+   * Context-dependent: the obligation means "act constructively", not literally
+   * "bid a suit". Pass is excluded by the candidate filter, but NT is allowed.
+   * The tree/resolver handles suit preference; the obligation is a safety net.
+   */
+  BidSuit = "bid-suit",
+  /** Choose final contract (Lebensohl). */
+  PlaceContract = "place-contract",
+  /** Make a specific relay bid (Lebensohl opener). */
+  CompleteRelay = "complete-relay",
+  /** General: answer partner's question. */
+  RespondToAsk = "respond-to-ask",
+}
+
+export interface Obligation {
+  readonly kind: ObligationKind;
+  /** Which partnership role must fulfill this obligation.
+   *  Uses existing "opener" | "responder" role labels (same type as DialogueFrame.owner). */
+  readonly obligatedSide: "opener" | "responder";
 }
 
 export enum CompetitionMode {
@@ -70,9 +92,21 @@ export interface DialogueFrame {
 
 export interface DialogueState {
   readonly familyId: string | null;
+  /**
+   * Controls pass-exclusion mechanics. Set independently by transition rules.
+   * Coexists with `obligation` — they are independent concerns:
+   * `forcingState` says "can you pass?", `obligation` says "what should you do?"
+   * The mapping is not 1:1 (e.g., Lebensohl's place-contract is nonforcing
+   * despite having an obligation).
+   */
   readonly forcingState: ForcingState;
   readonly agreedStrain: AgreedStrain;
-  readonly pendingAction: PendingAction;
+  /**
+   * Describes what the obligated player should do (semantic obligation).
+   * Set independently from `forcingState` by transition rules or derived
+   * from the frame stack. See `ObligationKind` for the full taxonomy.
+   */
+  readonly obligation: Obligation;
   readonly competitionMode: CompetitionMode;
   readonly captain: CaptainRole;
   readonly systemMode: SystemMode;

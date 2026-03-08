@@ -8,7 +8,7 @@ import {
 } from "../../core/dialogue/dialogue-manager";
 import {
   ForcingState,
-  PendingAction,
+  ObligationKind,
   CompetitionMode,
   CaptainRole,
   SystemMode,
@@ -56,7 +56,7 @@ describe("DialogueState foundation", () => {
       expect(state).toEqual(INITIAL_DIALOGUE_STATE);
       expect(state.familyId).toBeNull();
       expect(state.forcingState).toBe(ForcingState.Nonforcing);
-      expect(state.pendingAction).toBe(PendingAction.None);
+      expect(state.obligation).toEqual({ kind: ObligationKind.None, obligatedSide: "opener" });
       expect(state.competitionMode).toBe(CompetitionMode.Uncontested);
       expect(state.captain).toBe(CaptainRole.Neither);
       expect(state.systemMode).toBe(SystemMode.Off);
@@ -80,7 +80,7 @@ describe("DialogueState foundation", () => {
       const state = computeStaymanState(auction);
 
       expect(state.familyId).toBe("1nt");
-      expect(state.pendingAction).toBe(PendingAction.ShowMajor);
+      expect(state.obligation).toEqual({ kind: ObligationKind.ShowMajor, obligatedSide: "opener" });
       expect(state.forcingState).toBe(ForcingState.ForcingOneRound);
       expect(state.captain).toBe(CaptainRole.Responder);
     });
@@ -91,7 +91,7 @@ describe("DialogueState foundation", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2H"]);
       const state = computeStaymanState(auction);
 
-      expect(state.pendingAction).toBe(PendingAction.None);
+      expect(state.obligation).toEqual({ kind: ObligationKind.None, obligatedSide: "opener" });
       expect(state.agreedStrain).toEqual({
         type: "suit",
         suit: "H",
@@ -115,7 +115,7 @@ describe("DialogueState foundation", () => {
       const state = computeStaymanState(auction);
 
       expect(state.agreedStrain).toEqual({ type: "none" });
-      expect(state.pendingAction).toBe(PendingAction.None);
+      expect(state.obligation).toEqual({ kind: ObligationKind.None, obligatedSide: "opener" });
     });
   });
 
@@ -146,7 +146,7 @@ describe("DialogueState foundation", () => {
       const state = computeStaymanState(auction);
 
       // Family rule sets ShowMajor; baseline would not
-      expect(state.pendingAction).toBe(PendingAction.ShowMajor);
+      expect(state.obligation).toEqual({ kind: ObligationKind.ShowMajor, obligatedSide: "opener" });
     });
   });
 
@@ -369,7 +369,7 @@ describe("DialogueState foundation", () => {
       const state = computeStaymanState(auction);
 
       expect(state.familyId).toBe("1nt");
-      expect(state.pendingAction).toBe(PendingAction.None);
+      expect(state.obligation).toEqual({ kind: ObligationKind.None, obligatedSide: "opener" });
       expect(state.agreedStrain).toEqual({
         type: "suit",
         suit: "H",
@@ -600,7 +600,7 @@ describe("DialogueState foundation", () => {
       const state = computeStaymanState(auction);
 
       // Opponent's 2C should NOT set ShowMajor or ForcingOneRound
-      expect(state.pendingAction).not.toBe(PendingAction.ShowMajor);
+      expect(state.obligation.kind).not.toBe(ObligationKind.ShowMajor);
       expect(state.forcingState).not.toBe(ForcingState.ForcingOneRound);
     });
 
@@ -610,7 +610,7 @@ describe("DialogueState foundation", () => {
       const state = computeStaymanState(auction);
 
       // Partner's 2C DID set Stayman ask
-      expect(state.pendingAction).toBe(PendingAction.ShowMajor);
+      expect(state.obligation).toEqual({ kind: ObligationKind.ShowMajor, obligatedSide: "opener" });
       // Opponent's 2H should NOT resolve the Stayman response
       expect(state.agreedStrain).not.toEqual({
         type: "suit",
@@ -623,7 +623,7 @@ describe("DialogueState foundation", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P", "2C"]);
       const state = computeStaymanState(auction);
 
-      expect(state.pendingAction).toBe(PendingAction.ShowMajor);
+      expect(state.obligation).toEqual({ kind: ObligationKind.ShowMajor, obligatedSide: "opener" });
       expect(state.forcingState).toBe(ForcingState.ForcingOneRound);
     });
 
@@ -631,7 +631,7 @@ describe("DialogueState foundation", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2H"]);
       const state = computeStaymanState(auction);
 
-      expect(state.pendingAction).toBe(PendingAction.None);
+      expect(state.obligation).toEqual({ kind: ObligationKind.None, obligatedSide: "opener" });
       expect(state.agreedStrain).toEqual({
         type: "suit",
         suit: "H",
@@ -664,14 +664,14 @@ describe("DialogueState foundation", () => {
       const auction = buildAuction(Seat.North, ["2H", "2NT"]);
       const state = computeDialogueState(auction, weakTwoTransitionRules, baselineTransitionRules);
 
-      expect(state.pendingAction).not.toBe(PendingAction.ShowSuit);
+      expect(state.obligation.kind).not.toBe(ObligationKind.ShowSuit);
     });
 
     it("2H-P-2NT: partner bid DOES trigger Ogust ask", () => {
       const auction = buildAuction(Seat.North, ["2H", "P", "2NT"]);
       const state = computeDialogueState(auction, weakTwoTransitionRules, baselineTransitionRules);
 
-      expect(state.pendingAction).toBe(PendingAction.ShowSuit);
+      expect(state.obligation).toEqual({ kind: ObligationKind.ShowSuit, obligatedSide: "opener" });
     });
   });
 
@@ -843,6 +843,70 @@ describe("DialogueState foundation", () => {
     it("applyEffect popFrame is a no-op on empty stack", () => {
       const popped = applyEffect(INITIAL_DIALOGUE_STATE, { popFrame: true });
       expect(popped.frames).toEqual([]);
+    });
+
+    it("pushFrame derives obligation from frame kind: relay → CompleteRelay", () => {
+      const pushed = applyEffect(INITIAL_DIALOGUE_STATE, {
+        pushFrame: {
+          kind: "relay",
+          owner: "opener",
+          targetStrain: BidSuit.Clubs,
+          targetLevel: 3,
+          pushedAt: 0,
+        },
+      });
+      expect(pushed.obligation).toEqual({ kind: ObligationKind.CompleteRelay, obligatedSide: "opener" });
+    });
+
+    it("pop-then-push derives obligation from new top frame: place-contract → PlaceContract", () => {
+      const seeded = applyEffect(INITIAL_DIALOGUE_STATE, {
+        pushFrame: {
+          kind: "relay",
+          owner: "opener",
+          targetStrain: BidSuit.Clubs,
+          targetLevel: 3,
+          pushedAt: 2,
+        },
+      });
+
+      const swapped = applyEffect(seeded, {
+        popFrame: true,
+        pushFrame: {
+          kind: "place-contract",
+          owner: "responder",
+          pushedAt: 4,
+        },
+      });
+      expect(swapped.obligation).toEqual({ kind: ObligationKind.PlaceContract, obligatedSide: "responder" });
+    });
+
+    it("popFrame on last frame derives obligation None", () => {
+      const pushed = applyEffect(INITIAL_DIALOGUE_STATE, {
+        pushFrame: {
+          kind: "relay",
+          owner: "opener",
+          targetStrain: BidSuit.Clubs,
+          targetLevel: 3,
+          pushedAt: 0,
+        },
+      });
+      const popped = applyEffect(pushed, { popFrame: true });
+      expect(popped.obligation).toEqual({ kind: ObligationKind.None, obligatedSide: "opener" });
+    });
+
+    it("explicit setObligation takes precedence over frame-derived obligation", () => {
+      const result = applyEffect(INITIAL_DIALOGUE_STATE, {
+        pushFrame: {
+          kind: "relay",
+          owner: "opener",
+          targetStrain: BidSuit.Clubs,
+          targetLevel: 3,
+          pushedAt: 0,
+        },
+        setObligation: { kind: ObligationKind.BidSuit, obligatedSide: "responder" },
+      });
+      // setObligation wins over frame-derived CompleteRelay
+      expect(result.obligation).toEqual({ kind: ObligationKind.BidSuit, obligatedSide: "responder" });
     });
 
     it("computeDialogueState preserves behavior when pushing then popping frames", () => {

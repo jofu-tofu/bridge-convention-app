@@ -5,7 +5,7 @@
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import {
   ForcingState,
-  PendingAction,
+  ObligationKind,
   SystemMode,
 } from "../../core/dialogue/dialogue-state";
 import { STAYMAN_CAPABILITY } from "./constants";
@@ -76,7 +76,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
     },
     effects() {
       return {
-        setPendingAction: PendingAction.ShowMajor,
+        setObligation: { kind: ObligationKind.ShowMajor, obligatedSide: "opener" as const },
         setForcingState: ForcingState.ForcingOneRound,
       };
     },
@@ -91,7 +91,7 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
     },
     effects() {
       return {
-        setPendingAction: PendingAction.ShowMajor,
+        setObligation: { kind: ObligationKind.ShowMajor, obligatedSide: "opener" as const },
         setForcingState: ForcingState.ForcingOneRound,
       };
     },
@@ -104,14 +104,14 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
       const { call, seat } = entry;
       return (
         state.familyId === "1nt" &&
-        state.pendingAction === PendingAction.ShowMajor &&
+        state.obligation.kind === ObligationKind.ShowMajor &&
         (is2H(call) || is3H(call)) &&
         isOpenerSeat(state, seat)
       );
     },
     effects() {
       return {
-        setPendingAction: PendingAction.None,
+        setObligation: { kind: ObligationKind.None, obligatedSide: "opener" as const },
         setForcingState: ForcingState.Nonforcing,
         setAgreedStrain: { type: "suit" as const, suit: Suit.Hearts, confidence: "tentative" as const },
         mergeConventionData: { showed: "hearts" },
@@ -126,14 +126,14 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
       const { call, seat } = entry;
       return (
         state.familyId === "1nt" &&
-        state.pendingAction === PendingAction.ShowMajor &&
+        state.obligation.kind === ObligationKind.ShowMajor &&
         (is2S(call) || is3S(call)) &&
         isOpenerSeat(state, seat)
       );
     },
     effects() {
       return {
-        setPendingAction: PendingAction.None,
+        setObligation: { kind: ObligationKind.None, obligatedSide: "opener" as const },
         setForcingState: ForcingState.Nonforcing,
         setAgreedStrain: { type: "suit" as const, suit: Suit.Spades, confidence: "tentative" as const },
         mergeConventionData: { showed: "spades" },
@@ -148,14 +148,14 @@ export const staymanTransitionRules: readonly TransitionRule[] = [
       const { call, seat } = entry;
       return (
         state.familyId === "1nt" &&
-        state.pendingAction === PendingAction.ShowMajor &&
+        state.obligation.kind === ObligationKind.ShowMajor &&
         (is2D(call) || is3D(call)) &&
         isOpenerSeat(state, seat)
       );
     },
     effects() {
       return {
-        setPendingAction: PendingAction.None,
+        setObligation: { kind: ObligationKind.None, obligatedSide: "opener" as const },
         setForcingState: ForcingState.Nonforcing,
         setAgreedStrain: { type: "none" as const },
         mergeConventionData: { showed: "denial" },

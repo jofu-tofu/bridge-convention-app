@@ -20,7 +20,7 @@ import type { IntentNode } from "../../core/intent";
 import type { SemanticIntent, IntentResolverMap } from "../../core/intent";
 import {
   ForcingState,
-  PendingAction,
+  ObligationKind,
   CompetitionMode,
   CaptainRole,
   SystemMode,
@@ -49,7 +49,7 @@ const ntDialogueState: DialogueState = {
   familyId: "1nt",
   forcingState: ForcingState.Nonforcing,
   agreedStrain: { type: "none" },
-  pendingAction: PendingAction.None,
+  obligation: { kind: ObligationKind.None, obligatedSide: "opener" as const },
   competitionMode: CompetitionMode.Uncontested,
   captain: CaptainRole.Responder,
   systemMode: SystemMode.On,

@@ -3,7 +3,8 @@ import { selectMatchedCandidate } from "../../core/pipeline/candidate-selector";
 import type { ResolvedCandidate } from "../../core/pipeline/candidate-generator";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { ForcingState } from "../../core/dialogue/dialogue-state";
+import { ForcingState, ObligationKind } from "../../core/dialogue/dialogue-state";
+import type { Obligation } from "../../core/dialogue/dialogue-state";
 
 function makeCandidate(
   overrides: Partial<ResolvedCandidate> & { isMatched: boolean; legal: boolean },
@@ -374,6 +375,67 @@ describe("selectMatchedCandidate", () => {
       const ranker = () => [] as ResolvedCandidate[];
       const result = selectMatchedCandidate(candidates, ranker);
       expect(result).toBeNull();
+    });
+  });
+
+  describe("obligation-aware filtering", () => {
+    const passCall: Call = { type: "pass" };
+    const bidCall: Call = { type: "bid", level: 2, strain: BidSuit.Hearts };
+    const ntCall: Call = { type: "bid", level: 1, strain: BidSuit.NoTrump };
+
+    const bidSuitObligation: Obligation = { kind: ObligationKind.BidSuit, obligatedSide: "responder" };
+    const showMajorObligation: Obligation = { kind: ObligationKind.ShowMajor, obligatedSide: "opener" };
+    const noneObligation: Obligation = { kind: ObligationKind.None, obligatedSide: "opener" };
+
+    test("BidSuit obligation filters out Pass candidates", () => {
+      const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
+      const bidCand = makeCandidate({ bidName: "bid", isMatched: false, legal: true, priority: "preferred", resolvedCall: bidCall });
+      const result = selectMatchedCandidate([passCand, bidCand], undefined, undefined, bidSuitObligation);
+      expect(result).not.toBeNull();
+      expect(result!.bidName).toBe("bid");
+    });
+
+    test("BidSuit obligation allows NT candidates (context-dependent)", () => {
+      const ntCand = makeCandidate({ bidName: "nt", isMatched: true, legal: true, resolvedCall: ntCall });
+      const result = selectMatchedCandidate([ntCand], undefined, undefined, bidSuitObligation);
+      expect(result).not.toBeNull();
+      expect(result!.bidName).toBe("nt");
+    });
+
+    test("BidSuit obligation returns null when only Pass candidates exist", () => {
+      const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
+      const result = selectMatchedCandidate([passCand], undefined, undefined, bidSuitObligation);
+      expect(result).toBeNull();
+    });
+
+    test("ShowMajor obligation does not filter (informational)", () => {
+      const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
+      const result = selectMatchedCandidate([passCand], undefined, undefined, showMajorObligation);
+      expect(result).not.toBeNull();
+      expect(result!.bidName).toBe("pass");
+    });
+
+    test("None obligation = no change from current behavior", () => {
+      const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
+      const result = selectMatchedCandidate([passCand], undefined, undefined, noneObligation);
+      expect(result).not.toBeNull();
+      expect(result!.bidName).toBe("pass");
+    });
+
+    test("no obligation parameter = no change from current behavior", () => {
+      const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
+      const result = selectMatchedCandidate([passCand]);
+      expect(result).not.toBeNull();
+      expect(result!.bidName).toBe("pass");
+    });
+
+    test("BidSuit obligation composes with forcing state", () => {
+      // Both forcing state AND obligation reject Pass — non-Pass preferred wins
+      const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
+      const bidCand = makeCandidate({ bidName: "bid", isMatched: false, legal: true, priority: "preferred", resolvedCall: bidCall });
+      const result = selectMatchedCandidate([passCand, bidCand], undefined, ForcingState.ForcingOneRound, bidSuitObligation);
+      expect(result).not.toBeNull();
+      expect(result!.bidName).toBe("bid");
     });
   });
 });

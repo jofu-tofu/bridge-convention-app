@@ -30,6 +30,10 @@ Shared across conventions: `shared-helpers.ts` — `STRAIN_TO_BIDSUIT` lookup an
 5. Test deal constraints with `checkConstraints()` — verify acceptance and rejection.
 6. Test bidding rules with `evaluateBiddingRules()` — verify rule matching, call output, and `conditionResults`.
 
+## Authoring Rules
+
+- **Established↔conventionData synchrony.** When a protocol trigger's `establishes` field sets a semantic fact that downstream consumers need (resolvers, overlays, teaching), the convention's transition rules MUST set the same fact in `conventionData`. Add a synchrony test in `cross-engine-invariants.test.ts` (Invariant 5) for each such shared fact.
+
 ## Test Organization
 
 ```

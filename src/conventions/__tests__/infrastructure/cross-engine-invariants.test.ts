@@ -19,7 +19,7 @@ import type { IntentNode } from "../../core/intent/intent-node";
 import {
   CompetitionMode,
   SystemMode,
-  PendingAction,
+  ObligationKind,
   getSystemModeFor,
 } from "../../core/dialogue/dialogue-state";
 import { STAYMAN_CAPABILITY } from "../../definitions/stayman/constants";
@@ -146,7 +146,7 @@ describe("Invariant 1: Protocol ↔ Dialogue consistency", () => {
 // ─── Invariant 2: Resolve-then-replay ────────────────────────
 
 describe("Invariant 2: Resolve-then-replay", () => {
-  it("AskForMajor resolves to 2C; appending 2C sets pendingAction=ShowMajor", () => {
+  it("AskForMajor resolves to 2C; appending 2C sets obligation=ShowMajor", () => {
     // Responder with 4 hearts, 8+ HCP
     const h = hand("SK", "S5", "S2", "HA", "HK", "HQ", "H3", "D5", "D3", "D2", "C5", "C3", "C2");
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
@@ -181,7 +181,7 @@ describe("Invariant 2: Resolve-then-replay", () => {
     // Append the resolved call and replay dialogue
     const auctionAfter = buildAuction(Seat.North, ["1NT", "P", "2C"]);
     const stateAfter = computeStaymanState(auctionAfter);
-    expect(stateAfter.pendingAction).toBe(PendingAction.ShowMajor);
+    expect(stateAfter.obligation).toEqual({ kind: ObligationKind.ShowMajor, obligatedSide: "opener" });
   });
 
   it("ShowHeldSuit(hearts) resolves to 2H; appending 2H updates agreedStrain", () => {
@@ -295,7 +295,7 @@ describe("Invariant 4: Baseline fact preservation", () => {
 
     expect(state.familyId).toBe("1nt");
     expect(state.conventionData["openerSeat"]).toBe(Seat.North);
-    expect(state.pendingAction).toBe(PendingAction.ShowMajor);
+    expect(state.obligation).toEqual({ kind: ObligationKind.ShowMajor, obligatedSide: "opener" });
   });
 
   it("1NT→X: familyId and openerSeat survive interference transition", () => {
@@ -321,6 +321,73 @@ describe("Invariant 4: Baseline fact preservation", () => {
 
     expect(state.familyId).toBe("weak-two");
     expect(state.conventionData["openingSuit"]).toBe("H");
-    expect(state.pendingAction).toBe(PendingAction.ShowSuit);
+    expect(state.obligation).toEqual({ kind: ObligationKind.ShowSuit, obligatedSide: "opener" });
+  });
+});
+
+// ─── Invariant 5: Established↔conventionData synchrony ───────
+// Protocol triggers set facts via `establishes`; dialogue transition rules
+// set the same facts via `mergeConventionData`. These must agree.
+
+describe("Invariant 5: Established↔conventionData synchrony", () => {
+  it("1NT-P-2C-P-2H: protocol establishes showed=hearts, dialogue sets showed=hearts", () => {
+    const h = hand("HA", "HK", "HQ", "H5", "SA", "SK", "S3", "DA", "DK", "D5", "CA", "C5", "C2");
+    const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2H"]);
+    const ctx = createBiddingContext({
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+    });
+
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, ctx);
+    const dialogueState = computeStaymanState(auction);
+
+    // Protocol round 3 trigger matched bidMade(2, Hearts) → establishes { showed: "hearts" }
+    expect(protoResult.established.showed).toBe("hearts");
+    // Dialogue transition rule sets the same fact
+    expect(dialogueState.conventionData["showed"]).toBe("hearts");
+  });
+
+  it("1NT-P-2C-P-2S: protocol establishes showed=spades, dialogue sets showed=spades", () => {
+    const h = hand("HA", "HK", "HQ", "H5", "SA", "SK", "S3", "DA", "DK", "D5", "CA", "C5", "C2");
+    const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2S"]);
+    const ctx = createBiddingContext({
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+    });
+
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, ctx);
+    const dialogueState = computeStaymanState(auction);
+
+    expect(protoResult.established.showed).toBe("spades");
+    expect(dialogueState.conventionData["showed"]).toBe("spades");
+  });
+
+  it("1NT-P-2C-P-2D: protocol establishes showed=denial, dialogue sets showed=denial", () => {
+    const h = hand("HA", "HK", "HQ", "H5", "SA", "SK", "S3", "DA", "DK", "D5", "CA", "C5", "C2");
+    const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2D"]);
+    const ctx = createBiddingContext({
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+    });
+
+    const protoResult = evaluateProtocol(staymanConfig.protocol!, ctx);
+    const dialogueState = computeStaymanState(auction);
+
+    expect(protoResult.established.showed).toBe("denial");
+    expect(dialogueState.conventionData["showed"]).toBe("denial");
+  });
+
+  it("2H opener: dialogue sets openingSuit=H", () => {
+    const auction = buildAuction(Seat.North, ["2H"]);
+    const dialogueState = computeWeakTwoState(auction);
+
+    // Weak Twos transition rules set openingSuit from the opening bid strain
+    expect(dialogueState.conventionData["openingSuit"]).toBe("H");
   });
 });

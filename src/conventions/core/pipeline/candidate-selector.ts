@@ -1,10 +1,32 @@
 import type { ResolvedCandidate } from "./candidate-generator";
-import { ForcingState } from "../dialogue/dialogue-state";
+import { ForcingState, ObligationKind } from "../dialogue/dialogue-state";
+import type { Obligation } from "../dialogue/dialogue-state";
 
 /** Ranker function type — reorders candidates before tiered selection. */
 export type CandidateRankerFn = (
   candidates: readonly ResolvedCandidate[],
 ) => readonly ResolvedCandidate[];
+
+/**
+ * Check whether a candidate meets an obligation constraint.
+ * Conservative: only `BidSuit` actively filters (excludes Pass).
+ * All other obligation kinds are informational — the tree already constrains correctly.
+ */
+function meetsObligation(c: ResolvedCandidate, obligation: Obligation | undefined): boolean {
+  if (!obligation || obligation.kind === ObligationKind.None) return true;
+  switch (obligation.kind) {
+    case ObligationKind.BidSuit:
+      // Context-dependent: must act constructively. Always excludes Pass.
+      // Allows NT for strong hands (obligation is "bid constructively", not literally "bid a suit").
+      // Pass exclusion is the primary enforcement; tree/resolver handles suit preference.
+      if (c.resolvedCall.type === "pass") return false;
+      return true;
+    default:
+      // All other obligation kinds are informational for now.
+      // ShowMajor, CompleteRelay, etc. — the tree already constrains responses correctly.
+      return true;
+  }
+}
 
 /** Select the best candidate using tiered selection.
  *  If ranker is provided, candidates are reordered first.
@@ -14,11 +36,13 @@ export type CandidateRankerFn = (
  *  Tier 4: null
  *  When forcingState is ForcingOneRound or GameForcing, Pass candidates
  *  are excluded from all tiers.
+ *  When obligation is provided, candidates are filtered by obligation constraints.
  *  Ranker influences WHICH candidate wins within a tier, not tier boundaries. */
 export function selectMatchedCandidate(
   candidates: readonly ResolvedCandidate[],
   ranker?: CandidateRankerFn,
   forcingState?: ForcingState,
+  obligation?: Obligation,
 ): ResolvedCandidate | null {
   const ranked = ranker ? ranker(candidates) : candidates;
   const noPass = forcingState === ForcingState.ForcingOneRound
@@ -27,6 +51,7 @@ export function selectMatchedCandidate(
   const allowed = (c: ResolvedCandidate) => {
     if (noPass && c.resolvedCall.type === "pass") return false;
     if (passOnly && c.resolvedCall.type !== "pass") return false;
+    if (!meetsObligation(c, obligation)) return false;
     return true;
   };
 

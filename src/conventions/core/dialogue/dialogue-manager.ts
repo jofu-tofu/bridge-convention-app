@@ -5,7 +5,7 @@ import type { Auction } from "../../../engine/types";
 import type { DialogueState } from "./dialogue-state";
 import {
   ForcingState,
-  PendingAction,
+  ObligationKind,
   CompetitionMode,
   CaptainRole,
   SystemMode,
@@ -18,7 +18,7 @@ export const INITIAL_DIALOGUE_STATE: DialogueState = {
   familyId: null,
   forcingState: ForcingState.Nonforcing,
   agreedStrain: { type: "none" },
-  pendingAction: PendingAction.None,
+  obligation: { kind: ObligationKind.None, obligatedSide: "opener" },
   competitionMode: CompetitionMode.Uncontested,
   captain: CaptainRole.Neither,
   systemMode: SystemMode.Off,
