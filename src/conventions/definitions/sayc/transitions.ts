@@ -4,6 +4,7 @@
 // Composed with baseline rules in config:
 //   transitionRules: [...saycTransitionRules, ...baselineTransitionRules]
 
+import { BidSuit } from "../../../engine/types";
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 
@@ -17,7 +18,7 @@ export const saycTransitionRules: readonly TransitionRule[] = [
         state.familyId === null &&
         call.type === "bid" &&
         call.level === 1 &&
-        call.strain === "NT"
+        call.strain === BidSuit.NoTrump
       );
     },
     effects() {
@@ -33,7 +34,7 @@ export const saycTransitionRules: readonly TransitionRule[] = [
         state.familyId === null &&
         call.type === "bid" &&
         call.level === 1 &&
-        call.strain !== "NT"
+        call.strain !== BidSuit.NoTrump
       );
     },
     effects(_state: DialogueState, entry) {
@@ -51,7 +52,7 @@ export const saycTransitionRules: readonly TransitionRule[] = [
         state.familyId === null &&
         call.type === "bid" &&
         call.level === 2 &&
-        call.strain === "C"
+        call.strain === BidSuit.Clubs
       );
     },
     effects() {

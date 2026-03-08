@@ -371,7 +371,7 @@ describe("findCandidateBids — duplicate IntentNode names", () => {
     // check-a(false) → NO → check-c(true) → YES → diamonds matched
     expect(result.matched).not.toBeNull();
     expect(result.matched!.name).toBe("raise-to-game");
-    expect((result.matched! as import("../../core/intent/intent-node").IntentNode).intent.params).toEqual({ suit: "diamonds" });
+    expect((result.matched!).intent.params).toEqual({ suit: "diamonds" });
 
     const candidates = findCandidateBids(tree, result.matched!, ctx, "test-convention");
 

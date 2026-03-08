@@ -124,14 +124,14 @@ export function validateProtocol(proto: ConventionProtocol): void {
       if (trigger.condition.category !== "auction") {
         throw new Error(
           `Protocol "${proto.id}" round "${r.name}" trigger condition ` +
-            `"${trigger.condition.name}" has category "${trigger.condition.category}" — expected "auction".`,
+            `"${String(trigger.condition.name)}" has category "${String(trigger.condition.category)}" — expected "auction".`,
         );
       }
     }
     if (r.seatFilter && r.seatFilter.category !== "auction") {
       throw new Error(
         `Protocol "${proto.id}" round "${r.name}" seatFilter ` +
-          `"${r.seatFilter.name}" has category "${r.seatFilter.category}" — expected "auction".`,
+          `"${String(r.seatFilter.name)}" has category "${String(r.seatFilter.category)}" — expected "auction".`,
       );
     }
   }

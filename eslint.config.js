@@ -76,10 +76,6 @@ export default tseslint.config(
       "coverage/",
       "_output/",
       ".aiwcli/",
-      "playwright.config.ts",
-      "vite.config.ts",
-      "vitest.config.ts",
-      "tests/e2e/",
     ],
     linterOptions: {
       reportUnusedDisableDirectives: "warn",
@@ -95,7 +91,18 @@ export default tseslint.config(
     files: ["**/*.ts"],
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: [
+            "playwright.config.ts",
+            "tests/e2e/convention-select.spec.ts",
+            "tests/e2e/dds-browser.spec.ts",
+            "tests/e2e/game-lifecycle.spec.ts",
+            "tests/e2e/play-phase.spec.ts",
+            "tests/e2e/stayman-bidding.spec.ts",
+            "vite.config.ts",
+            "vitest.config.ts",
+          ],
+        },
       },
     },
     plugins: {
@@ -474,6 +481,7 @@ export default tseslint.config(
     files: [
       "**/__tests__/**/*.ts",
       "**/*.test.ts",
+      "**/*.spec.ts",
       "src/test-support/**/*.ts",
     ],
     rules: {
@@ -490,6 +498,20 @@ export default tseslint.config(
       "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/await-thenable": "off",
+    },
+  },
+
+  // ── Root config files — relaxed rules ──
+  {
+    files: [
+      "vite.config.ts",
+      "vitest.config.ts",
+      "playwright.config.ts",
+    ],
+    rules: {
+      "no-restricted-syntax": "off",
+      "no-restricted-imports": "off",
+      "no-console": "off",
     },
   },
 

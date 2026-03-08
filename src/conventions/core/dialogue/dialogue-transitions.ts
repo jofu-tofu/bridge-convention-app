@@ -2,7 +2,7 @@
 
 import type { AuctionEntry, Auction } from "../../../engine/types";
 import type { DialogueState, DialogueFrame, InterferenceDetail } from "./dialogue-state";
-import {
+import type {
   ForcingState,
   PendingAction,
   CompetitionMode,

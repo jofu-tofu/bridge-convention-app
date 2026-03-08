@@ -5,6 +5,7 @@ import type { HandInference } from "../../core/contracts";
 import type { BiddingRuleResult } from "../../conventions/core/registry";
 import type { InferenceExtractor, InferenceProvider } from "../types";
 import type { BidAlert } from "../../conventions/core/rule-tree";
+import type { ConditionInference } from "../../conventions/core/types";
 import { produceAnnotation } from "../annotation-producer";
 import { protocolInferenceExtractor } from "../protocol-inference-extractor";
 
@@ -160,7 +161,7 @@ describe("produceAnnotation", () => {
 function makeHandCondition(
   name: string,
   label: string,
-  inference?: import("../../conventions/core/types").ConditionInference,
+  inference?: ConditionInference,
 ) {
   return {
     name,

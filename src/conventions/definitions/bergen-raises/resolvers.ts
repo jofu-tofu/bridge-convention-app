@@ -4,10 +4,11 @@ import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import type { IntentResolverFn, IntentResolverMap } from "../../core/intent/intent-resolver";
+import type { DialogueState } from "../../core/dialogue/dialogue-state";
 
 const pass: Call = { type: "pass" };
 
-function openerMajor(state: import("../../core/dialogue/dialogue-state").DialogueState): BidSuit | null {
+function openerMajor(state: DialogueState): BidSuit | null {
   const strain = state.conventionData["openerMajor"] as BidSuit | undefined;
   if (strain === BidSuit.Hearts || strain === BidSuit.Spades) return strain;
   return null;

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { BidSuit, Seat } from "../../../engine/types";
+import type { Auction } from "../../../engine/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import {
   computeDialogueState,
@@ -14,6 +15,7 @@ import {
   InterferenceKind,
   getSystemModeFor,
 } from "../../core/dialogue/dialogue-state";
+import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import type { TransitionRule } from "../../core/dialogue";
 import { applyEffect, applyBackfillEffect } from "../../core/dialogue";
 import { STAYMAN_CAPABILITY } from "../../definitions/stayman/constants";
@@ -25,7 +27,7 @@ import { saycTransitionRules } from "../../definitions/sayc/transitions";
 import { lebensohlTransitionRules } from "../../definitions/lebensohl-lite/transitions";
 
 // Helper: call computeDialogueState with two-pass mode (matching production config)
-function computeStaymanState(auction: import("../../../engine/types").Auction) {
+function computeStaymanState(auction: Auction) {
   return computeDialogueState(auction, staymanTransitionRules, baselineTransitionRules);
 }
 const bergenRules: readonly TransitionRule[] = [
@@ -675,7 +677,7 @@ describe("DialogueState foundation", () => {
 
   describe("getSystemModeFor", () => {
     it("returns systemMode when no capabilities set", () => {
-      const state: import("../../core/dialogue/dialogue-state").DialogueState = {
+      const state: DialogueState = {
         ...INITIAL_DIALOGUE_STATE,
         systemMode: SystemMode.On,
       };
@@ -683,7 +685,7 @@ describe("DialogueState foundation", () => {
     });
 
     it("returns capability-specific mode when set", () => {
-      const state: import("../../core/dialogue/dialogue-state").DialogueState = {
+      const state: DialogueState = {
         ...INITIAL_DIALOGUE_STATE,
         systemMode: SystemMode.Off,
         systemCapabilities: { stayman: SystemMode.Modified },
@@ -692,7 +694,7 @@ describe("DialogueState foundation", () => {
     });
 
     it("falls back to systemMode for unset capabilities", () => {
-      const state: import("../../core/dialogue/dialogue-state").DialogueState = {
+      const state: DialogueState = {
         ...INITIAL_DIALOGUE_STATE,
         systemMode: SystemMode.Off,
         systemCapabilities: { stayman: SystemMode.Modified },
@@ -737,7 +739,7 @@ describe("DialogueState foundation", () => {
 
     it("per-key merge: convention stayman=Modified survives baseline stayman=Off backfill", () => {
       // applyBackfillEffect imported at top of file
-      const stateWithConvCapability: import("../../core/dialogue/dialogue-state").DialogueState = {
+      const stateWithConvCapability: DialogueState = {
         ...INITIAL_DIALOGUE_STATE,
         systemCapabilities: { stayman: SystemMode.Modified },
       };
@@ -751,7 +753,7 @@ describe("DialogueState foundation", () => {
 
     it("per-key merge: convention stayman=Modified, baseline transfers=Off — both survive", () => {
       // applyBackfillEffect imported at top of file
-      const stateWithConvCapability: import("../../core/dialogue/dialogue-state").DialogueState = {
+      const stateWithConvCapability: DialogueState = {
         ...INITIAL_DIALOGUE_STATE,
         systemCapabilities: { stayman: SystemMode.Modified },
       };

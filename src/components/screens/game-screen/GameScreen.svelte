@@ -84,7 +84,7 @@
   });
 
   function makeDevRng(): (() => number) | undefined {
-    if (appStore.devSeed == null) return undefined;
+    if (appStore.devSeed === null) return undefined;
     const seed = appStore.devSeed + appStore.devDealCount;
     appStore.advanceDevDeal();
     return mulberry32(seed);
@@ -112,6 +112,7 @@
       dealNumber++;
       return;
     }
+    // eslint-disable-next-line no-console -- startup error should surface in dev tools
     startNewDrill().catch(console.error);
   });
 

@@ -4,6 +4,7 @@
 
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
+import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { partnerOfOpener } from "../../core/dialogue/helpers";
 
@@ -11,7 +12,7 @@ function isMajorOpening(call: Call): boolean {
   return (
     call.type === "bid" &&
     call.level === 1 &&
-    (call.strain === "H" || call.strain === "S")
+    (call.strain === BidSuit.Hearts || call.strain === BidSuit.Spades)
   );
 }
 
@@ -42,7 +43,7 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
         state.familyId === "bergen" &&
         call.type === "bid" &&
         call.level === 3 &&
-        call.strain === "C" &&
+        call.strain === BidSuit.Clubs &&
         partnerOfOpener(state, seat)
       );
     },
@@ -64,7 +65,7 @@ export const bergenTransitionRules: readonly TransitionRule[] = [
         state.familyId === "bergen" &&
         call.type === "bid" &&
         call.level === 3 &&
-        call.strain === "D" &&
+        call.strain === BidSuit.Diamonds &&
         partnerOfOpener(state, seat)
       );
     },

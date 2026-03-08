@@ -5,6 +5,7 @@
 import type { TransitionRule } from "./dialogue-transitions";
 import { CaptainRole, CompetitionMode, InterferenceKind, SystemMode } from "./dialogue-state";
 import type { DialogueState } from "./dialogue-state";
+import { BidSuit } from "../../../engine/types";
 import type { Call, Seat } from "../../../engine/types";
 import { areSamePartnership } from "./helpers";
 
@@ -22,12 +23,12 @@ function isOpponentOfOpener(state: DialogueState, biddingSeat: Seat): boolean {
 
 /** Check if a call is a 1NT opening bid. */
 function is1NT(call: Call): boolean {
-  return call.type === "bid" && call.level === 1 && call.strain === "NT";
+  return call.type === "bid" && call.level === 1 && call.strain === BidSuit.NoTrump;
 }
 
 /** Check if a call is a 2NT opening bid. */
 function is2NT(call: Call): boolean {
-  return call.type === "bid" && call.level === 2 && call.strain === "NT";
+  return call.type === "bid" && call.level === 2 && call.strain === BidSuit.NoTrump;
 }
 
 export const baselineTransitionRules: readonly TransitionRule[] = [

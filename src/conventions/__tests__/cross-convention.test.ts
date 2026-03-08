@@ -4,6 +4,7 @@
 
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../engine/types";
+import type { ContractBid } from "../../engine/types";
 import { generateDeal } from "../../engine/deal-generator";
 import {
   registerConvention,
@@ -465,7 +466,7 @@ describe("Multi-round sequence integrity — conventions across 3+ rounds", () =
     const rebidResult = evaluateBiddingRules(rebidCtx, staymanConfig);
     expect(rebidResult).not.toBeNull();
     expect(rebidResult!.rule).toBe("stayman-rebid-major-fit-h");
-    const call = rebidResult!.call as import("../../engine/types").ContractBid;
+    const call = rebidResult!.call as ContractBid;
     expect(call.level).toBe(4);
     expect(call.strain).toBe(BidSuit.Hearts);
   });

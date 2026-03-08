@@ -23,7 +23,7 @@ import type { ConventionOverlayPatch } from "../../core/overlay";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { protocol, round, semantic } from "../../core/protocol";
-import type { ProtocolEvalResult, ProtocolRound, ConventionProtocol } from "../../core/protocol";
+import type { ProtocolEvalResult, ConventionProtocol } from "../../core/protocol";
 import { bidMade, isResponder } from "../../core/conditions";
 
 describe("generateCandidates", () => {
@@ -594,7 +594,7 @@ describe("matchedIntentSuppressed tracking", () => {
       matchedRounds: [],
       established: { role: "responder" as const },
       handResult: treeResult,
-      activeRound: (testProtocol.rounds as readonly ProtocolRound[]).find(r => r.name === "opening") ?? null,
+      activeRound: (testProtocol.rounds).find(r => r.name === "opening") ?? null,
       handTreeRoot: testTree,
     };
   }

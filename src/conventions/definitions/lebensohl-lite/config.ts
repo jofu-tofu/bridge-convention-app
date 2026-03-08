@@ -1,5 +1,5 @@
 import { Seat, Suit } from "../../../engine/types";
-import type { Auction, DealConstraints } from "../../../engine/types";
+import type { Auction, Deal, DealConstraints } from "../../../engine/types";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
@@ -31,7 +31,7 @@ export const lebensohlLiteDealConstraints: DealConstraints = {
 
 function lebensohlLiteDefaultAuction(
   seat: Seat,
-  _deal?: import("../../../engine/types").Deal,
+  _deal?: Deal,
 ): Auction | undefined {
   if (seat === Seat.South) {
     return buildAuction(Seat.North, ["1NT", "2D"]);

@@ -323,11 +323,11 @@ export function noFiveCardMajor(): HandCondition {
     label: "No 5-card major",
     category: "hand",
     test(ctx) {
-      return ctx.evaluation.shape[0]! < 5 && ctx.evaluation.shape[1]! < 5;
+      return ctx.evaluation.shape[0] < 5 && ctx.evaluation.shape[1] < 5;
     },
     describe(ctx) {
-      const spades = ctx.evaluation.shape[0]!;
-      const hearts = ctx.evaluation.shape[1]!;
+      const spades = ctx.evaluation.shape[0];
+      const hearts = ctx.evaluation.shape[1];
       if (spades < 5 && hearts < 5) {
         return `No 5-card major (${spades} spades, ${hearts} hearts)`;
       }
@@ -351,14 +351,14 @@ export function longerMajor(
       const thisLen = ctx.evaluation.shape[suitIndex]!;
       // suitIndex 0=spades, 1=hearts; the other major
       const otherIndex = suitIndex === 0 ? 1 : 0;
-      const otherLen = ctx.evaluation.shape[otherIndex]!;
+      const otherLen = ctx.evaluation.shape[otherIndex];
       return thisLen >= 5 && thisLen >= otherLen;
     },
     describe(ctx) {
       const thisLen = ctx.evaluation.shape[suitIndex]!;
       const otherIndex = suitIndex === 0 ? 1 : 0;
       const otherName = suitIndex === 0 ? "hearts" : "spades";
-      const otherLen = ctx.evaluation.shape[otherIndex]!;
+      const otherLen = ctx.evaluation.shape[otherIndex];
       if (thisLen >= 5 && thisLen >= otherLen) {
         return `${thisLen} ${suitName} (longer/equal major vs ${otherLen} ${otherName})`;
       }
@@ -375,11 +375,11 @@ export function hasFourCardMajor(): HandCondition {
     label: "Has 4+ card major",
     category: "hand",
     test(ctx) {
-      return ctx.evaluation.shape[0]! >= 4 || ctx.evaluation.shape[1]! >= 4;
+      return ctx.evaluation.shape[0] >= 4 || ctx.evaluation.shape[1] >= 4;
     },
     describe(ctx) {
-      const s = ctx.evaluation.shape[0]!;
-      const h = ctx.evaluation.shape[1]!;
+      const s = ctx.evaluation.shape[0];
+      const h = ctx.evaluation.shape[1];
       if (s >= 4 || h >= 4) return `Has 4-card major (${s}S, ${h}H)`;
       return `Need 4+ card major (have ${s}S, ${h}H)`;
     },
@@ -406,21 +406,21 @@ export function majorSupport(count: number = 4, orMore: boolean = false): HandCo
     category: "hand",
     test(ctx) {
       const shape = ctx.evaluation.shape;
-      if (auctionMatchesExact(ctx.auction, ["1H", "P"])) return check(shape[1]!);
-      if (auctionMatchesExact(ctx.auction, ["1S", "P"])) return check(shape[0]!);
+      if (auctionMatchesExact(ctx.auction, ["1H", "P"])) return check(shape[1]);
+      if (auctionMatchesExact(ctx.auction, ["1S", "P"])) return check(shape[0]);
       return false;
     },
     describe(ctx) {
       const shape = ctx.evaluation.shape;
       const suffix = orMore ? `${count}+ support` : `exactly ${count}`;
       if (auctionMatchesExact(ctx.auction, ["1H", "P"])) {
-        const len = shape[1]!;
+        const len = shape[1];
         return check(len)
           ? `${len} hearts (${suffix})`
           : `Need ${suffix} hearts (have ${len})`;
       }
       if (auctionMatchesExact(ctx.auction, ["1S", "P"])) {
-        const len = shape[0]!;
+        const len = shape[0];
         return check(len)
           ? `${len} spades (${suffix})`
           : `Need ${suffix} spades (have ${len})`;
@@ -442,10 +442,10 @@ export function hasSingleLongSuit(): HandCondition {
     category: "hand",
     test(ctx) {
       const shape = ctx.evaluation.shape;
-      const spades = shape[0]!;
-      const hearts = shape[1]!;
-      const diamonds = shape[2]!;
-      const clubs = shape[3]!;
+      const spades = shape[0];
+      const hearts = shape[1];
+      const diamonds = shape[2];
+      const clubs = shape[3];
       if (spades >= 6) return false; // Use 2S instead
       const hasSingleLong = hearts >= 6 || diamonds >= 6 || clubs >= 6;
       const hasSecond4 =
@@ -458,10 +458,10 @@ export function hasSingleLongSuit(): HandCondition {
       const longestIdx = shape.indexOf(longest);
       const suitName = suitNames[longestIdx] ?? "unknown";
       // Inline the test logic to avoid this-binding fragility
-      const spades = shape[0]!;
-      const hearts = shape[1]!;
-      const diamonds = shape[2]!;
-      const clubs = shape[3]!;
+      const spades = shape[0];
+      const hearts = shape[1];
+      const diamonds = shape[2];
+      const clubs = shape[3];
       if (
         spades < 6 &&
         (hearts >= 6 || diamonds >= 6 || clubs >= 6) &&
@@ -519,18 +519,18 @@ export function majorSupportN(n: number): HandCondition {
     // Omitting .inference until Phase 2c wires dynamic-suit support to the inference engine.
     test(ctx) {
       const strain = partnerOpeningStrain(ctx);
-      if (strain === BidSuit.Hearts) return ctx.evaluation.shape[1]! >= n;
-      if (strain === BidSuit.Spades) return ctx.evaluation.shape[0]! >= n;
+      if (strain === BidSuit.Hearts) return ctx.evaluation.shape[1] >= n;
+      if (strain === BidSuit.Spades) return ctx.evaluation.shape[0] >= n;
       return false;
     },
     describe(ctx) {
       const strain = partnerOpeningStrain(ctx);
       if (strain === BidSuit.Hearts) {
-        const len = ctx.evaluation.shape[1]!;
+        const len = ctx.evaluation.shape[1];
         return len >= n ? `${len} hearts (${n}+ support)` : `Need ${n}+ hearts (have ${len})`;
       }
       if (strain === BidSuit.Spades) {
-        const len = ctx.evaluation.shape[0]!;
+        const len = ctx.evaluation.shape[0];
         return len >= n ? `${len} spades (${n}+ support)` : `Need ${n}+ spades (have ${len})`;
       }
       return "Partner did not open a major";
@@ -581,14 +581,14 @@ export function partnerRespondedMajorWithSupport(): HandCondition {
     test(ctx) {
       const partnerMajor = partnerRespondedMajor(ctx);
       if (!partnerMajor) return false;
-      if (partnerMajor === BidSuit.Hearts) return ctx.evaluation.shape[1]! >= 4;
-      return ctx.evaluation.shape[0]! >= 4;
+      if (partnerMajor === BidSuit.Hearts) return ctx.evaluation.shape[1] >= 4;
+      return ctx.evaluation.shape[0] >= 4;
     },
     describe(ctx) {
       const partnerMajor = partnerRespondedMajor(ctx);
       if (!partnerMajor) return "Partner did not respond with a major";
       const idx = partnerMajor === BidSuit.Hearts ? 1 : 0;
-      const len = ctx.evaluation.shape[idx]!;
+      const len = ctx.evaluation.shape[idx];
       return len >= 4
         ? `${len} ${partnerMajor} (4+ support for partner's response)`
         : `Need 4+ ${partnerMajor} (have ${len})`;

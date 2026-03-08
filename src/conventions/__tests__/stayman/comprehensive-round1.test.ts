@@ -1186,7 +1186,7 @@ describe("Round 1: edge cases and boundary conditions", () => {
     expect(result).not.toBeNull();
     // Should NOT bid 3C (opponent's suit)
     if (result!.call.type === "bid") {
-      const bid = result!.call as ContractBid;
+      const bid = result!.call;
       if (bid.level === 3) {
         expect(bid.strain).not.toBe(BidSuit.Clubs);
       }

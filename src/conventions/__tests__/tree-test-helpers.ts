@@ -1,4 +1,5 @@
-import { Seat, BidSuit } from "../../engine/types";
+import type { BidSuit } from "../../engine/types";
+import { Seat } from "../../engine/types";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { intentBid } from "../core/intent/intent-node";
 import type { IntentNode } from "../core/intent/intent-node";

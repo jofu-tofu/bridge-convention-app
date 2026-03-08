@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
-import type { ContractBid, Hand } from "../../../engine/types";
+import type { Hand } from "../../../engine/types";
 import {
   registerConvention,
   clearRegistry,
@@ -106,7 +106,7 @@ describe("Stayman interference", () => {
         // If something matches, it must NOT be a conventional 2C bid
         const call = result.call;
         if (call.type === "bid") {
-          const bid = call as ContractBid;
+          const bid = call;
           expect(bid.strain).not.toBe(BidSuit.Clubs);
         }
       }
@@ -124,7 +124,7 @@ describe("Stayman interference", () => {
       for (const h of hands) {
         const result = suggestCall(h, Seat.South, ["1NT", "2H"]);
         if (result && result.call.type === "bid") {
-          const bid = result.call as ContractBid;
+          const bid = result.call;
           // 2C Stayman must never appear after an overcall
           if (bid.level === 2) {
             expect(bid.strain).not.toBe(BidSuit.Clubs);

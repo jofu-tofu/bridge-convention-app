@@ -39,10 +39,10 @@ export function getSuitLength(hand: Hand): SuitLength {
 
 export function isBalanced(shape: SuitLength): boolean {
   // Sorting network for 4 elements — zero allocation, 5 conditional swaps
-  let a = shape[0]!,
-    b = shape[1]!,
-    c = shape[2]!,
-    d = shape[3]!;
+  let a = shape[0],
+    b = shape[1],
+    c = shape[2],
+    d = shape[3];
   if (a < b) {
     const t = a;
     a = b;

@@ -4,7 +4,7 @@
  */
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
-import type { ContractBid, Hand } from "../../../engine/types";
+import type { Hand } from "../../../engine/types";
 import {
   registerConvention,
   clearRegistry,
@@ -77,7 +77,7 @@ describe("contested auction safety", () => {
       for (const [name, handFn] of Object.entries(hands)) {
         const { result } = suggest(handFn(), ["1NT", "2H"]);
         if (result && result.call.type === "bid") {
-          const bid = result.call as ContractBid;
+          const bid = result.call;
           expect(
             bid.level === 2 && bid.strain === BidSuit.Clubs,
             `${name}: 2C Stayman must not appear after overcall`,
@@ -92,7 +92,7 @@ describe("contested auction safety", () => {
       for (const [name, handFn] of Object.entries(hands)) {
         const { result } = suggest(handFn(), ["1NT", "2D"]);
         if (result && result.call.type === "bid") {
-          const bid = result.call as ContractBid;
+          const bid = result.call;
           expect(
             bid.level === 2 && bid.strain === BidSuit.Clubs,
             `${name}: 2C Stayman must not appear after overcall`,

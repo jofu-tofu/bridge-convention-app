@@ -18,7 +18,6 @@ import {
   opponentActed,
   notPassedHand,
 } from "../../core/conditions";
-import type { AuctionCondition } from "../../core/types";
 import { decision, handDecision, fallback } from "../../core/rule-tree";
 import type { HandNode, RuleNode } from "../../core/rule-tree";
 import { createIntentBidFactory } from "../../core/intent/intent-node";
@@ -208,10 +207,10 @@ export const bergenProtocol: ConventionProtocol = protocol("bergen-raises", [
   // seatFilter: responder who hasn't previously passed
   round("opening", {
     triggers: [
-      semantic(or(bidMade(1, BidSuit.Hearts), bidMade(1, BidSuit.Spades)) as AuctionCondition, {}),
+      semantic(or(bidMade(1, BidSuit.Hearts), bidMade(1, BidSuit.Spades)), {}),
     ],
     handTree: responderInitialBranch,
-    seatFilter: and(isResponder(), notPassedHand()) as AuctionCondition,
+    seatFilter: and(isResponder(), notPassedHand()),
   }),
   // Round 2: Responder bid at 3-level — opener rebids (first rebid)
   // seatFilter: opener on their first rebid, uncontested
@@ -220,26 +219,26 @@ export const bergenProtocol: ConventionProtocol = protocol("bergen-raises", [
       semantic(bidMadeAtLevel(3), {}),
     ],
     handTree: openerRound1Branch as HandNode,
-    seatFilter: and(isOpener(), biddingRound(1), not(opponentActed())) as AuctionCondition,
+    seatFilter: and(isOpener(), biddingRound(1), not(opponentActed())),
   }),
   // Round 3: Opener rebid — responder continues (first continuation)
   // seatFilter: responder on their first rebid, uncontested
   round("opener-rebid", {
     triggers: [
-      semantic(or(bidMadeAtLevel(3), bidMadeAtLevel(4)) as AuctionCondition, {}),
+      semantic(or(bidMadeAtLevel(3), bidMadeAtLevel(4)), {}),
     ],
     handTree: responderRound1Branch as HandNode,
-    seatFilter: and(isResponder(), biddingRound(1), not(opponentActed())) as AuctionCondition,
+    seatFilter: and(isResponder(), biddingRound(1), not(opponentActed())),
   }),
   // Round 4: Responder made final decision — opener accepts (second rebid)
   // seatFilter: opener on their second rebid, uncontested
   round("continuation", {
     triggers: [
-      semantic(or(bidMadeAtLevel(3), bidMadeAtLevel(4)) as AuctionCondition, {}),
+      semantic(or(bidMadeAtLevel(3), bidMadeAtLevel(4)), {}),
     ],
     handTree: bid("bergen-opener-accept-after-try", "Accepts partner's decision on the game try",
       { type: SemanticIntentType.AcceptPartnerDecision, params: {} },
       (): Call => ({ type: "pass" })),
-    seatFilter: and(isOpener(), biddingRound(2), not(opponentActed())) as AuctionCondition,
+    seatFilter: and(isOpener(), biddingRound(2), not(opponentActed())),
   }),
 ]);

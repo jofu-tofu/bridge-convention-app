@@ -17,9 +17,9 @@ import {
   seatFirstBidStrain,
   partnerOpeningStrain,
 } from "../../core/conditions";
-import type { AuctionCondition } from "../../core/types";
 import { handDecision, fallback } from "../../core/rule-tree";
 import type { HandNode } from "../../core/rule-tree";
+import type { HandCondition } from "../../core/types";
 import { createIntentBidFactory } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import { protocol, round, semantic } from "../../core/protocol";
@@ -63,7 +63,7 @@ const openingTree: HandNode = handDecision(
 // ─── Round 2: Response ──────────────────────────────────────
 
 /** N+ cards in partner's opened suit (works for any suit, not just majors). */
-function partnerSuitSupport(n: number): import("../../core/types").HandCondition {
+function partnerSuitSupport(n: number): HandCondition {
   return {
     name: `partner-suit-support-${n}`,
     label: `${n}+ in partner's opened suit`,
@@ -116,7 +116,7 @@ const responseTree: HandNode = handDecision(
  *  Uses seatFirstBidStrain to identify which suit was opened. */
 function ogustRebidTree(): HandNode {
   /** Dynamic suitQuality that checks this seat's opened suit. */
-  function openedSuitQuality(minTopHonors: number): import("../../core/types").HandCondition {
+  function openedSuitQuality(minTopHonors: number): HandCondition {
     return {
       name: "opened-suit-quality",
       label: `${minTopHonors}+ top honors in opened suit`,
@@ -186,7 +186,7 @@ export const weakTwosProtocol: ConventionProtocol<WeakTwoEstablished> = protocol
       semantic<WeakTwoEstablished>(bidMadeAtLevel(2), {}),
     ],
     handTree: openingTree,
-    seatFilter: and(isOpener(), biddingRound(0)) as AuctionCondition,
+    seatFilter: and(isOpener(), biddingRound(0)),
   }),
   // Round 2: Response — responder decides to raise, ask Ogust, or pass
   round<WeakTwoEstablished>("response", {
@@ -194,7 +194,7 @@ export const weakTwosProtocol: ConventionProtocol<WeakTwoEstablished> = protocol
       semantic<WeakTwoEstablished>(bidMadeAtLevel(2), {}),
     ],
     handTree: responseTree,
-    seatFilter: and(isResponder(), lastEntryIsPass()) as AuctionCondition,
+    seatFilter: and(isResponder(), lastEntryIsPass()),
   }),
   // Round 3: Ogust rebid — opener classifies hand quality
   round<WeakTwoEstablished>("ogust-rebid", {
@@ -202,6 +202,6 @@ export const weakTwosProtocol: ConventionProtocol<WeakTwoEstablished> = protocol
       semantic<WeakTwoEstablished>(bidMade(2, BidSuit.NoTrump), {}),
     ],
     handTree: ogustRebidTree(),
-    seatFilter: and(isOpener(), passedAfter(2, BidSuit.NoTrump)) as AuctionCondition,
+    seatFilter: and(isOpener(), passedAfter(2, BidSuit.NoTrump)),
   }),
 ]);

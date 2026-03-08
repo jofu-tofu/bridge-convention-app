@@ -18,7 +18,6 @@ import {
   or,
   goodSuitAtLevel,
 } from "../../core/conditions";
-import type { AuctionCondition } from "../../core/types";
 import { decision, handDecision } from "../../core/rule-tree";
 import type { HandNode, RuleNode } from "../../core/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
@@ -322,7 +321,7 @@ export function makeCompetitiveBranch(): RuleNode {
   // Gate: must not be opener or responder
   return decision(
     "not-opener-check",
-    and(not(isOpener()), not(isResponder())) as AuctionCondition,
+    and(not(isOpener()), not(isResponder())),
     handDecision(
       "1nt-overcall",
       and(hcpRange(15, 18), isBalanced()),

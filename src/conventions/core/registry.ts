@@ -35,6 +35,7 @@ export function registerConvention(config: ConventionConfig): void {
     throw new Error(`Convention "${config.id}" is already registered.`);
   }
   if (config.protocol) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- protocol generic is any by design (see ConventionConfig.protocol)
     validateProtocol(config.protocol);
   }
   if (config.baselineRules && config.transitionRules) {
@@ -53,6 +54,7 @@ export function registerConvention(config: ConventionConfig): void {
     if (!config.protocol) {
       throw new Error(`Convention "${config.id}" has overlays but no protocol.`);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- protocol generic is any by design
     validateOverlayPatches(config.overlays, config.protocol);
   }
   // Run diagnostics at registration time (cached for test/dev consumption)
@@ -91,6 +93,7 @@ export function isTreeConvention(config: ConventionConfig): boolean {
 /** Get the flattened bidding rules from a config (computed from protocol on demand). */
 export function getEffectiveRules(config: ConventionConfig): readonly BiddingRule[] {
   if (config.protocol) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- protocol generic is any by design
     return flattenProtocol(config.protocol);
   }
   return config.biddingRules ?? [];
@@ -113,6 +116,7 @@ export function evaluateBiddingRules(
     const { handResult, treeRoot } = applyProtocolOverlays(
       config,
       context,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- ProtocolEvalResult<any> propagates from protocol generic
       protoResult,
       lookupConvention,
     );

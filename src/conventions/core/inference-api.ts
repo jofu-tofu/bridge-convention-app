@@ -1,5 +1,6 @@
 import type { Call } from "../../engine/types";
 import type { BiddingContext, ConventionConfig, RuleCondition } from "./types";
+import type { ConventionProtocol } from "./protocol";
 import { isConditionedRule } from "./condition-evaluator";
 import { createBiddingContext } from "./context-factory";
 import { evaluateProtocol } from "./protocol-evaluator";
@@ -34,16 +35,17 @@ export function evaluateForInference(
 ): ConventionInferenceData | null {
   if (!config.protocol) return null;
 
-  const rules: InferenceRuleDTO[] = flattenProtocol(config.protocol)
+  const proto = config.protocol as ConventionProtocol;
+  const rules: InferenceRuleDTO[] = flattenProtocol(proto)
     .filter(isConditionedRule)
     .map((rule) => ({
       name: rule.name,
       auctionConditions: rule.auctionConditions,
       handConditions: rule.handConditions,
-      call: rule.call,
+      call: (ctx: BiddingContext) => rule.call(ctx),
     }));
 
-  const treeResult = evaluateProtocol(config.protocol, context).handResult;
+  const treeResult = evaluateProtocol(proto, context).handResult;
   return {
     rules,
     treeResult: {

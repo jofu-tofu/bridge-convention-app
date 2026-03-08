@@ -35,7 +35,7 @@ function stubContext(
     totalPoints: overrides.totalPoints ?? 10,
     strategy: overrides.strategy ?? "hcp",
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- partial BiddingContext stub for testing
+   
   return { evaluation, hand: { cards: [] } } as any;
 }
 

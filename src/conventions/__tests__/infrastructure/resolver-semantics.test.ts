@@ -17,7 +17,6 @@ import {
   CaptainRole, SystemMode,
 } from "../../core/dialogue/dialogue-state";
 import { intentBid } from "../../core/intent/intent-node";
-import type { IntentNode } from "../../core/intent/intent-node";
 import { SemanticIntentType } from "../../core/intent/semantic-intent";
 import type { IntentResolverFn, IntentResolverMap } from "../../core/intent/intent-resolver";
 import { evaluateTree } from "../../core/tree-evaluator";
@@ -79,7 +78,7 @@ function makeEffectiveCtx(
     overlays: [...overlays],
   } satisfies ConventionConfig;
   const handResult = evaluateTree(tree, raw);
-  const matched = handResult.matched as IntentNode | null;
+  const matched = handResult.matched;
   const protocolResult = {
     matched,
     matchedRounds: [],
@@ -105,7 +104,7 @@ describe("ResolverResult semantics", () => {
     test("no resolver registered → candidate uses defaultCall", () => {
       const resolvers: IntentResolverMap = new Map();
       const ctx = makeEffectiveCtx(resolvers);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(1);
       expect(result.candidates[0]!.resolvedCall).toEqual(defaultCall);
       expect(result.candidates[0]!.isDefaultCall).toBe(true);
@@ -117,7 +116,7 @@ describe("ResolverResult semantics", () => {
         [SemanticIntentType.AskForMajor, resolver],
       ]);
       const ctx = makeEffectiveCtx(resolvers);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(1);
       expect(result.candidates[0]!.resolvedCall).toEqual(defaultCall);
       expect(result.candidates[0]!.isDefaultCall).toBe(true);
@@ -132,7 +131,7 @@ describe("ResolverResult semantics", () => {
         [SemanticIntentType.AskForMajor, resolver],
       ]);
       const ctx = makeEffectiveCtx(resolvers);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(1);
       expect(result.candidates[0]!.resolvedCall).toEqual(resolvedCall);
       expect(result.candidates[0]!.isDefaultCall).toBe(false);
@@ -144,7 +143,7 @@ describe("ResolverResult semantics", () => {
         [SemanticIntentType.AskForMajor, resolver],
       ]);
       const ctx = makeEffectiveCtx(resolvers);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       // The key assertion: declined = excluded, NOT fallback to defaultCall
       expect(result.candidates).toHaveLength(0);
     });
@@ -166,7 +165,7 @@ describe("ResolverResult semantics", () => {
         overrideResolver: () => null,
       };
       const ctx = makeEffectiveCtx(resolvers, [overlay]);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(1);
       expect(result.candidates[0]!.resolvedCall).toEqual(resolvedCall);
     });
@@ -184,7 +183,7 @@ describe("ResolverResult semantics", () => {
       };
       const resolvers: IntentResolverMap = new Map();
       const ctx = makeEffectiveCtx(resolvers, [overlay]);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(1);
       expect(result.candidates[0]!.resolvedCall).toEqual(overrideCall);
       expect(result.candidates[0]!.isDefaultCall).toBe(false);
@@ -199,7 +198,7 @@ describe("ResolverResult semantics", () => {
       };
       const resolvers: IntentResolverMap = new Map();
       const ctx = makeEffectiveCtx(resolvers, [overlay]);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(0);
     });
 
@@ -212,7 +211,7 @@ describe("ResolverResult semantics", () => {
       };
       const resolvers: IntentResolverMap = new Map();
       const ctx = makeEffectiveCtx(resolvers, [overlay]);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(1);
       expect(result.candidates[0]!.resolvedCall).toEqual(defaultCall);
       expect(result.candidates[0]!.isDefaultCall).toBe(true);
@@ -231,7 +230,7 @@ describe("ResolverResult semantics", () => {
         [SemanticIntentType.AskForMajor, resolver],
       ]);
       const ctx = makeEffectiveCtx(resolvers);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(1);
       // Empty auction → 7NT is actually legal. Use pass as second option anyway.
       // The point is the first call is tried first.
@@ -248,7 +247,7 @@ describe("ResolverResult semantics", () => {
         [SemanticIntentType.AskForMajor, resolver],
       ]);
       const ctx = makeEffectiveCtx(resolvers);
-      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult!, ctx);
+      const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
       expect(result.candidates).toHaveLength(0);
       expect(result.matchedIntentSuppressed).toBe(false);
     });

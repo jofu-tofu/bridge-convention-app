@@ -58,8 +58,8 @@
 
   const practicalRec = $derived(feedback.practicalRecommendation);
   const showPracticalNote = $derived(
-    practicalRec != null &&
-    feedback.expectedResult != null &&
+    practicalRec != null && // eslint-disable-line eqeqeq -- intentional nullish check
+    feedback.expectedResult != null && // eslint-disable-line eqeqeq -- intentional nullish check
     !callsEqual(practicalRec.topCandidateCall, feedback.expectedResult.call)
   );
 

@@ -89,15 +89,15 @@ describe("parsePatternCall edge cases", () => {
   test("lowercase '1c' normalizes to 1C bid", () => {
     const call = parsePatternCall("1c");
     expect(call.type).toBe("bid");
-    expect((call as import("../types").ContractBid).level).toBe(1);
-    expect((call as import("../types").ContractBid).strain).toBe(BidSuit.Clubs);
+    expect((call as ContractBid).level).toBe(1);
+    expect((call as ContractBid).strain).toBe(BidSuit.Clubs);
   });
 
   test("whitespace ' 1NT ' normalizes via trim", () => {
     const call = parsePatternCall(" 1NT ");
     expect(call.type).toBe("bid");
-    expect((call as import("../types").ContractBid).level).toBe(1);
-    expect((call as import("../types").ContractBid).strain).toBe(
+    expect((call as ContractBid).level).toBe(1);
+    expect((call as ContractBid).strain).toBe(
       BidSuit.NoTrump,
     );
   });

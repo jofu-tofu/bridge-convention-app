@@ -373,7 +373,7 @@ describe("validateProtocol", () => {
       round("bad", {
         triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
         handTree: staticBid("test", 2, BidSuit.Clubs),
-        seatFilter: handCond as unknown as import("../../core/types").AuctionCondition,
+        seatFilter: handCond as unknown as AuctionCondition,
       }),
     ]);
     expect(() => validateProtocol(proto)).toThrow('category "hand"');

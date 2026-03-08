@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
-import type { ContractBid, Hand } from "../../../engine/types";
+import type { ContractBid, Hand, Vulnerability } from "../../../engine/types";
 import {
   calculateHcp,
   getSuitLength,
@@ -77,8 +77,8 @@ describe("Stayman deal constraints", () => {
 
       expect(hcp).toBeGreaterThanOrEqual(8);
       // At least one major is 4+
-      const hasSpades = shape[0]! >= 4;
-      const hasHearts = shape[1]! >= 4;
+      const hasSpades = shape[0] >= 4;
+      const hasHearts = shape[1] >= 4;
       expect(hasSpades || hasHearts).toBe(true);
     }
   });
@@ -154,7 +154,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../../engine/types").Vulnerability, // cast: test convenience
+          "None" as unknown as Vulnerability, // cast: test convenience
       },
       staymanDealConstraints,
     );
@@ -231,7 +231,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../../engine/types").Vulnerability,
+          "None" as unknown as Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -309,7 +309,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../../engine/types").Vulnerability,
+          "None" as unknown as Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -387,7 +387,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../../engine/types").Vulnerability,
+          "None" as unknown as Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -465,7 +465,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../../engine/types").Vulnerability,
+          "None" as unknown as Vulnerability,
       },
       staymanDealConstraints,
     );
@@ -545,7 +545,7 @@ describe("Stayman deal constraints", () => {
         },
         dealer: Seat.North,
         vulnerability:
-          "None" as unknown as import("../../../engine/types").Vulnerability,
+          "None" as unknown as Vulnerability,
       },
       staymanDealConstraints,
     );

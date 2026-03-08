@@ -97,7 +97,7 @@
             ({appStore.selectedConvention?.id ?? "—"})</span
           >
         </div>
-        {#if appStore.devSeed != null}
+        {#if appStore.devSeed !== null}
           <div>Seed: <span class="text-text-primary">{appStore.devSeed}</span></div>
         {/if}
         <div>

@@ -7,7 +7,7 @@ import { evaluateBiddingRules } from "../../core/registry";
 import { generateCandidates } from "../../core/candidate-generator";
 import { selectMatchedCandidate } from "../../core/candidate-selector";
 import { protocol, round, semantic } from "../../core/protocol";
-import type { ConventionProtocol, ProtocolEvalResult, ProtocolRound } from "../../core/protocol";
+import type { ConventionProtocol, ProtocolEvalResult } from "../../core/protocol";
 import { handDecision, decision, fallback } from "../../core/rule-tree";
 import type { HandNode } from "../../core/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
@@ -93,7 +93,7 @@ function makeProtocolResult(roundName: string): ProtocolEvalResult {
     matchedRounds: [],
     established: { role: "responder" as const },
     handResult: evaluateTree(normalTree, makeContext(["1NT", "P"])),
-    activeRound: (testProtocol.rounds as readonly ProtocolRound[]).find(r => r.name === roundName) ?? null,
+    activeRound: (testProtocol.rounds).find(r => r.name === roundName) ?? null,
     handTreeRoot: normalTree,
   };
 }

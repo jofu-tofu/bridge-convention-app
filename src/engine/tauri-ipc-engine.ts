@@ -82,12 +82,12 @@ export class TauriIpcEngine implements EnginePort {
     return invoke<DDSolution>("solve_deal", { deal });
   }
 
-  async suggestPlay(
+  suggestPlay(
     _hand: Hand,
     _currentTrick: readonly Card[],
     _trumpSuit: BidSuit | null,
     _previousTricks: readonly (readonly Card[])[],
   ): Promise<Card> {
-    throw new Error("DDS not available in V1");
+    return Promise.reject(new Error("DDS not available in V1"));
   }
 }

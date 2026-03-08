@@ -68,8 +68,8 @@ describe("Bergen Raises deal constraints", () => {
       expect(hcp).toBeGreaterThanOrEqual(12);
       expect(hcp).toBeLessThanOrEqual(21);
       // At least one major is 5+
-      const hasSpades = shape[0]! >= 5;
-      const hasHearts = shape[1]! >= 5;
+      const hasSpades = shape[0] >= 5;
+      const hasHearts = shape[1] >= 5;
       expect(hasSpades || hasHearts).toBe(true);
     }
   });
@@ -83,8 +83,8 @@ describe("Bergen Raises deal constraints", () => {
 
       expect(hcp).toBeGreaterThanOrEqual(0);
       // No maxHcp cap — game raise (13+) needs to be reachable
-      const hasSpades = shape[0]! >= 4;
-      const hasHearts = shape[1]! >= 4;
+      const hasSpades = shape[0] >= 4;
+      const hasHearts = shape[1] >= 4;
       expect(hasSpades || hasHearts).toBe(true);
     }
   });
@@ -1069,8 +1069,8 @@ describe("Bergen Raises property-based invariants", () => {
 
       // Determine what opener bid based on opener's shape
       const openerShape = getSuitLength(deal.hands[Seat.North]);
-      const spades = openerShape[0]!;
-      const hearts = openerShape[1]!;
+      const spades = openerShape[0];
+      const hearts = openerShape[1];
       const openMajor = spades >= 5 && spades >= hearts ? "1S" : "1H";
 
       const ctx = makeBiddingContext(responderHand, Seat.South, [
@@ -1084,7 +1084,7 @@ describe("Bergen Raises property-based invariants", () => {
       // So we only assert a match when responder has support for the opened major.
       const responderShape = getSuitLength(responderHand);
       const hasSupportForOpened =
-        openMajor === "1H" ? responderShape[1]! === 4 : responderShape[0]! === 4;
+        openMajor === "1H" ? responderShape[1] === 4 : responderShape[0] === 4;
 
       if (hasSupportForOpened) {
         expect(ruleResult).not.toBeNull();

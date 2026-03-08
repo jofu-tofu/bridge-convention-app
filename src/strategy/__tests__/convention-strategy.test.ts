@@ -701,8 +701,8 @@ describe("conventionToStrategy — treeInferenceData", () => {
     if (result!.treeInferenceData) {
       // All entries should have negatable as boolean or undefined
       for (const entry of [
-        ...result!.treeInferenceData!.pathConditions,
-        ...result!.treeInferenceData!.rejectedConditions,
+        ...result!.treeInferenceData.pathConditions,
+        ...result!.treeInferenceData.rejectedConditions,
       ]) {
         expect(entry.negatable === undefined || typeof entry.negatable === "boolean").toBe(true);
       }

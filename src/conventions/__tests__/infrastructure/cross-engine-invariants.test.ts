@@ -5,6 +5,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
+import type { Auction } from "../../../engine/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
@@ -30,14 +31,14 @@ import { bergenConfig } from "../../definitions/bergen-raises/config";
 import { weakTwosConfig } from "../../definitions/weak-twos/config";
 
 // Two-pass helpers matching production config pattern
-function computeStaymanState(auction: import("../../../engine/types").Auction) {
+function computeStaymanState(auction: Auction) {
   return computeDialogueState(auction, staymanTransitionRules, baselineTransitionRules);
 }
-function computeBergenState(auction: import("../../../engine/types").Auction) {
-  return computeDialogueState(auction, bergenConfig.transitionRules!, bergenConfig.baselineRules!);
+function computeBergenState(auction: Auction) {
+  return computeDialogueState(auction, bergenConfig.transitionRules!, bergenConfig.baselineRules);
 }
-function computeWeakTwoState(auction: import("../../../engine/types").Auction) {
-  return computeDialogueState(auction, weakTwosConfig.transitionRules!, weakTwosConfig.baselineRules!);
+function computeWeakTwoState(auction: Auction) {
+  return computeDialogueState(auction, weakTwosConfig.transitionRules!, weakTwosConfig.baselineRules);
 }
 
 beforeEach(() => {

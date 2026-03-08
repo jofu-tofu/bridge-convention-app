@@ -607,7 +607,7 @@ describe("Round 3: opponent's actions inform rebid", () => {
      */
     const result = suggestCall(inviteHeartFit(), Seat.South, ["1NT", "P", "2C", "P", "2D", "2H"]);
     if (result && result.call.type === "bid") {
-      const call = result.call as ContractBid;
+      const call = result.call;
       // Should NOT bid hearts — opponent has shown heart length
       expect(call.strain).not.toBe(BidSuit.Hearts);
     }

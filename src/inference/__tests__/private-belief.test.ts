@@ -13,7 +13,7 @@ function makeBeliefState(overrides?: Partial<Record<Seat, { hcpRange?: { min: nu
   const beliefs = { ...base.beliefs };
   for (const [seatStr, data] of Object.entries(overrides)) {
     const seat = seatStr as Seat;
-    const existing = beliefs[seat]!;
+    const existing = beliefs[seat];
     beliefs[seat] = {
       ...existing,
       hcpRange: data.hcpRange ?? existing.hcpRange,

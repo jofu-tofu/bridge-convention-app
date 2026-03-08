@@ -260,7 +260,7 @@ function flattenBinaryTreeForDisplay(
       case "decision": {
         const rawLabel = node.condition.label;
         let conditionLabel = rawLabel;
-        let fullConditionLabel = rawLabel;
+        const fullConditionLabel = rawLabel;
         let childAncestorAlts = nearestAncestorAuctionAlts;
 
         if (node.condition.category === "auction") {

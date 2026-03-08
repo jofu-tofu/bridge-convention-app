@@ -10,6 +10,7 @@
 
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
+import type { ContractBid } from "../../../engine/types";
 import {
   registerConvention,
   clearRegistry,
@@ -237,7 +238,7 @@ describe("Bergen Raises — unusual hand shapes", () => {
     const result = evaluateBiddingRules(ctx, bergenConfig);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("bergen-constructive-raise");
-    const call = result!.call as import("../../../engine/types").ContractBid;
+    const call = result!.call as ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Clubs);
   });
@@ -255,7 +256,7 @@ describe("Bergen Raises — unusual hand shapes", () => {
     const result = evaluateBiddingRules(ctx, bergenConfig);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("bergen-preemptive-raise");
-    const call = result!.call as import("../../../engine/types").ContractBid;
+    const call = result!.call as ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Spades);
   });
@@ -273,7 +274,7 @@ describe("Bergen Raises — unusual hand shapes", () => {
     const result = evaluateBiddingRules(ctx, bergenConfig);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("bergen-splinter");
-    const call = result!.call as import("../../../engine/types").ContractBid;
+    const call = result!.call as ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Spades);
   });
@@ -291,7 +292,7 @@ describe("Bergen Raises — unusual hand shapes", () => {
     const result = evaluateBiddingRules(ctx, bergenConfig);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("bergen-splinter");
-    const call = result!.call as import("../../../engine/types").ContractBid;
+    const call = result!.call as ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Hearts);
   });

@@ -32,7 +32,7 @@
     const params = new URLSearchParams(window.location.search);
 
     const seedParam = params.get("seed");
-    if (seedParam != null) {
+    if (seedParam !== null) {
       const seed = Number(seedParam);
       if (Number.isFinite(seed)) {
         store.setDevSeed(seed);

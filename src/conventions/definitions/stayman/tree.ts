@@ -14,7 +14,6 @@ import {
   or,
   opponentActed,
 } from "../../core/conditions";
-import type { AuctionCondition } from "../../core/types";
 import { handDecision, fallback } from "../../core/rule-tree";
 import type { HandNode } from "../../core/rule-tree";
 import { createIntentBidFactory } from "../../core/intent/intent-node";
@@ -387,7 +386,7 @@ export const staymanProtocol: ConventionProtocol<StaymanEstablished> = protocol<
       semantic<StaymanEstablished>(bidMade(2, BidSuit.NoTrump), { openingLevel: 2 }),
     ],
     handTree: round1WithInterference,
-    seatFilter: and(isResponder(), biddingRound(0), or(lastEntryIsPass(), opponentActed())) as AuctionCondition,
+    seatFilter: and(isResponder(), biddingRound(0), or(lastEntryIsPass(), opponentActed())),
   }),
   // Round 2: Stayman ask made — opener responds with major or denial
   // seatFilter: opener + no interference after the Stayman ask
@@ -398,7 +397,7 @@ export const staymanProtocol: ConventionProtocol<StaymanEstablished> = protocol<
     ],
     handTree: (est: StaymanEstablished): HandNode =>
       est.openingLevel === 2 ? round2Response2NT : round2Response,
-    seatFilter: and(isOpener(), lastEntryIsPass()) as AuctionCondition,
+    seatFilter: and(isOpener(), lastEntryIsPass()),
   }),
   // Round 3: Opener responded — responder rebids based on what was shown
   // seatFilter: responder + no interference after opener's response
@@ -417,6 +416,6 @@ export const staymanProtocol: ConventionProtocol<StaymanEstablished> = protocol<
       if (est.showed === "denial") return rebidAfter2D;
       return fallback("unknown-response");
     },
-    seatFilter: and(isResponder(), lastEntryIsPass()) as AuctionCondition,
+    seatFilter: and(isResponder(), lastEntryIsPass()),
   }),
 ]);

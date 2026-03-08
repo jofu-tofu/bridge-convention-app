@@ -11,39 +11,39 @@ import {
 import { STAYMAN_CAPABILITY } from "./constants";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import type { Call, Seat } from "../../../engine/types";
-import { Suit } from "../../../engine/types";
+import { BidSuit, Suit } from "../../../engine/types";
 import { areSamePartnership, partnerOfOpener, isOpenerSeat } from "../../core/dialogue/helpers";
 
 function is2C(call: Call): boolean {
-  return call.type === "bid" && call.level === 2 && call.strain === "C";
+  return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Clubs;
 }
 
 function is3C(call: Call): boolean {
-  return call.type === "bid" && call.level === 3 && call.strain === "C";
+  return call.type === "bid" && call.level === 3 && call.strain === BidSuit.Clubs;
 }
 
 function is2H(call: Call): boolean {
-  return call.type === "bid" && call.level === 2 && call.strain === "H";
+  return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Hearts;
 }
 
 function is2S(call: Call): boolean {
-  return call.type === "bid" && call.level === 2 && call.strain === "S";
+  return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Spades;
 }
 
 function is2D(call: Call): boolean {
-  return call.type === "bid" && call.level === 2 && call.strain === "D";
+  return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Diamonds;
 }
 
 function is3H(call: Call): boolean {
-  return call.type === "bid" && call.level === 3 && call.strain === "H";
+  return call.type === "bid" && call.level === 3 && call.strain === BidSuit.Hearts;
 }
 
 function is3S(call: Call): boolean {
-  return call.type === "bid" && call.level === 3 && call.strain === "S";
+  return call.type === "bid" && call.level === 3 && call.strain === BidSuit.Spades;
 }
 
 function is3D(call: Call): boolean {
-  return call.type === "bid" && call.level === 3 && call.strain === "D";
+  return call.type === "bid" && call.level === 3 && call.strain === BidSuit.Diamonds;
 }
 
 export const staymanTransitionRules: readonly TransitionRule[] = [

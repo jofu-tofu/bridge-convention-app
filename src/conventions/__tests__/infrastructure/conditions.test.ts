@@ -23,7 +23,7 @@ import {
   partnerBidMade,
   opponentBidMade,
 } from "../../core/conditions";
-import type { BiddingContext, ConditionedBiddingRule } from "../../core/types";
+import type { BiddingContext } from "../../core/types";
 import { isAuctionCondition } from "../../core/tree-compat";
 import { hand, auctionFromBids, makeBiddingContext } from "../fixtures";
 
@@ -146,7 +146,7 @@ describe("condition classification audit", () => {
     for (const config of conventions) {
       for (const rule of getConventionRules(config.id)) {
         if (!isConditionedRule(rule)) continue;
-        const conditioned = rule as ConditionedBiddingRule;
+        const conditioned = rule;
         for (const cond of conditioned.auctionConditions) {
           if (!isAuctionCondition(cond)) {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" in auctionConditions`);
@@ -170,7 +170,7 @@ describe("condition classification audit", () => {
     for (const config of conventions) {
       for (const rule of getConventionRules(config.id)) {
         if (!isConditionedRule(rule)) continue;
-        const conditioned = rule as ConditionedBiddingRule;
+        const conditioned = rule;
         for (const cond of conditioned.handConditions) {
           if (isAuctionCondition(cond)) {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" in handConditions`);
@@ -189,7 +189,7 @@ describe("condition classification audit", () => {
     for (const config of conventions) {
       for (const rule of getConventionRules(config.id)) {
         if (!isConditionedRule(rule)) continue;
-        const conditioned = rule as ConditionedBiddingRule;
+        const conditioned = rule;
         for (const cond of conditioned.handConditions) {
           if (cond.category === "auction") {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" has category:'auction' in handConditions`);
@@ -208,7 +208,7 @@ describe("condition classification audit", () => {
     for (const config of conventions) {
       for (const rule of getConventionRules(config.id)) {
         if (!isConditionedRule(rule)) continue;
-        const conditioned = rule as ConditionedBiddingRule;
+        const conditioned = rule;
         for (const cond of conditioned.auctionConditions) {
           if (cond.inference) {
             violations.push(`${config.id}/${rule.name}: "${cond.name}" has .inference in auctionConditions`);

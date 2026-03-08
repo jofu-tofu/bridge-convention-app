@@ -5,7 +5,7 @@ import { getEffectiveRules } from "../../core/registry";
 import { generateDeal } from "../../../engine/deal-generator";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, BidSuit } from "../../../engine/types";
-import type { Auction, Hand } from "../../../engine/types";
+import type { Auction, Hand, Call } from "../../../engine/types";
 import type { BiddingContext, BiddingRule } from "../../core/types";
 import { createBiddingContext } from "../../core/context-factory";
 import { SEATS } from "../../../engine/constants";
@@ -57,7 +57,7 @@ function auctionFromCalls(
   return { entries, isComplete: false };
 }
 
-function parseCall(s: string): import("../../../engine/types").Call {
+function parseCall(s: string): Call {
   if (s === "P") return { type: "pass" };
   if (s === "X") return { type: "double" };
   if (s === "XX") return { type: "redouble" };

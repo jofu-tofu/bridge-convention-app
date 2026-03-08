@@ -13,7 +13,7 @@ import {
   suitMin,
   suitQuality,
 } from "../../core/conditions";
-import type { AuctionCondition, HandCondition } from "../../core/types";
+import type { HandCondition } from "../../core/types";
 import { handDecision } from "../../core/rule-tree";
 import type { HandNode } from "../../core/rule-tree";
 import { intentBid } from "../../core/intent/intent-node";
@@ -209,14 +209,14 @@ export const lebensohlLiteProtocol: ConventionProtocol<LebensohlLiteEstablished>
           ),
         ],
         handTree: (established) => round1ResponderTree(established.overcallSuit ?? BidSuit.Diamonds),
-        seatFilter: and(isResponder(), biddingRound(0)) as AuctionCondition,
+        seatFilter: and(isResponder(), biddingRound(0)),
       }),
       round<LebensohlLiteEstablished>("relay-completion", {
         triggers: [
           semantic<LebensohlLiteEstablished>(bidMade(2, BidSuit.NoTrump), {}),
         ],
         handTree: round2RelayAcceptTree,
-        seatFilter: and(isOpener(), passedAfter(2, BidSuit.NoTrump)) as AuctionCondition,
+        seatFilter: and(isOpener(), passedAfter(2, BidSuit.NoTrump)),
       }),
       round<LebensohlLiteEstablished>("continuation", {
         triggers: [
@@ -224,7 +224,7 @@ export const lebensohlLiteProtocol: ConventionProtocol<LebensohlLiteEstablished>
         ],
         handTree: (established) =>
           round3ResponderContinuationTree(established.overcallSuit ?? BidSuit.Diamonds),
-        seatFilter: and(isResponder(), passedAfter(3, BidSuit.Clubs)) as AuctionCondition,
+        seatFilter: and(isResponder(), passedAfter(3, BidSuit.Clubs)),
       }),
     ],
   );

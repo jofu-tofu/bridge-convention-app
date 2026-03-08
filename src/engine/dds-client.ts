@@ -5,6 +5,12 @@
 
 import type { Deal, DDSolution } from "./types";
 
+/** Messages received from the DDS Web Worker. */
+type DDSWorkerMessage =
+  | { type: "ready" }
+  | { type: "result"; id: number; solution: DDSolution }
+  | { type: "error"; id: number; message: string };
+
 let worker: Worker | null = null;
 let ready = false;
 let initPromise: Promise<void> | null = null;
@@ -27,7 +33,7 @@ export async function initDDS(): Promise<void> {
       15000,
     );
 
-    worker.onmessage = (e: MessageEvent) => {
+    worker.onmessage = (e: MessageEvent<DDSWorkerMessage>) => {
       const msg = e.data;
 
       if (msg.type === "ready") {
@@ -38,7 +44,7 @@ export async function initDDS(): Promise<void> {
       }
 
       // Route solve responses by request ID
-      if (msg.id != null && pending.has(msg.id)) {
+      if (pending.has(msg.id)) {
         const p = pending.get(msg.id)!;
         pending.delete(msg.id);
         if (msg.type === "result") {

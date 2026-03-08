@@ -182,15 +182,15 @@ export function extractTeachingContent(
         const est = { ...accEst, ...trigger.establishes };
 
         // Flatten this round's hand tree with accumulated conditions
-        let handTree: import("../conventions/core/rule-tree").RuleNode | null;
+        let handTree: RuleNode | null;
         if (typeof r.handTree === "function") {
           try {
-            handTree = r.handTree(est as never) as import("../conventions/core/rule-tree").RuleNode;
+            handTree = r.handTree(est as never) as RuleNode;
           } catch {
             handTree = null;
           }
         } else {
-          handTree = r.handTree as import("../conventions/core/rule-tree").RuleNode;
+          handTree = r.handTree as RuleNode;
         }
         if (handTree) {
           walkTree(handTree, pathConds, pathNames, [], explanations, collected);

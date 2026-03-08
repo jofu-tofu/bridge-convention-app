@@ -1,5 +1,5 @@
-import type { Auction, ContractBid, Hand } from "../../engine/types";
-import { Seat } from "../../engine/types";
+import type { Auction, Hand } from "../../engine/types";
+import type { Seat } from "../../engine/types";
 import { buildAuction, parsePatternCall } from "../../engine/auction-helpers";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import type { BiddingContext } from "../core/types";
@@ -157,8 +157,8 @@ export function expectBid(
   const expectedCall = parsePatternCall(expected);
   expect(lastEntry!.call.type).toBe(expectedCall.type);
   if (expectedCall.type === "bid" && lastEntry!.call.type === "bid") {
-    const lastBid = lastEntry!.call as ContractBid;
-    const expBid = expectedCall as ContractBid;
+    const lastBid = lastEntry!.call;
+    const expBid = expectedCall;
     expect(lastBid.level).toBe(expBid.level);
     expect(lastBid.strain).toBe(expBid.strain);
   }

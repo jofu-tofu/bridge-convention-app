@@ -1,4 +1,4 @@
-import { Suit, Rank } from "./types";
+import type { Suit, Rank } from "./types";
 import type { Card, Hand, Trick, Seat } from "./types";
 import { RANK_INDEX } from "./constants";
 

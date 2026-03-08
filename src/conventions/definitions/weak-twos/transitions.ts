@@ -5,6 +5,7 @@
 import type { TransitionRule } from "../../core/dialogue/dialogue-transitions";
 import { PendingAction } from "../../core/dialogue/dialogue-state";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
+import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { partnerOfOpener } from "../../core/dialogue/helpers";
 
@@ -12,12 +13,12 @@ function isWeakTwoOpening(call: Call): boolean {
   return (
     call.type === "bid" &&
     call.level === 2 &&
-    (call.strain === "H" || call.strain === "S" || call.strain === "D")
+    (call.strain === BidSuit.Hearts || call.strain === BidSuit.Spades || call.strain === BidSuit.Diamonds)
   );
 }
 
 function is2NT(call: Call): boolean {
-  return call.type === "bid" && call.level === 2 && call.strain === "NT";
+  return call.type === "bid" && call.level === 2 && call.strain === BidSuit.NoTrump;
 }
 
 export const weakTwoTransitionRules: readonly TransitionRule[] = [

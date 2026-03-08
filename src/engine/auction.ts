@@ -1,11 +1,11 @@
-import { BidSuit, Seat } from "./types";
+import { BidSuit } from "./types";
 import type {
   Auction,
   AuctionEntry,
   Call,
   Contract,
   ContractBid,
-} from "./types";
+ Seat } from "./types";
 import { partnerSeat } from "./constants";
 
 /**

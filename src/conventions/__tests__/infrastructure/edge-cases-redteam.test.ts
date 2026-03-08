@@ -338,12 +338,12 @@ describe("edge cases red team", () => {
       const rules: readonly TransitionRule[] = [
         {
           id: "set-show-major",
-          matches: (_state, entry) => { const { call } = entry; return call.type === "bid" && call.level === 2 && call.strain === "C"; },
+          matches: (_state, entry) => { const { call } = entry; return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Clubs; },
           effects: () => ({ setPendingAction: PendingAction.ShowMajor }),
         },
         {
           id: "set-show-suit",
-          matches: (_state, entry) => { const { call } = entry; return call.type === "bid" && call.level === 2 && call.strain === "D"; },
+          matches: (_state, entry) => { const { call } = entry; return call.type === "bid" && call.level === 2 && call.strain === BidSuit.Diamonds; },
           effects: () => ({ setPendingAction: PendingAction.ShowSuit }),
         },
       ];
@@ -407,7 +407,7 @@ describe("edge cases red team", () => {
               return state.familyId === null
                 && call.type === "bid"
                 && call.level === 1
-                && call.strain === "NT";
+                && call.strain === BidSuit.NoTrump;
             },
             effects: (_state, entry) => {
               const { seat } = entry;

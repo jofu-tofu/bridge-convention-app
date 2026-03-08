@@ -6,7 +6,6 @@ import {
   seatHasBid,
   and,
 } from "../../core/conditions";
-import type { AuctionCondition } from "../../core/types";
 import type { HandNode, RuleNode } from "../../core/rule-tree";
 import { protocol, round, semantic } from "../../core/protocol";
 import type { ConventionProtocol, EstablishedContext } from "../../core/protocol";
@@ -44,7 +43,7 @@ export const saycProtocol: ConventionProtocol<SAYCEstablished> = protocol<SAYCEs
   round<SAYCEstablished>("dispatch", {
     triggers: [
       semantic<SAYCEstablished>(
-        and(isOpener(), noPriorBid()) as AuctionCondition,
+        and(isOpener(), noPriorBid()),
         { slotName: "is-opener-no-prior-bid" },
       ),
       semantic<SAYCEstablished>(
@@ -56,7 +55,7 @@ export const saycProtocol: ConventionProtocol<SAYCEstablished> = protocol<SAYCEs
         { slotName: "opponent-bid" },
       ),
       semantic<SAYCEstablished>(
-        and(isOpener(), seatHasBid()) as AuctionCondition,
+        and(isOpener(), seatHasBid()),
         { slotName: "is-opener-rebid" },
       ),
     ],

@@ -13,6 +13,7 @@
 
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
+import type { ContractBid } from "../../../engine/types";
 import {
   registerConvention,
   clearRegistry,
@@ -385,7 +386,7 @@ describe("Stayman — 2NT opening Stayman", () => {
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("stayman-ask-2nt");
-    const call = result!.call as import("../../../engine/types").ContractBid;
+    const call = result!.call as ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Clubs);
   });
@@ -403,7 +404,7 @@ describe("Stayman — 2NT opening Stayman", () => {
     const result = evaluateBiddingRules(ctx, staymanConfig);
     expect(result).not.toBeNull();
     expect(result!.rule).toBe("stayman-response-hearts-2nt");
-    const call = result!.call as import("../../../engine/types").ContractBid;
+    const call = result!.call as ContractBid;
     expect(call.level).toBe(3);
     expect(call.strain).toBe(BidSuit.Hearts);
   });

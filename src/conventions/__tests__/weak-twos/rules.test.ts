@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
-import type { ContractBid, Hand } from "../../../engine/types";
+import type { ContractBid, Deal, Hand } from "../../../engine/types";
 import {
   calculateHcp,
   getSuitLength,
@@ -68,9 +68,9 @@ describe("Weak Two Bids deal constraints", () => {
       expect(hcp).toBeGreaterThanOrEqual(5);
       expect(hcp).toBeLessThanOrEqual(11);
       // At least one suit is 6+
-      const hasHearts = shape[1]! >= 6;
-      const hasSpades = shape[0]! >= 6;
-      const hasDiamonds = shape[2]! >= 6;
+      const hasHearts = shape[1] >= 6;
+      const hasSpades = shape[0] >= 6;
+      const hasDiamonds = shape[2] >= 6;
       expect(hasHearts || hasSpades || hasDiamonds).toBe(true);
     }
   });
@@ -95,7 +95,7 @@ describe("Weak Two Bids deal constraints", () => {
     );
     // checkConstraints takes a Deal-like object with .hands property
     const result = checkConstraints(
-      { hands: { [Seat.North]: tooStrong } } as import("../../../engine/types").Deal,
+      { hands: { [Seat.North]: tooStrong } } as Deal,
       weakTwosDealConstraints,
     );
     expect(result).toBe(false);

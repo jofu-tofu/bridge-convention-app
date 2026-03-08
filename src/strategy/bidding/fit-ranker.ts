@@ -4,7 +4,6 @@
 
 import type { ResolvedCandidate } from "../../conventions/core/candidate-generator";
 import type { EffectiveConventionContext } from "../../conventions/core/effective-context";
-import type { Suit } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
 import { partnerSeat } from "../../engine/constants";
 import { SUIT_ORDER } from "../../engine/constants";
@@ -51,7 +50,7 @@ export function createFitConfidenceRanker(): (
       if (suitIndex === undefined) return { candidate: c, score: 0 };
 
       const ownLength = ownShape[suitIndex] ?? 0;
-      const suit = SUIT_ORDER[suitIndex]! as Suit;
+      const suit = SUIT_ORDER[suitIndex]!;
       const partnerMinLength = partnerBeliefs.suitLengths[suit]?.min ?? 0;
 
       return { candidate: c, score: ownLength + partnerMinLength };

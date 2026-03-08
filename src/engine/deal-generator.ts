@@ -22,7 +22,7 @@ const DEFAULT_MAX_ATTEMPTS = 10_000;
 const STANDARD_DECK: readonly Card[] = createDeck();
 
 /** Pre-allocated shuffle buffer — reused across iterations to avoid per-call spread. */
-const shuffleBuffer: Card[] = new Array(52);
+const shuffleBuffer: Card[] = new Array<Card>(52);
 
 function fisherYatesShuffle(
   cards: readonly Card[],

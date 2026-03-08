@@ -6,7 +6,7 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 import type { BiddingContext } from "../../core/types";
 import { handDecision, fallback } from "../../core/rule-tree";
-import type { HandNode } from "../../core/rule-tree";
+import type { HandNode, RuleNode } from "../../core/rule-tree";
 import { evaluateTree } from "../../core/tree-evaluator";
 import { flattenTree } from "../../core/tree-compat";
 import { findSiblingBids } from "../../core/sibling-finder";
@@ -87,7 +87,7 @@ describe("IntentNode + Intent Resolver", () => {
     it("evaluates IntentNode as leaf with matched.type === 'intent'", () => {
       const tree = makeIntentTree();
       const ctx = makeContext(responderHand(), ["1NT", "P"]);
-      const result = evaluateTree(tree as import("../../core/rule-tree").RuleNode, ctx);
+      const result = evaluateTree(tree as RuleNode, ctx);
 
       expect(result.matched).not.toBeNull();
       expect(result.matched!.type).toBe("intent");
@@ -99,7 +99,7 @@ describe("IntentNode + Intent Resolver", () => {
   describe("flattenTree with IntentNode", () => {
     it("produces ConditionedBiddingRule[] with callable call from defaultCall", () => {
       const tree = makeIntentTree();
-      const rules = flattenTree(tree as import("../../core/rule-tree").RuleNode);
+      const rules = flattenTree(tree as RuleNode);
 
       // Should have rules (at least the intent node path)
       expect(rules.length).toBeGreaterThan(0);
@@ -136,7 +136,7 @@ describe("IntentNode + Intent Resolver", () => {
       );
 
       const ctx = makeContext(responderHand(), ["1NT", "P", "2C", "P"]);
-      const result = evaluateTree(tree as import("../../core/rule-tree").RuleNode, ctx);
+      const result = evaluateTree(tree as RuleNode, ctx);
 
       // Should match show-hearts (hand has 4 hearts)
       expect(result.matched).not.toBeNull();
@@ -144,7 +144,7 @@ describe("IntentNode + Intent Resolver", () => {
 
       // Find siblings — deny-hearts should appear
       const siblings = findSiblingBids(
-        tree as import("../../core/rule-tree").RuleNode,
+        tree as RuleNode,
         result.matched!,
         ctx,
       );

@@ -1,5 +1,5 @@
 import { Seat, Suit } from "../../../engine/types";
-import type { DealConstraints, Auction } from "../../../engine/types";
+import type { Auction, Deal, DealConstraints } from "../../../engine/types";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
@@ -38,7 +38,7 @@ export const staymanDealConstraints: DealConstraints = {
 /** Responder position starts after 1NT - P. */
 function staymanDefaultAuction(
   seat: Seat,
-  _deal?: import("../../../engine/types").Deal,
+  _deal?: Deal,
 ): Auction | undefined {
   if (seat === Seat.South || seat === Seat.East) {
     return buildAuction(Seat.North, ["1NT", "P"]);

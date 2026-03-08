@@ -1,5 +1,5 @@
 import { Seat, Suit } from "../../../engine/types";
-import type { DealConstraints, Auction } from "../../../engine/types";
+import type { Auction, Deal, DealConstraints } from "../../../engine/types";
 import type { ConventionConfig } from "../../core/types";
 import { ConventionCategory } from "../../core/types";
 import { weakTwosProtocol } from "./tree";
@@ -36,7 +36,7 @@ export const weakTwosDealConstraints: DealConstraints = {
 /** Opener is first to act — empty auction. */
 function weakTwosDefaultAuction(
   _seat: Seat,
-  _deal?: import("../../../engine/types").Deal,
+  _deal?: Deal,
 ): Auction | undefined {
   // Opener is North and goes first; no preceding bids needed.
   return undefined;

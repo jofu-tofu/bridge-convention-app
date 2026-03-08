@@ -63,7 +63,7 @@ export function mergeInferences(
   const suitLengths = {} as Record<Suit, { min: number; max: number }>;
   for (const suit of ALL_SUITS) {
     let min = suitMins[suit]!;
-    let max = suitMaxes[suit]!;
+    const max = suitMaxes[suit]!;
     if (min > max) {
       min = max; // clamp on contradiction
     }

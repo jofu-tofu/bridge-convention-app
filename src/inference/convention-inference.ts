@@ -200,10 +200,10 @@ function mergeHandInferences(
     for (const [s, si] of Object.entries(inf.suits) as [Suit, SuitInference][]) {
       if (!suits[s]) suits[s] = {};
       if (si.minLength !== undefined) {
-        suits[s]!.minLength = Math.max(suits[s]!.minLength ?? 0, si.minLength);
+        suits[s].minLength = Math.max(suits[s].minLength ?? 0, si.minLength);
       }
       if (si.maxLength !== undefined) {
-        suits[s]!.maxLength = Math.min(suits[s]!.maxLength ?? 13, si.maxLength);
+        suits[s].maxLength = Math.min(suits[s].maxLength ?? 13, si.maxLength);
       }
     }
   }

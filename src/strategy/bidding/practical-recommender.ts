@@ -109,7 +109,7 @@ function buildScoringInput(
   }
 
   const ownSuitLength = ownShape[suitIndex] ?? 0;
-  const suit = SUIT_ORDER[suitIndex]! as Suit;
+  const suit = SUIT_ORDER[suitIndex]!;
   const partnerMinSuitLength = partnerSuitLengths[suit]?.min ?? 0;
 
   return { ownHcp, partnerMinHcp, ownSuitLength, partnerMinSuitLength };
