@@ -172,7 +172,7 @@ export const saycExplanations: ConventionExplanations = {
     "sayc-opener-accept-transfer": {
       whyThisBid:
         "Completes the Jacoby transfer by bidding the indicated major. This is mandatory — opener must accept.",
-      forcingType: "forced",
+      forcingType: "forcing",
     },
     "sayc-1nt-overcall": {
       whyThisBid:

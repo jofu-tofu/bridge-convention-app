@@ -26,7 +26,7 @@ function getAllProtocolIntentNodes(): IntentNode[] {
       // But the protocol resolves hand trees at evaluation time via established context.
       // Instead, walk all trigger hand trees directly by getting established contexts.
       if (trigger.establishes) {
-        const est = trigger.establishes;
+        const est = { slotName: "", ...trigger.establishes };
         const handTree = typeof round.handTree === "function"
           ? round.handTree(est)
           : round.handTree;
