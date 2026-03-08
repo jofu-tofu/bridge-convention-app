@@ -79,7 +79,7 @@ tailwind.config = {
     <a href="#teaching" class="toc-link block py-1 px-3 text-gray-700">12. Teaching Resolution</a>
     <a href="#strategy-chain" class="toc-link block py-1 px-3 text-gray-700">13. Strategy Chain</a>
     <a href="#resolvers" class="toc-link block py-1 px-3 text-gray-700">14. Resolver Architecture</a>
-    <a href="#forcing" class="toc-link block py-1 px-3 text-gray-700">15. Three-Level Forcing</a>
+    <a href="#forcing" class="toc-link block py-1 px-3 text-gray-700">15. Forcing &amp; Obligation</a>
     <a href="#walkthrough" class="toc-link block py-1 px-3 text-gray-700">16. Stayman Walkthrough</a>
     <a href="#store-trigger" class="toc-link block py-1 px-3 text-gray-700">17. Store Integration</a>
     <a href="#conditions-ref" class="toc-link block py-1 px-3 text-gray-700">18. Condition Reference</a>
@@ -141,10 +141,10 @@ flowchart LR
   <li><strong>Build EffectiveConventionContext:</strong> Bundles raw context + config + protocol result + dialogue state + active overlays + belief.</li>
   <li><strong>Generate candidates:</strong> <code>generateCandidates(treeRoot, treeEvalResult, effectiveCtx)</code> -- runs intent collection, overlay hooks, resolver calls.</li>
   <li><strong>Compose ranker:</strong> <code>config.rankCandidates</code> first, then <code>options.ranker</code>. Both compose: config output feeds into options.</li>
-  <li><strong>Select candidate:</strong> <code>selectMatchedCandidate(candidates, ranker, forcingState)</code> -- tiered selection.</li>
-  <li><strong>Handle result:</strong> If selected, use its <code>resolvedCall</code>. If not selected and <code>matchedIntentSuppressed</code>, return <code>null</code>. Otherwise fall back to <code>defaultCall</code>.</li>
+  <li><strong>Select candidate:</strong> <code>selectMatchedCandidate(candidates, ranker, forcingState, obligation)</code> -- returns <code>SelectionResult</code> with <code>selected</code>, <code>tierPeers</code>, and <code>rankerApplied</code>. Records tier-peer ambiguity in the evaluation trace.</li>
+  <li><strong>Handle result:</strong> If selected, use its <code>resolvedCall</code>. If not selected, return <code>null</code> (defer to next strategy). There is no <code>defaultCall</code> fallback -- if no candidate survives selection, the pipeline declines entirely.</li>
   <li><strong>Compute practical recommendation:</strong> If belief data exists, score candidates + generate pragmatic candidates + build recommendation.</li>
-  <li><strong>Assemble BidResult:</strong> call, ruleName, explanation, meaning, handSummary, conditions, treePath, evaluationTrace, treeInferenceData, practicalRecommendation.</li>
+  <li><strong>Assemble BidResult:</strong> call, ruleName, explanation, meaning, handSummary, conditions, <code>decisionTrace</code> (tree path), <code>candidateSet</code> (sibling bids + resolved candidates), evaluationTrace, treeInferenceData, practicalRecommendation.</li>
 </ol>
 </div>
 
@@ -160,11 +160,10 @@ flowchart LR
 <div class="algo-box algo-deterministic">
 <p class="font-bold text-emerald-800 mb-2">Algorithm: evaluateProtocol(proto, context, triggerOverrides?)</p>
 <ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
-  <li><strong>Compute role:</strong> <code>computeRole(entries, seat)</code> scans the auction entries array linearly to determine if the evaluating seat is <code>opener</code>, <code>responder</code>, <code>competitive</code>, or <code>rebidder</code>.</li>
-  <li><strong>Initialize:</strong> <code>cursor = 0</code>, <code>established = { role }</code>, <code>activeRound = null</code>.</li>
+  <li><strong>Initialize:</strong> <code>cursor = 0</code>, <code>established = {}</code>, <code>activeRound = null</code>. No upfront role computation -- role authority lives in <code>DialogueState</code> (obligation, captain, frames), and is derived per-seat via <code>getLocalRoles(state, seat)</code>.</li>
   <li><strong>For each round</strong> in <code>proto.rounds</code> (linear scan):
     <ol class="list-[lower-alpha] list-inside ml-4 space-y-1">
-      <li>Create a <strong>windowed context</strong> from cursor position: <code>entries.slice(0, cursor + 2)</code>.</li>
+      <li>Create an <strong>event-local span</strong> from cursor position: <code>entries.slice(cursor, cursor + 2)</code>. The trigger evaluates only the 2-entry event span at the cursor -- <strong>not</strong> the full auction prefix. This prevents stale-trigger bugs where earlier entries could inadvertently re-fire a trigger.</li>
       <li>Get effective triggers: overlay trigger overrides if provided, else the round's own triggers.</li>
       <li><strong>Linear scan</strong> the triggers array. For each trigger, test <code>trigger.condition.test(cursorCtx)</code>. <strong>First match wins.</strong></li>
       <li>If no trigger matches, <strong>break</strong> -- auction hasn't reached this round.</li>
@@ -178,11 +177,10 @@ flowchart LR
 
 <pre class="mermaid">
 stateDiagram-v2
-    [*] --> ComputeRole
-    ComputeRole --> InitCursor: role determined
+    [*] --> InitCursor
     InitCursor --> TestRound: cursor=0
-    TestRound --> WindowContext: for each round
-    WindowContext --> TestTriggers: entries.slice(0, cursor+2)
+    TestRound --> EventSpan: for each round
+    EventSpan --> TestTriggers: entries.slice(cursor, cursor+2)
     TestTriggers --> NoMatch: no trigger passes
     TestTriggers --> AdvanceCursor: first trigger passes
     NoMatch --> EvalHandTree: break loop
@@ -281,17 +279,17 @@ loop forever:
 <table class="w-full text-sm">
 <thead><tr class="border-b"><th class="text-left py-1 pr-4">Field</th><th class="text-left py-1">What it tracks</th></tr></thead>
 <tbody>
-<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">familyId</td><td>Which convention family is active (e.g., "stayman")</td></tr>
-<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">forcingState</td><td>Nonforcing | ForcingOneRound | GameForcing | PassForcing</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">familyId</td><td>Which convention family is active (e.g., "1nt", "2nt")</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">forcingState</td><td>Nonforcing | ForcingOneRound | GameForcing | PassForcing. Mechanical pass-exclusion: "can you pass?"</td></tr>
 <tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">agreedStrain</td><td>{ type: none|suit|notrump, suit?, confidence? }</td></tr>
-<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">pendingAction</td><td>None | ShowMajor | ShowSuit</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">obligation</td><td>{ kind: ObligationKind, obligatedSide: "opener"|"responder" }. Semantic obligation: "what should you do?" Independent from forcingState -- e.g. Lebensohl's PlaceContract is nonforcing despite having an obligation.</td></tr>
 <tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">competitionMode</td><td>Uncontested | Doubled | Overcalled | Balancing</td></tr>
 <tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">captain</td><td>Opener | Responder | Neither</td></tr>
 <tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">systemMode</td><td>On | Off | Modified (global default)</td></tr>
-<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">systemCapabilities</td><td>Record of capability &rarr; SystemMode (per-capability override)</td></tr>
-<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">conventionData</td><td>Open record for convention-specific state</td></tr>
-<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">interferenceDetail</td><td>{ call, seat, isNatural, kind? } if opponent interfered</td></tr>
-<tr><td class="py-1 pr-4 font-mono text-xs">frames</td><td>Stack of DialogueFrame for multi-step obligations</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">systemCapabilities?</td><td>Record of capability &rarr; SystemMode (per-capability override)</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">conventionData</td><td>Open record for convention-specific state (e.g., <code>openerSeat</code>)</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">interferenceDetail?</td><td>{ call, seat, isNatural, kind?: InterferenceKind } if opponent interfered</td></tr>
+<tr><td class="py-1 pr-4 font-mono text-xs">frames?</td><td>Stack of DialogueFrame for multi-step obligations. Frame push/pop auto-derives obligation via <code>obligationFromFrame()</code>.</td></tr>
 </tbody>
 </table>
 </div>
@@ -331,7 +329,24 @@ return state</code></pre>
 
 <p class="text-gray-700 mt-4"><strong>Two-pass mode</strong> separates convention-specific transitions from generic baseline transitions. Convention rules fire first and "claim" fields; baseline rules only backfill unclaimed fields. This prevents baseline rules from overriding convention-specific state while still providing sensible defaults.</p>
 
-<p class="text-gray-700 mt-2"><strong>TransitionRule interface:</strong> Each rule has <code>id</code>, <code>matches(state, entry, auction, entryIndex)</code>, and <code>effects(state, entry, auction, entryIndex)</code>. Effects use typed <code>set*</code> prefix fields (e.g., <code>setFamilyId</code>, <code>mergeConventionData</code>).</p>
+<p class="text-gray-700 mt-2"><strong>TransitionRule interface:</strong> Each rule has <code>id</code>, optional <code>matchDescriptor</code> (for overlap analysis), <code>matches(state, entry, auction, entryIndex)</code>, and <code>effects(state, entry, auction, entryIndex)</code>. Effects use typed <code>set*</code> prefix fields (e.g., <code>setFamilyId</code>, <code>setObligation</code>, <code>setForcingState</code>, <code>mergeConventionData</code>, <code>pushFrame</code>/<code>popFrame</code>). The <code>set*</code> prefix prevents accidental pass-through of a full <code>DialogueState</code> as an effect.</p>
+
+<details class="mt-4 bg-gray-50 rounded-lg p-4">
+<summary class="text-gray-700">ObligationKind taxonomy</summary>
+<table class="w-full text-sm mt-2">
+<thead><tr class="border-b"><th class="text-left py-1 pr-4">Kind</th><th class="text-left py-1">Meaning</th><th class="text-left py-1">Active filtering?</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>None</code></td><td>No obligation</td><td>No</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>ShowMajor</code></td><td>Show a 4+ card major (Stayman)</td><td>Informational only</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>ShowSuit</code></td><td>Show a suit (e.g., Ogust)</td><td>Informational only</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>BidSuit</code></td><td>Act constructively -- excludes Pass, allows NT</td><td><strong>Yes</strong> -- excludes Pass</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>PlaceContract</code></td><td>Choose final contract (Lebensohl)</td><td>Informational only</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>CompleteRelay</code></td><td>Make a specific relay bid</td><td>Informational only</td></tr>
+<tr><td class="py-1 pr-4"><code>RespondToAsk</code></td><td>Answer partner's question</td><td>Informational only</td></tr>
+</tbody>
+</table>
+<p class="text-sm text-gray-500 mt-2">Only <code>BidSuit</code> actively filters candidates (excludes Pass). All other kinds are informational -- the tree already constrains responses correctly. Frame-derived obligations: <code>obligationFromFrame()</code> maps frame kind <code>"relay"</code> &rarr; <code>CompleteRelay</code>, <code>"place-contract"</code> &rarr; <code>PlaceContract</code>.</p>
+</details>
 </section>
 
 <!-- 5. Effective Context -->
@@ -451,9 +466,9 @@ flowchart TD
 <p class="font-bold text-emerald-800 mb-2">Algorithm: generateCandidates(handTreeRoot, handResult, effectiveCtx)</p>
 <ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
   <li><strong>Step 1 -- Replacement tree:</strong> Apply first overlay's <code>replacementTree</code> if any. Re-evaluates tree from new root. Tags all proposals with provenance <code>"replacement-tree"</code> or <code>"tree"</code>.</li>
-  <li><strong>Guard:</strong> If no IntentNode was matched after potential replacement, return empty candidates.</li>
+  <li><strong>Guard (with rescue):</strong> If no IntentNode was matched after potential replacement, skip tree collection and suppression, but <strong>still call <code>addIntents</code> hooks</strong> with an empty array. This lets overlays <strong>rescue empty candidate pools</strong> by injecting candidates even when there's no tree match. If no overlay provides addIntents, return empty candidates.</li>
   <li><strong>Step 2 -- Collect proposals:</strong> <code>collectIntentProposals(activeRoot, context)</code> -- recursive DFS, all IntentNode leaves.</li>
-  <li><strong>Step 3 -- Suppress:</strong> Apply all overlays' <code>suppressIntent</code> hooks. Track whether the matched intent was specifically suppressed.</li>
+  <li><strong>Step 3 -- Suppress:</strong> Apply all overlays' <code>suppressIntent</code> hooks. <strong>Suppressed proposals are NOT removed</strong> from the array -- they are <strong>tagged</strong> with <code>suppressedBy: string[]</code> (overlay IDs). During resolution, these tags become <code>protocol.reasons</code> making <code>protocol.satisfied = false</code>. This lets downstream consumers see what was suppressed and why.</li>
   <li><strong>Step 4 -- Add:</strong> Apply all overlays' <code>addIntents</code> hooks. Tags with provenance <code>"overlay-injected"</code>.</li>
   <li><strong>Step 5 -- Resolve each proposal</strong> (linear scan):
     <ol class="list-[lower-alpha] list-inside ml-4 space-y-1">
@@ -469,7 +484,8 @@ flowchart TD
         </ul>
       </li>
       <li>Check legality: <code>isLegalCall(auction, resolvedCall, seat)</code>.</li>
-      <li>Build <code>ResolvedCandidate</code> with all metadata (bidName, nodeId, meaning, call, failedConditions, intent, source, resolvedCall, isDefaultCall, legal, isMatched, priority, provenance).</li>
+      <li>Build <code>CandidateEligibility</code> via <code>buildEligibility()</code>: four dimensions (hand, protocol, encoding, pedagogical). Protocol reasons populated from <code>suppressedBy</code> tags and resolver <code>declined</code> status. Pedagogical check via optional <code>config.pedagogicalCheck()</code> hook.</li>
+      <li>Build <code>ResolvedCandidate</code> with all metadata including eligibility. Suppressed and declined candidates <strong>stay in the array</strong> (array presence &ne; selectability) -- <code>isSelectable()</code> gates selection via all four eligibility dimensions.</li>
     </ol>
   </li>
   <li><strong>Ordering:</strong> Matched candidates are <code>unshift</code>ed to front; non-matched are <code>push</code>ed to back.</li>
@@ -501,55 +517,73 @@ flowchart TD
 <section id="candidate-sel" class="mb-12">
 <h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">9. Candidate Selection: Tiered Algorithm</h2>
 
-<p class="text-gray-700 leading-relaxed mb-4"><code>selectMatchedCandidate()</code> picks the best candidate from the resolved pool using a strict <strong>four-tier priority system</strong>. Within each tier, the first candidate found in the (optionally ranked) array wins. The ranker influences which candidate wins <em>within</em> a tier, not tier boundaries.</p>
+<p class="text-gray-700 leading-relaxed mb-4"><code>selectMatchedCandidate()</code> picks the best candidate from the resolved pool using a strict <strong>four-tier priority system</strong> and returns a <code>SelectionResult</code>. Within each tier, the first candidate found in the (optionally ranked) array wins. The ranker influences which candidate wins <em>within</em> a tier, not tier boundaries. <strong>Tier-peer ambiguity</strong> is surfaced: when multiple candidates qualify in the winning tier without a ranker, the extras are reported as <code>tierPeers</code>.</p>
 
 <div class="algo-box algo-deterministic">
-<p class="font-bold text-emerald-800 mb-2">Algorithm: selectMatchedCandidate(candidates, ranker?, forcingState?)</p>
+<p class="font-bold text-emerald-800 mb-2">Algorithm: selectMatchedCandidate(candidates, ranker?, forcingState?, obligation?)</p>
 <pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>ranked = ranker ? ranker(candidates) : candidates
 
 // Forcing constraints
 noPass   = forcingState is ForcingOneRound OR GameForcing
 passOnly = forcingState is PassForcing
-allowed(c) = not (noPass AND c is Pass) AND not (passOnly AND c is not Pass)
+allowed(c) =
+    not (noPass AND c is Pass)
+    AND not (passOnly AND c is not Pass)
+    AND meetsObligation(c, obligation)  // BidSuit excludes Pass
 
-// Tier 1: matched + legal + allowed
-matched = ranked.find(c => c.isMatched AND c.legal AND allowed(c))
-if matched: return matched
+// Tier 1: matched + selectable + allowed
+matchedAll = ranked.filter(c => c.isMatched AND isSelectable(c) AND allowed(c))
+if matchedAll.length > 0:
+  return { selected: matchedAll[0],
+           tierPeers: hasRanker ? [] : matchedAll.slice(1),
+           rankerApplied: hasRanker }
 
-// Tier 2: preferred + legal + satisfiable + allowed
-preferred = ranked.find(c =>
-  c.priority === "preferred"
-  AND c.legal
-  AND c.failedConditions.length === 0    // satisfiable
-  AND allowed(c))
-if preferred: return preferred
+// Tier 2: preferred + selectable + allowed
+preferredAll = ranked.filter(c =>
+  c.priority === "preferred" AND isSelectable(c) AND allowed(c))
+if preferredAll.length > 0:
+  return { selected: preferredAll[0],
+           tierPeers: hasRanker ? [] : preferredAll.slice(1),
+           rankerApplied: hasRanker }
 
-// Tier 3: alternative + legal + satisfiable + allowed
-alt = ranked.find(c =>
-  c.priority === "alternative"
-  AND c.legal
-  AND c.failedConditions.length === 0
-  AND allowed(c))
-if alt: return alt
+// Tier 3: alternative + selectable + allowed
+altAll = ranked.filter(c =>
+  c.priority === "alternative" AND isSelectable(c) AND allowed(c))
+if altAll.length > 0:
+  return { selected: altAll[0],
+           tierPeers: hasRanker ? [] : altAll.slice(1),
+           rankerApplied: hasRanker }
 
 // Tier 4: no selection
-return null</code></pre>
+return { selected: null, tierPeers: [], rankerApplied: hasRanker }</code></pre>
+</div>
+
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+<p class="font-semibold text-blue-800 mb-2">SelectionResult (returned from selectMatchedCandidate)</p>
+<table class="w-full text-sm">
+<thead><tr class="border-b"><th class="text-left py-1 pr-4">Field</th><th class="text-left py-1">Meaning</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">selected</td><td>The winning candidate (or null if no tier matched)</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">tierPeers</td><td>Other candidates in the same winning tier that also qualified. Empty when a ranker was applied (ranker resolves ambiguity) or only one candidate qualifies.</td></tr>
+<tr><td class="py-1 pr-4 font-mono text-xs">rankerApplied</td><td>Whether a CandidateRankerFn was used to reorder before selection</td></tr>
+</tbody>
+</table>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-6">
   <div class="border-2 border-emerald-300 rounded-lg p-3 text-center">
     <p class="font-bold text-emerald-700">Tier 1</p>
-    <p class="text-sm">Matched + Legal</p>
+    <p class="text-sm">Matched + Selectable</p>
     <p class="text-xs text-gray-500 mt-1">The tree's own answer</p>
   </div>
   <div class="border-2 border-blue-300 rounded-lg p-3 text-center">
     <p class="font-bold text-blue-700">Tier 2</p>
-    <p class="text-sm">Preferred + Satisfiable</p>
+    <p class="text-sm">Preferred + Selectable</p>
     <p class="text-xs text-gray-500 mt-1">Convention-marked preference</p>
   </div>
   <div class="border-2 border-amber-300 rounded-lg p-3 text-center">
     <p class="font-bold text-amber-700">Tier 3</p>
-    <p class="text-sm">Alternative + Satisfiable</p>
+    <p class="text-sm">Alternative + Selectable</p>
     <p class="text-xs text-gray-500 mt-1">Acceptable backup</p>
   </div>
   <div class="border-2 border-gray-300 rounded-lg p-3 text-center">
@@ -559,9 +593,32 @@ return null</code></pre>
   </div>
 </div>
 
-<p class="text-gray-700 mt-4"><strong>Forcing constraints:</strong> When <code>ForcingOneRound</code> or <code>GameForcing</code> is active, Pass is excluded from all tiers. When <code>PassForcing</code> is active, only Pass is allowed. These constraints are enforced at selection time and also by the strategy chain's <code>resultFilter</code> (belt-and-suspenders).</p>
+<h3 class="text-lg font-semibold text-bridge-700 mt-6 mb-3">CandidateEligibility: Four-Dimensional Selectability</h3>
 
-<p class="text-gray-700 mt-2"><strong>Satisfiability gate (Tiers 2-3):</strong> <code>failedConditions.length === 0</code> -- the candidate's hand conditions must all be satisfied by the actual hand. This prevents selecting a "preferred 2H bid" when the hand doesn't have 4 hearts. Tier 1 (matched) doesn't need this check because the matched candidate is by construction the one whose path conditions all passed during tree evaluation.</p>
+<p class="text-gray-700 mb-3"><code>isSelectable(c)</code> checks all four eligibility dimensions -- a candidate must satisfy <strong>all four</strong> to pass any tier gate. This replaces the old <code>legal + failedConditions.length === 0</code> check with a richer model.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <div class="border rounded-lg p-3">
+    <p class="font-bold text-gray-800"><code>hand.satisfied</code></p>
+    <p class="text-xs text-gray-600 mt-1">All path conditions met by the actual hand. Carries <code>failedConditions[]</code> with name + description.</p>
+  </div>
+  <div class="border rounded-lg p-3">
+    <p class="font-bold text-gray-800"><code>protocol.satisfied</code></p>
+    <p class="text-xs text-gray-600 mt-1">Not suppressed by overlays, not declined by resolvers. Carries <code>reasons[]</code> (e.g., "Suppressed by overlay: interference-X").</p>
+  </div>
+  <div class="border rounded-lg p-3">
+    <p class="font-bold text-gray-800"><code>encoding.legal</code></p>
+    <p class="text-xs text-gray-600 mt-1">The call is legal in the current auction (not below the current bid level).</p>
+  </div>
+  <div class="border rounded-lg p-3">
+    <p class="font-bold text-gray-800"><code>pedagogical.acceptable</code></p>
+    <p class="text-xs text-gray-600 mt-1">Convention-specific teaching suitability hook. Carries <code>reasons[]</code>. Fail-open on errors.</p>
+  </div>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Forcing + obligation constraints:</strong> When <code>ForcingOneRound</code> or <code>GameForcing</code> is active, Pass is excluded from all tiers. When <code>PassForcing</code> is active, only Pass is allowed. When <code>obligation.kind === BidSuit</code>, Pass is additionally excluded (obligation is "act constructively", not literally "bid a suit"). These constraints compose -- a candidate must pass both forcing and obligation filters to be <code>allowed()</code>.</p>
+
+<p class="text-gray-700 mt-2"><strong>Tier-peer ambiguity:</strong> When multiple candidates qualify in the winning tier and no ranker was applied, <code>tierPeers</code> exposes the ambiguity. The <code>EvaluationTrace</code> records <code>tierPeerCount</code>, <code>tierPeerBidNames</code>, and <code>rankerResolved</code> for diagnostics. The teaching layer uses this: if <code>tierPeerCount >= 2</code> and no ranker resolved, ambiguity score gets a +0.2 boost.</p>
 </section>
 
 <!-- 10. Inference System -->
@@ -696,16 +753,34 @@ totalScore =
 <p class="text-gray-700 leading-relaxed mb-4">Teaching resolution takes the <code>BidResult</code> and determines how to grade the user's bid. It's completely <strong>deterministic</strong> and isolated from the practical layer. Same hand + same auction = same grade, always.</p>
 
 <div class="algo-box algo-teaching">
-<p class="font-bold text-purple-800 mb-2">Algorithm: resolveTeachingAnswer(bidResult)</p>
+<p class="font-bold text-purple-800 mb-2">Algorithm: resolveTeachingAnswer(bidResult, alternativeGroups?)</p>
 <ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
   <li>Primary bid = <code>bidResult.call</code> (the convention's answer).</li>
-  <li>Extract <code>resolvedCandidates</code> from <code>bidResult.treePath</code>.</li>
+  <li>Extract <code>resolvedCandidates</code> from <code>bidResult.candidateSet</code>.</li>
   <li>If no candidates, return exact grading (only the primary bid is correct).</li>
-  <li>Filter acceptable alternatives: candidates that are <strong>not matched</strong>, <strong>legal</strong>, <strong>failedConditions.length === 0</strong> (satisfiable), and have priority <code>"preferred"</code> or <code>"alternative"</code>.</li>
-  <li>Compute ambiguity score: 0 preferred &rarr; 0.3, 1 preferred &rarr; 0.6, 2+ preferred &rarr; 0.8.</li>
+  <li><strong>Phase 1 -- Priority filter:</strong> Filter candidates that are <strong>not matched</strong>, <strong>selectable</strong> (<code>isDtoSelectable()</code>), and have priority <code>"preferred"</code> or <code>"alternative"</code>.</li>
+  <li><strong>Phase 2 -- AlternativeGroup lookup:</strong> If <code>alternativeGroups</code> provided, find groups containing the matched candidate's <code>bidName</code>. All other members of matching groups become additional acceptable alternatives (with the group's <code>credit</code> value). This bypasses tree path-condition exclusivity -- two bids in the same group are "semantically interchangeable" even if they live on mutually exclusive tree branches.</li>
+  <li><strong>Phase 3 -- Dedup:</strong> When the same call appears from both paths, the higher <code>credit</code> (0.0-1.0) wins.</li>
+  <li>Compute ambiguity score: 0 preferred &rarr; 0.3, 1 preferred &rarr; 0.6, 2+ preferred &rarr; 0.8. <strong>Tier-peer boost:</strong> if <code>tierPeerCount &ge; 2</code> and no ranker resolved, ambiguity += 0.2.</li>
   <li>Determine grading type: if matched candidate used resolver (non-default call) &rarr; <code>"intent_based"</code>; if acceptable alternatives exist &rarr; <code>"primary_plus_acceptable"</code>; else &rarr; <code>"exact"</code>.</li>
 </ol>
 </div>
+
+<details class="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4 mb-4">
+<summary class="cursor-pointer font-semibold text-purple-800">AlternativeGroup: Semantic Acceptable Alternatives</summary>
+<div class="mt-3">
+<p class="text-sm text-gray-700 mb-2">Convention configs declare <code>alternativeGroups: AlternativeGroup[]</code>. Each group has:</p>
+<table class="w-full text-sm mt-2">
+<thead><tr class="border-b"><th class="text-left py-1 pr-4">Field</th><th class="text-left py-1">Meaning</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">name</td><td>Human-readable group name (e.g., "game-raise-group")</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">members</td><td>Array of <code>bidName</code> strings from the convention's IntentNodes</td></tr>
+<tr><td class="py-1 pr-4 font-mono text-xs">credit</td><td>0.0-1.0 acceptability weight (1.0 = fully acceptable, 0.5 = partially)</td></tr>
+</tbody>
+</table>
+<p class="text-sm text-gray-600 mt-3"><strong>Example (Bergen Raises):</strong> Game raise (4M) and limit raise (3D) are grouped because both show invitational+ strength with major support. Splinter bids and preemptive raises are NOT grouped because they have categorically different meanings.</p>
+</div>
+</details>
 
 <div class="algo-box algo-teaching mt-4">
 <p class="font-bold text-purple-800 mb-2">Algorithm: gradeBid(userCall, resolution)</p>
@@ -807,29 +882,30 @@ return null                                   // all strategies exhausted</code>
 
 <!-- 15. Three-Level Forcing -->
 <section id="forcing" class="mb-12">
-<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">15. Three-Level Forcing Enforcement</h2>
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">15. Four-Level Forcing &amp; Obligation Enforcement</h2>
 
-<p class="text-gray-700 leading-relaxed mb-4">Forcing state determines whether Pass is allowed. The system enforces forcing at <strong>three independent levels</strong> -- a belt-and-suspenders-and-belt approach that guarantees correctness.</p>
+<p class="text-gray-700 leading-relaxed mb-4">Forcing state and obligation determine whether Pass is allowed. The system enforces constraints at <strong>four independent levels</strong> -- a belt-and-suspenders approach that guarantees correctness.</p>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
   <div class="border-l-4 border-emerald-500 pl-4 py-2">
-    <p class="font-bold text-emerald-800">Level 1: Candidate Selector</p>
+    <p class="font-bold text-emerald-800">Level 1: Candidate Selector (Forcing)</p>
     <p class="text-sm text-gray-700 mt-1"><code>selectMatchedCandidate()</code> excludes Pass candidates from all tiers when <code>ForcingOneRound</code> or <code>GameForcing</code>. Allows only Pass when <code>PassForcing</code>.</p>
-    <p class="text-xs text-gray-500 mt-2">File: <code>candidate-selector.ts:24-31</code></p>
+  </div>
+  <div class="border-l-4 border-violet-500 pl-4 py-2">
+    <p class="font-bold text-violet-800">Level 2: Candidate Selector (Obligation)</p>
+    <p class="text-sm text-gray-700 mt-1"><code>meetsObligation(c, obligation)</code> in the <code>allowed()</code> predicate. When <code>obligation.kind === BidSuit</code>, Pass is excluded. Other <code>ObligationKind</code> values currently pass through (seam for future filtering).</p>
   </div>
   <div class="border-l-4 border-blue-500 pl-4 py-2">
-    <p class="font-bold text-blue-800">Level 2: Pragmatic Filter</p>
+    <p class="font-bold text-blue-800">Level 3: Pragmatic Filter</p>
     <p class="text-sm text-gray-700 mt-1"><code>conventionToStrategy()</code> filters Pass from pragmatic candidates when forcing is active. Prevents tactical pass suggestions during forcing auctions.</p>
-    <p class="text-xs text-gray-500 mt-2">File: <code>convention-strategy.ts:185-188</code></p>
   </div>
   <div class="border-l-4 border-amber-500 pl-4 py-2">
-    <p class="font-bold text-amber-800">Level 3: Strategy Chain Filter</p>
+    <p class="font-bold text-amber-800">Level 4: Strategy Chain Filter</p>
     <p class="text-sm text-gray-700 mt-1"><code>createForcingFilter(config)</code> on the chain's <code>resultFilter</code> rejects Pass results from ANY strategy. End-to-end guarantee: even <code>passStrategy</code> can't produce Pass during forcing.</p>
-    <p class="text-xs text-gray-500 mt-2">File: <code>config-factory.ts</code> + <code>strategy-chain.ts:24-26</code></p>
   </div>
 </div>
 
-<p class="text-gray-700"><strong>Forcing states</strong> are set by <code>DialogueState.forcingState</code>, computed via transition rules during auction replay. For example, Stayman's 2C response sets <code>ForcingOneRound</code> -- opener must respond to the Stayman ask.</p>
+<p class="text-gray-700"><strong>Forcing states</strong> are set by <code>DialogueState.forcingState</code>; <strong>obligations</strong> are set by <code>DialogueState.obligation</code> -- both computed via transition rules during auction replay. They are independent: forcing is about temporal constraints ("you must bid NOW"), obligations are about semantic requirements ("you owe partner a suit bid"). Both can be active simultaneously.</p>
 
 <p class="text-gray-700 mt-2"><strong>Trace diagnostics:</strong> <code>forcingFiltered</code> flags when the chain rejected a strategy result due to the forcing filter.</p>
 </section>
@@ -891,10 +967,10 @@ return null                                   // all strategies exhausted</code>
     <ul class="list-disc list-inside text-xs text-gray-500 ml-4 space-y-1">
       <li>S-1NT: baseline rule "detect-1nt-opening" fires &rarr; <code>familyId="1nt"</code>, <code>systemMode=On</code>, <code>captain=Responder</code></li>
       <li>W-Pass: baseline "pass-no-change" fires &rarr; no change</li>
-      <li>N-2C: convention rule "1nt-stayman-ask" fires &rarr; <code>pendingAction=ShowMajor</code>, <code>forcingState=ForcingOneRound</code></li>
+      <li>N-2C: convention rule "1nt-stayman-ask" fires &rarr; <code>obligation: { kind: ShowMajor, obligatedSide: "opener" }</code>, <code>forcingState=ForcingOneRound</code></li>
       <li>E-Pass: baseline "pass-no-change" fires &rarr; no change</li>
     </ul>
-    <p class="text-sm text-gray-600 mt-1"><strong>Result:</strong> <code>{ familyId: "1nt", forcingState: ForcingOneRound, pendingAction: ShowMajor, systemMode: On, competitionMode: Uncontested }</code></p>
+    <p class="text-sm text-gray-600 mt-1"><strong>Result:</strong> <code>{ familyId: "1nt", forcingState: ForcingOneRound, obligation: { kind: ShowMajor, obligatedSide: "opener" }, systemMode: On, competitionMode: Uncontested }</code></p>
   </div>
 </div>
 
@@ -925,8 +1001,9 @@ return null                                   // all strategies exhausted</code>
   <span class="step-number">7</span>
   <div>
     <p class="font-semibold text-gray-800">Candidate Selection</p>
-    <p class="text-sm text-gray-600"><strong>Tier 1:</strong> "stayman-response-hearts" is matched + legal + allowed (forcing allows non-pass). <strong>Selected.</strong></p>
-    <p class="text-sm text-gray-600 mt-1"><strong>Result:</strong> <code>BidResult { call: {type:"bid", level:2, strain:"H"}, ruleName: "stayman-response-hearts", meaning: "Shows a 4-card heart suit" }</code></p>
+    <p class="text-sm text-gray-600"><strong>Tier 1:</strong> "stayman-response-hearts" is matched + <code>isSelectable()</code> (all 4 eligibility dimensions pass) + <code>allowed()</code> (forcing allows non-pass, obligation met). <strong>Selected.</strong> No tier peers.</p>
+    <p class="text-sm text-gray-600 mt-1"><strong>SelectionResult:</strong> <code>{ selected: stayman-response-hearts, tierPeers: [], rankerApplied: false }</code></p>
+    <p class="text-sm text-gray-600 mt-1"><strong>BidResult:</strong> <code>{ call: {type:"bid", level:2, strain:"H"}, ruleName: "stayman-response-hearts", meaning: "Shows a 4-card heart suit" }</code></p>
   </div>
 </div>
 
@@ -944,7 +1021,7 @@ return null                                   // all strategies exhausted</code>
 <ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
   <li><strong>Guard checks:</strong> Must have deal, session, not be processing, must be user's turn.</li>
   <li><strong>Get expected result:</strong> If <code>conventionStrategy</code> exists, call <code>conventionStrategy.suggest(context)</code> to get what the convention says is correct. This triggers the entire pipeline (sections 1-13).</li>
-  <li><strong>Resolve teaching answer:</strong> <code>resolveTeachingAnswer(expectedResult)</code> -- extracts acceptable alternatives from <code>BidResult.treePath.resolvedCandidates</code>.</li>
+  <li><strong>Resolve teaching answer:</strong> <code>resolveTeachingAnswer(expectedResult, alternativeGroups?)</code> -- extracts acceptable alternatives from <code>BidResult.candidateSet.candidates</code> + optional <code>AlternativeGroup</code> lookup.</li>
   <li><strong>Grade the bid:</strong> <code>gradeBid(userCall, teachingResolution)</code> -- Correct, Acceptable, or Incorrect.</li>
   <li><strong>Build feedback:</strong> <code>BidFeedback { grade, userCall, expectedResult, teachingResolution, practicalRecommendation }</code>.</li>
   <li><strong>Apply call to auction:</strong> <code>engine.addCall(auction, call, seat)</code>.</li>
@@ -1079,7 +1156,7 @@ flowchart TD
         IC["Intent Collection\n(recursive DFS,\nall IntentNode leaves,\npath conditions recorded)"]
         OH["Overlay Hooks\n(1. replacement tree - first wins\n2. suppress - all compose\n3. add - all concat\n4. override resolver - first wins)"]
         CR["Candidate Resolution\n(per-proposal: resolver call\nor defaultCall fallback,\nlegality check)"]
-        CS["Candidate Selection\n(Tier 1: matched+legal\nTier 2: preferred+satisfiable\nTier 3: alternative+satisfiable\nTier 4: null)"]
+        CS["Candidate Selection\n(Tier 1: matched+selectable\nTier 2: preferred+selectable\nTier 3: alternative+selectable\nTier 4: null)\n→ SelectionResult\n{selected, tierPeers, rankerApplied}"]
     end
 
     subgraph Parallel["Parallel Systems"]
@@ -1093,7 +1170,7 @@ flowchart TD
     end
 
     subgraph Output
-        BR["BidResult\n(call, ruleName, explanation,\ntreePath, evaluationTrace,\ntreeInferenceData,\npracticalRecommendation)"]
+        BR["BidResult\n(call, ruleName, explanation,\ndecisionTrace, candidateSet,\nevaluationTrace,\ntreeInferenceData,\npracticalRecommendation)"]
     end
 
     BC --> SC
@@ -1155,9 +1232,14 @@ flowchart TD
   <td class="py-2">How interference modifies the candidate pool</td>
 </tr>
 <tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Candidate Eligibility</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
+  <td class="py-2">Whether a candidate is selectable (hand, protocol, encoding, pedagogical)</td>
+</tr>
+<tr class="border-b border-gray-200">
   <td class="py-2 pr-4">Candidate Selection</td>
   <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
-  <td class="py-2">Which single bid to make (4-tier priority)</td>
+  <td class="py-2">Which single bid to make (4-tier priority) + tier-peer ambiguity</td>
 </tr>
 <tr class="border-b border-gray-200">
   <td class="py-2 pr-4">Inference Engine</td>
