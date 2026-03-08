@@ -92,7 +92,7 @@ describe("edge cases red team", () => {
     const unsatisfied = generated.candidates.filter(c => c.failedConditions.length > 0);
     expect(unsatisfied.length).toBeGreaterThan(0);
 
-    const selected = selectMatchedCandidate(generated.candidates);
+    const { selected } = selectMatchedCandidate(generated.candidates);
     expect(selected === null || selected.failedConditions.length === 0).toBe(true);
   });
 
@@ -136,7 +136,7 @@ describe("edge cases red team", () => {
     expect(unsatisfied).toBeDefined();
 
     const promoted = { ...unsatisfied!, priority: "preferred" as const };
-    const selected = selectMatchedCandidate([promoted]);
+    const { selected } = selectMatchedCandidate([promoted]);
     expect(selected).toBeNull();
   });
 
@@ -674,7 +674,7 @@ describe("Phase 4: red-team tests for new behavior", () => {
         makeCandidate({ bidName: "plain-a", isMatched: false, legal: true }),
         makeCandidate({ bidName: "plain-b", isMatched: false, legal: true }),
       ];
-      const result = selectMatchedCandidate(candidates);
+      const { selected: result } = selectMatchedCandidate(candidates);
       expect(result).toBeNull();
     });
 
@@ -693,7 +693,7 @@ describe("Phase 4: red-team tests for new behavior", () => {
         resolvedCall: bid2H,
       });
 
-      const result = selectMatchedCandidate(
+      const { selected: result } = selectMatchedCandidate(
         [bidCand, passCand],
         undefined,
         ForcingState.PassForcing,
@@ -708,7 +708,7 @@ describe("Phase 4: red-team tests for new behavior", () => {
         legal: true,
         resolvedCall: passCall,
       });
-      const result = selectMatchedCandidate(
+      const { selected: result } = selectMatchedCandidate(
         [passCand],
         undefined,
         ForcingState.ForcingOneRound,
@@ -829,7 +829,7 @@ describe("Phase 4: red-team tests for new behavior", () => {
       // Matched candidate is still present and selected
       const matched = candidates.find(c => c.isMatched);
       expect(matched).toBeDefined();
-      const selected = selectMatchedCandidate(candidates);
+      const { selected } = selectMatchedCandidate(candidates);
       expect(selected).toBe(matched);
     });
   });
@@ -902,7 +902,7 @@ describe("Phase 4: red-team tests for new behavior", () => {
       const reverseRanker = (cs: readonly ResolvedCandidate[]) => [...cs].reverse();
 
       // Even though ranker reverses, Tier 1 (matched+legal) still wins
-      const selected = selectMatchedCandidate(
+      const { selected } = selectMatchedCandidate(
         [preferredCand, matchedCand],
         reverseRanker,
       );

@@ -78,6 +78,7 @@ export type {
   CandidateProvenance,
   CandidateGenerationResult,
   CandidateRankerFn,
+  SelectionResult,
   CollectedIntent,
   PathConditionEntry,
 } from "./pipeline";

@@ -59,6 +59,6 @@ describe("test convention satisfiability", () => {
     expect(unsatisfied).toBeDefined();
 
     const promoted = { ...unsatisfied!, priority: "preferred" as const };
-    expect(selectMatchedCandidate([promoted])).toBeNull();
+    expect(selectMatchedCandidate([promoted]).selected).toBeNull();
   });
 });

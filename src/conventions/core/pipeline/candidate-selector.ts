@@ -36,6 +36,12 @@ function meetsObligation(c: ResolvedCandidate, obligation: Obligation | undefine
   }
 }
 
+export interface SelectionResult {
+  readonly selected: ResolvedCandidate | null;
+  readonly tierPeers: readonly ResolvedCandidate[];
+  readonly rankerApplied: boolean;
+}
+
 /** Select the best candidate using tiered selection.
  *  If ranker is provided, candidates are reordered first.
  *  Tier 1: matched+legal
@@ -45,13 +51,15 @@ function meetsObligation(c: ResolvedCandidate, obligation: Obligation | undefine
  *  When forcingState is ForcingOneRound or GameForcing, Pass candidates
  *  are excluded from all tiers.
  *  When obligation is provided, candidates are filtered by obligation constraints.
- *  Ranker influences WHICH candidate wins within a tier, not tier boundaries. */
+ *  Ranker influences WHICH candidate wins within a tier, not tier boundaries.
+ *  Returns SelectionResult with tier peers for ambiguity detection. */
 export function selectMatchedCandidate(
   candidates: readonly ResolvedCandidate[],
   ranker?: CandidateRankerFn,
   forcingState?: ForcingState,
   obligation?: Obligation,
-): ResolvedCandidate | null {
+): SelectionResult {
+  const hasRanker = !!ranker;
   const ranked = ranker ? ranker(candidates) : candidates;
   const noPass = forcingState === ForcingState.ForcingOneRound
     || forcingState === ForcingState.GameForcing;
@@ -64,25 +72,42 @@ export function selectMatchedCandidate(
   };
 
   // Tier 1: matched+selectable (matched candidates have no failedConditions by construction)
-  const matched = ranked.find(c => c.isMatched && isSelectable(c) && allowed(c));
-  if (matched) {
-    if (import.meta.env?.DEV && matched.failedConditions.length > 0) {
+  const matchedAll = ranked.filter(c => c.isMatched && isSelectable(c) && allowed(c));
+  if (matchedAll.length > 0) {
+    const selected = matchedAll[0]!;
+    if (import.meta.env?.DEV && selected.failedConditions.length > 0) {
       // eslint-disable-next-line no-console -- invariant checks should surface in development.
       console.warn("Invariant violation: matched candidate has non-empty failedConditions");
     }
-    return matched;
+    return {
+      selected,
+      tierPeers: hasRanker ? [] : matchedAll.slice(1),
+      rankerApplied: hasRanker,
+    };
   }
 
   // Tier 2: preferred+selectable
-  const preferred = ranked.find(c =>
+  const preferredAll = ranked.filter(c =>
     c.priority === "preferred" && isSelectable(c) && allowed(c));
-  if (preferred) return preferred;
+  if (preferredAll.length > 0) {
+    return {
+      selected: preferredAll[0]!,
+      tierPeers: hasRanker ? [] : preferredAll.slice(1),
+      rankerApplied: hasRanker,
+    };
+  }
 
   // Tier 3: alternative+selectable
-  const alt = ranked.find(c =>
+  const altAll = ranked.filter(c =>
     c.priority === "alternative" && isSelectable(c) && allowed(c));
-  if (alt) return alt;
+  if (altAll.length > 0) {
+    return {
+      selected: altAll[0]!,
+      tierPeers: hasRanker ? [] : altAll.slice(1),
+      rankerApplied: hasRanker,
+    };
+  }
 
   // Tier 4: no selection
-  return null;
+  return { selected: null, tierPeers: [], rankerApplied: hasRanker };
 }

@@ -8,7 +8,7 @@ export type {
 } from "./candidate-generator";
 
 export { selectMatchedCandidate, isSelectable } from "./candidate-selector";
-export type { CandidateRankerFn } from "./candidate-selector";
+export type { CandidateRankerFn, SelectionResult } from "./candidate-selector";
 
 export { collectIntentProposals } from "./intent-collector";
 export type { CollectedIntent, PathConditionEntry } from "./intent-collector";

@@ -105,7 +105,7 @@ describe("selectMatchedCandidate", () => {
     ];
 
     test.each(scenarios)("$name", ({ candidates, forcingState, expectedBidName, excludedBidNames }) => {
-      const selected = selectMatchedCandidate(candidates, undefined, forcingState);
+      const { selected } = selectMatchedCandidate(candidates, undefined, forcingState);
       if (expectedBidName === null) {
         expect(selected).toBeNull();
       } else {
@@ -126,11 +126,11 @@ describe("selectMatchedCandidate", () => {
       makeCandidate({ isMatched: false, legal: true }),
     ];
     const result = selectMatchedCandidate(candidates);
-    expect(result).toBe(candidates[0]);
+    expect(result.selected).toBe(candidates[0]);
   });
 
   test("returns null when no candidates (empty array)", () => {
-    expect(selectMatchedCandidate([])).toBeNull();
+    expect(selectMatchedCandidate([]).selected).toBeNull();
   });
 
   test("returns null when matched candidate is illegal", () => {
@@ -138,7 +138,7 @@ describe("selectMatchedCandidate", () => {
       makeCandidate({ isMatched: true, legal: false }),
       makeCandidate({ isMatched: false, legal: true }),
     ];
-    expect(selectMatchedCandidate(candidates)).toBeNull();
+    expect(selectMatchedCandidate(candidates).selected).toBeNull();
   });
 
   test("skips non-matched candidates even if legal", () => {
@@ -146,7 +146,7 @@ describe("selectMatchedCandidate", () => {
       makeCandidate({ isMatched: false, legal: true }),
       makeCandidate({ isMatched: false, legal: true }),
     ];
-    expect(selectMatchedCandidate(candidates)).toBeNull();
+    expect(selectMatchedCandidate(candidates).selected).toBeNull();
   });
 
   describe("tiered selection with priority", () => {
@@ -154,47 +154,47 @@ describe("selectMatchedCandidate", () => {
       const matched = makeCandidate({ isMatched: true, legal: true, bidName: "matched" });
       const preferred = makeCandidate({ isMatched: false, legal: true, bidName: "preferred", priority: "preferred" });
       const result = selectMatchedCandidate([preferred, matched]);
-      expect(result).toBe(matched);
+      expect(result.selected).toBe(matched);
     });
 
     test("preferred+legal selected when no matched+legal", () => {
       const preferred = makeCandidate({ isMatched: false, legal: true, bidName: "preferred", priority: "preferred" });
       const other = makeCandidate({ isMatched: false, legal: true, bidName: "other" });
       const result = selectMatchedCandidate([other, preferred]);
-      expect(result).toBe(preferred);
+      expect(result.selected).toBe(preferred);
     });
 
     test("preferred+legal selected when matched is illegal", () => {
       const matched = makeCandidate({ isMatched: true, legal: false, bidName: "matched" });
       const preferred = makeCandidate({ isMatched: false, legal: true, bidName: "preferred", priority: "preferred" });
       const result = selectMatchedCandidate([matched, preferred]);
-      expect(result).toBe(preferred);
+      expect(result.selected).toBe(preferred);
     });
 
     test("alternative+legal selected when no matched and no preferred", () => {
       const alt = makeCandidate({ isMatched: false, legal: true, bidName: "alt", priority: "alternative" });
       const result = selectMatchedCandidate([alt]);
-      expect(result).toBe(alt);
+      expect(result.selected).toBe(alt);
     });
 
     test("alternative NOT selected when preferred exists", () => {
       const preferred = makeCandidate({ isMatched: false, legal: true, bidName: "preferred", priority: "preferred" });
       const alt = makeCandidate({ isMatched: false, legal: true, bidName: "alt", priority: "alternative" });
       const result = selectMatchedCandidate([alt, preferred]);
-      expect(result).toBe(preferred);
+      expect(result.selected).toBe(preferred);
     });
 
     test("alternative+illegal skipped", () => {
       const alt = makeCandidate({ isMatched: false, legal: false, bidName: "alt", priority: "alternative" });
       const result = selectMatchedCandidate([alt]);
-      expect(result).toBeNull();
+      expect(result.selected).toBeNull();
     });
 
     test("without priority field, behavior unchanged", () => {
       const matched = makeCandidate({ isMatched: true, legal: true });
       const other = makeCandidate({ isMatched: false, legal: true });
       const result = selectMatchedCandidate([other, matched]);
-      expect(result).toBe(matched);
+      expect(result.selected).toBe(matched);
     });
   });
 
@@ -207,7 +207,7 @@ describe("selectMatchedCandidate", () => {
         failedConditions: [{ name: "hcp-min", description: "Need 10+ HCP" }],
       });
 
-      expect(selectMatchedCandidate([candidate])).toBeNull();
+      expect(selectMatchedCandidate([candidate]).selected).toBeNull();
     });
 
     test("alternative+legal candidate with failedConditions is excluded", () => {
@@ -218,7 +218,7 @@ describe("selectMatchedCandidate", () => {
         failedConditions: [{ name: "suit-min", description: "Need 4+ hearts" }],
       });
 
-      expect(selectMatchedCandidate([candidate])).toBeNull();
+      expect(selectMatchedCandidate([candidate]).selected).toBeNull();
     });
 
     test("overlay-injected candidate with empty failedConditions passes through", () => {
@@ -229,7 +229,7 @@ describe("selectMatchedCandidate", () => {
         failedConditions: [],
       });
 
-      expect(selectMatchedCandidate([candidate])).toBe(candidate);
+      expect(selectMatchedCandidate([candidate]).selected).toBe(candidate);
     });
 
     test("satisfiable preferred beats unsatisfiable preferred", () => {
@@ -249,13 +249,13 @@ describe("selectMatchedCandidate", () => {
       });
 
       const result = selectMatchedCandidate([bad, good]);
-      expect(result).toBe(good);
+      expect(result.selected).toBe(good);
     });
 
     test("matched candidate selection unchanged", () => {
       const matched = makeCandidate({ isMatched: true, legal: true });
       const result = selectMatchedCandidate([matched]);
-      expect(result).toBe(matched);
+      expect(result.selected).toBe(matched);
     });
   });
 
@@ -267,35 +267,35 @@ describe("selectMatchedCandidate", () => {
       const candidates = [
         makeCandidate({ isMatched: true, legal: true, resolvedCall: passCall }),
       ];
-      expect(selectMatchedCandidate(candidates, undefined, ForcingState.ForcingOneRound)).toBeNull();
+      expect(selectMatchedCandidate(candidates, undefined, ForcingState.ForcingOneRound).selected).toBeNull();
     });
 
     test("excludes Pass candidate when GameForcing → null", () => {
       const candidates = [
         makeCandidate({ isMatched: true, legal: true, resolvedCall: passCall }),
       ];
-      expect(selectMatchedCandidate(candidates, undefined, ForcingState.GameForcing)).toBeNull();
+      expect(selectMatchedCandidate(candidates, undefined, ForcingState.GameForcing).selected).toBeNull();
     });
 
     test("allows Pass when Nonforcing → returns candidate", () => {
       const candidates = [
         makeCandidate({ isMatched: true, legal: true, resolvedCall: passCall }),
       ];
-      expect(selectMatchedCandidate(candidates, undefined, ForcingState.Nonforcing)).toBe(candidates[0]);
+      expect(selectMatchedCandidate(candidates, undefined, ForcingState.Nonforcing).selected).toBe(candidates[0]);
     });
 
     test("selects non-Pass when Pass is force-filtered → returns non-Pass candidate", () => {
       const passCand = makeCandidate({ isMatched: true, legal: true, resolvedCall: passCall, bidName: "pass" });
       const bidCand = makeCandidate({ isMatched: false, legal: true, resolvedCall: bidCall, bidName: "bid", priority: "preferred" });
       const result = selectMatchedCandidate([passCand, bidCand], undefined, ForcingState.ForcingOneRound);
-      expect(result).toBe(bidCand);
+      expect(result.selected).toBe(bidCand);
     });
 
     test("non-Pass candidates unaffected by forcing filter", () => {
       const candidates = [
         makeCandidate({ isMatched: true, legal: true, resolvedCall: bidCall }),
       ];
-      expect(selectMatchedCandidate(candidates, undefined, ForcingState.ForcingOneRound)).toBe(candidates[0]);
+      expect(selectMatchedCandidate(candidates, undefined, ForcingState.ForcingOneRound).selected).toBe(candidates[0]);
     });
 
     test("PassForcing allows only Pass candidates (non-Pass matched is excluded)", () => {
@@ -313,7 +313,7 @@ describe("selectMatchedCandidate", () => {
         resolvedCall: bidCall,
       });
 
-      const selected = selectMatchedCandidate(
+      const { selected } = selectMatchedCandidate(
         [nonPassMatched, passPreferred],
         undefined,
         ForcingState.PassForcing,
@@ -330,7 +330,7 @@ describe("selectMatchedCandidate", () => {
         resolvedCall: bidCall,
       });
 
-      const selected = selectMatchedCandidate(
+      const { selected } = selectMatchedCandidate(
         [nonPassOnly],
         undefined,
         ForcingState.PassForcing,
@@ -347,7 +347,7 @@ describe("selectMatchedCandidate", () => {
         isMatched: false,
         legal: true,
       });
-      const selected = selectMatchedCandidate([plainCandidate]);
+      const { selected } = selectMatchedCandidate([plainCandidate]);
       expect(selected).toBeNull();
     });
   });
@@ -359,7 +359,7 @@ describe("selectMatchedCandidate", () => {
         makeCandidate({ isMatched: true, legal: true, bidName: "second" }),
       ];
       const result = selectMatchedCandidate(candidates);
-      expect(result!.bidName).toBe("first");
+      expect(result.selected!.bidName).toBe("first");
     });
 
     test("with ranker: ranker reorders before selection", () => {
@@ -369,7 +369,7 @@ describe("selectMatchedCandidate", () => {
       ];
       const ranker = (cs: readonly ResolvedCandidate[]) => [...cs].reverse();
       const result = selectMatchedCandidate(candidates, ranker);
-      expect(result!.bidName).toBe("second");
+      expect(result.selected!.bidName).toBe("second");
     });
 
     test("ranker returns empty array: returns null", () => {
@@ -378,7 +378,7 @@ describe("selectMatchedCandidate", () => {
       ];
       const ranker = () => [] as ResolvedCandidate[];
       const result = selectMatchedCandidate(candidates, ranker);
-      expect(result).toBeNull();
+      expect(result.selected).toBeNull();
     });
   });
 
@@ -394,52 +394,119 @@ describe("selectMatchedCandidate", () => {
     test("BidSuit obligation filters out Pass candidates", () => {
       const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
       const bidCand = makeCandidate({ bidName: "bid", isMatched: false, legal: true, priority: "preferred", resolvedCall: bidCall });
-      const result = selectMatchedCandidate([passCand, bidCand], undefined, undefined, bidSuitObligation);
-      expect(result).not.toBeNull();
-      expect(result!.bidName).toBe("bid");
+      const { selected } = selectMatchedCandidate([passCand, bidCand], undefined, undefined, bidSuitObligation);
+      expect(selected).not.toBeNull();
+      expect(selected!.bidName).toBe("bid");
     });
 
     test("BidSuit obligation allows NT candidates (context-dependent)", () => {
       const ntCand = makeCandidate({ bidName: "nt", isMatched: true, legal: true, resolvedCall: ntCall });
-      const result = selectMatchedCandidate([ntCand], undefined, undefined, bidSuitObligation);
-      expect(result).not.toBeNull();
-      expect(result!.bidName).toBe("nt");
+      const { selected } = selectMatchedCandidate([ntCand], undefined, undefined, bidSuitObligation);
+      expect(selected).not.toBeNull();
+      expect(selected!.bidName).toBe("nt");
     });
 
     test("BidSuit obligation returns null when only Pass candidates exist", () => {
       const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
-      const result = selectMatchedCandidate([passCand], undefined, undefined, bidSuitObligation);
-      expect(result).toBeNull();
+      expect(selectMatchedCandidate([passCand], undefined, undefined, bidSuitObligation).selected).toBeNull();
     });
 
     test("ShowMajor obligation does not filter (informational)", () => {
       const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
-      const result = selectMatchedCandidate([passCand], undefined, undefined, showMajorObligation);
-      expect(result).not.toBeNull();
-      expect(result!.bidName).toBe("pass");
+      const { selected } = selectMatchedCandidate([passCand], undefined, undefined, showMajorObligation);
+      expect(selected).not.toBeNull();
+      expect(selected!.bidName).toBe("pass");
     });
 
     test("None obligation = no change from current behavior", () => {
       const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
-      const result = selectMatchedCandidate([passCand], undefined, undefined, noneObligation);
-      expect(result).not.toBeNull();
-      expect(result!.bidName).toBe("pass");
+      const { selected } = selectMatchedCandidate([passCand], undefined, undefined, noneObligation);
+      expect(selected).not.toBeNull();
+      expect(selected!.bidName).toBe("pass");
     });
 
     test("no obligation parameter = no change from current behavior", () => {
       const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
-      const result = selectMatchedCandidate([passCand]);
-      expect(result).not.toBeNull();
-      expect(result!.bidName).toBe("pass");
+      const { selected } = selectMatchedCandidate([passCand]);
+      expect(selected).not.toBeNull();
+      expect(selected!.bidName).toBe("pass");
     });
 
     test("BidSuit obligation composes with forcing state", () => {
       // Both forcing state AND obligation reject Pass — non-Pass preferred wins
       const passCand = makeCandidate({ bidName: "pass", isMatched: true, legal: true, resolvedCall: passCall });
       const bidCand = makeCandidate({ bidName: "bid", isMatched: false, legal: true, priority: "preferred", resolvedCall: bidCall });
-      const result = selectMatchedCandidate([passCand, bidCand], undefined, ForcingState.ForcingOneRound, bidSuitObligation);
-      expect(result).not.toBeNull();
-      expect(result!.bidName).toBe("bid");
+      const { selected } = selectMatchedCandidate([passCand, bidCand], undefined, ForcingState.ForcingOneRound, bidSuitObligation);
+      expect(selected).not.toBeNull();
+      expect(selected!.bidName).toBe("bid");
+    });
+  });
+
+  describe("tier-peer detection", () => {
+    test("single matched → tierPeers empty", () => {
+      const candidates = [
+        makeCandidate({ bidName: "sole-match", isMatched: true, legal: true }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.selected).toBe(candidates[0]);
+      expect(result.tierPeers).toEqual([]);
+      expect(result.rankerApplied).toBe(false);
+    });
+
+    test("2+ matched, no ranker → tierPeers has extras, selected is first", () => {
+      const candidates = [
+        makeCandidate({ bidName: "first-match", isMatched: true, legal: true }),
+        makeCandidate({ bidName: "second-match", isMatched: true, legal: true }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.selected!.bidName).toBe("first-match");
+      expect(result.tierPeers).toHaveLength(1);
+      expect(result.tierPeers[0]!.bidName).toBe("second-match");
+    });
+
+    test("2+ matched, ranker applied → tierPeers empty, rankerApplied: true", () => {
+      const candidates = [
+        makeCandidate({ bidName: "first-match", isMatched: true, legal: true }),
+        makeCandidate({ bidName: "second-match", isMatched: true, legal: true }),
+      ];
+      const ranker = (cs: readonly ResolvedCandidate[]) => [...cs].reverse();
+      const result = selectMatchedCandidate(candidates, ranker);
+      expect(result.selected!.bidName).toBe("second-match");
+      expect(result.tierPeers).toEqual([]);
+      expect(result.rankerApplied).toBe(true);
+    });
+
+    test("tier peers in preferred tier (no matched candidates)", () => {
+      const candidates = [
+        makeCandidate({ bidName: "pref-a", isMatched: false, legal: true, priority: "preferred" }),
+        makeCandidate({ bidName: "pref-b", isMatched: false, legal: true, priority: "preferred" }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.selected!.bidName).toBe("pref-a");
+      expect(result.tierPeers).toHaveLength(1);
+      expect(result.tierPeers[0]!.bidName).toBe("pref-b");
+    });
+
+    test("tier peers in alternative tier", () => {
+      const candidates = [
+        makeCandidate({ bidName: "alt-a", isMatched: false, legal: true, priority: "alternative" }),
+        makeCandidate({ bidName: "alt-b", isMatched: false, legal: true, priority: "alternative" }),
+      ];
+      const result = selectMatchedCandidate(candidates);
+      expect(result.selected!.bidName).toBe("alt-a");
+      expect(result.tierPeers).toHaveLength(1);
+      expect(result.tierPeers[0]!.bidName).toBe("alt-b");
+    });
+
+    test("rankerApplied true even with single candidate when ranker provided", () => {
+      const candidates = [
+        makeCandidate({ bidName: "sole", isMatched: true, legal: true }),
+      ];
+      const ranker = (cs: readonly ResolvedCandidate[]) => cs;
+      const result = selectMatchedCandidate(candidates, ranker);
+      expect(result.selected!.bidName).toBe("sole");
+      expect(result.tierPeers).toEqual([]);
+      expect(result.rankerApplied).toBe(true);
     });
   });
 });

@@ -420,7 +420,7 @@ describe("overlay patch hooks", () => {
     const result = generateCandidates(normalTree, protoResult.handResult, effectiveCtx);
     expect(result.matchedIntentSuppressed).toBe(true);
 
-    const selected = selectMatchedCandidate(result.candidates);
+    const { selected } = selectMatchedCandidate(result.candidates);
     expect(selected).toBeNull();
   });
 });

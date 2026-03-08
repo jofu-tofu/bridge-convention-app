@@ -15,6 +15,9 @@ export class TraceCollector {
   private effectivePath?: EvaluationTrace["effectivePath"];
   private forcingFiltered?: boolean;
   private practicalError?: string;
+  private tierPeerCount?: number;
+  private tierPeerBidNames?: readonly string[];
+  private rankerResolved?: boolean;
   private strategyChainPath: { strategyId: string; result: "suggested" | "declined" | "filtered" | "error" }[] = [];
 
   setConventionId(id: string): void {
@@ -61,6 +64,18 @@ export class TraceCollector {
     this.practicalError = error;
   }
 
+  setTierPeerCount(count: number): void {
+    this.tierPeerCount = count;
+  }
+
+  setTierPeerBidNames(names: readonly string[]): void {
+    this.tierPeerBidNames = names;
+  }
+
+  setRankerResolved(value: boolean): void {
+    this.rankerResolved = value;
+  }
+
   addStrategyAttempt(strategyId: string, result: "suggested" | "declined" | "filtered" | "error"): void {
     this.strategyChainPath.push({ strategyId, result });
   }
@@ -77,6 +92,9 @@ export class TraceCollector {
       selectedTier: this.selectedTier,
       forcingFiltered: this.forcingFiltered,
       practicalError: this.practicalError,
+      tierPeerCount: this.tierPeerCount,
+      tierPeerBidNames: this.tierPeerBidNames,
+      rankerResolved: this.rankerResolved,
       effectivePath: this.effectivePath,
       strategyChainPath: [...this.strategyChainPath],
     };
