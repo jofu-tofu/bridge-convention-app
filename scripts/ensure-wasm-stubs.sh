@@ -8,13 +8,8 @@ set -euo pipefail
 
 PKG_DIR="src-tauri/crates/bridge-wasm/pkg"
 
-if [ -f "$PKG_DIR/bridge_wasm.js" ]; then
-  echo "[wasm-stubs] Full WASM build found, skipping stubs."
-  exit 0
-fi
-
-if [ -f "$PKG_DIR/index.js" ]; then
-  echo "[wasm-stubs] Stubs already exist, skipping."
+if [ -f "$PKG_DIR/bridge_wasm.js" ] && [ -f "$PKG_DIR/index.js" ]; then
+  echo "[wasm-stubs] WASM build or stubs already exist, skipping."
   exit 0
 fi
 
