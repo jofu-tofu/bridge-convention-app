@@ -6,6 +6,7 @@ import { BidSuit } from "../../engine/types";
 import { partnerSeat, SUIT_ORDER } from "../../engine/constants";
 import type { BiddingContext } from "../../conventions/core";
 import type { ResolvedCandidateDTO, PracticalRecommendation, BeliefData } from "../../core/contracts";
+import { isDtoSelectable } from "../../core/contracts";
 import type { InferenceProvider } from "../../inference/types";
 import { computePartnerInterpretation } from "../../inference/partner-interpretation";
 import { scoreCandidatePractically, buildPracticalRecommendation } from "./practical-scorer";
@@ -53,7 +54,7 @@ export function computePracticalRecommendation(
 
     // Score normative candidates
     const scored = candidates
-      .filter(c => c.legal && c.failedConditions.length === 0)
+      .filter(isDtoSelectable)
       .map(candidate => {
         const belief = buildScoringInput(candidate.resolvedCall, ownHcp, partnerMinHcp, ownShape, partnerBeliefs.suitLengths);
         let misunderstandingRisk = 0;

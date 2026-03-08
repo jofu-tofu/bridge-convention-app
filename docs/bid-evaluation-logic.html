@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bid Evaluation Logic - Decision Model</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        bridge: { 50: '#f0f7ff', 100: '#e0effe', 200: '#bae0fd', 300: '#7cc8fc', 400: '#37adf8', 500: '#0d93e9', 600: '#0175c7', 700: '#015da1', 800: '#064f85', 900: '#0a3d66' },
+        layer: { deterministic: '#059669', nondeterministic: '#d97706', teaching: '#7c3aed', inference: '#dc2626' }
+      }
+    }
+  }
+}
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  .prose-container { max-width: 75ch; }
+  .sticky-toc { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+  .toc-link { transition: all 0.2s; border-left: 3px solid transparent; }
+  .toc-link:hover, .toc-link.active { border-left-color: #0175c7; background: #f0f7ff; }
+  .algo-box { border-left: 4px solid; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 0.5rem 0.5rem 0; }
+  .algo-deterministic { border-color: #059669; background: #ecfdf5; }
+  .algo-nondeterministic { border-color: #d97706; background: #fffbeb; }
+  .algo-teaching { border-color: #7c3aed; background: #f5f3ff; }
+  .state-badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+  .badge-det { background: #d1fae5; color: #065f46; }
+  .badge-nondet { background: #fef3c7; color: #92400e; }
+  .badge-teach { background: #ede9fe; color: #5b21b6; }
+  pre.mermaid { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; }
+  .step-number { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 9999px; background: #0175c7; color: white; font-weight: 700; font-size: 0.875rem; flex-shrink: 0; }
+  details summary { cursor: pointer; font-weight: 600; }
+  details summary:hover { color: #0175c7; }
+  .weight-table td:nth-child(2) { font-family: monospace; }
+  @media (max-width: 1024px) { .sidebar-layout { flex-direction: column; } .sticky-toc { position: static; max-height: none; } }
+</style>
+</head>
+<body class="bg-white text-gray-900">
+
+<!-- Header -->
+<header class="bg-bridge-800 text-white py-8 px-6">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">Bid Evaluation Logic</h1>
+    <p class="text-bridge-200 text-lg">How the decision model evaluates bids: every algorithm, every state transition, every layer</p>
+    <div class="flex gap-4 mt-4 text-sm">
+      <span class="state-badge badge-det">Deterministic</span>
+      <span class="state-badge badge-nondet">Non-deterministic</span>
+      <span class="state-badge badge-teach">Teaching</span>
+    </div>
+  </div>
+</header>
+
+<!-- Main Layout -->
+<div class="max-w-7xl mx-auto px-6 py-8 sidebar-layout flex gap-8">
+
+<!-- Sticky ToC -->
+<nav class="w-64 flex-shrink-0 hidden lg:block">
+  <div class="sticky-toc text-sm">
+    <p class="font-bold text-gray-500 uppercase tracking-wider text-xs mb-3">Contents</p>
+    <a href="#overview" class="toc-link block py-1 px-3 text-gray-700">Pipeline Overview</a>
+    <a href="#entry" class="toc-link block py-1 px-3 text-gray-700">1. Entry Point</a>
+    <a href="#protocol" class="toc-link block py-1 px-3 text-gray-700">2. Protocol Dispatch</a>
+    <a href="#tree-eval" class="toc-link block py-1 px-3 text-gray-700">3. Tree Evaluation</a>
+    <a href="#dialogue" class="toc-link block py-1 px-3 text-gray-700">4. Dialogue State</a>
+    <a href="#effective-ctx" class="toc-link block py-1 px-3 text-gray-700">5. Effective Context</a>
+    <a href="#intent-collection" class="toc-link block py-1 px-3 text-gray-700">6. Intent Collection</a>
+    <a href="#overlays" class="toc-link block py-1 px-3 text-gray-700">7. Overlay System</a>
+    <a href="#candidate-gen" class="toc-link block py-1 px-3 text-gray-700">8. Candidate Generation</a>
+    <a href="#candidate-sel" class="toc-link block py-1 px-3 text-gray-700">9. Candidate Selection</a>
+    <a href="#inference" class="toc-link block py-1 px-3 text-gray-700">10. Inference System</a>
+    <a href="#practical" class="toc-link block py-1 px-3 text-gray-700">11. Practical Scoring</a>
+    <a href="#teaching" class="toc-link block py-1 px-3 text-gray-700">12. Teaching Resolution</a>
+    <a href="#strategy-chain" class="toc-link block py-1 px-3 text-gray-700">13. Strategy Chain</a>
+    <a href="#resolvers" class="toc-link block py-1 px-3 text-gray-700">14. Resolver Architecture</a>
+    <a href="#forcing" class="toc-link block py-1 px-3 text-gray-700">15. Three-Level Forcing</a>
+    <a href="#walkthrough" class="toc-link block py-1 px-3 text-gray-700">16. Stayman Walkthrough</a>
+    <a href="#store-trigger" class="toc-link block py-1 px-3 text-gray-700">17. Store Integration</a>
+    <a href="#conditions-ref" class="toc-link block py-1 px-3 text-gray-700">18. Condition Reference</a>
+    <a href="#full-flow" class="toc-link block py-1 px-3 text-gray-700">Complete State Flow</a>
+  </div>
+</nav>
+
+<!-- Content -->
+<main class="flex-1 min-w-0">
+<div class="prose-container">
+
+<!-- Overview -->
+<section id="overview" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">Pipeline Overview</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Given an <strong>auction context</strong> (auction history + hand + evaluation + seat + opponent conventions), the system produces a <strong>BidResult</strong> containing the recommended call, an explanation, a teaching trace, inference data, and an optional practical recommendation. The pipeline is fully <strong>deterministic</strong>: same inputs always produce the same output. Non-determinism exists only in deal generation (PRNG), never in evaluation.</p>
+
+<div class="bg-bridge-50 border border-bridge-200 rounded-lg p-4 mb-6">
+<p class="font-semibold text-bridge-800 mb-2">The pipeline in one sentence:</p>
+<p class="text-gray-700"><strong>Strategy Chain</strong> iterates strategies (convention adapter, natural fallback, pass) trying each in order. The convention adapter runs: <strong>Protocol Dispatch</strong> (sequential round matching) &rarr; <strong>Tree Evaluation</strong> (iterative binary traversal) &rarr; <strong>Dialogue State</strong> (auction replay) &rarr; <strong>Effective Context</strong> (bundle) &rarr; <strong>Intent Collection</strong> (recursive DFS) &rarr; <strong>Overlay Hooks</strong> (suppress/add/override) &rarr; <strong>Candidate Resolution</strong> (resolver calls) &rarr; <strong>Tiered Selection</strong> (matched &gt; preferred &gt; alternative) &rarr; <strong>Practical Scoring</strong> (weighted formula with belief data).</p>
+</div>
+
+<pre class="mermaid">
+flowchart LR
+    A["BiddingContext"] --> B["Strategy Chain"]
+    B --> C["Convention Adapter"]
+    C --> D["Protocol Dispatch"]
+    D --> E["Tree Evaluation"]
+    E --> F["Dialogue State"]
+    F --> G["Effective Context"]
+    G --> H["Intent Collection"]
+    H --> I["Overlay Hooks"]
+    I --> J["Candidate Resolution"]
+    J --> K["Tiered Selection"]
+    K --> L["BidResult"]
+    B --> M["Natural Fallback"]
+    M --> L
+    B --> N["Pass Strategy"]
+    N --> L
+
+    style C fill:#e0effe,stroke:#0175c7
+    style M fill:#fef3c7,stroke:#d97706
+    style N fill:#f3f4f6,stroke:#9ca3af
+</pre>
+</section>
+
+<!-- 1. Entry Point -->
+<section id="entry" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">1. Entry Point: <code>conventionToStrategy()</code></h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">The entry point is <code>conventionToStrategy(config, options?)</code> in <code>strategy/bidding/convention-strategy.ts</code>. It wraps a <code>ConventionConfig</code> as a <code>BiddingStrategy</code> object with a single <code>suggest(context): BidResult | null</code> method. Returning <code>null</code> means "no opinion" -- the strategy declines to bid, and the chain tries the next strategy.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: conventionToStrategy.suggest(context)</p>
+<ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
+  <li><strong>Evaluate bidding rules:</strong> Call <code>evaluateBiddingRules(context, config)</code> -- this runs Protocol Dispatch + Tree Evaluation. If it returns <code>null</code>, the convention doesn't apply. Return <code>null</code>.</li>
+  <li><strong>Guard:</strong> If the tree matched an IntentNode, proceed to the candidate pipeline. Otherwise, use the flat rule result directly.</li>
+  <li><strong>Obtain belief data:</strong> Call <code>options.beliefProvider(context)</code> if provided (exceptions caught, yielding <code>undefined</code>).</li>
+  <li><strong>Build EffectiveConventionContext:</strong> Bundles raw context + config + protocol result + dialogue state + active overlays + belief.</li>
+  <li><strong>Generate candidates:</strong> <code>generateCandidates(treeRoot, treeEvalResult, effectiveCtx)</code> -- runs intent collection, overlay hooks, resolver calls.</li>
+  <li><strong>Compose ranker:</strong> <code>config.rankCandidates</code> first, then <code>options.ranker</code>. Both compose: config output feeds into options.</li>
+  <li><strong>Select candidate:</strong> <code>selectMatchedCandidate(candidates, ranker, forcingState)</code> -- tiered selection.</li>
+  <li><strong>Handle result:</strong> If selected, use its <code>resolvedCall</code>. If not selected and <code>matchedIntentSuppressed</code>, return <code>null</code>. Otherwise fall back to <code>defaultCall</code>.</li>
+  <li><strong>Compute practical recommendation:</strong> If belief data exists, score candidates + generate pragmatic candidates + build recommendation.</li>
+  <li><strong>Assemble BidResult:</strong> call, ruleName, explanation, meaning, handSummary, conditions, treePath, evaluationTrace, treeInferenceData, practicalRecommendation.</li>
+</ol>
+</div>
+
+<p class="text-gray-600 text-sm mt-3"><strong>State produced:</strong> <code>BidResult</code> -- the complete output of evaluation for one bid decision.</p>
+</section>
+
+<!-- 2. Protocol Dispatch -->
+<section id="protocol" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">2. Protocol Dispatch</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Every convention defines a <code>ConventionProtocol</code> -- an ordered array of <code>ProtocolRound</code> objects representing the multi-round conversation structure of the convention (e.g., Stayman has 3 rounds: opening 1NT, response 2C, rebid). The protocol evaluator walks these rounds <strong>sequentially</strong> (linear scan of the rounds array), testing trigger conditions against the auction.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: evaluateProtocol(proto, context, triggerOverrides?)</p>
+<ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
+  <li><strong>Compute role:</strong> <code>computeRole(entries, seat)</code> scans the auction entries array linearly to determine if the evaluating seat is <code>opener</code>, <code>responder</code>, <code>competitive</code>, or <code>rebidder</code>.</li>
+  <li><strong>Initialize:</strong> <code>cursor = 0</code>, <code>established = { role }</code>, <code>activeRound = null</code>.</li>
+  <li><strong>For each round</strong> in <code>proto.rounds</code> (linear scan):
+    <ol class="list-[lower-alpha] list-inside ml-4 space-y-1">
+      <li>Create a <strong>windowed context</strong> from cursor position: <code>entries.slice(0, cursor + 2)</code>.</li>
+      <li>Get effective triggers: overlay trigger overrides if provided, else the round's own triggers.</li>
+      <li><strong>Linear scan</strong> the triggers array. For each trigger, test <code>trigger.condition.test(cursorCtx)</code>. <strong>First match wins.</strong></li>
+      <li>If no trigger matches, <strong>break</strong> -- auction hasn't reached this round.</li>
+      <li>If matched: advance <code>cursor += 2</code> (partnership turn = 2 seats), merge <code>trigger.establishes</code> into accumulated context.</li>
+      <li><strong>Seat filter check:</strong> If the round has a <code>seatFilter</code>, test it against the <strong>full</strong> context (not windowed). If it passes, set <code>activeRound = r</code>. If it fails, the milestone happened but this seat doesn't act -- cursor still advanced.</li>
+    </ol>
+  </li>
+  <li><strong>Evaluate hand tree:</strong> If <code>activeRound</code> is set, resolve its <code>handTree</code> (may be static or a function of established context), then call <code>evaluateTree(handTree, context)</code>.</li>
+</ol>
+</div>
+
+<pre class="mermaid">
+stateDiagram-v2
+    [*] --> ComputeRole
+    ComputeRole --> InitCursor: role determined
+    InitCursor --> TestRound: cursor=0
+    TestRound --> WindowContext: for each round
+    WindowContext --> TestTriggers: entries.slice(0, cursor+2)
+    TestTriggers --> NoMatch: no trigger passes
+    TestTriggers --> AdvanceCursor: first trigger passes
+    NoMatch --> EvalHandTree: break loop
+    AdvanceCursor --> SeatFilter: cursor += 2
+    SeatFilter --> SetActive: seatFilter passes
+    SeatFilter --> SkipActive: seatFilter fails
+    SetActive --> TestRound: next round
+    SkipActive --> TestRound: next round
+    EvalHandTree --> [*]: return ProtocolEvalResult
+</pre>
+
+<p class="text-gray-700 mt-4"><strong>Key insight:</strong> The cursor mechanism separates "what happened in the auction" from "who should act now." A round can match (advancing the cursor) without the current seat being the one who acts (seatFilter fails). This handles multi-round conventions where different partnership members act in different rounds.</p>
+
+<details class="mt-4 bg-gray-50 rounded-lg p-4">
+<summary class="text-gray-700">Trigger condition types</summary>
+<ul class="list-disc list-inside mt-2 text-sm text-gray-600 space-y-1">
+  <li><code>bidMade(level, strain)</code> -- seat-agnostic milestone (any player bid this)</li>
+  <li><code>partnerBidMade(level, strain)</code> -- actor-aware: only fires for partner bids (uses <code>areSamePartnership()</code>)</li>
+  <li><code>opponentBidMade(level, strain)</code> -- actor-aware: only fires for opponent bids</li>
+  <li><code>doubleMade()</code> -- seat-agnostic double detection</li>
+  <li>Combined with <code>and()</code>, <code>or()</code>, <code>not()</code> compositors</li>
+</ul>
+<p class="mt-2 text-sm text-gray-600"><strong>Seat filter patterns:</strong> <code>isResponder()</code>, <code>isOpener()</code>, <code>not(seatHasActed())</code>, <code>biddingRound(n)</code>, <code>passedAfter(level, strain)</code></p>
+</details>
+</section>
+
+<!-- 3. Tree Evaluation -->
+<section id="tree-eval" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">3. Tree Evaluation: Binary Decision Traversal</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">The hand tree is a <strong>binary decision tree</strong> with three node types. Traversal is <strong>iterative</strong> (not recursive) via an infinite loop with a switch statement -- stack-safe for arbitrarily deep trees.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="border rounded-lg p-4 bg-emerald-50 border-emerald-200">
+    <p class="font-bold text-emerald-800">DecisionNode</p>
+    <p class="text-sm text-gray-600 mt-1">Has <code>condition</code> (test + describe), <code>yes</code> branch, <code>no</code> branch. Can be auction or hand condition.</p>
+  </div>
+  <div class="border rounded-lg p-4 bg-blue-50 border-blue-200">
+    <p class="font-bold text-blue-800">IntentNode</p>
+    <p class="text-sm text-gray-600 mt-1">Leaf. Carries <code>SemanticIntent</code>, <code>defaultCall</code>, <code>meaning</code>, <code>nodeId</code>. Terminal match.</p>
+  </div>
+  <div class="border rounded-lg p-4 bg-gray-100 border-gray-300">
+    <p class="font-bold text-gray-700">FallbackNode</p>
+    <p class="text-sm text-gray-600 mt-1">Leaf. No match -- convention doesn't apply to this hand/auction. Optional <code>reason</code>.</p>
+  </div>
+</div>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: evaluateTree(tree, context) -- Iterative Linear Path Traversal</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>node = tree
+path = [], rejectedDecisions = [], visited = []
+
+loop forever:
+  switch node.type:
+    case "intent":
+      return { matched: node, path, rejectedDecisions, visited }
+
+    case "fallback":
+      return { matched: null, path, rejectedDecisions, visited }
+
+    case "decision":
+      passed = node.condition.test(context)
+      description = node.condition.describe(context)
+      entry = { node, passed, description }
+      visited.push(entry)
+
+      if passed:
+        path.push(entry)        // record as passing
+        node = node.yes         // follow YES branch
+      else:
+        rejectedDecisions.push(entry)  // record as rejected
+        node = node.no                 // follow NO branch</code></pre>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Data structure:</strong> The tree is a linked structure (each node points to its children), not an array. Traversal follows exactly one path from root to leaf. This is neither DFS nor BFS -- it's a <strong>single-path walk</strong> through a binary decision tree. Every decision node is visited exactly once on the path. The tree never backtracks.</p>
+
+<p class="text-gray-700 mt-2"><strong>Output: <code>TreeEvalResult</code></strong> contains four things:</p>
+<ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+  <li><code>matched</code> -- the IntentNode reached (or null if FallbackNode)</li>
+  <li><code>path</code> -- only the decision nodes where condition passed (YES branches taken)</li>
+  <li><code>rejectedDecisions</code> -- only the decision nodes where condition failed (NO branches taken)</li>
+  <li><code>visited</code> -- all decision nodes in traversal order (passing and rejected interleaved)</li>
+</ul>
+
+<p class="text-gray-700 mt-3"><strong>Validation invariant:</strong> <code>validateTree()</code> at registration time enforces that auction conditions always precede hand conditions on every path (DFS walk checking). This guarantees that <code>findHandSubtreeRoot()</code> can skip past auction conditions to find where hand evaluation begins.</p>
+</section>
+
+<!-- 4. Dialogue State -->
+<section id="dialogue" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">4. Dialogue State: Auction Replay</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Dialogue state is <strong>protocol memory</strong> -- what the auction means under the partnership agreement, independent of any hand. It's computed by <strong>replaying the entire auction</strong> one bid at a time through transition rules. Fully deterministic and stateless: same auction always produces the same DialogueState.</p>
+
+<div class="bg-gray-50 rounded-lg p-4 mb-6">
+<p class="font-semibold text-gray-800 mb-2">DialogueState contains:</p>
+<table class="w-full text-sm">
+<thead><tr class="border-b"><th class="text-left py-1 pr-4">Field</th><th class="text-left py-1">What it tracks</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">familyId</td><td>Which convention family is active (e.g., "stayman")</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">forcingState</td><td>Nonforcing | ForcingOneRound | GameForcing | PassForcing</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">agreedStrain</td><td>{ type: none|suit|notrump, suit?, confidence? }</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">pendingAction</td><td>None | ShowMajor | ShowSuit</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">competitionMode</td><td>Uncontested | Doubled | Overcalled | Balancing</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">captain</td><td>Opener | Responder | Neither</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">systemMode</td><td>On | Off | Modified (global default)</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">systemCapabilities</td><td>Record of capability &rarr; SystemMode (per-capability override)</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">conventionData</td><td>Open record for convention-specific state</td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4 font-mono text-xs">interferenceDetail</td><td>{ call, seat, isNatural, kind? } if opponent interfered</td></tr>
+<tr><td class="py-1 pr-4 font-mono text-xs">frames</td><td>Stack of DialogueFrame for multi-step obligations</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: computeDialogueState(auction, conventionRules, baselineRules?)</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>state = INITIAL_DIALOGUE_STATE
+
+for each entry in auction.entries (index i):
+
+  if single-pass mode (no baselineRules):
+    for each rule in conventionRules:     // linear scan
+      if rule.matches(state, entry, auction, i):
+        effect = rule.effects(state, entry, auction, i)
+        state = applyEffect(state, effect)
+        break                              // first match wins
+
+  if two-pass mode (baselineRules provided):
+    // Pass 1: convention rules (first-match-wins)
+    alreadySet = empty set
+    for each rule in conventionRules:
+      if rule.matches(state, entry, auction, i):
+        effect = rule.effects(...)
+        alreadySet = getEffectKeys(effect)   // track which fields were set
+        state = applyEffect(state, effect)
+        break
+
+    // Pass 2: baseline rules (first-match-wins, backfill only)
+    for each rule in baselineRules:
+      if rule.matches(state, entry, auction, i):
+        effect = rule.effects(...)
+        state = applyBackfillEffect(state, effect, alreadySet)
+        break                // only sets fields NOT in alreadySet
+
+return state</code></pre>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Two-pass mode</strong> separates convention-specific transitions from generic baseline transitions. Convention rules fire first and "claim" fields; baseline rules only backfill unclaimed fields. This prevents baseline rules from overriding convention-specific state while still providing sensible defaults.</p>
+
+<p class="text-gray-700 mt-2"><strong>TransitionRule interface:</strong> Each rule has <code>id</code>, <code>matches(state, entry, auction, entryIndex)</code>, and <code>effects(state, entry, auction, entryIndex)</code>. Effects use typed <code>set*</code> prefix fields (e.g., <code>setFamilyId</code>, <code>mergeConventionData</code>).</p>
+</section>
+
+<!-- 5. Effective Context -->
+<section id="effective-ctx" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">5. Effective Context: The Bundle</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4"><code>EffectiveConventionContext</code> is the assembled bundle that downstream pipeline stages consume. It's built by <code>buildEffectiveContext()</code> and bundles everything needed for candidate generation.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: buildEffectiveContext(raw, config, protocolResult, publicBelief?, lookupConvention?)</p>
+<ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
+  <li><strong>Compute dialogue state</strong> via <code>computeDialogueState()</code> using config's transition rules (two-pass or single-pass depending on whether <code>config.baselineRules</code> exists).</li>
+  <li><strong>Classify interference:</strong> If <code>dialogueState.interferenceDetail</code> exists and opponent convention IDs are present, call <code>classifyInterference()</code> which may set <code>InterferenceKind</code> (natural-overcall, penalty-double, etc.).</li>
+  <li><strong>Filter active overlays:</strong> From <code>config.overlays</code>, keep only those where:
+    <ul class="list-disc list-inside ml-4">
+      <li><code>overlay.roundName === protocolResult.activeRound.name</code> (must match the current round)</li>
+      <li><code>overlay.matches(dialogueState)</code> returns true</li>
+    </ul>
+  </li>
+  <li><strong>Sort overlays</strong> by <code>priority</code> (ascending -- lower number = higher precedence, default 0).</li>
+  <li><strong>Return bundle:</strong> <code>{ raw, config, protocolResult, dialogueState, activeOverlays, publicBelief }</code></li>
+</ol>
+</div>
+</section>
+
+<!-- 6. Intent Collection -->
+<section id="intent-collection" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">6. Intent Collection: Gathering All Proposals</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Intent collection traverses the hand subtree to gather <strong>all</strong> IntentNode leaves (not just the matched one). This produces the candidate pool that the selection algorithm chooses from. The algorithm is a <strong>recursive DFS</strong> over the hand portion of the tree.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: collectIntentProposals(handTreeRoot, context)</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>// Step 1: Skip past auction conditions to find hand subtree root
+root = findHandSubtreeRoot(handTreeRoot, context)
+  // walks auction-condition decision nodes, following YES/NO based on
+  // condition evaluation, until reaching a hand-condition node or leaf
+
+// Step 2: Recursive DFS collecting ALL leaves
+function collectLeaves(node, pathEntries, results):
+  switch node.type:
+    case "fallback":
+      return                    // skip -- no intent here
+
+    case "intent":
+      results.push({
+        intent: node.intent,
+        nodeName: node.name,
+        meaning: node.meaning,
+        defaultCall: node.defaultCall,
+        pathConditions: pathEntries,   // hand conditions on path to this leaf
+        sourceNode: node,
+      })
+      return
+
+    case "decision":
+      // INVARIANT: must be a hand condition (auction conditions filtered above)
+      if isAuctionCondition(node.condition): throw Error
+
+      yesPath = [...pathEntries, { condition, requiredResult: true }]
+      noPath  = [...pathEntries, { condition, requiredResult: false }]
+      collectLeaves(node.yes, yesPath, results)   // recurse YES
+      collectLeaves(node.no,  noPath,  results)   // recurse NO
+
+results = []
+collectLeaves(root, [], results)
+return results</code></pre>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Key distinction from tree evaluation:</strong> Tree evaluation follows a single path (the matched path). Intent collection explores <strong>all branches</strong> -- every IntentNode in the hand subtree becomes a proposal. Each proposal carries <code>pathConditions</code>: the hand conditions that must be true/false to reach it. These conditions are used later to compute <code>failedConditions</code> (which conditions the actual hand doesn't satisfy).</p>
+
+<pre class="mermaid">
+flowchart TD
+    A["Hand Subtree Root"] --> B{"HCP >= 8?"}
+    B -->|YES| C{"4+ Hearts?"}
+    B -->|NO| D["IntentNode: Pass"]
+    C -->|YES| E["IntentNode: Bid 2H"]
+    C -->|NO| F["IntentNode: Bid 2D"]
+
+    style A fill:#f0f7ff,stroke:#0175c7
+    style D fill:#e0effe,stroke:#0175c7
+    style E fill:#e0effe,stroke:#0175c7
+    style F fill:#e0effe,stroke:#0175c7
+</pre>
+
+<p class="text-sm text-gray-500 mt-2">In this example tree, DFS collects 3 proposals: Pass (path: HCP&lt;8), Bid 2H (path: HCP>=8, 4+ hearts), Bid 2D (path: HCP>=8, not 4+ hearts). Each records its path conditions.</p>
+</section>
+
+<!-- 7. Overlay System -->
+<section id="overlays" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">7. Overlay System: Patches for Interference</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Overlays modify the evaluation pipeline when unusual auction conditions arise (e.g., opponent interference). Each <code>ConventionOverlayPatch</code> has a <code>matches(dialogueState)</code> predicate and optional hooks. Overlays are activated during effective context building and applied during candidate generation.</p>
+
+<div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+<p class="font-semibold text-amber-800 mb-2">Four overlay hooks (applied in strict order):</p>
+<ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
+  <li><strong><code>replacementTree</code></strong> -- Full tree replacement. <strong>First overlay wins</strong> (only one can replace). Re-evaluates the tree from the new root.</li>
+  <li><strong><code>suppressIntent(intent, ctx)</code></strong> -- Remove proposals from the candidate pool. <strong>All overlays compose</strong> (each can suppress independently). Returns <code>true</code> to suppress.</li>
+  <li><strong><code>addIntents(ctx)</code></strong> -- Inject proposals not in the tree. <strong>All overlays concatenate</strong>. Injected intents have no <code>sourceNode</code> and are never considered "matched."</li>
+  <li><strong><code>overrideResolver(intent, ctx)</code></strong> -- Override the standard resolver for a proposal. <strong>First non-null result wins</strong>. Returns <code>ResolverResult | null</code>.</li>
+</ol>
+</div>
+
+<p class="text-gray-700"><strong>Activation:</strong> Overlays are filtered by <code>roundName === activeRound.name</code> AND <code>matches(dialogueState)</code>. Sorted by <code>priority</code> (lower = higher precedence). All error handling is graceful: hook exceptions trigger <code>onOverlayError</code> callback but don't crash the pipeline.</p>
+
+<p class="text-gray-700 mt-2"><strong>Trigger overrides:</strong> Overlays can also carry <code>triggerOverrides</code> (Map of roundName &rarr; SemanticTrigger[]) which replace the protocol round's original triggers during protocol evaluation. These are collected by <code>collectTriggerOverrides()</code> before protocol dispatch runs.</p>
+</section>
+
+<!-- 8. Candidate Generation -->
+<section id="candidate-gen" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">8. Candidate Generation: Resolving Intents</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4"><code>generateCandidates()</code> is the central orchestration function. It takes the raw proposals from intent collection, applies overlay hooks, resolves each proposal through its resolver, and produces <code>ResolvedCandidate[]</code>.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: generateCandidates(handTreeRoot, handResult, effectiveCtx)</p>
+<ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
+  <li><strong>Step 1 -- Replacement tree:</strong> Apply first overlay's <code>replacementTree</code> if any. Re-evaluates tree from new root. Tags all proposals with provenance <code>"replacement-tree"</code> or <code>"tree"</code>.</li>
+  <li><strong>Guard:</strong> If no IntentNode was matched after potential replacement, return empty candidates.</li>
+  <li><strong>Step 2 -- Collect proposals:</strong> <code>collectIntentProposals(activeRoot, context)</code> -- recursive DFS, all IntentNode leaves.</li>
+  <li><strong>Step 3 -- Suppress:</strong> Apply all overlays' <code>suppressIntent</code> hooks. Track whether the matched intent was specifically suppressed.</li>
+  <li><strong>Step 4 -- Add:</strong> Apply all overlays' <code>addIntents</code> hooks. Tags with provenance <code>"overlay-injected"</code>.</li>
+  <li><strong>Step 5 -- Resolve each proposal</strong> (linear scan):
+    <ol class="list-[lower-alpha] list-inside ml-4 space-y-1">
+      <li>Compute <code>defaultCall</code> by calling <code>proposal.defaultCall(raw)</code>. If it throws, skip this proposal.</li>
+      <li>Compute <code>failedConditions</code>: for non-matched proposals, re-evaluate each path condition against the raw context. Conditions that don't match their required result are failures.</li>
+      <li>Check for <strong>overlay resolver override</strong>: scan overlays for first non-null <code>overrideResolver</code> result.</li>
+      <li>If no override, call the <strong>standard resolver</strong>: <code>resolveIntent(intent, dialogueState, raw, resolvers)</code>.
+        <ul class="list-disc list-inside ml-4">
+          <li>Returns <code>ResolverResult</code>: discriminated union of <code>{ status: "resolved", calls }</code>, <code>{ status: "use_default" }</code>, or <code>{ status: "declined" }</code>.</li>
+          <li><code>resolved</code>: Linear scan of <code>calls</code> array for first legal encoding. If none legal, use first call anyway.</li>
+          <li><code>use_default</code>: Keep the defaultCall.</li>
+          <li><code>declined</code>: Exclude this proposal entirely (returns null).</li>
+        </ul>
+      </li>
+      <li>Check legality: <code>isLegalCall(auction, resolvedCall, seat)</code>.</li>
+      <li>Build <code>ResolvedCandidate</code> with all metadata (bidName, nodeId, meaning, call, failedConditions, intent, source, resolvedCall, isDefaultCall, legal, isMatched, priority, provenance).</li>
+    </ol>
+  </li>
+  <li><strong>Ordering:</strong> Matched candidates are <code>unshift</code>ed to front; non-matched are <code>push</code>ed to back.</li>
+</ol>
+</div>
+
+<pre class="mermaid">
+flowchart TD
+    A["handTreeRoot + handResult"] --> B["Apply replacementTree"]
+    B --> C["collectIntentProposals - DFS"]
+    C --> D["Apply suppressIntent hooks"]
+    D --> E["Apply addIntents hooks"]
+    E --> F["For each proposal"]
+    F --> G{"Override resolver?"}
+    G -->|Yes| H["Use overlay result"]
+    G -->|No| I["resolveIntent standard"]
+    H --> J["Build ResolvedCandidate"]
+    I --> J
+    J --> K{"Declined?"}
+    K -->|Yes| L["Skip"]
+    K -->|No| M["Add to candidates"]
+    M --> N["ResolvedCandidate array"]
+
+    style N fill:#d1fae5,stroke:#059669
+</pre>
+</section>
+
+<!-- 9. Candidate Selection -->
+<section id="candidate-sel" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">9. Candidate Selection: Tiered Algorithm</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4"><code>selectMatchedCandidate()</code> picks the best candidate from the resolved pool using a strict <strong>four-tier priority system</strong>. Within each tier, the first candidate found in the (optionally ranked) array wins. The ranker influences which candidate wins <em>within</em> a tier, not tier boundaries.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: selectMatchedCandidate(candidates, ranker?, forcingState?)</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>ranked = ranker ? ranker(candidates) : candidates
+
+// Forcing constraints
+noPass   = forcingState is ForcingOneRound OR GameForcing
+passOnly = forcingState is PassForcing
+allowed(c) = not (noPass AND c is Pass) AND not (passOnly AND c is not Pass)
+
+// Tier 1: matched + legal + allowed
+matched = ranked.find(c => c.isMatched AND c.legal AND allowed(c))
+if matched: return matched
+
+// Tier 2: preferred + legal + satisfiable + allowed
+preferred = ranked.find(c =>
+  c.priority === "preferred"
+  AND c.legal
+  AND c.failedConditions.length === 0    // satisfiable
+  AND allowed(c))
+if preferred: return preferred
+
+// Tier 3: alternative + legal + satisfiable + allowed
+alt = ranked.find(c =>
+  c.priority === "alternative"
+  AND c.legal
+  AND c.failedConditions.length === 0
+  AND allowed(c))
+if alt: return alt
+
+// Tier 4: no selection
+return null</code></pre>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-6">
+  <div class="border-2 border-emerald-300 rounded-lg p-3 text-center">
+    <p class="font-bold text-emerald-700">Tier 1</p>
+    <p class="text-sm">Matched + Legal</p>
+    <p class="text-xs text-gray-500 mt-1">The tree's own answer</p>
+  </div>
+  <div class="border-2 border-blue-300 rounded-lg p-3 text-center">
+    <p class="font-bold text-blue-700">Tier 2</p>
+    <p class="text-sm">Preferred + Satisfiable</p>
+    <p class="text-xs text-gray-500 mt-1">Convention-marked preference</p>
+  </div>
+  <div class="border-2 border-amber-300 rounded-lg p-3 text-center">
+    <p class="font-bold text-amber-700">Tier 3</p>
+    <p class="text-sm">Alternative + Satisfiable</p>
+    <p class="text-xs text-gray-500 mt-1">Acceptable backup</p>
+  </div>
+  <div class="border-2 border-gray-300 rounded-lg p-3 text-center">
+    <p class="font-bold text-gray-600">Tier 4</p>
+    <p class="text-sm">null</p>
+    <p class="text-xs text-gray-500 mt-1">No candidate viable</p>
+  </div>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Forcing constraints:</strong> When <code>ForcingOneRound</code> or <code>GameForcing</code> is active, Pass is excluded from all tiers. When <code>PassForcing</code> is active, only Pass is allowed. These constraints are enforced at selection time and also by the strategy chain's <code>resultFilter</code> (belt-and-suspenders).</p>
+
+<p class="text-gray-700 mt-2"><strong>Satisfiability gate (Tiers 2-3):</strong> <code>failedConditions.length === 0</code> -- the candidate's hand conditions must all be satisfied by the actual hand. This prevents selecting a "preferred 2H bid" when the hand doesn't have 4 hearts. Tier 1 (matched) doesn't need this check because the matched candidate is by construction the one whose path conditions all passed during tree evaluation.</p>
+</section>
+
+<!-- 10. Inference System -->
+<section id="inference" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">10. Inference System: Building Beliefs from Bids</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">The inference system runs <strong>parallel to</strong> the evaluation pipeline. It doesn't determine what bid to make -- it determines <strong>what we know about each player's hand</strong> based on what they bid. This feeds into the practical scoring layer.</p>
+
+<div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+<p class="font-semibold text-red-800 mb-2">Key architecture decisions:</p>
+<ul class="list-disc list-inside text-sm text-gray-800 space-y-1">
+  <li><strong>Two inference engines per deal:</strong> <code>nsEngine</code> (N/S perspective) and <code>ewEngine</code> (E/W perspective) -- models information asymmetry between partnerships.</li>
+  <li><strong>Incremental:</strong> <code>processBid()</code> called after every bid, not at auction end.</li>
+  <li><strong>Monotonic narrowing:</strong> Additional inferences can only tighten bounds, never widen them.</li>
+  <li><strong>Range intersection:</strong> <code>min = max(all minHcp)</code>, <code>max = min(all maxHcp)</code>. Same per-suit.</li>
+</ul>
+</div>
+
+<div class="algo-box algo-nondeterministic">
+<p class="font-bold text-amber-800 mb-2">Algorithm: mergeInferences(seat, inferences) -- Range Intersection</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>hcpMin = 0, hcpMax = 40
+suitMins = { S:0, H:0, D:0, C:0 }
+suitMaxes = { S:13, H:13, D:13, C:13 }
+
+for each inference:
+  hcpMin = max(hcpMin, inference.minHcp)
+  hcpMax = min(hcpMax, inference.maxHcp)
+  for each suit:
+    suitMins[suit] = max(suitMins[suit], inference.minLength)
+    suitMaxes[suit] = min(suitMaxes[suit], inference.maxLength)
+
+// Contradiction clamping
+if hcpMin > hcpMax:
+  use last inference's values (most recent bid wins)
+for each suit:
+  if suitMin > suitMax: clamp suitMin = suitMax</code></pre>
+</div>
+
+<h3 class="text-lg font-semibold text-bridge-700 mt-6 mb-3">Negative Inference</h3>
+
+<p class="text-gray-700 mb-3">When a decision node's condition fails during tree evaluation (recorded in <code>rejectedDecisions</code>), the <strong>inverse</strong> tells us what the hand does NOT have. This is extracted by the tree inference system.</p>
+
+<div class="bg-gray-50 rounded-lg p-4">
+<p class="font-mono text-sm text-gray-700 mb-2"><strong>invertInference(ci)</strong> inversions:</p>
+<table class="w-full text-sm">
+<thead><tr class="border-b"><th class="text-left py-1 pr-4">Original</th><th class="text-left py-1">Inverted to</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>hcp-min: 12</code></td><td><code>hcp-max: 11</code></td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>hcp-max: 15</code></td><td><code>hcp-min: 16</code></td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>suit-min: 4 hearts</code></td><td><code>suit-max: 3 hearts</code></td></tr>
+<tr class="border-b border-gray-200"><td class="py-1 pr-4"><code>suit-max: 3 spades</code></td><td><code>suit-min: 4 spades</code></td></tr>
+<tr><td class="py-1 pr-4"><code>hcp-range</code></td><td>disjunction (resolved against cumulative state)</td></tr>
+</tbody>
+</table>
+<p class="text-sm text-gray-500 mt-2">Uninvertible types (ace-count, king-count, two-suited) return null -- no false inference.</p>
+</div>
+
+<h3 class="text-lg font-semibold text-bridge-700 mt-6 mb-3">Private Belief Conditioning</h3>
+
+<p class="text-gray-700"><code>conditionOnOwnHand()</code> narrows partner beliefs using own hand knowledge. Partner HCP max is capped at <code>40 - ownHcp</code>. Partner suit length max is capped at <code>13 - ownSuitLength</code>. These are physical constraints (the deck has 40 total HCP and 13 cards per suit).</p>
+</section>
+
+<!-- 11. Practical Scoring -->
+<section id="practical" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">11. Practical Scoring: Weighted Evaluation</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">The practical scoring layer is <strong>advisory only</strong> -- it never changes the teaching answer or grade. It produces a <code>PracticalRecommendation</code> that tells the user what an experienced player might prefer. It scores candidates using beliefs (inference data) combined with hand evaluation.</p>
+
+<div class="algo-box algo-nondeterministic">
+<p class="font-bold text-amber-800 mb-2">Scoring Formula: scoreCandidatePractically()</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>// Weights
+WEIGHTS = {
+  fit:                    2.0,    // suit fit bonus
+  hcp:                    1.5,    // HCP adequacy
+  conventionDistance:     -4.0,   // penalty for non-matched candidates
+  misunderstandingRisk:  -3.0,    // penalty for partner confusion
+}
+
+// Level-to-HCP floor table
+LEVEL_HCP_TABLE = { 1:20, 2:23, 3:26, 4:26, 5:29, 6:33, 7:37 }
+
+// For suit bids:
+fitScore = ownSuitLength + partnerMinSuitLength
+hcpScore = (ownHcp + partnerMinHcp) - LEVEL_HCP_TABLE[bidLevel]
+
+// Convention distance:
+//   matched candidate     -> 0
+//   preferred candidate   -> 1
+//   alternative candidate -> 2
+//   pragmatic candidate   -> 3
+
+totalScore =
+    WEIGHTS.fit * fitScore
+  + WEIGHTS.hcp * hcpScore
+  + WEIGHTS.conventionDistance * conventionDistance
+  + WEIGHTS.misunderstandingRisk * misunderstandingRisk
+
+// Pass/double/redouble -> score 0 (all components zero)
+// NT bids -> fitScore = 0 (no suit fit applies)</code></pre>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Candidate pool:</strong> The scorer evaluates both <strong>normative candidates</strong> (from the convention tree) and <strong>pragmatic candidates</strong> (heuristic tactical bids). Only legal + satisfiable normative candidates are scored. All candidates are sorted descending by score; the top scorer becomes the recommendation.</p>
+
+<h3 class="text-lg font-semibold text-bridge-700 mt-6 mb-3">Pragmatic Candidate Generator</h3>
+
+<p class="text-gray-700 mb-3">Three tactical heuristics produce bids that convention trees don't cover. Each is tried independently; results are deduplicated against existing convention candidates.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="border rounded-lg p-4">
+    <p class="font-bold text-gray-800">Conservative NT Downgrade</p>
+    <p class="text-sm text-gray-600 mt-1">When partner bid NT and combined HCP is within 2 points of the level floor, suggest one level lower. Linear scan of auction entries backward to find partner's NT bid.</p>
+  </div>
+  <div class="border rounded-lg p-4">
+    <p class="font-bold text-gray-800">Competitive Overcall</p>
+    <p class="text-sm text-gray-600 mt-1">When opponents have bid, 8+ HCP, and a 5+ card suit exists. Linear scan of 4 suits, for each finds cheapest legal bid (level 1-7 scan).</p>
+  </div>
+  <div class="border rounded-lg p-4">
+    <p class="font-bold text-gray-800">Protective Double</p>
+    <p class="text-sm text-gray-600 mt-1">Passout seat protection: 10+ HCP, last 3 entries are opponent-bid + pass + pass, opponent at level 3 or below.</p>
+  </div>
+</div>
+
+<h3 class="text-lg font-semibold text-bridge-700 mt-6 mb-3">Partner Interpretation Model</h3>
+
+<p class="text-gray-700"><code>computePartnerInterpretation()</code> models what partner would infer from a candidate bid. It computes <code>misunderstandingRisk</code> (HCP deviation between what the bid promises and what the hand actually has) and <code>continuationAwkwardness</code> (suit length shortfall). The misunderstandingRisk feeds into the scoring formula as a penalty.</p>
+</section>
+
+<!-- 12. Teaching Resolution -->
+<section id="teaching" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">12. Teaching Resolution: Grading the User</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Teaching resolution takes the <code>BidResult</code> and determines how to grade the user's bid. It's completely <strong>deterministic</strong> and isolated from the practical layer. Same hand + same auction = same grade, always.</p>
+
+<div class="algo-box algo-teaching">
+<p class="font-bold text-purple-800 mb-2">Algorithm: resolveTeachingAnswer(bidResult)</p>
+<ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
+  <li>Primary bid = <code>bidResult.call</code> (the convention's answer).</li>
+  <li>Extract <code>resolvedCandidates</code> from <code>bidResult.treePath</code>.</li>
+  <li>If no candidates, return exact grading (only the primary bid is correct).</li>
+  <li>Filter acceptable alternatives: candidates that are <strong>not matched</strong>, <strong>legal</strong>, <strong>failedConditions.length === 0</strong> (satisfiable), and have priority <code>"preferred"</code> or <code>"alternative"</code>.</li>
+  <li>Compute ambiguity score: 0 preferred &rarr; 0.3, 1 preferred &rarr; 0.6, 2+ preferred &rarr; 0.8.</li>
+  <li>Determine grading type: if matched candidate used resolver (non-default call) &rarr; <code>"intent_based"</code>; if acceptable alternatives exist &rarr; <code>"primary_plus_acceptable"</code>; else &rarr; <code>"exact"</code>.</li>
+</ol>
+</div>
+
+<div class="algo-box algo-teaching mt-4">
+<p class="font-bold text-purple-800 mb-2">Algorithm: gradeBid(userCall, resolution)</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>if callsMatch(userCall, resolution.primaryBid):
+  return BidGrade.Correct          // exact match to convention answer
+
+if resolution.acceptableBids.some(bid => callsMatch(userCall, bid.call)):
+  return BidGrade.Acceptable       // matched an acceptable alternative
+
+return BidGrade.Incorrect          // neither primary nor acceptable</code></pre>
+</div>
+
+<p class="text-gray-700 mt-4"><code>callsMatch()</code> is a structural equality check on Call objects (same type, same level, same strain for bids). The three grades map to UI colors: green (Correct), teal (Acceptable), red (Incorrect). Acceptable bids auto-advance the auction.</p>
+</section>
+
+<!-- 13. Strategy Chain -->
+<section id="strategy-chain" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">13. Strategy Chain: Fallback Composition</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">The strategy chain is how multiple strategies compose. It wraps an ordered array of <code>BiddingStrategy</code> objects and tries each in sequence. <strong>First non-null result wins</strong>, subject to an optional <code>resultFilter</code>.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: createStrategyChain(strategies, options?)</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>for each strategy in strategies:
+  try:
+    result = strategy.suggest(context)
+    if result is not null:
+      if resultFilter exists AND resultFilter(result, context) is false:
+        trace.add(strategy.id, "filtered")   // rejected by filter
+        continue                              // try next strategy
+      trace.add(strategy.id, "suggested")
+      return result (with merged trace)
+    trace.add(strategy.id, "declined")        // returned null
+  catch:
+    trace.add(strategy.id, "error")           // strategy threw
+
+return null                                   // all strategies exhausted</code></pre>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Production chain:</strong> <code>[conventionStrategy, naturalFallbackStrategy]</code> with <code>createForcingFilter(config)</code> as <code>resultFilter</code>. The forcing filter rejects Pass results when the dialogue state has active forcing. This provides an end-to-end guarantee: no strategy can produce Pass during a forcing auction.</p>
+
+<div class="bg-gray-50 rounded-lg p-4 mt-4">
+<p class="font-semibold text-gray-800 mb-2">Strategy chain in production (N/S partnership):</p>
+<ol class="list-decimal list-inside text-sm text-gray-700 space-y-1">
+  <li><strong>Convention strategy</strong> (e.g., Stayman wrapped by <code>conventionToStrategy</code>) -- tries convention-specific logic</li>
+  <li><strong>Natural fallback</strong> -- 6+ HCP with a 5+ card suit &rarr; bid cheapest legal in that suit (linear scan: level 1-7, per suit by SUIT_ORDER)</li>
+  <li>If all return null or are filtered: chain returns null &rarr; drill session wraps as Pass</li>
+</ol>
+</div>
+</section>
+
+<!-- 14. Resolver Architecture -->
+<section id="resolvers" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">14. Resolver Architecture: <code>defaultCall</code> vs <code>resolvedCall</code></h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Every IntentNode carries two paths to a concrete bid. Understanding which is used where is essential to understanding the architecture.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+  <div class="border-2 border-emerald-300 rounded-lg p-4">
+    <p class="font-bold text-emerald-800 mb-2"><code>defaultCall(ctx: BiddingContext) &rarr; Call</code></p>
+    <p class="text-sm text-gray-700 mb-2">Always present on every IntentNode. Takes only the hand and auction context. Computes the concrete bid for the <strong>default (uncontested) context</strong>.</p>
+    <p class="text-sm text-gray-600"><strong>Used by:</strong> tree flattening, sibling finder, inference extraction, teaching display. Everything except the production decision path.</p>
+  </div>
+  <div class="border-2 border-blue-300 rounded-lg p-4">
+    <p class="font-bold text-blue-800 mb-2"><code>IntentResolverFn(intent, state, ctx) &rarr; ResolverResult</code></p>
+    <p class="text-sm text-gray-700 mb-2">Optional. Looked up from <code>IntentResolverMap</code> by intent type. Takes <code>DialogueState</code> in addition to context. Can adapt the call based on forcing, interference, or system mode.</p>
+    <p class="text-sm text-gray-600"><strong>Used by:</strong> only <code>generateCandidates()</code> in the production strategy path.</p>
+  </div>
+</div>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">ResolverResult: Three-Way Discriminated Union</p>
+<pre class="bg-gray-800 text-gray-100 rounded p-4 text-sm overflow-x-auto"><code>type ResolverResult =
+  | { status: "resolved", calls: ResolvedIntent[] }
+      // Resolver provides one or more concrete calls.
+      // Linear scan: first legal call wins.
+      // If none legal, first call used anyway.
+
+  | { status: "use_default" }
+      // No special encoding needed.
+      // Pipeline uses IntentNode.defaultCall() as-is.
+
+  | { status: "declined" }
+      // Intent is invalid in this context.
+      // Candidate is EXCLUDED entirely from the pool.
+      // Example: Stayman resolver returns declined when
+      //   getSystemModeFor(state, STAYMAN_CAPABILITY) === Off</code></pre>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Convention variation:</strong> Conventions differ in how much they use resolvers:</p>
+<ul class="list-disc list-inside text-sm text-gray-700 space-y-1 ml-4">
+  <li><strong>SAYC:</strong> Empty resolver map (<code>new Map()</code>). All 55+ IntentNodes have deterministic <code>defaultCall</code> functions. Resolvers aren't needed because bids depend only on hand + auction, never on dialogue state.</li>
+  <li><strong>Stayman:</strong> Full resolver map (9 entries). Each checks system mode and computes level dynamically (e.g., 2C after 1NT, 3C after 2NT).</li>
+  <li><strong>Bergen:</strong> Partial map (5 entries). <code>ShowShortage</code>, <code>AskShortage</code>, <code>HelpSuitGameTry</code> use dynamic <code>defaultCall</code> functions because they need <code>BiddingContext</code> (which major was opened), not <code>DialogueState</code>.</li>
+</ul>
+
+<p class="text-gray-700 mt-3"><strong>The <code>isDefaultCall</code> flag:</strong> Set on each <code>ResolvedCandidate</code>. When <code>true</code>, the resolver didn't change the call. When <code>false</code>, the resolver remapped it. This flag flows through to <code>ResolvedCandidateDTO</code> and into the teaching system, which uses it to determine grading type (<code>"intent_based"</code> when a resolver produced a non-default call).</p>
+</section>
+
+<!-- 15. Three-Level Forcing -->
+<section id="forcing" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">15. Three-Level Forcing Enforcement</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Forcing state determines whether Pass is allowed. The system enforces forcing at <strong>three independent levels</strong> -- a belt-and-suspenders-and-belt approach that guarantees correctness.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="border-l-4 border-emerald-500 pl-4 py-2">
+    <p class="font-bold text-emerald-800">Level 1: Candidate Selector</p>
+    <p class="text-sm text-gray-700 mt-1"><code>selectMatchedCandidate()</code> excludes Pass candidates from all tiers when <code>ForcingOneRound</code> or <code>GameForcing</code>. Allows only Pass when <code>PassForcing</code>.</p>
+    <p class="text-xs text-gray-500 mt-2">File: <code>candidate-selector.ts:24-31</code></p>
+  </div>
+  <div class="border-l-4 border-blue-500 pl-4 py-2">
+    <p class="font-bold text-blue-800">Level 2: Pragmatic Filter</p>
+    <p class="text-sm text-gray-700 mt-1"><code>conventionToStrategy()</code> filters Pass from pragmatic candidates when forcing is active. Prevents tactical pass suggestions during forcing auctions.</p>
+    <p class="text-xs text-gray-500 mt-2">File: <code>convention-strategy.ts:185-188</code></p>
+  </div>
+  <div class="border-l-4 border-amber-500 pl-4 py-2">
+    <p class="font-bold text-amber-800">Level 3: Strategy Chain Filter</p>
+    <p class="text-sm text-gray-700 mt-1"><code>createForcingFilter(config)</code> on the chain's <code>resultFilter</code> rejects Pass results from ANY strategy. End-to-end guarantee: even <code>passStrategy</code> can't produce Pass during forcing.</p>
+    <p class="text-xs text-gray-500 mt-2">File: <code>config-factory.ts</code> + <code>strategy-chain.ts:24-26</code></p>
+  </div>
+</div>
+
+<p class="text-gray-700"><strong>Forcing states</strong> are set by <code>DialogueState.forcingState</code>, computed via transition rules during auction replay. For example, Stayman's 2C response sets <code>ForcingOneRound</code> -- opener must respond to the Stayman ask.</p>
+
+<p class="text-gray-700 mt-2"><strong>Trace diagnostics:</strong> <code>forcingFiltered</code> flags when the chain rejected a strategy result due to the forcing filter.</p>
+</section>
+
+<!-- 16. Concrete Walkthrough -->
+<section id="walkthrough" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">16. Concrete Example: Stayman Round 2</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">To show the pipeline working on real data, here's a trace of Stayman round 2 (opener's response after partner bid 2C). Opener has 4 hearts, 3 spades, 16 HCP.</p>
+
+<div class="bg-bridge-50 border border-bridge-200 rounded-lg p-4 mb-6">
+<p class="font-semibold text-bridge-800 mb-2">Setup</p>
+<ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+  <li><strong>Auction so far:</strong> South opens 1NT, West passes, North bids 2C (Stayman), East passes</li>
+  <li><strong>Evaluating seat:</strong> South (opener)</li>
+  <li><strong>South's hand:</strong> 4 hearts, 3 spades, 3 diamonds, 3 clubs, 16 HCP</li>
+</ul>
+</div>
+
+<div class="space-y-6">
+
+<div class="flex gap-4 items-start">
+  <span class="step-number">1</span>
+  <div>
+    <p class="font-semibold text-gray-800">Protocol Dispatch</p>
+    <p class="text-sm text-gray-600">Round "nt-opening": trigger <code>bidMade(1, NT)</code> matches at cursor 0. Cursor advances to 2. Establishes <code>{ openingLevel: 1 }</code>. seatFilter checks <code>isResponder()</code> -- South is opener, fails. <code>activeRound</code> not set.</p>
+    <p class="text-sm text-gray-600 mt-1">Round "stayman-ask": trigger <code>bidMade(2, C)</code> matches at cursor 2. Cursor advances to 4. seatFilter checks <code>isOpener() AND lastEntryIsPass()</code> -- South is opener, last entry is Pass, passes. <code>activeRound = "stayman-ask"</code>.</p>
+  </div>
+</div>
+
+<div class="flex gap-4 items-start">
+  <span class="step-number">2</span>
+  <div>
+    <p class="font-semibold text-gray-800">Hand Tree Resolution</p>
+    <p class="text-sm text-gray-600"><code>handTree</code> is a function of established context: <code>(est) => est.openingLevel === 1 ? round2ResponseAfter1NT : round2ResponseAfter2NT</code>. Since <code>openingLevel = 1</code>, selects the 1NT response tree.</p>
+  </div>
+</div>
+
+<div class="flex gap-4 items-start">
+  <span class="step-number">3</span>
+  <div>
+    <p class="font-semibold text-gray-800">Tree Evaluation (Single-Path Walk)</p>
+    <p class="text-sm text-gray-600">The tree for round 2 response:</p>
+    <pre class="bg-gray-800 text-gray-100 rounded p-3 text-xs mt-2 overflow-x-auto"><code>handDecision("has-4-hearts", suitMin(1, "hearts", 4))
+  YES: IntentNode("stayman-response-hearts") -> 2H
+  NO:  handDecision("has-4-spades", suitMin(0, "spades", 4))
+         YES: IntentNode("stayman-response-spades") -> 2S
+         NO:  IntentNode("stayman-response-denial") -> 2D</code></pre>
+    <p class="text-sm text-gray-600 mt-2"><strong>Walk:</strong> "has-4-hearts" condition: <code>shape[1] >= 4</code> = <code>4 >= 4</code> = <strong>true</strong>. Follow YES branch. Reach IntentNode "stayman-response-hearts". <code>matched = stayman-response-hearts</code>.</p>
+    <p class="text-sm text-gray-600 mt-1"><strong>Path:</strong> <code>[{has-4-hearts: PASS}]</code>. <strong>Rejected:</strong> <code>[]</code>.</p>
+  </div>
+</div>
+
+<div class="flex gap-4 items-start">
+  <span class="step-number">4</span>
+  <div>
+    <p class="font-semibold text-gray-800">Dialogue State (Auction Replay)</p>
+    <p class="text-sm text-gray-600">Replays 4 entries:</p>
+    <ul class="list-disc list-inside text-xs text-gray-500 ml-4 space-y-1">
+      <li>S-1NT: baseline rule "detect-1nt-opening" fires &rarr; <code>familyId="1nt"</code>, <code>systemMode=On</code>, <code>captain=Responder</code></li>
+      <li>W-Pass: baseline "pass-no-change" fires &rarr; no change</li>
+      <li>N-2C: convention rule "1nt-stayman-ask" fires &rarr; <code>pendingAction=ShowMajor</code>, <code>forcingState=ForcingOneRound</code></li>
+      <li>E-Pass: baseline "pass-no-change" fires &rarr; no change</li>
+    </ul>
+    <p class="text-sm text-gray-600 mt-1"><strong>Result:</strong> <code>{ familyId: "1nt", forcingState: ForcingOneRound, pendingAction: ShowMajor, systemMode: On, competitionMode: Uncontested }</code></p>
+  </div>
+</div>
+
+<div class="flex gap-4 items-start">
+  <span class="step-number">5</span>
+  <div>
+    <p class="font-semibold text-gray-800">Intent Collection (Full DFS)</p>
+    <p class="text-sm text-gray-600">Collects ALL 3 IntentNode leaves from the hand subtree:</p>
+    <ul class="list-disc list-inside text-xs text-gray-500 ml-4 space-y-1">
+      <li><code>stayman-response-hearts</code> -- path: <code>[{suitMin(H,4): required=true}]</code></li>
+      <li><code>stayman-response-spades</code> -- path: <code>[{suitMin(H,4): required=false}, {suitMin(S,4): required=true}]</code></li>
+      <li><code>stayman-response-denial</code> -- path: <code>[{suitMin(H,4): required=false}, {suitMin(S,4): required=false}]</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="flex gap-4 items-start">
+  <span class="step-number">6</span>
+  <div>
+    <p class="font-semibold text-gray-800">Candidate Resolution</p>
+    <p class="text-sm text-gray-600">For each proposal, call resolver. Stayman resolver for <code>ShowHeldSuit</code> returns <code>{ status: "resolved", calls: [{ call: { type: "bid", level: 2, strain: "H" } }] }</code>. All three candidates resolve to legal calls.</p>
+    <p class="text-sm text-gray-600 mt-1"><code>failedConditions</code> for "stayman-response-spades": <code>[{suitMin(H,4): required=false but actual=true}]</code> -- hand HAS 4 hearts, but this branch requires NOT having them. 1 failed condition.</p>
+    <p class="text-sm text-gray-600 mt-1"><code>failedConditions</code> for "stayman-response-denial": <code>[{suitMin(H,4): required=false but actual=true}]</code> -- same failure.</p>
+  </div>
+</div>
+
+<div class="flex gap-4 items-start">
+  <span class="step-number">7</span>
+  <div>
+    <p class="font-semibold text-gray-800">Candidate Selection</p>
+    <p class="text-sm text-gray-600"><strong>Tier 1:</strong> "stayman-response-hearts" is matched + legal + allowed (forcing allows non-pass). <strong>Selected.</strong></p>
+    <p class="text-sm text-gray-600 mt-1"><strong>Result:</strong> <code>BidResult { call: {type:"bid", level:2, strain:"H"}, ruleName: "stayman-response-hearts", meaning: "Shows a 4-card heart suit" }</code></p>
+  </div>
+</div>
+
+</div>
+</section>
+
+<!-- 17. Store Integration -->
+<section id="store-trigger" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">17. Store Integration: How Evaluation is Triggered</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">The store layer connects the evaluation pipeline to the UI. Understanding how <code>userBid()</code> triggers evaluation reveals the full lifecycle of a bid decision.</p>
+
+<div class="algo-box algo-deterministic">
+<p class="font-bold text-emerald-800 mb-2">Algorithm: bidding.svelte.ts :: userBid(call)</p>
+<ol class="list-decimal list-inside space-y-2 text-sm text-gray-800">
+  <li><strong>Guard checks:</strong> Must have deal, session, not be processing, must be user's turn.</li>
+  <li><strong>Get expected result:</strong> If <code>conventionStrategy</code> exists, call <code>conventionStrategy.suggest(context)</code> to get what the convention says is correct. This triggers the entire pipeline (sections 1-13).</li>
+  <li><strong>Resolve teaching answer:</strong> <code>resolveTeachingAnswer(expectedResult)</code> -- extracts acceptable alternatives from <code>BidResult.treePath.resolvedCandidates</code>.</li>
+  <li><strong>Grade the bid:</strong> <code>gradeBid(userCall, teachingResolution)</code> -- Correct, Acceptable, or Incorrect.</li>
+  <li><strong>Build feedback:</strong> <code>BidFeedback { grade, userCall, expectedResult, teachingResolution, practicalRecommendation }</code>.</li>
+  <li><strong>Apply call to auction:</strong> <code>engine.addCall(auction, call, seat)</code>.</li>
+  <li><strong>Feed inference engines:</strong> <code>onProcessBid</code> callback feeds both NS and EW inference engines + produces public belief annotation via <code>produceAnnotation()</code> &rarr; <code>applyAnnotation()</code>.</li>
+  <li><strong>Record in history:</strong> Push <code>BidHistoryEntry</code> with <code>isUser: true</code>, <code>isCorrect</code>, and <code>expectedResult</code> (if wrong).</li>
+  <li><strong>Branch:</strong> If correct (Correct or Acceptable) &rarr; check auction completion, run AI bids. If incorrect &rarr; show feedback panel (user can dismiss, retry, or skip).</li>
+</ol>
+</div>
+
+<pre class="mermaid">
+sequenceDiagram
+    participant U as User Click
+    participant BS as Bidding Store
+    participant CS as Convention Strategy
+    participant TR as Teaching Resolution
+    participant IE as Inference Engines
+    participant AI as AI Bid Loop
+
+    U->>BS: userBid(call)
+    BS->>CS: suggest(context)
+    CS-->>BS: BidResult (expected)
+    BS->>TR: resolveTeachingAnswer(expected)
+    TR-->>BS: TeachingResolution
+    BS->>BS: gradeBid(userCall, resolution)
+    BS->>BS: engine.addCall()
+    BS->>IE: onProcessBid (NS + EW)
+    IE->>IE: mergeInferences
+    alt Correct or Acceptable
+        BS->>AI: runAiBids()
+        AI->>CS: suggest(context) per AI seat
+    else Incorrect
+        BS->>U: Show BidFeedbackPanel
+    end
+</pre>
+
+<p class="text-gray-700 mt-4"><strong>AI bid loop</strong> (<code>runAiBids()</code>): While the current turn is not the user's, wait 300ms, call <code>session.getNextBid(seat, hand, auction)</code>, apply the call, feed inference engines, and advance. If the strategy returns <code>null</code>, wraps as Pass.</p>
+
+<p class="text-gray-700 mt-2"><strong>Drill session wiring:</strong> <code>createDrillConfig()</code> in <code>drill/config-factory.ts</code> builds the strategy chain per seat. N/S seats get <code>[conventionStrategy, naturalFallbackStrategy]</code> with a forcing filter. E/W seats get the opponent convention (default SAYC) or passStrategy. The user's seat gets <code>"user"</code> (returns <code>null</code>, signals UI to wait).</p>
+</section>
+
+<!-- 18. Condition Reference -->
+<section id="conditions-ref" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">18. Condition System Reference</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">Conditions are the primitives that decision nodes evaluate. Each condition factory returns a <code>RuleCondition</code> object with <code>test(ctx)</code>, <code>describe(ctx)</code>, and optional <code>inference</code> metadata for the inference engine. Conditions are split into two categories that must not mix within a single compound expression.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div>
+<h3 class="font-semibold text-bridge-700 mb-3">Hand Conditions</h3>
+<p class="text-sm text-gray-600 mb-2">Evaluate against <code>ctx.evaluation</code> (HCP, shape). Carry <code>.inference</code> metadata.</p>
+<table class="w-full text-xs">
+<thead><tr class="border-b"><th class="text-left py-1 pr-2">Factory</th><th class="text-left py-1 pr-2">Tests</th><th class="text-left py-1">Inference</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>hcpMin(8)</code></td><td class="py-1 pr-2"><code>hcp >= 8</code></td><td class="py-1"><code>hcp-min:8</code></td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>hcpMax(17)</code></td><td class="py-1 pr-2"><code>hcp <= 17</code></td><td class="py-1"><code>hcp-max:17</code></td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>hcpRange(10,12)</code></td><td class="py-1 pr-2"><code>10 <= hcp <= 12</code></td><td class="py-1"><code>hcp-range:10,12</code></td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>suitMin(0,"S",4)</code></td><td class="py-1 pr-2"><code>shape[0] >= 4</code></td><td class="py-1"><code>suit-min:S,4</code></td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>suitBelow(1,"H",5)</code></td><td class="py-1 pr-2"><code>shape[1] < 5</code></td><td class="py-1"><code>suit-max:H,4</code></td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>anySuitMin([S,H],4)</code></td><td class="py-1 pr-2">either >= 4</td><td class="py-1">disjunction</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>isBalanced()</code></td><td class="py-1 pr-2">4-3-3-3, 4-4-3-2, 5-3-3-2</td><td class="py-1"><code>balanced</code></td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>hasShortage()</code></td><td class="py-1 pr-2">singleton or void</td><td class="py-1">none</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>majorSupport(4)</code></td><td class="py-1 pr-2">4+ in partner's major</td><td class="py-1"><code>suit-min</code></td></tr>
+<tr><td class="py-1 pr-2"><code>suitQuality(0,"S",2)</code></td><td class="py-1 pr-2">2+ top honors (A/K/Q)</td><td class="py-1">none</td></tr>
+</tbody>
+</table>
+</div>
+
+<div>
+<h3 class="font-semibold text-bridge-700 mb-3">Auction Conditions</h3>
+<p class="text-sm text-gray-600 mb-2">Evaluate against <code>ctx.auction</code> entries. No <code>.inference</code> metadata (enforced by test).</p>
+<table class="w-full text-xs">
+<thead><tr class="border-b"><th class="text-left py-1 pr-2">Factory</th><th class="text-left py-1">Tests</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>bidMade(1, NT)</code></td><td class="py-1">Any seat bid 1NT</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>partnerBidMade(2, C)</code></td><td class="py-1">Partner bid 2C</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>opponentBidMade(2, H)</code></td><td class="py-1">Opponent bid 2H</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>isOpener()</code></td><td class="py-1">Seat made first non-pass bid</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>isResponder()</code></td><td class="py-1">Partner made first bid</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>biddingRound(n)</code></td><td class="py-1">Seat's Nth contract bid</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>opponentBid()</code></td><td class="py-1">Any opponent made a contract bid</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>seatHasActed()</code></td><td class="py-1">Seat has any action</td></tr>
+<tr class="border-b border-gray-100"><td class="py-1 pr-2"><code>passedAfter(1, NT)</code></td><td class="py-1">Pass followed 1NT</td></tr>
+<tr><td class="py-1 pr-2"><code>doubleMade()</code></td><td class="py-1">Any player doubled</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<h3 class="text-lg font-semibold text-bridge-700 mt-4 mb-3">Combinators</h3>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="border rounded-lg p-3">
+    <p class="font-bold text-gray-800"><code>and(c1, c2, ...)</code></p>
+    <p class="text-xs text-gray-600 mt-1">All must pass. Throws on mixed auction + hand categories. Single branch with all sub-results.</p>
+  </div>
+  <div class="border rounded-lg p-3">
+    <p class="font-bold text-gray-800"><code>or(c1, c2, ...)</code></p>
+    <p class="text-xs text-gray-600 mt-1">Any must pass. Max 4 branches. <strong>Always evaluates ALL branches</strong> (no short-circuit) for UI branch highlighting. Per-branch results.</p>
+  </div>
+  <div class="border rounded-lg p-3">
+    <p class="font-bold text-gray-800"><code>not(cond)</code></p>
+    <p class="text-xs text-gray-600 mt-1">Inverts <code>test()</code>. Preserves category type. Used in seat filters and negated hand checks.</p>
+  </div>
+</div>
+
+<p class="text-gray-700 mt-4"><strong>Suit index mapping:</strong> <code>[0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs</code> following <code>SUIT_ORDER</code> in <code>engine/constants.ts</code>. This order differs from bid strain ordering (C &lt; D &lt; H &lt; S &lt; NT in <code>auction.ts</code>).</p>
+</section>
+
+<!-- Complete State Flow -->
+<section id="full-flow" class="mb-12">
+<h2 class="text-2xl font-bold text-bridge-800 border-b-2 border-bridge-200 pb-2 mb-4">Complete State Flow: End-to-End</h2>
+
+<p class="text-gray-700 leading-relaxed mb-4">This diagram shows the complete evaluation pipeline with every state transition, from the initial BiddingContext to the final BidResult. Each box shows what data enters and leaves each stage.</p>
+
+<pre class="mermaid">
+flowchart TD
+    subgraph Input
+        BC["BiddingContext\n(auction, hand, seat, evaluation, opponentConventionIds)"]
+    end
+
+    subgraph StrategyChain["Strategy Chain (linear scan)"]
+        SC["createStrategyChain\ntries each strategy, first non-null wins\nresultFilter rejects Pass if forcing"]
+    end
+
+    subgraph ConventionPipeline["Convention Adapter Pipeline"]
+        direction TB
+        EBR["evaluateBiddingRules\n(protocol dispatch + tree eval)"]
+        PD["Protocol Dispatch\n(sequential round scan,\ncursor += 2 per match,\nseatFilter against full context)"]
+        TE["Tree Evaluation\n(iterative binary traversal,\nsingle path walk)"]
+        DS["Dialogue State\n(auction replay,\ntransition rules,\nfirst-match-wins per entry)"]
+        EC["Effective Context\n(bundle: raw + config\n+ protocol + dialogue\n+ active overlays + belief)"]
+        IC["Intent Collection\n(recursive DFS,\nall IntentNode leaves,\npath conditions recorded)"]
+        OH["Overlay Hooks\n(1. replacement tree - first wins\n2. suppress - all compose\n3. add - all concat\n4. override resolver - first wins)"]
+        CR["Candidate Resolution\n(per-proposal: resolver call\nor defaultCall fallback,\nlegality check)"]
+        CS["Candidate Selection\n(Tier 1: matched+legal\nTier 2: preferred+satisfiable\nTier 3: alternative+satisfiable\nTier 4: null)"]
+    end
+
+    subgraph Parallel["Parallel Systems"]
+        INF["Inference Engine\n(incremental per-bid,\nrange intersection,\nnegative inference)"]
+        PS["Practical Scorer\n(fit*2 + hcp*1.5\n+ convDist*-4\n+ misRisk*-3)"]
+        PG["Pragmatic Generator\n(NT downgrade,\ncompetitive overcall,\nprotective double)"]
+    end
+
+    subgraph TeachingLayer["Teaching Layer"]
+        TR["Teaching Resolution\n(Correct / Acceptable / Incorrect)\nresolveTeachingAnswer + gradeBid"]
+    end
+
+    subgraph Output
+        BR["BidResult\n(call, ruleName, explanation,\ntreePath, evaluationTrace,\ntreeInferenceData,\npracticalRecommendation)"]
+    end
+
+    BC --> SC
+    SC --> EBR
+    EBR --> PD
+    PD --> TE
+    TE --> DS
+    DS --> EC
+    EC --> IC
+    IC --> OH
+    OH --> CR
+    CR --> CS
+    CS --> BR
+
+    BC --> INF
+    INF --> PS
+    CS --> PS
+    PG --> PS
+    PS --> BR
+
+    BR --> TR
+
+    SC -.->|"null? try next"| NF["Natural Fallback\n(6+ HCP, 5+ suit)"]
+    NF -.->|"null?"| PASS["Pass Strategy"]
+
+    style ConventionPipeline fill:#f0f7ff,stroke:#0175c7
+    style Parallel fill:#fffbeb,stroke:#d97706
+    style TeachingLayer fill:#f5f3ff,stroke:#7c3aed
+</pre>
+
+<div class="bg-bridge-50 border border-bridge-200 rounded-lg p-4 mt-6">
+<h3 class="font-bold text-bridge-800 mb-3">Layer Classification</h3>
+<table class="w-full text-sm">
+<thead><tr class="border-b"><th class="text-left py-2 pr-4">Layer</th><th class="text-left py-2 pr-4">Type</th><th class="text-left py-2">What it decides</th></tr></thead>
+<tbody>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Protocol Dispatch</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
+  <td class="py-2">Which round of the convention applies, which seat acts</td>
+</tr>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Tree Evaluation</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
+  <td class="py-2">Which IntentNode the hand matches in the convention tree</td>
+</tr>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Dialogue State</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
+  <td class="py-2">What the auction means (forcing, agreed strain, system mode)</td>
+</tr>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Intent Collection</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
+  <td class="py-2">All possible bids and their hand conditions</td>
+</tr>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Overlay Hooks</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
+  <td class="py-2">How interference modifies the candidate pool</td>
+</tr>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Candidate Selection</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-det">Deterministic</span></td>
+  <td class="py-2">Which single bid to make (4-tier priority)</td>
+</tr>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Inference Engine</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-nondet">Non-deterministic*</span></td>
+  <td class="py-2">What we believe about each player's hand (range narrowing)</td>
+</tr>
+<tr class="border-b border-gray-200">
+  <td class="py-2 pr-4">Practical Scorer</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-nondet">Non-deterministic*</span></td>
+  <td class="py-2">What an experienced player might prefer (advisory)</td>
+</tr>
+<tr>
+  <td class="py-2 pr-4">Teaching Resolution</td>
+  <td class="py-2 pr-4"><span class="state-badge badge-teach">Teaching</span></td>
+  <td class="py-2">Whether the user's bid is correct, acceptable, or incorrect</td>
+</tr>
+</tbody>
+</table>
+<p class="text-xs text-gray-500 mt-2">* These layers are deterministic in implementation (same inputs = same outputs), but operate on probabilistic/belief data (inferred ranges), hence "non-deterministic" in the semantic sense.</p>
+</div>
+</section>
+
+</div><!-- prose-container -->
+</main>
+</div><!-- sidebar-layout -->
+
+<!-- Footer -->
+<footer class="bg-gray-100 border-t py-6 px-6 text-center text-sm text-gray-500">
+  <p>Bridge Convention App -- Bid Evaluation Logic Reference</p>
+  <p class="mt-1">Generated from source code analysis of the decision model pipeline</p>
+</footer>
+
+<!-- Mermaid init -->
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'neutral',
+  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+  securityLevel: 'loose'
+});
+</script>
+
+<!-- ToC active highlighting -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -80% 0px' });
+  sections.forEach(s => observer.observe(s));
+});
+</script>
+
+</body>
+</html>

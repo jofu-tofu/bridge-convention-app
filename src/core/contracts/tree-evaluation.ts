@@ -66,6 +66,26 @@ export interface CandidateBid extends SiblingBid {
   readonly explanation?: string; // from ConventionExplanations if available
 }
 
+/** Unified eligibility model — all four dimensions that gate candidate selectability.
+ *  CONSTRAINT: Pure DTO — no methods, no imports from conventions/ or engine/. */
+export interface CandidateEligibility {
+  readonly hand: {
+    readonly satisfied: boolean;
+    readonly failedConditions: readonly SiblingConditionDetail[];
+  };
+  readonly protocol: {
+    readonly satisfied: boolean;
+    readonly reasons: readonly string[];
+  };
+  readonly encoding: {
+    readonly legal: boolean;
+  };
+  readonly pedagogical: {
+    readonly acceptable: boolean;
+    readonly reasons: readonly string[];
+  };
+}
+
 /** Strategy-resolved candidate — what the system actually considered for this auction+hand.
  *  Serializable DTO (no function refs) from ResolvedCandidate in candidate-generator. */
 export interface ResolvedCandidateDTO {
@@ -83,6 +103,17 @@ export interface ResolvedCandidateDTO {
   };
   readonly intentType: string;
   readonly failedConditions: readonly SiblingConditionDetail[];
+  readonly eligibility?: CandidateEligibility;
+}
+
+/** Check whether a ResolvedCandidateDTO is selectable.
+ *  Falls back to legacy `legal` + `failedConditions` when eligibility is absent. */
+export function isDtoSelectable(c: ResolvedCandidateDTO): boolean {
+  if (!c.eligibility) return c.legal && c.failedConditions.length === 0;
+  return c.eligibility.hand.satisfied
+    && c.eligibility.protocol.satisfied
+    && c.eligibility.encoding.legal
+    && c.eligibility.pedagogical.acceptable;
 }
 
 export interface TreeEvalSummary {

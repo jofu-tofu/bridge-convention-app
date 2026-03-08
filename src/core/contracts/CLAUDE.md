@@ -16,7 +16,7 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | `index.ts` | Barrel re-export for all contract files |
 | `bidding.ts` | `BiddingContext`, `ForcingState`, `BidAlert`, `BiddingStrategy`, `BidResult`, `BidHistoryEntry` |
 | `inference.ts` | `SuitInference`, `HandInference`, `InferredHoldings`, `TreeInferenceConditionEntry`, `TreeInferenceData`, `BeliefData` |
-| `tree-evaluation.ts` | `ConditionDetail`, `TreePathEntry`, `TreeForkPoint`, `SiblingConditionDetail`, `SiblingBid`, `CandidateBid`, `ResolvedCandidateDTO`, `TreeEvalSummary`, `EvaluationTrace` |
+| `tree-evaluation.ts` | `ConditionDetail`, `TreePathEntry`, `TreeForkPoint`, `SiblingConditionDetail`, `SiblingBid`, `CandidateBid`, `CandidateEligibility`, `ResolvedCandidateDTO`, `TreeEvalSummary`, `EvaluationTrace`, `isDtoSelectable()` |
 | `play.ts` | `PlayContext`, `PlayResult`, `PlayStrategy` |
 | `recommendation.ts` | `PracticalRecommendation`, `ConventionBiddingStrategy` |
 

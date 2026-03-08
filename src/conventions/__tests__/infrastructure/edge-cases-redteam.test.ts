@@ -17,7 +17,7 @@ import { weakTwosConfig } from "../../definitions/weak-twos";
 import { saycConfig } from "../../definitions/sayc";
 import { lebensohlLiteConfig } from "../../definitions/lebensohl-lite";
 import { buildEffectiveContext } from "../../core/pipeline/effective-context";
-import { generateCandidates } from "../../core/pipeline/candidate-generator";
+import { generateCandidates, buildEligibility } from "../../core/pipeline/candidate-generator";
 import type { ResolvedCandidate } from "../../core/pipeline/candidate-generator";
 import { selectMatchedCandidate } from "../../core/pipeline/candidate-selector";
 import type { BiddingContext, ConventionConfig } from "../../core/types";
@@ -527,16 +527,19 @@ describe("Phase 4: red-team tests for new behavior", () => {
     overrides: Partial<ResolvedCandidate> & { isMatched: boolean; legal: boolean },
   ): ResolvedCandidate {
     const call: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
+    const failedConditions = overrides.failedConditions ?? [];
+    const legal = overrides.legal;
     return {
       bidName: "test-bid",
       nodeId: overrides.bidName ?? "test-bid",
       meaning: "Test",
       call,
-      failedConditions: [],
+      failedConditions,
       intent: { type: "Signoff", params: {} },
       source: { conventionId: "test", nodeName: "test-bid" },
       resolvedCall: call,
       isDefaultCall: true,
+      eligibility: buildEligibility(failedConditions, legal),
       ...overrides,
     };
   }

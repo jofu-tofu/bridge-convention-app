@@ -118,6 +118,7 @@ export function mapResolvedCandidates(
     ...(c.provenance ? { provenance: c.provenance } : {}),
     intentType: c.intent.type,
     failedConditions: c.failedConditions,
+    eligibility: c.eligibility,
   }));
 }
 

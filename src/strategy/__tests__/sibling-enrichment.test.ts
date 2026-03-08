@@ -4,6 +4,7 @@ import { evaluateHand } from "../../engine/hand-evaluator";
 import { decision } from "../../conventions/core/tree/rule-tree";
 import { intentBid } from "../../conventions/core/intent/intent-node";
 import { SemanticIntentType } from "../../conventions/core/intent/semantic-intent";
+import { buildEligibility } from "../../conventions/core/pipeline/candidate-generator";
 import type { BiddingContext } from "../../conventions/core/types";
 import type { TreeEvalResult } from "../../conventions/core/tree/tree-evaluator";
 import type { SiblingBid, ResolvedCandidateDTO } from "../../core/contracts";
@@ -195,6 +196,7 @@ describe("enrichSiblingsWithResolvedCalls", () => {
           isDefaultCall: false,
           legal: true,
           isMatched: false,
+          eligibility: buildEligibility([], true),
         },
       ],
     );

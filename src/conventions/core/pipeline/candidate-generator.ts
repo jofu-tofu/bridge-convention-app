@@ -1,7 +1,7 @@
 // Candidate generator — resolves intent proposals through the intent system.
 // Uses collectIntentProposals() for traversal, decoupled from sibling-finder display path.
 
-import type { CandidateBid } from "../../../core/contracts";
+import type { CandidateBid, CandidateEligibility, SiblingConditionDetail } from "../../../core/contracts";
 import type { Call } from "../../../engine/types";
 import { isLegalCall } from "../../../engine/auction";
 import type { EffectiveConventionContext } from "./effective-context";
@@ -25,6 +25,7 @@ export interface ResolvedCandidate extends CandidateBid {
   readonly isMatched: boolean;
   readonly priority?: "preferred" | "alternative";
   readonly provenance?: CandidateProvenance;
+  readonly eligibility: CandidateEligibility;
 }
 
 export type CandidateProvenance =
@@ -54,8 +55,39 @@ export const throwingOverlayErrorHandler = (
 
 // ─── Internal helpers ────────────────────────────────────────
 
-type CollectedIntentWithProvenance = CollectedIntent & { provenance?: CandidateProvenance };
+type CollectedIntentWithProvenance = CollectedIntent & {
+  provenance?: CandidateProvenance;
+  suppressedBy?: string[];
+};
 type OverlayErrorHandler = (overlayId: string, hook: string, error: string) => void;
+
+/** Build a CandidateEligibility from existing candidate fields. */
+export function buildEligibility(
+  failedConditions: readonly SiblingConditionDetail[],
+  legal: boolean,
+  protocolSatisfied: boolean = true,
+  protocolReasons: readonly string[] = [],
+  pedagogicalAcceptable: boolean = true,
+  pedagogicalReasons: readonly string[] = [],
+): CandidateEligibility {
+  return {
+    hand: {
+      satisfied: failedConditions.length === 0,
+      failedConditions,
+    },
+    protocol: {
+      satisfied: protocolSatisfied,
+      reasons: protocolReasons,
+    },
+    encoding: {
+      legal,
+    },
+    pedagogical: {
+      acceptable: pedagogicalAcceptable,
+      reasons: pedagogicalReasons,
+    },
+  };
+}
 
 /** Step 1: Apply first overlay's replacementTree (first wins). */
 function applyReplacementTreeStep(
@@ -71,7 +103,9 @@ function applyReplacementTreeStep(
   return { activeRoot: replaced.root, activeResult: replaced.result, provenance };
 }
 
-/** Step 2: Apply suppressIntent from ALL overlays (any can suppress). */
+/** Step 2: Apply suppressIntent from ALL overlays (any can suppress).
+ *  Tags suppressed proposals with `suppressedBy` instead of filtering them out.
+ *  All proposals pass through — suppressed ones get protocol.satisfied=false during resolution. */
 function applySuppressHooks(
   proposals: CollectedIntentWithProvenance[],
   overlays: readonly ConventionOverlayPatch[],
@@ -79,16 +113,18 @@ function applySuppressHooks(
   ctx: EffectiveConventionContext,
   onError?: OverlayErrorHandler,
 ): { proposals: CollectedIntentWithProvenance[]; matchedSuppressed: boolean } {
-  let filtered = proposals;
   let matchedSuppressed = false;
 
   for (const overlay of overlays) {
     if (!overlay.suppressIntent) continue;
     try {
-      const hadMatched = filtered.some(p => p.sourceNode?.nodeId === matchedNodeId);
-      filtered = filtered.filter(p => !overlay.suppressIntent!(p, ctx));
-      const stillHasMatched = filtered.some(p => p.sourceNode?.nodeId === matchedNodeId);
-      if (hadMatched && !stillHasMatched) matchedSuppressed = true;
+      for (const p of proposals) {
+        if (overlay.suppressIntent(p, ctx)) {
+          if (!p.suppressedBy) p.suppressedBy = [];
+          p.suppressedBy.push(overlay.id);
+          if (p.sourceNode?.nodeId === matchedNodeId) matchedSuppressed = true;
+        }
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (onError) onError(overlay.id, "suppressIntent", msg);
@@ -97,7 +133,7 @@ function applySuppressHooks(
     }
   }
 
-  return { proposals: filtered, matchedSuppressed };
+  return { proposals, matchedSuppressed };
 }
 
 /** Step 3: Apply addIntents from ALL overlays (concatenate in config order). */
@@ -172,7 +208,8 @@ function applyResolverResult(
   }
 }
 
-/** Resolve a single collected intent proposal into a ResolvedCandidate. */
+/** Resolve a single collected intent proposal into a ResolvedCandidate.
+ *  Suppressed and declined candidates are kept with protocol.satisfied=false. */
 function resolveCollectedIntent(
   proposal: CollectedIntentWithProvenance,
   isMatched: boolean,
@@ -201,11 +238,20 @@ function resolveCollectedIntent(
   let resolvedCall = call;
   let isDefaultCall = true;
   let provenance = proposal.provenance;
+  const protocolReasons: string[] = [];
+
+  // Carry over suppression info from overlay hooks
+  if (proposal.suppressedBy && proposal.suppressedBy.length > 0) {
+    for (const overlayId of proposal.suppressedBy) {
+      protocolReasons.push(`Suppressed by overlay: ${overlayId}`);
+    }
+  }
 
   if (overrideResult) {
     const outcome = applyResolverResult(overrideResult.result, raw);
-    if (outcome === "declined") return null;
-    if (outcome !== "use_default") {
+    if (outcome === "declined") {
+      protocolReasons.push(`Resolver declined: ${proposal.intent.type}`);
+    } else if (outcome !== "use_default") {
       resolvedCall = outcome.resolvedCall;
       isDefaultCall = outcome.isDefaultCall;
       provenance = { origin: "overlay-override", overlayId: overrideResult.overlayId };
@@ -215,8 +261,9 @@ function resolveCollectedIntent(
       const result = resolveIntent(proposal.intent, dialogueState, raw, resolvers);
       if (result !== null) {
         const outcome = applyResolverResult(result, raw);
-        if (outcome === "declined") return null;
-        if (outcome !== "use_default") {
+        if (outcome === "declined") {
+          protocolReasons.push(`Resolver declined: ${proposal.intent.type}`);
+        } else if (outcome !== "use_default") {
           resolvedCall = outcome.resolvedCall;
           isDefaultCall = outcome.isDefaultCall;
         }
@@ -227,6 +274,23 @@ function resolveCollectedIntent(
   }
 
   const legal = isLegalCall(raw.auction, resolvedCall, raw.seat);
+  const protocolSatisfied = protocolReasons.length === 0;
+
+  // Pedagogical dimension — convention hook (fail-open)
+  let pedagogicalAcceptable = true;
+  let pedagogicalReasons: string[] = [];
+  if (config.pedagogicalCheck) {
+    try {
+      const result = config.pedagogicalCheck(
+        { intentType: proposal.intent.type, call, resolvedCall, isMatched },
+        effectiveCtx,
+      );
+      pedagogicalAcceptable = result.acceptable;
+      pedagogicalReasons = result.reasons;
+    } catch {
+      // Fail-open: pedagogical hook errors → acceptable
+    }
+  }
 
   return {
     bidName: proposal.nodeName,
@@ -249,6 +313,7 @@ function resolveCollectedIntent(
     isMatched,
     priority: proposal.priority,
     provenance,
+    eligibility: buildEligibility(failedConditions, legal, protocolSatisfied, protocolReasons, pedagogicalAcceptable, pedagogicalReasons),
   };
 }
 

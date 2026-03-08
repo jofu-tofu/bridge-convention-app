@@ -68,6 +68,7 @@ export {
   buildEffectiveContext, classifyInterference,
   generateCandidates,
   selectMatchedCandidate,
+  isSelectable,
   collectIntentProposals,
 } from "./pipeline";
 export type {

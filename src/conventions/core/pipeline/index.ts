@@ -1,13 +1,13 @@
 // Pipeline subsystem barrel — candidate generation pipeline.
 
-export { generateCandidates } from "./candidate-generator";
+export { generateCandidates, buildEligibility } from "./candidate-generator";
 export type {
   ResolvedCandidate,
   CandidateProvenance,
   CandidateGenerationResult,
 } from "./candidate-generator";
 
-export { selectMatchedCandidate } from "./candidate-selector";
+export { selectMatchedCandidate, isSelectable } from "./candidate-selector";
 export type { CandidateRankerFn } from "./candidate-selector";
 
 export { collectIntentProposals } from "./intent-collector";

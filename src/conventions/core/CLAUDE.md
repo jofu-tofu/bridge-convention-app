@@ -106,7 +106,9 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 **Candidate pipeline:** `collectIntentProposals()` → `generateCandidates()` → `selectMatchedCandidate()`. Selection tiers: matched+legal > preferred+legal+satisfiable > alternative+legal+satisfiable > null. Pass excluded when `forcingState` active.
 
-**Teaching metadata:** `DecisionMetadata` on DecisionNodes, `BidMetadata` on IntentNodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. `RuleCondition.teachingNote` for per-condition overrides. `negatable?: boolean` controls inference inversion.
+**Eligibility model:** Every `ResolvedCandidate` carries a `CandidateEligibility` with four orthogonal dimensions: hand (failedConditions), protocol (suppressed/declined), encoding (legality), and pedagogical (convention hook). `isSelectable(c)` checks all four. Architectural rule: eligibility is intrinsic candidate state; `allowed()` (forcing/obligation) remains a selection-time policy in the selector. Candidates array now includes protocol-ineligible candidates (suppressed/declined) — array presence does NOT mean selectability.
+
+**Teaching metadata:** `DecisionMetadata` on DecisionNodes, `BidMetadata` on IntentNodes, `ConventionExplanations` per convention, `ConventionTeaching` on config. `RuleCondition.teachingNote` for per-condition overrides. `negatable?: boolean` controls inference inversion. `pedagogicalCheck` on `ConventionConfig` — optional hook for convention-level pedagogical eligibility (feeds the pedagogical dimension of `CandidateEligibility`).
 
 ## Overlay System
 
@@ -114,7 +116,7 @@ All conventions use `ConventionProtocol` — dispatch via `protocol()` + `round(
 
 **Each patch has:** `id`, `roundName` (must match protocol round), `matches(state)` predicate, optional `priority` (lower = higher precedence), and hooks:
 - `replacementTree?` — full tree replacement
-- `suppressIntent?(intent, ctx)` — remove intents (return true to suppress)
+- `suppressIntent?(intent, ctx)` — remove intents (return true to suppress). Suppressed proposals are tagged with `suppressedBy` and kept in the candidates array with `protocol.satisfied=false`, rather than being filtered out.
 - `addIntents?(ctx)` — inject intents not in the tree (no `sourceNode`, never matched)
 - `overrideResolver?(intent, ctx)` — override resolver (return `Call` to override, null to fallthrough)
 

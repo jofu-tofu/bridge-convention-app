@@ -1089,11 +1089,9 @@ describe("overlay addIntents rescue (no tree match)", () => {
     // but the gate handles it defensively. Use type assertions to simulate.
     const ctx = makeRescueContext();
     const fb = fallback();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- defensive test: simulating non-intent matched node
-    const treeResult = { matched: fb as any, rejectedDecisions: [], path: [], visited: [] };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- defensive test
+    const treeResult = { matched: fb as any, rejectedDecisions: [], path: [], visited: [] }; // any: defensive test simulating non-intent matched node
     const protoResult: ProtocolEvalResult = {
-      matched: fb as any,
+      matched: fb as any, // any: defensive test simulating non-intent matched node
       matchedRounds: [],
       established: { role: "responder" as const },
       handResult: treeResult,
@@ -1123,5 +1121,460 @@ describe("overlay addIntents rescue (no tree match)", () => {
     expect(candidates.length).toBeGreaterThan(0);
     expect(candidates[0]!.bidName).toBe("non-intent-rescue");
     expect(candidates[0]!.isMatched).toBe(false);
+  });
+});
+
+// ─── Phase 1: CandidateEligibility on every candidate ──────────
+
+describe("candidate eligibility (Phase 1)", () => {
+  const bid1C: Call = { type: "bid", level: 1, strain: BidSuit.Clubs };
+  const bid1D: Call = { type: "bid", level: 1, strain: BidSuit.Diamonds };
+
+  function makeIntentNode(name: string, meaning: string, call: Call) {
+    return intentBid(
+      name,
+      meaning,
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => call,
+    );
+  }
+
+  it("every candidate has eligibility populated", () => {
+    const strongNode = makeIntentNode("strong-open", "Opens 1C", bid1C);
+    const weakNode = makeIntentNode("weak-open", "Opens 1D", bid1D);
+    const tree = handDecision("has-12-hcp", hcpMin(12), strongNode, weakNode);
+
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.South, []),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const treeResult = evaluateTree(tree, context);
+    const protoResult = {
+      matched: strongNode,
+      matchedRounds: [],
+      established: { role: "opener" as const },
+      handResult: treeResult,
+      activeRound: null,
+      handTreeRoot: tree,
+    };
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+    const { candidates } = generateCandidates(tree, treeResult, effective);
+
+    expect(candidates.length).toBeGreaterThanOrEqual(2);
+    for (const c of candidates) {
+      expect(c.eligibility).toBeDefined();
+      expect(c.eligibility.encoding).toBeDefined();
+      expect(c.eligibility.hand).toBeDefined();
+      expect(c.eligibility.protocol).toBeDefined();
+      expect(c.eligibility.pedagogical).toBeDefined();
+    }
+  });
+
+  it("matched candidate: hand.satisfied=true, failedConditions empty", () => {
+    const node = makeIntentNode("open-1c", "Opens 1C", bid1C);
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "DK", "DQ", "CA", "CK", "CQ", "CJ");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.South, []),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const treeResult = evaluateTree(node, context);
+    const protoResult = {
+      matched: node,
+      matchedRounds: [],
+      established: { role: "opener" as const },
+      handResult: treeResult,
+      activeRound: null,
+      handTreeRoot: node,
+    };
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+    const { candidates } = generateCandidates(node, treeResult, effective);
+
+    const matched = candidates.find(c => c.isMatched)!;
+    expect(matched.eligibility.hand.satisfied).toBe(true);
+    expect(matched.eligibility.hand.failedConditions).toHaveLength(0);
+  });
+
+  it("sibling candidate: hand.satisfied=false, failedConditions non-empty", () => {
+    const strongNode = makeIntentNode("strong-open", "Opens 1C", bid1C);
+    const weakNode = makeIntentNode("weak-open", "Opens 1D", bid1D);
+    const tree = handDecision("has-12-hcp", hcpMin(12), strongNode, weakNode);
+
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.South, []),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const treeResult = evaluateTree(tree, context);
+    const protoResult = {
+      matched: strongNode,
+      matchedRounds: [],
+      established: { role: "opener" as const },
+      handResult: treeResult,
+      activeRound: null,
+      handTreeRoot: tree,
+    };
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+    const { candidates } = generateCandidates(tree, treeResult, effective);
+
+    const sibling = candidates.find(c => !c.isMatched)!;
+    expect(sibling.eligibility.hand.satisfied).toBe(false);
+    expect(sibling.eligibility.hand.failedConditions.length).toBeGreaterThan(0);
+  });
+
+  it("eligibility.hand.failedConditions is same reference as candidate failedConditions", () => {
+    const strongNode = makeIntentNode("strong-open", "Opens 1C", bid1C);
+    const weakNode = makeIntentNode("weak-open", "Opens 1D", bid1D);
+    const tree = handDecision("has-12-hcp", hcpMin(12), strongNode, weakNode);
+
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.South, []),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const treeResult = evaluateTree(tree, context);
+    const protoResult = {
+      matched: strongNode,
+      matchedRounds: [],
+      established: { role: "opener" as const },
+      handResult: treeResult,
+      activeRound: null,
+      handTreeRoot: tree,
+    };
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+    const { candidates } = generateCandidates(tree, treeResult, effective);
+
+    for (const c of candidates) {
+      expect(c.eligibility.hand.failedConditions).toBe(c.failedConditions);
+    }
+  });
+
+  it("eligibility.encoding.legal mirrors candidate.legal", () => {
+    const strongNode = makeIntentNode("strong-open", "Opens 1C", bid1C);
+    const weakNode = makeIntentNode("weak-open", "Opens 1D", bid1D);
+    const tree = handDecision("has-12-hcp", hcpMin(12), strongNode, weakNode);
+
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.South, []),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const treeResult = evaluateTree(tree, context);
+    const protoResult = {
+      matched: strongNode,
+      matchedRounds: [],
+      established: { role: "opener" as const },
+      handResult: treeResult,
+      activeRound: null,
+      handTreeRoot: tree,
+    };
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+    const { candidates } = generateCandidates(tree, treeResult, effective);
+
+    for (const c of candidates) {
+      expect(c.eligibility.encoding.legal).toBe(c.legal);
+    }
+  });
+
+  it("Phase 1: protocol.satisfied defaults to true, pedagogical.acceptable defaults to true", () => {
+    const node = makeIntentNode("open-1c", "Opens 1C", bid1C);
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "DK", "DQ", "CA", "CK", "CQ", "CJ");
+    const context: BiddingContext = {
+      hand: h,
+      auction: buildAuction(Seat.South, []),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+    const treeResult = evaluateTree(node, context);
+    const protoResult = {
+      matched: node,
+      matchedRounds: [],
+      established: { role: "opener" as const },
+      handResult: treeResult,
+      activeRound: null,
+      handTreeRoot: node,
+    };
+    const effective = buildEffectiveContext(context, staymanConfig, protoResult);
+    const { candidates } = generateCandidates(node, treeResult, effective);
+
+    for (const c of candidates) {
+      expect(c.eligibility.protocol.satisfied).toBe(true);
+      expect(c.eligibility.protocol.reasons).toHaveLength(0);
+      expect(c.eligibility.pedagogical.acceptable).toBe(true);
+      expect(c.eligibility.pedagogical.reasons).toHaveLength(0);
+    }
+  });
+});
+
+// ─── Phase 2: Protocol eligibility — keep suppressed/declined candidates ────
+
+describe("protocol eligibility (Phase 2)", () => {
+  const bid1C: Call = { type: "bid", level: 1, strain: BidSuit.Clubs };
+  const bid1D: Call = { type: "bid", level: 1, strain: BidSuit.Diamonds };
+
+  const testTree = handDecision(
+    "hcp-check",
+    hcpMin(8),
+    intentBid("strong-bid", "Strong bid",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1C),
+    intentBid("weak-bid", "Weak bid",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1D),
+  );
+
+  const testProtocol: ConventionProtocol = protocol("proto-elig-test", [
+    round("opening", {
+      triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+      handTree: testTree,
+      seatFilter: isResponder(),
+    }),
+  ]);
+
+  function makeTestConfig(overlays?: readonly ConventionOverlayPatch[], resolvers?: IntentResolverMap): ConventionConfig {
+    return {
+      id: "proto-elig-test",
+      name: "Protocol Eligibility Test",
+      description: "Test",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: testProtocol,
+      overlays,
+      intentResolvers: resolvers,
+    };
+  }
+
+  function makeStrongContext(): BiddingContext {
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    return {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+  }
+
+  it("overlay-suppressed intent → candidate present with protocol.satisfied=false", () => {
+    const overlay: ConventionOverlayPatch = {
+      id: "suppress-matched",
+      roundName: "opening",
+      matches: () => true,
+      suppressIntent: (intent) => intent.nodeName === "strong-bid",
+    };
+    const config = makeTestConfig([overlay]);
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    const suppressed = candidates.find(c => c.bidName === "strong-bid");
+    expect(suppressed).toBeDefined();
+    expect(suppressed!.eligibility.protocol.satisfied).toBe(false);
+    expect(suppressed!.eligibility.protocol.reasons.length).toBeGreaterThan(0);
+    expect(suppressed!.eligibility.protocol.reasons[0]).toContain("suppress-matched");
+  });
+
+  it("resolver-declined intent → candidate present with protocol.satisfied=false", () => {
+    const declineResolver: IntentResolverMap = new Map([
+      [SemanticIntentType.NaturalBid, () => ({ status: "declined" as const })],
+    ]);
+    const config = makeTestConfig(undefined, declineResolver);
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    // Both candidates should be present but protocol-ineligible (both use NaturalBid resolver)
+    expect(candidates.length).toBeGreaterThanOrEqual(1);
+    const declined = candidates.find(c => c.eligibility.protocol.satisfied === false);
+    expect(declined).toBeDefined();
+    expect(declined!.eligibility.protocol.reasons.some(r => r.includes("declined"))).toBe(true);
+  });
+
+  it("suppressed candidates are NOT selected at any tier", () => {
+    const overlay: ConventionOverlayPatch = {
+      id: "suppress-all",
+      roundName: "opening",
+      matches: () => true,
+      suppressIntent: () => true,
+    };
+    const config = makeTestConfig([overlay]);
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    // All candidates present but none protocol-satisfied
+    expect(candidates.length).toBeGreaterThan(0);
+    const selectable = candidates.filter(c => c.eligibility.protocol.satisfied);
+    expect(selectable).toHaveLength(0);
+  });
+
+  it("matchedIntentSuppressed still correctly set when overlay suppresses matched intent", () => {
+    const overlay: ConventionOverlayPatch = {
+      id: "suppress-matched-only",
+      roundName: "opening",
+      matches: () => true,
+      suppressIntent: (intent) => intent.nodeName === "strong-bid",
+    };
+    const config = makeTestConfig([overlay]);
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { matchedIntentSuppressed } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    expect(matchedIntentSuppressed).toBe(true);
+  });
+
+  it("multiple overlays suppressing same proposal → all overlay IDs in reasons", () => {
+    const overlay1: ConventionOverlayPatch = {
+      id: "suppress-overlay-1",
+      roundName: "opening",
+      matches: () => true,
+      suppressIntent: (intent) => intent.nodeName === "strong-bid",
+    };
+    const overlay2: ConventionOverlayPatch = {
+      id: "suppress-overlay-2",
+      roundName: "opening",
+      matches: () => true,
+      suppressIntent: (intent) => intent.nodeName === "strong-bid",
+    };
+    const config = makeTestConfig([overlay1, overlay2]);
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    const suppressed = candidates.find(c => c.bidName === "strong-bid");
+    expect(suppressed).toBeDefined();
+    expect(suppressed!.eligibility.protocol.reasons).toContain("Suppressed by overlay: suppress-overlay-1");
+    expect(suppressed!.eligibility.protocol.reasons).toContain("Suppressed by overlay: suppress-overlay-2");
+  });
+});
+
+// ─── Phase 4: Pedagogical dimension — convention hook ────────────────────
+
+describe("pedagogical eligibility (Phase 4)", () => {
+  const bid1C: Call = { type: "bid", level: 1, strain: BidSuit.Clubs };
+  const bid1D: Call = { type: "bid", level: 1, strain: BidSuit.Diamonds };
+
+  const testTree = handDecision(
+    "hcp-check",
+    hcpMin(8),
+    intentBid("strong-bid", "Strong bid",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1C),
+    intentBid("weak-bid", "Weak bid",
+      { type: SemanticIntentType.NaturalBid, params: {} },
+      () => bid1D),
+  );
+
+  const testProtocol: ConventionProtocol = protocol("proto-ped-test", [
+    round("opening", {
+      triggers: [semantic(bidMade(1, BidSuit.NoTrump), {})],
+      handTree: testTree,
+      seatFilter: isResponder(),
+    }),
+  ]);
+
+  function makeTestConfig(
+    pedagogicalCheck?: ConventionConfig["pedagogicalCheck"],
+  ): ConventionConfig {
+    return {
+      id: "proto-ped-test",
+      name: "Pedagogical Test",
+      description: "Test",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+      protocol: testProtocol,
+      pedagogicalCheck,
+    };
+  }
+
+  function makeStrongContext(): BiddingContext {
+    const h = hand("SA", "SK", "SQ", "SJ", "HA", "HK", "DA", "D5", "D3", "C5", "C4", "C3", "C2");
+    return {
+      hand: h,
+      auction: buildAuction(Seat.North, ["1NT", "P"]),
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+      opponentConventionIds: [],
+    };
+  }
+
+  it("config without pedagogicalCheck → all candidates have pedagogical.acceptable=true", () => {
+    const config = makeTestConfig();
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    for (const c of candidates) {
+      expect(c.eligibility.pedagogical.acceptable).toBe(true);
+      expect(c.eligibility.pedagogical.reasons).toHaveLength(0);
+    }
+  });
+
+  it("pedagogicalCheck returning unacceptable → candidate has pedagogical.acceptable=false", () => {
+    const config = makeTestConfig(
+      (candidate) => candidate.intentType === (SemanticIntentType.NaturalBid as string)
+        ? { acceptable: false, reasons: ["not recommended for beginners"] }
+        : { acceptable: true, reasons: [] },
+    );
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    for (const c of candidates) {
+      expect(c.eligibility.pedagogical.acceptable).toBe(false);
+      expect(c.eligibility.pedagogical.reasons).toContain("not recommended for beginners");
+    }
+  });
+
+  it("pedagogicalCheck returning acceptable → candidate has pedagogical.acceptable=true", () => {
+    const config = makeTestConfig(
+      () => ({ acceptable: true, reasons: [] }),
+    );
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    for (const c of candidates) {
+      expect(c.eligibility.pedagogical.acceptable).toBe(true);
+      expect(c.eligibility.pedagogical.reasons).toHaveLength(0);
+    }
+  });
+
+  it("pedagogicalCheck throwing → fail-open, pedagogical.acceptable=true", () => {
+    const config = makeTestConfig(
+      () => { throw new Error("broken hook"); },
+    );
+    const ctx = makeStrongContext();
+    const protoResult = evaluateProtocol(config.protocol!, ctx);
+    const effective = buildEffectiveContext(ctx, config, protoResult);
+    const { candidates } = generateCandidates(testTree, protoResult.handResult, effective);
+
+    for (const c of candidates) {
+      expect(c.eligibility.pedagogical.acceptable).toBe(true);
+    }
   });
 });

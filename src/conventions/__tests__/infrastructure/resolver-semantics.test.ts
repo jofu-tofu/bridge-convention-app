@@ -1,6 +1,6 @@
 // Phase 7a: Resolver result semantics tests
-// Tests the ResolverResult discriminated union: declined excludes candidates,
-// use_default falls back to defaultCall, resolved uses the call(s).
+// Tests the ResolverResult discriminated union: declined keeps candidates with
+// protocol.satisfied=false, use_default falls back to defaultCall, resolved uses the call(s).
 
 import { describe, test, expect } from "vitest";
 import { BidSuit, Seat } from "../../../engine/types";
@@ -137,15 +137,19 @@ describe("ResolverResult semantics", () => {
       expect(result.candidates[0]!.isDefaultCall).toBe(false);
     });
 
-    test("resolver returns { status: 'declined' } → candidate excluded entirely", () => {
+    test("resolver returns { status: 'declined' } → candidate kept with protocol.satisfied=false", () => {
       const resolver: IntentResolverFn = () => ({ status: "declined" });
       const resolvers: IntentResolverMap = new Map([
         [SemanticIntentType.AskForMajor, resolver],
       ]);
       const ctx = makeEffectiveCtx(resolvers);
       const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
-      // The key assertion: declined = excluded, NOT fallback to defaultCall
-      expect(result.candidates).toHaveLength(0);
+      // Candidate is kept but protocol-ineligible — NOT fallback to defaultCall
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0]!.eligibility.protocol.satisfied).toBe(false);
+      expect(result.candidates[0]!.eligibility.protocol.reasons.some(r => r.includes("declined"))).toBe(true);
+      // Uses defaultCall since resolver declined (no resolved call produced)
+      expect(result.candidates[0]!.resolvedCall).toEqual(defaultCall);
     });
   });
 
@@ -189,7 +193,7 @@ describe("ResolverResult semantics", () => {
       expect(result.candidates[0]!.isDefaultCall).toBe(false);
     });
 
-    test("overrideResolver returns { status: 'declined' } → candidate excluded entirely", () => {
+    test("overrideResolver returns { status: 'declined' } → candidate kept with protocol.satisfied=false", () => {
       const overlay: ConventionOverlayPatch = {
         id: "test-overlay",
         roundName: "round1",
@@ -199,7 +203,9 @@ describe("ResolverResult semantics", () => {
       const resolvers: IntentResolverMap = new Map();
       const ctx = makeEffectiveCtx(resolvers, [overlay]);
       const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
-      expect(result.candidates).toHaveLength(0);
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0]!.eligibility.protocol.satisfied).toBe(false);
+      expect(result.candidates[0]!.eligibility.protocol.reasons.some(r => r.includes("declined"))).toBe(true);
     });
 
     test("overrideResolver returns { status: 'use_default' } → uses defaultCall", () => {
@@ -239,16 +245,18 @@ describe("ResolverResult semantics", () => {
   });
 
   describe("Edge Case D: declined resolver without overlay protection", () => {
-    test("resolver declined + no overlay → zero candidates, no defaultCall leak", () => {
-      // This is the core bug the plan addresses:
-      // Before 7a, null from resolver fell through to defaultCall
+    test("resolver declined + no overlay → candidate kept with protocol.satisfied=false, no defaultCall leak", () => {
+      // Before eligibility model: null from resolver fell through to defaultCall.
+      // Now: candidate is kept with protocol.satisfied=false, still uses defaultCall
+      // but is never selectable (protocol gate in selector prevents selection).
       const resolver: IntentResolverFn = () => ({ status: "declined" });
       const resolvers: IntentResolverMap = new Map([
         [SemanticIntentType.AskForMajor, resolver],
       ]);
       const ctx = makeEffectiveCtx(resolvers);
       const result = generateCandidates(ctx.protocolResult.handTreeRoot!, ctx.protocolResult.handResult, ctx);
-      expect(result.candidates).toHaveLength(0);
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0]!.eligibility.protocol.satisfied).toBe(false);
       expect(result.matchedIntentSuppressed).toBe(false);
     });
   });

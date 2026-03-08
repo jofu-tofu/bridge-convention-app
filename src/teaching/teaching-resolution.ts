@@ -1,6 +1,6 @@
 import { callsMatch } from "../engine/call-helpers";
 import type { Call } from "../engine/types";
-import type { BidResult } from "../core/contracts";
+import type { BidResult, ResolvedCandidateDTO } from "../core/contracts";
 
 export enum BidGrade {
   Correct = "correct",
@@ -24,6 +24,18 @@ export interface TeachingResolution {
   readonly ambiguityScore: number;
 }
 
+/** Check if a candidate is eligible for teaching.
+ *  Uses eligibility model when available, falls back to legacy fields. */
+function isTeachingEligible(c: ResolvedCandidateDTO): boolean {
+  if (c.eligibility) {
+    return c.eligibility.hand.satisfied
+      && c.eligibility.encoding.legal
+      && c.eligibility.protocol.satisfied
+      && c.eligibility.pedagogical.acceptable;
+  }
+  return c.legal && c.failedConditions.length === 0;
+}
+
 export function resolveTeachingAnswer(bidResult: BidResult): TeachingResolution {
   const primaryBid = bidResult.call;
   const candidates = bidResult.treePath?.resolvedCandidates ?? [];
@@ -40,8 +52,7 @@ export function resolveTeachingAnswer(bidResult: BidResult): TeachingResolution 
   const acceptableBids: AcceptableBid[] = candidates
     .filter(candidate =>
       !candidate.isMatched
-      && candidate.legal
-      && candidate.failedConditions.length === 0
+      && isTeachingEligible(candidate)
       && (candidate.priority === "preferred" || candidate.priority === "alternative"),
     )
     .map((candidate) => {

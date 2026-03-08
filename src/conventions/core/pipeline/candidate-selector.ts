@@ -2,6 +2,14 @@ import type { ResolvedCandidate } from "./candidate-generator";
 import { ForcingState, ObligationKind } from "../dialogue/dialogue-state";
 import type { Obligation } from "../dialogue/dialogue-state";
 
+/** Check all four eligibility dimensions — candidate must satisfy all to be selectable. */
+export function isSelectable(c: ResolvedCandidate): boolean {
+  return c.eligibility.hand.satisfied
+    && c.eligibility.protocol.satisfied
+    && c.eligibility.encoding.legal
+    && c.eligibility.pedagogical.acceptable;
+}
+
 /** Ranker function type — reorders candidates before tiered selection. */
 export type CandidateRankerFn = (
   candidates: readonly ResolvedCandidate[],
@@ -55,10 +63,9 @@ export function selectMatchedCandidate(
     return true;
   };
 
-  // Tier 1: matched+legal
-  const matched = ranked.find(c => c.isMatched && c.legal && allowed(c));
+  // Tier 1: matched+selectable (matched candidates have no failedConditions by construction)
+  const matched = ranked.find(c => c.isMatched && isSelectable(c) && allowed(c));
   if (matched) {
-    // Invariant: matched candidates have no failed conditions by construction.
     if (import.meta.env?.DEV && matched.failedConditions.length > 0) {
       // eslint-disable-next-line no-console -- invariant checks should surface in development.
       console.warn("Invariant violation: matched candidate has non-empty failedConditions");
@@ -66,14 +73,14 @@ export function selectMatchedCandidate(
     return matched;
   }
 
-  // Tier 2: preferred+legal+satisfiable
+  // Tier 2: preferred+selectable
   const preferred = ranked.find(c =>
-    c.priority === "preferred" && c.legal && c.failedConditions.length === 0 && allowed(c));
+    c.priority === "preferred" && isSelectable(c) && allowed(c));
   if (preferred) return preferred;
 
-  // Tier 3: alternative+legal+satisfiable
+  // Tier 3: alternative+selectable
   const alt = ranked.find(c =>
-    c.priority === "alternative" && c.legal && c.failedConditions.length === 0 && allowed(c));
+    c.priority === "alternative" && isSelectable(c) && allowed(c));
   if (alt) return alt;
 
   // Tier 4: no selection

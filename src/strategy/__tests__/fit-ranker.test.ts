@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat, Suit, BidSuit } from "../../engine/types";
 import type { Call, HandEvaluation } from "../../engine/types";
 import type { ResolvedCandidate } from "../../conventions/core/pipeline/candidate-generator";
+import { buildEligibility } from "../../conventions/core/pipeline/candidate-generator";
 import type { EffectiveConventionContext } from "../../conventions/core/pipeline/effective-context";
 import type { BeliefData } from "../../core/contracts";
 import type { BiddingContext } from "../../conventions/core/types";
@@ -24,6 +25,7 @@ function makeCandidate(
     isDefaultCall: true,
     legal: true,
     isMatched: false,
+    eligibility: buildEligibility([], true),
   };
 }
 

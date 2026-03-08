@@ -277,8 +277,8 @@ describe("generateCandidates — overlay tree application", () => {
 describe("overlay patch hooks", () => {
   const bid2D: Call = { type: "bid", level: 2, strain: BidSuit.Diamonds };
 
-  test("suppressIntent filters a proposal → candidate list shrinks", () => {
-    // Overlay with suppressIntent that removes "normal-bid"
+  test("suppressIntent tags proposal → candidate present with protocol.satisfied=false", () => {
+    // Overlay with suppressIntent that suppresses "normal-bid"
     const overlay: ConventionOverlayPatch = {
       id: "suppress-test",
       roundName: "opening",
@@ -292,10 +292,11 @@ describe("overlay patch hooks", () => {
     const effectiveCtx = buildEffectiveContext(ctx, config, protoResult);
     const { candidates } = generateCandidates(normalTree, protoResult.handResult, effectiveCtx);
 
-    // Normal tree has 1 IntentNode that matches (normal-bid) + potentially fallback.
-    // With suppression, the matched candidate should be gone.
+    // With suppression, the matched candidate is present but protocol-ineligible.
     const normalBid = candidates.find(c => c.bidName === "normal-bid");
-    expect(normalBid).toBeUndefined();
+    expect(normalBid).toBeDefined();
+    expect(normalBid!.eligibility.protocol.satisfied).toBe(false);
+    expect(normalBid!.eligibility.protocol.reasons[0]).toContain("suppress-test");
   });
 
   test("addIntents appends proposals → list grows, added intents never matched", () => {
@@ -482,7 +483,10 @@ describe("overlay composition (multi-overlay)", () => {
 
     const { candidates, matchedIntentSuppressed } = generateCandidates(normalTree, protoResult.handResult, effectiveCtx);
     expect(matchedIntentSuppressed).toBe(true);
-    expect(candidates.find(c => c.bidName === "normal-bid")).toBeUndefined();
+    const normalBid = candidates.find(c => c.bidName === "normal-bid");
+    expect(normalBid).toBeDefined();
+    expect(normalBid!.eligibility.protocol.satisfied).toBe(false);
+    expect(normalBid!.eligibility.protocol.reasons[0]).toContain("suppress-1");
   });
 
   test("addIntents from ALL overlays concatenate in config order", () => {

@@ -211,6 +211,13 @@ export interface ConventionConfig {
     candidates: readonly ResolvedCandidate[],
     context: EffectiveConventionContext,
   ) => readonly ResolvedCandidate[];
+  /** Optional pedagogical filter — convention authors can mark candidates as
+   *  not appropriate for teaching. Errors are caught (fail-open → acceptable: true).
+   *  No conventions use this yet — seam for future use. */
+  readonly pedagogicalCheck?: (
+    candidate: { intentType: string; call: Call; resolvedCall: Call; isMatched: boolean },
+    ctx: EffectiveConventionContext,
+  ) => { acceptable: boolean; reasons: string[] };
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */

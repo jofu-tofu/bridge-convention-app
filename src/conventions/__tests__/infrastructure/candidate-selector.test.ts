@@ -1,6 +1,7 @@
 import { describe, test, expect } from "vitest";
-import { selectMatchedCandidate } from "../../core/pipeline/candidate-selector";
+import { selectMatchedCandidate, isSelectable } from "../../core/pipeline/candidate-selector";
 import type { ResolvedCandidate } from "../../core/pipeline/candidate-generator";
+import { buildEligibility } from "../../core/pipeline/candidate-generator";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { ForcingState, ObligationKind } from "../../core/dialogue/dialogue-state";
@@ -10,16 +11,19 @@ function makeCandidate(
   overrides: Partial<ResolvedCandidate> & { isMatched: boolean; legal: boolean },
 ): ResolvedCandidate {
   const call: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
+  const failedConditions = overrides.failedConditions ?? [];
+  const legal = overrides.legal;
   return {
     bidName: "test-bid",
     nodeId: overrides.bidName ?? "test-bid",
     meaning: "Test",
     call,
-    failedConditions: [],
+    failedConditions,
     intent: { type: "Signoff", params: {} },
     source: { conventionId: "test", nodeName: "test-bid" },
     resolvedCall: call,
     isDefaultCall: true,
+    eligibility: buildEligibility(failedConditions, legal),
     ...overrides,
   };
 }
@@ -437,5 +441,58 @@ describe("selectMatchedCandidate", () => {
       expect(result).not.toBeNull();
       expect(result!.bidName).toBe("bid");
     });
+  });
+});
+
+describe("isSelectable", () => {
+  test("all dimensions satisfied → selectable", () => {
+    const c = makeCandidate({ isMatched: true, legal: true });
+    expect(isSelectable(c)).toBe(true);
+  });
+
+  test("hand unsatisfied → not selectable", () => {
+    const c = makeCandidate({
+      isMatched: true,
+      legal: true,
+      failedConditions: [{ name: "hcp", description: "Need 10+ HCP" }],
+    });
+    expect(isSelectable(c)).toBe(false);
+  });
+
+  test("protocol unsatisfied → not selectable", () => {
+    const c = makeCandidate({
+      isMatched: true,
+      legal: true,
+      eligibility: buildEligibility([], true, false, ["suppressed by overlay"]),
+    });
+    expect(isSelectable(c)).toBe(false);
+  });
+
+  test("encoding illegal → not selectable", () => {
+    const c = makeCandidate({ isMatched: true, legal: false });
+    expect(isSelectable(c)).toBe(false);
+  });
+
+  test("pedagogically unacceptable → not selectable", () => {
+    const c = makeCandidate({
+      isMatched: true,
+      legal: true,
+      eligibility: {
+        hand: { satisfied: true, failedConditions: [] },
+        protocol: { satisfied: true, reasons: [] },
+        encoding: { legal: true },
+        pedagogical: { acceptable: false, reasons: ["not teachable"] },
+      },
+    });
+    expect(isSelectable(c)).toBe(false);
+  });
+
+  test("multiple dimensions unsatisfied → not selectable", () => {
+    const c = makeCandidate({
+      isMatched: true,
+      legal: false,
+      failedConditions: [{ name: "hcp", description: "Need 10+ HCP" }],
+    });
+    expect(isSelectable(c)).toBe(false);
   });
 });
