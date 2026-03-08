@@ -78,42 +78,47 @@
     </aside>
 
     <!-- Main content -->
-    <div class="flex-1 overflow-y-auto p-8 space-y-7">
+    <div class="flex-1 flex flex-col min-h-0">
       {#if config}
-        <!-- Convention header -->
-        <div>
-          <div class="flex items-center gap-3 mb-2">
-            <h1 class="text-3xl font-bold text-text-primary">{config.name}</h1>
-            <span class="rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1">
+        <!-- Convention toolbar — always visible -->
+        <div class="shrink-0 px-8 py-3 border-b border-border-subtle bg-bg-base flex items-center gap-4">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <h1 class="text-xl font-semibold text-text-primary truncate">{config.name}</h1>
+            <span class="shrink-0 rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1">
               {config.category}
             </span>
           </div>
-          <p class="text-text-secondary">{config.description}</p>
+          <!-- Depth mode tabs -->
+          <div class="shrink-0 flex gap-1 bg-[#1c2530] rounded-lg p-1" role="tablist" aria-label="Detail level">
+            {#each [
+              { mode: "compact" as const, label: "Compact" },
+              { mode: "study" as const, label: "Study" },
+              { mode: "learn" as const, label: "Learn" },
+            ] as tab (tab.mode)}
+              <button
+                role="tab"
+                aria-selected={depthMode === tab.mode}
+                class="px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer
+                  {depthMode === tab.mode
+                    ? 'bg-accent-primary text-text-on-accent font-medium'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'}"
+                onclick={() => depthMode = tab.mode}
+              >
+                {tab.label}
+              </button>
+            {/each}
+          </div>
+          <button
+            class="shrink-0 px-5 py-2.5 bg-accent-primary text-text-on-accent rounded-lg text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
+            onclick={() => config && appStore.selectConvention(config)}
+          >
+            Practice
+          </button>
         </div>
 
-        <!-- Depth mode tabs -->
-        <div class="flex gap-1 bg-[#1c2530] rounded-lg p-1" role="tablist" aria-label="Detail level">
-          {#each [
-            { mode: "compact" as const, label: "Compact" },
-            { mode: "study" as const, label: "Study" },
-            { mode: "learn" as const, label: "Learn" },
-          ] as tab (tab.mode)}
-            <button
-              role="tab"
-              aria-selected={depthMode === tab.mode}
-              class="px-4 py-2 text-sm rounded-md transition-colors cursor-pointer
-                {depthMode === tab.mode
-                  ? 'bg-accent-primary text-text-on-accent font-medium'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'}"
-              onclick={() => depthMode = tab.mode}
-            >
-              {tab.label}
-            </button>
-          {/each}
-        </div>
-
-        <!-- Convention teaching header card (Study + Learn) -->
-        {#if conventionTeaching && depthMode !== "compact"}
+        <!-- Scrollable content -->
+        <div class="flex-1 overflow-y-auto p-8 space-y-7">
+          <!-- About This Convention card -->
           <section class="bg-[#1c2530] rounded-xl border border-border-subtle">
             <button
               class="w-full flex items-center justify-between px-5 py-4 cursor-pointer"
@@ -136,72 +141,66 @@
             </button>
             {#if !headerCollapsed}
               <div id="convention-teaching-content" class="px-5 pb-5 space-y-3">
-                {#if conventionTeaching.purpose}
-                  <div>
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Purpose</span>
-                    <p class="text-sm text-slate-200 mt-1">{conventionTeaching.purpose}</p>
-                  </div>
-                {/if}
-                {#if conventionTeaching.whenToUse}
-                  <div>
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">When to use</span>
-                    <p class="text-sm text-slate-200 mt-1">{conventionTeaching.whenToUse}</p>
-                  </div>
-                {/if}
-                {#if conventionTeaching.roles}
-                  <div>
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Roles</span>
-                    <p class="text-sm text-slate-200 mt-1">{conventionTeaching.roles}</p>
-                  </div>
-                {/if}
-                <!-- Learn-only fields -->
-                {#if depthMode === "learn"}
-                  {#if conventionTeaching.whenNotToUse && conventionTeaching.whenNotToUse.length > 0}
+                <div>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Summary</span>
+                  <p class="text-sm text-slate-200 mt-1">{config.description}</p>
+                </div>
+                {#if conventionTeaching && depthMode !== "compact"}
+                  {#if conventionTeaching.purpose}
                     <div>
-                      <span class="text-xs font-semibold text-amber-400 uppercase tracking-wide">When not to use</span>
-                      <ul class="text-sm text-slate-200 mt-1 list-disc list-inside space-y-1">
-                        {#each conventionTeaching.whenNotToUse as item (item)}
-                          <li>{item}</li>
-                        {/each}
-                      </ul>
+                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Purpose</span>
+                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.purpose}</p>
                     </div>
                   {/if}
-                  {#if conventionTeaching.tradeoff}
+                  {#if conventionTeaching.whenToUse}
                     <div>
-                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Tradeoff</span>
-                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.tradeoff}</p>
+                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">When to use</span>
+                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.whenToUse}</p>
                     </div>
                   {/if}
-                  {#if conventionTeaching.principle}
+                  {#if conventionTeaching.roles}
                     <div>
-                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Principle</span>
-                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.principle}</p>
+                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Roles</span>
+                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.roles}</p>
                     </div>
+                  {/if}
+                  <!-- Learn-only fields -->
+                  {#if depthMode === "learn"}
+                    {#if conventionTeaching.whenNotToUse && conventionTeaching.whenNotToUse.length > 0}
+                      <div>
+                        <span class="text-xs font-semibold text-amber-400 uppercase tracking-wide">When not to use</span>
+                        <ul class="text-sm text-slate-200 mt-1 list-disc list-inside space-y-1">
+                          {#each conventionTeaching.whenNotToUse as item (item)}
+                            <li>{item}</li>
+                          {/each}
+                        </ul>
+                      </div>
+                    {/if}
+                    {#if conventionTeaching.tradeoff}
+                      <div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Tradeoff</span>
+                        <p class="text-sm text-slate-200 mt-1">{conventionTeaching.tradeoff}</p>
+                      </div>
+                    {/if}
+                    {#if conventionTeaching.principle}
+                      <div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Principle</span>
+                        <p class="text-sm text-slate-200 mt-1">{conventionTeaching.principle}</p>
+                      </div>
+                    {/if}
                   {/if}
                 {/if}
               </div>
             {/if}
           </section>
-        {/if}
 
-        <hr class="border-border-subtle" />
+          <hr class="border-border-subtle" />
 
-        <!-- Decision Tree placeholder — protocol conventions don't produce a single tree root.
-             Future: protocol-aware tree display. -->
-        <div class="text-text-muted italic py-8 text-center">
-          No decision tree available for this convention.
-        </div>
-
-        <hr class="border-border-subtle" />
-
-        <!-- Practice button -->
-        <div class="pb-8">
-          <button
-            class="px-6 py-3 bg-accent-primary text-text-on-accent rounded-lg font-medium hover:opacity-90 transition-opacity cursor-pointer"
-            onclick={() => config && appStore.selectConvention(config)}
-          >
-            Practice This Convention
-          </button>
+          <!-- Decision Tree placeholder — protocol conventions don't produce a single tree root.
+               Future: protocol-aware tree display. -->
+          <div class="text-text-muted italic py-8 text-center">
+            No decision tree available for this convention.
+          </div>
         </div>
       {:else}
         <div class="text-center py-12 text-text-muted">

@@ -57,7 +57,7 @@
   </h2>
   <BidPanel {legalCalls} {onBid} {disabled} compact />
 </div>
-<div class:hidden={!hasFeedback}>
+<div class="min-h-0 flex-1 overflow-y-auto" class:hidden={!hasFeedback}>
   {#if bidFeedback}
     <BidFeedbackPanel
       feedback={bidFeedback}

@@ -61,16 +61,16 @@ describe("LearningScreen", () => {
     expect(screen.getByText(/no decision tree/i)).toBeTruthy();
   });
 
-  it("has a practice button", () => {
+  it("has a practice button in the convention toolbar", () => {
     renderLearningScreen();
     expect(
-      screen.getByRole("button", { name: /practice this convention/i }),
+      screen.getByRole("button", { name: /practice/i }),
     ).toBeTruthy();
   });
 
   it("practice button navigates to game screen", async () => {
     const { appStore } = renderLearningScreen();
-    const btn = screen.getByRole("button", { name: /practice this convention/i });
+    const btn = screen.getByRole("button", { name: /^practice$/i });
     await fireEvent.click(btn);
     expect(appStore.screen).toBe("game");
   });
@@ -107,11 +107,15 @@ describe("LearningScreen", () => {
     expect(screen.getByText("Purpose")).toBeTruthy();
   });
 
-  it("hides convention teaching header in Compact mode", async () => {
+  it("hides teaching details in Compact mode but keeps summary", async () => {
     renderLearningScreen();
     const compactTab = screen.getByRole("tab", { name: "Compact" });
     await fireEvent.click(compactTab);
-    expect(screen.queryByText("About This Convention")).toBeNull();
+    // About card and Summary always visible
+    expect(screen.getByText("About This Convention")).toBeTruthy();
+    expect(screen.getByText("Summary")).toBeTruthy();
+    // Teaching-specific fields hidden in Compact
+    expect(screen.queryByText("Purpose")).toBeNull();
   });
 
   it("shows tradeoff in Learn mode but not Study", async () => {
