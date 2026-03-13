@@ -15,6 +15,7 @@ import {
 } from "../../core/registry";
 import { saycConfig } from "../../definitions/sayc";
 import { hand, makeBiddingContext } from "../fixtures";
+import { refDescribe } from "../../../test-support/tiers";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ function callFromSaycRules(h: Hand, seat: Seat, bids: string[], dealer: Seat = S
 
 // ─── SAYC — opening bid edge cases ─────────────────────────────
 
-describe("SAYC — opening bid edge cases", () => {
+refDescribe("[ref:SAYC]", "SAYC — opening bid edge cases", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(saycConfig);

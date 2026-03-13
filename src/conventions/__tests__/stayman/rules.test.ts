@@ -16,6 +16,7 @@ import { staymanConfig, staymanDealConstraints } from "../../definitions/stayman
 import type { BiddingContext } from "../../core/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
+import { refDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -51,7 +52,7 @@ function callFromRules(
 
 // ─── Deal Constraints ───────────────────────────────────────
 
-describe("Stayman deal constraints", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman deal constraints", () => {
   test("opener 15-17 HCP, balanced, no 5-card major", () => {
     for (let i = 0; i < 20; i++) {
       const result = generateDeal(staymanDealConstraints);
@@ -555,7 +556,7 @@ describe("Stayman deal constraints", () => {
 
 // ─── Bidding Rule Matching ──────────────────────────────────
 
-describe("Stayman bidding rules — ask", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman bidding rules — ask", () => {
   // Responder with 4+ hearts, 8+ HCP
   const responderWithHearts = hand(
     "SK",
@@ -657,7 +658,7 @@ describe("Stayman bidding rules — ask", () => {
   });
 });
 
-describe("Stayman bidding rules — opener response", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman bidding rules — opener response", () => {
   // Opener with 4 hearts (and not 4 spades)
   const openerWithHearts = hand(
     "SA",
@@ -783,7 +784,7 @@ describe("Stayman bidding rules — opener response", () => {
   });
 });
 
-describe("Stayman bidding rules — responder rebid", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman bidding rules — responder rebid", () => {
   // Responder with 4 hearts
   const responderHearts = hand(
     "SK",
@@ -889,7 +890,7 @@ describe("Stayman bidding rules — responder rebid", () => {
 
 // ─── Full Sequence Integration ──────────────────────────────
 
-describe("Stayman full sequences", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman full sequences", () => {
   // North opens 1NT, South responds with Stayman
   // We test the entire sequence by feeding each step through the rules
 

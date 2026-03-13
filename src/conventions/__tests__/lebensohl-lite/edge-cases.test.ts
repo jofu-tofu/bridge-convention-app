@@ -6,6 +6,7 @@ import { clearRegistry, evaluateBiddingRules, registerConvention } from "../../c
 import type { BiddingContext } from "../../core/types";
 import { lebensohlLiteConfig } from "../../definitions/lebensohl-lite";
 import { auctionFromBids, hand } from "../fixtures";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -27,7 +28,7 @@ function makeBiddingContext(
   };
 }
 
-describe("Lebensohl Lite edge cases", () => {
+refDescribe("[ref:bridgebum/lebensohl]", "Lebensohl Lite edge cases", () => {
   describe("different overcall suits produce correct bids", () => {
     test("overcall 2D: penalty double with 4 diamonds", () => {
       const h = hand(

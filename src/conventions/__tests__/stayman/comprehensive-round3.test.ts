@@ -13,6 +13,8 @@ import { Seat, BidSuit } from "../../../engine/types";
 import type { ContractBid, Hand } from "../../../engine/types";
 import { registerConvention, clearRegistry } from "../../core/registry";
 import { staymanConfig } from "../../definitions/stayman";
+// eslint-disable-next-line unused-imports/no-unused-imports
+import { policyDescribe } from "../../../test-support/tiers";
 import { hand, makeBiddingContext } from "../fixtures";
 import { conventionToStrategy } from "../../../strategy/bidding/convention-strategy";
 
@@ -81,7 +83,7 @@ const gfBalancedNoFit = () =>
 
 // ─── Round 3 after 2H response: opponent overcalls ───────
 
-describe("Round 3 after 2H response: opponent overcalls", () => {
+policyDescribe("[policy]", "rebid after 2H response with opponent overcall", "Round 3 after 2H response: opponent overcalls", () => {
   test.skip("after 2H-2S(opp): GF with heart fit raises to 4H (free raise to game)", () => {
     /**
      * BRIDGE THEORY: When opener shows 4 hearts via 2H and responder has
@@ -210,7 +212,7 @@ describe("Round 3 after 2H response: opponent overcalls", () => {
 
 // ─── Round 3 after 2H response: opponent doubles ─────────
 
-describe("Round 3 after 2H response: opponent doubles", () => {
+policyDescribe("[policy]", "rebid after 2H response with opponent double", "Round 3 after 2H response: opponent doubles", () => {
   test.skip("after 2H-X(opp): GF with heart fit redoubles (support redouble)", () => {
     /**
      * BRIDGE THEORY: When opener's 2H is doubled, a redouble by responder
@@ -285,7 +287,7 @@ describe("Round 3 after 2H response: opponent doubles", () => {
 
 // ─── Round 3 after 2S response: opponent overcalls ───────
 
-describe("Round 3 after 2S response: opponent overcalls", () => {
+policyDescribe("[policy]", "rebid after 2S response with opponent overcall", "Round 3 after 2S response: opponent overcalls", () => {
   test.skip("after 2S-3C(opp): GF with spade fit bids 4S (jump to game)", () => {
     /**
      * BRIDGE THEORY: Opener showed 4 spades via 2S, responder has 4 spades
@@ -372,7 +374,7 @@ describe("Round 3 after 2S response: opponent overcalls", () => {
 
 // ─── Round 3 after 2D denial: opponent overcalls ─────────
 
-describe("Round 3 after 2D denial: opponent overcalls", () => {
+policyDescribe("[policy]", "rebid after 2D denial with opponent overcall", "Round 3 after 2D denial: opponent overcalls", () => {
   test.skip("after 2D-2H(opp): Smolen 3H ambiguous with natural 2H overcall", () => {
     /**
      * BRIDGE THEORY: After 2D denial, responder with 5H+4S GF would normally
@@ -508,7 +510,7 @@ describe("Round 3 after 2D denial: opponent overcalls", () => {
 
 // ─── Round 3: delayed competition effects ────────────────
 
-describe("Round 3: delayed competition effects", () => {
+policyDescribe("[policy]", "delayed competition does not change rebid", "Round 3: delayed competition effects", () => {
   test.skip("1NT-X-2C-P-2H-P: normal rebid despite Round 1 double", () => {
     /**
      * BRIDGE THEORY: If responder bid 2C Stayman despite the double in
@@ -571,7 +573,7 @@ describe("Round 3: delayed competition effects", () => {
 
 // ─── Round 3: opponent's actions inform rebid ────────────
 
-describe("Round 3: opponent's actions inform rebid", () => {
+policyDescribe("[policy]", "opponent actions inform competitive rebid judgment", "Round 3: opponent's actions inform rebid", () => {
   test.skip("after 2H-2S(opp): responder avoids competing in spades", () => {
     /**
      * BRIDGE THEORY: When opponent overcalls 2S, they've shown spade length
@@ -681,7 +683,7 @@ describe("Round 3: opponent's actions inform rebid", () => {
 
 // ─── Round 3: additional competitive scenarios ───────────
 
-describe("Round 3: competitive judgment edge cases", () => {
+policyDescribe("[policy]", "competitive judgment at boundaries", "Round 3: competitive judgment edge cases", () => {
   test.skip("after 2H-2S(opp): GF with heart fit and spade stopper prefers 4H over 3NT", () => {
     /**
      * BRIDGE THEORY: With a confirmed 4-4 heart fit and GF values, 4H is
@@ -939,7 +941,7 @@ describe("Round 3: competitive judgment edge cases", () => {
 
 // ─── Round 3: opponent convention informs rebid ──────────
 
-describe("Round 3: opponent convention informs rebid", () => {
+policyDescribe("[policy]", "opponent convention identification informs rebid", "Round 3: opponent convention informs rebid", () => {
   test.skip("after 2H-2S(natural): GF heart fit bids 3H (natural 6+S, conservative)", () => {
     /**
      * BRIDGE THEORY: When opponent's 2S is a natural overcall (6+ spades),

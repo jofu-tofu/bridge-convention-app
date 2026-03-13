@@ -20,6 +20,7 @@ import {
 import { bergenConfig, bergenDealConstraints } from "../../definitions/bergen-raises";
 import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -57,7 +58,7 @@ function callFromRules(
 
 // ─── Deal Constraints ───────────────────────────────────────
 
-describe("Bergen Raises deal constraints", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises deal constraints", () => {
   test("[bridgebum/bergen] opener 12-21 HCP with 5+ major", () => {
     for (let i = 0; i < 20; i++) {
       const result = generateDeal(bergenDealConstraints);
@@ -324,7 +325,7 @@ describe("Bergen Raises deal constraints", () => {
 
 // ─── Bidding Rule Matching ──────────────────────────────────
 
-describe("Bergen Raises bidding rules — constructive raise", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises bidding rules — constructive raise", () => {
   // 8 HCP: HK(3) + DK(3) + DQ(2) = 8, 4 hearts
   const constructiveHand = () =>
     hand(
@@ -387,7 +388,7 @@ describe("Bergen Raises bidding rules — constructive raise", () => {
   });
 });
 
-describe("Bergen Raises bidding rules — limit raise", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises bidding rules — limit raise", () => {
   // 11 HCP: SA(4) + HK(3) + HJ(1) + DQ(2) + CJ(1) = 11, 4 hearts
   const limitHand = () =>
     hand(
@@ -424,7 +425,7 @@ describe("Bergen Raises bidding rules — limit raise", () => {
   });
 });
 
-describe("Bergen Raises bidding rules — game raise", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises bidding rules — game raise", () => {
   // 14 HCP: SA(4) + SK(3) + HQ(2) + DK(3) + DQ(2) = 14, 4 hearts
   const gameHand = () =>
     hand(
@@ -486,7 +487,7 @@ describe("Bergen Raises bidding rules — game raise", () => {
   });
 });
 
-describe("Bergen Raises bidding rules — preemptive raise", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises bidding rules — preemptive raise", () => {
   // 5 HCP: HK(3) + HQ(2) = 5, 4 hearts
   const preemptiveHand = () =>
     hand(
@@ -548,7 +549,7 @@ describe("Bergen Raises bidding rules — preemptive raise", () => {
   });
 });
 
-describe("Bergen Raises bidding rules — rejection cases", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises bidding rules — rejection cases", () => {
   test("[bridgebum/bergen] rejects responder with 4 spades after 1H (wrong major)", () => {
     // 11 HCP: SK(3) + SQ(2) + DK(3) + DQ(2) + DJ(1) = 11, 4 spades but only 2 hearts
     const responder = hand(
@@ -637,7 +638,7 @@ describe("Bergen Raises bidding rules — rejection cases", () => {
 
 // ─── Boundary HCP Tests ─────────────────────────────────────
 
-describe("Bergen Raises HCP boundary tests", () => {
+policyDescribe("[policy]", "HCP boundaries: 0-6 preemptive, 7-9 constructive (not 7-10), 10-12 limit, 13+ game", "Bergen Raises HCP boundary tests", () => {
   test("exactly 6 HCP matches preemptive (0-6)", () => {
     // HK(3) + HQ(2) + CJ(1) = 6 HCP, 4 hearts
     const responder = hand(
@@ -779,7 +780,7 @@ describe("Bergen Raises HCP boundary tests", () => {
 
 // ─── Edge Cases ────────────────────────────────────────────
 
-describe("Bergen Raises edge cases", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises edge cases", () => {
   test("responder with 4H + 4S after 1H bids hearts (Bergen fires for opened major)", () => {
     // 8 HCP: HK(3) + DK(3) + DQ(2) = 8, 4H + 4S
     const responderBoth = hand(
@@ -854,7 +855,7 @@ describe("Bergen Raises edge cases", () => {
 
 // ─── Full Sequence Integration ──────────────────────────────
 
-describe("Bergen Raises full sequences", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises full sequences", () => {
   test("1H-P-3C (constructive raise with 8 HCP, 4 hearts)", () => {
     // HK(3) + DK(3) + DQ(2) = 8 HCP, 4 hearts
     const responder = hand(
@@ -984,7 +985,7 @@ describe("Bergen Raises full sequences", () => {
 
 // ─── Reference Hand Tests ───────────────────────────────────
 
-describe("Bergen Raises reference hands", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises reference hands", () => {
   test("[bridgebum/bergen] classic constructive: 7 HCP, 4H support", () => {
     // SJ(1) + HK(3) + DQ(2) + DJ(1) = 7 HCP, 4 hearts
     const responder = hand(
@@ -1060,7 +1061,7 @@ describe("Bergen Raises reference hands", () => {
 
 // ─── Property-Based Invariants ──────────────────────────────
 
-describe("Bergen Raises property-based invariants", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises property-based invariants", () => {
   test("[bridgebum/bergen invariant] 50 random deals all produce a Bergen rule match", () => {
     for (let i = 0; i < 50; i++) {
       const result = generateDeal(bergenDealConstraints);

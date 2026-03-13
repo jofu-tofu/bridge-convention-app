@@ -6,6 +6,7 @@
  */
 
 import { describe, test, expect } from "vitest";
+import { refDescribe } from "../../../test-support/tiers";
 import { BidSuit, Seat } from "../../../engine/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { resolveIntent } from "../../core/intent/intent-resolver";
@@ -45,7 +46,7 @@ function expectResolvedCall(result: ResolverResult | null) {
   return result!.calls[0]!.call;
 }
 
-describe("Stayman 2NT resolvers", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman 2NT resolvers", () => {
   test("askForMajor after 2NT → 3C (not 2C)", () => {
     const state = stateAfter(["2NT", "P"]);
     const intent: SemanticIntent = { type: SemanticIntentType.AskForMajor, params: {} };

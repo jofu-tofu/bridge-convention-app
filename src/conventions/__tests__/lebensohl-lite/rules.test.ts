@@ -6,6 +6,7 @@ import { clearRegistry, evaluateBiddingRules, registerConvention } from "../../c
 import type { BiddingContext } from "../../core/types";
 import { lebensohlLiteConfig } from "../../definitions/lebensohl-lite";
 import { auctionFromBids, hand } from "../fixtures";
+import { refDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -27,7 +28,7 @@ function makeBiddingContext(
   };
 }
 
-describe("Lebensohl Lite", () => {
+refDescribe("[ref:bridgebum/lebensohl]", "Lebensohl Lite", () => {
   test("round 1: strong hand with overcall suit support doubles for penalty", () => {
     const h = hand(
       "SA", "S7", "S4",

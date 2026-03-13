@@ -5,13 +5,14 @@ import { registerConvention, clearRegistry } from "../../core/registry";
 import { saycConfig } from "../../definitions/sayc";
 import { hand } from "../fixtures";
 import { callFromRules } from "./helpers";
+import { refDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
   registerConvention(saycConfig);
 });
 
-describe("SAYC responses to 1-level suit openings", () => {
+refDescribe("[ref:SAYC]", "SAYC responses to 1-level suit openings", () => {
   test("raise 1H to 2H: 6-10 HCP, 3+ hearts", () => {
     // Partner (North) opened 1H, we (South) have 9 HCP 3 hearts
     const responder = hand(
@@ -94,7 +95,7 @@ describe("SAYC responses to 1-level suit openings", () => {
   });
 });
 
-describe("SAYC responses to 1NT", () => {
+refDescribe("[ref:SAYC]", "SAYC responses to 1NT", () => {
   test("Stayman: 8+ HCP, 4-card major after 1NT", () => {
     const responder = hand(
       "SK", "SQ", "SJ", "S3", // 4 spades, 6 HCP
@@ -126,7 +127,7 @@ describe("SAYC responses to 1NT", () => {
   });
 });
 
-describe("SAYC edge cases - responses", () => {
+refDescribe("[ref:SAYC]", "SAYC edge cases - responses", () => {
   test("sayc-respond-1nt-stayman does NOT fire after partner opens 2NT", () => {
     // 10 HCP, 4 hearts — would be Stayman after 1NT but NOT after 2NT
     const responder = hand(

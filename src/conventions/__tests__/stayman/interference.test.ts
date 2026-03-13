@@ -12,6 +12,7 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateProtocol } from "../../core/protocol/protocol-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
 import { conventionToStrategy } from "../../../strategy/bidding/convention-strategy";
+import { policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -70,7 +71,7 @@ const weakNoEscapeHand = () =>
 
 // ─── Tests ──────────────────────────────────────────────────
 
-describe("Stayman interference", () => {
+policyDescribe("[policy]", "interference handling: redouble for penalty with 10+ HCP, Stayman still on after double, system off after overcall", "Stayman interference", () => {
   describe("after 1NT-X (opponent doubles)", () => {
     test("strong hand (14 HCP) redoubles for penalty", () => {
       const result = suggestCall(strongHand(), Seat.South, ["1NT", "X"]);

@@ -18,6 +18,7 @@ import {
 import { bergenConfig } from "../../definitions/bergen-raises";
 import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -55,7 +56,7 @@ function callFromRules(
 
 // ─── Opener Rebids After Constructive ─────────────────────────
 
-describe("Bergen Raises — opener rebids after constructive (1M P 3C P)", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — opener rebids after constructive (1M P 3C P)", () => {
   // Opener hands for North seat (12-21 HCP, 5+ hearts)
   // 18 HCP: SA(4) + HA(4) + HK(3) + HQ(2) + DK(3) + DQ(2) = 18
   const strongOpener = () =>
@@ -171,7 +172,7 @@ describe("Bergen Raises — opener rebids after constructive (1M P 3C P)", () =>
 
 // ─── Opener Rebid HCP Boundaries (Constructive) ──────────────
 
-describe("Bergen Raises — constructive rebid HCP boundaries", () => {
+policyDescribe("[policy]", "constructive rebid HCP boundaries: 16+ game, 14-15 try, 12-13 signoff", "Bergen Raises — constructive rebid HCP boundaries", () => {
   // Template: North opener with 5 hearts, varying HCP
   // 13 HCP → pass (12-13 range)
   test("boundary: 13 HCP opener passes after constructive (top of signoff)", () => {
@@ -265,7 +266,7 @@ describe("Bergen Raises — constructive rebid HCP boundaries", () => {
 
 // ─── Game Try Continuation ───────────────────────────────────
 
-describe("Bergen Raises — game try continuation (1M P 3C P 3D P)", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — game try continuation (1M P 3C P 3D P)", () => {
   test("9 HCP responder accepts game try → 4H", () => {
     // HK(3) + HQ(2) + DK(3) + CJ(1) = 9 HCP, 4 hearts
     const responder = hand(
@@ -398,7 +399,7 @@ describe("Bergen Raises — game try continuation (1M P 3C P 3D P)", () => {
 
 // ─── Opener Rebids After Limit ───────────────────────────────
 
-describe("Bergen Raises — opener rebids after limit (1M P 3D P)", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — opener rebids after limit (1M P 3D P)", () => {
   test("16 HCP opener bids 4H after limit raise (game)", () => {
     // SA(4) + HA(4) + HK(3) + HQ(2) + DK(3) = 16
     const opener = hand(
@@ -522,7 +523,7 @@ describe("Bergen Raises — opener rebids after limit (1M P 3D P)", () => {
 
 // ─── Opener Rebids After Preemptive ──────────────────────────
 
-describe("Bergen Raises — opener rebids after preemptive (1M P 3M P)", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — opener rebids after preemptive (1M P 3M P)", () => {
   test("19 HCP opener bids 4H after 1H-P-3H-P (game)", () => {
     // SA(4) + SK(3) + HA(4) + HK(3) + HQ(2) + DK(3) = 19, 5H
     const opener = hand(
@@ -644,7 +645,7 @@ describe("Bergen Raises — opener rebids after preemptive (1M P 3M P)", () => {
 
 // ─── Rebid Invariants ────────────────────────────────────────
 
-describe("Bergen Raises — rebid invariants", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — rebid invariants", () => {
   test("responder initial rules don't fire on 4-entry auctions", () => {
     // 8 HCP responder hand — would match constructive on 2-entry, but not on 4-entry
     const responder = hand(
@@ -716,7 +717,7 @@ describe("Bergen Raises — rebid invariants", () => {
 
 // ─── Acceptance Passes ───────────────────────────────────────
 
-describe("Bergen Raises — acceptance passes (closing the auction)", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — acceptance passes (closing the auction)", () => {
   test("responder passes after opener bids game 4H (accept game)", () => {
     // 11 HCP limit hand, after 1H-P-3D-P-4H-P — South passes to close
     const responder = hand(
@@ -879,7 +880,7 @@ describe("Bergen Raises — acceptance passes (closing the auction)", () => {
 
 // ─── Splinter Bids ────────────────────────────────────────────
 
-describe("Bergen splinter bids [bridgebum/bergen]", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen splinter bids", () => {
   test("[bridgebum/bergen] 12+ HCP with singleton bids 3S after 1H (splinter)", () => {
     // 12 HCP, 4 hearts, singleton diamond: KQ=5, KQ=5, -=0, K=3 but need 12
     // A=4, Q=2: spades=6, K=3 Q=2: hearts=5... let's build carefully

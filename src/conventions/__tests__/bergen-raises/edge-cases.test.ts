@@ -18,10 +18,11 @@ import {
 } from "../../core/registry";
 import { bergenConfig } from "../../definitions/bergen-raises";
 import { hand, makeBiddingContext } from "../fixtures";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 
 // ─── Bergen Raises — opponent interference ───────────────────
 
-describe("Bergen Raises — opponent interference", () => {
+policyDescribe("[policy]", "Bergen OFF after opponent interference (double or overcall)", "Bergen Raises — opponent interference", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(bergenConfig);
@@ -108,7 +109,7 @@ describe("Bergen Raises — opponent interference", () => {
   });
 });
 
-describe("Bergen Raises — HCP boundary", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — HCP boundary", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(bergenConfig);
@@ -189,7 +190,7 @@ describe("Bergen Raises — HCP boundary", () => {
 
 // ─── Bergen Raises — unusual hand shapes ──────────────────────
 
-describe("Bergen Raises — unusual hand shapes", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — unusual hand shapes", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(bergenConfig);
@@ -327,7 +328,7 @@ describe("Bergen Raises — unusual hand shapes", () => {
   });
 });
 
-describe("Bergen Raises — opener rebid edge cases", () => {
+refDescribe("[ref:bridgebum/bergen]", "Bergen Raises — opener rebid edge cases", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(bergenConfig);

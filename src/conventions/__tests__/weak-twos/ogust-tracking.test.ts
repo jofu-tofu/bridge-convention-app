@@ -13,6 +13,7 @@ import { baselineTransitionRules } from "../../core/dialogue/baseline-transition
 import { computeDialogueState } from "../../core/dialogue/dialogue-manager";
 import { ObligationKind } from "../../core/dialogue/dialogue-state";
 import { auctionFromBids } from "../fixtures";
+import { refDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -28,7 +29,7 @@ function computeState(bids: string[], dealer: Seat = Seat.North) {
 
 // ─── Ogust Response Classification ─────────────────────────
 
-describe("Ogust response tracking", () => {
+refDescribe("[ref:bridgebum/ogust]", "Ogust response tracking", () => {
   // Auction: North opens 2H, East passes, South asks 2NT (Ogust), West passes,
   // North responds with Ogust classification
 
@@ -82,7 +83,7 @@ describe("Ogust response tracking", () => {
 
 // ─── Direct Raise Tracking ──────────────────────────────────
 
-describe("Direct raise tracking", () => {
+refDescribe("[ref:bridgebum/weak-twos]", "Direct raise tracking", () => {
   test("partner raises to game (4H after 2H) sets directRaise", () => {
     // North opens 2H, East passes, South raises to 4H
     const state = computeState(["2H", "P", "4H"]);
@@ -102,7 +103,7 @@ describe("Direct raise tracking", () => {
 
 // ─── Invite Tracking ────────────────────────────────────────
 
-describe("Invite tracking", () => {
+refDescribe("[ref:bridgebum/weak-twos]", "Invite tracking", () => {
   test("partner raises to 3H (invite) after 2H sets inviteMade", () => {
     const state = computeState(["2H", "P", "3H"]);
     expect(state.conventionData["inviteMade"]).toBe(true);
