@@ -63,26 +63,41 @@ export type {
 // ── Context Factory ─────────────────────────────────────────────────────
 export { createBiddingContext } from "./context-factory";
 
-// ── Pipeline (sub-barrel) ────────────────────────────────────────────────
+// ── Pipeline ─────────────────────────────────────────────────────────────
 export {
   buildEffectiveContext, classifyInterference,
-  generateCandidates,
-  selectMatchedCandidate,
-  isSelectable,
-  isPedagogicallyAcceptable,
-  collectIntentProposals,
-} from "./pipeline";
+} from "./pipeline/effective-context";
 export type {
   EffectiveConventionContext,
   BeliefData,
+} from "./pipeline/effective-context";
+
+export {
+  generateCandidates,
+} from "./pipeline/candidate-generator";
+export type {
   ResolvedCandidate,
   CandidateProvenance,
   CandidateGenerationResult,
+} from "./pipeline/candidate-generator";
+
+export {
+  selectMatchedCandidate,
+  isSelectable,
+  isPedagogicallyAcceptable,
+} from "./pipeline/candidate-selector";
+export type {
   CandidateRankerFn,
   SelectionResult,
+} from "./pipeline/candidate-selector";
+
+export {
+  collectIntentProposals,
+} from "./pipeline/intent-collector";
+export type {
   CollectedIntent,
   PathConditionEntry,
-} from "./pipeline";
+} from "./pipeline/intent-collector";
 
 // ── Condition Evaluator ─────────────────────────────────────────────────
 export { evaluateConditions, buildExplanation, isConditionedRule } from "./condition-evaluator";
