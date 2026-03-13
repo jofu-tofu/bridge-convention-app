@@ -1,6 +1,7 @@
 // Private belief state — narrows partner's public holdings using own hand.
 
-import type { Hand, HandEvaluation, Seat, Suit } from "../engine/types";
+import type { Hand, HandEvaluation, Seat } from "../engine/types";
+import { Suit } from "../engine/types";
 import { SUIT_ORDER } from "../engine/constants";
 import { partnerSeat } from "../engine/constants";
 import type { PublicBeliefState } from "./types";
@@ -28,7 +29,12 @@ export function conditionOnOwnHand(
   const partner = partnerSeat(seat);
   const partnerBeliefs = publicBelief.beliefs[partner];
 
-  const partnerSuitLengths = {} as Record<Suit, { readonly min: number; readonly max: number }>;
+  const partnerSuitLengths: Record<Suit, { readonly min: number; readonly max: number }> = {
+    [Suit.Spades]: { min: 0, max: 13 },
+    [Suit.Hearts]: { min: 0, max: 13 },
+    [Suit.Diamonds]: { min: 0, max: 13 },
+    [Suit.Clubs]: { min: 0, max: 13 },
+  };
   for (let i = 0; i < SUIT_ORDER.length; i++) {
     const suit = SUIT_ORDER[i]!;
     const ownLength = evaluation.shape[i]!;

@@ -4,18 +4,18 @@ import type { InferredHoldings } from "../core/contracts";
 import type { BidAnnotation, PublicBeliefState } from "./types";
 import { mergeInferences } from "./merge";
 
-const ALL_SEATS: Seat[] = [SeatEnum.North, SeatEnum.East, SeatEnum.South, SeatEnum.West];
-
 function createLooseHoldings(seat: Seat): InferredHoldings {
   return mergeInferences(seat, []);
 }
 
 /** Create a maximally loose public belief state — no information known about any seat. */
 export function createInitialBeliefState(): PublicBeliefState {
-  const beliefs = {} as Record<Seat, InferredHoldings>;
-  for (const seat of ALL_SEATS) {
-    beliefs[seat] = createLooseHoldings(seat);
-  }
+  const beliefs: Record<Seat, InferredHoldings> = {
+    [SeatEnum.North]: createLooseHoldings(SeatEnum.North),
+    [SeatEnum.East]: createLooseHoldings(SeatEnum.East),
+    [SeatEnum.South]: createLooseHoldings(SeatEnum.South),
+    [SeatEnum.West]: createLooseHoldings(SeatEnum.West),
+  };
   return { beliefs, annotations: [] };
 }
 

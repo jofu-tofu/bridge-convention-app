@@ -14,7 +14,6 @@ import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { createConventionInferenceProvider } from "../inference/convention-inference";
 import { ForcingState } from "../core/contracts";
-import { SEATS } from "../engine/constants";
 import type { BeliefData } from "../core/contracts";
 import { createFitConfidenceRanker } from "../strategy/bidding/fit-ranker";
 
@@ -100,16 +99,17 @@ export function createDrillConfig(
   }
 
   // N/S = convention, E/W = opponent, user seat = "user"
-  const seatStrategies = {} as Record<Seat, BiddingStrategy | "user">;
-  for (const seat of SEATS) {
-    if (seat === userSeat) {
-      seatStrategies[seat] = "user";
-    } else if (NS_SEATS.has(seat)) {
-      seatStrategies[seat] = strategy;
-    } else {
-      seatStrategies[seat] = opponentStrategy;
-    }
+  function seatStrategy(seat: Seat): BiddingStrategy | "user" {
+    if (seat === userSeat) return "user";
+    if (NS_SEATS.has(seat)) return strategy;
+    return opponentStrategy;
   }
+  const seatStrategies: Record<Seat, BiddingStrategy | "user"> = {
+    [Seat.North]: seatStrategy(Seat.North),
+    [Seat.East]: seatStrategy(Seat.East),
+    [Seat.South]: seatStrategy(Seat.South),
+    [Seat.West]: seatStrategy(Seat.West),
+  };
 
   // Build N/S inference config: convention-aware for own bids, natural for opponents
   const naturalProvider = createNaturalInferenceProvider();
