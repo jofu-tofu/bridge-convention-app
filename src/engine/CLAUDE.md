@@ -6,7 +6,6 @@ Pure TypeScript game logic. Zero platform dependencies.
 
 - Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `@tauri-apps/*`, `window`, `document`, or `localStorage`. Transport adapters (`tauri-ipc-engine.ts`, `wasm-engine.ts`, `dds-client.ts`, `dds-worker.ts`) are the explicit exception.
 - Engine-facing cross-boundary interfaces and DTOs live in `src/core/contracts/`. Engine may import `core/contracts/`, but `core/contracts/` must stay free of `strategy/`, `stores/`, `components/`, and other higher-level modules.
-- `suggestBid` is NOT on EnginePort — it's a standalone function in `bid-suggester.ts` (can't cross IPC/HTTP because BiddingStrategy has methods)
 - All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
@@ -31,14 +30,13 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `types.ts`            | All enums (`Suit`, `Rank`, `Seat`) and interfaces (`Card`, `Hand`, `Deal`, `Contract`)    |
 | `constants.ts`        | Suit/rank orderings, display mappings                                                     |
 | `hand-evaluator.ts`   | HCP calculation, strategy pattern for evaluation                                          |
-| `deal-generator.ts`   | Rejection sampling with Fisher-Yates shuffle, constraint relaxation                       |
+| `deal-generator.ts`   | Rejection sampling with Fisher-Yates shuffle, seat constraints                            |
 | `port.ts`             | `EnginePort` interface — async boundary between UI and engine                             |
 | `auction.ts`          | Auction logic: bid comparison, legality, completion, contract/declarer extraction         |
 | `play.ts`             | Trick play rules: legal plays (follow suit), lead suit, trick winner determination        |
 | `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
 | `auction-helpers.ts`  | Auction query utils: lastContractBid, bidsInSequence, auctionMatchesExact, buildAuction   |
 | `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
-| `bid-suggester.ts`    | Standalone `suggestBid()` — extracted from EnginePort (can't cross IPC/HTTP)              |
 | `call-helpers.ts`     | Canonical `callsMatch()` — call equality check shared by stores and inference             |
 | `constraint-utils.ts` | `cleanConstraints()` / `cleanSeatConstraint()` — strips non-serializable fields          |
 | `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()` (desktop)                              |

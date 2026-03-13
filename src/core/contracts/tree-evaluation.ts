@@ -213,4 +213,8 @@ export interface EvaluationTrace {
   readonly preRankingPeerBidNames?: readonly string[];
   readonly rankerResolved?: boolean;
   readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "filtered" | "error" }[];
+  /** Number of posterior samples drawn. Set by meaning-pipeline strategies with posterior engine. */
+  readonly posteriorSampleCount?: number;
+  /** Confidence from posterior engine (0-1). Set by meaning-pipeline strategies with posterior engine. */
+  readonly posteriorConfidence?: number;
 }

@@ -11,7 +11,28 @@ Convention folders that each implement a bridge bidding convention. Each is self
 - `index.ts` — barrel exports + `registerConvention()` call
 - Optional: `helpers.ts`, `conditions.ts`, `transitions.ts`, `resolvers.ts`, `overlays.ts`, `constants.ts`
 
-Shared across conventions: `shared-helpers.ts` — `STRAIN_TO_BIDSUIT` lookup and `strainToBidSuit()` function. Used by Stayman, Weak Twos, and Lebensohl Lite resolvers.
+**`nt-bundle/`** -- Combines Stayman + Jacoby Transfers into a single 1NT response bundle. Files:
+- `config.ts` -- `ConventionBundle` with `meaningSurfaces`, `factExtensions`, `surfaceRouter`, `conversationMachine`, `declaredCapabilities: { ntOpenerContext: "active" }`
+- `meaning-surfaces.ts` -- `MeaningSurface[]` definitions: responder R1 (5), opener Stayman response (3), opener transfer accept hearts (1), opener transfer accept spades (1), Stayman R3 after 2H/2S/2D (4+4+2), transfer R3 after hearts/spades accept (4+4) -- 28 surfaces total
+- `facts.ts` -- `FactCatalogExtension`s for module-derived facts (`module.stayman.*`, `module.transfer.*`, `module.ntResponse.*`)
+- `semantic-classes.ts` -- module-local semantic class constants (not in central registry)
+- `surface-routing.ts` -- `RoutedSurfaceGroup[]` for round-aware surface selection
+- `activation.ts` -- activation filter for 1NT opening detection
+- `alternatives.ts` -- cross-convention alternative groups for teaching
+- `system-profile.ts` -- `NT_SAYC_PROFILE` SystemProfileIR for profile-based module activation
+- `machine.ts` -- Conversation machine FSM (13 states: idle -> nt-opened -> responder-r1/opener-stayman/opener-transfer/terminal/nt-contested)
+- `pedagogical-relations.ts` -- `NT_PEDAGOGICAL_RELATIONS` pedagogical relation graph (same-family, stronger-than, fallback-of, continuation-of, near-miss-of)
+
+**`bergen-bundle/`** -- Bergen Raises R1 (responder's initial response to 1M-P) using the meaning pipeline with surface bindings for suit parameterization. Files:
+- `config.ts` -- `ConventionBundle` with `meaningSurfaces`, `factExtensions`, `surfaceRouter`, `conversationMachine`, `internal: true` (parity testing)
+- `meaning-surfaces.ts` -- `createBergenR1Surfaces(suit)` factory producing 5 surfaces parameterized by `$suit` binding (splinter, game, limit, constructive, preemptive), instantiated for hearts and spades (10 surfaces total)
+- `facts.ts` -- `FactCatalogExtension` for `module.bergen.hasMajorSupport`
+- `semantic-classes.ts` -- module-local Bergen semantic class constants
+- `machine.ts` -- minimal FSM: idle -> major-opened -> responder-r1-hearts/spades -> terminal
+- `system-profile.ts` -- `BERGEN_PROFILE` SystemProfileIR
+- `surface-routing.ts` -- 2 routed surface groups (responder-r1-hearts, responder-r1-spades)
+
+Shared across conventions and bundles: `shared-helpers.ts` -- `STRAIN_TO_BIDSUIT` lookup and `strainToBidSuit()` function. Used by Stayman, Weak Twos, and Lebensohl Lite resolvers.
 
 ## Convention Quick Reference
 
@@ -60,6 +81,13 @@ All fields from `ConventionConfig` in `core/types.ts`:
 | `rankCandidates` | No | `(candidates, context) => candidates` | Optional candidate ranker. No conventions use this yet (future seam). |
 | `pedagogicalCheck` | No | `(candidate, ctx) => { acceptable, reasons }` | Optional pedagogical filter — feeds the pedagogical dimension of CandidateEligibility. Checked via isPedagogicallyAcceptable() (post-selection annotation, not a selection gate). No conventions use this yet. |
 | `intentFamilies` | No | `readonly IntentFamily[]` | Groups of semantically related IntentNode leaves for diagnostics and family-aware teaching grading. Members reference IntentNode names. IntentRelationship: mutually_exclusive, equivalent_encoding, policy_alternative. |
+| `activationFilter` | Yes (bundles) | `(auction, seat) => readonly string[]` | Returns active convention IDs given auction state. |
+| `meaningSurfaces` | No | `readonly { groupId, surfaces }[]` | Meaning surfaces organized by group. When present, meaning pipeline is used. |
+| `factExtensions` | No | `readonly FactCatalogExtension[]` | Module-derived fact definitions. |
+| `surfaceRouter` | No | `(auction, seat) => readonly MeaningSurface[]` | Round-aware surface filtering. |
+| `systemProfile` | No | `SystemProfileIR` | Profile-based module activation. |
+| `conversationMachine` | No | `ConversationMachine` | FSM for hierarchical surface selection. |
+| `declaredCapabilities` | No | `Readonly<Record<string, string>>` | Capabilities injected into profile-based activation. Bundles without this field get no capabilities. |
 
 *Required in practice for a complete convention, though TypeScript marks them optional.
 
@@ -451,6 +479,8 @@ __tests__/
 ```
 
 Bergen splits into `rules-responder.test.ts` + `rules-opener-rebids.test.ts`. Stayman splits into `rules.test.ts` + `rules-extended.test.ts`.
+
+5. **Module-derived facts for NT-specific thresholds.** `module.ntResponse.inviteValues`, `module.ntResponse.gameValues`, `module.ntResponse.slamValues` are in `nt-bundle/facts.ts` as `ntResponseFacts` extension (not in shared `BRIDGE_DERIVED_FACTS`). They fail the promotion rule (cannot be named without "1NT"). Any test or strategy that evaluates NT surfaces must include `ntResponseFacts` in its `createFactCatalog()` call, or these facts will be absent and clauses referencing them will fail closed.
 
 ---
 

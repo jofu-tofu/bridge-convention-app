@@ -50,6 +50,11 @@ export function conventionToStrategy(
     getLastPracticalRecommendation() { return lastPracticalRecommendation; },
     getAcceptableAlternatives() { return config.acceptableAlternatives; },
     getIntentFamilies() { return config.intentFamilies; },
+    getLastProvenance() { return null; },
+    getLastArbitration() { return null; },
+    getLastPosteriorSummary() { return null; },
+    getExplanationCatalog() { return undefined; },
+    getLastTeachingProjection() { return null; },
     suggest(context): BidResult | null {
       lastPracticalRecommendation = null;
       const trace = new TraceCollector();

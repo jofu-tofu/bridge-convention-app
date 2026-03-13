@@ -450,15 +450,6 @@ describe("generateDeal", () => {
   test("returns iteration metadata", () => {
     const result = generateDeal({ seats: [] });
     expect(result.iterations).toBeGreaterThanOrEqual(1);
-    expect(result.relaxationSteps).toBe(0);
-  });
-
-  test("relaxationSteps always 0", () => {
-    const constraints: DealConstraints = {
-      seats: [{ seat: Seat.North, minHcp: 12 }],
-    };
-    const result = generateDeal(constraints);
-    expect(result.relaxationSteps).toBe(0);
   });
 
   test("respects dealer constraint", () => {
@@ -507,7 +498,6 @@ describe("generateDeal", () => {
       const hcp = calculateHcp(result.deal.hands[Seat.North]);
       expect(hcp).toBeGreaterThanOrEqual(15);
       expect(hcp).toBeLessThanOrEqual(17);
-      expect(result.relaxationSteps).toBe(0);
     }
   });
 

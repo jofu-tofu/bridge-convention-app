@@ -1,214 +1,391 @@
-// Bergen Raises surface evaluation tests.
-//
-// These tests verify that the surface evaluator correctly identifies
-// which Bergen raise type applies for a given hand, with particular
-// focus on splinter detection.
-//
-// Sources: bridgebum.com/bergen_raises.php [bridgebum/bergen]
-// Standard Bergen: splinter = 12+ HCP, 4-card support, singleton or void.
-
-import { describe, test, expect } from "vitest";
-import { BidSuit } from "../../../../engine/types";
-import { evaluateHand, calculateHcp } from "../../../../engine/hand-evaluator";
+import { describe, it, expect } from "vitest";
+import { refDescribe } from "../../../../test-support/tiers";
+import { Seat, BidSuit } from "../../../../engine/types";
+import type { Call, Hand } from "../../../../engine/types";
 import { hand } from "../../../../engine/__tests__/fixtures";
-import { evaluateBergenFacts } from "../facts";
-import { evaluateBergenSurfaces } from "../meaning-surfaces";
+import { evaluateHand } from "../../../../engine/hand-evaluator";
+import { buildAuction } from "../../../../engine/auction-helpers";
+import { createBiddingContext } from "../../../core";
+import { createFactCatalog } from "../../../../core/contracts/fact-catalog";
+import { createSharedFactCatalog } from "../../../core/pipeline/fact-evaluator";
+import { evaluateFacts } from "../../../core/pipeline/fact-evaluator";
+import { evaluateAllSurfaces } from "../../../core/pipeline/meaning-evaluator";
+import { meaningBundleToStrategy } from "../../../../strategy/bidding/meaning-strategy";
+import { bergenBundle } from "../config";
+import { bergenFacts } from "../facts";
+import {
+  BERGEN_R1_HEARTS_SURFACES,
+  BERGEN_R1_SPADES_SURFACES,
+} from "../meaning-surfaces";
 
-// ─── Helpers ──────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────
 
-function evaluateForBergen(h: ReturnType<typeof hand>, opening: BidSuit.Hearts | BidSuit.Spades) {
-  const evaluation = evaluateHand(h);
-  const facts = evaluateBergenFacts(evaluation, opening);
-  return { facts, result: evaluateBergenSurfaces(facts) };
+function buildCatalog() {
+  return createFactCatalog(createSharedFactCatalog(), bergenFacts);
 }
 
-// ─── Splinter detection ───────────────────────────────────────
-
-describe("Bergen surface evaluation — splinter detection", () => {
-  test("[ref:bridgebum/bergen] 13 HCP + 4 hearts + shortage produces 3S splinter", () => {
-    // SA(4) + HK(3) + HQ(2) + DK(3) + CJ(1) = 13 HCP
-    // Shape: 1-4-3-5 → singleton spade = shortage
-    const responder = hand(
-      "SA",        // 1 spade (shortage)
-      "HK", "HQ", "H6", "H2",  // 4 hearts
-      "DK", "D7", "D3",         // 3 diamonds
-      "CJ", "C8", "C5", "C3", "C2", // 5 clubs
-    );
-    expect(calculateHcp(responder)).toBe(13);
-
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Hearts);
-    expect(facts.hasShortage).toBe(true);
-    expect(facts.supportCount).toBe(4);
-    expect(facts.hcp).toBe(13);
-
-    expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("splinter");
-    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Spades });
+function buildMachineStrategy() {
+  const catalog = buildCatalog();
+  const moduleSurfaces = bergenBundle.meaningSurfaces!.map((g) => ({
+    moduleId: g.groupId,
+    surfaces: g.surfaces,
+  }));
+  return meaningBundleToStrategy(moduleSurfaces, bergenBundle.id, {
+    name: bergenBundle.name,
+    factCatalog: catalog,
+    conversationMachine: bergenBundle.conversationMachine,
   });
+}
 
-  test("[ref:bridgebum/bergen] 12 HCP + 4 spades + shortage produces 3H splinter", () => {
-    // SK(3) + SQ(2) + SA(4) = 9 in spades... no, need exactly 4 spades.
-    // SK(3) + SQ(2) + S6 + S2 = 5 HCP in 4 spades
-    // HA(4) = 4 HCP (1 heart = shortage)
-    // DQ(2) + DJ(1) = 3 HCP in 3 diamonds
-    // C-void or singleton
-    // Let me build: SK(3)+SQ(2)+HA(4)+DQ(2)+DJ(1) = 12 HCP, shape 4-1-3-5
-    const responder = hand(
-      "SK", "SQ", "S6", "S2",   // 4 spades
-      "HA",                       // 1 heart (shortage)
-      "DQ", "DJ", "D7",          // 3 diamonds
-      "C8", "C7", "C5", "C3", "C2", // 5 clubs
-    );
-    expect(calculateHcp(responder)).toBe(12);
-
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Spades);
-    expect(facts.hasShortage).toBe(true);
-    expect(facts.supportCount).toBe(4);
-    expect(facts.hcp).toBe(12);
-
-    expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("splinter");
-    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Hearts });
+function suggestBid(h: Hand, auctionCalls: string[], seat: Seat = Seat.South) {
+  const strategy = buildMachineStrategy();
+  const auction = buildAuction(Seat.North, auctionCalls);
+  const ctx = createBiddingContext({
+    hand: h,
+    auction,
+    seat,
+    evaluation: evaluateHand(h),
   });
+  const result = strategy.suggest(ctx);
+  return { result, strategy };
+}
 
-  test("[ref:bridgebum/bergen] exactly 12 HCP with shortage qualifies as splinter", () => {
-    // SA(4) + HK(3) + HQ(2) + DK(3) = 12 HCP
-    // Shape: 1-4-3-5 → singleton spade = shortage
-    const responder = hand(
-      "SA",                       // 1 spade (shortage)
-      "HK", "HQ", "H6", "H2",   // 4 hearts
-      "DK", "D7", "D3",          // 3 diamonds
-      "C8", "C7", "C5", "C3", "C2", // 5 clubs
-    );
-    expect(calculateHcp(responder)).toBe(12);
+function formatCall(call: Call): string {
+  if (call.type === "bid") {
+    const strainNames = new Map<BidSuit, string>([
+      [BidSuit.Clubs, "C"],
+      [BidSuit.Diamonds, "D"],
+      [BidSuit.Hearts, "H"],
+      [BidSuit.Spades, "S"],
+      [BidSuit.NoTrump, "NT"],
+    ]);
+    return `${call.level}${strainNames.get(call.strain) ?? "?"}`;
+  }
+  return call.type;
+}
 
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Hearts);
-    expect(facts.hasShortage).toBe(true);
-    expect(facts.supportCount).toBe(4);
+// ─── Surface binding resolution ─────────────────────────────
 
-    expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("splinter");
-    // Splinter after 1H opening = 3S (other major)
-    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Spades });
-  });
-});
-
-// ─── Non-splinter raises (no shortage) ────────────────────────
-
-describe("Bergen surface evaluation — non-splinter raises", () => {
-  test("[ref:bridgebum/bergen] 13 HCP without shortage produces game raise", () => {
-    // SA(4) + HK(3) + HQ(2) + DK(3) + CJ(1) = 13 HCP
-    // Shape: 3-4-3-3 → no shortage
-    const responder = hand(
-      "SA", "S5", "S2",
-      "HK", "HQ", "H6", "H2",
-      "DK", "D7", "D3",
-      "CJ", "C3", "C2",
-    );
-    expect(calculateHcp(responder)).toBe(13);
-
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Hearts);
-    expect(facts.hasShortage).toBe(false);
-
-    expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("game-raise");
-    expect(result!.call).toEqual({ type: "bid", level: 4, strain: BidSuit.Hearts });
-  });
-
-  test("[ref:bridgebum/bergen] 11 HCP without shortage produces limit raise", () => {
-    // SA(4) + HK(3) + HJ(1) + DQ(2) + CJ(1) = 11 HCP
-    // Shape: 3-4-3-3 → no shortage
-    const responder = hand(
-      "SA", "S5", "S2",
-      "HK", "HJ", "H6", "H2",
-      "DQ", "D7", "D3",
-      "CJ", "C3", "C2",
-    );
-    expect(calculateHcp(responder)).toBe(11);
-
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Hearts);
-    expect(facts.hasShortage).toBe(false);
-
-    expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("limit-raise");
-    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Diamonds });
-  });
-
-  test("[ref:bridgebum/bergen] 8 HCP produces constructive raise", () => {
-    // HK(3) + DK(3) + DQ(2) = 8 HCP, 4 hearts
-    // Shape: 3-4-3-3 → no shortage
-    const responder = hand(
+describe("Bergen surface binding resolution", () => {
+  it("resolves $suit to hearts in hearts surfaces", () => {
+    const catalog = buildCatalog();
+    // 8 HCP, 4 hearts -- constructive raise
+    const h = hand(
       "S8", "S5", "S2",
       "HK", "HT", "H6", "H2",
       "DK", "DQ", "D3",
       "C5", "C3", "C2",
     );
-    expect(calculateHcp(responder)).toBe(8);
+    const facts = evaluateFacts(h, evaluateHand(h), catalog);
+    const proposals = evaluateAllSurfaces(BERGEN_R1_HEARTS_SURFACES, facts);
 
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Hearts);
-    expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("constructive-raise");
-    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Clubs });
+    // All proposals should have resolved factIds with 'hearts', not '$suit'
+    for (const p of proposals) {
+      for (const clause of p.clauses) {
+        expect(clause.factId).not.toContain("$suit");
+      }
+    }
   });
 
-  test("[ref:bridgebum/bergen] 5 HCP produces preemptive raise", () => {
+  it("resolves $suit to spades in spades surfaces", () => {
+    const catalog = buildCatalog();
+    const h = hand(
+      "SK", "ST", "S6", "S2",
+      "H8", "H5", "H2",
+      "DK", "DQ", "D3",
+      "C5", "C3", "C2",
+    );
+    const facts = evaluateFacts(h, evaluateHand(h), catalog);
+    const proposals = evaluateAllSurfaces(BERGEN_R1_SPADES_SURFACES, facts);
+
+    for (const p of proposals) {
+      for (const clause of p.clauses) {
+        expect(clause.factId).not.toContain("$suit");
+      }
+    }
+  });
+});
+
+// ─── Hearts R1 surface tests ────────────────────────────────
+
+refDescribe("[ref:bridgebum]", "Bergen bundle -- hearts R1 surfaces", () => {
+  it("5 HCP + 4 hearts -> preemptive raise (3H)", () => {
     // HK(3) + HQ(2) = 5 HCP, 4 hearts
-    // Shape: 3-4-3-3 → no shortage
-    const responder = hand(
+    const h = hand(
       "S8", "S5", "S2",
       "HK", "HQ", "H6", "H2",
       "DT", "D7", "D3",
       "C5", "C3", "C2",
     );
-    expect(calculateHcp(responder)).toBe(5);
-
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Hearts);
+    const { result } = suggestBid(h, ["1H", "P"]);
     expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("preemptive-raise");
-    expect(result!.call).toEqual({ type: "bid", level: 3, strain: BidSuit.Hearts });
+    expect(result!.call.type).toBe("bid");
+    expect(formatCall(result!.call)).toBe("3H");
   });
-});
 
-// ─── Splinter with void ──────────────────────────────────────
-
-describe("Bergen surface evaluation — splinter with void", () => {
-  test("[ref:bridgebum/bergen] 14 HCP with void produces splinter, not game raise", () => {
-    // SA(4) + SK(3) + HQ(2) + HJ(1) + DK(3) + CJ(1) = 14 HCP
-    // Shape: 0-4-3-6 → void in spades = shortage
-    // Wait, can't have 0 spades and SA+SK. Let me fix.
-    // Shape: 3-4-0-6 → void in diamonds
-    // SA(4) + SK(3) + HQ(2) + HJ(1) + CK(3) + CJ(1) = 14 HCP
-    const responder = hand(
-      "SA", "SK", "S2",           // 3 spades
-      "HQ", "HJ", "H6", "H2",    // 4 hearts
-      // 0 diamonds (void)
-      "CK", "CJ", "C8", "C5", "C3", "C2", // 6 clubs
-    );
-    expect(calculateHcp(responder)).toBe(14);
-
-    const { facts, result } = evaluateForBergen(responder, BidSuit.Hearts);
-    expect(facts.hasShortage).toBe(true);
-    expect(facts.hcp).toBe(14);
-
-    expect(result).not.toBeNull();
-    expect(result!.surface.id).toBe("splinter");
-  });
-});
-
-// ─── No match cases ──────────────────────────────────────────
-
-describe("Bergen surface evaluation — no match", () => {
-  test("3-card support returns null (no surface matches)", () => {
-    // 13 HCP but only 3 hearts
-    const responder = hand(
-      "SA", "SK", "S5", "S2",
-      "HK", "H5", "H2",
-      "DK", "D7", "D3",
+  it("8 HCP + 4 hearts -> constructive raise (3C)", () => {
+    // HK(3) + DK(3) + DQ(2) = 8 HCP, 4 hearts
+    const h = hand(
+      "S8", "S5", "S2",
+      "HK", "HT", "H6", "H2",
+      "DK", "DQ", "D3",
       "C5", "C3", "C2",
     );
-    expect(calculateHcp(responder)).toBe(13);
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3C");
+  });
 
-    const { result } = evaluateForBergen(responder, BidSuit.Hearts);
+  it("11 HCP + 4 hearts -> limit raise (3D)", () => {
+    // SA(4) + HK(3) + HJ(1) + DQ(2) + CJ(1) = 11 HCP, 4 hearts
+    const h = hand(
+      "SA", "S5", "S2",
+      "HK", "HJ", "H6", "H2",
+      "DQ", "D7", "D3",
+      "CJ", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3D");
+  });
+
+  it("14 HCP + 4 hearts -> game raise (4H)", () => {
+    // SA(4) + SK(3) + HQ(2) + DK(3) + DQ(2) = 14 HCP, 4 hearts
+    const h = hand(
+      "SA", "SK", "S2",
+      "HQ", "HT", "H6", "H2",
+      "DK", "DQ", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("4H");
+  });
+
+  it("13 HCP + 4 hearts + shortage -> splinter (3S)", () => {
+    // SA(4) + HK(3) + HQ(2) + DA(4) = 13 HCP, 4 hearts, singleton spade
+    const h = hand(
+      "SA",
+      "HK", "HQ", "H7", "H3",
+      "DA", "D5", "D3", "D2",
+      "C5", "C4", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3S");
+  });
+
+  it("13 HCP + 4 hearts + no shortage -> game raise (4H), not splinter", () => {
+    // SA(4) + HK(3) + HQ(2) + DK(3) + CJ(1) = 13 HCP, 4 hearts, balanced
+    const h = hand(
+      "SA", "S5", "S3",
+      "HK", "HQ", "H7", "H3",
+      "DK", "D5", "D3",
+      "CJ", "C5", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("4H");
+  });
+
+  it("no support (< 4 hearts) -> no surface matches (null result)", () => {
+    // 8 HCP, only 3 hearts -- no Bergen raise
+    const h = hand(
+      "S8", "S5", "S2",
+      "HK", "HT", "H6",
+      "DK", "DQ", "D7", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
     expect(result).toBeNull();
+  });
+});
+
+// ─── Spades R1 surface tests ───────────────────────────────
+
+refDescribe("[ref:bridgebum]", "Bergen bundle -- spades R1 surfaces", () => {
+  it("4 HCP + 4 spades -> preemptive raise (3S)", () => {
+    // SQ(2) + SJ(1) + DJ(1) = 4 HCP, 4 spades
+    const h = hand(
+      "SQ", "SJ", "S6", "S2",
+      "H8", "H5", "H2",
+      "DJ", "D7", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3S");
+  });
+
+  it("8 HCP + 4 spades -> constructive raise (3C)", () => {
+    // SK(3) + DK(3) + DQ(2) = 8 HCP, 4 spades
+    const h = hand(
+      "SK", "ST", "S6", "S2",
+      "H8", "H5", "H2",
+      "DK", "DQ", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3C");
+  });
+
+  it("11 HCP + 4 spades -> limit raise (3D)", () => {
+    // SK(3) + SJ(1) + HA(4) + DQ(2) + CJ(1) = 11 HCP, 4 spades
+    const h = hand(
+      "SK", "SJ", "S6", "S2",
+      "HA", "H5", "H2",
+      "DQ", "D7", "D3",
+      "CJ", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3D");
+  });
+
+  it("14 HCP + 4 spades -> game raise (4S)", () => {
+    // SK(3) + SQ(2) + HA(4) + DK(3) + DQ(2) = 14 HCP, 4 spades
+    const h = hand(
+      "SK", "SQ", "S6", "S2",
+      "HA", "H5", "H2",
+      "DK", "DQ", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("4S");
+  });
+
+  it("12 HCP + 4 spades + shortage -> splinter (3H)", () => {
+    // SK(3) + SQ(2) + HA(4) + DK(3) = 12 HCP, 4 spades, singleton heart
+    const h = hand(
+      "SK", "SQ", "S7", "S3",
+      "HA",
+      "DK", "D5", "D3", "D2",
+      "C5", "C4", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3H");
+  });
+
+  it("no support (< 4 spades) -> null result", () => {
+    // 11 HCP, 3 spades
+    const h = hand(
+      "SK", "SQ", "S6",
+      "HA", "H5", "H2",
+      "DQ", "DJ", "D3",
+      "CJ", "C3", "C2", "C4",
+    );
+    const { result } = suggestBid(h, ["1S", "P"]);
+    expect(result).toBeNull();
+  });
+});
+
+// ─── Wrong auction ─────────────────────────────────────────
+
+describe("Bergen bundle -- wrong auction", () => {
+  it("1NT-P auction -> no surfaces match", () => {
+    const h = hand(
+      "S8", "S5", "S2",
+      "HK", "HT", "H6", "H2",
+      "DK", "DQ", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1NT", "P"]);
+    expect(result).toBeNull();
+  });
+
+  it("1D-P auction -> no surfaces match", () => {
+    const h = hand(
+      "S8", "S5", "S2",
+      "HK", "HT", "H6", "H2",
+      "DK", "DQ", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1D", "P"]);
+    expect(result).toBeNull();
+  });
+});
+
+// ─── HCP boundary tests ───────────────────────────────────
+
+refDescribe("[ref:bridgebum]", "Bergen bundle -- HCP boundary tests", () => {
+  it("exactly 6 HCP -> preemptive (0-6)", () => {
+    // HK(3) + HQ(2) + CJ(1) = 6 HCP, 4 hearts
+    const h = hand(
+      "S8", "S5", "S2",
+      "HK", "HQ", "H6", "H2",
+      "DT", "D7", "D3",
+      "CJ", "C5", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3H");
+  });
+
+  it("exactly 7 HCP -> constructive (7-10)", () => {
+    // HK(3) + HQ(2) + DJ(1) + CJ(1) = 7 HCP, 4 hearts
+    const h = hand(
+      "S8", "S5", "S2",
+      "HK", "HQ", "H6", "H2",
+      "DJ", "D7", "D3",
+      "CJ", "C5", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3C");
+  });
+
+  it("exactly 10 HCP -> limit raise wins (10-12) over constructive (7-10) by ranking", () => {
+    // SA(4) + HJ(1) + DK(3) + DQ(2) = 10 HCP, 4 hearts
+    const h = hand(
+      "SA", "S5", "S2",
+      "HJ", "H7", "H5", "H3",
+      "DK", "DQ", "D3",
+      "C5", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3D");
+  });
+
+  it("exactly 12 HCP with shortage -> splinter (12+)", () => {
+    // SK(3) + SQ(2) + HA(4) + DK(3) = 12 HCP, 4 spades, singleton heart
+    const h = hand(
+      "SK", "SQ", "S7", "S3",
+      "HA",
+      "DK", "D5", "D3", "D2",
+      "C5", "C4", "C3", "C2",
+    );
+    const { result } = suggestBid(h, ["1S", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3H");
+  });
+
+  it("exactly 13 HCP without shortage -> game raise (not splinter)", () => {
+    // SA(4) + SK(3) + HQ(2) + DK(3) + CJ(1) = 13 HCP, balanced, 4 hearts
+    const h = hand(
+      "SA", "SK", "S3",
+      "HQ", "HT", "H6", "H2",
+      "DK", "D5", "D3",
+      "CJ", "C5", "C2",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("4H");
+  });
+
+  it("0 HCP + 4 hearts -> preemptive", () => {
+    // 0 HCP, 4 hearts
+    const h = hand(
+      "S7", "S5", "S3",
+      "H7", "H5", "H4", "H3",
+      "D7", "D5", "D3",
+      "C7", "C5", "C3",
+    );
+    const { result } = suggestBid(h, ["1H", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("3H");
   });
 });

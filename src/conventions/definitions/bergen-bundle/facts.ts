@@ -1,41 +1,40 @@
-/**
- * Bergen Raises fact evaluators.
- *
- * Each fact evaluates a single hand property relevant to Bergen raise selection.
- * Facts are composed by surfaces to determine which raise type applies.
- */
+import type {
+  FactCatalogExtension,
+  FactDefinition,
+  FactValue,
+  FactEvaluatorFn,
+} from "../../../core/contracts/fact-catalog";
 
-import { BidSuit } from "../../../engine/types";
-import type { HandEvaluation } from "../../../engine/types";
+// ─── Helpers ─────────────────────────────────────────────────
 
-/** Evaluated facts for a Bergen raise decision. */
-export interface BergenFacts {
-  readonly hcp: number;
-  readonly supportCount: number;
-  readonly hasShortage: boolean;
-  readonly trumpSuit: BidSuit.Hearts | BidSuit.Spades | null;
+function num(evaluated: ReadonlyMap<string, FactValue>, id: string): number {
+  return evaluated.get(id)!.value as number;
 }
 
-/**
- * Evaluate Bergen-relevant facts from a hand evaluation and auction context.
- *
- * @param evaluation - Hand evaluation with shape and hcp
- * @param openingStrain - The major suit opened by partner (Hearts or Spades)
- */
-export function evaluateBergenFacts(
-  evaluation: HandEvaluation,
-  openingStrain: BidSuit.Hearts | BidSuit.Spades,
-): BergenFacts {
-  const suitIndex = openingStrain === BidSuit.Hearts ? 1 : 0;
-  const supportCount = evaluation.shape[suitIndex]!;
-
-  // Check for singleton or void in any suit
-  const hasShortage = evaluation.shape.some((s: number) => s <= 1);
-
-  return {
-    hcp: evaluation.hcp,
-    supportCount,
-    hasShortage,
-    trumpSuit: openingStrain,
-  };
+function fv(factId: string, value: number | boolean | string): FactValue {
+  return { factId, value };
 }
+
+// ─── Bergen module facts ────────────────────────────────────
+
+const BERGEN_FACTS: readonly FactDefinition[] = [
+  {
+    id: "module.bergen.hasMajorSupport",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Has 4+ card support in at least one major",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.hearts", "hand.suitLength.spades"],
+  },
+];
+
+const BERGEN_EVALUATORS = new Map<string, FactEvaluatorFn>([
+  ["module.bergen.hasMajorSupport", (_h, _ev, m) =>
+    fv("module.bergen.hasMajorSupport",
+      num(m, "hand.suitLength.hearts") >= 4 || num(m, "hand.suitLength.spades") >= 4)],
+]);
+
+export const bergenFacts: FactCatalogExtension = {
+  definitions: BERGEN_FACTS,
+  evaluators: BERGEN_EVALUATORS,
+};

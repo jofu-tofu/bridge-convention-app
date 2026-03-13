@@ -142,8 +142,6 @@ export interface DealConstraints {
 export interface DealGeneratorResult {
   readonly deal: Deal;
   readonly iterations: number;
-  /** @deprecated Always 0. Relaxation was removed in Phase 2. */
-  readonly relaxationSteps: number;
 }
 
 export interface ParContract {

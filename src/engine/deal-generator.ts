@@ -163,7 +163,6 @@ export function generateDeal(
       return {
         deal,
         iterations: attempt,
-        relaxationSteps: 0,
       };
     }
   }

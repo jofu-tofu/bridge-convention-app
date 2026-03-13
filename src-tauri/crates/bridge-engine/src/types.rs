@@ -214,7 +214,6 @@ pub struct DealConstraints {
 pub struct DealGeneratorResult {
     pub deal: Deal,
     pub iterations: u32,
-    pub relaxation_steps: u32,
 }
 
 // --- Future extensibility traits ---
@@ -429,10 +428,9 @@ mod tests {
                 vulnerability: Vulnerability::None,
             },
             iterations: 1,
-            relaxation_steps: 0,
         };
         let json = serde_json::to_string(&dgr).unwrap();
-        assert!(json.contains("relaxationSteps"));
+        assert!(json.contains("iterations"));
     }
 
     #[test]

@@ -145,7 +145,6 @@ pub fn generate_deal(constraints: &DealConstraints) -> Result<DealGeneratorResul
             return Ok(DealGeneratorResult {
                 deal,
                 iterations: attempt,
-                relaxation_steps: 0,
             });
         }
     }
@@ -169,7 +168,6 @@ mod tests {
         };
         let result = generate_deal(&constraints).unwrap();
         assert_eq!(result.iterations, 1);
-        assert_eq!(result.relaxation_steps, 0);
 
         // All 4 hands have 13 cards
         for seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {

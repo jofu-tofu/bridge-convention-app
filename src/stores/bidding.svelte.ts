@@ -8,6 +8,7 @@ import type {
   BidHistoryEntry,
   PracticalRecommendation,
   ConventionBiddingStrategy,
+  TeachingProjection,
 } from "../core/contracts";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
@@ -31,6 +32,7 @@ export interface BidFeedback {
   readonly expectedResult: BidResult | null;
   readonly teachingResolution: TeachingResolution | null;
   readonly practicalRecommendation?: PracticalRecommendation;
+  readonly teachingProjection?: TeachingProjection;
 }
 
 const AI_BID_DELAY = 300;
@@ -177,6 +179,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       },
       teachingResolution,
       practicalRecommendation: conventionStrategy?.getLastPracticalRecommendation() ?? undefined,
+      teachingProjection: conventionStrategy?.getLastTeachingProjection() ?? undefined,
     };
 
     const auctionBeforeUser = auction;

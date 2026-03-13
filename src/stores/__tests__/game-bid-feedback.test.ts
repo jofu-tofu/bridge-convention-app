@@ -15,6 +15,11 @@ function make2CStrategy(): ConventionBiddingStrategy {
     getLastPracticalRecommendation() { return null; },
     getAcceptableAlternatives() { return undefined; },
     getIntentFamilies() { return undefined; },
+    getLastProvenance() { return null; },
+    getLastArbitration() { return null; },
+    getLastPosteriorSummary() { return null; },
+    getExplanationCatalog() { return undefined; },
+    getLastTeachingProjection() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
@@ -33,6 +38,11 @@ function makeNoOpStrategy(): ConventionBiddingStrategy {
     getLastPracticalRecommendation() { return null; },
     getAcceptableAlternatives() { return undefined; },
     getIntentFamilies() { return undefined; },
+    getLastProvenance() { return null; },
+    getLastArbitration() { return null; },
+    getLastPosteriorSummary() { return null; },
+    getExplanationCatalog() { return undefined; },
+    getLastTeachingProjection() { return null; },
     suggest(): null {
       return null;
     },
@@ -47,6 +57,11 @@ function makePrimaryWithAcceptableAlternativeStrategy(): ConventionBiddingStrate
     getLastPracticalRecommendation() { return null; },
     getAcceptableAlternatives() { return undefined; },
     getIntentFamilies() { return undefined; },
+    getLastProvenance() { return null; },
+    getLastArbitration() { return null; },
+    getLastPosteriorSummary() { return null; },
+    getExplanationCatalog() { return undefined; },
+    getLastTeachingProjection() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
