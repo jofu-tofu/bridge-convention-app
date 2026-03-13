@@ -113,13 +113,18 @@ function groupBySuit(cards: readonly Card[]): Record<string, Card[]> {
   return groups;
 }
 
+/** Extract suit keys from a suit-grouped record. */
+function getSuitKeys(suitGroups: Record<string, Card[]>): Suit[] {
+  return Object.keys(suitGroups) as Suit[];
+}
+
 /** Suit contracts: lead ace from AK combination in a side suit. */
 function leadFromAKCombination(
   suitGroups: Record<string, Card[]>,
   trumpSuit: Suit,
   legalPlays: readonly Card[],
 ): Card | null {
-  for (const suit of Object.keys(suitGroups) as Suit[]) {
+  for (const suit of getSuitKeys(suitGroups)) {
     if (suit === trumpSuit) continue;
     const cards = suitGroups[suit]!;
     const hasAce = cards.some((c) => c.rank === Rank.Ace);
@@ -139,7 +144,7 @@ function leadTouchingHonors(
   suitGroups: Record<string, Card[]>,
   legalPlays: readonly Card[],
 ): Card | null {
-  for (const suit of Object.keys(suitGroups) as Suit[]) {
+  for (const suit of getSuitKeys(suitGroups)) {
     const cards = suitGroups[suit]!;
     const top = topOfTouchingHonors(cards);
     if (top && isLegalPlay(top, legalPlays)) {
@@ -156,7 +161,7 @@ function leadFourthBest(
 ): Card | null {
   let longestSuit: Suit | null = null;
   let longestLen = 0;
-  for (const suit of Object.keys(suitGroups) as Suit[]) {
+  for (const suit of getSuitKeys(suitGroups)) {
     const len = suitGroups[suit]!.length;
     if (len > longestLen) {
       longestLen = len;
@@ -179,7 +184,7 @@ function leadShortSuit(
   trumpSuit: Suit,
   legalPlays: readonly Card[],
 ): Card | null {
-  for (const suit of Object.keys(suitGroups) as Suit[]) {
+  for (const suit of getSuitKeys(suitGroups)) {
     if (suit === trumpSuit) continue; // Don't lead singleton trump
     const cards = suitGroups[suit]!;
     if (cards.length === 1) {
@@ -391,15 +396,17 @@ const discardManagementHeuristic: PlayHeuristic = {
       suitGroups[c.suit]!.push(c);
     }
 
-    const suits = Object.keys(suitGroups) as Suit[];
+    const suits = getSuitKeys(suitGroups);
     if (suits.length === 0) return null;
 
     // Find shortest suit
     suits.sort(
       (a, b) => (suitGroups[a]?.length ?? 0) - (suitGroups[b]?.length ?? 0),
     );
-    const shortestSuit = suits[0]!;
-    const cards = suitGroups[shortestSuit]!;
+    const shortestSuit = suits[0];
+    if (!shortestSuit) return null;
+    const cards = suitGroups[shortestSuit];
+    if (!cards || cards.length === 0) return null;
 
     // Discard lowest from shortest suit
     const sorted = sortByRankAsc(cards);
@@ -438,9 +445,10 @@ export function createHeuristicPlayStrategy(): PlayStrategy {
           }
         }
       }
-      // Fallback: lowest legal card
+      // Fallback: lowest legal card (legalPlays is non-empty per guard above)
       const sorted = sortByRankAsc(context.legalPlays);
-      return { card: sorted[0]!, reason: "default-lowest" };
+      const fallback = sorted[0] ?? context.legalPlays[0]!;
+      return { card: fallback, reason: "default-lowest" };
     },
   };
 }
