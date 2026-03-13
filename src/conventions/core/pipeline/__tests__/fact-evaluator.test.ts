@@ -7,7 +7,7 @@ import type { PublicConstraint } from "../../../../core/contracts/agreement-modu
 import type { RelationalFactContext } from "../fact-evaluator";
 import { staymanFacts, transferFacts, ntResponseFacts } from "../../../definitions/nt-bundle/facts";
 
-/** Create a full catalog with shared + module facts (reproduces old SEED_FACTS behavior). */
+/** Create a full catalog with shared + module facts (reproduces SHARED_FACTS behavior). */
 function fullCatalog() {
   return createFactCatalog(createSharedFactCatalog(), staymanFacts, transferFacts, ntResponseFacts);
 }
@@ -23,7 +23,7 @@ function val(result: ReturnType<typeof factsFor>, id: string) {
 }
 
 describe("evaluateFacts", () => {
-  it("evaluates all 9 standard shared facts when called without catalog (no relational context)", () => {
+  it("evaluates all 10 standard shared facts when called without catalog (no relational context)", () => {
     const h = hand(
       "SA", "SK", "S5", "S2",
       "HQ", "HJ", "H9", "H3",
@@ -32,21 +32,21 @@ describe("evaluateFacts", () => {
     );
     const ev = evaluateHand(h);
     const result = evaluateFacts(h, ev);
-    // Without relational context, only the 9 standard facts are evaluated
-    // (6 primitive + 3 bridge-derived; relational facts require a RelationalFactContext;
+    // Without relational context, only the 10 standard facts are evaluated
+    // (6 primitive + 4 bridge-derived; relational facts require a RelationalFactContext;
     //  1NT-specific value facts moved to module.ntResponse.*)
-    expect(result.facts.size).toBe(9);
+    expect(result.facts.size).toBe(10);
     expect(result.world).toBe("acting-hand");
   });
 
-  it("evaluates all 17 facts with full catalog (shared + module extensions)", () => {
+  it("evaluates all 18 facts with full catalog (shared + module extensions)", () => {
     const result = factsFor(
       "SA", "SK", "S5", "S2",
       "HQ", "HJ", "H9", "H3",
       "D8", "D6", "D4",
       "C7", "C3",
     );
-    expect(result.facts.size).toBe(17);
+    expect(result.facts.size).toBe(18);
     expect(result.world).toBe("acting-hand");
   });
 
@@ -248,7 +248,7 @@ describe("evaluateFacts", () => {
     const ev = evaluateHand(h);
     const catalog = fullCatalog();
     const result = evaluateFacts(h, ev, catalog);
-    expect(result.facts.size).toBe(17);
+    expect(result.facts.size).toBe(18);
     expect(result.facts.has("module.stayman.eligible")).toBe(true);
   });
 
@@ -268,8 +268,8 @@ describe("evaluateFacts", () => {
       evaluators: new Map(),
     });
     const result = evaluateFacts(h, ev, catalog);
-    // The 9 standard shared facts evaluate (no relational context), but the new one is skipped
-    expect(result.facts.size).toBe(9);
+    // The 10 standard shared facts evaluate (no relational context), but the new one is skipped
+    expect(result.facts.size).toBe(10);
     expect(result.facts.has("module.test.noEvaluator")).toBe(false);
   });
 });

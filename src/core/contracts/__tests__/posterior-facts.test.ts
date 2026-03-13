@@ -30,8 +30,8 @@ describe("POSTERIOR_DERIVED_FACTS", () => {
 });
 
 describe("SHARED_FACTS includes posterior facts", () => {
-  it("has 18 entries (13 original + 5 posterior)", () => {
-    expect(SHARED_FACTS).toHaveLength(18);
+  it("has 19 entries (14 original + 5 posterior)", () => {
+    expect(SHARED_FACTS).toHaveLength(19);
   });
 
   it("includes all 5 posterior fact IDs", () => {

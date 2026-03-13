@@ -40,7 +40,7 @@ Shared across conventions and bundles: `shared-helpers.ts` -- `STRAIN_TO_BIDSUIT
 - **Bergen Raises:** Multi-round (constructive/limit/preemptive + opener rebids + game try). Standard Bergen variant (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter 12+).
 - **SAYC:** User-drillable + E/W opponent AI default. 55+ flattened rules. All IntentNode leaves with empty resolvers (deterministic via defaultCall). Uses `createIntentBidFactory("sayc")` for deterministic nodeIds (`sayc/{name}`).
 - **Weak Twos:** Preemptive opening (2D/2H/2S, 6+ suit, 5-11 HCP), Ogust response system, vulnerability awareness. Interference via protocol branches on `"response"` round (doubled + overcalled), not overlays.
-- **Lebensohl Lite:** Uses deprecated `intentBid()` (dynamic tree patterns).
+- **Lebensohl Lite:** Uses `createIntentBidFactory("lebensohl")` for deterministic nodeIds.
 
 ## Convention Parity Checklist
 

@@ -41,6 +41,8 @@ export interface TreeForkPoint {
 export interface SiblingConditionDetail {
   readonly name: string;
   readonly description: string;
+  /** Primary role of this condition — teaching consumers filter by role !== "routing". */
+  readonly conditionRole?: "semantic" | "inferential" | "pedagogical" | "routing";
 }
 
 /** A bid that was available in the same auction context but rejected for this hand. */
@@ -113,6 +115,9 @@ export interface ResolvedCandidateDTO {
   readonly eligibility?: CandidateEligibility;
   /** DFS traversal order from intent collection. Used for deterministic tie-breaking within selection tiers. */
   readonly orderKey?: number;
+  /** All resolver encodings with legality — retained for teaching and obligation enrichment.
+   *  `resolvedCall` is the first legal encoding (selection unchanged). */
+  readonly allEncodings?: readonly { readonly call: Call; readonly legal: boolean }[];
 }
 
 /** Check three eligibility dimensions for DTO — pedagogical is post-selection annotation, not a gate.
@@ -212,7 +217,15 @@ export interface EvaluationTrace {
   readonly preRankingPeerCount?: number;
   readonly preRankingPeerBidNames?: readonly string[];
   readonly rankerResolved?: boolean;
+  /** True when the selected candidate came from an overlay's addIntents hook rather than
+   *  the convention tree. High frequency indicates the tree doesn't model this convention's
+   *  competitive behavior. */
+  readonly overlayRescue?: boolean;
   readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "filtered" | "error" }[];
+  /** Active convention IDs when this bid was evaluated via a bundle. */
+  readonly bundleActiveConventions?: readonly string[];
+  /** Convention that won bundle arbitration. */
+  readonly bundleWinningConvention?: string;
   /** Number of posterior samples drawn. Set by meaning-pipeline strategies with posterior engine. */
   readonly posteriorSampleCount?: number;
   /** Confidence from posterior engine (0-1). Set by meaning-pipeline strategies with posterior engine. */

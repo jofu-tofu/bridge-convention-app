@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  SEED_FACTS,
   SHARED_FACTS,
   PRIMITIVE_FACTS,
   BRIDGE_DERIVED_FACTS,
@@ -18,16 +17,16 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 
 describe("SHARED_FACTS", () => {
-  it("has 18 shared facts (6 primitive + 7 bridge-derived + 5 posterior-derived)", () => {
-    expect(SHARED_FACTS).toHaveLength(18);
+  it("has 19 shared facts (6 primitive + 8 bridge-derived + 5 posterior-derived)", () => {
+    expect(SHARED_FACTS).toHaveLength(19);
   });
 
   it("PRIMITIVE_FACTS has 6 entries", () => {
     expect(PRIMITIVE_FACTS).toHaveLength(6);
   });
 
-  it("BRIDGE_DERIVED_FACTS has 7 entries", () => {
-    expect(BRIDGE_DERIVED_FACTS).toHaveLength(7);
+  it("BRIDGE_DERIVED_FACTS has 8 entries", () => {
+    expect(BRIDGE_DERIVED_FACTS).toHaveLength(8);
   });
 
   it("every fact has required fields", () => {
@@ -123,12 +122,6 @@ describe("SHARED_FACTS", () => {
   it("has no duplicate IDs", () => {
     const ids = SHARED_FACTS.map((f) => f.id);
     expect(new Set(ids).size).toBe(ids.length);
-  });
-});
-
-describe("SEED_FACTS (backward compat)", () => {
-  it("is the same array as SHARED_FACTS", () => {
-    expect(SEED_FACTS).toBe(SHARED_FACTS);
   });
 });
 

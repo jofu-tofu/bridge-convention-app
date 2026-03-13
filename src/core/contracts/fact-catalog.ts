@@ -226,6 +226,15 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     derivesFrom: ["bridge.supportForBoundSuit"],
   },
   {
+    id: "bridge.hasShortage",
+    layer: "bridge-derived",
+    world: "acting-hand",
+    description: "Has singleton or void in any suit (for splinter detection)",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts", "hand.suitLength.diamonds", "hand.suitLength.clubs"],
+    metadata: { negatable: true, explainable: true },
+  },
+  {
     id: "bridge.shortageInSuit",
     layer: "bridge-derived",
     world: "acting-hand",
@@ -293,5 +302,3 @@ export const SHARED_FACTS: readonly FactDefinition[] = [
   ...POSTERIOR_DERIVED_FACTS,
 ];
 
-/** @deprecated Use SHARED_FACTS. Kept for backward compatibility — includes only shared facts. */
-export const SEED_FACTS: readonly FactDefinition[] = SHARED_FACTS;

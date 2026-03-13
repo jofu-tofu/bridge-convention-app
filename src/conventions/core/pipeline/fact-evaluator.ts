@@ -82,6 +82,11 @@ export const BRIDGE_DERIVED_EVALUATORS = new Map<string, FactEvaluatorFn>([
       num(m, "hand.suitLength.spades"),
       num(m, "hand.suitLength.hearts"),
     ))],
+  ["bridge.hasShortage", (_h, _ev, m) => {
+    const suits = ["hand.suitLength.spades", "hand.suitLength.hearts", "hand.suitLength.diamonds", "hand.suitLength.clubs"];
+    const hasShort = suits.some(s => num(m, s) <= 1);
+    return fv("bridge.hasShortage", hasShort);
+  }],
 ]);
 
 /** Combined shared evaluators (primitive + bridge-derived). */
@@ -208,7 +213,7 @@ export function evaluateFacts(
   let effectiveRelationalEvaluators: ReadonlyMap<string, RelationalFactEvaluatorFn> | undefined;
 
   if (catalog === undefined || catalog === null) {
-    // No catalog — use shared catalog (backward compat: was SEED_FACTS)
+    // No catalog — use shared catalog (SHARED_FACTS)
     const shared = createSharedFactCatalog();
     effectiveDefinitions = shared.definitions;
     effectiveEvaluators = shared.evaluators;
