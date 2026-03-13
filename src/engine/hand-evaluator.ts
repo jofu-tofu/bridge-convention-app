@@ -9,6 +9,12 @@ import type {
 } from "./types";
 import { HCP_VALUES } from "./constants";
 
+// ── Distribution point values ──────────────────────────────────────
+const VOID_POINTS = 3;
+const SINGLETON_POINTS = 2;
+const DOUBLETON_POINTS = 1;
+const LENGTH_POINT_THRESHOLD = 4;
+
 export function calculateHcp(hand: Hand): number {
   return hand.cards.reduce((sum, card) => sum + HCP_VALUES[card.rank], 0);
 }
@@ -112,10 +118,10 @@ export function calculateDistributionPoints(
   let shortness = 0;
   let length = 0;
   for (const count of shape) {
-    if (count === 0) shortness += 3;
-    else if (count === 1) shortness += 2;
-    else if (count === 2) shortness += 1;
-    if (count > 4) length += count - 4;
+    if (count === 0) shortness += VOID_POINTS;
+    else if (count === 1) shortness += SINGLETON_POINTS;
+    else if (count === 2) shortness += DOUBLETON_POINTS;
+    if (count > LENGTH_POINT_THRESHOLD) length += count - LENGTH_POINT_THRESHOLD;
   }
   return { shortness, length, total: shortness + length };
 }

@@ -1,6 +1,51 @@
 import { BidSuit, Seat, Vulnerability } from "./types";
 import type { Contract } from "./types";
 
+// ── Trick-point constants ──────────────────────────────────────────
+const MINOR_TRICK_VALUE = 20;
+const MAJOR_TRICK_VALUE = 30;
+const NT_FIRST_TRICK_VALUE = 40;
+const NT_SUBSEQUENT_TRICK_VALUE = 30;
+
+// ── Multipliers ────────────────────────────────────────────────────
+const DOUBLED_MULTIPLIER = 2;
+const REDOUBLED_MULTIPLIER = 4;
+
+// ── Game / partscore thresholds ────────────────────────────────────
+const GAME_TRICK_POINT_THRESHOLD = 100;
+const SMALL_SLAM_LEVEL = 6;
+const GRAND_SLAM_LEVEL = 7;
+const BOOK_TRICKS = 6;
+
+// ── Bonuses ────────────────────────────────────────────────────────
+const GAME_BONUS_VUL = 500;
+const GAME_BONUS_NON_VUL = 300;
+const PARTSCORE_BONUS = 50;
+const SMALL_SLAM_BONUS_VUL = 750;
+const SMALL_SLAM_BONUS_NON_VUL = 500;
+const GRAND_SLAM_BONUS_VUL = 1500;
+const GRAND_SLAM_BONUS_NON_VUL = 1000;
+const INSULT_BONUS_DOUBLED = 50;
+const INSULT_BONUS_REDOUBLED = 100;
+
+// ── Overtrick values (doubled/redoubled) ───────────────────────────
+const DOUBLED_OVERTRICK_VUL = 200;
+const DOUBLED_OVERTRICK_NON_VUL = 100;
+const REDOUBLED_OVERTRICK_VUL = 400;
+const REDOUBLED_OVERTRICK_NON_VUL = 200;
+
+// ── Undoubled penalties ────────────────────────────────────────────
+const UNDOUBLED_PENALTY_VUL = 100;
+const UNDOUBLED_PENALTY_NON_VUL = 50;
+
+// ── Doubled penalty schedule ───────────────────────────────────────
+const DOUBLED_PENALTY_VUL_FIRST = 200;
+const DOUBLED_PENALTY_VUL_SUBSEQUENT = 300;
+const DOUBLED_PENALTY_NON_VUL_FIRST = 100;
+const DOUBLED_PENALTY_NON_VUL_SECOND_THIRD = 200;
+const DOUBLED_PENALTY_NON_VUL_FOURTH_PLUS = 300;
+const NON_VUL_ESCALATION_THRESHOLD = 3;
+
 /** Check if a declarer is vulnerable given the vulnerability setting. */
 export function isVulnerable(
   declarer: Seat,
@@ -28,40 +73,40 @@ export function calculateTrickPoints(contract: Contract): number {
 
   let base: number;
   if (strain === BidSuit.Clubs || strain === BidSuit.Diamonds) {
-    base = 20 * level;
+    base = MINOR_TRICK_VALUE * level;
   } else if (strain === BidSuit.Hearts || strain === BidSuit.Spades) {
-    base = 30 * level;
+    base = MAJOR_TRICK_VALUE * level;
   } else {
-    // NoTrump: 40 for first trick + 30 for each additional
-    base = 40 + 30 * (level - 1);
+    // NoTrump: first trick + subsequent tricks
+    base = NT_FIRST_TRICK_VALUE + NT_SUBSEQUENT_TRICK_VALUE * (level - 1);
   }
 
-  if (redoubled) return base * 4;
-  if (doubled) return base * 2;
+  if (redoubled) return base * REDOUBLED_MULTIPLIER;
+  if (doubled) return base * DOUBLED_MULTIPLIER;
   return base;
 }
 
-/** Game requires trick points >= 100. */
+/** Game requires trick points >= GAME_TRICK_POINT_THRESHOLD. */
 export function isGame(contract: Contract): boolean {
-  return calculateTrickPoints(contract) >= 100;
+  return calculateTrickPoints(contract) >= GAME_TRICK_POINT_THRESHOLD;
 }
 
 /** Small slam = level 6. */
 export function isSmallSlam(contract: Contract): boolean {
-  return contract.level === 6;
+  return contract.level === SMALL_SLAM_LEVEL;
 }
 
 /** Grand slam = level 7. */
 export function isGrandSlam(contract: Contract): boolean {
-  return contract.level === 7;
+  return contract.level === GRAND_SLAM_LEVEL;
 }
 
 /** Per-trick value for the contract strain (undoubled). */
 function trickValue(strain: BidSuit): number {
-  if (strain === BidSuit.Clubs || strain === BidSuit.Diamonds) return 20;
-  if (strain === BidSuit.Hearts || strain === BidSuit.Spades) return 30;
+  if (strain === BidSuit.Clubs || strain === BidSuit.Diamonds) return MINOR_TRICK_VALUE;
+  if (strain === BidSuit.Hearts || strain === BidSuit.Spades) return MAJOR_TRICK_VALUE;
   // NT overtricks are 30 each (only the first contracted trick is 40)
-  return 30;
+  return NT_SUBSEQUENT_TRICK_VALUE;
 }
 
 /**
@@ -77,32 +122,32 @@ export function calculateMakingScore(
 
   // Game / partscore bonus
   let bonus: number;
-  if (trickPoints >= 100) {
-    bonus = vulnerable ? 500 : 300;
+  if (trickPoints >= GAME_TRICK_POINT_THRESHOLD) {
+    bonus = vulnerable ? GAME_BONUS_VUL : GAME_BONUS_NON_VUL;
   } else {
-    bonus = 50;
+    bonus = PARTSCORE_BONUS;
   }
 
   // Slam bonuses (in addition to game bonus)
-  if (contract.level === 6) {
-    bonus += vulnerable ? 750 : 500;
-  } else if (contract.level === 7) {
-    bonus += vulnerable ? 1500 : 1000;
+  if (contract.level === SMALL_SLAM_LEVEL) {
+    bonus += vulnerable ? SMALL_SLAM_BONUS_VUL : SMALL_SLAM_BONUS_NON_VUL;
+  } else if (contract.level === GRAND_SLAM_LEVEL) {
+    bonus += vulnerable ? GRAND_SLAM_BONUS_VUL : GRAND_SLAM_BONUS_NON_VUL;
   }
 
   // Insult bonus for making a doubled/redoubled contract
   if (contract.redoubled) {
-    bonus += 100;
+    bonus += INSULT_BONUS_REDOUBLED;
   } else if (contract.doubled) {
-    bonus += 50;
+    bonus += INSULT_BONUS_DOUBLED;
   }
 
   // Overtrick points
   let overtrickPoints: number;
   if (contract.redoubled) {
-    overtrickPoints = overtricks * (vulnerable ? 400 : 200);
+    overtrickPoints = overtricks * (vulnerable ? REDOUBLED_OVERTRICK_VUL : REDOUBLED_OVERTRICK_NON_VUL);
   } else if (contract.doubled) {
-    overtrickPoints = overtricks * (vulnerable ? 200 : 100);
+    overtrickPoints = overtricks * (vulnerable ? DOUBLED_OVERTRICK_VUL : DOUBLED_OVERTRICK_NON_VUL);
   } else {
     overtrickPoints = overtricks * trickValue(contract.strain);
   }
@@ -120,13 +165,13 @@ export function calculatePenalty(
   vulnerable: boolean,
 ): number {
   if (contract.redoubled) {
-    return calculateDoubledPenalty(undertricks, vulnerable) * 2;
+    return calculateDoubledPenalty(undertricks, vulnerable) * DOUBLED_MULTIPLIER;
   }
   if (contract.doubled) {
     return calculateDoubledPenalty(undertricks, vulnerable);
   }
   // Undoubled: flat per-trick penalty
-  return undertricks * (vulnerable ? 100 : 50);
+  return undertricks * (vulnerable ? UNDOUBLED_PENALTY_VUL : UNDOUBLED_PENALTY_NON_VUL);
 }
 
 /** Calculate doubled undertrick penalty (before redouble multiplier). */
@@ -138,15 +183,15 @@ function calculateDoubledPenalty(
   for (let i = 1; i <= undertricks; i++) {
     if (vulnerable) {
       // Vul doubled: 1st=200, 2nd+=300
-      total += i === 1 ? 200 : 300;
+      total += i === 1 ? DOUBLED_PENALTY_VUL_FIRST : DOUBLED_PENALTY_VUL_SUBSEQUENT;
     } else {
       // NV doubled: 1st=100, 2nd-3rd=200, 4th+=300
       if (i === 1) {
-        total += 100;
-      } else if (i <= 3) {
-        total += 200;
+        total += DOUBLED_PENALTY_NON_VUL_FIRST;
+      } else if (i <= NON_VUL_ESCALATION_THRESHOLD) {
+        total += DOUBLED_PENALTY_NON_VUL_SECOND_THIRD;
       } else {
-        total += 300;
+        total += DOUBLED_PENALTY_NON_VUL_FOURTH_PLUS;
       }
     }
   }
@@ -163,7 +208,7 @@ export function calculateScore(
   tricksWon: number,
   vulnerability: Vulnerability,
 ): number {
-  const required = contract.level + 6;
+  const required = contract.level + BOOK_TRICKS;
   const vulnerable = isVulnerable(contract.declarer, vulnerability);
 
   if (tricksWon >= required) {
