@@ -15,6 +15,7 @@ import { staymanConfig } from "../../definitions/stayman";
 import type { BiddingContext } from "../../core/types";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -50,7 +51,7 @@ function callFromRules(
 
 // ─── Edge Cases ─────────────────────────────────────────────
 
-describe("Stayman edge cases", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman edge cases", () => {
   test("minimum HCP responder (exactly 8)", () => {
     const minResponder = hand(
       "SK",
@@ -476,7 +477,7 @@ describe("Stayman edge cases", () => {
 
 // ─── Smolen after 2D denial [bridgebum/stayman] ───────────
 
-describe("Stayman Smolen bids after 2D denial", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman Smolen bids after 2D denial", () => {
   test("[bridgebum/stayman] 3H Smolen: 4S+5H GF after 2D denial", () => {
     // 10+ HCP, 4 spades + 5 hearts, game-forcing
     // K(3)+Q(2) spades = 5, A(4)+J(1) hearts = 5, Q(2) diamonds = 2 → 12 HCP
@@ -541,7 +542,7 @@ describe("Stayman Smolen bids after 2D denial", () => {
 
 // ─── Stayman after 2NT opening [bridgebum/stayman] ────────
 
-describe("Stayman after 2NT opening", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman after 2NT opening", () => {
   test("[bridgebum/stayman] 3C Stayman ask after 2NT-P", () => {
     // 5+ HCP with 4-card major after 2NT opening
     // K(3)+Q(2) spades = 5, J(1) hearts = 1, Q(2) diamonds = 2 → 8 HCP

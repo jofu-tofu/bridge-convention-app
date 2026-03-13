@@ -17,6 +17,7 @@ import { conventionToStrategy } from "../../../strategy/bidding/convention-strat
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand, auctionFromBids } from "../fixtures";
 import type { BiddingContext } from "../../core/types";
+import { policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -72,7 +73,7 @@ const weakHand = () =>
 
 // ─── Dialogue State Tests ───────────────────────────────────
 
-describe("Weak two interference — dialogue state", () => {
+policyDescribe("[policy]", "system off after double/overcall of weak two opening", "Weak two interference — dialogue state", () => {
   test("opponent double after weak two sets CompetitionMode.Doubled", () => {
     // North opens 2H, East doubles
     const state = computeState(["2H", "X"]);
@@ -105,7 +106,7 @@ describe("Weak two interference — dialogue state", () => {
 
 // ─── Strategy-level Overlay Tests ───────────────────────────
 
-describe("Weak two interference — overlay activation", () => {
+policyDescribe("[policy]", "overlay activation for weak two competitive responses", "Weak two interference — overlay activation", () => {
   describe("after 2H-X (opponent doubles)", () => {
     test("strong hand with fit still raises to game", () => {
       // Partner opened 2H, opponent doubled, responder has 16 HCP + 3 hearts

@@ -5,6 +5,7 @@ import { registerConvention, clearRegistry } from "../../core/registry";
 import { staymanConfig } from "../../definitions/stayman";
 import { hand, makeBiddingContext } from "../fixtures";
 import { conventionToStrategy } from "../../../strategy/bidding/convention-strategy";
+import { policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -170,7 +171,7 @@ const balancedStrongSpadeStopper = () =>
 
 // ─── Tests: Competitive bidding after 2D overcall ─────────────
 
-describe("Round 1: competitive bidding after 2D overcall", () => {
+policyDescribe("[policy]", "competitive actions after 2D overcall: system off, no Stayman available", "Round 1: competitive bidding after 2D overcall", () => {
   test.skip("after 1NT-2D: strong hand doubles for penalty", () => {
     /**
      * BRIDGE THEORY: When opponent overcalls 2D after partner's 1NT, responder
@@ -276,7 +277,7 @@ describe("Round 1: competitive bidding after 2D overcall", () => {
 
 // ─── Tests: Competitive bidding after 2H overcall ─────────────
 
-describe("Round 1: competitive bidding after 2H overcall", () => {
+policyDescribe("[policy]", "competitive actions after 2H overcall", "Round 1: competitive bidding after 2H overcall", () => {
   test.skip("after 1NT-2H: strong hand (14+ HCP, 4S) doubles for penalty", () => {
     /**
      * BRIDGE THEORY: When opponent overcalls 2H after partner's 1NT, responder
@@ -379,7 +380,7 @@ describe("Round 1: competitive bidding after 2H overcall", () => {
 
 // ─── Tests: Competitive bidding after 2S overcall ─────────────
 
-describe("Round 1: competitive bidding after 2S overcall", () => {
+policyDescribe("[policy]", "competitive actions after 2S overcall", "Round 1: competitive bidding after 2S overcall", () => {
   test.skip("after 1NT-2S: strong hand doubles for penalty", () => {
     /**
      * BRIDGE THEORY: 16 HCP opposite 15-17 = 31+ HCP. Opponent is in trouble
@@ -470,7 +471,7 @@ describe("Round 1: competitive bidding after 2S overcall", () => {
 
 // ─── Tests: Competitive bidding after 2C overcall ─────────────
 
-describe("Round 1: competitive bidding after 2C overcall", () => {
+policyDescribe("[policy]", "competitive actions after 2C overcall blocks Stayman", "Round 1: competitive bidding after 2C overcall", () => {
   test.skip("after 1NT-2C: with 4H+4S, GF values, bids 2H (natural, Stayman unavailable)", () => {
     /**
      * BRIDGE THEORY: 2C overcall takes away Stayman (also 2C). With both majors
@@ -562,7 +563,7 @@ describe("Round 1: competitive bidding after 2C overcall", () => {
 
 // ─── Tests: Competitive bidding after 2NT overcall ────────────
 
-describe("Round 1: competitive bidding after 2NT overcall", () => {
+policyDescribe("[policy]", "competitive actions after 2NT overcall", "Round 1: competitive bidding after 2NT overcall", () => {
   test.skip("after 1NT-2NT (unusual): strong hand doubles for penalty", () => {
     /**
      * BRIDGE THEORY: 2NT overcall of 1NT typically shows an unusual 2NT
@@ -639,7 +640,7 @@ describe("Round 1: competitive bidding after 2NT overcall", () => {
 
 // ─── Tests: Competitive bidding after 3-level overcall ────────
 
-describe("Round 1: competitive bidding after 3-level overcall", () => {
+policyDescribe("[policy]", "competitive actions after 3-level preemptive overcall", "Round 1: competitive bidding after 3-level overcall", () => {
   test.skip("after 1NT-3C: strong hand (16 HCP) doubles", () => {
     /**
      * BRIDGE THEORY: After 3C overcall (preemptive), double with 16 HCP is
@@ -745,7 +746,7 @@ describe("Round 1: competitive bidding after 3-level overcall", () => {
 
 // ─── Tests: Lebensohl 2NT relay after overcall ────────────────
 
-describe("Round 1: Lebensohl 2NT relay after overcall", () => {
+policyDescribe("[policy]", "Lebensohl 2NT relay as competitive tool after overcall", "Round 1: Lebensohl 2NT relay after overcall", () => {
   test.skip("after 1NT-2D: 2NT Lebensohl relay (puppet to 3C)", () => {
     /**
      * BRIDGE THEORY: Lebensohl 2NT is an artificial relay asking partner to bid
@@ -896,7 +897,7 @@ describe("Round 1: Lebensohl 2NT relay after overcall", () => {
 
 // ─── Tests: Extended contested after double ───────────────────
 
-describe("Round 1: extended contested after double", () => {
+policyDescribe("[policy]", "redouble 10+ HCP, Stayman on after double, weak escapes", "Round 1: extended contested after double", () => {
   test.skip("after 1NT-X: XX(penalty) — opener passes (forcing penalty)", () => {
     /**
      * BRIDGE THEORY: After 1NT-X-XX, the redouble is for penalty (in the
@@ -1050,7 +1051,7 @@ describe("Round 1: extended contested after double", () => {
 
 // ─── Tests: Vulnerability-aware competitive decisions ─────────
 
-describe("Round 1: vulnerability-aware competitive decisions", () => {
+policyDescribe("[policy]", "vulnerability affects competitive decisions", "Round 1: vulnerability-aware competitive decisions", () => {
   test.skip("vulnerable: don't compete at 3-level with invite values after 2S overcall", () => {
     /**
      * BRIDGE THEORY: When vulnerable, going down at the 3-level costs more
@@ -1133,7 +1134,7 @@ describe("Round 1: vulnerability-aware competitive decisions", () => {
 
 // ─── Tests: Edge cases and boundary conditions ────────────────
 
-describe("Round 1: edge cases and boundary conditions", () => {
+policyDescribe("[policy]", "competitive edge cases at HCP boundaries", "Round 1: edge cases and boundary conditions", () => {
   test.skip("after 1NT-2D: 0 HCP hand always passes", () => {
     /**
      * BRIDGE THEORY: With 0 HCP, no competitive action is ever justified.
@@ -1267,7 +1268,7 @@ describe("Round 1: edge cases and boundary conditions", () => {
 
 // ─── Round 1: opponent convention awareness ─────────────
 
-describe("Round 1: opponent convention awareness", () => {
+policyDescribe("[policy]", "opponent convention identification affects competitive response", "Round 1: opponent convention awareness", () => {
   test.skip("1NT-2H with DONT: strong hand doubles (DONT = only 5H, penalty viable)", () => {
     /**
      * BRIDGE THEORY: When opponents play DONT, a 2H overcall shows hearts + a minor

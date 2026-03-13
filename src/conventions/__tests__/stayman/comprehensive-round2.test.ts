@@ -13,6 +13,8 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
+// eslint-disable-next-line unused-imports/no-unused-imports
+import { policyDescribe } from "../../../test-support/tiers";
 import { registerConvention, clearRegistry } from "../../core/registry";
 import { staymanConfig } from "../../definitions/stayman";
 import { hand, makeBiddingContext } from "../fixtures";
@@ -63,7 +65,7 @@ const strongOpener18 = () =>
 
 // ─── Round 2: opponent doubles the 2C Stayman ask ─────────
 
-describe("Round 2: opponent doubles the 2C Stayman ask", () => {
+policyDescribe("[policy]", "opener response when opponent doubles Stayman ask", "Round 2: opponent doubles the 2C Stayman ask", () => {
   // Auction: 1NT-P-2C-X, opener's (North's) turn
 
   test.skip("after 1NT-P-2C-X: opener with 4H still bids 2H", () => {
@@ -187,7 +189,7 @@ describe("Round 2: opponent doubles the 2C Stayman ask", () => {
 
 // ─── Round 2: opponent overcalls 2D after 2C ask ──────────
 
-describe("Round 2: opponent overcalls 2D after 2C ask", () => {
+policyDescribe("[policy]", "opener response after 2D overcall of Stayman ask", "Round 2: opponent overcalls 2D after 2C ask", () => {
   // Auction: 1NT-P-2C-2D, opener's turn
 
   test.skip("after 1NT-P-2C-2D: opener with 4H free bids 2H", () => {
@@ -291,7 +293,7 @@ describe("Round 2: opponent overcalls 2D after 2C ask", () => {
 
 // ─── Round 2: opponent overcalls 2H after 2C ask ──────────
 
-describe("Round 2: opponent overcalls 2H after 2C ask", () => {
+policyDescribe("[policy]", "opener response after 2H overcall of Stayman ask", "Round 2: opponent overcalls 2H after 2C ask", () => {
   // Auction: 1NT-P-2C-2H, opener's turn
 
   test.skip("after 1NT-P-2C-2H: opener with 4S bids 2S (still available)", () => {
@@ -377,7 +379,7 @@ describe("Round 2: opponent overcalls 2H after 2C ask", () => {
 
 // ─── Round 2: opponent overcalls 2S after 2C ask ──────────
 
-describe("Round 2: opponent overcalls 2S after 2C ask", () => {
+policyDescribe("[policy]", "opener response after 2S overcall of Stayman ask", "Round 2: opponent overcalls 2S after 2C ask", () => {
   // Auction: 1NT-P-2C-2S, opener's turn
 
   test.skip("after 1NT-P-2C-2S: opener with 4H and 17+ bids 3H (extras required)", () => {
@@ -487,7 +489,7 @@ describe("Round 2: opponent overcalls 2S after 2C ask", () => {
 
 // ─── Round 2: opponent convention informs opener response ──
 
-describe("Round 2: opponent convention informs opener response", () => {
+policyDescribe("[policy]", "opponent convention identification adjusts opener response", "Round 2: opponent convention informs opener response", () => {
   test.skip("1NT-P-2C-2H(DONT): opener with 4S free bids 2S (DONT = hearts+minor, spades safe)", () => {
     /**
      * BRIDGE THEORY: When opponent's 2H overcall is DONT (hearts + a minor),

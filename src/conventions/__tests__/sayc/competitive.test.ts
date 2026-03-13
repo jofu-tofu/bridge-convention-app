@@ -7,6 +7,7 @@ import { saycOverlays } from "../../definitions/sayc/overlays";
 import { hand } from "../fixtures";
 import { callFromRules } from "./helpers";
 import { CompetitionMode, SystemMode } from "../../core/dialogue/dialogue-state";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 import type { DialogueState } from "../../core/dialogue/dialogue-state";
 import { INITIAL_DIALOGUE_STATE } from "../../core/dialogue/dialogue-manager";
 
@@ -19,7 +20,7 @@ beforeEach(() => {
   registerConvention(saycConfig);
 });
 
-describe("SAYC competitive bids", () => {
+refDescribe("[ref:SAYC]", "SAYC competitive bids", () => {
   // Migrated from rules.test.ts
   test("1NT overcall: 15-18 balanced, not opener/responder", () => {
     // Opponent (North) opened 1D, East overcalls 1NT with 15-18 balanced
@@ -101,7 +102,7 @@ describe("SAYC overlay registration", () => {
   });
 });
 
-describe("SAYC overlay matching", () => {
+policyDescribe("[policy]", "overlay activation depends on familyId and competitionMode", "SAYC overlay matching", () => {
   test("sayc-1nt-doubled activates when 1NT is doubled", () => {
     const state = stateWith({
       familyId: "sayc-1nt",

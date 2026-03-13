@@ -5,13 +5,14 @@ import { registerConvention, clearRegistry } from "../../core/registry";
 import { saycConfig } from "../../definitions/sayc";
 import { hand } from "../fixtures";
 import { callFromRules } from "./helpers";
+import { refDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
   registerConvention(saycConfig);
 });
 
-describe("SAYC opener rebids", () => {
+refDescribe("[ref:SAYC]", "SAYC opener rebids", () => {
   // Migrated from rules.test.ts
   test("raise partner's major response: 12-16 HCP, 4+ support", () => {
     // After 1H-P-1S-P, opener with 14 HCP and 4+ spades raises to 2S

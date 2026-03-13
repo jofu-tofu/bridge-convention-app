@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { refDescribe } from "../../../test-support/tiers";
 import { Seat } from "../../../engine/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { computeDialogueState } from "../../core/dialogue/dialogue-manager";
@@ -14,7 +15,7 @@ function computeLebensohlState(bids: string[]) {
   );
 }
 
-describe("Lebensohl Lite transitions", () => {
+refDescribe("[ref:bridgebum/lebensohl]", "Lebensohl Lite transitions", () => {
   test("relay-request pushes relay frame and sets forcing one round", () => {
     const state = computeLebensohlState(["1NT", "2H", "2NT"]);
 

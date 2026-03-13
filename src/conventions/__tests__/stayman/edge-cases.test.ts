@@ -21,10 +21,11 @@ import {
 } from "../../core/registry";
 import { staymanConfig } from "../../definitions/stayman";
 import { hand, makeBiddingContext } from "../fixtures";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 
 // ─── Stayman — opponent interference ─────────────────────────
 
-describe("Stayman — opponent interference", () => {
+policyDescribe("[policy]", "system off after overcall/double at each round, redouble for penalty with 10+ HCP", "Stayman — opponent interference", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
@@ -133,7 +134,7 @@ describe("Stayman — wrong seat", () => {
   });
 });
 
-describe("Stayman — HCP boundary", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman — HCP boundary", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
@@ -182,7 +183,7 @@ describe("Stayman — HCP boundary", () => {
 
 // ─── Stayman — unusual hand shapes ─────────────────────────────
 
-describe("Stayman — unusual hand shapes", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman — unusual hand shapes", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
@@ -232,7 +233,7 @@ describe("Stayman — unusual hand shapes", () => {
   });
 });
 
-describe("Stayman — opener has both 4-card majors", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman — opener has both 4-card majors", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
@@ -254,7 +255,7 @@ describe("Stayman — opener has both 4-card majors", () => {
   });
 });
 
-describe("Stayman — rebid edge cases after opener's response", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman — rebid edge cases after opener's response", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);
@@ -367,7 +368,7 @@ describe("Stayman — rebid edge cases after opener's response", () => {
   });
 });
 
-describe("Stayman — 2NT opening Stayman", () => {
+refDescribe("[ref:bridgebum/stayman]", "Stayman — 2NT opening Stayman", () => {
   beforeEach(() => {
     clearRegistry();
     registerConvention(staymanConfig);

@@ -1,4 +1,5 @@
 import { describe, test, expect } from "vitest";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 import { Seat, BidSuit, Suit } from "../../../engine/types";
 import { computeDialogueState } from "../../core/dialogue/dialogue-manager";
 import { buildAuction } from "../../../engine/auction-helpers";
@@ -12,7 +13,7 @@ function dialogueAfter(bids: string[], dealer: Seat = Seat.North) {
   return computeDialogueState(auction, saycTransitionRules, baselineTransitionRules);
 }
 
-describe("SAYC transition rules", () => {
+refDescribe("[ref:SAYC]", "SAYC transition rules", () => {
   describe("opening family detection", () => {
     test("1NT opening → familyId: sayc-1nt", () => {
       const state = dialogueAfter(["1NT"]);

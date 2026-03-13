@@ -5,13 +5,14 @@ import { registerConvention, clearRegistry } from "../../core/registry";
 import { saycConfig } from "../../definitions/sayc";
 import { hand } from "../fixtures";
 import { callFromRules } from "./helpers";
+import { refDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
   registerConvention(saycConfig);
 });
 
-describe("SAYC opening bids", () => {
+refDescribe("[ref:SAYC]", "SAYC opening bids", () => {
   test("1NT opening: 15-17 balanced, no 5-card major", () => {
     // 16 HCP, 4-3-3-3 balanced
     const opener = hand(
@@ -170,7 +171,7 @@ describe("SAYC opening bids", () => {
   });
 });
 
-describe("SAYC edge cases - opening", () => {
+refDescribe("[ref:SAYC]", "SAYC edge cases - opening", () => {
   test("opener with exactly 12 HCP opens 1-level suit", () => {
     // 12 HCP, 5 spades
     const opener = hand(

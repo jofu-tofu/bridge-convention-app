@@ -15,6 +15,7 @@ import {
 import { weakTwosConfig } from "../../definitions/weak-twos";
 import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
+import { refDescribe, policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -52,7 +53,7 @@ function callFromRules(
 
 // ─── Opening edge cases ─────────────────────────────────────
 
-describe("Weak Two opening edge cases", () => {
+refDescribe("[ref:bridgebum/weak-twos]", "Weak Two opening edge cases", () => {
   test("no 6-card suit does not open", () => {
     // 5-4-2-2 shape with 8 HCP
     // SK(3) SQ(2) S9 S7 S5 = 5 HCP in 5 spades
@@ -127,7 +128,7 @@ describe("Weak Two opening edge cases", () => {
 
 // ─── Response edge cases ────────────────────────────────────
 
-describe("Weak Two response edge cases", () => {
+refDescribe("[ref:bridgebum/weak-twos]", "Weak Two response edge cases", () => {
   test("exactly 14 HCP with 3+ support makes invite, not game", () => {
     // SA(4) SQ(2) S9 = 6 HCP in 3 spades
     // HA(4) HQ(2) = 6 HCP; DQ(2) = 2 HCP => 14 total
@@ -191,7 +192,7 @@ describe("Weak Two response edge cases", () => {
 
 // ─── Ogust edge cases ───────────────────────────────────────
 
-describe("Ogust edge cases", () => {
+policyDescribe("[policy]", "Ogust HCP boundary at 8/9 and top-honor counting rules", "Ogust edge cases", () => {
   test("boundary: 8 HCP is still min range", () => {
     // HK(3) HQ(2) H9 H7 H5 H3 = 5 HCP, 6 hearts, 2 top honors (K, Q)
     // SK(3) = 3 HCP => 8 total (min range 5-8)

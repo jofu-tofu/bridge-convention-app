@@ -16,6 +16,8 @@
  */
 
 import { describe, test, expect, beforeEach } from "vitest";
+// eslint-disable-next-line unused-imports/no-unused-imports
+import { policyDescribe } from "../../../test-support/tiers";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { ContractBid, Hand } from "../../../engine/types";
 import { registerConvention, clearRegistry } from "../../core/registry";
@@ -88,7 +90,7 @@ const smolen5S4H = () =>
 
 // ─── Round 1: Interference over 2NT opening ─────────────
 
-describe("2NT Round 1: interference handling", () => {
+policyDescribe("[policy]", "2NT Stayman interference at compressed 3-level", "2NT Round 1: interference handling", () => {
   test.skip("after 2NT-X: responder with strong hand redoubles for penalty", () => {
     /*
      * BRIDGE THEORY:
@@ -293,7 +295,7 @@ describe("2NT Round 1: interference handling", () => {
 
 // ─── Round 2: Opener response under interference ────────
 
-describe("2NT Round 2: opener response under interference", () => {
+policyDescribe("[policy]", "opener response under interference after 2NT Stayman ask", "2NT Round 2: opener response under interference", () => {
   test.skip("after 2NT-P-3C-X: opener with 4H still bids 3H", () => {
     /*
      * BRIDGE THEORY:
@@ -432,7 +434,7 @@ describe("2NT Round 2: opener response under interference", () => {
 
 // ─── Round 3: Responder rebids (level-awareness) ────────
 
-describe("2NT Round 3: responder rebids (level-awareness)", () => {
+policyDescribe("[policy]", "2NT rebids must be at 4-level, no invite level exists", "2NT Round 3: responder rebids (level-awareness)", () => {
   test.skip("after 3D denial: responder bids 3NT (NOT 2NT invite — already above 2NT)", () => {
     /*
      * BRIDGE THEORY:

@@ -16,6 +16,7 @@ import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
 import { computeDialogueState } from "../../core/dialogue/dialogue-manager";
 import { baselineTransitionRules } from "../../core/dialogue/baseline-transitions";
+import { policyDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -66,7 +67,7 @@ const preemptiveHand = () =>
 
 // ─── Overlay activation tests ───────────────────────────────
 
-describe("Bergen Raises — overlays: doubled", () => {
+policyDescribe("[policy]", "Bergen OFF when opponent doubles partner's 1M", "Bergen Raises — overlays: doubled", () => {
   test("Bergen OFF when opponent doubles 1H — constructive hand returns null", () => {
     const result = suggestCall(constructiveHand(), Seat.South, ["1H", "X"]);
     // Bergen is OFF: overlays suppress all Bergen intents after a double
@@ -86,7 +87,7 @@ describe("Bergen Raises — overlays: doubled", () => {
   });
 });
 
-describe("Bergen Raises — overlays: overcalled", () => {
+policyDescribe("[policy]", "Bergen OFF when opponent overcalls partner's 1M", "Bergen Raises — overlays: overcalled", () => {
   test("Bergen OFF when opponent overcalls 1H — constructive hand returns null", () => {
     const result = suggestCall(constructiveHand(), Seat.South, ["1H", "1S"]);
     expect(result).toBeNull();

@@ -20,6 +20,7 @@ import {
 import { weakTwosConfig, weakTwosDealConstraints } from "../../definitions/weak-twos";
 import type { BiddingContext } from "../../core/types";
 import { hand, auctionFromBids } from "../fixtures";
+import { refDescribe } from "../../../test-support/tiers";
 
 beforeEach(() => {
   clearRegistry();
@@ -57,7 +58,7 @@ function callFromRules(
 
 // ─── Deal Constraints ───────────────────────────────────────
 
-describe("Weak Two Bids deal constraints", () => {
+refDescribe("[ref:bridgebum/weak-twos]", "Weak Two Bids deal constraints", () => {
   test("[bridgebum/weak-twos] opener 5-11 HCP with 6+ in a major or diamonds", () => {
     for (let i = 0; i < 20; i++) {
       const result = generateDeal(weakTwosDealConstraints);
@@ -104,7 +105,7 @@ describe("Weak Two Bids deal constraints", () => {
 
 // ─── Round 1: Opening ───────────────────────────────────────
 
-describe("Weak Two opening bids", () => {
+refDescribe("[ref:bridgebum/weak-twos]", "Weak Two opening bids", () => {
   test("[bridgebum/weak-twos] 6+ hearts with 8 HCP opens 2H", () => {
     // HK(3) HQ(2) H9 H7 H5 H3 = 5 HCP in 6 hearts + DK(3) = 8 total
     const weakHearts = hand(
@@ -189,7 +190,7 @@ describe("Weak Two opening bids", () => {
 
 // ─── Round 2: Response ──────────────────────────────────────
 
-describe("Weak Two responses", () => {
+refDescribe("[ref:bridgebum/weak-twos]", "Weak Two responses", () => {
   test("[bridgebum/weak-twos] 16+ HCP with 3+ support raises to 4M", () => {
     // SA(4) SK(3) SQ(2) = 9 HCP in 3 spades
     // HA(4) HK(3) = 7 HCP => 16 total
@@ -287,7 +288,7 @@ describe("Weak Two responses", () => {
 
 // ─── Round 3: Ogust Rebid ───────────────────────────────────
 
-describe("Ogust rebids", () => {
+refDescribe("[ref:bridgebum/ogust]", "Ogust rebids", () => {
   test("[bridgebum/ogust] min HCP + bad suit => 3C", () => {
     // Opener opened 2H with 6 HCP and bad suit (0 top honors in hearts)
     // HJ(1) H9 H7 H6 H5 H3 = 1 HCP, 6 hearts, 0 top honors (J is not AKQ)
