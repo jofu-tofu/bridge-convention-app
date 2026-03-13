@@ -60,7 +60,12 @@ export function mergeInferences(
     }
   }
 
-  const suitLengths = {} as Record<Suit, { min: number; max: number }>;
+  const suitLengths: Record<Suit, { min: number; max: number }> = {
+    [SuitEnum.Spades]: { min: 0, max: 13 },
+    [SuitEnum.Hearts]: { min: 0, max: 13 },
+    [SuitEnum.Diamonds]: { min: 0, max: 13 },
+    [SuitEnum.Clubs]: { min: 0, max: 13 },
+  };
   for (const suit of ALL_SUITS) {
     let min = suitMins[suit]!;
     const max = suitMaxes[suit]!;
