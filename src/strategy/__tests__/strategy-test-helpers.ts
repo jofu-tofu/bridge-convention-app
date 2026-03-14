@@ -3,17 +3,15 @@ import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { buildAuction } from "../../engine/auction-helpers";
 import { createBiddingContext } from "../../conventions/core";
-import { Seat, BidSuit } from "../../engine/types";
+import { Seat } from "../../engine/types";
+import { makeSurface } from "../../test-support/convention-factories";
 
 export function makeTestSurface(
   overrides: Partial<MeaningSurface> = {},
 ): MeaningSurface {
-  return {
+  return makeSurface({
     meaningId: "test:ask",
     moduleId: "test",
-    encoding: {
-      defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
-    },
     clauses: [
       {
         clauseId: "hcp",
@@ -38,7 +36,7 @@ export function makeTestSurface(
     },
     sourceIntent: { type: "test-ask", params: {} },
     ...overrides,
-  };
+  });
 }
 
 // 10 HCP hand with 4 spades: SA SK S3 S2 HA H3 DA D4 D2 CA C5 C4 C3

@@ -8,8 +8,9 @@ import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { createSharedFactCatalog } from "../../conventions/core/pipeline/fact-evaluator";
 import { hand } from "../../engine/__tests__/fixtures";
-import { buildAuction } from "../../engine/auction-helpers";
-import { Seat, BidSuit } from "../../engine/types";
+import type { buildAuction } from "../../engine/auction-helpers";
+import type { Seat} from "../../engine/types";
+import { BidSuit } from "../../engine/types";
 import { makeTestSurface, makeContext, strongHandWith4Spades } from "./strategy-test-helpers";
 
 // 5 HCP hand with 4 spades: S5 S4 S3 S2 HK H3 D5 D4 D3 D2 C5 C4 C3

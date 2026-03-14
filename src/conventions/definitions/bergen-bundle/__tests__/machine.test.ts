@@ -76,9 +76,11 @@ describe("Bergen bundle conversation machine", () => {
     // opener-after-constructive-hearts, opener-after-constructive-spades,
     // opener-after-limit-hearts, opener-after-limit-spades,
     // opener-after-preemptive-hearts, opener-after-preemptive-spades,
-    // responder-after-opener-rebid-hearts, responder-after-opener-rebid-spades,
+    // responder-after-game, responder-after-signoff,
+    // responder-after-game-try-hearts, responder-after-game-try-spades,
+    // opener-r4-accept,
     // terminal, bergen-contested
-    expect(machine.states.size).toBe(15);
+    expect(machine.states.size).toBe(18);
   });
 
   // ─── R1 → R2 routing (hearts) ────────────────────────────────
@@ -172,27 +174,35 @@ describe("Bergen bundle conversation machine", () => {
   // ─── R2 opener rebids ────────────────────────────────────────
 
   describe("R2 opener rebids (hearts)", () => {
-    it("constructive: opponent pass keeps state, opener bid → responder-after-opener-rebid", () => {
+    it("constructive: opponent pass keeps state, opener bids game → responder-after-game", () => {
       // 1H(N) P(E) 3C(S) P(W) 4H(N)
       const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "4H"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("responder-after-opener-rebid-hearts");
-      expect(result.activeSurfaceGroupIds).toContain("responder-after-opener-rebid-hearts");
+      expect(result.context.currentStateId).toBe("responder-after-game");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-game");
       expect(result.context.registers.captain).toBe("responder");
     });
 
-    it("limit: opener bids game → responder-after-opener-rebid", () => {
+    it("limit: opener bids game → responder-after-game", () => {
       // 1H(N) P(E) 3D(S) P(W) 4H(N)
       const auction = buildAuction(Seat.North, ["1H", "P", "3D", "P", "4H"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("responder-after-opener-rebid-hearts");
+      expect(result.context.currentStateId).toBe("responder-after-game");
     });
 
-    it("limit: opener signs off at 3H → responder-after-opener-rebid", () => {
+    it("limit: opener signs off at 3H → responder-after-signoff", () => {
       // 1H(N) P(E) 3D(S) P(W) 3H(N)
       const auction = buildAuction(Seat.North, ["1H", "P", "3D", "P", "3H"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("responder-after-opener-rebid-hearts");
+      expect(result.context.currentStateId).toBe("responder-after-signoff");
+    });
+
+    it("constructive: opener makes game try → responder-after-game-try-hearts", () => {
+      // 1H(N) P(E) 3C(S) P(W) 3D(N) — game try in a new suit
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-game-try-hearts");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-game-try-hearts");
     });
 
     it("preemptive: opener bids game → terminal", () => {
@@ -212,12 +222,12 @@ describe("Bergen bundle conversation machine", () => {
   });
 
   describe("R2 opener rebids (spades)", () => {
-    it("constructive: opener bids → responder-after-opener-rebid-spades", () => {
+    it("constructive: opener bids game → responder-after-game", () => {
       // 1S(N) P(E) 3C(S) P(W) 4S(N)
       const auction = buildAuction(Seat.North, ["1S", "P", "3C", "P", "4S"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("responder-after-opener-rebid-spades");
-      expect(result.activeSurfaceGroupIds).toContain("responder-after-opener-rebid-spades");
+      expect(result.context.currentStateId).toBe("responder-after-game");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-game");
     });
 
     it("preemptive: opener bids game → terminal", () => {
@@ -231,25 +241,124 @@ describe("Bergen bundle conversation machine", () => {
   // ─── R3 responder continuation ────────────────────────────────
 
   describe("R3 responder continuation", () => {
-    it("responder passes after opener rebid → terminal (hearts)", () => {
-      // 1H(N) P(E) 3C(S) P(W) 4H(N) P(E) P(S)
+    it("after game (4H): all passes self-loop (convention stays active)", () => {
+      // 1H(N) P(E) 3C(S) P(W) 4H(N) P(E) P(S) — both passes self-loop
       const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "4H", "P", "P"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("terminal");
+      expect(result.context.currentStateId).toBe("responder-after-game");
     });
 
-    it("responder bids after opener rebid → terminal (hearts)", () => {
+    it("after game (4H): opponent pass activates responder-after-game surface", () => {
+      // 1H(N) P(E) 3C(S) P(W) 4H(N) P(E) — before S acts
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "4H", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-game");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-game");
+    });
+
+    it("after signoff (3H): opponent pass activates responder-after-signoff surface", () => {
+      // 1H(N) P(E) 3D(S) P(W) 3H(N) P(E) — before S acts
+      const auction = buildAuction(Seat.North, ["1H", "P", "3D", "P", "3H", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-signoff");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-signoff");
+    });
+
+    it("after signoff: responder bids game → terminal", () => {
       // 1H(N) P(E) 3D(S) P(W) 3H(N) P(E) 4H(S)
       const auction = buildAuction(Seat.North, ["1H", "P", "3D", "P", "3H", "P", "4H"]);
       const result = evaluateMachine(machine, auction, Seat.South);
       expect(result.context.currentStateId).toBe("terminal");
     });
 
-    it("responder passes after opener rebid → terminal (spades)", () => {
-      // 1S(N) P(E) 3C(S) P(W) 4S(N) P(E) P(S)
+    it("after game try: opponent pass activates responder-after-game-try-hearts surface", () => {
+      // 1H(N) P(E) 3C(S) P(W) 3D(N) P(E) — before S acts
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-game-try-hearts");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-game-try-hearts");
+    });
+
+    it("after game try: responder bids → opener-r4-accept", () => {
+      // 1H(N) P(E) 3C(S) P(W) 3D(N) P(E) 4H(S)
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P", "4H"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("opener-r4-accept");
+      expect(result.activeSurfaceGroupIds).toContain("opener-r4-accept");
+      expect(result.context.registers.captain).toBe("opener");
+    });
+
+    it("after game (4S spades): opponent pass keeps state", () => {
+      // 1S(N) P(E) 3C(S) P(W) 4S(N) P(E) — before S acts
+      const auction = buildAuction(Seat.North, ["1S", "P", "3C", "P", "4S", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-game");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-game");
+    });
+
+    it("after game (4S spades): all passes self-loop (convention stays active)", () => {
+      // 1S(N) P(E) 3C(S) P(W) 4S(N) P(E) P(S) — both passes self-loop
       const auction = buildAuction(Seat.North, ["1S", "P", "3C", "P", "4S", "P", "P"]);
       const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-game");
+    });
+  });
+
+  // ─── R4 opener accepts ─────────────────────────────────────────
+
+  describe("R4 opener accepts after game try response", () => {
+    it("all passes self-loop (convention stays active until a bid)", () => {
+      // 1H(N) P(E) 3C(S) P(W) 3D(N) P(E) 4H(S) P(W) P(N) — passes self-loop
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P", "4H", "P", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("opener-r4-accept");
+    });
+
+    it("opener bids after game try response → terminal", () => {
+      // 1H(N) P(E) 3C(S) P(W) 3D(N) P(E) 4H(S) P(W) 5H(N) — opener bids
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P", "4H", "P", "5H"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
       expect(result.context.currentStateId).toBe("terminal");
+    });
+
+    it("opponent pass activates opener-r4-accept surface", () => {
+      // 1H(N) P(E) 3C(S) P(W) 3D(N) P(E) 4H(S) P(W) — before N acts
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P", "4H", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("opener-r4-accept");
+      expect(result.activeSurfaceGroupIds).toContain("opener-r4-accept");
+      expect(result.context.registers.captain).toBe("opener");
+    });
+  });
+
+  // ─── Pass self-loop ────────────────────────────────────────────
+
+  describe("pass self-loop in R3 states", () => {
+    it("opponent pass in responder-after-game does not go to terminal", () => {
+      // 1H(N) P(E) 3C(S) P(W) 4H(N) — enters responder-after-game
+      // Next call is P(E) — opponent pass should self-loop
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "4H", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-game");
+      // NOT terminal — pass self-loops
+    });
+
+    it("opponent pass in responder-after-signoff does not go to terminal", () => {
+      const auction = buildAuction(Seat.North, ["1H", "P", "3D", "P", "3H", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-signoff");
+    });
+
+    it("opponent pass in responder-after-game-try-hearts does not go to terminal", () => {
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-game-try-hearts");
+    });
+
+    it("opponent pass in opener-r4-accept does not go to terminal", () => {
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P", "4H", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("opener-r4-accept");
     });
   });
 
@@ -293,15 +402,27 @@ describe("Bergen bundle conversation machine", () => {
   // ─── Full sequence state history ─────────────────────────────
 
   describe("full sequence tracking", () => {
-    it("records complete state history: idle → major-opened → R1 → R2 → R3 → terminal", () => {
-      // 1H(N) P(E) 3C(S) P(W) 4H(N) P(E) P(S)
-      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "4H", "P", "P"]);
+    it("records complete state history: idle → major-opened → R1 → R2 → R3", () => {
+      // 1H(N) P(E) 3C(S) P(W) 4H(N) P(E) — ends at responder-after-game
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "4H", "P"]);
       const result = evaluateMachine(machine, auction, Seat.South);
       expect(result.context.stateHistory).toContain("idle");
       expect(result.context.stateHistory).toContain("major-opened-hearts");
       expect(result.context.stateHistory).toContain("responder-r1-hearts");
       expect(result.context.stateHistory).toContain("opener-after-constructive-hearts");
-      expect(result.context.stateHistory).toContain("responder-after-opener-rebid-hearts");
+      expect(result.context.stateHistory).toContain("responder-after-game");
+    });
+
+    it("records full state history through R4 to terminal (game try path)", () => {
+      // 1H(N) P(E) 3C(S) P(W) 3D(N) P(E) 4H(S) P(W) 5H(N) — reaches terminal via bid
+      const auction = buildAuction(Seat.North, ["1H", "P", "3C", "P", "3D", "P", "4H", "P", "5H"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.stateHistory).toContain("idle");
+      expect(result.context.stateHistory).toContain("major-opened-hearts");
+      expect(result.context.stateHistory).toContain("responder-r1-hearts");
+      expect(result.context.stateHistory).toContain("opener-after-constructive-hearts");
+      expect(result.context.stateHistory).toContain("responder-after-game-try-hearts");
+      expect(result.context.stateHistory).toContain("opener-r4-accept");
       expect(result.context.stateHistory).toContain("terminal");
     });
 

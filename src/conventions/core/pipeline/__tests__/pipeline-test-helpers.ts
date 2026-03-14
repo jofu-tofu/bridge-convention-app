@@ -2,17 +2,13 @@
 
 import type { Call } from "../../../../engine/types";
 import { BidSuit } from "../../../../engine/types";
-import type { MeaningProposal, RankingMetadata } from "../../../../core/contracts/meaning";
+import type { MeaningProposal } from "../../../../core/contracts/meaning";
 import type { ArbitrationInput } from "../meaning-arbitrator";
 import type { CandidateEligibility } from "../../../../core/contracts/tree-evaluation";
+import { makeCall, makePass, makeRanking } from "../../../../test-support/convention-factories";
 
-export function makeCall(level: 1 | 2 | 3 | 4 | 5 | 6 | 7 = 1, strain: BidSuit = BidSuit.Clubs): Call {
-  return { type: "bid", level, strain };
-}
-
-export function makePass(): Call {
-  return { type: "pass" };
-}
+// Re-export shared factories so existing consumers don't break.
+export { makeCall, makePass, makeRanking };
 
 export function makeEligibility(overrides?: {
   hand?: Partial<CandidateEligibility["hand"]>;
@@ -25,16 +21,6 @@ export function makeEligibility(overrides?: {
     protocol: { satisfied: true, reasons: [], ...overrides?.protocol },
     encoding: { legal: true, ...overrides?.encoding },
     pedagogical: { acceptable: true, reasons: [], ...overrides?.pedagogical },
-  };
-}
-
-export function makeRanking(overrides?: Partial<RankingMetadata>): RankingMetadata {
-  return {
-    recommendationBand: "should",
-    specificity: 1,
-    modulePrecedence: 0,
-    intraModuleOrder: 0,
-    ...overrides,
   };
 }
 

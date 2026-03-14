@@ -3,7 +3,7 @@
   import type { Hand, Card as CardType } from "../../engine/types";
   import { Seat } from "../../engine/types";
   import { viewSeat } from "../../core/display/seat-mapping";
-  import { computeHcp } from "../../core/display/hcp";
+  import { calculateHcp } from "../../engine/hand-evaluator";
   import HandFan from "./HandFan.svelte";
 
   interface Props {
@@ -42,7 +42,7 @@
     showAll = false,
   }: Props = $props();
 
-  const southHcp = $derived(computeHcp(hands[Seat.South]));
+  const southHcp = $derived(calculateHcp(hands[Seat.South]));
 
   // Map physical screen positions to logical seats
   const northSeat = $derived(viewSeat(Seat.North, rotated));

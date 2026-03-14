@@ -21,14 +21,21 @@ import { buildConversationMachine } from "../../core/runtime/machine-types";
  *                                → terminal (on splinter, game raise, or pass)
  *
  *   R2 — opener rebids:
- *     opener-after-constructive-hearts/spades → responder-after-opener-rebid (on bid)
- *                                             → terminal (on pass)
- *     opener-after-limit-hearts/spades → responder-after-opener-rebid (on bid)
- *                                      → terminal (on pass = signoff at 3M)
+ *     opener-after-constructive-hearts/spades → responder-after-game (on 4M)
+ *                                             → responder-after-signoff (on 3M)
+ *                                             → responder-after-game-try (on other bid)
+ *     opener-after-limit-hearts/spades → responder-after-game (on 4M)
+ *                                      → responder-after-signoff (on 3M)
+ *                                      → responder-after-game-try (on other bid)
  *     opener-after-preemptive-hearts/spades → terminal (all paths)
  *
  *   R3 — responder continuation:
- *     responder-after-opener-rebid-hearts/spades → terminal (all paths)
+ *     responder-after-game → terminal (pass through opponent, then done)
+ *     responder-after-signoff → terminal (pass through opponent, then done)
+ *     responder-after-game-try-hearts/spades → opener-r4-accept (on bid)
+ *
+ *   R4 — opener accepts:
+ *     opener-r4-accept → terminal (all paths)
  *
  *   terminal / bergen-contested (end states)
  */
@@ -193,9 +200,19 @@ export function createBergenConversationMachine(): ConversationMachine {
           target: "opener-after-constructive-hearts", // stay — waiting for opener through opponent pass
         },
         {
-          transitionId: "constructive-hearts-any-bid",
+          transitionId: "constructive-hearts-game",
+          match: { kind: "call", level: 4, strain: BidSuit.Hearts },
+          target: "responder-after-game",
+        },
+        {
+          transitionId: "constructive-hearts-signoff",
+          match: { kind: "call", level: 3, strain: BidSuit.Hearts },
+          target: "responder-after-signoff",
+        },
+        {
+          transitionId: "constructive-hearts-game-try",
           match: { kind: "any-bid" },
-          target: "responder-after-opener-rebid-hearts",
+          target: "responder-after-game-try-hearts",
         },
       ],
       surfaceGroupId: "opener-after-constructive-hearts",
@@ -213,9 +230,19 @@ export function createBergenConversationMachine(): ConversationMachine {
           target: "opener-after-constructive-spades", // stay — waiting for opener
         },
         {
-          transitionId: "constructive-spades-any-bid",
+          transitionId: "constructive-spades-game",
+          match: { kind: "call", level: 4, strain: BidSuit.Spades },
+          target: "responder-after-game",
+        },
+        {
+          transitionId: "constructive-spades-signoff",
+          match: { kind: "call", level: 3, strain: BidSuit.Spades },
+          target: "responder-after-signoff",
+        },
+        {
+          transitionId: "constructive-spades-game-try",
           match: { kind: "any-bid" },
-          target: "responder-after-opener-rebid-spades",
+          target: "responder-after-game-try-spades",
         },
       ],
       surfaceGroupId: "opener-after-constructive-spades",
@@ -235,9 +262,19 @@ export function createBergenConversationMachine(): ConversationMachine {
           target: "opener-after-limit-hearts", // stay — waiting for opener
         },
         {
-          transitionId: "limit-hearts-any-bid",
+          transitionId: "limit-hearts-game",
+          match: { kind: "call", level: 4, strain: BidSuit.Hearts },
+          target: "responder-after-game",
+        },
+        {
+          transitionId: "limit-hearts-signoff",
+          match: { kind: "call", level: 3, strain: BidSuit.Hearts },
+          target: "responder-after-signoff",
+        },
+        {
+          transitionId: "limit-hearts-game-try",
           match: { kind: "any-bid" },
-          target: "responder-after-opener-rebid-hearts",
+          target: "responder-after-game-try-hearts",
         },
       ],
       surfaceGroupId: "opener-after-limit-hearts",
@@ -255,9 +292,19 @@ export function createBergenConversationMachine(): ConversationMachine {
           target: "opener-after-limit-spades", // stay — waiting for opener
         },
         {
-          transitionId: "limit-spades-any-bid",
+          transitionId: "limit-spades-game",
+          match: { kind: "call", level: 4, strain: BidSuit.Spades },
+          target: "responder-after-game",
+        },
+        {
+          transitionId: "limit-spades-signoff",
+          match: { kind: "call", level: 3, strain: BidSuit.Spades },
+          target: "responder-after-signoff",
+        },
+        {
+          transitionId: "limit-spades-game-try",
           match: { kind: "any-bid" },
-          target: "responder-after-opener-rebid-spades",
+          target: "responder-after-game-try-spades",
         },
       ],
       surfaceGroupId: "opener-after-limit-spades",
@@ -309,44 +356,111 @@ export function createBergenConversationMachine(): ConversationMachine {
     },
 
     // ─── R3: responder continuation after opener rebid ──────────
+
+    // R3: after opener bids game (4M) — responder just passes
     {
-      stateId: "responder-after-opener-rebid-hearts",
+      stateId: "responder-after-game",
       parentId: null,
       transitions: [
         {
-          transitionId: "resp-rebid-hearts-any-bid",
+          transitionId: "after-game-pass",
+          match: { kind: "pass" },
+          target: "responder-after-game",
+        },
+        {
+          transitionId: "after-game-any",
           match: { kind: "any-bid" },
           target: "terminal",
         },
-        {
-          transitionId: "resp-rebid-hearts-pass",
-          match: { kind: "pass" },
-          target: "terminal",
-        },
       ],
-      surfaceGroupId: "responder-after-opener-rebid-hearts",
+      surfaceGroupId: "responder-after-game",
       entryEffects: {
         setCaptain: "responder",
       },
     },
+    // R3: after opener signs off (3M) — responder just passes
     {
-      stateId: "responder-after-opener-rebid-spades",
+      stateId: "responder-after-signoff",
       parentId: null,
       transitions: [
         {
-          transitionId: "resp-rebid-spades-any-bid",
+          transitionId: "after-signoff-pass",
+          match: { kind: "pass" },
+          target: "responder-after-signoff",
+        },
+        {
+          transitionId: "after-signoff-any",
           match: { kind: "any-bid" },
           target: "terminal",
         },
+      ],
+      surfaceGroupId: "responder-after-signoff",
+      entryEffects: {
+        setCaptain: "responder",
+      },
+    },
+    // R3: after opener makes game try — responder decides based on HCP (hearts)
+    {
+      stateId: "responder-after-game-try-hearts",
+      parentId: null,
+      transitions: [
         {
-          transitionId: "resp-rebid-spades-pass",
+          transitionId: "game-try-hearts-pass",
           match: { kind: "pass" },
+          target: "responder-after-game-try-hearts",
+        },
+        {
+          transitionId: "game-try-hearts-bid",
+          match: { kind: "any-bid" },
+          target: "opener-r4-accept",
+        },
+      ],
+      surfaceGroupId: "responder-after-game-try-hearts",
+      entryEffects: {
+        setCaptain: "responder",
+      },
+    },
+    // R3: after opener makes game try — responder decides based on HCP (spades)
+    {
+      stateId: "responder-after-game-try-spades",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "game-try-spades-pass",
+          match: { kind: "pass" },
+          target: "responder-after-game-try-spades",
+        },
+        {
+          transitionId: "game-try-spades-bid",
+          match: { kind: "any-bid" },
+          target: "opener-r4-accept",
+        },
+      ],
+      surfaceGroupId: "responder-after-game-try-spades",
+      entryEffects: {
+        setCaptain: "responder",
+      },
+    },
+
+    // ─── R4: opener accepts responder's game-try decision ───────
+    {
+      stateId: "opener-r4-accept",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "r4-accept-pass",
+          match: { kind: "pass" },
+          target: "opener-r4-accept",
+        },
+        {
+          transitionId: "r4-accept-any",
+          match: { kind: "any-bid" },
           target: "terminal",
         },
       ],
-      surfaceGroupId: "responder-after-opener-rebid-spades",
+      surfaceGroupId: "opener-r4-accept",
       entryEffects: {
-        setCaptain: "responder",
+        setCaptain: "opener",
       },
     },
 

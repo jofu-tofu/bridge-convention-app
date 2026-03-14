@@ -3,7 +3,8 @@ import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import type { ExplanationCatalogIR } from "../../../core/contracts/explanation-catalog";
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import type { ConventionCategory } from "../types";
+import type { ConventionConfig } from "../types";
+import { ConventionCategory } from "../types";
 import type { ConversationMachine } from "../runtime/machine-types";
 
 export interface ConventionBundle {
@@ -41,4 +42,27 @@ export interface ConventionBundle {
   readonly description?: string;
   /** Explanation catalog for enriching teaching projections with template keys. */
   readonly explanationCatalog?: ExplanationCatalogIR;
+}
+
+/**
+ * Creates a ConventionConfig from a ConventionBundle with optional overrides.
+ * Eliminates boilerplate convention-config.ts files in each bundle definition.
+ */
+export function createConventionConfigFromBundle(
+  bundle: ConventionBundle,
+  overrides: {
+    name: string;
+    description: string;
+    categoryFallback?: ConventionCategory;
+  },
+): ConventionConfig {
+  return {
+    id: bundle.id,
+    name: overrides.name,
+    description: overrides.description,
+    category: bundle.category ?? overrides.categoryFallback ?? ConventionCategory.Constructive,
+    dealConstraints: bundle.dealConstraints,
+    defaultAuction: bundle.defaultAuction,
+    internal: bundle.internal,
+  };
 }

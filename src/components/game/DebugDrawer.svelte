@@ -3,7 +3,7 @@
   import { Seat, Suit } from "../../engine/types";
   import type { Card } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../stores/context";
-  import { computeHcp } from "../../core/display/hcp";
+  import { calculateHcp } from "../../engine/hand-evaluator";
   import { formatCall, SUIT_SYMBOLS } from "../../core/display/format";
   import { sortCards } from "../../core/display/sort-cards";
   interface Props {
@@ -116,7 +116,7 @@
               <div class="font-semibold text-text-primary">
                 {seat}
                 <span class="text-text-muted font-normal"
-                  >({computeHcp(gameStore.deal.hands[seat])} HCP)</span
+                  >({calculateHcp(gameStore.deal.hands[seat])} HCP)</span
                 >
               </div>
               <div class="pl-2">

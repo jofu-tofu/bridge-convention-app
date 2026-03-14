@@ -48,7 +48,7 @@ export const bergenBundle: ConventionBundle = {
   name: "Bergen Raises Bundle",
   description: "Bergen Raises — constructive, limit, and preemptive responses to 1M opening",
   category: ConventionCategory.Constructive,
-  memberIds: ["bergen-bundle"],
+  memberIds: ["bergen-bundle", "bergen-raises"],
   dealConstraints: bergenBundleDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {

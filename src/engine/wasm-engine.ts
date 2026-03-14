@@ -53,7 +53,7 @@ export class WasmEngine implements EnginePort {
   }
 
   getLegalCalls(auction: Auction, seat: Seat): Promise<Call[]> {
-    const calls: Call[] = wasm.get_legal_calls({ auction, seat });
+    const calls = wasm.get_legal_calls({ auction, seat }) as Call[];
     return Promise.resolve(calls);
   }
 
@@ -78,7 +78,7 @@ export class WasmEngine implements EnginePort {
   }
 
   getLegalPlays(hand: Hand, leadSuit?: Suit): Promise<Card[]> {
-    const legalPlays: Card[] = wasm.get_legal_plays({ hand, leadSuit: leadSuit ?? null });
+    const legalPlays = wasm.get_legal_plays({ hand, leadSuit: leadSuit ?? null }) as Card[];
     return Promise.resolve(legalPlays);
   }
 

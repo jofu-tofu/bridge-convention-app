@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteMap } from "svelte/reactivity";
   import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
@@ -54,7 +55,7 @@
 
   // Aggregate convention contributions across user bids that have teaching projections
   const conventionSummary = $derived.by(() => {
-    const moduleMap = new Map<string, { role: ConventionContribution["role"]; count: number }>();
+    const moduleMap = new SvelteMap<string, { role: ConventionContribution["role"]; count: number }>();
     for (const entry of bidHistory) {
       if (!entry.isUser || !entry.teachingProjection) continue;
       for (const contrib of entry.teachingProjection.conventionsApplied) {
