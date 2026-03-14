@@ -1,11 +1,13 @@
 import { Seat } from "../engine/types";
 import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
 import type { DrillConfig } from "./types";
+import type { OpponentMode } from "./types";
 import type { InferenceConfig } from "../inference/types";
 import type { ConventionLookup } from "../conventions/core";
 import { meaningBundleToStrategy } from "../strategy/bidding/meaning-strategy";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
+import { passStrategy } from "../strategy/bidding/pass-strategy";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { getBundle, createSharedFactCatalog } from "../conventions/core";
@@ -56,8 +58,9 @@ export function buildBundleStrategy(
 export function createDrillConfig(
   conventionId: string,
   userSeat: Seat,
-  _options?: {
+  options?: {
     lookupConvention?: ConventionLookup;
+    opponentMode?: OpponentMode;
   },
 ): DrillConfig {
   // Look up the bundle
@@ -76,7 +79,9 @@ export function createDrillConfig(
   }
 
   const strategy = createStrategyChain([bundleStrategy, naturalFallbackStrategy]);
-  const ewStrategy = createStrategyChain([naturalFallbackStrategy]);
+  const ewStrategy = options?.opponentMode === "silent"
+    ? passStrategy
+    : createStrategyChain([naturalFallbackStrategy]);
 
   // N/S = convention strategy, E/W = natural fallback, user seat = "user"
   function seatStrategy(seat: Seat): BiddingStrategy | "user" {

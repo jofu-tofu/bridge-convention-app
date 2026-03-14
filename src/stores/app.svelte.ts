@@ -1,4 +1,5 @@
 import type { ConventionConfig } from "../conventions/core";
+import type { OpponentMode } from "../bootstrap/types";
 
 export type Screen = "select" | "game" | "learning";
 
@@ -12,6 +13,17 @@ export function createAppStore() {
   let engineError = $state<string | null>(null);
   let learningConvention = $state<ConventionConfig | null>(null);
   let autoplay = $state(false);
+
+  // Opponent strategy preference — persisted to localStorage
+  const OPPONENT_MODE_KEY = "bridge-app:opponent-mode";
+  function loadOpponentMode(): OpponentMode {
+    try {
+      const stored = localStorage.getItem(OPPONENT_MODE_KEY);
+      if (stored === "silent" || stored === "natural") return stored;
+    } catch { /* SSR or storage unavailable */ }
+    return "natural";
+  }
+  let opponentMode = $state<OpponentMode>(loadOpponentMode());
 
   return {
     get screen() {
@@ -91,6 +103,15 @@ export function createAppStore() {
 
     setAutoplay(on: boolean) {
       autoplay = on;
+    },
+
+    get opponentMode() {
+      return opponentMode;
+    },
+
+    setOpponentMode(mode: OpponentMode) {
+      opponentMode = mode;
+      try { localStorage.setItem(OPPONENT_MODE_KEY, mode); } catch { /* ignore */ }
     },
   };
 }
