@@ -17,8 +17,8 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 
 describe("SHARED_FACTS", () => {
-  it("has 19 shared facts (6 primitive + 8 bridge-derived + 5 posterior-derived)", () => {
-    expect(SHARED_FACTS).toHaveLength(19);
+  it("has 16 shared facts (6 primitive + 8 bridge-derived + 2 posterior-derived)", () => {
+    expect(SHARED_FACTS).toHaveLength(16);
   });
 
   it("PRIMITIVE_FACTS has 6 entries", () => {
@@ -43,10 +43,7 @@ describe("SHARED_FACTS", () => {
   it("every non-posterior fact has a derivesFrom array", () => {
     const posteriorIds = new Set([
       "bridge.partnerHas4CardMajorLikely",
-      "bridge.nsHaveEightCardFitLikely",
       "bridge.combinedHcpInRangeLikely",
-      "bridge.openerStillBalancedLikely",
-      "bridge.openerHasSecondMajorLikely",
     ]);
     for (const fact of SHARED_FACTS) {
       if (posteriorIds.has(fact.id)) continue; // posterior facts derive from sampling, not catalog deps

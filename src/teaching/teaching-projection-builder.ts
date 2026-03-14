@@ -56,6 +56,8 @@ import type {
 
 import type { PedagogicalRelation } from "../core/contracts/pedagogical-relations";
 
+import type { PosteriorSummary } from "../core/contracts/recommendation";
+
 import {
   buildPedagogicalGraph,
   findRelationsFor,
@@ -108,6 +110,9 @@ export interface TeachingProjectionOptions {
   readonly explanationCatalog?: ExplanationCatalogIR;
   /** Pedagogical relations for enriching WhyNot entries with family context. */
   readonly pedagogicalRelations?: readonly PedagogicalRelation[];
+  /** Posterior summary for enriching the hand space with probabilistic partner info.
+   *  Convention-agnostic: renders whatever posterior-derived facts are present. */
+  readonly posteriorSummary?: PosteriorSummary;
 }
 
 // -- Catalog Index --
@@ -135,6 +140,21 @@ function buildCatalogIndex(catalog: ExplanationCatalogIR): CatalogIndex {
   return { byFactId, byMeaningId };
 }
 
+// -- Display Text Resolver --
+
+/** Resolve display text from a catalog entry.
+ *  When isContrastive is true, prefers contrastiveDisplayText, falling back to displayText. */
+function resolveDisplayText(
+  catalogEntry: ExplanationEntry | undefined,
+  isContrastive?: boolean,
+): string | undefined {
+  if (!catalogEntry) return undefined;
+  if (isContrastive) {
+    return catalogEntry.contrastiveDisplayText ?? catalogEntry.displayText;
+  }
+  return catalogEntry.displayText;
+}
+
 // -- Main entry point --
 
 /**
@@ -158,12 +178,15 @@ export function projectTeaching(
 
   const truthMeaningIds = new Set(arbitration.truthSet.map(e => e.proposal.meaningId));
 
+  // Build a clause description index from the selected proposal for primary explanation
+  const clauseDescriptions = buildClauseDescriptionIndex(arbitration);
+
   const meaningViews = buildMeaningViews(arbitration, provenance);
   const callViews = buildCallViews(arbitration);
-  const primaryExplanation = buildPrimaryExplanation(provenance, catalogIndex);
+  const primaryExplanation = buildPrimaryExplanation(provenance, catalogIndex, clauseDescriptions);
   const whyNot = buildWhyNot(arbitration, provenance, catalogIndex, pedGraph, truthMeaningIds);
   const conventionsApplied = buildConventionContributions(arbitration, provenance);
-  const handSpace = buildHandSpace(options);
+  const handSpace = buildHandSpace(options, catalogIndex);
 
   return {
     callViews,
@@ -178,7 +201,7 @@ export function projectTeaching(
 // -- Call Views --
 
 /**
- * Build CallProjection[] from the truth set.
+ * Build CallProjection[] from truth set and acceptable set.
  *
  * Projection rules (per spec):
  *   - Same call + same semanticClassId -> "merged-equivalent"
@@ -186,10 +209,11 @@ export function projectTeaching(
  *   - Single meaning for a call -> "single-rationale"
  */
 function buildCallViews(arbitration: ArbitrationResult): CallProjection[] {
-  const callGroups = groupByCall(arbitration.truthSet);
   const views: CallProjection[] = [];
 
-  for (const [, encodeds] of callGroups) {
+  // Truth set entries
+  const truthCallGroups = groupByCall(arbitration.truthSet);
+  for (const [, encodeds] of truthCallGroups) {
     const meaningIds = encodeds.map(e => e.proposal.meaningId);
     const call = encodeds[0]!.call;
     const projectionKind = classifyProjectionKind(encodeds);
@@ -198,6 +222,26 @@ function buildCallViews(arbitration: ArbitrationResult): CallProjection[] {
     views.push({
       call,
       status: "truth",
+      supportingMeanings: meaningIds,
+      primaryMeaning,
+      projectionKind,
+    });
+  }
+
+  // Acceptable set entries (not already in truth set by call)
+  const truthCallKeys = new Set([...truthCallGroups.keys()]);
+  const acceptableCallGroups = groupByCall(arbitration.acceptableSet);
+  for (const [key, encodeds] of acceptableCallGroups) {
+    if (truthCallKeys.has(key)) continue;
+
+    const meaningIds = encodeds.map(e => e.proposal.meaningId);
+    const call = encodeds[0]!.call;
+    const projectionKind = classifyProjectionKind(encodeds);
+    const primaryMeaning = selectPrimaryMeaning(encodeds);
+
+    views.push({
+      call,
+      status: "acceptable",
       supportingMeanings: meaningIds,
       primaryMeaning,
       projectionKind,
@@ -286,7 +330,7 @@ function buildMeaningViews(
     views.push({
       meaningId: encoded.proposal.meaningId,
       semanticClassId: encoded.proposal.semanticClassId,
-      displayLabel: encoded.proposal.meaningId,
+      displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
       status: "live",
       supportingEvidence: encoded.proposal.clauses.map(clauseToEvidence),
     });
@@ -322,7 +366,7 @@ function buildMeaningViews(
     views.push({
       meaningId: encoded.proposal.meaningId,
       semanticClassId: encoded.proposal.semanticClassId,
-      displayLabel: encoded.proposal.meaningId,
+      displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
       status: "eliminated",
       eliminationReason: "Hand conditions not fully satisfied",
       supportingEvidence: encoded.proposal.clauses.map(clauseToEvidence),
@@ -332,29 +376,65 @@ function buildMeaningViews(
   return views;
 }
 
+// -- Clause Description Index --
+
+/** Build a map from factId → human-readable description from the selected proposal's clauses. */
+function buildClauseDescriptionIndex(
+  arbitration: ArbitrationResult,
+): ReadonlyMap<string, string> {
+  const index = new Map<string, string>();
+
+  // Primary source: selected proposal clauses
+  if (arbitration.selected) {
+    for (const clause of arbitration.selected.proposal.clauses) {
+      if (clause.description) {
+        index.set(clause.factId, clause.description);
+      }
+    }
+  }
+
+  // Secondary: truth set clauses (may add entries the selected didn't have)
+  for (const encoded of arbitration.truthSet) {
+    for (const clause of encoded.proposal.clauses) {
+      if (clause.description && !index.has(clause.factId)) {
+        index.set(clause.factId, clause.description);
+      }
+    }
+  }
+
+  return index;
+}
+
 // -- Primary Explanation --
 
-/** Build the primary explanation from provenance applicability evidence. */
+/** Build the primary explanation from provenance applicability evidence,
+ *  enriched with clause descriptions and catalog template keys. */
 function buildPrimaryExplanation(
   provenance: DecisionProvenance,
   catalogIndex?: CatalogIndex,
+  clauseDescriptions?: ReadonlyMap<string, string>,
 ): ExplanationNode[] {
   const nodes: ExplanationNode[] = [];
   const seenMeaningIds = new Set<string>();
 
   for (const condition of provenance.applicability.evaluatedConditions) {
     const catalogEntry = catalogIndex?.byFactId.get(condition.conditionId);
+    // Prefer clause description, then catalog display text, then fall back to conditionId
+    const displayContent = clauseDescriptions?.get(condition.conditionId)
+      ?? resolveDisplayText(catalogEntry)
+      ?? condition.conditionId;
+
     const node: ExplanationNode = catalogEntry
       ? {
           kind: "condition",
-          content: condition.conditionId,
+          content: displayContent,
           passed: condition.satisfied,
           explanationId: catalogEntry.explanationId,
           templateKey: catalogEntry.templateKey,
         }
       : {
           kind: "condition",
-          content: condition.conditionId,
+          content: displayContent,
           passed: condition.satisfied,
         };
     nodes.push(node);
@@ -365,9 +445,10 @@ function buildPrimaryExplanation(
       const meaningEntry = catalogIndex?.byMeaningId.get(catalogEntry.meaningId);
       if (meaningEntry) {
         seenMeaningIds.add(catalogEntry.meaningId);
+        const meaningContent = resolveDisplayText(meaningEntry) ?? meaningEntry.meaningId!;
         nodes.push({
           kind: "convention-reference",
-          content: meaningEntry.meaningId!,
+          content: meaningContent,
           explanationId: meaningEntry.explanationId,
           templateKey: meaningEntry.templateKey,
         });
@@ -467,17 +548,23 @@ function buildWhyNotExplanation(
       const templateKey = catalogEntry
         ? (catalogEntry.contrastiveTemplateKey ?? catalogEntry.templateKey)
         : undefined;
+      // Use resolved display text or clause description from the proposal
+      const clauseDesc = encoded.proposal.clauses.find(c => c.factId === evidence.conditionId)?.description;
+      const contrastiveText = resolveDisplayText(catalogEntry, /* isContrastive */ true);
+      const displayContent = contrastiveText
+        ?? clauseDesc
+        ?? evidence.conditionId;
       const node: ExplanationNode = catalogEntry
         ? {
             kind: "condition",
-            content: evidence.conditionId,
+            content: displayContent,
             passed: evidence.satisfied,
             explanationId: catalogEntry.explanationId,
             templateKey,
           }
         : {
             kind: "condition",
-            content: evidence.conditionId,
+            content: displayContent,
             passed: evidence.satisfied,
           };
       nodes.push(node);
@@ -571,11 +658,47 @@ function getOrCreateModuleEntry(
 
 // -- Hand Space --
 
-/** Build hand space summary (defaults when no posterior data available). */
-function buildHandSpace(options?: TeachingProjectionOptions): SeatRelativeHandSpaceSummary {
-  return {
+/** Build a partner summary from posterior fact values.
+ *  Convention-agnostic: renders facts above a confidence threshold,
+ *  resolving labels from the explanation catalog. */
+function buildPartnerSummary(
+  posterior: PosteriorSummary,
+  catalogIndex?: CatalogIndex,
+): string | undefined {
+  const HIGH_CONFIDENCE = 0.55;
+  const insights: string[] = [];
+
+  for (const fv of posterior.factValues) {
+    if (fv.confidence < HIGH_CONFIDENCE) continue;
+    // Look up label from catalog, fall back to factId
+    const catalogEntry = catalogIndex?.byFactId.get(fv.factId);
+    const label = catalogEntry?.displayText ?? fv.factId;
+    const pct = Math.round(fv.confidence * 100);
+    insights.push(`${label} (${pct}%)`);
+  }
+
+  if (insights.length === 0) return undefined;
+  return insights.join(". ");
+}
+
+/** Build hand space summary, enriched with posterior data when available. */
+function buildHandSpace(
+  options?: TeachingProjectionOptions,
+  catalogIndex?: CatalogIndex,
+): SeatRelativeHandSpaceSummary {
+  const base: SeatRelativeHandSpaceSummary = {
     seatLabel: options?.seatLabel ?? "South",
     hcpRange: options?.hcpRange ?? { min: 0, max: 40 },
     shapeDescription: options?.shapeDescription ?? "Unknown shape",
+  };
+
+  if (!options?.posteriorSummary) return base;
+
+  const partnerSummary = buildPartnerSummary(options.posteriorSummary, catalogIndex);
+  if (!partnerSummary) return base;
+
+  return {
+    ...base,
+    partnerSummary,
   };
 }

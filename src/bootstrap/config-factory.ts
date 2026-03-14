@@ -1,5 +1,5 @@
 import { Seat } from "../engine/types";
-import type { BiddingStrategy, BidResult } from "../core/contracts";
+import type { BiddingStrategy, BidResult, ConventionBiddingStrategy } from "../core/contracts";
 import type { DrillConfig } from "./types";
 import type { InferenceConfig } from "../inference/types";
 import { getConvention, computeDialogueState } from "../conventions/core";
@@ -17,7 +17,7 @@ import { createConventionInferenceProvider } from "../inference/convention-infer
 import { ForcingState } from "../core/contracts";
 import type { BeliefData } from "../core/contracts";
 import { createFitConfidenceRanker } from "../strategy/bidding/fit-ranker";
-import { findBundleForConvention, createSharedFactCatalog } from "../conventions/core";
+import { getBundle, createSharedFactCatalog } from "../conventions/core";
 import type { ConventionBundle } from "../conventions/core";
 import { createFactCatalog } from "../core/contracts/fact-catalog";
 import { createPosteriorEngine } from "../inference/posterior";
@@ -44,9 +44,9 @@ function createForcingFilter(config: ConventionConfig): StrategyChainOptions["re
 
 /** Build a meaning-pipeline strategy from a ConventionBundle.
  *  Returns the strategy or null if the bundle has no meaningSurfaces. */
-function buildBundleStrategy(
+export function buildBundleStrategy(
   bundle: ConventionBundle,
-): BiddingStrategy | null {
+): ConventionBiddingStrategy | null {
   if (!bundle.meaningSurfaces || bundle.meaningSurfaces.length === 0) return null;
 
   const factCatalog = bundle.factExtensions && bundle.factExtensions.length > 0
@@ -92,9 +92,10 @@ export function createDrillConfig(
   const lookup = options?.lookupConvention ?? getConvention;
   const convention = lookup(conventionId);
 
-  // Check if this convention belongs to a registered bundle with meaning surfaces.
-  // If so, use the meaning pipeline instead of the tree pipeline.
-  const bundle = findBundleForConvention(conventionId);
+  // Use the meaning pipeline only when the user explicitly selected a bundle ID.
+  // Individual conventions (e.g., "stayman") stay on the tree pipeline even if they
+  // belong to a bundle — the user chose to study that convention specifically.
+  const bundle = getBundle(conventionId);
   const bundleStrategy = bundle ? buildBundleStrategy(bundle) : null;
 
   // Wire belief + ranker + interpretation options into convention strategy

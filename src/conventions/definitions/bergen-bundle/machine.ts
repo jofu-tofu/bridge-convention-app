@@ -4,13 +4,7 @@ import type {
   ConversationMachine,
   MachineState,
 } from "../../core/runtime/machine-types";
-
-function areSamePartnership(a: Seat, b: Seat): boolean {
-  return (
-    (a === Seat.North || a === Seat.South) ===
-    (b === Seat.North || b === Seat.South)
-  );
-}
+import { areSamePartnership } from "../../core/dialogue/helpers";
 
 /**
  * Create the Bergen Raises Conversation Machine.

@@ -587,16 +587,14 @@ describe("projectTeaching", () => {
     const conditionNodes = projection.primaryExplanation.filter(n => n.kind === "condition");
     expect(conditionNodes.length).toBe(2);
 
-    // hand.hcp is matched by catalog
-    const hcpNode = conditionNodes.find(n => n.content === "hand.hcp");
+    // hand.hcp is matched by catalog and resolved to template string
+    const hcpNode = conditionNodes.find(n => n.explanationId === "nt.hcp.base");
     expect(hcpNode).toBeDefined();
-    expect(hcpNode!.explanationId).toBe("nt.hcp.base");
     expect(hcpNode!.templateKey).toBe("nt.hcp.base.mechanical");
 
-    // bridge.hasFourCardMajor is matched by catalog
-    const majorNode = conditionNodes.find(n => n.content === "bridge.hasFourCardMajor");
+    // bridge.hasFourCardMajor is matched by catalog and resolved to template string
+    const majorNode = conditionNodes.find(n => n.explanationId === "nt.suit.fourCardMajor");
     expect(majorNode).toBeDefined();
-    expect(majorNode!.explanationId).toBe("nt.suit.fourCardMajor");
     expect(majorNode!.templateKey).toBe("nt.suit.fourCardMajor.supporting");
   });
 

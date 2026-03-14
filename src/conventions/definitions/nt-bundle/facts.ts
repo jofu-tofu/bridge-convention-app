@@ -20,6 +20,38 @@ function fv(factId: string, value: number | boolean | string): FactValue {
   return { factId, value };
 }
 
+// ─── NT-specific posterior facts ─────────────────────────────
+// These posterior facts are 1NT/Stayman-specific (they reference opener context
+// and N/S partnership assumptions). They live here because they fail the
+// shared promotion rule: cannot be named without a convention name.
+
+const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
+  {
+    id: "bridge.nsHaveEightCardFitLikely",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Posterior probability that N/S have an 8+ card major fit",
+    valueType: "number",
+    metadata: { inferable: true, explainable: true },
+  },
+  {
+    id: "bridge.openerStillBalancedLikely",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Posterior probability that opener has balanced shape",
+    valueType: "number",
+    metadata: { inferable: true, explainable: true },
+  },
+  {
+    id: "bridge.openerHasSecondMajorLikely",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Posterior probability that opener has a second 4-card major",
+    valueType: "number",
+    metadata: { inferable: true, explainable: true },
+  },
+];
+
 // ─── Stayman module facts ────────────────────────────────────
 
 const STAYMAN_FACTS: readonly FactDefinition[] = [
@@ -49,9 +81,15 @@ const STAYMAN_EVALUATORS = new Map<string, FactEvaluatorFn>([
 ]);
 
 export const staymanFacts: FactCatalogExtension = {
-  definitions: STAYMAN_FACTS,
+  definitions: [...STAYMAN_FACTS, ...NT_POSTERIOR_FACTS],
   evaluators: STAYMAN_EVALUATORS,
-  posteriorEvaluators: createPosteriorFactEvaluators(),
+  posteriorEvaluators: createPosteriorFactEvaluators([
+    "bridge.partnerHas4CardMajorLikely",
+    "bridge.combinedHcpInRangeLikely",
+    "bridge.nsHaveEightCardFitLikely",
+    "bridge.openerStillBalancedLikely",
+    "bridge.openerHasSecondMajorLikely",
+  ]),
 };
 
 // ─── Transfer module facts ───────────────────────────────────

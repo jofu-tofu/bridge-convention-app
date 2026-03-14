@@ -9,17 +9,13 @@ import {
 } from "../engine/types";
 import type { DrillBundle } from "./types";
 import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
-import { createDrillConfig } from "./config-factory";
+import { createDrillConfig, buildBundleStrategy } from "./config-factory";
 import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
-import { meaningBundleToStrategy } from "../strategy/bidding/meaning-strategy";
-import { getConvention } from "../conventions/core";
+import { getConvention, getBundle } from "../conventions/core";
 import { evaluateHand } from "../engine/hand-evaluator";
 import type { BeliefData } from "../core/contracts";
 import { createInferenceEngine } from "../inference/inference-engine";
-import { findBundleForConvention, createSharedFactCatalog } from "../conventions/core";
-import { createFactCatalog } from "../core/contracts/fact-catalog";
-import { createPosteriorEngine } from "../inference/posterior";
 
 /** 180° table rotation: N↔S, E↔W */
 export function rotateSeat180(seat: Seat): Seat {
@@ -111,29 +107,13 @@ export async function startDrill(
   });
   const session = createDrillSession(config);
 
-  // Build strategy: use meaning pipeline when convention belongs to a bundle with surfaces
+  // Build strategy: use meaning pipeline only when the user explicitly selected a bundle ID.
+  // Individual conventions stay on the tree pipeline.
   let strategy: ConventionBiddingStrategy;
-  const bundle = findBundleForConvention(convention.id);
-  if (bundle?.meaningSurfaces && bundle.meaningSurfaces.length > 0) {
-    const factCatalog = bundle.factExtensions && bundle.factExtensions.length > 0
-      ? createFactCatalog(createSharedFactCatalog(), ...bundle.factExtensions)
-      : createSharedFactCatalog();
-    strategy = meaningBundleToStrategy(
-      bundle.meaningSurfaces.map((g) => ({
-        moduleId: g.groupId,
-        surfaces: [...g.surfaces],
-      })),
-      bundle.id,
-      {
-        name: bundle.name,
-        factCatalog,
-        surfaceRouter: bundle.surfaceRouter,
-        conversationMachine: bundle.conversationMachine,
-        posteriorEngine: createPosteriorEngine(),
-        surfaceRouterForCommitments: bundle.surfaceRouter,
-        explanationCatalog: bundle.explanationCatalog,
-      },
-    );
+  const bundle = getBundle(convention.id);
+  const bundleStrategy = bundle ? buildBundleStrategy(bundle) : null;
+  if (bundleStrategy) {
+    strategy = bundleStrategy;
   } else {
     strategy = conventionToStrategy(convention, { lookupConvention: options?.lookupConvention });
   }

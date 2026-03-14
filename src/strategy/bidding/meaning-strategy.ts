@@ -12,7 +12,6 @@ import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import type { PosteriorEngine, PublicHandSpace, PosteriorFactProvider, PosteriorFactValue, SeatPosterior } from "../../core/contracts/posterior";
-import { ALL_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
@@ -63,7 +62,7 @@ function buildBidResult(
     isMatched: ep.eligibility.hand.satisfied,
     isDefaultCall: ep.isDefaultEncoding,
     legal: ep.eligibility.encoding.legal,
-    meaning: ep.proposal.meaningId,
+    meaning: ep.proposal.teachingLabel ?? ep.proposal.meaningId,
     intentType: ep.proposal.sourceIntent.type,
     priority: ep.proposal.modulePriority,
     orderKey: ep.proposal.ranking.intraModuleOrder,
@@ -82,7 +81,7 @@ function buildBidResult(
     call: selected.call,
     ruleName: selected.proposal.meaningId,
     explanation: selected.proposal.evidence.provenance.nodeName,
-    meaning: selected.proposal.meaningId,
+    meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
     handSummary: formatHandSummary(context.evaluation),
     conditions,
     evaluationTrace: {
@@ -111,10 +110,12 @@ function buildTeachingProjection(
   arbitration: ArbitrationResult,
   provenance: DecisionProvenance | null,
   explanationCatalog?: ExplanationCatalogIR,
+  posteriorSummary?: PosteriorSummary | null,
 ): TeachingProjection | null {
   if (!provenance) return null;
   return projectTeaching(arbitration, provenance, {
     explanationCatalog,
+    posteriorSummary: posteriorSummary ?? undefined,
   });
 }
 
@@ -223,6 +224,19 @@ export function meaningBundleToStrategy(
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
 
+  // Machine evaluation memoization: cache by auction length
+  let cachedMachineResult: MachineEvalResult | null = null;
+  let cachedMachineAuctionLength = -1;
+
+  function getMachineResult(machine: ConversationMachine, auction: Auction, seat: Seat): MachineEvalResult {
+    if (cachedMachineAuctionLength === auction.entries.length && cachedMachineResult) {
+      return cachedMachineResult;
+    }
+    cachedMachineResult = evaluateMachine(machine, auction, seat);
+    cachedMachineAuctionLength = auction.entries.length;
+    return cachedMachineResult;
+  }
+
   // Posterior memoization: cache PublicHandSpace[] by auction length
   let cachedHandSpaces: PublicHandSpace[] | null = null;
   let cachedAuctionLength = -1;
@@ -259,7 +273,7 @@ export function meaningBundleToStrategy(
 
       if (options?.conversationMachine) {
         // Machine-driven surface selection: machine determines which surface groups are live
-        const machineResult: MachineEvalResult = evaluateMachine(
+        const machineResult: MachineEvalResult = getMachineResult(
           options.conversationMachine,
           context.auction,
           context.seat,
@@ -315,7 +329,10 @@ export function meaningBundleToStrategy(
       // Build posterior summary from evaluated facts when posterior was active
       if (posteriorProvider && activeSeatPosterior) {
         const posteriorFacts: PosteriorFactValue[] = [];
-        for (const id of ALL_POSTERIOR_FACT_IDS) {
+        const posteriorIds = catalog.posteriorEvaluators
+          ? [...catalog.posteriorEvaluators.keys()]
+          : [];
+        for (const id of posteriorIds) {
           const fv = facts.facts.get(id);
           if (fv) {
             const queryResult = posteriorProvider.queryFact({ factId: id, seatId: activeSeatPosterior.seatId });
@@ -348,7 +365,7 @@ export function meaningBundleToStrategy(
       lastArbitration = result;
       lastProvenance = result.provenance ?? null;
       lastTeachingProjection = buildTeachingProjection(
-        result, lastProvenance, options?.explanationCatalog,
+        result, lastProvenance, options?.explanationCatalog, lastPosteriorSummary,
       );
 
       if (!result.selected) return null;

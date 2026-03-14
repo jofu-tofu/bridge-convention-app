@@ -176,6 +176,44 @@ Two systems extract semantic facts from the auction. They answer different quest
 - `computeTriggerOverridesForConfig(config, auction)` — `@internal` dialogue state + overlay trigger override stage
 - `applyProtocolOverlays(config, context, protoResult, lookupConvention?)` — `@internal` overlay replacement-tree stage
 
+## Runtime (Meaning Pipeline)
+
+`runtime/` is the meaning-centric evaluation runtime — the new pipeline that replaces tree/protocol/overlay for conventions authored as `ConventionBundle` with `meaningSurfaces`. Two consumers: 1NT bundle and Bergen bundle.
+
+**Module graph:**
+```
+runtime/
+  machine-types.ts        ConversationMachine, MachineState, MachineEffect, TransitionMatch
+  machine-evaluator.ts    evaluateMachine() — generic FSM stepper (SCXML-inspired)
+  machine-validation.ts   validateMachine() — structural checks (orphans, dangling refs)
+  evaluation-runtime.ts   evaluate() — two-phase orchestrator (public snapshot → decision surfaces)
+  public-snapshot-builder.ts  buildSnapshotFromAuction() — Phase 1 output
+  decision-surface-emitter.ts emitDecisionSurfaces() — Phase 2 output
+  bundle-adapter.ts       bundleToRuntimeModules() — ConventionBundle → RuntimeModule[]
+  commitment-extractor.ts extractCommitments() — surfaces with publicConsequences → PublicConstraint[]
+  profile-activation.ts   resolveActiveModules() — SystemProfileIR activation
+  profile-validation.ts   validateProfile() — semantic collision detection
+  types.ts                RuntimeModule, DecisionSurfaceEntry
+```
+
+**Known gaps (Pattern 2-6 conventions):**
+
+| Gap | Impact | Blocks |
+|-----|--------|--------|
+| No submachine/invoke on `MachineState` | Can't compose machines (e.g., RKCB from multiple parents) | Pattern 5-6 (slam tools) |
+| No loop guards/iteration counters | Can't express variable-length exchanges safely | Pattern 5 (control bidding) |
+| `mergeRegisters` is a no-op in `machine-evaluator.ts` | Can't track custom per-machine state (relay step count, controls shown) | Pattern 2, 5, 6 |
+| `"call"` TransitionMatch doesn't check seatRole | Opponent bids can fire partnership transitions in competitive auctions | Pattern 3 (competitive) |
+| No `AttachmentIR` for host-state attachment | Add-on modules can't attach to host states | Pattern 4 (Negative Doubles, Drury) |
+| `ActivationTrace` always `[]` in meaning arbitrator | Provenance can't answer "which modules were live and why?" | Diagnostics |
+| `evaluateFacts()` only evaluates `acting-hand` world | No `public` or `full-deal` world facts can be evaluated | Future scope |
+
+These gaps don't block any current convention (1NT, Bergen). They become blocking when attempting DONT (20+ states), RKCB (submachines), control bidding (loops), or Negative Doubles (host attachment).
+
+**Machine evaluation is memoized** per-strategy-instance by auction length in `meaning-strategy.ts`.
+
+**`areSamePartnership()`** is shared from `dialogue/helpers.ts` — do NOT define local copies in machine files.
+
 ---
 
 ## Context Maintenance

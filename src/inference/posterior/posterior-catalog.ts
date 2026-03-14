@@ -4,7 +4,7 @@ import type {
   PosteriorFactValue,
   SeatPosterior,
 } from "../../core/contracts/posterior";
-import { ALL_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
+import { SHARED_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
 import type { PosteriorFactEvaluatorFn, FactValue } from "../../core/contracts/fact-catalog";
 
 /**
@@ -16,10 +16,13 @@ import type { PosteriorFactEvaluatorFn, FactValue } from "../../core/contracts/f
  * 2. If result is non-null: returns { factId, value: result.expectedValue }
  * 3. If result is null: returns { factId, value: 0 } (fail-open)
  */
-export function createPosteriorFactEvaluators(): ReadonlyMap<string, PosteriorFactEvaluatorFn> {
+export function createPosteriorFactEvaluators(
+  factIds?: readonly string[],
+): ReadonlyMap<string, PosteriorFactEvaluatorFn> {
   const evaluators = new Map<string, PosteriorFactEvaluatorFn>();
+  const ids = factIds ?? SHARED_POSTERIOR_FACT_IDS;
 
-  for (const factId of ALL_POSTERIOR_FACT_IDS) {
+  for (const factId of ids) {
     evaluators.set(factId, (provider: PosteriorFactProvider, request: PosteriorFactRequest): FactValue => {
       const result = provider.queryFact(request);
       return { factId: request.factId, value: result?.expectedValue ?? 0 };

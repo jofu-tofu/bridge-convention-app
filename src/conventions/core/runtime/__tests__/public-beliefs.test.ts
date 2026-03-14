@@ -68,10 +68,10 @@ describe("buildSnapshotFromAuction — publicBeliefs", () => {
     expect(snapshot.publicBeliefs![0]!.seatId).toBe("N");
     expect(snapshot.publicBeliefs![0]!.observerSeat).toBe("S");
     expect(snapshot.publicBeliefs![0]!.staleness).toBe(0);
-    expect(snapshot.publicBeliefs![0]!.facts).toHaveLength(5);
+    expect(snapshot.publicBeliefs![0]!.facts).toHaveLength(ALL_POSTERIOR_FACT_IDS.length);
   });
 
-  it("each BeliefView.facts contains exactly 5 PosteriorFactValue entries", () => {
+  it("each BeliefView.facts contains exactly 2 shared PosteriorFactValue entries", () => {
     const handSpaces: PublicHandSpace[] = [
       { seatId: "N", constraints: [] },
       { seatId: "E", constraints: [] },
@@ -87,7 +87,7 @@ describe("buildSnapshotFromAuction — publicBeliefs", () => {
 
     expect(snapshot.publicBeliefs!.length).toBe(2);
     for (const belief of snapshot.publicBeliefs!) {
-      expect(belief.facts).toHaveLength(5);
+      expect(belief.facts).toHaveLength(ALL_POSTERIOR_FACT_IDS.length);
       for (const fact of belief.facts) {
         expect(ALL_POSTERIOR_FACT_IDS).toContain(fact.factId);
       }

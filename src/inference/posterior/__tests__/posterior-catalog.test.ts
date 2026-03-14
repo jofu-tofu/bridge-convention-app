@@ -5,7 +5,7 @@ import {
 } from "../posterior-catalog";
 import type { SeatPosterior, PosteriorFactRequest, PosteriorFactValue } from "../../../core/contracts/posterior";
 import type { PosteriorFactProvider as PosteriorFactProviderType } from "../../../core/contracts/posterior";
-import { ALL_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
+import { ALL_POSTERIOR_FACT_IDS, SHARED_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
 import type { PublicHandSpace, LikelihoodModel } from "../../../core/contracts/posterior";
 
 function makeMockProvider(values: Record<string, PosteriorFactValue | null>): PosteriorFactProviderType {
@@ -31,10 +31,25 @@ function makeMockSeatPosterior(probabilities: Record<string, number>): SeatPoste
 }
 
 describe("createPosteriorFactEvaluators", () => {
-  it("returns map with exactly 5 entries, keys matching ALL_POSTERIOR_FACT_IDS", () => {
+  it("returns map with exactly 2 entries by default, keys matching SHARED_POSTERIOR_FACT_IDS", () => {
     const evaluators = createPosteriorFactEvaluators();
+    expect(evaluators.size).toBe(2);
+    for (const id of SHARED_POSTERIOR_FACT_IDS) {
+      expect(evaluators.has(id)).toBe(true);
+    }
+  });
+
+  it("returns map with custom IDs when explicit factIds are provided", () => {
+    const customIds = [
+      "bridge.partnerHas4CardMajorLikely",
+      "bridge.combinedHcpInRangeLikely",
+      "bridge.nsHaveEightCardFitLikely",
+      "bridge.openerStillBalancedLikely",
+      "bridge.openerHasSecondMajorLikely",
+    ];
+    const evaluators = createPosteriorFactEvaluators(customIds);
     expect(evaluators.size).toBe(5);
-    for (const id of ALL_POSTERIOR_FACT_IDS) {
+    for (const id of customIds) {
       expect(evaluators.has(id)).toBe(true);
     }
   });

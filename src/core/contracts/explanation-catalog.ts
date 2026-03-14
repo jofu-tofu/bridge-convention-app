@@ -25,8 +25,13 @@ export interface ExplanationEntry {
   readonly meaningId?: string;
   /** i18n-ready template reference for the primary explanation. */
   readonly templateKey: string;
+  /** Human-readable display text. When present, used directly by the teaching projection builder.
+   *  Prefer this over templateKey for immediate rendering; templateKey is reserved for i18n. */
+  readonly displayText?: string;
   /** i18n-ready template reference for "why this, not that" explanations. */
   readonly contrastiveTemplateKey?: string;
+  /** Human-readable contrastive display text (for "why not" explanations). */
+  readonly contrastiveDisplayText?: string;
   /** Whether the explanation focuses on "why" (semantic) or "what" (mechanical). */
   readonly preferredLevel: ExplanationLevel;
   /** Contexts in which this explanation is used. */

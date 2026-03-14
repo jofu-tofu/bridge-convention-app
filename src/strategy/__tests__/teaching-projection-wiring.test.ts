@@ -122,9 +122,9 @@ describe("getLastTeachingProjection — meaning pipeline", () => {
     strategy.suggest(context);
 
     // No selected candidate → still produces projection (provenance exists)
-    // but the projection should have no truth-set call views
+    // Acceptable-set entries appear in callViews with status "acceptable"
     const projection = strategy.getLastTeachingProjection();
     expect(projection).not.toBeNull();
-    expect(projection!.callViews).toHaveLength(0);
+    expect(projection!.callViews.filter(v => v.status === "truth")).toHaveLength(0);
   });
 });

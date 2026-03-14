@@ -111,14 +111,15 @@ export interface PosteriorFactProvider {
 
 // ─── Posterior fact IDs ────────────────────────────────────
 
-/** All posterior-derived fact IDs. Used by the fact catalog and provider layer. */
-export const ALL_POSTERIOR_FACT_IDS = [
+/** Shared posterior fact IDs — generic facts parameterized via conditionedOn.
+ *  Convention-specific posterior facts belong in their module's FactCatalogExtension. */
+export const SHARED_POSTERIOR_FACT_IDS = [
   "bridge.partnerHas4CardMajorLikely",
-  "bridge.nsHaveEightCardFitLikely",
   "bridge.combinedHcpInRangeLikely",
-  "bridge.openerStillBalancedLikely",
-  "bridge.openerHasSecondMajorLikely",
 ] as const;
+
+/** @deprecated Use SHARED_POSTERIOR_FACT_IDS. Kept for backward compat. */
+export const ALL_POSTERIOR_FACT_IDS = SHARED_POSTERIOR_FACT_IDS;
 
 // ─── Posterior engine interface ─────────────────────────────
 export interface PosteriorEngine {
