@@ -331,6 +331,171 @@ describe("resolveActiveModules", () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe("whenAuction: contains pattern", () => {
+    it("activates when auction contains the specified call", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-contains",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "contains", call: "X" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Auction: 1H - X (double by East)
+      const auction = buildAuction(Seat.North, ["1H", "X"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual(["mod-x"]);
+    });
+
+    it("does not activate when auction does not contain the specified call", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-contains-miss",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "contains", call: "X" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual([]);
+    });
+
+    it("activates when byRole restricts to a specific role", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-contains-role",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "contains", call: "X", byRole: "overcaller" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Auction: North=1H, East=X — East is overcaller (next after opener)
+      const auction = buildAuction(Seat.North, ["1H", "X"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual(["mod-x"]);
+    });
+
+    it("does not activate when call exists but by wrong role", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-contains-wrong-role",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "contains", call: "1H", byRole: "responder" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Auction: North=1H — 1H was by opener, not responder
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual([]);
+    });
+
+    it("returns empty when byRole cannot be resolved (no bids)", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-contains-no-opener",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "contains", call: "P", byRole: "opener" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Empty auction — no bids, so "opener" role can't be resolved
+      const auction = buildAuction(Seat.North, []);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual([]);
+    });
+  });
+
+  describe("whenAuction: by-role pattern", () => {
+    it("activates when last call by role matches", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-byrole",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "by-role", role: "opener", lastCall: "2H" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Auction: North=1H, East=P, South=2C, West=P, North=2H
+      // Opener (North) last call is 2H.
+      const auction = buildAuction(Seat.North, ["1H", "P", "2C", "P", "2H"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual(["mod-x"]);
+    });
+
+    it("does not activate when last call by role does not match", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-byrole-miss",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "by-role", role: "opener", lastCall: "2H" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Opener's last call is 1H, not 2H
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual([]);
+    });
+
+    it("does not activate when role cannot be resolved", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-byrole-no-opener",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "by-role", role: "opener", lastCall: "1H" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Empty auction — no opener
+      const auction = buildAuction(Seat.North, []);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual([]);
+    });
+
+    it("checks the LAST call by the role, not the first", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-byrole-last",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "by-role", role: "responder", lastCall: "3C" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Auction: N=1H, E=P, S=2C, W=P, N=2H, E=P, S=3C
+      // Responder (South) first bid 2C, then 3C. Last call is 3C.
+      const auction = buildAuction(Seat.North, ["1H", "P", "2C", "P", "2H", "P", "3C"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual(["mod-x"]);
+    });
+
+    it("does not activate when role seat never acted", () => {
+      const profile: SystemProfileIR = {
+        profileId: "test-byrole-never-acted",
+        baseSystem: "test",
+        modules: [{
+          moduleId: "mod-x",
+          kind: "add-on",
+          attachments: [{ whenAuction: { kind: "by-role", role: "advancer", lastCall: "P" } }],
+        }],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+      // Auction: N=1H, E=X — advancer is West (partner of East), who hasn't acted yet
+      const auction = buildAuction(Seat.North, ["1H", "X"]);
+      expect(resolveActiveModules(profile, auction, Seat.South)).toEqual([]);
+    });
+  });
 });
 
 

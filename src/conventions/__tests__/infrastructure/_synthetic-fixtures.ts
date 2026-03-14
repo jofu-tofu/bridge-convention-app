@@ -42,9 +42,10 @@ import type {
 } from "../../../core/contracts/agreement-module";
 
 // ── Machine types ────────────────────────────────────────────
-import type {
-  ConversationMachine,
-  MachineState,
+import {
+  type ConversationMachine,
+  type MachineState,
+  buildConversationMachine,
 } from "../../core/runtime/machine-types";
 
 // ── Runtime types ────────────────────────────────────────────
