@@ -20,7 +20,7 @@ export interface MeaningSurfaceClause {
 
 export interface MeaningSurface {
   readonly meaningId: MeaningId;
-  readonly semanticClassId?: SemanticClassId;
+  readonly semanticClassId: SemanticClassId;
   readonly moduleId: string;
   readonly encoding: {
     readonly defaultCall: Call;
@@ -35,8 +35,7 @@ export interface MeaningSurface {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
-  readonly teachingLabel?: string;
-  readonly familyId?: string;
+  readonly teachingLabel: string;
   readonly publicConsequences?: PublicConsequences;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
 }

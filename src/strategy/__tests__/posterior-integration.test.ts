@@ -51,6 +51,7 @@ const testSurface: MeaningSurface = {
     intraModuleOrder: 1,
   },
   sourceIntent: { type: "test-intent", params: {} },
+  teachingLabel: "Test bid",
 };
 
 // 1NT auction: North opens 1NT, East passes

@@ -65,22 +65,9 @@ export function validateMachine(
   // Start from initial state
   visit(initialStateId);
 
-  // Also mark states reachable via parentId chains from reachable states
-  // A child state is reachable if any transition targets it OR it's the initial state
-  // We also consider children of reachable states as reachable (parentId relationship)
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const [stateId, state] of states) {
-      if (!reachable.has(stateId) && state.parentId !== null && reachable.has(state.parentId)) {
-        // A state whose parent is reachable is NOT automatically reachable
-        // unless it can be transitioned to. Skip this — parentId is for inheritance.
-      }
-      // But a state that is reachable makes its transition targets reachable (already handled)
-    }
-  }
-
-  // Also: states that are transition targets from any reachable state are reachable (already handled by visit)
+  // Note: parentId is for inheritance, not reachability — a child is only
+  // reachable if a transition targets it. Transition reachability is fully
+  // handled by the visit() traversal above.
   // Check: states reachable via parentId from reachable children need not be reachable themselves
   // Only report states that cannot be reached by any transition path from initialStateId
   for (const stateId of states.keys()) {

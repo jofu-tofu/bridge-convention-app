@@ -5,6 +5,31 @@ import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import { resolveActiveModules } from "./profile-activation";
 
+/**
+ * Resolve active module/convention IDs for a bundle at a given auction position.
+ *
+ * Activation priority:
+ * 1. systemProfile → resolveActiveModules (declarative, preferred)
+ * 2. activationFilter → legacy hardcoded function (deprecated fallback)
+ * 3. Empty → no activation (bundle has neither)
+ */
+function resolveActivation(
+  bundle: ConventionBundle,
+  auction: Auction,
+  seat: Seat,
+): readonly string[] {
+  if (bundle.systemProfile) {
+    const capabilities: Record<string, string> = {
+      ...(bundle.declaredCapabilities ?? {}),
+    };
+    return resolveActiveModules(bundle.systemProfile, auction, seat, capabilities);
+  }
+  if (bundle.activationFilter) {
+    return bundle.activationFilter(auction, seat);
+  }
+  return [];
+}
+
 /** Convert a ConventionBundle into RuntimeModule[] for the evaluation runtime. */
 export function bundleToRuntimeModules(
   bundle: ConventionBundle,
@@ -12,16 +37,8 @@ export function bundleToRuntimeModules(
   modules: readonly RuntimeModule[];
   getActiveIds: (auction: Auction, seat: Seat) => readonly string[];
 } {
-  const getActiveIds = (auction: Auction, seat: Seat): readonly string[] => {
-    if (bundle.systemProfile) {
-      // Profile-based activation: use bundle's declared capabilities.
-      const capabilities: Record<string, string> = {
-        ...(bundle.declaredCapabilities ?? {}),
-      };
-      return resolveActiveModules(bundle.systemProfile, auction, seat, capabilities);
-    }
-    return bundle.activationFilter(auction, seat);
-  };
+  const getActiveIds = (auction: Auction, seat: Seat): readonly string[] =>
+    resolveActivation(bundle, auction, seat);
 
   if (!bundle.meaningSurfaces) {
     return { modules: [], getActiveIds };
@@ -36,7 +53,7 @@ export function bundleToRuntimeModules(
         return group.surfaces.some((s) => routedSurfaces.includes(s));
       }
       // Without router, all groups are active when bundle is active
-      const activeIds = bundle.activationFilter(auction, seat);
+      const activeIds = resolveActivation(bundle, auction, seat);
       return activeIds.length > 0;
     },
     emitSurfaces: (

@@ -95,7 +95,7 @@ export interface MachineRegisters {
 }
 
 /** Default seatRole: self for own bids, partner for partnership, opponent otherwise. */
-export function defaultSeatRole(
+function defaultSeatRole(
   _auction: Auction,
   seat: Seat,
   callSeat: Seat,

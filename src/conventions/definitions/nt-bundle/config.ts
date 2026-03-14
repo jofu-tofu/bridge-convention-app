@@ -3,7 +3,7 @@ import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
-import { ntActivationFilter } from "./activation";
+import { ntCrossConventionAlternatives } from "./alternatives";
 import { NT_ROUTED_SURFACES, createNtSurfaceRouter } from "./surface-routing";
 import {
   RESPONDER_SURFACES,
@@ -20,6 +20,7 @@ import { staymanFacts, transferFacts, ntResponseFacts } from "./facts";
 import { NT_SAYC_PROFILE } from "./system-profile";
 import { createNtConversationMachine } from "./machine";
 import { NT_EXPLANATION_CATALOG } from "./explanation-catalog";
+import { NT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 
 const ntDealConstraints: DealConstraints = {
   seats: [
@@ -52,7 +53,6 @@ export const ntBundle: ConventionBundle = {
     }
     return undefined;
   },
-  activationFilter: ntActivationFilter,
   declaredCapabilities: { ntOpenerContext: "active" },
   meaningSurfaces: [
     { groupId: "responder-r1", surfaces: RESPONDER_SURFACES },
@@ -70,4 +70,6 @@ export const ntBundle: ConventionBundle = {
   systemProfile: NT_SAYC_PROFILE,
   conversationMachine: ntMachine,
   explanationCatalog: NT_EXPLANATION_CATALOG,
+  pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
+  acceptableAlternatives: ntCrossConventionAlternatives,
 };

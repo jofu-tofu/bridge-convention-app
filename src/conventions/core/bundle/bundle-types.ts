@@ -2,6 +2,8 @@ import type { DealConstraints, Seat, Deal, Auction } from "../../../engine/types
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import type { ExplanationCatalogIR } from "../../../core/contracts/explanation-catalog";
+import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/tree-evaluation";
+import type { PedagogicalRelation } from "../../../core/contracts/pedagogical-relations";
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig } from "../types";
 import { ConventionCategory } from "../types";
@@ -15,7 +17,9 @@ export interface ConventionBundle {
   readonly internal?: boolean;
   readonly dealConstraints: DealConstraints;
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
-  readonly activationFilter: (
+  /** @deprecated Use `systemProfile` for profile-driven activation instead.
+   *  When omitted and `systemProfile` is present, activation is derived from the profile. */
+  readonly activationFilter?: (
     auction: Auction,
     seat: Seat,
   ) => readonly string[];
@@ -42,6 +46,12 @@ export interface ConventionBundle {
   readonly description?: string;
   /** Explanation catalog for enriching teaching projections with template keys. */
   readonly explanationCatalog?: ExplanationCatalogIR;
+  /** Pedagogical relations for enriching WhyNot entries with family/strength relationships. */
+  readonly pedagogicalRelations?: readonly PedagogicalRelation[];
+  /** Alternative groups for grading acceptable alternatives in teaching resolution. */
+  readonly acceptableAlternatives?: readonly AlternativeGroup[];
+  /** Intent families for relationship-aware credit in teaching resolution. */
+  readonly intentFamilies?: readonly IntentFamily[];
 }
 
 /**
@@ -52,14 +62,14 @@ export function createConventionConfigFromBundle(
   bundle: ConventionBundle,
   overrides: {
     name: string;
-    description: string;
+    description?: string;
     categoryFallback?: ConventionCategory;
   },
 ): ConventionConfig {
   return {
     id: bundle.id,
     name: overrides.name,
-    description: overrides.description,
+    description: overrides.description ?? bundle.description ?? "",
     category: bundle.category ?? overrides.categoryFallback ?? ConventionCategory.Constructive,
     dealConstraints: bundle.dealConstraints,
     defaultAuction: bundle.defaultAuction,

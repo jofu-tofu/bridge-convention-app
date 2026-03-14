@@ -11,13 +11,6 @@ export interface GateResult {
   readonly reason?: string;
 }
 
-export interface GatedProposal {
-  readonly candidateBidName: string;
-  readonly moduleId: string;
-  readonly gateResults: readonly GateResult[];
-  readonly passedAllGates: boolean;
-}
-
 /** The canonical gate evaluation order. */
 const GATE_ORDER: readonly GateId[] = [
   "semantic-applicability",

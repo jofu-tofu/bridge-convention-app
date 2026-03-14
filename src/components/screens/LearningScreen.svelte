@@ -17,7 +17,7 @@
   );
 
   const conventionTeaching = $derived<ConventionTeaching | null>(
-    config?.explanations?.convention ?? config?.teaching ?? null,
+    config?.teaching ?? null,
   );
 
   function handleConventionClick(conv: ConventionConfig) {

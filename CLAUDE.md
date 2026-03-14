@@ -28,7 +28,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 
 ## Dev Tools (dev server only)
 
-- **URL routing:** `?convention=nt-bundle` jumps to game screen with that convention (IDs: `nt-bundle`, `bergen-bundle`). `?learn=nt-bundle` jumps to learning screen.
+- **URL routing:** `?convention=nt-bundle` jumps to game screen with that convention (IDs: `nt-bundle`, `nt-stayman`, `nt-transfers`, `bergen-bundle`). `?learn=nt-bundle` jumps to learning screen.
 - **Deterministic seed:** `?seed=42` seeds the PRNG for reproducible deals. Seed advances per deal (42, 43, 44...). Reload resets.
 - **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=nt-bundle&autoplay=true`
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
@@ -116,11 +116,11 @@ tests/
 
 The app separates two concerns: **deterministic convention teaching** and **probabilistic realism**.
 
-- **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `MeaningSurface` describes a bidding meaning with clauses evaluated against facts.
+- **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `MeaningSurface` describes a bidding meaning with clauses evaluated against facts. `semanticClassId` and `teachingLabel` are required on every surface.
 - **`TeachingResolution`** (`src/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), Acceptable (preferred/alternative tier candidates), Incorrect. `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)` extracts acceptable alternatives. `gradeBid()` grades user input.
-- **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects arbitration results + provenance into teaching-optimized views for "why not X?" UI.
+- **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects arbitration results + provenance into teaching-optimized views for "why not X?" UI. Pedagogical relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
 - **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
-- **Opponents always pass.** No opponent convention strategy — opponents use `passStrategy` exclusively.
+- **Opponent modes:** "none" (opponents always pass) or "natural" (opponents bid with 6+ HCP and 5+ suit). Configurable via settings dropdown, persisted in localStorage.
 
 ## Roadmap
 
@@ -132,6 +132,35 @@ The app separates two concerns: **deterministic convention teaching** and **prob
    - (b) Dedicated learning screen — needs rebuild for meaning pipeline (old tree-walking display removed). Future: Spotlight Walk, Decision Cards, Dual Pane views.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard)
 11. **Convention Migration** — Migrate remaining conventions (SAYC, Weak Twos, Lebensohl Lite) to meaning pipeline bundles. Currently only nt-bundle and bergen-bundle exist.
+
+## Architecture Spec & Alignment
+
+**Design specs** (the authoritative vision for the full architecture):
+
+- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-convention-protocol.md` — Agreement Module IR: composable convention modules, system profiles, conversation machines, two-phase evaluation, public state layers, WitnessSpecIR, FactCatalogIR
+- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-candidate-pipeline.md` — Meaning-centric pipeline: MeaningSurface as canonical unit, semantic arbitration, TeachingProjection, DecisionProvenance, PedagogicalRelation graph, ExplanationCatalog
+
+**Alignment summary (as of 2026-03-14):**
+
+| Area | Alignment | Key gaps |
+|------|-----------|----------|
+| Pipeline (selection, teaching, provenance) | ~85% | Grading taxonomy missing "Correct-but-not-preferred" and "Near miss" grades. priorityClass→band indirection not implemented (surfaces set band directly). |
+| Upstream (modules, profiles, machine) | ~65% | Profile-driven activation implemented (`activationFilter` deprecated, `resolveActiveModules()` is source of truth). Sub-bundles (Stayman-only, Transfers-only) prove composition model. Two-phase evaluation not unified. No host-attachment, submachines, or loops. ActivationTrace always empty. |
+| Convention coverage | Pattern 1 only | Only fixed-sequence ask-and-tell (Stayman, Bergen). Patterns 2-6 (relay, competitive, pattern-triggered, variable-length, slam-with-interference) not yet exercised. |
+| WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
+| DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
+
+**Next steps (recommended order for implementing spec toward many-convention future):**
+
+1. ~~**Make system profiles drive module activation.**~~ Done. `activationFilter` is deprecated (optional). `resolveActiveModules()` drives activation via `bundle-adapter.ts resolveActivation()`.
+2. ~~**Implement Stayman-only and Transfer-only sub-bundles.**~~ Done. `nt-stayman` and `nt-transfers` bundles registered with dedicated profiles (`NT_STAYMAN_ONLY_PROFILE`, `NT_TRANSFERS_ONLY_PROFILE`).
+3. **Build the learning screen** on existing TeachingProjection + ConventionTeaching contracts. The data pipeline is now fully wired; the UI is the missing piece.
+4. **Add Smolen surfaces to NT bundle.** First new convention content within an existing bundle. Tests the R3 continuation pattern with a cross-major-suit reference.
+5. **Implement a Pattern 2 convention (Weak Twos or Lebensohl Lite).** Exercises relay chains, variable responses, and tests the machine's loop/forking capabilities against the spec.
+6. **Implement a Pattern 4 convention (Negative Doubles).** Exercises host-attachment activation and pattern-triggered modules — the hardest spec requirement.
+7. **Wire WitnessSpecIR to deal generation.** Replace raw DealConstraints with WitnessSpec-based generation. The types and compiler already exist.
+8. **Unify two-phase evaluation.** Merge `buildSnapshotFromAuction()` + machine evaluation into a single `evaluate()` call returning `{ publicSnapshot, decisionSurfaces }` per spec.
+9. **Migrate pipeline to DecisionSurfaceIR.** Complete the surface-adapter migration so the pipeline consumes DecisionSurfaceIR instead of raw MeaningSurface.
 
 ## Test-Driven Development
 
@@ -171,7 +200,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
-- All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`
+- All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `pedagogicalRelations`, `acceptableAlternatives`, `explanationCatalog`
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
 - `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports
@@ -231,4 +260,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-14 | version=13 | dir-commits-at-audit=62 | tree-sig=dirs:18,files:150+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-14 | version=14 | dir-commits-at-audit=62 | tree-sig=dirs:18,files:150+ -->

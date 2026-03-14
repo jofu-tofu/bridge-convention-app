@@ -1,5 +1,6 @@
 import type { Call } from "../../engine/types";
 import type { ConditionRole } from "./evidence-bundle";
+import type { RecommendationBand } from "./meaning";
 
 export interface SiblingConditionDetail {
   readonly name: string;
@@ -48,6 +49,12 @@ export interface ResolvedCandidateDTO {
   /** All encoder encodings with legality — retained for teaching and obligation enrichment.
    *  `resolvedCall` is the first legal encoding (selection unchanged). */
   readonly allEncodings?: readonly { readonly call: Call; readonly legal: boolean }[];
+  /** Originating module — threaded from MeaningProposal for downstream consumers. */
+  readonly moduleId?: string;
+  /** Semantic equivalence class — threaded from MeaningProposal. */
+  readonly semanticClassId?: string;
+  /** Authored recommendation band — threaded from MeaningProposal ranking. */
+  readonly recommendationBand?: RecommendationBand;
 }
 
 /** Check three eligibility dimensions for DTO — pedagogical is post-selection annotation, not a gate.

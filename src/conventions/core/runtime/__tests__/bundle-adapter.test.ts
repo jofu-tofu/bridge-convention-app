@@ -53,6 +53,7 @@ const dummySurface: MeaningSurface = {
     intraModuleOrder: 0,
   },
   sourceIntent: { type: "test", params: {} },
+  teachingLabel: "Test dummy",
 };
 
 function makeBundleWithSurfaces(

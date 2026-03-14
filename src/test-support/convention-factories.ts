@@ -15,13 +15,15 @@ import type { ConversationMachine, MachineState } from "../conventions/core/runt
 export function makeSurface(overrides: Partial<MeaningSurface> & { meaningId?: string; moduleId?: string } = {}): MeaningSurface {
   return {
     meaningId: "test:meaning",
+    semanticClassId: "test:class",
     moduleId: "test",
     encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
     clauses: [],
     ranking: makeRanking(),
     sourceIntent: { type: "TestIntent", params: {} },
+    teachingLabel: "Test meaning",
     ...overrides,
-  };
+  } as MeaningSurface;
 }
 
 /** Create a default RankingMetadata with override support. */

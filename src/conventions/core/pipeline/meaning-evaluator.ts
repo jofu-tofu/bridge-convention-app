@@ -159,7 +159,7 @@ export function evaluateMeaningSurface(
 }
 
 /** Input type for evaluateAllSurfaces: either MeaningSurface[] or DecisionSurfaceIR[]. */
-export type EvaluableSurface = MeaningSurface | DecisionSurfaceIR;
+type EvaluableSurface = MeaningSurface | DecisionSurfaceIR;
 
 /**
  * Type guard: distinguishes MeaningSurface from DecisionSurfaceIR.

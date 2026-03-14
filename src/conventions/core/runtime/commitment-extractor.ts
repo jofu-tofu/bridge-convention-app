@@ -57,13 +57,8 @@ export function deriveEntailedDenials(
       case "surface":
         // All surfaces from the same router query are peers
         return true;
-      case "meaning-family":
-        return s.familyId !== undefined && domain.ids.includes(s.familyId);
       case "semantic-class-set":
-        return (
-          s.semanticClassId !== undefined &&
-          domain.ids.includes(s.semanticClassId)
-        );
+        return domain.ids.includes(s.semanticClassId);
       case "module-frontier":
         return s.moduleId === domain.id;
     }

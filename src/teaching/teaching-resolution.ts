@@ -17,6 +17,8 @@ export interface AcceptableBid {
   readonly tier: "preferred" | "alternative";
   /** Intent family relationship, if the bid belongs to an IntentFamily. */
   readonly relationship?: IntentRelationship;
+  /** Originating module — threaded from ResolvedCandidateDTO. */
+  readonly moduleId?: string;
 }
 
 export interface TeachingResolution {
@@ -78,6 +80,7 @@ export function resolveTeachingAnswer(
         reason: `${tier} alternative: ${candidate.meaning}`,
         fullCredit: tier === "preferred",
         tier,
+        moduleId: candidate.moduleId,
       };
     });
 
@@ -118,6 +121,7 @@ export function resolveTeachingAnswer(
             fullCredit,
             tier: group.tier,
             relationship: family?.members.includes(memberName) ? family.relationship : undefined,
+            moduleId: memberCandidate.moduleId,
           });
         }
       }

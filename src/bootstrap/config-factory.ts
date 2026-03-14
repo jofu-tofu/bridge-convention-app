@@ -43,6 +43,9 @@ export function buildBundleStrategy(
       posteriorEngine: createPosteriorEngine(),
       surfaceRouterForCommitments: bundle.surfaceRouter,
       explanationCatalog: bundle.explanationCatalog,
+      acceptableAlternatives: bundle.acceptableAlternatives,
+      intentFamilies: bundle.intentFamilies,
+      pedagogicalRelations: bundle.pedagogicalRelations,
     },
   );
 }

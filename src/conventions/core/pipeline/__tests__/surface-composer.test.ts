@@ -10,13 +10,15 @@ import { BidSuit } from "../../../../engine/types";
 function makeSurface(overrides?: Partial<MeaningSurface>): MeaningSurface {
   return {
     meaningId: "test:meaning",
+    semanticClassId: "test:class",
     moduleId: "test",
     encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
     clauses: [],
     ranking: { recommendationBand: "should", specificity: 1, modulePrecedence: 0, intraModuleOrder: 0 },
     sourceIntent: { type: "test-intent", params: {} },
+    teachingLabel: "Test meaning",
     ...overrides,
-  };
+  } as MeaningSurface;
 }
 
 function makeSuppress(targetId: string, id = "t1"): CandidateTransform {

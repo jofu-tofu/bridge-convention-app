@@ -25,6 +25,7 @@ function makeSurface(
 ): MeaningSurface {
   return {
     meaningId: "test:meaning",
+    semanticClassId: "test:class",
     moduleId: "test-module",
     encoding: {
       defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
@@ -37,8 +38,9 @@ function makeSurface(
       intraModuleOrder: 0,
     },
     sourceIntent: { type: "test-intent", params: {} },
+    teachingLabel: "Test meaning",
     ...overrides,
-  };
+  } as MeaningSurface;
 }
 
 describe("adaptMeaningSurface", () => {

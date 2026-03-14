@@ -7,6 +7,7 @@ describe("MeaningSurface", () => {
   it("can construct a MeaningSurface with all required fields", () => {
     const surface: MeaningSurface = {
       meaningId: "stayman:ask-major",
+      semanticClassId: "bridge:major-ask",
       moduleId: "stayman",
       encoding: {
         defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
@@ -30,6 +31,7 @@ describe("MeaningSurface", () => {
         type: "stayman-ask",
         params: {},
       },
+      teachingLabel: "Stayman 2C",
     };
 
     expect(surface.meaningId).toBe("stayman:ask-major");
@@ -43,7 +45,7 @@ describe("MeaningSurface", () => {
     expect(surface.ranking.recommendationBand).toBe("should");
   });
 
-  it("can construct with optional fields (semanticClassId, alternateEncodings, teachingLabel, familyId)", () => {
+  it("can construct with optional fields (alternateEncodings)", () => {
     const surface: MeaningSurface = {
       meaningId: "stayman:ask-major",
       semanticClassId: "bridge:major-ask",
@@ -69,7 +71,6 @@ describe("MeaningSurface", () => {
         params: { level: 2 },
       },
       teachingLabel: "Stayman Convention",
-      familyId: "stayman-family",
     };
 
     expect(surface.semanticClassId).toBe("bridge:major-ask");
@@ -78,7 +79,6 @@ describe("MeaningSurface", () => {
       "after-interference",
     );
     expect(surface.teachingLabel).toBe("Stayman Convention");
-    expect(surface.familyId).toBe("stayman-family");
   });
 
   it("all operator types can be used in clauses (gte, lte, eq, range, boolean, in)", () => {
@@ -140,6 +140,7 @@ describe("MeaningSurface", () => {
   it("encoding.defaultCall accepts both contract bids and special calls", () => {
     const contractBidSurface: MeaningSurface = {
       meaningId: "test:contract-bid",
+      semanticClassId: "test:contract-bid-class",
       moduleId: "test",
       encoding: {
         defaultCall: { type: "bid", level: 3, strain: BidSuit.NoTrump },
@@ -152,10 +153,12 @@ describe("MeaningSurface", () => {
         intraModuleOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
+      teachingLabel: "3NT contract bid",
     };
 
     const passSurface: MeaningSurface = {
       meaningId: "test:pass",
+      semanticClassId: "test:pass-class",
       moduleId: "test",
       encoding: {
         defaultCall: { type: "pass" } as Call,
@@ -168,6 +171,7 @@ describe("MeaningSurface", () => {
         intraModuleOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
+      teachingLabel: "Pass",
     };
 
     expect(contractBidSurface.encoding.defaultCall.type).toBe("bid");

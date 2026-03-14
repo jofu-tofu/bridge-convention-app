@@ -182,7 +182,7 @@ function buildProvenance(
 
   return {
     applicability,
-    activation: [],
+    activation: [], // activation traces not yet implemented — always empty
     transforms: [],
     encoding: traces.encoding,
     legality: traces.legality,

@@ -37,6 +37,7 @@ function makeSurface(
   overrides: Partial<MeaningSurface> & { meaningId: string },
 ): MeaningSurface {
   return {
+    semanticClassId: "test:class",
     moduleId: "test-module",
     encoding: {
       defaultCall: { type: "bid", level: 2, strain: "C" } as Call,
@@ -49,14 +50,14 @@ function makeSurface(
       intraModuleOrder: 1,
     },
     sourceIntent: { type: "test", params: {} },
+    teachingLabel: "Test meaning",
     ...overrides,
-  };
+  } as MeaningSurface;
 }
 
 const surfaceA = makeSurface({
   meaningId: "meaning-a",
   semanticClassId: "class-a",
-  familyId: "family-x",
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "C" } as Call },
   publicConsequences: {
@@ -69,7 +70,6 @@ const surfaceA = makeSurface({
 const surfaceB = makeSurface({
   meaningId: "meaning-b",
   semanticClassId: "class-b",
-  familyId: "family-x",
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "D" } as Call },
   publicConsequences: {
@@ -82,7 +82,6 @@ const surfaceB = makeSurface({
 const surfaceC = makeSurface({
   meaningId: "meaning-c",
   semanticClassId: "class-c",
-  familyId: "family-y",
   moduleId: "mod-beta",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "H" } as Call },
   publicConsequences: {
@@ -95,7 +94,6 @@ const surfaceC = makeSurface({
 const surfaceNoConsequences = makeSurface({
   meaningId: "meaning-d",
   semanticClassId: "class-d",
-  familyId: "family-x",
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "S" } as Call },
 });
@@ -153,35 +151,6 @@ describe("deriveEntailedDenials — domain kind: surface", () => {
     };
     const denials = deriveEntailedDenials(surfaceA, partial, testEntry, testRouter, emptyAuction);
     expect(denials).toHaveLength(0);
-  });
-});
-
-describe("deriveEntailedDenials — domain kind: meaning-family", () => {
-  const policy: ChoiceClosurePolicy = {
-    exclusive: true,
-    exhaustive: true,
-    mandatory: true,
-    domain: { kind: "meaning-family", ids: ["family-x"] },
-  };
-
-  it("derives denials only for unchosen surfaces within the named family", () => {
-    const denials = deriveEntailedDenials(surfaceA, policy, testEntry, testRouter, emptyAuction);
-
-    // surfaceB is in family-x → denial for hearts >= 5
-    // surfaceC is in family-y → excluded
-    // surfaceNoConsequences is in family-x but has no promises → skipped
-    expect(denials).toHaveLength(1);
-    expect(denials[0]!.constraint.factId).toBe("hand.suitLength.hearts");
-    expect(denials[0]!.origin).toBe("entailed-denial");
-    expect(denials[0]!.strength).toBe("entailed");
-  });
-
-  it("excludes surfaces outside the named families", () => {
-    const denials = deriveEntailedDenials(surfaceA, policy, testEntry, testRouter, emptyAuction);
-    const spadesDenial = denials.find(
-      (d) => d.constraint.factId === "hand.suitLength.spades",
-    );
-    expect(spadesDenial).toBeUndefined();
   });
 });
 

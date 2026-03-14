@@ -1,6 +1,6 @@
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
-import { Seat, Suit, BidSuit } from "../../../engine/types";
+import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import {
@@ -23,6 +23,8 @@ import { BERGEN_PROFILE } from "./system-profile";
 import { BERGEN_ROUTED_SURFACES, createBergenSurfaceRouter } from "./surface-routing";
 import { createBergenConversationMachine } from "./machine";
 import { BERGEN_EXPLANATION_CATALOG } from "./explanation-catalog";
+import { BERGEN_ALTERNATIVE_GROUPS } from "./alternatives";
+import { BERGEN_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 
 const bergenBundleDealConstraints: DealConstraints = {
   seats: [
@@ -56,16 +58,6 @@ export const bergenBundle: ConventionBundle = {
     }
     return undefined;
   },
-  activationFilter: (auction) => {
-    const has1Major = auction.entries.some(
-      (e) =>
-        e.call.type === "bid" &&
-        e.call.level === 1 &&
-        (e.call.strain === BidSuit.Hearts || e.call.strain === BidSuit.Spades),
-    );
-    if (!has1Major) return [];
-    return ["bergen-raises"];
-  },
   meaningSurfaces: [
     // R1: Responder initial bids
     { groupId: "responder-r1-hearts", surfaces: BERGEN_R1_HEARTS_SURFACES },
@@ -90,4 +82,6 @@ export const bergenBundle: ConventionBundle = {
   systemProfile: BERGEN_PROFILE,
   conversationMachine: createBergenConversationMachine(),
   explanationCatalog: BERGEN_EXPLANATION_CATALOG,
+  pedagogicalRelations: BERGEN_PEDAGOGICAL_RELATIONS,
+  acceptableAlternatives: BERGEN_ALTERNATIVE_GROUPS,
 };

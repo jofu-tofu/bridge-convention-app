@@ -21,20 +21,19 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `alternatives.ts` | `AlternativeGroup[]` for cross-convention or within-bundle alternatives |
 | `index.ts` | Barrel exports |
 | `__tests__/` | Bundle-specific tests |
-| `activation.ts` | *(NT only)* Activation filter for 1NT opening detection |
+
 
 **`nt-bundle/`** — Combines Stayman + Jacoby Transfers into a single 1NT response bundle.
 - `config.ts` — `ConventionBundle` with `meaningSurfaces` (9 groups, 29 surfaces), `factExtensions` (staymanFacts, transferFacts, ntResponseFacts), `surfaceRouter`, `conversationMachine`, `declaredCapabilities: { ntOpenerContext: "active" }`. `memberIds: ["jacoby-transfers", "stayman"]` (Jacoby first for tie-breaking priority).
 - `meaning-surfaces.ts` — 29 `MeaningSurface` definitions across responder R1 (5), opener Stayman response (3), opener transfer accept hearts (1) + spades (1), Stayman R3 after 2H/2S/2D (4+4+2), transfer R3 after hearts/spades accept (4+4). 982 lines — largest file in the bundle.
 - `facts.ts` — 3 `FactCatalogExtension`s: `staymanFacts` (module.stayman.*, posterior facts), `transferFacts` (module.transfer.*), `ntResponseFacts` (module.ntResponse.inviteValues/gameValues/slamValues).
 - `machine.ts` — 13-state hierarchical FSM: idle → nt-opened → responder-r1 → opener-stayman / opener-transfer-hearts / opener-transfer-spades → responder-r3 variants → terminal / nt-contested. Uses hierarchical parent states (`nt-opened` as parent).
-- `activation.ts` — `ntActivationFilter()` returns `["jacoby-transfers", "stayman"]` when 1NT is in the auction.
 - `alternatives.ts` — 1 cross-convention `AlternativeGroup`: "NT response: transfer vs Stayman".
 - `pedagogical-relations.ts` — `NT_PEDAGOGICAL_RELATIONS` graph.
 - `surface-routing.ts` — 9 `RoutedSurfaceGroup` entries; `createNtSurfaceRouter()` delegates to `evaluateMachine()`.
 
 **`bergen-bundle/`** — Bergen Raises using the meaning pipeline with `$suit` binding parameterization for hearts and spades.
-- `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `surfaceRouter`, `conversationMachine`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Inline `activationFilter` checks for 1-level major bid.
+- `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `surfaceRouter`, `conversationMachine`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.
 - `meaning-surfaces.ts` — `createBergenR1Surfaces(suit)` factory producing 5 surfaces per suit (splinter, game, limit, constructive, preemptive) parameterized by `$suit` bindings. Also includes R2–R4 surfaces. 604 lines total.
 - `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4).
 - `machine.ts` — ~16-state flat FSM (`parentId: null` everywhere): idle → major-opened-hearts/spades → responder-r1 → R2 (opener-after-constructive/limit/preemptive) → R3 (responder-after-opener-rebid) → R4 → terminal / bergen-contested. Uses `surfaceGroupId` and `entryEffects` for `setCaptain`.
@@ -54,7 +53,7 @@ Every convention bundle must satisfy all items before being considered complete:
 2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state.
 3. **`surfaceRouter` for round-aware filtering.** Maps FSM state → surface group via `RoutedSurfaceGroup[]`. Without this, all surfaces are evaluated every round (expensive and semantically incorrect).
 4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, `terminal`, and a contested state.
-5. **`activationFilter` function.** Returns active convention IDs given auction state. Must return `[]` when the convention's trigger bid is absent.
+5. **`systemProfile` for activation.** Profile-based module activation via `SystemProfileIR`. The legacy `activationFilter` field is optional and no longer needed when `systemProfile` is present.
 6. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate.
 7. **`convention-config.ts` wrapper.** Thin `ConventionConfig` that maps bundle fields to the registry interface. Required for UI picker compatibility.
 8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections. Each entry links a `factId` to display text and contrastive templates.
@@ -93,7 +92,7 @@ The full bundle interface — the primary authoring surface for new conventions.
 | `internal` | No | `boolean` | If `true`, hidden from UI picker (e.g., parity testing). |
 | `dealConstraints` | Yes | `DealConstraints` | Seat-specific HCP, shape, and balanced constraints. |
 | `defaultAuction` | No | `(seat, deal?) => Auction \| undefined` | Pre-filled auction for drill start. |
-| `activationFilter` | Yes | `(auction, seat) => readonly string[]` | Returns active convention IDs given auction state. Returns `[]` when trigger bid absent. |
+| `activationFilter` | No | `(auction, seat) => readonly string[]` | Legacy activation filter. Optional when `systemProfile` is present. |
 | `meaningSurfaces` | No* | `readonly { groupId: string; surfaces: readonly MeaningSurface[] }[]` | Meaning surfaces organized by group. When present, the meaning pipeline is used. |
 | `factExtensions` | No | `readonly FactCatalogExtension[]` | Module-derived fact definitions for surface clause evaluation. |
 | `surfaceRouter` | No | `(auction, seat) => readonly MeaningSurface[]` | Round-aware surface filtering. When absent, all surfaces are evaluated. |
@@ -119,7 +118,6 @@ Skeleton templates for a new convention bundle. Replace `{name}` with bundle ID 
 ```ts
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import { ConventionCategory } from "../../core/types";
-import type { Seat, Auction } from "../../../engine/types";
 import { {NAME}_SURFACES } from "./meaning-surfaces";
 import { {name}Facts } from "./facts";
 import { create{Name}SurfaceRouter } from "./surface-routing";
@@ -138,10 +136,6 @@ export const {name}Bundle: ConventionBundle = {
       { seat: "N" as any, minHcp: 12, maxHcp: 21 },
       { seat: "S" as any, minHcp: 0 },
     ],
-  },
-  activationFilter: (auction: Auction, _seat: Seat): readonly string[] => {
-    // Return member IDs when trigger bid is present, [] otherwise
-    return [];
   },
   meaningSurfaces: [
     { groupId: "responder-r1", surfaces: {NAME}_SURFACES },

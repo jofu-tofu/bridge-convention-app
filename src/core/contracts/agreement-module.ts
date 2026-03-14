@@ -78,7 +78,6 @@ export interface ChoiceClosurePolicy {
 
 export type ClosureDomain =
   | { readonly kind: "surface" }
-  | { readonly kind: "meaning-family"; readonly ids: readonly string[] }
   | { readonly kind: "semantic-class-set"; readonly ids: readonly string[] }
   | { readonly kind: "module-frontier"; readonly id: string };
 

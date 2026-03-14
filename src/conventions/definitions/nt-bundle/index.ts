@@ -1,6 +1,7 @@
 export { ntBundle } from "./config";
-export { ntActivationFilter } from "./activation";
+export { ntStaymanBundle, ntTransfersBundle } from "./sub-bundles";
 export { ntCrossConventionAlternatives } from "./alternatives";
+export { NT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 export { staymanFacts, transferFacts, ntResponseFacts } from "./facts";
 export {
   RESPONDER_SURFACES,

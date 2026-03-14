@@ -115,6 +115,7 @@ export function makeSurface(
   surfaceCounter++;
   return {
     meaningId: `synth:surface-${surfaceCounter}`,
+    semanticClassId: `synth:class-${surfaceCounter}`,
     moduleId: "synth-module",
     encoding: {
       defaultCall: CALLS.bid2C,
@@ -127,8 +128,9 @@ export function makeSurface(
       intraModuleOrder: 0,
     },
     sourceIntent: { type: "synth-intent", params: {} },
+    teachingLabel: `Synth surface ${surfaceCounter}`,
     ...overrides,
-  };
+  } as MeaningSurface;
 }
 
 /**

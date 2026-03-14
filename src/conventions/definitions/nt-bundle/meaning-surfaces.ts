@@ -131,7 +131,7 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
   {
     meaningId: "bridge:nt-invite",
     semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
-    moduleId: "natural",
+    moduleId: "natural-nt",
     encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
     clauses: [
       {
@@ -170,7 +170,7 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
   {
     meaningId: "bridge:to-3nt",
     semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_GAME,
-    moduleId: "natural",
+    moduleId: "natural-nt",
     encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
     clauses: [
       {

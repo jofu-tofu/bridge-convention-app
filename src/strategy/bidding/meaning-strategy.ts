@@ -13,6 +13,7 @@ import type { ArbitrationResult } from "../../core/contracts/module-surface";
 import type { FactCatalog, EvaluatedFacts } from "../../core/contracts/fact-catalog";
 import type { PosteriorEngine, PublicHandSpace, PosteriorFactProvider, PosteriorFactValue, SeatPosterior } from "../../core/contracts/posterior";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
+import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import type { Auction, Seat } from "../../engine/types";
@@ -200,6 +201,9 @@ function buildBidResult(
       })),
     eligibility: ep.eligibility,
     allEncodings: ep.allEncodings,
+    moduleId: ep.proposal.moduleId,
+    semanticClassId: ep.proposal.semanticClassId,
+    recommendationBand: ep.proposal.ranking.recommendationBand,
   }));
 
   return {
@@ -230,11 +234,13 @@ function buildTeachingProjection(
   provenance: DecisionProvenance | null,
   explanationCatalog?: ExplanationCatalogIR,
   posteriorSummary?: PosteriorSummary | null,
+  pedagogicalRelations?: readonly PedagogicalRelation[],
 ): TeachingProjection | null {
   if (!provenance) return null;
   return projectTeaching(arbitration, provenance, {
     explanationCatalog,
     posteriorSummary: posteriorSummary ?? undefined,
+    pedagogicalRelations,
   });
 }
 
@@ -382,6 +388,8 @@ export function meaningBundleToStrategy(
     surfaceRouterForCommitments?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
     /** Explanation catalog for enriching teaching projections with template keys. */
     explanationCatalog?: ExplanationCatalogIR;
+    /** Pedagogical relations for enriching WhyNot entries with family context. */
+    pedagogicalRelations?: readonly PedagogicalRelation[];
   },
 ): ConventionBiddingStrategy {
   const allSurfaces = moduleSurfaces.flatMap((m) => m.surfaces);
@@ -456,6 +464,7 @@ export function meaningBundleToStrategy(
       lastProvenance = result.provenance ?? null;
       lastTeachingProjection = buildTeachingProjection(
         result, lastProvenance, options?.explanationCatalog, lastPosteriorSummary,
+        options?.pedagogicalRelations,
       );
 
       if (!result.selected) return null;

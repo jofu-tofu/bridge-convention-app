@@ -36,7 +36,7 @@ describe("meaningToStrategy", () => {
       strain: BidSuit.Clubs,
     });
     expect(result!.ruleName).toBe("test:ask");
-    expect(result!.meaning).toBe("test:ask");
+    expect(result!.meaning).toBe("Test meaning");
     expect(result!.explanation).toBe("test:ask");
     expect(result!.handSummary).toBeTruthy();
   });
