@@ -83,18 +83,19 @@
     return () => { if (raf) cancelAnimationFrame(raf); };
   });
 
-  function makeDevRng(): (() => number) | undefined {
+  function getDevSeed(): number | undefined {
     if (appStore.devSeed === null) return undefined;
-    const seed = appStore.devSeed + appStore.devDealCount;
-    appStore.advanceDevDeal();
-    return mulberry32(seed);
+    return appStore.devSeed + appStore.devDealCount;
   }
 
   async function startNewDrill() {
     const convention = appStore.selectedConvention;
     if (!convention) return;
     dealNumber++;
-    const bundle = await startDrill(engine, convention, userSeat, makeDevRng(), undefined, {
+    const devSeed = getDevSeed();
+    const devRng = devSeed !== undefined ? mulberry32(devSeed) : undefined;
+    if (devSeed !== undefined) appStore.advanceDevDeal();
+    const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, {
       beliefProvider: (ctx) => {
         try {
           const priv = conditionOnOwnHand(gameStore.publicBeliefState, ctx.seat, ctx.hand, ctx.evaluation);

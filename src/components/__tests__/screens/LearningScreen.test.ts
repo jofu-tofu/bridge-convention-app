@@ -54,11 +54,11 @@ describe("LearningScreen", () => {
     expect(screen.getByRole("button", { name: "Bergen Raises" })).toBeTruthy();
   });
 
-  it("protocol conventions show 'No decision tree' placeholder", () => {
-    // Stayman is now a protocol convention (no ruleTree), so the decision tree
-    // section shows a placeholder instead. Future: protocol-aware tree display.
+  it("protocol conventions show decision trees for each round", () => {
     renderLearningScreen();
-    expect(screen.getByText(/no decision tree/i)).toBeTruthy();
+    // Stayman has protocol rounds — at least the first round should render a tree
+    expect(screen.getByText(/Round 1:/)).toBeTruthy();
+    expect(screen.getAllByRole("tree").length).toBeGreaterThan(0);
   });
 
   it("has a practice button in the convention toolbar", () => {

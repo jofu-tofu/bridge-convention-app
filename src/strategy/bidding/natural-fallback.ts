@@ -13,6 +13,15 @@ const SUIT_TO_BID_SUIT: readonly BidSuit[] = [
   BidSuit.Clubs,
 ];
 
+/** HCP-based maximum bid level to prevent runaway escalation.
+ *  This is a simple fallback — real conventions handle competitive judgment. */
+function maxLevelForHcp(hcp: number): number {
+  if (hcp >= 20) return 5;
+  if (hcp >= 16) return 4;
+  if (hcp >= 12) return 3;
+  return 2;
+}
+
 export const naturalFallbackStrategy: BiddingStrategy = {
   id: "natural-fallback",
   name: "Natural Fallback",
@@ -35,9 +44,10 @@ export const naturalFallbackStrategy: BiddingStrategy = {
     if (bestIndex === -1) return null;
 
     const strain = SUIT_TO_BID_SUIT[bestIndex]!;
+    const maxLevel = maxLevelForHcp(evaluation.hcp);
 
-    // Find cheapest legal level for this suit
-    for (let level = 1; level <= 7; level++) {
+    // Find cheapest legal level for this suit, capped by HCP strength
+    for (let level = 1; level <= maxLevel; level++) {
       const call: ContractBid = {
         type: "bid",
         level: level as ContractBid["level"],

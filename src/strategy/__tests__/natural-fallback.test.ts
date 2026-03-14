@@ -121,4 +121,35 @@ describe("naturalFallbackStrategy", () => {
     expect(result).not.toBeNull();
     expect(result!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
   });
+
+  it("declines to bid when auction is above HCP-based max level", () => {
+    // 8 HCP, 6 hearts — max level 2 for 6-11 HCP
+    const sixHearts = hand(
+      "SJ", "S4", "S2",
+      "HK", "HJ", "H9", "H8", "H7", "H6",
+      "DQ", "D3",
+      "CJ", "C2",
+    );
+    // Auction already at 3-level — 8 HCP hand should not compete further
+    const ctx = makeContext(sixHearts, ["1H", "2S", "3H", "3S", "P", "P"]);
+    const result = naturalFallbackStrategy.suggest(ctx);
+
+    expect(result).toBeNull();
+  });
+
+  it("allows 3-level bid with 12+ HCP", () => {
+    // 13 HCP, 5 spades — max level 3 for 12-15 HCP
+    const strongHand = hand(
+      "SA", "SK", "SQ", "S8", "S7",
+      "H4", "H3",
+      "DJ", "D5", "D3",
+      "CJ", "C4", "C2",
+    );
+    // Auction at 2-level — 13 HCP hand can bid at 3-level
+    const ctx = makeContext(strongHand, ["2H", "P", "P"]);
+    const result = naturalFallbackStrategy.suggest(ctx);
+
+    expect(result).not.toBeNull();
+    expect(result!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Spades });
+  });
 });

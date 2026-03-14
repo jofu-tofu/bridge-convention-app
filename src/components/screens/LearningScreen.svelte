@@ -1,8 +1,11 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
   import { listConventions } from "../../conventions/core";
-  import type { ConventionConfig, ConventionTeaching } from "../../conventions/core";
+  import type { ConventionConfig, ConventionTeaching, ProtocolRound } from "../../conventions/core";
   import { filterConventions } from "../../core/display/filter-conventions";
+  import DecisionTree from "../game/DecisionTree.svelte";
+  import { flattenTreeForDisplay } from "../game/DecisionTree";
+  import type { TreeDisplayRow } from "../game/DecisionTree";
 
   const appStore = getAppStore();
 
@@ -19,6 +22,28 @@
   const conventionTeaching = $derived<ConventionTeaching | null>(
     config?.explanations?.convention ?? config?.teaching ?? null,
   );
+
+  interface RoundDisplay {
+    readonly name: string;
+    readonly label: string;
+    readonly rows: TreeDisplayRow[];
+  }
+
+  const protocolRounds = $derived.by<RoundDisplay[]>(() => {
+    if (!config?.protocol?.rounds) return [];
+    const rounds: RoundDisplay[] = [];
+    for (let i = 0; i < config.protocol.rounds.length; i++) {
+      const round: ProtocolRound = config.protocol.rounds[i]!;
+      const tree = typeof round.handTree === "function"
+        ? round.handTree({})
+        : round.handTree;
+      const rows = flattenTreeForDisplay(tree, config.explanations);
+      if (rows.length === 0) continue;
+      const label = `Round ${i + 1}: ${round.name.charAt(0).toUpperCase() + round.name.slice(1).replace(/-/g, " ")}`;
+      rounds.push({ name: round.name, label, rows });
+    }
+    return rounds;
+  });
 
   function handleConventionClick(conv: ConventionConfig) {
     appStore.navigateToLearning(conv);
@@ -196,11 +221,18 @@
 
           <hr class="border-border-subtle" />
 
-          <!-- Decision Tree placeholder — protocol conventions don't produce a single tree root.
-               Future: protocol-aware tree display. -->
-          <div class="text-text-muted italic py-8 text-center">
-            No decision tree available for this convention.
-          </div>
+          {#if protocolRounds.length > 0}
+            {#each protocolRounds as round (round.name)}
+              <section>
+                <h2 class="text-lg font-semibold text-text-primary mb-3">{round.label}</h2>
+                <DecisionTree rows={round.rows} depth={depthMode} />
+              </section>
+            {/each}
+          {:else}
+            <div class="text-text-muted italic py-8 text-center">
+              No decision tree available for this convention.
+            </div>
+          {/if}
         </div>
       {:else}
         <div class="text-center py-12 text-text-muted">
