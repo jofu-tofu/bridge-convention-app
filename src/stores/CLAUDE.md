@@ -8,7 +8,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
 - **Minimal engine imports.** Stores import `EnginePort` type, `nextSeat`/`partnerSeat` from constants, and `evaluateHand` from hand-evaluator (for bid correctness checking). Never import `auction`, `scoring`, etc.
-- **No conventions/core imports.** `game.svelte.ts` uses `noopExtractor` from `inference/noop-extractor`. The `toExtractorInput()` adapter builds a narrow DTO for annotation production.
+- **Minimal conventions/core imports.** `bidding.svelte.ts` imports `createBiddingContext`; `app.svelte.ts` imports type `ConventionConfig`. `game.svelte.ts` uses `noopExtractor` from `inference/noop-extractor`. The `toExtractorInput()` adapter builds a narrow DTO for annotation production.
 
 ## Architecture
 
@@ -39,9 +39,9 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 **DECLARER_PROMPT conditions:**
 - **North declares (user is dummy):** Offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/core/display/seat-mapping.ts`) or "Skip to Review"
 - **E/W declares:** Offers "Play as Defender" (user stays South) or "Skip to Review"
-- **South declares:** Skips directly to EXPLANATION (no prompt needed)
+- **South declares:** Shows DECLARER_PROMPT with Play/Skip options (`acceptSouthPlay`/`declineSouthPlay`).
 
-**Play phase entry:** `acceptDeclarerSwap` (when user is dummy and chooses to play as declarer) or `acceptDefend` (when opponent declares and user chooses to defend).
+**Play phase entry:** `acceptDeclarerSwap` (when user is dummy and chooses to play as declarer) or `acceptDefend` (when opponent declares and user chooses to defend) or `acceptSouthPlay` (when South declares and user chooses to play).
 
 **AI play behavior:** Heuristic strategy chain (opening leads, second-hand-low, third-hand-high, cover honor, trump management, discard, fallback) with 500ms delay between plays. Falls back to random play if no strategy configured.
 

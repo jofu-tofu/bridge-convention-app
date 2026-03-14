@@ -1,18 +1,20 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../engine/types";
 import type { Call } from "../../engine/types";
-import {
-  projectTeaching,
-  type ArbitrationResult,
-  type EncodedProposal,
-  type EliminationRecord,
-  type DecisionProvenance,
-  type MeaningProposal,
-  type RankingMetadata,
-  type MeaningClause,
-  type CandidateEligibility,
-  type ExplanationCatalogIR,
-} from "../teaching-projection-builder";
+import { projectTeaching } from "../teaching-projection-builder";
+import type {
+  ArbitrationResult,
+  EncodedProposal,
+  EliminationRecord,
+} from "../../core/contracts/module-surface";
+import type {
+  RankingMetadata,
+  MeaningClause,
+  MeaningProposal,
+} from "../../core/contracts/meaning";
+import type { DecisionProvenance } from "../../core/contracts/provenance";
+import type { CandidateEligibility } from "../../core/contracts/tree-evaluation";
+import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
 

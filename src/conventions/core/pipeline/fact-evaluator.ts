@@ -59,7 +59,7 @@ function classifyMajorPattern(spades: number, hearts: number): string {
 
 // ─── Layered evaluators ──────────────────────────────────────
 
-export const PRIMITIVE_EVALUATORS = new Map<string, FactEvaluatorFn>([
+const PRIMITIVE_EVALUATORS = new Map<string, FactEvaluatorFn>([
   ["hand.hcp", (_h, ev) => fv("hand.hcp", ev.hcp)],
   ["hand.suitLength.spades", (_h, ev) =>
     fv("hand.suitLength.spades", ev.shape[0])],
@@ -72,7 +72,7 @@ export const PRIMITIVE_EVALUATORS = new Map<string, FactEvaluatorFn>([
   ["hand.isBalanced", (_h, ev) => fv("hand.isBalanced", isBalanced(ev.shape))],
 ]);
 
-export const BRIDGE_DERIVED_EVALUATORS = new Map<string, FactEvaluatorFn>([
+const BRIDGE_DERIVED_EVALUATORS = new Map<string, FactEvaluatorFn>([
   ["bridge.hasFourCardMajor", (_h, _ev, m) =>
     fv("bridge.hasFourCardMajor", num(m, "hand.suitLength.spades") >= 4 || num(m, "hand.suitLength.hearts") >= 4)],
   ["bridge.hasFiveCardMajor", (_h, _ev, m) =>
@@ -90,7 +90,7 @@ export const BRIDGE_DERIVED_EVALUATORS = new Map<string, FactEvaluatorFn>([
 ]);
 
 /** Combined shared evaluators (primitive + bridge-derived). */
-export const SHARED_EVALUATORS: ReadonlyMap<string, FactEvaluatorFn> = new Map([
+const SHARED_EVALUATORS: ReadonlyMap<string, FactEvaluatorFn> = new Map([
   ...PRIMITIVE_EVALUATORS,
   ...BRIDGE_DERIVED_EVALUATORS,
 ]);
@@ -112,7 +112,7 @@ function suitFactIdFor(suit: string): string | undefined {
   return SUIT_FACT_IDS[suit];
 }
 
-export const RELATIONAL_EVALUATORS = new Map<string, RelationalFactEvaluatorFn>([
+const RELATIONAL_EVALUATORS = new Map<string, RelationalFactEvaluatorFn>([
   ["bridge.supportForBoundSuit", (_h, _ev, evaluated, ctx) => {
     const suitFactId = suitFactIdFor(ctx.bindings?.suit ?? "");
     if (!suitFactId) return fv("bridge.supportForBoundSuit", 0);

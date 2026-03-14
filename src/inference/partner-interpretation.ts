@@ -1,6 +1,5 @@
 // Partner interpretation model — what will partner infer if we make this bid?
 // Lives in inference/ because it runs hypothetical inferFromBid() calls.
-// Consumed by practical-recommender.ts (strategy/ -> inference/ dependency direction).
 
 import type { Call, Seat, Auction, AuctionEntry } from "../engine/types";
 import type { InferenceProvider } from "./types";

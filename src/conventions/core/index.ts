@@ -17,7 +17,6 @@ export {
   clearRegistry,
   getConvention,
   listConventions,
-  listConventionIds,
 } from "./registry";
 
 // ── Context Factory ─────────────────────────────────────────────────────

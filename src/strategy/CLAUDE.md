@@ -17,7 +17,6 @@ strategy/
     strategy-chain.ts        createStrategyChain(strategies, options?) — tries strategies in order, first non-null wins; optional resultFilter rejects results
     natural-fallback.ts      naturalFallbackStrategy — 6+ HCP with 5+ suit → bid cheapest legal
     pass-strategy.ts         Always-pass placeholder strategy
-    practical-recommender.ts computePracticalRecommendation() — fail-closed practical recommendation from candidates + belief. Accepts optional interpretationProvider and pragmaticCandidates.
     practical-scorer.ts      scoreCandidatePractically(), buildPracticalRecommendation() — pure scoring functions. Accepts ScorableCandidate (normative or pragmatic) union type.
     practical-types.ts       PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate — local types (not contracts/)
     pragmatic-generator.ts   generatePragmaticCandidates() — heuristic tactical bids (NT downgrade, competitive overcall, protective double). Import boundary: engine/ + inference/ types only (no conventions/core/ runtime imports).
@@ -40,7 +39,7 @@ strategy/
 ## Gotchas
 
 - **EvaluationTrace:** `TraceCollector` in `trace-collector.ts` builds `EvaluationTrace` DTOs. `createStrategyChain()` records strategy attempts on the trace (including `"filtered"` outcome when `resultFilter` rejects). Always-on (not DEV-gated). Trace flags: `forcingFiltered` (strategy result rejected by chain's `resultFilter`).
-- **`resultFilter` on `createStrategyChain()`:** Generic `(result: BidResult, context: BiddingContext) => boolean` predicate. When the filter returns false, the chain treats the result as "declined" and tries the next strategy. Used by `config-factory.ts` with `createForcingFilter(config)` — rejects Pass results when the conversation machine indicates active forcing. End-to-end guarantee: no strategy (including `passStrategy`) can produce a result that fails the filter.
+- **`resultFilter` on `createStrategyChain()`:** Generic `(result: BidResult, context: BiddingContext) => boolean` predicate. When the filter returns false, the chain treats the result as "declined" and tries the next strategy. Available infrastructure not yet wired into production.
 - **Pragmatic generator** `callKeyForDedup()` is a local utility in `pragmatic-generator.ts` — creates string keys from Calls for deduplication against existing convention candidates.
 
 ---

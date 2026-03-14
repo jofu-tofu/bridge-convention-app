@@ -2,6 +2,7 @@ import { BidSuit } from "./types";
 import type { Auction, ContractBid, Call, Seat } from "./types";
 import { addCall } from "./auction";
 import { nextSeat } from "./constants";
+import { callsMatch } from "./call-helpers";
 
 /** Returns the most recent contract bid in the auction, or null if none. */
 export function lastContractBid(auction: Auction): ContractBid | null {
@@ -57,14 +58,6 @@ export function parsePatternCall(str: string): Call {
   };
 }
 
-function callsEqual(a: Call, b: Call): boolean {
-  if (a.type !== b.type) return false;
-  if (a.type === "bid" && b.type === "bid") {
-    return a.level === b.level && a.strain === b.strain;
-  }
-  return true;
-}
-
 /** Build an Auction from bid strings, rotating seats from the dealer. */
 export function buildAuction(dealer: Seat, bids: string[]): Auction {
   let auction: Auction = { entries: [], isComplete: false };
@@ -85,7 +78,7 @@ export function auctionMatchesExact(
   if (auction.entries.length !== pattern.length) return false;
   for (let i = 0; i < pattern.length; i++) {
     const expected = parsePatternCall(pattern[i]!);
-    if (!callsEqual(auction.entries[i]!.call, expected)) return false;
+    if (!callsMatch(auction.entries[i]!.call, expected)) return false;
   }
   return true;
 }

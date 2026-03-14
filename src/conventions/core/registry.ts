@@ -22,10 +22,6 @@ export function listConventions(): ConventionConfig[] {
   return [...registry.values()];
 }
 
-export function listConventionIds(): string[] {
-  return [...registry.keys()];
-}
-
 export function clearRegistry(): void {
   registry.clear();
 }

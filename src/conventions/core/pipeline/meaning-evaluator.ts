@@ -165,7 +165,7 @@ export type EvaluableSurface = MeaningSurface | DecisionSurfaceIR;
  * Type guard: distinguishes MeaningSurface from DecisionSurfaceIR.
  * MeaningSurface has `meaningId`; DecisionSurfaceIR has `surfaceId` + `decisionProgram`.
  */
-export function isMeaningSurface(
+function isMeaningSurface(
   surface: EvaluableSurface,
 ): surface is MeaningSurface {
   return "meaningId" in surface && !("decisionProgram" in surface);
@@ -199,7 +199,7 @@ function priorityClassToBand(pc: PriorityClass | undefined): RecommendationBand 
  * For other decision programs or when no inlineClauses are present, produces
  * empty clauses (all-pass) as a fallback.
  */
-export function evaluateDecisionSurface(
+function evaluateDecisionSurface(
   surface: DecisionSurfaceIR,
   facts: EvaluatedFacts,
 ): MeaningProposal {

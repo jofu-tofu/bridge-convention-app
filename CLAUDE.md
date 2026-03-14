@@ -78,12 +78,12 @@ src/
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
-    game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, DebugDrawer.ts)
+    game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
     shared/        Reusable components (Card, Button, ConventionCallout)
 src-tauri/         Cargo workspace with three crates
   crates/
     bridge-engine/   Pure Rust engine logic (types, hand eval, deal gen, auction, scoring, play)
-    bridge-tauri/    Tauri app with #[tauri::command] handlers delegating to BridgeEngine trait
+    bridge-tauri/    Tauri app with #[tauri::command] handlers delegating to bridge-engine free functions
     bridge-wasm/     WASM bindings via wasm-bindgen for browser deployment
 tests/
   e2e/             Playwright E2E tests

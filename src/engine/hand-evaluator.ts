@@ -130,7 +130,7 @@ export function getCardsInSuit(hand: Hand, suit: Suit): Card[] {
   return hand.cards.filter((c) => c.suit === suit);
 }
 
-export const hcpStrategy: HandEvaluationStrategy = {
+const hcpStrategy: HandEvaluationStrategy = {
   name: "HCP",
   evaluate(hand: Hand): HandEvaluation {
     const hcp = calculateHcp(hand);

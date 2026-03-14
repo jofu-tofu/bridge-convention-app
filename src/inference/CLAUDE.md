@@ -22,7 +22,7 @@ Auction inference system — extracts hand information from bids with per-partne
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
 | `noop-extractor.ts` | `noopExtractor` — no-op `InferenceExtractor` used by the store |
 | `private-belief.ts` | `PrivateBeliefState`, `conditionOnOwnHand(publicBelief, seat, hand, eval)` — narrows partner suit lengths using own hand (13 minus own length caps partner max) |
-| `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` and `continuationAwkwardness`. Consumed by `practical-recommender.ts` |
+| `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` and `continuationAwkwardness` |
 | `belief-converter.ts` | `toBeliefData()` — converts `PublicBeliefState` → `BeliefData` structural type |
 | `posterior/` | Posterior inference engine — sampling, compilation, and fact evaluation for probabilistic hand inference |
 

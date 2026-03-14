@@ -64,7 +64,7 @@ export function zipProposalsWithSurfaces(
  * When two proposals resolve to the same canonical ID, they are treated
  * as equivalent for deduplication (higher-ranked wins).
  */
-export function buildAliasResolver(
+function buildAliasResolver(
   aliases: readonly { from: string; to: string }[],
 ): (semanticClassId: string | undefined) => string | undefined {
   if (aliases.length === 0) {

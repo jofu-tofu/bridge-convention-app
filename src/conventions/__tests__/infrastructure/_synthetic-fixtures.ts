@@ -39,7 +39,6 @@ import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import { buildPublicSnapshot } from "../../../core/contracts/module-surface";
 import type {
   SystemProfileIR,
-  FactConstraintIR,
 } from "../../../core/contracts/agreement-module";
 
 // ── Machine types ────────────────────────────────────────────
@@ -539,21 +538,6 @@ export function makeInjectTransform(
 // ═══════════════════════════════════════════════════════════════
 // PublicConsequences / Commitment Factories
 // ═══════════════════════════════════════════════════════════════
-
-/**
- * Build a surface with publicConsequences for commitment extraction testing.
- */
-export function makeSurfaceWithCommitments(
-  meaningId: string,
-  promises: FactConstraintIR[],
-  overrides: Partial<MeaningSurface> = {},
-): MeaningSurface {
-  return makeSurface({
-    meaningId,
-    publicConsequences: { promises },
-    ...overrides,
-  });
-}
 
 // ═══════════════════════════════════════════════════════════════
 // BiddingContext Factories

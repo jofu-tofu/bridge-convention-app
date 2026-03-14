@@ -42,7 +42,7 @@ export interface TierEntry {
 
 const _tierRegistry: TierEntry[] = [];
 
-/** Returns all registered tier entries (for tier-report tooling). */
+/** Returns all registered tier entries. */
 export function getTierRegistry(): readonly TierEntry[] {
   return _tierRegistry;
 }

@@ -11,7 +11,7 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 - **Context for DI.** Engine, game store, and app store provided via Svelte context (set in App.svelte, retrieved via `src/stores/context.ts` helpers).
 - **Tailwind CSS + design tokens.** Tailwind utility classes augmented with CSS custom properties defined via `@theme` in `src/app.css`. Midnight Table dark theme. No `<style>` blocks in new components except for CSS that Tailwind can't express (e.g., HandFan overlap/rotation).
 - **Pure function extraction.** Complex logic extracted to `src/core/display/` and `src/bootstrap/` for testability: `sortCards`, `computeTableScale`, `filterConventions` (display/), `startDrill` (bootstrap/).
-- **Companion `.ts` files.** Components with non-trivial logic co-locate a PascalCase `.ts` file next to the `.svelte` file (e.g., `DecisionTree.ts` + `DecisionTree.svelte`). The `.ts` file holds pure functions and types; the `.svelte` file handles rendering. If a second component needs the same logic, move the `.ts` file to `core/display/` or `teaching/`. Tests go in `__tests__/game/` with the original descriptive name (e.g., `tree-display.test.ts`).
+- **Companion `.ts` files.** Components with non-trivial logic co-locate a PascalCase `.ts` file next to the `.svelte` file (e.g., `DecisionTree.ts` + `DecisionTree.svelte`). The `.ts` file holds pure functions and types; the `.svelte` file handles rendering. If a second component needs the same logic, move the `.ts` file to `core/display/` or `teaching/`. Tests go in `__tests__/game/` with the original descriptive name (e.g., `DecisionTree.test.ts`).
 
 ## Accessibility
 

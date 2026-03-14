@@ -84,29 +84,3 @@ export function mergeInferences(
   };
 }
 
-/** Simple merge for cumulative tracking during inference extraction. */
-export function mergeToCumulative(
-  inferences: HandInference[],
-  seat: Seat,
-  source: string,
-): HandInference {
-  let minHcp: number | undefined;
-  let maxHcp: number | undefined;
-  const suits: HandInference["suits"] = {};
-
-  for (const inf of inferences) {
-    if (inf.minHcp !== undefined) {
-      minHcp = minHcp !== undefined ? Math.max(minHcp, inf.minHcp) : inf.minHcp;
-    }
-    if (inf.maxHcp !== undefined) {
-      maxHcp = maxHcp !== undefined ? Math.min(maxHcp, inf.maxHcp) : inf.maxHcp;
-    }
-    for (const [s, si] of Object.entries(inf.suits)) {
-      if (!suits[s as keyof typeof suits]) {
-        suits[s as keyof typeof suits] = { ...si };
-      }
-    }
-  }
-
-  return { seat, minHcp, maxHcp, suits, source };
-}

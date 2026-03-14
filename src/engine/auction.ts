@@ -6,7 +6,7 @@ import type {
   Contract,
   ContractBid,
  Seat } from "./types";
-import { partnerSeat } from "./constants";
+import { areSamePartnership } from "./constants";
 
 /**
  * Bid strain rank for comparison.
@@ -71,10 +71,6 @@ function lastBid(auction: Auction): AuctionEntry | undefined {
   return undefined;
 }
 
-/** Check if two seats are on the same partnership (NS or EW). */
-function sameSide(a: Seat, b: Seat): boolean {
-  return a === b || partnerSeat(a) === b;
-}
 
 export function isLegalCall(auction: Auction, call: Call, seat: Seat): boolean {
   if (auction.isComplete) {
@@ -102,7 +98,7 @@ export function isLegalCall(auction: Auction, call: Call, seat: Seat): boolean {
     if (lastNonPass.call.type !== "bid") {
       return false;
     }
-    return !sameSide(lastNonPass.seat, seat);
+    return !areSamePartnership(lastNonPass.seat, seat);
   }
 
   if (call.type === "redouble") {
@@ -117,13 +113,13 @@ export function isLegalCall(auction: Auction, call: Call, seat: Seat): boolean {
     // The double must have been made by an opponent (not our side)
     // And the underlying bid must be our side's bid
     // Simplification: the doubler is on the opponent side relative to the redoubler
-    return !sameSide(lastNonPass.seat, seat);
+    return !areSamePartnership(lastNonPass.seat, seat);
   }
 
   return false;
 }
 
-export function isAuctionComplete(auction: Auction): boolean {
+function isAuctionComplete(auction: Auction): boolean {
   const entries = auction.entries;
   const len = entries.length;
 
@@ -174,7 +170,7 @@ export function addCall(auction: Auction, entry: AuctionEntry): Auction {
   };
 }
 
-export function getDeclarer(auction: Auction): Seat {
+function getDeclarer(auction: Auction): Seat {
   const last = lastBid(auction);
   if (!last) {
     throw new Error("No bids in auction — cannot determine declarer");
@@ -188,7 +184,7 @@ export function getDeclarer(auction: Auction): Seat {
     if (
       entry.call.type === "bid" &&
       entry.call.strain === finalStrain &&
-      sameSide(entry.seat, declaringSide)
+      areSamePartnership(entry.seat, declaringSide)
     ) {
       return entry.seat;
     }

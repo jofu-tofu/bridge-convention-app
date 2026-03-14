@@ -1,12 +1,5 @@
 import { Suit, BidSuit } from "../../engine/types";
 
-export const SUIT_COLOR_CLASS: Record<Suit, string> = {
-  [Suit.Spades]: "text-suit-spades",
-  [Suit.Hearts]: "text-suit-hearts",
-  [Suit.Diamonds]: "text-suit-diamonds",
-  [Suit.Clubs]: "text-suit-clubs",
-};
-
 export const SUIT_CARD_COLOR_CLASS: Record<Suit, string> = {
   [Suit.Spades]: "text-suit-card-spades",
   [Suit.Hearts]: "text-suit-card-hearts",

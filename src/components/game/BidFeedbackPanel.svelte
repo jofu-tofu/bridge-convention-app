@@ -4,6 +4,7 @@
   import type { BidFeedback } from "../../stores/game.svelte";
   import { BidGrade } from "../../stores/bidding.svelte";
   import { formatCall } from "../../core/display/format";
+  import { callsMatch } from "../../engine/call-helpers";
   import {
     formatRelationKind,
     formatEliminationStage,
@@ -99,23 +100,15 @@
     }
   }
 
-  function callsEqual(a: Call, b: Call): boolean {
-    if (a.type !== b.type) return false;
-    if (a.type === "bid" && b.type === "bid") {
-      return a.level === b.level && a.strain === b.strain;
-    }
-    return true;
-  }
-
   const practicalRec = $derived(feedback.practicalRecommendation);
   const showPracticalNote = $derived(
     practicalRec != null && // eslint-disable-line eqeqeq -- intentional nullish check
     feedback.expectedResult != null && // eslint-disable-line eqeqeq -- intentional nullish check
-    !callsEqual(practicalRec.topCandidateCall, feedback.expectedResult.call)
+    !callsMatch(practicalRec.topCandidateCall, feedback.expectedResult.call)
   );
 
   function isAcceptableWhyNot(call: Call): boolean {
-    return acceptableBids.some((acceptable) => callsEqual(acceptable.call, call));
+    return acceptableBids.some((acceptable) => callsMatch(acceptable.call, call));
   }
 </script>
 

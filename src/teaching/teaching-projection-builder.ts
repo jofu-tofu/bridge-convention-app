@@ -12,25 +12,15 @@ import { callsMatch } from "../engine/call-helpers";
 import type {
   ArbitrationResult,
   EncodedProposal,
-  EliminationRecord,
 } from "../core/contracts/module-surface";
 
 import type {
-  RankingMetadata,
   MeaningClause,
-  MeaningProposal,
 } from "../core/contracts/meaning";
 
 import type {
   DecisionProvenance,
-  ApplicabilityEvidence,
   EliminationTrace,
-  ActivationTrace,
-  TransformTraceEntry,
-  ArbitrationTrace,
-  EncodingTrace,
-  LegalityTrace,
-  HandoffTrace,
 } from "../core/contracts/provenance";
 
 import type {
@@ -40,14 +30,12 @@ import type {
   ExplanationNode,
   WhyNotEntry,
   PedagogicalRelationEntry,
-  PedagogicalRelationKind,
   ConventionContribution,
   SeatRelativeHandSpaceSummary,
 } from "../core/contracts/teaching-projection";
 
 import type { ConditionEvidenceIR } from "../core/contracts/evidence-bundle";
 
-import type { CandidateEligibility } from "../core/contracts/tree-evaluation";
 
 import type {
   ExplanationCatalogIR,
@@ -63,38 +51,6 @@ import {
   findRelationsFor,
   type PedagogicalGraph,
 } from "./pedagogical-graph";
-
-// Re-export contract types for consumers that were importing from this file
-export type {
-  ArbitrationResult,
-  EncodedProposal,
-  EliminationRecord,
-  RankingMetadata,
-  MeaningClause,
-  MeaningProposal,
-  DecisionProvenance,
-  ApplicabilityEvidence,
-  EliminationTrace,
-  ActivationTrace,
-  TransformTraceEntry,
-  ArbitrationTrace,
-  EncodingTrace,
-  LegalityTrace,
-  HandoffTrace,
-  TeachingProjection,
-  CallProjection,
-  MeaningView,
-  ExplanationNode,
-  WhyNotEntry,
-  PedagogicalRelationEntry,
-  PedagogicalRelationKind,
-  ConventionContribution,
-  SeatRelativeHandSpaceSummary,
-  ConditionEvidenceIR,
-  CandidateEligibility,
-  ExplanationCatalogIR,
-  ExplanationEntry,
-};
 
 // -- Options --
 

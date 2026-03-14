@@ -1,12 +1,10 @@
-import type { Auction, Hand } from "../../engine/types";
+import type { Auction } from "../../engine/types";
 import type { Seat } from "../../engine/types";
 import { buildAuction, parsePatternCall } from "../../engine/auction-helpers";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import type { BiddingContext } from "../core/types";
 import { expect } from "vitest";
 
 // Re-export engine test helpers for convenience
-export { card, hand } from "../../engine/__tests__/fixtures";
+export { hand } from "../../engine/__tests__/fixtures";
 import { hand } from "../../engine/__tests__/fixtures";
 
 // --- Named Stayman test hands ---
@@ -30,7 +28,7 @@ export const staymanResponder = () =>
   );
 
 // Re-export production helpers as the test fixture API
-export { buildAuction, parsePatternCall };
+// buildAuction and parsePatternCall are used locally via aliases below
 
 /** Alias for buildAuction — kept for existing test call sites. */
 export const auctionFromBids = buildAuction;
@@ -44,26 +42,6 @@ export const parseCallString = parsePatternCall;
  */
 export function makeOpening(dealer: Seat, bid: string): Auction {
   return buildAuction(dealer, [bid]);
-}
-
-/**
- * Creates a BiddingContext from a hand, seat, bid sequence, and dealer.
- * Shared helper used by edge-case tests across all conventions.
- */
-export function makeBiddingContext(
-  h: Hand,
-  seat: Seat,
-  bids: string[],
-  dealer: Seat,
-  opponentConventionIds: readonly string[] = [],
-): BiddingContext {
-  return {
-    hand: h,
-    auction: auctionFromBids(dealer, bids),
-    seat,
-    evaluation: evaluateHand(h),
-    opponentConventionIds,
-  };
 }
 
 /**

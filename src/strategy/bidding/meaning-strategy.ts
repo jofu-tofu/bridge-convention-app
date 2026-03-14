@@ -27,6 +27,7 @@ import {
 } from "../../conventions/core/pipeline/meaning-arbitrator";
 import { composeSurfaces, mergeUpstreamProvenance } from "../../conventions/core/pipeline/surface-composer";
 import { getLegalCalls } from "../../engine/auction";
+import { partnerSeat } from "../../engine/constants";
 import { formatHandSummary } from "../../core/display/hand-summary";
 import { createPosteriorFactProvider } from "../../inference/posterior";
 import { projectTeaching } from "../../teaching/teaching-projection-builder";
@@ -92,11 +93,6 @@ function runMeaningPipeline(input: PipelineInput): PipelineOutput {
 
 // ─── Posterior Helpers ──────────────────────────────────────────
 
-function getPartnerSeat(seat: Seat): string {
-  const partners: Record<string, string> = { N: "S", S: "N", E: "W", W: "E" };
-  return partners[seat] ?? "N";
-}
-
 /** Posterior wiring state — caches PublicHandSpace[] across calls at the same auction length. */
 interface PosteriorCache {
   handSpaces: PublicHandSpace[] | null;
@@ -122,8 +118,8 @@ function buildPosteriorProvider(
     cache.handSpaces = engine.compilePublic(snapshot);
     cache.auctionLength = auctionLength;
   }
-  const partnerSeat = getPartnerSeat(context.seat);
-  const partnerSpace = cache.handSpaces?.find((s) => s.seatId === partnerSeat);
+  const partner: string = partnerSeat(context.seat);
+  const partnerSpace = cache.handSpaces?.find((s) => s.seatId === partner);
   if (!partnerSpace) return {};
 
   const seatPosterior = engine.conditionOnHand(partnerSpace, context.seat, context.hand);

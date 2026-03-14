@@ -32,7 +32,7 @@ bootstrap/
 
 **Rotation utilities** (`start-drill.ts`): `rotateSeat180(seat)` swaps N↔S, E↔W. `rotateDealConstraints(base, newDealer)` rotates all seat constraints. `rotateAuction(auction)` rotates all auction entry seats.
 
-**Config factory wiring:** `createDrillConfig()` builds both `nsInferenceConfig` and `ewInferenceConfig`. Options: `opponentBidding`, `opponentConventionId` (defaults to "sayc"), `beliefProvider`, `lookupConvention` (DI seam).
+**Config factory wiring:** `createDrillConfig()` builds both `nsInferenceConfig` and `ewInferenceConfig`. Options: `lookupConvention` (DI seam, currently unused).
 
 ## Gotchas
 

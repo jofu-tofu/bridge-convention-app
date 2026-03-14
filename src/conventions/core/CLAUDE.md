@@ -71,7 +71,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 **`evaluateMachine()`** walks auction entries with descendant-first transition preemption. Output: `MachineEvalResult` with `currentStateId`, `activeSurfaceGroupIds`, `collectedTransforms`. Machine-over-profile precedence: profile = "what's installed", machine = "what's live".
 
-**`areSamePartnership()`** is used by machine `seatRole` functions — defined per-machine, not in a shared helper.
+**`areSamePartnership()`** is used by machine `seatRole` functions — defined in `engine/constants.ts` and imported by machine files.
 
 ## Runtime System
 

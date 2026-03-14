@@ -24,8 +24,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `activation.ts` | *(NT only)* Activation filter for 1NT opening detection |
 
 **`nt-bundle/`** — Combines Stayman + Jacoby Transfers into a single 1NT response bundle.
-- `config.ts` — `ConventionBundle` with `meaningSurfaces` (9 groups, 28 surfaces), `factExtensions` (staymanFacts, transferFacts, ntResponseFacts), `surfaceRouter`, `conversationMachine`, `declaredCapabilities: { ntOpenerContext: "active" }`. `memberIds: ["jacoby-transfers", "stayman"]` (Jacoby first for tie-breaking priority).
-- `meaning-surfaces.ts` — 28 `MeaningSurface` definitions across responder R1 (5), opener Stayman response (3), opener transfer accept hearts (1) + spades (1), Stayman R3 after 2H/2S/2D (4+4+2), transfer R3 after hearts/spades accept (4+4). 982 lines — largest file in the bundle.
+- `config.ts` — `ConventionBundle` with `meaningSurfaces` (9 groups, 29 surfaces), `factExtensions` (staymanFacts, transferFacts, ntResponseFacts), `surfaceRouter`, `conversationMachine`, `declaredCapabilities: { ntOpenerContext: "active" }`. `memberIds: ["jacoby-transfers", "stayman"]` (Jacoby first for tie-breaking priority).
+- `meaning-surfaces.ts` — 29 `MeaningSurface` definitions across responder R1 (5), opener Stayman response (3), opener transfer accept hearts (1) + spades (1), Stayman R3 after 2H/2S/2D (4+4+2), transfer R3 after hearts/spades accept (4+4). 982 lines — largest file in the bundle.
 - `facts.ts` — 3 `FactCatalogExtension`s: `staymanFacts` (module.stayman.*, posterior facts), `transferFacts` (module.transfer.*), `ntResponseFacts` (module.ntResponse.inviteValues/gameValues/slamValues).
 - `machine.ts` — 13-state hierarchical FSM: idle → nt-opened → responder-r1 → opener-stayman / opener-transfer-hearts / opener-transfer-spades → responder-r3 variants → terminal / nt-contested. Uses hierarchical parent states (`nt-opened` as parent).
 - `activation.ts` — `ntActivationFilter()` returns `["jacoby-transfers", "stayman"]` when 1NT is in the auction.
@@ -43,7 +43,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 ## Convention Quick Reference
 
-- **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades). 28 meaning surfaces, 3 fact extensions, 13-state hierarchical FSM. Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
+- **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades). 29 meaning surfaces, 3 fact extensions, 13-state hierarchical FSM. Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
 - **Bergen Bundle (Bergen Raises):** Responder raises after 1M opening. Standard Bergen variant (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding factory for DRY heart/spade parameterization. Deal constraints: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
 
 ## Convention Bundle Completeness Checklist
@@ -444,7 +444,6 @@ definitions/
     surface-evaluation.test.ts     Surface clause evaluation tests
 
 __tests__/                          (at src/conventions/__tests__/)
-  _convention-template.test.ts     Template for new convention tests
   fixtures.test.ts                 Shared test helper tests
   fixtures.ts                      Shared helpers (hand, auctionFromBids, makeBiddingContext)
   infrastructure/

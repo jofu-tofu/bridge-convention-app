@@ -46,7 +46,7 @@ export interface TreeDisplayRow {
 
 /** Minimal dummy hand for resolving convention calls in display contexts.
  *  4-3-3-3 shape, 9 HCP (A=4 + K=3 + Q=2). */
-export const DUMMY_HAND: Hand = {
+const DUMMY_HAND: Hand = {
   cards: [
     { suit: Suit.Spades, rank: Rank.Ace },
     { suit: Suit.Spades, rank: Rank.Ten },

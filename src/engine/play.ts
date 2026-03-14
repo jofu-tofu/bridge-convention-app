@@ -3,7 +3,7 @@ import type { Card, Hand, Trick, Seat } from "./types";
 import { RANK_INDEX } from "./constants";
 
 /** Rank comparison: use RANK_INDEX lookup (Two=0 ... Ace=12) */
-export function rankValue(rank: Rank): number {
+function rankValue(rank: Rank): number {
   return RANK_INDEX[rank];
 }
 

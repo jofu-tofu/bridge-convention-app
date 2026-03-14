@@ -47,14 +47,3 @@ export function formatRuleName(name: string): string {
     .join(" ");
 }
 
-export function suitColor(suit: Suit | BidSuit): "red" | "black" {
-  if (
-    suit === Suit.Hearts ||
-    suit === Suit.Diamonds ||
-    suit === BidSuit.Hearts ||
-    suit === BidSuit.Diamonds
-  ) {
-    return "red";
-  }
-  return "black";
-}

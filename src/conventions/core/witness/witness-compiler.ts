@@ -32,7 +32,7 @@ const SEAT_ORDER: readonly Seat[] = [Seat.North, Seat.East, Seat.South, Seat.Wes
  *   rho       -> seat to the right of user
  *   openingSide -> userSeat (convention: user's side is the opening side)
  */
-export function resolveRole(role: SeatRole, userSeat: Seat): Seat {
+function resolveRole(role: SeatRole, userSeat: Seat): Seat {
   const userIndex = SEAT_ORDER.indexOf(userSeat);
   switch (role) {
     case "self":

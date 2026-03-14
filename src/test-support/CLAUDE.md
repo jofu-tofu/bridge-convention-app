@@ -8,6 +8,7 @@ Shared test factories and stubs used across module boundaries (stores, component
 | ---------------- | ------------------------------------------------------------------------------------------------ |
 | `engine-stub.ts` | `createStubEngine(overrides?)`, `makeDeal()`                                                     |
 | `fixtures.ts`    | `makeCard`, `ALL_RANKS`, `makeSimpleTestDeal`, `makeDrillSession`, `makeContract`, `flushWithFakeTimers`, `flushWithRealTimers` |
+| `tiers.ts`       | `refDescribe`, `policyDescribe`, `PolicyRationale`, `TestTier`, `TierEntry`, `getTierRegistry`, `clearTierRegistry` |
 
 ## Conventions
 

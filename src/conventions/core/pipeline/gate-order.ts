@@ -19,7 +19,7 @@ export interface GatedProposal {
 }
 
 /** The canonical gate evaluation order. */
-export const GATE_ORDER: readonly GateId[] = [
+const GATE_ORDER: readonly GateId[] = [
   "semantic-applicability",
   "obligation-satisfaction",
   "encoder-availability",

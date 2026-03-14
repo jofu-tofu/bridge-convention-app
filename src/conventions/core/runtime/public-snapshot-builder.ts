@@ -100,7 +100,7 @@ function buildPublicRecord(auction: Auction): readonly PublicEvent[] {
   }));
 }
 
-export function detectCompetitionMode(auction: Auction): string {
+function detectCompetitionMode(auction: Auction): string {
   for (let i = auction.entries.length - 1; i >= 0; i--) {
     const entry = auction.entries[i]!;
     if (entry.call.type === "double") return "Doubled";
