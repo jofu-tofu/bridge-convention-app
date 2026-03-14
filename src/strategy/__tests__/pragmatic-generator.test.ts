@@ -1,5 +1,5 @@
 /**
- * Tests for pragmatic candidate generator — heuristic tactical bids beyond convention trees.
+ * Tests for pragmatic candidate generator — heuristic tactical bids beyond convention surfaces.
  * Each distortion type tested for trigger and non-trigger conditions.
  */
 import { describe, test, expect } from "vitest";

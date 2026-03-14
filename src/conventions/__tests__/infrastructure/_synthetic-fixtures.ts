@@ -7,9 +7,6 @@
  * pipeline mechanics, not convention-specific bridge semantics.
  *
  * Convention-specific integration tests should import from definitions/ directly.
- *
- * The old tree pipeline (protocol → tree → intent → resolver → candidate → selection)
- * is intentionally excluded — it is being retired.
  */
 
 import { BidSuit, Seat } from "../../../engine/types";

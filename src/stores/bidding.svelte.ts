@@ -35,7 +35,7 @@ export interface BidFeedback {
   readonly practicalRecommendation?: PracticalRecommendation;
   readonly teachingProjection?: TeachingProjection;
   /** Encoding trace for the selected meaning (how it became a concrete call).
-   *  Null for tree-pipeline strategies or when provenance is unavailable. */
+   *  Null when provenance is unavailable. */
   readonly encodingTrace?: EncodingTrace;
 }
 

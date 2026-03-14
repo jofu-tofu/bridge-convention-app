@@ -4,7 +4,7 @@ import {
   meaningBundleToStrategy,
 } from "../bidding/meaning-strategy";
 import type { MeaningSurface } from "../../core/contracts/meaning-surface";
-import type { AlternativeGroup, IntentFamily } from "../../core/contracts/evaluation-dtos";
+import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { createSharedFactCatalog } from "../../conventions/core/pipeline/fact-evaluator";

@@ -1,36 +1,6 @@
-import type { ConventionConfig } from "../../conventions/core";
 import type { BidHistoryEntry } from "../../core/contracts";
 import type { BidResult } from "../../core/contracts";
-import type { Deal, Call, Seat } from "../../engine/types";
-
-export interface DisplayCondition {
-  readonly name: string;
-  readonly passed: boolean;
-  readonly description: string;
-}
-
-export interface DisplayRule {
-  readonly ruleName: string;
-  readonly displayName: string;
-  readonly call: Call | undefined;
-  readonly fired: boolean;
-  readonly firedBySeat: Seat | null;
-  readonly conditions: DisplayCondition[];
-  readonly isConditioned: boolean;
-}
-
-/**
- * Prepare convention rules for display in the Rules tab.
- * Returns empty — old tree-pipeline rule evaluation functions have been removed.
- * New meaning-pipeline conventions use a different display path.
- */
-export function prepareRulesForDisplay(
-  _config: ConventionConfig,
-  _deal: Deal,
-  _bidHistory: readonly BidHistoryEntry[],
-): { firedRules: DisplayRule[]; referenceRules: DisplayRule[] } {
-  return { firedRules: [], referenceRules: [] };
-}
+import type { Call, Seat } from "../../engine/types";
 
 // ─── Round-by-round grouping ──────────────────────────────────
 

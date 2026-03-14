@@ -8,7 +8,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
 - **Minimal engine imports.** Stores import `EnginePort` type, `nextSeat`/`partnerSeat` from constants, and `evaluateHand` from hand-evaluator (for bid correctness checking). Never import `auction`, `scoring`, etc.
-- **No conventions/core imports.** `game.svelte.ts` uses `noopExtractor` from `inference/noop-extractor` (not `protocolInferenceExtractor`). The `toExtractorInput()` adapter builds a narrow DTO for annotation production.
+- **No conventions/core imports.** `game.svelte.ts` uses `noopExtractor` from `inference/noop-extractor`. The `toExtractorInput()` adapter builds a narrow DTO for annotation production.
 
 ## Architecture
 

@@ -1,10 +1,11 @@
 import type { Call } from "../../engine/types";
+import type { ConditionRole } from "./evidence-bundle";
 
 export interface SiblingConditionDetail {
   readonly name: string;
   readonly description: string;
   /** Primary role of this condition — teaching consumers filter by role !== "routing". */
-  readonly conditionRole?: "semantic" | "inferential" | "pedagogical" | "routing";
+  readonly conditionRole?: ConditionRole;
 }
 
 /** Unified eligibility model — all four dimensions that gate candidate selectability.
@@ -28,8 +29,8 @@ export interface CandidateEligibility {
   };
 }
 
-/** Strategy-resolved candidate — what the system actually considered for this auction+hand.
- *  Serializable DTO (no function refs) from ResolvedCandidate in candidate-generator. */
+/** Strategy-resolved candidate — what the pipeline actually considered for this auction+hand.
+ *  Serializable DTO (no function refs). */
 export interface ResolvedCandidateDTO {
   readonly bidName: string;
   readonly meaning: string;
@@ -42,9 +43,9 @@ export interface ResolvedCandidateDTO {
   readonly intentType: string;
   readonly failedConditions: readonly SiblingConditionDetail[];
   readonly eligibility?: CandidateEligibility;
-  /** DFS traversal order from intent collection. Used for deterministic tie-breaking within selection tiers. */
+  /** Ordering key for deterministic tie-breaking within selection tiers. */
   readonly orderKey?: number;
-  /** All resolver encodings with legality — retained for teaching and obligation enrichment.
+  /** All encoder encodings with legality — retained for teaching and obligation enrichment.
    *  `resolvedCall` is the first legal encoding (selection unchanged). */
   readonly allEncodings?: readonly { readonly call: Call; readonly legal: boolean }[];
 }
@@ -64,35 +65,33 @@ export function isDtoPedagogicallyAcceptable(c: ResolvedCandidateDTO): boolean {
   return c.eligibility.pedagogical.acceptable;
 }
 
-/** Groups of intents that are acceptable alternatives to each other for grading.
- *  When the matched intent is in a group, other group members become acceptable bids.
- *  Bypasses tree path-condition exclusivity — these are semantic, not structural, neighbors. */
+/** Groups of meanings that are acceptable alternatives to each other for grading.
+ *  When the matched meaning is in a group, other group members become acceptable bids.
+ *  Bypasses surface clause exclusivity — these are semantic, not structural, neighbors. */
 export interface AlternativeGroup {
   /** Human-readable label for the group (e.g., "Bergen strength raises") */
   readonly label: string;
-  /** bidNames (IntentNode.name) of intents in this group.
-   *  Uses bidName (e.g., "bergen-game-raise") NOT nodeId ("bergen/bergen-game-raise")
-   *  because ResolvedCandidateDTO carries bidName, not nodeId. */
+  /** bidNames (meaningIds) of meanings in this group. */
   readonly members: readonly string[];
   /** Whether alternatives get full credit or partial.
    *  "preferred" → fullCredit: true (teal, same as correct).
    *  "alternative" → fullCredit: false (teal, partial credit).
    *  Maps to existing AcceptableBid.fullCredit in teaching-resolution.ts. */
   readonly tier: "preferred" | "alternative";
-  /** Optional: only activate when matched intent is one of these specific bidNames.
+  /** Optional: only activate when matched meaning is one of these specific bidNames.
    *  If omitted, any member match activates all other members as alternatives.
    *  If present, ONLY matching one of these members activates the group. */
   readonly whenMatched?: readonly string[];
 }
 
-/** Discriminator for how IntentNode members within a family are related. */
+/** Discriminator for how members within a family are related. */
 export type IntentRelationship =
   | "mutually_exclusive"    // Only one applies per hand (e.g., game vs limit raise)
-  | "equivalent_encoding"   // Same intent, different call (e.g., relay paths)
+  | "equivalent_encoding"   // Same meaning, different call (e.g., relay paths)
   | "policy_alternative";   // Both valid, convention policy prefers one
 
-/** Declares that multiple IntentNode leaves belong to the same conceptual family.
- *  Members reference IntentNode names (bidName). Convention-level grouping for
+/** Declares that multiple meaning leaves belong to the same conceptual family.
+ *  Members reference meaningIds (bidName). Convention-level grouping for
  *  diagnostics, teaching, and relationship-aware grading. */
 export interface IntentFamily {
   readonly id: string;
@@ -108,16 +107,9 @@ export interface EvaluationTrace {
   readonly conventionId: string;
   readonly protocolMatched: boolean;
   readonly candidateCount: number;
-  readonly selectedTier?: "matched" | "preferred" | "alternative" | "none";
   /** True when a strategy result was rejected by the chain's resultFilter. */
   readonly forcingFiltered?: boolean;
-  /** Error message from the practical recommendation pipeline, if it failed. */
-  readonly practicalError?: string;
   readonly strategyChainPath: readonly { readonly strategyId: string; readonly result: "suggested" | "declined" | "filtered" | "error" }[];
-  /** Active convention IDs when this bid was evaluated via a bundle. */
-  readonly bundleActiveConventions?: readonly string[];
-  /** Convention that won bundle arbitration. */
-  readonly bundleWinningConvention?: string;
   /** Number of posterior samples drawn. Set by meaning-pipeline strategies with posterior engine. */
   readonly posteriorSampleCount?: number;
   /** Confidence from posterior engine (0-1). Set by meaning-pipeline strategies with posterior engine. */

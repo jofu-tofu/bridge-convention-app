@@ -26,7 +26,7 @@ function makeBidResult(overrides: Partial<BidResult> = {}): BidResult {
 }
 
 describe("game inference adapter characterization", () => {
-  test("without tree data: adapter emits current 3-field shape", () => {
+  test("adapter emits minimal 3-field shape", () => {
     const bidResult = makeBidResult();
 
     const adapted = adaptBidResultLikeGameStore(bidResult);
@@ -36,11 +36,9 @@ describe("game inference adapter characterization", () => {
       explanation: "Asks for a 4-card major",
       meaning: "Asks for a 4-card major",
     });
-    expect("treeEvalResult" in adapted).toBe(false);
-    expect("protocolResult" in adapted).toBe(false);
   });
 
-  test("with display fields present: adapter still emits hollow shape", () => {
+  test("with evaluationTrace present: adapter still emits minimal shape", () => {
     const bidResult = makeBidResult({
       ruleName: null,
       evaluationTrace: {
@@ -58,9 +56,6 @@ describe("game inference adapter characterization", () => {
       explanation: bidResult.explanation,
       meaning: bidResult.meaning,
     });
-    expect("treeEvalResult" in adapted).toBe(false);
-    expect("protocolResult" in adapted).toBe(false);
-    expect("treeRoot" in adapted).toBe(false);
   });
 
   test("noopExtractor returns empty for any input", () => {

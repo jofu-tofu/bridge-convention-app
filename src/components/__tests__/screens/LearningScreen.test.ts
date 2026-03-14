@@ -51,10 +51,10 @@ describe("LearningScreen", () => {
     expect(screen.getByRole("button", { name: "1NT Responses" })).toBeTruthy();
   });
 
-  it("shows no-tree message for new pipeline conventions", () => {
+  it("shows placeholder message for learning content", () => {
     renderLearningScreen();
-    // New pipeline conventions don't have protocol rounds — expect the no-tree message
-    expect(screen.getByText(/No decision tree available/)).toBeTruthy();
+    // Meaning pipeline display not yet implemented — expect placeholder
+    expect(screen.getByText(/coming soon/i)).toBeTruthy();
   });
 
   it("has a practice button in the convention toolbar", () => {

@@ -3,8 +3,6 @@
  *
  * Makes the bundle selectable in the convention picker as "Bergen Raises (Bundle)".
  * When selected, the drill infrastructure uses the meaning pipeline (via the bundle).
- * The tree-based "bergen-raises" convention remains available as a separate drill
- * using the tree pipeline.
  */
 
 import type { ConventionConfig } from "../../core/types";

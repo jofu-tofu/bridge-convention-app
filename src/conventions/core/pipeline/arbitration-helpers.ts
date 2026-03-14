@@ -2,7 +2,7 @@ import type {
   EncodedProposal,
   EliminationRecord,
 } from "../../../core/contracts/module-surface";
-import type { CandidateEligibility } from "../../../core/contracts/evaluation-dtos";
+import type { CandidateEligibility } from "../../../core/contracts/tree-evaluation";
 import type {
   EliminationTrace,
   LegalityTrace,

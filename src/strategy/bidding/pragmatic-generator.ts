@@ -1,4 +1,4 @@
-// Pragmatic candidate generator — heuristic tactical bids beyond convention trees.
+// Pragmatic candidate generator — heuristic tactical bids beyond convention surfaces.
 // Import boundary: engine/ types, inference/ PrivateBeliefState, and BiddingContext type only.
 // NO runtime imports from conventions/core/ — only type imports.
 
@@ -40,7 +40,7 @@ const SUIT_INDEX_TO_BIDSUIT: readonly BidSuit[] = [
 ];
 
 /**
- * Generate pragmatic (tactical) candidates that convention trees don't produce.
+ * Generate pragmatic (tactical) candidates that convention surfaces don't produce.
  * Returns candidates with legality checks. Deduplicates against existingCalls.
  */
 export function generatePragmaticCandidates(

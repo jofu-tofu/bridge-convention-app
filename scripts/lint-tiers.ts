@@ -23,12 +23,8 @@ const CONVENTIONS_TEST_DIR = path.resolve(
 );
 
 const CONVENTION_DIRS = [
-  "stayman",
-  "bergen-raises",
-  "sayc",
-  "weak-twos",
-  "lebensohl-lite",
-  "jacoby-transfers",
+  "nt-bundle",
+  "bergen-bundle",
 ];
 
 interface FileResult {

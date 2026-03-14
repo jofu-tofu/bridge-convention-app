@@ -78,7 +78,7 @@
       : null,
   );
 
-  // Divergence note: removed — old tree-pipeline candidateSet no longer available
+  // Divergence note: candidateSet display removed — not available in current pipeline
 
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
   let prevFeedback: BidFeedback | undefined;

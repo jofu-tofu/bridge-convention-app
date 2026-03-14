@@ -5,7 +5,7 @@ Auction inference system — extracts hand information from bids with per-partne
 ## Key Concepts
 
 - **Information asymmetry:** Partnerships share inference, not individual seats. N and S both know their convention. E and W both know SAYC. Asymmetry is between partnerships, not seats.
-- **Difficulty spectrum:** `InferenceProvider` is the primary difficulty axis. `naturalInferenceProvider` (easy) → evidence-based inference (medium) → full knowledge of opponent's convention (hard/oracle).
+- **Difficulty spectrum:** `InferenceProvider` is the primary difficulty axis. `naturalInferenceProvider` (easy) → posterior engine (medium) → full knowledge of opponent's convention (hard/oracle).
 - **Incremental inference:** `processBid()` called after every bid, not at auction end. Phase 3 opponent AI uses mid-auction inferences.
 - **Two engines per deal:** `nsEngine` and `ewEngine` with different `InferenceConfig`. Game store owns both, resets on new deal.
 
@@ -16,7 +16,6 @@ Auction inference system — extracts hand information from bids with per-partne
 | `types.ts` | Core interfaces: `ConditionInference`, `InferenceExtractorInput`, `InferenceExtractor`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`. `ConditionInference` is now owned locally (no conventions/core dependency). |
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
 | `condition-mapper.ts` | `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` — maps `ConditionInference` → `HandInference` |
-| `evidence-inference-adapter.ts` | `evidenceToConditionInference()`, `extractInferenceFromEvidence()` — converts `EvidenceBundleIR` (new pipeline) to `HandInference` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
 | `merge.ts` | `mergeInferences()` — range intersection (narrowing), clamps contradictions |
 | `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |

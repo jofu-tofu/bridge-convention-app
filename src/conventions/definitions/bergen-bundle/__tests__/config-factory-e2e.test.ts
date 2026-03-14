@@ -2,8 +2,7 @@
  * End-to-end test: Bergen bundle through config-factory dispatch.
  *
  * Verifies that when the user selects "bergen-bundle" as a convention ID,
- * the config-factory dispatches to the meaning pipeline (not the tree pipeline)
- * and produces correct results.
+ * the config-factory dispatches to the meaning pipeline and produces correct results.
  */
 
 import { describe, it, expect, beforeEach } from "vitest";

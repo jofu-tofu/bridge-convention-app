@@ -40,7 +40,7 @@ strategy/
 ## Gotchas
 
 - **EvaluationTrace:** `TraceCollector` in `trace-collector.ts` builds `EvaluationTrace` DTOs. `createStrategyChain()` records strategy attempts on the trace (including `"filtered"` outcome when `resultFilter` rejects). Always-on (not DEV-gated). Trace flags: `forcingFiltered` (strategy result rejected by chain's `resultFilter`).
-- **`resultFilter` on `createStrategyChain()`:** Generic `(result: BidResult, context: BiddingContext) => boolean` predicate. When the filter returns false, the chain treats the result as "declined" and tries the next strategy. Used by `config-factory.ts` with `createForcingFilter(config)` — rejects Pass results when DialogueState has active forcing. End-to-end guarantee: no strategy (including `passStrategy`) can produce a result that fails the filter.
+- **`resultFilter` on `createStrategyChain()`:** Generic `(result: BidResult, context: BiddingContext) => boolean` predicate. When the filter returns false, the chain treats the result as "declined" and tries the next strategy. Used by `config-factory.ts` with `createForcingFilter(config)` — rejects Pass results when the conversation machine indicates active forcing. End-to-end guarantee: no strategy (including `passStrategy`) can produce a result that fails the filter.
 - **Pragmatic generator** `callKeyForDedup()` is a local utility in `pragmatic-generator.ts` — creates string keys from Calls for deduplication against existing convention candidates.
 
 ---

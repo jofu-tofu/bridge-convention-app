@@ -69,16 +69,12 @@ export interface InferenceExtractorInput {
   readonly explanation: string;
   readonly meaning?: string;
   readonly alert?: BidAlert | null;
-  /** Opaque to the interface boundary — extractor implementations know the concrete shape. */
-  readonly protocolResult?: unknown;
-  readonly treeEvalResult?: unknown;
 }
 
 /**
  * Stable adapter for extracting HandInference[] from convention evaluation results.
- * Decouples public belief layer from evaluator internals (protocol/tree result shapes).
- * Current implementation: protocolInferenceExtractor (reads protocolResult/treeEvalResult).
- * Future: state machine evaluator provides its own implementation.
+ * Decouples public belief layer from evaluator internals.
+ * Current implementation: noop-extractor (placeholder) or posterior engine.
  */
 export interface InferenceExtractor {
   extractInferences(result: InferenceExtractorInput, seat: Seat): readonly HandInference[];

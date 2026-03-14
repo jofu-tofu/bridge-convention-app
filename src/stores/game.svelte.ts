@@ -50,8 +50,7 @@ const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
 };
 
 /** Adapt BidResult (shared DTO) to InferenceExtractorInput.
- *  BidResult doesn't carry protocolResult/treeEvalResult,
- *  so convention inferences will be empty. Natural inference still works via the provider. */
+ *  Convention inferences are extracted separately. Natural inference works via the provider. */
 function toExtractorInput(bidResult: BidResult): InferenceExtractorInput {
   return {
     rule: bidResult.ruleName ?? "unknown",

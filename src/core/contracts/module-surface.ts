@@ -1,5 +1,5 @@
 import type { Call } from "../../engine/types";
-import type { CandidateEligibility } from "./evaluation-dtos";
+import type { CandidateEligibility } from "./tree-evaluation";
 import type { ForcingState } from "./bidding";
 import type { MeaningProposal, TransformTrace } from "./meaning";
 import type { DecisionProvenance } from "./provenance";
@@ -8,8 +8,8 @@ import type { PublicEvent, PublicConstraint } from "./agreement-module";
 import type { BeliefView, LatentBranchSet } from "./posterior";
 import type { EvidenceBundleIR } from "./evidence-bundle";
 
-/** Hand-independent public state derived from DialogueState.
- *  Pure DTO — caller extracts fields from DialogueState to avoid
+/** Hand-independent public state derived from conversation machine registers.
+ *  Pure DTO — caller extracts fields from machine state to avoid
  *  contracts/ importing from conventions/. */
 export interface PublicSnapshot {
   readonly activeModuleIds: readonly string[];
@@ -83,9 +83,8 @@ export interface ArbitrationResult {
   readonly evidenceBundle?: EvidenceBundleIR;
 }
 
-/** Build a PublicSnapshot from dialogue state fields.
- *  Takes plain fields to avoid importing from conventions/.
- *  Caller (in conventions/ or strategy/) extracts fields from DialogueState. */
+/** Build a PublicSnapshot from machine state fields.
+ *  Takes plain fields to avoid importing from conventions/. */
 /** Result of upstream surface composition (transform application before pipeline). */
 export interface SurfaceEvaluationResult {
   readonly composedSurfaces: readonly MeaningSurface[];

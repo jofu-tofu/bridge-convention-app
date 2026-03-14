@@ -6,8 +6,6 @@
   import { computeHcp } from "../../core/display/hcp";
   import { formatCall, SUIT_SYMBOLS } from "../../core/display/format";
   import { sortCards } from "../../core/display/sort-cards";
-  import { computeBidEvalTraces } from "./DebugDrawer";
-
   interface Props {
     open: boolean;
   }
@@ -18,16 +16,6 @@
   const appStore = getAppStore();
 
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
-
-  // Compute full rule evaluation trace for each bid in history (recomputes when bidHistory or auction entries change)
-  const bidEvalTraces = $derived.by(() => {
-    return computeBidEvalTraces(
-      appStore.selectedConvention,
-      gameStore.deal,
-      gameStore.bidHistory,
-      gameStore.auction.entries,
-    );
-  });
 
   function formatSuitCards(cards: readonly Card[], suit: Suit): string {
     const sorted = sortCards([...cards]);
@@ -149,51 +137,7 @@
       </div>
     </details>
 
-    <!-- 3. Bid Evaluation Trace -->
-    <details>
-      <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1"
-        >Bid Evaluation Trace</summary
-      >
-      <div class="pl-2 py-1">
-        {#if bidEvalTraces.length === 0}
-          <div class="text-text-muted italic">No bids yet</div>
-        {:else}
-          {#each bidEvalTraces as { entry, allResults }, i (entry.seat + '-' + i)}
-            <details class="mb-1">
-              <summary class="cursor-pointer">
-                <span class="text-text-primary">{entry.seat}</span>:
-                <span class="font-bold text-text-primary"
-                  >{formatCall(entry.call)}</span
-                >
-                {#if entry.ruleName}
-                  <span class="text-text-muted">({entry.ruleName})</span>
-                {/if}
-              </summary>
-              <div class="pl-4 py-0.5">
-                {#each allResults as result, ri (result.ruleName + '-' + ri)}
-                  <div
-                    class={result.matched
-                      ? result.isLegal
-                        ? "text-green-400"
-                        : "text-yellow-400"
-                      : "text-text-muted"}
-                  >
-                    {result.matched ? (result.isLegal ? "✓" : "⚠") : "✗"}
-                    {result.ruleName}
-                    {#if result.call}→ {formatCall(result.call)}{/if}
-                    {#if result.matched && !result.isLegal}
-                      <span class="text-yellow-500">(illegal)</span>{/if}
-                  </div>
-
-                {/each}
-              </div>
-            </details>
-          {/each}
-        {/if}
-      </div>
-    </details>
-
-    <!-- 4. Inference Timeline -->
+    <!-- 3. Inference Timeline -->
     <details>
       <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1"
         >Inference Timeline</summary

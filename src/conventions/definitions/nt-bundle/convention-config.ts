@@ -3,8 +3,6 @@
  *
  * Makes the bundle selectable in the convention picker as "1NT Responses".
  * When selected, the drill infrastructure uses the meaning pipeline (via the bundle).
- * Individual conventions (Stayman, Jacoby) remain available as separate drills
- * using the tree pipeline.
  */
 
 import type { ConventionConfig } from "../../core/types";

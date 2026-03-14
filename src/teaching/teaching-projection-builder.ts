@@ -47,7 +47,7 @@ import type {
 
 import type { ConditionEvidenceIR } from "../core/contracts/evidence-bundle";
 
-import type { CandidateEligibility } from "../core/contracts/evaluation-dtos";
+import type { CandidateEligibility } from "../core/contracts/tree-evaluation";
 
 import type {
   ExplanationCatalogIR,

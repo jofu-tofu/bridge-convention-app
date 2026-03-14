@@ -18,8 +18,8 @@ export interface ConventionBundle {
     auction: Auction,
     seat: Seat,
   ) => readonly string[];
-  /** Meaning surfaces organized by group. When present, the meaning pipeline
-   *  is used instead of the tree pipeline. */
+  /** Meaning surfaces organized by group.
+   *  When present, the meaning pipeline is used for this bundle. */
   readonly meaningSurfaces?: readonly {
     readonly groupId: string;
     readonly surfaces: readonly MeaningSurface[];

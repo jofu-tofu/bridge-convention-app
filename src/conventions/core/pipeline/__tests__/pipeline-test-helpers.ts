@@ -4,7 +4,7 @@ import type { Call } from "../../../../engine/types";
 import { BidSuit } from "../../../../engine/types";
 import type { MeaningProposal, RankingMetadata } from "../../../../core/contracts/meaning";
 import type { ArbitrationInput } from "../meaning-arbitrator";
-import type { CandidateEligibility } from "../../../../core/contracts/evaluation-dtos";
+import type { CandidateEligibility } from "../../../../core/contracts/tree-evaluation";
 
 export function makeCall(level: 1 | 2 | 3 | 4 | 5 | 6 | 7 = 1, strain: BidSuit = BidSuit.Clubs): Call {
   return { type: "bid", level, strain };

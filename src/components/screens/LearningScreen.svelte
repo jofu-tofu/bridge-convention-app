@@ -3,8 +3,6 @@
   import { listConventions } from "../../conventions/core";
   import type { ConventionConfig, ConventionTeaching } from "../../conventions/core";
   import { filterConventions } from "../../core/display/filter-conventions";
-  import DecisionTree from "../game/DecisionTree.svelte";
-  import type { TreeDisplayRow } from "../game/DecisionTree";
 
   const appStore = getAppStore();
 
@@ -21,18 +19,6 @@
   const conventionTeaching = $derived<ConventionTeaching | null>(
     config?.explanations?.convention ?? config?.teaching ?? null,
   );
-
-  interface RoundDisplay {
-    readonly name: string;
-    readonly label: string;
-    readonly rows: TreeDisplayRow[];
-  }
-
-  const protocolRounds = $derived.by<RoundDisplay[]>(() => {
-    // Old tree-pipeline protocol rounds have been removed from ConventionConfig.
-    // New meaning-pipeline conventions don't expose protocol data for display.
-    return [];
-  });
 
   function handleConventionClick(conv: ConventionConfig) {
     appStore.navigateToLearning(conv);
@@ -210,18 +196,9 @@
 
           <hr class="border-border-subtle" />
 
-          {#if protocolRounds.length > 0}
-            {#each protocolRounds as round (round.name)}
-              <section>
-                <h2 class="text-lg font-semibold text-text-primary mb-3">{round.label}</h2>
-                <DecisionTree rows={round.rows} depth={depthMode} />
-              </section>
-            {/each}
-          {:else}
-            <div class="text-text-muted italic py-8 text-center">
-              No decision tree available for this convention.
-            </div>
-          {/if}
+          <div class="text-text-muted italic py-8 text-center">
+            Learning screen content coming soon — meaning pipeline display not yet implemented.
+          </div>
         </div>
       {:else}
         <div class="text-center py-12 text-text-muted">

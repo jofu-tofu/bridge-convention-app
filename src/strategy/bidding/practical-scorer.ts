@@ -25,7 +25,7 @@ export interface ScoringInput {
   readonly partnerMinSuitLength: number;
 }
 
-/** Score a normative (convention tree) candidate. */
+/** Score a normative (convention pipeline) candidate. */
 export function scoreCandidatePractically(
   candidate: ResolvedCandidateDTO,
   belief: ScoringInput,

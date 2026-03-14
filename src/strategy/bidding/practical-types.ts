@@ -12,7 +12,7 @@ export interface PracticalScoreBreakdown {
   readonly totalScore: number;
 }
 
-/** Discriminated union for scorer input — normative (from convention tree) or pragmatic (tactical). */
+/** Discriminated union for scorer input — normative (from convention pipeline) or pragmatic (tactical). */
 export type ScorableCandidate =
   | { readonly kind: "normative"; readonly candidate: ResolvedCandidateDTO }
   | { readonly kind: "pragmatic"; readonly candidate: PragmaticCandidate };

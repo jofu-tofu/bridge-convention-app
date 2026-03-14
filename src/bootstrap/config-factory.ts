@@ -61,7 +61,7 @@ export function createDrillConfig(
     lookupConvention?: ConventionLookup;
   },
 ): DrillConfig {
-  // Look up the bundle — only bundles exist now (no tree pipeline fallback)
+  // Look up the bundle
   const bundle = getBundle(conventionId);
   if (!bundle) {
     throw new Error(
@@ -92,7 +92,7 @@ export function createDrillConfig(
   };
 
   // Inference: natural for all partnerships
-  // (Convention inference required the deleted tree pipeline)
+  // (Convention inference is not yet wired for the meaning pipeline)
   const naturalProvider = createNaturalInferenceProvider();
   const nsInferenceConfig: InferenceConfig = {
     ownPartnership: naturalProvider,
