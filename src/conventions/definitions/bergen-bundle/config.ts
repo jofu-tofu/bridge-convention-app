@@ -6,11 +6,23 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
+  BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES,
+  BERGEN_R2_AFTER_CONSTRUCTIVE_SPADES_SURFACES,
+  BERGEN_R2_AFTER_LIMIT_HEARTS_SURFACES,
+  BERGEN_R2_AFTER_LIMIT_SPADES_SURFACES,
+  BERGEN_R2_AFTER_PREEMPTIVE_HEARTS_SURFACES,
+  BERGEN_R2_AFTER_PREEMPTIVE_SPADES_SURFACES,
+  BERGEN_R3_AFTER_GAME_SURFACES,
+  BERGEN_R3_AFTER_SIGNOFF_SURFACES,
+  BERGEN_R3_AFTER_GAME_TRY_HEARTS_SURFACES,
+  BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES,
+  BERGEN_R4_SURFACES,
 } from "./meaning-surfaces";
 import { bergenFacts } from "./facts";
 import { BERGEN_PROFILE } from "./system-profile";
 import { BERGEN_ROUTED_SURFACES, createBergenSurfaceRouter } from "./surface-routing";
 import { createBergenConversationMachine } from "./machine";
+import { BERGEN_EXPLANATION_CATALOG } from "./explanation-catalog";
 
 const bergenBundleDealConstraints: DealConstraints = {
   seats: [
@@ -37,9 +49,6 @@ export const bergenBundle: ConventionBundle = {
   description: "Bergen Raises — constructive, limit, and preemptive responses to 1M opening",
   category: ConventionCategory.Constructive,
   memberIds: ["bergen-raises"],
-  // internal: parity testing against tree-based bergen-raises;
-  // both pipelines coexist until the meaning pipeline is fully validated
-  internal: true,
   dealConstraints: bergenBundleDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {
@@ -58,11 +67,27 @@ export const bergenBundle: ConventionBundle = {
     return ["bergen-raises"];
   },
   meaningSurfaces: [
+    // R1: Responder initial bids
     { groupId: "responder-r1-hearts", surfaces: BERGEN_R1_HEARTS_SURFACES },
     { groupId: "responder-r1-spades", surfaces: BERGEN_R1_SPADES_SURFACES },
+    // R2: Opener rebids
+    { groupId: "opener-after-constructive-hearts", surfaces: BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES },
+    { groupId: "opener-after-constructive-spades", surfaces: BERGEN_R2_AFTER_CONSTRUCTIVE_SPADES_SURFACES },
+    { groupId: "opener-after-limit-hearts", surfaces: BERGEN_R2_AFTER_LIMIT_HEARTS_SURFACES },
+    { groupId: "opener-after-limit-spades", surfaces: BERGEN_R2_AFTER_LIMIT_SPADES_SURFACES },
+    { groupId: "opener-after-preemptive-hearts", surfaces: BERGEN_R2_AFTER_PREEMPTIVE_HEARTS_SURFACES },
+    { groupId: "opener-after-preemptive-spades", surfaces: BERGEN_R2_AFTER_PREEMPTIVE_SPADES_SURFACES },
+    // R3: Responder continuations
+    { groupId: "responder-after-game", surfaces: BERGEN_R3_AFTER_GAME_SURFACES },
+    { groupId: "responder-after-signoff", surfaces: BERGEN_R3_AFTER_SIGNOFF_SURFACES },
+    { groupId: "responder-after-game-try-hearts", surfaces: BERGEN_R3_AFTER_GAME_TRY_HEARTS_SURFACES },
+    { groupId: "responder-after-game-try-spades", surfaces: BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES },
+    // R4: Opener final acceptance
+    { groupId: "opener-r4-accept", surfaces: BERGEN_R4_SURFACES },
   ],
   factExtensions: [bergenFacts],
   surfaceRouter: createBergenSurfaceRouter(BERGEN_ROUTED_SURFACES),
   systemProfile: BERGEN_PROFILE,
   conversationMachine: createBergenConversationMachine(),
+  explanationCatalog: BERGEN_EXPLANATION_CATALOG,
 };

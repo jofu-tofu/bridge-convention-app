@@ -212,6 +212,393 @@ export function createBergenR1Surfaces(
   ];
 }
 
-/** Pre-instantiated surfaces for hearts and spades. */
+// ─── Round 2: Opener rebids ─────────────────────────────────
+
+/**
+ * R2 surfaces after constructive raise (1M-P-3C-P).
+ *
+ * Opener evaluates HCP to accept or decline:
+ * - 17+ HCP → bid game (4M)
+ * - ≤13 HCP → pass (decline)
+ *
+ * The 14-16 HCP help-suit game try is omitted here because it requires
+ * dynamic call selection based on hand shape (weakest side suit) that
+ * static meaning surfaces cannot express.
+ */
+export function createBergenR2AfterConstructiveSurfaces(
+  suit: "hearts" | "spades",
+): readonly MeaningSurface[] {
+  const bindings = { suit } as const;
+  const majorStrain = suitToBidSuit(suit);
+
+  return [
+    // Opener game: 17+ HCP → 4M
+    {
+      meaningId: `bergen:opener-game-after-constructive-${suit}`,
+      semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_CONSTRUCTIVE,
+      moduleId: "bergen",
+      encoding: { defaultCall: bid(4, majorStrain) },
+      clauses: [
+        {
+          clauseId: "hcp-17-plus",
+          factId: "hand.hcp",
+          operator: "gte",
+          value: 17,
+          description: "17+ HCP to accept constructive raise and bid game",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "AcceptInvitation", params: { suit } },
+      teachingLabel: `Accept constructive → game (4${suit === "hearts" ? "H" : "S"})`,
+      surfaceBindings: bindings,
+    },
+
+    // Opener signoff: ≤13 HCP → Pass
+    {
+      meaningId: `bergen:opener-signoff-after-constructive-${suit}`,
+      semanticClassId: BERGEN_CLASSES.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE,
+      moduleId: "bergen",
+      encoding: { defaultCall: { type: "pass" } },
+      clauses: [
+        {
+          clauseId: "hcp-13-or-less",
+          factId: "hand.hcp",
+          operator: "lte",
+          value: 13,
+          description: "≤13 HCP, decline constructive raise",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 1,
+      },
+      sourceIntent: { type: "DeclineInvitation", params: { suit } },
+      teachingLabel: "Decline constructive → pass",
+      surfaceBindings: bindings,
+    },
+  ];
+}
+
+/**
+ * R2 surfaces after limit raise (1M-P-3D-P).
+ *
+ * Opener evaluates HCP:
+ * - 15+ HCP → bid game (4M)
+ * - ≤14 HCP → sign off (3M)
+ */
+export function createBergenR2AfterLimitSurfaces(
+  suit: "hearts" | "spades",
+): readonly MeaningSurface[] {
+  const bindings = { suit } as const;
+  const majorStrain = suitToBidSuit(suit);
+
+  return [
+    // Opener game: 15+ HCP → 4M
+    {
+      meaningId: `bergen:opener-game-after-limit-${suit}`,
+      semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_LIMIT,
+      moduleId: "bergen",
+      encoding: { defaultCall: bid(4, majorStrain) },
+      clauses: [
+        {
+          clauseId: "hcp-15-plus",
+          factId: "hand.hcp",
+          operator: "gte",
+          value: 15,
+          description: "15+ HCP to accept limit raise and bid game",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "AcceptInvitation", params: { suit } },
+      teachingLabel: `Accept limit raise → game (4${suit === "hearts" ? "H" : "S"})`,
+      surfaceBindings: bindings,
+    },
+
+    // Opener signoff: ≤14 HCP → 3M
+    {
+      meaningId: `bergen:opener-signoff-after-limit-${suit}`,
+      semanticClassId: BERGEN_CLASSES.OPENER_SIGNOFF_AFTER_LIMIT,
+      moduleId: "bergen",
+      encoding: { defaultCall: bid(3, majorStrain) },
+      clauses: [
+        {
+          clauseId: "hcp-14-or-less",
+          factId: "hand.hcp",
+          operator: "lte",
+          value: 14,
+          description: "≤14 HCP, decline limit raise and sign off",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 1,
+      },
+      sourceIntent: { type: "DeclineInvitation", params: { suit } },
+      teachingLabel: `Decline limit raise → signoff (3${suit === "hearts" ? "H" : "S"})`,
+      surfaceBindings: bindings,
+    },
+  ];
+}
+
+/**
+ * R2 surfaces after preemptive raise (1M-P-3M-P).
+ *
+ * Opener evaluates HCP:
+ * - 18+ HCP → bid game (4M)
+ * - ≤17 HCP → pass
+ */
+export function createBergenR2AfterPreemptiveSurfaces(
+  suit: "hearts" | "spades",
+): readonly MeaningSurface[] {
+  const bindings = { suit } as const;
+  const majorStrain = suitToBidSuit(suit);
+
+  return [
+    // Opener game: 18+ HCP → 4M
+    {
+      meaningId: `bergen:opener-game-after-preemptive-${suit}`,
+      semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_PREEMPTIVE,
+      moduleId: "bergen",
+      encoding: { defaultCall: bid(4, majorStrain) },
+      clauses: [
+        {
+          clauseId: "hcp-18-plus",
+          factId: "hand.hcp",
+          operator: "gte",
+          value: 18,
+          description: "18+ HCP to bid game over preemptive raise",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "RaiseToGame", params: { suit } },
+      teachingLabel: `Bid game over preemptive (4${suit === "hearts" ? "H" : "S"})`,
+      surfaceBindings: bindings,
+    },
+
+    // Opener pass: ≤17 HCP → Pass
+    {
+      meaningId: `bergen:opener-pass-after-preemptive-${suit}`,
+      semanticClassId: BERGEN_CLASSES.OPENER_PASS_AFTER_PREEMPTIVE,
+      moduleId: "bergen",
+      encoding: { defaultCall: { type: "pass" } },
+      clauses: [
+        {
+          clauseId: "hcp-17-or-less",
+          factId: "hand.hcp",
+          operator: "lte",
+          value: 17,
+          description: "≤17 HCP, pass over preemptive raise",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 1,
+      },
+      sourceIntent: { type: "AcceptPartnerDecision", params: { suit } },
+      teachingLabel: "Pass over preemptive",
+      surfaceBindings: bindings,
+    },
+  ];
+}
+
+// ─── Round 3: Responder continuations ───────────────────────
+
+/**
+ * R3 surface after opener bids game (4M).
+ *
+ * Responder unconditionally passes — game has been reached.
+ * No suit parameterization needed since the call is always Pass.
+ */
+export function createBergenR3AfterGameSurfaces(): readonly MeaningSurface[] {
+  return [
+    {
+      meaningId: "bergen:responder-accept-game",
+      semanticClassId: BERGEN_CLASSES.RESPONDER_ACCEPT_GAME,
+      moduleId: "bergen",
+      encoding: { defaultCall: { type: "pass" } },
+      clauses: [],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 0,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "AcceptPartnerDecision", params: {} },
+      teachingLabel: "Accept partner's game bid → pass",
+    },
+  ];
+}
+
+/**
+ * R3 surface after opener signs off (3M or Pass).
+ *
+ * Responder unconditionally passes — the auction is over.
+ */
+export function createBergenR3AfterSignoffSurfaces(): readonly MeaningSurface[] {
+  return [
+    {
+      meaningId: "bergen:responder-accept-signoff",
+      semanticClassId: BERGEN_CLASSES.RESPONDER_ACCEPT_SIGNOFF,
+      moduleId: "bergen",
+      encoding: { defaultCall: { type: "pass" } },
+      clauses: [],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 0,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "AcceptPartnerDecision", params: {} },
+      teachingLabel: "Accept partner's signoff → pass",
+    },
+  ];
+}
+
+/**
+ * R3 surfaces after opener makes a help-suit game try.
+ *
+ * Responder evaluates HCP within the constructive range:
+ * - 9-10 HCP → accept game try, bid 4M
+ * - 7-8 HCP  → reject game try, sign off at 3M
+ */
+export function createBergenR3AfterGameTrySurfaces(
+  suit: "hearts" | "spades",
+): readonly MeaningSurface[] {
+  const bindings = { suit } as const;
+  const majorStrain = suitToBidSuit(suit);
+
+  return [
+    // Accept game try: 9-10 HCP → 4M
+    {
+      meaningId: `bergen:responder-try-accept-${suit}`,
+      semanticClassId: BERGEN_CLASSES.RESPONDER_TRY_ACCEPT,
+      moduleId: "bergen",
+      encoding: { defaultCall: bid(4, majorStrain) },
+      clauses: [
+        {
+          clauseId: "hcp-9-10",
+          factId: "hand.hcp",
+          operator: "range",
+          value: { min: 9, max: 10 },
+          description: "9-10 HCP, accept game try",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "AcceptInvitation", params: { suit } },
+      teachingLabel: `Accept game try → game (4${suit === "hearts" ? "H" : "S"})`,
+      surfaceBindings: bindings,
+    },
+
+    // Reject game try: 7-8 HCP → 3M
+    {
+      meaningId: `bergen:responder-try-reject-${suit}`,
+      semanticClassId: BERGEN_CLASSES.RESPONDER_TRY_REJECT,
+      moduleId: "bergen",
+      encoding: { defaultCall: bid(3, majorStrain) },
+      clauses: [
+        {
+          clauseId: "hcp-7-8",
+          factId: "hand.hcp",
+          operator: "range",
+          value: { min: 7, max: 8 },
+          description: "7-8 HCP, reject game try",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 1,
+      },
+      sourceIntent: { type: "DeclineInvitation", params: { suit } },
+      teachingLabel: `Reject game try → signoff (3${suit === "hearts" ? "H" : "S"})`,
+      surfaceBindings: bindings,
+    },
+  ];
+}
+
+// ─── Round 4: Opener final acceptance ───────────────────────
+
+/**
+ * R4 surface after responder decides on the game try.
+ *
+ * Opener unconditionally passes — responder has made the final decision.
+ */
+export function createBergenR4Surfaces(): readonly MeaningSurface[] {
+  return [
+    {
+      meaningId: "bergen:opener-accept-after-try",
+      semanticClassId: BERGEN_CLASSES.OPENER_ACCEPT_AFTER_TRY,
+      moduleId: "bergen",
+      encoding: { defaultCall: { type: "pass" } },
+      clauses: [],
+      ranking: {
+        recommendationBand: "must",
+        specificity: 0,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "AcceptPartnerDecision", params: {} },
+      teachingLabel: "Accept partner's decision on game try → pass",
+    },
+  ];
+}
+
+// ─── Pre-instantiated surfaces ──────────────────────────────
+
+/** R1: Pre-instantiated surfaces for hearts and spades. */
 export const BERGEN_R1_HEARTS_SURFACES = createBergenR1Surfaces("hearts");
 export const BERGEN_R1_SPADES_SURFACES = createBergenR1Surfaces("spades");
+
+/** R2: Pre-instantiated surfaces for hearts and spades. */
+export const BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES =
+  createBergenR2AfterConstructiveSurfaces("hearts");
+export const BERGEN_R2_AFTER_CONSTRUCTIVE_SPADES_SURFACES =
+  createBergenR2AfterConstructiveSurfaces("spades");
+export const BERGEN_R2_AFTER_LIMIT_HEARTS_SURFACES =
+  createBergenR2AfterLimitSurfaces("hearts");
+export const BERGEN_R2_AFTER_LIMIT_SPADES_SURFACES =
+  createBergenR2AfterLimitSurfaces("spades");
+export const BERGEN_R2_AFTER_PREEMPTIVE_HEARTS_SURFACES =
+  createBergenR2AfterPreemptiveSurfaces("hearts");
+export const BERGEN_R2_AFTER_PREEMPTIVE_SPADES_SURFACES =
+  createBergenR2AfterPreemptiveSurfaces("spades");
+
+/** R3: Pre-instantiated surfaces. */
+export const BERGEN_R3_AFTER_GAME_SURFACES =
+  createBergenR3AfterGameSurfaces();
+export const BERGEN_R3_AFTER_SIGNOFF_SURFACES =
+  createBergenR3AfterSignoffSurfaces();
+export const BERGEN_R3_AFTER_GAME_TRY_HEARTS_SURFACES =
+  createBergenR3AfterGameTrySurfaces("hearts");
+export const BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES =
+  createBergenR3AfterGameTrySurfaces("spades");
+
+/** R4: Pre-instantiated surfaces. */
+export const BERGEN_R4_SURFACES = createBergenR4Surfaces();
