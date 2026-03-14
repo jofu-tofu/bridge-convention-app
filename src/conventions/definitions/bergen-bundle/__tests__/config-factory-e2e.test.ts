@@ -103,4 +103,31 @@ describe("Bergen bundle end-to-end via config-factory", () => {
       expect(result!.call.strain).toBe("H");
     }
   });
+
+  it("meaning pipeline produces correct result for constructive hand after 1S (spades path)", () => {
+    // 8 HCP, 4 spades — should bid 3C (constructive raise) after 1S
+    const h = hand("SK","ST","S6","S2","H5","H3","DK","DQ","D3","D2","C5","C3","C2");
+    expect(calculateHcp(h)).toBe(8);
+
+    const drillConfig = createDrillConfig("bergen-bundle", Seat.North);
+    const auction = buildAuction(Seat.North, ["1S", "P"]);
+    const ctx = createBiddingContext({
+      hand: h,
+      auction,
+      seat: Seat.South,
+      evaluation: evaluateHand(h),
+    });
+
+    const southStrategy = drillConfig.seatStrategies[Seat.South];
+    if (southStrategy === "user") return;
+
+    const result = southStrategy.suggest(ctx);
+    expect(result).not.toBeNull();
+    expect(result!.call.type).toBe("bid");
+    if (result!.call.type === "bid") {
+      expect(result!.call.level).toBe(3);
+      // 3C for constructive (same encoding for both suits)
+      expect(result!.call.strain).toBe("C");
+    }
+  });
 });

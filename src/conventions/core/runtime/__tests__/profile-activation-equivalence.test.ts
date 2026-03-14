@@ -127,5 +127,19 @@ describe("profile-driven activation (replaces legacy activationFilter)", () => {
 
       expect(result).toEqual(["bergen"]);
     });
+
+    it("after 1D P — minor opening does not activate bergen", () => {
+      const auction = buildAuction(Seat.North, ["1D", "P"]);
+      const result = resolveActiveModules(BERGEN_PROFILE, auction, seat);
+
+      expect(result).toEqual([]);
+    });
+
+    it("after 1C P — minor opening does not activate bergen", () => {
+      const auction = buildAuction(Seat.North, ["1C", "P"]);
+      const result = resolveActiveModules(BERGEN_PROFILE, auction, seat);
+
+      expect(result).toEqual([]);
+    });
   });
 });
