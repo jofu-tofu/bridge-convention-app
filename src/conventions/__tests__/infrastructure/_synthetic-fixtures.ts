@@ -341,6 +341,40 @@ export function makeSyntheticMachine(): ConversationMachine {
   return buildMachine(states, "idle");
 }
 
+/**
+ * Synthetic machine transitioning on 1H (major-suit opening pattern).
+ * Exercises a non-NT activation path for infrastructure tests.
+ */
+export function makeSyntheticMajorOpenMachine(): ConversationMachine {
+  return buildConversationMachine("synth-major-open", [
+    {
+      stateId: "idle",
+      parentId: null,
+      transitions: [{
+        transitionId: "detect-1h",
+        match: { kind: "call", level: 1, strain: BidSuit.Hearts },
+        target: "opened",
+      }],
+    },
+    {
+      stateId: "opened",
+      parentId: null,
+      surfaceGroupId: "responder-r1",
+      transitions: [{
+        transitionId: "opponent-passes",
+        match: { kind: "pass" },
+        target: "responder-r1",
+      }],
+    },
+    {
+      stateId: "responder-r1",
+      parentId: null,
+      surfaceGroupId: "responder-r1",
+      transitions: [],
+    },
+  ]);
+}
+
 // ═══════════════════════════════════════════════════════════════
 // Profile Factories
 // ═══════════════════════════════════════════════════════════════
@@ -453,6 +487,60 @@ export function makeSyntheticBundle(
     category: ConventionCategory.Asking,
     description: "Synthetic test bundle",
     conversationMachine: makeSyntheticMachine(),
+    ...overrides,
+  };
+}
+
+/**
+ * Synthetic bundle using systemProfile instead of legacy activationFilter.
+ * Exercises a non-NT (1H major-suit) activation pattern for infrastructure tests.
+ */
+export function makeSyntheticProfileBundle(
+  overrides: Partial<ConventionBundle> = {},
+): ConventionBundle {
+  const askSurface = makeHcpSurface(8, CALLS.bid2C, {
+    meaningId: "synth:profile-ask",
+    moduleId: "synth-asking",
+    ranking: { recommendationBand: "should", specificity: 2, modulePrecedence: 0, intraModuleOrder: 0 },
+    sourceIntent: { type: "ask-intent", params: {} },
+  });
+  const signoffSurface = makeSurface({
+    meaningId: "synth:profile-signoff",
+    moduleId: "synth-natural",
+    encoding: { defaultCall: CALLS.bid3NT },
+    clauses: [
+      { clauseId: "hcp-game", factId: "hand.hcp", operator: "gte", value: 10, description: "10+ HCP" },
+      { clauseId: "balanced", factId: "hand.isBalanced", operator: "boolean", value: true, description: "Balanced" },
+    ],
+    ranking: { recommendationBand: "should", specificity: 1, modulePrecedence: 1, intraModuleOrder: 0 },
+    sourceIntent: { type: "signoff-intent", params: {} },
+  });
+
+  return {
+    id: "synth-profile-bundle",
+    name: "Synthetic Profile Bundle",
+    memberIds: ["synth-asking", "synth-natural"],
+    dealConstraints: { seats: [] },
+    systemProfile: {
+      profileId: "synth-major-profile",
+      baseSystem: "synth-system",
+      modules: [
+        {
+          moduleId: "synth-asking",
+          kind: "base-system",
+          attachments: [{
+            whenAuction: { kind: "sequence", calls: ["1H"] },
+          }],
+        },
+      ],
+      conflictPolicy: { activationDefault: "simultaneous" },
+    },
+    meaningSurfaces: [
+      { groupId: "responder-r1", surfaces: [askSurface, signoffSurface] },
+    ],
+    category: ConventionCategory.Asking,
+    description: "Synthetic profile-driven bundle (non-NT activation)",
+    conversationMachine: makeSyntheticMajorOpenMachine(),
     ...overrides,
   };
 }
