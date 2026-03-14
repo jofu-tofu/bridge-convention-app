@@ -1,10 +1,9 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
   import { listConventions } from "../../conventions/core";
-  import type { ConventionConfig, ConventionTeaching, ProtocolRound } from "../../conventions/core";
+  import type { ConventionConfig, ConventionTeaching } from "../../conventions/core";
   import { filterConventions } from "../../core/display/filter-conventions";
   import DecisionTree from "../game/DecisionTree.svelte";
-  import { flattenTreeForDisplay } from "../game/DecisionTree";
   import type { TreeDisplayRow } from "../game/DecisionTree";
 
   const appStore = getAppStore();
@@ -30,19 +29,9 @@
   }
 
   const protocolRounds = $derived.by<RoundDisplay[]>(() => {
-    if (!config?.protocol?.rounds) return [];
-    const rounds: RoundDisplay[] = [];
-    for (let i = 0; i < config.protocol.rounds.length; i++) {
-      const round: ProtocolRound = config.protocol.rounds[i]!;
-      const tree = typeof round.handTree === "function"
-        ? round.handTree({})
-        : round.handTree;
-      const rows = flattenTreeForDisplay(tree, config.explanations);
-      if (rows.length === 0) continue;
-      const label = `Round ${i + 1}: ${round.name.charAt(0).toUpperCase() + round.name.slice(1).replace(/-/g, " ")}`;
-      rounds.push({ name: round.name, label, rows });
-    }
-    return rounds;
+    // Old tree-pipeline protocol rounds have been removed from ConventionConfig.
+    // New meaning-pipeline conventions don't expose protocol data for display.
+    return [];
   });
 
   function handleConventionClick(conv: ConventionConfig) {

@@ -1,7 +1,7 @@
 import type { SystemProfileIR, AttachmentIR } from "../../../core/contracts/agreement-module";
 import type { AuctionPatternIR, PublicGuardIR } from "../../../core/contracts/predicate-surfaces";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { Auction, Call, Seat } from "../../../engine/types";
+import type { Auction, Seat } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
 import { formatCallString } from "./commitment-extractor";

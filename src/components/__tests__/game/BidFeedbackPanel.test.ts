@@ -3,50 +3,19 @@ import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
 import type { BidFeedback } from "../../../stores/game.svelte";
 import { BidGrade } from "../../../stores/bidding.svelte";
-import type { DecisionTrace, CandidateSet, TreeForkPoint, TreePathEntry, PracticalRecommendation } from "../../../core/contracts";
+import type { PracticalRecommendation } from "../../../core/contracts";
+import type { BidResult } from "../../../core/contracts/bidding";
 
-function makeForkPoint(): TreeForkPoint {
-  const matched: TreePathEntry = {
-    nodeName: "has-4-card-major",
-    passed: true,
-    description: "Has 4+ card major (4 hearts)",
-    depth: 1,
-    parentNodeName: "is-responder",
+function makeWrongBidFeedback(): BidFeedback {
+  const expectedResult: BidResult = {
+    call: { type: "bid", level: 2, strain: "C" as never },
+    ruleName: "stayman-ask",
+    explanation: "Stayman convention ask",
   };
-  const rejected: TreePathEntry = {
-    nodeName: "is-balanced",
-    passed: false,
-    description: "Hand is balanced (4-3-3-3)",
-    depth: 1,
-    parentNodeName: "is-responder",
-  };
-  return { matched, rejected };
-}
-
-function makeTreePath(forkPoint?: TreeForkPoint): DecisionTrace {
-  return {
-    matchedNodeName: "stayman-ask",
-    path: [
-      { nodeName: "is-responder", passed: true, description: "Is responder", depth: 0, parentNodeName: null },
-    ],
-    visited: [
-      { nodeName: "is-responder", passed: true, description: "Is responder", depth: 0, parentNodeName: null },
-    ],
-    forkPoint,
-  };
-}
-
-function makeWrongBidFeedback(decisionTrace?: DecisionTrace, candidateSet?: CandidateSet): BidFeedback {
   return {
     grade: BidGrade.Incorrect,
     userCall: { type: "pass" },
-    expectedResult: {
-      call: { type: "bid", level: 2, strain: "C" as never },
-      ruleName: "stayman-ask",
-      explanation: "Stayman convention ask",
-      decisionTrace,
-      candidateSet,
-    },
+    expectedResult,
     teachingResolution: null,
   };
 }
@@ -54,8 +23,8 @@ function makeWrongBidFeedback(decisionTrace?: DecisionTrace, candidateSet?: Cand
 describe("BidFeedbackPanel", () => {
   const noop = () => {};
 
-  test("shows fork point when decisionTrace.forkPoint exists and answer is revealed", async () => {
-    const feedback = makeWrongBidFeedback(makeTreePath(makeForkPoint()));
+  test("shows answer panel when answer is revealed", async () => {
+    const feedback = makeWrongBidFeedback();
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
     });
@@ -64,15 +33,13 @@ describe("BidFeedbackPanel", () => {
     const showBtn = screen.getByLabelText("Show answer");
     await fireEvent.click(showBtn);
 
-    // Fork point should be visible
-    const forkSection = container.querySelector("[data-testid='fork-point']");
-    expect(forkSection).not.toBeNull();
-    expect(forkSection!.textContent).toContain("Has 4+ card major");
-    expect(forkSection!.textContent).toContain("Hand is balanced");
+    // No fork point conditions since no decisionTrace
+    const conditionList = container.querySelector("[aria-label='Bid conditions']");
+    expect(conditionList).toBeNull();
   });
 
-  test("does not show fork point when decisionTrace is undefined", async () => {
-    const feedback = makeWrongBidFeedback(undefined);
+  test("does not show fork point conditions when decisionTrace is undefined", async () => {
+    const feedback = makeWrongBidFeedback();
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
     });
@@ -80,12 +47,13 @@ describe("BidFeedbackPanel", () => {
     const showBtn = screen.getByLabelText("Show answer");
     await fireEvent.click(showBtn);
 
-    const forkSection = container.querySelector("[data-testid='fork-point']");
-    expect(forkSection).toBeNull();
+    // With no conditions or fork point, no condition list rendered
+    const conditionList = container.querySelector("[aria-label='Bid conditions']");
+    expect(conditionList).toBeNull();
   });
 
-  test("does not show fork point when forkPoint is undefined", async () => {
-    const feedback = makeWrongBidFeedback(makeTreePath(undefined));
+  test("does not show fork point conditions when forkPoint is undefined", async () => {
+    const feedback = makeWrongBidFeedback();
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
     });
@@ -93,69 +61,9 @@ describe("BidFeedbackPanel", () => {
     const showBtn = screen.getByLabelText("Show answer");
     await fireEvent.click(showBtn);
 
-    const forkSection = container.querySelector("[data-testid='fork-point']");
-    expect(forkSection).toBeNull();
-  });
-
-  test("shows divergence note when resolvedCandidate has isDefaultCall: false", async () => {
-    const decisionTrace: DecisionTrace = makeTreePath();
-    const candidateSet: CandidateSet = {
-      siblings: [],
-      resolvedCandidates: [
-        {
-          bidName: "stayman-ask",
-          meaning: "Asks for a 4-card major",
-          call: { type: "bid", level: 2, strain: "C" as never },
-          resolvedCall: { type: "bid", level: 2, strain: "D" as never },
-          isDefaultCall: false,
-          legal: true,
-          isMatched: true,
-          intentType: "AskForMajor",
-          failedConditions: [],
-        },
-      ],
-    };
-    const feedback = makeWrongBidFeedback(decisionTrace, candidateSet);
-    const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
-    });
-
-    const showBtn = screen.getByLabelText("Show answer");
-    await fireEvent.click(showBtn);
-
-    const note = container.querySelector("[data-testid='divergence-note']");
-    expect(note).not.toBeNull();
-    expect(note!.textContent).toContain("resolves differently");
-  });
-
-  test("no divergence note when resolvedCandidate has isDefaultCall: true", async () => {
-    const decisionTrace: DecisionTrace = makeTreePath();
-    const candidateSet: CandidateSet = {
-      siblings: [],
-      resolvedCandidates: [
-        {
-          bidName: "stayman-ask",
-          meaning: "Asks for a 4-card major",
-          call: { type: "bid", level: 2, strain: "C" as never },
-          resolvedCall: { type: "bid", level: 2, strain: "C" as never },
-          isDefaultCall: true,
-          legal: true,
-          isMatched: true,
-          intentType: "AskForMajor",
-          failedConditions: [],
-        },
-      ],
-    };
-    const feedback = makeWrongBidFeedback(decisionTrace, candidateSet);
-    const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
-    });
-
-    const showBtn = screen.getByLabelText("Show answer");
-    await fireEvent.click(showBtn);
-
-    const note = container.querySelector("[data-testid='divergence-note']");
-    expect(note).toBeNull();
+    // No fork point means no condition nodes from it
+    const conditionList = container.querySelector("[aria-label='Bid conditions']");
+    expect(conditionList).toBeNull();
   });
 
   test("shows correct bid display for correct feedback", () => {

@@ -1,12 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit } from "../../engine/types";
-import type { ConditionInference } from "../../conventions/core/types";
-import type { HandInference } from "../types";
+import type { ConditionInference, HandInference } from "../types";
 import {
   conditionToHandInference,
   invertInference,
   resolveDisjunction,
-  shouldInvertCondition,
 } from "../condition-mapper";
 
 // ─── conditionToHandInference ────────────────────────────────
@@ -99,32 +97,6 @@ describe("invertInference", () => {
   it("returns null when suit-max 13 would invert to min > domain max", () => {
     const ci: ConditionInference = { type: "suit-max", params: { max: 13, suitIndex: 0 } };
     expect(invertInference(ci)).toBeNull();
-  });
-
-  it("returns null for condition with negatable: false via shouldInvertCondition", () => {
-    const condition = {
-      name: "test",
-      label: "test",
-      category: "hand" as const,
-      negatable: false,
-      inference: { type: "balanced" as const, params: {} },
-      test: () => true,
-      describe: () => "test",
-    };
-    // shouldInvertCondition checks the negatable flag before invertInference
-    expect(shouldInvertCondition(condition)).toBe(false);
-  });
-
-  it("shouldInvertCondition returns true when negatable is undefined (default)", () => {
-    const condition = {
-      name: "test",
-      label: "test",
-      category: "hand" as const,
-      inference: { type: "balanced" as const, params: {} },
-      test: () => true,
-      describe: () => "test",
-    };
-    expect(shouldInvertCondition(condition)).toBe(true);
   });
 
   it("filters out-of-range branches from hcp-range disjunction", () => {

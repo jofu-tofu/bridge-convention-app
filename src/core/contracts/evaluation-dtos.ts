@@ -4,15 +4,12 @@
  * New code should import from "./tree-evaluation" or from the barrel "../contracts".
  */
 export {
-  type ConditionDetail,
   type SiblingConditionDetail,
-  type SiblingBid,
   type CandidateEligibility,
   type ResolvedCandidateDTO,
   isDtoSelectable,
   isDtoPedagogicallyAcceptable,
   type AlternativeGroup,
-  type CandidateSet,
   type IntentRelationship,
   type IntentFamily,
   type EvaluationTrace,

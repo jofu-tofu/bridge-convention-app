@@ -102,3 +102,8 @@ export function nextSeat(seat: Seat): Seat {
 export function partnerSeat(seat: Seat): Seat {
   return SEATS[(SEAT_INDEX[seat] + 2) % 4]!;
 }
+
+/** True when two seats are on the same partnership (N-S or E-W). */
+export function areSamePartnership(a: Seat, b: Seat): boolean {
+  return a === b || partnerSeat(a) === b;
+}

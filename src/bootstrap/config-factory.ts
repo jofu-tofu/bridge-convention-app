@@ -1,22 +1,14 @@
 import { Seat } from "../engine/types";
-import type { BiddingStrategy, BidResult, ConventionBiddingStrategy } from "../core/contracts";
+import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
 import type { DrillConfig } from "./types";
 import type { InferenceConfig } from "../inference/types";
-import { getConvention, computeDialogueState } from "../conventions/core";
-import type { ConventionConfig, BiddingContext, ConventionLookup } from "../conventions/core";
-import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
-import type { ConventionStrategyOptions } from "../strategy/bidding/convention-strategy";
+import type { ConventionLookup } from "../conventions/core";
 import { meaningBundleToStrategy } from "../strategy/bidding/meaning-strategy";
 import { passStrategy } from "../strategy/bidding/pass-strategy";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
-import type { StrategyChainOptions } from "../strategy/bidding/strategy-chain";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { createConventionInferenceProvider } from "../inference/convention-inference";
-import { ForcingState } from "../core/contracts";
-import type { BeliefData } from "../core/contracts";
-import { createFitConfidenceRanker } from "../strategy/bidding/fit-ranker";
 import { getBundle, createSharedFactCatalog } from "../conventions/core";
 import type { ConventionBundle } from "../conventions/core";
 import { createFactCatalog } from "../core/contracts/fact-catalog";
@@ -24,23 +16,6 @@ import { createPosteriorEngine } from "../inference/posterior";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
-
-/** Creates a result filter that rejects Pass when the dialogue state is forcing.
- *  The filter is a closure over the convention config — forcing knowledge stays
- *  in the convention layer, and the chain stays generic. */
-function createForcingFilter(config: ConventionConfig): StrategyChainOptions["resultFilter"] {
-  return (result: BidResult, context: BiddingContext) => {
-    if (result.call.type !== "pass") return true;
-    const state = computeDialogueState(
-      context.auction,
-      config.transitionRules ?? [],
-      config.baselineRules,
-    );
-    const isForced = state.forcingState === ForcingState.ForcingOneRound
-      || state.forcingState === ForcingState.GameForcing;
-    return !isForced;
-  };
-}
 
 /** Build a meaning-pipeline strategy from a ConventionBundle.
  *  Returns the strategy or null if the bundle has no meaningSurfaces. */
@@ -73,80 +48,41 @@ export function buildBundleStrategy(
 
 /**
  * Creates a DrillConfig for a given convention and user seat.
- * - N/S partnership always uses the drilled convention strategy
- * - E/W partnership always uses the opponent strategy (SAYC by default)
+ * - N/S partnership uses the bundle strategy (meaning pipeline)
+ * - E/W partnership always passes
  * - User seat gets "user"
- * - Wires inference configs: N/S convention-aware, E/W natural
+ * - Wires inference configs: natural for all partnerships
  * - Defaults to heuristic play strategy
  */
 export function createDrillConfig(
   conventionId: string,
   userSeat: Seat,
-  options?: {
-    opponentBidding?: boolean;
-    opponentConventionId?: string;
-    beliefProvider?: (ctx: BiddingContext) => BeliefData | undefined;
+  _options?: {
     lookupConvention?: ConventionLookup;
   },
 ): DrillConfig {
-  const lookup = options?.lookupConvention ?? getConvention;
-  const convention = lookup(conventionId);
-
-  // Use the meaning pipeline only when the user explicitly selected a bundle ID.
-  // Individual conventions (e.g., "stayman") stay on the tree pipeline even if they
-  // belong to a bundle — the user chose to study that convention specifically.
+  // Look up the bundle — only bundles exist now (no tree pipeline fallback)
   const bundle = getBundle(conventionId);
-  const bundleStrategy = bundle ? buildBundleStrategy(bundle) : null;
-
-  // Wire belief + ranker + interpretation options into convention strategy
-  const strategyOptions: ConventionStrategyOptions = {};
-  if (options?.beliefProvider) {
-    strategyOptions.beliefProvider = options.beliefProvider;
-  }
-  if (options?.lookupConvention) {
-    strategyOptions.lookupConvention = options.lookupConvention;
-  }
-  // Always create the ranker — it no-ops when belief is undefined
-  strategyOptions.ranker = createFitConfidenceRanker();
-
-  // Wire convention inference provider for partner interpretation model
-  const conventionProviderForInterpretation = createConventionInferenceProvider(conventionId, options?.lookupConvention);
-  strategyOptions.interpretationProvider = conventionProviderForInterpretation;
-
-  // Use bundle strategy (meaning pipeline) when available, else tree pipeline
-  const primaryStrategy = bundleStrategy ?? conventionToStrategy(convention, strategyOptions);
-
-  const strategy = createStrategyChain(
-    [primaryStrategy, naturalFallbackStrategy],
-    // Forcing filter only applies to tree pipeline; meaning pipeline handles forcing internally
-    bundleStrategy ? {} : { resultFilter: createForcingFilter(convention) },
-  );
-
-  // Wire opponent strategy
-  let opponentStrategy: BiddingStrategy = passStrategy;
-  const opponentBidding = options?.opponentBidding ?? false;
-  const opponentConventionId = options?.opponentConventionId ?? "sayc";
-  const opponentStrategyOptions = options?.lookupConvention
-    ? { lookupConvention: options.lookupConvention }
-    : undefined;
-  if (opponentBidding) {
-    try {
-      const opponentConvention = lookup(opponentConventionId);
-      opponentStrategy = createStrategyChain([
-        conventionToStrategy(opponentConvention, opponentStrategyOptions),
-        naturalFallbackStrategy,
-      ]);
-    } catch {
-      // Fall back to pass if opponent convention not found
-      opponentStrategy = passStrategy;
-    }
+  if (!bundle) {
+    throw new Error(
+      `No bundle registered for "${conventionId}". Only bundle-based conventions are supported.`,
+    );
   }
 
-  // N/S = convention, E/W = opponent, user seat = "user"
+  const bundleStrategy = buildBundleStrategy(bundle);
+  if (!bundleStrategy) {
+    throw new Error(
+      `Bundle "${conventionId}" has no meaning surfaces — cannot build strategy.`,
+    );
+  }
+
+  const strategy = createStrategyChain([bundleStrategy, naturalFallbackStrategy]);
+
+  // N/S = convention strategy, E/W = pass, user seat = "user"
   function seatStrategy(seat: Seat): BiddingStrategy | "user" {
     if (seat === userSeat) return "user";
     if (NS_SEATS.has(seat)) return strategy;
-    return opponentStrategy;
+    return passStrategy;
   }
   const seatStrategies: Record<Seat, BiddingStrategy | "user"> = {
     [Seat.North]: seatStrategy(Seat.North),
@@ -155,28 +91,15 @@ export function createDrillConfig(
     [Seat.West]: seatStrategy(Seat.West),
   };
 
-  // Build N/S inference config: convention-aware for own bids, natural for opponents
+  // Inference: natural for all partnerships
+  // (Convention inference required the deleted tree pipeline)
   const naturalProvider = createNaturalInferenceProvider();
-  const conventionProvider = createConventionInferenceProvider(conventionId, options?.lookupConvention);
   const nsInferenceConfig: InferenceConfig = {
-    ownPartnership: conventionProvider,
-    opponentPartnership: naturalProvider,
+    ownPartnership: naturalProvider,
+    opponentPartnership: createNaturalInferenceProvider(),
   };
-
-  // Build E/W inference config: natural by default, convention-aware when opponentBidding
-  let ewOwnProvider = createNaturalInferenceProvider();
-  if (opponentBidding) {
-    try {
-      // Verify convention exists before creating provider
-      lookup(opponentConventionId);
-      ewOwnProvider = createConventionInferenceProvider(opponentConventionId, options?.lookupConvention);
-    } catch {
-      // Fall back to natural if opponent convention not found
-      ewOwnProvider = createNaturalInferenceProvider();
-    }
-  }
   const ewInferenceConfig: InferenceConfig = {
-    ownPartnership: ewOwnProvider,
+    ownPartnership: createNaturalInferenceProvider(),
     opponentPartnership: createNaturalInferenceProvider(),
   };
 

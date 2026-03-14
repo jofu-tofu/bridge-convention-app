@@ -154,6 +154,7 @@ export function evaluateMeaningSurface(
     ranking: surface.ranking,
     evidence,
     sourceIntent: surface.sourceIntent,
+    teachingLabel: surface.teachingLabel,
   };
 }
 
@@ -255,6 +256,7 @@ export function evaluateDecisionSurface(
     ranking,
     evidence,
     sourceIntent: surface.sourceIntent ?? { type: "decision-surface-ir", params: {} },
+    teachingLabel: surface.teachingLabel,
   };
 }
 

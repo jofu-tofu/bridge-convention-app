@@ -9,7 +9,14 @@ import { SUIT_ORDER, partnerSeat } from "../../engine/constants";
 import type { BiddingContext } from "../../conventions/core";
 import type { PrivateBeliefState } from "../../inference/private-belief";
 import { LEVEL_HCP_TABLE } from "./practical-scorer";
-import { callKeyForDedup } from "./tree-eval-mapper";
+
+/** Create a string key from a Call for deduplication against existing candidates. */
+function callKeyForDedup(call: Call): string {
+  if (call.type === "bid") return `${call.level}${call.strain}`;
+  if (call.type === "double") return "X";
+  if (call.type === "redouble") return "XX";
+  return call.type;
+}
 
 export enum DistortionType {
   ConservativeNTDowngrade = "conservative-nt-downgrade",

@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   computeScenarioDistribution,
-  type ScenarioDistribution,
 } from "../pedagogical-weighting";
 import type { PedagogicalControls } from "../../core/contracts/witness-spec";
 

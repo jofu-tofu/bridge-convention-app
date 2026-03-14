@@ -8,12 +8,12 @@ import {
   clearRegistry,
   registerConvention,
 } from "../../../conventions/core/registry";
-import { staymanConfig } from "../../../conventions/definitions/stayman";
+import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
 
 describe("AppShell", () => {
   beforeEach(() => {
     clearRegistry();
-    registerConvention(staymanConfig);
+    registerConvention(ntBundleConventionConfig);
   });
 
   function renderShell() {
@@ -37,7 +37,7 @@ describe("AppShell", () => {
     expect(appStore.debugPanelOpen).toBe(true);
 
     // Navigate to game (this is what caused the $effect to re-run)
-    appStore.selectConvention(staymanConfig);
+    appStore.selectConvention(ntBundleConventionConfig);
     expect(appStore.screen).toBe("game");
 
     // Debug panel should still be on — not reset by re-running URL params
@@ -48,7 +48,7 @@ describe("AppShell", () => {
     const { appStore } = renderShell();
 
     appStore.setAutoplay(true);
-    appStore.selectConvention(staymanConfig);
+    appStore.selectConvention(ntBundleConventionConfig);
     expect(appStore.autoplay).toBe(true);
 
     appStore.navigateToMenu();

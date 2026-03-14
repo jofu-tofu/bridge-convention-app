@@ -4,25 +4,22 @@ import {
   registerConvention,
   listConventions,
 } from "../../../conventions/core/registry";
-import { staymanConfig } from "../../../conventions/definitions/stayman";
-import { bergenConfig } from "../../../conventions/definitions/bergen-raises";
-import { saycConfig } from "../../../conventions/definitions/sayc";
+import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
+import { bergenBundleConventionConfig } from "../../../conventions/definitions/bergen-bundle/convention-config";
 
 // ConventionSelectScreen uses getContext so we test via registry + filter logic
 describe("ConventionSelectScreen", () => {
   beforeEach(() => {
     clearRegistry();
-    registerConvention(staymanConfig);
-    registerConvention(bergenConfig);
-    registerConvention(saycConfig);
+    registerConvention(ntBundleConventionConfig);
+    registerConvention(bergenBundleConventionConfig);
   });
 
   it("lists all registered conventions from registry", () => {
     const conventions = listConventions();
-    expect(conventions).toHaveLength(3);
-    expect(conventions.map((c) => c.id)).toContain("stayman");
-    expect(conventions.map((c) => c.id)).toContain("bergen-raises");
-    expect(conventions.map((c) => c.id)).toContain("sayc");
+    expect(conventions).toHaveLength(2);
+    expect(conventions.map((c) => c.id)).toContain("nt-bundle");
+    expect(conventions.map((c) => c.id)).toContain("bergen-bundle");
   });
 
   it("each convention has name, description, and category", () => {
@@ -38,9 +35,9 @@ describe("ConventionSelectScreen", () => {
     const { filterConventions } =
       await import("../../../core/display/filter-conventions");
     const conventions = listConventions();
-    const result = filterConventions(conventions, "stayman", null);
+    const result = filterConventions(conventions, "1NT", null);
     expect(result).toHaveLength(1);
-    expect(result[0]!.id).toBe("stayman");
+    expect(result[0]!.id).toBe("nt-bundle");
   });
 
   it("filterConventions filters by category", async () => {
@@ -53,9 +50,8 @@ describe("ConventionSelectScreen", () => {
       "",
       ConventionCategory.Constructive,
     );
-    expect(result).toHaveLength(2);
-    expect(result.map((c) => c.id)).toContain("bergen-raises");
-    expect(result.map((c) => c.id)).toContain("sayc");
+    expect(result.length).toBeGreaterThanOrEqual(1);
+    expect(result.map((c) => c.id)).toContain("bergen-bundle");
   });
 
   it("shows empty state when no conventions match", async () => {

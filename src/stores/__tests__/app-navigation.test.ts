@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createAppStore } from "../app.svelte";
-import { staymanConfig } from "../../conventions/definitions/stayman";
-import { bergenConfig } from "../../conventions/definitions/bergen-raises";
+import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
+import { bergenBundleConventionConfig } from "../../conventions/definitions/bergen-bundle/convention-config";
 
 describe("app store learning navigation", () => {
   it("learningConvention is null initially", () => {
@@ -11,14 +11,14 @@ describe("app store learning navigation", () => {
 
   it("navigateToLearning sets screen and learningConvention", () => {
     const store = createAppStore();
-    store.navigateToLearning(staymanConfig);
+    store.navigateToLearning(ntBundleConventionConfig);
     expect(store.screen).toBe("learning");
-    expect(store.learningConvention?.id).toBe("stayman");
+    expect(store.learningConvention?.id).toBe("nt-bundle");
   });
 
   it("navigateToMenu from learning clears learningConvention", () => {
     const store = createAppStore();
-    store.navigateToLearning(staymanConfig);
+    store.navigateToLearning(ntBundleConventionConfig);
     store.navigateToMenu();
     expect(store.screen).toBe("select");
     expect(store.learningConvention).toBeNull();
@@ -26,19 +26,19 @@ describe("app store learning navigation", () => {
 
   it("navigateToLearning clears selectedConvention", () => {
     const store = createAppStore();
-    store.selectConvention(staymanConfig);
+    store.selectConvention(ntBundleConventionConfig);
     expect(store.selectedConvention).not.toBeNull();
-    store.navigateToLearning(bergenConfig);
+    store.navigateToLearning(bergenBundleConventionConfig);
     expect(store.selectedConvention).toBeNull();
-    expect(store.learningConvention?.id).toBe("bergen-raises");
+    expect(store.learningConvention?.id).toBe("bergen-bundle");
   });
 
   it("selectConvention clears learningConvention", () => {
     const store = createAppStore();
-    store.navigateToLearning(staymanConfig);
+    store.navigateToLearning(ntBundleConventionConfig);
     expect(store.learningConvention).not.toBeNull();
-    store.selectConvention(bergenConfig);
+    store.selectConvention(bergenBundleConventionConfig);
     expect(store.learningConvention).toBeNull();
-    expect(store.selectedConvention?.id).toBe("bergen-raises");
+    expect(store.selectedConvention?.id).toBe("bergen-bundle");
   });
 });

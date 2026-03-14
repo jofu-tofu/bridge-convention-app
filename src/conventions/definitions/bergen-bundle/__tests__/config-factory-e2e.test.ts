@@ -17,7 +17,6 @@ import {
   clearRegistry,
 } from "../../../core/registry";
 import { registerBundle, clearBundleRegistry, getBundle } from "../../../core/bundle";
-import { bergenConfig } from "../../bergen-raises";
 import { bergenBundle } from "../config";
 import { bergenBundleConventionConfig } from "../convention-config";
 import { createDrillConfig } from "../../../../bootstrap/config-factory";
@@ -27,7 +26,6 @@ import { createDrillConfig } from "../../../../bootstrap/config-factory";
 beforeEach(() => {
   clearRegistry();
   clearBundleRegistry();
-  registerConvention(bergenConfig);
   registerConvention(bergenBundleConventionConfig);
   registerBundle(bergenBundle);
 });

@@ -1,10 +1,6 @@
-import type { ConventionConfig, ConditionResult } from "../../conventions/core";
-import type { Deal, Auction, Call, Seat } from "../../engine/types";
+import type { ConventionConfig } from "../../conventions/core";
+import type { Call, Seat } from "../../engine/types";
 import type { BidHistoryEntry } from "../../core/contracts";
-import {
-  evaluateAllBiddingRules,
-  reconstructBiddingContext,
-} from "../../conventions/core";
 
 export interface BidEvalTrace {
   readonly entry: BidHistoryEntry;
@@ -16,25 +12,15 @@ export interface DebugRuleResultView {
   readonly matched: boolean;
   readonly isLegal: boolean;
   readonly call?: Call;
-  readonly conditionResults?: readonly ConditionResult[];
 }
 
-/** Compute full rule evaluation trace for each bid in history. */
+/** Compute full rule evaluation trace for each bid in history.
+ *  Returns empty — old tree pipeline evaluators have been removed. */
 export function computeBidEvalTraces(
-  convention: ConventionConfig | null | undefined,
-  deal: Deal | null,
-  bidHistory: readonly BidHistoryEntry[],
-  auctionEntries: readonly { seat: Seat; call: Call }[],
+  _convention: ConventionConfig | null | undefined,
+  _deal: unknown,
+  _bidHistory: readonly BidHistoryEntry[],
+  _auctionEntries: readonly { seat: Seat; call: Call }[],
 ): BidEvalTrace[] {
-  if (!convention || !deal) return [];
-
-  return bidHistory.map((entry, i) => {
-    const auctionPrefix: Auction = {
-      entries: auctionEntries.slice(0, i) as { seat: Seat; call: Call }[],
-      isComplete: false,
-    };
-    const ctx = reconstructBiddingContext(deal, entry.seat, auctionPrefix);
-    const allResults = evaluateAllBiddingRules(ctx, convention);
-    return { entry, allResults };
-  });
+  return [];
 }

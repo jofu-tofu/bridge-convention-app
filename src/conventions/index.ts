@@ -1,12 +1,12 @@
-import { staymanConfig } from "./definitions/stayman";
-import { bergenConfig } from "./definitions/bergen-raises";
-import { saycConfig } from "./definitions/sayc";
-import { weakTwosConfig } from "./definitions/weak-twos";
-import { lebensohlLiteConfig } from "./definitions/lebensohl-lite";
 import { registerConvention } from "./core/registry";
+import { registerBundle } from "./core/bundle";
+import { ntBundle } from "./definitions/nt-bundle";
+import { ntBundleConventionConfig } from "./definitions/nt-bundle/convention-config";
+import { bergenBundle } from "./definitions/bergen-bundle";
+import { bergenBundleConventionConfig } from "./definitions/bergen-bundle/convention-config";
 
-registerConvention(staymanConfig);
-registerConvention(bergenConfig);
-registerConvention(saycConfig);
-registerConvention(weakTwosConfig);
-registerConvention(lebensohlLiteConfig);
+registerConvention(ntBundleConventionConfig);
+registerConvention(bergenBundleConventionConfig);
+
+registerBundle(ntBundle);
+registerBundle(bergenBundle);

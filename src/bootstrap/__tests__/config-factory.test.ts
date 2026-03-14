@@ -3,10 +3,10 @@ import { createDrillConfig } from "../config-factory";
 import { Seat } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
 import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
-import { staymanConfig } from "../../conventions/definitions/stayman";
-import { bergenConfig } from "../../conventions/definitions/bergen-raises";
-import { saycConfig } from "../../conventions/definitions/sayc";
 import { ntBundle } from "../../conventions/definitions/nt-bundle";
+import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
+import { bergenBundle } from "../../conventions/definitions/bergen-bundle";
+import { bergenBundleConventionConfig } from "../../conventions/definitions/bergen-bundle/convention-config";
 
 beforeEach(() => {
   clearRegistry();
@@ -14,53 +14,31 @@ beforeEach(() => {
 });
 
 describe("createDrillConfig", () => {
-  it("supports injected lookup without registry setup", () => {
-    const localLookup = (id: string) => {
-      if (id === "stayman") return staymanConfig;
-      if (id === "sayc") return saycConfig;
-      throw new Error(`missing local convention: ${id}`);
-    };
-
-    const config = createDrillConfig("stayman", Seat.South, { lookupConvention: localLookup });
-    expect(config.seatStrategies[Seat.South]).toBe("user");
-    const northStrategy = config.seatStrategies[Seat.North];
-    expect(northStrategy).not.toBe("user");
-    if (northStrategy !== "user") {
-      expect(northStrategy.id).toContain("convention:stayman");
-    }
-  });
-
-  it("propagates errors from injected lookup for missing IDs", () => {
-    const throwingLookup = (id: string) => {
-      throw new Error(`injected lookup failed: ${id}`);
-    };
-
-    expect(() => createDrillConfig("missing-injected", Seat.South, { lookupConvention: throwingLookup }))
-      .toThrowError("injected lookup failed: missing-injected");
-  });
-
   it("assigns user seat as 'user'", () => {
-    registerConvention(staymanConfig);
-    const config = createDrillConfig("stayman", Seat.South);
+    registerConvention(ntBundleConventionConfig);
+    registerBundle(ntBundle);
+    const config = createDrillConfig("nt-bundle", Seat.South);
     expect(config.seatStrategies[Seat.South]).toBe("user");
     expect(config.userSeat).toBe(Seat.South);
-    expect(config.conventionId).toBe("stayman");
+    expect(config.conventionId).toBe("nt-bundle");
   });
 
-  it("assigns convention strategy to N/S partner (North)", () => {
-    registerConvention(staymanConfig);
-    const config = createDrillConfig("stayman", Seat.South);
+  it("assigns bundle strategy to N/S partner (North)", () => {
+    registerConvention(ntBundleConventionConfig);
+    registerBundle(ntBundle);
+    const config = createDrillConfig("nt-bundle", Seat.South);
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
     if (northStrategy !== "user") {
-      expect(northStrategy.id).toContain("convention:stayman");
+      expect(northStrategy.id).toContain("nt-bundle");
     }
   });
 
-  it("assigns opponent strategy to E/W seats", () => {
-    registerConvention(staymanConfig);
-    const config = createDrillConfig("stayman", Seat.South);
-    // East and West are opponents — passStrategy by default
+  it("assigns passStrategy to E/W seats", () => {
+    registerConvention(ntBundleConventionConfig);
+    registerBundle(ntBundle);
+    const config = createDrillConfig("nt-bundle", Seat.South);
+    // East and West are opponents — always passStrategy
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
@@ -73,16 +51,16 @@ describe("createDrillConfig", () => {
     }
   });
 
-  it("assigns convention strategy to North for constructive conventions (Bergen)", () => {
-    registerConvention(bergenConfig);
-    const config = createDrillConfig("bergen-raises", Seat.South);
-    // North is South's partner — should use Bergen for opener rebids
+  it("assigns bundle strategy to North for Bergen bundle", () => {
+    registerConvention(bergenBundleConventionConfig);
+    registerBundle(bergenBundle);
+    const config = createDrillConfig("bergen-bundle", Seat.South);
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
     if (northStrategy !== "user") {
-      expect(northStrategy.id).toContain("convention:bergen-raises");
+      expect(northStrategy.id).toContain("bergen-bundle");
     }
-    // East is opponent — should NOT use Bergen
+    // East is opponent — always pass
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
@@ -90,56 +68,33 @@ describe("createDrillConfig", () => {
     }
   });
 
-  it("wraps N/S convention strategy in a chain with natural fallback", () => {
-    registerConvention(staymanConfig);
-    const config = createDrillConfig("stayman", Seat.South);
+  it("wraps N/S bundle strategy in a chain with natural fallback", () => {
+    registerConvention(ntBundleConventionConfig);
+    registerBundle(ntBundle);
+    const config = createDrillConfig("nt-bundle", Seat.South);
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
     if (northStrategy !== "user") {
       expect(northStrategy.id).toContain("chain:");
-      expect(northStrategy.id).toContain("convention:stayman");
+      expect(northStrategy.id).toContain("nt-bundle");
       expect(northStrategy.id).toContain("natural-fallback");
     }
   });
 
-  it("wraps E/W opponent strategy in a chain when opponent bidding enabled", () => {
-    registerConvention(staymanConfig);
-    registerConvention(saycConfig);
-    const config = createDrillConfig("stayman", Seat.South, {
-      opponentBidding: true,
-      opponentConventionId: "sayc",
-    });
-    const eastStrategy = config.seatStrategies[Seat.East];
-    expect(eastStrategy).not.toBe("user");
-    if (eastStrategy !== "user") {
-      expect(eastStrategy.id).toContain("chain:");
-      expect(eastStrategy.id).toContain("convention:sayc");
-      expect(eastStrategy.id).toContain("natural-fallback");
-    }
+  it("throws when no bundle is registered for the convention ID", () => {
+    // No bundle registered
+    expect(() => createDrillConfig("missing-bundle", Seat.South))
+      .toThrowError(/No bundle registered for "missing-bundle"/);
   });
 
-  it("dispatches to meaning pipeline when convention belongs to a registered bundle with meaningSurfaces", () => {
-    registerConvention(staymanConfig);
+  it("dispatches to meaning pipeline when user selects the bundle ID", () => {
+    registerConvention(ntBundleConventionConfig);
     registerBundle(ntBundle);
-    const config = createDrillConfig("stayman", Seat.South);
+    const config = createDrillConfig("nt-bundle", Seat.South);
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
     if (northStrategy !== "user") {
-      // Meaning pipeline strategy ID uses the bundle ID
       expect(northStrategy.id).toContain("nt-bundle");
     }
   });
-
-  it("falls back to tree pipeline when convention has no registered bundle", () => {
-    registerConvention(staymanConfig);
-    // Do NOT register ntBundle — no bundle available
-    const config = createDrillConfig("stayman", Seat.South);
-    const northStrategy = config.seatStrategies[Seat.North];
-    expect(northStrategy).not.toBe("user");
-    if (northStrategy !== "user") {
-      // Tree pipeline uses convention:stayman ID
-      expect(northStrategy.id).toContain("convention:stayman");
-    }
-  });
-
 });

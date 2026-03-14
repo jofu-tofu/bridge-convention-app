@@ -12,8 +12,6 @@ function makeConvention(
     description: "A test convention for testing",
     category: ConventionCategory.Asking,
     dealConstraints: { seats: [] },
-    biddingRules: [],
-    examples: [],
     ...overrides,
   };
 }

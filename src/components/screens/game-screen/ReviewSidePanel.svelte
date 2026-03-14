@@ -2,7 +2,9 @@
   import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
+  import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
   import { STRAIN_SYMBOLS } from "../../../core/display/format";
+  import { formatModuleRole, roleColorClasses } from "../../game/BidFeedbackPanel";
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
@@ -49,6 +51,32 @@
     void dealNumber;
     activeTab = "bidding";
   });
+
+  // Aggregate convention contributions across user bids that have teaching projections
+  const conventionSummary = $derived.by(() => {
+    const moduleMap = new Map<string, { role: ConventionContribution["role"]; count: number }>();
+    for (const entry of bidHistory) {
+      if (!entry.isUser || !entry.teachingProjection) continue;
+      for (const contrib of entry.teachingProjection.conventionsApplied) {
+        if (contrib.meaningsProposed.length === 0) continue;
+        const existing = moduleMap.get(contrib.moduleId);
+        if (!existing || (contrib.role === "primary" && existing.role !== "primary")) {
+          moduleMap.set(contrib.moduleId, {
+            role: contrib.role,
+            count: (existing?.count ?? 0) + 1,
+          });
+        } else {
+          existing.count++;
+        }
+      }
+    }
+    return [...moduleMap.entries()].map(([moduleId, data]) => ({
+      moduleId,
+      role: data.role,
+      count: data.count,
+    }));
+  });
+  const showConventionSummary = $derived(conventionSummary.length > 1);
 
   /** Format contract result like "3NT= — +400" or "2H -1 — -100" */
   function formatResult(): string | null {
@@ -124,6 +152,22 @@
     {/if}
 
     <BiddingReview {bidHistory} />
+
+    {#if showConventionSummary}
+      <div class="mt-3 bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
+        <p class="text-xs font-medium text-text-muted mb-2">Conventions in this deal</p>
+        <div class="flex flex-wrap gap-1.5">
+          {#each conventionSummary as mod (mod.moduleId)}
+            <span
+              class="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs {roleColorClasses(mod.role)}"
+            >
+              <span class="font-medium">{mod.moduleId}</span>
+              <span class="opacity-70">{formatModuleRole(mod.role)}</span>
+            </span>
+          {/each}
+        </div>
+      </div>
+    {/if}
   </div>
 {:else if activeTab === "analysis"}
   <div id="review-panel-analysis" role="tabpanel" aria-label="DDS analysis" class="min-w-0 overflow-x-hidden">

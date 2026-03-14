@@ -1,5 +1,4 @@
-import type { RuleCondition, ConditionInference } from "../conventions/core";
-import type { HandInference } from "./types";
+import type { ConditionInference, HandInference } from "./types";
 import type { Suit, Seat } from "../engine/types";
 import { Suit as SuitEnum } from "../engine/types";
 
@@ -9,17 +8,6 @@ const SUIT_INDEX_TO_SUIT: Record<number, Suit> = {
   2: SuitEnum.Diamonds,
   3: SuitEnum.Clubs,
 };
-
-/**
- * Extract inference data from a RuleCondition.
- * Returns null for conditions without a structured `.inference` field.
- * New conditions should always include `.inference` for inference engine support.
- */
-export function extractInference(
-  condition: RuleCondition,
-): ConditionInference | null {
-  return condition.inference ?? null;
-}
 
 /** Convert a ConditionInference into a partial HandInference. */
 export function conditionToHandInference(
@@ -75,15 +63,6 @@ export function conditionToHandInference(
     case "two-suited":
       return { seat, suits: {}, source }; // Two-suited noted but no specific suit known
   }
-}
-
-/**
- * Check whether a condition's inference should be inverted for negative inference.
- * Returns false when `condition.negatable` is explicitly false (e.g., `isBalanced()`
- * where NO ≠ unbalanced — could be semi-balanced). Defaults to true.
- */
-export function shouldInvertCondition(condition: RuleCondition): boolean {
-  return condition.negatable !== false;
 }
 
 /**

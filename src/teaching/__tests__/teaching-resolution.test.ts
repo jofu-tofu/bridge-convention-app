@@ -24,12 +24,7 @@ function makeBidResult(candidates?: readonly ResolvedCandidateDTO[]): BidResult 
     call: { type: "bid", level: 2, strain: BidSuit.Clubs },
     ruleName: "stayman-ask",
     explanation: "Stayman ask",
-    candidateSet: candidates === undefined
-      ? undefined
-      : {
-          siblings: [],
-          resolvedCandidates: candidates,
-        },
+    resolvedCandidates: candidates,
   };
 }
 
@@ -439,129 +434,6 @@ describe("resolveTeachingAnswer", () => {
     // game-raise has failedConditions but is added via group (bypasses tree eligibility)
     expect(result.acceptableBids).toHaveLength(1);
     expect(result.acceptableBids[0]?.bidName).toBe("game-raise");
-  });
-});
-
-describe("tier-peer ambiguity boost", () => {
-  test("ambiguityScore boosts by 0.2 when tierPeerCount >= 2 and !rankerResolved", () => {
-    // One preferred alternative → base score 0.6, + 0.2 tier-peer boost = 0.8
-    const result = resolveTeachingAnswer(
-      {
-        ...makeBidResult([
-          makeCandidate({
-            bidName: "one",
-            call: { type: "bid", level: 2, strain: BidSuit.Hearts },
-            resolvedCall: { type: "bid", level: 2, strain: BidSuit.Hearts },
-            priority: "preferred",
-          }),
-        ]),
-        evaluationTrace: {
-          conventionId: "test",
-          protocolMatched: true,
-          overlaysActivated: [],
-          overlayErrors: [],
-          candidateCount: 3,
-          tierPeerCount: 2,
-          strategyChainPath: [],
-        },
-      },
-    );
-    expect(result.ambiguityScore).toBe(0.8);
-  });
-
-  test("ambiguityScore unchanged when rankerResolved: true", () => {
-    // One preferred → base 0.6, but ranker resolved → no boost
-    const result = resolveTeachingAnswer(
-      {
-        ...makeBidResult([
-          makeCandidate({
-            bidName: "one",
-            call: { type: "bid", level: 2, strain: BidSuit.Hearts },
-            resolvedCall: { type: "bid", level: 2, strain: BidSuit.Hearts },
-            priority: "preferred",
-          }),
-        ]),
-        evaluationTrace: {
-          conventionId: "test",
-          protocolMatched: true,
-          overlaysActivated: [],
-          overlayErrors: [],
-          candidateCount: 3,
-          tierPeerCount: 2,
-          rankerResolved: true,
-          strategyChainPath: [],
-        },
-      },
-    );
-    expect(result.ambiguityScore).toBe(0.6);
-  });
-
-  test("ambiguityScore unchanged when trace absent (backward compat)", () => {
-    const result = resolveTeachingAnswer(
-      makeBidResult([
-        makeCandidate({
-          bidName: "one",
-          call: { type: "bid", level: 2, strain: BidSuit.Hearts },
-          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Hearts },
-          priority: "preferred",
-        }),
-      ]),
-    );
-    // No evaluationTrace → no boost
-    expect(result.ambiguityScore).toBe(0.6);
-  });
-
-  test("tier-peer boost alone yields 0.2 when no acceptable alternatives exist", () => {
-    const result = resolveTeachingAnswer(
-      {
-        ...makeBidResult([
-          makeCandidate({ isMatched: true, bidName: "matched-only" }),
-        ]),
-        evaluationTrace: {
-          conventionId: "test",
-          protocolMatched: true,
-          overlaysActivated: [],
-          overlayErrors: [],
-          candidateCount: 2,
-          tierPeerCount: 2,
-          strategyChainPath: [],
-        },
-      },
-    );
-    // No acceptable alternatives → base 0, + 0.2 tier-peer = 0.2
-    expect(result.ambiguityScore).toBe(0.2);
-  });
-
-  test("ambiguityScore capped at 1.0", () => {
-    const result = resolveTeachingAnswer(
-      {
-        ...makeBidResult([
-          makeCandidate({
-            bidName: "one",
-            call: { type: "bid", level: 2, strain: BidSuit.Hearts },
-            resolvedCall: { type: "bid", level: 2, strain: BidSuit.Hearts },
-            priority: "preferred",
-          }),
-          makeCandidate({
-            bidName: "two",
-            call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
-            resolvedCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
-            priority: "preferred",
-          }),
-        ]),
-        evaluationTrace: {
-          conventionId: "test",
-          protocolMatched: true,
-          overlaysActivated: [],
-          overlayErrors: [],
-          candidateCount: 4,
-          tierPeerCount: 3,
-          strategyChainPath: [],
-        },
-      },
-    );
-    // 2 preferred → base 0.8, + 0.2 = 1.0 (capped)
-    expect(result.ambiguityScore).toBe(1.0);
   });
 });
 

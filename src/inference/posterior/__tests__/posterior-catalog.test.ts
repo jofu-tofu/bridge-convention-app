@@ -5,7 +5,7 @@ import {
 } from "../posterior-catalog";
 import type { SeatPosterior, PosteriorFactRequest, PosteriorFactValue } from "../../../core/contracts/posterior";
 import type { PosteriorFactProvider as PosteriorFactProviderType } from "../../../core/contracts/posterior";
-import { ALL_POSTERIOR_FACT_IDS, SHARED_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
+import { SHARED_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
 import type { PublicHandSpace, LikelihoodModel } from "../../../core/contracts/posterior";
 
 function makeMockProvider(values: Record<string, PosteriorFactValue | null>): PosteriorFactProviderType {

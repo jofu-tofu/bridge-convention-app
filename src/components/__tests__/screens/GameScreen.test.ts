@@ -5,16 +5,18 @@ import {
   clearRegistry,
   registerConvention,
 } from "../../../conventions/core/registry";
-import { staymanConfig } from "../../../conventions/definitions/stayman";
-import { saycConfig } from "../../../conventions/definitions/sayc";
+import { registerBundle, clearBundleRegistry } from "../../../conventions/core/bundle";
+import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
+import { ntBundle } from "../../../conventions/definitions/nt-bundle/config";
 import { createStubEngine, makeDeal } from "../../../test-support/engine-stub";
 
 // GameScreen uses Svelte context heavily — test the extracted logic
 describe("GameScreen", () => {
   beforeEach(() => {
     clearRegistry();
-    registerConvention(staymanConfig);
-    registerConvention(saycConfig);
+    clearBundleRegistry();
+    registerConvention(ntBundleConventionConfig);
+    registerBundle(ntBundle);
   });
 
   it("startDrill calls engine.generateDeal", async () => {
@@ -23,11 +25,11 @@ describe("GameScreen", () => {
     const generateDeal = vi.fn().mockResolvedValue(deal);
     const engine = createStubEngine({ generateDeal });
 
-    await startDrill(engine, staymanConfig, Seat.South);
+    await startDrill(engine, ntBundleConventionConfig, Seat.South);
     expect(generateDeal).toHaveBeenCalledTimes(1);
     const calledConstraints = generateDeal.mock.calls[0]![0];
     // Convention's own seat constraints are included
-    for (const seatConstraint of staymanConfig.dealConstraints.seats) {
+    for (const seatConstraint of ntBundleConventionConfig.dealConstraints.seats) {
       expect(calledConstraints.seats).toContainEqual(
         expect.objectContaining({ seat: seatConstraint.seat }),
       );
@@ -41,7 +43,7 @@ describe("GameScreen", () => {
       generateDeal: vi.fn().mockResolvedValue(deal),
     });
 
-    const bundle = await startDrill(engine, staymanConfig, Seat.South);
+    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
     expect(bundle.deal).toBe(deal);
     expect(bundle.session).toBeDefined();
   });

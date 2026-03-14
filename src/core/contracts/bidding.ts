@@ -6,13 +6,11 @@ import type {
   Seat,
   Vulnerability,
 } from "../../engine/types";
-import type { TreeInferenceData } from "./inference";
 import type {
-  CandidateSet,
-  ConditionDetail,
-  DecisionTrace,
   EvaluationTrace,
+  ResolvedCandidateDTO,
 } from "./tree-evaluation";
+import type { TeachingProjection } from "./teaching-projection";
 
 export interface BiddingContext {
   readonly hand: Hand;
@@ -48,13 +46,10 @@ export interface BidResult {
   readonly explanation: string;
   readonly meaning?: string;
   readonly handSummary?: string;
-  readonly conditions?: readonly ConditionDetail[];
-  readonly decisionTrace?: DecisionTrace;
-  readonly candidateSet?: CandidateSet;
   readonly evaluationTrace?: EvaluationTrace;
-  /** Structured inference data from tree evaluation — hand conditions on the matched path
-   *  and rejected branches. Used by the inference engine for positive/negative inference. */
-  readonly treeInferenceData?: TreeInferenceData;
+  /** All candidates the pipeline considered for this auction+hand.
+   *  Used by teaching-resolution for alternative grading. */
+  readonly resolvedCandidates?: readonly ResolvedCandidateDTO[];
 }
 
 /** A single entry in the bid history, shown in review/feedback screens. */
@@ -66,11 +61,11 @@ export interface BidHistoryEntry {
   readonly meaning?: string;
   readonly handSummary?: string;
   readonly isUser: boolean;
-  readonly conditions?: readonly ConditionDetail[];
   readonly isCorrect?: boolean;
   readonly expectedResult?: BidResult;
-  readonly decisionTrace?: DecisionTrace;
-  readonly candidateSet?: CandidateSet;
+  /** Teaching projection snapshot — persisted for review-phase convention analysis.
+   *  Present for user bids when the meaning or tree pipeline produced one. */
+  readonly teachingProjection?: TeachingProjection;
 }
 
 export interface BiddingStrategy {

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test("autoplay completes bidding and reaches review", async ({ page }) => {
   // Use autoplay to complete bidding automatically with deterministic seed
-  await page.goto("/?convention=stayman&seed=42&autoplay=true");
+  await page.goto("/?convention=nt-bundle&seed=42&autoplay=true");
 
   // Should reach Review phase (autoplay bids correctly and skips to review)
   const phaseLabel = page.getByTestId("game-phase");
@@ -16,7 +16,7 @@ test("autoplay completes bidding and reaches review", async ({ page }) => {
 test("skip to review button transitions to review", async ({ page }) => {
   // Use autoplay=false with seed — autoplay the opponents but not the user
   // Instead, use convention+seed and manually bid to reach play phase
-  await page.goto("/?convention=stayman&seed=42&autoplay=true");
+  await page.goto("/?convention=nt-bundle&seed=42&autoplay=true");
 
   // Autoplay reaches review; verify the phase and that review content is present
   const phaseLabel = page.getByTestId("game-phase");

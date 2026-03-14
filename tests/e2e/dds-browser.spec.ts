@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("DDS in browser via WASM worker", () => {
   test("autoplay to Review shows analysis tab", async ({ page }) => {
     // Autoplay bids correct calls and skips to review automatically
-    await page.goto("/?convention=stayman&autoplay=true&seed=42");
+    await page.goto("/?convention=nt-bundle&autoplay=true&seed=42");
 
     // Wait for Review phase (autoplay completes bidding)
     const phaseLabel = page.getByTestId("game-phase");

@@ -4,6 +4,15 @@
   import type { BidFeedback } from "../../stores/game.svelte";
   import { BidGrade } from "../../stores/bidding.svelte";
   import { formatCall } from "../../core/display/format";
+  import {
+    formatRelationKind,
+    formatEliminationStage,
+    formatModuleRole,
+    roleColorClasses,
+    whyNotGradeClasses,
+    isArtificialEncoder,
+    formatEncoderKind,
+  } from "./BidFeedbackPanel";
 
   interface Props {
     feedback: BidFeedback;
@@ -15,36 +24,78 @@
   let { feedback, onContinue, onSkipToReview, onRetry }: Props = $props();
 
   let showAnswer = $state(false);
-  let expandedSiblings = new SvelteSet<number>();
-  const forkPoint = $derived(feedback.expectedResult?.decisionTrace?.forkPoint ?? null);
-  const siblings = $derived(feedback.expectedResult?.candidateSet?.siblings ?? []);
+  let showDecisionSpace = $state(false);
+  let expandedWhyNot = new SvelteSet<number>();
   const acceptableBids = $derived(feedback.teachingResolution?.acceptableBids ?? []);
-  const handConditions = $derived(
-    feedback.expectedResult?.conditions?.filter(c => c.category !== "auction") ?? [],
+
+  // Teaching projection — unified contract from both pipelines
+  const projection = $derived(feedback.teachingProjection);
+
+  // Meaning display label from the live meaning view
+  const liveMeaning = $derived(
+    projection?.meaningViews.find(v => v.status === "live"),
+  );
+  const meaningLabel = $derived(liveMeaning?.displayLabel ?? feedback.expectedResult?.meaning);
+
+  // Conditions from primary explanation (kind="condition" nodes)
+  const conditionNodes = $derived(
+    projection?.primaryExplanation.filter(n => n.kind === "condition") ?? [],
   );
 
-  // Divergence note: when a resolver produced a different call than the default
-  const divergedCandidate = $derived(
-    feedback.expectedResult?.candidateSet?.resolvedCandidates?.find(
-      c => c.isMatched && !c.isDefaultCall,
+  // WhyNot entries — alternative bids with explanations
+  const whyNotEntries = $derived(projection?.whyNot ?? []);
+
+  // Convention contributions — only show when multiple modules contributed
+  const contributions = $derived(
+    (projection?.conventionsApplied ?? []).filter(c => c.meaningsProposed.length > 0),
+  );
+  const showContributions = $derived(contributions.length > 1);
+
+  // Multi-rationale detection: a call correct for more than one distinct reason
+  const multiRationaleCall = $derived(
+    projection?.callViews.find(
+      cv => cv.status === "truth" && cv.projectionKind === "multi-rationale-same-call",
     ) ?? null,
   );
+
+  // Decision space: all evaluated meanings (live + eliminated)
+  const eliminatedMeanings = $derived(
+    (projection?.meaningViews ?? []).filter(v => v.status === "eliminated"),
+  );
+  const showDecisionSpaceToggle = $derived(eliminatedMeanings.length > 0);
+
+  // Partner hand space summary
+  const handSpace = $derived(projection?.handSpace);
+  const hasPartnerInfo = $derived(
+    handSpace != null && // eslint-disable-line eqeqeq -- intentional nullish check
+    handSpace.partnerSummary != null, // eslint-disable-line eqeqeq -- intentional nullish check
+  );
+
+  // Encoding explanation — show when the meaning was encoded via an artificial mechanism
+  const encodingNote = $derived(
+    feedback.encodingTrace && isArtificialEncoder(feedback.encodingTrace.encoderKind)
+      ? formatEncoderKind(feedback.encodingTrace.encoderKind)
+      : null,
+  );
+
+  // Divergence note: removed — old tree-pipeline candidateSet no longer available
 
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
   let prevFeedback: BidFeedback | undefined;
   $effect.pre(() => {
     if (feedback !== prevFeedback) {
       showAnswer = false;
-      expandedSiblings.clear();
+      showDecisionSpace = false;
+      expandedWhyNot.clear();
     }
     prevFeedback = feedback;
   });
 
-  function toggleSibling(index: number) {
-    if (expandedSiblings.has(index)) {
-      expandedSiblings.delete(index);
+  function toggleWhyNot(index: number) {
+    if (expandedWhyNot.has(index)) {
+      expandedWhyNot.delete(index);
     } else {
-      expandedSiblings.add(index);
+      expandedWhyNot.add(index);
     }
   }
 
@@ -63,7 +114,7 @@
     !callsEqual(practicalRec.topCandidateCall, feedback.expectedResult.call)
   );
 
-  function isAcceptableSibling(call: typeof siblings[number]["call"]): boolean {
+  function isAcceptableWhyNot(call: Call): boolean {
     return acceptableBids.some((acceptable) => callsEqual(acceptable.call, call));
   }
 </script>
@@ -176,10 +227,21 @@
           <p class="text-xs text-red-300/70 mb-0.5">Correct bid:</p>
           <p class="font-mono font-bold text-base text-red-100">
             {formatCall(feedback.expectedResult.call)}
-            {#if feedback.expectedResult.meaning}
-              <span class="font-sans font-normal text-sm text-red-200/80">— {feedback.expectedResult.meaning}</span>
+            {#if meaningLabel}
+              <span class="font-sans font-normal text-sm text-red-200/80">— {meaningLabel}</span>
             {/if}
           </p>
+          {#if multiRationaleCall}
+            <p class="text-xs text-sky-300/70 mt-0.5">
+              Correct for more than one reason
+              {#if multiRationaleCall.supportingMeanings.length > 0}
+                — supported by {multiRationaleCall.supportingMeanings.length} meanings
+              {/if}
+            </p>
+          {/if}
+          {#if encodingNote}
+            <p class="text-xs text-violet-300/60 mt-0.5 italic">{encodingNote}</p>
+          {/if}
         </div>
 
         <!-- 2. Hand summary -->
@@ -190,54 +252,22 @@
           </div>
         {/if}
 
-        <!-- 3. Conditions (hand only) -->
-        {#if handConditions.length > 0}
+        <!-- 3. Conditions from teaching projection -->
+        {#if conditionNodes.length > 0}
           <ul class="space-y-1" role="list" aria-label="Bid conditions">
-            {#each handConditions as cond, ci (cond.name + '-' + ci)}
-              {#if cond.children}
-                <li class="text-xs min-w-0">
-                  <span class="text-red-200/70 break-words">{cond.description}</span>
-                  {#each cond.children as branch, bi (branch.name + '-' + bi)}
-                    <ul
-                      class="ml-3 mt-1 {branch.isBestBranch
-                        ? ''
-                        : 'opacity-40'}"
-                      role="list"
-                      aria-label={branch.isBestBranch
-                        ? "Best matching path"
-                        : "Alternative path"}
-                    >
-                      {#each branch.children ?? [] as sub, si (sub.name + '-' + si)}
-                        <li class="flex items-center gap-1.5">
-                          <span
-                            class={sub.passed
-                              ? "text-accent-success"
-                              : "text-accent-danger"}
-                            aria-hidden="true">{sub.passed ? "✓" : "✗"}</span
-                          >
-                          <span class="sr-only"
-                            >{sub.passed ? "Passed:" : "Failed:"}</span
-                          >
-                          <span class="text-red-200/70 break-words">{sub.description}</span>
-                        </li>
-                      {/each}
-                    </ul>
-                  {/each}
-                </li>
-              {:else}
-                <li class="flex items-center gap-1.5">
-                  <span
-                    class={cond.passed
-                      ? "text-accent-success"
-                      : "text-accent-danger"}
-                    aria-hidden="true">{cond.passed ? "✓" : "✗"}</span
-                  >
-                  <span class="sr-only"
-                    >{cond.passed ? "Passed:" : "Failed:"}</span
-                  >
-                  <span class="text-red-200/70 break-words">{cond.description}</span>
-                </li>
-              {/if}
+            {#each conditionNodes as node, ci (node.content + '-' + ci)}
+              <li class="flex items-center gap-1.5">
+                <span
+                  class={node.passed
+                    ? "text-accent-success"
+                    : "text-accent-danger"}
+                  aria-hidden="true">{node.passed ? "✓" : "✗"}</span
+                >
+                <span class="sr-only"
+                  >{node.passed ? "Passed:" : "Failed:"}</span
+                >
+                <span class="text-red-200/70 break-words text-xs">{node.content}</span>
+              </li>
             {/each}
           </ul>
         {:else if feedback.expectedResult.explanation}
@@ -246,34 +276,86 @@
           </p>
         {/if}
 
-        <!-- 4. Other Bids (sibling alternatives) -->
-        {#if siblings.length > 0}
+        <!-- 4. Partner hand space -->
+        {#if hasPartnerInfo && handSpace}
+          <div class="pt-1 border-t border-red-500/20">
+            <p class="text-xs text-red-300/70 mb-0.5">What we know about partner:</p>
+            <p class="text-xs text-red-200/70">{handSpace.partnerSummary}</p>
+            {#if handSpace.archetypes && handSpace.archetypes.length > 0}
+              <div class="mt-1 space-y-0.5">
+                {#each handSpace.archetypes as archetype (archetype.label)}
+                  <p class="text-[10px] text-red-300/50 font-mono">
+                    {archetype.label}: {archetype.hcpRange.min}-{archetype.hcpRange.max} HCP, {archetype.shapePattern}
+                  </p>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/if}
+
+        <!-- 5. Convention contributions -->
+        {#if showContributions}
+          <div class="pt-1 border-t border-red-500/20">
+            <p class="text-xs text-red-300/70 mb-1">Conventions evaluated:</p>
+            <div class="flex flex-wrap gap-1">
+              {#each contributions as contrib (contrib.moduleId)}
+                <span
+                  class="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] {roleColorClasses(contrib.role)}"
+                >
+                  <span class="font-medium">{contrib.moduleId}</span>
+                  <span class="opacity-70">{formatModuleRole(contrib.role)}</span>
+                </span>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
+        <!-- 6. Other Bids (from whyNot entries) -->
+        {#if whyNotEntries.length > 0}
           <div class="pt-1 border-t border-red-500/20">
             <p class="text-xs text-red-300/70 mb-1">Other bids:</p>
             <div class="space-y-1">
-              {#each siblings as sibling, si (sibling.bidName + '-' + si)}
+              {#each whyNotEntries as entry, wi (wi)}
                 <div class="text-xs">
                   <button
                     type="button"
-                    class="flex items-center gap-1 text-left cursor-pointer hover:text-red-100 transition-colors w-full"
-                    onclick={() => toggleSibling(si)}
-                    aria-expanded={expandedSiblings.has(si)}
+                    class="flex items-center gap-1 text-left cursor-pointer hover:text-red-100 transition-colors w-full flex-wrap"
+                    onclick={() => toggleWhyNot(wi)}
+                    aria-expanded={expandedWhyNot.has(wi)}
                   >
-                    <span class="text-red-300/50 shrink-0">{expandedSiblings.has(si) ? "▾" : "▸"}</span>
-                    <span class="font-mono font-bold text-red-200/80">{formatCall(sibling.call)}</span>
-                    <span class="text-red-200/60">— {sibling.meaning}</span>
-                    {#if isAcceptableSibling(sibling.call)}
-                      <span class="ml-1 rounded bg-teal-900/70 border border-teal-500/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-teal-200">
+                    <span class="text-red-300/50 shrink-0">{expandedWhyNot.has(wi) ? "▾" : "▸"}</span>
+                    <span class="font-mono font-bold text-red-200/80">{formatCall(entry.call)}</span>
+                    {#if isAcceptableWhyNot(entry.call)}
+                      <span class="rounded bg-teal-900/70 border border-teal-500/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-teal-200">
                         acceptable
+                      </span>
+                    {:else}
+                      {@const gradeStyle = whyNotGradeClasses(entry.grade)}
+                      <span class="rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-wide {gradeStyle.badge}">
+                        {gradeStyle.label}
+                      </span>
+                    {/if}
+                    {#if entry.familyRelation}
+                      <span class="text-[10px] text-purple-300/60 italic">
+                        {formatRelationKind(entry.familyRelation.kind)}
+                      </span>
+                    {/if}
+                    {#if entry.eliminationStage}
+                      <span class="text-[10px] text-zinc-400/50">
+                        ({formatEliminationStage(entry.eliminationStage)})
                       </span>
                     {/if}
                   </button>
-                  {#if expandedSiblings.has(si) && sibling.failedConditions.length > 0}
-                    <ul class="ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Failed conditions for {sibling.bidName}">
-                      {#each sibling.failedConditions as fc, fi (fc.name + '-' + fi)}
+                  {#if expandedWhyNot.has(wi) && entry.explanation.length > 0}
+                    <ul class="ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Why not this bid">
+                      {#each entry.explanation as expNode, ei (expNode.content + '-' + ei)}
                         <li class="flex items-center gap-1.5 text-red-300/50">
-                          <span class="text-accent-danger" aria-hidden="true">✗</span>
-                          <span>{fc.description}</span>
+                          {#if expNode.kind === "condition"}
+                            <span class={expNode.passed ? "text-accent-success" : "text-accent-danger"} aria-hidden="true">{expNode.passed ? "✓" : "✗"}</span>
+                          {:else}
+                            <span class="text-red-300/30" aria-hidden="true">·</span>
+                          {/if}
+                          <span>{expNode.content}</span>
                         </li>
                       {/each}
                     </ul>
@@ -284,26 +366,36 @@
           </div>
         {/if}
 
-        <!-- 5. Divergence note: resolver produced a different call -->
-        {#if divergedCandidate}
-          <p class="text-xs text-amber-300/70 italic" data-testid="divergence-note">
-            Under interference, bid resolves differently from the default ({formatCall(divergedCandidate.call)} &rarr; {formatCall(divergedCandidate.resolvedCall)}).
-          </p>
-        {/if}
-
-        <!-- 6. Fork point -->
-        {#if forkPoint}
-          <div class="pt-1 border-t border-red-500/20 space-y-1" data-testid="fork-point">
-            <p class="text-xs text-green-400/80 flex items-center gap-1.5">
-              <span aria-hidden="true">&#10003;</span>
-              <span>{forkPoint.matched.description}</span>
-            </p>
-            <p class="text-xs text-red-300/50 flex items-center gap-1.5">
-              <span aria-hidden="true">&#10007;</span>
-              <span>Not: {forkPoint.rejected.description}</span>
-            </p>
+        <!-- 7. Decision space: meanings evaluated (expandable) -->
+        {#if showDecisionSpaceToggle}
+          <div class="pt-1 border-t border-red-500/20">
+            <button
+              type="button"
+              class="text-xs text-red-300/50 hover:text-red-200 transition-colors cursor-pointer flex items-center gap-1"
+              onclick={() => { showDecisionSpace = !showDecisionSpace; }}
+              aria-expanded={showDecisionSpace}
+            >
+              <span class="shrink-0">{showDecisionSpace ? "▾" : "▸"}</span>
+              <span>Decision space ({eliminatedMeanings.length} eliminated meaning{eliminatedMeanings.length === 1 ? '' : 's'})</span>
+            </button>
+            {#if showDecisionSpace}
+              <div class="mt-1 space-y-0.5 ml-3">
+                {#each eliminatedMeanings as mv (mv.meaningId)}
+                  <div class="text-[10px] flex items-start gap-1.5">
+                    <span class="text-red-400/50 shrink-0" aria-hidden="true">✗</span>
+                    <div>
+                      <span class="text-red-200/60">{mv.displayLabel}</span>
+                      {#if mv.eliminationReason}
+                        <span class="text-red-300/40"> — {mv.eliminationReason}</span>
+                      {/if}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
           </div>
         {/if}
+
       </div>
     {/if}
 

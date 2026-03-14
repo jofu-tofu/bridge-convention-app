@@ -5,7 +5,7 @@ import type {
   AlternativeGroup,
   IntentFamily,
 } from "../../core/contracts";
-import type { ConditionDetail, ResolvedCandidateDTO } from "../../core/contracts/evaluation-dtos";
+import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation";
 import type { MeaningSurface } from "../../core/contracts/meaning-surface";
 import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
@@ -180,15 +180,7 @@ function buildBidResult(
   arbitration: ArbitrationResult,
   posteriorSummary?: PosteriorSummary | null,
 ): BidResult {
-  const conditions: ConditionDetail[] = selected.proposal.clauses.map(
-    (c) => ({
-      name: c.factId,
-      passed: c.satisfied,
-      description: c.description,
-    }),
-  );
-
-  // Map truth + acceptable sets to ResolvedCandidateDTO for candidateSet
+  // Map truth + acceptable sets to ResolvedCandidateDTO for teaching-resolution
   const resolvedCandidates: ResolvedCandidateDTO[] = [
     ...arbitration.truthSet,
     ...arbitration.acceptableSet,
@@ -220,12 +212,9 @@ function buildBidResult(
     explanation: selected.proposal.evidence.provenance.nodeName,
     meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
     handSummary: formatHandSummary(context.evaluation),
-    conditions,
     evaluationTrace: {
       conventionId: moduleId,
       protocolMatched: true,
-      overlaysActivated: [],
-      overlayErrors: [],
       candidateCount: arbitration.truthSet.length + arbitration.acceptableSet.length,
       strategyChainPath: [],
       ...(posteriorSummary ? {
@@ -233,10 +222,7 @@ function buildBidResult(
         posteriorConfidence: posteriorSummary.confidence,
       } : {}),
     },
-    candidateSet: {
-      siblings: [],
-      resolvedCandidates,
-    },
+    resolvedCandidates,
   };
 }
 

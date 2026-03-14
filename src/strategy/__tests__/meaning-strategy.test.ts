@@ -95,9 +95,6 @@ describe("meaningToStrategy", () => {
     expect(result!.meaning).toBe("test:ask");
     expect(result!.explanation).toBe("test:ask");
     expect(result!.handSummary).toBeTruthy();
-    expect(result!.conditions).toHaveLength(2);
-    expect(result!.conditions![0]!.passed).toBe(true);
-    expect(result!.conditions![1]!.passed).toBe(true);
   });
 
   it("returns null when hand does not satisfy clauses", () => {

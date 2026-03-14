@@ -4,27 +4,25 @@ import LearningScreenTestWrapper from "./LearningScreenTestWrapper.svelte";
 import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
 import { createStubEngine } from "../../../test-support/engine-stub";
-import { staymanConfig } from "../../../conventions/definitions/stayman";
+import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
+import { bergenBundleConventionConfig } from "../../../conventions/definitions/bergen-bundle/convention-config";
 import {
   clearRegistry,
   registerConvention,
 } from "../../../conventions/core/registry";
-import { bergenConfig } from "../../../conventions/definitions/bergen-raises";
-import { saycConfig } from "../../../conventions/definitions/sayc";
 
 describe("LearningScreen", () => {
   beforeEach(() => {
     clearRegistry();
-    registerConvention(staymanConfig);
-    registerConvention(bergenConfig);
-    registerConvention(saycConfig);
+    registerConvention(ntBundleConventionConfig);
+    registerConvention(bergenBundleConventionConfig);
   });
 
   function renderLearningScreen() {
     const engine = createStubEngine();
     const gameStore = createGameStore(engine);
     const appStore = createAppStore();
-    appStore.navigateToLearning(staymanConfig);
+    appStore.navigateToLearning(ntBundleConventionConfig);
 
     render(LearningScreenTestWrapper, {
       props: { engine, gameStore, appStore },
@@ -35,7 +33,7 @@ describe("LearningScreen", () => {
 
   it("renders the convention name in the heading", () => {
     renderLearningScreen();
-    expect(screen.getByRole("heading", { name: "Stayman", level: 1 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "1NT Responses", level: 1 })).toBeTruthy();
   });
 
   it("has a back button", () => {
@@ -49,16 +47,14 @@ describe("LearningScreen", () => {
     renderLearningScreen();
     const nav = screen.getByRole("navigation", { name: /convention list/i });
     expect(nav).toBeTruthy();
-    // All three registered conventions should appear in sidebar
-    expect(screen.getByRole("button", { name: "Stayman" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Bergen Raises" })).toBeTruthy();
+    // Both registered conventions should appear in sidebar
+    expect(screen.getByRole("button", { name: "1NT Responses" })).toBeTruthy();
   });
 
-  it("protocol conventions show decision trees for each round", () => {
+  it("shows no-tree message for new pipeline conventions", () => {
     renderLearningScreen();
-    // Stayman has protocol rounds — at least the first round should render a tree
-    expect(screen.getByText(/Round 1:/)).toBeTruthy();
-    expect(screen.getAllByRole("tree").length).toBeGreaterThan(0);
+    // New pipeline conventions don't have protocol rounds — expect the no-tree message
+    expect(screen.getByText(/No decision tree available/)).toBeTruthy();
   });
 
   it("has a practice button in the convention toolbar", () => {
@@ -100,32 +96,9 @@ describe("LearningScreen", () => {
     expect(studyTab.getAttribute("aria-selected")).toBe("false");
   });
 
-  it("shows convention teaching header in Study mode", () => {
+  it("shows convention description as summary", () => {
     renderLearningScreen();
-    // Stayman has convention teaching with purpose
-    expect(screen.getByText("About This Convention")).toBeTruthy();
-    expect(screen.getByText("Purpose")).toBeTruthy();
-  });
-
-  it("hides teaching details in Compact mode but keeps summary", async () => {
-    renderLearningScreen();
-    const compactTab = screen.getByRole("tab", { name: "Compact" });
-    await fireEvent.click(compactTab);
-    // About card and Summary always visible
     expect(screen.getByText("About This Convention")).toBeTruthy();
     expect(screen.getByText("Summary")).toBeTruthy();
-    // Teaching-specific fields hidden in Compact
-    expect(screen.queryByText("Purpose")).toBeNull();
-  });
-
-  it("shows tradeoff in Learn mode but not Study", async () => {
-    renderLearningScreen();
-    // In Study mode (default), tradeoff should not appear
-    expect(screen.queryByText("Tradeoff")).toBeNull();
-
-    // Switch to Learn
-    const learnTab = screen.getByRole("tab", { name: "Learn" });
-    await fireEvent.click(learnTab);
-    expect(screen.getByText("Tradeoff")).toBeTruthy();
   });
 });

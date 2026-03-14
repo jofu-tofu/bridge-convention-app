@@ -134,10 +134,8 @@ function makeMetadataRows(): TreeDisplayRow[] {
       decisionMetadata: null,
       bidMetadata: {
         whyThisBid: "Finds a 4-4 major fit",
-        partnerExpects: "Opener must respond 2D, 2H, or 2S",
         isArtificial: true,
         forcingType: "forcing",
-        commonMistake: "Confusing with a natural 2C bid",
       },
       denialImplication: null,
     },
@@ -301,11 +299,10 @@ describe("DecisionTree depth modes", () => {
       expect(screen.queryByText("Bidding Stayman with only 7 HCP")).toBeNull();
     });
 
-    it("does not render partnerExpects or whyThisBid", () => {
+    it("does not render whyThisBid in study mode", () => {
       render(DecisionTree, { props: { rows: makeMetadataRows(), depth: "study" } });
 
       expect(screen.queryByText("Finds a 4-4 major fit")).toBeNull();
-      expect(screen.queryByText(/Opener must respond/)).toBeNull();
     });
   });
 
@@ -326,18 +323,6 @@ describe("DecisionTree depth modes", () => {
       render(DecisionTree, { props: { rows: makeMetadataRows(), depth: "learn" } });
 
       expect(screen.getByText("Finds a 4-4 major fit")).toBeTruthy();
-    });
-
-    it("renders partnerExpects on bid rows", () => {
-      render(DecisionTree, { props: { rows: makeMetadataRows(), depth: "learn" } });
-
-      expect(screen.getByText(/Opener must respond/)).toBeTruthy();
-    });
-
-    it("renders commonMistake on bid rows", () => {
-      render(DecisionTree, { props: { rows: makeMetadataRows(), depth: "learn" } });
-
-      expect(screen.getByText("Confusing with a natural 2C bid")).toBeTruthy();
     });
 
     it("also renders all study mode content", () => {

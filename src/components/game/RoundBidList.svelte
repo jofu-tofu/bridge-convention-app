@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { SvelteSet } from "svelte/reactivity";
   import type { BidHistoryEntry } from "../../core/contracts";
   import { groupBidsByRound } from "./RoundBidList";
   import { formatCall } from "../../core/display/format";
@@ -9,8 +8,6 @@
 
   interface Props {
     bidHistory: BidHistoryEntry[];
-    /** If true, siblings start expanded; if false, they start collapsed. */
-    defaultSiblingsExpanded?: boolean;
     /** If true, shows expected result for incorrect user bids. */
     showExpectedResult?: boolean;
     /** Optional prefix for data-testid attributes. If omitted, no test IDs are added. */
@@ -19,31 +16,11 @@
 
   let {
     bidHistory,
-    defaultSiblingsExpanded = false,
     showExpectedResult = false,
     testIdPrefix,
   }: Props = $props();
 
   const rounds = $derived(groupBidsByRound(bidHistory));
-
-  /**
-   * Track toggled siblings. When defaultSiblingsExpanded=true, this set holds collapsed entries.
-   * When defaultSiblingsExpanded=false, this set holds expanded entries.
-   */
-  let toggledSiblings = new SvelteSet<string>();
-
-  function toggleSiblings(key: string) {
-    if (toggledSiblings.has(key)) {
-      toggledSiblings.delete(key);
-    } else {
-      toggledSiblings.add(key);
-    }
-  }
-
-  function isSiblingVisible(key: string): boolean {
-    const toggled = toggledSiblings.has(key);
-    return defaultSiblingsExpanded ? !toggled : toggled;
-  }
 
   function callColorClass(call: Call): string {
     if (call.type !== "bid") return "text-text-secondary";
@@ -68,8 +45,6 @@
       </div>
 
       {#each round.entries as entry (entry.seat + "-" + round.roundNumber)}
-        {@const entryKey = entry.seat + "-" + round.roundNumber}
-        {@const siblings = entry.candidateSet?.siblings ?? []}
         <div class="flex flex-col gap-0.5 pl-2">
           <!-- Bid line -->
           <div class="flex min-w-0 items-center gap-2">
@@ -108,43 +83,6 @@
             </div>
           {/if}
 
-          <!-- Expandable alternatives -->
-          {#if isNS(entry.seat) && siblings.length > 0}
-            <div class="pl-6">
-              <button
-                type="button"
-                class="text-text-muted hover:text-text-secondary flex items-center gap-1 text-xs transition-colors cursor-pointer"
-                onclick={() => toggleSiblings(entryKey)}
-                aria-expanded={isSiblingVisible(entryKey)}
-              >
-                <span class="shrink-0">{isSiblingVisible(entryKey) ? "▾" : "▸"}</span>
-                <span>{siblings.length} alternative{siblings.length !== 1 ? "s" : ""}</span>
-              </button>
-              {#if isSiblingVisible(entryKey)}
-                <div class="mt-0.5 space-y-0.5 pl-3">
-                  {#each siblings as sibling, si (sibling.bidName + "-" + si)}
-                    <div class="text-xs flex flex-col gap-0.5">
-                      <div class="flex items-baseline gap-1.5">
-                        <span class="text-accent-danger" aria-hidden="true">✗</span>
-                        <span class="font-mono font-bold {callColorClass(sibling.call)}">{formatCall(sibling.call)}</span>
-                        <span class="text-text-muted">— {sibling.meaning}</span>
-                      </div>
-                      {#if sibling.failedConditions.length > 0}
-                        <ul class="text-text-muted/50 ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Failed conditions for {sibling.bidName}">
-                          {#each sibling.failedConditions as fc, fi (fc.name + "-" + fi)}
-                            <li class="flex items-center gap-1.5">
-                              <span class="text-accent-danger" aria-hidden="true">✗</span>
-                              <span>{fc.description}</span>
-                            </li>
-                          {/each}
-                        </ul>
-                      {/if}
-                    </div>
-                  {/each}
-                </div>
-              {/if}
-            </div>
-          {/if}
         </div>
       {/each}
     </div>

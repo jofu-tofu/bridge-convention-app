@@ -1,12 +1,62 @@
-import type {
-  RuleNode,
-  HandNode,
-  DecisionMetadata,
-  BidMetadata,
-  ConventionExplanations,
-  BiddingContext,
-} from "../../conventions/core";
+import type { BiddingContext, ConventionTeaching } from "../../conventions/core";
 import type { Call, Hand } from "../../engine/types";
+
+// ── Local type stubs for deleted tree-pipeline types ──────────────────
+// These types were in conventions/core/tree/rule-tree.ts (now deleted).
+// Kept as local stubs so the display component compiles. New pipeline
+// conventions don't use these types; the learning screen shows
+// "No decision tree available" instead.
+
+interface RuleCondition {
+  readonly name: string;
+  readonly label: string;
+  readonly category: "auction" | "hand";
+  readonly teachingNote?: string;
+}
+
+interface DecisionMetadata {
+  readonly whyThisMatters?: string;
+  readonly commonMistake?: string;
+  readonly denialImplication?: string;
+}
+
+interface BidMetadata {
+  readonly whyThisBid?: string;
+  readonly isArtificial?: boolean;
+  readonly forcingType?: string;
+}
+
+interface DecisionNode {
+  readonly type: "decision";
+  readonly name: string;
+  readonly condition: RuleCondition;
+  readonly yes: RuleNode;
+  readonly no: RuleNode;
+  readonly metadata?: DecisionMetadata;
+}
+
+interface IntentNode {
+  readonly type: "intent";
+  readonly name: string;
+  readonly meaning: string;
+  readonly defaultCall: (ctx: BiddingContext) => Call;
+  readonly metadata?: BidMetadata;
+}
+
+interface FallbackNode {
+  readonly type: "fallback";
+  readonly reason?: string;
+}
+
+type RuleNode = DecisionNode | IntentNode | FallbackNode;
+type HandNode = RuleNode;
+
+interface ConventionExplanations {
+  readonly convention?: ConventionTeaching;
+  readonly decisions?: Record<string, DecisionMetadata>;
+  readonly bids?: Record<string, BidMetadata>;
+  readonly conditions?: Record<string, string>;
+}
 import { STRAIN_SYMBOLS } from "../../core/display/format";
 import { BidSuit, Seat, Suit, Rank } from "../../engine/types";
 import { createBiddingContext } from "../../conventions/core";

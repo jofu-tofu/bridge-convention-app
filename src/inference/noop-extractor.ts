@@ -1,7 +1,7 @@
 import type { InferenceExtractor } from "./types";
 
-/** No-op extractor for store use. The production inference path uses
- *  treeInferenceData DTOs via extractInferencesFromDTO() instead. */
+/** No-op extractor for store use. Returns empty inferences;
+ *  real inference flows through the evidence-inference-adapter or posterior engine. */
 export const noopExtractor: InferenceExtractor = {
   extractInferences() { return []; },
 };

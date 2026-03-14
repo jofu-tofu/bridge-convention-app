@@ -10,6 +10,7 @@ import type {
   ConventionBiddingStrategy,
   TeachingProjection,
 } from "../core/contracts";
+import type { EncodingTrace } from "../core/contracts/provenance";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callsMatch } from "../engine/call-helpers";
@@ -33,6 +34,9 @@ export interface BidFeedback {
   readonly teachingResolution: TeachingResolution | null;
   readonly practicalRecommendation?: PracticalRecommendation;
   readonly teachingProjection?: TeachingProjection;
+  /** Encoding trace for the selected meaning (how it became a concrete call).
+   *  Null for tree-pipeline strategies or when provenance is unavailable. */
+  readonly encodingTrace?: EncodingTrace;
 }
 
 const AI_BID_DELAY = 300;
@@ -111,9 +115,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
             meaning: result.meaning,
             handSummary: result.handSummary,
             isUser: false,
-            conditions: result.conditions,
-            decisionTrace: result.decisionTrace,
-            candidateSet: result.candidateSet,
           },
         ];
 
@@ -180,6 +181,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       teachingResolution,
       practicalRecommendation: conventionStrategy?.getLastPracticalRecommendation() ?? undefined,
       teachingProjection: conventionStrategy?.getLastTeachingProjection() ?? undefined,
+      encodingTrace: conventionStrategy?.getLastProvenance()?.encoding[0] ?? undefined,
     };
 
     const auctionBeforeUser = auction;
@@ -221,8 +223,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         isUser: true,
         isCorrect,
         expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
-        decisionTrace: expectedResult?.decisionTrace,
-        candidateSet: expectedResult?.candidateSet,
+        teachingProjection: conventionStrategy?.getLastTeachingProjection() ?? undefined,
       },
     ];
 

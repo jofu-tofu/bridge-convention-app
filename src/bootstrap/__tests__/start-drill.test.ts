@@ -13,137 +13,59 @@ import {
 import { Seat } from "../../engine/types";
 import type { SeatConstraint, DealConstraints } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
-import { staymanConfig } from "../../conventions/definitions/stayman";
-import { saycConfig } from "../../conventions/definitions/sayc";
-import { conventionToStrategy } from "../../strategy/bidding/convention-strategy";
+import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
+import { ntBundle } from "../../conventions/definitions/nt-bundle";
+import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
+import { passStrategy } from "../../strategy/bidding/pass-strategy";
 import { buildAuction } from "../../engine/auction-helpers";
 import { parseHand } from "../../engine/notation";
 import { ConventionCategory } from "../../conventions/core/types";
 import type { ConventionConfig } from "../../conventions/core/types";
 
 describe("buildOpponentPassConstraints", () => {
-  beforeEach(() => {
-    clearRegistry();
-    registerConvention(saycConfig);
-  });
-
-  const saycStrategy = () => conventionToStrategy(saycConfig);
-
   it("returns empty array when defaultAuction is undefined", () => {
-    const result = buildOpponentPassConstraints(undefined, saycStrategy());
+    const result = buildOpponentPassConstraints(undefined, passStrategy);
     expect(result).toEqual([]);
   });
 
   it("returns empty array when auction has no E/W passes", () => {
-    // DONT-like: East opens 1NT, no pass entries from E/W
+    // Auction starts from East, no pass entries from E/W before a bid
     const auction = buildAuction(Seat.East, ["1NT"]);
-    const result = buildOpponentPassConstraints(auction, saycStrategy());
+    const result = buildOpponentPassConstraints(auction, passStrategy);
     expect(result).toEqual([]);
   });
 
   it("returns SeatConstraint for East when auction has East pass", () => {
-    // Stayman: North opens 1NT, East passes
+    // 1NT by North, East passes
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const result = buildOpponentPassConstraints(auction, saycStrategy());
+    const result = buildOpponentPassConstraints(auction, passStrategy);
     expect(result).toHaveLength(1);
     expect(result[0]!.seat).toBe(Seat.East);
     expect(typeof result[0]!.customCheck).toBe("function");
   });
 
-  it("rejects hands where SAYC would overcall after 1NT", () => {
+  it("passStrategy always accepts any hand (opponents always pass)", () => {
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const constraints = buildOpponentPassConstraints(auction, saycStrategy());
+    const constraints = buildOpponentPassConstraints(auction, passStrategy);
     const check = constraints[0]!.customCheck!;
 
-    // Strong hand: 14 HCP, 5-card spade suit — SAYC overcalls 1-level
-    // SA SK SJ S9 S4 . HK H3 H2 . DQ D7 D5 . C8 C2
-    const strongHand = parseHand([
+    // passStrategy always returns pass, so any hand is accepted
+    const anyHand = parseHand([
       "SA", "SK", "SJ", "S9", "S4",
       "HK", "H3", "H2",
       "DQ", "D7", "D5",
       "C8", "C2",
     ]);
-    expect(check(strongHand)).toBe(false);
-  });
-
-  it("accepts hands where SAYC would pass after 1NT", () => {
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const constraints = buildOpponentPassConstraints(auction, saycStrategy());
-    const check = constraints[0]!.customCheck!;
-
-    // Weak hand: 7 HCP, no good suit — SAYC passes
-    // SJ S8 S3 S2 . H9 H5 H4 . DK D7 D2 . CQ C8 C6
-    const weakHand = parseHand([
-      "SJ", "S8", "S3", "S2",
-      "H9", "H5", "H4",
-      "DK", "D7", "D2",
-      "CQ", "C8", "C6",
-    ]);
-    expect(check(weakHand)).toBe(true);
+    expect(check(anyHand)).toBe(true);
   });
 });
 
 describe("startDrill", () => {
   beforeEach(() => {
     clearRegistry();
-    registerConvention(staymanConfig);
-    registerConvention(saycConfig);
-  });
-
-  it("supports injected lookup without registry setup", async () => {
-    clearRegistry();
-    const localLookup = (id: string): ConventionConfig => {
-      if (id === "stayman") return staymanConfig;
-      if (id === "sayc") return saycConfig;
-      throw new Error(`missing local convention: ${id}`);
-    };
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    const bundle = await startDrill(engine, staymanConfig, Seat.South, undefined, undefined, {
-      lookupConvention: localLookup,
-    });
-
-    expect(bundle.deal).toBeDefined();
-    expect(bundle.session).toBeDefined();
-  });
-
-  it("propagates errors from injected lookup for missing IDs", async () => {
-    clearRegistry();
-    const throwingLookup = (id: string): ConventionConfig => {
-      if (id === "stayman") return staymanConfig;
-      throw new Error(`injected lookup failed: ${id}`);
-    };
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    await expect(
-      startDrill(engine, staymanConfig, Seat.South, undefined, undefined, {
-        lookupConvention: throwingLookup,
-      }),
-    )
-      .rejects.toThrowError("injected lookup failed: sayc");
-  });
-
-  it("includes opponent pass constraints in generateDeal call", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
-
-    await startDrill(engine, staymanConfig, Seat.South);
-
-    const constraints = generateDeal.mock.calls[0]![0];
-    // Stayman has defaultAuction with East pass, so seats should include
-    // the convention's own constraints PLUS the opponent pass constraint
-    expect(constraints.seats.length).toBeGreaterThan(
-      staymanConfig.dealConstraints.seats.length,
-    );
-    const eastConstraint = constraints.seats.find(
-      (s: SeatConstraint) => s.seat === Seat.East,
-    );
-    expect(eastConstraint).toBeDefined();
-    expect(typeof eastConstraint!.customCheck).toBe("function");
+    clearBundleRegistry();
+    registerConvention(ntBundleConventionConfig);
+    registerBundle(ntBundle);
   });
 
   it("returns bundle with generated deal and session", async () => {
@@ -152,11 +74,30 @@ describe("startDrill", () => {
       generateDeal: vi.fn().mockResolvedValue(deal),
     });
 
-    const bundle = await startDrill(engine, staymanConfig, Seat.South);
+    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
 
     expect(bundle.deal).toBe(deal);
     expect(bundle.session).toBeDefined();
     expect(typeof bundle.session.getNextBid).toBe("function");
+  });
+
+  it("includes opponent pass constraints in generateDeal call", async () => {
+    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
+    const engine = createStubEngine({ generateDeal });
+
+    await startDrill(engine, ntBundleConventionConfig, Seat.South);
+
+    const constraints = generateDeal.mock.calls[0]![0];
+    // ntBundle has defaultAuction with East pass, so seats should include
+    // the convention's own constraints PLUS the opponent pass constraint
+    expect(constraints.seats.length).toBeGreaterThan(
+      ntBundleConventionConfig.dealConstraints.seats.length,
+    );
+    const eastConstraint = constraints.seats.find(
+      (s: SeatConstraint) => s.seat === Seat.East,
+    );
+    expect(eastConstraint).toBeDefined();
+    expect(typeof eastConstraint!.customCheck).toBe("function");
   });
 
   it("includes initialAuction from convention.defaultAuction when defined", async () => {
@@ -167,8 +108,8 @@ describe("startDrill", () => {
 
     // Create a test convention with a defaultAuction that has no E/W passes
     const mockAuction = { entries: [], isComplete: false };
-    const conventionWithDefault = {
-      ...staymanConfig,
+    const conventionWithDefault: ConventionConfig = {
+      ...ntBundleConventionConfig,
       defaultAuction: vi.fn().mockReturnValue(mockAuction),
     };
 
@@ -187,12 +128,11 @@ describe("startDrill", () => {
     });
 
     // Create convention without defaultAuction
-    const { defaultAuction: _, ...conventionNoDefault } = staymanConfig;
-    registerConvention({ ...conventionNoDefault, id: "stayman-no-default" });
-    const config = {
+    const { defaultAuction: _, ...conventionNoDefault } = ntBundleConventionConfig;
+    const config: ConventionConfig = {
       ...conventionNoDefault,
-      id: "stayman-no-default",
-    } as typeof staymanConfig;
+      id: "nt-bundle",
+    };
 
     const bundle = await startDrill(engine, config, Seat.South);
 
@@ -203,12 +143,11 @@ describe("startDrill", () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
 
-    const { defaultAuction: _, ...conventionNoDefault } = staymanConfig;
-    const config = {
+    const { defaultAuction: _, ...conventionNoDefault } = ntBundleConventionConfig;
+    const config: ConventionConfig = {
       ...conventionNoDefault,
-      id: "stayman-no-default",
-    } as typeof staymanConfig;
-    registerConvention(config);
+      id: "nt-bundle",
+    };
 
     await startDrill(engine, config, Seat.South);
 
@@ -217,10 +156,21 @@ describe("startDrill", () => {
     expect(constraints.seats).toEqual(config.dealConstraints.seats);
   });
 
+  it("throws when no bundle is registered for the convention", async () => {
+    clearBundleRegistry();
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+
+    await expect(
+      startDrill(engine, ntBundleConventionConfig, Seat.South),
+    ).rejects.toThrowError(/No bundle registered/);
+  });
+
   it("rotates constraints when allowedDealers picks a different dealer", async () => {
     // Synthetic convention with East-based constraints and allowedDealers
     const rotationConvention: ConventionConfig = {
-      id: "rotation-test",
+      id: "nt-bundle",
       name: "Rotation Test",
       description: "Test rotation",
       category: ConventionCategory.Competitive,
@@ -231,7 +181,6 @@ describe("startDrill", () => {
       allowedDealers: [Seat.East, Seat.West],
       defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
     };
-    registerConvention(rotationConvention);
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
 
@@ -249,7 +198,7 @@ describe("startDrill", () => {
 
   it("does not rotate when allowedDealers picks the base dealer", async () => {
     const rotationConvention: ConventionConfig = {
-      id: "rotation-test-2",
+      id: "nt-bundle",
       name: "Rotation Test 2",
       description: "Test rotation",
       category: ConventionCategory.Competitive,
@@ -260,7 +209,6 @@ describe("startDrill", () => {
       allowedDealers: [Seat.East, Seat.West],
       defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
     };
-    registerConvention(rotationConvention);
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
 
@@ -275,16 +223,16 @@ describe("startDrill", () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
 
-    await startDrill(engine, staymanConfig, Seat.South);
+    await startDrill(engine, ntBundleConventionConfig, Seat.South);
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    // Stayman base dealer is North (from dealConstraints)
-    expect(constraints.dealer).toBe(staymanConfig.dealConstraints.dealer);
+    // ntBundle base dealer is North (from dealConstraints)
+    expect(constraints.dealer).toBe(ntBundleConventionConfig.dealConstraints.dealer);
   });
 
   it("rotates initialAuction entries when dealer was rotated", async () => {
     const rotationConvention: ConventionConfig = {
-      id: "rotation-test-3",
+      id: "nt-bundle",
       name: "Rotation Test 3",
       description: "Test rotation",
       category: ConventionCategory.Competitive,
@@ -295,7 +243,6 @@ describe("startDrill", () => {
       allowedDealers: [Seat.East, Seat.West],
       defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
     };
-    registerConvention(rotationConvention);
     const deal = makeDeal();
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),
@@ -315,7 +262,7 @@ describe("startDrill", () => {
       generateDeal: vi.fn().mockResolvedValue(makeDeal()),
     });
 
-    const bundle = await startDrill(engine, staymanConfig, Seat.South);
+    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
 
     expect(bundle.nsInferenceEngine).not.toBeNull();
     expect(bundle.ewInferenceEngine).not.toBeNull();

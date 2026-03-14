@@ -1,10 +1,10 @@
-import { BidSuit, Seat } from "../../../engine/types";
-import type { Auction } from "../../../engine/types";
+import { BidSuit } from "../../../engine/types";
+import type { Auction , Seat } from "../../../engine/types";
 import type {
   ConversationMachine,
   MachineState,
 } from "../../core/runtime/machine-types";
-import { areSamePartnership } from "../../core/dialogue/helpers";
+import { areSamePartnership } from "../../../engine/constants";
 
 /**
  * Create the Bergen Raises Conversation Machine.

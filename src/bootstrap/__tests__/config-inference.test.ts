@@ -4,103 +4,38 @@ import {
   registerConvention,
   clearRegistry,
 } from "../../conventions/core/registry";
-import { staymanConfig } from "../../conventions/definitions/stayman";
-import { saycConfig } from "../../conventions/definitions/sayc";
-import { bergenConfig } from "../../conventions/definitions/bergen-raises";
-import { Seat, BidSuit } from "../../engine/types";
+import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
+import { ntBundle } from "../../conventions/definitions/nt-bundle";
+import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
+import { Seat } from "../../engine/types";
 
 describe("Suite 5: DrillConfig Inference Integration", () => {
   beforeEach(() => {
     clearRegistry();
-    registerConvention(staymanConfig);
-    registerConvention(saycConfig);
-    registerConvention(bergenConfig);
+    clearBundleRegistry();
+    registerConvention(ntBundleConventionConfig);
+    registerBundle(ntBundle);
   });
 
-  it("5.1 N-S own partnership is convention provider for the selected convention", () => {
-    const config = createDrillConfig("stayman", Seat.South);
+  it("5.1 N-S own partnership is natural provider", () => {
+    const config = createDrillConfig("nt-bundle", Seat.South);
     expect(config.nsInferenceConfig).toBeDefined();
-    expect(config.nsInferenceConfig!.ownPartnership.id).toBe(
-      "convention:stayman",
-    );
+    expect(config.nsInferenceConfig!.ownPartnership.id).toBe("natural");
   });
 
   it("5.2 N-S opponent partnership is natural provider", () => {
-    const config = createDrillConfig("stayman", Seat.South);
+    const config = createDrillConfig("nt-bundle", Seat.South);
     expect(config.nsInferenceConfig!.opponentPartnership.id).toBe("natural");
   });
 
-  it("5.3 E-W own partnership is natural by default", () => {
-    const config = createDrillConfig("stayman", Seat.South);
+  it("5.3 E-W own partnership is natural", () => {
+    const config = createDrillConfig("nt-bundle", Seat.South);
     expect(config.ewInferenceConfig).toBeDefined();
     expect(config.ewInferenceConfig!.ownPartnership.id).toBe("natural");
   });
 
-  it("5.4 E-W opponent partnership is natural by default", () => {
-    const config = createDrillConfig("stayman", Seat.South);
+  it("5.4 E-W opponent partnership is natural", () => {
+    const config = createDrillConfig("nt-bundle", Seat.South);
     expect(config.ewInferenceConfig!.opponentPartnership.id).toBe("natural");
-  });
-
-  it("5.5 opponentBidding → E-W own partnership uses SAYC convention", () => {
-    const config = createDrillConfig("stayman", Seat.South, {
-      opponentBidding: true,
-    });
-    expect(config.ewInferenceConfig!.ownPartnership.id).toBe(
-      "convention:sayc",
-    );
-  });
-
-  it("5.6 opponentBidding → E-W opponent partnership still natural (asymmetry)", () => {
-    const config = createDrillConfig("stayman", Seat.South, {
-      opponentBidding: true,
-    });
-    expect(config.ewInferenceConfig!.opponentPartnership.id).toBe("natural");
-  });
-
-  it("5.7 opponentConventionId → E-W uses custom convention", () => {
-    const config = createDrillConfig("stayman", Seat.South, {
-      opponentBidding: true,
-      opponentConventionId: "bergen-raises",
-    });
-    expect(config.ewInferenceConfig!.ownPartnership.id).toBe(
-      "convention:bergen-raises",
-    );
-  });
-
-  it("5.8 Invalid opponentConventionId falls back to natural provider", () => {
-    const config = createDrillConfig("stayman", Seat.South, {
-      opponentBidding: true,
-      opponentConventionId: "nonexistent-convention",
-    });
-    expect(config.ewInferenceConfig!.ownPartnership.id).toBe("natural");
-  });
-
-  it("5.9 lookupConvention is threaded to convention inference providers", () => {
-    clearRegistry();
-    const localLookup = (id: string) => {
-      if (id === "stayman") return staymanConfig;
-      if (id === "sayc") return saycConfig;
-      throw new Error(`missing local convention: ${id}`);
-    };
-    const config = createDrillConfig("stayman", Seat.South, {
-      opponentBidding: true,
-      lookupConvention: localLookup,
-    });
-    const entry = {
-      seat: Seat.South,
-      call: { type: "bid" as const, level: 2 as const, strain: BidSuit.Clubs },
-    };
-    const auctionBefore = {
-      entries: [
-        { seat: Seat.North, call: { type: "bid" as const, level: 1 as const, strain: BidSuit.NoTrump } },
-        { seat: Seat.East, call: { type: "pass" as const } },
-      ],
-      isComplete: false,
-    };
-
-    expect(config.nsInferenceConfig).toBeDefined();
-    const result = config.nsInferenceConfig!.ownPartnership.inferFromBid(entry, auctionBefore, Seat.South);
-    expect(result).not.toBeNull();
-    expect(result!.source).toBe("stayman-ask");
   });
 });

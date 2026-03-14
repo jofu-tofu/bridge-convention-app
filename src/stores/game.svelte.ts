@@ -411,7 +411,6 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
             noopExtractor,
             naturalProvider,
             auctionBefore,
-            bidResult?.treeInferenceData,
           );
           publicBeliefState = applyAnnotation(publicBeliefState, annotation);
         },

@@ -5,7 +5,7 @@ Auction inference system — extracts hand information from bids with per-partne
 ## Key Concepts
 
 - **Information asymmetry:** Partnerships share inference, not individual seats. N and S both know their convention. E and W both know SAYC. Asymmetry is between partnerships, not seats.
-- **Difficulty spectrum:** `InferenceProvider` is the primary difficulty axis. `naturalInferenceProvider` (easy) → `conventionInferenceProvider` (medium) → full knowledge of opponent's convention (hard/oracle).
+- **Difficulty spectrum:** `InferenceProvider` is the primary difficulty axis. `naturalInferenceProvider` (easy) → evidence-based inference (medium) → full knowledge of opponent's convention (hard/oracle).
 - **Incremental inference:** `processBid()` called after every bid, not at auction end. Phase 3 opponent AI uses mid-auction inferences.
 - **Two engines per deal:** `nsEngine` and `ewEngine` with different `InferenceConfig`. Game store owns both, resets on new deal.
 
@@ -13,72 +13,50 @@ Auction inference system — extracts hand information from bids with per-partne
 
 | File | Role |
 |------|------|
-| `types.ts` | Core interfaces: `InferenceExtractorInput`, `InferenceExtractor`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`. No imports from `conventions/core/` — uses narrow `InferenceExtractorInput` instead of `BiddingRuleResult`. |
+| `types.ts` | Core interfaces: `ConditionInference`, `InferenceExtractorInput`, `InferenceExtractor`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`. `ConditionInference` is now owned locally (no conventions/core dependency). |
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
-| `convention-inference.ts` | Extracts positive/negative inferences via `evaluateForInference()` from `conventions/core/inference-api.ts` (DTO boundary over protocol internals) |
-| `condition-mapper.ts` | `extractInference()`, `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` |
+| `condition-mapper.ts` | `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` — maps `ConditionInference` → `HandInference` |
+| `evidence-inference-adapter.ts` | `evidenceToConditionInference()`, `extractInferenceFromEvidence()` — converts `EvidenceBundleIR` (new pipeline) to `HandInference` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
 | `merge.ts` | `mergeInferences()` — range intersection (narrowing), clamps contradictions |
 | `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
-| `noop-extractor.ts` | `noopExtractor` — no-op `InferenceExtractor` used by the store (production inference uses `treeInferenceData` DTOs instead) |
-| `protocol-inference-extractor.ts` | `protocolInferenceExtractor` — `InferenceExtractor` adapter reading `TreeEvalResult` path/rejectedDecisions (test/integration utility only, not used in production store path) |
+| `noop-extractor.ts` | `noopExtractor` — no-op `InferenceExtractor` used by the store |
 | `private-belief.ts` | `PrivateBeliefState`, `conditionOnOwnHand(publicBelief, seat, hand, eval)` — narrows partner suit lengths using own hand (13 minus own length caps partner max) |
-| `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` (HCP deviation) and `continuationAwkwardness` (suit length shortfall). Consumed by `practical-recommender.ts` |
+| `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` and `continuationAwkwardness`. Consumed by `practical-recommender.ts` |
+| `belief-converter.ts` | `toBeliefData()` — converts `PublicBeliefState` → `BeliefData` structural type |
+| `posterior/` | Posterior inference engine — sampling, compilation, and fact evaluation for probabilistic hand inference |
 
 ## Contracts Boundary
 
-- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `TreeInferenceData`, and `BidAlert`, live in `src/core/contracts/`.
-- `inference/types.ts` remains the subsystem-local interface layer; use `contracts/` for shared DTOs and `inference/types.ts` for inference-only protocols.
+- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `EvidenceBundleIR`, and `BidAlert`, live in `src/core/contracts/`.
+- `inference/types.ts` is the subsystem-local interface layer including the locally-owned `ConditionInference` type.
 
 ## Merge Algorithm
 
 Range intersection: `min = max(all minHcp)`, `max = min(all maxHcp)`. Suit lengths same per suit. Contradictions clamp to last inference's values and log warning. Never throws.
 
-## `ConditionInference` Hybrid
-
-Structured `.inference` field on `RuleCondition` is preferred. Name-based fallback exists for unannotated conditions. New conditions should always include `.inference`.
-
-## Behavioral Invariants (test-encoded)
-
-These architectural guarantees are encoded as tests in `__tests__/inference-behavioral.test.ts` (38 tests):
-
-- **Partnership asymmetry:** Convention engine sees own partnership's conventions; natural engine does not. Same auction, different observer → different HCP ranges.
-- **Provider scoping:** Convention provider only returns inferences for bids matching its rules (e.g., Stayman provider returns null for 1NT, which is outside Stayman's rule set).
-- **Monotonic range narrowing:** `mergeInferences()` intersects ranges; additional inferences can only tighten, never widen bounds.
-- **Contradiction clamping (design choice):** HCP contradiction → last inference's values win. Suit length contradiction → min clamped down to max.
-- **Engine isolation:** Two engines with same config are independent; `reset()` fully clears state; `getInferences()` is non-mutating.
-- **No-throw contract:** Throwing providers are swallowed; double/redouble don't break engine; empty auctions are safe.
-- **Determinism:** Incremental processing equals batch replay — same inputs → same outputs.
-
 ## Negative Inference
 
-Tree rejection data enables negative inference: when a decision node's condition fails, the inverse tells us what the hand does NOT have.
+Rejection data enables negative inference: when a condition fails, the inverse tells us what the hand does NOT have.
 
-- **`invertInference(ci)`** — inverts a `ConditionInference`. `hcp-min:12` → `hcp-max:11`. `suit-min:4` → `suit-max:3`. `hcp-range` → disjunction. Returns null for uninvertible types (ace-count, king-count, two-suited).
+- **`invertInference(ci)`** — inverts a `ConditionInference`. `hcp-min:12` → `hcp-max:11`. `suit-min:4` → `suit-max:3`. `hcp-range` → disjunction. Returns null for uninvertible types (two-suited).
 - **`resolveDisjunction(options, cumulative)`** — picks the first non-contradicting branch of a disjunction. Returns null if all branches contradict cumulative state (no false inference).
-- **Architecture invariant:** Inference uses `evaluateForInference()` (not `evaluateBiddingRules()`) because it needs rejected-decision data for negative inference.
-- **Example:** Stayman 2D denial → rejected `has-4-hearts` (suit-min hearts 4) → inverted to suit-max hearts 3. Rejected `has-4-spades` → suit-max spades 3.
 
 ## Public Belief State
 
-Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` narrowed monotonically as bids are made. Coexists with private per-partnership `InferenceEngine` instances (information asymmetry).
+Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` narrowed monotonically as bids are made.
 
 - **`BidAnnotation`:** Per-bid record with call, seat, ruleName, conventionId, meaning, alert, inferences.
 - **`PublicBeliefState`:** `Record<Seat, InferredHoldings>` + `BidAnnotation[]`. Created fresh per deal via `createInitialBeliefState()`.
 - **`applyAnnotation()`:** Merges annotation inferences into seat's beliefs via `mergeInferences()`. Returns new immutable state.
-- **`InferenceExtractor`:** Adapter interface decoupling belief layer from evaluator internals. `protocolInferenceExtractor` reads `treeEvalResult.path`/`rejectedDecisions`. Extracts positive (path hand conditions) and negative (inverted rejected hand conditions) inferences.
 - **`produceAnnotation()`:** Convention bids → inferences from extractor. Natural bids → inferences from `naturalInferenceProvider`. Pass/double/redouble → empty inferences.
-- **Store wiring:** Game store owns `publicBeliefState`, resets per deal. Bidding store's `onProcessBid` fires `produceAnnotation()` → `applyAnnotation()`. Store passes `noopExtractor` (always returns `[]`) since the real inference path uses `treeInferenceData` DTOs via `extractInferencesFromDTO()` from `tree-inference-extractor.ts`. `protocolInferenceExtractor` remains available as a test/integration utility.
 - **HCP narrowing:** `conditionOnOwnHand()` caps partner HCP max at `40 - ownHcp` (conservative bound). `toBeliefData()` uses narrowed `partnerHcpRange` for partner seat when private override present.
-- **`BidAlert`:** Optional on `BidNode` in `rule-tree.ts`. Convention authors declare alerts at definition time. Threaded through `BiddingRuleResult.alert` → `BidAnnotation.alert`. Migration of existing conventions is a follow-up.
 
 ## Gotchas
 
 - Inference errors never propagate to callers — `inferFromBid()` returns null, `mergeInferences()` clamps
-- `createConventionInferenceProvider(conventionId, lookupConvention?)` defaults to registry lookup but accepts injected `ConventionLookup` for unit-test DI
 - `isOwnPartnership()` checks bidder seat vs observer seat + partner
-- Positive inferences use flattened inference rules (call matching via `tryGetRuleCall`); negative inferences use `treeResult.rejectedDecisions` from the inference API
 
 ---
 
@@ -101,4 +79,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `inference-engine.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-02-28 | version=5 | dir-commits-at-audit=0 | tree-sig=dirs:2,files:17,exts:ts:16,md:1 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-06-11 | version=6 | tree-sig=dirs:2,files:14,exts:ts:13,md:1 -->

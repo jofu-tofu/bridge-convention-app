@@ -184,16 +184,7 @@
                     {#if result.matched && !result.isLegal}
                       <span class="text-yellow-500">(illegal)</span>{/if}
                   </div>
-                  {#if result.conditionResults}
-                    <div class="pl-4 text-text-muted">
-                      {#each result.conditionResults as cr, ci (cr.condition.name + '-' + ci)}
-                        <div>
-                          {cr.passed ? "✓" : "✗"}
-                          {cr.condition.name}: {cr.description}
-                        </div>
-                      {/each}
-                    </div>
-                  {/if}
+
                 {/each}
               </div>
             </details>

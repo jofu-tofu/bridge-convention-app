@@ -1,5 +1,5 @@
 import type { EnginePort } from "../engine/port";
-import type { ConventionConfig, BiddingContext, ConventionLookup } from "../conventions/core";
+import type { ConventionConfig, ConventionLookup } from "../conventions/core";
 import {
   Seat,
   type Auction,
@@ -11,10 +11,9 @@ import type { DrillBundle } from "./types";
 import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
 import { createDrillConfig, buildBundleStrategy } from "./config-factory";
 import { createDrillSession } from "./session";
-import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
-import { getConvention, getBundle } from "../conventions/core";
+import { passStrategy } from "../strategy/bidding/pass-strategy";
+import { getBundle } from "../conventions/core";
 import { evaluateHand } from "../engine/hand-evaluator";
-import type { BeliefData } from "../core/contracts";
 import { createInferenceEngine } from "../inference/inference-engine";
 
 /** 180° table rotation: N↔S, E↔W */
@@ -93,30 +92,28 @@ export async function startDrill(
   rng?: () => number,
   seed?: number,
   options?: {
-    beliefProvider?: (ctx: BiddingContext) => BeliefData | undefined;
     lookupConvention?: ConventionLookup;
-    opponentConventionId?: string;
   },
 ): Promise<DrillBundle> {
-  const lookup = options?.lookupConvention ?? getConvention;
   const config = createDrillConfig(convention.id, userSeat, {
-    opponentBidding: true,
-    opponentConventionId: options?.opponentConventionId,
-    beliefProvider: options?.beliefProvider,
     lookupConvention: options?.lookupConvention,
   });
   const session = createDrillSession(config);
 
-  // Build strategy: use meaning pipeline only when the user explicitly selected a bundle ID.
-  // Individual conventions stay on the tree pipeline.
-  let strategy: ConventionBiddingStrategy;
+  // Build strategy: always meaning pipeline via bundle
   const bundle = getBundle(convention.id);
-  const bundleStrategy = bundle ? buildBundleStrategy(bundle) : null;
-  if (bundleStrategy) {
-    strategy = bundleStrategy;
-  } else {
-    strategy = conventionToStrategy(convention, { lookupConvention: options?.lookupConvention });
+  if (!bundle) {
+    throw new Error(
+      `No bundle registered for "${convention.id}". Only bundle-based conventions are supported.`,
+    );
   }
+  const bundleStrategy = buildBundleStrategy(bundle);
+  if (!bundleStrategy) {
+    throw new Error(
+      `Bundle "${convention.id}" has no meaning surfaces — cannot build strategy.`,
+    );
+  }
+  const strategy: ConventionBiddingStrategy = bundleStrategy;
 
   // Resolve dealer randomization
   let resolvedConstraints = convention.dealConstraints;
@@ -131,22 +128,16 @@ export async function startDrill(
     }
   }
 
-  // Build opponent pass constraints from defaultAuction
+  // Build opponent pass constraints — opponents always use passStrategy
   let previewAuction = convention.defaultAuction
     ? convention.defaultAuction(userSeat)
     : undefined;
   if (previewAuction && dealerRotated) {
     previewAuction = rotateAuction(previewAuction);
   }
-  const opponentConventionId = options?.opponentConventionId ?? "sayc";
-  const opponentConvention = lookup(opponentConventionId);
-  const opponentStrategy = conventionToStrategy(
-    opponentConvention,
-    { lookupConvention: options?.lookupConvention },
-  );
   const passConstraints = buildOpponentPassConstraints(
     previewAuction,
-    opponentStrategy,
+    passStrategy,
   );
 
   // Compose: convention's constraints (possibly rotated) + E/W pass constraints

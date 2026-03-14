@@ -87,10 +87,6 @@ describe("meaningBundleToStrategy with real 1NT surfaces", () => {
     expect(result!.ruleName).toBe("transfer:to-hearts");
     expect(result!.explanation).toBeTruthy();
     expect(result!.handSummary).toBeTruthy();
-    expect(result!.conditions).toBeDefined();
-    expect(result!.conditions!.length).toBeGreaterThan(0);
-    // All conditions should be satisfied for a matching surface
-    expect(result!.conditions!.every((c) => c.passed)).toBe(true);
     expect(result!.evaluationTrace).toBeDefined();
     expect(result!.evaluationTrace!.conventionId).toBe("jacoby-transfers");
   });

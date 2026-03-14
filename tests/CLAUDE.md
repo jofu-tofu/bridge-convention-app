@@ -17,7 +17,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 - Base URL: `http://localhost:1420`
 - Test structural concerns (elements render, navigation works), not specific copy
 - Bid buttons have `data-testid="bid-{callKey}"` selectors (e.g., `bid-1C`, `bid-pass`) — use these instead of unicode suit symbols
-- Dev URL params available: `?convention=stayman&seed=42` for deterministic test scenarios
+- Dev URL params available: `?convention=nt-bundle&seed=42` for deterministic test scenarios
 
 ## Architecture
 
@@ -29,7 +29,6 @@ Playwright end-to-end smoke tests for user-facing behavior.
 | `e2e/play-phase.spec.ts`        | Autoplay reaches review; review content renders                   |
 | `e2e/dds-browser.spec.ts`       | DDS analysis tab renders in review phase                          |
 | `e2e/game-lifecycle.spec.ts`    | Full game lifecycle: start drill, bid, review, next deal           |
-| `e2e/stayman-bidding.spec.ts`   | Stayman-specific bidding flow with seeded deals                    |
 
 ## Constraints
 
@@ -57,4 +56,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `e2e/convention-select.spec.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-25 | version=5 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:5,exts:ts:4,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-25 | version=6 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:4,exts:ts:4,md:1 -->

@@ -6,8 +6,7 @@ import type {
   EvidenceBundleIR,
   ConditionEvidenceIR,
 } from "../core/contracts/evidence-bundle";
-import type { HandInference } from "./types";
-import type { ConditionInference } from "../conventions/core";
+import type { HandInference, ConditionInference } from "./types";
 import type { Seat } from "../engine/types";
 import {
   conditionToHandInference,

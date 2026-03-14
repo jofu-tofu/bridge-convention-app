@@ -1,8 +1,20 @@
 import type { Seat, Auction, AuctionEntry, Call } from "../engine/types";
 import type { HandInference, InferredHoldings, BidAlert } from "../core/contracts";
 
-// Re-export ConditionInference from its canonical location
-export type { ConditionInference } from "../conventions/core";
+// ConditionInference — structured inference metadata for condition → HandInference mapping.
+// Previously lived in conventions/core/types; now owned by inference layer.
+export interface ConditionInference {
+  readonly type:
+    | "hcp-min"
+    | "hcp-max"
+    | "hcp-range"
+    | "suit-min"
+    | "suit-max"
+    | "balanced"
+    | "not-balanced"
+    | "two-suited";
+  readonly params: Record<string, unknown>;
+}
 
 // Re-export inference DTOs from contracts (canonical location for cross-boundary types)
 export type {

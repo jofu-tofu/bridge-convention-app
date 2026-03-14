@@ -1,14 +1,10 @@
 import type { AuctionEntry, Auction } from "../engine/types";
-import type { TreeInferenceData } from "../core/contracts";
 import type { BidAnnotation, InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "./types";
-import { extractInferencesFromDTO } from "./tree-inference-extractor";
 
 /**
  * Produce a BidAnnotation for a single auction entry.
  *
  * Convention bids: meaning/alert/inferences from the rule result + extractor.
- * When treeInferenceData is provided, extracts inferences directly from the DTO
- * (bypasses the hollow BiddingRuleResult adapter that returns empty inferences).
  * Natural bids: inferences from the natural provider.
  * Pass/double/redouble: no inferences.
  */
@@ -19,14 +15,10 @@ export function produceAnnotation(
   extractor: InferenceExtractor,
   naturalProvider: InferenceProvider,
   auctionBefore: Auction,
-  treeInferenceData?: TreeInferenceData,
 ): BidAnnotation {
   // Convention bid
   if (ruleResult) {
-    // Prefer DTO-based extraction when available (avoids hollow adapter problem)
-    const inferences = treeInferenceData
-      ? extractInferencesFromDTO(treeInferenceData, entry.seat, ruleResult.rule ?? "convention")
-      : extractor.extractInferences(ruleResult, entry.seat);
+    const inferences = extractor.extractInferences(ruleResult, entry.seat);
     return {
       call: entry.call,
       seat: entry.seat,

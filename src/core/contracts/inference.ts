@@ -28,19 +28,6 @@ export interface InferredHoldings {
   readonly isBalanced: boolean | undefined;
 }
 
-/** A single condition entry extracted from the tree evaluation for inference consumption. */
-export interface TreeInferenceConditionEntry {
-  readonly type: string;
-  readonly params: Record<string, number | string | boolean>;
-  readonly negatable?: boolean;
-}
-
-/** Inference-ready data extracted from tree evaluation path and rejected branches. */
-export interface TreeInferenceData {
-  readonly pathConditions: readonly TreeInferenceConditionEntry[];
-  readonly rejectedConditions: readonly TreeInferenceConditionEntry[];
-}
-
 /** Belief data for convention pipeline. Per-seat HCP ranges and suit length ranges. */
 export interface BeliefData {
   readonly beliefs: Record<Seat, {
