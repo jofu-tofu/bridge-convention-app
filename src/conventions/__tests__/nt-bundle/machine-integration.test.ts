@@ -1,23 +1,23 @@
 import { describe, it, expect } from "vitest";
-import { Seat, BidSuit } from "../../../../engine/types";
-import type { Call, Hand } from "../../../../engine/types";
-import { hand } from "../../../../engine/__tests__/fixtures";
-import { evaluateHand } from "../../../../engine/hand-evaluator";
-import { buildAuction } from "../../../../engine/auction-helpers";
-import { createBiddingContext } from "../../";
-import { createFactCatalog } from "../../../../core/contracts/fact-catalog";
-import { createSharedFactCatalog } from "../../pipeline/fact-evaluator";
+import { Seat, BidSuit } from "../../../engine/types";
+import type { Call, Hand } from "../../../engine/types";
+import { hand } from "../../../engine/__tests__/fixtures";
+import { evaluateHand } from "../../../engine/hand-evaluator";
+import { buildAuction } from "../../../engine/auction-helpers";
+import { createBiddingContext } from "../../core";
+import { createFactCatalog } from "../../../core/contracts/fact-catalog";
+import { createSharedFactCatalog } from "../../core/pipeline/fact-evaluator";
 
 // NT bundle
-import { ntBundle } from "../../../definitions/nt-bundle/config";
-import { staymanFacts, transferFacts, ntResponseFacts } from "../../../definitions/nt-bundle/facts";
+import { ntBundle } from "../../definitions/nt-bundle/config";
+import { staymanFacts, transferFacts, ntResponseFacts } from "../../definitions/nt-bundle/facts";
 
 // Strategy adapter (machine-aware)
-import { meaningBundleToStrategy } from "../../../../strategy/bidding/meaning-strategy";
+import { meaningBundleToStrategy } from "../../../strategy/bidding/meaning-strategy";
 
 // Runtime
-import { bundleToRuntimeModules } from "../bundle-adapter";
-import { evaluate } from "../evaluation-runtime";
+import { bundleToRuntimeModules } from "../../core/runtime/bundle-adapter";
+import { evaluate } from "../../core/runtime/evaluation-runtime";
 
 // ─── Helpers ────────────────────────────────────────────────
 

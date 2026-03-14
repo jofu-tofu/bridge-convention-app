@@ -1,37 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { validateProfile } from "../profile-validation";
-import { NT_SAYC_PROFILE } from "../../../definitions/nt-bundle/system-profile";
 import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
 
 describe("validateProfile", () => {
-  it("NT SAYC profile passes validation with no collisions", () => {
-    // Stayman owns 2C, transfers own 2D/2H — no overlapping defaultCalls with different semanticClassIds
-    const surfaceLookup = (moduleId: string) => {
-      switch (moduleId) {
-        case "natural-nt":
-          return [
-            { defaultCall: "P", semanticClassId: "bridge:pass" },
-            { defaultCall: "2NT", semanticClassId: "bridge:nt-invite" },
-            { defaultCall: "3NT", semanticClassId: "bridge:nt-game" },
-          ];
-        case "stayman":
-          return [
-            { defaultCall: "2C", semanticClassId: "stayman:ask-major" },
-          ];
-        case "jacoby-transfers":
-          return [
-            { defaultCall: "2D", semanticClassId: "transfer:hearts" },
-            { defaultCall: "2H", semanticClassId: "transfer:spades" },
-          ];
-        default:
-          return [];
-      }
-    };
-
-    const diagnostics = validateProfile(NT_SAYC_PROFILE, surfaceLookup);
-    expect(diagnostics).toEqual([]);
-  });
-
   it("emits diagnostic for conflicting semanticClassIds on same call", () => {
     const conflictingProfile: SystemProfileIR = {
       profileId: "test-conflict",

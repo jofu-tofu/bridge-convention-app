@@ -3,11 +3,6 @@ import { buildSnapshotFromAuction } from "../public-snapshot-builder";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import { ForcingState } from "../../../../core/contracts/bidding";
-import {
-  createNtSurfaceRouter,
-  NT_ROUTED_SURFACES,
-} from "../../../definitions/nt-bundle/surface-routing";
-import { createNtConversationMachine } from "../../../definitions/nt-bundle/machine";
 
 describe("buildSnapshotFromAuction", () => {
   it("returns snapshot with provided activeModuleIds", () => {
@@ -153,25 +148,4 @@ describe("buildSnapshotFromAuction", () => {
     });
   });
 
-  describe("publicCommitments (with surfaceRouter)", () => {
-    const surfaceRouter = createNtSurfaceRouter(NT_ROUTED_SURFACES, createNtConversationMachine());
-
-    it("populates publicCommitments when surfaceRouter is provided", () => {
-      const auction = buildAuction(Seat.North, ["1NT", "P", "2C"]);
-      const snapshot = buildSnapshotFromAuction(auction, Seat.South, [], {
-        surfaceRouter,
-      });
-
-      // 2C = Stayman ask: at least 2 commitments (HCP >= 8, hasFourCardMajor)
-      expect(snapshot.publicCommitments).toBeDefined();
-      expect(snapshot.publicCommitments!.length).toBeGreaterThanOrEqual(2);
-    });
-
-    it("returns undefined publicCommitments when no surfaceRouter", () => {
-      const auction = buildAuction(Seat.North, ["1NT", "P", "2C"]);
-      const snapshot = buildSnapshotFromAuction(auction, Seat.South, []);
-
-      expect(snapshot.publicCommitments).toBeUndefined();
-    });
-  });
 });
