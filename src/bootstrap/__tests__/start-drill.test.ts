@@ -17,6 +17,7 @@ import { clearBundleRegistry, registerBundle } from "../../conventions/core/bund
 import { ntBundle } from "../../conventions/definitions/nt-bundle";
 import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
 import { passStrategy } from "../../strategy/bidding/pass-strategy";
+import { naturalFallbackStrategy } from "../../strategy/bidding/natural-fallback";
 import { buildAuction } from "../../engine/auction-helpers";
 import { parseHand } from "../../engine/notation";
 import { ConventionCategory } from "../../conventions/core/types";
@@ -57,6 +58,30 @@ describe("buildOpponentPassConstraints", () => {
       "C8", "C2",
     ]);
     expect(check(anyHand)).toBe(true);
+  });
+
+  it("naturalFallbackStrategy rejects hands that would bid naturally", () => {
+    const auction = buildAuction(Seat.North, ["1NT", "P"]);
+    const constraints = buildOpponentPassConstraints(auction, naturalFallbackStrategy);
+    const check = constraints[0]!.customCheck!;
+
+    // Strong hand with 5-card suit: 12 HCP, 5 spades → would bid, so rejected
+    const strongHand = parseHand([
+      "SA", "SK", "SQ", "SJ", "S9",
+      "HK", "H3",
+      "DQ", "D7", "D5",
+      "C8", "C4", "C2",
+    ]);
+    expect(check(strongHand)).toBe(false);
+
+    // Weak hand: 3 HCP, no 5-card suit → would pass, so accepted
+    const weakHand = parseHand([
+      "S9", "S8", "S4",
+      "H7", "H5", "H3", "H2",
+      "DQ", "D7", "D5",
+      "C8", "C4", "C2",
+    ]);
+    expect(check(weakHand)).toBe(true);
   });
 });
 

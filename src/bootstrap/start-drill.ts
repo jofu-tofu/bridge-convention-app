@@ -11,7 +11,7 @@ import type { DrillBundle } from "./types";
 import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
 import { createDrillConfig, buildBundleStrategy } from "./config-factory";
 import { createDrillSession } from "./session";
-import { passStrategy } from "../strategy/bidding/pass-strategy";
+import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { getBundle } from "../conventions/core";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { createInferenceEngine } from "../inference/inference-engine";
@@ -128,7 +128,7 @@ export async function startDrill(
     }
   }
 
-  // Build opponent pass constraints — opponents always use passStrategy
+  // Build opponent constraints — opponents use natural fallback (bid with 6+ HCP and 5+ suit)
   let previewAuction = convention.defaultAuction
     ? convention.defaultAuction(userSeat)
     : undefined;
@@ -137,7 +137,7 @@ export async function startDrill(
   }
   const passConstraints = buildOpponentPassConstraints(
     previewAuction,
-    passStrategy,
+    naturalFallbackStrategy,
   );
 
   // Compose: convention's constraints (possibly rotated) + E/W pass constraints

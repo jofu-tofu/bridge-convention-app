@@ -34,20 +34,20 @@ describe("createDrillConfig", () => {
     }
   });
 
-  it("assigns passStrategy to E/W seats", () => {
+  it("assigns natural fallback strategy to E/W seats", () => {
     registerConvention(ntBundleConventionConfig);
     registerBundle(ntBundle);
     const config = createDrillConfig("nt-bundle", Seat.South);
-    // East and West are opponents — always passStrategy
+    // East and West are opponents — natural fallback (bids with 6+ HCP and 5+ suit)
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
-      expect(eastStrategy.id).toBe("pass");
+      expect(eastStrategy.id).toContain("natural-fallback");
     }
     const westStrategy = config.seatStrategies[Seat.West];
     expect(westStrategy).not.toBe("user");
     if (westStrategy !== "user") {
-      expect(westStrategy.id).toBe("pass");
+      expect(westStrategy.id).toContain("natural-fallback");
     }
   });
 
@@ -60,11 +60,11 @@ describe("createDrillConfig", () => {
     if (northStrategy !== "user") {
       expect(northStrategy.id).toContain("bergen-bundle");
     }
-    // East is opponent — always pass
+    // East is opponent — natural fallback
     const eastStrategy = config.seatStrategies[Seat.East];
     expect(eastStrategy).not.toBe("user");
     if (eastStrategy !== "user") {
-      expect(eastStrategy.id).toBe("pass");
+      expect(eastStrategy.id).toContain("natural-fallback");
     }
   });
 

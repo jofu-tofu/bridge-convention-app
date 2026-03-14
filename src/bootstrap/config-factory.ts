@@ -4,7 +4,6 @@ import type { DrillConfig } from "./types";
 import type { InferenceConfig } from "../inference/types";
 import type { ConventionLookup } from "../conventions/core";
 import { meaningBundleToStrategy } from "../strategy/bidding/meaning-strategy";
-import { passStrategy } from "../strategy/bidding/pass-strategy";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
@@ -49,7 +48,7 @@ export function buildBundleStrategy(
 /**
  * Creates a DrillConfig for a given convention and user seat.
  * - N/S partnership uses the bundle strategy (meaning pipeline)
- * - E/W partnership always passes
+ * - E/W partnership uses natural fallback (bids with 6+ HCP and 5+ suit, else passes)
  * - User seat gets "user"
  * - Wires inference configs: natural for all partnerships
  * - Defaults to heuristic play strategy
@@ -77,12 +76,13 @@ export function createDrillConfig(
   }
 
   const strategy = createStrategyChain([bundleStrategy, naturalFallbackStrategy]);
+  const ewStrategy = createStrategyChain([naturalFallbackStrategy]);
 
-  // N/S = convention strategy, E/W = pass, user seat = "user"
+  // N/S = convention strategy, E/W = natural fallback, user seat = "user"
   function seatStrategy(seat: Seat): BiddingStrategy | "user" {
     if (seat === userSeat) return "user";
     if (NS_SEATS.has(seat)) return strategy;
-    return passStrategy;
+    return ewStrategy;
   }
   const seatStrategies: Record<Seat, BiddingStrategy | "user"> = {
     [Seat.North]: seatStrategy(Seat.North),
