@@ -33,14 +33,14 @@ export interface ConventionBiddingStrategy extends BiddingStrategy {
   /** Convention-level intent families for relationship-aware grading.
    *  Returns the families from the convention config, or undefined if not set. */
   getIntentFamilies(): readonly IntentFamily[] | undefined;
-  /** Provenance from the most recent meaning-pipeline evaluation. Null for tree-pipeline strategies. */
+  /** Provenance from the most recent meaning-pipeline evaluation. Null when strategy doesn't produce this. */
   getLastProvenance(): DecisionProvenance | null;
-  /** Full arbitration result from the most recent meaning-pipeline evaluation. Null for tree-pipeline strategies. */
+  /** Full arbitration result from the most recent meaning-pipeline evaluation. Null when strategy doesn't produce this. */
   getLastArbitration(): ArbitrationResult | null;
   /** Posterior summary from the most recent suggest() call. Null when posterior engine not wired. */
   getLastPosteriorSummary(): PosteriorSummary | null;
   /** Explanation catalog for enriching teaching projections. Undefined when not available. */
   getExplanationCatalog(): ExplanationCatalogIR | undefined;
-  /** Teaching projection from the most recent meaning-pipeline evaluation. Null for tree-pipeline strategies. */
+  /** Teaching projection from the most recent meaning-pipeline evaluation. Null when strategy doesn't produce this. */
   getLastTeachingProjection(): TeachingProjection | null;
 }

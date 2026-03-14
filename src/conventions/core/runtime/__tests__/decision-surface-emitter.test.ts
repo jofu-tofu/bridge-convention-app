@@ -2,25 +2,10 @@ import { describe, it, expect } from "vitest";
 import { emitDecisionSurfaces } from "../decision-surface-emitter";
 import { buildSnapshotFromAuction } from "../public-snapshot-builder";
 import { buildAuction } from "../../../../engine/auction-helpers";
-import { BidSuit, Seat } from "../../../../engine/types";
+import { Seat } from "../../../../engine/types";
 import type { RuntimeModule } from "../types";
 import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
-
-function makeSurface(meaningId: string, moduleId: string): MeaningSurface {
-  return {
-    meaningId,
-    moduleId,
-    encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
-    clauses: [],
-    ranking: {
-      recommendationBand: "should",
-      specificity: 1,
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
-    sourceIntent: { type: "TestIntent", params: {} },
-  };
-}
+import { makeSurface } from "./runtime-test-helpers";
 
 function makeModule(
   id: string,

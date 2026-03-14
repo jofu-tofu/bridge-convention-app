@@ -29,7 +29,3 @@ export interface DealConstraintIR {
   readonly params: Readonly<Record<string, unknown>>;
 }
 
-export interface FullDealPredicateIR {
-  readonly seatPredicates: readonly { role: string; predicate: HandPredicateIR }[];
-  readonly jointConstraints?: readonly DealConstraintIR[];
-}

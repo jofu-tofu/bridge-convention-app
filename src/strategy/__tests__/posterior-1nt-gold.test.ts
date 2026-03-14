@@ -6,7 +6,7 @@ import { createSharedFactCatalog } from "../../conventions/core/pipeline/fact-ev
 import { staymanFacts, transferFacts, ntResponseFacts } from "../../conventions/definitions/nt-bundle/facts";
 import { createNtConversationMachine } from "../../conventions/definitions/nt-bundle/machine";
 import { createNtSurfaceRouter, NT_ROUTED_SURFACES } from "../../conventions/definitions/nt-bundle/surface-routing";
-import { ALL_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
+import { SHARED_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
 import { buildSnapshotFromAuction } from "../../conventions/core/runtime/public-snapshot-builder";
 import { evaluateFacts } from "../../conventions/core/pipeline/fact-evaluator";
 import { gradeBid, BidGrade, resolveTeachingAnswer } from "../../teaching/teaching-resolution";
@@ -270,7 +270,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     expect(facts.facts.get("hand.hcp")!.value).toBe(10);
 
     // Posterior facts should be present
-    for (const factId of ALL_POSTERIOR_FACT_IDS) {
+    for (const factId of SHARED_POSTERIOR_FACT_IDS) {
       const fv = facts.facts.get(factId);
       expect(fv).toBeDefined();
       expect(typeof fv!.value).toBe("number");
@@ -333,7 +333,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
       expect(belief.seatId).toBeDefined();
       expect(belief.observerSeat).toBe("S");
       expect(belief.staleness).toBe(0);
-      expect(belief.facts.length).toBe(ALL_POSTERIOR_FACT_IDS.length);
+      expect(belief.facts.length).toBe(SHARED_POSTERIOR_FACT_IDS.length);
     }
   });
 
@@ -380,7 +380,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
       const posterior = engine.conditionOnHand(emptySpace, SeatEnum.South, staymanHand);
 
       // All fact queries should return 0 (no samples satisfy constraints)
-      for (const factId of ALL_POSTERIOR_FACT_IDS) {
+      for (const factId of SHARED_POSTERIOR_FACT_IDS) {
         const val = posterior.probability({ factId, seatId: "N" });
         expect(val).toBe(0);
       }

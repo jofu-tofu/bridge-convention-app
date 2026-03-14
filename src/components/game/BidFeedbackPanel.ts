@@ -106,8 +106,6 @@ export function formatEncoderKind(kind: EncoderKind): string | null {
       return "This bid is remapped by the convention — it doesn't mean what it normally would";
     case "alternate-encoding":
       return "This bid uses an alternate encoding due to the auction context";
-    case "overlay-override":
-      return "This bid was modified by interference handling";
     case "default-call":
     case "resolver":
       return null;

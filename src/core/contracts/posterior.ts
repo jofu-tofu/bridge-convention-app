@@ -118,9 +118,6 @@ export const SHARED_POSTERIOR_FACT_IDS = [
   "bridge.combinedHcpInRangeLikely",
 ] as const;
 
-/** @deprecated Use SHARED_POSTERIOR_FACT_IDS. Kept for backward compat. */
-export const ALL_POSTERIOR_FACT_IDS = SHARED_POSTERIOR_FACT_IDS;
-
 // ─── Posterior engine interface ─────────────────────────────
 export interface PosteriorEngine {
   readonly compilePublic: (snapshot: PublicSnapshot) => PublicHandSpace[];

@@ -162,13 +162,6 @@ export interface DDSolution {
   readonly par: ParInfo | null;
 }
 
-export interface Score {
-  readonly contract: Contract;
-  readonly tricksWon: number;
-  readonly score: number;
-  readonly vulnerability: Vulnerability;
-}
-
 export interface PlayedCard {
   readonly card: Card;
   readonly seat: Seat;

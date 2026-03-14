@@ -3,7 +3,6 @@ import { BidSuit, Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { ForcingState } from "../../../../core/contracts/bidding";
 import type {
-  ConversationMachine,
   MachineState,
   MachineEffect,
 } from "../machine-types";
@@ -17,29 +16,7 @@ import {
   collectInheritedTransforms,
   createDefaultRegisters,
 } from "../machine-evaluator";
-
-/** Helper: create a minimal machine with states from an array. */
-function buildMachine(
-  states: MachineState[],
-  initialStateId: string,
-): ConversationMachine {
-  const stateMap = new Map<string, MachineState>();
-  for (const s of states) {
-    stateMap.set(s.stateId, s);
-  }
-  return {
-    machineId: "test-machine",
-    states: stateMap,
-    initialStateId,
-    seatRole: (_auction, seat, callSeat) => {
-      if (seat === callSeat) return "self";
-      const samePartnership =
-        (seat === Seat.North || seat === Seat.South) ===
-        (callSeat === Seat.North || callSeat === Seat.South);
-      return samePartnership ? "partner" : "opponent";
-    },
-  };
-}
+import { buildMachine } from "./runtime-test-helpers";
 
 describe("evaluateMachine", () => {
   it("stays in initial state for empty auction", () => {

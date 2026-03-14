@@ -51,8 +51,6 @@ export interface EvidenceBundle {
     readonly nodeName: string;
     readonly origin:
       | "tree"
-      | "replacement-tree"
-      | "overlay-injected"
       | "overlay-override";
     readonly overlayId?: string;
   };

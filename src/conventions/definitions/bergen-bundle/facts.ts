@@ -1,19 +1,9 @@
 import type {
   FactCatalogExtension,
   FactDefinition,
-  FactValue,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function num(evaluated: ReadonlyMap<string, FactValue>, id: string): number {
-  return evaluated.get(id)!.value as number;
-}
-
-function fv(factId: string, value: number | boolean | string): FactValue {
-  return { factId, value };
-}
+import { num, fv } from "../../../core/contracts/fact-catalog";
 
 // ─── Bergen module facts ────────────────────────────────────
 

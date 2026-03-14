@@ -278,3 +278,21 @@ export const SHARED_FACTS: readonly FactDefinition[] = [
   ...POSTERIOR_DERIVED_FACTS,
 ];
 
+// ── Fact authoring helpers ────────────────────────────────────
+// Shared utilities for convention fact evaluators and pipeline fact evaluation.
+
+/** Extract a numeric fact value from evaluated facts. */
+export function num(evaluated: ReadonlyMap<string, FactValue>, id: string): number {
+  return evaluated.get(id)!.value as number;
+}
+
+/** Extract a boolean fact value from evaluated facts. */
+export function bool(evaluated: ReadonlyMap<string, FactValue>, id: string): boolean {
+  return evaluated.get(id)!.value as boolean;
+}
+
+/** Create a FactValue object from a factId and value. */
+export function fv(factId: string, value: number | boolean | string): FactValue {
+  return { factId, value };
+}
+

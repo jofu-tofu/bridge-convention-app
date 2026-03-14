@@ -33,7 +33,7 @@ export function seatBidCount(auction: Auction, seat: Seat): number {
   return count;
 }
 
-const STRAIN_MAP: Record<string, BidSuit> = {
+export const STRAIN_MAP: Record<string, BidSuit> = {
   C: BidSuit.Clubs,
   D: BidSuit.Diamonds,
   H: BidSuit.Hearts,
@@ -68,6 +68,19 @@ export function buildAuction(dealer: Seat, bids: string[]): Auction {
     currentSeat = nextSeat(currentSeat);
   }
   return auction;
+}
+
+/** Prefix-match: auction entries must start with exactly these calls (auction may be longer). */
+export function auctionMatchesPrefix(
+  auction: Auction,
+  pattern: readonly string[],
+): boolean {
+  if (auction.entries.length < pattern.length) return false;
+  for (let i = 0; i < pattern.length; i++) {
+    const expected = parsePatternCall(pattern[i]!);
+    if (!callsMatch(auction.entries[i]!.call, expected)) return false;
+  }
+  return true;
 }
 
 /** Exact-match: auction entries must have exactly the same calls as pattern (same length). */

@@ -1,21 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit, Vulnerability } from "../../../../engine/types";
-import type {
-  WitnessSpecIR,
-  SeatRole,
-} from "../../../../core/contracts/witness-spec";
+import type { SeatRole } from "../../../../core/contracts/witness-spec";
 import { compileWitnessSpec } from "../witness-compiler";
-
-// ─── Helper: build a minimal spec ─────────────────────────────
-function makeSpec(overrides: Partial<WitnessSpecIR> = {}): WitnessSpecIR {
-  return {
-    specId: "test-spec",
-    moduleId: "test-module",
-    layers: [],
-    targets: [],
-    ...overrides,
-  };
-}
+import { makeSpec } from "./witness-test-helpers";
 
 // ─── Basic constraint compilation ─────────────────────────────
 describe("compileWitnessSpec", () => {

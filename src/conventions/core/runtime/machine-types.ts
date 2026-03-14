@@ -2,6 +2,7 @@ import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { ForcingState } from "../../../core/contracts/bidding";
 import type { Call, Seat, BidSuit, Auction } from "../../../engine/types";
+import { areSamePartnership } from "../../../engine/constants";
 import type { RuntimeDiagnostic } from "./types";
 
 export interface MachineState {
@@ -91,4 +92,30 @@ export interface MachineRegisters {
   readonly competitionMode: string;
   readonly captain: string;
   readonly systemCapabilities: Readonly<Record<string, string>>;
+}
+
+/** Default seatRole: self for own bids, partner for partnership, opponent otherwise. */
+export function defaultSeatRole(
+  _auction: Auction,
+  seat: Seat,
+  callSeat: Seat,
+): "self" | "partner" | "opponent" {
+  if (seat === callSeat) return "self";
+  return areSamePartnership(seat, callSeat) ? "partner" : "opponent";
+}
+
+/** Build a ConversationMachine from an array of states with standard defaults. */
+export function buildConversationMachine(
+  machineId: string,
+  states: readonly MachineState[],
+  initialStateId = "idle",
+): ConversationMachine {
+  const stateMap = new Map<string, MachineState>();
+  for (const s of states) stateMap.set(s.stateId, s);
+  return {
+    machineId,
+    states: stateMap,
+    initialStateId,
+    seatRole: defaultSeatRole,
+  };
 }

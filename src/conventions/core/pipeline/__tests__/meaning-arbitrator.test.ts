@@ -7,62 +7,11 @@ import {
 import type { MeaningProposal } from "../../../../core/contracts/meaning";
 import { BidSuit } from "../../../../engine/types";
 import type { Call } from "../../../../engine/types";
-
-function makeCall(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
-  return { type: "bid", level, strain };
-}
-
-function makeProposal(
-  overrides: Partial<MeaningProposal> & { allSatisfied?: boolean } = {},
-): MeaningProposal {
-  const { allSatisfied = true, ...rest } = overrides;
-  return {
-    meaningId: "test:meaning",
-    moduleId: "test",
-    clauses: [
-      {
-        factId: "hand.hcp",
-        operator: "gte",
-        value: 8,
-        satisfied: allSatisfied,
-        description: "8+ HCP",
-      },
-    ],
-    ranking: {
-      recommendationBand: "should",
-      specificity: 1,
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
-    evidence: {
-      factDependencies: ["hand.hcp"],
-      evaluatedConditions: [
-        { name: "hcp", passed: allSatisfied, description: "8+ HCP" },
-      ],
-      provenance: {
-        moduleId: "test",
-        nodeName: "test-node",
-        origin: "tree",
-      },
-    },
-    sourceIntent: { type: "test-intent", params: {} },
-    ...rest,
-  };
-}
-
-function makeInput(
-  proposalOverrides: Partial<MeaningProposal> & { allSatisfied?: boolean } = {},
-  call: Call = makeCall(2, BidSuit.Clubs),
-): ArbitrationInput {
-  return {
-    proposal: makeProposal(proposalOverrides),
-    surface: { encoding: { defaultCall: call } },
-  };
-}
+import { makeCall, makeMeaningProposal, makeArbitrationInput } from "./pipeline-test-helpers";
 
 describe("arbitrateMeanings", () => {
   it("selects a single proposal that passes all gates", () => {
-    const input = makeInput();
+    const input = makeArbitrationInput();
     const result = arbitrateMeanings([input]);
 
     expect(result.selected).not.toBeNull();
@@ -72,7 +21,7 @@ describe("arbitrateMeanings", () => {
   });
 
   it("does not select a proposal that fails semantic gate", () => {
-    const input = makeInput({ allSatisfied: false });
+    const input = makeArbitrationInput({ allSatisfied: false });
     const result = arbitrateMeanings([input]);
 
     expect(result.selected).toBeNull();
@@ -82,7 +31,7 @@ describe("arbitrateMeanings", () => {
   });
 
   it("selects highest band when multiple proposals have different bands", () => {
-    const mustInput = makeInput({
+    const mustInput = makeArbitrationInput({
       meaningId: "test:must",
       ranking: {
         recommendationBand: "must",
@@ -92,7 +41,7 @@ describe("arbitrateMeanings", () => {
       },
     }, makeCall(2, BidSuit.Hearts));
 
-    const shouldInput = makeInput({
+    const shouldInput = makeArbitrationInput({
       meaningId: "test:should",
       ranking: {
         recommendationBand: "should",
@@ -102,7 +51,7 @@ describe("arbitrateMeanings", () => {
       },
     }, makeCall(2, BidSuit.Clubs));
 
-    const mayInput = makeInput({
+    const mayInput = makeArbitrationInput({
       meaningId: "test:may",
       ranking: {
         recommendationBand: "may",
@@ -121,7 +70,7 @@ describe("arbitrateMeanings", () => {
   });
 
   it("selects higher specificity when bands are equal", () => {
-    const specificInput = makeInput({
+    const specificInput = makeArbitrationInput({
       meaningId: "test:specific",
       ranking: {
         recommendationBand: "should",
@@ -131,7 +80,7 @@ describe("arbitrateMeanings", () => {
       },
     }, makeCall(2, BidSuit.Hearts));
 
-    const generalInput = makeInput({
+    const generalInput = makeArbitrationInput({
       meaningId: "test:general",
       ranking: {
         recommendationBand: "should",
@@ -152,7 +101,7 @@ describe("arbitrateMeanings", () => {
       { type: "pass" },
     ];
 
-    const input = makeInput({}, makeCall(2, BidSuit.Clubs));
+    const input = makeArbitrationInput({}, makeCall(2, BidSuit.Clubs));
     const result = arbitrateMeanings([input], { legalCalls });
 
     expect(result.selected).toBeNull();
@@ -168,7 +117,7 @@ describe("arbitrateMeanings", () => {
       { type: "pass" },
     ];
 
-    const input = makeInput({ meaningId: "test:blocked" }, illegalCall);
+    const input = makeArbitrationInput({ meaningId: "test:blocked" }, illegalCall);
     const result = arbitrateMeanings([input], { legalCalls });
 
     expect(result.provenance).toBeDefined();
@@ -185,7 +134,7 @@ describe("arbitrateMeanings", () => {
     const legalCall = makeCall(1, BidSuit.Clubs);
     const legalCalls: Call[] = [legalCall, { type: "pass" }];
 
-    const input = makeInput({}, legalCall);
+    const input = makeArbitrationInput({}, legalCall);
     const result = arbitrateMeanings([input], { legalCalls });
 
     expect(result.provenance).toBeDefined();
@@ -205,7 +154,7 @@ describe("arbitrateMeanings", () => {
   });
 
   it("places failed-semantic may-band legal proposals in acceptableSet", () => {
-    const input = makeInput({
+    const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
         recommendationBand: "may",
@@ -225,8 +174,8 @@ describe("arbitrateMeanings", () => {
 
   it("keeps two proposals with same call both in truthSet (no dedup)", () => {
     const call = makeCall(2, BidSuit.Clubs);
-    const input1 = makeInput({ meaningId: "test:a" }, call);
-    const input2 = makeInput({ meaningId: "test:b" }, call);
+    const input1 = makeArbitrationInput({ meaningId: "test:a" }, call);
+    const input2 = makeArbitrationInput({ meaningId: "test:b" }, call);
 
     const result = arbitrateMeanings([input1, input2]);
 
@@ -268,7 +217,7 @@ describe("arbitrateMeanings", () => {
   });
 
   it("places failed-semantic should-band proposals in acceptableSet", () => {
-    const input = makeInput({
+    const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
         recommendationBand: "should",
@@ -285,7 +234,7 @@ describe("arbitrateMeanings", () => {
   });
 
   it("does NOT place failed-semantic avoid-band proposals in acceptableSet", () => {
-    const input = makeInput({
+    const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
         recommendationBand: "avoid",
@@ -304,7 +253,7 @@ describe("arbitrateMeanings", () => {
 
 describe("evidenceBundle production", () => {
   it("produces matched with satisfiedConditions including observedValues", () => {
-    const input = makeInput({
+    const input = makeArbitrationInput({
       meaningId: "test:winner",
       clauses: [
         {
@@ -342,7 +291,7 @@ describe("evidenceBundle production", () => {
   });
 
   it("rejected surfaces appear with clause-level failure details", () => {
-    const failingInput = makeInput({
+    const failingInput = makeArbitrationInput({
       meaningId: "test:rejected",
       allSatisfied: false,
       ranking: {
@@ -363,7 +312,7 @@ describe("evidenceBundle production", () => {
   });
 
   it("alternatives from truth set appear with ranking", () => {
-    const input1 = makeInput({
+    const input1 = makeArbitrationInput({
       meaningId: "test:winner",
       ranking: {
         recommendationBand: "must",
@@ -373,7 +322,7 @@ describe("evidenceBundle production", () => {
       },
     }, makeCall(2, BidSuit.Hearts));
 
-    const input2 = makeInput({
+    const input2 = makeArbitrationInput({
       meaningId: "test:alternative",
       ranking: {
         recommendationBand: "should",
@@ -395,7 +344,7 @@ describe("evidenceBundle production", () => {
   });
 
   it("exhaustive is true and fallbackReached is true when no surface matched", () => {
-    const failingInput = makeInput({
+    const failingInput = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
         recommendationBand: "avoid",
@@ -414,7 +363,7 @@ describe("evidenceBundle production", () => {
   });
 
   it("fallbackReached is false when a surface was selected", () => {
-    const input = makeInput();
+    const input = makeArbitrationInput();
     const result = arbitrateMeanings([input]);
 
     expect(result.evidenceBundle).toBeDefined();
@@ -424,7 +373,7 @@ describe("evidenceBundle production", () => {
 
 describe("handoff provenance", () => {
   it("threads provided handoffs into provenance", () => {
-    const input = makeInput();
+    const input = makeArbitrationInput();
     const handoffs = [
       { fromModuleId: "mod-a", toModuleId: "mod-b", reason: "forcing relay" },
       { fromModuleId: "mod-b", toModuleId: "mod-c", reason: "transfer completion" },
@@ -438,7 +387,7 @@ describe("handoff provenance", () => {
   });
 
   it("defaults handoffs to empty array when not provided", () => {
-    const input = makeInput();
+    const input = makeArbitrationInput();
     const result = arbitrateMeanings([input]);
 
     expect(result.provenance).toBeDefined();
@@ -448,7 +397,7 @@ describe("handoff provenance", () => {
 
 describe("zipProposalsWithSurfaces", () => {
   it("pairs proposals with their source surfaces by index", () => {
-    const proposals: MeaningProposal[] = [makeProposal({ meaningId: "a" }), makeProposal({ meaningId: "b" })];
+    const proposals: MeaningProposal[] = [makeMeaningProposal({ meaningId: "a" }), makeMeaningProposal({ meaningId: "b" })];
     const surfaces = [
       { meaningId: "a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, intraModuleOrder: 0 }, sourceIntent: { type: "t", params: {} } },
       { meaningId: "b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, intraModuleOrder: 1 }, sourceIntent: { type: "t", params: {} } },

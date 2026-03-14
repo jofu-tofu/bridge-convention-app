@@ -9,7 +9,7 @@ import type {
 } from "../../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider, PosteriorFactRequest } from "../../../core/contracts/posterior";
 import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import { SHARED_FACTS } from "../../../core/contracts/fact-catalog";
+import { SHARED_FACTS, num, fv } from "../../../core/contracts/fact-catalog";
 import { isBalanced } from "../../../engine/hand-evaluator";
 
 // Re-export FactEvaluatorFn from contracts (canonical location)
@@ -33,14 +33,6 @@ export interface RelationalFactContext {
 }
 
 // ─── Evaluator registry ─────────────────────────────────────
-
-function num(evaluated: ReadonlyMap<string, FactValue>, id: string): number {
-  return evaluated.get(id)!.value as number;
-}
-
-function fv(factId: string, value: number | boolean | string): FactValue {
-  return { factId, value };
-}
 
 function classifyMajorPattern(spades: number, hearts: number): string {
   const s5 = spades >= 5;

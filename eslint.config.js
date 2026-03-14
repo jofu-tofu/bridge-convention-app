@@ -437,8 +437,8 @@ export default tseslint.config(
             },
           ],
           patterns: [{
-            group: ["*/conventions/core/*", "*/conventions/core/conditions/*",
-                    "*/conventions/core/dialogue/*", "*/conventions/core/intent/*"],
+            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
+                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
             message: "Import from 'conventions/core' barrel instead of deep paths",
           }],
         },
@@ -458,8 +458,8 @@ export default tseslint.config(
     rules: {
       "no-restricted-imports": ["error", {
         patterns: [{
-          group: ["*/conventions/core/*", "*/conventions/core/conditions/*",
-                  "*/conventions/core/dialogue/*", "*/conventions/core/intent/*"],
+          group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
+                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
           message: "Import from 'conventions/core' barrel instead of deep paths",
         }],
       }],

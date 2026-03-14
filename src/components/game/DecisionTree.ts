@@ -36,10 +36,6 @@ export interface TreeDisplayRow {
   readonly denialImplication: string | null;
   /** Whether the convention system is off for this display context. */
   readonly systemOff?: boolean;
-  /** Whether this intent was suppressed by an overlay hook. */
-  readonly suppressedByOverlay?: boolean;
-  /** Whether this intent's call was overridden by an overlay resolver. */
-  readonly overriddenByOverlay?: boolean;
 }
 
 // ─── Dummy context for display ───────────────────────────────

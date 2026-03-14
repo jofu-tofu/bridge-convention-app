@@ -1,67 +1,11 @@
 import { describe, it, expect } from "vitest";
-import {
-  arbitrateMeanings,
-  type ArbitrationInput,
-} from "../meaning-arbitrator";
-import type { MeaningProposal } from "../../../../core/contracts/meaning";
+import { arbitrateMeanings } from "../meaning-arbitrator";
 import { BidSuit } from "../../../../engine/types";
-import type { Call } from "../../../../engine/types";
-
-function makeCall(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
-  return { type: "bid", level, strain };
-}
-
-function makeProposal(
-  overrides: Partial<MeaningProposal> & { allSatisfied?: boolean } = {},
-): MeaningProposal {
-  const { allSatisfied = true, ...rest } = overrides;
-  return {
-    meaningId: "test:meaning",
-    moduleId: "test",
-    clauses: [
-      {
-        factId: "hand.hcp",
-        operator: "gte",
-        value: 8,
-        satisfied: allSatisfied,
-        description: "8+ HCP",
-      },
-    ],
-    ranking: {
-      recommendationBand: "should",
-      specificity: 1,
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
-    evidence: {
-      factDependencies: ["hand.hcp"],
-      evaluatedConditions: [
-        { name: "hcp", passed: allSatisfied, description: "8+ HCP" },
-      ],
-      provenance: {
-        moduleId: "test",
-        nodeName: "test-node",
-        origin: "tree",
-      },
-    },
-    sourceIntent: { type: "test-intent", params: {} },
-    ...rest,
-  };
-}
-
-function makeInput(
-  proposalOverrides: Partial<MeaningProposal> & { allSatisfied?: boolean } = {},
-  call: Call = makeCall(2, BidSuit.Clubs),
-): ArbitrationInput {
-  return {
-    proposal: makeProposal(proposalOverrides),
-    surface: { encoding: { defaultCall: call } },
-  };
-}
+import { makeCall, makeArbitrationInput } from "./pipeline-test-helpers";
 
 describe("semantic class aliasing in arbitrateMeanings", () => {
   it("without aliases, two proposals with different semanticClassIds both remain in truth set", () => {
-    const input1 = makeInput(
+    const input1 = makeArbitrationInput(
       {
         meaningId: "stayman:ask-major",
         semanticClassId: "stayman:ask-major",
@@ -75,7 +19,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
       makeCall(2, BidSuit.Clubs),
     );
 
-    const input2 = makeInput(
+    const input2 = makeArbitrationInput(
       {
         meaningId: "precision-stayman:ask-major",
         semanticClassId: "precision-stayman:ask-major",
@@ -97,7 +41,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
   });
 
   it("deduplicates proposals whose semanticClassIds are aliased to the same canonical ID", () => {
-    const input1 = makeInput(
+    const input1 = makeArbitrationInput(
       {
         meaningId: "stayman:ask-major",
         semanticClassId: "stayman:ask-major",
@@ -111,7 +55,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
       makeCall(2, BidSuit.Clubs),
     );
 
-    const input2 = makeInput(
+    const input2 = makeArbitrationInput(
       {
         meaningId: "precision-stayman:ask-major",
         semanticClassId: "precision-stayman:ask-major",
@@ -144,7 +88,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
   });
 
   it("does not deduplicate proposals with no aliases (backward compatible)", () => {
-    const input1 = makeInput(
+    const input1 = makeArbitrationInput(
       {
         meaningId: "transfer:hearts",
         semanticClassId: "transfer:hearts",
@@ -158,7 +102,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
       makeCall(2, BidSuit.Diamonds),
     );
 
-    const input2 = makeInput(
+    const input2 = makeArbitrationInput(
       {
         meaningId: "natural:weak-diamonds",
         semanticClassId: "natural:weak-diamonds",
@@ -185,7 +129,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
 
   it("transitive aliasing: two proposals aliased to the same target are deduplicated", () => {
     // Three proposals, two share the same alias target, one is unrelated
-    const inputA = makeInput(
+    const inputA = makeArbitrationInput(
       {
         meaningId: "moduleA:nt-invite",
         semanticClassId: "moduleA:nt-invite",
@@ -199,7 +143,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
       makeCall(2, BidSuit.NoTrump),
     );
 
-    const inputB = makeInput(
+    const inputB = makeArbitrationInput(
       {
         meaningId: "moduleB:nt-invite",
         semanticClassId: "moduleB:nt-invite",
@@ -213,7 +157,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
       makeCall(2, BidSuit.NoTrump),
     );
 
-    const inputC = makeInput(
+    const inputC = makeArbitrationInput(
       {
         meaningId: "moduleC:pass",
         semanticClassId: "bridge:pass",
@@ -244,7 +188,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
   });
 
   it("proposals without semanticClassId are never affected by aliases", () => {
-    const inputWithClass = makeInput(
+    const inputWithClass = makeArbitrationInput(
       {
         meaningId: "stayman:ask-major",
         semanticClassId: "stayman:ask-major",
@@ -258,7 +202,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
       makeCall(2, BidSuit.Clubs),
     );
 
-    const inputWithoutClass = makeInput(
+    const inputWithoutClass = makeArbitrationInput(
       {
         meaningId: "other:bid",
         // no semanticClassId

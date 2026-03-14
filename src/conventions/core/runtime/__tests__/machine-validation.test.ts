@@ -1,29 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { Seat } from "../../../../engine/types";
-import type { ConversationMachine, MachineState } from "../machine-types";
+import type { MachineState } from "../machine-types";
 import { validateMachine } from "../machine-validation";
-
-function buildMachine(
-  states: MachineState[],
-  initialStateId: string,
-): ConversationMachine {
-  const stateMap = new Map<string, MachineState>();
-  for (const s of states) {
-    stateMap.set(s.stateId, s);
-  }
-  return {
-    machineId: "test-machine",
-    states: stateMap,
-    initialStateId,
-    seatRole: (_auction, seat, callSeat) => {
-      if (seat === callSeat) return "self";
-      const samePartnership =
-        (seat === Seat.North || seat === Seat.South) ===
-        (callSeat === Seat.North || callSeat === Seat.South);
-      return samePartnership ? "partner" : "opponent";
-    },
-  };
-}
+import { buildMachine } from "./runtime-test-helpers";
 
 describe("validateMachine", () => {
   it("returns no diagnostics for a valid machine", () => {

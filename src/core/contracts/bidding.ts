@@ -17,9 +17,9 @@ export interface BiddingContext {
   readonly auction: Auction;
   readonly seat: Seat;
   readonly evaluation: HandEvaluation;
-  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
+  /** Optional — defaults are supplied via createBiddingContext() when not provided. */
   readonly vulnerability?: Vulnerability;
-  /** Added in Phase 1 of tree migration. Optional during migration; tree evaluator uses defaults via createBiddingContext(). */
+  /** Optional — defaults are supplied via createBiddingContext() when not provided. */
   readonly dealer?: Seat;
   /** Convention IDs opponents are known to play (from alerts, pre-game card).
    *  Empty array = natural bidding only. Used by evaluation pipeline to compute
@@ -64,7 +64,7 @@ export interface BidHistoryEntry {
   readonly isCorrect?: boolean;
   readonly expectedResult?: BidResult;
   /** Teaching projection snapshot — persisted for review-phase convention analysis.
-   *  Present for user bids when the meaning or tree pipeline produced one. */
+   *  Present for user bids when the meaning pipeline produced one. */
   readonly teachingProjection?: TeachingProjection;
 }
 

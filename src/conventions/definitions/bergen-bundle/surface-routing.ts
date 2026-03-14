@@ -1,6 +1,6 @@
 import type { Auction, Seat } from "../../../engine/types";
-import { BidSuit } from "../../../engine/types";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
@@ -11,44 +11,6 @@ export interface BergenRoutedSurfaceGroup {
   readonly groupId: string;
   readonly surfaces: readonly MeaningSurface[];
   readonly isActive: (auction: Auction, seat: Seat) => boolean;
-}
-
-/**
- * Check whether the auction entries match an expected sequence of call strings.
- */
-function auctionMatchesSequence(
-  auction: Auction,
-  expected: readonly string[],
-): boolean {
-  if (auction.entries.length < expected.length) return false;
-
-  for (let i = 0; i < expected.length; i++) {
-    const entry = auction.entries[i]!;
-    const exp = expected[i]!;
-
-    if (exp === "P") {
-      if (entry.call.type !== "pass") return false;
-      continue;
-    }
-
-    if (entry.call.type !== "bid") return false;
-
-    const match = exp.match(/^(\d)(NT|C|D|H|S)$/);
-    if (!match) return false;
-
-    const level = Number(match[1]);
-    const strainMap: Record<string, BidSuit> = {
-      C: BidSuit.Clubs,
-      D: BidSuit.Diamonds,
-      H: BidSuit.Hearts,
-      S: BidSuit.Spades,
-      NT: BidSuit.NoTrump,
-    };
-    const strain = strainMap[match[2]!];
-    if (entry.call.level !== level || entry.call.strain !== strain) return false;
-  }
-
-  return true;
 }
 
 /**
@@ -74,7 +36,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1H-P, for the responder (not the opener)
       return (
-        auctionMatchesSequence(auction, ["1H", "P"]) &&
+        auctionMatchesPrefix(auction, ["1H", "P"]) &&
         auction.entries.length === 2 &&
         seat !== auction.entries[0]!.seat
       );
@@ -86,7 +48,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1S-P, for the responder (not the opener)
       return (
-        auctionMatchesSequence(auction, ["1S", "P"]) &&
+        auctionMatchesPrefix(auction, ["1S", "P"]) &&
         auction.entries.length === 2 &&
         seat !== auction.entries[0]!.seat
       );
@@ -100,7 +62,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1H-P-3C-P, for the opener (same seat as 1H bidder)
       return (
-        auctionMatchesSequence(auction, ["1H", "P", "3C", "P"]) &&
+        auctionMatchesPrefix(auction, ["1H", "P", "3C", "P"]) &&
         auction.entries.length === 4 &&
         seat === auction.entries[0]!.seat
       );
@@ -112,7 +74,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1S-P-3C-P, for the opener (same seat as 1S bidder)
       return (
-        auctionMatchesSequence(auction, ["1S", "P", "3C", "P"]) &&
+        auctionMatchesPrefix(auction, ["1S", "P", "3C", "P"]) &&
         auction.entries.length === 4 &&
         seat === auction.entries[0]!.seat
       );
@@ -126,7 +88,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1H-P-3D-P, for the opener
       return (
-        auctionMatchesSequence(auction, ["1H", "P", "3D", "P"]) &&
+        auctionMatchesPrefix(auction, ["1H", "P", "3D", "P"]) &&
         auction.entries.length === 4 &&
         seat === auction.entries[0]!.seat
       );
@@ -138,7 +100,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1S-P-3D-P, for the opener
       return (
-        auctionMatchesSequence(auction, ["1S", "P", "3D", "P"]) &&
+        auctionMatchesPrefix(auction, ["1S", "P", "3D", "P"]) &&
         auction.entries.length === 4 &&
         seat === auction.entries[0]!.seat
       );
@@ -152,7 +114,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1H-P-3H-P, for the opener
       return (
-        auctionMatchesSequence(auction, ["1H", "P", "3H", "P"]) &&
+        auctionMatchesPrefix(auction, ["1H", "P", "3H", "P"]) &&
         auction.entries.length === 4 &&
         seat === auction.entries[0]!.seat
       );
@@ -164,7 +126,7 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
     isActive: (auction, seat) => {
       // Active after 1S-P-3S-P, for the opener
       return (
-        auctionMatchesSequence(auction, ["1S", "P", "3S", "P"]) &&
+        auctionMatchesPrefix(auction, ["1S", "P", "3S", "P"]) &&
         auction.entries.length === 4 &&
         seat === auction.entries[0]!.seat
       );
@@ -182,8 +144,8 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
       // Opener bid game (4H) following constructive or limit raise
       return (
         auction.entries.length === 6 &&
-        (auctionMatchesSequence(auction, ["1H", "P", "3C", "P", "4H", "P"]) ||
-         auctionMatchesSequence(auction, ["1H", "P", "3D", "P", "4H", "P"])) &&
+        (auctionMatchesPrefix(auction, ["1H", "P", "3C", "P", "4H", "P"]) ||
+         auctionMatchesPrefix(auction, ["1H", "P", "3D", "P", "4H", "P"])) &&
         seat !== auction.entries[0]!.seat
       );
     },
@@ -195,8 +157,8 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
       // Active after 1S-P-{3C/3D}-P-4S-P, for the responder
       return (
         auction.entries.length === 6 &&
-        (auctionMatchesSequence(auction, ["1S", "P", "3C", "P", "4S", "P"]) ||
-         auctionMatchesSequence(auction, ["1S", "P", "3D", "P", "4S", "P"])) &&
+        (auctionMatchesPrefix(auction, ["1S", "P", "3C", "P", "4S", "P"]) ||
+         auctionMatchesPrefix(auction, ["1S", "P", "3D", "P", "4S", "P"])) &&
         seat !== auction.entries[0]!.seat
       );
     },
@@ -209,8 +171,8 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
       // Opener signed off at 3H following constructive or limit raise
       return (
         auction.entries.length === 6 &&
-        (auctionMatchesSequence(auction, ["1H", "P", "3C", "P", "3H", "P"]) ||
-         auctionMatchesSequence(auction, ["1H", "P", "3D", "P", "3H", "P"])) &&
+        (auctionMatchesPrefix(auction, ["1H", "P", "3C", "P", "3H", "P"]) ||
+         auctionMatchesPrefix(auction, ["1H", "P", "3D", "P", "3H", "P"])) &&
         seat !== auction.entries[0]!.seat
       );
     },
@@ -222,8 +184,8 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
       // Active after 1S-P-{3C/3D}-P-3S-P, for the responder
       return (
         auction.entries.length === 6 &&
-        (auctionMatchesSequence(auction, ["1S", "P", "3C", "P", "3S", "P"]) ||
-         auctionMatchesSequence(auction, ["1S", "P", "3D", "P", "3S", "P"])) &&
+        (auctionMatchesPrefix(auction, ["1S", "P", "3C", "P", "3S", "P"]) ||
+         auctionMatchesPrefix(auction, ["1S", "P", "3D", "P", "3S", "P"])) &&
         seat !== auction.entries[0]!.seat
       );
     },

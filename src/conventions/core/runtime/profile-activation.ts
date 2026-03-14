@@ -2,17 +2,9 @@ import type { SystemProfileIR, AttachmentIR } from "../../../core/contracts/agre
 import type { AuctionPatternIR, PublicGuardIR } from "../../../core/contracts/predicate-surfaces";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { Auction, Seat } from "../../../engine/types";
-import { BidSuit } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
+import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
 import { formatCallString } from "./commitment-extractor";
-
-const STRAIN_MAP: Record<string, BidSuit> = {
-  C: BidSuit.Clubs,
-  D: BidSuit.Diamonds,
-  H: BidSuit.Hearts,
-  S: BidSuit.Spades,
-  NT: BidSuit.NoTrump,
-};
 
 /**
  * Resolve a semantic role (e.g. "opener", "responder") to a compass Seat
@@ -39,35 +31,6 @@ function resolveAuctionRole(role: string, auction: Auction): Seat | undefined {
 }
 
 /**
- * Check whether the auction entries start with an expected sequence of call strings.
- * Reuses the same matching logic as surface-routing's auctionMatchesSequence.
- */
-function matchesSequence(auction: Auction, calls: readonly string[]): boolean {
-  if (auction.entries.length < calls.length) return false;
-
-  for (let i = 0; i < calls.length; i++) {
-    const entry = auction.entries[i]!;
-    const exp = calls[i]!;
-
-    if (exp === "P") {
-      if (entry.call.type !== "pass") return false;
-      continue;
-    }
-
-    if (entry.call.type !== "bid") return false;
-
-    const match = exp.match(/^(\d)(NT|C|D|H|S)$/);
-    if (!match) return false;
-
-    const level = Number(match[1]);
-    const strain = STRAIN_MAP[match[2]!];
-    if (entry.call.level !== level || entry.call.strain !== strain) return false;
-  }
-
-  return true;
-}
-
-/**
  * Evaluate an AuctionPatternIR against the current auction.
  * - sequence: check if auction starts with these calls
  * - contains: check if auction contains the specified call (optionally by role)
@@ -79,7 +42,7 @@ function matchesAuctionPattern(
 ): boolean {
   switch (pattern.kind) {
     case "sequence":
-      return matchesSequence(auction, pattern.calls);
+      return auctionMatchesPrefix(auction, pattern.calls);
     case "contains": {
       // Check if any entry in the auction matches the specified call,
       // optionally restricted to a specific role (e.g. "opener", "responder")

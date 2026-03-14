@@ -109,14 +109,6 @@ export interface ConflictPolicyIR {
 // encoding was resolved at runtime ("default-call" | "resolver" | etc.).
 export type DeclaredEncoderKind = "direct" | "choice-set" | "frontier-step" | "relay-map";
 
-export interface EncodingTraceIR {
-  readonly encoderId: string;
-  readonly encoderKind: DeclaredEncoderKind;
-  readonly consideredCalls: readonly string[];
-  readonly chosenCall?: string;
-  readonly blockedCalls: readonly { call: string; reason: string }[];
-}
-
 // ─── Public state events/constraints ────────────────────────
 export interface PublicEvent {
   readonly eventIndex: number;

@@ -6,7 +6,7 @@ import {
 } from "../fact-catalog";
 import type { FactCatalog, FactCatalogExtension } from "../fact-catalog";
 import type { PosteriorFactEvaluatorFn } from "../fact-catalog";
-import { ALL_POSTERIOR_FACT_IDS, SHARED_POSTERIOR_FACT_IDS } from "../posterior";
+import { SHARED_POSTERIOR_FACT_IDS } from "../posterior";
 
 describe("POSTERIOR_DERIVED_FACTS", () => {
   it("has exactly 2 shared entries (NT-specific facts moved to nt-bundle)", () => {
@@ -42,10 +42,9 @@ describe("SHARED_FACTS includes posterior facts", () => {
   });
 });
 
-describe("SHARED_POSTERIOR_FACT_IDS / ALL_POSTERIOR_FACT_IDS", () => {
+describe("SHARED_POSTERIOR_FACT_IDS", () => {
   it("has exactly 2 entries matching POSTERIOR_DERIVED_FACTS", () => {
     expect(SHARED_POSTERIOR_FACT_IDS).toHaveLength(2);
-    expect(ALL_POSTERIOR_FACT_IDS).toHaveLength(2);
     const definedIds = POSTERIOR_DERIVED_FACTS.map((f) => f.id);
     for (const id of SHARED_POSTERIOR_FACT_IDS) {
       expect(definedIds).toContain(id);

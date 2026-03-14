@@ -6,36 +6,19 @@
  * NEVER affects truth/recommendation/selection.
  */
 
-import type { Call } from "../engine/types";
-import { callsMatch } from "../engine/call-helpers";
-
 import type {
   ArbitrationResult,
-  EncodedProposal,
 } from "../core/contracts/module-surface";
 
 import type {
-  MeaningClause,
-} from "../core/contracts/meaning";
-
-import type {
   DecisionProvenance,
-  EliminationTrace,
 } from "../core/contracts/provenance";
 
 import type {
   TeachingProjection,
-  CallProjection,
-  MeaningView,
-  ExplanationNode,
-  WhyNotEntry,
-  PedagogicalRelationEntry,
   ConventionContribution,
   SeatRelativeHandSpaceSummary,
 } from "../core/contracts/teaching-projection";
-
-import type { ConditionEvidenceIR } from "../core/contracts/evidence-bundle";
-
 
 import type {
   ExplanationCatalogIR,
@@ -48,9 +31,12 @@ import type { PosteriorSummary } from "../core/contracts/recommendation";
 
 import {
   buildPedagogicalGraph,
-  findRelationsFor,
-  type PedagogicalGraph,
 } from "./pedagogical-graph";
+
+import { buildCallViews } from "./call-view-builder";
+import { buildMeaningViews } from "./meaning-view-builder";
+import { buildPrimaryExplanation, buildClauseDescriptionIndex } from "./explanation-builder";
+import { buildWhyNot } from "./why-not-builder";
 
 // -- Options --
 
@@ -74,7 +60,7 @@ export interface TeachingProjectionOptions {
 // -- Catalog Index --
 
 /** Pre-indexed catalog for O(1) lookups by factId and meaningId. */
-interface CatalogIndex {
+export interface CatalogIndex {
   readonly byFactId: ReadonlyMap<string, ExplanationEntry>;
   readonly byMeaningId: ReadonlyMap<string, ExplanationEntry>;
 }
@@ -100,7 +86,7 @@ function buildCatalogIndex(catalog: ExplanationCatalogIR): CatalogIndex {
 
 /** Resolve display text from a catalog entry.
  *  When isContrastive is true, prefers contrastiveDisplayText, falling back to displayText. */
-function resolveDisplayText(
+export function resolveDisplayText(
   catalogEntry: ExplanationEntry | undefined,
   isContrastive?: boolean,
 ): string | undefined {
@@ -152,398 +138,6 @@ export function projectTeaching(
     conventionsApplied,
     handSpace,
   };
-}
-
-// -- Call Views --
-
-/**
- * Build CallProjection[] from truth set and acceptable set.
- *
- * Projection rules (per spec):
- *   - Same call + same semanticClassId -> "merged-equivalent"
- *   - Same call + different semanticClassIds -> "multi-rationale-same-call"
- *   - Single meaning for a call -> "single-rationale"
- */
-function buildCallViews(arbitration: ArbitrationResult): CallProjection[] {
-  const views: CallProjection[] = [];
-
-  // Truth set entries
-  const truthCallGroups = groupByCall(arbitration.truthSet);
-  for (const [, encodeds] of truthCallGroups) {
-    const meaningIds = encodeds.map(e => e.proposal.meaningId);
-    const call = encodeds[0]!.call;
-    const projectionKind = classifyProjectionKind(encodeds);
-    const primaryMeaning = selectPrimaryMeaning(encodeds);
-
-    views.push({
-      call,
-      status: "truth",
-      supportingMeanings: meaningIds,
-      primaryMeaning,
-      projectionKind,
-    });
-  }
-
-  // Acceptable set entries (not already in truth set by call)
-  const truthCallKeys = new Set([...truthCallGroups.keys()]);
-  const acceptableCallGroups = groupByCall(arbitration.acceptableSet);
-  for (const [key, encodeds] of acceptableCallGroups) {
-    if (truthCallKeys.has(key)) continue;
-
-    const meaningIds = encodeds.map(e => e.proposal.meaningId);
-    const call = encodeds[0]!.call;
-    const projectionKind = classifyProjectionKind(encodeds);
-    const primaryMeaning = selectPrimaryMeaning(encodeds);
-
-    views.push({
-      call,
-      status: "acceptable",
-      supportingMeanings: meaningIds,
-      primaryMeaning,
-      projectionKind,
-    });
-  }
-
-  return views;
-}
-
-/** Group encoded proposals by their concrete call. */
-function groupByCall(
-  encoded: readonly EncodedProposal[],
-): Map<string, EncodedProposal[]> {
-  const groups = new Map<string, EncodedProposal[]>();
-  for (const e of encoded) {
-    const key = formatCallKey(e.call);
-    const group = groups.get(key);
-    if (group) {
-      group.push(e);
-    } else {
-      groups.set(key, [e]);
-    }
-  }
-  return groups;
-}
-
-/** Produce a stable string key for call grouping. */
-function formatCallKey(call: Call): string {
-  if (call.type === "bid") {
-    return `${call.level}${call.strain}`;
-  }
-  return call.type;
-}
-
-/** Classify the projectionKind for a group of proposals encoding to the same call. */
-function classifyProjectionKind(
-  encodeds: readonly EncodedProposal[],
-): CallProjection["projectionKind"] {
-  if (encodeds.length <= 1) return "single-rationale";
-
-  const semanticClassIds = new Set(
-    encodeds.map(e => e.proposal.semanticClassId).filter(Boolean),
-  );
-
-  // All share the same semanticClassId (or none have one, but there are multiple)
-  if (semanticClassIds.size <= 1) return "merged-equivalent";
-
-  return "multi-rationale-same-call";
-}
-
-/**
- * Select the primary meaning for display.
- * Per spec: prefer alphabetically by meaningId as a stable tiebreak.
- */
-function selectPrimaryMeaning(encodeds: readonly EncodedProposal[]): string | undefined {
-  if (encodeds.length === 0) return undefined;
-  const sorted = [...encodeds].sort((a, b) =>
-    a.proposal.meaningId.localeCompare(b.proposal.meaningId),
-  );
-  return sorted[0]!.proposal.meaningId;
-}
-
-// -- Meaning Views --
-
-/** Convert a MeaningClause to ConditionEvidenceIR for supporting evidence. */
-function clauseToEvidence(clause: MeaningClause): ConditionEvidenceIR {
-  return {
-    conditionId: clause.factId,
-    satisfied: clause.satisfied,
-    factId: clause.factId,
-    observedValue: clause.observedValue,
-  };
-}
-
-/** Build MeaningView[] from truth set, acceptable set, and eliminated proposals. */
-function buildMeaningViews(
-  arbitration: ArbitrationResult,
-  provenance: DecisionProvenance,
-): MeaningView[] {
-  const views: MeaningView[] = [];
-  const seenMeaningIds = new Set<string>();
-
-  // Live meanings: truth set entries
-  for (const encoded of arbitration.truthSet) {
-    seenMeaningIds.add(encoded.proposal.meaningId);
-    views.push({
-      meaningId: encoded.proposal.meaningId,
-      semanticClassId: encoded.proposal.semanticClassId,
-      displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
-      status: "live",
-      supportingEvidence: encoded.proposal.clauses.map(clauseToEvidence),
-    });
-  }
-
-  // Eliminated meanings: from elimination records + provenance
-  for (const elimination of arbitration.eliminations) {
-    if (seenMeaningIds.has(elimination.candidateBidName)) continue;
-    seenMeaningIds.add(elimination.candidateBidName);
-
-    const eliminationTrace = provenance.eliminations.find(
-      e => e.candidateId === elimination.candidateBidName,
-    );
-
-    const evidence: ConditionEvidenceIR[] = eliminationTrace?.evidence
-      ? [...eliminationTrace.evidence]
-      : [];
-
-    views.push({
-      meaningId: elimination.candidateBidName,
-      displayLabel: elimination.candidateBidName,
-      status: "eliminated",
-      eliminationReason: elimination.reason,
-      supportingEvidence: evidence,
-    });
-  }
-
-  // Acceptable-but-not-truth meanings: from acceptable set
-  for (const encoded of arbitration.acceptableSet) {
-    if (seenMeaningIds.has(encoded.proposal.meaningId)) continue;
-    seenMeaningIds.add(encoded.proposal.meaningId);
-
-    views.push({
-      meaningId: encoded.proposal.meaningId,
-      semanticClassId: encoded.proposal.semanticClassId,
-      displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
-      status: "eliminated",
-      eliminationReason: "Hand conditions not fully satisfied",
-      supportingEvidence: encoded.proposal.clauses.map(clauseToEvidence),
-    });
-  }
-
-  return views;
-}
-
-// -- Clause Description Index --
-
-/** Build a map from factId → human-readable description from the selected proposal's clauses. */
-function buildClauseDescriptionIndex(
-  arbitration: ArbitrationResult,
-): ReadonlyMap<string, string> {
-  const index = new Map<string, string>();
-
-  // Primary source: selected proposal clauses
-  if (arbitration.selected) {
-    for (const clause of arbitration.selected.proposal.clauses) {
-      if (clause.description) {
-        index.set(clause.factId, clause.description);
-      }
-    }
-  }
-
-  // Secondary: truth set clauses (may add entries the selected didn't have)
-  for (const encoded of arbitration.truthSet) {
-    for (const clause of encoded.proposal.clauses) {
-      if (clause.description && !index.has(clause.factId)) {
-        index.set(clause.factId, clause.description);
-      }
-    }
-  }
-
-  return index;
-}
-
-// -- Primary Explanation --
-
-/** Build the primary explanation from provenance applicability evidence,
- *  enriched with clause descriptions and catalog template keys. */
-function buildPrimaryExplanation(
-  provenance: DecisionProvenance,
-  catalogIndex?: CatalogIndex,
-  clauseDescriptions?: ReadonlyMap<string, string>,
-): ExplanationNode[] {
-  const nodes: ExplanationNode[] = [];
-  const seenMeaningIds = new Set<string>();
-
-  for (const condition of provenance.applicability.evaluatedConditions) {
-    const catalogEntry = catalogIndex?.byFactId.get(condition.conditionId);
-    // Prefer clause description, then catalog display text, then fall back to conditionId
-    const displayContent = clauseDescriptions?.get(condition.conditionId)
-      ?? resolveDisplayText(catalogEntry)
-      ?? condition.conditionId;
-
-    const node: ExplanationNode = catalogEntry
-      ? {
-          kind: "condition",
-          content: displayContent,
-          passed: condition.satisfied,
-          explanationId: catalogEntry.explanationId,
-          templateKey: catalogEntry.templateKey,
-        }
-      : {
-          kind: "condition",
-          content: displayContent,
-          passed: condition.satisfied,
-        };
-    nodes.push(node);
-
-    // If there is a meaning-level catalog entry linked via the same factId,
-    // emit a convention-reference node (deduplicated by meaningId).
-    if (catalogEntry?.meaningId && !seenMeaningIds.has(catalogEntry.meaningId)) {
-      const meaningEntry = catalogIndex?.byMeaningId.get(catalogEntry.meaningId);
-      if (meaningEntry) {
-        seenMeaningIds.add(catalogEntry.meaningId);
-        const meaningContent = resolveDisplayText(meaningEntry) ?? meaningEntry.meaningId!;
-        nodes.push({
-          kind: "convention-reference",
-          content: meaningContent,
-          explanationId: meaningEntry.explanationId,
-          templateKey: meaningEntry.templateKey,
-        });
-      }
-    }
-  }
-
-  return nodes;
-}
-
-// -- WhyNot --
-
-/**
- * Build WhyNotEntry[] for calls that are in the acceptable set but NOT in the truth set.
- * These represent "near-miss" calls that almost made it.
- */
-function buildWhyNot(
-  arbitration: ArbitrationResult,
-  provenance: DecisionProvenance,
-  catalogIndex?: CatalogIndex,
-  pedGraph?: PedagogicalGraph,
-  truthMeaningIds?: ReadonlySet<string>,
-): WhyNotEntry[] {
-  const entries: WhyNotEntry[] = [];
-  const truthCalls = arbitration.truthSet.map(e => e.call);
-
-  // Acceptable-set entries that are not in the truth set are near-misses
-  for (const encoded of arbitration.acceptableSet) {
-    if (truthCalls.some(tc => callsMatch(tc, encoded.call))) continue;
-
-    const eliminationTrace = provenance.eliminations.find(
-      t => t.candidateId === encoded.proposal.meaningId,
-    );
-
-    const explanation = buildWhyNotExplanation(encoded, eliminationTrace, catalogIndex);
-    const stage = eliminationTrace?.stage ?? "applicability";
-    const familyRelation = pedGraph
-      ? findNearMissRelation(pedGraph, encoded.proposal.meaningId, truthMeaningIds)
-      : undefined;
-
-    entries.push({
-      call: encoded.call,
-      grade: "near-miss",
-      familyRelation,
-      explanation,
-      eliminationStage: stage,
-    });
-  }
-
-  return entries;
-}
-
-/**
- * Find the best pedagogical relation between a near-miss meaning and any truth-set meaning.
- * Prefers `near-miss-of` relations, then any relation linking the two.
- */
-function findNearMissRelation(
-  graph: PedagogicalGraph,
-  nearMissMeaningId: string,
-  truthMeaningIds?: ReadonlySet<string>,
-): PedagogicalRelationEntry | undefined {
-  if (!truthMeaningIds || truthMeaningIds.size === 0) return undefined;
-
-  const relations = findRelationsFor(graph, nearMissMeaningId);
-  if (relations.length === 0) return undefined;
-
-  // Find relations that connect this near-miss to a truth-set meaning
-  const connecting = relations.filter(r => {
-    const otherRef = r.a === nearMissMeaningId ? r.b : r.a;
-    return truthMeaningIds.has(otherRef);
-  });
-
-  if (connecting.length === 0) return undefined;
-
-  // Prefer near-miss-of relations
-  const nearMissRelation = connecting.find(r => r.kind === "near-miss-of");
-  const best = nearMissRelation ?? connecting[0]!;
-
-  return { kind: best.kind, a: best.a, b: best.b };
-}
-
-/** Build explanation nodes for a WhyNot entry. */
-function buildWhyNotExplanation(
-  encoded: EncodedProposal,
-  eliminationTrace: EliminationTrace | undefined,
-  catalogIndex?: CatalogIndex,
-): ExplanationNode[] {
-  const nodes: ExplanationNode[] = [];
-
-  if (eliminationTrace) {
-    nodes.push({
-      kind: "text",
-      content: eliminationTrace.reason,
-    });
-    for (const evidence of eliminationTrace.evidence) {
-      const catalogEntry = catalogIndex?.byFactId.get(evidence.conditionId);
-      const templateKey = catalogEntry
-        ? (catalogEntry.contrastiveTemplateKey ?? catalogEntry.templateKey)
-        : undefined;
-      // Use resolved display text or clause description from the proposal
-      const clauseDesc = encoded.proposal.clauses.find(c => c.factId === evidence.conditionId)?.description;
-      const contrastiveText = resolveDisplayText(catalogEntry, /* isContrastive */ true);
-      const displayContent = contrastiveText
-        ?? clauseDesc
-        ?? evidence.conditionId;
-      const node: ExplanationNode = catalogEntry
-        ? {
-            kind: "condition",
-            content: displayContent,
-            passed: evidence.satisfied,
-            explanationId: catalogEntry.explanationId,
-            templateKey,
-          }
-        : {
-            kind: "condition",
-            content: displayContent,
-            passed: evidence.satisfied,
-          };
-      nodes.push(node);
-    }
-  } else {
-    // Fall back to clause-level detail from the proposal
-    const failedClauses = encoded.proposal.clauses.filter(c => !c.satisfied);
-    if (failedClauses.length > 0) {
-      nodes.push({
-        kind: "text",
-        content: "Hand conditions not satisfied",
-      });
-      for (const clause of failedClauses) {
-        nodes.push({
-          kind: "condition",
-          content: clause.description,
-          passed: false,
-        });
-      }
-    }
-  }
-
-  return nodes;
 }
 
 // -- Convention Contributions --

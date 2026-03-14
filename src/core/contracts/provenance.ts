@@ -4,7 +4,7 @@ import type { TransformTrace } from "./meaning";
 import type { SurfaceCompositionDiagnostic } from "./module-surface";
 
 /** Kind of encoder used for call assignment. */
-export type EncoderKind = "default-call" | "resolver" | "alternate-encoding" | "overlay-override" | "frontier-step" | "relay-map";
+export type EncoderKind = "default-call" | "resolver" | "alternate-encoding" | "frontier-step" | "relay-map";
 
 /** Full decision provenance — why this candidate was selected. */
 export interface DecisionProvenance {

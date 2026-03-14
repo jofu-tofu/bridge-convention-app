@@ -1,24 +1,10 @@
 import type {
   FactCatalogExtension,
   FactDefinition,
-  FactValue,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
+import { num, bool, fv } from "../../../core/contracts/fact-catalog";
 import { createPosteriorFactEvaluators } from "../../../inference/posterior";
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function num(evaluated: ReadonlyMap<string, FactValue>, id: string): number {
-  return evaluated.get(id)!.value as number;
-}
-
-function bool(evaluated: ReadonlyMap<string, FactValue>, id: string): boolean {
-  return evaluated.get(id)!.value as boolean;
-}
-
-function fv(factId: string, value: number | boolean | string): FactValue {
-  return { factId, value };
-}
 
 // ─── NT-specific posterior facts ─────────────────────────────
 // These posterior facts are 1NT/Stayman-specific (they reference opener context

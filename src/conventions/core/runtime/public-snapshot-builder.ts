@@ -5,7 +5,7 @@ import type { PublicEvent } from "../../../core/contracts/agreement-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import type { PosteriorEngine } from "../../../core/contracts/posterior";
 import type { BeliefView, PosteriorSourceRef } from "../../../core/contracts/posterior";
-import { ALL_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
+import { SHARED_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
 import type { FactConstraintIR } from "../../../core/contracts/agreement-module";
 import type { MachineRegisters } from "./machine-types";
 import { ForcingState } from "../../../core/contracts/bidding";
@@ -55,7 +55,7 @@ export function buildSnapshotFromAuction(
     const handSpaces = options.posteriorEngine.compilePublic(partialSnapshot);
     const evidenceGroupId = `posterior:${seat}`;
     publicBeliefs = handSpaces.map((space) => {
-      const factValues = options.posteriorEngine!.deriveActingHandFacts(space, ALL_POSTERIOR_FACT_IDS);
+      const factValues = options.posteriorEngine!.deriveActingHandFacts(space, SHARED_POSTERIOR_FACT_IDS);
       const leadFact = factValues[0];
       const constraint: FactConstraintIR | undefined = leadFact
         ? { factId: leadFact.factId, operator: "gte", value: leadFact.expectedValue }

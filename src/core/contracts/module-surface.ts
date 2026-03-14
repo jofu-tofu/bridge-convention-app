@@ -33,23 +33,6 @@ export interface PublicSnapshot {
   readonly latentBranches?: readonly LatentBranchSet[];
 }
 
-/** One module's evaluation output. */
-export interface ModuleSurface {
-  readonly moduleId: string;
-  readonly active: boolean;
-  readonly activationReason: string;
-  readonly proposals: readonly MeaningProposal[];
-  readonly localRegisters: Readonly<Record<string, unknown>>;
-  readonly capabilities: readonly string[];
-}
-
-/** Aggregation of all module surfaces. */
-export interface MultiModuleSurface {
-  readonly modules: readonly ModuleSurface[];
-  readonly allProposals: readonly MeaningProposal[];
-  readonly publicSnapshot: PublicSnapshot;
-}
-
 /** Meaning after call assignment. */
 export interface EncodedProposal {
   readonly proposal: MeaningProposal;

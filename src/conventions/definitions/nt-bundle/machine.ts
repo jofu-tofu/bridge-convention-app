@@ -1,10 +1,9 @@
 import { BidSuit } from "../../../engine/types";
-import type { Auction , Seat } from "../../../engine/types";
 import type {
   ConversationMachine,
   MachineState,
 } from "../../core/runtime/machine-types";
-import { areSamePartnership } from "../../../engine/constants";
+import { buildConversationMachine } from "../../core/runtime/machine-types";
 
 /**
  * Create the 1NT Conversation Machine.
@@ -228,22 +227,5 @@ export function createNtConversationMachine(): ConversationMachine {
     },
   ];
 
-  const stateMap = new Map<string, MachineState>();
-  for (const s of states) {
-    stateMap.set(s.stateId, s);
-  }
-
-  return {
-    machineId: "nt-conversation",
-    states: stateMap,
-    initialStateId: "idle",
-    seatRole: (
-      _auction: Auction,
-      seat: Seat,
-      callSeat: Seat,
-    ): "self" | "partner" | "opponent" => {
-      if (seat === callSeat) return "self";
-      return areSamePartnership(seat, callSeat) ? "partner" : "opponent";
-    },
-  };
+  return buildConversationMachine("nt-conversation", states);
 }

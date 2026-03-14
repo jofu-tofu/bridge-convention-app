@@ -1,19 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type {
-  WitnessSpecIR,
-} from "../../../../core/contracts/witness-spec";
 import { detectUnsat } from "../witness-unsat";
-
-// ─── Helper: build a minimal spec ─────────────────────────────
-function makeSpec(overrides: Partial<WitnessSpecIR> = {}): WitnessSpecIR {
-  return {
-    specId: "test-spec",
-    moduleId: "test-module",
-    layers: [],
-    targets: [],
-    ...overrides,
-  };
-}
+import { makeSpec } from "./witness-test-helpers";
 
 // ─── Satisfiable specs return null ────────────────────────────
 describe("detectUnsat - satisfiable specs", () => {

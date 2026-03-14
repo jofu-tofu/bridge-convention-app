@@ -6,92 +6,19 @@
  * ordering fix, and E/W inference engine wiring.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Seat, BidSuit, Vulnerability, Suit, Rank } from "../../engine/types";
-import type { Contract, Hand } from "../../engine/types";
+import { Seat } from "../../engine/types";
+import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
+import { makeSimpleTestDeal, makeDrillSession, makeContract } from "../../test-support/fixtures";
 import type { DrillSession } from "../../bootstrap/types";
 import type { EnginePort } from "../../engine/port";
 import type { InferenceConfig } from "../../inference/types";
 
-function makeDrillSession(userSeat: Seat = Seat.South): DrillSession {
-  return {
-    config: {
-      conventionId: "test",
-      userSeat,
-      seatStrategies: {
-        [Seat.North]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.East]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-        [Seat.South]: "user",
-        [Seat.West]: {
-          id: "pass",
-          name: "Pass",
-          suggest: () => ({
-            call: { type: "pass" as const },
-            ruleName: null,
-            explanation: "pass",
-          }),
-        },
-      },
-    },
-    getNextBid(seat) {
-      if (seat === userSeat) return null;
-      return { call: { type: "pass" }, ruleName: null, explanation: "AI pass" };
-    },
-    isUserSeat(seat) {
-      return seat === userSeat;
-    },
-  };
-}
-
-function makeTestDeal() {
-  const ranks = [
-    Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six,
-    Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack,
-    Rank.Queen, Rank.King, Rank.Ace,
-  ];
-  return {
-    hands: {
-      [Seat.North]: { cards: ranks.map((r) => ({ suit: Suit.Clubs, rank: r })) },
-      [Seat.East]: { cards: ranks.map((r) => ({ suit: Suit.Diamonds, rank: r })) },
-      [Seat.South]: { cards: ranks.map((r) => ({ suit: Suit.Hearts, rank: r })) },
-      [Seat.West]: { cards: ranks.map((r) => ({ suit: Suit.Spades, rank: r })) },
-    },
-    dealer: Seat.North,
-    vulnerability: Vulnerability.None,
-  };
-}
-
-function makeContract(declarer: Seat): Contract {
-  return {
-    level: 1,
-    strain: BidSuit.NoTrump,
-    doubled: false,
-    redoubled: false,
-    declarer,
-  };
-}
-
 describe("unified acceptPlay / declinePlay API", () => {
   let engine: EnginePort;
   let store: ReturnType<typeof createGameStore>;
-  const deal = makeTestDeal();
+  const deal = makeSimpleTestDeal();
   const session = makeDrillSession();
 
   beforeEach(() => {
@@ -215,7 +142,7 @@ describe("unified acceptPlay / declinePlay API", () => {
 describe("playThisHand mutation ordering", () => {
   let engine: EnginePort;
   let store: ReturnType<typeof createGameStore>;
-  const deal = makeTestDeal();
+  const deal = makeSimpleTestDeal();
   const session = makeDrillSession();
 
   beforeEach(() => {
@@ -330,7 +257,7 @@ describe("namespaced sub-store accessors (finding #1)", () => {
   });
 
   it("bidding sub-store reflects state changes after startDrill", async () => {
-    const deal = makeTestDeal();
+    const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
@@ -433,7 +360,7 @@ describe("E/W inference engine wiring (finding #5)", () => {
     vi.useRealTimers();
     const nsInferenceEngine = createInferenceEngine(nsConfig, Seat.North);
     const ewInferenceEngine = createInferenceEngine(ewConfig, Seat.East);
-    const promise = store.startDrill({ deal: makeTestDeal(), session, nsInferenceEngine, ewInferenceEngine });
+    const promise = store.startDrill({ deal: makeSimpleTestDeal(), session, nsInferenceEngine, ewInferenceEngine });
     await promise;
 
     // After auction completes, playInferences should have all 4 seats

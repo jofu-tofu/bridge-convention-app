@@ -3,14 +3,14 @@ import { buildSnapshotFromAuction } from "../public-snapshot-builder";
 import type { PosteriorEngine, PublicHandSpace, PosteriorFactValue } from "../../../../core/contracts/posterior";
 import type { Auction } from "../../../../engine/types";
 import { Seat as SeatEnum } from "../../../../engine/types";
-import { ALL_POSTERIOR_FACT_IDS } from "../../../../core/contracts/posterior";
+import { SHARED_POSTERIOR_FACT_IDS } from "../../../../core/contracts/posterior";
 
 function makeAuction(entries: Auction["entries"]): Auction {
   return { entries, isComplete: false };
 }
 
 function makeMockPosteriorEngine(handSpaces: PublicHandSpace[]): PosteriorEngine {
-  const _factValues: PosteriorFactValue[] = ALL_POSTERIOR_FACT_IDS.map((factId) => ({
+  const _factValues: PosteriorFactValue[] = SHARED_POSTERIOR_FACT_IDS.map((factId) => ({
     factId,
     seatId: "N",
     expectedValue: 0.5,
@@ -68,7 +68,7 @@ describe("buildSnapshotFromAuction — publicBeliefs", () => {
     expect(snapshot.publicBeliefs![0]!.seatId).toBe("N");
     expect(snapshot.publicBeliefs![0]!.observerSeat).toBe("S");
     expect(snapshot.publicBeliefs![0]!.staleness).toBe(0);
-    expect(snapshot.publicBeliefs![0]!.facts).toHaveLength(ALL_POSTERIOR_FACT_IDS.length);
+    expect(snapshot.publicBeliefs![0]!.facts).toHaveLength(SHARED_POSTERIOR_FACT_IDS.length);
   });
 
   it("each BeliefView.facts contains exactly 2 shared PosteriorFactValue entries", () => {
@@ -87,9 +87,9 @@ describe("buildSnapshotFromAuction — publicBeliefs", () => {
 
     expect(snapshot.publicBeliefs!.length).toBe(2);
     for (const belief of snapshot.publicBeliefs!) {
-      expect(belief.facts).toHaveLength(ALL_POSTERIOR_FACT_IDS.length);
+      expect(belief.facts).toHaveLength(SHARED_POSTERIOR_FACT_IDS.length);
       for (const fact of belief.facts) {
-        expect(ALL_POSTERIOR_FACT_IDS).toContain(fact.factId);
+        expect(SHARED_POSTERIOR_FACT_IDS).toContain(fact.factId);
       }
     }
   });
@@ -143,7 +143,7 @@ describe("buildSnapshotFromAuction — publicBeliefs", () => {
       const belief = snapshot.publicBeliefs![0]!;
       // The first fact has expectedValue 0.5, mapped to a boolean constraint
       expect(belief.constraint).toBeDefined();
-      expect(belief.constraint!.factId).toBe(ALL_POSTERIOR_FACT_IDS[0]);
+      expect(belief.constraint!.factId).toBe(SHARED_POSTERIOR_FACT_IDS[0]);
       expect(belief.constraint!.operator).toBe("gte");
     });
 
