@@ -422,6 +422,30 @@ describe("evidenceBundle production", () => {
   });
 });
 
+describe("handoff provenance", () => {
+  it("threads provided handoffs into provenance", () => {
+    const input = makeInput();
+    const handoffs = [
+      { fromModuleId: "mod-a", toModuleId: "mod-b", reason: "forcing relay" },
+      { fromModuleId: "mod-b", toModuleId: "mod-c", reason: "transfer completion" },
+    ];
+
+    const result = arbitrateMeanings([input], { handoffs });
+
+    expect(result.provenance).toBeDefined();
+    expect(result.provenance!.handoffs).toEqual(handoffs);
+    expect(result.provenance!.handoffs).toHaveLength(2);
+  });
+
+  it("defaults handoffs to empty array when not provided", () => {
+    const input = makeInput();
+    const result = arbitrateMeanings([input]);
+
+    expect(result.provenance).toBeDefined();
+    expect(result.provenance!.handoffs).toEqual([]);
+  });
+});
+
 describe("zipProposalsWithSurfaces", () => {
   it("pairs proposals with their source surfaces by index", () => {
     const proposals: MeaningProposal[] = [makeProposal({ meaningId: "a" }), makeProposal({ meaningId: "b" })];

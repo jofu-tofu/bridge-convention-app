@@ -96,7 +96,7 @@ export interface SurfaceEvaluationResult {
 /** Record of a single transform applied during surface composition. */
 export interface TransformApplication {
   readonly transformId: string;
-  readonly kind: "suppress" | "inject";
+  readonly kind: "suppress" | "inject" | "remap";
   readonly targetId: string;
   readonly sourceModuleId: string;
   readonly reason: string;

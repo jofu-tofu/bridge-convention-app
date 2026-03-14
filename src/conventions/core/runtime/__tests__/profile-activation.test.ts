@@ -1,9 +1,26 @@
 import { describe, it, expect } from "vitest";
 import { resolveActiveModules, resolveModulePrecedence } from "../profile-activation";
-import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
+import type { SystemProfileIR, PublicConstraint } from "../../../../core/contracts/agreement-module";
+import type { PublicSnapshot } from "../../../../core/contracts/module-surface";
 import { NT_SAYC_PROFILE } from "../../../definitions/nt-bundle/system-profile";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
+import { ForcingState } from "../../../../core/contracts/bidding";
+
+/** Minimal PublicSnapshot for testing — only publicRegisters and publicCommitments matter. */
+function makeSnapshot(overrides: Partial<PublicSnapshot> = {}): PublicSnapshot {
+  return {
+    activeModuleIds: [],
+    forcingState: ForcingState.Nonforcing,
+    obligation: { kind: "none", obligatedSide: "opener" },
+    agreedStrain: { type: "none" },
+    competitionMode: "uncontested",
+    captain: "none",
+    systemCapabilities: {},
+    publicRegisters: {},
+    ...overrides,
+  };
+}
 
 describe("resolveActiveModules", () => {
   it("returns all 3 modules for 1NT-P auction with ntOpenerContext capability", () => {
@@ -143,6 +160,221 @@ describe("resolveActiveModules", () => {
 
     // a1 wins group-a (index 0 < 1), b1 wins group-b (index 2 < 3)
     expect(result).toEqual(["a1", "b1"]);
+  });
+
+  describe("whenPublic guard", () => {
+    const auction = buildAuction(Seat.North, ["1NT", "P"]);
+
+    function profileWithGuard(
+      field: string,
+      operator: "eq" | "neq" | "in" | "exists",
+      value?: unknown,
+    ): SystemProfileIR {
+      return {
+        profileId: "test-public-guard",
+        baseSystem: "sayc",
+        modules: [
+          {
+            moduleId: "guarded-mod",
+            kind: "base-system",
+            attachments: [{ whenPublic: { field, operator, value } }],
+          },
+        ],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+    }
+
+    it("activates module when eq guard matches register value", () => {
+      const profile = profileWithGuard("competitionMode", "eq", "competitive");
+      const snapshot = makeSnapshot({
+        publicRegisters: { competitionMode: "competitive" },
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual(["guarded-mod"]);
+    });
+
+    it("excludes module when eq guard does not match register value", () => {
+      const profile = profileWithGuard("competitionMode", "eq", "competitive");
+      const snapshot = makeSnapshot({
+        publicRegisters: { competitionMode: "uncontested" },
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+
+    it("activates module when neq guard does not match register value", () => {
+      const profile = profileWithGuard("competitionMode", "neq", "competitive");
+      const snapshot = makeSnapshot({
+        publicRegisters: { competitionMode: "uncontested" },
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual(["guarded-mod"]);
+    });
+
+    it("excludes module when neq guard matches register value", () => {
+      const profile = profileWithGuard("competitionMode", "neq", "competitive");
+      const snapshot = makeSnapshot({
+        publicRegisters: { competitionMode: "competitive" },
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+
+    it("activates module when in guard finds value in array", () => {
+      const profile = profileWithGuard("captain", "in", ["opener", "responder"]);
+      const snapshot = makeSnapshot({
+        publicRegisters: { captain: "responder" },
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual(["guarded-mod"]);
+    });
+
+    it("excludes module when in guard does not find value in array", () => {
+      const profile = profileWithGuard("captain", "in", ["opener", "responder"]);
+      const snapshot = makeSnapshot({
+        publicRegisters: { captain: "nobody" },
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+
+    it("activates module when exists guard finds the field", () => {
+      const profile = profileWithGuard("competitionMode", "exists");
+      const snapshot = makeSnapshot({
+        publicRegisters: { competitionMode: "uncontested" },
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual(["guarded-mod"]);
+    });
+
+    it("excludes module when exists guard does not find the field", () => {
+      const profile = profileWithGuard("competitionMode", "exists");
+      const snapshot = makeSnapshot({
+        publicRegisters: {},
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+
+    it("excludes module when whenPublic is set but no publicSnapshot provided", () => {
+      const profile = profileWithGuard("competitionMode", "eq", "competitive");
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {});
+      expect(result).toEqual([]);
+    });
+
+    it("eq guard returns false when register field is missing", () => {
+      const profile = profileWithGuard("missingField", "eq", "anything");
+      const snapshot = makeSnapshot({ publicRegisters: {} });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("requiresVisibleMeanings", () => {
+    const auction = buildAuction(Seat.North, ["1NT", "P"]);
+
+    function profileWithVisibleMeanings(
+      meaningIds: readonly string[],
+    ): SystemProfileIR {
+      return {
+        profileId: "test-visible-meanings",
+        baseSystem: "sayc",
+        modules: [
+          {
+            moduleId: "meaning-mod",
+            kind: "base-system",
+            attachments: [{ requiresVisibleMeanings: meaningIds }],
+          },
+        ],
+        conflictPolicy: { activationDefault: "simultaneous" },
+      };
+    }
+
+    function commitment(sourceMeaning: string): PublicConstraint {
+      return {
+        subject: "responder",
+        constraint: { factId: "hcp", operator: "gte", value: 10 },
+        origin: "call-meaning",
+        strength: "hard",
+        sourceMeaning,
+      };
+    }
+
+    it("activates module when required meaning is in publicCommitments", () => {
+      const profile = profileWithVisibleMeanings(["stayman-ask"]);
+      const snapshot = makeSnapshot({
+        publicCommitments: [commitment("stayman-ask")],
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual(["meaning-mod"]);
+    });
+
+    it("excludes module when required meaning is not in publicCommitments", () => {
+      const profile = profileWithVisibleMeanings(["stayman-ask"]);
+      const snapshot = makeSnapshot({
+        publicCommitments: [commitment("transfer-hearts")],
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+
+    it("requires all meaning IDs to be present", () => {
+      const profile = profileWithVisibleMeanings(["stayman-ask", "gerber-ace"]);
+      const snapshot = makeSnapshot({
+        publicCommitments: [commitment("stayman-ask")],
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+
+    it("activates when all required meaning IDs are present", () => {
+      const profile = profileWithVisibleMeanings(["stayman-ask", "gerber-ace"]);
+      const snapshot = makeSnapshot({
+        publicCommitments: [
+          commitment("stayman-ask"),
+          commitment("gerber-ace"),
+        ],
+      });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual(["meaning-mod"]);
+    });
+
+    it("excludes module when requiresVisibleMeanings set but no snapshot provided", () => {
+      const profile = profileWithVisibleMeanings(["stayman-ask"]);
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {});
+      expect(result).toEqual([]);
+    });
+
+    it("excludes module when publicCommitments is empty", () => {
+      const profile = profileWithVisibleMeanings(["stayman-ask"]);
+      const snapshot = makeSnapshot({ publicCommitments: [] });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
+
+    it("excludes module when publicCommitments is undefined", () => {
+      const profile = profileWithVisibleMeanings(["stayman-ask"]);
+      const snapshot = makeSnapshot({ publicCommitments: undefined });
+
+      const result = resolveActiveModules(profile, auction, Seat.South, {}, snapshot);
+      expect(result).toEqual([]);
+    });
   });
 });
 

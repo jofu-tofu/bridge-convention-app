@@ -6,6 +6,7 @@ import { getConvention, computeDialogueState } from "../conventions/core";
 import type { ConventionConfig, BiddingContext, ConventionLookup } from "../conventions/core";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
 import type { ConventionStrategyOptions } from "../strategy/bidding/convention-strategy";
+import { meaningBundleToStrategy } from "../strategy/bidding/meaning-strategy";
 import { passStrategy } from "../strategy/bidding/pass-strategy";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
 import type { StrategyChainOptions } from "../strategy/bidding/strategy-chain";
@@ -16,6 +17,10 @@ import { createConventionInferenceProvider } from "../inference/convention-infer
 import { ForcingState } from "../core/contracts";
 import type { BeliefData } from "../core/contracts";
 import { createFitConfidenceRanker } from "../strategy/bidding/fit-ranker";
+import { findBundleForConvention, createSharedFactCatalog } from "../conventions/core";
+import type { ConventionBundle } from "../conventions/core";
+import { createFactCatalog } from "../core/contracts/fact-catalog";
+import { createPosteriorEngine } from "../inference/posterior";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
@@ -35,6 +40,35 @@ function createForcingFilter(config: ConventionConfig): StrategyChainOptions["re
       || state.forcingState === ForcingState.GameForcing;
     return !isForced;
   };
+}
+
+/** Build a meaning-pipeline strategy from a ConventionBundle.
+ *  Returns the strategy or null if the bundle has no meaningSurfaces. */
+function buildBundleStrategy(
+  bundle: ConventionBundle,
+): BiddingStrategy | null {
+  if (!bundle.meaningSurfaces || bundle.meaningSurfaces.length === 0) return null;
+
+  const factCatalog = bundle.factExtensions && bundle.factExtensions.length > 0
+    ? createFactCatalog(createSharedFactCatalog(), ...bundle.factExtensions)
+    : createSharedFactCatalog();
+
+  return meaningBundleToStrategy(
+    bundle.meaningSurfaces.map((g) => ({
+      moduleId: g.groupId,
+      surfaces: [...g.surfaces],
+    })),
+    bundle.id,
+    {
+      name: bundle.name,
+      factCatalog,
+      surfaceRouter: bundle.surfaceRouter,
+      conversationMachine: bundle.conversationMachine,
+      posteriorEngine: createPosteriorEngine(),
+      surfaceRouterForCommitments: bundle.surfaceRouter,
+      explanationCatalog: bundle.explanationCatalog,
+    },
+  );
 }
 
 /**
@@ -58,6 +92,11 @@ export function createDrillConfig(
   const lookup = options?.lookupConvention ?? getConvention;
   const convention = lookup(conventionId);
 
+  // Check if this convention belongs to a registered bundle with meaning surfaces.
+  // If so, use the meaning pipeline instead of the tree pipeline.
+  const bundle = findBundleForConvention(conventionId);
+  const bundleStrategy = bundle ? buildBundleStrategy(bundle) : null;
+
   // Wire belief + ranker + interpretation options into convention strategy
   const strategyOptions: ConventionStrategyOptions = {};
   if (options?.beliefProvider) {
@@ -73,9 +112,13 @@ export function createDrillConfig(
   const conventionProviderForInterpretation = createConventionInferenceProvider(conventionId, options?.lookupConvention);
   strategyOptions.interpretationProvider = conventionProviderForInterpretation;
 
+  // Use bundle strategy (meaning pipeline) when available, else tree pipeline
+  const primaryStrategy = bundleStrategy ?? conventionToStrategy(convention, strategyOptions);
+
   const strategy = createStrategyChain(
-    [conventionToStrategy(convention, strategyOptions), naturalFallbackStrategy],
-    { resultFilter: createForcingFilter(convention) },
+    [primaryStrategy, naturalFallbackStrategy],
+    // Forcing filter only applies to tree pipeline; meaning pipeline handles forcing internally
+    bundleStrategy ? {} : { resultFilter: createForcingFilter(convention) },
   );
 
   // Wire opponent strategy

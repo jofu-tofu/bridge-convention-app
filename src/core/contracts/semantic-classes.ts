@@ -9,4 +9,8 @@ export const BRIDGE_SEMANTIC_CLASSES = {
   PASS: "bridge:pass",
   NT_INVITE: "bridge:nt-invite",
   NT_GAME: "bridge:to-3nt",
+  ASK_MAJOR: "bridge:ask-major",
+  MAJOR_RAISE_GAME: "bridge:major-raise-game",
+  MAJOR_RAISE_INVITE: "bridge:major-raise-invite",
+  MINOR_RAISE: "bridge:minor-raise",
 } as const;

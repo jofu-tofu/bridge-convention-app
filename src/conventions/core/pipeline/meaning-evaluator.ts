@@ -193,25 +193,53 @@ function priorityClassToBand(pc: PriorityClass | undefined): RecommendationBand 
 /**
  * Evaluate a DecisionSurfaceIR against facts.
  *
- * DecisionSurfaceIR defers clause evaluation to its decision program.
- * This adapter produces a MeaningProposal with empty clauses (all-pass)
- * and metadata from the IR fields. The decision program integration is
- * a future migration step — this function is the pipeline seam.
+ * When the surface has `inlineClauses` and `decisionProgram === "clause-evaluator"`,
+ * evaluates them against facts using the same clause evaluation logic as MeaningSurface.
+ * For other decision programs or when no inlineClauses are present, produces
+ * empty clauses (all-pass) as a fallback.
  */
 export function evaluateDecisionSurface(
   surface: DecisionSurfaceIR,
-  _facts: EvaluatedFacts,
+  facts: EvaluatedFacts,
 ): MeaningProposal {
   const ranking: RankingMetadata = {
     recommendationBand: priorityClassToBand(surface.defaultPriorityClass),
-    specificity: 1,
+    specificity: surface.specificity ?? 1,
     modulePrecedence: surface.modulePrecedence,
-    intraModuleOrder: 0,
+    intraModuleOrder: surface.intraModuleOrder ?? 0,
   };
 
+  const bindings = surface.surfaceBindings
+    ? Object.fromEntries(
+        Object.entries(surface.surfaceBindings).filter(
+          (e): e is [string, string] => typeof e[1] === "string",
+        ),
+      )
+    : undefined;
+
+  // Evaluate inline clauses when available (clause-evaluator program)
+  let clauses: MeaningClause[] = [];
+  if (surface.decisionProgram === "clause-evaluator" && surface.inlineClauses && surface.inlineClauses.length > 0) {
+    clauses = surface.inlineClauses.map((ic) => {
+      // Convert FactConstraintIR to MeaningSurfaceClause for reuse of evaluateClause
+      const asSurfaceClause: MeaningSurfaceClause = {
+        clauseId: ic.factId,
+        factId: ic.factId,
+        operator: ic.operator,
+        value: ic.value,
+        description: ic.factId,
+      };
+      return evaluateClause(asSurfaceClause, facts, bindings);
+    });
+  }
+
   const evidence: EvidenceBundle = {
-    factDependencies: [],
-    evaluatedConditions: [],
+    factDependencies: clauses.map((c) => c.factId),
+    evaluatedConditions: clauses.map((c) => ({
+      name: c.factId,
+      passed: c.satisfied,
+      description: c.description,
+    })),
     provenance: {
       moduleId: surface.moduleId,
       nodeName: surface.surfaceId,
@@ -223,10 +251,10 @@ export function evaluateDecisionSurface(
     meaningId: surface.surfaceId,
     semanticClassId: surface.defaultSemanticClassId,
     moduleId: surface.moduleId,
-    clauses: [],
+    clauses,
     ranking,
     evidence,
-    sourceIntent: { type: "decision-surface-ir", params: {} },
+    sourceIntent: surface.sourceIntent ?? { type: "decision-surface-ir", params: {} },
   };
 }
 

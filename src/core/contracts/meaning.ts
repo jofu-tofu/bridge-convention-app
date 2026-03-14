@@ -122,7 +122,13 @@ export interface CandidateTransform {
   readonly sourceModuleId: string;
   readonly reason: string;
   readonly surface?: MeaningSurface; // required when kind === "inject"
-  readonly newCall?: Call; // required when kind === "remap"
+  readonly newCall?: Call; // shorthand when remap only changes the call
+  readonly remapTo?: {
+    readonly meaningId?: string;
+    readonly semanticClassId?: string;
+    readonly encoderRef?: string;
+    readonly defaultCall?: Call;
+  };
 }
 
 /** Trace of a transform applied during arbitration. */

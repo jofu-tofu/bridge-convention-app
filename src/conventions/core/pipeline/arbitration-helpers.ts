@@ -1,4 +1,3 @@
-import type { CandidateTransform, TransformTrace } from "../../../core/contracts/meaning";
 import type {
   EncodedProposal,
   EliminationRecord,
@@ -8,12 +7,10 @@ import type {
   EliminationTrace,
   LegalityTrace,
   EncodingTrace,
-  TransformTraceEntry,
 } from "../../../core/contracts/provenance";
 import type { Call } from "../../../engine/types";
 import { BAND_PRIORITY } from "../../../core/contracts/meaning";
 import { evaluateGates, type GateId } from "./gate-order";
-import { callsMatch } from "../../../engine/call-helpers";
 import type { ArbitrationInput } from "./meaning-arbitrator";
 import { resolveEncoding } from "./encoder-resolver";
 import type { DeclaredEncoderKind } from "../../../core/contracts/agreement-module";
@@ -27,63 +24,6 @@ export interface ProposalResult {
   provenanceEncoding: EncodingTrace;
   /** Whether this should be added to encoded array even though eliminated (for acceptableSet). */
   addToEncoded: boolean;
-}
-
-/**
- * Process transforms into a suppress-ID set and trace arrays.
- * Pure: no side effects beyond returned values.
- * @deprecated Use `composeSurfaces()` from `surface-composer.ts` instead.
- * Transform handling has moved upstream of the pipeline.
- */
-export function buildSuppressSet(transforms?: readonly CandidateTransform[]): {
-  suppressIds: Set<string>;
-  transformTraces: TransformTrace[];
-  provenanceTransforms: TransformTraceEntry[];
-} {
-  const suppressIds = new Set<string>();
-  const transformTraces: TransformTrace[] = [];
-  const provenanceTransforms: TransformTraceEntry[] = [];
-
-  if (transforms) {
-    for (const t of transforms) {
-      if (t.kind === "suppress") {
-        suppressIds.add(t.targetId);
-        transformTraces.push({
-          transformId: t.transformId,
-          kind: t.kind,
-          targetId: t.targetId,
-          sourceModuleId: t.sourceModuleId,
-          reason: t.reason,
-        });
-        provenanceTransforms.push({
-          transformId: t.transformId,
-          kind: t.kind,
-          targetId: t.targetId,
-          sourceModuleId: t.sourceModuleId,
-          reason: t.reason,
-          affectedCandidateIds: undefined,
-        });
-      } else if (t.kind === "inject") {
-        transformTraces.push({
-          transformId: t.transformId,
-          kind: t.kind,
-          targetId: t.targetId,
-          sourceModuleId: t.sourceModuleId,
-          reason: t.reason,
-        });
-        provenanceTransforms.push({
-          transformId: t.transformId,
-          kind: t.kind,
-          targetId: t.targetId,
-          sourceModuleId: t.sourceModuleId,
-          reason: t.reason,
-          affectedCandidateIds: undefined,
-        });
-      }
-    }
-  }
-
-  return { suppressIds, transformTraces, provenanceTransforms };
 }
 
 /**
@@ -143,10 +83,14 @@ export function evaluateProposal(
         : "One or more clauses not satisfied",
     },
     {
+      // Obligation enforcement is handled at the strategy-chain level (createForcingFilter),
+      // not in pipeline gates.
       gateId: "obligation-satisfaction",
       passed: true,
     },
     {
+      // Encoder availability is subsumed by the concrete-legality gate's check of
+      // encodingResult.chosenCall.
       gateId: "encoder-availability",
       passed: true,
     },

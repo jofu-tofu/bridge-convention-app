@@ -74,9 +74,26 @@ export interface ConventionContribution {
   readonly transformsApplied: readonly string[];
 }
 
+/** Compact description of a class of hands consistent with constraints. */
+export interface HandArchetypeSummary {
+  readonly label: string;
+  readonly hcpRange: { readonly min: number; readonly max: number };
+  readonly shapePattern: string;
+  readonly frequency?: number;
+}
+
+/** A representative example hand from the consistent space. */
+export interface WitnessHand {
+  readonly description: string;
+  readonly hcp: number;
+}
+
 /** Seat-relative hand space summary for teaching context. */
 export interface SeatRelativeHandSpaceSummary {
   readonly seatLabel: string;
   readonly hcpRange: { readonly min: number; readonly max: number };
   readonly shapeDescription: string;
+  readonly partnerSummary?: string;
+  readonly archetypes?: readonly HandArchetypeSummary[];
+  readonly witnessHands?: readonly WitnessHand[];
 }

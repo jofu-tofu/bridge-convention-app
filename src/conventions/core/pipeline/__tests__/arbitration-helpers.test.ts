@@ -1,10 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
-  buildSuppressSet,
   evaluateProposal,
   classifyIntoSets,
 } from "../arbitration-helpers";
-import type { CandidateTransform } from "../../../../core/contracts/meaning";
 import type { EncodedProposal } from "../../../../core/contracts/module-surface";
 import { BidSuit } from "../../../../engine/types";
 import {
@@ -15,118 +13,6 @@ import {
   makeRanking,
   makeEligibility,
 } from "./pipeline-test-helpers";
-
-// ─── buildSuppressSet ───────────────────────────────────────
-
-describe("buildSuppressSet", () => {
-  it("returns empty set and no traces when no transforms provided", () => {
-    const result = buildSuppressSet(undefined);
-
-    expect(result.suppressIds.size).toBe(0);
-    expect(result.transformTraces).toHaveLength(0);
-    expect(result.provenanceTransforms).toHaveLength(0);
-  });
-
-  it("returns empty set and no traces for empty array", () => {
-    const result = buildSuppressSet([]);
-
-    expect(result.suppressIds.size).toBe(0);
-    expect(result.transformTraces).toHaveLength(0);
-    expect(result.provenanceTransforms).toHaveLength(0);
-  });
-
-  it("adds suppress transform targetId to suppress set and records traces", () => {
-    const transforms: CandidateTransform[] = [{
-      transformId: "t1",
-      kind: "suppress",
-      targetId: "stayman:ask-major",
-      sourceModuleId: "interference",
-      reason: "Opponent doubled",
-    }];
-
-    const result = buildSuppressSet(transforms);
-
-    expect(result.suppressIds.has("stayman:ask-major")).toBe(true);
-    expect(result.suppressIds.size).toBe(1);
-    expect(result.transformTraces).toHaveLength(1);
-    expect(result.transformTraces[0]!.kind).toBe("suppress");
-    expect(result.transformTraces[0]!.targetId).toBe("stayman:ask-major");
-    expect(result.provenanceTransforms).toHaveLength(1);
-    expect(result.provenanceTransforms[0]!.kind).toBe("suppress");
-  });
-
-  it("records inject transform traces but does not add to suppress set", () => {
-    const transforms: CandidateTransform[] = [{
-      transformId: "t2",
-      kind: "inject",
-      targetId: "bridge:penalty-double",
-      sourceModuleId: "interference",
-      reason: "Opponent overcalled",
-    }];
-
-    const result = buildSuppressSet(transforms);
-
-    expect(result.suppressIds.size).toBe(0);
-    expect(result.transformTraces).toHaveLength(1);
-    expect(result.transformTraces[0]!.kind).toBe("inject");
-    expect(result.provenanceTransforms).toHaveLength(1);
-    expect(result.provenanceTransforms[0]!.kind).toBe("inject");
-  });
-
-  it("aggregates multiple transforms correctly", () => {
-    const transforms: CandidateTransform[] = [
-      {
-        transformId: "t1",
-        kind: "suppress",
-        targetId: "a:meaning",
-        sourceModuleId: "mod-a",
-        reason: "reason-a",
-      },
-      {
-        transformId: "t2",
-        kind: "suppress",
-        targetId: "b:meaning",
-        sourceModuleId: "mod-b",
-        reason: "reason-b",
-      },
-    ];
-
-    const result = buildSuppressSet(transforms);
-
-    expect(result.suppressIds.size).toBe(2);
-    expect(result.suppressIds.has("a:meaning")).toBe(true);
-    expect(result.suppressIds.has("b:meaning")).toBe(true);
-    expect(result.transformTraces).toHaveLength(2);
-    expect(result.provenanceTransforms).toHaveLength(2);
-  });
-
-  it("handles mixed suppress + inject — only suppress IDs in set", () => {
-    const transforms: CandidateTransform[] = [
-      {
-        transformId: "t1",
-        kind: "suppress",
-        targetId: "suppress-me",
-        sourceModuleId: "mod",
-        reason: "suppress reason",
-      },
-      {
-        transformId: "t2",
-        kind: "inject",
-        targetId: "inject-me",
-        sourceModuleId: "mod",
-        reason: "inject reason",
-      },
-    ];
-
-    const result = buildSuppressSet(transforms);
-
-    expect(result.suppressIds.size).toBe(1);
-    expect(result.suppressIds.has("suppress-me")).toBe(true);
-    expect(result.suppressIds.has("inject-me")).toBe(false);
-    expect(result.transformTraces).toHaveLength(2);
-    expect(result.provenanceTransforms).toHaveLength(2);
-  });
-});
 
 // ─── evaluateProposal ───────────────────────────────────────
 

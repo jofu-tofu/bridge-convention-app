@@ -12,6 +12,7 @@ import type {
   LegalityTrace,
   EncodingTrace,
   ApplicabilityEvidence,
+  HandoffTrace,
 } from "../../../core/contracts/provenance";
 import type { MeaningProposal } from "../../../core/contracts/meaning";
 import { compareRanking, BAND_PRIORITY } from "../../../core/contracts/meaning";
@@ -22,6 +23,8 @@ import type {
   RejectionEvidence,
   AlternativeEvidence,
 } from "../../../core/contracts/evidence-bundle";
+import type { DeclaredEncoderKind } from "../../../core/contracts/agreement-module";
+import type { EncoderConfig } from "./encoder-resolver";
 
 /** Format a Call as a human-readable string for evidence output. */
 function formatCallForEvidence(call: Call): string {
@@ -36,8 +39,8 @@ export interface ArbitrationInput {
   readonly proposal: MeaningProposal;
   readonly surface: {
     readonly encoding: { readonly defaultCall: Call };
-    readonly encoderKind?: import("../../../core/contracts/agreement-module").DeclaredEncoderKind;
-    readonly encoderConfig?: import("./encoder-resolver").EncoderConfig;
+    readonly encoderKind?: DeclaredEncoderKind;
+    readonly encoderConfig?: EncoderConfig;
   };
 }
 
@@ -138,6 +141,7 @@ export function arbitrateMeanings(
   options?: {
     legalCalls?: readonly Call[];
     semanticClassAliases?: readonly { from: string; to: string }[];
+    handoffs?: readonly HandoffTrace[];
   },
 ): ArbitrationResult {
   const encoded: EncodedProposal[] = [];
@@ -230,7 +234,7 @@ export function arbitrateMeanings(
     legality: provenanceLegality,
     arbitration: arbitrationTraces,
     eliminations: provenanceEliminations,
-    handoffs: [], // Handoffs not yet tracked
+    handoffs: options?.handoffs ?? [],
   };
 
   // Build EvidenceBundleIR
@@ -259,21 +263,40 @@ export function arbitrateMeanings(
         observedValue: c.observedValue,
         threshold: c.value,
       })),
+      negatableFailures: failedClauses.map((c): ConditionEvidenceIR => ({
+        conditionId: c.factId,
+        factId: c.factId,
+        satisfied: false,
+        observedValue: c.observedValue,
+        threshold: c.value,
+      })),
       moduleId: input?.proposal.moduleId ?? "unknown",
     };
   });
 
   const alternativeEvidence: AlternativeEvidence[] = finalTruthSet
     .filter((e) => e !== selected)
-    .map((e) => ({
-      meaningId: e.proposal.meaningId,
-      call: formatCallForEvidence(e.call),
-      ranking: {
-        band: e.proposal.ranking.recommendationBand,
-        specificity: e.proposal.ranking.specificity,
-      },
-      reason: "truth-set-member-not-selected",
-    }));
+    .map((e) => {
+      const selectedFacts = selected ? new Set(selected.proposal.clauses.map(c => c.factId)) : new Set<string>();
+      return {
+        meaningId: e.proposal.meaningId,
+        call: formatCallForEvidence(e.call),
+        ranking: {
+          band: e.proposal.ranking.recommendationBand,
+          specificity: e.proposal.ranking.specificity,
+        },
+        reason: "truth-set-member-not-selected",
+        conditionDelta: e.proposal.clauses
+          .filter(c => !selectedFacts.has(c.factId))
+          .map((c): ConditionEvidenceIR => ({
+            conditionId: c.factId,
+            factId: c.factId,
+            satisfied: c.satisfied,
+            observedValue: c.observedValue,
+            threshold: c.value,
+          })),
+      };
+    });
 
   const evidenceBundle: EvidenceBundleIR = {
     matched: matchedEvidence,

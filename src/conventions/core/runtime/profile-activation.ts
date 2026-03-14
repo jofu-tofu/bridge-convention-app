@@ -1,7 +1,9 @@
 import type { SystemProfileIR, AttachmentIR } from "../../../core/contracts/agreement-module";
-import type { AuctionPatternIR } from "../../../core/contracts/predicate-surfaces";
-import type { Auction } from "../../../engine/types";
+import type { AuctionPatternIR, PublicGuardIR } from "../../../core/contracts/predicate-surfaces";
+import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { Auction, Call, Seat } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
+import { partnerSeat, nextSeat } from "../../../engine/constants";
 
 const STRAIN_MAP: Record<string, BidSuit> = {
   C: BidSuit.Clubs,
@@ -10,6 +12,38 @@ const STRAIN_MAP: Record<string, BidSuit> = {
   S: BidSuit.Spades,
   NT: BidSuit.NoTrump,
 };
+
+/** Convert a Call to its canonical string representation (e.g. "1NT", "P", "X", "XX"). */
+function callToString(call: Call): string {
+  if (call.type === "bid") return `${call.level}${call.strain}`;
+  if (call.type === "pass") return "P";
+  if (call.type === "double") return "X";
+  return "XX"; // redouble
+}
+
+/**
+ * Resolve a semantic role (e.g. "opener", "responder") to a compass Seat
+ * based on auction history. Returns undefined if the role cannot be resolved
+ * (e.g. no bid has been made yet).
+ */
+function resolveAuctionRole(role: string, auction: Auction): Seat | undefined {
+  const openerEntry = auction.entries.find(e => e.call.type === "bid");
+  if (!openerEntry) return undefined;
+
+  const openerSeat = openerEntry.seat;
+  switch (role) {
+    case "opener":
+      return openerSeat;
+    case "responder":
+      return partnerSeat(openerSeat);
+    case "overcaller":
+      return nextSeat(openerSeat);
+    case "advancer":
+      return partnerSeat(nextSeat(openerSeat));
+    default:
+      return undefined;
+  }
+}
 
 /**
  * Check whether the auction entries start with an expected sequence of call strings.
@@ -43,7 +77,8 @@ function matchesSequence(auction: Auction, calls: readonly string[]): boolean {
 /**
  * Evaluate an AuctionPatternIR against the current auction.
  * - sequence: check if auction starts with these calls
- * - contains / by-role: stub as always-true (future implementation)
+ * - contains: check if auction contains the specified call (optionally by role)
+ * - by-role: check if the last call by the specified role matches
  */
 function matchesAuctionPattern(
   pattern: AuctionPatternIR,
@@ -52,13 +87,77 @@ function matchesAuctionPattern(
   switch (pattern.kind) {
     case "sequence":
       return matchesSequence(auction, pattern.calls);
-    case "contains":
-      // Stub: always true for now
-      return true;
-    case "by-role":
-      // Stub: always true for now
-      return true;
+    case "contains": {
+      // Check if any entry in the auction matches the specified call,
+      // optionally restricted to a specific role (e.g. "opener", "responder")
+      const roleSeat = pattern.byRole
+        ? resolveAuctionRole(pattern.byRole, auction)
+        : undefined;
+      if (pattern.byRole && roleSeat === undefined) return false;
+
+      return auction.entries.some(e => {
+        if (pattern.byRole && e.seat !== roleSeat) return false;
+        return callToString(e.call) === pattern.call;
+      });
+    }
+    case "by-role": {
+      // Check if the last call by the specified role matches lastCall
+      const seat = resolveAuctionRole(pattern.role, auction);
+      if (seat === undefined) return false;
+
+      // Find the last entry by this seat
+      for (let i = auction.entries.length - 1; i >= 0; i--) {
+        const entry = auction.entries[i]!;
+        if (entry.seat === seat) {
+          return callToString(entry.call) === pattern.lastCall;
+        }
+      }
+      return false; // role's seat never acted
+    }
   }
+}
+
+/**
+ * Evaluate a PublicGuardIR against a public snapshot's registers.
+ * Returns true if the guard condition is satisfied.
+ */
+function evaluatePublicGuard(
+  guard: PublicGuardIR,
+  publicRegisters: Readonly<Record<string, unknown>>,
+): boolean {
+  switch (guard.operator) {
+    case "exists":
+      return guard.field in publicRegisters;
+    case "eq":
+      return guard.field in publicRegisters && publicRegisters[guard.field] === guard.value;
+    case "neq":
+      return guard.field in publicRegisters && publicRegisters[guard.field] !== guard.value;
+    case "in": {
+      if (!Array.isArray(guard.value)) return false;
+      if (!(guard.field in publicRegisters)) return false;
+      return (guard.value as unknown[]).includes(publicRegisters[guard.field]);
+    }
+  }
+}
+
+/**
+ * Check whether all required meaning family IDs have been committed to
+ * in the public record. A meaning is "visible" when at least one
+ * PublicConstraint with a matching sourceMeaning exists in publicCommitments.
+ */
+function hasVisibleMeanings(
+  requiredIds: readonly string[],
+  publicCommitments: readonly { readonly sourceMeaning?: string }[] | undefined,
+): boolean {
+  if (!publicCommitments || publicCommitments.length === 0) return false;
+
+  const committedMeanings = new Set(
+    publicCommitments
+      .map((c) => c.sourceMeaning)
+      .filter((m): m is string => m !== undefined),
+  );
+
+  return requiredIds.every((id) => committedMeanings.has(id));
 }
 
 /**
@@ -68,6 +167,7 @@ function attachmentMatches(
   attachment: AttachmentIR,
   auction: Auction,
   capabilities: Readonly<Record<string, string>>,
+  publicSnapshot?: PublicSnapshot,
 ): boolean {
   // whenAuction check
   if (attachment.whenAuction) {
@@ -85,8 +185,21 @@ function attachmentMatches(
     }
   }
 
-  // whenPublic: stub as always-true
-  // requiresVisibleMeanings: stub as always-true
+  // whenPublic: evaluate guard against public snapshot registers
+  if (attachment.whenPublic) {
+    if (!publicSnapshot) return false;
+    if (!evaluatePublicGuard(attachment.whenPublic, publicSnapshot.publicRegisters)) {
+      return false;
+    }
+  }
+
+  // requiresVisibleMeanings: all required meaning IDs must appear in publicCommitments
+  if (attachment.requiresVisibleMeanings) {
+    if (!publicSnapshot) return false;
+    if (!hasVisibleMeanings(attachment.requiresVisibleMeanings, publicSnapshot.publicCommitments)) {
+      return false;
+    }
+  }
 
   return true;
 }
@@ -97,12 +210,14 @@ function attachmentMatches(
  * A module is active if at least one of its attachments matches ALL its conditions:
  * - whenAuction: auction pattern match
  * - requiresCapabilities: all capabilities present in the provided set
- * - whenPublic / requiresVisibleMeanings: stubbed as always-true
+ * - whenPublic: public snapshot register guard
+ * - requiresVisibleMeanings: all required meaning IDs committed in public record
  *
  * @param profile - The system profile to evaluate
  * @param auction - Current auction state
  * @param _seat - The seat being evaluated (reserved for future use)
  * @param capabilities - Available capabilities (defaults to empty)
+ * @param publicSnapshot - Optional public state for whenPublic / requiresVisibleMeanings
  * @returns Module IDs where at least one attachment matches
  */
 export function resolveActiveModules(
@@ -110,12 +225,13 @@ export function resolveActiveModules(
   auction: Auction,
   _seat: unknown,
   capabilities: Readonly<Record<string, string>> = {},
+  publicSnapshot?: PublicSnapshot,
 ): readonly string[] {
   const activeIds: string[] = [];
 
   for (const module of profile.modules) {
     const hasMatchingAttachment = module.attachments.some((attachment) =>
-      attachmentMatches(attachment, auction, capabilities),
+      attachmentMatches(attachment, auction, capabilities, publicSnapshot),
     );
     if (hasMatchingAttachment) {
       activeIds.push(module.moduleId);

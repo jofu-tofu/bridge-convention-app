@@ -125,20 +125,20 @@ describe("composeSurfaces", () => {
 
   it("logs diagnostic for unrecognized transform kind", () => {
     const surfaces = [makeSurface()];
+    // Force a truly unrecognized kind via type assertion
     const unknownTransform = {
       transformId: "t1",
-      kind: "remap" as const,
+      kind: "frobnicate" as unknown as "suppress",
       targetId: "x",
       sourceModuleId: "mod",
-      reason: "remap",
-    };
-    // remap is on CandidateTransform but not handled by composer
+      reason: "unknown",
+    } satisfies CandidateTransform;
     const result = composeSurfaces(surfaces, [unknownTransform]);
 
     expect(result.composedSurfaces).toEqual(surfaces);
     expect(result.diagnostics).toHaveLength(1);
     expect(result.diagnostics[0]!.level).toBe("info");
-    expect(result.diagnostics[0]!.message).toContain("remap");
+    expect(result.diagnostics[0]!.message).toContain("frobnicate");
   });
 
   it("emits info diagnostic for each successfully suppressed surface", () => {
@@ -177,12 +177,246 @@ describe("composeSurfaces", () => {
     };
     const result = composeSurfaces(surfaces, [remapTransform]);
 
+    // Remap is now handled — surface encoding should change
+    expect(result.composedSurfaces).toHaveLength(1);
+    expect(result.composedSurfaces[0]!.encoding.defaultCall).toEqual({
+      type: "bid",
+      level: 3,
+      strain: BidSuit.Clubs,
+    });
+    expect(result.appliedTransforms).toHaveLength(1);
+    expect(result.appliedTransforms[0]!.kind).toBe("remap");
+
     const remapDiags = result.diagnostics.filter(
-      (d) => d.message.includes("remap"),
+      (d) => d.message.includes("Remap"),
     );
     expect(remapDiags).toHaveLength(1);
     expect(remapDiags[0]!.level).toBe("info");
     expect(remapDiags[0]!.message).toContain("remap-1");
+  });
+
+  // ─── inject transforms ─────────────────────────────────────
+
+  it("inject transform adds surface to composed set", () => {
+    const existing = [makeSurface({ meaningId: "existing" })];
+    const injectedSurface = makeSurface({
+      meaningId: "injected:new",
+      moduleId: "overlay-mod",
+      encoding: { defaultCall: { type: "bid", level: 4, strain: BidSuit.Hearts } },
+    });
+    const injectTransform: CandidateTransform = {
+      transformId: "inject-1",
+      kind: "inject",
+      targetId: "injected:new",
+      sourceModuleId: "overlay-mod",
+      reason: "Inject competitive bid",
+      surface: injectedSurface,
+    };
+
+    const result = composeSurfaces(existing, [injectTransform]);
+
+    expect(result.composedSurfaces).toHaveLength(2);
+    expect(result.composedSurfaces[0]!.meaningId).toBe("existing");
+    expect(result.composedSurfaces[1]!.meaningId).toBe("injected:new");
+    expect(result.appliedTransforms).toHaveLength(1);
+    expect(result.appliedTransforms[0]!.kind).toBe("inject");
+    expect(result.appliedTransforms[0]!.targetId).toBe("injected:new");
+    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["injected:new"]);
+  });
+
+  it("inject transform without surface field emits diagnostic", () => {
+    const existing = [makeSurface({ meaningId: "existing" })];
+    const badInject: CandidateTransform = {
+      transformId: "inject-bad",
+      kind: "inject",
+      targetId: "phantom",
+      sourceModuleId: "overlay-mod",
+      reason: "Missing surface payload",
+      // no surface field
+    };
+
+    const result = composeSurfaces(existing, [badInject]);
+
+    // Should not add anything
+    expect(result.composedSurfaces).toHaveLength(1);
+    expect(result.composedSurfaces[0]!.meaningId).toBe("existing");
+    expect(result.appliedTransforms).toHaveLength(0);
+
+    // Should emit a warning
+    const warnDiags = result.diagnostics.filter((d) => d.level === "warn");
+    expect(warnDiags).toHaveLength(1);
+    expect(warnDiags[0]!.message).toContain("inject-bad");
+    expect(warnDiags[0]!.message).toContain("surface");
+  });
+
+  // ─── remap transforms ──────────────────────────────────────
+
+  it("remap transform changes encoding on matching surface", () => {
+    const surfaces = [
+      makeSurface({
+        meaningId: "remap:target",
+        encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.Diamonds } },
+      }),
+      makeSurface({ meaningId: "untouched" }),
+    ];
+    const remapTransform: CandidateTransform = {
+      transformId: "remap-enc",
+      kind: "remap",
+      targetId: "remap:target",
+      sourceModuleId: "override-mod",
+      reason: "Transfer encoding change",
+      newCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+    };
+
+    const result = composeSurfaces(surfaces, [remapTransform]);
+
+    expect(result.composedSurfaces).toHaveLength(2);
+    const remapped = result.composedSurfaces.find((s) => s.meaningId === "remap:target")!;
+    expect(remapped.encoding.defaultCall).toEqual({
+      type: "bid",
+      level: 2,
+      strain: BidSuit.Diamonds,
+    });
+    // Untouched surface unchanged
+    const kept = result.composedSurfaces.find((s) => s.meaningId === "untouched")!;
+    expect(kept.encoding.defaultCall).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
+    expect(result.appliedTransforms).toHaveLength(1);
+    expect(result.appliedTransforms[0]!.kind).toBe("remap");
+    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["remap:target"]);
+  });
+
+  it("remap transform by semanticClassId applies to all matching surfaces", () => {
+    const surfaces = [
+      makeSurface({
+        meaningId: "a",
+        semanticClassId: "bridge:transfer",
+        encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Diamonds } },
+      }),
+      makeSurface({
+        meaningId: "b",
+        semanticClassId: "bridge:transfer",
+        encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Hearts } },
+      }),
+      makeSurface({ meaningId: "c" }),
+    ];
+    const remapTransform: CandidateTransform = {
+      transformId: "remap-class",
+      kind: "remap",
+      targetId: "bridge:transfer",
+      sourceModuleId: "override-mod",
+      reason: "Remap all transfers",
+      remapTo: {
+        defaultCall: { type: "bid", level: 3, strain: BidSuit.NoTrump },
+      },
+    };
+
+    const result = composeSurfaces(surfaces, [remapTransform]);
+
+    expect(result.composedSurfaces).toHaveLength(3);
+    const remappedA = result.composedSurfaces.find((s) => s.meaningId === "a")!;
+    const remappedB = result.composedSurfaces.find((s) => s.meaningId === "b")!;
+    expect(remappedA.encoding.defaultCall).toEqual({ type: "bid", level: 3, strain: BidSuit.NoTrump });
+    expect(remappedB.encoding.defaultCall).toEqual({ type: "bid", level: 3, strain: BidSuit.NoTrump });
+    expect(result.appliedTransforms).toHaveLength(1);
+    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["a", "b"]);
+  });
+
+  it("remap on non-existent target emits warning diagnostic", () => {
+    const surfaces = [makeSurface({ meaningId: "a" })];
+    const remapTransform: CandidateTransform = {
+      transformId: "remap-miss",
+      kind: "remap",
+      targetId: "nonexistent:target",
+      sourceModuleId: "mod",
+      reason: "Remap nothing",
+      newCall: { type: "bid", level: 3, strain: BidSuit.Spades },
+    };
+
+    const result = composeSurfaces(surfaces, [remapTransform]);
+
+    expect(result.composedSurfaces).toHaveLength(1);
+    expect(result.composedSurfaces[0]!.meaningId).toBe("a");
+    expect(result.appliedTransforms).toHaveLength(0);
+
+    const warnDiags = result.diagnostics.filter((d) => d.level === "warn");
+    expect(warnDiags).toHaveLength(1);
+    expect(warnDiags[0]!.message).toContain("remap-miss");
+    expect(warnDiags[0]!.message).toContain("nonexistent:target");
+  });
+
+  // ─── mixed transforms ──────────────────────────────────────
+
+  it("mixed transforms (suppress + inject + remap) compose correctly", () => {
+    const surfaces = [
+      makeSurface({
+        meaningId: "keep",
+        encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.Clubs } },
+      }),
+      makeSurface({ meaningId: "remove" }),
+      makeSurface({
+        meaningId: "remap-me",
+        encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Diamonds } },
+      }),
+    ];
+
+    const injectedSurface = makeSurface({
+      meaningId: "fresh:inject",
+      encoding: { defaultCall: { type: "bid", level: 4, strain: BidSuit.Spades } },
+    });
+
+    const transforms: CandidateTransform[] = [
+      makeSuppress("remove", "suppress-1"),
+      {
+        transformId: "inject-1",
+        kind: "inject",
+        targetId: "fresh:inject",
+        sourceModuleId: "overlay",
+        reason: "Add competitive bid",
+        surface: injectedSurface,
+      },
+      {
+        transformId: "remap-1",
+        kind: "remap",
+        targetId: "remap-me",
+        sourceModuleId: "override",
+        reason: "Change call",
+        newCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+      },
+    ];
+
+    const result = composeSurfaces(surfaces, transforms);
+
+    // "remove" suppressed, "remap-me" remapped, "fresh:inject" injected
+    expect(result.composedSurfaces).toHaveLength(3);
+
+    const ids = result.composedSurfaces.map((s) => s.meaningId);
+    expect(ids).toContain("keep");
+    expect(ids).toContain("remap-me");
+    expect(ids).toContain("fresh:inject");
+    expect(ids).not.toContain("remove");
+
+    // Verify remap applied
+    const remapped = result.composedSurfaces.find((s) => s.meaningId === "remap-me")!;
+    expect(remapped.encoding.defaultCall).toEqual({
+      type: "bid",
+      level: 3,
+      strain: BidSuit.Diamonds,
+    });
+
+    // Verify injected surface is intact
+    const injected = result.composedSurfaces.find((s) => s.meaningId === "fresh:inject")!;
+    expect(injected.encoding.defaultCall).toEqual({
+      type: "bid",
+      level: 4,
+      strain: BidSuit.Spades,
+    });
+
+    // All three transform types recorded
+    expect(result.appliedTransforms).toHaveLength(3);
+    const kinds = result.appliedTransforms.map((t) => t.kind);
+    expect(kinds).toContain("suppress");
+    expect(kinds).toContain("inject");
+    expect(kinds).toContain("remap");
   });
 });
 

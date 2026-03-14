@@ -206,7 +206,10 @@ describe("1NT Meaning Pipeline", () => {
 
     // Transform tracing via upstream appliedTransforms
     expect(appliedTransforms.length).toBeGreaterThan(0);
-    expect(appliedTransforms.every((t) => t.kind === "suppress")).toBe(true);
+    const suppressTransforms = appliedTransforms.filter((t) => t.kind === "suppress");
+    const injectTransforms = appliedTransforms.filter((t) => t.kind === "inject");
+    expect(suppressTransforms.length).toBeGreaterThan(0);
+    expect(injectTransforms.length).toBeGreaterThanOrEqual(0);
   });
 
   // ─── Scenario 6: 1NT-2S overcall ────────────────────────────

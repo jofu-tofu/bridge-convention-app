@@ -140,3 +140,10 @@ export * from "./dialogue";
 
 // ── Intent (sub-barrel) ─────────────────────────────────────────────────
 export * from "./intent";
+
+// ── Bundle (sub-barrel) ─────────────────────────────────────────────────
+export { findBundleForConvention } from "./bundle";
+export type { ConventionBundle } from "./bundle";
+
+// ── Fact Evaluator ──────────────────────────────────────────────────────
+export { createSharedFactCatalog } from "./pipeline/fact-evaluator";

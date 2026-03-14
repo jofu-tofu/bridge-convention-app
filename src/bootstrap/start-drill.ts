@@ -8,14 +8,18 @@ import {
   type Hand,
 } from "../engine/types";
 import type { DrillBundle } from "./types";
-import type { BiddingStrategy } from "../core/contracts";
+import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
 import { createDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
 import { conventionToStrategy } from "../strategy/bidding/convention-strategy";
+import { meaningBundleToStrategy } from "../strategy/bidding/meaning-strategy";
 import { getConvention } from "../conventions/core";
 import { evaluateHand } from "../engine/hand-evaluator";
 import type { BeliefData } from "../core/contracts";
 import { createInferenceEngine } from "../inference/inference-engine";
+import { findBundleForConvention, createSharedFactCatalog } from "../conventions/core";
+import { createFactCatalog } from "../core/contracts/fact-catalog";
+import { createPosteriorEngine } from "../inference/posterior";
 
 /** 180° table rotation: N↔S, E↔W */
 export function rotateSeat180(seat: Seat): Seat {
@@ -95,16 +99,44 @@ export async function startDrill(
   options?: {
     beliefProvider?: (ctx: BiddingContext) => BeliefData | undefined;
     lookupConvention?: ConventionLookup;
+    opponentConventionId?: string;
   },
 ): Promise<DrillBundle> {
   const lookup = options?.lookupConvention ?? getConvention;
   const config = createDrillConfig(convention.id, userSeat, {
     opponentBidding: true,
+    opponentConventionId: options?.opponentConventionId,
     beliefProvider: options?.beliefProvider,
     lookupConvention: options?.lookupConvention,
   });
   const session = createDrillSession(config);
-  const strategy = conventionToStrategy(convention, { lookupConvention: options?.lookupConvention });
+
+  // Build strategy: use meaning pipeline when convention belongs to a bundle with surfaces
+  let strategy: ConventionBiddingStrategy;
+  const bundle = findBundleForConvention(convention.id);
+  if (bundle?.meaningSurfaces && bundle.meaningSurfaces.length > 0) {
+    const factCatalog = bundle.factExtensions && bundle.factExtensions.length > 0
+      ? createFactCatalog(createSharedFactCatalog(), ...bundle.factExtensions)
+      : createSharedFactCatalog();
+    strategy = meaningBundleToStrategy(
+      bundle.meaningSurfaces.map((g) => ({
+        moduleId: g.groupId,
+        surfaces: [...g.surfaces],
+      })),
+      bundle.id,
+      {
+        name: bundle.name,
+        factCatalog,
+        surfaceRouter: bundle.surfaceRouter,
+        conversationMachine: bundle.conversationMachine,
+        posteriorEngine: createPosteriorEngine(),
+        surfaceRouterForCommitments: bundle.surfaceRouter,
+        explanationCatalog: bundle.explanationCatalog,
+      },
+    );
+  } else {
+    strategy = conventionToStrategy(convention, { lookupConvention: options?.lookupConvention });
+  }
 
   // Resolve dealer randomization
   let resolvedConstraints = convention.dealConstraints;
@@ -126,7 +158,8 @@ export async function startDrill(
   if (previewAuction && dealerRotated) {
     previewAuction = rotateAuction(previewAuction);
   }
-  const opponentConvention = lookup("sayc");
+  const opponentConventionId = options?.opponentConventionId ?? "sayc";
+  const opponentConvention = lookup(opponentConventionId);
   const opponentStrategy = conventionToStrategy(
     opponentConvention,
     { lookupConvention: options?.lookupConvention },

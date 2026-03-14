@@ -34,9 +34,6 @@ export interface ConventionOverlayPatch {
   readonly triggerOverrides?: ReadonlyMap<string, readonly SemanticTrigger[]>;
 }
 
-/** @deprecated Use ConventionOverlayPatch instead. */
-export type ConventionOverlay = ConventionOverlayPatch;
-
 /**
  * Validate overlay patches against a protocol at registration time.
  * Throws if any overlay references a round name not in the protocol.
@@ -99,5 +96,3 @@ export function collectTriggerOverrides(
   return merged;
 }
 
-/** @deprecated Use validateOverlayPatches instead. */
-export const validateOverlays = validateOverlayPatches;

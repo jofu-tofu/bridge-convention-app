@@ -1,5 +1,6 @@
 import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { Call } from "../../../engine/types";
 import type {
   ArbitrationResult,
   SurfaceEvaluationResult,
@@ -10,7 +11,7 @@ import type { TransformTraceEntry, DecisionProvenance } from "../../../core/cont
 
 /**
  * Compose surfaces by applying transforms upstream of the pipeline.
- * Currently handles `suppress` transforms; `inject` with surfaces is deferred.
+ * Handles `suppress`, `inject`, and `remap` transforms.
  * Unrecognized transform kinds emit a diagnostic.
  */
 export function composeSurfaces(
@@ -24,39 +25,48 @@ export function composeSurfaces(
   const appliedTransforms: TransformApplication[] = [];
   const diagnostics: SurfaceCompositionDiagnostic[] = [];
 
-  // Build suppress-ID set
-  const suppressIds = new Set<string>();
+  // Partition transforms by kind
   const suppressTransforms: CandidateTransform[] = [];
+  const injectTransforms: CandidateTransform[] = [];
+  const remapTransforms: CandidateTransform[] = [];
 
   for (const t of transforms) {
-    if (t.kind === "suppress") {
-      suppressIds.add(t.targetId);
-      suppressTransforms.push(t);
-    } else {
-      // inject, remap, etc. — not handled at surface level yet
-      diagnostics.push({
-        level: "info",
-        message: `Transform kind "${t.kind}" (${t.transformId}) not handled by surface composer — passed through`,
-      });
+    switch (t.kind) {
+      case "suppress":
+        suppressTransforms.push(t);
+        break;
+      case "inject":
+        injectTransforms.push(t);
+        break;
+      case "remap":
+        remapTransforms.push(t);
+        break;
+      default:
+        diagnostics.push({
+          level: "info",
+          message: `Transform kind "${String(t.kind)}" (${t.transformId}) not handled by surface composer — passed through`,
+        });
     }
   }
 
-  // Filter surfaces and track which meaningIds were affected per transform
-  const composedSurfaces: MeaningSurface[] = [];
+  // ── Phase 1: Suppress ───────────────────────────────────────
+  const suppressIds = new Set<string>(suppressTransforms.map((t) => t.targetId));
+
+  const afterSuppress: MeaningSurface[] = [];
   const affectedByTarget = new Map<string, string[]>(); // targetId → meaningId[]
 
   for (const surface of surfaces) {
-    const matchedTarget = findMatchingSuppress(surface, suppressIds);
+    const matchedTarget = findMatchingTarget(surface, suppressIds);
     if (matchedTarget !== null) {
       const affected = affectedByTarget.get(matchedTarget) ?? [];
       affected.push(surface.meaningId);
       affectedByTarget.set(matchedTarget, affected);
     } else {
-      composedSurfaces.push(surface);
+      afterSuppress.push(surface);
     }
   }
 
-  // Build appliedTransforms and detect unmatched suppress targets
+  // Record suppress appliedTransforms and diagnostics
   for (const t of suppressTransforms) {
     const affected = affectedByTarget.get(t.targetId);
     if (affected && affected.length > 0) {
@@ -80,17 +90,91 @@ export function composeSurfaces(
     }
   }
 
+  // ── Phase 2: Remap ─────────────────────────────────────────
+  let composedSurfaces = afterSuppress;
+
+  for (const t of remapTransforms) {
+    const remapCall = resolveRemapCall(t);
+    const remapTargetIds = new Set<string>([t.targetId]);
+    const affectedIds: string[] = [];
+
+    composedSurfaces = composedSurfaces.map((surface) => {
+      const matched = findMatchingTarget(surface, remapTargetIds);
+      if (matched === null) return surface;
+      affectedIds.push(surface.meaningId);
+
+      // Apply encoding remap — create a new surface with updated encoding
+      const newEncoding = remapCall
+        ? { ...surface.encoding, defaultCall: remapCall }
+        : surface.encoding;
+
+      return { ...surface, encoding: newEncoding } as MeaningSurface;
+    });
+
+    if (affectedIds.length > 0) {
+      appliedTransforms.push({
+        transformId: t.transformId,
+        kind: "remap",
+        targetId: t.targetId,
+        sourceModuleId: t.sourceModuleId,
+        reason: t.reason,
+        affectedMeaningIds: affectedIds,
+      });
+      diagnostics.push({
+        level: "info",
+        message: `Remapped surface "${t.targetId}" via transform "${t.transformId}" from module "${t.sourceModuleId}" (affected: ${affectedIds.join(", ")})`,
+      });
+    } else {
+      diagnostics.push({
+        level: "warn",
+        message: `Remap transform "${t.transformId}" targets "${t.targetId}" but no matching surface found`,
+      });
+    }
+  }
+
+  // ── Phase 3: Inject ─────────────────────────────────────────
+  for (const t of injectTransforms) {
+    if (!t.surface) {
+      diagnostics.push({
+        level: "warn",
+        message: `Inject transform "${t.transformId}" missing required surface field — skipped`,
+      });
+      continue;
+    }
+
+    composedSurfaces = [...composedSurfaces, t.surface];
+    appliedTransforms.push({
+      transformId: t.transformId,
+      kind: "inject",
+      targetId: t.targetId,
+      sourceModuleId: t.sourceModuleId,
+      reason: t.reason,
+      affectedMeaningIds: [t.surface.meaningId],
+    });
+    diagnostics.push({
+      level: "info",
+      message: `Injected surface "${t.surface.meaningId}" via transform "${t.transformId}" from module "${t.sourceModuleId}"`,
+    });
+  }
+
   return { composedSurfaces, appliedTransforms, diagnostics };
 }
 
-/** Check if a surface matches any suppress target (by meaningId or semanticClassId). */
-function findMatchingSuppress(
+/** Check if a surface matches a target (by meaningId or semanticClassId). */
+function findMatchingTarget(
   surface: MeaningSurface,
-  suppressIds: Set<string>,
+  targetIds: Set<string>,
 ): string | null {
-  if (suppressIds.has(surface.meaningId)) return surface.meaningId;
-  if (surface.semanticClassId && suppressIds.has(surface.semanticClassId)) return surface.semanticClassId;
+  if (targetIds.has(surface.meaningId)) return surface.meaningId;
+  if (surface.semanticClassId && targetIds.has(surface.semanticClassId)) return surface.semanticClassId;
   return null;
+}
+
+/** Resolve the effective Call for a remap transform (newCall takes precedence over remapTo.defaultCall). */
+function resolveRemapCall(t: CandidateTransform): Call | undefined {
+  if (t.newCall) return t.newCall;
+  if (t.remapTo?.defaultCall) return t.remapTo.defaultCall;
+  return undefined;
 }
 
 /**

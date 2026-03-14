@@ -2,6 +2,7 @@ import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import type {
   DecisionSurfaceIR,
   PriorityClass,
+  FactConstraintIR,
 } from "../../../core/contracts/agreement-module";
 import type { RecommendationBand } from "../../../core/contracts/meaning";
 
@@ -33,6 +34,13 @@ function bandToPriorityClass(band: RecommendationBand): PriorityClass {
  * appropriate defaults.
  */
 export function adaptMeaningSurface(surface: MeaningSurface): DecisionSurfaceIR {
+  // Convert MeaningSurfaceClause[] to FactConstraintIR[] for inline evaluation
+  const inlineClauses: FactConstraintIR[] = surface.clauses.map((c) => ({
+    factId: c.factId,
+    operator: c.operator,
+    value: c.value,
+  }));
+
   return {
     surfaceId: surface.meaningId,
     moduleId: surface.moduleId,
@@ -45,6 +53,12 @@ export function adaptMeaningSurface(surface: MeaningSurface): DecisionSurfaceIR 
     exclusivityGroup: undefined,
     defaultSemanticClassId: surface.semanticClassId,
     defaultPriorityClass: bandToPriorityClass(surface.ranking.recommendationBand),
+    inlineClauses: inlineClauses.length > 0 ? inlineClauses : undefined,
+    teachingLabel: surface.teachingLabel,
+    defaultCall: surface.encoding.defaultCall,
+    sourceIntent: surface.sourceIntent,
+    intraModuleOrder: surface.ranking.intraModuleOrder,
+    specificity: surface.ranking.specificity,
   };
 }
 

@@ -2,12 +2,15 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createDrillConfig } from "../config-factory";
 import { Seat } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
+import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
 import { staymanConfig } from "../../conventions/definitions/stayman";
 import { bergenConfig } from "../../conventions/definitions/bergen-raises";
 import { saycConfig } from "../../conventions/definitions/sayc";
+import { ntBundle } from "../../conventions/definitions/nt-bundle";
 
 beforeEach(() => {
   clearRegistry();
+  clearBundleRegistry();
 });
 
 describe("createDrillConfig", () => {
@@ -112,6 +115,30 @@ describe("createDrillConfig", () => {
       expect(eastStrategy.id).toContain("chain:");
       expect(eastStrategy.id).toContain("convention:sayc");
       expect(eastStrategy.id).toContain("natural-fallback");
+    }
+  });
+
+  it("dispatches to meaning pipeline when convention belongs to a registered bundle with meaningSurfaces", () => {
+    registerConvention(staymanConfig);
+    registerBundle(ntBundle);
+    const config = createDrillConfig("stayman", Seat.South);
+    const northStrategy = config.seatStrategies[Seat.North];
+    expect(northStrategy).not.toBe("user");
+    if (northStrategy !== "user") {
+      // Meaning pipeline strategy ID uses the bundle ID
+      expect(northStrategy.id).toContain("nt-bundle");
+    }
+  });
+
+  it("falls back to tree pipeline when convention has no registered bundle", () => {
+    registerConvention(staymanConfig);
+    // Do NOT register ntBundle — no bundle available
+    const config = createDrillConfig("stayman", Seat.South);
+    const northStrategy = config.seatStrategies[Seat.North];
+    expect(northStrategy).not.toBe("user");
+    if (northStrategy !== "user") {
+      // Tree pipeline uses convention:stayman ID
+      expect(northStrategy.id).toContain("convention:stayman");
     }
   });
 

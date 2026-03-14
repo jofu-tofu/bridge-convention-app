@@ -1,6 +1,7 @@
 import type { AuctionPatternIR, PublicGuardIR } from "./predicate-surfaces";
 import type { CandidateTransform, SemanticClassId } from "./meaning";
 import type { LatentBranchSet } from "./posterior";
+import type { Call } from "../../engine/types";
 
 // ─── Module classification ──────────────────────────────────
 export type ActivationKind = "auction-pattern" | "host-attachment" | "invoke-only";
@@ -11,9 +12,10 @@ export type PriorityClass = "obligatory" | "preferredConventional" | "preferredN
                           | "neutralCorrect" | "fallbackCorrect";
 
 // ─── DecisionSurfaceIR ─────────────────────────────────────
-// ** NOTE: This is a FUTURE IR contract type. The runtime (Phase 4) operates on MeaningSurface[]
-// because that's what the existing pipeline functions consume. DecisionSurfaceIR becomes the
-// migration target when the pipeline is updated to consume richer surfaces. **
+// The primary IR contract type for decision surfaces. The runtime evaluates these
+// through the meaning pipeline. When decisionProgram === "clause-evaluator" and
+// inlineClauses are provided, the pipeline evaluates them against facts.
+// Other decision programs remain as a future extension point.
 export interface DecisionSurfaceIR {
   readonly surfaceId: string;
   readonly moduleId: string;
@@ -26,6 +28,20 @@ export interface DecisionSurfaceIR {
   readonly exclusivityGroup?: string;
   readonly defaultSemanticClassId?: SemanticClassId;
   readonly defaultPriorityClass?: PriorityClass;
+  /** Inline clauses for the "clause-evaluator" decision program.
+   *  When present, the pipeline evaluates these against EvaluatedFacts
+   *  instead of producing empty all-pass clauses. */
+  readonly inlineClauses?: readonly FactConstraintIR[];
+  /** Human-readable teaching label for this surface. */
+  readonly teachingLabel?: string;
+  /** Default call when encoding is "direct". */
+  readonly defaultCall?: Call;
+  /** Source intent for provenance tracking. */
+  readonly sourceIntent?: Readonly<{ type: string; params: Readonly<Record<string, string | number | boolean>> }>;
+  /** Ranking metadata for intra-module ordering. */
+  readonly intraModuleOrder?: number;
+  /** Specificity for ranking. */
+  readonly specificity?: number;
 }
 
 // ─── Attachment contract ────────────────────────────────────

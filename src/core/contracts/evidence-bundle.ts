@@ -9,6 +9,8 @@
 export interface ConditionEvidenceIR {
   readonly conditionId: string;
   readonly factId?: string;
+  /** Parameters for parameterized facts (e.g. `{ suit: "hearts" }` for `suitLength(hearts)`). */
+  readonly params?: Readonly<Record<string, unknown>>;
   readonly satisfied: boolean;
   readonly observedValue?: unknown;
   readonly threshold?: unknown;
@@ -19,6 +21,8 @@ export interface RejectionEvidence {
   readonly meaningId: string;
   readonly failedConditions: readonly ConditionEvidenceIR[];
   readonly moduleId: string;
+  /** Conditions whose failure supports negative inference (invertInference). Optional for backward compat. */
+  readonly negatableFailures?: readonly ConditionEvidenceIR[];
 }
 
 /** Evidence for an alternative meaning that was considered. */
@@ -27,6 +31,8 @@ export interface AlternativeEvidence {
   readonly call: string;
   readonly ranking: { readonly band: string; readonly specificity: number };
   readonly reason: string;
+  /** Per-condition delta vs. matched meaning (spec: Agreement Module IR). Optional for backward compat. */
+  readonly conditionDelta?: readonly ConditionEvidenceIR[];
 }
 
 /** The spec's evidence contract for decision program representations. */
