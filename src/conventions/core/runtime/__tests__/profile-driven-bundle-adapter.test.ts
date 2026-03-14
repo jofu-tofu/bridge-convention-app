@@ -6,31 +6,33 @@ import type { MeaningSurface } from "../../../../core/contracts/meaning-surface"
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 
-// ─── Fixtures ───────────────────────────────────────────────
+// ─── Convention-agnostic Fixtures ────────────────────────────
 
-const dummySurface: MeaningSurface = {
-  meaningId: "test:dummy",
-  semanticClassId: "test:dummy-class",
-  moduleId: "test-module",
-  encoding: { defaultCall: { type: "pass" } },
-  clauses: [],
-  ranking: {
-    recommendationBand: "should",
-    specificity: 1,
-    modulePrecedence: 0,
-    intraModuleOrder: 0,
-  },
-  sourceIntent: { type: "test", params: {} },
-  teachingLabel: "Test dummy",
-};
+function makeSurface(moduleId: string, meaningId: string): MeaningSurface {
+  return {
+    meaningId,
+    semanticClassId: `${moduleId}:class`,
+    moduleId,
+    encoding: { defaultCall: { type: "pass" } },
+    clauses: [],
+    ranking: {
+      recommendationBand: "should",
+      specificity: 1,
+      modulePrecedence: 0,
+      intraModuleOrder: 0,
+    },
+    sourceIntent: { type: "test", params: {} },
+    teachingLabel: `Test ${meaningId}`,
+  };
+}
 
-/** Profile that activates "stayman" module when auction starts with 1NT. */
-const profileWith1NT: SystemProfileIR = {
-  profileId: "test-1nt",
+/** Profile with single module, single sequence attachment. */
+const singleSequenceProfile: SystemProfileIR = {
+  profileId: "test-single-seq",
   baseSystem: "test",
   modules: [
     {
-      moduleId: "stayman",
+      moduleId: "mod-a",
       kind: "add-on",
       attachments: [{ whenAuction: { kind: "sequence", calls: ["1NT"] } }],
     },
@@ -38,21 +40,62 @@ const profileWith1NT: SystemProfileIR = {
   conflictPolicy: { activationDefault: "simultaneous" },
 };
 
-/** Profile that activates "stayman" unconditionally (no auction guard). */
-const unconditionalProfile: SystemProfileIR = {
-  profileId: "test-unconditional",
+/** Profile with single module, multiple OR attachments (like Bergen: 1H OR 1S). */
+const multiAttachmentProfile: SystemProfileIR = {
+  profileId: "test-multi-attach",
   baseSystem: "test",
   modules: [
     {
-      moduleId: "stayman",
+      moduleId: "mod-raises",
       kind: "add-on",
-      attachments: [{}],
+      attachments: [
+        { whenAuction: { kind: "sequence", calls: ["1H"] } },
+        { whenAuction: { kind: "sequence", calls: ["1S"] } },
+      ],
     },
   ],
   conflictPolicy: { activationDefault: "simultaneous" },
 };
 
-// ─── Helper ─────────────────────────────────────────────────
+/** Profile with multiple modules (base + two add-ons with capability gates). */
+const multiModuleProfile: SystemProfileIR = {
+  profileId: "test-multi-mod",
+  baseSystem: "test",
+  modules: [
+    {
+      moduleId: "base",
+      kind: "base-system",
+      attachments: [{ whenAuction: { kind: "sequence", calls: ["1C"] } }],
+    },
+    {
+      moduleId: "addon-x",
+      kind: "add-on",
+      attachments: [{
+        whenAuction: { kind: "sequence", calls: ["1C"] },
+        requiresCapabilities: ["feature-x"],
+      }],
+    },
+    {
+      moduleId: "addon-y",
+      kind: "add-on",
+      attachments: [{
+        whenAuction: { kind: "sequence", calls: ["1C"] },
+        requiresCapabilities: ["feature-y"],
+      }],
+    },
+  ],
+  conflictPolicy: { activationDefault: "simultaneous" },
+};
+
+/** Unconditional profile — always active. */
+const unconditionalProfile: SystemProfileIR = {
+  profileId: "test-unconditional",
+  baseSystem: "test",
+  modules: [
+    { moduleId: "always-on", kind: "base-system", attachments: [{}] },
+  ],
+  conflictPolicy: { activationDefault: "simultaneous" },
+};
 
 function makeBundleWithSurfaces(
   overrides: Partial<ConventionBundle> = {},
@@ -60,10 +103,10 @@ function makeBundleWithSurfaces(
   return {
     id: "test-bundle",
     name: "Test Bundle",
-    memberIds: ["stayman"],
+    memberIds: ["test-conv"],
     dealConstraints: { seats: [], dealer: Seat.North },
     meaningSurfaces: [
-      { groupId: "stayman", surfaces: [dummySurface] },
+      { groupId: "group-a", surfaces: [makeSurface("mod-a", "mod-a:meaning")] },
     ],
     ...overrides,
   };
@@ -72,68 +115,144 @@ function makeBundleWithSurfaces(
 // ─── Tests ──────────────────────────────────────────────────
 
 describe("bundleToRuntimeModules with profile-only activation (no activationFilter)", () => {
-  it("getActiveIds uses profile when activationFilter is undefined", () => {
-    const bundle = makeBundleWithSurfaces({
-      systemProfile: profileWith1NT,
+  describe("single-sequence profile (e.g., 1NT trigger)", () => {
+    it("getActiveIds activates on matching auction", () => {
+      const bundle = makeBundleWithSurfaces({ systemProfile: singleSequenceProfile });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
+
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual(["mod-a"]);
     });
 
-    const { getActiveIds } = bundleToRuntimeModules(bundle);
+    it("getActiveIds returns empty on non-matching auction", () => {
+      const bundle = makeBundleWithSurfaces({ systemProfile: singleSequenceProfile });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
 
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const activeIds = getActiveIds(auction, Seat.South);
-    expect(activeIds).toEqual(["stayman"]);
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual([]);
+    });
   });
 
-  it("isActive on RuntimeModule uses profile instead of activationFilter", () => {
-    const bundle = makeBundleWithSurfaces({
-      systemProfile: profileWith1NT,
-      surfaceRouter: undefined,
+  describe("multi-attachment OR profile (e.g., Bergen: 1H or 1S)", () => {
+    it("activates on first attachment match", () => {
+      const bundle = makeBundleWithSurfaces({ systemProfile: multiAttachmentProfile });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
+
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual(["mod-raises"]);
     });
 
-    const { modules } = bundleToRuntimeModules(bundle);
-    expect(modules).toHaveLength(1);
+    it("activates on second attachment match", () => {
+      const bundle = makeBundleWithSurfaces({ systemProfile: multiAttachmentProfile });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
 
-    const staymanModule = modules[0]!;
+      const auction = buildAuction(Seat.North, ["1S", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual(["mod-raises"]);
+    });
 
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    expect(staymanModule.isActive(auction, Seat.South)).toBe(true);
+    it("returns empty when no attachment matches", () => {
+      const bundle = makeBundleWithSurfaces({ systemProfile: multiAttachmentProfile });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
+
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual([]);
+    });
   });
 
-  it("getActiveIds returns empty when profile conditions not met", () => {
-    const bundle = makeBundleWithSurfaces({
-      systemProfile: profileWith1NT,
+  describe("multi-module profile with capability gates", () => {
+    it("activates all modules when all capabilities provided", () => {
+      const bundle = makeBundleWithSurfaces({
+        systemProfile: multiModuleProfile,
+        declaredCapabilities: { "feature-x": "active", "feature-y": "active" },
+      });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
+
+      const auction = buildAuction(Seat.North, ["1C", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual(["base", "addon-x", "addon-y"]);
     });
 
-    const { getActiveIds } = bundleToRuntimeModules(bundle);
+    it("activates only base when no capabilities provided", () => {
+      const bundle = makeBundleWithSurfaces({ systemProfile: multiModuleProfile });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
 
-    const auction = buildAuction(Seat.North, ["1H", "P"]);
-    const activeIds = getActiveIds(auction, Seat.South);
-    expect(activeIds).toEqual([]);
+      const auction = buildAuction(Seat.North, ["1C", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual(["base"]);
+    });
+
+    it("activates base + one addon when only one capability provided", () => {
+      const bundle = makeBundleWithSurfaces({
+        systemProfile: multiModuleProfile,
+        declaredCapabilities: { "feature-x": "active" },
+      });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
+
+      const auction = buildAuction(Seat.North, ["1C", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual(["base", "addon-x"]);
+    });
   });
 
-  it("modules.isActive returns true when profile activates the module", () => {
-    const bundle = makeBundleWithSurfaces({
-      systemProfile: unconditionalProfile,
-      surfaceRouter: undefined,
+  describe("isActive on RuntimeModule (no surfaceRouter)", () => {
+    it("returns true when profile activates", () => {
+      const bundle = makeBundleWithSurfaces({
+        systemProfile: unconditionalProfile,
+        surfaceRouter: undefined,
+      });
+      const { modules } = bundleToRuntimeModules(bundle);
+
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(modules[0]!.isActive(auction, Seat.South)).toBe(true);
     });
 
-    const { modules } = bundleToRuntimeModules(bundle);
-    const staymanModule = modules[0]!;
+    it("returns false when profile does not activate", () => {
+      const bundle = makeBundleWithSurfaces({
+        systemProfile: singleSequenceProfile,
+        surfaceRouter: undefined,
+      });
+      const { modules } = bundleToRuntimeModules(bundle);
 
-    const auction = buildAuction(Seat.North, ["1H", "P"]);
-    expect(staymanModule.isActive(auction, Seat.South)).toBe(true);
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(modules[0]!.isActive(auction, Seat.South)).toBe(false);
+    });
   });
 
-  it("modules.isActive returns false when profile does not activate", () => {
-    const bundle = makeBundleWithSurfaces({
-      systemProfile: profileWith1NT,
-      surfaceRouter: undefined,
+  describe("edge cases", () => {
+    it("bundle with neither activationFilter nor systemProfile returns empty", () => {
+      const bundle = makeBundleWithSurfaces({
+        systemProfile: undefined,
+        activationFilter: undefined,
+      });
+      const { getActiveIds } = bundleToRuntimeModules(bundle);
+
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual([]);
     });
 
-    const { modules } = bundleToRuntimeModules(bundle);
-    const staymanModule = modules[0]!;
+    it("bundle with multiple surface groups creates one module per group", () => {
+      const bundle = makeBundleWithSurfaces({
+        systemProfile: unconditionalProfile,
+        meaningSurfaces: [
+          { groupId: "group-a", surfaces: [makeSurface("mod-a", "a:meaning")] },
+          { groupId: "group-b", surfaces: [makeSurface("mod-b", "b:meaning")] },
+          { groupId: "group-c", surfaces: [makeSurface("mod-c", "c:meaning")] },
+        ],
+      });
+      const { modules } = bundleToRuntimeModules(bundle);
 
-    const auction = buildAuction(Seat.North, ["1H", "P"]);
-    expect(staymanModule.isActive(auction, Seat.South)).toBe(false);
+      expect(modules).toHaveLength(3);
+      expect(modules.map(m => m.id)).toEqual(["group-a", "group-b", "group-c"]);
+    });
+
+    it("bundle with no meaningSurfaces returns empty modules", () => {
+      const bundle = makeBundleWithSurfaces({
+        systemProfile: unconditionalProfile,
+        meaningSurfaces: undefined,
+      });
+      const { modules, getActiveIds } = bundleToRuntimeModules(bundle);
+
+      expect(modules).toHaveLength(0);
+      // getActiveIds still works even with no surfaces
+      const auction = buildAuction(Seat.North, ["1H", "P"]);
+      expect(getActiveIds(auction, Seat.South)).toEqual(["always-on"]);
+    });
   });
 });
