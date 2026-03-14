@@ -139,7 +139,7 @@ export async function startDrill(
   if (previewAuction && dealerRotated) {
     previewAuction = rotateAuction(previewAuction);
   }
-  const opponentStrategy = options?.opponentMode === "silent"
+  const opponentStrategy = options?.opponentMode === "none"
     ? passStrategy
     : naturalFallbackStrategy;
   const passConstraints = buildOpponentPassConstraints(

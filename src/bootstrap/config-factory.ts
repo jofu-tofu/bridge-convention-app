@@ -79,7 +79,7 @@ export function createDrillConfig(
   }
 
   const strategy = createStrategyChain([bundleStrategy, naturalFallbackStrategy]);
-  const ewStrategy = options?.opponentMode === "silent"
+  const ewStrategy = options?.opponentMode === "none"
     ? passStrategy
     : createStrategyChain([naturalFallbackStrategy]);
 

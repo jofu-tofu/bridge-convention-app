@@ -19,7 +19,7 @@ export function createAppStore() {
   function loadOpponentMode(): OpponentMode {
     try {
       const stored = localStorage.getItem(OPPONENT_MODE_KEY);
-      if (stored === "silent" || stored === "natural") return stored;
+      if (stored === "none" || stored === "natural") return stored;
     } catch { /* SSR or storage unavailable */ }
     return "natural";
   }

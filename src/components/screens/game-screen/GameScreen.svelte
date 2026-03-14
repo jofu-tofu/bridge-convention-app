@@ -266,7 +266,7 @@
               class="absolute right-0 top-full mt-1 w-56 bg-bg-card border border-border-subtle rounded-[--radius-md] shadow-lg z-50 p-3"
               role="menu"
             >
-              <label class="block text-xs font-semibold text-text-secondary mb-1.5">Opponents</label>
+              <label class="block text-xs font-semibold text-text-secondary mb-1.5">Opponent Interference</label>
               <select
                 class="w-full bg-bg-base border border-border-subtle rounded-[--radius-sm] px-2.5 py-1.5 text-sm text-text-primary cursor-pointer"
                 value={appStore.opponentMode}
@@ -277,13 +277,13 @@
                 }}
                 data-testid="opponent-mode-select"
               >
-                <option value="natural">Natural (bid with good hands)</option>
-                <option value="silent">Silent (always pass)</option>
+                <option value="natural">Natural</option>
+                <option value="none">None</option>
               </select>
               <p class="text-xs text-text-secondary mt-1.5">
                 {appStore.opponentMode === "natural"
                   ? "Opponents bid naturally with 6+ HCP and a 5+ card suit."
-                  : "Opponents always pass (classic drill mode)."}
+                  : "Opponents always pass."}
               </p>
             </div>
           {/if}

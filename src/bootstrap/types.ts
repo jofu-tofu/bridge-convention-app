@@ -9,7 +9,7 @@ import type { InferenceConfig } from "../inference/types";
 import type { InferenceEngine } from "../inference/inference-engine";
 
 /** Opponent bidding behavior for drills. */
-export type OpponentMode = "natural" | "silent";
+export type OpponentMode = "natural" | "none";
 
 export interface DrillConfig {
   readonly conventionId: string;
