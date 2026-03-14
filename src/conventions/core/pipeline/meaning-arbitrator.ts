@@ -136,69 +136,33 @@ function deduplicateBySemanticClassAlias(
   return { deduplicated, aliasEliminations, aliasEliminationTraces };
 }
 
-export function arbitrateMeanings(
-  inputs: readonly ArbitrationInput[],
-  options?: {
-    legalCalls?: readonly Call[];
-    semanticClassAliases?: readonly { from: string; to: string }[];
-    handoffs?: readonly HandoffTrace[];
+// ─── Provenance Helpers ────────────────────────────────────────
+
+/** Map a MeaningClause to a ConditionEvidenceIR (shared across provenance builders). */
+function clauseToEvidence(c: { factId: string; satisfied: boolean; observedValue?: unknown; value: unknown }): ConditionEvidenceIR {
+  return { conditionId: c.factId, factId: c.factId, satisfied: c.satisfied, observedValue: c.observedValue, threshold: c.value };
+}
+
+/** Build DecisionProvenance from gate-level traces and arbitration results. */
+function buildProvenance(
+  encoded: readonly EncodedProposal[],
+  finalTruthSet: readonly EncodedProposal[],
+  recommended: readonly EncodedProposal[],
+  selected: EncodedProposal | null,
+  traces: {
+    legality: readonly LegalityTrace[];
+    encoding: readonly EncodingTrace[];
+    eliminations: readonly EliminationTrace[];
   },
-): ArbitrationResult {
-  const encoded: EncodedProposal[] = [];
-  const eliminations: EliminationRecord[] = [];
-
-  // Provenance collectors
-  const provenanceEliminations: EliminationTrace[] = [];
-  const provenanceLegality: LegalityTrace[] = [];
-  const provenanceEncoding: EncodingTrace[] = [];
-
-  for (const input of inputs) {
-    const result = evaluateProposal(input, options?.legalCalls);
-
-    provenanceLegality.push(result.provenanceLegality);
-    provenanceEncoding.push(result.provenanceEncoding);
-    if (result.elimination) eliminations.push(result.elimination);
-    if (result.provenanceElimination) provenanceEliminations.push(result.provenanceElimination);
-    if (result.encoded) {
-      encoded.push(result.encoded);
-    }
-  }
-
-  const { truthSet, acceptableSet } = classifyIntoSets(encoded);
-
-  // Sort truth set by ranking (ascending — first element is highest rank)
-  const sortedTruth = [...truthSet].sort((a, b) =>
-    compareRanking(a.proposal.ranking, b.proposal.ranking),
-  );
-
-  // Apply semantic class alias deduplication if aliases are provided
-  const resolveAlias = buildAliasResolver(options?.semanticClassAliases ?? []);
-  const {
-    deduplicated: deduplicatedTruth,
-    aliasEliminations,
-    aliasEliminationTraces,
-  } = deduplicateBySemanticClassAlias(sortedTruth, resolveAlias);
-
-  // Merge alias eliminations into the main elimination arrays
-  eliminations.push(...aliasEliminations);
-  provenanceEliminations.push(...aliasEliminationTraces);
-
-  const recommended = deduplicatedTruth;
-
-  // After alias dedup, the truth set is deduplicatedTruth
-  const finalTruthSet = deduplicatedTruth;
-
-  const selected: EncodedProposal | null = recommended.length > 0 ? (recommended[0] ?? null) : null;
-
-  // Build arbitration traces for all candidates that made it through gates
-  const arbitrationTraces: ArbitrationTrace[] = encoded.map((e, _index) => {
+  handoffs: readonly HandoffTrace[],
+): DecisionProvenance {
+  const arbitration: ArbitrationTrace[] = encoded.map((e) => {
     const isTruth = finalTruthSet.includes(e) && e.eligibility.hand.satisfied && e.eligibility.encoding.legal;
-    const isAcceptable = !e.eligibility.hand.satisfied && e.eligibility.encoding.legal;
     const recIndex = recommended.indexOf(e);
     return {
       candidateId: e.proposal.meaningId,
       truthSetMember: isTruth,
-      acceptableSetMember: isAcceptable,
+      acceptableSetMember: !e.eligibility.hand.satisfied && e.eligibility.encoding.legal,
       recommendationRank: recIndex >= 0 ? recIndex : undefined,
       rankingInputs: {
         recommendationBand: BAND_PRIORITY[e.proposal.ranking.recommendationBand],
@@ -209,111 +173,116 @@ export function arbitrateMeanings(
     };
   });
 
-  // Build applicability evidence from the selected candidate (or empty if none)
   const applicability: ApplicabilityEvidence = selected
     ? {
       factDependencies: selected.proposal.clauses.map((c) => c.factId),
-      evaluatedConditions: selected.proposal.clauses.map((c) => ({
-        conditionId: c.factId,
-        factId: c.factId,
-        satisfied: c.satisfied,
-        observedValue: c.observedValue,
-        threshold: c.value,
-      })),
+      evaluatedConditions: selected.proposal.clauses.map(clauseToEvidence),
     }
-    : {
-      factDependencies: [],
-      evaluatedConditions: [],
-    };
+    : { factDependencies: [], evaluatedConditions: [] };
 
-  const provenance: DecisionProvenance = {
+  return {
     applicability,
-    activation: [], // Module activation happens upstream
-    transforms: [], // Transforms applied upstream by composeSurfaces
-    encoding: provenanceEncoding,
-    legality: provenanceLegality,
-    arbitration: arbitrationTraces,
-    eliminations: provenanceEliminations,
-    handoffs: options?.handoffs ?? [],
+    activation: [],
+    transforms: [],
+    encoding: traces.encoding,
+    legality: traces.legality,
+    arbitration,
+    eliminations: traces.eliminations,
+    handoffs,
   };
+}
 
-  // Build EvidenceBundleIR
-  const matchedEvidence: EvidenceBundleIR["matched"] = selected
-    ? {
-        meaningId: selected.proposal.meaningId,
-        satisfiedConditions: selected.proposal.clauses.map((c): ConditionEvidenceIR => ({
-          conditionId: c.factId,
-          factId: c.factId,
-          satisfied: c.satisfied,
-          observedValue: c.observedValue,
-          threshold: c.value,
-        })),
-      }
+/** Build EvidenceBundleIR from arbitration results. */
+function buildEvidenceBundle(
+  inputs: readonly ArbitrationInput[],
+  eliminations: readonly EliminationRecord[],
+  finalTruthSet: readonly EncodedProposal[],
+  selected: EncodedProposal | null,
+): EvidenceBundleIR {
+  const matched: EvidenceBundleIR["matched"] = selected
+    ? { meaningId: selected.proposal.meaningId, satisfiedConditions: selected.proposal.clauses.map(clauseToEvidence) }
     : null;
 
-  const rejectedEvidence: RejectionEvidence[] = eliminations.map((e) => {
+  const rejected: RejectionEvidence[] = eliminations.map((e) => {
     const input = inputs.find((i) => i.proposal.meaningId === e.candidateBidName);
     const failedClauses = input?.proposal.clauses.filter((c) => !c.satisfied) ?? [];
     return {
       meaningId: e.candidateBidName,
-      failedConditions: failedClauses.map((c): ConditionEvidenceIR => ({
-        conditionId: c.factId,
-        factId: c.factId,
-        satisfied: c.satisfied,
-        observedValue: c.observedValue,
-        threshold: c.value,
-      })),
-      negatableFailures: failedClauses.map((c): ConditionEvidenceIR => ({
-        conditionId: c.factId,
-        factId: c.factId,
-        satisfied: false,
-        observedValue: c.observedValue,
-        threshold: c.value,
-      })),
+      failedConditions: failedClauses.map(clauseToEvidence),
+      negatableFailures: failedClauses.map((c) => clauseToEvidence({ ...c, satisfied: false })),
       moduleId: input?.proposal.moduleId ?? "unknown",
     };
   });
 
-  const alternativeEvidence: AlternativeEvidence[] = finalTruthSet
+  const selectedFacts = selected ? new Set(selected.proposal.clauses.map(c => c.factId)) : new Set<string>();
+  const alternatives: AlternativeEvidence[] = finalTruthSet
     .filter((e) => e !== selected)
-    .map((e) => {
-      const selectedFacts = selected ? new Set(selected.proposal.clauses.map(c => c.factId)) : new Set<string>();
-      return {
-        meaningId: e.proposal.meaningId,
-        call: formatCallForEvidence(e.call),
-        ranking: {
-          band: e.proposal.ranking.recommendationBand,
-          specificity: e.proposal.ranking.specificity,
-        },
-        reason: "truth-set-member-not-selected",
-        conditionDelta: e.proposal.clauses
-          .filter(c => !selectedFacts.has(c.factId))
-          .map((c): ConditionEvidenceIR => ({
-            conditionId: c.factId,
-            factId: c.factId,
-            satisfied: c.satisfied,
-            observedValue: c.observedValue,
-            threshold: c.value,
-          })),
-      };
-    });
+    .map((e) => ({
+      meaningId: e.proposal.meaningId,
+      call: formatCallForEvidence(e.call),
+      ranking: { band: e.proposal.ranking.recommendationBand, specificity: e.proposal.ranking.specificity },
+      reason: "truth-set-member-not-selected",
+      conditionDelta: e.proposal.clauses.filter(c => !selectedFacts.has(c.factId)).map(clauseToEvidence),
+    }));
 
-  const evidenceBundle: EvidenceBundleIR = {
-    matched: matchedEvidence,
-    rejected: rejectedEvidence,
-    alternatives: alternativeEvidence,
-    exhaustive: true,
-    fallbackReached: selected === null,
-  };
+  return { matched, rejected, alternatives, exhaustive: true, fallbackReached: selected === null };
+}
+
+// ─── Main Arbitration ──────────────────────────────────────────
+
+export function arbitrateMeanings(
+  inputs: readonly ArbitrationInput[],
+  options?: {
+    legalCalls?: readonly Call[];
+    semanticClassAliases?: readonly { from: string; to: string }[];
+    handoffs?: readonly HandoffTrace[];
+  },
+): ArbitrationResult {
+  // Step 1: Evaluate each proposal through gates (semantic, legality, encoding)
+  const encoded: EncodedProposal[] = [];
+  const eliminations: EliminationRecord[] = [];
+  const provenanceEliminations: EliminationTrace[] = [];
+  const provenanceLegality: LegalityTrace[] = [];
+  const provenanceEncoding: EncodingTrace[] = [];
+
+  for (const input of inputs) {
+    const result = evaluateProposal(input, options?.legalCalls);
+    provenanceLegality.push(result.provenanceLegality);
+    provenanceEncoding.push(result.provenanceEncoding);
+    if (result.elimination) eliminations.push(result.elimination);
+    if (result.provenanceElimination) provenanceEliminations.push(result.provenanceElimination);
+    if (result.encoded) encoded.push(result.encoded);
+  }
+
+  // Step 2: Classify into truth set (all satisfied + legal) and acceptable set
+  const { truthSet, acceptableSet } = classifyIntoSets(encoded);
+
+  // Step 3: Sort truth set by ranking, then deduplicate by semantic class alias
+  const sortedTruth = [...truthSet].sort((a, b) =>
+    compareRanking(a.proposal.ranking, b.proposal.ranking),
+  );
+  const resolveAlias = buildAliasResolver(options?.semanticClassAliases ?? []);
+  const { deduplicated, aliasEliminations, aliasEliminationTraces } =
+    deduplicateBySemanticClassAlias(sortedTruth, resolveAlias);
+  eliminations.push(...aliasEliminations);
+  provenanceEliminations.push(...aliasEliminationTraces);
+
+  // Step 4: Select winner (highest-ranked in deduplicated truth set)
+  const finalTruthSet = deduplicated;
+  const recommended = deduplicated;
+  const selected: EncodedProposal | null = recommended[0] ?? null;
+
+  // Step 5: Build provenance and evidence (post-processing — separate from selection)
+  const provenance = buildProvenance(
+    encoded, finalTruthSet, recommended, selected,
+    { legality: provenanceLegality, encoding: provenanceEncoding, eliminations: provenanceEliminations },
+    options?.handoffs ?? [],
+  );
+  const evidenceBundle = buildEvidenceBundle(inputs, eliminations, finalTruthSet, selected);
 
   return {
-    selected,
-    truthSet: finalTruthSet,
-    acceptableSet,
-    recommended,
-    eliminations,
-    transformTraces: undefined, // Transform traces grafted by upstream mergeUpstreamProvenance
-    provenance,
-    evidenceBundle,
+    selected, truthSet: finalTruthSet, acceptableSet, recommended, eliminations,
+    transformTraces: undefined,
+    provenance, evidenceBundle,
   };
 }

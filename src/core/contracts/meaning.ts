@@ -1,4 +1,5 @@
-import type { MeaningSurface } from "./meaning-surface";
+import type { MeaningSurface, FactOperator } from "./meaning-surface";
+import type { ConditionRole } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
@@ -9,6 +10,9 @@ export type SemanticClassId = string;
 
 /** Recommendation band — authored semantic priority. */
 export type RecommendationBand = "must" | "should" | "may" | "avoid";
+
+/** Operator subset for evaluated meaning clauses (excludes "in" which is resolved during evaluation). */
+export type MeaningClauseOperator = Exclude<FactOperator, "in">;
 
 /** Ranking metadata — the frozen ranking knob matrix. */
 export interface RankingMetadata {
@@ -25,7 +29,7 @@ export interface RankingMetadata {
 /** A single clause in a meaning proposal. */
 export interface MeaningClause {
   readonly factId: string;
-  readonly operator: "gte" | "lte" | "eq" | "range" | "boolean";
+  readonly operator: MeaningClauseOperator;
   readonly value: number | boolean | { min: number; max: number };
   readonly satisfied: boolean;
   readonly description: string;
@@ -39,7 +43,7 @@ export interface EvidenceBundle {
     readonly name: string;
     readonly passed: boolean;
     readonly description: string;
-    readonly conditionRole?: "semantic" | "inferential" | "pedagogical" | "routing";
+    readonly conditionRole?: ConditionRole;
   }[];
   readonly provenance: {
     readonly moduleId: string;
@@ -67,6 +71,9 @@ export interface MeaningProposal {
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
   readonly modulePriority?: "preferred" | "alternative";
+  /** Human-readable teaching label (e.g., "Stayman 2C", "Transfer to hearts").
+   *  Threaded from MeaningSurface.teachingLabel through the evaluation pipeline. */
+  readonly teachingLabel?: string;
 }
 
 /** Recommendation band priority values for comparison (lower = higher priority). */

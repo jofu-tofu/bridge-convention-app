@@ -4,6 +4,7 @@ import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { Auction, Call, Seat } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
+import { formatCallString } from "./commitment-extractor";
 
 const STRAIN_MAP: Record<string, BidSuit> = {
   C: BidSuit.Clubs,
@@ -12,14 +13,6 @@ const STRAIN_MAP: Record<string, BidSuit> = {
   S: BidSuit.Spades,
   NT: BidSuit.NoTrump,
 };
-
-/** Convert a Call to its canonical string representation (e.g. "1NT", "P", "X", "XX"). */
-function callToString(call: Call): string {
-  if (call.type === "bid") return `${call.level}${call.strain}`;
-  if (call.type === "pass") return "P";
-  if (call.type === "double") return "X";
-  return "XX"; // redouble
-}
 
 /**
  * Resolve a semantic role (e.g. "opener", "responder") to a compass Seat
@@ -97,7 +90,7 @@ function matchesAuctionPattern(
 
       return auction.entries.some(e => {
         if (pattern.byRole && e.seat !== roleSeat) return false;
-        return callToString(e.call) === pattern.call;
+        return formatCallString(e.call) === pattern.call;
       });
     }
     case "by-role": {
@@ -109,7 +102,7 @@ function matchesAuctionPattern(
       for (let i = auction.entries.length - 1; i >= 0; i--) {
         const entry = auction.entries[i]!;
         if (entry.seat === seat) {
-          return callToString(entry.call) === pattern.lastCall;
+          return formatCallString(entry.call) === pattern.lastCall;
         }
       }
       return false; // role's seat never acted

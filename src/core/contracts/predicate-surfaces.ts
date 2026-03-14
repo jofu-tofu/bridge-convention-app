@@ -1,3 +1,5 @@
+import type { FactOperator } from "./meaning-surface";
+
 // ─── Auction pattern matching ───────────────────────────────
 export type AuctionPatternIR =
   | { readonly kind: "sequence"; readonly calls: readonly string[] }
@@ -15,7 +17,7 @@ export interface PublicGuardIR {
 export interface HandPredicateIR {
   readonly clauses: readonly {
     readonly factId: string;
-    readonly operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+    readonly operator: FactOperator;
     readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
   }[];
   readonly conjunction: "all" | "any";

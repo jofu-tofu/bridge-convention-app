@@ -5,6 +5,9 @@
  * provenance and evidence bundles.
  */
 
+/** Role a condition plays in the evaluation pipeline. */
+export type ConditionRole = "semantic" | "inferential" | "pedagogical" | "routing";
+
 /** Evidence for a single condition evaluation. */
 export interface ConditionEvidenceIR {
   readonly conditionId: string;

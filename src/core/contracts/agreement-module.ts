@@ -1,5 +1,6 @@
 import type { AuctionPatternIR, PublicGuardIR } from "./predicate-surfaces";
 import type { CandidateTransform, SemanticClassId } from "./meaning";
+import type { FactOperator } from "./meaning-surface";
 import type { LatentBranchSet } from "./posterior";
 import type { Call } from "../../engine/types";
 
@@ -55,7 +56,7 @@ export interface AttachmentIR {
 // ─── Fact constraint ────────────────────────────────────────
 export interface FactConstraintIR {
   readonly factId: string;
-  readonly operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+  readonly operator: FactOperator;
   readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
 }
 

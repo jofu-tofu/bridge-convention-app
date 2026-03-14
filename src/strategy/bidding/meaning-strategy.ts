@@ -10,7 +10,7 @@ import type { MeaningSurface } from "../../core/contracts/meaning-surface";
 import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
-import type { FactCatalog } from "../../core/contracts/fact-catalog";
+import type { FactCatalog, EvaluatedFacts } from "../../core/contracts/fact-catalog";
 import type { PosteriorEngine, PublicHandSpace, PosteriorFactProvider, PosteriorFactValue, SeatPosterior } from "../../core/contracts/posterior";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
@@ -31,10 +31,147 @@ import { formatHandSummary } from "../../core/display/hand-summary";
 import { createPosteriorFactProvider } from "../../inference/posterior";
 import { projectTeaching } from "../../teaching/teaching-projection-builder";
 
+// ─── Core Pipeline ─────────────────────────────────────────────
+//
+// The meaning pipeline is a 5-step pure transformation:
+//
+//   surfaces → compose → evaluate facts → evaluate meanings → arbitrate
+//
+// `runMeaningPipeline` is the single entry point. Both `meaningToStrategy`
+// (single-module) and `meaningBundleToStrategy` (multi-module) delegate to it.
+// Everything before the pipeline (surface selection, posterior wiring) and
+// after it (result mapping, teaching projection) is handled by the caller.
+
+/** Input to the core meaning pipeline. */
+interface PipelineInput {
+  readonly surfaces: readonly MeaningSurface[];
+  readonly transforms?: readonly CandidateTransform[];
+  readonly context: BiddingContext;
+  readonly catalog: FactCatalog;
+  readonly posteriorProvider?: PosteriorFactProvider;
+}
+
+/** Output from the core meaning pipeline. */
+interface PipelineOutput {
+  readonly result: ArbitrationResult;
+  readonly facts: EvaluatedFacts;
+}
+
+/**
+ * Core meaning pipeline: compose → evaluate facts → evaluate meanings → arbitrate.
+ *
+ * Pure transformation — no caching, no side effects, no state mutation.
+ * Callers handle surface selection (upstream) and result mapping (downstream).
+ */
+function runMeaningPipeline(input: PipelineInput): PipelineOutput {
+  // Step 1: Compose surfaces (apply suppress/inject/remap transforms)
+  const { composedSurfaces, appliedTransforms, diagnostics } = composeSurfaces(
+    input.surfaces,
+    input.transforms,
+  );
+
+  // Step 2: Evaluate facts against the hand
+  const facts = evaluateFacts(
+    input.context.hand, input.context.evaluation,
+    input.catalog, undefined, input.posteriorProvider,
+  );
+
+  // Step 3: Evaluate each surface's clauses against the facts
+  const proposals = evaluateAllSurfaces(composedSurfaces, facts);
+
+  // Step 4: Arbitrate — encode, gate-check, rank, and select winner
+  const inputs = zipProposalsWithSurfaces(proposals, composedSurfaces);
+  const legalCalls = getLegalCalls(input.context.auction, input.context.seat);
+  const arbitration = arbitrateMeanings(inputs, { legalCalls });
+
+  // Step 5: Graft upstream provenance (transform traces) into the result
+  const result = mergeUpstreamProvenance(arbitration, appliedTransforms, diagnostics);
+
+  return { result, facts };
+}
+
+// ─── Posterior Helpers ──────────────────────────────────────────
+
 function getPartnerSeat(seat: Seat): string {
   const partners: Record<string, string> = { N: "S", S: "N", E: "W", W: "E" };
   return partners[seat] ?? "N";
 }
+
+/** Posterior wiring state — caches PublicHandSpace[] across calls at the same auction length. */
+interface PosteriorCache {
+  handSpaces: PublicHandSpace[] | null;
+  auctionLength: number;
+}
+
+/**
+ * Build a PosteriorFactProvider from the posterior engine, or undefined if not available.
+ * Caches the compiled hand spaces by auction length to avoid redundant computation.
+ */
+function buildPosteriorProvider(
+  engine: PosteriorEngine,
+  surfaceRouter: (auction: Auction, seat: Seat) => readonly MeaningSurface[],
+  context: BiddingContext,
+  cache: PosteriorCache,
+): { provider?: PosteriorFactProvider; seatPosterior?: SeatPosterior } {
+  const auctionLength = context.auction.entries.length;
+  if (cache.auctionLength !== auctionLength) {
+    const snapshot = buildSnapshotFromAuction(
+      context.auction, context.seat, [],
+      { surfaceRouter },
+    );
+    cache.handSpaces = engine.compilePublic(snapshot);
+    cache.auctionLength = auctionLength;
+  }
+  const partnerSeat = getPartnerSeat(context.seat);
+  const partnerSpace = cache.handSpaces?.find((s) => s.seatId === partnerSeat);
+  if (!partnerSpace) return {};
+
+  const seatPosterior = engine.conditionOnHand(partnerSpace, context.seat, context.hand);
+  return {
+    provider: createPosteriorFactProvider(seatPosterior),
+    seatPosterior,
+  };
+}
+
+/**
+ * Build a PosteriorSummary from evaluated facts and the active seat posterior.
+ * Returns null if no posterior facts were evaluated.
+ */
+function buildPosteriorSummary(
+  catalog: FactCatalog,
+  facts: EvaluatedFacts,
+  provider: PosteriorFactProvider,
+  seatPosterior: SeatPosterior,
+): PosteriorSummary | null {
+  const posteriorIds = catalog.posteriorEvaluators
+    ? [...catalog.posteriorEvaluators.keys()]
+    : [];
+
+  const posteriorFacts: PosteriorFactValue[] = [];
+  for (const id of posteriorIds) {
+    const fv = facts.facts.get(id);
+    if (fv) {
+      const queryResult = provider.queryFact({ factId: id, seatId: seatPosterior.seatId });
+      posteriorFacts.push({
+        factId: id,
+        seatId: seatPosterior.seatId,
+        expectedValue: fv.value as number,
+        confidence: queryResult?.confidence ?? 0,
+      });
+    }
+  }
+
+  if (posteriorFacts.length === 0) return null;
+
+  const avgConfidence = posteriorFacts.reduce((sum, f) => sum + f.confidence, 0) / posteriorFacts.length;
+  return {
+    factValues: posteriorFacts,
+    sampleCount: seatPosterior.effectiveSampleSize,
+    confidence: avgConfidence,
+  };
+}
+
+// ─── Result Mapping ────────────────────────────────────────────
 
 function buildBidResult(
   selected: NonNullable<ArbitrationResult["selected"]>,
@@ -119,9 +256,66 @@ function buildTeachingProjection(
   });
 }
 
+// ─── Surface Selection ─────────────────────────────────────────
+
+/** Machine evaluation cache — avoids redundant FSM evaluation at the same auction length. */
+interface MachineCache {
+  result: MachineEvalResult | null;
+  auctionLength: number;
+}
+
+function getMachineResult(
+  machine: ConversationMachine,
+  auction: Auction,
+  seat: Seat,
+  cache: MachineCache,
+): MachineEvalResult {
+  if (cache.auctionLength === auction.entries.length && cache.result) {
+    return cache.result;
+  }
+  cache.result = evaluateMachine(machine, auction, seat);
+  cache.auctionLength = auction.entries.length;
+  return cache.result;
+}
+
+/** Select surfaces and collect machine transforms for the current auction position. */
+function selectActiveSurfaces(
+  moduleSurfaces: readonly { moduleId: string; surfaces: readonly MeaningSurface[] }[],
+  allSurfaces: readonly MeaningSurface[],
+  context: BiddingContext,
+  options?: {
+    conversationMachine?: ConversationMachine;
+    surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
+  },
+  machineCache?: MachineCache,
+): { surfaces: readonly MeaningSurface[]; machineTransforms: readonly CandidateTransform[] } | null {
+  if (options?.conversationMachine && machineCache) {
+    const machineResult = getMachineResult(
+      options.conversationMachine, context.auction, context.seat, machineCache,
+    );
+    const activeGroupIds = new Set(machineResult.activeSurfaceGroupIds);
+    const surfaces = moduleSurfaces
+      .filter((g) => activeGroupIds.has(g.moduleId))
+      .flatMap((g) => g.surfaces);
+    if (surfaces.length === 0) return null;
+    return { surfaces, machineTransforms: machineResult.collectedTransforms };
+  }
+
+  if (options?.surfaceRouter) {
+    const surfaces = options.surfaceRouter(context.auction, context.seat);
+    if (surfaces.length === 0) return null;
+    return { surfaces, machineTransforms: [] };
+  }
+
+  if (allSurfaces.length === 0) return null;
+  return { surfaces: allSurfaces, machineTransforms: [] };
+}
+
+// ─── Public API ────────────────────────────────────────────────
+
 /**
  * Create a ConventionBiddingStrategy from a set of MeaningSurfaces.
- * Tree-free: uses fact-evaluator → meaning-evaluator → meaning-arbitrator pipeline.
+ * Tree-free: uses the meaning pipeline (compose → facts → evaluate → arbitrate).
  */
 export function meaningToStrategy(
   surfaces: readonly MeaningSurface[],
@@ -156,28 +350,18 @@ export function meaningToStrategy(
       lastArbitration = null;
       lastTeachingProjection = null;
 
-      // Upstream: compose surfaces (apply transforms before pipeline)
-      const { composedSurfaces, appliedTransforms, diagnostics } = composeSurfaces(
+      const { result } = runMeaningPipeline({
         surfaces,
-        options?.transforms,
-      );
-
-      // Pipeline: evaluate composed surfaces — no transform awareness
-      const facts = evaluateFacts(context.hand, context.evaluation, catalog);
-      const proposals = evaluateAllSurfaces(composedSurfaces, facts);
-      const inputs = zipProposalsWithSurfaces(proposals, composedSurfaces);
-      const legalCalls = getLegalCalls(context.auction, context.seat);
-      const arbitration = arbitrateMeanings(inputs, { legalCalls });
-
-      // Graft upstream provenance
-      const result = mergeUpstreamProvenance(arbitration, appliedTransforms, diagnostics);
+        transforms: options?.transforms,
+        context,
+        catalog,
+      });
 
       lastArbitration = result;
       lastProvenance = result.provenance ?? null;
       lastTeachingProjection = buildTeachingProjection(result, lastProvenance);
 
       if (!result.selected) return null;
-
       return buildBidResult(result.selected, context, moduleId, result);
     },
   };
@@ -185,11 +369,14 @@ export function meaningToStrategy(
 
 /**
  * Create a ConventionBiddingStrategy from multiple modules' surfaces.
- * Flattens all surfaces, evaluates and arbitrates across all modules.
+ * Evaluates and arbitrates across all modules.
  *
- * When `surfaceRouter` is provided, only surfaces active for the current
- * auction position and seat are evaluated — enabling round-aware selection
- * for multi-round conventions.
+ * The suggest() method runs a 3-phase sequence:
+ * 1. **Surface selection** — machine, router, or all surfaces
+ * 2. **Core pipeline** — compose → facts → evaluate → arbitrate
+ * 3. **Output** — teaching projection + BidResult mapping
+ *
+ * Posterior enrichment (when configured) runs as a sidecar to fact evaluation.
  */
 export function meaningBundleToStrategy(
   moduleSurfaces: readonly {
@@ -223,33 +410,8 @@ export function meaningBundleToStrategy(
   let lastTeachingProjection: TeachingProjection | null = null;
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
-
-  // Machine evaluation memoization: cache by auction length
-  let cachedMachineResult: MachineEvalResult | null = null;
-  let cachedMachineAuctionLength = -1;
-
-  function getMachineResult(machine: ConversationMachine, auction: Auction, seat: Seat): MachineEvalResult {
-    if (cachedMachineAuctionLength === auction.entries.length && cachedMachineResult) {
-      return cachedMachineResult;
-    }
-    cachedMachineResult = evaluateMachine(machine, auction, seat);
-    cachedMachineAuctionLength = auction.entries.length;
-    return cachedMachineResult;
-  }
-
-  // Posterior memoization: cache PublicHandSpace[] by auction length
-  let cachedHandSpaces: PublicHandSpace[] | null = null;
-  let cachedAuctionLength = -1;
-
-  /** When machine is present, use activeSurfaceGroupIds to select surfaces. */
-  function selectSurfacesViaMachine(
-    machineResult: MachineEvalResult,
-  ): readonly MeaningSurface[] {
-    const activeGroupIds = new Set(machineResult.activeSurfaceGroupIds);
-    return moduleSurfaces
-      .filter((g) => activeGroupIds.has(g.moduleId))
-      .flatMap((g) => g.surfaces);
-  }
+  const machineCache: MachineCache = { result: null, auctionLength: -1 };
+  const posteriorCache: PosteriorCache = { handSpaces: null, auctionLength: -1 };
 
   return {
     id: bundleId,
@@ -268,100 +430,46 @@ export function meaningBundleToStrategy(
       lastPosteriorSummary = null;
       lastTeachingProjection = null;
 
-      let activeSurfaces: readonly MeaningSurface[];
-      let machineTransforms: readonly CandidateTransform[] = [];
-
-      if (options?.conversationMachine) {
-        // Machine-driven surface selection: machine determines which surface groups are live
-        const machineResult: MachineEvalResult = getMachineResult(
-          options.conversationMachine,
-          context.auction,
-          context.seat,
-        );
-        activeSurfaces = selectSurfacesViaMachine(machineResult);
-        machineTransforms = machineResult.collectedTransforms;
-      } else if (options?.surfaceRouter) {
-        // Legacy surface router path
-        activeSurfaces = options.surfaceRouter(context.auction, context.seat);
-      } else {
-        activeSurfaces = allSurfaces;
-      }
-
-      if (activeSurfaces.length === 0) return null;
+      // Phase 1: Select active surfaces for this auction position
+      const selection = selectActiveSurfaces(
+        moduleSurfaces, allSurfaces, context,
+        { conversationMachine: options?.conversationMachine, surfaceRouter: options?.surfaceRouter },
+        machineCache,
+      );
+      if (!selection) return null;
 
       // Merge machine transforms with static transforms
-      const allTransforms = machineTransforms.length > 0
-        ? [...machineTransforms, ...(options?.transforms ?? [])]
+      const allTransforms = selection.machineTransforms.length > 0
+        ? [...selection.machineTransforms, ...(options?.transforms ?? [])]
         : options?.transforms;
 
-      // Upstream: compose surfaces (apply transforms before pipeline)
-      const { composedSurfaces, appliedTransforms, diagnostics: surfaceDiagnostics } = composeSurfaces(
-        activeSurfaces,
-        allTransforms,
-      );
-
-      // Posterior wiring: build provider from posterior engine when available
+      // Phase 2: Build posterior provider (sidecar — enriches fact evaluation)
       let posteriorProvider: PosteriorFactProvider | undefined;
-      let activeSeatPosterior: SeatPosterior | undefined;
+      let seatPosterior: SeatPosterior | undefined;
       if (options?.posteriorEngine && options?.surfaceRouterForCommitments) {
-        const auctionLength = context.auction.entries.length;
-        if (cachedAuctionLength !== auctionLength) {
-          const snapshot = buildSnapshotFromAuction(
-            context.auction, context.seat, [],
-            { surfaceRouter: options.surfaceRouterForCommitments },
-          );
-          cachedHandSpaces = options.posteriorEngine.compilePublic(snapshot);
-          cachedAuctionLength = auctionLength;
-        }
-        const partnerSeat = getPartnerSeat(context.seat);
-        const partnerSpace = cachedHandSpaces?.find((s) => s.seatId === partnerSeat);
-        if (partnerSpace) {
-          activeSeatPosterior = options.posteriorEngine.conditionOnHand(
-            partnerSpace, context.seat, context.hand,
-          );
-          posteriorProvider = createPosteriorFactProvider(activeSeatPosterior);
-        }
+        const posterior = buildPosteriorProvider(
+          options.posteriorEngine, options.surfaceRouterForCommitments,
+          context, posteriorCache,
+        );
+        posteriorProvider = posterior.provider;
+        seatPosterior = posterior.seatPosterior;
       }
 
-      // Pipeline: evaluate composed surfaces — no transform awareness
-      const facts = evaluateFacts(context.hand, context.evaluation, catalog, undefined, posteriorProvider);
+      // Phase 3: Run the core meaning pipeline
+      const { result, facts } = runMeaningPipeline({
+        surfaces: selection.surfaces,
+        transforms: allTransforms,
+        context,
+        catalog,
+        posteriorProvider,
+      });
 
-      // Build posterior summary from evaluated facts when posterior was active
-      if (posteriorProvider && activeSeatPosterior) {
-        const posteriorFacts: PosteriorFactValue[] = [];
-        const posteriorIds = catalog.posteriorEvaluators
-          ? [...catalog.posteriorEvaluators.keys()]
-          : [];
-        for (const id of posteriorIds) {
-          const fv = facts.facts.get(id);
-          if (fv) {
-            const queryResult = posteriorProvider.queryFact({ factId: id, seatId: activeSeatPosterior.seatId });
-            posteriorFacts.push({
-              factId: id,
-              seatId: activeSeatPosterior.seatId,
-              expectedValue: fv.value as number,
-              confidence: queryResult?.confidence ?? 0,
-            });
-          }
-        }
-        if (posteriorFacts.length > 0) {
-          const avgConfidence = posteriorFacts.reduce((sum, f) => sum + f.confidence, 0) / posteriorFacts.length;
-          lastPosteriorSummary = {
-            factValues: posteriorFacts,
-            sampleCount: activeSeatPosterior.effectiveSampleSize,
-            confidence: avgConfidence,
-          };
-        }
+      // Phase 4: Build posterior summary from evaluated facts
+      if (posteriorProvider && seatPosterior) {
+        lastPosteriorSummary = buildPosteriorSummary(catalog, facts, posteriorProvider, seatPosterior);
       }
 
-      const proposals = evaluateAllSurfaces(composedSurfaces, facts);
-      const inputs = zipProposalsWithSurfaces(proposals, composedSurfaces);
-      const legalCalls = getLegalCalls(context.auction, context.seat);
-      const arbitration = arbitrateMeanings(inputs, { legalCalls });
-
-      // Graft upstream provenance
-      const result = mergeUpstreamProvenance(arbitration, appliedTransforms, surfaceDiagnostics);
-
+      // Phase 5: Build output (teaching projection + BidResult)
       lastArbitration = result;
       lastProvenance = result.provenance ?? null;
       lastTeachingProjection = buildTeachingProjection(
@@ -369,7 +477,6 @@ export function meaningBundleToStrategy(
       );
 
       if (!result.selected) return null;
-
       const winningModuleId = result.selected.proposal.moduleId;
       return buildBidResult(result.selected, context, winningModuleId, result, lastPosteriorSummary);
     },

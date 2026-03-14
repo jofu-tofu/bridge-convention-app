@@ -1,5 +1,6 @@
 import type { Call } from "../../engine/types";
-import type { ConditionEvidenceIR } from "./evidence-bundle";
+import type { ConditionEvidenceIR, ConditionRole } from "./evidence-bundle";
+import type { TransformTrace } from "./meaning";
 import type { SurfaceCompositionDiagnostic } from "./module-surface";
 
 /** Kind of encoder used for call assignment. */
@@ -31,7 +32,7 @@ export interface DecisionProvenance {
 export interface ApplicabilityEvidence {
   readonly factDependencies: readonly string[];
   readonly evaluatedConditions: readonly (ConditionEvidenceIR & {
-    readonly conditionRole?: "semantic" | "inferential" | "pedagogical" | "routing";
+    readonly conditionRole?: ConditionRole;
   })[];
 }
 
@@ -59,12 +60,7 @@ export interface ActivationTrace {
 
 /** Trace of a transform applied during arbitration.
  *  Extended from the basic TransformTrace in meaning.ts with provenance fields. */
-export interface TransformTraceEntry {
-  readonly transformId: string;
-  readonly kind: "suppress" | "inject" | "remap";
-  readonly targetId: string;
-  readonly sourceModuleId: string;
-  readonly reason: string;
+export interface TransformTraceEntry extends TransformTrace {
   /** IDs of candidates affected by this transform. */
   readonly affectedCandidateIds?: readonly string[];
 }

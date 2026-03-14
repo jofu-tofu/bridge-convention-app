@@ -2,10 +2,13 @@ import type { Call } from "../../engine/types";
 import type { MeaningId, SemanticClassId, RankingMetadata } from "./meaning";
 import type { PublicConsequences } from "./agreement-module";
 
+/** Operator for fact-based clause evaluation. */
+export type FactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+
 export interface MeaningSurfaceClause {
   readonly clauseId: string;
   readonly factId: string;
-  readonly operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+  readonly operator: FactOperator;
   readonly value:
     | number
     | boolean
