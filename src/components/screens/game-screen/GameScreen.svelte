@@ -73,11 +73,7 @@
     } else if (phase === "BIDDING" && feedback) {
       raf = requestAnimationFrame(() => gameStore.dismissBidFeedback());
     } else if (phase === "DECLARER_PROMPT") {
-      raf = requestAnimationFrame(() => {
-        if (gameStore.isDefenderPrompt) gameStore.declineDefend();
-        else if (gameStore.isSouthDeclarerPrompt) gameStore.declineSouthPlay();
-        else gameStore.declineDeclarerSwap();
-      });
+      raf = requestAnimationFrame(() => gameStore.declinePrompt());
     }
 
     return () => { if (raf) cancelAnimationFrame(raf); };
@@ -133,7 +129,7 @@
       return { label: "Bidding", color: "bg-blue-600", textColor: "text-blue-100" };
     }
     if (gameStore.phase === "DECLARER_PROMPT") {
-      if (gameStore.isDefenderPrompt) {
+      if (gameStore.promptMode === "defender") {
         return { label: "Defend", color: "bg-amber-600", textColor: "text-amber-100" };
       }
       return { label: "Declarer", color: "bg-teal-600", textColor: "text-teal-100" };
@@ -268,7 +264,7 @@
         {phaseContainerClass}
         {sidePanelClass}
         deal={gameStore.deal}
-        {userSeat}
+        faceUpSeats={gameStore.faceUpSeats}
         auction={gameStore.auction}
         legalCalls={gameStore.legalCalls}
         onBid={handleBid}
@@ -289,20 +285,12 @@
         {sidePanelClass}
         deal={gameStore.deal}
         {userSeat}
+        faceUpSeats={gameStore.faceUpSeats}
         auction={gameStore.auction}
         contract={gameStore.contract}
-        isDefenderPrompt={gameStore.isDefenderPrompt}
-        isSouthDeclarerPrompt={gameStore.isSouthDeclarerPrompt}
-        onAccept={gameStore.isDefenderPrompt
-          ? () => gameStore.acceptDefend()
-          : gameStore.isSouthDeclarerPrompt
-            ? () => gameStore.acceptSouthPlay()
-            : () => gameStore.acceptDeclarerSwap()}
-        onSkip={gameStore.isDefenderPrompt
-          ? () => gameStore.declineDefend()
-          : gameStore.isSouthDeclarerPrompt
-            ? () => gameStore.declineSouthPlay()
-            : () => gameStore.declineDeclarerSwap()}
+        promptMode={gameStore.promptMode ?? "defender"}
+        onAccept={() => gameStore.acceptPrompt()}
+        onSkip={() => gameStore.declinePrompt()}
       />
     {:else if gameStore.phase === "PLAYING" && gameStore.deal}
       <PlayingPhase
@@ -314,10 +302,10 @@
         {sidePanelClass}
         {playUserSeat}
         {rotated}
+        faceUpSeats={gameStore.faceUpSeats}
         deal={gameStore.deal}
         contract={gameStore.contract}
         currentPlayer={gameStore.currentPlayer}
-        dummySeat={gameStore.dummySeat ?? undefined}
         currentTrick={gameStore.currentTrick}
         trumpSuit={gameStore.trumpSuit}
         declarerTricksWon={gameStore.declarerTricksWon}
@@ -337,6 +325,7 @@
         {sidePanelClass}
         deal={gameStore.deal}
         {userSeat}
+        faceUpSeats={gameStore.faceUpSeats}
         auction={gameStore.auction}
         contract={gameStore.contract}
         score={gameStore.score}

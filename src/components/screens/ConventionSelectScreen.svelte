@@ -2,7 +2,6 @@
   import { listConventions } from "../../conventions/core/registry";
   import { ConventionCategory } from "../../conventions/core/types";
   import type { ConventionConfig } from "../../conventions/core/types";
-  import type { OpponentMode } from "../../bootstrap/types";
   import { getAppStore } from "../../stores/context";
   import { filterConventions } from "../../core/display/filter-conventions";
 
@@ -37,7 +36,17 @@
 <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Convention selection">
   <!-- Fixed header: title + search + filters -->
   <div class="shrink-0">
-    <h1 class="text-3xl font-bold text-text-primary mb-2">Bridge Practice</h1>
+    <div class="flex items-center justify-between mb-2">
+      <h1 class="text-3xl font-bold text-text-primary">Bridge Practice</h1>
+      <button
+        class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
+        onclick={() => appStore.navigateToSettings()}
+        aria-label="Settings"
+        data-testid="settings-button"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
     <p class="text-text-secondary mb-6">Select a convention to begin drilling.</p>
 
     <!-- Search -->
@@ -93,26 +102,6 @@
           {cat}
         </button>
       {/each}
-    </div>
-
-    <!-- Settings -->
-    <div class="flex items-center gap-3 mb-4">
-      <label class="text-sm font-medium text-text-secondary" for="opponent-mode">Opponent Interference</label>
-      <select
-        id="opponent-mode"
-        class="bg-bg-card border border-border-subtle rounded-[--radius-md] px-2.5 py-1.5 text-sm text-text-primary cursor-pointer"
-        value={appStore.opponentMode}
-        onchange={(e) => appStore.setOpponentMode(e.currentTarget.value as OpponentMode)}
-        data-testid="opponent-mode-select"
-      >
-        <option value="natural">Natural</option>
-        <option value="none">None</option>
-      </select>
-      <span class="text-xs text-text-muted">
-        {appStore.opponentMode === "natural"
-          ? "Opponents bid naturally"
-          : "Opponents always pass"}
-      </span>
     </div>
   </div>
 

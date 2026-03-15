@@ -6,6 +6,7 @@
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
   import LearningScreen from "./components/screens/LearningScreen.svelte";
+  import SettingsScreen from "./components/screens/SettingsScreen.svelte";
 
   interface Props {
     engine: EnginePort;
@@ -27,5 +28,7 @@
     <GameScreen />
   {:else if props.appStore.screen === "learning"}
     <LearningScreen />
+  {:else if props.appStore.screen === "settings"}
+    <SettingsScreen />
   {/if}
 </div>
