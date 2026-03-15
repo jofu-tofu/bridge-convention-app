@@ -569,6 +569,46 @@ describe("matchTransition", () => {
       ),
     ).toBe(true);
   });
+
+  it("matches opponent-action bid with level and strain filter", () => {
+    expect(
+      matchTransition(
+        { kind: "opponent-action", callType: "bid", level: 1, strain: BidSuit.NoTrump },
+        { type: "bid", level: 1, strain: BidSuit.NoTrump },
+        "opponent",
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects opponent-action bid with wrong level", () => {
+    expect(
+      matchTransition(
+        { kind: "opponent-action", callType: "bid", level: 1, strain: BidSuit.NoTrump },
+        { type: "bid", level: 2, strain: BidSuit.NoTrump },
+        "opponent",
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects opponent-action bid with wrong strain", () => {
+    expect(
+      matchTransition(
+        { kind: "opponent-action", callType: "bid", level: 1, strain: BidSuit.NoTrump },
+        { type: "bid", level: 1, strain: BidSuit.Hearts },
+        "opponent",
+      ),
+    ).toBe(false);
+  });
+
+  it("matches opponent-action bid with level filter only", () => {
+    expect(
+      matchTransition(
+        { kind: "opponent-action", callType: "bid", level: 2 },
+        { type: "bid", level: 2, strain: BidSuit.Hearts },
+        "opponent",
+      ),
+    ).toBe(true);
+  });
 });
 
 describe("collectInheritedTransforms", () => {

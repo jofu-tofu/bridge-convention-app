@@ -36,6 +36,17 @@ describe("createDontConversationMachine", () => {
     expect(result.activeSurfaceGroupIds).toContain("overcaller-r1");
   });
 
+  it("does not activate on non-1NT opening", () => {
+    const auction1C = buildAuction(Seat.East, ["1C"]);
+    expect(evaluateMachine(machine, auction1C, Seat.South).context.currentStateId).toBe("idle");
+
+    const auction1H = buildAuction(Seat.East, ["1H"]);
+    expect(evaluateMachine(machine, auction1H, Seat.South).context.currentStateId).toBe("idle");
+
+    const auction2C = buildAuction(Seat.East, ["2C"]);
+    expect(evaluateMachine(machine, auction2C, Seat.South).context.currentStateId).toBe("idle");
+  });
+
   it("overcaller bids 2H (both majors)", () => {
     const auction = buildAuction(Seat.East, ["1NT", "2H"]);
     const result = evaluateMachine(machine, auction, Seat.South);

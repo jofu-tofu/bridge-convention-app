@@ -102,8 +102,11 @@ export function matchTransition(
       if (match.callType === undefined) return true;
       if (match.callType === "double") return call.type === "double";
       if (match.callType === "redouble") return call.type === "redouble";
-      // callType "bid" matches any contract bid from opponent
-      return call.type === "bid";
+      // callType "bid" matches contract bids from opponent, with optional level/strain filter
+      if (call.type !== "bid") return false;
+      if (match.level !== undefined && call.level !== match.level) return false;
+      if (match.strain !== undefined && call.strain !== match.strain) return false;
+      return true;
     }
     case "predicate":
       // Predicate tests are handled at the evaluateMachine level with full context

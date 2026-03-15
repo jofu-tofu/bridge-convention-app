@@ -39,6 +39,8 @@ export type TransitionMatch =
   | {
       readonly kind: "opponent-action";
       readonly callType?: "bid" | "double" | "redouble";
+      readonly level?: number; // Optional: filter to specific bid level
+      readonly strain?: BidSuit; // Optional: filter to specific bid strain
     }
   | {
       readonly kind: "predicate";
