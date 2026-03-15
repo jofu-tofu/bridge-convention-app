@@ -5,7 +5,6 @@
   import { getEngine, getGameStore, getAppStore } from "../../../stores/context";
   import { BidGrade } from "../../../stores/bidding.svelte";
   import { startDrill } from "../../../bootstrap/start-drill";
-  import type { OpponentMode } from "../../../bootstrap/types";
   import { computeTableScale } from "../../../core/display/table-scale";
   import { mulberry32 } from "../../../core/util/seeded-rng";
   import { toBeliefData } from "../../../inference/belief-converter";
@@ -25,21 +24,6 @@
   const userSeat = Seat.South;
 
   let dealNumber = $state(0);
-
-  // Settings dropdown
-  let settingsOpen = $state(false);
-
-  $effect(() => {
-    if (!settingsOpen) return;
-    function close(e: MouseEvent) {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[data-testid="settings-toggle"]') && !target.closest('[role="menu"]')) {
-        settingsOpen = false;
-      }
-    }
-    document.addEventListener("click", close, true);
-    return () => document.removeEventListener("click", close, true);
-  });
 
   // Table rotation: only when effectiveUserSeat is exactly North (declarer swap accepted)
   const rotated = $derived(gameStore.effectiveUserSeat === Seat.North);
@@ -257,44 +241,6 @@
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
       </div>
       <div class="flex items-center gap-3">
-        <!-- Opponent strategy dropdown -->
-        <div class="relative">
-          <button
-            class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-            onclick={() => settingsOpen = !settingsOpen}
-            aria-label="Settings"
-            aria-expanded={settingsOpen}
-            data-testid="settings-toggle"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-          {#if settingsOpen}
-            <div
-              class="absolute right-0 top-full mt-1 w-56 bg-bg-card border border-border-subtle rounded-[--radius-md] shadow-lg z-50 p-3"
-              role="menu"
-            >
-              <label class="block text-xs font-semibold text-text-secondary mb-1.5">Opponent Interference</label>
-              <select
-                class="w-full bg-bg-base border border-border-subtle rounded-[--radius-sm] px-2.5 py-1.5 text-sm text-text-primary cursor-pointer"
-                value={appStore.opponentMode}
-                onchange={(e) => {
-                  const target = e.currentTarget;
-                  appStore.setOpponentMode(target.value as OpponentMode);
-                  settingsOpen = false;
-                }}
-                data-testid="opponent-mode-select"
-              >
-                <option value="natural">Natural</option>
-                <option value="none">None</option>
-              </select>
-              <p class="text-xs text-text-secondary mt-1.5">
-                {appStore.opponentMode === "natural"
-                  ? "Opponents bid naturally with 6+ HCP and a 5+ card suit."
-                  : "Opponents always pass."}
-              </p>
-            </div>
-          {/if}
-        </div>
         <span class="text-text-secondary text-base">Deal #{dealNumber}</span>
         {#if DEV}
           <button

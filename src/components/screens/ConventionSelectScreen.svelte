@@ -2,6 +2,7 @@
   import { listConventions } from "../../conventions/core/registry";
   import { ConventionCategory } from "../../conventions/core/types";
   import type { ConventionConfig } from "../../conventions/core/types";
+  import type { OpponentMode } from "../../bootstrap/types";
   import { getAppStore } from "../../stores/context";
   import { filterConventions } from "../../core/display/filter-conventions";
 
@@ -92,6 +93,26 @@
           {cat}
         </button>
       {/each}
+    </div>
+
+    <!-- Settings -->
+    <div class="flex items-center gap-3 mb-4">
+      <label class="text-sm font-medium text-text-secondary" for="opponent-mode">Opponent Interference</label>
+      <select
+        id="opponent-mode"
+        class="bg-bg-card border border-border-subtle rounded-[--radius-md] px-2.5 py-1.5 text-sm text-text-primary cursor-pointer"
+        value={appStore.opponentMode}
+        onchange={(e) => appStore.setOpponentMode(e.currentTarget.value as OpponentMode)}
+        data-testid="opponent-mode-select"
+      >
+        <option value="natural">Natural</option>
+        <option value="none">None</option>
+      </select>
+      <span class="text-xs text-text-muted">
+        {appStore.opponentMode === "natural"
+          ? "Opponents bid naturally"
+          : "Opponents always pass"}
+      </span>
     </div>
   </div>
 

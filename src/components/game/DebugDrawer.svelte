@@ -713,59 +713,7 @@
     </details>
 
     <!-- ═══════════════════════════════════════════════════════════
-         12. INFERENCE TIMELINE (NS + EW)
-         ═══════════════════════════════════════════════════════════ -->
-    <details>
-      <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">
-        Inference Timeline
-        {#if gameStore.inferenceTimeline.length > 0}
-          <span class="text-text-muted font-normal">({gameStore.inferenceTimeline.length} NS, {gameStore.ewInferenceTimeline.length} EW)</span>
-        {/if}
-      </summary>
-      <div class="pl-2 py-1">
-        {#if gameStore.inferenceTimeline.length === 0 && gameStore.ewInferenceTimeline.length === 0}
-          <div class="text-text-muted italic">No inferences</div>
-        {:else}
-          {#if gameStore.inferenceTimeline.length > 0}
-            <div class="mb-1">
-              <span class="text-text-muted font-semibold">N-S:</span>
-              {#each gameStore.inferenceTimeline as snapshot, i (snapshot.entry.seat + '-' + i)}
-                <div class="ml-2 border-l border-border-subtle pl-2">
-                  <span class="text-text-primary">{snapshot.entry.seat}:</span>
-                  <span class="font-bold ml-1">{fmtCall(snapshot.entry.call)}</span>
-                  {#if snapshot.newInference}
-                    <span class="text-green-400 ml-1">HCP: {snapshot.newInference.minHcp ?? "?"}-{snapshot.newInference.maxHcp ?? "?"}</span>
-                    <span class="text-text-muted ml-1">({snapshot.newInference.source})</span>
-                  {:else}
-                    <span class="text-text-muted ml-1">no inference</span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-          {#if gameStore.ewInferenceTimeline.length > 0}
-            <div>
-              <span class="text-text-muted font-semibold">E-W:</span>
-              {#each gameStore.ewInferenceTimeline as snapshot, i (snapshot.entry.seat + '-' + i)}
-                <div class="ml-2 border-l border-border-subtle pl-2">
-                  <span class="text-text-primary">{snapshot.entry.seat}:</span>
-                  <span class="font-bold ml-1">{fmtCall(snapshot.entry.call)}</span>
-                  {#if snapshot.newInference}
-                    <span class="text-green-400 ml-1">HCP: {snapshot.newInference.minHcp ?? "?"}-{snapshot.newInference.maxHcp ?? "?"}</span>
-                    <span class="text-text-muted ml-1">({snapshot.newInference.source})</span>
-                  {:else}
-                    <span class="text-text-muted ml-1">no inference</span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-        {/if}
-      </div>
-    </details>
-
-    <!-- ═══════════════════════════════════════════════════════════
-         13. PLAY LOG
+         PLAY LOG (play-phase only)
          ═══════════════════════════════════════════════════════════ -->
     <details>
       <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">Play Log</summary>
@@ -783,37 +731,6 @@
               <span class="text-text-muted">({entry.reason})</span>
             </div>
           {/each}
-        {/if}
-      </div>
-    </details>
-
-    <!-- ═══════════════════════════════════════════════════════════
-         14. LIVE INFERENCES
-         ═══════════════════════════════════════════════════════════ -->
-    <details>
-      <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">Live Inferences</summary>
-      <div class="pl-2 py-1">
-        {#if gameStore.playInferences}
-          {#each ALL_SEATS as seat (seat)}
-            {@const inf = gameStore.playInferences[seat]}
-            <div class="mb-1.5">
-              <div class="font-semibold text-text-primary">{seat}</div>
-              <div class="pl-2">
-                HCP: {inf.hcpRange.min}-{inf.hcpRange.max}
-                {#if inf.isBalanced !== undefined}
-                  | Bal: {inf.isBalanced ? "Y" : "N"}
-                {/if}
-              </div>
-              <div class="pl-2">
-                {#each [{ suit: Suit.Spades, sym: "\u2660" }, { suit: Suit.Hearts, sym: "\u2665" }, { suit: Suit.Diamonds, sym: "\u2666" }, { suit: Suit.Clubs, sym: "\u2663" }] as { suit, sym } (suit)}
-                  {@const sl = inf.suitLengths[suit]}
-                  <span class="mr-2 {suit === Suit.Hearts || suit === Suit.Diamonds ? 'text-red-400' : 'text-text-primary'}">{sym}{sl.min}-{sl.max}</span>
-                {/each}
-              </div>
-            </div>
-          {/each}
-        {:else}
-          <div class="text-text-muted italic">No inferences available</div>
         {/if}
       </div>
     </details>
