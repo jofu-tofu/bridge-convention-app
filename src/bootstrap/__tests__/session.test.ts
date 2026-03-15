@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { createDrillSession } from "../session";
 import type { DrillConfig } from "../types";
 import type { BiddingStrategy, BidResult } from "../../core/contracts";
@@ -18,7 +18,7 @@ function makeStrategy(result: BidResult | null): BiddingStrategy {
   return {
     id: "test",
     name: "Test Strategy",
-    suggest: vi.fn().mockReturnValue(result),
+    suggest: () => result,
   };
 }
 
@@ -62,7 +62,6 @@ describe("createDrillSession", () => {
     const session = createDrillSession(config);
     const result = session.getNextBid(Seat.North, makeHand(), makeAuction());
     expect(result).toEqual(bidResult);
-    expect(strategy.suggest).toHaveBeenCalled();
   });
 
   it("wraps null strategy result as pass", () => {
