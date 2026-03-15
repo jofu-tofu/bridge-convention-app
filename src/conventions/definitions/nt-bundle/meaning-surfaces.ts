@@ -58,6 +58,7 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional",
     sourceIntent: { type: "StaymanAsk", params: {} },
     teachingLabel: "Stayman 2C",
+    alert: "alert",
     publicConsequences: {
       promises: [
         { factId: "hand.hcp", operator: "gte", value: 8 },
@@ -91,6 +92,7 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional",
     sourceIntent: { type: "TransferToHearts", params: {} },
     teachingLabel: "Transfer to hearts",
+    alert: "announce",
     publicConsequences: {
       promises: [
         { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
@@ -124,6 +126,7 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional",
     sourceIntent: { type: "TransferToSpades", params: {} },
     teachingLabel: "Transfer to spades",
+    alert: "announce",
     publicConsequences: {
       promises: [
         { factId: "hand.suitLength.spades", operator: "gte", value: 5 },
@@ -246,6 +249,7 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory",
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "hearts" } },
     teachingLabel: "Show hearts",
+    alert: "alert",
     publicConsequences: {
       promises: [
         { factId: "hand.suitLength.hearts", operator: "gte", value: 4 },
@@ -290,6 +294,7 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory",
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "spades" } },
     teachingLabel: "Show spades",
+    alert: "alert",
     publicConsequences: {
       promises: [
         { factId: "hand.suitLength.spades", operator: "gte", value: 4 },
@@ -334,6 +339,7 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory",
     sourceIntent: { type: "DenyMajor", params: {} },
     teachingLabel: "Deny major (2D)",
+    alert: "alert",
     publicConsequences: {
       denies: [
         { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true },
@@ -768,6 +774,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional",
     sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
     teachingLabel: "Smolen 3H (5H + 4S, game force)",
+    alert: "alert",
   },
 
   // Smolen 3S: 10+ HCP, 5 spades + 4 hearts (game-forcing, bids short major)
@@ -808,6 +815,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional",
     sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
     teachingLabel: "Smolen 3S (5S + 4H, game force)",
+    alert: "alert",
   },
 ];
 
@@ -1199,4 +1207,5 @@ export const INTERFERENCE_REDOUBLE_SURFACE: MeaningSurface = {
   priorityClass: "obligatory",
   sourceIntent: { type: "RedoubleStrength", params: {} },
   teachingLabel: "Redouble (showing 10+ HCP)",
+  alert: "alert",
 };

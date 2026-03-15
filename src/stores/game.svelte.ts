@@ -18,7 +18,7 @@ import { createInitialBeliefState, applyAnnotation } from "../inference/belief-a
 import { produceAnnotation } from "../inference/annotation-producer";
 import { noopExtractor } from "../inference/noop-extractor";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { partnerSeat } from "../engine/constants";
+import { partnerSeat, areSamePartnership } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
 import { createPlayStore } from "./play.svelte";
 import { createBiddingStore } from "./bidding.svelte";
@@ -42,6 +42,8 @@ export type { PlayLogEntry } from "./play.svelte";
 // Re-export seatController from play sub-store for backward compat
 export { seatController } from "./play.svelte";
 
+export type PromptMode = "defender" | "south-declarer" | "declarer-swap";
+
 /** Valid phase transitions. Key = source phase, value = allowed target phases. */
 const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
   BIDDING: ["DECLARER_PROMPT", "EXPLANATION"],
@@ -57,6 +59,7 @@ function toExtractorInput(bidResult: BidResult): InferenceExtractorInput {
     rule: bidResult.ruleName ?? "unknown",
     explanation: bidResult.explanation,
     meaning: bidResult.meaning,
+    alert: bidResult.alert ?? null,
   };
 }
 
@@ -193,6 +196,59 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     declinePlay();
   }
 
+  /** Determine the current prompt mode from game state. */
+  function getPromptMode(): PromptMode | null {
+    if (phase !== "DECLARER_PROMPT" || !contract || !userSeat) return null;
+    if (contract.declarer !== userSeat && partnerSeat(contract.declarer) !== userSeat) return "defender";
+    if (contract.declarer === userSeat) return "south-declarer";
+    return "declarer-swap";
+  }
+
+  /** Accept the current prompt, dispatching based on prompt mode. */
+  function acceptPrompt() {
+    if (!contract || phase !== "DECLARER_PROMPT") return;
+    const mode = getPromptMode();
+    if (mode === "declarer-swap") {
+      acceptPlay(contract.declarer);
+    } else {
+      acceptPlay();
+    }
+  }
+
+  /** Decline the current prompt (skip to review). */
+  function declinePrompt() {
+    declinePlay();
+  }
+
+  /** Compute which seats should be shown face-up, based on current phase and user perspective. */
+  function getFaceUpSeats(): ReadonlySet<Seat> {
+    const seat = effectiveUserSeat ?? userSeat;
+    if (!seat) return new Set();
+
+    const seats = new Set<Seat>([seat]);
+
+    if (phase === "DECLARER_PROMPT" && contract) {
+      const mode = getPromptMode();
+      if (mode === "south-declarer") {
+        seats.add(partnerSeat(contract.declarer));
+      } else if (mode === "declarer-swap") {
+        seats.add(contract.declarer);
+      }
+      // defender: only user's hand
+    }
+
+    if (phase === "PLAYING" && contract) {
+      const dummy = partnerSeat(contract.declarer);
+      if (areSamePartnership(dummy, seat)) {
+        seats.add(dummy);
+      }
+    }
+
+    // EXPLANATION: only user's hand (showAll is component-local)
+
+    return seats;
+  }
+
   function resetImpl() {
     deal = null;
     phase = "BIDDING";
@@ -222,6 +278,14 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     get effectiveUserSeat() {
       return effectiveUserSeat;
     },
+    /** The seat the user is playing as (effectiveUserSeat after swap, or default userSeat). */
+    get playUserSeat(): Seat {
+      return effectiveUserSeat ?? userSeat ?? Seat.South;
+    },
+    /** True when the table should be rotated (user playing as North after declarer swap). */
+    get rotated(): boolean {
+      return effectiveUserSeat === Seat.North;
+    },
     // Bidding state — delegated to bidding sub-store
     get auction() {
       return bidding.auction;
@@ -243,6 +307,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     },
     get bidFeedback() {
       return bidding.bidFeedback;
+    },
+    get isFeedbackBlocking() {
+      return bidding.isFeedbackBlocking;
     },
     // Play state — delegated to play sub-store
     get tricks() {
@@ -269,6 +336,15 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     get trumpSuit() {
       return play.trumpSuit;
     },
+    get legalPlaysForCurrentPlayer() {
+      return play.legalPlaysForCurrentPlayer;
+    },
+    get userControlledSeats() {
+      return play.userControlledSeats;
+    },
+    get remainingCardsPerSeat() {
+      return play.remainingCardsPerSeat;
+    },
     // DDS analysis state — delegated to DDS sub-store
     get ddsSolution() {
       return dds.ddsSolution;
@@ -291,6 +367,14 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     get isSouthDeclarerPrompt() {
       if (!contract || !userSeat) return false;
       return contract.declarer === userSeat;
+    },
+    /** Current prompt mode during DECLARER_PROMPT phase. */
+    get promptMode(): PromptMode | null {
+      return getPromptMode();
+    },
+    /** Which seats should be shown face-up based on current phase and user perspective. */
+    get faceUpSeats(): ReadonlySet<Seat> {
+      return getFaceUpSeats();
     },
 
     // --- Namespaced sub-store accessors ---
@@ -349,6 +433,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     /** Get legal plays for a seat based on current trick context. */
     getLegalPlaysForSeat: play.getLegalPlaysForSeat,
 
+    /** Refresh legal plays for current player (async). */
+    refreshLegalPlays: play.refreshLegalPlays,
+
     /** Get remaining cards for a seat (hand minus played cards). */
     getRemainingCards: play.getRemainingCards,
 
@@ -356,6 +443,8 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     skipToReview: play.skipToReview,
     acceptPlay,
     declinePlay,
+    acceptPrompt,
+    declinePrompt,
     acceptDeclarerSwap,
     declineDeclarerSwap,
     acceptDefend,

@@ -11,6 +11,7 @@ import type {
   ResolvedCandidateDTO,
 } from "./tree-evaluation";
 import type { TeachingProjection } from "./teaching-projection";
+import type { FactConstraintIR } from "./agreement-module";
 
 export interface BiddingContext {
   readonly hand: Hand;
@@ -34,10 +35,19 @@ export enum ForcingState {
   PassForcing = "pass-forcing",
 }
 
-/** Alert information for conventional (non-natural) bids. */
+/** Alert at the bridge table — what partner says when this bid is made.
+ *  "alert" = opponents may ask for explanation.
+ *  "announce" = partner proactively states the meaning (e.g., "transfer").
+ *  The formal explanation comes from publicConstraints — same FactConstraintIR
+ *  vocabulary used by the factor graph, making this directly translatable
+ *  to public beliefs without any interpretation layer. */
 export interface BidAlert {
-  readonly artificial: boolean;
-  readonly forcingType: "forcing" | "game-forcing" | "invitational" | "signoff" | null;
+  readonly kind: "alert" | "announce";
+  /** Structured constraints that become public knowledge when this bid is explained.
+   *  Sourced from the surface's publicConsequences.promises. */
+  readonly publicConstraints: readonly FactConstraintIR[];
+  /** Human-readable label for UI display (from surface.teachingLabel). */
+  readonly teachingLabel: string;
 }
 
 export interface BidResult {
@@ -45,6 +55,8 @@ export interface BidResult {
   readonly ruleName: string | null;
   readonly explanation: string;
   readonly meaning?: string;
+  /** Alert information when this bid is conventional/alertable. Null for natural bids. */
+  readonly alert?: BidAlert | null;
   readonly handSummary?: string;
   readonly evaluationTrace?: EvaluationTrace;
   /** All candidates the pipeline considered for this auction+hand.

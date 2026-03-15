@@ -43,5 +43,9 @@ export interface MeaningSurface {
   };
   readonly teachingLabel: string;
   readonly publicConsequences?: PublicConsequences;
+  /** Bridge alert status — when set, partner alerts or announces this bid at the table.
+   *  When absent, resolveAlert() derives from priorityClass and sourceIntent.
+   *  The formal explanation comes from publicConsequences (same FactConstraintIR vocabulary). */
+  readonly alert?: "alert" | "announce";
   readonly surfaceBindings?: Readonly<Record<string, string>>;
 }

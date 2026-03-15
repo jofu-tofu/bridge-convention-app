@@ -1,6 +1,7 @@
 import type { MeaningSurface, FactOperator } from "./meaning-surface";
 import type { ConditionRole } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
+import type { FactConstraintIR } from "./agreement-module";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;
@@ -72,6 +73,12 @@ export interface MeaningProposal {
   /** Human-readable teaching label (e.g., "Stayman 2C", "Transfer to hearts").
    *  Threaded from MeaningSurface.teachingLabel through the evaluation pipeline. */
   readonly teachingLabel?: string;
+  /** Resolved alert kind — threaded from surface.alert or derived by resolveAlert().
+   *  Present only when this bid is alertable. */
+  readonly alert?: "alert" | "announce";
+  /** Structured constraints from the surface's publicConsequences.promises.
+   *  Threaded through the pipeline for BidAlert construction in the strategy layer. */
+  readonly publicConstraints?: readonly FactConstraintIR[];
 }
 
 /** Recommendation band priority values for comparison (lower = higher priority). */

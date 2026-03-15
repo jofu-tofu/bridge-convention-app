@@ -14,7 +14,7 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | File | Role |
 |------|------|
 | `index.ts` | Barrel re-export for all contract files |
-| `bidding.ts` | `BiddingContext`, `ForcingState`, `BidAlert`, `BiddingStrategy`, `BidResult`, `BidHistoryEntry` |
+| `bidding.ts` | `BiddingContext`, `ForcingState`, `BidAlert` (with `kind: "alert" \| "announce"`, `publicConstraints`, `teachingLabel`), `BiddingStrategy`, `BidResult` (with optional `alert`), `BidHistoryEntry` |
 | `inference.ts` | `SuitInference`, `HandInference`, `InferredHoldings`, `BeliefData` |
 | `tree-evaluation.ts` | `SiblingConditionDetail`, `CandidateEligibility`, `ResolvedCandidateDTO` (with optional `allEncodings`), `AlternativeGroup`, `IntentFamily`, `IntentRelationship`, `EvaluationTrace`, `isDtoSelectable()`, `isDtoPedagogicallyAcceptable()` |
 | `play.ts` | `PlayContext`, `PlayResult`, `PlayStrategy` |
@@ -23,7 +23,8 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | `meaning.ts` | `MeaningId`, `SemanticClassId`, `RecommendationBand`, `RankingMetadata`, `MeaningClause`, `EvidenceBundle`, `MeaningProposal`, `BAND_PRIORITY`, `compareRanking()`, `CandidateTransform`, `TransformTrace` |
 | `fact-catalog.ts` | `FactLayer`, `EvaluationWorld`, `FactMetadata`, `FactDefinition` (with `derivesFrom`, optional `metadata`), `FactValue`, `EvaluatedFacts`, `getFactValue()`, `FactEvaluatorFn`, `RelationalFactEvaluatorFn`, `FactCatalog` (with optional `relationalEvaluators`, optional `posteriorEvaluators`), `FactCatalogExtension`, `createFactCatalog()`, `PRIMITIVE_FACTS` (6), `BRIDGE_DERIVED_FACTS` (8, including 4 relational: `supportForBoundSuit`, `fitWithBoundSuit`, `shortageInSuit`, `totalPointsForRaise`, plus `hasShortage` non-relational), `SHARED_FACTS` (19 = primitive + bridge-derived + posterior-derived) |
 | `semantic-classes.ts` | `BRIDGE_SEMANTIC_CLASSES` (platform-owned canonical IDs). Convenience catalog, not a gating registry — modules declare their own semantic class IDs as strings. |
-| `meaning-surface.ts` | `MeaningSurfaceClause`, `MeaningSurface` (with optional `publicConsequences`) — authored, hand-independent meaning units (pre-evaluation). Evaluated by `conventions/core/pipeline/meaning-evaluator.ts` into `MeaningProposal`. |
+| `meaning-surface.ts` | `MeaningSurfaceClause`, `MeaningSurface` (with optional `publicConsequences`, optional `alert: "alert" \| "announce"`) — authored, hand-independent meaning units (pre-evaluation). Evaluated by `conventions/core/pipeline/meaning-evaluator.ts` into `MeaningProposal`. |
+| `alert.ts` | `AlertResolvable`, `resolveAlert()` — derives `BidAlert` from surface properties (explicit `alert` field, or inferred from `priorityClass`/`sourceIntent`). Returns null for natural bids. |
 | `provenance.ts` | `EncoderKind`, `DecisionProvenance` (with optional `surfaceDiagnostics`), `ApplicabilityEvidence`, `EliminationTrace`, `ActivationTrace`, `TransformTraceEntry`, `ArbitrationTrace`, `EncodingTrace`, `LegalityTrace`, `HandoffTrace` — full decision provenance DTOs for pipeline tracing. `ApplicabilityEvidence.evaluatedConditions` and `EliminationTrace.evidence` use `ConditionEvidenceIR` from `evidence-bundle.ts`. |
 | `teaching-projection.ts` | `TeachingProjection`, `CallProjection`, `MeaningView`, `ExplanationNode`, `WhyNotEntry`, `PedagogicalRelationEntry`, `PedagogicalRelationKind`, `ConventionContribution`, `HandArchetypeSummary`, `WitnessHand`, `SeatRelativeHandSpaceSummary` (with optional `partnerSummary`, `archetypes`, `witnessHands`) — teaching-optimized views for "why not X?" UI |
 | `pedagogical-relations.ts` | `PedagogicalRelation` — discriminated union for pedagogical relations between bids/meanings |

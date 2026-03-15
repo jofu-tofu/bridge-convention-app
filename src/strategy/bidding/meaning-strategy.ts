@@ -1,6 +1,7 @@
 import type {
   BiddingContext,
   BidResult,
+  BidAlert,
   ConventionBiddingStrategy,
   AlternativeGroup,
   IntentFamily,
@@ -224,11 +225,21 @@ function buildBidResult(
     recommendationBand: ep.proposal.ranking.recommendationBand,
   }));
 
+  // Build alert from proposal's threaded alert metadata
+  const alert: BidAlert | null = selected.proposal.alert
+    ? {
+        kind: selected.proposal.alert,
+        publicConstraints: selected.proposal.publicConstraints ?? [],
+        teachingLabel: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
+      }
+    : null;
+
   return {
     call: selected.call,
     ruleName: selected.proposal.meaningId,
     explanation: selected.proposal.evidence.provenance.nodeName,
     meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
+    alert,
     handSummary: formatHandSummary(context.evaluation),
     evaluationTrace: {
       conventionId: moduleId,

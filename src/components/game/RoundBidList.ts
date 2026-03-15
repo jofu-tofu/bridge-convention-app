@@ -1,23 +1,10 @@
 import type { BidHistoryEntry } from "../../core/contracts";
-import type { BidResult } from "../../core/contracts";
-import type { Call, Seat } from "../../engine/types";
 
 // ─── Round-by-round grouping ──────────────────────────────────
 
-export interface RoundEntry {
-  readonly seat: Seat;
-  readonly call: Call;
-  readonly ruleName: string | null;
-  readonly meaning?: string;
-  readonly handSummary?: string;
-  readonly isUser: boolean;
-  readonly isCorrect?: boolean;
-  readonly expectedResult?: BidResult;
-}
-
 export interface RoundGroup {
   readonly roundNumber: number;
-  readonly entries: readonly RoundEntry[];
+  readonly entries: readonly BidHistoryEntry[];
 }
 
 /**
@@ -31,19 +18,9 @@ export function groupBidsByRound(
 
   const groups: RoundGroup[] = [];
   for (let i = 0; i < bidHistory.length; i += 4) {
-    const slice = bidHistory.slice(i, i + 4);
     groups.push({
       roundNumber: Math.floor(i / 4) + 1,
-      entries: slice.map((e) => ({
-        seat: e.seat,
-        call: e.call,
-        ruleName: e.ruleName,
-        meaning: e.meaning,
-        handSummary: e.handSummary,
-        isUser: e.isUser,
-        isCorrect: e.isCorrect,
-        expectedResult: e.expectedResult,
-      })),
+      entries: bidHistory.slice(i, i + 4),
     });
   }
   return groups;

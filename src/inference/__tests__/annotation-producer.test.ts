@@ -32,7 +32,11 @@ function makeStubNaturalProvider(inference: HandInference | null = null): Infere
 
 describe("produceAnnotation", () => {
   it("convention bid: alert from ruleResult.alert, meaning from ruleResult.meaning", () => {
-    const alert: BidAlert = { artificial: true, forcingType: "forcing" };
+    const alert: BidAlert = {
+      kind: "alert",
+      publicConstraints: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
+      teachingLabel: "Stayman 2C",
+    };
     const ruleResult = makeRuleResult({ alert, meaning: "Asks for a 4-card major" });
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" as never } };
 
@@ -150,5 +154,63 @@ describe("produceAnnotation", () => {
     expect(annotation.meaning).toBe("Redouble");
     expect(annotation.alert).toBeNull();
     expect(annotation.inferences).toEqual([]);
+  });
+
+  it("convention bid with alert publicConstraints: derives inference from constraints instead of natural", () => {
+    const alert: BidAlert = {
+      kind: "alert",
+      publicConstraints: [
+        { factId: "hand.hcp", operator: "gte", value: 8 },
+        { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
+      ],
+      teachingLabel: "Transfer to hearts",
+    };
+    const ruleResult = makeRuleResult({ alert, meaning: "Transfer to hearts" });
+    const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "D" as never } };
+
+    const annotation = produceAnnotation(
+      entry,
+      ruleResult,
+      "jacoby-transfers",
+      makeStubExtractor(), // noop — returns []
+      makeStubNaturalProvider(), // should NOT be called
+      emptyAuction,
+    );
+
+    expect(annotation.alert).toEqual(alert);
+    expect(annotation.inferences).toHaveLength(1);
+    expect(annotation.inferences[0]!.minHcp).toBe(8);
+    expect(annotation.inferences[0]!.suits).toEqual({
+      H: { minLength: 5 },
+    });
+    expect(annotation.inferences[0]!.source).toBe("alert:test-rule");
+  });
+
+  it("convention bid with empty publicConstraints: falls back to natural inference", () => {
+    const alert: BidAlert = {
+      kind: "alert",
+      publicConstraints: [],
+      teachingLabel: "DONT bid",
+    };
+    const naturalInference: HandInference = {
+      seat: Seat.South,
+      minHcp: 10,
+      suits: {},
+      source: "natural:2C",
+    };
+    const ruleResult = makeRuleResult({ alert, meaning: "DONT clubs + higher" });
+    const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" as never } };
+
+    const annotation = produceAnnotation(
+      entry,
+      ruleResult,
+      "dont",
+      makeStubExtractor(), // noop
+      makeStubNaturalProvider(naturalInference),
+      emptyAuction,
+    );
+
+    expect(annotation.alert).toEqual(alert);
+    expect(annotation.inferences).toEqual([naturalInference]);
   });
 });
