@@ -26,7 +26,6 @@ function makeDto(
 function makeEligibility(overrides: Partial<CandidateEligibility> = {}): CandidateEligibility {
   return {
     hand: { satisfied: true, failedConditions: [] },
-    protocol: { satisfied: true, reasons: [] },
     encoding: { legal: true },
     pedagogical: { acceptable: true, reasons: [] },
     ...overrides,
@@ -44,15 +43,6 @@ describe("isDtoSelectable", () => {
       const dto = makeDto({
         eligibility: makeEligibility({
           hand: { satisfied: false, failedConditions: [{ name: "hcp", description: "Need 10+" }] },
-        }),
-      });
-      expect(isDtoSelectable(dto)).toBe(false);
-    });
-
-    test("protocol unsatisfied → not selectable", () => {
-      const dto = makeDto({
-        eligibility: makeEligibility({
-          protocol: { satisfied: false, reasons: ["suppressed"] },
         }),
       });
       expect(isDtoSelectable(dto)).toBe(false);

@@ -68,7 +68,6 @@ function makeProposal(overrides: Partial<MeaningProposal> = {}): MeaningProposal
 function makeEligibility(overrides: Partial<CandidateEligibility> = {}): CandidateEligibility {
   return {
     hand: { satisfied: true, failedConditions: [] },
-    protocol: { satisfied: true, reasons: [] },
     encoding: { legal: true },
     pedagogical: { acceptable: true, reasons: [] },
     ...overrides,

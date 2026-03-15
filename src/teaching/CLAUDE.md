@@ -25,7 +25,7 @@ The following files were removed as part of the old tree-pipeline cleanup:
 
 ## Pedagogical Separation
 
-Pedagogical acceptability is NOT a selection gate in the candidate pipeline. Instead, `isDtoPedagogicallyAcceptable()` (contracts) is a post-selection annotation. `isTeachingEligible()` in `teaching-resolution.ts` checks hand+protocol+encoding+pedagogical for teaching candidate filtering.
+Pedagogical acceptability is NOT a selection gate in the candidate pipeline. Instead, `isDtoPedagogicallyAcceptable()` (contracts) is a post-selection annotation. `isTeachingEligible()` in `teaching-resolution.ts` checks hand+encoding+pedagogical for teaching candidate filtering.
 
 ---
 

@@ -15,13 +15,11 @@ describe("TraceCollector", () => {
   test("builds an EvaluationTrace with all fields", () => {
     const tc = new TraceCollector();
     tc.setConventionId("stayman");
-    tc.setProtocolMatched(true);
     tc.setCandidateCount(3);
     tc.addStrategyAttempt("convention:stayman", "suggested");
 
     const trace = tc.build();
     expect(trace.conventionId).toBe("stayman");
-    expect(trace.protocolMatched).toBe(true);
     expect(trace.candidateCount).toBe(3);
     expect(trace.strategyChainPath).toHaveLength(1);
   });

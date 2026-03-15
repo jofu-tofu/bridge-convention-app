@@ -121,10 +121,6 @@ export function evaluateProposal(
       satisfied: semanticPassed,
       failedConditions,
     },
-    protocol: {
-      satisfied: true,
-      reasons: [],
-    },
     encoding: {
       legal: legalityPassed,
       reason: legalityPassed ? undefined : "illegal_in_auction",

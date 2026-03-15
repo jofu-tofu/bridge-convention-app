@@ -44,7 +44,6 @@ function isTeachingEligible(c: ResolvedCandidateDTO): boolean {
   if (c.eligibility) {
     return c.eligibility.hand.satisfied
       && c.eligibility.encoding.legal
-      && c.eligibility.protocol.satisfied
       && c.eligibility.pedagogical.acceptable;
   }
   return c.legal && c.failedConditions.length === 0;

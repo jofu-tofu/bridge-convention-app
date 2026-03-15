@@ -43,7 +43,6 @@ describe("game inference adapter characterization", () => {
       ruleName: null,
       evaluationTrace: {
         conventionId: "stayman",
-        protocolMatched: true,
         candidateCount: 1,
         strategyChainPath: [],
       },

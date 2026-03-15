@@ -9,16 +9,12 @@ export interface SiblingConditionDetail {
   readonly conditionRole?: ConditionRole;
 }
 
-/** Unified eligibility model — all four dimensions that gate candidate selectability.
+/** Unified eligibility model — all dimensions that gate candidate selectability.
  *  CONSTRAINT: Pure DTO — no methods, no imports from conventions/ or engine/. */
 export interface CandidateEligibility {
   readonly hand: {
     readonly satisfied: boolean;
     readonly failedConditions: readonly SiblingConditionDetail[];
-  };
-  readonly protocol: {
-    readonly satisfied: boolean;
-    readonly reasons: readonly string[];
   };
   readonly encoding: {
     readonly legal: boolean;
@@ -57,12 +53,11 @@ export interface ResolvedCandidateDTO {
   readonly recommendationBand?: RecommendationBand;
 }
 
-/** Check three eligibility dimensions for DTO — pedagogical is post-selection annotation, not a gate.
+/** Check eligibility dimensions for DTO — pedagogical is post-selection annotation, not a gate.
  *  Falls back to legacy `legal` + `failedConditions` when eligibility is absent. */
 export function isDtoSelectable(c: ResolvedCandidateDTO): boolean {
   if (!c.eligibility) return c.legal && c.failedConditions.length === 0;
   return c.eligibility.hand.satisfied
-    && c.eligibility.protocol.satisfied
     && c.eligibility.encoding.legal;
 }
 
@@ -112,7 +107,6 @@ export interface IntentFamily {
  *  Always-on (not DEV-gated). Plain DTO — no convention-core imports. */
 export interface EvaluationTrace {
   readonly conventionId: string;
-  readonly protocolMatched: boolean;
   readonly candidateCount: number;
   /** True when a strategy result was rejected by the chain's resultFilter. */
   readonly forcingFiltered?: boolean;

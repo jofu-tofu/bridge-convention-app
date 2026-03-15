@@ -12,13 +12,11 @@ export { makeCall, makePass, makeRanking };
 
 export function makeEligibility(overrides?: {
   hand?: Partial<CandidateEligibility["hand"]>;
-  protocol?: Partial<CandidateEligibility["protocol"]>;
   encoding?: Partial<CandidateEligibility["encoding"]>;
   pedagogical?: Partial<CandidateEligibility["pedagogical"]>;
 }): CandidateEligibility {
   return {
     hand: { satisfied: true, failedConditions: [], ...overrides?.hand },
-    protocol: { satisfied: true, reasons: [], ...overrides?.protocol },
     encoding: { legal: true, ...overrides?.encoding },
     pedagogical: { acceptable: true, reasons: [], ...overrides?.pedagogical },
   };

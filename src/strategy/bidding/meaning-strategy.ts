@@ -219,7 +219,6 @@ function buildBidResult(
     handSummary: formatHandSummary(context.evaluation),
     evaluationTrace: {
       conventionId: moduleId,
-      protocolMatched: true,
       candidateCount: arbitration.truthSet.length + arbitration.acceptableSet.length,
       strategyChainPath: [],
       ...(posteriorSummary ? {
