@@ -152,7 +152,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 | Evidence group correlation model — within-group semantics not formalized as types | Unresolved | Posterior combiner accuracy |
 | `priorityClass` → `recommendationBand` indirection — spec says profile maps classes to bands | **Implemented** | — |
 | Two-phase evaluation unification — single `evaluate()` returning `{ publicSnapshot, decisionSurfaces }` | **Implemented** (strategy pipeline wired to evaluation runtime) | DecisionSurfaceIR migration (pipeline still uses MeaningSurface[]) |
-| Machine submachines and loops — needed for relay chains, variable-length protocols | **Implemented** (submachine stack + loop counters in machine-evaluator) | — |
+| Machine submachines and loops — needed for relay chains, variable-length protocols | **Implemented + exercised** (submachine stack + loop counters in machine-evaluator; Smolen submachine in NT bundle is first real convention use) | — |
 | Host-attachment activation — modules activating from another module's exported capabilities | Spec designed, not implemented | Negative Doubles, Fourth Suit Forcing |
 
 **Alignment summary (as of 2026-03-14):**
@@ -161,7 +161,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 |------|-----------|----------|
 | Pipeline (selection, teaching, provenance) | ~95% | priorityClass→band implemented. 5-grade taxonomy implemented (Correct/CorrectNotPreferred/Acceptable/NearMiss/Incorrect). Strategy pipeline wired to evaluation runtime. |
 | Upstream (modules, profiles, machine) | ~80% | Profile-driven activation implemented. Submachines and loops implemented. Two-phase evaluation wired. No host-attachment. ActivationTrace always empty. |
-| Convention coverage | Patterns 1 + 3 | Fixed-sequence ask-and-tell (Stayman, Bergen, Weak Twos). Weak Twos exercises multi-round ask-and-tell with Ogust sub-protocol. DONT exercises Pattern 3 (competitive/defensive with multi-stage relay, hierarchical parent/child states, predicate transitions). Patterns 2, 4-6 not yet exercised. |
+| Convention coverage | Patterns 1 + 3 + submachine | Fixed-sequence ask-and-tell (Stayman, Bergen, Weak Twos). Weak Twos exercises multi-round ask-and-tell with Ogust sub-protocol. DONT exercises Pattern 3 (competitive/defensive with multi-stage relay, hierarchical parent/child states, predicate transitions). Smolen exercises submachine invocation with guard-based routing (first real convention use of submachines). Patterns 2, 4-6 not yet exercised. |
 | WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
 | DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
 
@@ -174,6 +174,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 5. ~~**Machine submachines/loops.**~~ Done.
 6. ~~**Weak Twos convention bundle.**~~ Done (exercises multi-round Ogust protocol).
 6b. ~~**DONT convention bundle.**~~ Done (exercises Pattern 3 — hierarchical parent/child states, predicate transitions, multi-stage relay, 21-state competitive/defensive FSM).
+6c. ~~**Smolen convention (R3 continuation + submachine).**~~ Done (exercises submachine invocation — first real convention use of submachines with guard-based routing in NT bundle).
 7. **Finish remaining spec open questions:**
    - (a) Host-attachment activation + capability vocabulary (unblocks Negative Doubles)
    - (b) Fact catalog posterior compilers (unblocks WitnessSpecIR wiring)
@@ -181,7 +182,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 8. **Implement resolved spec areas** — as each open question is resolved:
    - Host-attachment → profile-activation extension
 9. **Add convention content that exercises resolved patterns:**
-   - Smolen (exercises R3 continuation — no spec gaps)
+   - ~~Smolen (exercises R3 continuation — no spec gaps)~~ Done.
    - Lebensohl (exercises relay encoding — needs relay-map encoder exercised)
    - Negative Doubles (exercises host-attachment — needs capability vocabulary done first)
 10. **Wire WitnessSpecIR to deal generation** (needs fact catalog posterior compilers resolved)

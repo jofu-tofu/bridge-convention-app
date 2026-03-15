@@ -155,4 +155,51 @@ export const NT_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
     a: "transfer:game-hearts",
     b: "transfer:nt-game-hearts",
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // Smolen: R3 continuation after 2D denial for 5-4 major hands
+  // ═══════════════════════════════════════════════════════════════
+
+  // Same-family: Both Smolen bids serve the same strategic purpose
+  {
+    kind: "same-family",
+    a: "smolen:bid-short-hearts",
+    b: "smolen:bid-short-spades",
+  },
+
+  // Stronger-than: Smolen is stronger than 2NT invite (game-forcing vs invite)
+  {
+    kind: "stronger-than",
+    a: "smolen:bid-short-hearts",
+    b: "stayman:nt-invite-after-denial",
+  },
+  {
+    kind: "stronger-than",
+    a: "smolen:bid-short-spades",
+    b: "stayman:nt-invite-after-denial",
+  },
+
+  // Continuation-of: Smolen continues the Stayman dialogue
+  {
+    kind: "continuation-of",
+    a: "smolen:bid-short-hearts",
+    b: "stayman:ask-major",
+  },
+  {
+    kind: "continuation-of",
+    a: "smolen:bid-short-spades",
+    b: "stayman:ask-major",
+  },
+
+  // Near-miss-of: Learners confuse Smolen 3H with 3NT game
+  {
+    kind: "near-miss-of",
+    a: "smolen:bid-short-hearts",
+    b: "stayman:nt-game-after-denial",
+  },
+  {
+    kind: "near-miss-of",
+    a: "smolen:bid-short-spades",
+    b: "stayman:nt-game-after-denial",
+  },
 ];

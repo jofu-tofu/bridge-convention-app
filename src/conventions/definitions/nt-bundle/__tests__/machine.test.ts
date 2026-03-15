@@ -19,8 +19,9 @@ describe("createNtConversationMachine", () => {
     // opener-transfer-hearts, opener-transfer-spades,
     // responder-r3-stayman-2h, responder-r3-stayman-2s, responder-r3-stayman-2d,
     // responder-r3-transfer-hearts, responder-r3-transfer-spades,
+    // smolen-invoke-hearts, smolen-invoke-spades,
     // terminal, nt-contested
-    expect(machine.states.size).toBe(13);
+    expect(machine.states.size).toBe(15);
   });
 
   it("idle → nt-opened on 1NT bid by partner", () => {

@@ -23,14 +23,14 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `__tests__/` | Bundle-specific tests |
 
 
-**`nt-bundle/`** — Combines Stayman + Jacoby Transfers into a single 1NT response bundle.
-- `config.ts` — `ConventionBundle` with `meaningSurfaces` (9 groups, 29 surfaces), `factExtensions` (staymanFacts, transferFacts, ntResponseFacts), `surfaceRouter`, `conversationMachine`, `declaredCapabilities: { ntOpenerContext: "active" }`. `memberIds: ["jacoby-transfers", "stayman"]` (Jacoby first for tie-breaking priority).
-- `meaning-surfaces.ts` — 29 `MeaningSurface` definitions across responder R1 (5), opener Stayman response (3), opener transfer accept hearts (1) + spades (1), Stayman R3 after 2H/2S/2D (4+4+2), transfer R3 after hearts/spades accept (4+4). 982 lines — largest file in the bundle.
-- `facts.ts` — 3 `FactCatalogExtension`s: `staymanFacts` (module.stayman.*, posterior facts), `transferFacts` (module.transfer.*), `ntResponseFacts` (module.ntResponse.inviteValues/gameValues/slamValues).
-- `machine.ts` — 13-state hierarchical FSM: idle → nt-opened → responder-r1 → opener-stayman / opener-transfer-hearts / opener-transfer-spades → responder-r3 variants → terminal / nt-contested. Uses hierarchical parent states (`nt-opened` as parent).
-- `alternatives.ts` — 1 cross-convention `AlternativeGroup`: "NT response: transfer vs Stayman".
-- `pedagogical-relations.ts` — `NT_PEDAGOGICAL_RELATIONS` graph.
-- `surface-routing.ts` — 9 `RoutedSurfaceGroup` entries; `createNtSurfaceRouter()` delegates to `evaluateMachine()`.
+**`nt-bundle/`** — Combines Stayman + Jacoby Transfers + Smolen into a single 1NT response bundle.
+- `config.ts` — `ConventionBundle` with `meaningSurfaces` (11 groups, 35 surfaces), `factExtensions` (staymanFacts, transferFacts, ntResponseFacts, smolenFacts), `surfaceRouter`, `conversationMachine`, `declaredCapabilities: { ntOpenerContext: "active" }`. `memberIds: ["jacoby-transfers", "stayman", "smolen"]` (Jacoby first for tie-breaking priority).
+- `meaning-surfaces.ts` — 35 `MeaningSurface` definitions across responder R1 (5), opener Stayman response (3), opener transfer accept hearts (1) + spades (1), Stayman R3 after 2H/2S/2D (4+4+4 — includes 2 Smolen surfaces), transfer R3 after hearts/spades accept (4+4), opener Smolen placement hearts (2) + spades (2).
+- `facts.ts` — 4 `FactCatalogExtension`s: `staymanFacts` (module.stayman.*, posterior facts), `transferFacts` (module.transfer.*), `ntResponseFacts` (module.ntResponse.inviteValues/gameValues/slamValues), `smolenFacts` (module.smolen.hasFiveHearts/hasFiveSpades/hasFourSpades/hasFourHearts/openerHasHeartFit/openerHasSpadesFit).
+- `machine.ts` — 15-state hierarchical FSM + 5-state Smolen submachine: idle → nt-opened → responder-r1 → opener-stayman / opener-transfer-hearts / opener-transfer-spades → responder-r3 variants → smolen-invoke-hearts/spades → [submachine: smolen-continuation] → terminal / nt-contested. First real convention to use submachine invocation with guard-based routing.
+- `alternatives.ts` — 2 `AlternativeGroup`s: "NT response: transfer vs Stayman" + "After denial: Smolen vs 3NT".
+- `pedagogical-relations.ts` — `NT_PEDAGOGICAL_RELATIONS` graph (including Smolen relations).
+- `surface-routing.ts` — 11 `RoutedSurfaceGroup` entries (including opener-smolen-hearts/spades); `createNtSurfaceRouter()` delegates to `evaluateMachine()` with Smolen submachine map.
 
 **`bergen-bundle/`** — Bergen Raises using the meaning pipeline with `$suit` binding parameterization for hearts and spades.
 - `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `surfaceRouter`, `conversationMachine`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.
@@ -42,7 +42,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 ## Convention Quick Reference
 
-- **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades). 29 meaning surfaces, 3 fact extensions, 13-state hierarchical FSM. Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
+- **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades) + Smolen (3H/3S game-forcing after 2D denial with 5-4 majors). 35 meaning surfaces, 4 fact extensions, 15-state hierarchical FSM + 5-state Smolen submachine (first real convention to use submachine invocation with guard-based routing). Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
 - **Bergen Bundle (Bergen Raises):** Responder raises after 1M opening. Standard Bergen variant (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding factory for DRY heart/spade parameterization. Deal constraints: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
 - **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. Pattern 3 convention — first to use hierarchical parent/child states (21-state FSM with `dont-active` parent providing inherited interference transitions), predicate transitions (for matching doubles), and multi-stage relay (overcaller → advancer → overcaller reveal). 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
 

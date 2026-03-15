@@ -12,7 +12,10 @@ import {
   STAYMAN_R3_AFTER_2D_SURFACES,
   TRANSFER_R3_HEARTS_SURFACES,
   TRANSFER_R3_SPADES_SURFACES,
+  OPENER_SMOLEN_HEARTS_SURFACES,
+  OPENER_SMOLEN_SPADES_SURFACES,
 } from "./meaning-surfaces";
+import { createSmolenSubmachine } from "./machine";
 
 /** A surface group identified by its groupId. */
 export interface RoutedSurfaceGroup {
@@ -34,6 +37,8 @@ export const NT_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
   { groupId: "responder-r3-after-stayman-2d", surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
   { groupId: "responder-r3-after-transfer-hearts", surfaces: TRANSFER_R3_HEARTS_SURFACES },
   { groupId: "responder-r3-after-transfer-spades", surfaces: TRANSFER_R3_SPADES_SURFACES },
+  { groupId: "opener-smolen-hearts", surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
+  { groupId: "opener-smolen-spades", surfaces: OPENER_SMOLEN_SPADES_SURFACES },
 ];
 
 /**
@@ -53,12 +58,15 @@ export function createNtSurfaceRouter(
     groupMap.set(group.groupId, group.surfaces);
   }
 
+  const smolenSub = createSmolenSubmachine();
+  const submachines = new Map([["smolen-continuation", smolenSub]]);
+
   return (auction, seat) => {
     if (!machine) {
       return [];
     }
 
-    const result = evaluateMachine(machine, auction, seat);
+    const result = evaluateMachine(machine, auction, seat, submachines);
     const activeSurfaces: MeaningSurface[] = [];
 
     for (const groupId of result.activeSurfaceGroupIds) {

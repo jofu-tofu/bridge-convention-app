@@ -15,8 +15,10 @@ import {
   STAYMAN_R3_AFTER_2D_SURFACES,
   TRANSFER_R3_HEARTS_SURFACES,
   TRANSFER_R3_SPADES_SURFACES,
+  OPENER_SMOLEN_HEARTS_SURFACES,
+  OPENER_SMOLEN_SPADES_SURFACES,
 } from "./meaning-surfaces";
-import { staymanFacts, transferFacts, ntResponseFacts } from "./facts";
+import { staymanFacts, transferFacts, ntResponseFacts, smolenFacts } from "./facts";
 import { NT_SAYC_PROFILE } from "./system-profile";
 import { createNtConversationMachine } from "./machine";
 import { NT_EXPLANATION_CATALOG } from "./explanation-catalog";
@@ -45,7 +47,7 @@ export const ntBundle: ConventionBundle = {
   category: ConventionCategory.Constructive,
   // IMPORTANT: Jacoby first -- transfer priority over Stayman ask.
   // Convention index 0 gets lower orderKeys, wins tie-breaking within tiers.
-  memberIds: ["jacoby-transfers", "stayman"],
+  memberIds: ["jacoby-transfers", "stayman", "smolen"],
   dealConstraints: ntDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {
@@ -64,8 +66,10 @@ export const ntBundle: ConventionBundle = {
     { groupId: "responder-r3-after-stayman-2d", surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
     { groupId: "responder-r3-after-transfer-hearts", surfaces: TRANSFER_R3_HEARTS_SURFACES },
     { groupId: "responder-r3-after-transfer-spades", surfaces: TRANSFER_R3_SPADES_SURFACES },
+    { groupId: "opener-smolen-hearts", surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
+    { groupId: "opener-smolen-spades", surfaces: OPENER_SMOLEN_SPADES_SURFACES },
   ],
-  factExtensions: [staymanFacts, transferFacts, ntResponseFacts],
+  factExtensions: [staymanFacts, transferFacts, ntResponseFacts, smolenFacts],
   surfaceRouter: createNtSurfaceRouter(NT_ROUTED_SURFACES, ntMachine),
   systemProfile: NT_SAYC_PROFILE,
   conversationMachine: ntMachine,

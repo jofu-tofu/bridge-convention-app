@@ -42,6 +42,12 @@ const KNOWN_MODULE_FACT_IDS = new Set([
   "module.ntResponse.inviteValues",
   "module.ntResponse.gameValues",
   "module.ntResponse.slamValues",
+  "module.smolen.hasFiveHearts",
+  "module.smolen.hasFiveSpades",
+  "module.smolen.hasFourSpades",
+  "module.smolen.hasFourHearts",
+  "module.smolen.openerHasHeartFit",
+  "module.smolen.openerHasSpadesFit",
 ]);
 
 const ALL_KNOWN_FACT_IDS = new Set([...KNOWN_SHARED_FACT_IDS, ...KNOWN_MODULE_FACT_IDS]);

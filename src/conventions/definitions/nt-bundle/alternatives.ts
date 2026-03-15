@@ -14,4 +14,14 @@ export const ntCrossConventionAlternatives: readonly AlternativeGroup[] = [
     ],
     tier: "alternative",
   },
+  // After 2D denial: Smolen vs 3NT are alternatives for game-forcing hands
+  {
+    label: "After denial: Smolen vs 3NT",
+    members: [
+      "smolen:bid-short-hearts",
+      "smolen:bid-short-spades",
+      "stayman:nt-game-after-denial",
+    ],
+    tier: "alternative",
+  },
 ];

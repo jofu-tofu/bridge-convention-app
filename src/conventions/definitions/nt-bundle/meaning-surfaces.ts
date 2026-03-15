@@ -8,6 +8,7 @@ import {
   INTERFERENCE_CLASSES,
   STAYMAN_R3_CLASSES,
   TRANSFER_R3_CLASSES,
+  SMOLEN_CLASSES,
 } from "./semantic-classes";
 
 function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
@@ -727,6 +728,196 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional",
     sourceIntent: { type: "NTInvite", params: { reason: "denial" } },
     teachingLabel: "2NT invite after denial",
+  },
+
+  // Smolen 3H: 10+ HCP, 4 spades + 5 hearts (game-forcing, bids short major)
+  {
+    meaningId: "smolen:bid-short-hearts",
+    semanticClassId: SMOLEN_CLASSES.BID_SHORT_HEARTS,
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(3, BidSuit.Hearts) },
+    clauses: [
+      {
+        clauseId: "game-values",
+        factId: "module.ntResponse.gameValues",
+        operator: "boolean",
+        value: true,
+        description: "Game values opposite 1NT (10+ HCP)",
+      },
+      {
+        clauseId: "five-hearts",
+        factId: "module.smolen.hasFiveHearts",
+        operator: "boolean",
+        value: true,
+        description: "5+ hearts",
+      },
+      {
+        clauseId: "four-spades",
+        factId: "module.smolen.hasFourSpades",
+        operator: "boolean",
+        value: true,
+        description: "Exactly 4 spades",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 3,
+      modulePrecedence: 1,
+      intraModuleOrder: 0,
+    },
+    priorityClass: "preferredConventional",
+    sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
+    teachingLabel: "Smolen 3H (5H + 4S, game force)",
+  },
+
+  // Smolen 3S: 10+ HCP, 5 spades + 4 hearts (game-forcing, bids short major)
+  {
+    meaningId: "smolen:bid-short-spades",
+    semanticClassId: SMOLEN_CLASSES.BID_SHORT_SPADES,
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(3, BidSuit.Spades) },
+    clauses: [
+      {
+        clauseId: "game-values",
+        factId: "module.ntResponse.gameValues",
+        operator: "boolean",
+        value: true,
+        description: "Game values opposite 1NT (10+ HCP)",
+      },
+      {
+        clauseId: "five-spades",
+        factId: "module.smolen.hasFiveSpades",
+        operator: "boolean",
+        value: true,
+        description: "5+ spades",
+      },
+      {
+        clauseId: "four-hearts",
+        factId: "module.smolen.hasFourHearts",
+        operator: "boolean",
+        value: true,
+        description: "Exactly 4 hearts",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 3,
+      modulePrecedence: 1,
+      intraModuleOrder: 1,
+    },
+    priorityClass: "preferredConventional",
+    sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
+    teachingLabel: "Smolen 3S (5S + 4H, game force)",
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// Smolen R4 — Opener placement after Smolen (1NT-P-2C-P-2D-P-3H/3S-P)
+// ═══════════════════════════════════════════════════════════════
+
+export const OPENER_SMOLEN_HEARTS_SURFACES: readonly MeaningSurface[] = [
+  // Opener has 3+ hearts → place 4H (major fit)
+  {
+    meaningId: "smolen:place-four-hearts",
+    semanticClassId: SMOLEN_CLASSES.PLACE_FOUR_HEARTS,
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(4, BidSuit.Hearts) },
+    clauses: [
+      {
+        clauseId: "heart-fit",
+        factId: "module.smolen.openerHasHeartFit",
+        operator: "boolean",
+        value: true,
+        description: "Opener has 3+ hearts (fit with responder's 5)",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 2,
+      modulePrecedence: 1,
+      intraModuleOrder: 0,
+    },
+    priorityClass: "obligatory",
+    sourceIntent: { type: "SmolenPlacement", params: { suit: "hearts" } },
+    teachingLabel: "4H (heart fit found)",
+  },
+  // Opener has <3 hearts → place 3NT (no fit)
+  {
+    meaningId: "smolen:place-three-nt-no-heart-fit",
+    semanticClassId: SMOLEN_CLASSES.PLACE_THREE_NT,
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    clauses: [
+      {
+        clauseId: "no-heart-fit",
+        factId: "module.smolen.openerHasHeartFit",
+        operator: "boolean",
+        value: false,
+        description: "Opener has fewer than 3 hearts (no fit)",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 1,
+      modulePrecedence: 1,
+      intraModuleOrder: 1,
+    },
+    priorityClass: "obligatory",
+    sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
+    teachingLabel: "3NT (no heart fit)",
+  },
+];
+
+export const OPENER_SMOLEN_SPADES_SURFACES: readonly MeaningSurface[] = [
+  // Opener has 3+ spades → place 4S (major fit)
+  {
+    meaningId: "smolen:place-four-spades",
+    semanticClassId: SMOLEN_CLASSES.PLACE_FOUR_SPADES,
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(4, BidSuit.Spades) },
+    clauses: [
+      {
+        clauseId: "spade-fit",
+        factId: "module.smolen.openerHasSpadesFit",
+        operator: "boolean",
+        value: true,
+        description: "Opener has 3+ spades (fit with responder's 5)",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 2,
+      modulePrecedence: 1,
+      intraModuleOrder: 0,
+    },
+    priorityClass: "obligatory",
+    sourceIntent: { type: "SmolenPlacement", params: { suit: "spades" } },
+    teachingLabel: "4S (spade fit found)",
+  },
+  // Opener has <3 spades → place 3NT (no fit)
+  {
+    meaningId: "smolen:place-three-nt-no-spade-fit",
+    semanticClassId: SMOLEN_CLASSES.PLACE_THREE_NT,
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    clauses: [
+      {
+        clauseId: "no-spade-fit",
+        factId: "module.smolen.openerHasSpadesFit",
+        operator: "boolean",
+        value: false,
+        description: "Opener has fewer than 3 spades (no fit)",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 1,
+      modulePrecedence: 1,
+      intraModuleOrder: 1,
+    },
+    priorityClass: "obligatory",
+    sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
+    teachingLabel: "3NT (no spade fit)",
   },
 ];
 

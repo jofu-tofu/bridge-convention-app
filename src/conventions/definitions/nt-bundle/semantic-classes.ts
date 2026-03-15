@@ -24,6 +24,15 @@ export const STAYMAN_R3_CLASSES = {
   NT_INVITE_DENIAL: "stayman:nt-invite-denial",
 } as const;
 
+/** Smolen semantic class IDs — Stayman R3 continuation for 5-4 major hands. */
+export const SMOLEN_CLASSES = {
+  BID_SHORT_HEARTS: "smolen:bid-short-hearts",    // 3H = 4S + 5H (bids short major)
+  BID_SHORT_SPADES: "smolen:bid-short-spades",    // 3S = 5S + 4H (bids short major)
+  PLACE_FOUR_HEARTS: "smolen:place-four-hearts",   // Opener places 4H (has heart fit)
+  PLACE_FOUR_SPADES: "smolen:place-four-spades",   // Opener places 4S (has spade fit)
+  PLACE_THREE_NT: "smolen:place-three-nt",         // Opener places 3NT (no fit)
+} as const;
+
 /** Transfer R3 semantic class IDs — responder continuations after opener accepts transfer. */
 export const TRANSFER_R3_CLASSES = {
   SIGNOFF: "transfer:signoff",

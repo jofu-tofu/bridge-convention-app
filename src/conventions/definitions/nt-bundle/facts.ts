@@ -127,6 +127,79 @@ export const transferFacts: FactCatalogExtension = {
   evaluators: TRANSFER_EVALUATORS,
 };
 
+// ─── Smolen module facts ─────────────────────────────────────
+
+const SMOLEN_FACTS: readonly FactDefinition[] = [
+  {
+    id: "module.smolen.hasFiveHearts",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Hand has 5+ hearts (for 3H Smolen showing 5H)",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.hearts"],
+  },
+  {
+    id: "module.smolen.hasFiveSpades",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Hand has 5+ spades (for 3S Smolen showing 5S)",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.spades"],
+  },
+  {
+    id: "module.smolen.hasFourSpades",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Hand has exactly 4 spades (needed for 3H Smolen: 4S+5H)",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.spades"],
+  },
+  {
+    id: "module.smolen.hasFourHearts",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Hand has exactly 4 hearts (needed for 3S Smolen: 5S+4H)",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.hearts"],
+  },
+  {
+    id: "module.smolen.openerHasHeartFit",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Opener has 3+ hearts (heart fit for Smolen placement)",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.hearts"],
+  },
+  {
+    id: "module.smolen.openerHasSpadesFit",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "Opener has 3+ spades (spade fit for Smolen placement)",
+    valueType: "boolean",
+    derivesFrom: ["hand.suitLength.spades"],
+  },
+];
+
+const SMOLEN_EVALUATORS = new Map<string, FactEvaluatorFn>([
+  ["module.smolen.hasFiveHearts", (_h, _ev, m) =>
+    fv("module.smolen.hasFiveHearts", num(m, "hand.suitLength.hearts") >= 5)],
+  ["module.smolen.hasFiveSpades", (_h, _ev, m) =>
+    fv("module.smolen.hasFiveSpades", num(m, "hand.suitLength.spades") >= 5)],
+  ["module.smolen.hasFourSpades", (_h, _ev, m) =>
+    fv("module.smolen.hasFourSpades", num(m, "hand.suitLength.spades") === 4)],
+  ["module.smolen.hasFourHearts", (_h, _ev, m) =>
+    fv("module.smolen.hasFourHearts", num(m, "hand.suitLength.hearts") === 4)],
+  ["module.smolen.openerHasHeartFit", (_h, _ev, m) =>
+    fv("module.smolen.openerHasHeartFit", num(m, "hand.suitLength.hearts") >= 3)],
+  ["module.smolen.openerHasSpadesFit", (_h, _ev, m) =>
+    fv("module.smolen.openerHasSpadesFit", num(m, "hand.suitLength.spades") >= 3)],
+]);
+
+export const smolenFacts: FactCatalogExtension = {
+  definitions: SMOLEN_FACTS,
+  evaluators: SMOLEN_EVALUATORS,
+};
+
 // ─── NT response value facts ────────────────────────────────
 // HCP thresholds for responder opposite a 1NT opening.
 // These are 1NT-specific (they fail the promotion rule: cannot be
