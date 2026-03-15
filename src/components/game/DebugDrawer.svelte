@@ -256,91 +256,140 @@
     </details>
 
     <!-- ═══════════════════════════════════════════════════════════
-         4. ARBITRATION (Pipeline Candidates)
+         4. PIPELINE — unified candidate view (merged arbitration + teaching projection)
          ═══════════════════════════════════════════════════════════ -->
     <details>
       <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">
-        Pipeline Arbitration
+        Pipeline
         {#if debugSnap?.arbitration}
+          {@const arb = debugSnap.arbitration}
           <span class="text-text-muted font-normal">
-            (T:{debugSnap.arbitration.truthSet.length} A:{debugSnap.arbitration.acceptableSet.length} E:{debugSnap.arbitration.eliminations.length})
+            ({arb.truthSet.length + arb.acceptableSet.length} candidates, {arb.eliminations.length} eliminated)
           </span>
         {/if}
       </summary>
       <div class="pl-2 py-1">
         {#if debugSnap?.arbitration}
           {@const arb = debugSnap.arbitration}
-          <!-- Selected -->
+          {@const tp = debugSnap.teachingProjection}
+
+          <!-- Winner -->
           {#if arb.selected}
-            <div class="mb-1.5">
-              <span class="text-green-400 font-bold">SELECTED:</span>
-              <span class="text-green-300 ml-1">{fmtCall(arb.selected.call)}</span>
-              <span class="text-text-primary ml-1">{arb.selected.proposal.teachingLabel ?? arb.selected.proposal.meaningId}</span>
-              <span class="text-text-muted ml-1">({arb.selected.proposal.moduleId})</span>
+            <div class="mb-2 p-1.5 bg-green-900/20 rounded border border-green-500/30">
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-lg font-bold text-green-300">{fmtCall(arb.selected.call)}</span>
+                <span class="text-green-200">{arb.selected.proposal.teachingLabel ?? arb.selected.proposal.meaningId}</span>
+              </div>
+              <div class="text-text-muted text-[10px] mt-0.5">
+                module: {arb.selected.proposal.moduleId} | band: {arb.selected.proposal.ranking.recommendationBand} | spec: {arb.selected.proposal.ranking.specificity}
+              </div>
             </div>
           {:else}
-            <div class="mb-1.5 text-yellow-400">No candidate selected (pass)</div>
+            <div class="mb-2 p-1.5 bg-yellow-900/20 rounded border border-yellow-500/30 text-yellow-300">
+              No candidate matched — pass
+            </div>
           {/if}
 
-          <!-- Truth set -->
+          <!-- All candidates: truth set (matched) -->
           {#if arb.truthSet.length > 0}
-            <div class="mb-1">
-              <span class="text-text-muted font-semibold">Truth Set ({arb.truthSet.length}):</span>
+            <div class="mb-1.5">
+              <div class="text-text-muted font-semibold mb-0.5">Matched ({arb.truthSet.length}):</div>
               {#each arb.truthSet as ep (ep.proposal.meaningId)}
-                <div class="pl-2 flex gap-1">
-                  <span class="text-green-300 w-8 shrink-0">{fmtCall(ep.call)}</span>
-                  <span class="text-text-primary">{ep.proposal.teachingLabel ?? ep.proposal.meaningId}</span>
-                  <span class="text-text-muted">band:{ep.proposal.ranking.recommendationBand} spec:{ep.proposal.ranking.specificity}</span>
+                <div class="pl-2 mb-1 border-l-2 border-green-500/40 pl-2">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-green-300 font-bold">{fmtCall(ep.call)}</span>
+                    <span class="text-text-primary">{ep.proposal.teachingLabel ?? ep.proposal.meaningId}</span>
+                  </div>
+                  <!-- Show satisfied clauses compactly -->
+                  <div class="text-[10px] text-text-muted">
+                    {#each ep.proposal.clauses as clause (clause.factId + clause.operator)}
+                      <span class="{clause.satisfied ? 'text-green-400/70' : 'text-red-400/70'}">{clause.satisfied ? '+' : '-'}{clause.description}</span><span class="mx-0.5">|</span>
+                    {/each}
+                  </div>
                 </div>
               {/each}
             </div>
           {/if}
 
-          <!-- Acceptable set -->
+          <!-- Other candidates: acceptable set (didn't match this hand) -->
           {#if arb.acceptableSet.length > 0}
-            <div class="mb-1">
-              <span class="text-text-muted font-semibold">Acceptable ({arb.acceptableSet.length}):</span>
+            <div class="mb-1.5">
+              <div class="text-text-muted font-semibold mb-0.5">Not this hand ({arb.acceptableSet.length}):</div>
               {#each arb.acceptableSet as ep (ep.proposal.meaningId)}
-                <div class="pl-2 flex gap-1">
-                  <span class="text-teal-300 w-8 shrink-0">{fmtCall(ep.call)}</span>
-                  <span class="text-text-primary">{ep.proposal.teachingLabel ?? ep.proposal.meaningId}</span>
-                  {#if !ep.eligibility.hand.satisfied}
-                    <span class="text-red-400">[hand fail]</span>
+                <div class="pl-2 mb-1 border-l-2 border-text-muted/30 pl-2">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-text-muted font-bold">{fmtCall(ep.call)}</span>
+                    <span class="text-text-muted">{ep.proposal.teachingLabel ?? ep.proposal.meaningId}</span>
+                  </div>
+                  <!-- Show which clauses failed with observed vs needed values -->
+                  <div class="text-[10px]">
+                    {#each ep.proposal.clauses.filter(c => !c.satisfied) as clause (clause.factId + clause.operator)}
+                      <div class="text-red-400/70 pl-1">
+                        {clause.description}
+                        {#if clause.observedValue !== undefined}
+                          <span class="text-text-muted">(have: {String(clause.observedValue)}, need: {typeof clause.value === 'object' && clause.value !== null && 'min' in clause.value ? `${clause.value.min}-${clause.value.max}` : String(clause.value)})</span>
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+
+          <!-- Eliminated: didn't even make it through gates -->
+          {#if arb.eliminations.length > 0}
+            <div class="mb-1.5">
+              <div class="text-text-muted font-semibold mb-0.5">Eliminated ({arb.eliminations.length}):</div>
+              {#each arb.eliminations as el (el.candidateBidName + el.reason)}
+                <div class="pl-2 text-text-muted">
+                  <span class="text-red-400/60">{el.candidateBidName}</span>
+                  <span class="ml-1">— {el.reason}</span>
+                </div>
+              {/each}
+            </div>
+          {/if}
+
+          <!-- WhyNot (from teaching projection) -->
+          {#if tp?.whyNot && tp.whyNot.length > 0}
+            <div class="mb-1.5">
+              <div class="text-text-muted font-semibold mb-0.5">Why not these?</div>
+              {#each tp.whyNot as wn (wn.call.type + (wn.call.type === 'bid' ? wn.call.level + wn.call.strain : ''))}
+                <div class="pl-2 mb-0.5">
+                  <span class="text-yellow-400">{fmtCall(wn.call)}</span>
+                  <span class="text-text-muted ml-1">— eliminated at {wn.eliminationStage}</span>
+                  {#if wn.familyRelation}
+                    <span class="text-purple-300 ml-1">({wn.familyRelation.kind})</span>
                   {/if}
                 </div>
               {/each}
             </div>
           {/if}
 
-          <!-- Eliminations -->
-          {#if arb.eliminations.length > 0}
-            <div class="mb-1">
-              <span class="text-text-muted font-semibold">Eliminations ({arb.eliminations.length}):</span>
-              {#each arb.eliminations as el (el.candidateBidName + el.reason)}
-                <div class="pl-2">
-                  <span class="text-red-400">{el.candidateBidName}</span>
-                  <span class="text-text-muted ml-1">{el.reason}</span>
-                  {#if el.gateId}<span class="text-text-muted ml-1">[{el.gateId}]</span>{/if}
-                </div>
-              {/each}
+          <!-- Hand space summary (from teaching projection) -->
+          {#if tp?.handSpace}
+            <div class="mt-1 pt-1 border-t border-border-subtle/30">
+              <span class="text-text-muted font-semibold">Convention expects:</span>
+              <span class="text-text-primary ml-1">{tp.handSpace.hcpRange.min}-{tp.handSpace.hcpRange.max} HCP, {tp.handSpace.shapeDescription}</span>
+              {#if tp.handSpace.partnerSummary}
+                <div class="text-text-muted pl-2">partner: {tp.handSpace.partnerSummary}</div>
+              {/if}
             </div>
           {/if}
         {:else}
-          <div class="text-text-muted italic">No arbitration data</div>
+          <div class="text-text-muted italic">No pipeline data</div>
         {/if}
       </div>
     </details>
 
     <!-- ═══════════════════════════════════════════════════════════
-         5. DECISION PROVENANCE
+         5. PROVENANCE (audit trail — collapsed by default)
          ═══════════════════════════════════════════════════════════ -->
     <details>
       <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">
         Provenance
         {#if debugSnap?.provenance}
-          <span class="text-text-muted font-normal">
-            ({debugSnap.provenance.encoding.length}enc {debugSnap.provenance.eliminations.length}elim {debugSnap.provenance.arbitration.length}arb)
-          </span>
+          <span class="text-text-muted font-normal">(trace)</span>
         {/if}
       </summary>
       <div class="pl-2 py-1">
@@ -370,72 +419,14 @@
             </div>
           {/if}
 
-          <!-- Legality traces -->
-          {#if prov.legality.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Legality:</span>
-              {#each prov.legality as leg, i (i)}
-                <div class="pl-2">
-                  <span class={leg.legal ? "text-green-400" : "text-red-400"}>{fmtCall(leg.call)}</span>
-                  <span class="text-text-muted ml-1">{leg.legal ? "legal" : "illegal"}{leg.reason ? `: ${leg.reason}` : ""}</span>
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Arbitration traces (ranking inputs) -->
+          <!-- Ranking traces -->
           {#if prov.arbitration.length > 0}
             <div class="mb-1.5">
               <span class="text-text-muted font-semibold">Ranking:</span>
               {#each prov.arbitration as at (at.candidateId)}
                 <div class="pl-2">
-                  <span class={at.truthSetMember ? "text-green-300" : at.acceptableSetMember ? "text-teal-300" : "text-text-muted"}>{truncate(at.candidateId, 30)}</span>
+                  <span class={at.truthSetMember ? "text-green-300" : "text-text-muted"}>{truncate(at.candidateId, 30)}</span>
                   <span class="text-text-muted ml-1">band:{at.rankingInputs.recommendationBand} spec:{at.rankingInputs.specificity} mod:{at.rankingInputs.modulePrecedence}</span>
-                  {#if at.rankingInputs.handFitScore !== undefined}
-                    <span class="text-text-muted ml-1">fit:{at.rankingInputs.handFitScore}</span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Elimination traces -->
-          {#if prov.eliminations.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Eliminated:</span>
-              {#each prov.eliminations as el (el.candidateId + el.stage)}
-                <div class="pl-2">
-                  <span class="text-red-400">{truncate(el.candidateId, 25)}</span>
-                  <span class="text-text-muted ml-1">@{el.stage}</span>
-                  <span class="text-text-muted ml-1">[{el.strength}]</span>
-                  <span class="text-text-primary ml-1">{el.reason}</span>
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Transform traces -->
-          {#if prov.transforms.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Transforms:</span>
-              {#each prov.transforms as tr (tr.transformId)}
-                <div class="pl-2">
-                  <span class="text-orange-300">{tr.kind}</span>
-                  <span class="text-text-muted ml-1">{tr.targetId}</span>
-                  <span class="text-text-primary ml-1">{tr.reason}</span>
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Activation traces -->
-          {#if prov.activation.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Activation:</span>
-              {#each prov.activation as act (act.moduleId)}
-                <div class="pl-2">
-                  <span class={act.activated ? "text-green-300" : "text-red-400"}>{act.moduleId}</span>
-                  <span class="text-text-muted ml-1">{act.activated ? "active" : "inactive"}{act.reason ? `: ${act.reason}` : ""}</span>
                 </div>
               {/each}
             </div>
@@ -444,7 +435,7 @@
           <!-- Applicability evidence -->
           {#if prov.applicability.evaluatedConditions.length > 0}
             <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Applicability ({prov.applicability.factDependencies.length} facts):</span>
+              <span class="text-text-muted font-semibold">Applicability:</span>
               {#each prov.applicability.evaluatedConditions as cond, i (i)}
                 <div class="pl-2">
                   <span class={cond.satisfied ? "text-green-400" : "text-red-400"}>{cond.satisfied ? "+" : "-"}</span>
@@ -457,22 +448,15 @@
             </div>
           {/if}
 
-          <!-- Handoff traces -->
-          {#if prov.handoffs.length > 0}
+          <!-- Transform and other traces -->
+          {#if prov.transforms.length > 0}
             <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Handoffs:</span>
-              {#each prov.handoffs as h (h.fromModuleId + h.toModuleId)}
-                <div class="pl-2 text-orange-300">{h.fromModuleId} → {h.toModuleId}: {h.reason}</div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Surface diagnostics -->
-          {#if prov.surfaceDiagnostics && prov.surfaceDiagnostics.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Surface Diagnostics:</span>
-              {#each prov.surfaceDiagnostics as sd, i (i)}
-                <div class="pl-2 {sd.level === 'warn' ? 'text-yellow-400' : 'text-text-muted'}">[{sd.level}] {sd.message}</div>
+              <span class="text-text-muted font-semibold">Transforms:</span>
+              {#each prov.transforms as tr (tr.transformId)}
+                <div class="pl-2">
+                  <span class="text-orange-300">{tr.kind}</span>
+                  <span class="text-text-muted ml-1">{tr.targetId} — {tr.reason}</span>
+                </div>
               {/each}
             </div>
           {/if}
@@ -483,7 +467,7 @@
     </details>
 
     <!-- ═══════════════════════════════════════════════════════════
-         6. TEACHING (Grading + Resolution)
+         6. TEACHING (grade + feedback after bidding)
          ═══════════════════════════════════════════════════════════ -->
     <details>
       <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">
@@ -506,32 +490,31 @@
           {#if feedback.teachingResolution}
             {@const tr = feedback.teachingResolution}
             <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Resolution:</span>
-              <div class="pl-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
+              <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
                 <span class="text-text-muted">type</span>
                 <span class="text-text-primary">{tr.gradingType}</span>
                 <span class="text-text-muted">ambiguity</span>
                 <span class="text-text-primary">{tr.ambiguityScore}</span>
               </div>
               {#if tr.acceptableBids.length > 0}
-                <div class="mt-1 pl-2">
-                  <span class="text-text-muted">acceptable ({tr.acceptableBids.length}):</span>
+                <div class="mt-1">
+                  <span class="text-text-muted">also acceptable:</span>
                   {#each tr.acceptableBids as ab (ab.bidName)}
                     <div class="pl-2">
                       <span class="text-teal-300">{fmtCall(ab.call)}</span>
                       <span class="text-text-primary ml-1">{ab.meaning}</span>
-                      <span class="text-text-muted ml-1">{ab.tier}{ab.fullCredit ? " (full)" : ""}</span>
+                      <span class="text-text-muted ml-1">({ab.tier}{ab.fullCredit ? ", full credit" : ""})</span>
                     </div>
                   {/each}
                 </div>
               {/if}
               {#if tr.nearMissCalls && tr.nearMissCalls.length > 0}
-                <div class="mt-1 pl-2">
-                  <span class="text-text-muted">near-misses ({tr.nearMissCalls.length}):</span>
+                <div class="mt-1">
+                  <span class="text-text-muted">near-misses:</span>
                   {#each tr.nearMissCalls as nm (nm.call.type + (nm.call.type === 'bid' ? nm.call.level + nm.call.strain : ''))}
                     <div class="pl-2">
                       <span class="text-yellow-400">{fmtCall(nm.call)}</span>
-                      <span class="text-text-muted ml-1">{nm.reason}</span>
+                      <span class="text-text-muted ml-1">— {nm.reason}</span>
                     </div>
                   {/each}
                 </div>
@@ -540,124 +523,6 @@
           {/if}
         {:else}
           <div class="text-text-muted italic">No feedback yet (bid to see grading)</div>
-        {/if}
-      </div>
-    </details>
-
-    <!-- ═══════════════════════════════════════════════════════════
-         7. TEACHING PROJECTION
-         ═══════════════════════════════════════════════════════════ -->
-    <details>
-      <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">
-        Teaching Projection
-        {#if debugSnap?.teachingProjection}
-          <span class="text-text-muted font-normal">({debugSnap.teachingProjection.meaningViews.length} meanings)</span>
-        {/if}
-      </summary>
-      <div class="pl-2 py-1">
-        {#if debugSnap?.teachingProjection}
-          {@const tp = debugSnap.teachingProjection}
-
-          <!-- Call views -->
-          {#if tp.callViews.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Calls:</span>
-              {#each tp.callViews as cv (cv.call.type + (cv.call.type === 'bid' ? cv.call.level + cv.call.strain : ''))}
-                <div class="pl-2">
-                  <span class="{cv.status === 'truth' ? 'text-green-300' : cv.status === 'acceptable' ? 'text-teal-300' : 'text-red-400'}">{fmtCall(cv.call)}</span>
-                  <span class="text-text-muted ml-1">{cv.status}</span>
-                  <span class="text-text-muted ml-1">({cv.projectionKind})</span>
-                  {#if cv.primaryMeaning}
-                    <span class="text-text-primary ml-1">{cv.primaryMeaning}</span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Meaning views -->
-          {#if tp.meaningViews.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Meanings:</span>
-              {#each tp.meaningViews as mv (mv.meaningId)}
-                <div class="pl-2">
-                  <span class="{mv.status === 'live' ? 'text-green-300' : mv.status === 'eliminated' ? 'text-red-400' : 'text-text-muted'}">{mv.displayLabel}</span>
-                  <span class="text-text-muted ml-1">[{mv.status}]</span>
-                  {#if mv.eliminationReason}
-                    <span class="text-text-muted ml-1">— {mv.eliminationReason}</span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- WhyNot entries -->
-          {#if tp.whyNot.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Why Not:</span>
-              {#each tp.whyNot as wn (wn.call.type + (wn.call.type === 'bid' ? wn.call.level + wn.call.strain : ''))}
-                <div class="pl-2">
-                  <span class="text-yellow-400">{fmtCall(wn.call)}</span>
-                  <span class="text-text-muted ml-1">[{wn.grade}]</span>
-                  <span class="text-text-muted ml-1">@{wn.eliminationStage}</span>
-                  {#if wn.familyRelation}
-                    <span class="text-purple-300 ml-1">({wn.familyRelation.kind}: {wn.familyRelation.a}↔{wn.familyRelation.b})</span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Conventions applied -->
-          {#if tp.conventionsApplied.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Conventions:</span>
-              {#each tp.conventionsApplied as ca (ca.moduleId)}
-                <div class="pl-2">
-                  <span class="{ca.role === 'primary' ? 'text-green-300' : ca.role === 'suppressed' ? 'text-red-400' : 'text-teal-300'}">{ca.moduleId}</span>
-                  <span class="text-text-muted ml-1">[{ca.role}]</span>
-                  <span class="text-text-muted ml-1">{ca.meaningsProposed.length} proposed</span>
-                </div>
-              {/each}
-            </div>
-          {/if}
-
-          <!-- Hand space -->
-          <div class="mb-1.5">
-            <span class="text-text-muted font-semibold">Hand Space:</span>
-            <div class="pl-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
-              <span class="text-text-muted">seat</span>
-              <span class="text-text-primary">{tp.handSpace.seatLabel}</span>
-              <span class="text-text-muted">hcp</span>
-              <span class="text-text-primary">{tp.handSpace.hcpRange.min}-{tp.handSpace.hcpRange.max}</span>
-              <span class="text-text-muted">shape</span>
-              <span class="text-text-primary">{tp.handSpace.shapeDescription}</span>
-              {#if tp.handSpace.partnerSummary}
-                <span class="text-text-muted">partner</span>
-                <span class="text-text-primary">{tp.handSpace.partnerSummary}</span>
-              {/if}
-            </div>
-          </div>
-
-          <!-- Primary explanation -->
-          {#if tp.primaryExplanation.length > 0}
-            <div class="mb-1.5">
-              <span class="text-text-muted font-semibold">Explanation:</span>
-              <div class="pl-2">
-                {#each tp.primaryExplanation as node, i (i)}
-                  {#if node.kind === "condition"}
-                    <span class="{node.passed ? 'text-green-400' : 'text-red-400'}">{node.content}</span>
-                  {:else if node.kind === "call-reference" || node.kind === "convention-reference"}
-                    <span class="text-cyan-300">{node.content}</span>
-                  {:else}
-                    <span class="text-text-primary">{node.content}</span>
-                  {/if}<span> </span>
-                {/each}
-              </div>
-            </div>
-          {/if}
-        {:else}
-          <div class="text-text-muted italic">No teaching projection</div>
         {/if}
       </div>
     </details>
