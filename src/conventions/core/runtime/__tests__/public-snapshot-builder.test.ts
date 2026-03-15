@@ -148,4 +148,103 @@ describe("buildSnapshotFromAuction", () => {
     });
   });
 
+  describe("machineRegisters", () => {
+    it("overrides forcingState from machine registers", () => {
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      const snapshot = buildSnapshotFromAuction(auction, Seat.South, [], {
+        machineRegisters: {
+          forcingState: ForcingState.GameForcing,
+          obligation: { kind: "None", obligatedSide: "responder" },
+          agreedStrain: { type: "none" },
+          competitionMode: "Uncontested",
+          captain: "responder",
+          systemCapabilities: {},
+        },
+      });
+
+      expect(snapshot.forcingState).toBe(ForcingState.GameForcing);
+    });
+
+    it("overrides captain from machine registers", () => {
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      const snapshot = buildSnapshotFromAuction(auction, Seat.South, [], {
+        machineRegisters: {
+          forcingState: ForcingState.Nonforcing,
+          obligation: { kind: "None", obligatedSide: "responder" },
+          agreedStrain: { type: "none" },
+          competitionMode: "Uncontested",
+          captain: "opener",
+          systemCapabilities: {},
+        },
+      });
+
+      expect(snapshot.captain).toBe("opener");
+    });
+
+    it("overrides agreedStrain from machine registers", () => {
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      const snapshot = buildSnapshotFromAuction(auction, Seat.South, [], {
+        machineRegisters: {
+          forcingState: ForcingState.Nonforcing,
+          obligation: { kind: "None", obligatedSide: "responder" },
+          agreedStrain: { type: "suit", suit: "H", confidence: "agreed" },
+          competitionMode: "Uncontested",
+          captain: "responder",
+          systemCapabilities: {},
+        },
+      });
+
+      expect(snapshot.agreedStrain).toEqual({ type: "suit", suit: "H", confidence: "agreed" });
+    });
+
+    it("overrides competitionMode from machine registers (skips detectCompetitionMode)", () => {
+      // Auction has a double, but machine says "Uncontested" — machine wins
+      const auction = buildAuction(Seat.North, ["1NT", "X"]);
+      const snapshot = buildSnapshotFromAuction(auction, Seat.South, [], {
+        machineRegisters: {
+          forcingState: ForcingState.Nonforcing,
+          obligation: { kind: "None", obligatedSide: "responder" },
+          agreedStrain: { type: "none" },
+          competitionMode: "Uncontested",
+          captain: "responder",
+          systemCapabilities: {},
+        },
+      });
+
+      expect(snapshot.competitionMode).toBe("Uncontested");
+    });
+
+    it("overrides obligation from machine registers", () => {
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      const snapshot = buildSnapshotFromAuction(auction, Seat.South, [], {
+        machineRegisters: {
+          forcingState: ForcingState.Nonforcing,
+          obligation: { kind: "Bid", obligatedSide: "opener" },
+          agreedStrain: { type: "none" },
+          competitionMode: "Uncontested",
+          captain: "responder",
+          systemCapabilities: {},
+        },
+      });
+
+      expect(snapshot.obligation).toEqual({ kind: "Bid", obligatedSide: "opener" });
+    });
+
+    it("overrides systemCapabilities from machine registers", () => {
+      const auction = buildAuction(Seat.North, ["1NT", "P"]);
+      const snapshot = buildSnapshotFromAuction(auction, Seat.South, [], {
+        machineRegisters: {
+          forcingState: ForcingState.Nonforcing,
+          obligation: { kind: "None", obligatedSide: "responder" },
+          agreedStrain: { type: "none" },
+          competitionMode: "Uncontested",
+          captain: "responder",
+          systemCapabilities: { ntOpenerContext: "active" },
+        },
+      });
+
+      expect(snapshot.systemCapabilities).toEqual({ ntOpenerContext: "active" });
+    });
+  });
+
 });

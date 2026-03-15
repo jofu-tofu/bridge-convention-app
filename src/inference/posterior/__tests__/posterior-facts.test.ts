@@ -1,248 +1,511 @@
 import { describe, it, expect } from "vitest";
 import { POSTERIOR_FACT_HANDLERS } from "../posterior-facts";
 import type { PosteriorFactRequest } from "../../../core/contracts/posterior";
-import { Suit, Rank } from "../../../engine/types";
-import type { Hand, Card } from "../../../engine/types";
+import type { Hand } from "../../../engine/types";
+import { hand } from "../../../engine/__tests__/fixtures";
 
-function card(suit: Suit, rank: Rank): Card {
-  return { suit, rank };
+// ── Test hands ──────────────────────────────────────────────────────
+// Notation: first char = suit (S/H/D/C), rest = rank (A/K/Q/J/T/9..2)
+// Every hand is exactly 13 cards with controlled suit distributions.
+
+/** 4H 3S 3D 3C — balanced 4-3-3-3, 0 HCP */
+const fourHeartsHand = hand(
+  "H2", "H3", "H4", "H5",
+  "S2", "S3", "S4",
+  "D2", "D3", "D4",
+  "C2", "C3", "C4",
+);
+
+/** 3H 4S 3D 3C — balanced 4-3-3-3, 0 HCP */
+const threeHeartsHand = hand(
+  "H2", "H3", "H4",
+  "S2", "S3", "S4", "S5",
+  "D2", "D3", "D4",
+  "C2", "C3", "C4",
+);
+
+/** 5H 3S 3D 2C — balanced 5-3-3-2, 0 HCP */
+const fiveHeartsHand = hand(
+  "H2", "H3", "H4", "H5", "H6",
+  "S2", "S3", "S4",
+  "D2", "D3", "D4",
+  "C2", "C3",
+);
+
+/** 4D 3S 3H 3C — balanced 4-3-3-3, 0 HCP */
+const fourDiamondsHand = hand(
+  "D2", "D3", "D4", "D5",
+  "S2", "S3", "S4",
+  "H2", "H3", "H4",
+  "C2", "C3", "C4",
+);
+
+/** 4C 3S 3H 3D — balanced 4-3-3-3, 0 HCP */
+const fourClubsHand = hand(
+  "C2", "C3", "C4", "C5",
+  "S2", "S3", "S4",
+  "H2", "H3", "H4",
+  "D2", "D3", "D4",
+);
+
+/** 4H 4S 3D 2C — balanced 4-4-3-2, 0 HCP */
+const bothMajorsHand = hand(
+  "H2", "H3", "H4", "H5",
+  "S2", "S3", "S4", "S5",
+  "D2", "D3", "D4",
+  "C2", "C3",
+);
+
+/** 6S 4H 2D 1C — NOT balanced, 0 HCP */
+const unbalancedHand = hand(
+  "S2", "S3", "S4", "S5", "S6", "S7",
+  "H2", "H3", "H4", "H5",
+  "D2", "D3",
+  "C2",
+);
+
+/** 4S 3H 3D 3C — balanced, 10 HCP (SA=4 + HK=3 + DQ=2 + CJ=1) */
+const tenHcpHand = hand(
+  "SA", "S2", "S3", "S4",
+  "HK", "H2", "H3",
+  "DQ", "D2", "D3",
+  "CJ", "C2", "C3",
+);
+
+/** 3S 3H 4D 3C — 5 HCP (SA=4 + DJ=1) */
+const fiveHcpHand = hand(
+  "SA", "S2", "S3",
+  "H2", "H3", "H4",
+  "DJ", "D2", "D3", "D4",
+  "C2", "C3", "C4",
+);
+
+/** 3S 3H 3D 4C — 15 HCP (SA=4 + SK=3 + HA=4 + DK=3 + CJ=1) */
+const fifteenHcpHand = hand(
+  "SA", "SK", "S2",
+  "HA", "H2", "H3",
+  "DK", "D2", "D3",
+  "CJ", "C2", "C3", "C4",
+);
+
+// ── Helpers ─────────────────────────────────────────────────────────
+
+/** A valid hand to pass as ownHand when the handler ignores it. */
+const dummyOwnHand = threeHeartsHand;
+
+/** Build a single sample map where seatId maps to h. */
+function makeSample(seatId: string, h: Hand): ReadonlyMap<string, Hand> {
+  return new Map([[seatId, h]]);
 }
 
-/** Build a 13-card hand with specified suit lengths using low cards. */
-function lowHand(spades: number, hearts: number, diamonds: number, clubs: number): Hand {
-  const cards: Card[] = [];
-  const lowRanks = [Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack, Rank.Queen, Rank.King, Rank.Ace];
-  const suits: [Suit, number][] = [
-    [Suit.Spades, spades],
-    [Suit.Hearts, hearts],
-    [Suit.Diamonds, diamonds],
-    [Suit.Clubs, clubs],
-  ];
-  let idx = 0;
-  for (const [suit, count] of suits) {
-    for (let i = 0; i < count; i++) {
-      cards.push(card(suit, lowRanks[idx % lowRanks.length]!));
-      idx++;
-    }
-  }
-  return { cards };
+/** Build n identical samples. */
+function makeSamples(
+  seatId: string,
+  h: Hand,
+  n: number,
+): ReadonlyMap<string, Hand>[] {
+  return Array.from({ length: n }, () => makeSample(seatId, h));
 }
 
-/** Build a hand with specific HCP: AKQJ of spades = 10 HCP, rest low */
-function hcpHand(hcp: number): Hand {
-  // Simple approach: put honors in spades to get desired HCP
-  const cards: Card[] = [];
-  const honors: [Rank, number][] = [[Rank.Ace, 4], [Rank.King, 3], [Rank.Queen, 2], [Rank.Jack, 1]];
-  let remaining = hcp;
-  for (const [rank, value] of honors) {
-    if (remaining >= value) {
-      cards.push(card(Suit.Spades, rank));
-      remaining -= value;
-    }
-  }
-  // Fill to 13 with low cards across suits
-  const fillers: Card[] = [];
-  const lowRanks = [Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten];
-  const fillSuits = [Suit.Hearts, Suit.Diamonds, Suit.Clubs, Suit.Spades];
-  let fillIdx = 0;
-  while (cards.length + fillers.length < 13) {
-    const suit = fillSuits[Math.floor(fillIdx / lowRanks.length) % fillSuits.length]!;
-    const rank = lowRanks[fillIdx % lowRanks.length]!;
-    // Avoid duplicates with existing honor cards
-    if (!cards.some(c => c.suit === suit && c.rank === rank)) {
-      fillers.push(card(suit, rank));
-    }
-    fillIdx++;
-  }
-  return { cards: [...cards, ...fillers] };
-}
-
-function makeSample(seatHands: Record<string, Hand>): ReadonlyMap<string, Hand> {
-  return new Map(Object.entries(seatHands));
-}
-
-function makeRequest(factId: string, seatId = "N", conditionedOn?: string[]): PosteriorFactRequest {
-  return { factId, seatId, conditionedOn };
-}
-
-const dummyHand = lowHand(4, 3, 3, 3);
+// ── Registry ────────────────────────────────────────────────────────
 
 describe("POSTERIOR_FACT_HANDLERS registry", () => {
-  it("contains exactly 5 handlers", () => {
-    expect(POSTERIOR_FACT_HANDLERS.size).toBe(5);
+  it("contains exactly the five expected handler keys", () => {
+    const keys = [...POSTERIOR_FACT_HANDLERS.keys()];
+    expect(keys).toHaveLength(5);
+    expect(keys).toContain("bridge.partnerHas4CardMajorLikely");
+    expect(keys).toContain("bridge.nsHaveEightCardFitLikely");
+    expect(keys).toContain("bridge.combinedHcpInRangeLikely");
+    expect(keys).toContain("bridge.openerStillBalancedLikely");
+    expect(keys).toContain("bridge.openerHasSecondMajorLikely");
   });
 
-  it("has all expected fact IDs", () => {
-    for (const id of [
-      "bridge.partnerHas4CardMajorLikely",
-      "bridge.nsHaveEightCardFitLikely",
-      "bridge.combinedHcpInRangeLikely",
-      "bridge.openerStillBalancedLikely",
-      "bridge.openerHasSecondMajorLikely",
-    ]) {
-      expect(POSTERIOR_FACT_HANDLERS.has(id)).toBe(true);
-    }
+  it("returns undefined for an unknown factId", () => {
+    expect(POSTERIOR_FACT_HANDLERS.get("bridge.doesNotExist")).toBeUndefined();
   });
 });
 
-describe("partnerHas4CardMajorLikely", () => {
-  const handler = POSTERIOR_FACT_HANDLERS.get("bridge.partnerHas4CardMajorLikely")!;
+// ── partnerHas4CardMajorLikely ──────────────────────────────────────
 
-  it("returns 0 for zero samples", () => {
-    const result = handler(makeRequest("bridge.partnerHas4CardMajorLikely", "N", ["H"]), [], dummyHand, 100);
+describe("partnerHas4CardMajorLikely", () => {
+  const handler = POSTERIOR_FACT_HANDLERS.get(
+    "bridge.partnerHas4CardMajorLikely",
+  )!;
+  const baseRequest: PosteriorFactRequest = {
+    factId: "bridge.partnerHas4CardMajorLikely",
+    seatId: "N",
+  };
+
+  it("returns expectedValue 0 and confidence 0 for zero samples", () => {
+    const result = handler(baseRequest, [], dummyOwnHand, 100);
     expect(result.expectedValue).toBe(0);
     expect(result.confidence).toBe(0);
   });
 
-  it("returns 1.0 when all samples have 4+ in conditioned suit", () => {
-    const samples = [
-      makeSample({ N: lowHand(2, 4, 4, 3) }),
-      makeSample({ N: lowHand(2, 5, 3, 3) }),
-    ];
-    const result = handler(makeRequest("bridge.partnerHas4CardMajorLikely", "N", ["H"]), samples, dummyHand, 2);
+  it("returns expectedValue 1.0 when all samples have 4+ hearts", () => {
+    const samples = makeSamples("N", fourHeartsHand, 10);
+    const result = handler(baseRequest, samples, dummyOwnHand, 10);
     expect(result.expectedValue).toBe(1.0);
-    expect(result.confidence).toBe(1.0);
   });
 
-  it("returns 0.0 when no samples have 4+ in conditioned suit", () => {
-    const samples = [
-      makeSample({ N: lowHand(2, 3, 5, 3) }),
-      makeSample({ N: lowHand(3, 2, 4, 4) }),
-    ];
-    const result = handler(makeRequest("bridge.partnerHas4CardMajorLikely", "N", ["H"]), samples, dummyHand, 2);
+  it("returns expectedValue 0.0 when no samples have 4+ hearts", () => {
+    const samples = makeSamples("N", threeHeartsHand, 10);
+    const result = handler(baseRequest, samples, dummyOwnHand, 10);
     expect(result.expectedValue).toBe(0.0);
   });
 
-  it("returns proportion for mixed samples with correct confidence", () => {
+  it("returns expectedValue equal to fraction of matching samples", () => {
     const samples = [
-      makeSample({ N: lowHand(2, 4, 4, 3) }),
-      makeSample({ N: lowHand(3, 2, 4, 4) }),
+      makeSample("N", fourHeartsHand),  // 4H ✓
+      makeSample("N", threeHeartsHand), // 3H ✗
+      makeSample("N", fourHeartsHand),  // 4H ✓
+      makeSample("N", threeHeartsHand), // 3H ✗
+      makeSample("N", fourHeartsHand),  // 4H ✓
     ];
-    const result = handler(makeRequest("bridge.partnerHas4CardMajorLikely", "N", ["H"]), samples, dummyHand, 4);
-    expect(result.expectedValue).toBe(0.5);
-    expect(result.confidence).toBe(0.5);
+    const result = handler(baseRequest, samples, dummyOwnHand, 10);
+    expect(result.expectedValue).toBeCloseTo(3 / 5);
   });
 
-  it("defaults to hearts when no conditionedOn provided", () => {
-    const samples = [makeSample({ N: lowHand(2, 5, 3, 3) })];
-    const result = handler(makeRequest("bridge.partnerHas4CardMajorLikely", "N"), samples, dummyHand, 1);
+  it("returns confidence equal to samples.length / totalRequested", () => {
+    const samples = makeSamples("N", fourHeartsHand, 7);
+    const result = handler(baseRequest, samples, dummyOwnHand, 20);
+    expect(result.confidence).toBeCloseTo(7 / 20);
+  });
+
+  it("conditions on spades when conditionedOn is S", () => {
+    const request: PosteriorFactRequest = {
+      ...baseRequest,
+      conditionedOn: ["S"],
+    };
+    // threeHeartsHand has 4 spades
+    const samples = makeSamples("N", threeHeartsHand, 5);
+    const result = handler(request, samples, dummyOwnHand, 5);
     expect(result.expectedValue).toBe(1.0);
   });
 
-  it("respects spades conditionedOn", () => {
-    const samples = [makeSample({ N: lowHand(5, 2, 3, 3) })];
-    const result = handler(makeRequest("bridge.partnerHas4CardMajorLikely", "N", ["S"]), samples, dummyHand, 1);
+  it("conditions on diamonds when conditionedOn is D", () => {
+    const request: PosteriorFactRequest = {
+      ...baseRequest,
+      conditionedOn: ["D"],
+    };
+    const matchSamples = makeSamples("N", fourDiamondsHand, 3);
+    const noMatchSamples = makeSamples("N", threeHeartsHand, 2);
+    const result = handler(
+      request,
+      [...matchSamples, ...noMatchSamples],
+      dummyOwnHand,
+      5,
+    );
+    expect(result.expectedValue).toBeCloseTo(3 / 5);
+  });
+
+  it("conditions on clubs when conditionedOn is C", () => {
+    const request: PosteriorFactRequest = {
+      ...baseRequest,
+      conditionedOn: ["C"],
+    };
+    const samples = makeSamples("N", fourClubsHand, 5);
+    const result = handler(request, samples, dummyOwnHand, 5);
     expect(result.expectedValue).toBe(1.0);
+  });
+
+  it("defaults to hearts when conditionedOn is absent", () => {
+    const samples = [
+      makeSample("N", fourHeartsHand),  // 4H ✓
+      makeSample("N", threeHeartsHand), // 3H ✗
+    ];
+    const result = handler(baseRequest, samples, dummyOwnHand, 2);
+    expect(result.expectedValue).toBeCloseTo(1 / 2);
+  });
+
+  it("propagates factId and seatId to the result", () => {
+    const request: PosteriorFactRequest = {
+      factId: "bridge.partnerHas4CardMajorLikely",
+      seatId: "E",
+    };
+    const samples = makeSamples("E", fourHeartsHand, 1);
+    const result = handler(request, samples, dummyOwnHand, 1);
+    expect(result.factId).toBe("bridge.partnerHas4CardMajorLikely");
+    expect(result.seatId).toBe("E");
   });
 });
 
-describe("nsHaveEightCardFitLikely", () => {
-  const handler = POSTERIOR_FACT_HANDLERS.get("bridge.nsHaveEightCardFitLikely")!;
+// ── nsHaveEightCardFitLikely ────────────────────────────────────────
 
-  it("returns 0 for zero samples", () => {
-    const result = handler(makeRequest("bridge.nsHaveEightCardFitLikely", "N"), [], dummyHand, 100);
+describe("nsHaveEightCardFitLikely", () => {
+  const handler = POSTERIOR_FACT_HANDLERS.get(
+    "bridge.nsHaveEightCardFitLikely",
+  )!;
+  const baseRequest: PosteriorFactRequest = {
+    factId: "bridge.nsHaveEightCardFitLikely",
+    seatId: "N",
+  };
+
+  it("returns expectedValue 0 and confidence 0 for zero samples", () => {
+    const result = handler(baseRequest, [], dummyOwnHand, 100);
     expect(result.expectedValue).toBe(0);
     expect(result.confidence).toBe(0);
   });
 
-  it("detects 8-card heart fit (own 4H + partner 4H)", () => {
-    const ownHand = lowHand(3, 4, 3, 3);
-    const samples = [makeSample({ N: lowHand(3, 4, 3, 3) })];
-    const result = handler(makeRequest("bridge.nsHaveEightCardFitLikely", "N"), samples, ownHand, 1);
+  it("returns 1.0 when own + partner always have 8+ hearts combined", () => {
+    // ownHand: fiveHeartsHand (5H 3S), partner: fourHeartsHand (4H 3S)
+    // combined hearts: 5 + 4 = 9 >= 8
+    const samples = makeSamples("N", fourHeartsHand, 10);
+    const result = handler(baseRequest, samples, fiveHeartsHand, 10);
     expect(result.expectedValue).toBe(1.0);
   });
 
-  it("detects 8-card spade fit (own 5S + partner 3S)", () => {
-    const ownHand = lowHand(5, 3, 3, 2);
-    const samples = [makeSample({ N: lowHand(3, 3, 4, 3) })];
-    const result = handler(makeRequest("bridge.nsHaveEightCardFitLikely", "N"), samples, ownHand, 1);
+  it("returns 0.0 when own + partner never reach 8 in either major", () => {
+    // ownHand: fourHeartsHand (4H 3S), partner: threeHeartsHand (3H 4S)
+    // combined hearts: 4 + 3 = 7 < 8, combined spades: 3 + 4 = 7 < 8
+    const samples = makeSamples("N", threeHeartsHand, 10);
+    const result = handler(baseRequest, samples, fourHeartsHand, 10);
+    expect(result.expectedValue).toBe(0.0);
+  });
+
+  it("returns correct fraction for mixed samples", () => {
+    // ownHand: fourHeartsHand (4H 3S)
+    // partner fiveHeartsHand (5H 3S): combined H = 9 >= 8 ✓
+    // partner threeHeartsHand (3H 4S): combined H = 7, S = 7 ✗
+    const samples = [
+      makeSample("N", fiveHeartsHand),
+      makeSample("N", threeHeartsHand),
+      makeSample("N", fiveHeartsHand),
+    ];
+    const result = handler(baseRequest, samples, fourHeartsHand, 6);
+    expect(result.expectedValue).toBeCloseTo(2 / 3);
+    expect(result.confidence).toBeCloseTo(3 / 6);
+  });
+
+  it("detects fit via spades", () => {
+    // ownHand: threeHeartsHand (3H 4S), partner: threeHeartsHand (3H 4S)
+    // combined spades: 4 + 4 = 8 >= 8 ✓
+    const samples = makeSamples("N", threeHeartsHand, 5);
+    const result = handler(baseRequest, samples, threeHeartsHand, 5);
     expect(result.expectedValue).toBe(1.0);
   });
 
-  it("returns 0 when no 8-card fit exists", () => {
-    const ownHand = lowHand(3, 3, 4, 3);
-    const samples = [makeSample({ N: lowHand(3, 3, 4, 3) })];
-    const result = handler(makeRequest("bridge.nsHaveEightCardFitLikely", "N"), samples, ownHand, 1);
-    expect(result.expectedValue).toBe(0);
+  it("does not count minor-suit fits", () => {
+    // ownHand: fourDiamondsHand (3H 3S 4D 3C), partner: fourDiamondsHand (3H 3S 4D 3C)
+    // combined H = 6, S = 6, neither >= 8 (diamonds 8 does not count)
+    const samples = makeSamples("N", fourDiamondsHand, 5);
+    const result = handler(baseRequest, samples, fourDiamondsHand, 5);
+    expect(result.expectedValue).toBe(0.0);
   });
 });
+
+// ── combinedHcpInRangeLikely ────────────────────────────────────────
 
 describe("combinedHcpInRangeLikely", () => {
-  const handler = POSTERIOR_FACT_HANDLERS.get("bridge.combinedHcpInRangeLikely")!;
+  const handler = POSTERIOR_FACT_HANDLERS.get(
+    "bridge.combinedHcpInRangeLikely",
+  )!;
+  const baseRequest: PosteriorFactRequest = {
+    factId: "bridge.combinedHcpInRangeLikely",
+    seatId: "N",
+    conditionedOn: ["20", "25"],
+  };
 
-  it("returns 0 for zero samples", () => {
-    const result = handler(makeRequest("bridge.combinedHcpInRangeLikely", "N", ["25", "30"]), [], dummyHand, 100);
+  it("returns expectedValue 0 and confidence 0 for zero samples", () => {
+    const result = handler(baseRequest, [], tenHcpHand, 100);
     expect(result.expectedValue).toBe(0);
+    expect(result.confidence).toBe(0);
   });
 
-  it("returns 1.0 when combined HCP in range", () => {
-    const ownHand = hcpHand(10);
-    const partnerHand = hcpHand(10);
-    const samples = [makeSample({ N: partnerHand })];
-    const result = handler(makeRequest("bridge.combinedHcpInRangeLikely", "N", ["15", "25"]), samples, ownHand, 1);
+  it("returns 1.0 when all combined HCPs are in range", () => {
+    // ownHand: tenHcpHand (10 HCP), partner: fifteenHcpHand (15 HCP)
+    // combined = 25, range [20, 25] ✓
+    const samples = makeSamples("N", fifteenHcpHand, 10);
+    const result = handler(baseRequest, samples, tenHcpHand, 10);
     expect(result.expectedValue).toBe(1.0);
   });
 
-  it("returns 0 when combined HCP below range", () => {
-    const ownHand = hcpHand(3);
-    const partnerHand = hcpHand(3);
-    const samples = [makeSample({ N: partnerHand })];
-    const result = handler(makeRequest("bridge.combinedHcpInRangeLikely", "N", ["25", "30"]), samples, ownHand, 1);
-    expect(result.expectedValue).toBe(0);
+  it("returns 0.0 when no combined HCPs are in range", () => {
+    // ownHand: tenHcpHand (10 HCP), partner: fiveHcpHand (5 HCP)
+    // combined = 15, range [20, 25] ✗
+    const samples = makeSamples("N", fiveHcpHand, 10);
+    const result = handler(baseRequest, samples, tenHcpHand, 10);
+    expect(result.expectedValue).toBe(0.0);
+  });
+
+  it("returns correct fraction for mixed samples", () => {
+    // ownHand: tenHcpHand (10 HCP)
+    // partner fifteenHcpHand (15): combined 25, in [20, 25] ✓
+    // partner fiveHcpHand (5): combined 15, NOT in [20, 25] ✗
+    const samples = [
+      makeSample("N", fifteenHcpHand),
+      makeSample("N", fiveHcpHand),
+      makeSample("N", fifteenHcpHand),
+      makeSample("N", fiveHcpHand),
+    ];
+    const result = handler(baseRequest, samples, tenHcpHand, 8);
+    expect(result.expectedValue).toBeCloseTo(2 / 4);
+    expect(result.confidence).toBeCloseTo(4 / 8);
+  });
+
+  it("uses conditionedOn[0] as min and conditionedOn[1] as max", () => {
+    // ownHand: tenHcpHand (10), partner: tenHcpHand (10) -> combined 20
+    const samples = makeSamples("N", tenHcpHand, 5);
+
+    // Range [19, 21] -> 20 in range ✓
+    const inRange: PosteriorFactRequest = {
+      ...baseRequest,
+      conditionedOn: ["19", "21"],
+    };
+    expect(handler(inRange, samples, tenHcpHand, 5).expectedValue).toBe(1.0);
+
+    // Range [21, 25] -> 20 NOT in range ✗
+    const tooHigh: PosteriorFactRequest = {
+      ...baseRequest,
+      conditionedOn: ["21", "25"],
+    };
+    expect(handler(tooHigh, samples, tenHcpHand, 5).expectedValue).toBe(0.0);
+  });
+
+  it("treats boundary values as inclusive", () => {
+    // ownHand: tenHcpHand (10), partner: tenHcpHand (10) -> combined 20
+    const samples = makeSamples("N", tenHcpHand, 5);
+
+    // Range [20, 20] -- combined is exactly at both boundaries
+    const exact: PosteriorFactRequest = {
+      ...baseRequest,
+      conditionedOn: ["20", "20"],
+    };
+    expect(handler(exact, samples, tenHcpHand, 5).expectedValue).toBe(1.0);
+  });
+
+  it("defaults to min 0 max 40 when conditionedOn is absent", () => {
+    const request: PosteriorFactRequest = {
+      factId: "bridge.combinedHcpInRangeLikely",
+      seatId: "N",
+    };
+    // combined = 20, range [0, 40] -> always in range
+    const samples = makeSamples("N", tenHcpHand, 5);
+    const result = handler(request, samples, tenHcpHand, 5);
+    expect(result.expectedValue).toBe(1.0);
   });
 });
+
+// ── openerStillBalancedLikely ───────────────────────────────────────
 
 describe("openerStillBalancedLikely", () => {
-  const handler = POSTERIOR_FACT_HANDLERS.get("bridge.openerStillBalancedLikely")!;
+  const handler = POSTERIOR_FACT_HANDLERS.get(
+    "bridge.openerStillBalancedLikely",
+  )!;
+  const baseRequest: PosteriorFactRequest = {
+    factId: "bridge.openerStillBalancedLikely",
+    seatId: "N",
+  };
 
-  it("returns 0 for zero samples", () => {
-    const result = handler(makeRequest("bridge.openerStillBalancedLikely", "N"), [], dummyHand, 100);
+  it("returns expectedValue 0 and confidence 0 for zero samples", () => {
+    const result = handler(baseRequest, [], dummyOwnHand, 100);
     expect(result.expectedValue).toBe(0);
+    expect(result.confidence).toBe(0);
   });
 
-  it("returns 1.0 for balanced hands (4-3-3-3)", () => {
-    const balanced = lowHand(4, 3, 3, 3);
-    const samples = [makeSample({ N: balanced })];
-    const result = handler(makeRequest("bridge.openerStillBalancedLikely", "N"), samples, dummyHand, 1);
+  it("returns 1.0 when all sample hands are balanced", () => {
+    // fourHeartsHand: 4-3-3-3 -> balanced
+    const samples = makeSamples("N", fourHeartsHand, 10);
+    const result = handler(baseRequest, samples, dummyOwnHand, 10);
     expect(result.expectedValue).toBe(1.0);
   });
 
-  it("returns 0 for unbalanced hands (6-3-2-2)", () => {
-    const unbalanced = lowHand(6, 3, 2, 2);
-    const samples = [makeSample({ N: unbalanced })];
-    const result = handler(makeRequest("bridge.openerStillBalancedLikely", "N"), samples, dummyHand, 1);
-    expect(result.expectedValue).toBe(0);
+  it("returns 0.0 when no sample hands are balanced", () => {
+    // unbalancedHand: 6-4-2-1 -> not balanced
+    const samples = makeSamples("N", unbalancedHand, 10);
+    const result = handler(baseRequest, samples, dummyOwnHand, 10);
+    expect(result.expectedValue).toBe(0.0);
+  });
+
+  it("returns correct fraction for mixed samples", () => {
+    const samples = [
+      makeSample("N", fourHeartsHand), // balanced 4-3-3-3 ✓
+      makeSample("N", unbalancedHand), // 6-4-2-1 ✗
+      makeSample("N", bothMajorsHand), // balanced 4-4-3-2 ✓
+    ];
+    const result = handler(baseRequest, samples, dummyOwnHand, 6);
+    expect(result.expectedValue).toBeCloseTo(2 / 3);
+    expect(result.confidence).toBeCloseTo(3 / 6);
+  });
+
+  it("recognises all three balanced shapes", () => {
+    // 4-3-3-3: fourHeartsHand
+    // 4-4-3-2: bothMajorsHand
+    // 5-3-3-2: fiveHeartsHand
+    const samples = [
+      makeSample("N", fourHeartsHand),
+      makeSample("N", bothMajorsHand),
+      makeSample("N", fiveHeartsHand),
+    ];
+    const result = handler(baseRequest, samples, dummyOwnHand, 3);
+    expect(result.expectedValue).toBe(1.0);
+  });
+
+  it("returns confidence equal to samples.length / totalRequested", () => {
+    const samples = makeSamples("N", fourHeartsHand, 4);
+    const result = handler(baseRequest, samples, dummyOwnHand, 16);
+    expect(result.confidence).toBeCloseTo(4 / 16);
   });
 });
 
-describe("openerHasSecondMajorLikely", () => {
-  const handler = POSTERIOR_FACT_HANDLERS.get("bridge.openerHasSecondMajorLikely")!;
+// ── openerHasSecondMajorLikely ──────────────────────────────────────
 
-  it("returns 0 for zero samples", () => {
-    const result = handler(makeRequest("bridge.openerHasSecondMajorLikely", "N"), [], dummyHand, 100);
+describe("openerHasSecondMajorLikely", () => {
+  const handler = POSTERIOR_FACT_HANDLERS.get(
+    "bridge.openerHasSecondMajorLikely",
+  )!;
+  const baseRequest: PosteriorFactRequest = {
+    factId: "bridge.openerHasSecondMajorLikely",
+    seatId: "N",
+  };
+
+  it("returns expectedValue 0 and confidence 0 for zero samples", () => {
+    const result = handler(baseRequest, [], dummyOwnHand, 100);
     expect(result.expectedValue).toBe(0);
+    expect(result.confidence).toBe(0);
   });
 
-  it("returns 1.0 when partner has 4+ in both majors", () => {
-    const bothMajors = lowHand(4, 4, 3, 2);
-    const samples = [makeSample({ N: bothMajors })];
-    const result = handler(makeRequest("bridge.openerHasSecondMajorLikely", "N"), samples, dummyHand, 1);
+  it("returns 1.0 when all sample hands have 4+ in both majors", () => {
+    // bothMajorsHand: 4H 4S
+    const samples = makeSamples("N", bothMajorsHand, 10);
+    const result = handler(baseRequest, samples, dummyOwnHand, 10);
     expect(result.expectedValue).toBe(1.0);
   });
 
-  it("returns 0 when partner has only one 4-card major", () => {
-    const oneMajor = lowHand(4, 3, 3, 3);
-    const samples = [makeSample({ N: oneMajor })];
-    const result = handler(makeRequest("bridge.openerHasSecondMajorLikely", "N"), samples, dummyHand, 1);
-    expect(result.expectedValue).toBe(0);
+  it("returns 0.0 when no sample hands have 4+ in both majors", () => {
+    // fourHeartsHand: 4H 3S -> only hearts >= 4
+    const samples = makeSamples("N", fourHeartsHand, 10);
+    const result = handler(baseRequest, samples, dummyOwnHand, 10);
+    expect(result.expectedValue).toBe(0.0);
   });
 
-  it("returns proportion for mixed samples with correct confidence", () => {
-    const bothMajors = lowHand(4, 4, 3, 2);
-    const oneMajor = lowHand(4, 3, 3, 3);
-    const samples = [makeSample({ N: bothMajors }), makeSample({ N: oneMajor })];
-    const result = handler(makeRequest("bridge.openerHasSecondMajorLikely", "N"), samples, dummyHand, 4);
-    expect(result.expectedValue).toBe(0.5);
-    expect(result.confidence).toBe(0.5);
+  it("returns correct fraction for mixed samples", () => {
+    const samples = [
+      makeSample("N", bothMajorsHand),  // 4H 4S ✓
+      makeSample("N", fourHeartsHand),  // 4H 3S ✗
+      makeSample("N", bothMajorsHand),  // 4H 4S ✓
+      makeSample("N", threeHeartsHand), // 3H 4S ✗
+    ];
+    const result = handler(baseRequest, samples, dummyOwnHand, 8);
+    expect(result.expectedValue).toBeCloseTo(2 / 4);
+    expect(result.confidence).toBeCloseTo(4 / 8);
+  });
+
+  it("requires 4+ in BOTH hearts and spades not just one", () => {
+    // fourHeartsHand: 4H but only 3S
+    const heartOnly = makeSamples("N", fourHeartsHand, 5);
+    const result1 = handler(baseRequest, heartOnly, dummyOwnHand, 5);
+    expect(result1.expectedValue).toBe(0.0);
+
+    // threeHeartsHand: 4S but only 3H
+    const spadeOnly = makeSamples("N", threeHeartsHand, 5);
+    const result2 = handler(baseRequest, spadeOnly, dummyOwnHand, 5);
+    expect(result2.expectedValue).toBe(0.0);
+  });
+
+  it("returns confidence equal to samples.length / totalRequested", () => {
+    const samples = makeSamples("N", bothMajorsHand, 3);
+    const result = handler(baseRequest, samples, dummyOwnHand, 12);
+    expect(result.confidence).toBeCloseTo(3 / 12);
   });
 });

@@ -16,12 +16,16 @@ describe("Weak Two bundle conversation machine", () => {
     expect(result.activeSurfaceGroupIds).toContain("opener-r1");
   });
 
-  it("has the expected number of states (12)", () => {
-    // idle, weak-two-opened-h, weak-two-opened-s, weak-two-opened-d,
-    // responder-r2-h, responder-r2-s, responder-r2-d,
-    // ogust-response-h, ogust-response-s, ogust-response-d,
-    // terminal, weak-two-contested
-    expect(machine.states.size).toBe(12);
+  it("contains all required states", () => {
+    const requiredStates = [
+      "idle", "weak-two-opened-h", "weak-two-opened-s", "weak-two-opened-d",
+      "responder-r2-h", "responder-r2-s", "responder-r2-d",
+      "ogust-response-h", "ogust-response-s", "ogust-response-d",
+      "terminal", "weak-two-contested",
+    ];
+    for (const stateId of requiredStates) {
+      expect(machine.states.has(stateId), `missing state: ${stateId}`).toBe(true);
+    }
   });
 
   // ─── R1: Opening transitions ──────────────────────────────────

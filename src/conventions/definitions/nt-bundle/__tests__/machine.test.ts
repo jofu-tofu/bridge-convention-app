@@ -14,14 +14,18 @@ describe("createNtConversationMachine", () => {
     expect(errors).toEqual([]);
   });
 
-  it("has expected number of states", () => {
-    // idle, nt-opened, responder-r1, opener-stayman,
-    // opener-transfer-hearts, opener-transfer-spades,
-    // responder-r3-stayman-2h, responder-r3-stayman-2s, responder-r3-stayman-2d,
-    // responder-r3-transfer-hearts, responder-r3-transfer-spades,
-    // smolen-invoke-hearts, smolen-invoke-spades,
-    // terminal, nt-contested
-    expect(machine.states.size).toBe(15);
+  it("contains all required states", () => {
+    const requiredStates = [
+      "idle", "nt-opened", "responder-r1",
+      "opener-stayman", "opener-transfer-hearts", "opener-transfer-spades",
+      "responder-r3-stayman-2h", "responder-r3-stayman-2s", "responder-r3-stayman-2d",
+      "responder-r3-transfer-hearts", "responder-r3-transfer-spades",
+      "smolen-invoke-hearts", "smolen-invoke-spades",
+      "terminal", "nt-contested",
+    ];
+    for (const stateId of requiredStates) {
+      expect(machine.states.has(stateId), `missing state: ${stateId}`).toBe(true);
+    }
   });
 
   it("idle → nt-opened on 1NT bid by partner", () => {

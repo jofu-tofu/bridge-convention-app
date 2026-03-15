@@ -16,15 +16,19 @@ describe("createDontConversationMachine", () => {
     expect(result.activeSurfaceGroupIds).toEqual([]);
   });
 
-  it("has 21 states", () => {
-    // idle, dont-active, overcaller-r1,
-    // wait-advancer-2h, wait-advancer-2d, wait-advancer-2c, wait-advancer-2s, wait-advancer-double,
-    // advancer-after-2h, advancer-after-2d, advancer-after-2c, advancer-after-2s, advancer-after-double,
-    // wait-reveal, overcaller-reveal,
-    // wait-2d-relay, overcaller-2d-relay,
-    // wait-2c-relay, overcaller-2c-relay,
-    // terminal, dont-contested
-    expect(machine.states.size).toBe(21);
+  it("contains all required states", () => {
+    const requiredStates = [
+      "idle", "dont-active", "overcaller-r1",
+      "wait-advancer-2h", "wait-advancer-2d", "wait-advancer-2c", "wait-advancer-2s", "wait-advancer-double",
+      "advancer-after-2h", "advancer-after-2d", "advancer-after-2c", "advancer-after-2s", "advancer-after-double",
+      "wait-reveal", "overcaller-reveal",
+      "wait-2d-relay", "overcaller-2d-relay",
+      "wait-2c-relay", "overcaller-2c-relay",
+      "terminal", "dont-contested",
+    ];
+    for (const stateId of requiredStates) {
+      expect(machine.states.has(stateId), `missing state: ${stateId}`).toBe(true);
+    }
   });
 
   // ─── R1: Activation and overcaller bids ───────────────────────

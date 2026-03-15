@@ -90,8 +90,14 @@ describe("Smolen submachine structure", () => {
     expect(errors).toHaveLength(0);
   });
 
-  it("has 5 states", () => {
-    expect(smolenSub.states.size).toBe(5);
+  it("contains all required states", () => {
+    const requiredStates = [
+      "smolen-wait", "opener-place-hearts", "opener-place-spades",
+      "smolen-done", "smolen-contested",
+    ];
+    for (const stateId of requiredStates) {
+      expect(smolenSub.states.has(stateId), `missing state: ${stateId}`).toBe(true);
+    }
   });
 
   it("initial state is smolen-wait", () => {

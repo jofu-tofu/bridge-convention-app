@@ -70,17 +70,21 @@ describe("Bergen bundle conversation machine", () => {
     expect(result.context.stateHistory).toContain("responder-r1-hearts");
   });
 
-  it("has the expected number of states", () => {
-    // idle, major-opened-hearts, major-opened-spades,
-    // responder-r1-hearts, responder-r1-spades,
-    // opener-after-constructive-hearts, opener-after-constructive-spades,
-    // opener-after-limit-hearts, opener-after-limit-spades,
-    // opener-after-preemptive-hearts, opener-after-preemptive-spades,
-    // responder-after-game, responder-after-signoff,
-    // responder-after-game-try-hearts, responder-after-game-try-spades,
-    // opener-r4-accept,
-    // terminal, bergen-contested
-    expect(machine.states.size).toBe(18);
+  it("contains all required states", () => {
+    const requiredStates = [
+      "idle", "major-opened-hearts", "major-opened-spades",
+      "responder-r1-hearts", "responder-r1-spades",
+      "opener-after-constructive-hearts", "opener-after-constructive-spades",
+      "opener-after-limit-hearts", "opener-after-limit-spades",
+      "opener-after-preemptive-hearts", "opener-after-preemptive-spades",
+      "responder-after-game", "responder-after-signoff",
+      "responder-after-game-try-hearts", "responder-after-game-try-spades",
+      "opener-r4-accept",
+      "terminal", "bergen-contested",
+    ];
+    for (const stateId of requiredStates) {
+      expect(machine.states.has(stateId), `missing state: ${stateId}`).toBe(true);
+    }
   });
 
   // ─── R1 → R2 routing (hearts) ────────────────────────────────

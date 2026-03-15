@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   formatCallString,
   deriveEntailedDenials,
+  extractCommitments,
 } from "../commitment-extractor";
 import type { Auction, Call } from "../../../../engine/types";
 import { Seat } from "../../../../engine/types";
@@ -199,5 +200,173 @@ describe("deriveEntailedDenials — domain kind: module-frontier", () => {
       (d) => d.constraint.factId === "hand.suitLength.spades",
     );
     expect(spadesDenial).toBeUndefined();
+  });
+});
+
+// ─── extractCommitments ─────────────────────────────────────────
+
+describe("extractCommitments", () => {
+  it("returns empty for empty auction", () => {
+    const result = extractCommitments(emptyAuction, Seat.South, testRouter);
+    expect(result).toEqual([]);
+  });
+
+  it("extracts promise constraints from matching surface", () => {
+    // surfaceA matches 2C — it has publicConsequences.promises
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" } as Call },
+      ],
+      isComplete: false,
+    };
+
+    const result = extractCommitments(auction, Seat.South, testRouter);
+
+    const promises = result.filter(c => c.origin === "call-meaning");
+    expect(promises.length).toBeGreaterThanOrEqual(1);
+    expect(promises[0]!.constraint.factId).toBe("hand.hcp");
+    expect(promises[0]!.strength).toBe("hard");
+    expect(promises[0]!.subject).toBe(Seat.South);
+    expect(promises[0]!.sourceCall).toBe("2C");
+    expect(promises[0]!.sourceMeaning).toBe("meaning-a");
+  });
+
+  it("extracts denial constraints when surface has denies", () => {
+    // Create a surface with denies
+    const surfaceWithDenials = makeSurface({
+      meaningId: "deny-surface",
+      encoding: { defaultCall: { type: "bid", level: 3, strain: "NT" } as Call },
+      publicConsequences: {
+        promises: [],
+        denies: [
+          { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
+        ],
+      },
+    });
+
+    const routerWithDenials = (_a: Auction, _s: Seat) => [surfaceWithDenials];
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.South, call: { type: "bid", level: 3, strain: "NT" } as Call },
+      ],
+      isComplete: false,
+    };
+
+    const result = extractCommitments(auction, Seat.South, routerWithDenials);
+
+    const denials = result.filter(c => c.origin === "explicit-denial");
+    expect(denials).toHaveLength(1);
+    expect(denials[0]!.constraint.factId).toBe("hand.suitLength.hearts");
+    expect(denials[0]!.strength).toBe("hard");
+  });
+
+  it("no commitments when auction entry does not match any surface", () => {
+    // 1NT doesn't match any of allTestSurfaces (which have 2C, 2D, 2H, 2S)
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.South, call: { type: "bid", level: 1, strain: "NT" } as Call },
+      ],
+      isComplete: false,
+    };
+
+    const result = extractCommitments(auction, Seat.South, testRouter);
+    expect(result).toEqual([]);
+  });
+
+  it("no commitments from surface without publicConsequences", () => {
+    // surfaceNoConsequences matches 2S but has no publicConsequences
+    const routerOnlyNoConsequences = (_a: Auction, _s: Seat) => [surfaceNoConsequences];
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.South, call: { type: "bid", level: 2, strain: "S" } as Call },
+      ],
+      isComplete: false,
+    };
+
+    const result = extractCommitments(auction, Seat.South, routerOnlyNoConsequences);
+    expect(result).toEqual([]);
+  });
+
+  it("surfaceRouter receives sub-auction (entries 0..i-1) for entry i", () => {
+    const routerCalls: Auction[] = [];
+    const captureRouter = (a: Auction, _s: Seat): readonly MeaningSurface[] => {
+      routerCalls.push(a);
+      return allTestSurfaces;
+    };
+
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" } as Call },
+        { seat: Seat.West, call: { type: "pass" } },
+      ],
+      isComplete: false,
+    };
+
+    extractCommitments(auction, Seat.South, captureRouter);
+
+    // First call: sub-auction has 0 entries (before entry 0)
+    expect(routerCalls[0]!.entries).toHaveLength(0);
+    // Second call: sub-auction has 1 entry (before entry 1)
+    expect(routerCalls[1]!.entries).toHaveLength(1);
+  });
+
+  it("accumulates commitments across multiple matching entries", () => {
+    // 2C matches surfaceA, 2D matches surfaceB
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" } as Call },
+        { seat: Seat.North, call: { type: "bid", level: 2, strain: "D" } as Call },
+      ],
+      isComplete: false,
+    };
+
+    const result = extractCommitments(auction, Seat.South, testRouter);
+
+    const promises = result.filter(c => c.origin === "call-meaning");
+    expect(promises.length).toBeGreaterThanOrEqual(2);
+    // One from surfaceA (hand.hcp) and one from surfaceB (hand.suitLength.hearts)
+    const hcpPromise = promises.find(c => c.constraint.factId === "hand.hcp");
+    const heartPromise = promises.find(c => c.constraint.factId === "hand.suitLength.hearts");
+    expect(hcpPromise).toBeDefined();
+    expect(heartPromise).toBeDefined();
+  });
+
+  it("extracts entailed denials when surface has closurePolicy", () => {
+    const surfaceWithClosure = makeSurface({
+      meaningId: "closure-surface",
+      encoding: { defaultCall: { type: "bid", level: 2, strain: "C" } as Call },
+      publicConsequences: {
+        promises: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
+        closurePolicy: {
+          exclusive: true,
+          exhaustive: true,
+          mandatory: true,
+          domain: { kind: "surface" },
+        },
+      },
+    });
+
+    const peerSurface = makeSurface({
+      meaningId: "peer-surface",
+      encoding: { defaultCall: { type: "bid", level: 2, strain: "D" } as Call },
+      publicConsequences: {
+        promises: [{ factId: "hand.suitLength.diamonds", operator: "gte", value: 5 }],
+      },
+    });
+
+    const closureRouter = (_a: Auction, _s: Seat) => [surfaceWithClosure, peerSurface];
+    const auction: Auction = {
+      entries: [
+        { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" } as Call },
+      ],
+      isComplete: false,
+    };
+
+    const result = extractCommitments(auction, Seat.South, closureRouter);
+
+    const entailed = result.filter(c => c.origin === "entailed-denial");
+    expect(entailed.length).toBeGreaterThanOrEqual(1);
+    expect(entailed[0]!.constraint.factId).toBe("hand.suitLength.diamonds");
+    expect(entailed[0]!.strength).toBe("entailed");
   });
 });
