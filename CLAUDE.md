@@ -129,9 +129,9 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 **Active/upcoming:**
 
 2. **User Learning Enhancements**
-   - (b) Dedicated learning screen — needs rebuild for meaning pipeline (old tree-walking display removed). Future: Spotlight Walk, Decision Cards, Dual Pane views.
+   - (b) Dedicated learning screen — needs rebuild for meaning pipeline (old tree-walking display removed). Future: Spotlight Walk, Decision Cards, Dual Pane views. Blocked on learning screen design spec.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard)
-11. **Convention Migration** — Migrate remaining conventions (SAYC, Weak Twos, Lebensohl Lite) to meaning pipeline bundles. Currently only nt-bundle and bergen-bundle exist.
+11. **Convention Migration** — Migrate remaining conventions (SAYC, Weak Twos, Lebensohl Lite) to meaning pipeline bundles. Currently only nt-bundle and bergen-bundle exist. Blocked on spec completion (Patterns 2-6 need spec resolution first).
 
 ## Architecture Spec & Alignment
 
@@ -139,6 +139,21 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 - `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-convention-protocol.md` — Agreement Module IR: composable convention modules, system profiles, conversation machines, two-phase evaluation, public state layers, WitnessSpecIR, FactCatalogIR
 - `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-candidate-pipeline.md` — Meaning-centric pipeline: MeaningSurface as canonical unit, semantic arbitration, TeachingProjection, DecisionProvenance, PedagogicalRelation graph, ExplanationCatalog
+
+**Spec status:** Both specs are `status: active`, `confidence: medium-high`. Many contracts are frozen but several open questions remain. **The spec must be finished before building features that depend on unresolved areas.** Do not implement against open questions — resolve the spec first.
+
+**Open questions in the protocol spec (must resolve before implementing):**
+
+| Open Question | Status | Blocks |
+|---|---|---|
+| Fact catalog design — posterior-derived fact compilers, gold scenario validation | Partially resolved (seed vocabulary defined) | WitnessSpecIR wiring, posterior enrichment |
+| Capability vocabulary — stable IDs for host attachment (`naturalOneLevelOpening`? `ntOpenerContext`?) | Unresolved (shape frozen, vocabulary not) | Negative Doubles, host-attachment conventions |
+| Posterior engine implementation — sampling method, likelihood models, `publicBeliefs` naming | Unresolved | Inference spectrum / difficulty config |
+| Evidence group correlation model — within-group semantics not formalized as types | Unresolved | Posterior combiner accuracy |
+| `priorityClass` → `recommendationBand` indirection — spec says profile maps classes to bands | Spec resolved, not implemented | Pipeline alignment to spec |
+| Two-phase evaluation unification — single `evaluate()` returning `{ publicSnapshot, decisionSurfaces }` | Spec resolved, not implemented | DecisionSurfaceIR migration |
+| Machine submachines and loops — needed for relay chains, variable-length protocols | Spec designed, not implemented | Weak Twos, Lebensohl |
+| Host-attachment activation — modules activating from another module's exported capabilities | Spec designed, not implemented | Negative Doubles, Fourth Suit Forcing |
 
 **Alignment summary (as of 2026-03-14):**
 
@@ -150,17 +165,29 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 | WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
 | DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
 
-**Next steps (recommended order for implementing spec toward many-convention future):**
+**Next steps (spec-first order — resolve design before building):**
 
-1. ~~**Make system profiles drive module activation.**~~ Done. `activationFilter` is deprecated (optional). `resolveActiveModules()` drives activation via `bundle-adapter.ts resolveActivation()`.
-2. ~~**Implement Stayman-only and Transfer-only sub-bundles.**~~ Done. `nt-stayman` and `nt-transfers` bundles registered with dedicated profiles (`NT_STAYMAN_ONLY_PROFILE`, `NT_TRANSFERS_ONLY_PROFILE`).
-3. **Build the learning screen** on existing TeachingProjection + ConventionTeaching contracts. The data pipeline is now fully wired; the UI is the missing piece.
-4. **Add Smolen surfaces to NT bundle.** First new convention content within an existing bundle. Tests the R3 continuation pattern with a cross-major-suit reference.
-5. **Implement a Pattern 2 convention (Weak Twos or Lebensohl Lite).** Exercises relay chains, variable responses, and tests the machine's loop/forking capabilities against the spec.
-6. **Implement a Pattern 4 convention (Negative Doubles).** Exercises host-attachment activation and pattern-triggered modules — the hardest spec requirement.
-7. **Wire WitnessSpecIR to deal generation.** Replace raw DealConstraints with WitnessSpec-based generation. The types and compiler already exist.
-8. **Unify two-phase evaluation.** Merge `buildSnapshotFromAuction()` + machine evaluation into a single `evaluate()` call returning `{ publicSnapshot, decisionSurfaces }` per spec.
-9. **Migrate pipeline to DecisionSurfaceIR.** Complete the surface-adapter migration so the pipeline consumes DecisionSurfaceIR instead of raw MeaningSurface.
+1. ~~**Make system profiles drive module activation.**~~ Done.
+2. ~~**Implement Stayman-only and Transfer-only sub-bundles.**~~ Done.
+3. **Finish the spec: resolve open questions.** Work in the Obsidian spec docs to close the open questions above. Each convention pattern (Weak Twos, Negative Doubles, Lebensohl) should have its spec section finalized before implementation begins. Priority order:
+   - (a) `priorityClass` → band indirection (small, unblocks pipeline alignment)
+   - (b) Two-phase evaluation unification (unblocks DecisionSurfaceIR migration)
+   - (c) Machine submachines/loops (unblocks Weak Twos, Lebensohl)
+   - (d) Host-attachment activation + capability vocabulary (unblocks Negative Doubles)
+   - (e) Fact catalog posterior compilers (unblocks WitnessSpecIR wiring)
+   - (f) Evidence group correlation model (unblocks posterior combiner)
+4. **Implement resolved spec areas** — as each open question is resolved, implement it:
+   - `priorityClass` indirection → pipeline change
+   - Two-phase evaluation → runtime unification
+   - Submachines/loops → machine-evaluator extension
+   - Host-attachment → profile-activation extension
+5. **Add convention content that exercises resolved patterns:**
+   - Smolen (exercises R3 continuation — no spec gaps)
+   - Weak Twos (exercises relay/variable-length — needs submachine spec done first)
+   - Negative Doubles (exercises host-attachment — needs capability vocabulary done first)
+6. **Wire WitnessSpecIR to deal generation** (needs fact catalog posterior compilers resolved)
+7. **Migrate pipeline to DecisionSurfaceIR** (needs two-phase evaluation unified first)
+8. **Build the learning screen** (needs its own design spec — `docs/learning/research-summary.md` is research, not a spec)
 
 ## Test-Driven Development
 
