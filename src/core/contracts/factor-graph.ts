@@ -13,7 +13,6 @@ export interface FactorOrigin {
   readonly sourceModule?: string;
   readonly originKind:
     | "call-meaning"
-    | "announcement"
     | "explicit-denial"
     | "entailed-denial";
 }
@@ -109,5 +108,4 @@ export interface FactorGraphIR {
   readonly factors: readonly FactorSpec[];
   readonly ambiguitySchema: readonly AmbiguityFamilyIR[];
   readonly evidencePins: readonly EvidencePin[];
-  readonly compilationTrace: readonly FactorOrigin[];
 }

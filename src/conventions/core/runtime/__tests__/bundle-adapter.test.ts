@@ -65,7 +65,6 @@ function makeBundleWithSurfaces(
     name: "Test Bundle",
     memberIds: ["test-conv"],
     dealConstraints: { seats: [], dealer: Seat.North },
-    activationFilter: () => ["test-conv"],
     meaningSurfaces: [{ groupId: "test-group", surfaces: [dummySurface] }],
     ...overrides,
   };
@@ -100,17 +99,17 @@ describe("bundleToRuntimeModules capability injection", () => {
     expect(activeIds).toEqual(["test-module"]);
   });
 
-  it("falls through to activationFilter when bundle has no systemProfile", () => {
+  it("returns empty when bundle has no systemProfile", () => {
     const bundle = makeBundleWithSurfaces({
-      // no systemProfile — falls through to activationFilter
+      // no systemProfile — returns empty
     });
 
     const { getActiveIds } = bundleToRuntimeModules(bundle);
     const auction = buildAuction(Seat.North, ["1H", "P"]);
     const activeIds = getActiveIds(auction, Seat.South);
 
-    // Without systemProfile, activationFilter is used
-    expect(activeIds).toEqual(["test-conv"]);
+    // Without systemProfile, returns empty
+    expect(activeIds).toEqual([]);
   });
 
   it("activates modules that have no capability requirements regardless of declaredCapabilities", () => {

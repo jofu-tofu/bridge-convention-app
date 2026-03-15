@@ -170,10 +170,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
           {
             seat: currentTurn,
             call: result.call,
-            ruleName: result.ruleName,
-            explanation: result.explanation,
             meaning: result.meaning,
-            handSummary: result.handSummary,
             isUser: false,
           },
         ];
@@ -289,10 +286,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       {
         seat: currentTurn,
         call,
-        ruleName: null,
-        explanation: "User bid",
         meaning: expectedResult?.meaning,
-        handSummary: expectedResult?.handSummary,
         isUser: true,
         isCorrect,
         expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
@@ -378,30 +372,9 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     if (initialAuction) {
       auction = initialAuction;
       bidHistory = initialAuction.entries.map((entry) => {
-        let explanation: string;
-        switch (entry.call.type) {
-          case "bid":
-            explanation = `Opening ${entry.call.level}${entry.call.strain} bid`;
-            break;
-          case "pass":
-            explanation = "Pass";
-            break;
-          case "double":
-            explanation = "Double";
-            break;
-          case "redouble":
-            explanation = "Redouble";
-            break;
-          default: {
-            const _exhaustive: never = entry.call;
-            throw new Error(`Unknown call type: ${(_exhaustive as { type: string }).type}`);
-          }
-        }
         return {
           seat: entry.seat,
           call: entry.call,
-          ruleName: null,
-          explanation,
           isUser: false,
         };
       });

@@ -88,18 +88,17 @@ export function produceAnnotation(
       return {
         call: entry.call,
         seat: entry.seat,
-        ruleName: ruleResult.rule,
         conventionId,
         meaning: ruleResult.meaning ?? ruleResult.explanation,
-        alert: ruleResult.alert ?? null,
         inferences,
       };
     }
 
     // Try to derive inferences from alert's publicConstraints
-    const alertInference = ruleResult.alert?.publicConstraints?.length
+    const alert = ruleResult.alert;
+    const alertInference = alert?.publicConstraints?.length
       ? constraintsToInference(
-          ruleResult.alert.publicConstraints,
+          alert.publicConstraints,
           entry.seat,
           `alert:${ruleResult.rule}`,
         )
@@ -109,10 +108,8 @@ export function produceAnnotation(
       return {
         call: entry.call,
         seat: entry.seat,
-        ruleName: ruleResult.rule,
         conventionId,
         meaning: ruleResult.meaning ?? ruleResult.explanation,
-        alert: ruleResult.alert ?? null,
         inferences: [alertInference],
       };
     }
@@ -123,20 +120,16 @@ export function produceAnnotation(
       return {
         call: entry.call,
         seat: entry.seat,
-        ruleName: ruleResult.rule,
         conventionId,
         meaning: ruleResult.meaning ?? ruleResult.explanation,
-        alert: ruleResult.alert ?? null,
         inferences: naturalInference ? [naturalInference] : [],
       };
     }
     return {
       call: entry.call,
       seat: entry.seat,
-      ruleName: ruleResult.rule,
       conventionId,
       meaning: ruleResult.meaning ?? ruleResult.explanation,
-      alert: ruleResult.alert ?? null,
       inferences: [],
     };
   }
@@ -147,10 +140,8 @@ export function produceAnnotation(
     return {
       call: entry.call,
       seat: entry.seat,
-      ruleName: null,
       conventionId: null,
       meaning: "Natural bid",
-      alert: null,
       inferences: naturalInference ? [naturalInference] : [],
     };
   }
@@ -165,10 +156,8 @@ export function produceAnnotation(
   return {
     call: entry.call,
     seat: entry.seat,
-    ruleName: null,
     conventionId: null,
     meaning: meaningMap[entry.call.type] ?? entry.call.type,
-    alert: null,
     inferences: [],
   };
 }

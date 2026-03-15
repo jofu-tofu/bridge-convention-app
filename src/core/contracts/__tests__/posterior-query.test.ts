@@ -29,7 +29,6 @@ const emptyFactorGraph: FactorGraphIR = {
   factors: [],
   ambiguitySchema: [],
   evidencePins: [],
-  compilationTrace: [],
 };
 
 const snapshot: PublicSnapshot = {
@@ -123,7 +122,6 @@ describe("ConditioningContext", () => {
         ],
         ambiguitySchema: [],
         evidencePins: [],
-        compilationTrace: [origin],
       },
       observerSeat: "S",
       ownHand: hand,

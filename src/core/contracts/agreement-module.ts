@@ -122,13 +122,12 @@ export interface PublicEvent {
   readonly eventIndex: number;
   readonly call: string;
   readonly seat: string;
-  readonly alert?: string;
 }
 
 export interface PublicConstraint {
   readonly subject: string;
   readonly constraint: FactConstraintIR;
-  readonly origin: "call-meaning" | "announcement" | "explanation" | "explicit-denial" | "entailed-denial";
+  readonly origin: "call-meaning" | "explicit-denial" | "entailed-denial";
   readonly strength: "hard" | "entailed";
   readonly sourceCall?: string;
   readonly sourceMeaning?: string;

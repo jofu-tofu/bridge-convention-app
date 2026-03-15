@@ -170,7 +170,6 @@ describe("compileFactorGraph", () => {
     expect(graph.factors).toHaveLength(0);
     expect(graph.ambiguitySchema).toHaveLength(0);
     expect(graph.evidencePins).toHaveLength(0);
-    expect(graph.compilationTrace).toHaveLength(0);
   });
 
   it("maps latentBranches to AmbiguityFamilyIR", () => {
@@ -205,7 +204,7 @@ describe("compileFactorGraph", () => {
     expect(graph.ambiguitySchema[0]!.alternatives[1]!.branchId).toBe("spades");
   });
 
-  it("produces a compilationTrace entry for every factor", () => {
+  it("each factor has an origin with originKind", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
@@ -230,10 +229,10 @@ describe("compileFactorGraph", () => {
     ]);
 
     const graph = compileFactorGraph(snapshot);
-    expect(graph.compilationTrace).toHaveLength(graph.factors.length);
-    // Each trace entry has an originKind
-    for (const trace of graph.compilationTrace) {
-      expect(trace).toHaveProperty("originKind");
+    expect(graph.factors).toHaveLength(3);
+    // Each factor has an origin with originKind
+    for (const factor of graph.factors) {
+      expect(factor.origin).toHaveProperty("originKind");
     }
   });
 

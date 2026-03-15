@@ -48,10 +48,8 @@ describe("produceAnnotation", () => {
       emptyAuction,
     );
 
-    expect(annotation.alert).toEqual(alert);
     expect(annotation.meaning).toBe("Asks for a 4-card major");
     expect(annotation.conventionId).toBe("stayman");
-    expect(annotation.ruleName).toBe("test-rule");
   });
 
   it("convention bid: inferences from extractor.extractInferences()", () => {
@@ -76,7 +74,7 @@ describe("produceAnnotation", () => {
     expect(annotation.inferences).toEqual([testInference]);
   });
 
-  it("natural bid (null ruleResult): alert null, inferences from naturalProvider", () => {
+  it("natural bid (null ruleResult): inferences from naturalProvider", () => {
     const naturalInference: HandInference = {
       seat: Seat.East,
       minHcp: 12,
@@ -97,14 +95,12 @@ describe("produceAnnotation", () => {
       emptyAuction,
     );
 
-    expect(annotation.alert).toBeNull();
     expect(annotation.meaning).toBe("Natural bid");
     expect(annotation.inferences).toEqual([naturalInference]);
-    expect(annotation.ruleName).toBeNull();
     expect(annotation.conventionId).toBeNull();
   });
 
-  it("pass: meaning 'Pass', alert null, inferences empty", () => {
+  it("pass: meaning 'Pass', inferences empty", () => {
     const entry: AuctionEntry = { seat: Seat.North, call: { type: "pass" } };
 
     const annotation = produceAnnotation(
@@ -117,11 +113,10 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.meaning).toBe("Pass");
-    expect(annotation.alert).toBeNull();
     expect(annotation.inferences).toEqual([]);
   });
 
-  it("double: meaning 'Double', alert null, inferences empty", () => {
+  it("double: meaning 'Double', inferences empty", () => {
     const entry: AuctionEntry = { seat: Seat.West, call: { type: "double" } };
 
     const annotation = produceAnnotation(
@@ -134,11 +129,10 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.meaning).toBe("Double");
-    expect(annotation.alert).toBeNull();
     expect(annotation.inferences).toEqual([]);
   });
 
-  it("redouble: meaning 'Redouble', alert null, inferences empty", () => {
+  it("redouble: meaning 'Redouble', inferences empty", () => {
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "redouble" } };
 
     const annotation = produceAnnotation(
@@ -151,7 +145,6 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.meaning).toBe("Redouble");
-    expect(annotation.alert).toBeNull();
     expect(annotation.inferences).toEqual([]);
   });
 
@@ -175,7 +168,6 @@ describe("produceAnnotation", () => {
       emptyAuction,
     );
 
-    expect(annotation.alert).toEqual(alert);
     expect(annotation.inferences).toHaveLength(1);
     expect(annotation.inferences[0]!.minHcp).toBe(8);
     expect(annotation.inferences[0]!.suits).toEqual({
@@ -207,7 +199,6 @@ describe("produceAnnotation", () => {
       emptyAuction,
     );
 
-    expect(annotation.alert).toEqual(alert);
     expect(annotation.inferences).toEqual([naturalInference]);
   });
 });

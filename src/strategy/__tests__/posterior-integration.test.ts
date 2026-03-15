@@ -110,7 +110,7 @@ function makeMockPosteriorBackend(particleCount = 200): {
     particles,
     context: {
       snapshot: { publicCommitments: [] } as unknown as ConditioningContext["snapshot"],
-      factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [], compilationTrace: [] },
+      factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [] },
       observerSeat: "S",
     },
   };
@@ -224,7 +224,7 @@ describe("meaningBundleToStrategy — posterior integration", () => {
       particles: [],
       context: {
         snapshot: { publicCommitments: [] } as unknown as ConditioningContext["snapshot"],
-        factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [], compilationTrace: [] },
+        factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [] },
         observerSeat: "S",
       },
     };

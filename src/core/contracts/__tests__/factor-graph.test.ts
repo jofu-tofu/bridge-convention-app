@@ -156,7 +156,7 @@ describe("EvidencePin discriminated union", () => {
       kind: "auction-record",
       events: [
         { eventIndex: 0, call: "1NT", seat: "N" },
-        { eventIndex: 1, call: "2C", seat: "S", alert: "Stayman" },
+        { eventIndex: 1, call: "2C", seat: "S" },
       ],
     };
 
@@ -218,13 +218,11 @@ describe("FactorGraphIR", () => {
       evidencePins: [
         { kind: "own-hand", seat: "S", hand },
       ],
-      compilationTrace: [origin],
     };
 
     expect(fg.factors).toHaveLength(1);
     expect(fg.ambiguitySchema).toHaveLength(1);
     expect(fg.evidencePins).toHaveLength(1);
-    expect(fg.compilationTrace).toHaveLength(1);
   });
 
   it("empty factor graph is valid", () => {
@@ -232,13 +230,11 @@ describe("FactorGraphIR", () => {
       factors: [],
       ambiguitySchema: [],
       evidencePins: [],
-      compilationTrace: [],
     };
 
     expect(fg.factors).toHaveLength(0);
     expect(fg.ambiguitySchema).toHaveLength(0);
     expect(fg.evidencePins).toHaveLength(0);
-    expect(fg.compilationTrace).toHaveLength(0);
   });
 
   it("round-trips through JSON serialization without loss", () => {
@@ -265,10 +261,6 @@ describe("FactorGraphIR", () => {
         { kind: "auction-record", events: [{ eventIndex: 0, call: "1NT", seat: "N" }] },
         { kind: "alert", seat: "N", message: "Forcing" },
       ],
-      compilationTrace: [
-        origin,
-        { originKind: "announcement", sourceModule: "jacoby" },
-      ],
     };
 
     const serialized = JSON.stringify(fg);
@@ -278,6 +270,5 @@ describe("FactorGraphIR", () => {
     expect(deserialized.factors).toHaveLength(5);
     expect(deserialized.ambiguitySchema[0]!.exclusivity).toBe("or");
     expect(deserialized.evidencePins).toHaveLength(3);
-    expect(deserialized.compilationTrace).toHaveLength(2);
   });
 });

@@ -8,10 +8,8 @@ import { resolveActiveModules } from "./profile-activation";
 /**
  * Resolve active module/convention IDs for a bundle at a given auction position.
  *
- * Activation priority:
- * 1. systemProfile → resolveActiveModules (declarative, preferred)
- * 2. activationFilter → legacy hardcoded function (deprecated fallback)
- * 3. Empty → no activation (bundle has neither)
+ * Activation: systemProfile → resolveActiveModules (declarative).
+ * Returns empty when no systemProfile is present.
  */
 function resolveActivation(
   bundle: ConventionBundle,
@@ -23,9 +21,6 @@ function resolveActivation(
       ...(bundle.declaredCapabilities ?? {}),
     };
     return resolveActiveModules(bundle.systemProfile, auction, seat, capabilities);
-  }
-  if (bundle.activationFilter) {
-    return bundle.activationFilter(auction, seat);
   }
   return [];
 }

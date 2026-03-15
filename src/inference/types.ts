@@ -48,10 +48,8 @@ export interface InferenceProvider {
 export interface BidAnnotation {
   readonly call: Call;
   readonly seat: Seat;
-  readonly ruleName: string | null;
   readonly conventionId: string | null;
   readonly meaning: string;
-  readonly alert: BidAlert | null;
   readonly inferences: readonly HandInference[];
 }
 

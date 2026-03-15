@@ -6,7 +6,7 @@ import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
 
-describe("profile-driven activation (replaces legacy activationFilter)", () => {
+describe("profile-driven activation", () => {
   describe("NT bundle: profile activates correct modules", () => {
     const seat = Seat.North;
     const ntCapabilities = { [CAP_OPENING_1NT]: "active" } as const;

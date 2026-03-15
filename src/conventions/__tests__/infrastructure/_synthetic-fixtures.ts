@@ -480,7 +480,6 @@ export function makeSyntheticBundle(
     name: "Synthetic Bundle",
     memberIds: ["synth-asking", "synth-natural"],
     dealConstraints: { seats: [] },
-    activationFilter: () => ["synth-asking", "synth-natural"],
     meaningSurfaces: [
       { groupId: "responder-r1", surfaces: [askSurface, signoffSurface] },
     ],
@@ -492,7 +491,7 @@ export function makeSyntheticBundle(
 }
 
 /**
- * Synthetic bundle using systemProfile instead of legacy activationFilter.
+ * Synthetic bundle using systemProfile for profile-driven activation.
  * Exercises a non-NT (1H major-suit) activation pattern for infrastructure tests.
  */
 export function makeSyntheticProfileBundle(

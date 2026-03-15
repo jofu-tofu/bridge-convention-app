@@ -65,10 +65,7 @@ export interface BidResult {
 export interface BidHistoryEntry {
   readonly seat: Seat;
   readonly call: Call;
-  readonly ruleName: string | null;
-  readonly explanation: string;
   readonly meaning?: string;
-  readonly handSummary?: string;
   readonly isUser: boolean;
   readonly isCorrect?: boolean;
   readonly expectedResult?: BidResult;

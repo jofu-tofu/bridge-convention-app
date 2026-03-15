@@ -114,7 +114,7 @@ function makeBundleWithSurfaces(
 
 // ─── Tests ──────────────────────────────────────────────────
 
-describe("bundleToRuntimeModules with profile-only activation (no activationFilter)", () => {
+describe("bundleToRuntimeModules with profile-only activation", () => {
   describe("single-sequence profile (e.g., 1NT trigger)", () => {
     it("getActiveIds activates on matching auction", () => {
       const bundle = makeBundleWithSurfaces({ systemProfile: singleSequenceProfile });
@@ -216,10 +216,9 @@ describe("bundleToRuntimeModules with profile-only activation (no activationFilt
   });
 
   describe("edge cases", () => {
-    it("bundle with neither activationFilter nor systemProfile returns empty", () => {
+    it("bundle with no systemProfile returns empty", () => {
       const bundle = makeBundleWithSurfaces({
         systemProfile: undefined,
-        activationFilter: undefined,
       });
       const { getActiveIds } = bundleToRuntimeModules(bundle);
 

@@ -14,7 +14,6 @@ function makeBundle(id: string, memberIds: string[] = []): ConventionBundle {
     name: `Bundle ${id}`,
     memberIds,
     dealConstraints: { seats: [] },
-    activationFilter: () => memberIds,
   };
 }
 

@@ -17,12 +17,6 @@ export interface ConventionBundle {
   readonly internal?: boolean;
   readonly dealConstraints: DealConstraints;
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
-  /** @deprecated Use `systemProfile` for profile-driven activation instead.
-   *  When omitted and `systemProfile` is present, activation is derived from the profile. */
-  readonly activationFilter?: (
-    auction: Auction,
-    seat: Seat,
-  ) => readonly string[];
   /** Meaning surfaces organized by group.
    *  When present, the meaning pipeline is used for this bundle. */
   readonly meaningSurfaces?: readonly {

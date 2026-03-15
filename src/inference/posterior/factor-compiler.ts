@@ -32,9 +32,6 @@ const MAX_SUIT_LENGTH = 13;
 function mapOriginKind(
   origin: PublicConstraint["origin"],
 ): FactorOrigin["originKind"] {
-  // PublicConstraint origin includes "explanation" which has no direct
-  // FactorOrigin mapping — treat it as an announcement.
-  if (origin === "explanation") return "announcement";
   return origin;
 }
 
@@ -217,19 +214,16 @@ export function compileFactorGraph(snapshot: PublicSnapshot): FactorGraphIR {
   const commitments = snapshot.publicCommitments ?? [];
 
   const factors: FactorSpec[] = [];
-  const compilationTrace: FactorOrigin[] = [];
 
   for (const commitment of commitments) {
     const factor = compileSingleConstraint(commitment);
     factors.push(factor);
-    compilationTrace.push(factor.origin);
   }
 
   return {
     factors,
     ambiguitySchema: compileAmbiguitySchema(snapshot),
     evidencePins: [],
-    compilationTrace,
   };
 }
 

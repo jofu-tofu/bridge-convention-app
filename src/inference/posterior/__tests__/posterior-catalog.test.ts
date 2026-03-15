@@ -198,7 +198,7 @@ function makeMockPosteriorState(particleCount: number, hand: Hand): PosteriorSta
     particles,
     context: {
       snapshot: { publicCommitments: [] } as unknown as ConditioningContext["snapshot"],
-      factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [], compilationTrace: [] },
+      factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [] },
       observerSeat: "S",
     },
   };

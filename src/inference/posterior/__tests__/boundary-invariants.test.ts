@@ -70,7 +70,6 @@ describe("posterior boundary invariants", () => {
     expect(deserialized.factors).toHaveLength(graph.factors.length);
     expect(deserialized.ambiguitySchema).toHaveLength(graph.ambiguitySchema.length);
     expect(deserialized.evidencePins).toHaveLength(graph.evidencePins.length);
-    expect(deserialized.compilationTrace).toHaveLength(graph.compilationTrace.length);
 
     // Each factor survives serialization
     for (let i = 0; i < graph.factors.length; i++) {
@@ -109,7 +108,7 @@ describe("posterior boundary invariants", () => {
     expect(hcpFactors.length).toBe(2);
   });
 
-  it("compilation trace present: every factor has a compilation trace entry", () => {
+  it("factor origin present: every factor has an origin with originKind", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
@@ -126,7 +125,9 @@ describe("posterior boundary invariants", () => {
     ]);
 
     const graph = compileFactorGraph(snapshot);
-    expect(graph.compilationTrace.length).toBe(graph.factors.length);
+    for (const factor of graph.factors) {
+      expect(factor.origin).toHaveProperty("originKind");
+    }
   });
 
   it("latent dimensionality: standard conventions produce factors with only seat-level variables", () => {
