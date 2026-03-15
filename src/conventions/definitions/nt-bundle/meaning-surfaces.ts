@@ -40,6 +40,7 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
         operator: "boolean",
         value: true,
         description: "At least one 4-card major",
+        isPublic: true,
       },
       {
         clauseId: "no-five-card-major",
@@ -59,12 +60,6 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
     sourceIntent: { type: "StaymanAsk", params: {} },
     teachingLabel: "Stayman 2C",
     alert: "alert",
-    publicConsequences: {
-      promises: [
-        { factId: "hand.hcp", operator: "gte", value: 8 },
-        { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true },
-      ],
-    },
   },
 
   // 2. Transfer to hearts — 2D with 5+ hearts
@@ -93,11 +88,6 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
     sourceIntent: { type: "TransferToHearts", params: {} },
     teachingLabel: "Transfer to hearts",
     alert: "announce",
-    publicConsequences: {
-      promises: [
-        { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
-      ],
-    },
   },
 
   // 3. Transfer to spades — 2H with 5+ spades
@@ -127,11 +117,6 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
     sourceIntent: { type: "TransferToSpades", params: {} },
     teachingLabel: "Transfer to spades",
     alert: "announce",
-    publicConsequences: {
-      promises: [
-        { factId: "hand.suitLength.spades", operator: "gte", value: 5 },
-      ],
-    },
   },
 
   // 4. NT invite — 2NT with invite values, no 4-card or 5-card major
@@ -212,11 +197,6 @@ export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "neutralCorrect",
     sourceIntent: { type: "NTGame", params: {} },
     teachingLabel: "3NT game",
-    publicConsequences: {
-      promises: [
-        { factId: "module.ntResponse.gameValues", operator: "boolean", value: true },
-      ],
-    },
   },
 ];
 
@@ -250,22 +230,17 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "hearts" } },
     teachingLabel: "Show hearts",
     alert: "alert",
-    publicConsequences: {
-      promises: [
-        { factId: "hand.suitLength.hearts", operator: "gte", value: 4 },
-      ],
-      closurePolicy: {
-        exclusive: true,
-        exhaustive: true,
-        mandatory: true,
-        domain: {
-          kind: "semantic-class-set",
-          ids: [
-            STAYMAN_CLASSES.SHOW_HEARTS,
-            STAYMAN_CLASSES.SHOW_SPADES,
-            STAYMAN_CLASSES.DENY_MAJOR,
-          ],
-        },
+    closurePolicy: {
+      exclusive: true,
+      exhaustive: true,
+      mandatory: true,
+      domain: {
+        kind: "semantic-class-set",
+        ids: [
+          STAYMAN_CLASSES.SHOW_HEARTS,
+          STAYMAN_CLASSES.SHOW_SPADES,
+          STAYMAN_CLASSES.DENY_MAJOR,
+        ],
       },
     },
   },
@@ -295,22 +270,17 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "spades" } },
     teachingLabel: "Show spades",
     alert: "alert",
-    publicConsequences: {
-      promises: [
-        { factId: "hand.suitLength.spades", operator: "gte", value: 4 },
-      ],
-      closurePolicy: {
-        exclusive: true,
-        exhaustive: true,
-        mandatory: true,
-        domain: {
-          kind: "semantic-class-set",
-          ids: [
-            STAYMAN_CLASSES.SHOW_HEARTS,
-            STAYMAN_CLASSES.SHOW_SPADES,
-            STAYMAN_CLASSES.DENY_MAJOR,
-          ],
-        },
+    closurePolicy: {
+      exclusive: true,
+      exhaustive: true,
+      mandatory: true,
+      domain: {
+        kind: "semantic-class-set",
+        ids: [
+          STAYMAN_CLASSES.SHOW_HEARTS,
+          STAYMAN_CLASSES.SHOW_SPADES,
+          STAYMAN_CLASSES.DENY_MAJOR,
+        ],
       },
     },
   },
@@ -340,25 +310,22 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     sourceIntent: { type: "DenyMajor", params: {} },
     teachingLabel: "Deny major (2D)",
     alert: "alert",
-    publicConsequences: {
-      denies: [
-        { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true },
-      ],
-      promises: [],
-      closurePolicy: {
-        exclusive: true,
-        exhaustive: true,
-        mandatory: true,
-        domain: {
-          kind: "semantic-class-set",
-          ids: [
-            STAYMAN_CLASSES.SHOW_HEARTS,
-            STAYMAN_CLASSES.SHOW_SPADES,
-            STAYMAN_CLASSES.DENY_MAJOR,
-          ],
-        },
+    closurePolicy: {
+      exclusive: true,
+      exhaustive: true,
+      mandatory: true,
+      domain: {
+        kind: "semantic-class-set",
+        ids: [
+          STAYMAN_CLASSES.SHOW_HEARTS,
+          STAYMAN_CLASSES.SHOW_SPADES,
+          STAYMAN_CLASSES.DENY_MAJOR,
+        ],
       },
     },
+    denies: [
+      { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true },
+    ],
   },
 ];
 

@@ -61,11 +61,9 @@ const surfaceA = makeSurface({
   semanticClassId: "class-a",
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "C" } as Call },
-  publicConsequences: {
-    promises: [
-      { factId: "hand.hcp", operator: "gte", value: 10 },
-    ],
-  },
+  clauses: [
+    { clauseId: "hcp-10", factId: "hand.hcp", operator: "gte", value: 10, description: "10+ HCP" },
+  ],
 });
 
 const surfaceB = makeSurface({
@@ -73,11 +71,9 @@ const surfaceB = makeSurface({
   semanticClassId: "class-b",
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "D" } as Call },
-  publicConsequences: {
-    promises: [
-      { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
-    ],
-  },
+  clauses: [
+    { clauseId: "hearts-5", factId: "hand.suitLength.hearts", operator: "gte", value: 5, description: "5+ hearts" },
+  ],
 });
 
 const surfaceC = makeSurface({
@@ -85,11 +81,9 @@ const surfaceC = makeSurface({
   semanticClassId: "class-c",
   moduleId: "mod-beta",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "H" } as Call },
-  publicConsequences: {
-    promises: [
-      { factId: "hand.suitLength.spades", operator: "gte", value: 4 },
-    ],
-  },
+  clauses: [
+    { clauseId: "spades-4", factId: "hand.suitLength.spades", operator: "gte", value: 4, description: "4+ spades" },
+  ],
 });
 
 const surfaceNoConsequences = makeSurface({
@@ -134,9 +128,9 @@ describe("deriveEntailedDenials — domain kind: surface", () => {
     expect(spadesDenial!.origin).toBe("entailed-denial");
   });
 
-  it("skips surfaces without publicConsequences", () => {
+  it("skips surfaces without primitive hand fact clauses", () => {
     const denials = deriveEntailedDenials(surfaceA, policy, testEntry, testRouter, emptyAuction);
-    // surfaceNoConsequences has no publicConsequences → no denial from it
+    // surfaceNoConsequences has no clauses → no denial from it
     const meaningDDenial = denials.find(
       (d) => d.sourceMeaning === "meaning-d",
     );
@@ -212,7 +206,7 @@ describe("extractCommitments", () => {
   });
 
   it("extracts promise constraints from matching surface", () => {
-    // surfaceA matches 2C — it has publicConsequences.promises
+    // surfaceA matches 2C — it has primitive hand fact clauses
     const auction: Auction = {
       entries: [
         { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" } as Call },
@@ -236,12 +230,9 @@ describe("extractCommitments", () => {
     const surfaceWithDenials = makeSurface({
       meaningId: "deny-surface",
       encoding: { defaultCall: { type: "bid", level: 3, strain: "NT" } as Call },
-      publicConsequences: {
-        promises: [],
-        denies: [
-          { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
-        ],
-      },
+      denies: [
+        { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
+      ],
     });
 
     const routerWithDenials = (_a: Auction, _s: Seat) => [surfaceWithDenials];
@@ -273,8 +264,8 @@ describe("extractCommitments", () => {
     expect(result).toEqual([]);
   });
 
-  it("no commitments from surface without publicConsequences", () => {
-    // surfaceNoConsequences matches 2S but has no publicConsequences
+  it("no commitments from surface without primitive clauses", () => {
+    // surfaceNoConsequences matches 2S but has no primitive hand fact clauses
     const routerOnlyNoConsequences = (_a: Auction, _s: Seat) => [surfaceNoConsequences];
     const auction: Auction = {
       entries: [
@@ -335,23 +326,23 @@ describe("extractCommitments", () => {
     const surfaceWithClosure = makeSurface({
       meaningId: "closure-surface",
       encoding: { defaultCall: { type: "bid", level: 2, strain: "C" } as Call },
-      publicConsequences: {
-        promises: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
-        closurePolicy: {
-          exclusive: true,
-          exhaustive: true,
-          mandatory: true,
-          domain: { kind: "surface" },
-        },
+      clauses: [
+        { clauseId: "hcp-8", factId: "hand.hcp", operator: "gte", value: 8, description: "8+ HCP" },
+      ],
+      closurePolicy: {
+        exclusive: true,
+        exhaustive: true,
+        mandatory: true,
+        domain: { kind: "surface" },
       },
     });
 
     const peerSurface = makeSurface({
       meaningId: "peer-surface",
       encoding: { defaultCall: { type: "bid", level: 2, strain: "D" } as Call },
-      publicConsequences: {
-        promises: [{ factId: "hand.suitLength.diamonds", operator: "gte", value: 5 }],
-      },
+      clauses: [
+        { clauseId: "diamonds-5", factId: "hand.suitLength.diamonds", operator: "gte", value: 5, description: "5+ diamonds" },
+      ],
     });
 
     const closureRouter = (_a: Auction, _s: Seat) => [surfaceWithClosure, peerSurface];

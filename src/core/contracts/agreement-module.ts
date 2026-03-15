@@ -63,7 +63,9 @@ export interface FactConstraintIR {
   readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
 }
 
-// ─── Public consequences ────────────────────────────────────
+// ─── Public consequences (deprecated) ───────────────────────
+/** @deprecated Use MeaningSurface.closurePolicy + MeaningSurface.denies + derivePublicConstraints() instead.
+ *  Promises are now auto-derived from clauses. ClosurePolicy and denies are top-level on MeaningSurface. */
 export interface PublicConsequences {
   readonly promises: readonly FactConstraintIR[];
   readonly denies?: readonly FactConstraintIR[];

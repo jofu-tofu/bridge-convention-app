@@ -5,6 +5,7 @@ import type {
 } from "../../../core/contracts/agreement-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import { callsMatch } from "../../../engine/call-helpers";
+import { derivePublicConstraints } from "../../../core/contracts/alert";
 
 /** Format a Call object into a human-readable string (e.g., "1NT", "P", "X", "XX"). */
 export function formatCallString(call: Call): string {
@@ -18,15 +19,13 @@ export function formatCallString(call: Call): string {
  * Derive entailed denials from a closure policy.
  *
  * When a surface with a closurePolicy is chosen, the unchosen peer surfaces'
- * promises become entailed denials. This captures the logical implication:
- * if the domain is exclusive+exhaustive+mandatory and you chose X, then you
- * did NOT choose Y or Z, so Y's and Z's promises are denied.
+ * auto-derived public constraints become entailed denials. This captures the
+ * logical implication: if the domain is exclusive+exhaustive+mandatory and you
+ * chose X, then you did NOT choose Y or Z, so Y's and Z's public constraints
+ * are denied.
  *
- * Closure policy: only unchosen surfaces' PROMISES become entailed denials.
- * Unchosen denies are NOT inverted — denial-of-denial creates ambiguity
- * (e.g., if deny-major denies hasFourCardMajor, and deny-major is unchosen,
- * we do NOT entail hasFourCardMajor=true — the show-hearts/show-spades
- * surfaces already promise that explicitly).
+ * Only unchosen surfaces' derived PROMISES become entailed denials.
+ * Unchosen denies are NOT inverted — denial-of-denial creates ambiguity.
  */
 export function deriveEntailedDenials(
   matchingSurface: MeaningSurface,
@@ -65,12 +64,13 @@ export function deriveEntailedDenials(
   });
 
   for (const peer of peerSurfaces) {
-    if (!peer.publicConsequences) continue;
+    // Auto-derive public constraints from peer's clauses
+    const peerConstraints = derivePublicConstraints(peer.clauses);
 
-    for (const promise of peer.publicConsequences.promises) {
+    for (const constraint of peerConstraints) {
       denials.push({
         subject: entry.seat,
-        constraint: promise,
+        constraint,
         origin: "entailed-denial",
         strength: "entailed",
         sourceCall: callStr,
@@ -84,16 +84,13 @@ export function deriveEntailedDenials(
 
 /**
  * Extract public commitments from an auction by matching each entry
- * against active meaning surfaces and collecting their publicConsequences.
+ * against active meaning surfaces and deriving constraints from clauses.
  *
  * For each auction entry, the surfaceRouter determines which surfaces
  * are active at that position. If a surface's defaultCall matches the
- * actual call and it has publicConsequences, the promises and denials
- * are converted into PublicConstraint objects.
- *
- * A second pass derives entailed denials from closure policies: when a
- * surface in a closed domain is chosen, unchosen peers' promises become
- * entailed denials.
+ * actual call, public constraints are auto-derived from its primitive/
+ * bridge-observable clauses. Explicit denials and closure policy
+ * (entailed denials) are also extracted.
  */
 export function extractCommitments(
   auction: Auction,
@@ -119,14 +116,15 @@ export function extractCommitments(
       callsMatch(s.encoding.defaultCall, entry.call),
     );
 
-    if (matchingSurface?.publicConsequences) {
-      const consequences = matchingSurface.publicConsequences;
+    if (matchingSurface) {
       const callStr = formatCallString(entry.call);
 
-      for (const promise of consequences.promises) {
+      // Auto-derive public constraints from primitive/bridge-observable clauses
+      const publicConstraints = derivePublicConstraints(matchingSurface.clauses);
+      for (const constraint of publicConstraints) {
         commitments.push({
           subject: entry.seat,
-          constraint: promise,
+          constraint,
           origin: "call-meaning",
           strength: "hard",
           sourceCall: callStr,
@@ -134,8 +132,9 @@ export function extractCommitments(
         });
       }
 
-      if (consequences.denies) {
-        for (const denial of consequences.denies) {
+      // Explicit denials from the surface
+      if (matchingSurface.denies) {
+        for (const denial of matchingSurface.denies) {
           commitments.push({
             subject: entry.seat,
             constraint: denial,
@@ -148,10 +147,10 @@ export function extractCommitments(
       }
 
       // Derive entailed denials from closure policy
-      if (consequences.closurePolicy) {
+      if (matchingSurface.closurePolicy) {
         const entailedDenials = deriveEntailedDenials(
           matchingSurface,
-          consequences.closurePolicy,
+          matchingSurface.closurePolicy,
           entry,
           surfaceRouter,
           subAuction,

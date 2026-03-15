@@ -44,7 +44,7 @@ export enum ForcingState {
 export interface BidAlert {
   readonly kind: "alert" | "announce";
   /** Structured constraints that become public knowledge when this bid is explained.
-   *  Sourced from the surface's publicConsequences.promises. */
+   *  Auto-derived from primitive/bridge-observable clauses on the MeaningSurface. */
   readonly publicConstraints: readonly FactConstraintIR[];
   /** Human-readable label for UI display (from surface.teachingLabel). */
   readonly teachingLabel: string;

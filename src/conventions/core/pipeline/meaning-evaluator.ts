@@ -15,7 +15,7 @@ import type {
 } from "../../../core/contracts/fact-catalog";
 import { getFactValue } from "../../../core/contracts/fact-catalog";
 import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
-import { resolveAlert } from "../../../core/contracts/alert";
+import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
 
 /**
  * Resolve an author-declared priority class to a runtime recommendation band.
@@ -182,6 +182,9 @@ export function evaluateMeaningSurface(
   // Resolve alert: explicit declaration on surface, or derived from priorityClass/sourceIntent
   const resolved = resolveAlert(surface);
 
+  // Auto-derive public constraints from primitive/bridge-observable clauses
+  const publicConstraints = derivePublicConstraints(surface.clauses);
+
   return {
     meaningId: surface.meaningId,
     semanticClassId: surface.semanticClassId,
@@ -192,7 +195,7 @@ export function evaluateMeaningSurface(
     sourceIntent: surface.sourceIntent,
     teachingLabel: surface.teachingLabel,
     ...(resolved ? { alert: resolved.kind } : {}),
-    ...(surface.publicConsequences?.promises ? { publicConstraints: surface.publicConsequences.promises } : {}),
+    ...(publicConstraints.length > 0 ? { publicConstraints } : {}),
   };
 }
 

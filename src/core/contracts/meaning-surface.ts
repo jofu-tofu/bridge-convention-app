@@ -1,6 +1,10 @@
 import type { Call } from "../../engine/types";
 import type { MeaningId, SemanticClassId, RankingMetadata } from "./meaning";
-import type { PublicConsequences, PriorityClassId } from "./agreement-module";
+import type {
+  PriorityClassId,
+  ChoiceClosurePolicy,
+  FactConstraintIR,
+} from "./agreement-module";
 
 /** Operator for fact-based clause evaluation. */
 export type FactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
@@ -16,6 +20,10 @@ export interface MeaningSurfaceClause {
     | { min: number; max: number }
     | readonly string[];
   readonly description: string;
+  /** When true, this clause is included in the alert's public constraints.
+   *  Primitive hand facts (hand.*) are always public regardless of this flag.
+   *  Use this for bridge-derived or module facts the bundle wants to disclose. */
+  readonly isPublic?: boolean;
 }
 
 export interface MeaningSurface {
@@ -42,10 +50,16 @@ export interface MeaningSurface {
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
   readonly teachingLabel: string;
-  readonly publicConsequences?: PublicConsequences;
   /** Bridge alert status — when set, partner alerts or announces this bid at the table.
    *  When absent, resolveAlert() derives from priorityClass and sourceIntent.
-   *  The formal explanation comes from publicConsequences (same FactConstraintIR vocabulary). */
+   *  Public constraints are auto-derived from primitive/bridge-observable clauses. */
   readonly alert?: "alert" | "announce";
+  /** Closure policy for entailed denials — known only to your partnership.
+   *  When a surface in a closed domain is chosen, unchosen peers' derived
+   *  public constraints become entailed denials for partnership posterior. */
+  readonly closurePolicy?: ChoiceClosurePolicy;
+  /** Explicit denials — constraints this bid actively communicates as NOT true.
+   *  e.g., deny-major explicitly denies hasFourCardMajor. */
+  readonly denies?: readonly FactConstraintIR[];
   readonly surfaceBindings?: Readonly<Record<string, string>>;
 }

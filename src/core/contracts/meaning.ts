@@ -76,7 +76,7 @@ export interface MeaningProposal {
   /** Resolved alert kind — threaded from surface.alert or derived by resolveAlert().
    *  Present only when this bid is alertable. */
   readonly alert?: "alert" | "announce";
-  /** Structured constraints from the surface's publicConsequences.promises.
+  /** Structured constraints auto-derived from primitive/bridge-observable clauses.
    *  Threaded through the pipeline for BidAlert construction in the strategy layer. */
   readonly publicConstraints?: readonly FactConstraintIR[];
 }

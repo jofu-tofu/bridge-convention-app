@@ -173,7 +173,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     const handSpaces = engine.compilePublic(snapshot);
     const northSpace = handSpaces.find((s) => s.seatId === "N");
     if (!northSpace) {
-      // If no constraints compiled (no publicConsequences on transfer accept),
+      // If no constraints compiled (transfer accept has no primitive clauses),
       // the posterior can't reason about fit. This is still valid — skip assertion.
       return;
     }
@@ -204,7 +204,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     const northSpace = handSpaces.find((s) => s.seatId === "N");
 
     if (!northSpace) {
-      // 1NT-P doesn't have publicConsequences on the 1NT opening itself
+      // 1NT-P doesn't have clauses on the 1NT opening itself
       // (no surface matches the 1NT opening bid — surfaces start at responder R1).
       // Without constraints, posterior can't be computed. This is expected.
       return;
@@ -229,7 +229,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     // The posterior summary should be available after suggest()
     const summary = strategy.getLastPosteriorSummary();
     // Whether posterior is populated depends on whether commitments exist at 1NT-P stage.
-    // The 1NT opening itself has no publicConsequences (only responder bids do).
+    // The 1NT opening itself has no clauses that produce commitments (only responder bids do).
     // So at the 1NT-P stage, there may be no commitments → no posterior.
     // This is expected behavior — the posterior wires up, but only has data after
     // commitment-producing bids occur.
@@ -240,7 +240,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
   });
 
   it("scenario 5: after Stayman denial, pipeline populates posterior facts in EvaluatedFacts", () => {
-    // After 1NT-P-2C-P-2D-P, there ARE publicConsequences (Stayman ask promises 4-card major,
+    // After 1NT-P-2C-P-2D-P, there ARE commitments (Stayman ask has primitive clauses: 4-card major,
     // 2D denial denies 4-card major). The posterior should be wired through the pipeline.
     const engine = createPosteriorEngine({ sampleCount: 200, seed: 42 });
     const catalog = makeCatalog();
