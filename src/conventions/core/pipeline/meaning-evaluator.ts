@@ -179,7 +179,7 @@ export function evaluateMeaningSurface(
     ? { ...surface.ranking, recommendationBand: resolvedBand }
     : surface.ranking;
 
-  // Resolve alert: explicit declaration on surface, or derived from priorityClass/sourceIntent
+  // Resolve alertability from priorityClass/sourceIntent
   const resolved = resolveAlert(surface);
 
   // Auto-derive public constraints from primitive/bridge-observable clauses
@@ -194,7 +194,7 @@ export function evaluateMeaningSurface(
     evidence,
     sourceIntent: surface.sourceIntent,
     teachingLabel: surface.teachingLabel,
-    ...(resolved ? { alert: resolved.kind } : {}),
+    ...(resolved ? { isAlertable: true } : {}),
     ...(publicConstraints.length > 0 ? { publicConstraints } : {}),
   };
 }

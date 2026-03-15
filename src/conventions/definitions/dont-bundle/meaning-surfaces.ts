@@ -43,7 +43,6 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTBothMajors", params: {} },
     teachingLabel: "2H — both majors",
-    alert: "alert",
   },
 
   // 2. 2D — diamonds + a major
@@ -70,7 +69,6 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTDiamondsMajor", params: {} },
     teachingLabel: "2D — diamonds + a major",
-    alert: "alert",
   },
 
   // 3. 2C — clubs + a higher suit
@@ -97,7 +95,6 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTClubsHigher", params: {} },
     teachingLabel: "2C — clubs + higher suit",
-    alert: "alert",
   },
 
   // 4. 2S — natural 6+ spades
@@ -124,7 +121,6 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTNaturalSpades", params: {} },
     teachingLabel: "2S — natural spades",
-    alert: "alert",
   },
 
   // 5. X (double) — single suited, one suit 6+, not spades
@@ -151,7 +147,6 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTSingleSuited", params: {} },
     teachingLabel: "X — single suited (not spades)",
-    alert: "alert",
   },
 
   // 6. Pass — no DONT bid applies (fallback)
@@ -223,7 +218,6 @@ export const DONT_ADVANCER_2H_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional" as const,
     sourceIntent: { type: "DONTPreferSpades", params: {} },
     teachingLabel: "2S — prefer spades",
-    alert: "alert",
   },
 
   // 3. 3C — escape with long clubs
@@ -250,7 +244,6 @@ export const DONT_ADVANCER_2H_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional" as const,
     sourceIntent: { type: "DONTEscapeClubs", params: {} },
     teachingLabel: "3C — minor escape",
-    alert: "alert",
   },
 
   // 4. 3D — escape with long diamonds
@@ -277,7 +270,6 @@ export const DONT_ADVANCER_2H_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional" as const,
     sourceIntent: { type: "DONTEscapeDiamonds", params: {} },
     teachingLabel: "3D — minor escape",
-    alert: "alert",
   },
 ];
 
@@ -329,7 +321,6 @@ export const DONT_ADVANCER_2D_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional" as const,
     sourceIntent: { type: "DONTRelayAskMajor", params: {} },
     teachingLabel: "2H — relay (ask for major)",
-    alert: "alert",
   },
 ];
 
@@ -381,7 +372,6 @@ export const DONT_ADVANCER_2C_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "preferredConventional" as const,
     sourceIntent: { type: "DONTRelayAskHigher", params: {} },
     teachingLabel: "2D — relay (ask for higher suit)",
-    alert: "alert",
   },
 ];
 
@@ -456,7 +446,6 @@ export const DONT_ADVANCER_DOUBLE_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTForcedRelay", params: {} },
     teachingLabel: "2C — forced relay after double",
-    alert: "alert",
   },
 ];
 
@@ -491,7 +480,6 @@ export const DONT_REVEAL_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTRevealClubs", params: {} },
     teachingLabel: "Pass — clubs",
-    alert: "alert",
   },
 
   // 2. 2D — reveal diamonds
@@ -518,7 +506,6 @@ export const DONT_REVEAL_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTRevealDiamonds", params: {} },
     teachingLabel: "2D — diamonds",
-    alert: "alert",
   },
 
   // 3. 2H — reveal hearts
@@ -545,7 +532,6 @@ export const DONT_REVEAL_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTRevealHearts", params: {} },
     teachingLabel: "2H — hearts",
-    alert: "alert",
   },
 ];
 
@@ -580,7 +566,6 @@ export const DONT_2C_RELAY_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTShowDiamonds", params: {} },
     teachingLabel: "Pass — diamonds (from 2C+higher)",
-    alert: "alert",
   },
 
   // 2. 2H — higher suit is hearts
@@ -607,7 +592,6 @@ export const DONT_2C_RELAY_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTShowHearts", params: {} },
     teachingLabel: "2H — hearts (from 2C+higher)",
-    alert: "alert",
   },
 
   // 3. 2S — higher suit is spades
@@ -634,7 +618,6 @@ export const DONT_2C_RELAY_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTShowSpades", params: {} },
     teachingLabel: "2S — spades (from 2C+higher)",
-    alert: "alert",
   },
 ];
 
@@ -668,7 +651,6 @@ export const DONT_2D_RELAY_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTShowHeartsFromDiamonds", params: {} },
     teachingLabel: "Pass — hearts (from 2D+major)",
-    alert: "alert",
   },
 
   // 2. 2S — major is spades
@@ -695,6 +677,5 @@ export const DONT_2D_RELAY_SURFACES: readonly MeaningSurface[] = [
     priorityClass: "obligatory" as const,
     sourceIntent: { type: "DONTShowSpadesFromDiamonds", params: {} },
     teachingLabel: "2S — spades (from 2D+major)",
-    alert: "alert",
   },
 ];

@@ -35,14 +35,11 @@ export enum ForcingState {
   PassForcing = "pass-forcing",
 }
 
-/** Alert at the bridge table — what partner says when this bid is made.
- *  "alert" = opponents may ask for explanation.
- *  "announce" = partner proactively states the meaning (e.g., "transfer").
- *  The formal explanation comes from publicConstraints — same FactConstraintIR
- *  vocabulary used by the factor graph, making this directly translatable
- *  to public beliefs without any interpretation layer. */
+/** Alert at the bridge table — this bid is conventional and its meaning
+ *  should be disclosed to opponents. The formal explanation comes from
+ *  publicConstraints — same FactConstraintIR vocabulary used by the factor
+ *  graph, making this directly translatable to public beliefs. */
 export interface BidAlert {
-  readonly kind: "alert" | "announce";
   /** Structured constraints that become public knowledge when this bid is explained.
    *  Auto-derived from primitive/bridge-observable clauses on the MeaningSurface. */
   readonly publicConstraints: readonly FactConstraintIR[];

@@ -43,38 +43,33 @@ export function derivePublicConstraints(
 /** Minimal shape for alert resolution — works with both MeaningSurface and
  *  any intermediate DTO that threads these fields. */
 export interface AlertResolvable {
-  readonly alert?: "alert" | "announce";
   readonly priorityClass?: PriorityClassId;
   readonly sourceIntent: { readonly type: string };
   readonly clauses: readonly MeaningSurfaceClause[];
   readonly teachingLabel: string;
 }
 
-/** Resolve the effective alert for a surface or proposal.
- *  Returns null when the bid is not alertable (natural/standard).
- *  Public constraints are auto-derived from hand.* clauses + isPublic clauses. */
+/** Resolve whether a surface is alertable.
+ *  Returns BidAlert when the bid is conventional, null when natural/standard.
+ *  Alertability is derived from priorityClass and sourceIntent — no manual
+ *  declaration needed. Public constraints are auto-derived from clauses. */
 export function resolveAlert(surface: AlertResolvable): BidAlert | null {
-  const kind = surface.alert ?? deriveAlertKind(surface);
-  if (!kind) return null;
+  if (!isAlertable(surface)) return null;
 
   return {
-    kind,
     publicConstraints: derivePublicConstraints(surface.clauses),
     teachingLabel: surface.teachingLabel,
   };
 }
 
-function deriveAlertKind(
+function isAlertable(
   surface: Pick<AlertResolvable, "priorityClass" | "sourceIntent">,
-): "alert" | "announce" | null {
+): boolean {
   if (
     surface.priorityClass === "preferredConventional" ||
     surface.priorityClass === "obligatory"
   ) {
-    return "alert";
+    return true;
   }
-  if (ARTIFICIAL_INTENTS.has(surface.sourceIntent.type)) {
-    return "alert";
-  }
-  return null;
+  return ARTIFICIAL_INTENTS.has(surface.sourceIntent.type);
 }

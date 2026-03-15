@@ -76,7 +76,6 @@ export function createBergenR1Surfaces(
       priorityClass: "obligatory",
       sourceIntent: { type: "Splinter", params: { suit } },
       teachingLabel: `Splinter (3${suit === "hearts" ? "S" : "H"})`,
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -145,7 +144,6 @@ export function createBergenR1Surfaces(
       priorityClass: "preferredConventional",
       sourceIntent: { type: "LimitRaise", params: { suit } },
       teachingLabel: "Limit raise (3D)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -180,7 +178,6 @@ export function createBergenR1Surfaces(
       priorityClass: "preferredConventional",
       sourceIntent: { type: "ConstructiveRaise", params: { suit } },
       teachingLabel: "Constructive raise (3C)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -215,7 +212,6 @@ export function createBergenR1Surfaces(
       priorityClass: "neutralCorrect",
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
       teachingLabel: `Preemptive raise (3${suit === "hearts" ? "H" : "S"})`,
-      alert: "alert",
       surfaceBindings: bindings,
     },
   ];

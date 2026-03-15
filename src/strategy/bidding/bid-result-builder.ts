@@ -51,10 +51,9 @@ export function buildBidResult(
     recommendationBand: ep.proposal.ranking.recommendationBand,
   }));
 
-  // Build alert from proposal's threaded alert metadata
-  const alert: BidAlert | null = selected.proposal.alert
+  // Build alert from proposal's threaded alertability metadata
+  const alert: BidAlert | null = selected.proposal.isAlertable
     ? {
-        kind: selected.proposal.alert,
         publicConstraints: selected.proposal.publicConstraints ?? [],
         teachingLabel: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
       }

@@ -50,10 +50,6 @@ export interface MeaningSurface {
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
   readonly teachingLabel: string;
-  /** Bridge alert status — when set, partner alerts or announces this bid at the table.
-   *  When absent, resolveAlert() derives from priorityClass and sourceIntent.
-   *  Public constraints are auto-derived from primitive/bridge-observable clauses. */
-  readonly alert?: "alert" | "announce";
   /** Closure policy for entailed denials — known only to your partnership.
    *  When a surface in a closed domain is chosen, unchosen peers' derived
    *  public constraints become entailed denials for partnership posterior. */

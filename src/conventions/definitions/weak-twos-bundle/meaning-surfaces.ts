@@ -154,7 +154,6 @@ export function createWeakTwoR2Surfaces(
       priorityClass: "obligatory" as const,
       sourceIntent: { type: "OgustAsk", params: { suit } },
       teachingLabel: "Ogust ask (2NT)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -254,7 +253,6 @@ export function createWeakTwoOgustSurfaces(
       priorityClass: "obligatory" as const,
       sourceIntent: { type: "OgustSolid", params: { suit } },
       teachingLabel: "Ogust solid (3NT)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -289,7 +287,6 @@ export function createWeakTwoOgustSurfaces(
       priorityClass: "obligatory" as const,
       sourceIntent: { type: "OgustMinBad", params: { suit } },
       teachingLabel: "Ogust min/bad (3C)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -324,7 +321,6 @@ export function createWeakTwoOgustSurfaces(
       priorityClass: "obligatory" as const,
       sourceIntent: { type: "OgustMinGood", params: { suit } },
       teachingLabel: "Ogust min/good (3D)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -359,7 +355,6 @@ export function createWeakTwoOgustSurfaces(
       priorityClass: "obligatory" as const,
       sourceIntent: { type: "OgustMaxBad", params: { suit } },
       teachingLabel: "Ogust max/bad (3H)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
 
@@ -394,7 +389,6 @@ export function createWeakTwoOgustSurfaces(
       priorityClass: "obligatory" as const,
       sourceIntent: { type: "OgustMaxGood", params: { suit } },
       teachingLabel: "Ogust max/good (3S)",
-      alert: "alert",
       surfaceBindings: bindings,
     },
   ];

@@ -33,7 +33,6 @@ function makeStubNaturalProvider(inference: HandInference | null = null): Infere
 describe("produceAnnotation", () => {
   it("convention bid: alert from ruleResult.alert, meaning from ruleResult.meaning", () => {
     const alert: BidAlert = {
-      kind: "alert",
       publicConstraints: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
       teachingLabel: "Stayman 2C",
     };
@@ -158,7 +157,6 @@ describe("produceAnnotation", () => {
 
   it("convention bid with alert publicConstraints: derives inference from constraints instead of natural", () => {
     const alert: BidAlert = {
-      kind: "alert",
       publicConstraints: [
         { factId: "hand.hcp", operator: "gte", value: 8 },
         { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
@@ -188,7 +186,6 @@ describe("produceAnnotation", () => {
 
   it("convention bid with empty publicConstraints: falls back to natural inference", () => {
     const alert: BidAlert = {
-      kind: "alert",
       publicConstraints: [],
       teachingLabel: "DONT bid",
     };
