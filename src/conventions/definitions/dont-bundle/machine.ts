@@ -10,7 +10,7 @@ import { buildConversationMachine } from "../../core/runtime/machine-types";
  *
  * State hierarchy (hierarchical — uses parent state for inherited transitions):
  *
- *   idle → overcaller-r1  (on opponent's 1NT via filtered opponent-action)
+ *   idle → overcaller-r1  (on 1NT — system profile restricts to opponent's 1NT)
  *
  *   dont-active (ABSTRACT PARENT — provides inherited interference transitions):
  *     └─ All child states inherit:
@@ -61,12 +61,7 @@ export function createDontConversationMachine(): ConversationMachine {
       transitions: [
         {
           transitionId: "idle-to-overcaller-r1",
-          match: {
-            kind: "opponent-action",
-            callType: "bid",
-            level: 1,
-            strain: BidSuit.NoTrump,
-          },
+          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
           target: "overcaller-r1",
         },
       ],
@@ -317,6 +312,11 @@ export function createDontConversationMachine(): ConversationMachine {
           transitionId: "adv-dbl-2c-relay",
           match: { kind: "call", level: 2, strain: BidSuit.Clubs },
           target: "wait-reveal",
+        },
+        {
+          transitionId: "adv-dbl-pass",
+          match: { kind: "pass" },
+          target: "terminal",
         },
         {
           transitionId: "adv-dbl-any",

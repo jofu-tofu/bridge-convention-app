@@ -117,9 +117,9 @@ describe("DONT R1 overcaller action surfaces", () => {
   });
 
   it("natural 6+ spades → 2S", () => {
-    // SA(4) + SK(3) = 7 HCP, shape 6=2=2=3
+    // SA(4) + SK(3) + SJ(1) = 8 HCP, shape 6=2=2=3
     const h = hand(
-      "SA", "SK", "ST", "S8", "S5", "S3",
+      "SA", "SK", "SJ", "S8", "S5", "S3",
       "H8", "H3",
       "DT", "D5",
       "C9", "C5", "C2",
@@ -130,10 +130,10 @@ describe("DONT R1 overcaller action surfaces", () => {
   });
 
   it("single suited 6+ (not spades) → double", () => {
-    // HA(4) + HK(3) = 7 HCP, shape 2=6=2=3
+    // HA(4) + HK(3) + HJ(1) = 8 HCP, shape 2=6=2=3
     const h = hand(
       "S8", "S3",
-      "HA", "HK", "HT", "H8", "H5", "H3",
+      "HA", "HK", "HJ", "H8", "H5", "H3",
       "DT", "D5",
       "C9", "C5", "C2",
     );
@@ -173,12 +173,12 @@ describe("DONT R1 overcaller action surfaces", () => {
 
 describe("DONT overcaller reveal after double → 2C relay", () => {
   it("reveal clubs (pass)", () => {
-    // CA(4) + CK(3) = 7 HCP, shape 2=2=3=6
+    // CA(4) + CK(3) + CJ(1) = 8 HCP, shape 2=2=3=6
     const h = hand(
       "S8", "S3",
       "H5", "H2",
       "D8", "D5", "D3",
-      "CA", "CK", "CT", "C8", "C5", "C3",
+      "CA", "CK", "CJ", "C8", "C5", "C3",
     );
     const { result } = suggestBid(h, ["1NT", "X", "P", "2C", "P"]);
     expect(result).not.toBeNull();
@@ -186,11 +186,11 @@ describe("DONT overcaller reveal after double → 2C relay", () => {
   });
 
   it("reveal diamonds (2D)", () => {
-    // DA(4) + DK(3) = 7 HCP, shape 2=2=6=3
+    // DA(4) + DK(3) + DJ(1) = 8 HCP, shape 2=2=6=3
     const h = hand(
       "S8", "S3",
       "H5", "H2",
-      "DA", "DK", "DT", "D8", "D5", "D3",
+      "DA", "DK", "DJ", "D8", "D5", "D3",
       "C9", "C5", "C2",
     );
     const { result } = suggestBid(h, ["1NT", "X", "P", "2C", "P"]);
@@ -199,10 +199,10 @@ describe("DONT overcaller reveal after double → 2C relay", () => {
   });
 
   it("reveal hearts (2H)", () => {
-    // HA(4) + HK(3) = 7 HCP, shape 2=6=2=3
+    // HA(4) + HK(3) + HJ(1) = 8 HCP, shape 2=6=2=3
     const h = hand(
       "S8", "S3",
-      "HA", "HK", "HT", "H8", "H5", "H3",
+      "HA", "HK", "HJ", "H8", "H5", "H3",
       "D5", "D3",
       "C9", "C5", "C2",
     );
@@ -239,5 +239,78 @@ describe("DONT 2D relay response (overcaller reveals major)", () => {
     const { result } = suggestBid(h, ["1NT", "2D", "P", "2H", "P"]);
     expect(result).not.toBeNull();
     expect(formatCall(result!.call)).toBe("2S");
+  });
+});
+
+// ─── 2C relay response tests ────────────────────────────────
+
+describe("DONT 2C relay response (overcaller reveals higher suit)", () => {
+  it("2C relay: diamonds (pass)", () => {
+    // CA(4) + DJ(1) + DK(3) = 8 HCP, shape 2=2=4=5
+    const h = hand(
+      "S8", "S3",
+      "H5", "H2",
+      "DK", "DJ", "D9", "D4",
+      "CA", "CT", "C7", "C5", "C3",
+    );
+    const { result } = suggestBid(h, ["1NT", "2C", "P", "2D", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("pass");
+  });
+
+  it("2C relay: hearts (2H)", () => {
+    // CA(4) + HK(3) + HJ(1) = 8 HCP, shape 2=4=2=5
+    const h = hand(
+      "S3", "S2",
+      "HK", "HJ", "H9", "H4",
+      "D8", "D3",
+      "CA", "CT", "C8", "C5", "C3",
+    );
+    const { result } = suggestBid(h, ["1NT", "2C", "P", "2D", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("2H");
+  });
+
+  it("2C relay: spades (2S)", () => {
+    // CA(4) + SK(3) + SJ(1) = 8 HCP, shape 4=2=2=5
+    const h = hand(
+      "SK", "SJ", "S9", "S4",
+      "H3", "H2",
+      "D8", "D3",
+      "CA", "CT", "C8", "C5", "C3",
+    );
+    const { result } = suggestBid(h, ["1NT", "2C", "P", "2D", "P"]);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("2S");
+  });
+});
+
+// ─── Advancer response tests ────────────────────────────────
+
+describe("DONT advancer responses", () => {
+  it("after 2H: accept hearts with 3+ support (pass)", () => {
+    // HK(3) + HJ(1) + DA(4) + DK(3) = 11 HCP, shape 2=3=5=3
+    const h = hand(
+      "S8", "S3",
+      "HK", "HJ", "H4",
+      "DA", "DK", "D8", "D5", "D3",
+      "C9", "C5", "C2",
+    );
+    const { result } = suggestBid(h, ["1NT", "2H", "P"], Seat.North);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("pass");
+  });
+
+  it("after double: forced 2C relay", () => {
+    // SA(4) + DA(4) = 8 HCP, shape 3=3=4=3
+    const h = hand(
+      "SA", "S8", "S3",
+      "H9", "H5", "H2",
+      "DA", "DT", "D8", "D5",
+      "C9", "C5", "C2",
+    );
+    const { result } = suggestBid(h, ["1NT", "X", "P"], Seat.North);
+    expect(result).not.toBeNull();
+    expect(formatCall(result!.call)).toBe("2C");
   });
 });

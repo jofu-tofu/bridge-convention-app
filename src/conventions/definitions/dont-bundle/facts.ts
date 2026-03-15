@@ -20,6 +20,7 @@ function longestSuitExcluding(
   const suits = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs].filter(
     (s) => !exclude.includes(s),
   );
+  if (suits.length === 0) return { suit: Suit.Clubs, length: 0 };
   let best = suits[0]!;
   let bestLen = suitLength(hand, best);
   for (const s of suits.slice(1)) {
