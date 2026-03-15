@@ -6,6 +6,7 @@ import type { ArbitrationResult } from "./module-surface";
 import type { DecisionProvenance } from "./provenance";
 import type { PosteriorFactValue } from "./posterior";
 import type { TeachingProjection } from "./teaching-projection";
+import type { EvaluatedFacts } from "./fact-catalog";
 
 /** Summary of posterior engine results from the most recent suggest() call. */
 export interface PosteriorSummary {
@@ -21,6 +22,25 @@ export interface PracticalRecommendation {
   readonly topCandidateCall: Call;
   readonly topScore: number;
   readonly rationale: string;
+}
+
+/** Lightweight DTO for convention machine state — avoids importing from conventions/core. */
+export interface MachineDebugSnapshot {
+  readonly currentStateId: string;
+  readonly stateHistory: readonly string[];
+  readonly transitionHistory: readonly string[];
+  readonly activeSurfaceGroupIds: readonly string[];
+  readonly registers: {
+    readonly forcingState: string;
+    readonly obligation: { readonly kind: string; readonly obligatedSide: string };
+    readonly agreedStrain: { readonly type: string; readonly suit?: string; readonly confidence?: string };
+    readonly competitionMode: string;
+    readonly captain: string;
+    readonly systemCapabilities: Readonly<Record<string, string>>;
+  };
+  readonly diagnostics: readonly { readonly level: string; readonly message: string; readonly moduleId?: string }[];
+  readonly handoffTraces: readonly { readonly fromModuleId: string; readonly toModuleId: string; readonly reason: string }[];
+  readonly submachineStack: readonly { readonly parentMachineId: string; readonly returnStateId: string }[];
 }
 
 /** Extended strategy interface for convention-based strategies that produce practical recommendations.
@@ -43,4 +63,8 @@ export interface ConventionBiddingStrategy extends BiddingStrategy {
   getExplanationCatalog(): ExplanationCatalogIR | undefined;
   /** Teaching projection from the most recent meaning-pipeline evaluation. Null when strategy doesn't produce this. */
   getLastTeachingProjection(): TeachingProjection | null;
+  /** Debug: evaluated facts from the most recent pipeline evaluation. */
+  getLastFacts(): EvaluatedFacts | null;
+  /** Debug: machine/protocol state from the most recent evaluation. */
+  getLastMachineSnapshot(): MachineDebugSnapshot | null;
 }

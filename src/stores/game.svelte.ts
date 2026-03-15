@@ -422,6 +422,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     retryBid: bidding.retryBid,
     skipFromFeedback: bidding.skipFromFeedback,
     getExpectedBid: bidding.getExpectedBid,
+    getDebugSnapshot: bidding.getDebugSnapshot,
 
     /** Reset all game state. Returns void — safe for event handlers. */
     reset(): void {

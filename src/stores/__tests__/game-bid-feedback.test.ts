@@ -20,6 +20,8 @@ function make2CStrategy(): ConventionBiddingStrategy {
     getLastPosteriorSummary() { return null; },
     getExplanationCatalog() { return undefined; },
     getLastTeachingProjection() { return null; },
+    getLastFacts() { return null; },
+    getLastMachineSnapshot() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
@@ -43,6 +45,8 @@ function makeNoOpStrategy(): ConventionBiddingStrategy {
     getLastPosteriorSummary() { return null; },
     getExplanationCatalog() { return undefined; },
     getLastTeachingProjection() { return null; },
+    getLastFacts() { return null; },
+    getLastMachineSnapshot() { return null; },
     suggest(): null {
       return null;
     },
@@ -62,6 +66,8 @@ function makePrimaryWithAcceptableAlternativeStrategy(): ConventionBiddingStrate
     getLastPosteriorSummary() { return null; },
     getExplanationCatalog() { return undefined; },
     getLastTeachingProjection() { return null; },
+    getLastFacts() { return null; },
+    getLastMachineSnapshot() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },

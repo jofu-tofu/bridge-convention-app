@@ -9,8 +9,12 @@ import type {
   PracticalRecommendation,
   ConventionBiddingStrategy,
   TeachingProjection,
+  MachineDebugSnapshot,
+  PosteriorSummary,
 } from "../core/contracts";
-import type { EncodingTrace } from "../core/contracts/provenance";
+import type { ArbitrationResult } from "../core/contracts/module-surface";
+import type { DecisionProvenance, EncodingTrace } from "../core/contracts/provenance";
+import type { EvaluatedFacts } from "../core/contracts/fact-catalog";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callsMatch } from "../engine/call-helpers";
@@ -37,6 +41,17 @@ export interface BidFeedback {
   /** Encoding trace for the selected meaning (how it became a concrete call).
    *  Null when provenance is unavailable. */
   readonly encodingTrace?: EncodingTrace;
+}
+
+/** Aggregated debug snapshot — all internal decision model state from the most recent pipeline evaluation. */
+export interface DebugSnapshot {
+  readonly expectedBid: BidResult | null;
+  readonly arbitration: ArbitrationResult | null;
+  readonly provenance: DecisionProvenance | null;
+  readonly posteriorSummary: PosteriorSummary | null;
+  readonly teachingProjection: TeachingProjection | null;
+  readonly facts: EvaluatedFacts | null;
+  readonly machineSnapshot: MachineDebugSnapshot | null;
 }
 
 const AI_BID_DELAY = 300;
@@ -404,6 +419,30 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       return conventionStrategy.suggest(
         createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
       );
+    },
+    /** DEV: returns all internal pipeline state from the most recent suggest() call.
+     *  Calls suggest() first to ensure caches are populated, then reads all debug data. */
+    getDebugSnapshot(): DebugSnapshot {
+      const empty: DebugSnapshot = {
+        expectedBid: null, arbitration: null, provenance: null,
+        posteriorSummary: null, teachingProjection: null, facts: null, machineSnapshot: null,
+      };
+      if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) return empty;
+      if (!activeSession.isUserSeat(currentTurn)) return empty;
+      const hand = activeDeal.hands[currentTurn];
+      const evaluation = evaluateHand(hand);
+      const expectedBid = conventionStrategy.suggest(
+        createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
+      );
+      return {
+        expectedBid,
+        arbitration: conventionStrategy.getLastArbitration(),
+        provenance: conventionStrategy.getLastProvenance(),
+        posteriorSummary: conventionStrategy.getLastPosteriorSummary(),
+        teachingProjection: conventionStrategy.getLastTeachingProjection(),
+        facts: conventionStrategy.getLastFacts(),
+        machineSnapshot: conventionStrategy.getLastMachineSnapshot(),
+      };
     },
   };
 }

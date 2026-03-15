@@ -16,7 +16,7 @@ import type { PosteriorBackend, PosteriorState } from "../../core/contracts/post
 import type { ConditioningContext } from "../../core/contracts/posterior-query";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
-import type { PosteriorSummary } from "../../core/contracts/recommendation";
+import type { PosteriorSummary, MachineDebugSnapshot } from "../../core/contracts/recommendation";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import type { Auction, Seat } from "../../engine/types";
 import type { ConversationMachine, MachineEvalResult } from "../../conventions/core/runtime/machine-types";
@@ -328,6 +328,29 @@ export function buildSurfacesFromEvaluation(
   return evalResult.decisionSurfaces.flatMap(entry => entry.surfaces);
 }
 
+// ─── Debug Helpers ─────────────────────────────────────────────
+
+/** Convert a MachineEvalResult to a lightweight debug DTO. */
+function toMachineDebugSnapshot(mr: MachineEvalResult): MachineDebugSnapshot {
+  return {
+    currentStateId: mr.context.currentStateId,
+    stateHistory: [...mr.context.stateHistory],
+    transitionHistory: [...mr.context.transitionHistory],
+    activeSurfaceGroupIds: [...mr.activeSurfaceGroupIds],
+    registers: {
+      forcingState: mr.context.registers.forcingState,
+      obligation: mr.context.registers.obligation,
+      agreedStrain: mr.context.registers.agreedStrain,
+      competitionMode: mr.context.registers.competitionMode,
+      captain: mr.context.registers.captain,
+      systemCapabilities: mr.context.registers.systemCapabilities,
+    },
+    diagnostics: mr.diagnostics.map(d => ({ level: d.level, message: d.message, moduleId: d.moduleId })),
+    handoffTraces: mr.handoffTraces.map(h => ({ fromModuleId: h.fromModuleId, toModuleId: h.toModuleId, reason: h.reason })),
+    submachineStack: mr.context.submachineStack.map(f => ({ parentMachineId: f.parentMachineId, returnStateId: f.returnStateId })),
+  };
+}
+
 // ─── Public API ────────────────────────────────────────────────
 
 /**
@@ -348,6 +371,7 @@ export function meaningToStrategy(
   let lastProvenance: DecisionProvenance | null = null;
   let lastArbitration: ArbitrationResult | null = null;
   let lastTeachingProjection: TeachingProjection | null = null;
+  let lastFacts: EvaluatedFacts | null = null;
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
 
@@ -362,18 +386,22 @@ export function meaningToStrategy(
     getLastPosteriorSummary() { return null; },
     getExplanationCatalog() { return undefined; },
     getLastTeachingProjection() { return lastTeachingProjection; },
+    getLastFacts() { return lastFacts; },
+    getLastMachineSnapshot() { return null; },
     suggest(context: BiddingContext): BidResult | null {
       lastProvenance = null;
       lastArbitration = null;
       lastTeachingProjection = null;
+      lastFacts = null;
 
-      const { result } = runMeaningPipeline({
+      const { result, facts } = runMeaningPipeline({
         surfaces,
         transforms: options?.transforms,
         context,
         catalog,
       });
 
+      lastFacts = facts;
       lastArbitration = result;
       lastProvenance = result.provenance ?? null;
       lastTeachingProjection = buildTeachingProjection(result, lastProvenance);
@@ -433,6 +461,7 @@ export function meaningBundleToStrategy(
   let lastArbitration: ArbitrationResult | null = null;
   let lastPosteriorSummary: PosteriorSummary | null = null;
   let lastTeachingProjection: TeachingProjection | null = null;
+  let lastFacts: EvaluatedFacts | null = null;
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
   const machineCache: MachineCache = { result: null, auctionLength: -1 };
@@ -449,11 +478,14 @@ export function meaningBundleToStrategy(
     getLastPosteriorSummary() { return lastPosteriorSummary; },
     getExplanationCatalog() { return options?.explanationCatalog; },
     getLastTeachingProjection() { return lastTeachingProjection; },
+    getLastFacts() { return lastFacts; },
+    getLastMachineSnapshot() { return machineCache.result ? toMachineDebugSnapshot(machineCache.result) : null; },
     suggest(context: BiddingContext): BidResult | null {
       lastProvenance = null;
       lastArbitration = null;
       lastPosteriorSummary = null;
       lastTeachingProjection = null;
+      lastFacts = null;
 
       // Phase 1: Select active surfaces for this auction position
       let selectedSurfaces: readonly MeaningSurface[];
@@ -525,6 +557,8 @@ export function meaningBundleToStrategy(
         posteriorProvider,
         relationalContext,
       });
+
+      lastFacts = facts;
 
       // Phase 4: Build posterior summary from evaluated facts
       if (posteriorProvider && posteriorState) {
