@@ -36,6 +36,7 @@ export type GamePhase =
 
 // Re-export types from sub-stores for backward compat
 export type { BidHistoryEntry, BidFeedback } from "./bidding.svelte";
+export type { DebugSnapshot, DebugLogEntry } from "./bidding.svelte";
 export type { PlayLogEntry } from "./play.svelte";
 
 // Re-export seatController from play sub-store for backward compat
@@ -329,6 +330,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     },
 
     // --- Debug observability getters ---
+    get debugLog() {
+      return bidding.debugLog;
+    },
     get playLog() {
       return play.playLog;
     },

@@ -54,6 +54,18 @@ export interface DebugSnapshot {
   readonly machineSnapshot: MachineDebugSnapshot | null;
 }
 
+/** A single entry in the persistent debug log — captures a snapshot at a specific moment. */
+export interface DebugLogEntry {
+  readonly kind: "pre-bid" | "user-bid" | "ai-bid";
+  readonly turnIndex: number;
+  readonly seat: Seat;
+  readonly call?: Call;
+  /** Pipeline state at this moment (null for AI bids). */
+  readonly snapshot: DebugSnapshot;
+  /** Feedback from grading (only on user-bid entries). */
+  readonly feedback: BidFeedback | null;
+}
+
 const AI_BID_DELAY = 300;
 
 export interface BiddingStoreConfig {
@@ -77,6 +89,10 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let error = $state<string | null>(null);
   let conventionStrategy: ConventionBiddingStrategy | null = null;
 
+  // Persistent debug log — accumulates snapshots across the auction
+  let debugLog = $state<DebugLogEntry[]>([]);
+  let debugTurnCounter = 0;
+
   // Retry state
   let preBidAuction = $state<Auction | null>(null);
   let preBidTurn = $state<Seat | null>(null);
@@ -95,6 +111,27 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       activeSession.isUserSeat(currentTurn) &&
       !isProcessing,
   );
+
+  /** Build a DebugSnapshot from the convention strategy's cached state. */
+  function captureSnapshot(): DebugSnapshot {
+    if (!conventionStrategy) {
+      return { expectedBid: null, arbitration: null, provenance: null, posteriorSummary: null, teachingProjection: null, facts: null, machineSnapshot: null };
+    }
+    return {
+      expectedBid: null, // filled by caller when applicable
+      arbitration: conventionStrategy.getLastArbitration(),
+      provenance: conventionStrategy.getLastProvenance(),
+      posteriorSummary: conventionStrategy.getLastPosteriorSummary(),
+      teachingProjection: conventionStrategy.getLastTeachingProjection(),
+      facts: conventionStrategy.getLastFacts(),
+      machineSnapshot: conventionStrategy.getLastMachineSnapshot(),
+    };
+  }
+
+  /** Append a debug log entry. */
+  function pushDebugLog(entry: DebugLogEntry) {
+    debugLog = [...debugLog, entry];
+  }
 
   async function runAiBids() {
     if (!activeSession || !activeDeal) return;
@@ -198,6 +235,19 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       teachingProjection: conventionStrategy?.getLastTeachingProjection() ?? undefined,
       encodingTrace: conventionStrategy?.getLastProvenance()?.encoding[0] ?? undefined,
     };
+
+    // Capture persistent debug log entry — strategy caches are fresh right now
+    if (import.meta.env.DEV) {
+      const snap = captureSnapshot();
+      pushDebugLog({
+        kind: "user-bid",
+        turnIndex: debugTurnCounter++,
+        seat: currentTurn,
+        call,
+        snapshot: { ...snap, expectedBid: expectedResult },
+        feedback: bidFeedback,
+      });
+    }
 
     const auctionBeforeUser = auction;
     if (!isCorrect) {
@@ -377,6 +427,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     onAuctionComplete = null;
     onSkipToExplanation = null;
     onProcessBid = null;
+    debugLog = [];
+    debugTurnCounter = 0;
   }
 
   return {
@@ -388,6 +440,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     get legalCalls() { return legalCalls; },
     get bidFeedback() { return bidFeedback; },
     get error() { return error; },
+    get debugLog() { return debugLog; },
     init,
     reset,
     userBid(call: Call): void {

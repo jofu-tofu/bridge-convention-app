@@ -1,6 +1,7 @@
 <!-- Full-lifecycle debug drawer — comprehensive decision model inspector.
      Surfaces all internal pipeline state: facts, machine, arbitration, provenance,
-     teaching, posterior, and beliefs. See also: DebugPanel.svelte (inline correct bid hint). -->
+     teaching, posterior, and beliefs. Uses persistent debug log so data survives
+     between turns. See also: DebugPanel.svelte (inline correct bid hint). -->
 <script lang="ts">
   import { Seat, Suit } from "../../engine/types";
   import type { Call, Card } from "../../engine/types";
@@ -23,19 +24,32 @@
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
 
   // ─── Reactive debug data ─────────────────────────────────────
-  let debugSnap = $state.raw<DebugSnapshot | null>(null);
-  let feedback = $state.raw<BidFeedback | null>(null);
+  // Live snapshot: populated only when it's the user's turn during BIDDING
+  let liveSnap = $state.raw<DebugSnapshot | null>(null);
 
   $effect(() => {
     if (gameStore.phase === "BIDDING") {
-      debugSnap = gameStore.getDebugSnapshot();
+      liveSnap = gameStore.getDebugSnapshot();
     } else {
-      debugSnap = null;
+      liveSnap = null;
     }
   });
 
-  $effect(() => {
-    feedback = gameStore.bidFeedback;
+  // The "active" snapshot: live data when available, otherwise the latest log entry's snapshot
+  const debugSnap = $derived.by<DebugSnapshot | null>(() => {
+    if (liveSnap?.expectedBid) return liveSnap;
+    const log = gameStore.debugLog;
+    if (log.length > 0) return log[log.length - 1]!.snapshot;
+    return liveSnap;
+  });
+
+  // The "active" feedback: live feedback when available, otherwise from latest log entry
+  const feedback = $derived.by<BidFeedback | null>(() => {
+    const live = gameStore.bidFeedback;
+    if (live) return live;
+    const log = gameStore.debugLog;
+    if (log.length > 0) return log[log.length - 1]!.feedback;
+    return null;
   });
 
   // ─── Helpers ─────────────────────────────────────────────────
@@ -649,7 +663,61 @@
     </details>
 
     <!-- ═══════════════════════════════════════════════════════════
-         8. POSTERIOR
+         8. BID LOG (persistent turn-by-turn debug trail)
+         ═══════════════════════════════════════════════════════════ -->
+    <details>
+      <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">
+        Bid Log
+        {#if gameStore.debugLog.length > 0}
+          <span class="text-text-muted font-normal">({gameStore.debugLog.length} entries)</span>
+        {/if}
+      </summary>
+      <div class="pl-2 py-1">
+        {#if gameStore.debugLog.length === 0}
+          <div class="text-text-muted italic">No bids yet</div>
+        {:else}
+          {#each gameStore.debugLog as entry (entry.turnIndex)}
+            <div class="mb-2 border-l-2 pl-2 {entry.feedback ? (entry.feedback.grade === 'correct' || entry.feedback.grade === 'correct-not-preferred' || entry.feedback.grade === 'acceptable' ? 'border-green-500/60' : entry.feedback.grade === 'near-miss' ? 'border-yellow-500/60' : 'border-red-500/60') : 'border-border-subtle'}">
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-text-muted">#{entry.turnIndex}</span>
+                <span class="text-text-primary font-semibold">{entry.seat}</span>
+                {#if entry.call}
+                  <span class="font-bold {entry.feedback?.grade === 'correct' ? 'text-green-300' : entry.feedback?.grade === 'incorrect' ? 'text-red-400' : 'text-text-primary'}">{fmtCall(entry.call)}</span>
+                {/if}
+                {#if entry.feedback}
+                  <span class="text-xs px-1 rounded {entry.feedback.grade === 'correct' ? 'bg-green-900/50 text-green-300' : entry.feedback.grade === 'incorrect' ? 'bg-red-900/50 text-red-300' : entry.feedback.grade === 'near-miss' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-teal-900/50 text-teal-300'}">{entry.feedback.grade}</span>
+                {/if}
+              </div>
+              {#if entry.snapshot.expectedBid}
+                <div class="text-text-muted">
+                  expected: <span class="text-green-300">{fmtCall(entry.snapshot.expectedBid.call)}</span>
+                  {#if entry.snapshot.expectedBid.meaning}
+                    <span class="text-yellow-300 ml-1">{entry.snapshot.expectedBid.meaning}</span>
+                  {/if}
+                </div>
+              {/if}
+              {#if entry.snapshot.machineSnapshot}
+                <div class="text-text-muted">
+                  state: <span class="text-cyan-300">{entry.snapshot.machineSnapshot.currentStateId}</span>
+                  | forcing: <span class="text-text-primary">{entry.snapshot.machineSnapshot.registers.forcingState}</span>
+                </div>
+              {/if}
+              {#if entry.feedback?.teachingResolution}
+                {@const tr = entry.feedback.teachingResolution}
+                {#if tr.acceptableBids.length > 0}
+                  <div class="text-text-muted">
+                    also ok: {tr.acceptableBids.map(ab => fmtCall(ab.call)).join(", ")}
+                  </div>
+                {/if}
+              {/if}
+            </div>
+          {/each}
+        {/if}
+      </div>
+    </details>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         9. POSTERIOR
          ═══════════════════════════════════════════════════════════ -->
     <details>
       <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">

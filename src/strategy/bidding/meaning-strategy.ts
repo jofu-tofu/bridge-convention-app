@@ -84,6 +84,7 @@ function runMeaningPipeline(input: PipelineInput): PipelineOutput {
   const facts = evaluateFacts(
     input.context.hand, input.context.evaluation,
     input.catalog, input.relationalContext, input.posteriorProvider,
+    input.posteriorProvider ? partnerSeat(input.context.seat) : undefined,
   );
 
   // Step 3: Evaluate each surface's clauses against the facts
@@ -169,7 +170,7 @@ function buildPosteriorSummary(
       posteriorFacts.push({
         factId: id,
         seatId: partnerSeatId,
-        expectedValue: fv.value as number,
+        expectedValue: queryResult?.expectedValue ?? (fv.value as number),
         confidence: queryResult?.confidence ?? 0,
       });
     }

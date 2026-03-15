@@ -201,6 +201,8 @@ export function evaluateFacts(
   catalog?: FactCatalog | readonly FactDefinition[],
   relationalContext?: RelationalFactContext,
   posterior?: PosteriorFactProvider,
+  /** Seat ID to query posterior facts about (e.g. partner seat). Required when posterior is provided. */
+  posteriorSeatId?: string,
 ): EvaluatedFacts {
   let effectiveDefinitions: readonly FactDefinition[];
   let effectiveEvaluators: ReadonlyMap<string, FactEvaluatorFn>;
@@ -259,7 +261,7 @@ export function evaluateFacts(
   // Each PosteriorFactEvaluatorFn handles null internally (see Fail-Open Policy).
   if (posterior && catalog && "posteriorEvaluators" in catalog && catalog.posteriorEvaluators) {
     for (const [factId, evaluator] of catalog.posteriorEvaluators) {
-      const request: PosteriorFactRequest = { factId, seatId: "" };
+      const request: PosteriorFactRequest = { factId, seatId: posteriorSeatId ?? "" };
       const value = evaluator(posterior, request);
       facts.set(factId, value);
     }
