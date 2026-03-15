@@ -3,7 +3,7 @@
   import type { BidFeedback } from "../../../stores/game.svelte";
   import { getGameStore } from "../../../stores/context";
   import BidPanel from "../../game/BidPanel.svelte";
-  import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
+  import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
   import DebugPanel from "../../game/DebugPanel.svelte";
 
   interface Props {

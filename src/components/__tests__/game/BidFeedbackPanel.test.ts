@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/svelte";
-import BidFeedbackPanel from "../../game/BidFeedbackPanel.svelte";
+import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
 import type { BidFeedback } from "../../../stores/game.svelte";
 import { BidGrade } from "../../../stores/bidding.svelte";
 import type { PracticalRecommendation } from "../../../core/contracts";

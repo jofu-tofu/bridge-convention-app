@@ -5,7 +5,7 @@
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
   import { formatContractWithDeclarer } from "../../../core/display/format";
-  import { formatModuleRole, roleColorClasses } from "../../game/BidFeedbackPanel";
+  import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";

@@ -1,7 +1,7 @@
-import { TauriIpcEngine } from "./engine/tauri-ipc-engine";
-import { WasmEngine, initWasm } from "./engine/wasm-engine";
-import { initDDS } from "./engine/dds-client";
-import type { EnginePort } from "./engine/port";
+import { TauriIpcEngine } from "./tauri-ipc-engine";
+import { WasmEngine, initWasm } from "./wasm-engine";
+import { initDDS } from "./dds-client";
+import type { EnginePort } from "./port";
 
 // Runtime engine detection: Tauri IPC (desktop) or WASM (browser)
 export async function createEngine(): Promise<EnginePort> {

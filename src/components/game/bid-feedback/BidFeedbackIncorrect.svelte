@@ -1,9 +1,9 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import type { Call } from "../../engine/types";
-  import type { BidFeedback } from "../../stores/game.svelte";
-  import { formatCall } from "../../core/display/format";
-  import { callsMatch } from "../../engine/call-helpers";
+  import type { Call } from "../../../engine/types";
+  import type { BidFeedback } from "../../../stores/game.svelte";
+  import { formatCall } from "../../../core/display/format";
+  import { callsMatch } from "../../../engine/call-helpers";
   import {
     formatRelationKind,
     formatEliminationStage,
