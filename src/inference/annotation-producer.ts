@@ -19,6 +19,33 @@ export function produceAnnotation(
   // Convention bid
   if (ruleResult) {
     const inferences = extractor.extractInferences(ruleResult, entry.seat);
+    // When the convention extractor produces inferences, use them.
+    // When it returns empty (e.g. noopExtractor), fall through to the
+    // natural provider so basic HCP/shape inferences still propagate.
+    if (inferences.length > 0) {
+      return {
+        call: entry.call,
+        seat: entry.seat,
+        ruleName: ruleResult.rule,
+        conventionId,
+        meaning: ruleResult.meaning ?? ruleResult.explanation,
+        alert: ruleResult.alert ?? null,
+        inferences,
+      };
+    }
+    // Fall through with convention metadata but natural inferences
+    if (entry.call.type === "bid") {
+      const naturalInference = naturalProvider.inferFromBid(entry, auctionBefore, entry.seat);
+      return {
+        call: entry.call,
+        seat: entry.seat,
+        ruleName: ruleResult.rule,
+        conventionId,
+        meaning: ruleResult.meaning ?? ruleResult.explanation,
+        alert: ruleResult.alert ?? null,
+        inferences: naturalInference ? [naturalInference] : [],
+      };
+    }
     return {
       call: entry.call,
       seat: entry.seat,
@@ -26,7 +53,7 @@ export function produceAnnotation(
       conventionId,
       meaning: ruleResult.meaning ?? ruleResult.explanation,
       alert: ruleResult.alert ?? null,
-      inferences,
+      inferences: [],
     };
   }
 

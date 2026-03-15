@@ -400,6 +400,20 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       const lastEntry =
         initialAuction.entries[initialAuction.entries.length - 1];
       currentTurn = lastEntry ? nextSeat(lastEntry.seat) : deal.dealer;
+
+      // Replay initial auction through onProcessBid so inference engines
+      // and public beliefs update for pre-set bids (e.g., 1NT opening).
+      // Pass null bidResult so the natural inference provider handles them.
+      if (onProcessBid) {
+        for (let i = 0; i < initialAuction.entries.length; i++) {
+          const entry = initialAuction.entries[i]!;
+          const auctionBefore: Auction = {
+            entries: initialAuction.entries.slice(0, i),
+            isComplete: false,
+          };
+          onProcessBid(entry, auctionBefore, null);
+        }
+      }
     } else {
       auction = { entries: [], isComplete: false };
       bidHistory = [];
