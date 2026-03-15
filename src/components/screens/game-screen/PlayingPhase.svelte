@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { Seat } from "../../../engine/types";
+  import type { Seat } from "../../../engine/types";
   import type { Card as CardType, Contract, Deal, PlayedCard, Suit } from "../../../engine/types";
-  import { partnerSeat } from "../../../engine/constants";
-  import { seatController } from "../../../stores/game.svelte";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import TrickArea from "../../game/TrickArea.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -10,17 +8,17 @@
   import type { LayoutProps } from "./layout-props";
 
   interface Props extends LayoutProps {
-    playUserSeat: Seat;
     rotated: boolean;
     deal: Deal;
     contract: Contract | null;
     currentPlayer: Seat | null;
-    dummySeat: Seat | undefined;
+    faceUpSeats: ReadonlySet<Seat>;
     currentTrick: PlayedCard[];
     trumpSuit: Suit | undefined;
     declarerTricksWon: number;
     defenderTricksWon: number;
-    legalPlays: CardType[];
+    legalPlays: readonly CardType[];
+    userControlledSeats: readonly Seat[];
     remainingCards: Partial<Record<Seat, readonly CardType[]>> | undefined;
     onPlayCard: (card: CardType, seat: Seat) => void;
     onSkipToReview: () => void;
@@ -33,43 +31,28 @@
     tableBaseH,
     phaseContainerClass,
     sidePanelClass,
-    playUserSeat,
     rotated,
     deal,
     contract,
     currentPlayer,
-    dummySeat,
+    faceUpSeats,
     currentTrick,
     trumpSuit,
     declarerTricksWon,
     defenderTricksWon,
     legalPlays,
+    userControlledSeats,
     remainingCards,
     onPlayCard,
     onSkipToReview,
   }: Props = $props();
-
-  // Compute user-controlled seats for play phase
-  const userControlledSeats = $derived.by(() => {
-    if (!contract) return [playUserSeat];
-    const seats: Seat[] = [playUserSeat];
-    const dummy = partnerSeat(contract.declarer);
-    if (
-      seatController(dummy, contract.declarer, playUserSeat) ===
-      "user"
-    ) {
-      seats.push(dummy);
-    }
-    return seats;
-  });
 </script>
 
 <div class={phaseContainerClass}>
   <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
     <BridgeTable
       hands={deal.hands}
-      userSeat={playUserSeat}
-      {dummySeat}
+      {faceUpSeats}
       legalPlays={legalPlays}
       onPlayCard={onPlayCard}
       currentPlayer={currentPlayer ?? undefined}

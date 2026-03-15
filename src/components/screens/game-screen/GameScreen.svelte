@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Seat } from "../../../engine/types";
-  import type { Call, Card as CardType } from "../../../engine/types";
+  import type { Call } from "../../../engine/types";
   import { getEngine, getGameStore, getAppStore } from "../../../stores/context";
-  import { BidGrade } from "../../../stores/bidding.svelte";
   import { startDrill } from "../../../bootstrap/start-drill";
   import { computeTableScale } from "../../../core/display/table-scale";
   import { mulberry32 } from "../../../core/util/seeded-rng";
@@ -25,35 +24,12 @@
 
   let dealNumber = $state(0);
 
-  // Table rotation: only when effectiveUserSeat is exactly North (declarer swap accepted)
-  const rotated = $derived(gameStore.effectiveUserSeat === Seat.North);
-  // Effective seat for play phase (effectiveUserSeat after swap, or default userSeat)
-  const playUserSeat = $derived(gameStore.effectiveUserSeat ?? userSeat);
-
-  // Legal plays for current player — fetched async, owned here as parent
-  let playLegalPlays = $state<CardType[]>([]);
-
+  // Refresh legal plays when current player changes during PLAYING phase
   $effect(() => {
     const player = gameStore.currentPlayer;
     if (gameStore.phase === "PLAYING" && player) {
-      gameStore.getLegalPlaysForSeat(player).then((plays) => {
-        if (gameStore.currentPlayer === player) {
-          playLegalPlays = plays;
-        }
-      });
-    } else {
-      playLegalPlays = [];
+      gameStore.refreshLegalPlays();
     }
-  });
-
-  // Remaining cards per seat during play
-  const playRemainingCards = $derived.by(() => {
-    if (!gameStore.deal) return undefined;
-    const result: Partial<Record<Seat, readonly CardType[]>> = {};
-    for (const seat of [Seat.North, Seat.East, Seat.South, Seat.West]) {
-      result[seat] = gameStore.getRemainingCards(seat);
-    }
-    return result;
   });
 
   // DEV autoplay: auto-bid correct call, auto-dismiss feedback, auto-skip prompts
@@ -139,14 +115,6 @@
     }
     return { label: "Review", color: "bg-purple-600", textColor: "text-purple-100" };
   });
-
-  // Whether feedback is showing and blocking input
-  const isFeedbackBlocking = $derived(
-    gameStore.bidFeedback !== null
-    && gameStore.bidFeedback.grade !== BidGrade.Correct
-    && gameStore.bidFeedback.grade !== BidGrade.CorrectNotPreferred
-    && gameStore.bidFeedback.grade !== BidGrade.Acceptable,
-  );
 
   // Responsive table scaling — measure actual available space
   let innerW = $state(1024);
@@ -268,9 +236,9 @@
         auction={gameStore.auction}
         legalCalls={gameStore.legalCalls}
         onBid={handleBid}
-        disabled={!gameStore.isUserTurn || isFeedbackBlocking || !!gameStore.bidFeedback}
+        disabled={!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback}
         isUserTurn={gameStore.isUserTurn}
-        {isFeedbackBlocking}
+        isFeedbackBlocking={gameStore.isFeedbackBlocking}
         onDismissFeedback={() => gameStore.dismissBidFeedback()}
         onSkipToReview={() => gameStore.skipFromFeedback()}
         onRetry={() => gameStore.retryBid()}
@@ -300,8 +268,7 @@
         {tableBaseH}
         {phaseContainerClass}
         {sidePanelClass}
-        {playUserSeat}
-        {rotated}
+        rotated={gameStore.rotated}
         faceUpSeats={gameStore.faceUpSeats}
         deal={gameStore.deal}
         contract={gameStore.contract}
@@ -310,8 +277,9 @@
         trumpSuit={gameStore.trumpSuit}
         declarerTricksWon={gameStore.declarerTricksWon}
         defenderTricksWon={gameStore.defenderTricksWon}
-        legalPlays={playLegalPlays}
-        remainingCards={playRemainingCards}
+        legalPlays={gameStore.legalPlaysForCurrentPlayer}
+        userControlledSeats={gameStore.userControlledSeats}
+        remainingCards={gameStore.remainingCardsPerSeat}
         onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
         onSkipToReview={() => gameStore.skipToReview()}
       />

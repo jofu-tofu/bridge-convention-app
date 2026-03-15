@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Contract } from "../../engine/types";
   import { Seat } from "../../engine/types";
-  import { STRAIN_SYMBOLS } from "../../core/display/format";
+  import { formatContractWithDeclarer } from "../../core/display/format";
 
   type PromptMode = "declarer-swap" | "defender" | "south-declarer";
 
@@ -42,10 +42,7 @@
   aria-label={ariaLabel}
 >
   <p class="text-base font-mono text-text-primary mb-1">
-    {contract.level}{STRAIN_SYMBOLS[contract.strain]}{contract.doubled
-      ? " X"
-      : ""}{contract.redoubled ? " XX" : ""}
-    by {contract.declarer}
+    {formatContractWithDeclarer(contract)}
   </p>
   <p class="text-text-secondary text-xs mb-2">
     {promptText}

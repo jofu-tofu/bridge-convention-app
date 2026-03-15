@@ -19,6 +19,7 @@
   interface Props extends LayoutProps {
     deal: Deal;
     userSeat: Seat;
+    faceUpSeats: ReadonlySet<Seat>;
     auction: Auction;
     contract: Contract | null;
     score: number | null;
@@ -44,6 +45,7 @@
     sidePanelClass,
     deal,
     userSeat,
+    faceUpSeats,
     auction,
     contract,
     score,
@@ -61,6 +63,8 @@
   }: Props = $props();
 
   let showAllCards = $state(false);
+
+  const allFaceUp: ReadonlySet<Seat> = new Set([Seat.North, Seat.East, Seat.South, Seat.West]);
 </script>
 
 <div class={phaseContainerClass}>
@@ -114,7 +118,7 @@
       tableWidth={tableBaseW}
       tableHeight={tableBaseH}
     >
-      <BridgeTable hands={deal.hands} {userSeat}>
+      <BridgeTable hands={deal.hands} {faceUpSeats}>
         <div class="flex flex-col items-center gap-2">
           <div
             class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"

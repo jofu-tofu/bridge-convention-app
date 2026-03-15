@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Seat } from "../../../engine/types";
-  import type { Call, Deal } from "../../../engine/types";
+  import type { Call, Deal, Seat } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
@@ -10,7 +9,7 @@
 
   interface Props extends LayoutProps {
     deal: Deal;
-    userSeat: Seat;
+    faceUpSeats: ReadonlySet<Seat>;
     auction: Auction;
     legalCalls: Call[];
     onBid: (call: Call) => void;
@@ -30,7 +29,7 @@
     phaseContainerClass,
     sidePanelClass,
     deal,
-    userSeat,
+    faceUpSeats,
     auction,
     legalCalls,
     onBid,
@@ -45,7 +44,7 @@
 
 <div class={phaseContainerClass}>
   <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
-    <BridgeTable hands={deal.hands} {userSeat}>
+    <BridgeTable hands={deal.hands} {faceUpSeats}>
       <div
         class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
       >

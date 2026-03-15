@@ -8,7 +8,7 @@ describe("BridgeTable", () => {
   const deal = makeDeal();
   const defaultProps = {
     hands: deal.hands,
-    userSeat: Seat.South,
+    faceUpSeats: new Set([Seat.South]),
   };
 
   it("renders 4 hand fan areas", () => {

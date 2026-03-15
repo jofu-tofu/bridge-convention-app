@@ -1,0 +1,73 @@
+import type { Hand, HandEvaluation } from "../../../engine/types";
+import type {
+  FactCatalog,
+  FactDefinition,
+  FactValue,
+  HandFactResolverFn,
+} from "../../../core/contracts/fact-catalog";
+import { createSharedFactCatalog } from "./shared-fact-catalog";
+
+// ─── Topological sort (shared utility) ──────────────────────
+
+function topologicalSort(catalog: readonly FactDefinition[]): FactDefinition[] {
+  const byId = new Map<string, FactDefinition>();
+  for (const f of catalog) byId.set(f.id, f);
+
+  const visited = new Set<string>();
+  const sorted: FactDefinition[] = [];
+
+  function visit(id: string): void {
+    if (visited.has(id)) return;
+    visited.add(id);
+    const def = byId.get(id);
+    if (!def) return;
+    for (const dep of def.derivesFrom ?? []) {
+      visit(dep);
+    }
+    sorted.push(def);
+  }
+
+  for (const f of catalog) {
+    visit(f.id);
+  }
+
+  return sorted;
+}
+
+/**
+ * Create a HandFactResolverFn that evaluates any factId against a hand
+ * using the catalog's evaluators. Evaluates facts in dependency order
+ * (primitives first, then derived) and caches results per call.
+ *
+ * This is the bridge between the fact catalog and the posterior sampler.
+ * The sampler calls this for each constraint clause instead of its
+ * hardcoded resolveFactValue().
+ */
+export function createHandFactResolver(
+  catalog?: FactCatalog,
+): HandFactResolverFn {
+  const effectiveCatalog = catalog ?? createSharedFactCatalog();
+  const evaluators = effectiveCatalog.evaluators;
+  const definitions = effectiveCatalog.definitions;
+
+  // Pre-compute topological order once
+  const actingHandDefs = definitions.filter((f) => f.world === "acting-hand");
+  // Filter out relational evaluators — they need context the sampler doesn't have
+  const relEvals = effectiveCatalog.relationalEvaluators;
+  const standardDefs = relEvals
+    ? actingHandDefs.filter((f) => !relEvals.has(f.id))
+    : actingHandDefs;
+  const sorted = topologicalSort(standardDefs);
+
+  return (hand: Hand, evaluation: HandEvaluation, factId: string): number | boolean | string | undefined => {
+    // Fast path: evaluate all facts in topological order (cached per call)
+    const facts = new Map<string, FactValue>();
+    for (const def of sorted) {
+      const evaluator = evaluators.get(def.id);
+      if (evaluator) {
+        facts.set(def.id, evaluator(hand, evaluation, facts));
+      }
+    }
+    return facts.get(factId)?.value;
+  };
+}

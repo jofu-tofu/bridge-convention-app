@@ -1,29 +1,24 @@
 import type {
   BiddingContext,
   BidResult,
-  BidAlert,
   ConventionBiddingStrategy,
   AlternativeGroup,
   IntentFamily,
 } from "../../core/contracts";
-import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation";
 import type { MeaningSurface } from "../../core/contracts/meaning-surface";
 import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ArbitrationResult, PublicSnapshot } from "../../core/contracts/module-surface";
 import type { FactCatalog, EvaluatedFacts } from "../../core/contracts/fact-catalog";
-import type { PosteriorFactProvider, PosteriorFactValue } from "../../core/contracts/posterior";
+import type { PosteriorFactProvider } from "../../core/contracts/posterior";
 import type { PosteriorBackend, PosteriorState } from "../../core/contracts/posterior-backend";
-import type { ConditioningContext } from "../../core/contracts/posterior-query";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
-import type { PosteriorSummary, MachineDebugSnapshot } from "../../core/contracts/recommendation";
+import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import type { Auction, Seat } from "../../engine/types";
-import type { ConversationMachine, MachineEvalResult } from "../../conventions/core/runtime/machine-types";
-import type { RuntimeModule, EvaluationResult } from "../../conventions/core/runtime/types";
-import { evaluateMachine } from "../../conventions/core/runtime/machine-evaluator";
-import { buildSnapshotFromAuction } from "../../conventions/core/runtime/public-snapshot-builder";
+import type { ConversationMachine } from "../../conventions/core/runtime/machine-types";
+import type { RuntimeModule } from "../../conventions/core/runtime/types";
 import { evaluate } from "../../conventions/core/runtime/evaluation-runtime";
 import { evaluateFacts, createSharedFactCatalog } from "../../conventions/core/pipeline/fact-evaluator";
 import type { RelationalFactContext } from "../../conventions/core/pipeline/fact-evaluator";
@@ -35,10 +30,11 @@ import {
 import { composeSurfaces, mergeUpstreamProvenance } from "../../conventions/core/pipeline/surface-composer";
 import { getLegalCalls } from "../../engine/auction";
 import { partnerSeat } from "../../engine/constants";
-import { formatHandSummary } from "../../core/display/hand-summary";
-import { createPosteriorFactProviderFromBackend } from "../../inference/posterior";
-import { compileFactorGraph } from "../../inference/posterior/factor-compiler";
-import { projectTeaching } from "../../teaching/teaching-projection-builder";
+import type { PosteriorCache } from "./posterior-wiring";
+import { DEFAULT_SAMPLE_COUNT, buildPosteriorProvider, buildPosteriorSummary } from "./posterior-wiring";
+import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
+import type { MachineCache } from "./surface-selection";
+import { getMachineResult, selectActiveSurfaces, buildSurfacesFromEvaluation, toMachineDebugSnapshot } from "./surface-selection";
 
 // ─── Core Pipeline ─────────────────────────────────────────────
 //
@@ -102,268 +98,11 @@ function runMeaningPipeline(input: PipelineInput): PipelineOutput {
   return { result, facts };
 }
 
-// ─── Posterior Helpers ──────────────────────────────────────────
-
-/** Default sample count for posterior inference. */
-const DEFAULT_SAMPLE_COUNT = 200;
-
-/** Posterior wiring state — caches PosteriorState across calls at the same auction length. */
-interface PosteriorCache {
-  state: PosteriorState | null;
-  auctionLength: number;
-}
-
-/**
- * Build a PosteriorFactProvider from the posterior backend, or undefined if not available.
- * Caches the initialized PosteriorState by auction length to avoid redundant computation.
- */
-function buildPosteriorProvider(
-  backend: PosteriorBackend,
-  surfaceRouter: (auction: Auction, seat: Seat) => readonly MeaningSurface[],
-  context: BiddingContext,
-  cache: PosteriorCache,
-  sampleCount: number,
-): { provider?: PosteriorFactProvider; state?: PosteriorState } {
-  const auctionLength = context.auction.entries.length;
-  if (cache.auctionLength !== auctionLength) {
-    const snapshot = buildSnapshotFromAuction(
-      context.auction, context.seat, [],
-      { surfaceRouter },
-    );
-    const factorGraph = compileFactorGraph(snapshot);
-    const conditioningContext: ConditioningContext = {
-      snapshot,
-      factorGraph,
-      observerSeat: context.seat,
-      ownHand: context.hand,
-    };
-    cache.state = backend.initialize(conditioningContext);
-    cache.auctionLength = auctionLength;
-  }
-  if (!cache.state || cache.state.particles.length === 0) return {};
-
-  return {
-    provider: createPosteriorFactProviderFromBackend(cache.state, context.hand, sampleCount),
-    state: cache.state,
-  };
-}
-
-/**
- * Build a PosteriorSummary from evaluated facts and the active posterior state.
- * Returns null if no posterior facts were evaluated.
- */
-function buildPosteriorSummary(
-  catalog: FactCatalog,
-  facts: EvaluatedFacts,
-  provider: PosteriorFactProvider,
-  state: PosteriorState,
-  partnerSeatId: string,
-): PosteriorSummary | null {
-  const posteriorIds = catalog.posteriorEvaluators
-    ? [...catalog.posteriorEvaluators.keys()]
-    : [];
-
-  const posteriorFacts: PosteriorFactValue[] = [];
-  for (const id of posteriorIds) {
-    const fv = facts.facts.get(id);
-    if (fv) {
-      const queryResult = provider.queryFact({ factId: id, seatId: partnerSeatId });
-      posteriorFacts.push({
-        factId: id,
-        seatId: partnerSeatId,
-        expectedValue: queryResult?.expectedValue ?? (fv.value as number),
-        confidence: queryResult?.confidence ?? 0,
-      });
-    }
-  }
-
-  if (posteriorFacts.length === 0) return null;
-
-  const avgConfidence = posteriorFacts.reduce((sum, f) => sum + f.confidence, 0) / posteriorFacts.length;
-  return {
-    factValues: posteriorFacts,
-    sampleCount: state.particles.length,
-    confidence: avgConfidence,
-  };
-}
-
-// ─── Result Mapping ────────────────────────────────────────────
-
-function buildBidResult(
-  selected: NonNullable<ArbitrationResult["selected"]>,
-  context: BiddingContext,
-  moduleId: string,
-  arbitration: ArbitrationResult,
-  posteriorSummary?: PosteriorSummary | null,
-): BidResult {
-  // Map truth + acceptable sets to ResolvedCandidateDTO for teaching-resolution
-  const resolvedCandidates: ResolvedCandidateDTO[] = [
-    ...arbitration.truthSet,
-    ...arbitration.acceptableSet,
-  ].map((ep) => ({
-    bidName: ep.proposal.meaningId,
-    call: ep.call,
-    resolvedCall: ep.call,
-    isMatched: ep.eligibility.hand.satisfied,
-    isDefaultCall: ep.isDefaultEncoding,
-    legal: ep.eligibility.encoding.legal,
-    meaning: ep.proposal.teachingLabel ?? ep.proposal.meaningId,
-    intentType: ep.proposal.sourceIntent.type,
-    priority: ep.proposal.modulePriority,
-    orderKey: ep.proposal.ranking.intraModuleOrder,
-    failedConditions: ep.proposal.clauses
-      .filter((c) => !c.satisfied)
-      .map((c) => ({
-        name: c.factId,
-        passed: false as const,
-        description: c.description,
-      })),
-    eligibility: ep.eligibility,
-    allEncodings: ep.allEncodings,
-    moduleId: ep.proposal.moduleId,
-    semanticClassId: ep.proposal.semanticClassId,
-    recommendationBand: ep.proposal.ranking.recommendationBand,
-  }));
-
-  // Build alert from proposal's threaded alert metadata
-  const alert: BidAlert | null = selected.proposal.alert
-    ? {
-        kind: selected.proposal.alert,
-        publicConstraints: selected.proposal.publicConstraints ?? [],
-        teachingLabel: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
-      }
-    : null;
-
-  return {
-    call: selected.call,
-    ruleName: selected.proposal.meaningId,
-    explanation: selected.proposal.evidence.provenance.nodeName,
-    meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
-    alert,
-    handSummary: formatHandSummary(context.evaluation),
-    evaluationTrace: {
-      conventionId: moduleId,
-      candidateCount: arbitration.truthSet.length + arbitration.acceptableSet.length,
-      strategyChainPath: [],
-      ...(posteriorSummary ? {
-        posteriorSampleCount: posteriorSummary.sampleCount,
-        posteriorConfidence: posteriorSummary.confidence,
-      } : {}),
-    },
-    resolvedCandidates,
-  };
-}
-
-/**
- * Build a TeachingProjection from arbitration and provenance, returning null if provenance is missing.
- */
-function buildTeachingProjection(
-  arbitration: ArbitrationResult,
-  provenance: DecisionProvenance | null,
-  explanationCatalog?: ExplanationCatalogIR,
-  posteriorSummary?: PosteriorSummary | null,
-  pedagogicalRelations?: readonly PedagogicalRelation[],
-): TeachingProjection | null {
-  if (!provenance) return null;
-  return projectTeaching(arbitration, provenance, {
-    explanationCatalog,
-    posteriorSummary: posteriorSummary ?? undefined,
-    pedagogicalRelations,
-  });
-}
-
-// ─── Surface Selection ─────────────────────────────────────────
-
-/** Machine evaluation cache — avoids redundant FSM evaluation at the same auction length. */
-interface MachineCache {
-  result: MachineEvalResult | null;
-  auctionLength: number;
-}
-
-function getMachineResult(
-  machine: ConversationMachine,
-  auction: Auction,
-  seat: Seat,
-  cache: MachineCache,
-): MachineEvalResult {
-  if (cache.auctionLength === auction.entries.length && cache.result) {
-    return cache.result;
-  }
-  cache.result = evaluateMachine(machine, auction, seat);
-  cache.auctionLength = auction.entries.length;
-  return cache.result;
-}
-
-/** Select surfaces and collect machine transforms for the current auction position. */
-function selectActiveSurfaces(
-  moduleSurfaces: readonly { moduleId: string; surfaces: readonly MeaningSurface[] }[],
-  allSurfaces: readonly MeaningSurface[],
-  context: BiddingContext,
-  options?: {
-    conversationMachine?: ConversationMachine;
-    surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
-  },
-  machineCache?: MachineCache,
-): { surfaces: readonly MeaningSurface[]; machineTransforms: readonly CandidateTransform[] } | null {
-  if (options?.conversationMachine && machineCache) {
-    const machineResult = getMachineResult(
-      options.conversationMachine, context.auction, context.seat, machineCache,
-    );
-    const activeGroupIds = new Set(machineResult.activeSurfaceGroupIds);
-    const surfaces = moduleSurfaces
-      .filter((g) => activeGroupIds.has(g.moduleId))
-      .flatMap((g) => g.surfaces);
-    if (surfaces.length === 0) return null;
-    return { surfaces, machineTransforms: machineResult.collectedTransforms };
-  }
-
-  if (options?.surfaceRouter) {
-    const surfaces = options.surfaceRouter(context.auction, context.seat);
-    if (surfaces.length === 0) return null;
-    return { surfaces, machineTransforms: [] };
-  }
-
-  if (allSurfaces.length === 0) return null;
-  return { surfaces: allSurfaces, machineTransforms: [] };
-}
-
-// ─── Evaluation Runtime Bridge ─────────────────────────────────
-
-/**
- * Flatten DecisionSurfaceEntry[] from the evaluation runtime into MeaningSurface[]
- * for the existing meaning pipeline. Bridges the gap between the two-phase
- * evaluation runtime and the strategy pipeline's surface input format.
- */
-export function buildSurfacesFromEvaluation(
-  evalResult: EvaluationResult,
-): MeaningSurface[] {
-  return evalResult.decisionSurfaces.flatMap(entry => entry.surfaces);
-}
-
-// ─── Debug Helpers ─────────────────────────────────────────────
-
-/** Convert a MachineEvalResult to a lightweight debug DTO. */
-function toMachineDebugSnapshot(mr: MachineEvalResult): MachineDebugSnapshot {
-  return {
-    currentStateId: mr.context.currentStateId,
-    stateHistory: [...mr.context.stateHistory],
-    transitionHistory: [...mr.context.transitionHistory],
-    activeSurfaceGroupIds: [...mr.activeSurfaceGroupIds],
-    registers: {
-      forcingState: mr.context.registers.forcingState,
-      obligation: mr.context.registers.obligation,
-      agreedStrain: mr.context.registers.agreedStrain,
-      competitionMode: mr.context.registers.competitionMode,
-      captain: mr.context.registers.captain,
-      systemCapabilities: mr.context.registers.systemCapabilities,
-    },
-    diagnostics: mr.diagnostics.map(d => ({ level: d.level, message: d.message, moduleId: d.moduleId })),
-    handoffTraces: mr.handoffTraces.map(h => ({ fromModuleId: h.fromModuleId, toModuleId: h.toModuleId, reason: h.reason })),
-    submachineStack: mr.context.submachineStack.map(f => ({ parentMachineId: f.parentMachineId, returnStateId: f.returnStateId })),
-  };
-}
-
 // ─── Public API ────────────────────────────────────────────────
+
+// Re-export buildSurfacesFromEvaluation so existing consumers that import it
+// from this module continue to work.
+export { buildSurfacesFromEvaluation } from "./surface-selection";
 
 /**
  * Create a ConventionBiddingStrategy from a set of MeaningSurfaces.

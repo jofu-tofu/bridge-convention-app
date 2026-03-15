@@ -7,9 +7,8 @@ import type {
   PlayedCard,
   Trick,
   Hand,
-  Seat,
 } from "../engine/types";
-import { BidSuit, Suit } from "../engine/types";
+import { BidSuit, Suit, Seat } from "../engine/types";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import type {
   PlayStrategy,
@@ -78,6 +77,8 @@ export function createPlayStore(engine: EnginePort) {
   let isProcessing = $state(false);
   let playLog = $state<PlayLogEntry[]>([]);
   let activePlayStrategy: PlayStrategy | null = null;
+  /** Legal plays for the current player, fetched asynchronously. */
+  let legalPlaysForCurrentPlayer = $state<Card[]>([]);
 
   // Config set at startPlay time — not reactive, plain vars
   let activeDeal: Deal | null = null;
@@ -352,12 +353,49 @@ export function createPlayStore(engine: EnginePort) {
     isShowingTrickResult = false;
     isProcessing = false;
     playLog = [];
+    legalPlaysForCurrentPlayer = [];
     activePlayStrategy = null;
     activeDeal = null;
     activeContract = null;
     activeUserSeat = null;
     activeInferences = null;
     onPlayComplete = null;
+  }
+
+  /** Refresh legal plays for the current player. Called by the game store's $effect. */
+  async function refreshLegalPlays() {
+    const player = currentPlayer;
+    if (!activeDeal || !player) {
+      legalPlaysForCurrentPlayer = [];
+      return;
+    }
+    const remaining = getRemainingCards(player);
+    const plays = await engine.getLegalPlays({ cards: remaining }, getLeadSuit());
+    // Guard against stale results
+    if (currentPlayer === player) {
+      legalPlaysForCurrentPlayer = plays;
+    }
+  }
+
+  /** Get the set of seats the user can interact with during play. */
+  function getUserControlledSeats(): readonly Seat[] {
+    if (!activeContract || !activeUserSeat) return [];
+    const seats: Seat[] = [activeUserSeat];
+    const dummy = partnerSeat(activeContract.declarer);
+    if (seatController(dummy, activeContract.declarer, activeUserSeat) === "user") {
+      seats.push(dummy);
+    }
+    return seats;
+  }
+
+  /** Get remaining cards for all seats as a record. */
+  function getRemainingCardsPerSeat(): Partial<Record<Seat, readonly Card[]>> {
+    if (!activeDeal) return {};
+    const result: Partial<Record<Seat, readonly Card[]>> = {};
+    for (const seat of [Seat.North, Seat.East, Seat.South, Seat.West] as Seat[]) {
+      result[seat] = getRemainingCards(seat);
+    }
+    return result;
   }
 
   return {
@@ -374,7 +412,11 @@ export function createPlayStore(engine: EnginePort) {
     get playLog() { return playLog; },
     get playAborted() { return playAborted; },
     set playAborted(v: boolean) { playAborted = v; },
+    get legalPlaysForCurrentPlayer() { return legalPlaysForCurrentPlayer; },
+    get userControlledSeats() { return getUserControlledSeats(); },
+    get remainingCardsPerSeat() { return getRemainingCardsPerSeat(); },
     getRemainingCards,
+    refreshLegalPlays,
     async getLegalPlaysForSeat(seat: Seat): Promise<Card[]> {
       if (!activeDeal || currentPlayer !== seat) return [];
       const remaining = getRemainingCards(seat);

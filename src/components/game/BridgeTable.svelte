@@ -8,10 +8,9 @@
 
   interface Props {
     hands: Record<Seat, Hand>;
-    userSeat: Seat;
+    /** Set of seats whose cards should be shown face-up. */
+    faceUpSeats: ReadonlySet<Seat>;
     children?: Snippet;
-    /** During play: seat whose hand is face-up as dummy */
-    dummySeat?: Seat;
     /** During play: legal cards for the active seat */
     legalPlays?: readonly CardType[];
     /** During play: callback when user clicks a card */
@@ -24,22 +23,18 @@
     remainingCards?: Partial<Record<Seat, readonly CardType[]>>;
     /** When true, rotate table 180°: North at bottom, South at top, E↔W swapped */
     rotated?: boolean;
-    /** When true, all hands are shown face-up (review mode) */
-    showAll?: boolean;
   }
 
   let {
     hands,
-    userSeat,
+    faceUpSeats,
     children,
-    dummySeat,
     legalPlays = [],
     onPlayCard,
     currentPlayer,
     userControlledSeats = [],
     remainingCards,
     rotated = false,
-    showAll = false,
   }: Props = $props();
 
   const southHcp = $derived(calculateHcp(hands[Seat.South]));
@@ -51,10 +46,7 @@
   const westSeat = $derived(viewSeat(Seat.West, rotated));
 
   function isFaceUp(seat: Seat): boolean {
-    if (showAll) return true;
-    if (seat === userSeat) return true;
-    if (seat === dummySeat) return true;
-    return false;
+    return faceUpSeats.has(seat);
   }
 
   function getCards(seat: Seat): readonly CardType[] {
@@ -95,14 +87,14 @@
 </script>
 
 <div
-  class="bridge-table relative bg-table-surface border border-table-border rounded-[--radius-xl]"
+  class="bridge-table bg-table-surface border border-table-border rounded-[--radius-xl]"
   style="width: var(--table-width); height: var(--table-height);"
   role="region"
   aria-label="Bridge table"
   data-testid="bridge-table"
 >
   <!-- Physical top position (North normally, South when rotated) -->
-  <div class="absolute seat-north">
+  <div class="area-north">
     <HandFan
       cards={getCards(northSeat)}
       faceUp={isFaceUp(northSeat)}
@@ -120,8 +112,49 @@
     </div>
   </div>
 
-  <!-- Physical bottom position (South normally, North when rotated) — z-10 stays on bottom hand -->
-  <div class="absolute z-10 seat-south">
+  <!-- Physical left position (West normally, East when rotated) + label -->
+  <div class="area-west">
+    <HandFan
+      cards={getCards(westSeat)}
+      faceUp={isFaceUp(westSeat)}
+      vertical
+      legalPlays={getSeatLegalPlays(westSeat)}
+      onPlayCard={getSeatOnPlayCard(westSeat)}
+    />
+    <span
+      class={seatLabelClass(westSeat)}
+      data-testid="seat-label-{westSeat}"
+      aria-label={westSeat === Seat.West ? "West" : "East"}
+      >{westSeat === Seat.West ? "W" : "E"}</span
+    >
+  </div>
+
+  <!-- Center area (auction or tricks) — dedicated grid cell, cannot overlap hands -->
+  <div class="area-center" data-testid="table-center">
+    {#if children}
+      {@render children()}
+    {/if}
+  </div>
+
+  <!-- Physical right position (East normally, West when rotated) + label -->
+  <div class="area-east">
+    <span
+      class={seatLabelClass(eastSeat)}
+      data-testid="seat-label-{eastSeat}"
+      aria-label={eastSeat === Seat.East ? "East" : "West"}
+      >{eastSeat === Seat.East ? "E" : "W"}</span
+    >
+    <HandFan
+      cards={getCards(eastSeat)}
+      faceUp={isFaceUp(eastSeat)}
+      vertical
+      legalPlays={getSeatLegalPlays(eastSeat)}
+      onPlayCard={getSeatOnPlayCard(eastSeat)}
+    />
+  </div>
+
+  <!-- Physical bottom position (South normally, North when rotated) -->
+  <div class="area-south">
     <div class="text-center mb-2 flex items-center justify-center gap-1.5">
       <span
         class={seatLabelClass(southSeat)}
@@ -143,96 +176,43 @@
       onPlayCard={getSeatOnPlayCard(southSeat)}
     />
   </div>
-
-  <!-- Physical right position (East normally, West when rotated) -->
-  <div class="absolute seat-east">
-    <HandFan
-      cards={getCards(eastSeat)}
-      faceUp={isFaceUp(eastSeat)}
-      vertical
-      legalPlays={getSeatLegalPlays(eastSeat)}
-      onPlayCard={getSeatOnPlayCard(eastSeat)}
-    />
-  </div>
-  <!-- East label — inset from edge to clear the vertical card fan (~12% card width + gap) -->
-  <div class="absolute seat-label-east">
-    <span
-      class={seatLabelClass(eastSeat)}
-      data-testid="seat-label-{eastSeat}"
-      aria-label={eastSeat === Seat.East ? "East" : "West"}
-      >{eastSeat === Seat.East ? "E" : "W"}</span
-    >
-  </div>
-
-  <!-- Physical left position (West normally, East when rotated) -->
-  <div class="absolute seat-west">
-    <HandFan
-      cards={getCards(westSeat)}
-      faceUp={isFaceUp(westSeat)}
-      vertical
-      legalPlays={getSeatLegalPlays(westSeat)}
-      onPlayCard={getSeatOnPlayCard(westSeat)}
-    />
-  </div>
-  <!-- West label — inset from edge to clear the vertical card fan (~12% card width + gap) -->
-  <div class="absolute seat-label-west">
-    <span
-      class={seatLabelClass(westSeat)}
-      data-testid="seat-label-{westSeat}"
-      aria-label={westSeat === Seat.West ? "West" : "East"}
-      >{westSeat === Seat.West ? "W" : "E"}</span
-    >
-  </div>
-
-  <!-- Center area (auction or tricks) — positioned in upper-center to leave room for growing auction rows -->
-  <div class="absolute seat-center" data-testid="table-center">
-    {#if children}
-      {@render children()}
-    {/if}
-  </div>
 </div>
 
 <style>
   .bridge-table {
-    --seat-edge: 4%;
-    --seat-center: 50%;
-    --seat-south-bottom: 4%;
-    --seat-label-inset: 14%;
-    --seat-center-top: 42%;
+    display: grid;
+    grid-template-areas:
+      "west   north  east"
+      "west   center east"
+      "west   south  east";
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    padding: 6px 14px;
   }
-  .seat-north {
-    top: var(--seat-edge);
-    left: var(--seat-center);
-    transform: translateX(-50%);
+  .area-north {
+    grid-area: north;
+    justify-self: center;
   }
-  .seat-south {
-    bottom: var(--seat-south-bottom);
-    left: var(--seat-center);
-    transform: translateX(-50%);
+  .area-south {
+    grid-area: south;
+    justify-self: center;
   }
-  .seat-east {
-    top: var(--seat-center);
-    right: var(--seat-edge);
-    transform: translateY(-50%);
+  .area-west {
+    grid-area: west;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .seat-label-east {
-    top: var(--seat-center);
-    right: var(--seat-label-inset);
-    transform: translateY(-50%);
+  .area-east {
+    grid-area: east;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .seat-west {
-    top: var(--seat-center);
-    left: var(--seat-edge);
-    transform: translateY(-50%);
-  }
-  .seat-label-west {
-    top: var(--seat-center);
-    left: var(--seat-label-inset);
-    transform: translateY(-50%);
-  }
-  .seat-center {
-    top: var(--seat-center-top);
-    left: var(--seat-center);
-    transform: translate(-50%, -50%);
+  .area-center {
+    grid-area: center;
+    place-self: center;
   }
 </style>

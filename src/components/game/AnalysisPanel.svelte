@@ -98,6 +98,7 @@
         {#if ddsSolution.par.contracts.length > 0}
           <div class="text-sm text-text-secondary mt-1">
             {#each ddsSolution.par.contracts as pc (pc.declarer + pc.strain + pc.level)}
+              <!-- Note: ParContract lacks `redoubled`, so formatContract(Contract) can't be used here -->
               <span class="mr-2">
                 {pc.level}{STRAIN_SYMBOLS[pc.strain]}{pc.doubled ? "X" : ""}
                 by {pc.declarer}{pc.overtricks > 0

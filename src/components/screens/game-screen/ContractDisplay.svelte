@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Contract } from "../../../engine/types";
-  import { STRAIN_SYMBOLS } from "../../../core/display/format";
+  import { formatContractWithDeclarer } from "../../../core/display/format";
 
   interface Props {
     contract: Contract;
@@ -16,8 +16,5 @@
 </script>
 
 <p class="{textSize} font-mono text-text-primary">
-  {contract.level}{STRAIN_SYMBOLS[contract.strain]}{contract.doubled
-    ? " X"
-    : ""}{contract.redoubled ? " XX" : ""}
-  by {contract.declarer}
+  {formatContractWithDeclarer(contract)}
 </p>

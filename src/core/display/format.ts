@@ -1,5 +1,5 @@
 import { Suit, BidSuit } from "../../engine/types";
-import type { Call } from "../../engine/types";
+import type { Call, Contract } from "../../engine/types";
 
 export const SUIT_SYMBOLS: Record<Suit, string> = {
   [Suit.Spades]: "\u2660",
@@ -23,6 +23,16 @@ export function formatCall(call: Call): string {
   if (call.type === "double") return "X";
   if (call.type === "redouble") return "XX";
   return "Pass";
+}
+
+/** Format a contract as a short string, e.g. "3NT", "4♠X", "6♥XX". */
+export function formatContract(contract: Contract): string {
+  return `${contract.level}${STRAIN_SYMBOLS[contract.strain]}${contract.doubled ? "X" : ""}${contract.redoubled ? "XX" : ""}`;
+}
+
+/** Format a contract with declarer, e.g. "3NT by N", "4♠X by S". */
+export function formatContractWithDeclarer(contract: Contract): string {
+  return `${formatContract(contract)} by ${contract.declarer}`;
 }
 
 /** Known bridge abbreviations that should be fully uppercased. */

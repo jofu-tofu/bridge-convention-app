@@ -4,7 +4,7 @@
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../stores/game.svelte";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
-  import { STRAIN_SYMBOLS } from "../../../core/display/format";
+  import { formatContractWithDeclarer } from "../../../core/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/BidFeedbackPanel";
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
@@ -83,15 +83,15 @@
   function formatResult(): string | null {
     if (!contract || score === null) return null;
     const required = contract.level + 6;
-    const contractStr = `${contract.level}${STRAIN_SYMBOLS[contract.strain]}${contract.doubled ? "X" : ""}${contract.redoubled ? "XX" : ""}`;
+    const contractWithDeclarer = formatContractWithDeclarer(contract);
 
     if (declarerTricksWon >= required) {
       const over = declarerTricksWon - required;
       const trickStr = over === 0 ? "=" : `+${over}`;
-      return `${contractStr} by ${contract.declarer} ${trickStr} — ${score >= 0 ? "+" : ""}${score}`;
+      return `${contractWithDeclarer} ${trickStr} — ${score >= 0 ? "+" : ""}${score}`;
     } else {
       const down = required - declarerTricksWon;
-      return `${contractStr} by ${contract.declarer} -${down} — ${score}`;
+      return `${contractWithDeclarer} -${down} — ${score}`;
     }
   }
 </script>

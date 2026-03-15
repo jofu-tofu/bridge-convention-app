@@ -112,6 +112,14 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       !isProcessing,
   );
 
+  /** True when bid feedback is showing and should block further input. */
+  const isFeedbackBlocking = $derived(
+    bidFeedback !== null &&
+      bidFeedback.grade !== BidGrade.Correct &&
+      bidFeedback.grade !== BidGrade.CorrectNotPreferred &&
+      bidFeedback.grade !== BidGrade.Acceptable,
+  );
+
   /** Build a DebugSnapshot from the convention strategy's cached state. */
   function captureSnapshot(): DebugSnapshot {
     if (!conventionStrategy) {
@@ -451,6 +459,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     get bidHistory() { return bidHistory; },
     get isProcessing() { return isProcessing; },
     get isUserTurn() { return isUserTurn; },
+    get isFeedbackBlocking() { return isFeedbackBlocking; },
     get legalCalls() { return legalCalls; },
     get bidFeedback() { return bidFeedback; },
     get error() { return error; },

@@ -5,12 +5,12 @@
 
   interface Props {
     hands: Record<Seat, Hand>;
-    userSeat: Seat;
+    faceUpSeats: ReadonlySet<Seat>;
   }
 
-  let { hands, userSeat }: Props = $props();
+  let { hands, faceUpSeats }: Props = $props();
 </script>
 
-<BridgeTable {hands} {userSeat}>
+<BridgeTable {hands} {faceUpSeats}>
   <div data-testid="center-content">Center</div>
 </BridgeTable>

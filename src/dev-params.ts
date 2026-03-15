@@ -1,0 +1,43 @@
+import type { createAppStore } from "./stores/app.svelte";
+import { getConvention } from "./conventions/core";
+
+export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
+  if (!import.meta.env.DEV) return;
+  const params = new URLSearchParams(window.location.search);
+
+  const seedParam = params.get("seed");
+  if (seedParam !== null) {
+    const seed = Number(seedParam);
+    if (Number.isFinite(seed)) {
+      store.setDevSeed(seed);
+    }
+  }
+
+  const debugParam = params.get("debug");
+  if (debugParam === "true") {
+    store.setDebugPanel(true);
+  }
+
+  const autoplayParam = params.get("autoplay");
+  if (autoplayParam === "true") {
+    store.setAutoplay(true);
+  }
+
+  const conventionParam = params.get("convention");
+  const learnParam = params.get("learn");
+  if (learnParam) {
+    try {
+      const config = getConvention(learnParam);
+      store.navigateToLearning(config);
+    } catch {
+      // Invalid dev param — silently ignore
+    }
+  } else if (conventionParam) {
+    try {
+      const config = getConvention(conventionParam);
+      store.selectConvention(config);
+    } catch {
+      // Invalid dev param — silently ignore
+    }
+  }
+}
