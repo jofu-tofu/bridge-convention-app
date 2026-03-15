@@ -6,6 +6,7 @@ import type {
   MachineState,
   MachineEffect,
 } from "../machine-types";
+import { buildConversationMachine } from "../machine-types";
 import type { CandidateTransform } from "../../../../core/contracts/meaning";
 import type { PublicSnapshot } from "../../../../core/contracts/module-surface";
 import {
@@ -615,5 +616,476 @@ describe("collectInheritedTransforms", () => {
     };
     const states = new Map([["s", s]]);
     expect(collectInheritedTransforms(states, "s")).toEqual([]);
+  });
+});
+
+describe("submachine invocation", () => {
+  it("invokes submachine and returns to parent on submachine-return", () => {
+    // RKCB submachine: waits for a bid response, then returns
+    const rkcbMachine = buildConversationMachine(
+      "rkcb",
+      [
+        {
+          stateId: "rkcb-ask",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-rkcb-response",
+              match: { kind: "any-bid" },
+              target: "rkcb-done",
+            },
+          ],
+        },
+        {
+          stateId: "rkcb-done",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-rkcb-return",
+              match: { kind: "submachine-return" },
+              target: "",
+            },
+          ],
+        },
+      ],
+      "rkcb-ask",
+    );
+
+    const parentMachine = buildConversationMachine(
+      "parent",
+      [
+        {
+          stateId: "idle",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-invoke",
+              match: { kind: "call", level: 4, strain: BidSuit.NoTrump },
+              target: "invoke-rkcb",
+            },
+          ],
+        },
+        {
+          stateId: "invoke-rkcb",
+          parentId: null,
+          transitions: [],
+          submachineRef: {
+            machineId: "rkcb",
+            returnTarget: "after-rkcb",
+          },
+        },
+        {
+          stateId: "after-rkcb",
+          parentId: null,
+          transitions: [],
+        },
+      ],
+      "idle",
+    );
+
+    const submachines = new Map([["rkcb", rkcbMachine]]);
+    // North=4NT, East=P, South=5C
+    const auction = buildAuction(Seat.North, ["4NT", "P", "5C"]);
+
+    const result = evaluateMachine(
+      parentMachine,
+      auction,
+      Seat.South,
+      submachines,
+    );
+
+    expect(result.context.currentStateId).toBe("after-rkcb");
+    expect(result.handoffTraces).toHaveLength(1);
+    expect(result.handoffTraces[0]!.fromModuleId).toBe("parent");
+    expect(result.handoffTraces[0]!.toModuleId).toBe("rkcb");
+  });
+
+  it("handles nested submachines: parent → sub1 → sub2 → return chain", () => {
+    // Sub2: processes a pass then returns
+    const sub2Machine = buildConversationMachine(
+      "sub2",
+      [
+        {
+          stateId: "sub2-idle",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-sub2-done",
+              match: { kind: "pass" },
+              target: "sub2-complete",
+            },
+          ],
+        },
+        {
+          stateId: "sub2-complete",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-sub2-return",
+              match: { kind: "submachine-return" },
+              target: "",
+            },
+          ],
+        },
+      ],
+      "sub2-idle",
+    );
+
+    // Sub1: processes a bid then invokes sub2, returns after sub2 completes
+    const sub1Machine = buildConversationMachine(
+      "sub1",
+      [
+        {
+          stateId: "sub1-idle",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-sub1-step",
+              match: { kind: "any-bid" },
+              target: "sub1-invoke-sub2",
+            },
+          ],
+        },
+        {
+          stateId: "sub1-invoke-sub2",
+          parentId: null,
+          transitions: [],
+          submachineRef: {
+            machineId: "sub2",
+            returnTarget: "sub1-after-sub2",
+          },
+        },
+        {
+          stateId: "sub1-after-sub2",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-sub1-return",
+              match: { kind: "submachine-return" },
+              target: "",
+            },
+          ],
+        },
+      ],
+      "sub1-idle",
+    );
+
+    const parentMachine = buildConversationMachine(
+      "parent",
+      [
+        {
+          stateId: "idle",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-invoke",
+              match: { kind: "call", level: 1, strain: BidSuit.Clubs },
+              target: "invoke-sub1",
+            },
+          ],
+        },
+        {
+          stateId: "invoke-sub1",
+          parentId: null,
+          transitions: [],
+          submachineRef: {
+            machineId: "sub1",
+            returnTarget: "after-sub1",
+          },
+        },
+        {
+          stateId: "after-sub1",
+          parentId: null,
+          transitions: [],
+        },
+      ],
+      "idle",
+    );
+
+    const submachines = new Map([
+      ["sub1", sub1Machine],
+      ["sub2", sub2Machine],
+    ]);
+    // North=1C (→ parent invokes sub1), East=1D (→ sub1 invokes sub2), South=P (→ sub2 completes → cascade return)
+    const auction = buildAuction(Seat.North, ["1C", "1D", "P"]);
+
+    const result = evaluateMachine(
+      parentMachine,
+      auction,
+      Seat.South,
+      submachines,
+    );
+
+    expect(result.context.currentStateId).toBe("after-sub1");
+    expect(result.handoffTraces).toHaveLength(2);
+    expect(result.handoffTraces[0]!.toModuleId).toBe("sub1");
+    expect(result.handoffTraces[1]!.toModuleId).toBe("sub2");
+  });
+
+  it("preserves parent registers on submachine return", () => {
+    const subMachine = buildConversationMachine(
+      "sub",
+      [
+        {
+          stateId: "sub-idle",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-sub-step",
+              match: { kind: "any-bid" },
+              target: "sub-done",
+              effects: { setCaptain: "nobody" },
+            },
+          ],
+        },
+        {
+          stateId: "sub-done",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-sub-return",
+              match: { kind: "submachine-return" },
+              target: "",
+            },
+          ],
+        },
+      ],
+      "sub-idle",
+    );
+
+    const parentMachine = buildConversationMachine(
+      "parent",
+      [
+        {
+          stateId: "idle",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-setup",
+              match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+              target: "invoke-sub",
+              effects: { setCaptain: "responder" },
+            },
+          ],
+        },
+        {
+          stateId: "invoke-sub",
+          parentId: null,
+          transitions: [],
+          submachineRef: { machineId: "sub", returnTarget: "after-sub" },
+        },
+        {
+          stateId: "after-sub",
+          parentId: null,
+          transitions: [],
+        },
+      ],
+      "idle",
+    );
+
+    const submachines = new Map([["sub", subMachine]]);
+    // North=1NT, East=P, South=2C
+    const auction = buildAuction(Seat.North, ["1NT", "P", "2C"]);
+
+    const result = evaluateMachine(
+      parentMachine,
+      auction,
+      Seat.South,
+      submachines,
+    );
+
+    expect(result.context.currentStateId).toBe("after-sub");
+    // Parent set captain to "responder" before submachine invocation
+    // Submachine changed captain to "nobody" (but this is lost on return)
+    // On return, parent's registers should be restored
+    expect(result.context.registers.captain).toBe("responder");
+  });
+
+  it("empty submachine with no transitions returns immediately", () => {
+    const subMachine = buildConversationMachine(
+      "sub",
+      [
+        {
+          stateId: "sub-idle",
+          parentId: null,
+          transitions: [], // No transitions = terminal = immediate return
+        },
+      ],
+      "sub-idle",
+    );
+
+    const parentMachine = buildConversationMachine(
+      "parent",
+      [
+        {
+          stateId: "idle",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-invoke",
+              match: { kind: "call", level: 1, strain: BidSuit.Clubs },
+              target: "invoke-sub",
+            },
+          ],
+        },
+        {
+          stateId: "invoke-sub",
+          parentId: null,
+          transitions: [],
+          submachineRef: { machineId: "sub", returnTarget: "after-sub" },
+        },
+        {
+          stateId: "after-sub",
+          parentId: null,
+          transitions: [],
+        },
+      ],
+      "idle",
+    );
+
+    const submachines = new Map([["sub", subMachine]]);
+    const auction = buildAuction(Seat.North, ["1C"]);
+
+    const result = evaluateMachine(
+      parentMachine,
+      auction,
+      Seat.South,
+      submachines,
+    );
+
+    // Submachine initial state has no transitions → immediate return to parent
+    expect(result.context.currentStateId).toBe("after-sub");
+  });
+});
+
+describe("loop evaluation", () => {
+  it("loop with explicit exit via exitLoop transition", () => {
+    const machine = buildConversationMachine(
+      "test",
+      [
+        {
+          stateId: "loop",
+          parentId: null,
+          loopConfig: { maxIterations: 10, exitTarget: "done" },
+          transitions: [
+            {
+              transitionId: "t-exit",
+              match: { kind: "pass" },
+              target: "ignored",
+              exitLoop: true,
+            },
+            {
+              transitionId: "t-continue",
+              match: { kind: "any-bid" },
+              target: "loop",
+            },
+          ],
+        },
+        {
+          stateId: "done",
+          parentId: null,
+          transitions: [],
+        },
+      ],
+      "loop",
+    );
+
+    // 3 bids then a pass → 3 iterations then exit
+    const auction = buildAuction(Seat.North, ["1C", "1D", "1H", "P"]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.currentStateId).toBe("done");
+    expect(
+      result.context.transitionHistory.filter((t) => t === "t-continue"),
+    ).toHaveLength(3);
+    expect(result.context.transitionHistory).toContain("t-exit");
+  });
+
+  it("loop exits automatically when maxIterations reached", () => {
+    const machine = buildConversationMachine(
+      "test",
+      [
+        {
+          stateId: "loop",
+          parentId: null,
+          loopConfig: { maxIterations: 3, exitTarget: "done" },
+          transitions: [
+            {
+              transitionId: "t-continue",
+              match: { kind: "any-bid" },
+              target: "loop",
+            },
+          ],
+        },
+        {
+          stateId: "done",
+          parentId: null,
+          transitions: [],
+        },
+      ],
+      "loop",
+    );
+
+    const auction = buildAuction(Seat.North, ["1C", "1D", "1H", "1S"]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.currentStateId).toBe("done");
+    // 3 iterations: 1C, 1D succeed; 1H fires but redirects to done on re-entry
+    expect(
+      result.context.transitionHistory.filter((t) => t === "t-continue"),
+    ).toHaveLength(3);
+  });
+
+  it("loop counter resets on re-entry after exit", () => {
+    const machine = buildConversationMachine(
+      "test",
+      [
+        {
+          stateId: "loop",
+          parentId: null,
+          loopConfig: { maxIterations: 2, exitTarget: "between" },
+          transitions: [
+            {
+              transitionId: "t-continue",
+              match: { kind: "any-bid" },
+              target: "loop",
+            },
+          ],
+        },
+        {
+          stateId: "between",
+          parentId: null,
+          transitions: [
+            {
+              transitionId: "t-reenter",
+              match: { kind: "pass" },
+              target: "loop",
+            },
+          ],
+        },
+      ],
+      "loop",
+    );
+
+    // First loop: 1C, 1D (hits max 2), auto-exit to "between"
+    // P → re-enter loop (counter should reset)
+    // Second loop: 1H, 1S (hits max 2), auto-exit to "between"
+    const auction = buildAuction(Seat.North, [
+      "1C",
+      "1D",
+      "P",
+      "1H",
+      "1S",
+    ]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.currentStateId).toBe("between");
+    // 4 total t-continue transitions (2 per loop entry)
+    expect(
+      result.context.transitionHistory.filter((t) => t === "t-continue"),
+    ).toHaveLength(4);
   });
 });

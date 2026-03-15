@@ -168,7 +168,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         ? BidGrade.Correct
         : BidGrade.Incorrect;
     }
-    const isCorrect = grade === BidGrade.Correct || grade === BidGrade.Acceptable;
+    const isCorrect = grade === BidGrade.Correct || grade === BidGrade.CorrectNotPreferred || grade === BidGrade.Acceptable;
 
     bidFeedback = {
       grade,

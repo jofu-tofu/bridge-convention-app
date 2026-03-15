@@ -2,10 +2,14 @@ import { describe, it, expect } from "vitest";
 import {
   evaluateMeaningSurface,
   evaluateAllSurfaces,
+  resolvePriorityClass,
 } from "../meaning-evaluator";
 import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
 import type { EvaluatedFacts, FactValue } from "../../../../core/contracts/fact-catalog";
 import { BidSuit } from "../../../../engine/types";
+import type { PriorityClass } from "../../../../core/contracts/agreement-module";
+import { defaultPriorityClassMapping } from "../../../../core/contracts/agreement-module";
+import type { RecommendationBand } from "../../../../core/contracts/meaning";
 
 function buildFacts(
   entries: Record<string, number | boolean | string>,
@@ -595,5 +599,179 @@ describe("observedValue on MeaningClause", () => {
     const proposal = evaluateMeaningSurface(surface, facts);
 
     expect(proposal.clauses[0]!.observedValue).toBe("one-four");
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// resolvePriorityClass tests
+// ═══════════════════════════════════════════════════════════════
+
+describe("resolvePriorityClass", () => {
+  const mapping = defaultPriorityClassMapping();
+
+  it("resolves obligatory → must via profile mapping", () => {
+    expect(resolvePriorityClass("obligatory", mapping, "may")).toBe("must");
+  });
+
+  it("resolves preferredConventional → should via profile mapping", () => {
+    expect(resolvePriorityClass("preferredConventional", mapping, "may")).toBe("should");
+  });
+
+  it("resolves preferredNatural → should via profile mapping", () => {
+    expect(resolvePriorityClass("preferredNatural", mapping, "may")).toBe("should");
+  });
+
+  it("resolves neutralCorrect → may via profile mapping", () => {
+    expect(resolvePriorityClass("neutralCorrect", mapping, "must")).toBe("may");
+  });
+
+  it("resolves fallbackCorrect → avoid via profile mapping", () => {
+    expect(resolvePriorityClass("fallbackCorrect", mapping, "must")).toBe("avoid");
+  });
+
+  it("falls back to fallbackBand when no profileMapping", () => {
+    expect(resolvePriorityClass("obligatory", undefined, "should")).toBe("should");
+  });
+
+  it("falls back to fallbackBand when no priorityClass", () => {
+    expect(resolvePriorityClass(undefined, mapping, "must")).toBe("must");
+  });
+
+  it("falls back to fallbackBand when both are undefined", () => {
+    expect(resolvePriorityClass(undefined, undefined, "avoid")).toBe("avoid");
+  });
+
+  it("uses custom profile mapping when provided", () => {
+    const customMapping: Record<PriorityClass, RecommendationBand> = {
+      obligatory: "must",
+      preferredConventional: "must",  // profile upgrades conventional to must
+      preferredNatural: "may",         // profile downgrades natural to may
+      neutralCorrect: "avoid",
+      fallbackCorrect: "avoid",
+    };
+    expect(resolvePriorityClass("preferredConventional", customMapping, "should")).toBe("must");
+    expect(resolvePriorityClass("preferredNatural", customMapping, "should")).toBe("may");
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Pipeline integration: priorityClass resolution
+// ═══════════════════════════════════════════════════════════════
+
+describe("evaluateMeaningSurface with priorityClass", () => {
+  const mapping = defaultPriorityClassMapping();
+
+  it("resolves priorityClass to override recommendationBand when mapping provided", () => {
+    const surface = makeSurface({
+      priorityClass: "obligatory",
+      ranking: {
+        recommendationBand: "may",  // surface says "may" but priorityClass says "obligatory" → "must"
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+    });
+    const facts = buildFacts({});
+    const proposal = evaluateMeaningSurface(surface, facts, mapping);
+
+    expect(proposal.ranking.recommendationBand).toBe("must");
+  });
+
+  it("preserves other ranking fields when priorityClass overrides band", () => {
+    const surface = makeSurface({
+      priorityClass: "fallbackCorrect",
+      ranking: {
+        recommendationBand: "must",
+        specificity: 5,
+        modulePrecedence: 3,
+        intraModuleOrder: 7,
+      },
+    });
+    const facts = buildFacts({});
+    const proposal = evaluateMeaningSurface(surface, facts, mapping);
+
+    expect(proposal.ranking.recommendationBand).toBe("avoid");
+    expect(proposal.ranking.specificity).toBe(5);
+    expect(proposal.ranking.modulePrecedence).toBe(3);
+    expect(proposal.ranking.intraModuleOrder).toBe(7);
+  });
+
+  it("uses surface band when priorityClass is set but no mapping provided", () => {
+    const surface = makeSurface({
+      priorityClass: "obligatory",
+      ranking: {
+        recommendationBand: "may",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+    });
+    const facts = buildFacts({});
+    const proposal = evaluateMeaningSurface(surface, facts);  // no mapping
+
+    expect(proposal.ranking.recommendationBand).toBe("may");
+  });
+
+  it("backward compat: surfaces without priorityClass use surface band", () => {
+    const surface = makeSurface({
+      // no priorityClass
+      ranking: {
+        recommendationBand: "should",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+    });
+    const facts = buildFacts({});
+    const proposal = evaluateMeaningSurface(surface, facts, mapping);
+
+    expect(proposal.ranking.recommendationBand).toBe("should");
+  });
+
+  it("backward compat: surfaces without priorityClass and no mapping work unchanged", () => {
+    const surface = makeSurface({
+      ranking: {
+        recommendationBand: "must",
+        specificity: 2,
+        modulePrecedence: 1,
+        intraModuleOrder: 3,
+      },
+    });
+    const facts = buildFacts({});
+    const proposal = evaluateMeaningSurface(surface, facts);
+
+    expect(proposal.ranking).toEqual(surface.ranking);
+  });
+});
+
+describe("evaluateAllSurfaces with priorityClass", () => {
+  const mapping = defaultPriorityClassMapping();
+
+  it("passes profileMapping through to MeaningSurface evaluation", () => {
+    const surface1 = makeSurface({
+      meaningId: "test:with-pc",
+      priorityClass: "obligatory",
+      ranking: {
+        recommendationBand: "may",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+    });
+    const surface2 = makeSurface({
+      meaningId: "test:without-pc",
+      ranking: {
+        recommendationBand: "should",
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 1,
+      },
+    });
+
+    const facts = buildFacts({});
+    const proposals = evaluateAllSurfaces([surface1, surface2], facts, mapping);
+
+    expect(proposals[0]!.ranking.recommendationBand).toBe("must");  // resolved via priorityClass
+    expect(proposals[1]!.ranking.recommendationBand).toBe("should");  // unchanged (no priorityClass)
   });
 });

@@ -17,6 +17,27 @@ import { getFactValue } from "../../../core/contracts/fact-catalog";
 import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
 
 /**
+ * Resolve an author-declared priority class to a runtime recommendation band.
+ *
+ * Resolution logic:
+ * - If `priorityClass` is set AND `profileMapping` exists → use the mapping.
+ * - Otherwise → return `fallbackBand` (the surface's existing recommendationBand).
+ *
+ * This keeps backward compatibility: surfaces without a priorityClass, or
+ * profiles without a mapping, continue to use the surface-level band directly.
+ */
+export function resolvePriorityClass(
+  priorityClass: PriorityClass | undefined,
+  profileMapping: Readonly<Record<PriorityClass, RecommendationBand>> | undefined,
+  fallbackBand: RecommendationBand,
+): RecommendationBand {
+  if (priorityClass !== undefined && profileMapping !== undefined) {
+    return profileMapping[priorityClass];
+  }
+  return fallbackBand;
+}
+
+/**
  * Resolve $-prefixed binding references in factId before fact lookup.
  * Binding resolution lives in the meaning evaluator (not the fact evaluator)
  * because it transforms surface-level references into concrete fact IDs
@@ -116,6 +137,7 @@ function evaluateClause(
 export function evaluateMeaningSurface(
   surface: MeaningSurface,
   facts: EvaluatedFacts,
+  profileMapping?: Readonly<Record<PriorityClass, RecommendationBand>>,
 ): MeaningProposal {
   const bindings = surface.surfaceBindings;
   const evaluatedClauses: MeaningClause[] = surface.clauses.map((clause) =>
@@ -146,12 +168,22 @@ export function evaluateMeaningSurface(
     },
   };
 
+  // Resolve recommendationBand: priorityClass + profileMapping wins over surface band
+  const resolvedBand = resolvePriorityClass(
+    surface.priorityClass,
+    profileMapping,
+    surface.ranking.recommendationBand,
+  );
+  const resolvedRanking: RankingMetadata = resolvedBand !== surface.ranking.recommendationBand
+    ? { ...surface.ranking, recommendationBand: resolvedBand }
+    : surface.ranking;
+
   return {
     meaningId: surface.meaningId,
     semanticClassId: surface.semanticClassId,
     moduleId: surface.moduleId,
     clauses: evaluatedClauses,
-    ranking: surface.ranking,
+    ranking: resolvedRanking,
     evidence,
     sourceIntent: surface.sourceIntent,
     teachingLabel: surface.teachingLabel,
@@ -269,14 +301,15 @@ function evaluateDecisionSurface(
 export function evaluateAllSurfaces(
   surfaces: readonly MeaningSurface[] | readonly DecisionSurfaceIR[],
   facts: EvaluatedFacts,
+  profileMapping?: Readonly<Record<PriorityClass, RecommendationBand>>,
 ): readonly MeaningProposal[] {
   if (surfaces.length === 0) return [];
 
   const first = surfaces[0]!;
   if (isMeaningSurface(first)) {
-    // MeaningSurface path: existing behavior unchanged
+    // MeaningSurface path: pass profileMapping for priorityClass resolution
     return (surfaces as readonly MeaningSurface[]).map((surface) =>
-      evaluateMeaningSurface(surface, facts),
+      evaluateMeaningSurface(surface, facts, profileMapping),
     );
   }
 

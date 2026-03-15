@@ -162,7 +162,10 @@
 
   // Whether feedback is showing and blocking input
   const isFeedbackBlocking = $derived(
-    gameStore.bidFeedback !== null && gameStore.bidFeedback.grade === BidGrade.Incorrect,
+    gameStore.bidFeedback !== null
+    && gameStore.bidFeedback.grade !== BidGrade.Correct
+    && gameStore.bidFeedback.grade !== BidGrade.CorrectNotPreferred
+    && gameStore.bidFeedback.grade !== BidGrade.Acceptable,
   );
 
   // Responsive table scaling — measure actual available space

@@ -4,6 +4,7 @@ import type { ForcingState } from "../../../core/contracts/bidding";
 import type { Call, Seat, BidSuit, Auction } from "../../../engine/types";
 import { areSamePartnership } from "../../../engine/constants";
 import type { RuntimeDiagnostic } from "./types";
+import type { HandoffTrace } from "../../../core/contracts/provenance";
 
 export interface MachineState {
   readonly stateId: string;
@@ -12,6 +13,14 @@ export interface MachineState {
   readonly entryEffects?: MachineEffect; // applied on state entry
   readonly surfaceGroupId?: string; // which surface group to emit
   readonly transforms?: readonly CandidateTransform[];
+  readonly submachineRef?: {
+    readonly machineId: string; // Which submachine to invoke
+    readonly returnTarget: string; // Where to go when submachine completes
+  };
+  readonly loopConfig?: {
+    readonly maxIterations: number; // Safety limit
+    readonly exitTarget: string; // Where to go when loop exits
+  };
 }
 
 export interface MachineTransition {
@@ -20,6 +29,7 @@ export interface MachineTransition {
   readonly target: string; // target stateId
   readonly effects?: MachineEffect;
   readonly guard?: (snapshot: PublicSnapshot) => boolean;
+  readonly exitLoop?: boolean; // When true, this transition exits the current loop
 }
 
 export type TransitionMatch =
@@ -33,7 +43,8 @@ export type TransitionMatch =
   | {
       readonly kind: "predicate";
       readonly test: (call: Call, seat: Seat, snapshot: PublicSnapshot) => boolean;
-    };
+    }
+  | { readonly kind: "submachine-return" }; // matches when a submachine completes
 
 export interface MachineEffect {
   readonly setForcingState?: ForcingState;
@@ -68,6 +79,7 @@ export interface MachineEvalResult {
   readonly activeSurfaceGroupIds: readonly string[];
   readonly collectedTransforms: readonly CandidateTransform[];
   readonly diagnostics: readonly RuntimeDiagnostic[];
+  readonly handoffTraces: readonly HandoffTrace[];
 }
 
 export interface MachineContext {
@@ -75,6 +87,13 @@ export interface MachineContext {
   readonly registers: MachineRegisters;
   readonly stateHistory: readonly string[];
   readonly transitionHistory: readonly string[];
+  readonly submachineStack: readonly SubmachineFrame[];
+}
+
+export interface SubmachineFrame {
+  readonly parentMachineId: string;
+  readonly returnStateId: string;
+  readonly parentRegisters: MachineRegisters;
 }
 
 // Machine registers are the subset of PublicSnapshot that the machine owns

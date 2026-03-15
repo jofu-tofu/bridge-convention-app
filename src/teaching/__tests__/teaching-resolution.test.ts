@@ -494,6 +494,244 @@ describe("gradeBid", () => {
   });
 });
 
+describe("5-grade gradeBid", () => {
+  test("returns Correct when user picks the recommended (primary) bid", () => {
+    const resolution = resolveTeachingAnswer(makeBidResult([]));
+
+    const grade = gradeBid({ type: "bid", level: 2, strain: BidSuit.Clubs }, resolution);
+    expect(grade).toBe(BidGrade.Correct);
+  });
+
+  test("returns CorrectNotPreferred when user picks a truth-set bid that isn't recommended", () => {
+    const resolution = resolveTeachingAnswer(makeBidResult([]));
+    // Add truthSetCalls with a non-primary bid
+    const resolutionWithTruth: typeof resolution = {
+      ...resolution,
+      truthSetCalls: [
+        { type: "bid", level: 2, strain: BidSuit.Diamonds },
+        { type: "bid", level: 2, strain: BidSuit.Hearts },
+      ],
+    };
+
+    const grade = gradeBid({ type: "bid", level: 2, strain: BidSuit.Diamonds }, resolutionWithTruth);
+    expect(grade).toBe(BidGrade.CorrectNotPreferred);
+  });
+
+  test("returns Acceptable when user picks an acceptable alternative", () => {
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([
+        makeCandidate({
+          bidName: "stayman-2h",
+          call: { type: "bid", level: 2, strain: BidSuit.Hearts },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Hearts },
+          priority: "preferred",
+        }),
+      ]),
+    );
+
+    const grade = gradeBid({ type: "bid", level: 2, strain: BidSuit.Hearts }, resolution);
+    expect(grade).toBe(BidGrade.Acceptable);
+  });
+
+  test("returns NearMiss when user picks a bid in nearMissCalls", () => {
+    const resolution = resolveTeachingAnswer(makeBidResult([]));
+    const resolutionWithNearMiss: typeof resolution = {
+      ...resolution,
+      nearMissCalls: [
+        {
+          call: { type: "bid", level: 3, strain: BidSuit.Hearts },
+          reason: "Right suit but wrong level — your hand is too weak for a jump",
+        },
+      ],
+    };
+
+    const grade = gradeBid({ type: "bid", level: 3, strain: BidSuit.Hearts }, resolutionWithNearMiss);
+    expect(grade).toBe(BidGrade.NearMiss);
+  });
+
+  test("returns Incorrect for a completely wrong bid", () => {
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([
+        makeCandidate({
+          bidName: "stayman-2h",
+          call: { type: "bid", level: 2, strain: BidSuit.Hearts },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Hearts },
+          priority: "preferred",
+        }),
+      ]),
+    );
+
+    const grade = gradeBid({ type: "bid", level: 4, strain: BidSuit.Spades }, resolution);
+    expect(grade).toBe(BidGrade.Incorrect);
+  });
+
+  test("backward compat: without truthSetCalls/nearMissCalls, non-primary non-acceptable bids grade as Incorrect", () => {
+    const resolution = resolveTeachingAnswer(makeBidResult([]));
+    // No truthSetCalls, no nearMissCalls — pure 3-grade behavior
+    expect(resolution.truthSetCalls).toBeUndefined();
+    expect(resolution.nearMissCalls).toBeUndefined();
+
+    const grade = gradeBid({ type: "bid", level: 3, strain: BidSuit.Hearts }, resolution);
+    expect(grade).toBe(BidGrade.Incorrect);
+  });
+
+  test("primary bid still returns Correct even when truthSetCalls is populated", () => {
+    const resolution = resolveTeachingAnswer(makeBidResult([]));
+    const resolutionWithTruth: typeof resolution = {
+      ...resolution,
+      truthSetCalls: [
+        { type: "bid", level: 2, strain: BidSuit.Diamonds },
+      ],
+    };
+
+    // The primary bid (2C) should still be Correct, not CorrectNotPreferred
+    const grade = gradeBid({ type: "bid", level: 2, strain: BidSuit.Clubs }, resolutionWithTruth);
+    expect(grade).toBe(BidGrade.Correct);
+  });
+
+  test("truth set takes priority over acceptable for grading", () => {
+    // A bid that is in BOTH truthSetCalls and acceptableBids → CorrectNotPreferred (higher grade)
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([
+        makeCandidate({
+          bidName: "alt-bid",
+          call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+          priority: "preferred",
+        }),
+      ]),
+    );
+    const resolutionWithTruth: typeof resolution = {
+      ...resolution,
+      truthSetCalls: [
+        { type: "bid", level: 2, strain: BidSuit.Diamonds },
+      ],
+    };
+
+    const grade = gradeBid({ type: "bid", level: 2, strain: BidSuit.Diamonds }, resolutionWithTruth);
+    expect(grade).toBe(BidGrade.CorrectNotPreferred);
+  });
+
+  test("acceptable takes priority over near-miss for grading", () => {
+    // A bid that is in BOTH acceptableBids and nearMissCalls → Acceptable (higher grade)
+    const resolution = resolveTeachingAnswer(
+      makeBidResult([
+        makeCandidate({
+          bidName: "alt-bid",
+          call: { type: "bid", level: 2, strain: BidSuit.Hearts },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Hearts },
+          priority: "preferred",
+        }),
+      ]),
+    );
+    const resolutionWithNearMiss: typeof resolution = {
+      ...resolution,
+      nearMissCalls: [
+        {
+          call: { type: "bid", level: 2, strain: BidSuit.Hearts },
+          reason: "Right idea, wrong context",
+        },
+      ],
+    };
+
+    const grade = gradeBid({ type: "bid", level: 2, strain: BidSuit.Hearts }, resolutionWithNearMiss);
+    expect(grade).toBe(BidGrade.Acceptable);
+  });
+});
+
+describe("resolveTeachingAnswer near-miss population", () => {
+  test("populates nearMissCalls from candidates sharing intent family with matched bid that have failedConditions", () => {
+    const families: IntentFamily[] = [
+      {
+        id: "raise-family",
+        label: "Raises",
+        members: ["limit-raise", "game-raise"],
+        relationship: "mutually_exclusive",
+        description: "Different raise strengths",
+      },
+    ];
+    const result = resolveTeachingAnswer(
+      makeBidResult([
+        makeCandidate({
+          bidName: "limit-raise",
+          isMatched: true,
+          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+        }),
+        makeCandidate({
+          bidName: "game-raise",
+          call: { type: "bid", level: 4, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 4, strain: BidSuit.Diamonds },
+          failedConditions: [{ name: "hcp", description: "13+ HCP required" }],
+        }),
+      ]),
+      undefined,
+      families,
+    );
+
+    expect(result.nearMissCalls).toBeDefined();
+    expect(result.nearMissCalls!.length).toBe(1);
+    expect(result.nearMissCalls![0]!.call).toEqual({ type: "bid", level: 4, strain: BidSuit.Diamonds });
+    expect(result.nearMissCalls![0]!.reason).toContain("13+ HCP required");
+  });
+
+  test("does not populate nearMissCalls when no intent families provided", () => {
+    const result = resolveTeachingAnswer(
+      makeBidResult([
+        makeCandidate({
+          bidName: "limit-raise",
+          isMatched: true,
+          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+        }),
+        makeCandidate({
+          bidName: "game-raise",
+          call: { type: "bid", level: 4, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 4, strain: BidSuit.Diamonds },
+          failedConditions: [{ name: "hcp", description: "13+ HCP required" }],
+        }),
+      ]),
+    );
+
+    expect(result.nearMissCalls).toBeUndefined();
+  });
+
+  test("does not include candidates that passed all conditions (already eligible) as near-miss", () => {
+    const families: IntentFamily[] = [
+      {
+        id: "raise-family",
+        label: "Raises",
+        members: ["limit-raise", "game-raise"],
+        relationship: "mutually_exclusive",
+        description: "Different raise strengths",
+      },
+    ];
+    const result = resolveTeachingAnswer(
+      makeBidResult([
+        makeCandidate({
+          bidName: "limit-raise",
+          isMatched: true,
+          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+        }),
+        makeCandidate({
+          bidName: "game-raise",
+          call: { type: "bid", level: 4, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 4, strain: BidSuit.Diamonds },
+          failedConditions: [], // No failed conditions — not a near-miss
+          priority: "preferred",
+        }),
+      ]),
+      undefined,
+      families,
+    );
+
+    // game-raise has no failedConditions — it should NOT be a near miss
+    // (it's already picked up as an acceptable bid via priority)
+    expect(result.nearMissCalls ?? []).toHaveLength(0);
+  });
+});
+
 describe("IntentFamily-aware grading", () => {
   const matchedCandidate = makeCandidate({
     bidName: "relay-a",

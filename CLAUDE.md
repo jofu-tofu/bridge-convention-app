@@ -67,7 +67,7 @@ src/
     util/            Zero-dep pure utilities (delay, seeded-rng)
   conventions/     Convention system
     core/            Registry, context factory, bundle registry, meaning pipeline (pipeline/), runtime (runtime/) — public API via index.ts barrel
-    definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
+    definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises), weak-twos-bundle/ (Weak Two Bids + Ogust) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
   teaching/        Teaching resolution (teaching-resolution.ts), projection builder, pedagogical graph
   inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
   strategy/        AI strategies
@@ -117,7 +117,7 @@ tests/
 The app separates two concerns: **deterministic convention teaching** and **probabilistic realism**.
 
 - **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `MeaningSurface` describes a bidding meaning with clauses evaluated against facts. `semanticClassId` and `teachingLabel` are required on every surface.
-- **`TeachingResolution`** (`src/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), Acceptable (preferred/alternative tier candidates), Incorrect. `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)` extracts acceptable alternatives. `gradeBid()` grades user input.
+- **`TeachingResolution`** (`src/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), CorrectNotPreferred (truth set but not recommended), Acceptable (preferred/alternative tier candidates), NearMiss (same family, fails constraint), Incorrect. `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)` extracts acceptable alternatives and near-miss candidates. `gradeBid()` grades user input with 5-grade cascade.
 - **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects arbitration results + provenance into teaching-optimized views for "why not X?" UI. Pedagogical relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
 - **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
 - **Opponent modes:** "none" (opponents always pass) or "natural" (opponents bid with 6+ HCP and 5+ suit). Configurable via settings dropdown, persisted in localStorage.
@@ -131,7 +131,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 2. **User Learning Enhancements**
    - (b) Dedicated learning screen — needs rebuild for meaning pipeline (old tree-walking display removed). Future: Spotlight Walk, Decision Cards, Dual Pane views. Blocked on learning screen design spec.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard)
-11. **Convention Migration** — Migrate remaining conventions (SAYC, Weak Twos, Lebensohl Lite) to meaning pipeline bundles. Currently only nt-bundle and bergen-bundle exist. Blocked on spec completion (Patterns 2-6 need spec resolution first).
+11. **Convention Migration** — Migrate remaining conventions (SAYC, Lebensohl Lite) to meaning pipeline bundles. Currently nt-bundle, bergen-bundle, and weak-twos-bundle exist. Lebensohl blocked on relay encoding spec; SAYC is a full base system.
 
 ## Architecture Spec & Alignment
 
@@ -150,18 +150,18 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 | Capability vocabulary — stable IDs for host attachment (`naturalOneLevelOpening`? `ntOpenerContext`?) | Unresolved (shape frozen, vocabulary not) | Negative Doubles, host-attachment conventions |
 | Posterior engine implementation — sampling method, likelihood models, `publicBeliefs` naming | Unresolved | Inference spectrum / difficulty config |
 | Evidence group correlation model — within-group semantics not formalized as types | Unresolved | Posterior combiner accuracy |
-| `priorityClass` → `recommendationBand` indirection — spec says profile maps classes to bands | Spec resolved, not implemented | Pipeline alignment to spec |
-| Two-phase evaluation unification — single `evaluate()` returning `{ publicSnapshot, decisionSurfaces }` | Spec resolved, not implemented | DecisionSurfaceIR migration |
-| Machine submachines and loops — needed for relay chains, variable-length protocols | Spec designed, not implemented | Weak Twos, Lebensohl |
+| `priorityClass` → `recommendationBand` indirection — spec says profile maps classes to bands | **Implemented** | — |
+| Two-phase evaluation unification — single `evaluate()` returning `{ publicSnapshot, decisionSurfaces }` | **Implemented** (strategy pipeline wired to evaluation runtime) | DecisionSurfaceIR migration (pipeline still uses MeaningSurface[]) |
+| Machine submachines and loops — needed for relay chains, variable-length protocols | **Implemented** (submachine stack + loop counters in machine-evaluator) | — |
 | Host-attachment activation — modules activating from another module's exported capabilities | Spec designed, not implemented | Negative Doubles, Fourth Suit Forcing |
 
 **Alignment summary (as of 2026-03-14):**
 
 | Area | Alignment | Key gaps |
 |------|-----------|----------|
-| Pipeline (selection, teaching, provenance) | ~85% | Grading taxonomy missing "Correct-but-not-preferred" and "Near miss" grades. priorityClass→band indirection not implemented (surfaces set band directly). |
-| Upstream (modules, profiles, machine) | ~65% | Profile-driven activation implemented (`activationFilter` deprecated, `resolveActiveModules()` is source of truth). Sub-bundles (Stayman-only, Transfers-only) prove composition model. Two-phase evaluation not unified. No host-attachment, submachines, or loops. ActivationTrace always empty. |
-| Convention coverage | Pattern 1 only | Only fixed-sequence ask-and-tell (Stayman, Bergen). Patterns 2-6 (relay, competitive, pattern-triggered, variable-length, slam-with-interference) not yet exercised. |
+| Pipeline (selection, teaching, provenance) | ~95% | priorityClass→band implemented. 5-grade taxonomy implemented (Correct/CorrectNotPreferred/Acceptable/NearMiss/Incorrect). Strategy pipeline wired to evaluation runtime. |
+| Upstream (modules, profiles, machine) | ~80% | Profile-driven activation implemented. Submachines and loops implemented. Two-phase evaluation wired. No host-attachment. ActivationTrace always empty. |
+| Convention coverage | Patterns 1 + partial 2 | Fixed-sequence ask-and-tell (Stayman, Bergen, Weak Twos). Weak Twos exercises multi-round ask-and-tell with Ogust sub-protocol. Patterns 3-6 not yet exercised. |
 | WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
 | DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
 
@@ -169,25 +169,23 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 1. ~~**Make system profiles drive module activation.**~~ Done.
 2. ~~**Implement Stayman-only and Transfer-only sub-bundles.**~~ Done.
-3. **Finish the spec: resolve open questions.** Work in the Obsidian spec docs to close the open questions above. Each convention pattern (Weak Twos, Negative Doubles, Lebensohl) should have its spec section finalized before implementation begins. Priority order:
-   - (a) `priorityClass` → band indirection (small, unblocks pipeline alignment)
-   - (b) Two-phase evaluation unification (unblocks DecisionSurfaceIR migration)
-   - (c) Machine submachines/loops (unblocks Weak Twos, Lebensohl)
-   - (d) Host-attachment activation + capability vocabulary (unblocks Negative Doubles)
-   - (e) Fact catalog posterior compilers (unblocks WitnessSpecIR wiring)
-   - (f) Evidence group correlation model (unblocks posterior combiner)
-4. **Implement resolved spec areas** — as each open question is resolved, implement it:
-   - `priorityClass` indirection → pipeline change
-   - Two-phase evaluation → runtime unification
-   - Submachines/loops → machine-evaluator extension
+3. ~~**priorityClass → band indirection.**~~ Done.
+4. ~~**Two-phase evaluation unification.**~~ Done (strategy pipeline wired to evaluation runtime).
+5. ~~**Machine submachines/loops.**~~ Done.
+6. ~~**Weak Twos convention bundle.**~~ Done (exercises multi-round Ogust protocol).
+7. **Finish remaining spec open questions:**
+   - (a) Host-attachment activation + capability vocabulary (unblocks Negative Doubles)
+   - (b) Fact catalog posterior compilers (unblocks WitnessSpecIR wiring)
+   - (c) Evidence group correlation model (unblocks posterior combiner)
+8. **Implement resolved spec areas** — as each open question is resolved:
    - Host-attachment → profile-activation extension
-5. **Add convention content that exercises resolved patterns:**
+9. **Add convention content that exercises resolved patterns:**
    - Smolen (exercises R3 continuation — no spec gaps)
-   - Weak Twos (exercises relay/variable-length — needs submachine spec done first)
+   - Lebensohl (exercises relay encoding — needs relay-map encoder exercised)
    - Negative Doubles (exercises host-attachment — needs capability vocabulary done first)
-6. **Wire WitnessSpecIR to deal generation** (needs fact catalog posterior compilers resolved)
-7. **Migrate pipeline to DecisionSurfaceIR** (needs two-phase evaluation unified first)
-8. **Build the learning screen** (needs its own design spec — `docs/learning/research-summary.md` is research, not a spec)
+10. **Wire WitnessSpecIR to deal generation** (needs fact catalog posterior compilers resolved)
+11. **Migrate pipeline to DecisionSurfaceIR** (two-phase evaluation wired, adapter exists — migrate consumption)
+12. **Build the learning screen** (needs its own design spec — `docs/learning/research-summary.md` is research, not a spec)
 
 ## Test-Driven Development
 

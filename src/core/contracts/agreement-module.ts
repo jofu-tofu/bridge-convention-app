@@ -1,5 +1,5 @@
 import type { AuctionPatternIR, PublicGuardIR } from "./predicate-surfaces";
-import type { CandidateTransform, SemanticClassId } from "./meaning";
+import type { CandidateTransform, SemanticClassId, RecommendationBand } from "./meaning";
 import type { FactOperator } from "./meaning-surface";
 import type { LatentBranchSet } from "./posterior";
 import type { Call } from "../../engine/types";
@@ -11,6 +11,9 @@ export type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "s
 // ─── Priority class → band mapping ─────────────────────────
 export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"
                           | "neutralCorrect" | "fallbackCorrect";
+
+/** Alias for use in MeaningSurface — same union, semantic name for surface authors. */
+export type PriorityClassId = PriorityClass;
 
 // ─── DecisionSurfaceIR ─────────────────────────────────────
 // The primary IR contract type for decision surfaces. The runtime evaluates these
@@ -87,6 +90,10 @@ export interface SystemProfileIR {
   readonly baseSystem: string;
   readonly modules: readonly ModuleEntryIR[];
   readonly conflictPolicy: ConflictPolicyIR;
+  /** Profile-level mapping from author-declared priority classes to runtime bands.
+   *  When present, surfaces with a `priorityClass` resolve their recommendationBand
+   *  through this mapping instead of using the surface-level band directly. */
+  readonly priorityClassMapping?: Readonly<Record<PriorityClass, RecommendationBand>>;
 }
 
 export interface ModuleEntryIR {
@@ -123,4 +130,17 @@ export interface PublicConstraint {
   readonly strength: "hard" | "entailed";
   readonly sourceCall?: string;
   readonly sourceMeaning?: string;
+}
+
+// ─── Default priority-class → band mapping ──────────────────
+/** The standard mapping from author-declared priority classes to runtime bands.
+ *  Profiles may override this with their own `priorityClassMapping`. */
+export function defaultPriorityClassMapping(): Readonly<Record<PriorityClass, RecommendationBand>> {
+  return {
+    obligatory: "must",
+    preferredConventional: "should",
+    preferredNatural: "should",
+    neutralCorrect: "may",
+    fallbackCorrect: "avoid",
+  };
 }

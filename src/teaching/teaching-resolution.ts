@@ -4,7 +4,9 @@ import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, IntentFamily, I
 
 export enum BidGrade {
   Correct = "correct",
+  CorrectNotPreferred = "correct-not-preferred",
   Acceptable = "acceptable",
+  NearMiss = "near-miss",
   Incorrect = "incorrect",
 }
 
@@ -26,6 +28,12 @@ export interface TeachingResolution {
   readonly acceptableBids: readonly AcceptableBid[];
   readonly gradingType: "exact" | "primary_plus_acceptable" | "intent_based";
   readonly ambiguityScore: number;
+  /** All calls in the truth set (correct bids that aren't the primary recommendation).
+   *  When populated, matching a truth-set call yields CorrectNotPreferred instead of Incorrect. */
+  readonly truthSetCalls?: readonly Call[];
+  /** Calls that are in the same intent family as a correct answer but fail a constraint.
+   *  When populated, matching a near-miss call yields NearMiss instead of Incorrect. */
+  readonly nearMissCalls?: readonly { call: Call; reason: string }[];
 }
 
 /** Check if a candidate is eligible for teaching.
@@ -141,6 +149,34 @@ export function resolveTeachingAnswer(
   }
   const acceptableBids = [...acceptableMap.values()];
 
+  // Phase 4: near-miss detection — candidates sharing an intent family with
+  // the matched bid that have failedConditions (they qualified for a related
+  // meaning but not the exact one)
+  let nearMissCalls: { call: Call; reason: string }[] | undefined;
+  if (intentFamilies && intentFamilies.length > 0) {
+    const matchedCandidate2 = candidates.find(c => c.isMatched);
+    if (matchedCandidate2) {
+      const matchedFamily = findFamilyForBid(matchedCandidate2.bidName, intentFamilies);
+      if (matchedFamily) {
+        const nearMisses: { call: Call; reason: string }[] = [];
+        for (const c of candidates) {
+          if (c.isMatched) continue;
+          if (c.failedConditions.length === 0) continue;
+          if (!matchedFamily.members.includes(c.bidName)) continue;
+          // Already in acceptableBids — skip (alternative group took precedence)
+          if (acceptableMap.has(c.bidName)) continue;
+          nearMisses.push({
+            call: c.resolvedCall,
+            reason: c.failedConditions.map(fc => fc.description).join("; "),
+          });
+        }
+        if (nearMisses.length > 0) {
+          nearMissCalls = nearMisses;
+        }
+      }
+    }
+  }
+
   const matchedCandidate = candidates.find(candidate => candidate.isMatched);
   const preferredCount = acceptableBids.filter(candidate => candidate.tier === "preferred").length;
 
@@ -163,6 +199,7 @@ export function resolveTeachingAnswer(
     acceptableBids,
     gradingType,
     ambiguityScore,
+    nearMissCalls,
   };
 }
 
@@ -170,8 +207,14 @@ export function gradeBid(userCall: Call, resolution: TeachingResolution): BidGra
   if (callsMatch(userCall, resolution.primaryBid)) {
     return BidGrade.Correct;
   }
+  if (resolution.truthSetCalls?.some(call => callsMatch(userCall, call))) {
+    return BidGrade.CorrectNotPreferred;
+  }
   if (resolution.acceptableBids.some(bid => callsMatch(userCall, bid.call))) {
     return BidGrade.Acceptable;
+  }
+  if (resolution.nearMissCalls?.some(entry => callsMatch(userCall, entry.call))) {
+    return BidGrade.NearMiss;
   }
   return BidGrade.Incorrect;
 }

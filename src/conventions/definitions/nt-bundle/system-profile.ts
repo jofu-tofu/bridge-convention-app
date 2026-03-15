@@ -1,4 +1,5 @@
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
+import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
 
 export const NT_SAYC_PROFILE: SystemProfileIR = {
   profileId: "1nt-sayc",
@@ -27,6 +28,7 @@ export const NT_SAYC_PROFILE: SystemProfileIR = {
     },
   ],
   conflictPolicy: { activationDefault: "simultaneous" },
+  priorityClassMapping: defaultPriorityClassMapping(),
 };
 
 /** Stayman-only sub-profile — natural NT responses + Stayman (no Jacoby Transfers). */
@@ -49,6 +51,7 @@ export const NT_STAYMAN_ONLY_PROFILE: SystemProfileIR = {
     },
   ],
   conflictPolicy: { activationDefault: "simultaneous" },
+  priorityClassMapping: defaultPriorityClassMapping(),
 };
 
 /** Transfer-only sub-profile — natural NT responses + Jacoby Transfers (no Stayman). */
@@ -71,4 +74,5 @@ export const NT_TRANSFERS_ONLY_PROFILE: SystemProfileIR = {
     },
   ],
   conflictPolicy: { activationDefault: "simultaneous" },
+  priorityClassMapping: defaultPriorityClassMapping(),
 };

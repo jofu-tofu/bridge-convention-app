@@ -9,13 +9,17 @@ import {
 } from "./definitions/nt-bundle/convention-config";
 import { bergenBundle } from "./definitions/bergen-bundle";
 import { bergenBundleConventionConfig } from "./definitions/bergen-bundle/convention-config";
+import { weakTwoBundle } from "./definitions/weak-twos-bundle";
+import { weakTwoBundleConventionConfig } from "./definitions/weak-twos-bundle/convention-config";
 
 registerConvention(ntBundleConventionConfig);
 registerConvention(ntStaymanConventionConfig);
 registerConvention(ntTransfersConventionConfig);
 registerConvention(bergenBundleConventionConfig);
+registerConvention(weakTwoBundleConventionConfig);
 
 registerBundle(ntBundle);
 registerBundle(ntStaymanBundle);
 registerBundle(ntTransfersBundle);
 registerBundle(bergenBundle);
+registerBundle(weakTwoBundle);

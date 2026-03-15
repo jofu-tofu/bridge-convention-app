@@ -9,7 +9,7 @@ import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation"
 import type { MeaningSurface } from "../../core/contracts/meaning-surface";
 import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
-import type { ArbitrationResult } from "../../core/contracts/module-surface";
+import type { ArbitrationResult, PublicSnapshot } from "../../core/contracts/module-surface";
 import type { FactCatalog, EvaluatedFacts } from "../../core/contracts/fact-catalog";
 import type { PosteriorEngine, PublicHandSpace, PosteriorFactProvider, PosteriorFactValue, SeatPosterior } from "../../core/contracts/posterior";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
@@ -18,9 +18,12 @@ import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import type { Auction, Seat } from "../../engine/types";
 import type { ConversationMachine, MachineEvalResult } from "../../conventions/core/runtime/machine-types";
+import type { RuntimeModule, EvaluationResult } from "../../conventions/core/runtime/types";
 import { evaluateMachine } from "../../conventions/core/runtime/machine-evaluator";
 import { buildSnapshotFromAuction } from "../../conventions/core/runtime/public-snapshot-builder";
+import { evaluate } from "../../conventions/core/runtime/evaluation-runtime";
 import { evaluateFacts, createSharedFactCatalog } from "../../conventions/core/pipeline/fact-evaluator";
+import type { RelationalFactContext } from "../../conventions/core/pipeline/fact-evaluator";
 import { evaluateAllSurfaces } from "../../conventions/core/pipeline/meaning-evaluator";
 import {
   arbitrateMeanings,
@@ -51,6 +54,8 @@ interface PipelineInput {
   readonly context: BiddingContext;
   readonly catalog: FactCatalog;
   readonly posteriorProvider?: PosteriorFactProvider;
+  /** Relational context for fact evaluation (e.g. publicCommitments from evaluation runtime). */
+  readonly relationalContext?: RelationalFactContext;
 }
 
 /** Output from the core meaning pipeline. */
@@ -75,7 +80,7 @@ function runMeaningPipeline(input: PipelineInput): PipelineOutput {
   // Step 2: Evaluate facts against the hand
   const facts = evaluateFacts(
     input.context.hand, input.context.evaluation,
-    input.catalog, undefined, input.posteriorProvider,
+    input.catalog, input.relationalContext, input.posteriorProvider,
   );
 
   // Step 3: Evaluate each surface's clauses against the facts
@@ -299,6 +304,19 @@ function selectActiveSurfaces(
   return { surfaces: allSurfaces, machineTransforms: [] };
 }
 
+// ─── Evaluation Runtime Bridge ─────────────────────────────────
+
+/**
+ * Flatten DecisionSurfaceEntry[] from the evaluation runtime into MeaningSurface[]
+ * for the existing meaning pipeline. Bridges the gap between the two-phase
+ * evaluation runtime and the strategy pipeline's surface input format.
+ */
+export function buildSurfacesFromEvaluation(
+  evalResult: EvaluationResult,
+): MeaningSurface[] {
+  return evalResult.decisionSurfaces.flatMap(entry => entry.surfaces);
+}
+
 // ─── Public API ────────────────────────────────────────────────
 
 /**
@@ -390,6 +408,12 @@ export function meaningBundleToStrategy(
     explanationCatalog?: ExplanationCatalogIR;
     /** Pedagogical relations for enriching WhyNot entries with family context. */
     pedagogicalRelations?: readonly PedagogicalRelation[];
+    /** Evaluation runtime modules — when present with conversationMachine, uses the
+     *  two-phase evaluate() for surface selection instead of ad-hoc selectActiveSurfaces(). */
+    evaluationRuntime?: {
+      readonly modules: readonly RuntimeModule[];
+      readonly getActiveIds: (auction: Auction, seat: Seat) => readonly string[];
+    };
   },
 ): ConventionBiddingStrategy {
   const allSurfaces = moduleSurfaces.flatMap((m) => m.surfaces);
@@ -421,17 +445,53 @@ export function meaningBundleToStrategy(
       lastTeachingProjection = null;
 
       // Phase 1: Select active surfaces for this auction position
-      const selection = selectActiveSurfaces(
-        moduleSurfaces, allSurfaces, context,
-        { conversationMachine: options?.conversationMachine, surfaceRouter: options?.surfaceRouter },
-        machineCache,
-      );
-      if (!selection) return null;
+      let selectedSurfaces: readonly MeaningSurface[];
+      let machineTransforms: readonly CandidateTransform[] = [];
+      let runtimeSnapshot: PublicSnapshot | undefined;
+
+      if (options?.evaluationRuntime && options?.conversationMachine) {
+        // Evaluation runtime path: unified two-phase evaluate() for surface selection
+        const activeModuleIds = options.evaluationRuntime.getActiveIds(
+          context.auction, context.seat,
+        );
+        const evalResult = evaluate(
+          options.evaluationRuntime.modules,
+          context.auction,
+          context.seat,
+          activeModuleIds,
+          { machine: options.conversationMachine, surfaceRouter: options.surfaceRouter },
+        );
+        const evalSurfaces = buildSurfacesFromEvaluation(evalResult);
+        if (evalSurfaces.length === 0) return null;
+        selectedSurfaces = evalSurfaces;
+        runtimeSnapshot = evalResult.publicSnapshot;
+
+        // Collect machine transforms through existing cache for transform merging
+        const machineResult = getMachineResult(
+          options.conversationMachine, context.auction, context.seat, machineCache,
+        );
+        machineTransforms = machineResult.collectedTransforms;
+      } else {
+        // Fallback: ad-hoc surface selection via machine, router, or all surfaces
+        const selection = selectActiveSurfaces(
+          moduleSurfaces, allSurfaces, context,
+          { conversationMachine: options?.conversationMachine, surfaceRouter: options?.surfaceRouter },
+          machineCache,
+        );
+        if (!selection) return null;
+        selectedSurfaces = selection.surfaces;
+        machineTransforms = selection.machineTransforms;
+      }
 
       // Merge machine transforms with static transforms
-      const allTransforms = selection.machineTransforms.length > 0
-        ? [...selection.machineTransforms, ...(options?.transforms ?? [])]
+      const allTransforms = machineTransforms.length > 0
+        ? [...machineTransforms, ...(options?.transforms ?? [])]
         : options?.transforms;
+
+      // Build relational context from evaluation runtime snapshot when available
+      const relationalContext: RelationalFactContext | undefined = runtimeSnapshot?.publicCommitments
+        ? { publicCommitments: runtimeSnapshot.publicCommitments }
+        : undefined;
 
       // Phase 2: Build posterior provider (sidecar — enriches fact evaluation)
       let posteriorProvider: PosteriorFactProvider | undefined;
@@ -447,11 +507,12 @@ export function meaningBundleToStrategy(
 
       // Phase 3: Run the core meaning pipeline
       const { result, facts } = runMeaningPipeline({
-        surfaces: selection.surfaces,
+        surfaces: selectedSurfaces,
         transforms: allTransforms,
         context,
         catalog,
         posteriorProvider,
+        relationalContext,
       });
 
       // Phase 4: Build posterior summary from evaluated facts

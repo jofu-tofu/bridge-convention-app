@@ -1,4 +1,5 @@
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
+import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
 
 export const BERGEN_PROFILE: SystemProfileIR = {
   profileId: "bergen-sayc",
@@ -15,4 +16,5 @@ export const BERGEN_PROFILE: SystemProfileIR = {
     },
   ],
   conflictPolicy: { activationDefault: "simultaneous" },
+  priorityClassMapping: defaultPriorityClassMapping(),
 };
