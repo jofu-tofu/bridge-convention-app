@@ -173,16 +173,19 @@
   let innerH = $state(768);
   let headerH = $state(0);
 
-  const rootFontSize = $derived(Math.min(28, Math.max(16, innerW * 0.015)));
+  const debugPanelW = $derived(DEV && appStore.debugPanelOpen ? 420 : 0);
+  const availableW = $derived(innerW - debugPanelW);
+
+  const rootFontSize = $derived(Math.min(28, Math.max(16, availableW * 0.015)));
   const tableBaseW = 800;
   const tableBaseH = 650;
   const sidePanelW = $derived(
-    Math.min(25 * rootFontSize, Math.max(16 * rootFontSize, innerW * 0.25)),
+    Math.min(25 * rootFontSize, Math.max(16 * rootFontSize, availableW * 0.25)),
   );
 
-  const isDesktop = $derived(innerW > 1023);
+  const isDesktop = $derived(availableW > 1023);
   const tableScale = $derived(
-    computeTableScale(innerW, innerH, {
+    computeTableScale(availableW, innerH, {
       sidePanel: isDesktop,
       tableW: tableBaseW,
       tableH: tableBaseH,
@@ -211,7 +214,8 @@
 <svelte:window bind:innerWidth={innerW} bind:innerHeight={innerH} />
 
 {#if gameStore.deal}
-  <main class="h-full flex flex-col" aria-label="Bridge drill">
+  <main class="h-full flex flex-row" aria-label="Bridge drill">
+    <div class="flex-1 min-w-0 flex flex-col">
     <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
       Skip to game
     </a>
@@ -403,6 +407,7 @@
         convention={appStore.selectedConvention ?? undefined}
       />
     {/if}
+    </div>
     </div>
 
     {#if DEV}

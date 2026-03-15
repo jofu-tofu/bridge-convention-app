@@ -77,15 +77,15 @@
 </script>
 
 <aside
-  class="fixed top-0 right-0 h-full w-[420px] bg-bg-elevated border-l border-border-subtle shadow-2xl z-40 overflow-y-auto font-mono text-xs text-text-secondary transition-transform duration-200 ease-in-out {open
-    ? 'translate-x-0'
-    : 'translate-x-full'}"
+  class="h-full shrink-0 bg-bg-elevated border-l border-border-subtle shadow-2xl overflow-y-auto font-mono text-xs text-text-secondary transition-[width] duration-200 ease-in-out {open
+    ? 'w-[420px]'
+    : 'w-0 overflow-hidden'}"
   aria-label="Debug drawer"
   inert={!open}
 >
   <!-- Header -->
   <div
-    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-2 flex items-center justify-between z-10"
+    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-2 flex items-center justify-between z-10 min-w-[420px]"
   >
     <span class="text-text-primary font-semibold text-sm">Debug Console</span>
     <button
@@ -108,7 +108,7 @@
     </div>
   {/if}
 
-  <div class="p-3 flex flex-col gap-1">
+  <div class="p-3 flex flex-col gap-1 min-w-[420px]">
 
     <!-- ═══════════════════════════════════════════════════════════
          1. SUGGESTED BID
