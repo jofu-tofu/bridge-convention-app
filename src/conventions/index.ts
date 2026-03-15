@@ -11,15 +11,19 @@ import { bergenBundle } from "./definitions/bergen-bundle";
 import { bergenBundleConventionConfig } from "./definitions/bergen-bundle/convention-config";
 import { weakTwoBundle } from "./definitions/weak-twos-bundle";
 import { weakTwoBundleConventionConfig } from "./definitions/weak-twos-bundle/convention-config";
+import { dontBundle } from "./definitions/dont-bundle";
+import { dontBundleConventionConfig } from "./definitions/dont-bundle/convention-config";
 
 registerConvention(ntBundleConventionConfig);
 registerConvention(ntStaymanConventionConfig);
 registerConvention(ntTransfersConventionConfig);
 registerConvention(bergenBundleConventionConfig);
 registerConvention(weakTwoBundleConventionConfig);
+registerConvention(dontBundleConventionConfig);
 
 registerBundle(ntBundle);
 registerBundle(ntStaymanBundle);
 registerBundle(ntTransfersBundle);
 registerBundle(bergenBundle);
 registerBundle(weakTwoBundle);
+registerBundle(dontBundle);

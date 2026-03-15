@@ -4,7 +4,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 ## Folder Structure
 
-2 convention bundles: `nt-bundle/`, `bergen-bundle/`. Each folder has a parallel set of modules:
+4 convention bundles: `nt-bundle/`, `bergen-bundle/`, `weak-twos-bundle/`, `dont-bundle/`. Each folder has a parallel set of modules:
 
 | File | Purpose |
 |------|---------|
@@ -44,6 +44,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 - **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades). 29 meaning surfaces, 3 fact extensions, 13-state hierarchical FSM. Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
 - **Bergen Bundle (Bergen Raises):** Responder raises after 1M opening. Standard Bergen variant (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding factory for DRY heart/spade parameterization. Deal constraints: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
+- **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. Pattern 3 convention — first to use hierarchical parent/child states (21-state FSM with `dont-active` parent providing inherited interference transitions), predicate transitions (for matching doubles), and multi-stage relay (overcaller → advancer → overcaller reveal). 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
 
 ## Convention Bundle Completeness Checklist
 
@@ -436,6 +437,12 @@ definitions/
     config-factory-e2e.test.ts     Bundle config + factory integration
     machine.test.ts                FSM state transition tests
     surface-evaluation.test.ts     Surface clause evaluation tests
+  weak-twos-bundle/__tests__/
+    machine.test.ts                FSM state transition tests
+    surface-evaluation.test.ts     Surface clause evaluation tests
+  dont-bundle/__tests__/
+    machine.test.ts                Hierarchical FSM + predicate transition tests (33 tests)
+    surface-evaluation.test.ts     R1 overcaller + reveal + relay response tests (13 tests)
 
 __tests__/                          (at src/conventions/__tests__/)
   fixtures.test.ts                 Shared test helper tests
@@ -460,7 +467,7 @@ Bundle-local tests (`definitions/{name}-bundle/__tests__/`) test individual modu
 **After modifying files in this directory:** scan the entries above — if any claim is now
 false or incomplete, update this file before ending the task. Do not defer.
 
-**Staleness anchor:** This file assumes `nt-bundle/config.ts` and `bergen-bundle/config.ts` exist.
-If either is missing, this file is stale — update or regenerate before relying on it.
+**Staleness anchor:** This file assumes `nt-bundle/config.ts`, `bergen-bundle/config.ts`, `weak-twos-bundle/config.ts`, and `dont-bundle/config.ts` exist.
+If any is missing, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-15 | version=5 | dir-commits-at-audit=unknown | tree-sig=dirs:4,files:30,exts:ts:28,md:1 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-15 | version=6 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:50+,exts:ts:48+,md:1 -->

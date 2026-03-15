@@ -67,7 +67,7 @@ src/
     util/            Zero-dep pure utilities (delay, seeded-rng)
   conventions/     Convention system
     core/            Registry, context factory, bundle registry, meaning pipeline (pipeline/), runtime (runtime/) — public API via index.ts barrel
-    definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises), weak-twos-bundle/ (Weak Two Bids + Ogust) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
+    definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises), weak-twos-bundle/ (Weak Two Bids + Ogust), dont-bundle/ (DONT competitive overcalls) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
   teaching/        Teaching resolution (teaching-resolution.ts), projection builder, pedagogical graph
   inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
   strategy/        AI strategies
@@ -161,7 +161,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 |------|-----------|----------|
 | Pipeline (selection, teaching, provenance) | ~95% | priorityClass→band implemented. 5-grade taxonomy implemented (Correct/CorrectNotPreferred/Acceptable/NearMiss/Incorrect). Strategy pipeline wired to evaluation runtime. |
 | Upstream (modules, profiles, machine) | ~80% | Profile-driven activation implemented. Submachines and loops implemented. Two-phase evaluation wired. No host-attachment. ActivationTrace always empty. |
-| Convention coverage | Patterns 1 + partial 2 | Fixed-sequence ask-and-tell (Stayman, Bergen, Weak Twos). Weak Twos exercises multi-round ask-and-tell with Ogust sub-protocol. Patterns 3-6 not yet exercised. |
+| Convention coverage | Patterns 1 + 3 | Fixed-sequence ask-and-tell (Stayman, Bergen, Weak Twos). Weak Twos exercises multi-round ask-and-tell with Ogust sub-protocol. DONT exercises Pattern 3 (competitive/defensive with multi-stage relay, hierarchical parent/child states, predicate transitions). Patterns 2, 4-6 not yet exercised. |
 | WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
 | DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
 
@@ -173,6 +173,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 4. ~~**Two-phase evaluation unification.**~~ Done (strategy pipeline wired to evaluation runtime).
 5. ~~**Machine submachines/loops.**~~ Done.
 6. ~~**Weak Twos convention bundle.**~~ Done (exercises multi-round Ogust protocol).
+6b. ~~**DONT convention bundle.**~~ Done (exercises Pattern 3 — hierarchical parent/child states, predicate transitions, multi-stage relay, 21-state competitive/defensive FSM).
 7. **Finish remaining spec open questions:**
    - (a) Host-attachment activation + capability vocabulary (unblocks Negative Doubles)
    - (b) Fact catalog posterior compilers (unblocks WitnessSpecIR wiring)
