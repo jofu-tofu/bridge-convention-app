@@ -12,24 +12,25 @@ import { validateProfile } from "../../core/runtime/profile-validation";
 import { NT_SAYC_PROFILE } from "../../definitions/nt-bundle/system-profile";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { Seat } from "../../../engine/types";
+import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 
 // ═══════════════════════════════════════════════════════════════
 // Profile Activation — NT SAYC
 // ═══════════════════════════════════════════════════════════════
 
 describe("resolveActiveModules (NT SAYC)", () => {
-  it("returns all 3 modules for 1NT-P auction with ntOpenerContext capability", () => {
+  it("returns all 3 modules for 1NT-P auction with opening.1nt capability", () => {
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
     const result = resolveActiveModules(
       NT_SAYC_PROFILE,
       auction,
       Seat.South,
-      { ntOpenerContext: "active" },
+      { [CAP_OPENING_1NT]: "active" },
     );
     expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers"]);
   });
 
-  it("returns only natural-nt without capabilities (others require ntOpenerContext)", () => {
+  it("returns only natural-nt without capabilities (others require opening.1nt)", () => {
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
     const result = resolveActiveModules(
       NT_SAYC_PROFILE,
@@ -45,7 +46,7 @@ describe("resolveActiveModules (NT SAYC)", () => {
       NT_SAYC_PROFILE,
       auction,
       Seat.South,
-      { ntOpenerContext: "active" },
+      { [CAP_OPENING_1NT]: "active" },
     );
     expect(result).toEqual([]);
   });

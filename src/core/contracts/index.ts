@@ -16,4 +16,5 @@ export * from "./predicate-surfaces";
 export * from "./evidence-bundle";
 export * from "./posterior";
 export * from "./agreement-module";
+export * from "./capability-vocabulary";
 export * from "./witness-spec";

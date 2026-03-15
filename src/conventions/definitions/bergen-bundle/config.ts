@@ -2,6 +2,7 @@ import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
+import { CAP_OPENING_MAJOR } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import {
   BERGEN_R1_HEARTS_SURFACES,
@@ -51,6 +52,7 @@ export const bergenBundle: ConventionBundle = {
   description: "Bergen Raises — constructive, limit, and preemptive responses to 1M opening",
   category: ConventionCategory.Constructive,
   memberIds: ["bergen-bundle", "bergen-raises"],
+  declaredCapabilities: { [CAP_OPENING_MAJOR]: "active" },
   dealConstraints: bergenBundleDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {

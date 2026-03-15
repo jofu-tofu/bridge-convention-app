@@ -4,11 +4,12 @@ import { NT_SAYC_PROFILE } from "../../../definitions/nt-bundle/system-profile";
 import { BERGEN_PROFILE } from "../../../definitions/bergen-bundle/system-profile";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
+import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
 
 describe("profile-driven activation (replaces legacy activationFilter)", () => {
   describe("NT bundle: profile activates correct modules", () => {
     const seat = Seat.North;
-    const ntCapabilities = { ntOpenerContext: "active" } as const;
+    const ntCapabilities = { [CAP_OPENING_1NT]: "active" } as const;
 
     it("after 1NT P — activates all three modules", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P"]);
@@ -77,7 +78,7 @@ describe("profile-driven activation (replaces legacy activationFilter)", () => {
       expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers"]);
     });
 
-    it("without ntOpenerContext capability — only base module activates", () => {
+    it("without opening.1nt capability — only base module activates", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P"]);
       const result = resolveActiveModules(
         NT_SAYC_PROFILE,

@@ -2,6 +2,7 @@ import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
+import { CAP_OPENING_WEAK_TWO } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import {
   WEAK_TWO_R1_SURFACES,
@@ -48,6 +49,7 @@ export const weakTwoBundle: ConventionBundle = {
   description: "Weak Two Bids with Ogust 2NT response system",
   category: ConventionCategory.Constructive,
   memberIds: ["weak-two-bundle", "weak-twos"],
+  declaredCapabilities: { [CAP_OPENING_WEAK_TWO]: "active" },
   dealConstraints: weakTwoBundleDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {

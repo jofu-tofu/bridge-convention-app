@@ -1,6 +1,7 @@
 import type { ConventionBundle } from "../../core/bundle";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
+import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { ntCrossConventionAlternatives } from "./alternatives";
@@ -55,7 +56,7 @@ export const ntBundle: ConventionBundle = {
     }
     return undefined;
   },
-  declaredCapabilities: { ntOpenerContext: "active" },
+  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   meaningSurfaces: [
     { groupId: "responder-r1", surfaces: RESPONDER_SURFACES },
     { groupId: "opener-stayman-response", surfaces: OPENER_STAYMAN_SURFACES },

@@ -2,6 +2,7 @@ import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
+import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./system-profile";
 import {
@@ -56,7 +57,7 @@ export const ntStaymanBundle: ConventionBundle = {
     }
     return undefined;
   },
-  declaredCapabilities: { ntOpenerContext: "active" },
+  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   meaningSurfaces: [
     { groupId: "responder-r1", surfaces: RESPONDER_SURFACES },
     { groupId: "opener-stayman-response", surfaces: OPENER_STAYMAN_SURFACES },
@@ -86,7 +87,7 @@ export const ntTransfersBundle: ConventionBundle = {
     }
     return undefined;
   },
-  declaredCapabilities: { ntOpenerContext: "active" },
+  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   meaningSurfaces: [
     { groupId: "responder-r1", surfaces: RESPONDER_SURFACES },
     { groupId: "opener-transfer-accept", surfaces: OPENER_TRANSFER_HEARTS_SURFACES },

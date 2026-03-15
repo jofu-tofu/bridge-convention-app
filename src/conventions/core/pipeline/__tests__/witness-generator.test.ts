@@ -9,6 +9,7 @@ import type { WitnessGeneratorResult } from "../witness-generator";
 import { Seat, Suit, Vulnerability } from "../../../../engine/types";
 import type { WitnessSpecIR, WitnessUnsatResult } from "../../../../core/contracts/witness-spec";
 import type { HandPredicateIR } from "../../../../core/contracts/predicate-surfaces";
+import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -378,7 +379,7 @@ describe("compileWitnessSpec", () => {
         layers: [
           {
             kind: "public-guard",
-            guard: { field: "ntOpenerContext", operator: "eq", value: "active" },
+            guard: { field: CAP_OPENING_1NT, operator: "eq", value: "active" },
           },
         ],
       });

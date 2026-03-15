@@ -2,6 +2,7 @@ import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
+import { CAP_OPPONENT_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import {
   DONT_R1_SURFACES,
@@ -53,6 +54,7 @@ export const dontBundle: ConventionBundle = {
     "DONT (Disturbing Opponent's No Trump) — competitive overcalls after opponent's 1NT",
   category: ConventionCategory.Defensive,
   memberIds: ["dont-bundle", "dont"],
+  declaredCapabilities: { [CAP_OPPONENT_1NT]: "active" },
   dealConstraints: dontBundleDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.West) {

@@ -1,5 +1,6 @@
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
 import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
+import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 
 export const NT_SAYC_PROFILE: SystemProfileIR = {
   profileId: "1nt-sayc",
@@ -15,7 +16,7 @@ export const NT_SAYC_PROFILE: SystemProfileIR = {
       kind: "add-on",
       attachments: [{
         whenAuction: { kind: "sequence", calls: ["1NT"] },
-        requiresCapabilities: ["ntOpenerContext"],
+        requiresCapabilities: [CAP_OPENING_1NT],
       }],
     },
     {
@@ -23,7 +24,7 @@ export const NT_SAYC_PROFILE: SystemProfileIR = {
       kind: "add-on",
       attachments: [{
         whenAuction: { kind: "sequence", calls: ["1NT"] },
-        requiresCapabilities: ["ntOpenerContext"],
+        requiresCapabilities: [CAP_OPENING_1NT],
       }],
     },
   ],
@@ -46,7 +47,7 @@ export const NT_STAYMAN_ONLY_PROFILE: SystemProfileIR = {
       kind: "add-on",
       attachments: [{
         whenAuction: { kind: "sequence", calls: ["1NT"] },
-        requiresCapabilities: ["ntOpenerContext"],
+        requiresCapabilities: [CAP_OPENING_1NT],
       }],
     },
   ],
@@ -69,7 +70,7 @@ export const NT_TRANSFERS_ONLY_PROFILE: SystemProfileIR = {
       kind: "add-on",
       attachments: [{
         whenAuction: { kind: "sequence", calls: ["1NT"] },
-        requiresCapabilities: ["ntOpenerContext"],
+        requiresCapabilities: [CAP_OPENING_1NT],
       }],
     },
   ],

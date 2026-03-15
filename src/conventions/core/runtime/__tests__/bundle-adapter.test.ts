@@ -5,8 +5,9 @@ import type { SystemProfileIR } from "../../../../core/contracts/agreement-modul
 import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
+import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
 
-/** Minimal profile that activates a module when ntOpenerContext capability is present. */
+/** Minimal profile that activates a module when opening.1nt capability is present. */
 const profileRequiringNtCapability: SystemProfileIR = {
   profileId: "test-profile",
   modules: [
@@ -15,7 +16,7 @@ const profileRequiringNtCapability: SystemProfileIR = {
       kind: "base-system",
       attachments: [
         {
-          requiresCapabilities: ["ntOpenerContext"],
+          requiresCapabilities: [CAP_OPENING_1NT],
         },
       ],
     },
@@ -71,7 +72,7 @@ function makeBundleWithSurfaces(
 }
 
 describe("bundleToRuntimeModules capability injection", () => {
-  it("does NOT inject ntOpenerContext for a bundle with meaningSurfaces but no declaredCapabilities", () => {
+  it("does NOT inject opening.1nt for a bundle with meaningSurfaces but no declaredCapabilities", () => {
     const bundle = makeBundleWithSurfaces({
       systemProfile: profileRequiringNtCapability,
       // no declaredCapabilities — simulates Bergen-like bundle
@@ -81,21 +82,21 @@ describe("bundleToRuntimeModules capability injection", () => {
     const auction = buildAuction(Seat.North, ["1H", "P"]);
     const activeIds = getActiveIds(auction, Seat.South);
 
-    // Module requires ntOpenerContext capability, which should NOT be injected
+    // Module requires opening.1nt capability, which should NOT be injected
     expect(activeIds).toEqual([]);
   });
 
-  it("injects ntOpenerContext when declaredCapabilities includes it", () => {
+  it("injects opening.1nt when declaredCapabilities includes it", () => {
     const bundle = makeBundleWithSurfaces({
       systemProfile: profileRequiringNtCapability,
-      declaredCapabilities: { ntOpenerContext: "active" },
+      declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
     });
 
     const { getActiveIds } = bundleToRuntimeModules(bundle);
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
     const activeIds = getActiveIds(auction, Seat.South);
 
-    // Module requires ntOpenerContext, which IS declared — module activates
+    // Module requires opening.1nt, which IS declared — module activates
     expect(activeIds).toEqual(["test-module"]);
   });
 

@@ -4,6 +4,7 @@ import { NT_SAYC_PROFILE } from "../system-profile";
 import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
+import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
 
 // ---------------------------------------------------------------------------
 // Sub-profiles: prove that different profiles can select different subsets
@@ -25,7 +26,7 @@ const STAYMAN_ONLY_PROFILE: SystemProfileIR = {
       attachments: [
         {
           whenAuction: { kind: "sequence", calls: ["1NT"] },
-          requiresCapabilities: ["ntOpenerContext"],
+          requiresCapabilities: [CAP_OPENING_1NT],
         },
       ],
     },
@@ -48,7 +49,7 @@ const TRANSFER_ONLY_PROFILE: SystemProfileIR = {
       attachments: [
         {
           whenAuction: { kind: "sequence", calls: ["1NT"] },
-          requiresCapabilities: ["ntOpenerContext"],
+          requiresCapabilities: [CAP_OPENING_1NT],
         },
       ],
     },
@@ -59,7 +60,7 @@ const TRANSFER_ONLY_PROFILE: SystemProfileIR = {
 // ---------------------------------------------------------------------------
 
 describe("NT sub-bundle profiles", () => {
-  const ntCapabilities = { ntOpenerContext: "active" };
+  const ntCapabilities = { [CAP_OPENING_1NT]: "active" };
   const auctionAfter1NT = buildAuction(Seat.North, ["1NT", "P"]);
 
   describe("full NT profile (reference)", () => {
