@@ -128,10 +128,10 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 **Active/upcoming:**
 
-2. **User Learning Enhancements**
-   - (b) Dedicated learning screen — needs rebuild for meaning pipeline (old tree-walking display removed). Future: Spotlight Walk, Decision Cards, Dual Pane views. Blocked on learning screen design spec.
-3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard)
-11. **Convention Migration** — Migrate remaining conventions (SAYC, Lebensohl Lite) to meaning pipeline bundles. Currently nt-bundle, bergen-bundle, and weak-twos-bundle exist. Lebensohl blocked on relay encoding spec; SAYC is a full base system.
+1. **Posterior Engine Boundary Redesign** — see `docs/posterior-implementation-plan.md`. Unblocks difficulty configuration and inference spectrum.
+2. **User Learning Enhancements** — dedicated learning screen needs rebuild for meaning pipeline. Blocked on learning screen design spec.
+3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard). Blocked on posterior redesign.
+4. **Convention Migration** — Migrate remaining conventions (SAYC, Lebensohl Lite) to meaning pipeline bundles. Lebensohl blocked on relay encoding spec; SAYC is a full base system.
 
 ## Architecture Spec & Alignment
 
@@ -139,55 +139,38 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 - `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-convention-protocol.md` — Agreement Module IR: composable convention modules, system profiles, conversation machines, two-phase evaluation, public state layers, WitnessSpecIR, FactCatalogIR
 - `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-candidate-pipeline.md` — Meaning-centric pipeline: MeaningSurface as canonical unit, semantic arbitration, TeachingProjection, DecisionProvenance, PedagogicalRelation graph, ExplanationCatalog
+- `docs/posterior-implementation-plan.md` — Posterior engine boundary redesign: 8-phase plan covering FactorGraphIR, PosteriorQueryPort, PosteriorBackend, factor compiler, CI invariant tests, and Rust/WASM upgrade path
 
-**Spec status:** Both specs are `status: active`, `confidence: medium-high`. Many contracts are frozen but several open questions remain. **The spec must be finished before building features that depend on unresolved areas.** Do not implement against open questions — resolve the spec first.
+**Spec status:** Both specs are `status: active`, `confidence: medium-high`. Most contracts are frozen. The posterior engine boundary has a detailed implementation plan. Do not implement against unresolved areas — resolve the spec first.
 
-**Open questions in the protocol spec (must resolve before implementing):**
+**Open questions in the protocol spec:**
 
 | Open Question | Status | Blocks |
 |---|---|---|
-| Fact catalog design — posterior-derived fact compilers, gold scenario validation | Partially resolved (seed vocabulary defined) | WitnessSpecIR wiring, posterior enrichment |
-| Capability vocabulary — stable IDs for host attachment | **Resolved** (`core/contracts/capability-vocabulary.ts` — `opening.*`, `opponent.*`, `context.*` naming; all bundles migrated) | — |
-| Posterior engine implementation — sampling method, likelihood models, `publicBeliefs` naming | Unresolved | Inference spectrum / difficulty config |
-| Evidence group correlation model — within-group semantics not formalized as types | Unresolved | Posterior combiner accuracy |
-| `priorityClass` → `recommendationBand` indirection — spec says profile maps classes to bands | **Implemented** | — |
-| Two-phase evaluation unification — single `evaluate()` returning `{ publicSnapshot, decisionSurfaces }` | **Implemented** (strategy pipeline wired to evaluation runtime) | DecisionSurfaceIR migration (pipeline still uses MeaningSurface[]) |
-| Machine submachines and loops — needed for relay chains, variable-length protocols | **Implemented + exercised** (submachine stack + loop counters in machine-evaluator; Smolen submachine in NT bundle is first real convention use) | — |
-| Host-attachment activation — modules activating from another module's exported capabilities | Spec designed, vocabulary resolved, not exercised by a convention yet | Negative Doubles, Fourth Suit Forcing |
+| Posterior engine boundary redesign | **Phases 0-5 complete** — contracts, factor compiler, backend, query port, CI tests done. Consumer migration (Phase 4B) pending. | Inference spectrum / difficulty config |
+| Fact catalog posterior compilers | **Subsumed** by posterior plan Phase 3 (factor compiler replaces `compilePublicHandSpace()`) | WitnessSpecIR wiring |
+| Evidence group correlation model | **Design complete** — typed groups (Independent, ExclusiveAlternative, SharedSourceJoint, TemporalChain). Reserved in schema as Phase 7 (soft evidence). | Posterior combiner accuracy |
+| Host-attachment activation | Spec designed, vocabulary resolved (`core/contracts/capability-vocabulary.ts`), not exercised by a convention yet | Negative Doubles, Fourth Suit Forcing |
 
-**Alignment summary (as of 2026-03-14):**
+**Alignment summary (as of 2026-03-15):**
 
 | Area | Alignment | Key gaps |
 |------|-----------|----------|
-| Pipeline (selection, teaching, provenance) | ~95% | priorityClass→band implemented. 5-grade taxonomy implemented (Correct/CorrectNotPreferred/Acceptable/NearMiss/Incorrect). Strategy pipeline wired to evaluation runtime. |
-| Upstream (modules, profiles, machine) | ~80% | Profile-driven activation implemented. Submachines and loops implemented. Two-phase evaluation wired. No host-attachment. ActivationTrace always empty. |
-| Convention coverage | Patterns 1 + 3 + submachine | Fixed-sequence ask-and-tell (Stayman, Bergen, Weak Twos). Weak Twos exercises multi-round ask-and-tell with Ogust sub-protocol. DONT exercises Pattern 3 (competitive/defensive with multi-stage relay, hierarchical parent/child states, predicate transitions). Smolen exercises submachine invocation with guard-based routing (first real convention use of submachines). Patterns 2, 4-6 not yet exercised. |
+| Pipeline (selection, teaching, provenance) | ~95% | Strategy pipeline wired to evaluation runtime. 5-grade taxonomy implemented. |
+| Upstream (modules, profiles, machine) | ~80% | Profile-driven activation, submachines, two-phase evaluation all implemented. No host-attachment exercised. ActivationTrace always empty. |
+| Posterior engine | ~70% (boundary designed and implemented, consumer migration pending) | Contracts, factor compiler, backend, query port, CI boundary tests done. Old `PosteriorEngine` → `SeatPosterior` path still works. Consumer migration (Phase 4B) pending. |
+| Convention coverage | Patterns 1 + 3 + submachine | Stayman, Bergen, Weak Twos, DONT, Smolen. Patterns 2, 4-6 not yet exercised. |
 | WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
 | DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
 
-**Next steps (spec-first order — resolve design before building):**
+**Next steps:**
 
-1. ~~**Make system profiles drive module activation.**~~ Done.
-2. ~~**Implement Stayman-only and Transfer-only sub-bundles.**~~ Done.
-3. ~~**priorityClass → band indirection.**~~ Done.
-4. ~~**Two-phase evaluation unification.**~~ Done (strategy pipeline wired to evaluation runtime).
-5. ~~**Machine submachines/loops.**~~ Done.
-6. ~~**Weak Twos convention bundle.**~~ Done (exercises multi-round Ogust protocol).
-6b. ~~**DONT convention bundle.**~~ Done (exercises Pattern 3 — hierarchical parent/child states, predicate transitions, multi-stage relay, 21-state competitive/defensive FSM).
-6c. ~~**Smolen convention (R3 continuation + submachine).**~~ Done (exercises submachine invocation — first real convention use of submachines with guard-based routing in NT bundle).
-7. **Finish remaining spec open questions:**
-   - ~~(a) Host-attachment activation + capability vocabulary~~ Done (`core/contracts/capability-vocabulary.ts`).
-   - (b) Fact catalog posterior compilers (unblocks WitnessSpecIR wiring)
-   - (c) Evidence group correlation model (unblocks posterior combiner)
-8. **Implement resolved spec areas** — as each open question is resolved:
-   - Host-attachment → profile-activation extension (vocabulary resolved; needs convention to exercise)
-9. **Add convention content that exercises resolved patterns:**
-   - ~~Smolen (exercises R3 continuation — no spec gaps)~~ Done.
-   - Lebensohl (exercises relay encoding — needs relay-map encoder exercised)
-   - Negative Doubles (exercises host-attachment — vocabulary resolved, ready to implement)
-10. **Wire WitnessSpecIR to deal generation** (needs fact catalog posterior compilers resolved)
-11. **Migrate pipeline to DecisionSurfaceIR** (two-phase evaluation wired, adapter exists — migrate consumption)
-12. **Build the learning screen** (needs its own design spec — `docs/learning/research-summary.md` is research, not a spec)
+1. **Posterior engine consumer migration (Phase 4B)** — Phases 0-5 complete (contracts, factor compiler, backend, query port, CI boundary tests, documentation). Next: migrate consumers (`meaning-strategy.ts`, `config-factory.ts`) from old `PosteriorEngine` → `SeatPosterior` to `createTsBackend()` → `createQueryPort()`. See `docs/posterior-implementation-plan.md`.
+2. **Host-attachment** — exercise with Negative Doubles convention (vocabulary resolved, ready to implement)
+3. **Convention content** — Lebensohl (relay encoding), Negative Doubles (host-attachment)
+4. **Wire WitnessSpecIR to deal generation** (unblocked after posterior Phase 3)
+5. **Migrate pipeline to DecisionSurfaceIR** (adapter exists — migrate consumption)
+6. **Build the learning screen** (needs its own design spec — `docs/learning/research-summary.md` is research, not a spec)
 
 ## Test-Driven Development
 
@@ -249,7 +232,8 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/conventions/CLAUDE.md` — registry pattern, convention bundles
 - `src/conventions/core/CLAUDE.md` — runtime, pipeline, bundle systems
 - `src/conventions/definitions/CLAUDE.md` — convention bundle authoring guide
-- `src/inference/CLAUDE.md` — inference architecture, posterior engine
+- `src/inference/CLAUDE.md` — inference architecture, posterior engine, new posterior boundary
+- `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port, migration status
 - `src/strategy/CLAUDE.md` — meaning-strategy pattern, play heuristics
 - `src/bootstrap/CLAUDE.md` — DrillConfig, DrillSession, DrillBundle, drill lifecycle
 - `src/core/display/CLAUDE.md` — display utility inventory, dependency rules
@@ -287,4 +271,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-14 | version=14 | dir-commits-at-audit=62 | tree-sig=dirs:18,files:150+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-15 | version=15 | dir-commits-at-audit=62 | tree-sig=dirs:18,files:150+ -->

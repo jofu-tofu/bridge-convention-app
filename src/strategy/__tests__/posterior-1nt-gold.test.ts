@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { meaningBundleToStrategy } from "../bidding/meaning-strategy";
-import { createPosteriorEngine, createPosteriorFactProvider } from "../../inference/posterior";
+import { createPosteriorEngine, createPosteriorFactProvider, createTsBackend } from "../../inference/posterior";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { createSharedFactCatalog } from "../../conventions/core/pipeline/fact-evaluator";
 import { staymanFacts, transferFacts, ntResponseFacts } from "../../conventions/definitions/nt-bundle/facts";
@@ -50,7 +50,7 @@ function makeCatalog() {
 }
 
 function makeStrategy(opts?: { sampleCount?: number; seed?: number }) {
-  const posteriorEngine = createPosteriorEngine({
+  const posteriorBackend = createTsBackend({
     sampleCount: opts?.sampleCount ?? 200,
     seed: opts?.seed ?? 12345,
   });
@@ -58,7 +58,7 @@ function makeStrategy(opts?: { sampleCount?: number; seed?: number }) {
 
   return meaningBundleToStrategy(moduleSurfaces, "nt-bundle", {
     factCatalog: catalog,
-    posteriorEngine,
+    posteriorBackend,
     surfaceRouterForCommitments: surfaceRouter,
     conversationMachine,
   });
@@ -137,7 +137,6 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
 
     const snapshot = buildSnapshotFromAuction(auction, SeatEnum.South, [], {
       surfaceRouter,
-      posteriorEngine: engine,
     });
 
     // publicCommitments should include denial-derived constraints
@@ -169,7 +168,6 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
 
     const snapshot = buildSnapshotFromAuction(auction, SeatEnum.South, [], {
       surfaceRouter,
-      posteriorEngine: engine,
     });
 
     const handSpaces = engine.compilePublic(snapshot);
@@ -200,7 +198,6 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
 
     const snapshot = buildSnapshotFromAuction(auction, SeatEnum.South, [], {
       surfaceRouter,
-      posteriorEngine: engine,
     });
 
     const handSpaces = engine.compilePublic(snapshot);
@@ -252,7 +249,6 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     const auction = auctionStaymanDenial();
     const snapshot = buildSnapshotFromAuction(auction, SeatEnum.South, [], {
       surfaceRouter,
-      posteriorEngine: engine,
     });
 
     const handSpaces = engine.compilePublic(snapshot);
@@ -315,51 +311,19 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     expect(gradeWithPosterior).toBe(BidGrade.Correct);
   });
 
-  it("scenario 7: publicBeliefs populated after commitment-producing bids", () => {
-    const engine = createPosteriorEngine({ sampleCount: 50, seed: 42 });
-    const auction = auctionStaymanDenial();
-
-    const snapshot = buildSnapshotFromAuction(auction, SeatEnum.South, [], {
-      surfaceRouter,
-      posteriorEngine: engine,
-    });
-
-    // After Stayman + denial, there should be public commitments
-    if (!snapshot.publicCommitments?.length) return;
-
-    // publicBeliefs should be populated by the posterior engine
-    expect(snapshot.publicBeliefs!.length).toBeGreaterThan(0);
-    for (const belief of snapshot.publicBeliefs!) {
-      expect(belief.seatId).toBeDefined();
-      expect(belief.observerSeat).toBe("S");
-      expect(belief.staleness).toBe(0);
-      expect(belief.facts.length).toBe(SHARED_POSTERIOR_FACT_IDS.length);
-    }
-  });
-
-  it("scenario 8: 0-sample fail-open — impossible constraints produce value 0, no throw", () => {
+  it("scenario 7: 0-sample fail-open — impossible constraints produce value 0, no throw", () => {
     // Use a very small sample count with a hand that makes constraints nearly impossible
     // to satisfy — should gracefully return 0 values, not throw.
     const engine = createPosteriorEngine({ sampleCount: 5, seed: 1 });
 
-    // Build a snapshot with contradictory constraints if possible
-    // The simplest test: empty commitments → compilePublic returns [] → no crash
+    // Build a snapshot with no commitments → compilePublic returns [] → no crash
     const auction = auction1NTP();
     const snapshot = buildSnapshotFromAuction(auction, SeatEnum.South, [], {
       surfaceRouter,
     });
 
-    // No posterior engine passed → publicBeliefs stays []
-    expect(snapshot.publicBeliefs).toEqual([]);
-
-    // Now with posterior but no commitments
-    const snapshot2 = buildSnapshotFromAuction(auction, SeatEnum.South, [], {
-      surfaceRouter,
-      posteriorEngine: engine,
-    });
-
     // compilePublic with no commitments returns [] — no crash
-    engine.compilePublic(snapshot2);
+    engine.compilePublic(snapshot);
 
     // Test direct handler fail-open: 0 samples scenario
     const emptySpace = {

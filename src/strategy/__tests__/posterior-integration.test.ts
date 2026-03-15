@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { meaningBundleToStrategy } from "../bidding/meaning-strategy";
-import type { PosteriorEngine, PublicHandSpace, SeatPosterior } from "../../core/contracts/posterior";
+import type { PosteriorBackend, PosteriorState, WeightedParticle } from "../../core/contracts/posterior-backend";
+import type { ConditioningContext } from "../../core/contracts/posterior-query";
 import type { MeaningSurface } from "../../core/contracts/meaning-surface";
 import type { Auction, Seat, Hand, HandEvaluation } from "../../engine/types";
 import { Suit, Rank, Seat as SeatEnum, BidSuit } from "../../engine/types";
@@ -74,46 +75,65 @@ function makeContext(auction?: Auction): BiddingContext {
   });
 }
 
-function makeMockPosteriorEngine(): {
-  engine: PosteriorEngine;
-  compilePublicSpy: ReturnType<typeof vi.fn>;
+// 17 HCP balanced hand for North: AQ94 KT8 AJ6 K72
+const northHand: Hand = {
+  cards: [
+    { suit: Suit.Spades, rank: Rank.Ace },
+    { suit: Suit.Spades, rank: Rank.Queen },
+    { suit: Suit.Spades, rank: Rank.Nine },
+    { suit: Suit.Spades, rank: Rank.Four },
+    { suit: Suit.Hearts, rank: Rank.King },
+    { suit: Suit.Hearts, rank: Rank.Ten },
+    { suit: Suit.Hearts, rank: Rank.Eight },
+    { suit: Suit.Diamonds, rank: Rank.Ace },
+    { suit: Suit.Diamonds, rank: Rank.Jack },
+    { suit: Suit.Diamonds, rank: Rank.Six },
+    { suit: Suit.Clubs, rank: Rank.King },
+    { suit: Suit.Clubs, rank: Rank.Seven },
+    { suit: Suit.Clubs, rank: Rank.Two },
+  ],
+};
+
+function makeMockPosteriorBackend(particleCount = 200): {
+  backend: PosteriorBackend;
+  initializeSpy: ReturnType<typeof vi.fn>;
 } {
-  const northSpace: PublicHandSpace = { seatId: "N", constraints: [] };
-  const compilePublicSpy = vi.fn().mockReturnValue([northSpace]);
+  const particles: WeightedParticle[] = Array.from({ length: particleCount }, () => ({
+    world: {
+      hiddenDeal: new Map([["N", northHand]]) as ReadonlyMap<string, Hand>,
+      branchAssignment: new Map() as ReadonlyMap<string, string>,
+    },
+    weight: 1,
+  }));
 
-  const mockPosterior: SeatPosterior = {
-    seatId: "N",
-    handSpace: northSpace,
-    likelihoodModel: { factors: [], combinationRule: "independent" },
-    effectiveSampleSize: 200,
-    probability(query) {
-      // Return 0.73 for partnerHas4CardMajor, 0.85 for eight card fit, etc.
-      const probMap: Record<string, number> = {
-        "bridge.partnerHas4CardMajorLikely": 0.73,
-        "bridge.nsHaveEightCardFitLikely": 0.85,
-        "bridge.combinedHcpInRangeLikely": 0.60,
-        "bridge.openerStillBalancedLikely": 0.95,
-        "bridge.openerHasSecondMajorLikely": 0.15,
+  const mockState: PosteriorState = {
+    particles,
+    context: {
+      snapshot: { publicCommitments: [] } as unknown as ConditioningContext["snapshot"],
+      factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [], compilationTrace: [] },
+      observerSeat: "S",
+    },
+  };
+
+  const initializeSpy = vi.fn().mockReturnValue(mockState);
+
+  const backend: PosteriorBackend = {
+    initialize: initializeSpy,
+    query() {
+      return {
+        value: 0.5,
+        health: {
+          effectiveSampleSize: particleCount,
+          totalParticles: particleCount,
+          acceptanceRate: 1,
+        },
       };
-      return probMap[query.factId] ?? 0;
     },
-    distribution() { return []; },
+    conditionOnHand() { return mockState; },
+    introspect() { return []; },
   };
 
-  const engine: PosteriorEngine = {
-    compilePublic: compilePublicSpy,
-    conditionOnHand() { return mockPosterior; },
-    deriveActingHandFacts(space, factIds) {
-      return factIds.map((factId) => ({
-        factId,
-        seatId: space.seatId,
-        expectedValue: 0.5,
-        confidence: 1,
-      }));
-    },
-  };
-
-  return { engine, compilePublicSpy };
+  return { backend, initializeSpy };
 }
 
 function makeSurfaceRouter(): (auction: Auction, seat: Seat) => readonly MeaningSurface[] {
@@ -121,7 +141,7 @@ function makeSurfaceRouter(): (auction: Auction, seat: Seat) => readonly Meaning
 }
 
 describe("meaningBundleToStrategy — posterior integration", () => {
-  it("without posteriorEngine, suggest works as before (regression)", () => {
+  it("without posteriorBackend, suggest works as before (regression)", () => {
     const strategy = meaningBundleToStrategy(
       [{ moduleId: "test-module", surfaces: [testSurface] }],
       "test-bundle",
@@ -132,8 +152,8 @@ describe("meaningBundleToStrategy — posterior integration", () => {
     expect(result).not.toBeNull();
   });
 
-  it("with posteriorEngine, compilePublic is called during suggest", () => {
-    const { engine, compilePublicSpy } = makeMockPosteriorEngine();
+  it("with posteriorBackend, initialize is called during suggest", () => {
+    const { backend, initializeSpy } = makeMockPosteriorBackend();
     const catalog = createFactCatalog(createSharedFactCatalog(), staymanFacts);
 
     const strategy = meaningBundleToStrategy(
@@ -141,17 +161,17 @@ describe("meaningBundleToStrategy — posterior integration", () => {
       "test-bundle",
       {
         factCatalog: catalog,
-        posteriorEngine: engine,
+        posteriorBackend: backend,
         surfaceRouterForCommitments: makeSurfaceRouter(),
       },
     );
 
     strategy.suggest(makeContext());
-    expect(compilePublicSpy).toHaveBeenCalledTimes(1);
+    expect(initializeSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("memoization: same auction length does not re-call compilePublic", () => {
-    const { engine, compilePublicSpy } = makeMockPosteriorEngine();
+  it("memoization: same auction length does not re-call initialize", () => {
+    const { backend, initializeSpy } = makeMockPosteriorBackend();
     const catalog = createFactCatalog(createSharedFactCatalog(), staymanFacts);
 
     const strategy = meaningBundleToStrategy(
@@ -159,7 +179,7 @@ describe("meaningBundleToStrategy — posterior integration", () => {
       "test-bundle",
       {
         factCatalog: catalog,
-        posteriorEngine: engine,
+        posteriorBackend: backend,
         surfaceRouterForCommitments: makeSurfaceRouter(),
       },
     );
@@ -167,11 +187,11 @@ describe("meaningBundleToStrategy — posterior integration", () => {
     const context = makeContext();
     strategy.suggest(context);
     strategy.suggest(context); // Same auction length
-    expect(compilePublicSpy).toHaveBeenCalledTimes(1);
+    expect(initializeSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("memoization: different auction length re-calls compilePublic", () => {
-    const { engine, compilePublicSpy } = makeMockPosteriorEngine();
+  it("memoization: different auction length re-calls initialize", () => {
+    const { backend, initializeSpy } = makeMockPosteriorBackend();
     const catalog = createFactCatalog(createSharedFactCatalog(), staymanFacts);
 
     const strategy = meaningBundleToStrategy(
@@ -179,7 +199,7 @@ describe("meaningBundleToStrategy — posterior integration", () => {
       "test-bundle",
       {
         factCatalog: catalog,
-        posteriorEngine: engine,
+        posteriorBackend: backend,
         surfaceRouterForCommitments: makeSurfaceRouter(),
       },
     );
@@ -196,14 +216,29 @@ describe("meaningBundleToStrategy — posterior integration", () => {
       isComplete: false,
     };
     strategy.suggest(makeContext(longerAuction));
-    expect(compilePublicSpy).toHaveBeenCalledTimes(2);
+    expect(initializeSpy).toHaveBeenCalledTimes(2);
   });
 
-  it("empty hand spaces from posterior engine does not crash pipeline", () => {
-    const engine: PosteriorEngine = {
-      compilePublic: () => [], // No hand spaces
-      conditionOnHand() { throw new Error("should not be called"); },
-      deriveActingHandFacts() { return []; },
+  it("empty particles from posterior backend does not crash pipeline", () => {
+    const emptyState: PosteriorState = {
+      particles: [],
+      context: {
+        snapshot: { publicCommitments: [] } as unknown as ConditioningContext["snapshot"],
+        factorGraph: { factors: [], ambiguitySchema: [], evidencePins: [], compilationTrace: [] },
+        observerSeat: "S",
+      },
+    };
+
+    const backend: PosteriorBackend = {
+      initialize: () => emptyState,
+      query() {
+        return {
+          value: 0,
+          health: { effectiveSampleSize: 0, totalParticles: 0, acceptanceRate: 0 },
+        };
+      },
+      conditionOnHand() { return emptyState; },
+      introspect() { return []; },
     };
 
     const catalog = createFactCatalog(createSharedFactCatalog(), staymanFacts);
@@ -213,45 +248,26 @@ describe("meaningBundleToStrategy — posterior integration", () => {
       "test-bundle",
       {
         factCatalog: catalog,
-        posteriorEngine: engine,
+        posteriorBackend: backend,
         surfaceRouterForCommitments: makeSurfaceRouter(),
       },
     );
 
-    // Should not throw — posterior provider is undefined when no partner space
+    // Should not throw — posterior provider is undefined when no particles
     const result = strategy.suggest(makeContext());
     expect(result).not.toBeNull();
   });
 
-  it("sampleCount reflects actual engine output, not hardcoded 200", () => {
-    const northSpace: PublicHandSpace = { seatId: "N", constraints: [] };
-
-    const mockPosterior: SeatPosterior = {
-      seatId: "N",
-      handSpace: northSpace,
-      likelihoodModel: { factors: [], combinationRule: "independent" },
-      effectiveSampleSize: 150,
-      probability() { return 0.5; },
-      distribution() { return []; },
-    };
-
-    const engine: PosteriorEngine = {
-      compilePublic: () => [northSpace],
-      conditionOnHand() { return mockPosterior; },
-      deriveActingHandFacts(space, factIds) {
-        return factIds.map((factId) => ({
-          factId, seatId: space.seatId, expectedValue: 0.5, confidence: 0.75,
-        }));
-      },
-    };
-
+  it("sampleCount reflects actual backend output, not hardcoded 200", () => {
+    const { backend } = makeMockPosteriorBackend(150);
     const catalog = createFactCatalog(createSharedFactCatalog(), staymanFacts);
+
     const strategy = meaningBundleToStrategy(
       [{ moduleId: "test-module", surfaces: [testSurface] }],
       "test-bundle",
       {
         factCatalog: catalog,
-        posteriorEngine: engine,
+        posteriorBackend: backend,
         surfaceRouterForCommitments: makeSurfaceRouter(),
       },
     );
@@ -259,39 +275,20 @@ describe("meaningBundleToStrategy — posterior integration", () => {
     strategy.suggest(makeContext());
     const summary = strategy.getLastPosteriorSummary();
     expect(summary).not.toBeNull();
-    // sampleCount should reflect the actual effectiveSampleSize (150), not hardcoded 200
+    // sampleCount should reflect the actual particle count (150), not hardcoded 200
     expect(summary!.sampleCount).toBe(150);
   });
 
   it("confidence is derived from posterior quality, not hardcoded 1", () => {
-    const northSpace: PublicHandSpace = { seatId: "N", constraints: [] };
-
-    const mockPosterior: SeatPosterior = {
-      seatId: "N",
-      handSpace: northSpace,
-      likelihoodModel: { factors: [], combinationRule: "independent" },
-      effectiveSampleSize: 80,
-      probability() { return 0.6; },
-      distribution() { return []; },
-    };
-
-    const engine: PosteriorEngine = {
-      compilePublic: () => [northSpace],
-      conditionOnHand() { return mockPosterior; },
-      deriveActingHandFacts(space, factIds) {
-        return factIds.map((factId) => ({
-          factId, seatId: space.seatId, expectedValue: 0.5, confidence: 0.4,
-        }));
-      },
-    };
-
+    const { backend } = makeMockPosteriorBackend(80);
     const catalog = createFactCatalog(createSharedFactCatalog(), staymanFacts);
+
     const strategy = meaningBundleToStrategy(
       [{ moduleId: "test-module", surfaces: [testSurface] }],
       "test-bundle",
       {
         factCatalog: catalog,
-        posteriorEngine: engine,
+        posteriorBackend: backend,
         surfaceRouterForCommitments: makeSurfaceRouter(),
       },
     );
@@ -300,40 +297,22 @@ describe("meaningBundleToStrategy — posterior integration", () => {
     const summary = strategy.getLastPosteriorSummary();
     expect(summary).not.toBeNull();
     // confidence should NOT be 1 — it should reflect the per-fact confidence values
+    // With 80 particles out of 200 totalRequested, confidence = 80/200 = 0.4
     expect(summary!.confidence).not.toBe(1);
     expect(summary!.confidence).toBeGreaterThan(0);
     expect(summary!.confidence).toBeLessThanOrEqual(1);
   });
 
   it("EvaluationTrace.posteriorConfidence is populated when posterior is active", () => {
-    const northSpace: PublicHandSpace = { seatId: "N", constraints: [] };
-
-    const mockPosterior: SeatPosterior = {
-      seatId: "N",
-      handSpace: northSpace,
-      likelihoodModel: { factors: [], combinationRule: "independent" },
-      effectiveSampleSize: 120,
-      probability() { return 0.7; },
-      distribution() { return []; },
-    };
-
-    const engine: PosteriorEngine = {
-      compilePublic: () => [northSpace],
-      conditionOnHand() { return mockPosterior; },
-      deriveActingHandFacts(space, factIds) {
-        return factIds.map((factId) => ({
-          factId, seatId: space.seatId, expectedValue: 0.5, confidence: 0.6,
-        }));
-      },
-    };
-
+    const { backend } = makeMockPosteriorBackend(120);
     const catalog = createFactCatalog(createSharedFactCatalog(), staymanFacts);
+
     const strategy = meaningBundleToStrategy(
       [{ moduleId: "test-module", surfaces: [testSurface] }],
       "test-bundle",
       {
         factCatalog: catalog,
-        posteriorEngine: engine,
+        posteriorBackend: backend,
         surfaceRouterForCommitments: makeSurfaceRouter(),
       },
     );

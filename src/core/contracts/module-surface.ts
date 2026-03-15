@@ -5,7 +5,7 @@ import type { MeaningProposal, TransformTrace } from "./meaning";
 import type { DecisionProvenance } from "./provenance";
 import type { MeaningSurface } from "./meaning-surface";
 import type { PublicEvent, PublicConstraint } from "./agreement-module";
-import type { BeliefView, LatentBranchSet } from "./posterior";
+import type { LatentBranchSet } from "./posterior";
 import type { EvidenceBundleIR } from "./evidence-bundle";
 
 /** Hand-independent public state derived from conversation machine registers.
@@ -29,7 +29,6 @@ export interface PublicSnapshot {
   readonly publicRegisters: Readonly<Record<string, unknown>>;
   readonly publicRecord?: readonly PublicEvent[];
   readonly publicCommitments?: readonly PublicConstraint[];
-  readonly publicBeliefs?: readonly BeliefView[];
   readonly latentBranches?: readonly LatentBranchSet[];
 }
 
@@ -104,7 +103,6 @@ export function buildPublicSnapshot(params: {
   conventionData?: Readonly<Record<string, unknown>>;
   publicRecord?: readonly PublicEvent[];
   publicCommitments?: readonly PublicConstraint[];
-  publicBeliefs?: readonly BeliefView[];
 }): PublicSnapshot {
   return {
     activeModuleIds: params.activeModuleIds,
@@ -117,6 +115,5 @@ export function buildPublicSnapshot(params: {
     publicRegisters: params.conventionData ?? {},
     publicRecord: params.publicRecord,
     publicCommitments: params.publicCommitments,
-    publicBeliefs: params.publicBeliefs,
   };
 }

@@ -13,7 +13,8 @@ import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { getBundle, createSharedFactCatalog } from "../conventions/core";
 import type { ConventionBundle } from "../conventions/core";
 import { createFactCatalog } from "../core/contracts/fact-catalog";
-import { createPosteriorEngine } from "../inference/posterior";
+import { createTsBackend } from "../inference/posterior";
+import { createHandFactResolver } from "../conventions/core/pipeline/fact-evaluator";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
@@ -40,7 +41,7 @@ export function buildBundleStrategy(
       factCatalog,
       surfaceRouter: bundle.surfaceRouter,
       conversationMachine: bundle.conversationMachine,
-      posteriorEngine: createPosteriorEngine(),
+      posteriorBackend: createTsBackend({ factResolver: createHandFactResolver(factCatalog) }),
       surfaceRouterForCommitments: bundle.surfaceRouter,
       explanationCatalog: bundle.explanationCatalog,
       acceptableAlternatives: bundle.acceptableAlternatives,

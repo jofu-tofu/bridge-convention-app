@@ -140,15 +140,6 @@ describe("buildSnapshotFromAuction", () => {
     });
   });
 
-  describe("publicBeliefs", () => {
-    it("always returns empty publicBeliefs array", () => {
-      const auction = buildAuction(Seat.North, ["1NT", "P"]);
-      const snapshot = buildSnapshotFromAuction(auction, Seat.South, []);
-
-      expect(snapshot.publicBeliefs).toEqual([]);
-    });
-  });
-
   describe("machineRegisters", () => {
     it("overrides forcingState from machine registers", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P"]);

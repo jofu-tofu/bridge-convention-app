@@ -1,10 +1,11 @@
 import type { PublicHandSpace } from "../../core/contracts/posterior";
 import type { HandPredicateIR } from "../../core/contracts/predicate-surfaces";
 import type { Hand, Card, Seat } from "../../engine/types";
+import type { HandFactResolverFn } from "../../core/contracts/fact-catalog";
 import { Suit, Rank } from "../../engine/types";
 import { HCP_VALUES } from "../../engine/constants";
 import { mulberry32 } from "../../core/util/seeded-rng";
-import { calculateHcpAndShape, isBalanced } from "../../engine/hand-evaluator";
+import { calculateHcpAndShape, isBalanced, evaluateHand } from "../../engine/hand-evaluator";
 
 export interface WeightedDealSample {
   readonly hands: ReadonlyMap<string, Hand>;
@@ -37,8 +38,8 @@ function shuffle(arr: Card[], rng: () => number): void {
   }
 }
 
-/** Resolve a fact value from a hand for constraint checking. */
-function resolveFactValue(hand: Hand, factId: string): number | boolean | undefined {
+/** Built-in fact resolver for primitive facts (fallback when no catalog resolver provided). */
+function resolveFactValueBuiltin(hand: Hand, factId: string): number | boolean | undefined {
   if (factId === "hand.hcp") {
     return hand.cards.reduce((sum, c) => sum + HCP_VALUES[c.rank], 0);
   }
@@ -65,6 +66,21 @@ function resolveFactValue(hand: Hand, factId: string): number | boolean | undefi
   return undefined;
 }
 
+/** Resolve a fact value from a hand for constraint checking.
+ *  When a catalog-aware resolver is provided, delegates to it.
+ *  Otherwise falls back to the built-in primitive resolution. */
+function resolveFactValueWithFallback(
+  hand: Hand,
+  factId: string,
+  resolver?: HandFactResolverFn,
+): number | boolean | string | undefined {
+  if (resolver) {
+    const evaluation = evaluateHand(hand);
+    return resolver(hand, evaluation, factId);
+  }
+  return resolveFactValueBuiltin(hand, factId);
+}
+
 /** Check one clause of a HandPredicateIR against a hand. */
 function checkClause(
   hand: Hand,
@@ -73,8 +89,9 @@ function checkClause(
     readonly operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in";
     readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
   },
+  resolver?: HandFactResolverFn,
 ): boolean {
-  const actual = resolveFactValue(hand, clause.factId);
+  const actual = resolveFactValueWithFallback(hand, clause.factId, resolver);
   if (actual === undefined) return true; // Unknown facts pass by default
 
   switch (clause.operator) {
@@ -102,17 +119,17 @@ function checkClause(
 }
 
 /** Check all constraints of a HandPredicateIR against a hand. */
-function checkPredicate(hand: Hand, predicate: HandPredicateIR): boolean {
+function checkPredicate(hand: Hand, predicate: HandPredicateIR, resolver?: HandFactResolverFn): boolean {
   if (predicate.conjunction === "all") {
-    return predicate.clauses.every((c) => checkClause(hand, c));
+    return predicate.clauses.every((c) => checkClause(hand, c, resolver));
   }
   // "any"
-  return predicate.clauses.some((c) => checkClause(hand, c));
+  return predicate.clauses.some((c) => checkClause(hand, c, resolver));
 }
 
 /** Check if a hand satisfies all constraints for a given seat. */
-function satisfiesSpace(hand: Hand, space: PublicHandSpace): boolean {
-  return space.constraints.every((predicate) => checkPredicate(hand, predicate));
+function satisfiesSpace(hand: Hand, space: PublicHandSpace, resolver?: HandFactResolverFn): boolean {
+  return space.constraints.every((predicate) => checkPredicate(hand, predicate, resolver));
 }
 
 /** Map Seat enum to string ID. */
@@ -131,6 +148,7 @@ export function sampleDeals(
   ownSeat: Seat,
   n: number,
   seed?: number,
+  factResolver?: HandFactResolverFn,
 ): WeightedDealSample[] {
   const rng = mulberry32(seed ?? Date.now());
   const deck = buildDeck();
@@ -175,7 +193,7 @@ export function sampleDeals(
 
       // Check constraints for this seat
       const space = spaceMap.get(seatId);
-      if (space && !satisfiesSpace(hand, space)) {
+      if (space && !satisfiesSpace(hand, space, factResolver)) {
         valid = false;
         break;
       }

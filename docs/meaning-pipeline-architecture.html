@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Convention Protocol &amp; Meaning Pipeline Architecture</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          surface: '#0f172a',
+          card: '#1e293b',
+          accent: '#38bdf8',
+          accent2: '#a78bfa',
+          warn: '#fbbf24',
+          danger: '#f87171',
+          success: '#34d399',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { background: #0f172a; color: #e2e8f0; font-family: 'Inter', system-ui, sans-serif; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; }
+  .card-accent { border-left: 4px solid #38bdf8; }
+  .card-warn { border-left: 4px solid #fbbf24; }
+  .card-danger { border-left: 4px solid #f87171; }
+  .card-success { border-left: 4px solid #34d399; }
+  .tag { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+  pre.mermaid { background: transparent !important; }
+  .mermaid svg { max-width: 100%; }
+  nav a { transition: color 0.15s; }
+  nav a:hover { color: #38bdf8; }
+  nav a.active { color: #38bdf8; font-weight: 600; }
+  h2 { scroll-margin-top: 5rem; }
+  h3 { scroll-margin-top: 5rem; }
+  .assumption-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+  code { background: #334155; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875em; }
+  .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+  table { border-collapse: collapse; width: 100%; }
+  th { background: #334155; text-align: left; padding: 0.5rem 0.75rem; font-weight: 600; font-size: 0.875rem; }
+  td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #334155; font-size: 0.875rem; }
+  tr:hover td { background: #1e293b; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Sticky ToC -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur border-b border-slate-700 px-6 py-3">
+  <div class="max-w-5xl mx-auto flex items-center gap-6 text-sm text-slate-400 overflow-x-auto">
+    <span class="font-bold text-white whitespace-nowrap">Meaning Pipeline</span>
+    <a href="#overview">Overview</a>
+    <a href="#bundle">Bundle Anatomy</a>
+    <a href="#fsm">FSM</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#gates">Gates</a>
+    <a href="#arbitration">Arbitration</a>
+    <a href="#teaching">Teaching</a>
+    <a href="#assumptions">Assumptions</a>
+    <a href="#gaps">Gaps</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-6 pt-20 pb-16 space-y-12">
+
+  <!-- Title -->
+  <header class="space-y-3">
+    <h1 class="text-3xl font-bold text-white">Convention Protocol &amp; Meaning Pipeline</h1>
+    <p class="text-slate-400 text-lg">Architecture review &mdash; how bids are selected, graded, and explained. Emphasis on assumptions and robustness boundaries.</p>
+  </header>
+
+  <!-- ============================================================ -->
+  <section id="overview">
+    <h2 class="text-2xl font-bold text-white mb-4">System Overview</h2>
+    <p class="text-slate-300 mb-4">The system determines the correct bid for a given hand and auction position, then grades the user's bid against it. Every convention is authored as a <strong>ConventionBundle</strong> &mdash; a self-contained package of declarative meaning surfaces, a finite state machine, fact extensions, and teaching metadata. A convention-universal pipeline evaluates all bundles through the same 5-step transformation.</p>
+
+    <pre class="mermaid">
+flowchart LR
+  subgraph Bundle["Convention Bundle"]
+    S["Meaning\nSurfaces"]
+    M["Conversation\nMachine (FSM)"]
+    F["Fact\nExtensions"]
+    T["Teaching\nMetadata"]
+  end
+  subgraph Pipeline["Meaning Pipeline"]
+    P1["1. Select\nSurfaces"]
+    P2["2. Compose\n(transforms)"]
+    P3["3. Evaluate\nFacts"]
+    P4["4. Evaluate\nClauses"]
+    P5["5. Arbitrate\n& Encode"]
+  end
+  subgraph Output["Output"]
+    BR["BidResult"]
+    TR["Teaching\nResolution"]
+    TP["Teaching\nProjection"]
+  end
+  M --> P1
+  S --> P1
+  P1 --> P2 --> P3
+  F --> P3
+  P3 --> P4 --> P5
+  P5 --> BR
+  BR --> TR
+  P5 --> TP
+  T --> TP
+    </pre>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="bundle">
+    <h2 class="text-2xl font-bold text-white mb-4">Bundle Anatomy</h2>
+    <p class="text-slate-300 mb-4">Each convention bundle is a folder in <code>conventions/definitions/</code>. Four bundles exist: <strong>nt-bundle</strong> (Stayman + Transfers + Smolen), <strong>bergen-bundle</strong>, <strong>weak-twos-bundle</strong> (+ Ogust), <strong>dont-bundle</strong>.</p>
+
+    <table class="mb-4">
+      <thead>
+        <tr><th>File</th><th>Role</th><th>Key Types</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>meaning-surfaces.ts</code></td><td>Bidding logic as declarative surfaces grouped by <code>surfaceGroupId</code></td><td><code>MeaningSurface[]</code></td></tr>
+        <tr><td><code>machine.ts</code></td><td>FSM tracking auction progression; produces active surface groups</td><td><code>ConversationMachine</code></td></tr>
+        <tr><td><code>facts.ts</code></td><td>Module-derived fact evaluators (e.g. <code>module.stayman.eligible</code>)</td><td><code>FactCatalogExtension</code></td></tr>
+        <tr><td><code>system-profile.ts</code></td><td>Profile-based module activation &amp; exclusivity groups</td><td><code>SystemProfileIR</code></td></tr>
+        <tr><td><code>alternatives.ts</code></td><td>Cross-convention acceptable alternatives for grading</td><td><code>AlternativeGroup[]</code></td></tr>
+        <tr><td><code>pedagogical-relations.ts</code></td><td>Semantic graph: stronger-than, fallback-of, same-family</td><td><code>PedagogicalRelation[]</code></td></tr>
+        <tr><td><code>explanation-catalog.ts</code></td><td>Template keys for "why?" and "why not?" UI</td><td><code>ExplanationCatalogIR</code></td></tr>
+        <tr><td><code>config.ts</code></td><td>Wires all modules into a single <code>ConventionBundle</code> object</td><td><code>ConventionBundle</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="text-lg font-semibold text-white mt-6 mb-2" id="surface-anatomy">What a MeaningSurface Looks Like</h3>
+    <div class="card card-accent p-4 text-sm mono text-slate-300 space-y-1">
+      <div><span class="text-accent">meaningId:</span> "stayman-2C"</div>
+      <div><span class="text-accent">semanticClassId:</span> "stayman.ask"</div>
+      <div><span class="text-accent">surfaceGroupId:</span> "stayman-responses"</div>
+      <div><span class="text-accent">clauses:</span> [</div>
+      <div class="pl-4">{ factId: "hand.hcp", operator: "gte", value: 8 },</div>
+      <div class="pl-4">{ factId: "bridge.hasFourCardMajor", operator: "boolean", value: true }</div>
+      <div>]</div>
+      <div><span class="text-accent">encoding:</span> { defaultCall: { type: "bid", level: 2, strain: "C" } }</div>
+      <div><span class="text-accent">ranking:</span> { recommendationBand: "should", specificity: 2, modulePrecedence: 0 }</div>
+    </div>
+    <p class="text-slate-400 text-sm mt-2">Each surface is a declarative rule: "if these fact conditions hold, this bid means X." No imperative logic.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="fsm">
+    <h2 class="text-2xl font-bold text-white mb-4">Conversation Machine (FSM)</h2>
+    <p class="text-slate-300 mb-4">Each bundle has a <code>ConversationMachine</code> &mdash; an SCXML-inspired hierarchical FSM that tracks where in the bidding conversation we are. The machine replays the entire auction from idle, matching each bid against transitions. The final state determines which <code>surfaceGroupId</code>s are active.</p>
+
+    <pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> idle
+  idle --> r1_response : partner opens 1NT
+  r1_response --> r2_stayman : self bids 2C
+  r1_response --> r2_transfer : self bids 2D/2H
+  r2_stayman --> r3_stayman_rebid : partner responds
+  r2_transfer --> r2_transfer_accept : partner completes
+  r2_stayman --> r2_opponent_action : opponent interferes
+  r1_response --> terminal : self passes
+    </pre>
+
+    <h3 class="text-lg font-semibold text-white mt-6 mb-2">Key FSM Features</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="card card-accent p-4">
+        <div class="font-semibold text-white mb-1">Hierarchical States</div>
+        <p class="text-slate-400 text-sm">Child states inherit parent transitions. DONT uses 21-state hierarchy with parent/child grouping for competitive/defensive phases.</p>
+      </div>
+      <div class="card card-accent p-4">
+        <div class="font-semibold text-white mb-1">Submachines</div>
+        <p class="text-slate-400 text-sm">States can invoke a named submachine (push), execute it, then return (pop). Smolen uses this for guard-based routing in NT.</p>
+      </div>
+      <div class="card card-accent p-4">
+        <div class="font-semibold text-white mb-1">Loop Counters</div>
+        <p class="text-slate-400 text-sm"><code>loopConfig.maxIterations</code> prevents infinite cycles. Auto-exits to <code>exitTarget</code> when reached.</p>
+      </div>
+      <div class="card card-accent p-4">
+        <div class="font-semibold text-white mb-1">Machine Registers</div>
+        <p class="text-slate-400 text-sm">Transitions carry <code>MachineEffect</code>s that set forcingState, obligation, agreedStrain, captain, and systemCapabilities.</p>
+      </div>
+      <div class="card card-accent p-4">
+        <div class="font-semibold text-white mb-1">Transition Matching</div>
+        <p class="text-slate-400 text-sm">6 match kinds: <code>call</code>, <code>pass</code>, <code>any-bid</code>, <code>opponent-action</code> (with level/strain filter), <code>predicate</code>, <code>submachine-return</code>.</p>
+      </div>
+      <div class="card card-accent p-4">
+        <div class="font-semibold text-white mb-1">Guards</div>
+        <p class="text-slate-400 text-sm">Transitions can have a <code>guard(snapshot)</code> function that checks register values before allowing the transition.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="pipeline">
+    <h2 class="text-2xl font-bold text-white mb-4">The 5-Step Pipeline</h2>
+    <p class="text-slate-300 mb-4">The core pipeline is a pure transformation in <code>meaning-strategy.ts</code>. No caching, no side effects, no state mutation. Called once per bid decision.</p>
+
+    <pre class="mermaid">
+flowchart TD
+  A["1. SELECT: Machine produces activeSurfaceGroupIds\nFilter MeaningSurfaces to active groups"] --> B
+  B["2. COMPOSE: Apply CandidateTransforms\n(suppress / inject / remap surfaces)"] --> C
+  C["3. FACTS: evaluateFacts(hand, evaluation, catalog)\n3-tier: primitive, bridge-derived, module-derived\n+ optional relational + posterior"] --> D
+  D["4. EVALUATE: evaluateAllSurfaces(surfaces, facts)\nEach clause checked against evaluated facts\nResult: MeaningProposal per surface"] --> E
+  E["5. ARBITRATE: evaluateProposal through 4 gates\nClassify into truth/acceptable sets\nRank by band, specificity, precedence\nSelect winner"]
+    </pre>
+
+    <h3 class="text-lg font-semibold text-white mt-6 mb-2" id="fact-tiers">Fact Evaluation Tiers</h3>
+    <table>
+      <thead><tr><th>Tier</th><th>Examples</th><th>Depends On</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag bg-blue-900 text-blue-200">Primitive</span></td><td><code>hand.hcp</code>, <code>hand.suitLength.spades</code>, <code>hand.isBalanced</code></td><td>Hand + HandEvaluation only</td></tr>
+        <tr><td><span class="tag bg-purple-900 text-purple-200">Bridge-Derived</span></td><td><code>bridge.hasFourCardMajor</code>, <code>bridge.majorPattern</code>, <code>bridge.hasShortage</code></td><td>Primitive facts</td></tr>
+        <tr><td><span class="tag bg-green-900 text-green-200">Module-Derived</span></td><td><code>module.stayman.eligible</code>, <code>module.bergen.fitLevel</code></td><td>Primitive + bridge facts</td></tr>
+        <tr><td><span class="tag bg-yellow-900 text-yellow-200">Relational</span></td><td><code>bridge.supportForBoundSuit</code>, <code>bridge.fitWithBoundSuit</code>, <code>bridge.totalPointsForRaise</code></td><td>Facts + publicCommitments + surfaceBindings</td></tr>
+        <tr><td><span class="tag bg-red-900 text-red-200">Posterior</span></td><td>Probabilistic facts from inference engine</td><td>PosteriorEngine + hand spaces (not fully wired)</td></tr>
+      </tbody>
+    </table>
+    <p class="text-slate-400 text-sm mt-2">Facts are topologically sorted by <code>derivesFrom</code> dependencies, then evaluated in order. Missing facts fail closed (clause not satisfied).</p>
+
+    <h3 class="text-lg font-semibold text-white mt-6 mb-2">Clause Evaluation</h3>
+    <p class="text-slate-300 mb-3">Each <code>MeaningSurfaceClause</code> is checked against evaluated facts using one of 6 operators:</p>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+      <div class="card p-2 text-center"><code>boolean</code><br><span class="text-slate-400">exact match</span></div>
+      <div class="card p-2 text-center"><code>gte</code><br><span class="text-slate-400">greater or equal</span></div>
+      <div class="card p-2 text-center"><code>lte</code><br><span class="text-slate-400">less or equal</span></div>
+      <div class="card p-2 text-center"><code>eq</code><br><span class="text-slate-400">strict equality</span></div>
+      <div class="card p-2 text-center"><code>range</code><br><span class="text-slate-400">{min, max}</span></div>
+      <div class="card p-2 text-center"><code>in</code><br><span class="text-slate-400">string set membership</span></div>
+    </div>
+    <p class="text-slate-400 text-sm mt-2">Binding variables (<code>$suit</code>) in factIds are resolved before lookup via <code>resolveFactId()</code>. This lets surfaces be parameterized (e.g. one "raise" surface reusable across suits).</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="gates">
+    <h2 class="text-2xl font-bold text-white mb-4">The 4-Gate Sequence</h2>
+    <p class="text-slate-300 mb-4">Every proposal passes through 4 gates in fixed order. First failure eliminates the candidate.</p>
+
+    <pre class="mermaid">
+flowchart LR
+  G1["1. Semantic\nApplicability"] --> G2["2. Obligation\nSatisfaction"]
+  G2 --> G3["3. Encoder\nAvailability"]
+  G3 --> G4["4. Concrete\nLegality"]
+  G4 --> OK["Encoded\nProposal"]
+  G1 -. fail .-> E1["Eliminated"]
+  G4 -. fail .-> E2["Eliminated"]
+  style E1 fill:#7f1d1d,stroke:#f87171
+  style E2 fill:#7f1d1d,stroke:#f87171
+  style OK fill:#064e3b,stroke:#34d399
+    </pre>
+
+    <table>
+      <thead><tr><th>Gate</th><th>What It Checks</th><th>Current Status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Semantic Applicability</strong></td>
+          <td>All clauses satisfied? (<code>clauses.every(c => c.satisfied)</code>)</td>
+          <td><span class="tag bg-green-900 text-green-200">Active</span></td>
+        </tr>
+        <tr>
+          <td><strong>Obligation Satisfaction</strong></td>
+          <td>Forcing bid obligations met?</td>
+          <td><span class="tag bg-yellow-900 text-yellow-200">Pass-through</span> &mdash; handled at strategy-chain level</td>
+        </tr>
+        <tr>
+          <td><strong>Encoder Availability</strong></td>
+          <td>Can the meaning be encoded as a legal call?</td>
+          <td><span class="tag bg-yellow-900 text-yellow-200">Pass-through</span> &mdash; subsumed by legality</td>
+        </tr>
+        <tr>
+          <td><strong>Concrete Legality</strong></td>
+          <td>Is the resolved call legal in the current auction? (<code>getLegalCalls()</code>)</td>
+          <td><span class="tag bg-green-900 text-green-200">Active</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="text-slate-400 text-sm mt-2">Gates 2 and 3 always pass today. They exist as placeholders for future enforcement (forcing obligations, complex encoder resolution).</p>
+
+    <h3 class="text-lg font-semibold text-white mt-6 mb-2">Encoder Resolution</h3>
+    <p class="text-slate-300 mb-2">4 encoder kinds determine how a meaning maps to a concrete call:</p>
+    <table>
+      <thead><tr><th>Encoder Kind</th><th>Logic</th><th>Used By</th></tr></thead>
+      <tbody>
+        <tr><td><code>direct</code></td><td>Use <code>defaultCall</code> if legal, else eliminated</td><td>Most surfaces</td></tr>
+        <tr><td><code>choice-set</code></td><td>Pick first legal call from ordered set</td><td>Splinter bids</td></tr>
+        <tr><td><code>frontier-step</code></td><td>Cheapest legal call at or above a floor</td><td>Relay continuations</td></tr>
+        <tr><td><code>relay-map</code></td><td>Map-based lookup (suit to call)</td><td>Transfer bids</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="arbitration">
+    <h2 class="text-2xl font-bold text-white mb-4">Arbitration</h2>
+    <p class="text-slate-300 mb-4">After gate checks, surviving proposals are classified into <strong>truth set</strong> (all clauses satisfied + legal) and <strong>acceptable set</strong> (clauses failed but legal, band "may" or better). The truth set is sorted and the winner selected.</p>
+
+    <pre class="mermaid">
+flowchart TD
+  EP["Encoded Proposals"] --> CL["classifyIntoSets()"]
+  CL --> TS["Truth Set\n(satisfied + legal)"]
+  CL --> AS["Acceptable Set\n(unsatisfied + legal)"]
+  TS --> SORT["Sort by ranking:\n1. recommendationBand\n2. specificity (higher wins)\n3. modulePrecedence\n4. intraModuleOrder"]
+  SORT --> DEDUP["Deduplicate by\nsemanticClassId aliases"]
+  DEDUP --> WIN["Winner = first in\ndeduplicated list"]
+  WIN --> RES["ArbitrationResult"]
+  AS --> RES
+    </pre>
+
+    <h3 class="text-lg font-semibold text-white mt-6 mb-2">Ranking Hierarchy</h3>
+    <table>
+      <thead><tr><th>Band</th><th>Priority Value</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>must</code></td><td>0 (highest)</td><td>Obligatory &mdash; forced bid</td></tr>
+        <tr><td><code>should</code></td><td>1</td><td>Preferred conventional bid</td></tr>
+        <tr><td><code>may</code></td><td>2</td><td>Correct but not preferred</td></tr>
+        <tr><td><code>avoid</code></td><td>3 (lowest)</td><td>Fallback; correct but inadvisable</td></tr>
+      </tbody>
+    </table>
+    <p class="text-slate-400 text-sm mt-2">Ties in band are broken by specificity (more specific wins), then modulePrecedence (lower wins), then intraModuleOrder.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="teaching">
+    <h2 class="text-2xl font-bold text-white mb-4">Teaching Resolution</h2>
+    <p class="text-slate-300 mb-4">The teaching layer grades the user's bid against the pipeline's answer. Five grades, evaluated in cascade order:</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-4">
+      <div class="card card-success p-3 text-center">
+        <div class="font-bold text-success">Correct</div>
+        <p class="text-xs text-slate-400 mt-1">Exact match with primary recommendation</p>
+      </div>
+      <div class="card p-3 text-center" style="border-left: 4px solid #6ee7b7;">
+        <div class="font-bold text-emerald-300">CorrectNotPreferred</div>
+        <p class="text-xs text-slate-400 mt-1">In truth set but not the top pick</p>
+      </div>
+      <div class="card card-warn p-3 text-center">
+        <div class="font-bold text-warn">Acceptable</div>
+        <p class="text-xs text-slate-400 mt-1">In alternative groups or has preferred/alternative priority</p>
+      </div>
+      <div class="card p-3 text-center" style="border-left: 4px solid #fb923c;">
+        <div class="font-bold text-orange-300">NearMiss</div>
+        <p class="text-xs text-slate-400 mt-1">Same intent family, fails a constraint</p>
+      </div>
+      <div class="card card-danger p-3 text-center">
+        <div class="font-bold text-danger">Incorrect</div>
+        <p class="text-xs text-slate-400 mt-1">Not in any recognized set</p>
+      </div>
+    </div>
+
+    <h3 class="text-lg font-semibold text-white mt-4 mb-2">Resolution Process</h3>
+    <ol class="text-slate-300 text-sm space-y-1 list-decimal list-inside">
+      <li><strong>Priority filter:</strong> Eligible candidates with <code>preferred</code> or <code>alternative</code> priority become acceptable bids</li>
+      <li><strong>AlternativeGroup lookup:</strong> Cross-convention alternatives (bypasses tree-path exclusivity)</li>
+      <li><strong>IntentFamily-aware credit:</strong> <code>equivalent_encoding</code> relations get full credit</li>
+      <li><strong>Deduplication:</strong> Higher-credit version wins when a bid appears in both sources</li>
+      <li><strong>Near-miss detection:</strong> Candidates sharing an intent family with the matched bid that have failed conditions</li>
+    </ol>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="assumptions">
+    <h2 class="text-2xl font-bold text-white mb-4">Key Assumptions</h2>
+    <p class="text-slate-300 mb-4">The pipeline's correctness depends on these assumptions. Each is annotated with robustness status.</p>
+
+    <div class="assumption-grid">
+
+      <div class="card card-success p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-green-900 text-green-200">Robust</span>
+          <span class="font-semibold text-white">Deterministic grading</span>
+        </div>
+        <p class="text-slate-400 text-sm">Same hand + same auction = same grade. No randomness in the pipeline. Posterior enrichment is a sidecar and does not affect the truth set in V1.</p>
+      </div>
+
+      <div class="card card-success p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-green-900 text-green-200">Robust</span>
+          <span class="font-semibold text-white">Convention-universal core</span>
+        </div>
+        <p class="text-slate-400 text-sm">All pipeline stages (fact eval, clause eval, arbitration, encoding) are generic. Convention-specific logic lives only in <code>definitions/</code>. Validated by 4 distinct convention patterns.</p>
+      </div>
+
+      <div class="card card-success p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-green-900 text-green-200">Robust</span>
+          <span class="font-semibold text-white">Fact evaluation is topologically sorted</span>
+        </div>
+        <p class="text-slate-400 text-sm">Facts declare <code>derivesFrom</code> dependencies. The evaluator sorts them before execution. Cycle detection is implicit (visited set).</p>
+      </div>
+
+      <div class="card card-warn p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-yellow-900 text-yellow-200">Moderate</span>
+          <span class="font-semibold text-white">FSM replays entire auction</span>
+        </div>
+        <p class="text-slate-400 text-sm">The machine replays all auction entries from <code>idle</code> on every call to <code>suggest()</code>. O(n) per bid where n = auction length. Fine for bridge (max ~40 bids) but fundamentally non-incremental. Caching by auction length mitigates repeated calls at the same position.</p>
+      </div>
+
+      <div class="card card-warn p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-yellow-900 text-yellow-200">Moderate</span>
+          <span class="font-semibold text-white">Single-winner arbitration</span>
+        </div>
+        <p class="text-slate-400 text-sm">The pipeline selects exactly one winner from the truth set (first after sorting). When multiple surfaces tie on all ranking dimensions, the winner is determined by array order. This is intentional (surfaces are authored in precedence order) but implicit.</p>
+      </div>
+
+      <div class="card card-warn p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-yellow-900 text-yellow-200">Moderate</span>
+          <span class="font-semibold text-white">Fail-closed on missing facts</span>
+        </div>
+        <p class="text-slate-400 text-sm">If a fact is missing from the catalog, the clause is marked unsatisfied. Correct for safety, but a typo in a factId silently eliminates a surface with no diagnostic warning.</p>
+      </div>
+
+      <div class="card card-warn p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-yellow-900 text-yellow-200">Moderate</span>
+          <span class="font-semibold text-white">Obligation gate is a no-op</span>
+        </div>
+        <p class="text-slate-400 text-sm">Gate 2 (<code>obligation-satisfaction</code>) always passes. Forcing obligations are handled separately at the strategy-chain level via <code>createForcingFilter</code>. This split means the pipeline's elimination trace doesn't show obligation failures.</p>
+      </div>
+
+      <div class="card card-danger p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-red-900 text-red-200">Fragile</span>
+          <span class="font-semibold text-white">No FSM validation at authoring time</span>
+        </div>
+        <p class="text-slate-400 text-sm"><code>machine-validation.ts</code> exists (orphan/dangling ref checks) but is not automatically run when bundles are registered. A malformed machine is only caught at runtime when no transition matches.</p>
+      </div>
+
+      <div class="card card-danger p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-red-900 text-red-200">Fragile</span>
+          <span class="font-semibold text-white">surfaceGroupId coupling</span>
+        </div>
+        <p class="text-slate-400 text-sm">The machine produces <code>activeSurfaceGroupIds</code> by string. These must exactly match the <code>surfaceGroupId</code> on MeaningSurfaces. A typo in either place silently produces an empty surface set &mdash; the pipeline returns null (no bid) with no diagnostic.</p>
+      </div>
+
+      <div class="card card-danger p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-red-900 text-red-200">Fragile</span>
+          <span class="font-semibold text-white">Predicate transitions are opaque</span>
+        </div>
+        <p class="text-slate-400 text-sm"><code>predicate</code> match kind takes an arbitrary <code>(call, seat, snapshot) => boolean</code>. These are not serializable, not testable in isolation from the FSM, and invisible to validation tooling.</p>
+      </div>
+
+      <div class="card card-warn p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-yellow-900 text-yellow-200">Moderate</span>
+          <span class="font-semibold text-white">Teaching relies on resolvedCandidates</span>
+        </div>
+        <p class="text-slate-400 text-sm">Teaching resolution builds from <code>BidResult.resolvedCandidates</code> mapped from truth + acceptable sets. If the arbitrator drops a candidate (e.g., semantic class dedup), it vanishes from teaching &mdash; the student never learns about the eliminated alternative.</p>
+      </div>
+
+      <div class="card card-warn p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="tag bg-yellow-900 text-yellow-200">Moderate</span>
+          <span class="font-semibold text-white">Relational facts require publicCommitments</span>
+        </div>
+        <p class="text-slate-400 text-sm">Facts like <code>bridge.fitWithBoundSuit</code> check partner's minimum suit length from <code>publicCommitments</code>. If the commitment extractor misses a bid (e.g., opponent interference disrupts the machine), the fit check defaults to 0.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="gaps">
+    <h2 class="text-2xl font-bold text-white mb-4">Known Gaps &amp; Open Questions</h2>
+
+    <table>
+      <thead><tr><th>Area</th><th>Gap</th><th>Impact</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="tag bg-red-900 text-red-200">Spec</span></td>
+          <td>Posterior semantic model not finalized. Joint distribution variables, <code>LatentWorld</code> representation, and fact catalog posterior compilers are unresolved.</td>
+          <td>Blocks WitnessSpecIR wiring, inference spectrum (difficulty config), and probabilistic fact enrichment beyond stub.</td>
+        </tr>
+        <tr>
+          <td><span class="tag bg-red-900 text-red-200">Spec</span></td>
+          <td>Evidence group correlation model not formalized as types. Four target group kinds identified but no IR.</td>
+          <td>Posterior combiner accuracy depends on correct within-group semantics.</td>
+        </tr>
+        <tr>
+          <td><span class="tag bg-yellow-900 text-yellow-200">Coverage</span></td>
+          <td>Only 2 of 6 convention patterns exercised: Pattern 1 (fixed-sequence ask-and-tell) and Pattern 3 (competitive/defensive). Submachines exercised (Smolen). Patterns 2, 4-6 not yet tested.</td>
+          <td>Assumptions about convention-universality are only validated against existing patterns.</td>
+        </tr>
+        <tr>
+          <td><span class="tag bg-yellow-900 text-yellow-200">Coverage</span></td>
+          <td>Host-attachment activation (module activating from another module's exported capabilities) is spec-designed with vocabulary resolved but not exercised by a convention.</td>
+          <td>Negative Doubles and Fourth Suit Forcing are blocked until a convention exercises this pattern.</td>
+        </tr>
+        <tr>
+          <td><span class="tag bg-yellow-900 text-yellow-200">Migration</span></td>
+          <td>Pipeline still consumes <code>MeaningSurface[]</code>, not <code>DecisionSurfaceIR[]</code>. Adapter exists in test code. Two-phase evaluation runtime wired but not the primary consumption path.</td>
+          <td>Dual code paths increase maintenance burden. DecisionSurfaceIR migration would unify them.</td>
+        </tr>
+        <tr>
+          <td><span class="tag bg-blue-900 text-blue-200">Resilience</span></td>
+          <td>No static analysis for surface/machine consistency. <code>surfaceGroupId</code> typos, missing fact catalog entries, and unreachable machine states are caught only by tests or runtime nulls.</td>
+          <td>Authoring errors can silently produce wrong answers. Mitigated by behavioral tests but not by tooling.</td>
+        </tr>
+        <tr>
+          <td><span class="tag bg-blue-900 text-blue-200">Resilience</span></td>
+          <td>WitnessSpecIR types exist but are not wired to deal generation. Raw <code>DealConstraints</code> used instead.</td>
+          <td>Deal generation can produce hands that are impossible for the convention, leading to "no bid found" results.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============================================================ -->
+  <section class="border-t border-slate-700 pt-8">
+    <h2 class="text-2xl font-bold text-white mb-4">Verdict Summary</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="card card-success p-4">
+        <div class="text-lg font-bold text-success mb-2">Strong</div>
+        <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+          <li>Deterministic, pure pipeline</li>
+          <li>Convention-universal core infrastructure</li>
+          <li>Declarative surface authoring</li>
+          <li>5-grade teaching resolution with intent families</li>
+          <li>Rich provenance &amp; evidence trail</li>
+        </ul>
+      </div>
+      <div class="card card-warn p-4">
+        <div class="text-lg font-bold text-warn mb-2">Watch</div>
+        <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+          <li>2 of 4 gates are no-ops</li>
+          <li>String-based coupling (surfaceGroupId, factId)</li>
+          <li>FSM replays full auction each time</li>
+          <li>Implicit tie-breaking by array order</li>
+          <li>Posterior enrichment is stub-only</li>
+        </ul>
+      </div>
+      <div class="card card-danger p-4">
+        <div class="text-lg font-bold text-danger mb-2">Risk</div>
+        <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+          <li>No static validation tooling for bundles</li>
+          <li>Only 2/6 convention patterns exercised</li>
+          <li>Predicate transitions are opaque black boxes</li>
+          <li>Posterior &amp; WitnessSpec design incomplete</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#334155',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#475569',
+      lineColor: '#64748b',
+      secondaryColor: '#1e293b',
+      tertiaryColor: '#0f172a',
+      fontFamily: 'Inter, system-ui, sans-serif',
+    },
+  });
+
+  // Active ToC highlighting
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+        const link = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-80px 0px -80% 0px' });
+
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

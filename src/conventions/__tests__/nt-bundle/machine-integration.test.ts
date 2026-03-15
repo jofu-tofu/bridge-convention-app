@@ -305,15 +305,4 @@ describe("Machine Integration: epistemic layers", () => {
     expect(spadesDenial!.strength).toBe("entailed");
   });
 
-  it("publicBeliefs is empty array (stub)", () => {
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const { modules, getActiveIds } = bundleToRuntimeModules(ntBundle);
-    const activeIds = getActiveIds(auction, Seat.South);
-    const result = evaluate(modules, auction, Seat.South, activeIds, {
-      machine: ntBundle.conversationMachine,
-      surfaceRouter: ntBundle.surfaceRouter,
-    });
-
-    expect(result.publicSnapshot.publicBeliefs).toEqual([]);
-  });
 });

@@ -18,3 +18,6 @@ export * from "./posterior";
 export * from "./agreement-module";
 export * from "./capability-vocabulary";
 export * from "./witness-spec";
+export * from "./factor-graph";
+export * from "./posterior-query";
+export * from "./posterior-backend";

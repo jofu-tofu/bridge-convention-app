@@ -24,7 +24,10 @@ Auction inference system — extracts hand information from bids with per-partne
 | `private-belief.ts` | `PrivateBeliefState`, `conditionOnOwnHand(publicBelief, seat, hand, eval)` — narrows partner suit lengths using own hand (13 minus own length caps partner max) |
 | `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` and `continuationAwkwardness` |
 | `belief-converter.ts` | `toBeliefData()` — converts `PublicBeliefState` → `BeliefData` structural type |
-| `posterior/` | Posterior inference engine — sampling, compilation, and fact evaluation for probabilistic hand inference |
+| `posterior/` | Posterior inference engine — sampling, compilation, and fact evaluation for probabilistic hand inference. See `posterior/CLAUDE.md` for details. |
+| `posterior/factor-compiler.ts` | `compileFactorGraph()`, `validateFactorGraph()` — compiles `PublicSnapshot` → `FactorGraphIR`. Convention-erased. |
+| `posterior/ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation wrapping existing sampler. Answers `PosteriorQueryIR` queries. |
+| `posterior/query-port.ts` | `createQueryPort()` — creates `PosteriorQueryPort` from backend + state. Consumer-facing query interface. |
 
 ## Contracts Boundary
 
@@ -51,6 +54,17 @@ Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` 
 - **`applyAnnotation()`:** Merges annotation inferences into seat's beliefs via `mergeInferences()`. Returns new immutable state.
 - **`produceAnnotation()`:** Convention bids → inferences from extractor. Natural bids → inferences from `naturalInferenceProvider`. Pass/double/redouble → empty inferences.
 - **HCP narrowing:** `conditionOnOwnHand()` caps partner HCP max at `40 - ownHcp` (conservative bound). `toBeliefData()` uses narrowed `partnerHcpRange` for partner seat when private override present.
+- **`publicBeliefs` removed from `PublicSnapshot`** (Phase 2). Belief views are now accessed via `PosteriorQueryPort` instead of being eagerly attached to the snapshot. This decouples snapshot construction from posterior inference.
+
+## New Posterior Boundary
+
+The redesigned posterior boundary (Phases 0-5 complete) separates concerns into three layers:
+
+1. **Factor Compiler** (`posterior/factor-compiler.ts`): `PublicSnapshot` → `FactorGraphIR` — convention-erased compilation. No convention imports cross the boundary.
+2. **Backend** (`posterior/ts-posterior-backend.ts`): `ConditioningContext` → `PosteriorState` — weighted particle generation via Monte Carlo sampling. The backend is replaceable (future Rust/WASM swap).
+3. **Query Port** (`posterior/query-port.ts`): `PosteriorState` → typed queries via `PosteriorQueryPort` — consumer-facing interface (`marginalHcp()`, `fitProbability()`, etc.).
+
+The old `PosteriorEngine` → `SeatPosterior` path still works and is used during migration. See `posterior/CLAUDE.md` for migration status and gotchas. Boundary invariant tests in `boundary-invariants.test.ts` enforce: no convention imports, no `publicBeliefs` on snapshot, JSON round-trip, compilation trace integrity.
 
 ## Gotchas
 
@@ -78,4 +92,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `inference-engine.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-06-11 | version=6 | tree-sig=dirs:2,files:14,exts:ts:13,md:1 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-03-15 | version=7 | tree-sig=dirs:2,files:17,exts:ts:16,md:2 -->

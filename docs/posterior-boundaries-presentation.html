@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Posterior Architecture Boundaries</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f5f1e8;
+        --ink: #1d2a2e;
+        --muted: #5f6f73;
+        --line: #c8bda9;
+        --accent: #16697a;
+        --accent-soft: #d8ecee;
+        --warn: #8f2d2d;
+        --warn-soft: #fde7e1;
+        --ok: #245c3a;
+        --ok-soft: #e5f3ea;
+        --gold: #8a6700;
+        --gold-soft: #f7efcf;
+        --card: #fffdf8;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-size: 16px;
+        line-height: 1.7;
+        letter-spacing: 0.01em;
+        word-spacing: 0.02em;
+        background:
+          radial-gradient(circle at top left, #efe4cf 0, transparent 32rem),
+          linear-gradient(180deg, #f8f4ec 0%, var(--paper) 100%);
+        color: var(--ink);
+      }
+
+      .page-grid {
+        display: grid;
+        grid-template-columns: 18rem minmax(0, 78ch);
+        gap: 2rem;
+      }
+
+      .toc-link {
+        display: block;
+        border-left: 3px solid transparent;
+        padding: 0.5rem 0.75rem;
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .toc-link:hover,
+      .toc-link.active {
+        border-left-color: var(--accent);
+        background: rgba(22, 105, 122, 0.08);
+        color: var(--ink);
+      }
+
+      .prose-block p {
+        margin-bottom: 1.4rem;
+      }
+
+      .diagram-shell {
+        border: 1px solid var(--line);
+        background: #fffefa;
+      }
+
+      .legend-chip {
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .callout {
+        border-left: 4px solid var(--accent);
+      }
+
+      .back-to-top {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        display: none;
+      }
+
+      .back-to-top.show {
+        display: inline-flex;
+      }
+
+      @media (max-width: 960px) {
+        .page-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .toc-wrap {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a id="top"></a>
+    <div class="mx-auto max-w-7xl px-4 py-8 md:px-8">
+      <header
+        class="mb-10 rounded-[2rem] border border-[color:var(--line)] bg-[color:var(--card)] px-6 py-8 shadow-sm md:px-10"
+      >
+        <p
+          class="mb-3 text-sm font-semibold tracking-[0.18em] text-[color:var(--accent)] uppercase"
+        >
+          Bridge Convention App · Internal architecture explainer
+        </p>
+        <h1 class="max-w-4xl text-4xl leading-tight font-black md:text-5xl">
+          Posterior feedback, translated into one question:
+          <span class="text-[color:var(--accent)]">what belongs where?</span>
+        </h1>
+        <p class="mt-6 max-w-4xl text-lg text-[color:var(--muted)]">
+          This presentation turns the posterior-engine feedback into a boundary
+          map. It shows what the feedback changes, what it leaves alone, and how
+          it fits the current contracts and files in this codebase.
+        </p>
+        <div class="mt-8 grid gap-4 md:grid-cols-4">
+          <section
+            class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-5"
+          >
+            <h2 class="text-lg font-bold">Main takeaway</h2>
+            <p class="mt-3 text-sm">
+              Deterministic teaching stays upstream. Probabilistic realism
+              becomes a separate full-world posterior layer.
+            </p>
+          </section>
+          <section
+            class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--ok-soft)] p-5"
+          >
+            <h2 class="text-lg font-bold">Canonical state</h2>
+            <p class="mt-3 text-sm">
+              The engine should reason over weighted particles of complete
+              hidden worlds, not seat-local marginals.
+            </p>
+          </section>
+          <section
+            class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--warn-soft)] p-5"
+          >
+            <h2 class="text-lg font-bold">Big rename</h2>
+            <p class="mt-3 text-sm">
+              <code>publicBeliefs</code> should leave
+              <code>PublicSnapshot</code>. Snapshot carries public state, not
+              beliefs.
+            </p>
+          </section>
+          <section
+            class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--gold-soft)] p-5"
+          >
+            <h2 class="text-lg font-bold">Big implementation shift</h2>
+            <p class="mt-3 text-sm">
+              Move from rejection sampling plus fact handlers toward full-world
+              importance sampling plus compiled query IR.
+            </p>
+          </section>
+        </div>
+      </header>
+
+      <div class="page-grid">
+        <aside
+          class="toc-wrap top-6 h-fit rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] p-4 shadow-sm md:sticky"
+        >
+          <p
+            class="mb-3 text-sm font-semibold tracking-[0.16em] text-[color:var(--accent)] uppercase"
+          >
+            Table of Contents
+          </p>
+          <nav aria-label="Table of contents">
+            <a class="toc-link" href="#executive-read">Executive Read</a>
+            <a class="toc-link" href="#current-vs-target">Current vs Target</a>
+            <a class="toc-link" href="#boundary-rules">Boundary Rules</a>
+            <a class="toc-link" href="#codebase-fit"
+              >How It Fits the Current Code</a
+            >
+            <a class="toc-link" href="#resolved-questions"
+              >Questions This Resolves</a
+            >
+            <a class="toc-link" href="#migration">Migration Path</a>
+            <a class="toc-link" href="#bottom-line">Bottom Line</a>
+          </nav>
+        </aside>
+
+        <main class="min-w-0">
+          <section id="executive-read" class="mb-16">
+            <h2 class="text-3xl font-black">Executive Read</h2>
+            <div class="prose-block mt-5">
+              <p>
+                The feedback does <strong>not</strong> move correctness into
+                probability. That boundary stays exactly where the current specs
+                want it: the meaning pipeline and teaching stack still decide
+                what is correct, acceptable, and recommended. The posterior
+                layer stays a <strong>realism layer</strong> that explains
+                uncertainty and plausibility.
+              </p>
+              <p>
+                What changes is the
+                <strong>canonical probabilistic object</strong>. Today, the code
+                and contracts lean toward <code>PublicHandSpace</code>,
+                <code>SeatPosterior</code>, and snapshot-level
+                <code>publicBeliefs</code>. The feedback says those are the
+                wrong center of gravity. The center should be a joint
+                distribution over <strong>full hidden worlds</strong>: unseen
+                cards, unresolved branch choices, and optional latent variables.
+              </p>
+              <p>
+                In plain English: the current model mostly asks, “what might
+                this one seat hold?” The feedback says the canonical model
+                should ask, “what complete bridge worlds are still alive, and
+                how much weight should each one have?” Seat beliefs then become
+                projections.
+              </p>
+            </div>
+
+            <figure class="diagram-shell mt-8 rounded-[1.5rem] p-5">
+              <figcaption class="mb-4">
+                <h3 class="text-xl font-bold">
+                  Diagram 1: The boundary the feedback is protecting
+                </h3>
+                <p class="text-sm text-[color:var(--muted)]">
+                  The core message is separation: deterministic teaching stays
+                  upstream; probabilistic realism runs beside it, not inside it.
+                </p>
+              </figcaption>
+              <pre
+                class="mermaid overflow-x-auto rounded-xl bg-white p-4"
+                role="img"
+                aria-label="Architecture boundary diagram"
+              >flowchart TD
+    A[Meaning pipeline<br>correctness and recommendation] --> B[PublicSnapshot<br>public record and commitments]
+    A --> T[TeachingProjection<br>grading and explanation]
+    B --> C[PosteriorContext<br>constraints priors and evidence]
+    C --> D[PosteriorState<br>weighted full latent worlds]
+    D --> E[PosteriorView<br>and PosteriorFactValue]
+
+    W[WitnessSpecIR] --> S[SharedWorldIR]
+    C --> S
+    E --> T
+
+    classDef deterministic fill:#e5f3ea,stroke:#245c3a,color:#1d2a2e;
+    classDef public fill:#d8ecee,stroke:#16697a,color:#1d2a2e;
+    classDef posterior fill:#fde7e1,stroke:#8f2d2d,color:#1d2a2e;
+    classDef shared fill:#f7efcf,stroke:#8a6700,color:#1d2a2e;
+
+    class A,T deterministic;
+    class B public;
+    class C,D,E posterior;
+    class W,S shared;</pre>
+            </figure>
+          </section>
+
+          <section id="current-vs-target" class="mb-16">
+            <h2 class="text-3xl font-black">Current Model vs Target Model</h2>
+            <div class="prose-block mt-5">
+              <p>
+                The current codebase already has the right
+                <strong>separation instinct</strong>: root context says
+                deterministic teaching and probabilistic realism are separate.
+                The feedback tightens that instinct into harder contracts.
+              </p>
+            </div>
+
+            <div
+              class="overflow-hidden rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] shadow-sm"
+            >
+              <table
+                class="min-w-full divide-y divide-[color:var(--line)] text-sm"
+              >
+                <thead class="bg-[color:var(--accent-soft)] text-left">
+                  <tr>
+                    <th class="px-4 py-3 font-bold">Concept</th>
+                    <th class="px-4 py-3 font-bold">Current code / contract</th>
+                    <th class="px-4 py-3 font-bold">Target from feedback</th>
+                    <th class="px-4 py-3 font-bold">Boundary meaning</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[color:var(--line)] align-top">
+                  <tr>
+                    <td class="px-4 py-3">
+                      <code>PublicSnapshot.publicBeliefs</code>
+                    </td>
+                    <td class="px-4 py-3">
+                      <code>src/core/contracts/module-surface.ts</code> stores
+                      <code>BeliefView[]</code> directly on the snapshot.
+                    </td>
+                    <td class="px-4 py-3">
+                      Remove from snapshot. If public cues exist, keep them as
+                      <code>publicObservations</code> or
+                      <code>publicSignals</code>. Posterior summaries move to
+                      <code>PosteriorView</code>.
+                    </td>
+                    <td class="px-4 py-3">Public state is not belief state.</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3"><code>latentBranches</code></td>
+                    <td class="px-4 py-3">
+                      Snapshot and <code>PublicHandSpace</code> already carry
+                      <code>LatentBranchSet[]</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Rename the public schema to
+                      <code>publicAmbiguitySchema</code>. Per-world realized
+                      choices become <code>BranchAssignment</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Public ambiguity must stay separate from hidden realized
+                      alternatives.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3"><code>PublicHandSpace</code></td>
+                    <td class="px-4 py-3">
+                      Acts like the main compiled posterior object in
+                      <code>posterior.ts</code> and
+                      <code>posterior-engine.ts</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Demote to a support envelope or proposal aid. Useful, but
+                      not canonical probabilistic state.
+                    </td>
+                    <td class="px-4 py-3">
+                      Support and pruning are not the same thing as belief.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3"><code>SeatPosterior</code></td>
+                    <td class="px-4 py-3">
+                      Current contract treats it as the main conditioned
+                      posterior object with query methods.
+                    </td>
+                    <td class="px-4 py-3">
+                      Treat seat-level posteriors as derived views, preferably
+                      <code>SeatPosteriorView</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Marginals are projections, not the engine’s canonical
+                      state.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3"><code>LikelihoodModel</code></td>
+                    <td class="px-4 py-3">
+                      Flat factors plus
+                      <code>combinationRule: "independent" | "chained"</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Replace with <code>EvidenceProgram</code> using typed
+                      group semantics: independent, exclusive alternative,
+                      shared-source joint, temporal chain.
+                    </td>
+                    <td class="px-4 py-3">
+                      Correlation should be explicit and machine-checkable.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">
+                      <code>POSTERIOR_FACT_HANDLERS</code>
+                    </td>
+                    <td class="px-4 py-3">
+                      Fact-specific handwritten handlers in
+                      <code>src/inference/posterior/posterior-facts.ts</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Move toward query templates compiled into
+                      <code>PosteriorQueryIR</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Extend primitives, not one-off fact code.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Sampling backend</td>
+                    <td class="px-4 py-3">
+                      <code>sampleDeals()</code> does rejection sampling and
+                      returns weight <code>1</code> for every accepted sample.
+                    </td>
+                    <td class="px-4 py-3">
+                      Use full-world importance sampling first, then sequential
+                      Monte Carlo as the target runtime shape.
+                    </td>
+                    <td class="px-4 py-3">
+                      Weights should express plausibility, not just acceptance.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <figure class="diagram-shell mt-8 rounded-[1.5rem] p-5">
+              <figcaption class="mb-4">
+                <h3 class="text-xl font-bold">
+                  Diagram 2: Current center of gravity vs target center of
+                  gravity
+                </h3>
+                <p class="text-sm text-[color:var(--muted)]">
+                  The proposed shift is not “add more posterior detail.” It is
+                  “move the canonical object down to the full-world level.”
+                </p>
+              </figcaption>
+              <pre
+                class="mermaid overflow-x-auto rounded-xl bg-white p-4"
+                role="img"
+                aria-label="Current versus target posterior model"
+              >flowchart LR
+    subgraph Current
+      C1[PublicSnapshot]
+      C2[PublicHandSpace<br>per seat]
+      C3[SeatPosterior]
+      C4[Fact handlers]
+      C1 --> C2 --> C3 --> C4
+    end
+
+    subgraph Target
+      T1[PublicSnapshot]
+      T2[ConstraintProgram]
+      T3[PriorProgram]
+      T4[EvidenceProgram]
+      T5[PosteriorState<br>over LatentWorld]
+      T6[PosteriorQueryIR]
+      T7[SeatPosteriorView<br>and PosteriorFactValue]
+      T1 --> T2
+      T1 --> T3
+      T1 --> T4
+      T2 --> T5
+      T3 --> T5
+      T4 --> T5
+      T5 --> T6 --> T7
+    end</pre>
+            </figure>
+          </section>
+
+          <section id="boundary-rules" class="mb-16">
+            <h2 class="text-3xl font-black">Boundary Rules</h2>
+            <div class="prose-block mt-5">
+              <p>
+                The most useful part of the feedback is that it turns several
+                fuzzy ideas into a small set of yes-or-no classification rules.
+                If you remember only one section, remember this one.
+              </p>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <section
+                class="rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <h3 class="text-xl font-bold">
+                  Rule 1: Impossible vs unlikely
+                </h3>
+                <p class="mt-3 text-sm text-[color:var(--muted)]">
+                  This is the hard/soft boundary.
+                </p>
+                <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+                  <li>
+                    If violating it makes a world impossible, it belongs in
+                    <code>ConstraintProgram</code>.
+                  </li>
+                  <li>
+                    If violating it only lowers plausibility, it belongs in
+                    <code>EvidenceProgram</code>.
+                  </li>
+                  <li>
+                    If it is baseline mass before observed realism, it belongs
+                    in <code>PriorProgram</code>.
+                  </li>
+                </ul>
+              </section>
+              <section
+                class="rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <h3 class="text-xl font-bold">
+                  Rule 2: Public schema vs latent realization
+                </h3>
+                <p class="mt-3 text-sm text-[color:var(--muted)]">
+                  This is the ambiguity boundary.
+                </p>
+                <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+                  <li>
+                    <code>publicAmbiguitySchema</code> is public and
+                    deterministic.
+                  </li>
+                  <li>
+                    <code>BranchAssignment</code> is per-world and hidden.
+                  </li>
+                  <li>Do not collapse those into one mixed object.</li>
+                </ul>
+              </section>
+              <section
+                class="rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <h3 class="text-xl font-bold">
+                  Rule 3: Canonical state vs read model
+                </h3>
+                <p class="mt-3 text-sm text-[color:var(--muted)]">
+                  This is the posterior object boundary.
+                </p>
+                <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+                  <li>
+                    The canonical probabilistic object is a distribution over
+                    <code>LatentWorld</code>.
+                  </li>
+                  <li>
+                    <code>SeatPosteriorView</code>, branch summaries, and fact
+                    values are projections.
+                  </li>
+                  <li>
+                    <code>PublicHandSpace</code> is a support aid, not the
+                    canonical belief object.
+                  </li>
+                </ul>
+              </section>
+              <section
+                class="rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <h3 class="text-xl font-bold">
+                  Rule 4: Deterministic teaching vs probabilistic realism
+                </h3>
+                <p class="mt-3 text-sm text-[color:var(--muted)]">
+                  This is the biggest architectural guardrail.
+                </p>
+                <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+                  <li>The meaning pipeline still defines correctness.</li>
+                  <li>
+                    The posterior engine may explain realism and uncertainty.
+                  </li>
+                  <li>
+                    The posterior engine must never redefine the answer key.
+                  </li>
+                </ul>
+              </section>
+            </div>
+
+            <div
+              class="callout mt-8 rounded-2xl border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-5"
+            >
+              <h3 class="text-xl font-bold">Practical litmus test</h3>
+              <p class="mt-3">
+                When you are unsure where something belongs, ask three questions
+                in order:
+                <strong>Is it public?</strong>
+                <strong>Is it deterministic?</strong>
+                <strong
+                  >Does it make worlds impossible or just more or less
+                  plausible?</strong
+                >
+                Those three answers usually place it in the right subsystem
+                immediately.
+              </p>
+            </div>
+          </section>
+
+          <section id="codebase-fit" class="mb-16">
+            <h2 class="text-3xl font-black">How It Fits the Current Code</h2>
+            <div class="prose-block mt-5">
+              <p>
+                The good news is that this feedback fits your current
+                architecture direction better than it fits the current posterior
+                implementation. In other words, it mostly reinforces the
+                <strong>spec philosophy</strong> and asks the posterior code to
+                catch up.
+              </p>
+            </div>
+
+            <div
+              class="overflow-hidden rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] shadow-sm"
+            >
+              <table
+                class="min-w-full divide-y divide-[color:var(--line)] text-sm"
+              >
+                <thead class="bg-[color:var(--ok-soft)] text-left">
+                  <tr>
+                    <th class="px-4 py-3 font-bold">Area</th>
+                    <th class="px-4 py-3 font-bold">Already aligned</th>
+                    <th class="px-4 py-3 font-bold">
+                      Boundary mismatch the feedback exposes
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[color:var(--line)] align-top">
+                  <tr>
+                    <td class="px-4 py-3">Teaching architecture</td>
+                    <td class="px-4 py-3">
+                      Root project context already says deterministic teaching
+                      and probabilistic realism are separate.
+                    </td>
+                    <td class="px-4 py-3">
+                      Snapshot-level <code>publicBeliefs</code> blurs that
+                      separation by embedding posterior summaries into public
+                      state.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Public commitments</td>
+                    <td class="px-4 py-3">
+                      <code>publicRecord</code> and
+                      <code>publicCommitments</code> already exist and are the
+                      right upstream inputs.
+                    </td>
+                    <td class="px-4 py-3">
+                      Posterior compilation currently turns those mostly into
+                      per-seat hand predicates, which is narrower than the
+                      proposed full-world model.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Ambiguity</td>
+                    <td class="px-4 py-3">
+                      The code already has <code>LatentBranchSet</code> as a
+                      concept.
+                    </td>
+                    <td class="px-4 py-3">
+                      The type still mixes schema-ish and probability-ish
+                      concerns; the feedback separates public schema from
+                      realized hidden selection.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Posterior facts</td>
+                    <td class="px-4 py-3">
+                      There is already a contract boundary for posterior facts
+                      and a catalog bridge into the fact system.
+                    </td>
+                    <td class="px-4 py-3">
+                      The current implementation is still handler-per-fact, not
+                      compiled queries over a general algebra.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Sampling</td>
+                    <td class="px-4 py-3">
+                      Monte Carlo is already the instinct, and the system
+                      already has a sampler seam.
+                    </td>
+                    <td class="px-4 py-3">
+                      Current samples are accepted with unit weight, so support
+                      and realism are not cleanly separated.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-8 grid gap-4 md:grid-cols-2">
+              <section
+                class="rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <h3 class="text-xl font-bold">
+                  Files that likely change semantics
+                </h3>
+                <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+                  <li>
+                    <code>src/core/contracts/module-surface.ts</code> — remove
+                    posterior beliefs from snapshot semantics.
+                  </li>
+                  <li>
+                    <code>src/core/contracts/posterior.ts</code> — redefine
+                    canonical objects, views, evidence programs, and query IR.
+                  </li>
+                  <li>
+                    <code>src/core/contracts/fact-catalog.ts</code> — shift
+                    posterior evaluators toward query-template compilation.
+                  </li>
+                </ul>
+              </section>
+              <section
+                class="rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <h3 class="text-xl font-bold">
+                  Files that likely change implementation shape
+                </h3>
+                <ul class="mt-4 list-disc space-y-2 pl-5 text-sm">
+                  <li>
+                    <code>src/inference/posterior/posterior-engine.ts</code> —
+                    build <code>PosteriorContext</code> and
+                    <code>PosteriorState</code> instead of seat-first objects.
+                  </li>
+                  <li>
+                    <code>src/inference/posterior/posterior-sampler.ts</code> —
+                    move from rejection sampling to weighted full-world
+                    proposals.
+                  </li>
+                  <li>
+                    <code>src/inference/posterior/posterior-facts.ts</code> —
+                    retire fact-level handlers as the default extension pattern.
+                  </li>
+                </ul>
+              </section>
+            </div>
+          </section>
+
+          <section id="resolved-questions" class="mb-16">
+            <h2 class="text-3xl font-black">
+              Questions This Feedback Resolves
+            </h2>
+            <div
+              class="overflow-hidden rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--card)] shadow-sm"
+            >
+              <table
+                class="min-w-full divide-y divide-[color:var(--line)] text-sm"
+              >
+                <thead class="bg-[color:var(--gold-soft)] text-left">
+                  <tr>
+                    <th class="px-4 py-3 font-bold">Open question</th>
+                    <th class="px-4 py-3 font-bold">Recommended resolution</th>
+                    <th class="px-4 py-3 font-bold">Boundary effect</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[color:var(--line)] align-top">
+                  <tr>
+                    <td class="px-4 py-3">Canonical latent state</td>
+                    <td class="px-4 py-3">
+                      Use a distribution over full hidden worlds, including
+                      branch assignments.
+                    </td>
+                    <td class="px-4 py-3">
+                      Joint facts become native. Seat marginals become derived.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Hard vs soft vs prior</td>
+                    <td class="px-4 py-3">
+                      Use three explicit programs:
+                      <code>ConstraintProgram</code>, <code>PriorProgram</code>,
+                      <code>EvidenceProgram</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Support, baseline mass, and realism stop leaking into each
+                      other.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Correlation semantics</td>
+                    <td class="px-4 py-3">
+                      Use typed evidence groups instead of prose-only likelihood
+                      assumptions.
+                    </td>
+                    <td class="px-4 py-3">
+                      Engine can tell when to multiply, sum alternatives, score
+                      jointly, or score sequentially.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Posterior facts</td>
+                    <td class="px-4 py-3">
+                      Compile fact requests through query templates into
+                      <code>PosteriorQueryIR</code>.
+                    </td>
+                    <td class="px-4 py-3">
+                      Fact catalog owns templates; primitive operators own hard
+                      logic.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Witness relationship</td>
+                    <td class="px-4 py-3">
+                      Share a lower-level world predicate substrate, but keep
+                      top-level witness and posterior IRs separate.
+                    </td>
+                    <td class="px-4 py-3">
+                      Deterministic teaching search and probabilistic inference
+                      stay distinct.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3">Belief placement</td>
+                    <td class="px-4 py-3">
+                      Beliefs leave <code>PublicSnapshot</code>; views come from
+                      posterior runtime state.
+                    </td>
+                    <td class="px-4 py-3">
+                      Public state becomes a cleaner machine-to-posterior seam.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="migration" class="mb-16">
+            <h2 class="text-3xl font-black">Migration Path in Plain English</h2>
+            <div class="prose-block mt-5">
+              <p>
+                The migration path implied by the feedback is clean because it
+                mostly redraws contracts before it demands algorithmic
+                sophistication. You do not need to jump to full sequential Monte
+                Carlo on day one.
+              </p>
+            </div>
+            <ol class="mt-6 space-y-4">
+              <li
+                class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <strong>1. Clean up semantics first.</strong> Reclassify current
+                inputs into public snapshot, hard constraints, priors, evidence,
+                and ambiguity schema.
+              </li>
+              <li
+                class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <strong>2. Reset the canonical object.</strong> Make full hidden
+                worlds the center; demote hand spaces and seat posteriors to
+                support and view layers.
+              </li>
+              <li
+                class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <strong>3. Add weights before sophistication.</strong> Replace
+                unit-weight rejection sampling with weighted importance sampling
+                over full worlds.
+              </li>
+              <li
+                class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <strong
+                  >4. Replace vague likelihoods with typed evidence
+                  groups.</strong
+                >
+                This resolves the evidence-correlation open question
+                structurally.
+              </li>
+              <li
+                class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <strong>5. Replace fact handlers with query templates.</strong>
+                That resolves the fact-catalog compiler question at the right
+                boundary.
+              </li>
+              <li
+                class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <strong>6. Extract the shared world substrate.</strong> Witness
+                generation and posterior inference reuse the same lower-level
+                predicates without becoming the same IR.
+              </li>
+              <li
+                class="rounded-2xl border border-[color:var(--line)] bg-[color:var(--card)] p-5 shadow-sm"
+              >
+                <strong>7. Upgrade the runtime later.</strong> Once semantics
+                are clean, move from snapshot-wise importance sampling to
+                sequential Monte Carlo with resampling and conditioned decision
+                views.
+              </li>
+            </ol>
+          </section>
+
+          <section id="bottom-line" class="mb-16">
+            <h2 class="text-3xl font-black">Bottom Line</h2>
+            <div class="prose-block mt-5">
+              <p>
+                The feedback is best understood as a
+                <strong>boundary correction</strong>, not a new theory of the
+                whole app. It keeps your existing architecture story intact:
+                public runtime upstream, meaning pipeline for correctness,
+                teaching projection for pedagogy.
+              </p>
+              <p>
+                The big correction is local to inference: stop treating
+                seat-local hand spaces and snapshot-level belief views as the
+                main probabilistic object. Instead, treat them as helpers and
+                projections around one canonical posterior state over full
+                hidden bridge worlds.
+              </p>
+              <p>
+                If you adopt that center of gravity, several current open
+                questions become easier to answer consistently:
+                <code>publicBeliefs</code> naming, evidence correlation
+                semantics, posterior fact compilation, and the boundary with
+                <code>WitnessSpecIR</code>
+                all become cleaner because each now has one obvious home.
+              </p>
+            </div>
+            <div
+              class="mt-8 rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--accent-soft)] p-6"
+            >
+              <h3 class="text-xl font-bold">One-sentence memory aid</h3>
+              <p class="mt-3 text-lg">
+                <strong
+                  >The meaning pipeline decides what is correct; the posterior
+                  engine decides which complete hidden worlds are still
+                  plausible.</strong
+                >
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <a
+      href="#top"
+      class="back-to-top rounded-full border border-[color:var(--line)] bg-[color:var(--card)] px-4 py-2 text-sm font-semibold shadow-sm"
+    >
+      Back to top
+    </a>
+
+    <script>
+      mermaid.initialize({ startOnLoad: true, theme: "neutral" });
+
+      const sections = [...document.querySelectorAll("main section[id]")];
+      const navLinks = [...document.querySelectorAll(".toc-link")];
+      const backToTop = document.querySelector(".back-to-top");
+
+      const onScroll = () => {
+        const scrollY = window.scrollY + 180;
+        let activeId = sections[0]?.id;
+
+        for (const section of sections) {
+          if (section.offsetTop <= scrollY) activeId = section.id;
+        }
+
+        for (const link of navLinks) {
+          const isActive = link.getAttribute("href") === `#${activeId}`;
+          link.classList.toggle("active", isActive);
+        }
+
+        if (backToTop) {
+          backToTop.classList.toggle("show", window.scrollY > 500);
+        }
+      };
+
+      document.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    </script>
+  </body>
+</html>

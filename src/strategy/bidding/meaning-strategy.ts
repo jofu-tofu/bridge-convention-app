@@ -11,7 +11,9 @@ import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ArbitrationResult, PublicSnapshot } from "../../core/contracts/module-surface";
 import type { FactCatalog, EvaluatedFacts } from "../../core/contracts/fact-catalog";
-import type { PosteriorEngine, PublicHandSpace, PosteriorFactProvider, PosteriorFactValue, SeatPosterior } from "../../core/contracts/posterior";
+import type { PosteriorFactProvider, PosteriorFactValue } from "../../core/contracts/posterior";
+import type { PosteriorBackend, PosteriorState } from "../../core/contracts/posterior-backend";
+import type { ConditioningContext } from "../../core/contracts/posterior-query";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
@@ -33,7 +35,8 @@ import { composeSurfaces, mergeUpstreamProvenance } from "../../conventions/core
 import { getLegalCalls } from "../../engine/auction";
 import { partnerSeat } from "../../engine/constants";
 import { formatHandSummary } from "../../core/display/hand-summary";
-import { createPosteriorFactProvider } from "../../inference/posterior";
+import { createPosteriorFactProviderFromBackend } from "../../inference/posterior";
+import { compileFactorGraph } from "../../inference/posterior/factor-compiler";
 import { projectTeaching } from "../../teaching/teaching-projection-builder";
 
 // ─── Core Pipeline ─────────────────────────────────────────────
@@ -99,51 +102,60 @@ function runMeaningPipeline(input: PipelineInput): PipelineOutput {
 
 // ─── Posterior Helpers ──────────────────────────────────────────
 
-/** Posterior wiring state — caches PublicHandSpace[] across calls at the same auction length. */
+/** Default sample count for posterior inference. */
+const DEFAULT_SAMPLE_COUNT = 200;
+
+/** Posterior wiring state — caches PosteriorState across calls at the same auction length. */
 interface PosteriorCache {
-  handSpaces: PublicHandSpace[] | null;
+  state: PosteriorState | null;
   auctionLength: number;
 }
 
 /**
- * Build a PosteriorFactProvider from the posterior engine, or undefined if not available.
- * Caches the compiled hand spaces by auction length to avoid redundant computation.
+ * Build a PosteriorFactProvider from the posterior backend, or undefined if not available.
+ * Caches the initialized PosteriorState by auction length to avoid redundant computation.
  */
 function buildPosteriorProvider(
-  engine: PosteriorEngine,
+  backend: PosteriorBackend,
   surfaceRouter: (auction: Auction, seat: Seat) => readonly MeaningSurface[],
   context: BiddingContext,
   cache: PosteriorCache,
-): { provider?: PosteriorFactProvider; seatPosterior?: SeatPosterior } {
+  sampleCount: number,
+): { provider?: PosteriorFactProvider; state?: PosteriorState } {
   const auctionLength = context.auction.entries.length;
   if (cache.auctionLength !== auctionLength) {
     const snapshot = buildSnapshotFromAuction(
       context.auction, context.seat, [],
       { surfaceRouter },
     );
-    cache.handSpaces = engine.compilePublic(snapshot);
+    const factorGraph = compileFactorGraph(snapshot);
+    const conditioningContext: ConditioningContext = {
+      snapshot,
+      factorGraph,
+      observerSeat: context.seat,
+      ownHand: context.hand,
+    };
+    cache.state = backend.initialize(conditioningContext);
     cache.auctionLength = auctionLength;
   }
-  const partner: string = partnerSeat(context.seat);
-  const partnerSpace = cache.handSpaces?.find((s) => s.seatId === partner);
-  if (!partnerSpace) return {};
+  if (!cache.state || cache.state.particles.length === 0) return {};
 
-  const seatPosterior = engine.conditionOnHand(partnerSpace, context.seat, context.hand);
   return {
-    provider: createPosteriorFactProvider(seatPosterior),
-    seatPosterior,
+    provider: createPosteriorFactProviderFromBackend(cache.state, context.hand, sampleCount),
+    state: cache.state,
   };
 }
 
 /**
- * Build a PosteriorSummary from evaluated facts and the active seat posterior.
+ * Build a PosteriorSummary from evaluated facts and the active posterior state.
  * Returns null if no posterior facts were evaluated.
  */
 function buildPosteriorSummary(
   catalog: FactCatalog,
   facts: EvaluatedFacts,
   provider: PosteriorFactProvider,
-  seatPosterior: SeatPosterior,
+  state: PosteriorState,
+  partnerSeatId: string,
 ): PosteriorSummary | null {
   const posteriorIds = catalog.posteriorEvaluators
     ? [...catalog.posteriorEvaluators.keys()]
@@ -153,10 +165,10 @@ function buildPosteriorSummary(
   for (const id of posteriorIds) {
     const fv = facts.facts.get(id);
     if (fv) {
-      const queryResult = provider.queryFact({ factId: id, seatId: seatPosterior.seatId });
+      const queryResult = provider.queryFact({ factId: id, seatId: partnerSeatId });
       posteriorFacts.push({
         factId: id,
-        seatId: seatPosterior.seatId,
+        seatId: partnerSeatId,
         expectedValue: fv.value as number,
         confidence: queryResult?.confidence ?? 0,
       });
@@ -168,7 +180,7 @@ function buildPosteriorSummary(
   const avgConfidence = posteriorFacts.reduce((sum, f) => sum + f.confidence, 0) / posteriorFacts.length;
   return {
     factValues: posteriorFacts,
-    sampleCount: seatPosterior.effectiveSampleSize,
+    sampleCount: state.particles.length,
     confidence: avgConfidence,
   };
 }
@@ -399,8 +411,8 @@ export function meaningBundleToStrategy(
     surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
     /** Conversation machine — when present, overrides surfaceRouter for surface selection. */
     conversationMachine?: ConversationMachine;
-    /** Posterior engine for probabilistic fact enrichment. */
-    posteriorEngine?: PosteriorEngine;
+    /** Posterior backend for probabilistic fact enrichment. */
+    posteriorBackend?: PosteriorBackend;
     /** Surface router used for commitment extraction in posterior snapshot building. */
     surfaceRouterForCommitments?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
     /** Explanation catalog for enriching teaching projections with template keys. */
@@ -424,7 +436,7 @@ export function meaningBundleToStrategy(
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
   const machineCache: MachineCache = { result: null, auctionLength: -1 };
-  const posteriorCache: PosteriorCache = { handSpaces: null, auctionLength: -1 };
+  const posteriorCache: PosteriorCache = { state: null, auctionLength: -1 };
 
   return {
     id: bundleId,
@@ -494,14 +506,14 @@ export function meaningBundleToStrategy(
 
       // Phase 2: Build posterior provider (sidecar — enriches fact evaluation)
       let posteriorProvider: PosteriorFactProvider | undefined;
-      let seatPosterior: SeatPosterior | undefined;
-      if (options?.posteriorEngine && options?.surfaceRouterForCommitments) {
+      let posteriorState: PosteriorState | undefined;
+      if (options?.posteriorBackend && options?.surfaceRouterForCommitments) {
         const posterior = buildPosteriorProvider(
-          options.posteriorEngine, options.surfaceRouterForCommitments,
-          context, posteriorCache,
+          options.posteriorBackend, options.surfaceRouterForCommitments,
+          context, posteriorCache, DEFAULT_SAMPLE_COUNT,
         );
         posteriorProvider = posterior.provider;
-        seatPosterior = posterior.seatPosterior;
+        posteriorState = posterior.state;
       }
 
       // Phase 3: Run the core meaning pipeline
@@ -515,8 +527,9 @@ export function meaningBundleToStrategy(
       });
 
       // Phase 4: Build posterior summary from evaluated facts
-      if (posteriorProvider && seatPosterior) {
-        lastPosteriorSummary = buildPosteriorSummary(catalog, facts, posteriorProvider, seatPosterior);
+      if (posteriorProvider && posteriorState) {
+        const partner = partnerSeat(context.seat);
+        lastPosteriorSummary = buildPosteriorSummary(catalog, facts, posteriorProvider, posteriorState, partner);
       }
 
       // Phase 5: Build output (teaching projection + BidResult)
