@@ -120,12 +120,12 @@ describe("meaningToStrategy accessors and extensions", () => {
     expect(strategy.getLastEvaluation()?.provenance ?? null).toBeNull();
   });
 
-  it("getLastArbitration() is null before first suggest", () => {
+  it("getLastEvaluation().arbitration is null before first suggest", () => {
     const strategy = meaningToStrategy([], "test-module");
     expect(strategy.getLastEvaluation()?.arbitration ?? null).toBeNull();
   });
 
-  it("getLastProvenance() resets to null on no-match suggest", () => {
+  it("getLastEvaluation().provenance resets to null on no-match suggest", () => {
     const surface = makeTestSurface();
     const strategy = meaningToStrategy([surface], "test-module");
 
@@ -326,7 +326,7 @@ describe("meaningBundleToStrategy", () => {
     expect(result).toBeNull();
   });
 
-  it("getLastProvenance() and getLastArbitration() populated after suggest", () => {
+  it("getLastEvaluation() provenance and arbitration populated after suggest", () => {
     const surface = makeTestSurface();
     const strategy = meaningBundleToStrategy(
       [{ moduleId: "mod-a", surfaces: [surface] }],
