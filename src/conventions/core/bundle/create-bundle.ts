@@ -58,6 +58,7 @@ export function createBundle(config: CreateBundleConfig): ConventionBundle {
       ...composed.surfaceGroups,
     ],
     conversationMachine: composed.conversationMachine,
+    submachines: composed.submachines,
     factExtensions: composed.factExtensions,
     surfaceRouter: composed.surfaceRouter,
     explanationCatalog: composed.explanationCatalog,

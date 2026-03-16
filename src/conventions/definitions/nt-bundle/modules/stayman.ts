@@ -591,13 +591,25 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "responder-r3-stayman-2h",
     parentId: "nt-opened",
-    transitions: [],
+    transitions: [
+      {
+        transitionId: "r3-pass-wait-2h",
+        match: { kind: "pass" },
+        target: "responder-r3-stayman-2h",
+      },
+    ],
     surfaceGroupId: "responder-r3-after-stayman-2h",
   },
   {
     stateId: "responder-r3-stayman-2s",
     parentId: "nt-opened",
-    transitions: [],
+    transitions: [
+      {
+        transitionId: "r3-pass-wait-2s",
+        match: { kind: "pass" },
+        target: "responder-r3-stayman-2s",
+      },
+    ],
     surfaceGroupId: "responder-r3-after-stayman-2s",
   },
   // responder-r3-stayman-2d: Smolen transitions removed — added via hookTransitions

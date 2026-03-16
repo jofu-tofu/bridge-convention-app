@@ -429,14 +429,26 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "responder-r3-transfer-hearts",
     parentId: "nt-opened",
-    transitions: [],
+    transitions: [
+      {
+        transitionId: "r3-pass-wait-th",
+        match: { kind: "pass" },
+        target: "responder-r3-transfer-hearts",
+      },
+    ],
     surfaceGroupId: "responder-r3-after-transfer-hearts",
   },
 
   {
     stateId: "responder-r3-transfer-spades",
     parentId: "nt-opened",
-    transitions: [],
+    transitions: [
+      {
+        transitionId: "r3-pass-wait-ts",
+        match: { kind: "pass" },
+        target: "responder-r3-transfer-spades",
+      },
+    ],
     surfaceGroupId: "responder-r3-after-transfer-spades",
   },
 ];

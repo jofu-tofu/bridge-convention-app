@@ -132,6 +132,90 @@ describe("createNtConversationMachine", () => {
     });
   });
 
+  it("1NT-P-2C-P-2H-P stays at responder-r3-stayman-2h (opponent pass absorbed)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT",
+      "P",
+      "2C",
+      "P",
+      "2H",
+      "P",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe("responder-r3-stayman-2h");
+    expect(result.activeSurfaceGroupIds).toContain(
+      "responder-r3-after-stayman-2h",
+    );
+  });
+
+  it("1NT-P-2C-P-2S-P stays at responder-r3-stayman-2s (opponent pass absorbed)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT",
+      "P",
+      "2C",
+      "P",
+      "2S",
+      "P",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe("responder-r3-stayman-2s");
+    expect(result.activeSurfaceGroupIds).toContain(
+      "responder-r3-after-stayman-2s",
+    );
+  });
+
+  it("1NT-P-2C-P-2D-P stays at responder-r3-stayman-2d (opponent pass absorbed)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT",
+      "P",
+      "2C",
+      "P",
+      "2D",
+      "P",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe("responder-r3-stayman-2d");
+    expect(result.activeSurfaceGroupIds).toContain(
+      "responder-r3-after-stayman-2d",
+    );
+  });
+
+  it("1NT-P-2D-P-2H-P stays at responder-r3-transfer-hearts (opponent pass absorbed)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT",
+      "P",
+      "2D",
+      "P",
+      "2H",
+      "P",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe(
+      "responder-r3-transfer-hearts",
+    );
+    expect(result.activeSurfaceGroupIds).toContain(
+      "responder-r3-after-transfer-hearts",
+    );
+  });
+
+  it("1NT-P-2H-P-2S-P stays at responder-r3-transfer-spades (opponent pass absorbed)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT",
+      "P",
+      "2H",
+      "P",
+      "2S",
+      "P",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe(
+      "responder-r3-transfer-spades",
+    );
+    expect(result.activeSurfaceGroupIds).toContain(
+      "responder-r3-after-transfer-spades",
+    );
+  });
+
   it("interference: 1NT-X produces competitionMode Doubled", () => {
     // North=1NT, East=X
     const auction = buildAuction(Seat.North, ["1NT", "X"]);

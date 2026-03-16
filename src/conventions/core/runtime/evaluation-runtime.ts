@@ -19,12 +19,13 @@ export function evaluate(
   activeModuleIds: readonly string[],
   options?: {
     machine?: ConversationMachine;
+    submachines?: ReadonlyMap<string, ConversationMachine>;
     surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
   },
 ): EvaluationResult {
   // Phase 1: Build public snapshot
   const machineResult = options?.machine
-    ? evaluateMachine(options.machine, auction, seat)
+    ? evaluateMachine(options.machine, auction, seat, options?.submachines)
     : undefined;
 
   const publicSnapshot = buildSnapshotFromAuction(

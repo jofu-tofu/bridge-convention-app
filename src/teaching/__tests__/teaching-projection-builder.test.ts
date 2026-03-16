@@ -331,11 +331,11 @@ describe("projectTeaching", () => {
 
     const projection = projectTeaching(arbitration, provenance);
 
-    // WhyNot entry for the near-miss call
+    // WhyNot entry for the eliminated call (no ped graph → grade "wrong")
     expect(projection.whyNot).toHaveLength(1);
     const whyNot = projection.whyNot[0]!;
     expect(whyNot.call).toEqual(makeCall(2, BidSuit.NoTrump));
-    expect(whyNot.grade).toBe("near-miss");
+    expect(whyNot.grade).toBe("wrong");
     expect(whyNot.eliminationStage).toBe("applicability");
     expect(whyNot.explanation.length).toBeGreaterThan(0);
   });
@@ -393,7 +393,7 @@ describe("projectTeaching", () => {
     // WhyNot entry for the eliminated call
     expect(projection.whyNot).toHaveLength(1);
     expect(projection.whyNot[0]!.call).toEqual(makeCall(2, BidSuit.Clubs));
-    expect(projection.whyNot[0]!.grade).toBe("near-miss");
+    expect(projection.whyNot[0]!.grade).toBe("wrong");
 
     // Meaning view shows eliminated
     expect(projection.meaningViews).toHaveLength(1);

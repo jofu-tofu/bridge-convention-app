@@ -153,7 +153,7 @@ describe("buildWhyNot", () => {
     expect(entries).toEqual([]);
   });
 
-  it("acceptable entries not matching truth produce WhyNotEntry with grade 'near-miss'", () => {
+  it("acceptable entries not matching truth produce WhyNotEntry with grade 'wrong' when no family relation", () => {
     const truthEncoded = makeEncoded({
       proposal: makeProposal({ meaningId: "nt:game-raise" }),
       call: makeCall(3, BidSuit.NoTrump),
@@ -181,7 +181,7 @@ describe("buildWhyNot", () => {
     const entries = buildWhyNot(arbitration, provenance);
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.grade).toBe("near-miss");
+    expect(entries[0]!.grade).toBe("wrong");
     expect(entries[0]!.call).toEqual(makeCall(2, BidSuit.NoTrump));
     expect(entries[0]!.eliminationStage).toBe("applicability");
   });

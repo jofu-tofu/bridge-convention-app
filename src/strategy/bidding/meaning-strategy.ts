@@ -194,6 +194,8 @@ export function meaningBundleToStrategy(
     surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
     /** Conversation machine — when present, overrides surfaceRouter for surface selection. */
     conversationMachine?: ConversationMachine;
+    /** Submachines referenced by states with submachineRef. */
+    submachines?: ReadonlyMap<string, ConversationMachine>;
     /** Posterior backend for probabilistic fact enrichment. */
     posteriorBackend?: PosteriorBackend;
     /** Surface router used for commitment extraction in posterior snapshot building. */
@@ -249,7 +251,7 @@ export function meaningBundleToStrategy(
           context.auction,
           context.seat,
           activeModuleIds,
-          { machine: options.conversationMachine, surfaceRouter: options.surfaceRouter },
+          { machine: options.conversationMachine, submachines: options.submachines, surfaceRouter: options.surfaceRouter },
         );
         const evalSurfaces = buildSurfacesFromEvaluation(evalResult);
         if (evalSurfaces.length === 0) return null;
@@ -262,7 +264,7 @@ export function meaningBundleToStrategy(
         // Fallback: ad-hoc surface selection via machine, router, or all surfaces
         const selection = selectActiveSurfaces(
           moduleSurfaces, allSurfaces, context,
-          { conversationMachine: options?.conversationMachine, surfaceRouter: options?.surfaceRouter },
+          { conversationMachine: options?.conversationMachine, submachines: options?.submachines, surfaceRouter: options?.surfaceRouter },
           machineCache,
         );
         if (!selection) return null;

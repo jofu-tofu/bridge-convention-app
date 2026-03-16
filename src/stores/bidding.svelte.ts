@@ -315,10 +315,16 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     if (initialAuction) {
       auction = initialAuction;
       bidHistory = initialAuction.entries.map((entry) => {
+        // Add range announcement for 1NT opening (ACBL requires partner to announce "15 to 17")
+        const alertLabel =
+          entry.call.type === "bid" && entry.call.level === 1 && entry.call.strain === "NT"
+            ? "15 to 17"
+            : undefined;
         return {
           seat: entry.seat,
           call: entry.call,
           isUser: false,
+          alertLabel,
         };
       });
       const lastEntry =

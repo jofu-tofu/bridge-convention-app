@@ -44,6 +44,7 @@ export function buildBundleStrategy(
       factCatalog,
       surfaceRouter: bundle.surfaceRouter,
       conversationMachine: bundle.conversationMachine,
+      submachines: bundle.submachines,
       posteriorBackend: createTsBackend({ factResolver: createHandFactResolver(factCatalog) }),
       surfaceRouterForCommitments: bundle.surfaceRouter,
       evaluationRuntime: { modules, getActiveIds },

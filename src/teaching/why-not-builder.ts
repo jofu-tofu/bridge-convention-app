@@ -60,9 +60,13 @@ export function buildWhyNot(
       ? findNearMissRelation(pedGraph, encoded.proposal.meaningId, truthMeaningIds)
       : undefined;
 
+    // Grade based on pedagogical relationship: bids in the same family as the
+    // correct answer are "near-miss"; unrelated bids are "wrong".
+    const grade: "near-miss" | "wrong" = familyRelation ? "near-miss" : "wrong";
+
     entries.push({
       call: encoded.call,
-      grade: "near-miss",
+      grade,
       familyRelation,
       explanation,
       eliminationStage: stage,

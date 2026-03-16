@@ -20,11 +20,12 @@ export function getMachineResult(
   auction: Auction,
   seat: Seat,
   cache: MachineCache,
+  submachines?: ReadonlyMap<string, ConversationMachine>,
 ): MachineEvalResult {
   if (cache.auctionLength === auction.entries.length && cache.result) {
     return cache.result;
   }
-  cache.result = evaluateMachine(machine, auction, seat);
+  cache.result = evaluateMachine(machine, auction, seat, submachines);
   cache.auctionLength = auction.entries.length;
   return cache.result;
 }
@@ -36,6 +37,7 @@ export function selectActiveSurfaces(
   context: BiddingContext,
   options?: {
     conversationMachine?: ConversationMachine;
+    submachines?: ReadonlyMap<string, ConversationMachine>;
     surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
   },
   machineCache?: MachineCache,
@@ -43,6 +45,7 @@ export function selectActiveSurfaces(
   if (options?.conversationMachine && machineCache) {
     const machineResult = getMachineResult(
       options.conversationMachine, context.auction, context.seat, machineCache,
+      options?.submachines,
     );
     const activeGroupIds = new Set(machineResult.activeSurfaceGroupIds);
     const surfaces = moduleSurfaces

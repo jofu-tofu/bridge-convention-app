@@ -38,6 +38,8 @@ export interface ConventionBundle {
   readonly systemProfile?: SystemProfileIR;
   /** Optional conversation machine for hierarchical FSM-driven surface selection. */
   readonly conversationMachine?: ConversationMachine;
+  /** Optional submachines referenced by states with submachineRef. */
+  readonly submachines?: ReadonlyMap<string, ConversationMachine>;
   /** Capabilities to inject into profile-based activation. Only capabilities
    *  declared here are provided — bundles without this field get no capabilities. */
   readonly declaredCapabilities?: Readonly<Record<string, string>>;
