@@ -21,5 +21,5 @@ export { staymanModule } from "./modules/stayman";
 export { jacobyTransfersModule } from "./modules/jacoby-transfers";
 export { smolenModule } from "./modules/smolen";
 export { naturalNtModule } from "./modules/natural-nt";
-export { composeNtModules } from "./compose";
+export { composeNtModules, NT_SKELETON } from "./compose";
 export type { NtConventionModule } from "./modules/module-types";

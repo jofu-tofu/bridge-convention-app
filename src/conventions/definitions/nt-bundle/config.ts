@@ -45,7 +45,7 @@ export const ntBundle: ConventionBundle = {
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   meaningSurfaces: [
-    { groupId: "responder-r1", surfaces: composed.r1Surfaces },
+    { groupId: "responder-r1", surfaces: composed.entrySurfaces },
     ...composed.surfaceGroups,
   ],
   factExtensions: composed.factExtensions,

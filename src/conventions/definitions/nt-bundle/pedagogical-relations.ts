@@ -1,4 +1,4 @@
-import type { PedagogicalRelation } from "../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 
 export const NT_CROSS_MODULE_RELATIONS: readonly PedagogicalRelation[] = [
   { kind: "same-family", a: "stayman:ask-major", b: "transfer:to-hearts" },

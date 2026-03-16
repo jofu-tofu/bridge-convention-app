@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NT_PEDAGOGICAL_RELATIONS } from "../pedagogical-relations";
-import type { PedagogicalRelation } from "../../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import {
   RESPONDER_SURFACES,
   OPENER_STAYMAN_SURFACES,

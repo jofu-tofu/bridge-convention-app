@@ -1,6 +1,6 @@
 // Re-export shim — surface routing now uses module re-exports for backward compatibility.
 import type { Auction, Seat } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { ConversationMachine } from "../../core/runtime/machine-types";
 import type { RoutedSurfaceGroup } from "../../core/bundle/bundle-types";
 import { evaluateMachine } from "../../core/runtime/machine-evaluator";

@@ -4,7 +4,7 @@ import type { Call, Hand, Auction } from "../../../../engine/types";
 import { hand } from "../../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../../engine/hand-evaluator";
 import { buildAuction } from "../../../../engine/auction-helpers";
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { ArbitrationResult } from "../../../../core/contracts/module-surface";
 import { compareRanking, type CandidateTransform } from "../../../../core/contracts/meaning";
 import { createFactCatalog } from "../../../../core/contracts/fact-catalog";

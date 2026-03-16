@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { MachineState, MachineTransition } from "../../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
@@ -7,10 +7,10 @@ import type {
 } from "../../../../core/contracts/fact-catalog";
 import { num, bool, fv } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
 import type { Call } from "../../../../engine/types";
-import type { NtConventionModule } from "./module-types";
+import type { ConventionModule } from "../../../core/composition/module-types";
 
 function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
   return { type: "bid", level, strain };
@@ -569,10 +569,10 @@ const TRANSFER_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 
 // ─── Module assembly ─────────────────────────────────────────
 
-export const jacobyTransfersModule: NtConventionModule = {
+export const jacobyTransfersModule: ConventionModule = {
   moduleId: "jacoby-transfers",
 
-  r1Surfaces: TRANSFER_R1_SURFACES,
+  entrySurfaces: TRANSFER_R1_SURFACES,
 
   surfaceGroups: [
     { groupId: "opener-transfer-accept", surfaces: OPENER_TRANSFER_HEARTS_SURFACES },
@@ -581,7 +581,7 @@ export const jacobyTransfersModule: NtConventionModule = {
     { groupId: "responder-r3-after-transfer-spades", surfaces: TRANSFER_R3_SPADES_SURFACES },
   ],
 
-  r1Transitions: TRANSFER_R1_TRANSITIONS,
+  entryTransitions: TRANSFER_R1_TRANSITIONS,
 
   machineStates: TRANSFER_MACHINE_STATES,
 

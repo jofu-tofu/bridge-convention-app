@@ -1,10 +1,8 @@
-import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
+import { createSaycProfile } from "../../core/profile-builder";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 
-export const NT_SAYC_PROFILE: SystemProfileIR = {
+export const NT_SAYC_PROFILE = createSaycProfile({
   profileId: "1nt-sayc",
-  baseSystem: "sayc",
   modules: [
     {
       moduleId: "natural-nt",
@@ -28,14 +26,11 @@ export const NT_SAYC_PROFILE: SystemProfileIR = {
       }],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
-  priorityClassMapping: defaultPriorityClassMapping(),
-};
+});
 
 /** Stayman-only sub-profile — natural NT responses + Stayman (no Jacoby Transfers). */
-export const NT_STAYMAN_ONLY_PROFILE: SystemProfileIR = {
+export const NT_STAYMAN_ONLY_PROFILE = createSaycProfile({
   profileId: "1nt-stayman-only",
-  baseSystem: "sayc",
   modules: [
     {
       moduleId: "natural-nt",
@@ -51,14 +46,11 @@ export const NT_STAYMAN_ONLY_PROFILE: SystemProfileIR = {
       }],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
-  priorityClassMapping: defaultPriorityClassMapping(),
-};
+});
 
 /** Transfer-only sub-profile — natural NT responses + Jacoby Transfers (no Stayman). */
-export const NT_TRANSFERS_ONLY_PROFILE: SystemProfileIR = {
+export const NT_TRANSFERS_ONLY_PROFILE = createSaycProfile({
   profileId: "1nt-transfers-only",
-  baseSystem: "sayc",
   modules: [
     {
       moduleId: "natural-nt",
@@ -74,6 +66,4 @@ export const NT_TRANSFERS_ONLY_PROFILE: SystemProfileIR = {
       }],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
-  priorityClassMapping: defaultPriorityClassMapping(),
-};
+});

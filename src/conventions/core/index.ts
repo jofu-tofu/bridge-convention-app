@@ -25,5 +25,48 @@ export { createBiddingContext } from "./context-factory";
 export { findBundleForConvention, getBundle } from "./bundle";
 export type { ConventionBundle } from "./bundle";
 
-// ── Fact Evaluator ──────────────────────────────────────────────────────
-export { createSharedFactCatalog } from "./pipeline/fact-evaluator";
+// ── Pipeline ────────────────────────────────────────────────────────────
+export {
+  evaluateFacts,
+  createSharedFactCatalog,
+} from "./pipeline/fact-evaluator";
+export type { RelationalFactContext } from "./pipeline/fact-evaluator";
+
+export { evaluateAllSurfaces } from "./pipeline/meaning-evaluator";
+
+export {
+  arbitrateMeanings,
+  zipProposalsWithSurfaces,
+} from "./pipeline/meaning-arbitrator";
+
+export {
+  composeSurfaces,
+  mergeUpstreamProvenance,
+} from "./pipeline/surface-composer";
+
+// ── Runtime ─────────────────────────────────────────────────────────────
+export { evaluate } from "./runtime/evaluation-runtime";
+export { evaluateMachine } from "./runtime/machine-evaluator";
+export { buildSnapshotFromAuction } from "./runtime/public-snapshot-builder";
+
+export type {
+  RuntimeModule,
+  DecisionSurfaceEntry,
+  RuntimeDiagnostic,
+  EvaluationResult,
+} from "./runtime/types";
+
+export type {
+  ConversationMachine,
+  MachineEvalResult,
+  MachineRegisters,
+  MachineState,
+  MachineTransition,
+  MachineEffect,
+  MachineContext,
+} from "./runtime/machine-types";
+export { buildConversationMachine } from "./runtime/machine-types";
+
+// ── Composition (bottom-up module assembly) ──────────────────────────────
+export type { ConventionModule, BundleSkeleton, ComposedBundle } from "./composition";
+export { composeModules } from "./composition";

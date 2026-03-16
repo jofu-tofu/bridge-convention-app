@@ -43,7 +43,7 @@ export const ntStaymanBundle: ConventionBundle = {
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   meaningSurfaces: [
-    { groupId: "responder-r1", surfaces: staymanComposed.r1Surfaces },
+    { groupId: "responder-r1", surfaces: staymanComposed.entrySurfaces },
     ...staymanComposed.surfaceGroups,
   ],
   factExtensions: staymanComposed.factExtensions,
@@ -67,7 +67,7 @@ export const ntTransfersBundle: ConventionBundle = {
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   meaningSurfaces: [
-    { groupId: "responder-r1", surfaces: transferComposed.r1Surfaces },
+    { groupId: "responder-r1", surfaces: transferComposed.entrySurfaces },
     ...transferComposed.surfaceGroups,
   ],
   factExtensions: transferComposed.factExtensions,

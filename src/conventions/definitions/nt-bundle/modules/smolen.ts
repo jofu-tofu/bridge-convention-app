@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type {
   MachineState,
   MachineTransition,
@@ -13,10 +13,10 @@ import type {
 import { num, fv } from "../../../../core/contracts/fact-catalog";
 import { ForcingState } from "../../../../core/contracts/bidding";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
 import type { Call } from "../../../../engine/types";
-import type { NtConventionModule } from "./module-types";
+import type { ConventionModule } from "../../../core/composition/module-types";
 
 function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
   return { type: "bid", level, strain };
@@ -506,10 +506,10 @@ const SMOLEN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 
 const smolenSub = createSmolenSubmachine();
 
-export const smolenModule: NtConventionModule = {
+export const smolenModule: ConventionModule = {
   moduleId: "smolen",
 
-  r1Surfaces: [],
+  entrySurfaces: [],
 
   surfaceGroups: [
     { groupId: "responder-r3-after-stayman-2d", surfaces: SMOLEN_R3_SURFACES },
@@ -517,7 +517,7 @@ export const smolenModule: NtConventionModule = {
     { groupId: "opener-smolen-spades", surfaces: OPENER_SMOLEN_SPADES_SURFACES },
   ],
 
-  r1Transitions: [],
+  entryTransitions: [],
 
   machineStates: SMOLEN_MACHINE_STATES,
 

@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { MachineTransition } from "../../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
@@ -7,11 +7,11 @@ import type {
 } from "../../../../core/contracts/fact-catalog";
 import { num, fv } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
 import type { Call } from "../../../../engine/types";
-import { BRIDGE_SEMANTIC_CLASSES } from "../../../../core/contracts/semantic-classes";
-import type { NtConventionModule } from "./module-types";
+import { BRIDGE_SEMANTIC_CLASSES } from "../../../../core/contracts/meaning";
+import type { ConventionModule } from "../../../core/composition/module-types";
 
 function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
   return { type: "bid", level, strain };
@@ -314,16 +314,16 @@ const NT_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 
 // ─── Module assembly ─────────────────────────────────────────
 
-export const naturalNtModule: NtConventionModule = {
+export const naturalNtModule: ConventionModule = {
   moduleId: "natural-nt",
 
-  r1Surfaces: NT_R1_SURFACES,
+  entrySurfaces: NT_R1_SURFACES,
 
   surfaceGroups: [
     { groupId: "opener-1nt", surfaces: OPENER_1NT_SURFACE },
   ],
 
-  r1Transitions: NT_R1_TRANSITIONS,
+  entryTransitions: NT_R1_TRANSITIONS,
 
   machineStates: [],
 

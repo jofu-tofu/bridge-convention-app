@@ -1,5 +1,5 @@
 // Re-export shim — canonical definitions now live in modules/.
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { staymanModule } from "./modules/stayman";
 import { jacobyTransfersModule } from "./modules/jacoby-transfers";
 import { naturalNtModule } from "./modules/natural-nt";
@@ -26,4 +26,4 @@ const fullComposed = composeNtModules(
   [naturalNtModule, jacobyTransfersModule, staymanModule, smolenModule],
   NT_CROSS_MODULE_RELATIONS,
 );
-export const RESPONDER_SURFACES: readonly MeaningSurface[] = fullComposed.r1Surfaces;
+export const RESPONDER_SURFACES: readonly MeaningSurface[] = fullComposed.entrySurfaces;

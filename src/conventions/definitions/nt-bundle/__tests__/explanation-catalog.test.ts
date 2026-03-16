@@ -25,6 +25,8 @@ const KNOWN_SHARED_FACT_IDS = new Set([
   // Posterior-derived
   "bridge.partnerHas4HeartsLikely",
   "bridge.partnerHas4SpadesLikely",
+  "bridge.partnerHas4DiamondsLikely",
+  "bridge.partnerHas4ClubsLikely",
   "bridge.nsHaveEightCardFitLikely",
   "bridge.combinedHcpInRangeLikely",
   "bridge.openerStillBalancedLikely",

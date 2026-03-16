@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { MachineState, MachineTransition } from "../../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
@@ -8,10 +8,10 @@ import type {
 import { num, bool, fv } from "../../../../core/contracts/fact-catalog";
 import { createPosteriorFactEvaluators } from "../../../../inference/posterior";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
 import type { Call } from "../../../../engine/types";
-import type { NtConventionModule } from "./module-types";
+import type { ConventionModule } from "../../../core/composition/module-types";
 
 function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
   return { type: "bid", level, strain };
@@ -690,6 +690,8 @@ const STAYMAN_EVALUATORS = new Map<string, FactEvaluatorFn>([
 const posteriorEvaluators = createPosteriorFactEvaluators([
   "bridge.partnerHas4HeartsLikely",
   "bridge.partnerHas4SpadesLikely",
+  "bridge.partnerHas4DiamondsLikely",
+  "bridge.partnerHas4ClubsLikely",
   "bridge.combinedHcpInRangeLikely",
   "bridge.nsHaveEightCardFitLikely",
   "bridge.openerStillBalancedLikely",
@@ -697,6 +699,8 @@ const posteriorEvaluators = createPosteriorFactEvaluators([
 ], new Map([
   ["bridge.partnerHas4HeartsLikely", ["H"]],
   ["bridge.partnerHas4SpadesLikely", ["S"]],
+  ["bridge.partnerHas4DiamondsLikely", ["D"]],
+  ["bridge.partnerHas4ClubsLikely", ["C"]],
   ["bridge.combinedHcpInRangeLikely", ["25", "40"]],
 ]));
 
@@ -771,10 +775,10 @@ const STAYMAN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 
 // ─── Module assembly ─────────────────────────────────────────
 
-export const staymanModule: NtConventionModule = {
+export const staymanModule: ConventionModule = {
   moduleId: "stayman",
 
-  r1Surfaces: [STAYMAN_R1_SURFACE],
+  entrySurfaces: [STAYMAN_R1_SURFACE],
 
   surfaceGroups: [
     { groupId: "opener-stayman-response", surfaces: OPENER_STAYMAN_SURFACES },
@@ -783,7 +787,7 @@ export const staymanModule: NtConventionModule = {
     { groupId: "responder-r3-after-stayman-2d", surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
   ],
 
-  r1Transitions: [STAYMAN_R1_TRANSITION],
+  entryTransitions: [STAYMAN_R1_TRANSITION],
 
   machineStates: STAYMAN_MACHINE_STATES,
 
