@@ -73,9 +73,7 @@ describe("posterior boundary invariants", () => {
 
     // Each factor survives serialization
     for (let i = 0; i < graph.factors.length; i++) {
-      expect(deserialized.factors[i].kind).toBe(graph.factors[i].kind);
-      expect(deserialized.factors[i].seat).toBe(graph.factors[i].seat);
-      expect(deserialized.factors[i].strength).toBe(graph.factors[i].strength);
+      expect(deserialized.factors[i]).toEqual(graph.factors[i]);
     }
   });
 

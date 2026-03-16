@@ -23,14 +23,14 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `__tests__/` | Bundle-specific tests |
 
 
-**`nt-bundle/`** — Bottom-up composition of Stayman + Jacoby Transfers + Smolen + Natural NT into a single 1NT response bundle. Each convention is a self-contained `NtConventionModule` in `modules/`; the bundle is assembled by `compose.ts`.
+**`nt-bundle/`** — Bottom-up composition of Stayman + Jacoby Transfers + Smolen + Natural NT into a single 1NT response bundle. Each convention is a self-contained `ConventionModule` (from `conventions/core/composition`) in `modules/`; the bundle is assembled by `compose.ts`.
 - `modules/` — Convention modules (source of truth for all bidding logic):
-  - `module-types.ts` — `NtConventionModule` interface: surfaces, machine states, facts, explanations, pedagogical relations per convention.
+  - ~~`module-types.ts`~~ — Removed. Was an alias for `ConventionModule` from `conventions/core/composition/module-types`. Import `ConventionModule` directly.
   - `stayman.ts` — Stayman convention: R1 surface (2C ask), opener response surfaces (show-hearts/spades/deny-major), R3 continuation surfaces, 4 FSM states, 2 facts + posterior evaluators.
   - `jacoby-transfers.ts` — Jacoby Transfers convention: R1 surfaces (2D/2H transfer), opener accept surfaces, R3 continuation surfaces, 4 FSM states, 3 facts.
   - `smolen.ts` — Smolen convention: R3 surfaces (3H/3S after 2D denial), opener placement surfaces, 2 FSM states + submachine (5 states), hooks into Stayman's R3-2D state via `hookTransitions`, 6 facts.
   - `natural-nt.ts` — Natural NT responses: R1 surfaces (2NT invite, 3NT game), 1NT opening surface, R1 terminal transitions, 3 HCP threshold facts, shared explanation entries.
-- `compose.ts` — `composeNtModules()`: assembles `NtConventionModule[]` bottom-up into shared FSM infrastructure (idle, nt-opened, responder-r1, terminal, nt-contested), merged surface groups, combined facts/explanations/relations. Handles `hookTransitions` (e.g., Smolen prepending transitions to Stayman states).
+- `compose.ts` — `composeNtModules()`: assembles `ConventionModule[]` bottom-up into shared FSM infrastructure (idle, nt-opened, responder-r1, terminal, nt-contested), merged surface groups, combined facts/explanations/relations. Handles `hookTransitions` (e.g., Smolen prepending transitions to Stayman states).
 - `config.ts` — `ConventionBundle` composed from all 4 modules. `memberIds: ["jacoby-transfers", "stayman", "smolen"]` (Jacoby first for tie-breaking priority).
 - `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles, each composed from a subset of modules.
 - `meaning-surfaces.ts` — Re-export shim for backward compatibility. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.

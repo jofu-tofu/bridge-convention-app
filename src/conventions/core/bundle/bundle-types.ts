@@ -12,6 +12,7 @@ import type { ConversationMachine } from "../runtime/machine-types";
 export interface RoutedSurfaceGroup {
   readonly groupId: string;
   readonly surfaces: readonly MeaningSurface[];
+  /** Legacy predicate-based routing. New bundles use FSM-based routing via composeModules(). */
   readonly isActive?: (auction: Auction, seat: Seat) => boolean;
 }
 

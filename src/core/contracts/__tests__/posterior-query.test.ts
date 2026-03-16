@@ -141,7 +141,7 @@ describe("PosteriorQueryIR discriminated union", () => {
   });
 
   it("can construct suit-length query", () => {
-    const q: PosteriorQueryIR = { kind: "suit-length", seat: "E", suit: "H" };
+    const q: PosteriorQueryIR = { kind: "suit-length", seat: "E", suit: "hearts" };
     expect(q.kind).toBe("suit-length");
   });
 
@@ -149,7 +149,7 @@ describe("PosteriorQueryIR discriminated union", () => {
     const q: PosteriorQueryIR = {
       kind: "fit-probability",
       seats: ["N", "S"],
-      suit: "S",
+      suit: "spades",
       threshold: 8,
     };
     expect(q.kind).toBe("fit-probability");
@@ -182,8 +182,8 @@ describe("PosteriorQueryIR discriminated union", () => {
   it("supports exhaustive switch on kind discriminant", () => {
     const queries: PosteriorQueryIR[] = [
       { kind: "marginal-hcp", seat: "N" },
-      { kind: "suit-length", seat: "N", suit: "S" },
-      { kind: "fit-probability", seats: ["N", "S"], suit: "H", threshold: 8 },
+      { kind: "suit-length", seat: "N", suit: "spades" },
+      { kind: "fit-probability", seats: ["N", "S"], suit: "hearts", threshold: 8 },
       { kind: "is-balanced", seat: "E" },
       { kind: "joint-hcp", seats: ["N", "S"], min: 25, max: 40 },
       { kind: "branch-probability", familyId: "fam1", branchId: "br1" },
@@ -206,6 +206,6 @@ describe("PosteriorQueryIR discriminated union", () => {
       }
     });
 
-    expect(kinds).toEqual(["N", "S", 8, "E", 25, "br1"]);
+    expect(kinds).toEqual(["N", "spades", 8, "E", 25, "br1"]);
   });
 });

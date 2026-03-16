@@ -14,10 +14,8 @@ function makeAnnotation(
   return {
     call: { type: "pass" },
     seat,
-    ruleName: null,
     conventionId: null,
     meaning: "Test",
-    alert: null,
     inferences,
   };
 }

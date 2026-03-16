@@ -9,8 +9,7 @@ function makeEntry(overrides: Partial<BidHistoryEntry> = {}): BidHistoryEntry {
     seat: Seat.South,
     call: { type: "pass" },
     isUser: false,
-    ruleName: null,
-    explanation: "Test",
+    meaning: "Test",
     ...overrides,
   };
 }

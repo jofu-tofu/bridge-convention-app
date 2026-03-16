@@ -8,8 +8,8 @@ import type {
 } from "../../core/contracts";
 import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { CandidateTransform } from "../../core/contracts/meaning";
-import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import type { FactCatalog } from "../../core/contracts/fact-catalog";
+import type { ArbitrationResult, PublicSnapshot } from "../../core/contracts/module-surface";
+import type { EvaluatedFacts, FactCatalog } from "../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider } from "../../core/contracts/posterior";
 import type { PosteriorBackend, PosteriorState } from "../../core/contracts/posterior-backend";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";

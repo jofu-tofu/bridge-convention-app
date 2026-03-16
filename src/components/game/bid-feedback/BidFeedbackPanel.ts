@@ -6,8 +6,8 @@
  * not by convention-specific checks.
  */
 
-import type { PedagogicalRelationKind } from "../../core/contracts/teaching-projection";
-import type { EncoderKind } from "../../core/contracts/provenance";
+import type { PedagogicalRelationKind } from "../../../core/contracts/teaching-projection";
+import type { EncoderKind } from "../../../core/contracts/provenance";
 
 /** Map pedagogical relation kinds to short display labels. */
 export function formatRelationKind(kind: PedagogicalRelationKind): string {
@@ -24,6 +24,10 @@ export function formatRelationKind(kind: PedagogicalRelationKind): string {
       return "Continuation";
     case "near-miss-of":
       return "Near miss";
+    default: {
+      const _exhaustive: never = kind;
+      return _exhaustive;
+    }
   }
 }
 
@@ -109,5 +113,9 @@ export function formatEncoderKind(kind: EncoderKind): string | null {
     case "default-call":
     case "resolver":
       return null;
+    default: {
+      const _exhaustive: never = kind;
+      return _exhaustive;
+    }
   }
 }

@@ -1,9 +1,9 @@
-import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
+import { createBundle } from "../../core/bundle";
 import { NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./system-profile";
 import { NT_CROSS_MODULE_RELATIONS } from "./pedagogical-relations";
 import { composeNtModules } from "./compose";
@@ -30,50 +30,34 @@ const transferDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-export const ntStaymanBundle: ConventionBundle = {
+export const ntStaymanBundle = createBundle({
   id: "nt-stayman",
   name: "Stayman Only",
   description: "Practice Stayman responses to 1NT opening (no Jacoby Transfers)",
   category: ConventionCategory.Asking,
   memberIds: ["stayman"],
+  composed: staymanComposed,
   dealConstraints: staymanDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  meaningSurfaces: [
-    { groupId: "responder-r1", surfaces: staymanComposed.entrySurfaces },
-    ...staymanComposed.surfaceGroups,
-  ],
-  factExtensions: staymanComposed.factExtensions,
-  surfaceRouter: staymanComposed.surfaceRouter,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
-  conversationMachine: staymanComposed.conversationMachine,
-  explanationCatalog: staymanComposed.explanationCatalog,
-  pedagogicalRelations: staymanComposed.pedagogicalRelations,
-};
+});
 
-export const ntTransfersBundle: ConventionBundle = {
+export const ntTransfersBundle = createBundle({
   id: "nt-transfers",
   name: "Jacoby Transfers Only",
   description: "Practice Jacoby Transfer responses to 1NT opening (no Stayman)",
   category: ConventionCategory.Constructive,
   memberIds: ["jacoby-transfers"],
+  composed: transferComposed,
   dealConstraints: transferDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  meaningSurfaces: [
-    { groupId: "responder-r1", surfaces: transferComposed.entrySurfaces },
-    ...transferComposed.surfaceGroups,
-  ],
-  factExtensions: transferComposed.factExtensions,
-  surfaceRouter: transferComposed.surfaceRouter,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,
-  conversationMachine: transferComposed.conversationMachine,
-  explanationCatalog: transferComposed.explanationCatalog,
-  pedagogicalRelations: transferComposed.pedagogicalRelations,
-};
+});

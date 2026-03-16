@@ -24,6 +24,17 @@ import type { PedagogicalRelation } from "../../../core/contracts/teaching-proje
 export interface ConventionModule {
   readonly moduleId: string;
 
+  // ── Dependencies ───────────────────────────────────────────────
+
+  /** Fact IDs this module requires from other modules.
+   *  Composition validates that all declared dependencies are satisfied. */
+  readonly requires?: readonly string[];
+
+  /** State IDs this module exposes for other modules to hook into.
+   *  Maps a symbolic name to the actual state ID, enabling refactor-safe hooks.
+   *  Example: Stayman exposes { afterOpener2D: "responder-r3-stayman-2d" }. */
+  readonly exposedStates?: Readonly<Record<string, string>>;
+
   // ── Surfaces ──────────────────────────────────────────────────
 
   /** Surfaces for the shared entry/dispatch point.
@@ -47,7 +58,7 @@ export interface ConventionModule {
 
   /** Transitions contributed to states owned by other modules.
    *  Hook transitions are prepended to the target state's transition array.
-   *  Example: Smolen hooks into Stayman's responder-r3-stayman-2d state. */
+   *  Use the target module's `exposedStates` for refactor-safe state references. */
   readonly hookTransitions?: readonly {
     readonly targetStateId: string;
     readonly transitions: readonly MachineTransition[];

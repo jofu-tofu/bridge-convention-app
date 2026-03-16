@@ -774,6 +774,10 @@ const STAYMAN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 export const staymanModule: ConventionModule = {
   moduleId: "stayman",
 
+  exposedStates: {
+    afterOpener2D: "responder-r3-stayman-2d",
+  },
+
   entrySurfaces: [STAYMAN_R1_SURFACE],
 
   surfaceGroups: [

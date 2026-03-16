@@ -1,22 +1,19 @@
 /**
- * Convention bundle factory — eliminates boilerplate when defining new bundles.
+ * Convention bundle factory — every bundle is composed from modules.
  *
  * Usage:
- *   export const myBundle = createBundle({ id: "my-bundle", ... });
+ *   const composed = composeModules(skeleton, [myModule]);
+ *   export const myBundle = createBundle({ id: "my-bundle", composed, ... });
  *
- * The factory defaults array-typed optional fields to `[]` so callers
- * only specify what their convention actually provides.
+ * The factory maps ComposedBundle fields into ConventionBundle shape and
+ * defaults array-typed optional fields to `[]`.
  */
 import type { ConventionBundle } from "./bundle-types";
 import type { DealConstraints, Seat, Deal, Auction } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
-import type { ConversationMachine } from "../runtime/machine-types";
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import type { ExplanationCatalogIR } from "../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/tree-evaluation";
 import type { ConventionCategory } from "../types";
+import type { ComposedBundle } from "../composition/compose";
 
 // ── Config accepted by the factory ──────────────────────────────────────
 
@@ -26,27 +23,21 @@ export interface CreateBundleConfig {
   readonly name: string;
   readonly memberIds: readonly string[];
 
-  // ── Deal setup (required) ─────────────────────────────────────────────
-  readonly dealConstraints: DealConstraints;
+  // ── Composition result (required) ─────────────────────────────────────
+  /** The result of composeModules(skeleton, modules). All pipeline fields
+   *  (surfaces, FSM, facts, router, explanations, pedagogy) come from here. */
+  readonly composed: ComposedBundle;
 
-  // ── Core pipeline (required) ──────────────────────────────────────────
-  readonly meaningSurfaces: readonly {
-    readonly groupId: string;
-    readonly surfaces: readonly MeaningSurface[];
-  }[];
-  readonly conversationMachine: ConversationMachine;
+  // ── Bundle-level concerns (required) ──────────────────────────────────
+  readonly dealConstraints: DealConstraints;
   readonly systemProfile: SystemProfileIR;
 
   // ── Optional — defaults to `[]` for arrays, `undefined` for scalars ──
   readonly internal?: boolean;
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
-  readonly factExtensions?: readonly FactCatalogExtension[];
-  readonly surfaceRouter?: ConventionBundle["surfaceRouter"];
   readonly declaredCapabilities?: Readonly<Record<string, string>>;
   readonly category?: ConventionCategory;
   readonly description?: string;
-  readonly explanationCatalog?: ExplanationCatalogIR;
-  readonly pedagogicalRelations?: readonly PedagogicalRelation[];
   readonly acceptableAlternatives?: readonly AlternativeGroup[];
   readonly intentFamilies?: readonly IntentFamily[];
 }
@@ -54,32 +45,36 @@ export interface CreateBundleConfig {
 // ── Factory ─────────────────────────────────────────────────────────────
 
 export function createBundle(config: CreateBundleConfig): ConventionBundle {
+  const { composed } = config;
   return {
     // Identity
     id: config.id,
     name: config.name,
     memberIds: config.memberIds,
 
-    // Deal setup
-    dealConstraints: config.dealConstraints,
+    // Pipeline — derived from composition
+    meaningSurfaces: [
+      { groupId: composed.entrySurfaceGroupId, surfaces: composed.entrySurfaces },
+      ...composed.surfaceGroups,
+    ],
+    conversationMachine: composed.conversationMachine,
+    factExtensions: composed.factExtensions,
+    surfaceRouter: composed.surfaceRouter,
+    explanationCatalog: composed.explanationCatalog,
+    pedagogicalRelations: composed.pedagogicalRelations,
 
-    // Core pipeline
-    meaningSurfaces: config.meaningSurfaces,
-    conversationMachine: config.conversationMachine,
+    // Bundle-level concerns
+    dealConstraints: config.dealConstraints,
     systemProfile: config.systemProfile,
 
     // Optional — scalars pass through
     internal: config.internal,
     defaultAuction: config.defaultAuction,
-    surfaceRouter: config.surfaceRouter,
     declaredCapabilities: config.declaredCapabilities,
     category: config.category,
     description: config.description,
-    explanationCatalog: config.explanationCatalog,
 
     // Optional — arrays default to []
-    factExtensions: config.factExtensions ?? [],
-    pedagogicalRelations: config.pedagogicalRelations ?? [],
     acceptableAlternatives: config.acceptableAlternatives ?? [],
     intentFamilies: config.intentFamilies ?? [],
   };

@@ -17,6 +17,7 @@ import type { PedagogicalRelation } from "../../../../core/contracts/teaching-pr
 import { BidSuit } from "../../../../engine/types";
 import type { ConventionModule } from "../../../core/composition/module-types";
 import { bid } from "../../../core/surface-helpers";
+import { staymanModule } from "./stayman";
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -222,7 +223,7 @@ const SMOLEN_HOOK_TRANSITIONS: readonly {
   readonly transitions: readonly MachineTransition[];
 }[] = [
   {
-    targetStateId: "responder-r3-stayman-2d",
+    targetStateId: staymanModule.exposedStates!.afterOpener2D!,
     transitions: [
       {
         transitionId: "r3-smolen-hearts",

@@ -14,7 +14,7 @@ import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalo
  *   R4 — opener's final acceptance after game try
  */
 
-const BERGEN_ENTRIES: ExplanationEntry[] = [
+export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
   // ── Fact-based entries: HCP thresholds ──────────────────────
 
   {
@@ -321,4 +321,4 @@ const BERGEN_ENTRIES: ExplanationEntry[] = [
   },
 ];
 
-export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalogIR = createExplanationCatalog(BERGEN_ENTRIES);
+export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalogIR = createExplanationCatalog(BERGEN_EXPLANATION_ENTRIES);

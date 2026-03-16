@@ -66,6 +66,8 @@ export interface BundleSkeleton {
 // ── Composition result ──────────────────────────────────────────
 
 export interface ComposedBundle {
+  /** Group ID for the dispatch state's entry surfaces (from the skeleton). */
+  readonly entrySurfaceGroupId: string;
   readonly entrySurfaces: readonly MeaningSurface[];
   readonly surfaceGroups: readonly {
     readonly groupId: string;
@@ -203,6 +205,7 @@ export function composeModules(
   };
 
   return {
+    entrySurfaceGroupId: skeleton.entrySurfaceGroupId,
     entrySurfaces,
     surfaceGroups,
     conversationMachine,

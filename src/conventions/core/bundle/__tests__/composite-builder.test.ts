@@ -66,8 +66,8 @@ describe("composeBundles", () => {
     const composite = composeBundles("ab", "AB", [a, b]);
 
     expect(composite.meaningSurfaces).toHaveLength(2);
-    expect(composite.meaningSurfaces![0].groupId).toBe("g-a");
-    expect(composite.meaningSurfaces![1].groupId).toBe("g-b");
+    expect(composite.meaningSurfaces![0]!.groupId).toBe("g-a");
+    expect(composite.meaningSurfaces![1]!.groupId).toBe("g-b");
   });
 
   it("concatenates fact extensions from all bundles", () => {
@@ -197,7 +197,7 @@ describe("composeBundles", () => {
 
     expect(composite.conversationMachine).toBe(machineA);
     expect(warnSpy).toHaveBeenCalledOnce();
-    expect(warnSpy.mock.calls[0][0]).toContain("Multiple conversation machines");
+    expect(warnSpy.mock.calls[0]![0]).toContain("Multiple conversation machines");
 
     warnSpy.mockRestore();
   });
@@ -237,8 +237,8 @@ describe("composeBundles", () => {
     expect(composite.systemProfile).toBeDefined();
     expect(composite.systemProfile!.profileId).toBe("prof-a"); // first wins
     expect(composite.systemProfile!.modules).toHaveLength(2);
-    expect(composite.systemProfile!.modules[0].moduleId).toBe("mod-a");
-    expect(composite.systemProfile!.modules[1].moduleId).toBe("mod-b");
+    expect(composite.systemProfile!.modules[0]!.moduleId).toBe("mod-a");
+    expect(composite.systemProfile!.modules[1]!.moduleId).toBe("mod-b");
   });
 
   it("concatenates pedagogical relations", () => {

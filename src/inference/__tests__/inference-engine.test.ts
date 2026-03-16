@@ -8,6 +8,7 @@ function makeProvider(result: HandInference | null = null): InferenceProvider & 
   const calls: AuctionEntry[] = [];
   return {
     id: "test-provider",
+    name: "test-provider",
     calls,
     inferFromBid(entry: AuctionEntry) {
       calls.push(entry);
@@ -19,6 +20,7 @@ function makeProvider(result: HandInference | null = null): InferenceProvider & 
 function makeThrowingProvider(): InferenceProvider {
   return {
     id: "throwing",
+    name: "throwing",
     inferFromBid() {
       throw new Error("provider exploded");
     },
@@ -95,6 +97,8 @@ describe("createInferenceEngine", () => {
 
   it("accumulates inferences and returns merged results", () => {
     const inference: HandInference = {
+      seat: Seat.North,
+      source: "test",
       minHcp: 15,
       maxHcp: 17,
       suits: {},
@@ -140,7 +144,7 @@ describe("createInferenceEngine", () => {
   });
 
   it("timeline records snapshots after each processBid", () => {
-    const inference: HandInference = { minHcp: 12, suits: {} };
+    const inference: HandInference = { seat: Seat.North, source: "test", minHcp: 12, suits: {} };
     const own = makeProvider(inference);
     const opponent = makeProvider();
     const engine = createInferenceEngine(makeConfig(own, opponent), Seat.South);
@@ -182,7 +186,7 @@ describe("createInferenceEngine", () => {
   });
 
   it("reset clears all accumulated inferences and timeline", () => {
-    const inference: HandInference = { minHcp: 15, maxHcp: 17, suits: {} };
+    const inference: HandInference = { seat: Seat.North, source: "test", minHcp: 15, maxHcp: 17, suits: {} };
     const own = makeProvider(inference);
     const opponent = makeProvider();
     const engine = createInferenceEngine(makeConfig(own, opponent), Seat.South);
@@ -202,10 +206,11 @@ describe("createInferenceEngine", () => {
     let callCount = 0;
     const narrowingProvider: InferenceProvider = {
       id: "narrowing",
+      name: "narrowing",
       inferFromBid() {
         callCount++;
-        if (callCount === 1) return { minHcp: 12, suits: {} };
-        return { minHcp: 15, maxHcp: 17, suits: {} };
+        if (callCount === 1) return { seat: Seat.North, source: "test", minHcp: 12, suits: {} };
+        return { seat: Seat.North, source: "test", minHcp: 15, maxHcp: 17, suits: {} };
       },
     };
     const opponent = makeProvider();

@@ -11,7 +11,7 @@ import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalo
  *   R3 — opener's Ogust rebid (solid, min/bad, min/good, max/bad, max/good)
  */
 
-const WEAK_TWO_ENTRIES: ExplanationEntry[] = [
+export const WEAK_TWO_ENTRIES: ExplanationEntry[] = [
   // ── Fact-based entries: HCP and suit requirements ──────────
 
   {

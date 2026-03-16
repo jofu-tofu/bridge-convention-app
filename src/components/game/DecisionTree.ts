@@ -31,6 +31,8 @@ export interface TreeDisplayRow {
     readonly whyThisBid?: string;
     readonly isArtificial?: boolean;
     readonly forcingType?: string;
+    readonly partnerExpects?: string;
+    readonly commonMistake?: string;
   } | null;
   /** Denial implication from parent decision node (only on NO-branch rows). */
   readonly denialImplication: string | null;

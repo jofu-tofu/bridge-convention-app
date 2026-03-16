@@ -116,7 +116,7 @@ describe("createQueryPort", () => {
     const state = backend.initialize(context);
     const port = createQueryPort(backend, state);
 
-    const result = port.suitLength("N", "S");
+    const result = port.suitLength("N", "spades");
     expect(result).toHaveProperty("value");
     expect(result).toHaveProperty("health");
     // Balanced hand: each suit 2-5, average length ~3.25
@@ -155,7 +155,7 @@ describe("createQueryPort", () => {
     const port = createQueryPort(backend, state);
 
     // South has 4 spades. P(N+S spades >= 8) = probability North has 4+ spades
-    const result = port.fitProbability(["N", "S"], "S", 8);
+    const result = port.fitProbability(["N", "S"], "spades", 8);
     expect(result).toHaveProperty("value");
     expect(result).toHaveProperty("health");
     expect(result.value).toBeGreaterThanOrEqual(0);
@@ -223,7 +223,7 @@ describe("createQueryPort", () => {
     expect(result.health.effectiveSampleSize).toBe(0);
     expect(result.health.acceptanceRate).toBe(0);
 
-    const suitResult = port.suitLength("N", "S");
+    const suitResult = port.suitLength("N", "spades");
     expect(suitResult.value).toBe(0);
 
     const balancedResult = port.isBalanced("N");
@@ -232,7 +232,7 @@ describe("createQueryPort", () => {
     const jointResult = port.jointHcp(["N", "S"], 0, 40);
     expect(jointResult.value).toBe(0);
 
-    const fitResult = port.fitProbability(["N", "S"], "S", 8);
+    const fitResult = port.fitProbability(["N", "S"], "spades", 8);
     expect(fitResult.value).toBe(0);
   });
 });

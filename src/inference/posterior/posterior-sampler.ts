@@ -37,7 +37,7 @@ function resolveFactValueBuiltin(hand: Hand, factId: string): number | boolean |
   const suitMatch = /^hand\.suitLength\.(.+)$/.exec(factId);
   if (suitMatch) {
     const suitKey = suitMatch[1]!;
-    const suit = SUIT_NAME_MAP[suitKey];
+    const suit = SUIT_NAME_MAP[suitKey as keyof typeof SUIT_NAME_MAP];
     if (suit !== undefined) {
       return hand.cards.filter((c) => c.suit === suit).length;
     }

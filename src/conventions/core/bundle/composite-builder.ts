@@ -68,7 +68,7 @@ export function composeBundles(
   if (machinesWithBundles.length > 1) {
     console.warn(
       `[composeBundles] Multiple conversation machines found in composite "${compositeId}". ` +
-        `Using machine from "${machinesWithBundles[0].bundleId}". ` +
+        `Using machine from "${machinesWithBundles[0]!.bundleId}". ` +
         `Bundles with machines: ${machinesWithBundles.map((m) => m.bundleId).join(", ")}`,
     );
   }
@@ -126,7 +126,7 @@ function mergeExplanationCatalogs(
   }
 
   return {
-    version: withCatalogs[0].explanationCatalog!.version,
+    version: withCatalogs[0]!.explanationCatalog!.version,
     entries: merged,
   };
 }
@@ -137,7 +137,7 @@ function mergeSystemProfiles(
   const withProfiles = bundles.filter((b) => b.systemProfile);
   if (withProfiles.length === 0) return undefined;
 
-  const base = withProfiles[0].systemProfile!;
+  const base = withProfiles[0]!.systemProfile!;
   const allModules: ModuleEntryIR[] = withProfiles.flatMap(
     (b) => b.systemProfile!.modules,
   );
@@ -173,7 +173,7 @@ function mergeSystemProfiles(
 function mergeDealConstraints(
   bundles: readonly ConventionBundle[],
 ): DealConstraints {
-  if (bundles.length === 1) return bundles[0].dealConstraints;
+  if (bundles.length === 1) return bundles[0]!.dealConstraints;
 
   // Merge seat constraints: collect all constraints, merge by seat
   const seatMap = new Map<string, SeatConstraint[]>();
@@ -189,7 +189,7 @@ function mergeDealConstraints(
   const mergedSeats: SeatConstraint[] = [];
   for (const [, constraints] of seatMap) {
     if (constraints.length === 1) {
-      mergedSeats.push(constraints[0]);
+      mergedSeats.push(constraints[0]!);
     } else {
       // Take most restrictive: highest minHcp, lowest maxHcp, etc.
       mergedSeats.push(mergeSeatConstraints(constraints));
@@ -209,7 +209,7 @@ function mergeDealConstraints(
 }
 
 function mergeSeatConstraints(constraints: SeatConstraint[]): SeatConstraint {
-  const seat = constraints[0].seat;
+  const seat = constraints[0]!.seat;
 
   // Most restrictive: highest minHcp
   const minHcps = constraints.map((c) => c.minHcp).filter((v): v is number => v !== undefined);

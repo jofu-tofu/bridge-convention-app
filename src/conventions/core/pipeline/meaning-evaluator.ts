@@ -7,13 +7,14 @@ import type {
   MeaningClause,
   MeaningEvaluationEvidence,
   RankingMetadata,
+  RecommendationBand,
 } from "../../../core/contracts/meaning";
 import type {
   EvaluatedFacts,
   FactValue,
 } from "../../../core/contracts/fact-catalog";
 import { getFactValue } from "../../../core/contracts/fact-catalog";
-import type { DecisionSurfaceIR } from "../../../core/contracts/agreement-module";
+import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
 import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
 import { priorityClassToBand } from "./priority-mapping";
 

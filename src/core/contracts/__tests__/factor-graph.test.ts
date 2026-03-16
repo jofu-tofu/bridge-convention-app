@@ -55,7 +55,7 @@ describe("FactorSpec discriminated union", () => {
     const factor: SuitLengthFactor = {
       kind: "suit-length",
       seat: "S",
-      suit: "H",
+      suit: "hearts",
       min: 5,
       max: 7,
       strength: "soft",
@@ -63,7 +63,7 @@ describe("FactorSpec discriminated union", () => {
     };
 
     expect(factor.kind).toBe("suit-length");
-    expect(factor.suit).toBe("H");
+    expect(factor.suit).toBe("hearts");
     expect(factor.min).toBe(5);
     expect(factor.max).toBe(7);
   });
@@ -98,7 +98,7 @@ describe("FactorSpec discriminated union", () => {
     const factor: FitFactor = {
       kind: "fit",
       seats: ["N", "S"],
-      suit: "S",
+      suit: "spades",
       minCombined: 8,
       strength: "soft",
       origin,
@@ -112,10 +112,10 @@ describe("FactorSpec discriminated union", () => {
   it("supports exhaustive switch on kind discriminant", () => {
     const factors: FactorSpec[] = [
       { kind: "hcp-range", seat: "N", min: 12, max: 14, strength: "hard", origin },
-      { kind: "suit-length", seat: "N", suit: "S", min: 4, max: 6, strength: "hard", origin },
+      { kind: "suit-length", seat: "N", suit: "spades", min: 4, max: 6, strength: "hard", origin },
       { kind: "shape", seat: "N", pattern: "balanced", strength: "hard", origin },
       { kind: "exclusion", seat: "N", constraint: "none", strength: "hard", origin },
-      { kind: "fit", seats: ["N", "S"], suit: "H", minCombined: 8, strength: "soft", origin },
+      { kind: "fit", seats: ["N", "S"], suit: "hearts", minCombined: 8, strength: "soft", origin },
     ];
 
     const kinds = factors.map((f) => {
@@ -134,7 +134,7 @@ describe("FactorSpec discriminated union", () => {
       // TypeScript exhaustiveness: the above should cover all cases
     });
 
-    expect(kinds).toEqual([12, "S", "balanced", "none", 8]);
+    expect(kinds).toEqual([12, "spades", "balanced", "none", 8]);
   });
 });
 
@@ -241,10 +241,10 @@ describe("FactorGraphIR", () => {
     const fg: FactorGraphIR = {
       factors: [
         { kind: "hcp-range", seat: "N", min: 15, max: 17, strength: "hard", origin },
-        { kind: "suit-length", seat: "S", suit: "H", min: 5, max: 7, strength: "soft", origin },
+        { kind: "suit-length", seat: "S", suit: "hearts", min: 5, max: 7, strength: "soft", origin },
         { kind: "shape", seat: "E", pattern: "semi-balanced", strength: "hard", origin },
         { kind: "exclusion", seat: "W", constraint: "no void", strength: "hard", origin },
-        { kind: "fit", seats: ["N", "S"], suit: "S", minCombined: 8, strength: "soft", origin },
+        { kind: "fit", seats: ["N", "S"], suit: "spades", minCombined: 8, strength: "soft", origin },
       ],
       ambiguitySchema: [
         {

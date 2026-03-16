@@ -36,6 +36,7 @@ export const ntBundle = createBundle({
   description: "Stayman + Jacoby Transfers responses to 1NT opening",
   category: ConventionCategory.Constructive,
   memberIds: ["jacoby-transfers", "stayman", "smolen"],
+  composed,
   dealConstraints: ntDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {
@@ -44,15 +45,6 @@ export const ntBundle = createBundle({
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  meaningSurfaces: [
-    { groupId: "responder-r1", surfaces: composed.entrySurfaces },
-    ...composed.surfaceGroups,
-  ],
-  factExtensions: composed.factExtensions,
-  surfaceRouter: composed.surfaceRouter,
   systemProfile: NT_SAYC_PROFILE,
-  conversationMachine: composed.conversationMachine,
-  explanationCatalog: composed.explanationCatalog,
-  pedagogicalRelations: composed.pedagogicalRelations,
   acceptableAlternatives: ntCrossConventionAlternatives,
 });

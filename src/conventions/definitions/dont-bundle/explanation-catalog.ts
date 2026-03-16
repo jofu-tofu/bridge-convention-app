@@ -11,7 +11,7 @@ import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalo
  *   Reveal — overcaller's reveal after double → 2C relay
  */
 
-const DONT_ENTRIES: ExplanationEntry[] = [
+export const DONT_ENTRIES: ExplanationEntry[] = [
   // ── Fact-based entries: shape and support requirements ─────
 
   {
