@@ -99,7 +99,7 @@ export function buildPublicSnapshot(params: {
   agreedStrain: {
     type: "none" | "suit" | "notrump";
     suit?: string;
-    confidence?: "tentative" | "agreed" | "forced";
+    confidence?: string;
   };
   competitionMode: string;
   captain: string;

@@ -31,7 +31,7 @@ export function buildSnapshotFromAuction(
     activeModuleIds,
     forcingState: registers?.forcingState ?? ForcingState.Nonforcing,
     obligation: registers?.obligation ?? { kind: "None", obligatedSide: "responder" },
-    agreedStrain: (registers?.agreedStrain ?? { type: "none" }) as PublicSnapshot["agreedStrain"],
+    agreedStrain: registers?.agreedStrain ?? { type: "none" },
     competitionMode,
     captain: registers?.captain ?? "responder",
     systemCapabilities: registers?.systemCapabilities,

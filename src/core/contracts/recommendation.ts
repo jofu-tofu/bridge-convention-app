@@ -2,7 +2,7 @@ import type { Call } from "../../engine/types";
 import type { BiddingStrategy } from "./bidding";
 import type { AlternativeGroup, IntentFamily } from "./tree-evaluation";
 import type { ExplanationCatalogIR } from "./explanation-catalog";
-import type { ArbitrationResult } from "./module-surface";
+import type { ArbitrationResult, MachineRegisters } from "./module-surface";
 import type { DecisionProvenance } from "./provenance";
 import type { PosteriorFactValue } from "./posterior";
 import type { TeachingProjection } from "./teaching-projection";
@@ -30,14 +30,7 @@ export interface MachineDebugSnapshot {
   readonly stateHistory: readonly string[];
   readonly transitionHistory: readonly string[];
   readonly activeSurfaceGroupIds: readonly string[];
-  readonly registers: {
-    readonly forcingState: string;
-    readonly obligation: { readonly kind: string; readonly obligatedSide: string };
-    readonly agreedStrain: { readonly type: string; readonly suit?: string; readonly confidence?: string };
-    readonly competitionMode: string;
-    readonly captain: string;
-    readonly systemCapabilities: Readonly<Record<string, string>>;
-  };
+  readonly registers: MachineRegisters;
   readonly diagnostics: readonly { readonly level: string; readonly message: string; readonly moduleId?: string }[];
   readonly handoffTraces: readonly { readonly fromModuleId: string; readonly toModuleId: string; readonly reason: string }[];
   readonly submachineStack: readonly { readonly parentMachineId: string; readonly returnStateId: string }[];

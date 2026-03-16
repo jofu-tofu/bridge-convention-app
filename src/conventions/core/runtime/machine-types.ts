@@ -1,4 +1,5 @@
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { PublicSnapshot, MachineRegisters } from "../../../core/contracts/module-surface";
+export type { MachineRegisters };
 import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { ForcingState } from "../../../core/contracts/bidding";
 import type { Call, Seat, BidSuit, Auction } from "../../../engine/types";
@@ -96,23 +97,6 @@ export interface SubmachineFrame {
   readonly parentMachineId: string;
   readonly returnStateId: string;
   readonly parentRegisters: MachineRegisters;
-}
-
-// Machine registers are the subset of PublicSnapshot that the machine owns
-export interface MachineRegisters {
-  readonly forcingState: ForcingState;
-  readonly obligation: {
-    readonly kind: string;
-    readonly obligatedSide: "opener" | "responder";
-  };
-  readonly agreedStrain: {
-    readonly type: "none" | "suit" | "notrump";
-    readonly suit?: string;
-    readonly confidence?: string;
-  };
-  readonly competitionMode: string;
-  readonly captain: string;
-  readonly systemCapabilities: Readonly<Record<string, string>>;
 }
 
 /** Default seatRole: self for own bids, partner for partnership, opponent otherwise. */

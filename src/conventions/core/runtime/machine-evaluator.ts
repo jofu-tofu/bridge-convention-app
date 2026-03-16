@@ -140,7 +140,7 @@ function registersToSnapshot(registers: MachineRegisters): PublicSnapshot {
     activeModuleIds: [],
     forcingState: registers.forcingState,
     obligation: registers.obligation,
-    agreedStrain: registers.agreedStrain as PublicSnapshot["agreedStrain"],
+    agreedStrain: registers.agreedStrain,
     competitionMode: registers.competitionMode,
     captain: registers.captain,
     systemCapabilities: registers.systemCapabilities,
