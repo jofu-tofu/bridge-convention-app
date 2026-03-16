@@ -3,6 +3,7 @@ import type { ConventionConfig, ConventionLookup } from "../conventions/core";
 import {
   Seat,
   type Auction,
+  type Deal,
   type DealConstraints,
 } from "../engine/types";
 import type { DrillBundle } from "./types";
@@ -12,6 +13,8 @@ import { createDrillConfig, buildBundleStrategy } from "./config-factory";
 import { createDrillSession } from "./session";
 import { getBundle } from "../conventions/core";
 import { createInferenceEngine } from "../inference/inference-engine";
+import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
+import { mulberry32 } from "../core/util/seeded-rng";
 
 /** 180° table rotation: N↔S, E↔W */
 export function rotateSeat180(seat: Seat): Seat {
@@ -93,7 +96,19 @@ export async function startDrill(
     ...(seed !== undefined ? { seed } : {}),
   };
 
-  const deal = await engine.generateDeal(constraints);
+  // When a seed is provided, use the TS-side deal generator for guaranteed
+  // deterministic results.  The WASM engine path (JS Number → Rust u64 via
+  // serde_wasm_bindgen) can silently drop the seed, falling back to a
+  // non-deterministic thread_rng.  The TS generator takes the seeded RNG
+  // directly, so the same seed always produces the same deal.
+  let deal: Deal;
+  if (seed !== undefined) {
+    const dealRng = rng ?? mulberry32(seed);
+    const result = tsGenerateDeal(constraints, dealRng);
+    deal = result.deal;
+  } else {
+    deal = await engine.generateDeal(constraints);
+  }
   let initialAuction = convention.defaultAuction
     ? convention.defaultAuction(userSeat, deal)
     : undefined;
