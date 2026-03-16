@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { evaluateMachine } from "../../../core/runtime/machine-evaluator";
+import { validateTransitionCompleteness, formatLeak } from "../../../core/runtime/machine-validation";
 import { createBergenConversationMachine } from "../machine";
 
 describe("Bergen bundle conversation machine", () => {
@@ -447,5 +448,18 @@ describe("Bergen bundle conversation machine", () => {
     expect(machine.seatRole(auction, Seat.South, Seat.South)).toBe("self");
     expect(machine.seatRole(auction, Seat.South, Seat.East)).toBe("opponent");
     expect(machine.seatRole(auction, Seat.South, Seat.West)).toBe("opponent");
+  });
+
+  // ─── Transition completeness ──────────────────────────────────
+
+  it("has zero parent-transition leaks (transition completeness)", () => {
+    const leaks = validateTransitionCompleteness(machine);
+    if (leaks.length > 0) {
+      const report = leaks.map(formatLeak).join("\n");
+      expect.fail(
+        `Found ${leaks.length} parent-transition leak(s):\n${report}`,
+      );
+    }
+    expect(leaks).toHaveLength(0);
   });
 });

@@ -52,6 +52,7 @@ export const NT_SKELETON: BundleSkeleton = {
       transitions: [],  // populated by module entryTransitions
       surfaceGroupId: "responder-r1",
       entryEffects: { setCaptain: "responder" },
+      allowedParentTransitions: ["nt-opened-opponent-double"],
     },
     {
       stateId: "terminal",
@@ -64,12 +65,20 @@ export const NT_SKELETON: BundleSkeleton = {
         },
       ],
       surfaceGroupId: "terminal-pass",
+      allowedParentTransitions: ["nt-opened-opponent-double"],
     },
     {
       stateId: "nt-contested",
       parentId: "nt-opened",
-      transitions: [],
+      transitions: [
+        {
+          transitionId: "contested-absorb",
+          match: { kind: "pass" },
+          target: "nt-contested",
+        },
+      ],
       entryEffects: { setCompetitionMode: "Doubled" },
+      allowedParentTransitions: ["nt-opened-opponent-double"],
     },
   ],
 };

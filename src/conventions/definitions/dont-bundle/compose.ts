@@ -66,6 +66,7 @@ export const DONT_SKELETON: BundleSkeleton = {
     {
       stateId: "overcaller-r1",
       parentId: "dont-active",
+      allowedParentTransitions: ["opp-double", "opp-bid"],
       transitions: [],
       surfaceGroupId: "overcaller-r1",
       entryEffects: {

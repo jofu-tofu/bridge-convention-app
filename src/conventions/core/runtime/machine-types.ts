@@ -22,6 +22,10 @@ export interface MachineState {
     readonly maxIterations: number; // Safety limit
     readonly exitTarget: string; // Where to go when loop exits
   };
+  /** Parent transition IDs that this state intentionally inherits.
+   *  Listed IDs are excluded from the completeness validator — everything
+   *  else leaking from a parent is flagged as a potential bug. */
+  readonly allowedParentTransitions?: readonly string[];
 }
 
 export interface MachineTransition {

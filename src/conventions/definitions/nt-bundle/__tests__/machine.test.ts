@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { evaluateMachine } from "../../../core/runtime/machine-evaluator";
-import { validateMachine } from "../../../core/runtime/machine-validation";
+import { validateMachine, validateTransitionCompleteness, formatLeak } from "../../../core/runtime/machine-validation";
 import { createNtConversationMachine } from "../machine";
 
 describe("createNtConversationMachine", () => {
@@ -332,5 +332,16 @@ describe("createNtConversationMachine", () => {
     expect(machine.seatRole(auction, Seat.South, Seat.South)).toBe("self");
     expect(machine.seatRole(auction, Seat.South, Seat.East)).toBe("opponent");
     expect(machine.seatRole(auction, Seat.South, Seat.West)).toBe("opponent");
+  });
+
+  it("has zero parent-transition leaks (transition completeness)", () => {
+    const leaks = validateTransitionCompleteness(machine);
+    if (leaks.length > 0) {
+      const report = leaks.map(formatLeak).join("\n");
+      expect.fail(
+        `Found ${leaks.length} parent-transition leak(s):\n${report}`,
+      );
+    }
+    expect(leaks).toHaveLength(0);
   });
 });

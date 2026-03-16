@@ -245,6 +245,7 @@ const SMOLEN_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "smolen-invoke-hearts",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double", "nt-opened-pass"],
     transitions: [],
     submachineRef: {
       machineId: "smolen-continuation",
@@ -258,6 +259,7 @@ const SMOLEN_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "smolen-invoke-spades",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double", "nt-opened-pass"],
     transitions: [],
     submachineRef: {
       machineId: "smolen-continuation",

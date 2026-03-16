@@ -73,6 +73,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-advancer-2h",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-2h-pass",
@@ -84,6 +85,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-advancer-2d",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-2d-pass",
@@ -95,6 +97,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-advancer-2c",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-2c-pass",
@@ -106,6 +109,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-advancer-2s",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-2s-pass",
@@ -117,6 +121,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-advancer-double",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-dbl-pass",
@@ -130,6 +135,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "advancer-after-2h",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "advancer-after-2h",
     entryEffects: {
       setCaptain: "responder",
@@ -170,6 +176,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "advancer-after-2d",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "advancer-after-2d",
     entryEffects: {
       setCaptain: "responder",
@@ -195,6 +202,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "advancer-after-2c",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "advancer-after-2c",
     entryEffects: {
       setCaptain: "responder",
@@ -220,6 +228,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "advancer-after-2s",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "advancer-after-2s",
     entryEffects: {
       setCaptain: "responder",
@@ -240,6 +249,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "advancer-after-double",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "advancer-after-double",
     entryEffects: {
       setCaptain: "responder",
@@ -267,6 +277,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-reveal",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-reveal-pass",
@@ -278,6 +289,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-2d-relay",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-2d-relay-pass",
@@ -289,6 +301,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "wait-2c-relay",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     transitions: [
       {
         transitionId: "wait-2c-relay-pass",
@@ -302,6 +315,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "overcaller-reveal",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "overcaller-reveal",
     entryEffects: {
       setCaptain: "opener",
@@ -322,6 +336,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "overcaller-2d-relay",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "overcaller-2d-relay",
     entryEffects: {
       setCaptain: "opener",
@@ -347,6 +362,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "overcaller-2c-relay",
     parentId: "dont-active",
+    allowedParentTransitions: ["opp-double", "opp-bid"],
     surfaceGroupId: "overcaller-2c-relay",
     entryEffects: {
       setCaptain: "opener",

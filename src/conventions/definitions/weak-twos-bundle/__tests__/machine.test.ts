@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { evaluateMachine } from "../../../core/runtime/machine-evaluator";
+import { validateTransitionCompleteness, formatLeak } from "../../../core/runtime/machine-validation";
 import { createWeakTwoConversationMachine } from "../machine";
 
 describe("Weak Two bundle conversation machine", () => {
@@ -272,5 +273,18 @@ describe("Weak Two bundle conversation machine", () => {
       expect(result.context.transitionHistory).toContain("opened-h-pass-to-responder");
       expect(result.context.transitionHistory).toContain("r2-h-ogust-ask");
     });
+  });
+
+  // ─── Transition completeness ──────────────────────────────────
+
+  it("has zero parent-transition leaks (transition completeness)", () => {
+    const leaks = validateTransitionCompleteness(machine);
+    if (leaks.length > 0) {
+      const report = leaks.map(formatLeak).join("\n");
+      expect.fail(
+        `Found ${leaks.length} parent-transition leak(s):\n${report}`,
+      );
+    }
+    expect(leaks).toHaveLength(0);
   });
 });

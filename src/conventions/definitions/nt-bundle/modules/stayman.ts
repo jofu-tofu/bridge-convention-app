@@ -561,6 +561,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "opener-stayman",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "stayman-pass",
@@ -591,6 +592,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "responder-r3-stayman-2h",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "r3-4h-game",
@@ -623,6 +625,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "responder-r3-stayman-2s",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "r3-4s-game",
@@ -656,6 +659,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "responder-r3-stayman-2d",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "r3-3nt-after-denial",

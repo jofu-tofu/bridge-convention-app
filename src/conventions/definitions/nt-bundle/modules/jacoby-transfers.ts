@@ -379,6 +379,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "opener-transfer-hearts",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "transfer-h-pass",
@@ -404,6 +405,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "opener-transfer-spades",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "transfer-s-pass",
@@ -429,6 +431,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "responder-r3-transfer-hearts",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "r3-4h-game",
@@ -457,6 +460,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
   {
     stateId: "responder-r3-transfer-spades",
     parentId: "nt-opened",
+    allowedParentTransitions: ["nt-opened-opponent-double"],
     transitions: [
       {
         transitionId: "r3-4s-game",

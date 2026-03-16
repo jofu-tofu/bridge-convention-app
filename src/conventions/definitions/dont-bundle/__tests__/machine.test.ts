@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { evaluateMachine } from "../../../core/runtime/machine-evaluator";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
+import { validateTransitionCompleteness, formatLeak } from "../../../core/runtime/machine-validation";
 import { createDontConversationMachine } from "../machine";
 
 describe("createDontConversationMachine", () => {
@@ -269,5 +270,18 @@ describe("createDontConversationMachine", () => {
     const auction = buildAuction(Seat.East, ["1NT", "2C", "P", "2D", "P", "P"]);
     const result = evaluateMachine(machine, auction, Seat.South);
     expect(result.context.currentStateId).toBe("terminal");
+  });
+
+  // ─── Transition completeness ──────────────────────────────────
+
+  it("has zero parent-transition leaks (transition completeness)", () => {
+    const leaks = validateTransitionCompleteness(machine);
+    if (leaks.length > 0) {
+      const report = leaks.map(formatLeak).join("\n");
+      expect.fail(
+        `Found ${leaks.length} parent-transition leak(s):\n${report}`,
+      );
+    }
+    expect(leaks).toHaveLength(0);
   });
 });
