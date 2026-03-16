@@ -162,6 +162,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
             meaning: result.meaning,
             isUser: false,
             alertLabel: result.alert?.teachingLabel,
+            annotationType: result.alert?.annotationType,
           },
         ];
 
@@ -278,6 +279,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         isUser: true,
         isCorrect: expectedResult ? true : undefined,
         alertLabel: expectedResult?.alert?.teachingLabel,
+        annotationType: expectedResult?.alert?.annotationType,
         teachingProjection: conventionStrategy?.getLastEvaluation()?.teachingProjection ?? undefined,
       },
     ];
@@ -316,15 +318,13 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       auction = initialAuction;
       bidHistory = initialAuction.entries.map((entry) => {
         // Add range announcement for 1NT opening (ACBL requires partner to announce "15 to 17")
-        const alertLabel =
-          entry.call.type === "bid" && entry.call.level === 1 && entry.call.strain === "NT"
-            ? "15 to 17"
-            : undefined;
+        const is1NT = entry.call.type === "bid" && entry.call.level === 1 && entry.call.strain === "NT";
         return {
           seat: entry.seat,
           call: entry.call,
           isUser: false,
-          alertLabel,
+          alertLabel: is1NT ? "15 to 17" : undefined,
+          annotationType: is1NT ? "announce" as const : undefined,
         };
       });
       const lastEntry =

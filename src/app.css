@@ -17,12 +17,12 @@
   --color-accent-danger: #ef4444;
   --color-suit-spades: #e2e8f0;
   --color-suit-hearts: #f87171;
-  --color-suit-diamonds: #fb923c; /* Diamonds are orange per Style Guide, NOT blue or red */
-  --color-suit-clubs: #22d3ee; /* Cyan — colorblind-safe, off red-green axis */
+  --color-suit-diamonds: #f87171; /* Standard bridge: red, same as hearts */
+  --color-suit-clubs: #e2e8f0; /* Standard bridge: black (light on dark bg), same as spades */
   --color-suit-card-spades: #1a1a2e;
   --color-suit-card-hearts: #f87171;
-  --color-suit-card-diamonds: #fb923c; /* Diamonds are orange per Style Guide, NOT blue or red */
-  --color-suit-card-clubs: #22d3ee; /* Cyan — colorblind-safe, off red-green axis */
+  --color-suit-card-diamonds: #ef4444; /* Standard bridge: red (visible on white card face) */
+  --color-suit-card-clubs: #1a1a2e; /* Standard bridge: black, same as spades */
   --color-table-surface: #1a2332;
   --color-table-border: #2a3a4e;
   --color-card-back: #1e3a5f;

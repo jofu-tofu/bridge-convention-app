@@ -43,7 +43,7 @@
 
 <div class={phaseContainerClass}>
   <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
-    <BridgeTable hands={deal.hands} {faceUpSeats}>
+    <BridgeTable hands={deal.hands} {faceUpSeats} vulnerability={deal.vulnerability} dealer={deal.dealer}>
       <div
         class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
       >

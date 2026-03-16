@@ -53,6 +53,8 @@
     <BridgeTable
       hands={deal.hands}
       {faceUpSeats}
+      vulnerability={deal.vulnerability}
+      dealer={deal.dealer}
       legalPlays={legalPlays}
       onPlayCard={onPlayCard}
       currentPlayer={currentPlayer ?? undefined}

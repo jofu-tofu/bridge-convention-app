@@ -10,6 +10,12 @@ const ARTIFICIAL_INTENTS = new Set([
   "alternate-encoding",
 ]);
 
+/** Source-intent types that are ACBL-announced (partner speaks the meaning aloud). */
+const ANNOUNCE_INTENTS = new Set([
+  "TransferToHearts",
+  "TransferToSpades",
+]);
+
 /** Determine if a clause represents publicly observable information.
  *  Two paths to being public:
  *  1. Primitive hand facts (hand.*) — universally disclosed when explaining any bid.
@@ -52,13 +58,21 @@ export interface AlertResolvable {
 /** Resolve whether a surface is alertable.
  *  Returns BidAlert when the bid is conventional, null when natural/standard.
  *  Alertability is derived from priorityClass and sourceIntent — no manual
- *  declaration needed. Public constraints are auto-derived from clauses. */
+ *  declaration needed. Public constraints are auto-derived from clauses.
+ *  annotationType distinguishes ACBL alerts, announcements, and educational labels. */
 export function resolveAlert(surface: AlertResolvable): BidAlert | null {
   if (!isAlertable(surface)) return null;
+
+  const annotationType = ANNOUNCE_INTENTS.has(surface.sourceIntent.type)
+    ? "announce" as const
+    : ARTIFICIAL_INTENTS.has(surface.sourceIntent.type)
+      ? "alert" as const
+      : "educational" as const;
 
   return {
     publicConstraints: derivePublicConstraints(surface.clauses),
     teachingLabel: surface.teachingLabel,
+    annotationType,
   };
 }
 

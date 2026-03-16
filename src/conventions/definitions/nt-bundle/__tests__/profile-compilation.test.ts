@@ -29,7 +29,7 @@ describe("NT bundle golden-master (characterization)", () => {
       expect(counts.get("responder-r1")).toBe(5);
 
       // Opener 1NT (empty group from natural-nt)
-      expect(counts.get("opener-1nt")).toBe(0);
+      expect(counts.get("opener-1nt")).toBe(1);
 
       // Opener Stayman response
       expect(counts.get("opener-stayman-response")).toBe(3);
@@ -61,7 +61,7 @@ describe("NT bundle golden-master (characterization)", () => {
         (sum, g) => sum + g.surfaces.length,
         0,
       );
-      expect(total).toBe(34);
+      expect(total).toBe(35);
     });
   });
 

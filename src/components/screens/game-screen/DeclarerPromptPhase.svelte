@@ -42,6 +42,8 @@
     <BridgeTable
       hands={deal.hands}
       {faceUpSeats}
+      vulnerability={deal.vulnerability}
+      dealer={deal.dealer}
     >
       <DeclarerPrompt
         {contract}

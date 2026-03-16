@@ -23,6 +23,19 @@
     isPlaceholder: boolean;
     colorClass: string;
     alertLabel?: string;
+    annotationType?: "alert" | "announce" | "educational";
+  }
+
+  /** Annotation styling per ACBL type:
+   *  - announce: blue (partner speaks the meaning, e.g., "15 to 17", "Transfer")
+   *  - alert: amber (conventional bid requiring alert)
+   *  - educational: gray (informational label for learning, not ACBL-required) */
+  function annotationClass(type?: "alert" | "announce" | "educational"): string {
+    switch (type) {
+      case "announce": return "text-blue-400/80";
+      case "alert": return "text-amber-400/80";
+      default: return "text-text-muted/70";
+    }
   }
 
   const rows = $derived.by(() => {
@@ -44,6 +57,7 @@
         isPlaceholder: false,
         colorClass,
         alertLabel: bidHistory?.[i]?.alertLabel,
+        annotationType: bidHistory?.[i]?.annotationType,
       });
     }
 
@@ -84,7 +98,7 @@
                 <span>{cell.text}</span>
                 {#if cell.alertLabel}
                   <span
-                    class="text-[9px] text-amber-400/80 font-sans italic leading-tight"
+                    class="text-[9px] {annotationClass(cell.annotationType)} font-sans italic leading-tight"
                     title={cell.alertLabel}
                   >{cell.alertLabel}</span>
                 {/if}

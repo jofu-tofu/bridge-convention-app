@@ -96,8 +96,49 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
 ];
 
 // ─── Opener 1NT surface (used as surface group for idle state) ───
+// Declares the 1NT opening promise (15-17 HCP, balanced) so that the
+// commitment extractor produces public constraints for the posterior sampler.
 
-export const OPENER_1NT_SURFACE: readonly MeaningSurface[] = [];
+export const OPENER_1NT_SURFACE: readonly MeaningSurface[] = [
+  {
+    meaningId: "bridge:1nt-opening",
+    semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_OPENING,
+    moduleId: "natural-nt",
+    encoding: { defaultCall: bid(1, BidSuit.NoTrump) },
+    clauses: [
+      {
+        clauseId: "hcp-15-plus",
+        factId: "hand.hcp",
+        operator: "gte",
+        value: 15,
+        description: "15+ HCP for 1NT opening",
+      },
+      {
+        clauseId: "hcp-17-max",
+        factId: "hand.hcp",
+        operator: "lte",
+        value: 17,
+        description: "At most 17 HCP for 1NT opening",
+      },
+      {
+        clauseId: "balanced",
+        factId: "hand.isBalanced",
+        operator: "boolean",
+        value: true,
+        description: "Balanced hand shape",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 3,
+      modulePrecedence: 0,
+      intraModuleOrder: 0,
+    },
+    priorityClass: "neutralCorrect",
+    sourceIntent: { type: "NTOpening", params: {} },
+    teachingLabel: "15 to 17",
+  },
+];
 
 // ─── R1 transitions ──────────────────────────────────────────
 

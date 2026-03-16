@@ -40,6 +40,7 @@ describe("resolveAlert", () => {
     expect(result).toEqual({
       publicConstraints: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
       teachingLabel: "Stayman 2C",
+      annotationType: "educational",
     });
   });
 
@@ -52,6 +53,7 @@ describe("resolveAlert", () => {
     expect(result).toEqual({
       publicConstraints: [],
       teachingLabel: "Show hearts",
+      annotationType: "educational",
     });
   });
 
@@ -64,7 +66,18 @@ describe("resolveAlert", () => {
     expect(result).toEqual({
       publicConstraints: [],
       teachingLabel: "Relay bid",
+      annotationType: "alert",
     });
+  });
+
+  it("returns announce annotationType for transfer intents", () => {
+    const surface = makeSurface({
+      priorityClass: "preferredConventional",
+      sourceIntent: { type: "TransferToHearts" },
+      teachingLabel: "Transfer to hearts",
+    });
+    const result = resolveAlert(surface);
+    expect(result?.annotationType).toBe("announce");
   });
 });
 

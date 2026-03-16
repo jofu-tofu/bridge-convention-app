@@ -70,7 +70,7 @@ describe("extractCommitments (NT bundle)", () => {
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
     const commitments = extractCommitments(auction, Seat.South, surfaceRouter);
 
-    // 1NT has no surface match (it's the opening, not a convention response),
+    // 1NT now produces commitments (15-17 HCP, balanced),
     // Pass produces no commitments
     const passCommitments = commitments.filter(
       (c) => c.sourceCall === "P",
@@ -95,13 +95,14 @@ describe("extractCommitments (NT bundle)", () => {
     expect(responderCommitments.length).toBeGreaterThanOrEqual(2);
 
     // 2H: opener (North) shows hearts (4+ hearts) + entailed denial (spades >= 4)
+    // Plus 1NT opening commitments (HCP 15-17, balanced)
     const openerCommitments = commitments.filter(
       (c) => c.subject === (Seat.North as string),
     );
-    expect(openerCommitments).toHaveLength(2);
+    expect(openerCommitments.length).toBeGreaterThanOrEqual(2);
 
     const heartsPromise = openerCommitments.find(
-      (c) => c.origin === "call-meaning",
+      (c) => c.origin === "call-meaning" && c.sourceCall === "2H",
     );
     expect(heartsPromise).toBeDefined();
     expect(heartsPromise!.constraint.factId).toBe("hand.suitLength.hearts");

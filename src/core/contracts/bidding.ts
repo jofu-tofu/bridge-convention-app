@@ -45,6 +45,9 @@ export interface BidAlert {
   readonly publicConstraints: readonly FactConstraintIR[];
   /** Human-readable label for UI display (from surface.teachingLabel). */
   readonly teachingLabel: string;
+  /** ACBL annotation type: alert (conventional bid), announce (announced range/transfer),
+   *  or educational (informational label for learning, not ACBL-required). */
+  readonly annotationType?: "alert" | "announce" | "educational";
 }
 
 export interface BidResult {
@@ -71,6 +74,8 @@ export interface BidHistoryEntry {
   readonly expectedResult?: BidResult;
   /** Alert/announcement label for this bid (e.g., "Transfer to hearts", "15 to 17"). */
   readonly alertLabel?: string;
+  /** Annotation type: alert (conventional), announce (spoken), educational (learning aid). */
+  readonly annotationType?: "alert" | "announce" | "educational";
   /** Teaching projection snapshot — persisted for review-phase convention analysis.
    *  Present for user bids when the meaning pipeline produced one. */
   readonly teachingProjection?: TeachingProjection;

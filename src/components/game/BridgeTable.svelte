@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { Hand, Card as CardType } from "../../engine/types";
-  import { Seat } from "../../engine/types";
+  import { Seat, Vulnerability } from "../../engine/types";
   import { viewSeat } from "../../core/display/seat-mapping";
   import { calculateHcp } from "../../engine/hand-evaluator";
+  import { isVulnerable } from "../../engine/scoring";
   import HandFan from "./HandFan.svelte";
 
   interface Props {
@@ -23,6 +24,10 @@
     remainingCards?: Partial<Record<Seat, readonly CardType[]>>;
     /** When true, rotate table 180°: North at bottom, South at top, E↔W swapped */
     rotated?: boolean;
+    /** Deal vulnerability for visual indicators on seat labels */
+    vulnerability?: Vulnerability;
+    /** Dealer seat — shows "D" badge */
+    dealer?: Seat;
   }
 
   let {
@@ -35,6 +40,8 @@
     userControlledSeats = [],
     remainingCards,
     rotated = false,
+    vulnerability,
+    dealer,
   }: Props = $props();
 
   const southHcp = $derived(calculateHcp(hands[Seat.South]));
@@ -77,12 +84,13 @@
   }
 
   function seatLabelClass(seat: Seat): string {
-    const base =
-      "text-sm font-bold bg-bg-elevated/80 px-2.5 py-0.5 rounded-full";
+    const vul = vulnerability ? isVulnerable(seat, vulnerability) : false;
+    const bg = vul ? "bg-red-900/80 ring-1 ring-red-500/40" : "bg-bg-elevated/80";
+    const base = `text-sm font-bold ${bg} px-2.5 py-0.5 rounded-full`;
     if (currentPlayer === seat) {
-      return `${base} text-accent`;
+      return `${base} text-accent-primary`;
     }
-    return `${base} text-text-secondary`;
+    return `${base} ${vul ? "text-red-300" : "text-text-secondary"}`;
   }
 </script>
 

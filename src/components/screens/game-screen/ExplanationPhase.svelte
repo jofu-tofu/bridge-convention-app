@@ -118,7 +118,7 @@
       tableWidth={tableBaseW}
       tableHeight={tableBaseH}
     >
-      <BridgeTable hands={deal.hands} {faceUpSeats}>
+      <BridgeTable hands={deal.hands} {faceUpSeats} vulnerability={deal.vulnerability} dealer={deal.dealer}>
         <div class="flex flex-col items-center gap-2">
           <div
             class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"

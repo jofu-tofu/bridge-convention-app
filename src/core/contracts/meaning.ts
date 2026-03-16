@@ -218,6 +218,7 @@ export interface MeaningSurface {
  * (Frozen Contract #14 from Agreement Module IR spec)
  */
 export const BRIDGE_SEMANTIC_CLASSES = {
+  NT_OPENING: "bridge:1nt-opening",
   NT_INVITE: "bridge:nt-invite",
   NT_GAME: "bridge:to-3nt",
 } as const;
