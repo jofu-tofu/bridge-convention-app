@@ -156,6 +156,12 @@ export interface DDSolution {
   readonly par: ParInfo | null;
 }
 
+/** Numeric range with inclusive min and max bounds. */
+export interface NumberRange {
+  readonly min: number;
+  readonly max: number;
+}
+
 export interface PlayedCard {
   readonly card: Card;
   readonly seat: Seat;

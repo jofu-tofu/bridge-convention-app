@@ -1,7 +1,7 @@
 import type { Call } from "../../engine/types";
 import type { MeaningId, SemanticClassId, RankingMetadata } from "./meaning";
 import type {
-  PriorityClassId,
+  PriorityClass,
   ChoiceClosurePolicy,
   FactConstraintIR,
 } from "./agreement-module";
@@ -44,7 +44,7 @@ export interface MeaningSurface {
    *  `RecommendationBand` at runtime, overriding `ranking.recommendationBand`.
    *  Optional for backward compatibility — surfaces without this field use the
    *  band from `ranking` directly. */
-  readonly priorityClass?: PriorityClassId;
+  readonly priorityClass?: PriorityClass;
   readonly sourceIntent: {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;

@@ -11,9 +11,6 @@ type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-too
 export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"
                           | "neutralCorrect" | "fallbackCorrect";
 
-/** Alias for use in MeaningSurface — same union, semantic name for surface authors. */
-export type PriorityClassId = PriorityClass;
-
 // ─── DecisionSurfaceIR ─────────────────────────────────────
 // The primary IR contract type for decision surfaces. The runtime evaluates these
 // through the meaning pipeline. When decisionProgram === "clause-evaluator" and

@@ -1,4 +1,4 @@
-import type { Seat, Suit } from "../../engine/types";
+import type { NumberRange, Seat, Suit } from "../../engine/types";
 
 export interface SuitInference {
   readonly minLength?: number;
@@ -20,18 +20,15 @@ export interface InferredHoldings {
   readonly seat: Seat;
   readonly inferences: readonly HandInference[];
   /** Merged view (computed from all inferences). */
-  readonly hcpRange: { readonly min: number; readonly max: number };
-  readonly suitLengths: Record<
-    Suit,
-    { readonly min: number; readonly max: number }
-  >;
+  readonly hcpRange: NumberRange;
+  readonly suitLengths: Record<Suit, NumberRange>;
   readonly isBalanced: boolean | undefined;
 }
 
 /** Belief data for convention pipeline. Per-seat HCP ranges and suit length ranges. */
 export interface BeliefData {
   readonly beliefs: Record<Seat, {
-    readonly hcpRange: { readonly min: number; readonly max: number };
-    readonly suitLengths: Record<Suit, { readonly min: number; readonly max: number }>;
+    readonly hcpRange: NumberRange;
+    readonly suitLengths: Record<Suit, NumberRange>;
   }>;
 }

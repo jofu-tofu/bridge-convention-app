@@ -2,7 +2,7 @@ import type { HandPredicateIR, DealConstraintIR, PublicGuardIR } from "./predica
 
 export type SeatRole = "self" | "partner" | "lho" | "rho" | "openingSide";
 
-export interface SeatConstraint {
+export interface WitnessSeatConstraint {
   readonly kind: "seat";
   readonly role: SeatRole;
   readonly predicate: HandPredicateIR;
@@ -20,7 +20,7 @@ interface ExclusionConstraint {
   readonly kind: "exclusion";
   readonly meaningIds: readonly string[];
 }
-type ConstraintLayer = SeatConstraint | JointConstraint | PublicGuardConstraint | ExclusionConstraint;
+type ConstraintLayer = WitnessSeatConstraint | JointConstraint | PublicGuardConstraint | ExclusionConstraint;
 
 export interface PedagogicalControls {
   readonly ambiguityPreference?: "allow" | "prefer-low" | "require-low";

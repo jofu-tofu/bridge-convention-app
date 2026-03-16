@@ -5,7 +5,7 @@ import type {
 import type {
   MeaningProposal,
   MeaningClause,
-  EvidenceBundle,
+  MeaningEvaluationEvidence,
   RankingMetadata,
   RecommendationBand,
 } from "../../../core/contracts/meaning";
@@ -152,7 +152,7 @@ export function evaluateMeaningSurface(
     ),
   ];
 
-  const evidence: EvidenceBundle = {
+  const evidence: MeaningEvaluationEvidence = {
     factDependencies,
     evaluatedConditions: evaluatedClauses.map((clause, i) => {
       const sourceClause = surface.clauses[i];
@@ -276,7 +276,7 @@ function evaluateDecisionSurface(
     });
   }
 
-  const evidence: EvidenceBundle = {
+  const evidence: MeaningEvaluationEvidence = {
     factDependencies: clauses.map((c) => c.factId),
     evaluatedConditions: clauses.map((c) => ({
       name: c.factId,

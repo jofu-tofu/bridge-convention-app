@@ -1,4 +1,4 @@
-import type { Call } from "../../engine/types";
+import type { Call, NumberRange } from "../../engine/types";
 import type { ConditionEvidenceIR } from "./evidence-bundle";
 import type { PedagogicalRelation } from "./pedagogical-relations";
 
@@ -65,7 +65,7 @@ export interface ConventionContribution {
 /** Compact description of a class of hands consistent with constraints. */
 interface HandArchetypeSummary {
   readonly label: string;
-  readonly hcpRange: { readonly min: number; readonly max: number };
+  readonly hcpRange: NumberRange;
   readonly shapePattern: string;
   readonly frequency?: number;
 }
@@ -79,7 +79,7 @@ interface WitnessHand {
 /** Seat-relative hand space summary for teaching context. */
 export interface SeatRelativeHandSpaceSummary {
   readonly seatLabel: string;
-  readonly hcpRange: { readonly min: number; readonly max: number };
+  readonly hcpRange: NumberRange;
   readonly shapeDescription: string;
   readonly partnerSummary?: string;
   readonly archetypes?: readonly HandArchetypeSummary[];

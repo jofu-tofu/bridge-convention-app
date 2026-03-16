@@ -1,7 +1,7 @@
 import { Seat, Suit, Vulnerability } from "../../../engine/types";
 import type {
   DealConstraints,
-  SeatConstraint as EngineSeatConstraint,
+  SeatConstraint,
 } from "../../../engine/types";
 import type {
   WitnessSpecIR,
@@ -184,7 +184,7 @@ function applyPredicate(
   }
 }
 
-function builderToConstraint(builder: SeatConstraintBuilder): EngineSeatConstraint {
+function builderToConstraint(builder: SeatConstraintBuilder): SeatConstraint {
   const result: {
     seat: Seat;
     minHcp?: number;

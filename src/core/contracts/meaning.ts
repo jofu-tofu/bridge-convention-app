@@ -38,7 +38,7 @@ export interface MeaningClause {
 }
 
 /** Evidence for how and why a meaning was evaluated. */
-export interface EvidenceBundle {
+export interface MeaningEvaluationEvidence {
   readonly factDependencies: readonly string[];
   readonly evaluatedConditions: readonly {
     readonly name: string;
@@ -64,7 +64,7 @@ export interface MeaningProposal {
   readonly moduleId: string;
   readonly clauses: readonly MeaningClause[];
   readonly ranking: RankingMetadata;
-  readonly evidence: EvidenceBundle;
+  readonly evidence: MeaningEvaluationEvidence;
   readonly sourceIntent: {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
