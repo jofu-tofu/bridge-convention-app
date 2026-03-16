@@ -7,6 +7,7 @@ import type {
   AmbiguityFamilyIR,
   FactorStrength,
 } from "../../core/contracts/factor-graph";
+import type { SuitName } from "../../engine/types";
 
 // ─── Validation types ───────────────────────────────────────
 
@@ -53,9 +54,9 @@ function buildOrigin(constraint: PublicConstraint): FactorOrigin {
 
 const SUIT_LENGTH_PREFIX = "hand.suitLength.";
 
-function extractSuit(factId: string): string | null {
+function extractSuit(factId: string): SuitName | null {
   if (factId.startsWith(SUIT_LENGTH_PREFIX)) {
-    return factId.slice(SUIT_LENGTH_PREFIX.length);
+    return factId.slice(SUIT_LENGTH_PREFIX.length) as SuitName;
   }
   return null;
 }
@@ -104,7 +105,7 @@ function compileHcpRange(
 
 function compileSuitLength(
   constraint: PublicConstraint,
-  suit: string,
+  suit: SuitName,
   denial: boolean,
 ): FactorSpec {
   const { operator, value } = constraint.constraint;

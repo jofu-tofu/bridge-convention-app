@@ -5,6 +5,7 @@ import type {
 } from "../../../core/contracts/fact-catalog";
 import { SHARED_FACTS, num, fv } from "../../../core/contracts/fact-catalog";
 import { isBalanced } from "../../../engine/hand-evaluator";
+import type { SuitName } from "../../../engine/types";
 
 // ─── Evaluator registry ─────────────────────────────────────
 
@@ -65,28 +66,30 @@ export const SHARED_EVALUATORS: ReadonlyMap<string, FactEvaluatorFn> = new Map([
 // Relational facts derive from hand + publicSnapshot + surfaceBindings.
 // They run after standard evaluators and receive the relational context.
 
-const SUIT_FACT_IDS: Record<string, string> = {
+const SUIT_FACT_IDS: Record<SuitName, string> = {
   spades: "hand.suitLength.spades",
   hearts: "hand.suitLength.hearts",
   diamonds: "hand.suitLength.diamonds",
   clubs: "hand.suitLength.clubs",
 };
 
-const ALL_SUITS = ["spades", "hearts", "diamonds", "clubs"] as const;
+const ALL_SUITS: readonly SuitName[] = ["spades", "hearts", "diamonds", "clubs"] as const;
 
-function suitFactIdFor(suit: string): string | undefined {
+function suitFactIdFor(suit: SuitName): string | undefined {
   return SUIT_FACT_IDS[suit];
 }
 
 const RELATIONAL_EVALUATORS = new Map<string, RelationalFactEvaluatorFn>([
   ["bridge.supportForBoundSuit", (_h, _ev, evaluated, ctx) => {
-    const suitFactId = suitFactIdFor(ctx.bindings?.suit ?? "");
+    const boundSuit = ctx.bindings?.suit as SuitName | undefined;
+    const suitFactId = boundSuit ? suitFactIdFor(boundSuit) : undefined;
     if (!suitFactId) return fv("bridge.supportForBoundSuit", 0);
     return fv("bridge.supportForBoundSuit", num(evaluated, suitFactId));
   }],
 
   ["bridge.fitWithBoundSuit", (_h, _ev, evaluated, ctx) => {
-    const suitFactId = suitFactIdFor(ctx.bindings?.suit ?? "");
+    const boundSuit = ctx.bindings?.suit as SuitName | undefined;
+    const suitFactId = boundSuit ? suitFactIdFor(boundSuit) : undefined;
     if (!suitFactId) return fv("bridge.fitWithBoundSuit", false);
     const ownLength = num(evaluated, "bridge.supportForBoundSuit");
     // Look for partner's minimum promised length from publicCommitments
@@ -103,14 +106,15 @@ const RELATIONAL_EVALUATORS = new Map<string, RelationalFactEvaluatorFn>([
   }],
 
   ["bridge.shortageInSuit", (_h, _ev, evaluated, ctx) => {
-    const suitFactId = suitFactIdFor(ctx.bindings?.suit ?? "");
+    const boundSuit = ctx.bindings?.suit as SuitName | undefined;
+    const suitFactId = boundSuit ? suitFactIdFor(boundSuit) : undefined;
     if (!suitFactId) return fv("bridge.shortageInSuit", false);
     const length = num(evaluated, suitFactId);
     return fv("bridge.shortageInSuit", length <= 1);
   }],
 
   ["bridge.totalPointsForRaise", (_h, _ev, evaluated, ctx) => {
-    const suit = ctx.bindings?.suit;
+    const suit = ctx.bindings?.suit as SuitName | undefined;
     if (!suit || !suitFactIdFor(suit)) return fv("bridge.totalPointsForRaise", 0);
     const hcp = num(evaluated, "hand.hcp");
     // Shortage points: void=3, singleton=2, doubleton=1 for non-trump suits
