@@ -1,4 +1,4 @@
-import type { Hand } from "../../engine/types";
+import type { Hand, SuitName } from "../../engine/types";
 import type { PublicSnapshot } from "./module-surface";
 import type { FactorGraphIR, FactorSpec } from "./factor-graph";
 
@@ -40,8 +40,8 @@ export interface ConditioningContext {
  *  All queries return results paired with InferenceHealth. */
 export interface PosteriorQueryPort {
   readonly marginalHcp: (seat: string) => PosteriorQueryResult<number>;
-  readonly suitLength: (seat: string, suit: string) => PosteriorQueryResult<number>;
-  readonly fitProbability: (seats: readonly string[], suit: string, threshold: number) => PosteriorQueryResult<number>;
+  readonly suitLength: (seat: string, suit: SuitName) => PosteriorQueryResult<number>;
+  readonly fitProbability: (seats: readonly string[], suit: SuitName, threshold: number) => PosteriorQueryResult<number>;
   readonly isBalanced: (seat: string) => PosteriorQueryResult<number>;
   readonly jointHcp: (seats: readonly string[], min: number, max: number) => PosteriorQueryResult<number>;
   readonly branchProbability: (familyId: string, branchId: string) => PosteriorQueryResult<number>;

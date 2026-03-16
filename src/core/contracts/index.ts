@@ -21,3 +21,4 @@ export * from "./factor-graph";
 export * from "./posterior-query";
 export * from "./posterior-backend";
 export * from "./alert";
+export * from "./convention";

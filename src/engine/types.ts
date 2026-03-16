@@ -5,6 +5,9 @@ export enum Suit {
   Spades = "S",
 }
 
+/** Suit name strings used in the fact system (lowercase English). */
+export type SuitName = "spades" | "hearts" | "diamonds" | "clubs";
+
 export enum Rank {
   Two = "2",
   Three = "3",

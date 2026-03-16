@@ -1,4 +1,4 @@
-import type { Hand } from "../../engine/types";
+import type { Hand, SuitName } from "../../engine/types";
 import type { PublicConstraint, PublicEvent } from "./agreement-module";
 
 // ─── Factor strength ────────────────────────────────────────
@@ -37,7 +37,7 @@ export interface HcpRangeFactor {
 export interface SuitLengthFactor {
   readonly kind: "suit-length";
   readonly seat: string;
-  readonly suit: string;
+  readonly suit: SuitName;
   readonly min: number;
   readonly max: number;
   readonly strength: FactorStrength;
@@ -63,7 +63,7 @@ export interface ExclusionFactor {
 export interface FitFactor {
   readonly kind: "fit";
   readonly seats: readonly string[];
-  readonly suit: string;
+  readonly suit: SuitName;
   readonly minCombined: number;
   readonly strength: FactorStrength;
   readonly origin: FactorOrigin;
