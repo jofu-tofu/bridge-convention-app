@@ -16,7 +16,7 @@ import { resolveEncoding } from "./encoder-resolver";
 import type { DeclaredEncoderKind } from "../../../core/contracts/agreement-module";
 
 /** Result of evaluating a single proposal through the gate pipeline. */
-export interface ProposalResult {
+interface ProposalResult {
   encoded?: EncodedProposal;
   elimination?: EliminationRecord;
   provenanceElimination?: EliminationTrace;

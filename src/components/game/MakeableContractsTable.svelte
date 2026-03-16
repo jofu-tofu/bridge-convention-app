@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Seat, BidSuit } from "../../engine/types";
+  import { SEATS } from "../../engine/constants";
   import { BID_SUIT_COLOR_CLASS } from "../../core/display/tokens";
   import { STRAIN_SYMBOLS } from "../../core/display/format";
 
@@ -8,8 +9,6 @@
   }
 
   let { tricks }: Props = $props();
-
-  const SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
   const STRAINS = [
     BidSuit.NoTrump,
     BidSuit.Spades,

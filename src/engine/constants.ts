@@ -78,6 +78,12 @@ export const HCP_VALUES: Record<Rank, number> = {
   [Rank.Ace]: 4,
 };
 
+/** Maps suit name strings (both short and long forms) to Suit enum values. */
+export const SUIT_NAME_MAP: Record<string, Suit> = {
+  S: Suit.Spades, H: Suit.Hearts, D: Suit.Diamonds, C: Suit.Clubs,
+  spades: Suit.Spades, hearts: Suit.Hearts, diamonds: Suit.Diamonds, clubs: Suit.Clubs,
+};
+
 export function createDeck(): Card[] {
   const cards: Card[] = [];
   for (const suit of SUITS) {

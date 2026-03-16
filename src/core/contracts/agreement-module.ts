@@ -1,12 +1,11 @@
 import type { AuctionPatternIR, PublicGuardIR } from "./predicate-surfaces";
 import type { CandidateTransform, SemanticClassId, RecommendationBand } from "./meaning";
 import type { FactOperator } from "./meaning-surface";
-import type { LatentBranchSet } from "./posterior";
 import type { Call } from "../../engine/types";
 
 // ─── Module classification ──────────────────────────────────
-export type ActivationKind = "auction-pattern" | "host-attachment" | "invoke-only";
-export type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-tool" | "defensive";
+type ActivationKind = "auction-pattern" | "host-attachment" | "invoke-only";
+type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-tool" | "defensive";
 
 // ─── Priority class → band mapping ─────────────────────────
 export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"
@@ -63,16 +62,6 @@ export interface FactConstraintIR {
   readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
 }
 
-// ─── Public consequences (deprecated) ───────────────────────
-/** @deprecated Use MeaningSurface.closurePolicy + MeaningSurface.denies + derivePublicConstraints() instead.
- *  Promises are now auto-derived from clauses. ClosurePolicy and denies are top-level on MeaningSurface. */
-export interface PublicConsequences {
-  readonly promises: readonly FactConstraintIR[];
-  readonly denies?: readonly FactConstraintIR[];
-  readonly closurePolicy?: ChoiceClosurePolicy;
-  readonly latentBranches?: readonly LatentBranchSet[];
-}
-
 // ─── Closure policy ─────────────────────────────────────────
 export interface ChoiceClosurePolicy {
   readonly exclusive: boolean;
@@ -81,7 +70,7 @@ export interface ChoiceClosurePolicy {
   readonly domain: ClosureDomain;
 }
 
-export type ClosureDomain =
+type ClosureDomain =
   | { readonly kind: "surface" }
   | { readonly kind: "semantic-class-set"; readonly ids: readonly string[] }
   | { readonly kind: "module-frontier"; readonly id: string };
@@ -98,14 +87,14 @@ export interface SystemProfileIR {
   readonly priorityClassMapping?: Readonly<Record<PriorityClass, RecommendationBand>>;
 }
 
-export interface ModuleEntryIR {
+interface ModuleEntryIR {
   readonly moduleId: string;
   readonly kind: ModuleKind;
   readonly attachments: readonly AttachmentIR[];
   readonly options?: Readonly<Record<string, unknown>>;
 }
 
-export interface ConflictPolicyIR {
+interface ConflictPolicyIR {
   readonly activationDefault: "simultaneous";
   readonly exclusivityGroups?: readonly { groupId: string; memberModuleIds: readonly string[] }[];
   readonly semanticClassAliases?: readonly { from: string; to: string }[];

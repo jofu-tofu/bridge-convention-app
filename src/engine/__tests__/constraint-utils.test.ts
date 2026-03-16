@@ -1,34 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { cleanSeatConstraint, cleanConstraints } from "../constraint-utils";
+import { cleanConstraints } from "../constraint-utils";
 import { Seat, Suit } from "../types";
-import type { SeatConstraint, DealConstraints, Hand } from "../types";
-
-describe("cleanSeatConstraint", () => {
-  it("strips customCheck from seat constraints", () => {
-    const sc: SeatConstraint = {
-      seat: Seat.South,
-      minHcp: 12,
-      customCheck: (_hand: Hand) => true,
-    };
-    const cleaned = cleanSeatConstraint(sc);
-    expect(cleaned).toEqual({ seat: Seat.South, minHcp: 12 });
-    expect("customCheck" in cleaned).toBe(false);
-  });
-
-  it("preserves all other fields", () => {
-    const sc: SeatConstraint = {
-      seat: Seat.North,
-      minHcp: 10,
-      maxHcp: 15,
-      balanced: true,
-      minLength: { [Suit.Spades]: 4 },
-      maxLength: { [Suit.Hearts]: 3 },
-      minLengthAny: { [Suit.Diamonds]: 5, [Suit.Clubs]: 5 },
-    };
-    const cleaned = cleanSeatConstraint(sc);
-    expect(cleaned).toEqual(sc);
-  });
-});
+import type { DealConstraints } from "../types";
 
 describe("cleanConstraints", () => {
   it("strips rng function from top-level constraints", () => {

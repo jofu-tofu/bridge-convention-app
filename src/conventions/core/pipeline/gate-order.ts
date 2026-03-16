@@ -5,7 +5,7 @@ export type GateId =
   | "encoder-availability"
   | "concrete-legality";
 
-export interface GateResult {
+interface GateResult {
   readonly gateId: GateId;
   readonly passed: boolean;
   readonly reason?: string;

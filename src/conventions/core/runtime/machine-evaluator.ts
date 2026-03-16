@@ -17,7 +17,7 @@ import type {
   TransitionMatch,
 } from "./machine-types";
 
-/** Create default registers with neutral initial values. */
+/** Create default registers with neutral initial values. @internal */
 export function createDefaultRegisters(): MachineRegisters {
   return {
     forcingState: ForcingState.Nonforcing,
@@ -29,7 +29,7 @@ export function createDefaultRegisters(): MachineRegisters {
   };
 }
 
-/** Walk from a state up through its parentId chain to the root. Returns descendant-first order. */
+/** Walk from a state up through its parentId chain to the root. Returns descendant-first order. @internal */
 export function collectAncestorChain(
   states: ReadonlyMap<string, MachineState>,
   stateId: string,
@@ -45,7 +45,7 @@ export function collectAncestorChain(
   return chain;
 }
 
-/** Immutably apply a MachineEffect to registers. */
+/** Immutably apply a MachineEffect to registers. @internal */
 export function applyMachineEffect(
   registers: MachineRegisters,
   effect: MachineEffect,
@@ -80,7 +80,7 @@ export function applyMachineEffect(
   return result;
 }
 
-/** Test whether a TransitionMatch matches a given call and seat role. */
+/** Test whether a TransitionMatch matches a given call and seat role. @internal */
 export function matchTransition(
   match: TransitionMatch,
   call: Call,
@@ -119,7 +119,7 @@ export function matchTransition(
   }
 }
 
-/** Collect transforms from state ancestry, descendant-first. */
+/** Collect transforms from state ancestry, descendant-first. @internal */
 export function collectInheritedTransforms(
   states: ReadonlyMap<string, MachineState>,
   stateId: string,

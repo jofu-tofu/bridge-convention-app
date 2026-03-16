@@ -28,7 +28,7 @@ export interface RelayMapConfig {
   readonly activePosition: string;
 }
 
-export interface RelayMapEntry {
+interface RelayMapEntry {
   readonly position: string;
   readonly call: Call;
 }
@@ -38,7 +38,7 @@ export type EncoderConfig = FrontierStepConfig | RelayMapConfig;
 
 // ─── Encoding result ────────────────────────────────────────
 
-export interface EncodingResolution {
+interface EncodingResolution {
   /** The resolved call, or undefined if no legal encoding is available. */
   readonly chosenCall: Call | undefined;
   /** Runtime encoder kind for provenance tracing. */
@@ -121,7 +121,7 @@ function resolveRelayMap(
 
 // ─── Public API ─────────────────────────────────────────────
 
-export interface ResolveEncodingInput {
+interface ResolveEncodingInput {
   readonly encoderKind: DeclaredEncoderKind;
   readonly defaultCall: Call;
   readonly legalCalls: readonly Call[];

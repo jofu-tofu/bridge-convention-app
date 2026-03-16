@@ -26,6 +26,7 @@ export function formatCallString(call: Call): string {
  *
  * Only unchosen surfaces' derived PROMISES become entailed denials.
  * Unchosen denies are NOT inverted — denial-of-denial creates ambiguity.
+ * @internal
  */
 export function deriveEntailedDenials(
   matchingSurface: MeaningSurface,

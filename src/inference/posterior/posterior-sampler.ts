@@ -2,30 +2,14 @@ import type { PublicHandSpace } from "../../core/contracts/posterior";
 import type { HandPredicateIR } from "../../core/contracts/predicate-surfaces";
 import type { Hand, Card, Seat } from "../../engine/types";
 import type { HandFactResolverFn } from "../../core/contracts/fact-catalog";
-import { Suit, Rank } from "../../engine/types";
-import { HCP_VALUES } from "../../engine/constants";
+import { Suit } from "../../engine/types";
+import { HCP_VALUES, createDeck, SUIT_NAME_MAP } from "../../engine/constants";
 import { mulberry32 } from "../../core/util/seeded-rng";
 import { calculateHcpAndShape, isBalanced, evaluateHand } from "../../engine/hand-evaluator";
 
 export interface WeightedDealSample {
   readonly hands: ReadonlyMap<string, Hand>;
   readonly weight: number;
-}
-
-/** All 52 cards in a standard deck. */
-function buildDeck(): Card[] {
-  const cards: Card[] = [];
-  const suits = [Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades];
-  const ranks = [
-    Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven,
-    Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack, Rank.Queen, Rank.King, Rank.Ace,
-  ];
-  for (const suit of suits) {
-    for (const rank of ranks) {
-      cards.push({ suit, rank });
-    }
-  }
-  return cards;
 }
 
 /** Fisher-Yates shuffle using provided RNG. */
@@ -53,11 +37,7 @@ function resolveFactValueBuiltin(hand: Hand, factId: string): number | boolean |
   const suitMatch = /^hand\.suitLength\.(.+)$/.exec(factId);
   if (suitMatch) {
     const suitKey = suitMatch[1]!;
-    const suitMap: Record<string, Suit> = {
-      S: Suit.Spades, H: Suit.Hearts, D: Suit.Diamonds, C: Suit.Clubs,
-      spades: Suit.Spades, hearts: Suit.Hearts, diamonds: Suit.Diamonds, clubs: Suit.Clubs,
-    };
-    const suit = suitMap[suitKey];
+    const suit = SUIT_NAME_MAP[suitKey];
     if (suit !== undefined) {
       return hand.cards.filter((c) => c.suit === suit).length;
     }
@@ -151,7 +131,7 @@ export function sampleDeals(
   factResolver?: HandFactResolverFn,
 ): WeightedDealSample[] {
   const rng = mulberry32(seed ?? Date.now());
-  const deck = buildDeck();
+  const deck = createDeck();
 
   // Remove own hand's cards
   const ownCardKeys = new Set(

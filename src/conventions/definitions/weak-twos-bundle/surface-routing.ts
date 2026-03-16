@@ -1,5 +1,6 @@
 import type { Auction, Seat } from "../../../engine/types";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { RoutedSurfaceGroup } from "../../core/bundle/bundle-types";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
 import {
   WEAK_TWO_R1_SURFACES,
@@ -7,13 +8,6 @@ import {
   WEAK_TWO_R2_SPADES_SURFACES,
   WEAK_TWO_R2_DIAMONDS_SURFACES,
 } from "./meaning-surfaces";
-
-/** A surface group with its activation pattern. */
-export interface WeakTwoRoutedSurfaceGroup {
-  readonly groupId: string;
-  readonly surfaces: readonly MeaningSurface[];
-  readonly isActive: (auction: Auction, seat: Seat) => boolean;
-}
 
 /**
  * Machine-only surface groups: Ogust R3 surfaces are only routed via the
@@ -29,7 +23,7 @@ const MACHINE_ONLY: readonly MeaningSurface[] = [];
  * R2 surfaces are wired for both paths (responder needs them after 2X-P).
  * Ogust R3 surfaces are routed exclusively via the conversation machine.
  */
-export const WEAK_TWO_ROUTED_SURFACES: readonly WeakTwoRoutedSurfaceGroup[] = [
+export const WEAK_TWO_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
   // ── R1: Opener weak two surfaces ────────────────────────────
   {
     groupId: "opener-r1",
@@ -115,10 +109,10 @@ export const WEAK_TWO_ROUTED_SURFACES: readonly WeakTwoRoutedSurfaceGroup[] = [
  * Create a surface router from routed surface groups.
  */
 export function createWeakTwoSurfaceRouter(
-  routedGroups: readonly WeakTwoRoutedSurfaceGroup[],
+  routedGroups: readonly RoutedSurfaceGroup[],
 ): (auction: Auction, seat: Seat) => readonly MeaningSurface[] {
   return (auction, seat) => {
-    const activeGroups = routedGroups.filter((g) => g.isActive(auction, seat));
+    const activeGroups = routedGroups.filter((g) => g.isActive?.(auction, seat));
     return activeGroups.flatMap((g) => g.surfaces);
   };
 }

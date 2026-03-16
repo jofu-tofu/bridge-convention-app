@@ -13,7 +13,7 @@ export function lastContractBid(auction: Auction): ContractBid | null {
   return null;
 }
 
-/** Returns all contract bids in order, filtering out passes/doubles/redoubles. */
+/** Returns all contract bids in order, filtering out passes/doubles/redoubles. @internal */
 export function bidsInSequence(auction: Auction): ContractBid[] {
   const bids: ContractBid[] = [];
   for (const entry of auction.entries) {
@@ -24,7 +24,7 @@ export function bidsInSequence(auction: Auction): ContractBid[] {
   return bids;
 }
 
-/** Counts the number of entries (calls) by a specific seat. */
+/** Counts the number of entries (calls) by a specific seat. @internal */
 export function seatBidCount(auction: Auction, seat: Seat): number {
   let count = 0;
   for (const entry of auction.entries) {
@@ -33,7 +33,7 @@ export function seatBidCount(auction: Auction, seat: Seat): number {
   return count;
 }
 
-export const STRAIN_MAP: Record<string, BidSuit> = {
+const STRAIN_MAP: Record<string, BidSuit> = {
   C: BidSuit.Clubs,
   D: BidSuit.Diamonds,
   H: BidSuit.Hearts,
@@ -83,7 +83,7 @@ export function auctionMatchesPrefix(
   return true;
 }
 
-/** Exact-match: auction entries must have exactly the same calls as pattern (same length). */
+/** Exact-match: auction entries must have exactly the same calls as pattern (same length). @internal */
 export function auctionMatchesExact(
   auction: Auction,
   pattern: string[],

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { Suit, Rank, Seat, Vulnerability, BidSuit, SpecialBid } from "../types";
+import { Suit, Rank, Seat, Vulnerability, BidSuit } from "../types";
 import type {
   Card,
   Hand,
@@ -143,19 +143,6 @@ describe("BidSuit", () => {
   test("all Object.values are accounted for by the 5 named strains", () => {
     const values = Object.values(BidSuit);
     expect(values).toHaveLength(5);
-  });
-});
-
-describe("SpecialBid", () => {
-  test("bridge has exactly 3 special calls", () => {
-    const specials = [SpecialBid.Pass, SpecialBid.Double, SpecialBid.Redouble];
-    expect(specials).toHaveLength(3);
-    expect(new Set(specials).size).toBe(3);
-  });
-
-  test("all Object.values are accounted for by the 3 named specials", () => {
-    const values = Object.values(SpecialBid);
-    expect(values).toHaveLength(3);
   });
 });
 

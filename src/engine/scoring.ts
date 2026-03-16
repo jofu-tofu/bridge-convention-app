@@ -67,6 +67,7 @@ export function isVulnerable(
  * Trick points for the contract (before bonuses).
  * Minor (C/D): 20 per trick. Major (H/S): 30 per trick.
  * NT: 40 first + 30 each subsequent. Doubled x2, redoubled x4.
+ * @internal
  */
 export function calculateTrickPoints(contract: Contract): number {
   const { level, strain, doubled, redoubled } = contract;
@@ -86,17 +87,17 @@ export function calculateTrickPoints(contract: Contract): number {
   return base;
 }
 
-/** Game requires trick points >= GAME_TRICK_POINT_THRESHOLD. */
+/** Game requires trick points >= GAME_TRICK_POINT_THRESHOLD. @internal */
 export function isGame(contract: Contract): boolean {
   return calculateTrickPoints(contract) >= GAME_TRICK_POINT_THRESHOLD;
 }
 
-/** Small slam = level 6. */
+/** Small slam = level 6. @internal */
 export function isSmallSlam(contract: Contract): boolean {
   return contract.level === SMALL_SLAM_LEVEL;
 }
 
-/** Grand slam = level 7. */
+/** Grand slam = level 7. @internal */
 export function isGrandSlam(contract: Contract): boolean {
   return contract.level === GRAND_SLAM_LEVEL;
 }

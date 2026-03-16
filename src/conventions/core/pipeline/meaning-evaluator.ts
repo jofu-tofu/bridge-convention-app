@@ -26,6 +26,7 @@ import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/a
  *
  * This keeps backward compatibility: surfaces without a priorityClass, or
  * profiles without a mapping, continue to use the surface-level band directly.
+ * @internal
  */
 export function resolvePriorityClass(
   priorityClass: PriorityClass | undefined,

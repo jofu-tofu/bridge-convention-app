@@ -1,14 +1,14 @@
 import type { SeatConstraint, DealConstraints } from "./types";
 
 /** Strip non-serializable fields from seat constraints. */
-export function cleanSeatConstraint(
+function cleanSeatConstraint(
   sc: SeatConstraint,
 ): Omit<SeatConstraint, "customCheck"> {
   const { customCheck: _, ...rest } = sc;
   return rest;
 }
 
-export type CleanDealConstraints = Omit<DealConstraints, "rng"> & {
+type CleanDealConstraints = Omit<DealConstraints, "rng"> & {
   readonly seats: readonly Omit<SeatConstraint, "customCheck">[];
 };
 

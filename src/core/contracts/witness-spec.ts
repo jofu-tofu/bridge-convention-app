@@ -12,15 +12,15 @@ export interface JointConstraint {
   readonly roles: [SeatRole, SeatRole];
   readonly predicate: DealConstraintIR;
 }
-export interface PublicGuardConstraint {
+interface PublicGuardConstraint {
   readonly kind: "public-guard";
   readonly guard: PublicGuardIR;
 }
-export interface ExclusionConstraint {
+interface ExclusionConstraint {
   readonly kind: "exclusion";
   readonly meaningIds: readonly string[];
 }
-export type ConstraintLayer = SeatConstraint | JointConstraint | PublicGuardConstraint | ExclusionConstraint;
+type ConstraintLayer = SeatConstraint | JointConstraint | PublicGuardConstraint | ExclusionConstraint;
 
 export interface PedagogicalControls {
   readonly ambiguityPreference?: "allow" | "prefer-low" | "require-low";
@@ -28,9 +28,9 @@ export interface PedagogicalControls {
   readonly weightingMode?: "positiveOnly" | "teachingDefault" | "balanced" | "adaptive";
 }
 
-export type GeneratorStrategy = "handFirst" | "publicFirst" | "hybrid";
+type GeneratorStrategy = "handFirst" | "publicFirst" | "hybrid";
 
-export type WitnessTarget =
+type WitnessTarget =
   | { readonly tier: "stable"; readonly kind: "module-active"; readonly moduleId: string }
   | { readonly tier: "stable"; readonly kind: "public-state"; readonly field: string; readonly value: unknown }
   | { readonly tier: "stable"; readonly kind: "meaning-available"; readonly meaningId: string }

@@ -1,7 +1,7 @@
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
 import type { RuntimeDiagnostic } from "./types";
 
-export interface ProfileDiagnostic extends RuntimeDiagnostic {
+interface ProfileDiagnostic extends RuntimeDiagnostic {
   readonly moduleId?: string;
 }
 

@@ -6,8 +6,7 @@
   import { startDrill } from "../../../bootstrap/start-drill";
   import { computeTableScale } from "../../../core/display/table-scale";
   import { mulberry32 } from "../../../core/util/seeded-rng";
-  import { toBeliefData } from "../../../inference/belief-converter";
-  import { conditionOnOwnHand } from "../../../inference/private-belief";
+
   import BiddingPhase from "./BiddingPhase.svelte";
   import DeclarerPromptPhase from "./DeclarerPromptPhase.svelte";
   import PlayingPhase from "./PlayingPhase.svelte";
@@ -75,14 +74,6 @@
     if (devSeed !== undefined) appStore.advanceDevDeal();
     const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, {
       opponentMode: appStore.opponentMode,
-      beliefProvider: (ctx) => {
-        try {
-          const priv = conditionOnOwnHand(gameStore.publicBeliefState, ctx.seat, ctx.hand, ctx.evaluation);
-          return toBeliefData(gameStore.publicBeliefState, priv);
-        } catch {
-          return undefined;
-        }
-      },
     });
     await gameStore.startDrill(bundle);
   }

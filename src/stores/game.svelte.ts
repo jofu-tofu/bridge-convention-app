@@ -28,7 +28,7 @@ export interface GameStoreOptions {
   delayFn?: (ms: number) => Promise<void>;
 }
 
-export type GamePhase =
+type GamePhase =
   | "BIDDING"
   | "DECLARER_PROMPT"
   | "PLAYING"
@@ -36,13 +36,11 @@ export type GamePhase =
 
 // Re-export types from sub-stores for backward compat
 export type { BidHistoryEntry, BidFeedback } from "./bidding.svelte";
-export type { DebugSnapshot, DebugLogEntry } from "./bidding.svelte";
-export type { PlayLogEntry } from "./play.svelte";
 
 // Re-export seatController from play sub-store for backward compat
 export { seatController } from "./play.svelte";
 
-export type PromptMode = "defender" | "south-declarer" | "declarer-swap";
+type PromptMode = "defender" | "south-declarer" | "declarer-swap";
 
 /** Valid phase transitions. Key = source phase, value = allowed target phases. */
 const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {

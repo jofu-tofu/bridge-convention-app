@@ -136,6 +136,7 @@ function checkShapeConstraint(
   return true;
 }
 
+/** @internal */
 export function checkConstraints(
   deal: Deal,
   constraints: DealConstraints,

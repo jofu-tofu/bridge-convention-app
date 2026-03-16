@@ -19,9 +19,10 @@ import type {
 
 import type {
   WhyNotEntry,
-  PedagogicalRelationEntry,
   ExplanationNode,
 } from "../core/contracts/teaching-projection";
+
+import type { PedagogicalRelation } from "../core/contracts/pedagogical-relations";
 
 import type { PedagogicalGraph } from "./pedagogical-graph";
 import { findRelationsFor } from "./pedagogical-graph";
@@ -79,7 +80,7 @@ function findNearMissRelation(
   graph: PedagogicalGraph,
   nearMissMeaningId: string,
   truthMeaningIds?: ReadonlySet<string>,
-): PedagogicalRelationEntry | undefined {
+): PedagogicalRelation | undefined {
   if (!truthMeaningIds || truthMeaningIds.size === 0) return undefined;
 
   const relations = findRelationsFor(graph, nearMissMeaningId);

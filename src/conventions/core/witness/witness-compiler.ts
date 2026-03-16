@@ -14,7 +14,7 @@ import type { HandPredicateIR } from "../../../core/contracts/predicate-surfaces
  * Extended DealConstraints that carries pedagogical metadata alongside
  * engine-consumable seat constraints.
  */
-export interface WitnessCompilationResult extends DealConstraints {
+interface WitnessCompilationResult extends DealConstraints {
   readonly pedagogicalControls?: PedagogicalControls;
 }
 
@@ -216,6 +216,7 @@ function builderToConstraint(builder: SeatConstraintBuilder): EngineSeatConstrai
  * cannot be represented in DealConstraints and are handled at higher layers.
  *
  * PedagogicalControls are passed through as metadata on the result.
+ * @internal
  */
 export function compileWitnessSpec(
   spec: WitnessSpecIR,

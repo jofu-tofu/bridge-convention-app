@@ -1,17 +1,11 @@
 import type { Auction, Seat } from "../../../engine/types";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { RoutedSurfaceGroup } from "../../core/bundle/bundle-types";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
 } from "./meaning-surfaces";
-
-/** A surface group with its activation pattern. */
-export interface BergenRoutedSurfaceGroup {
-  readonly groupId: string;
-  readonly surfaces: readonly MeaningSurface[];
-  readonly isActive: (auction: Auction, seat: Seat) => boolean;
-}
 
 /**
  * Machine-only surface groups: R2-R4 surfaces are only routed via the conversation machine.
@@ -28,7 +22,7 @@ const MACHINE_ONLY: readonly MeaningSurface[] = [];
  * (surfaceGroupId on machine states). The fallback router entries exist
  * for structural completeness but emit no surfaces.
  */
-export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
+export const BERGEN_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
   // ── R1: Responder initial bids ──────────────────────────────
   {
     groupId: "responder-r1-hearts",
@@ -200,10 +194,10 @@ export const BERGEN_ROUTED_SURFACES: readonly BergenRoutedSurfaceGroup[] = [
  * Create a surface router from routed surface groups.
  */
 export function createBergenSurfaceRouter(
-  routedGroups: readonly BergenRoutedSurfaceGroup[],
+  routedGroups: readonly RoutedSurfaceGroup[],
 ): (auction: Auction, seat: Seat) => readonly MeaningSurface[] {
   return (auction, seat) => {
-    const activeGroups = routedGroups.filter((g) => g.isActive(auction, seat));
+    const activeGroups = routedGroups.filter((g) => g.isActive?.(auction, seat));
     return activeGroups.flatMap((g) => g.surfaces);
   };
 }

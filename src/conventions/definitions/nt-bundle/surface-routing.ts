@@ -1,6 +1,7 @@
 import type { Auction, Seat } from "../../../engine/types";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import type { ConversationMachine } from "../../core/runtime/machine-types";
+import type { RoutedSurfaceGroup } from "../../core/bundle/bundle-types";
 import { evaluateMachine } from "../../core/runtime/machine-evaluator";
 import {
   RESPONDER_SURFACES,
@@ -16,12 +17,6 @@ import {
   OPENER_SMOLEN_SPADES_SURFACES,
 } from "./meaning-surfaces";
 import { createSmolenSubmachine } from "./machine";
-
-/** A surface group identified by its groupId. */
-export interface RoutedSurfaceGroup {
-  readonly groupId: string;
-  readonly surfaces: readonly MeaningSurface[];
-}
 
 /**
  * All NT routed surface groups — static mapping from groupId to surfaces.

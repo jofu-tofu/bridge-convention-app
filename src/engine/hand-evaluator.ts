@@ -112,6 +112,7 @@ export function calculateHcpAndShape(hand: Hand): {
   return { hcp, shape: [spades, hearts, diamonds, clubs] as const };
 }
 
+/** @internal */
 export function calculateDistributionPoints(
   shape: SuitLength,
 ): DistributionPoints {
@@ -126,6 +127,7 @@ export function calculateDistributionPoints(
   return { shortness, length, total: shortness + length };
 }
 
+/** @internal */
 export function getCardsInSuit(hand: Hand, suit: Suit): Card[] {
   return hand.cards.filter((c) => c.suit === suit);
 }

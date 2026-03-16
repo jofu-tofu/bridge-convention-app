@@ -50,6 +50,7 @@ function rhoSeat(s: Seat): Seat {
  *
  * "openingSide" defaults to `userSeat` — the caller is typically the opener
  * in practice-mode scenarios.
+ * @internal
  */
 export function resolveRole(role: SeatRole, userSeat: Seat): Seat {
   switch (role) {
@@ -275,7 +276,7 @@ function detectUnsatSuitLengths(
 
 // ─── Core compilation ──────────────────────────────────────────────
 
-export interface CompileResult {
+interface CompileResult {
   readonly dealConstraints: DealConstraints;
   readonly diagnostics: string[];
   /** Post-deal validation for joint constraints (if any). */
@@ -363,6 +364,7 @@ export function compileWitnessSpec(
 /**
  * Full compilation result including the joint-constraint post-deal check.
  * Use this when you need to validate joint constraints after deal generation.
+ * @internal
  */
 export function compileWitnessSpecFull(
   spec: WitnessSpecIR,
@@ -373,6 +375,7 @@ export function compileWitnessSpecFull(
 
 // ─── High-level generation ─────────────────────────────────────────
 
+/** @internal */
 export interface WitnessGeneratorResult {
   readonly deal: Deal;
   readonly iterations: number;

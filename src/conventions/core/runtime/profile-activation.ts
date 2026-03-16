@@ -224,6 +224,7 @@ export function resolveActiveModules(
 /**
  * Compute module precedence from a profile's module ordering.
  * Maps each moduleId to its index position in the modules array.
+ * @internal
  */
 export function resolveModulePrecedence(
   profile: SystemProfileIR,

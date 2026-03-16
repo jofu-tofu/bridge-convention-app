@@ -4,9 +4,8 @@ import type { ConditioningContext, PosteriorQueryResult, InferenceHealth, Factor
 import type { HandFactResolverFn } from "../../core/contracts/fact-catalog";
 import { sampleDeals } from "./posterior-sampler";
 import { compilePublicHandSpace } from "./posterior-compiler";
-import { Suit } from "../../engine/types";
 import { calculateHcpAndShape, isBalanced } from "../../engine/hand-evaluator";
-import { HCP_VALUES } from "../../engine/constants";
+import { HCP_VALUES, SUIT_NAME_MAP } from "../../engine/constants";
 
 const DEFAULT_SAMPLE_COUNT = 200;
 const DEFAULT_SEED = 12345;
@@ -62,11 +61,7 @@ export function createTsBackend(options?: {
         }
 
         case "suit-length": {
-          const suitMap: Record<string, Suit> = {
-            S: Suit.Spades, H: Suit.Hearts, D: Suit.Diamonds, C: Suit.Clubs,
-            spades: Suit.Spades, hearts: Suit.Hearts, diamonds: Suit.Diamonds, clubs: Suit.Clubs,
-          };
-          const suit = suitMap[query.suit];
+          const suit = SUIT_NAME_MAP[query.suit];
           let totalLen = 0;
           for (const p of particles) {
             const hand = p.world.hiddenDeal.get(query.seat);
@@ -80,10 +75,7 @@ export function createTsBackend(options?: {
         case "fit-probability": {
           // P(combined length >= threshold)
           let count = 0;
-          const suitMap: Record<string, Suit> = {
-            S: Suit.Spades, H: Suit.Hearts, D: Suit.Diamonds, C: Suit.Clubs,
-          };
-          const suit = suitMap[query.suit];
+          const suit = SUIT_NAME_MAP[query.suit];
           if (suit === undefined) return { value: 0, health };
           for (const p of particles) {
             let combined = 0;

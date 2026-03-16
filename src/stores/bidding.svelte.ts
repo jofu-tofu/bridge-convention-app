@@ -68,7 +68,7 @@ export interface DebugLogEntry {
 
 const AI_BID_DELAY = 300;
 
-export interface BiddingStoreConfig {
+interface BiddingStoreConfig {
   deal: Deal;
   session: DrillSession;
   strategy: ConventionBiddingStrategy | null;

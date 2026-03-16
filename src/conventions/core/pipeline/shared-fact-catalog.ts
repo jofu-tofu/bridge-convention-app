@@ -78,7 +78,7 @@ function suitFactIdFor(suit: string): string | undefined {
   return SUIT_FACT_IDS[suit];
 }
 
-export const RELATIONAL_EVALUATORS = new Map<string, RelationalFactEvaluatorFn>([
+const RELATIONAL_EVALUATORS = new Map<string, RelationalFactEvaluatorFn>([
   ["bridge.supportForBoundSuit", (_h, _ev, evaluated, ctx) => {
     const suitFactId = suitFactIdFor(ctx.bindings?.suit ?? "");
     if (!suitFactId) return fv("bridge.supportForBoundSuit", 0);

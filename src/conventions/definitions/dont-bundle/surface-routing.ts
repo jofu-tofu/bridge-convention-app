@@ -1,5 +1,6 @@
 import type { Auction, Seat } from "../../../engine/types";
 import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { RoutedSurfaceGroup } from "../../core/bundle/bundle-types";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
 import {
   DONT_R1_SURFACES,
@@ -9,13 +10,6 @@ import {
   DONT_ADVANCER_2S_SURFACES,
   DONT_ADVANCER_DOUBLE_SURFACES,
 } from "./meaning-surfaces";
-
-/** A surface group with its activation pattern. */
-export interface DontRoutedSurfaceGroup {
-  readonly groupId: string;
-  readonly surfaces: readonly MeaningSurface[];
-  readonly isActive: (auction: Auction, seat: Seat) => boolean;
-}
 
 /**
  * Machine-only surface groups: relay response surfaces are only routed via
@@ -31,7 +25,7 @@ const MACHINE_ONLY: readonly MeaningSurface[] = [];
  * Advancer surfaces are wired for both paths.
  * Reveal and relay response surfaces are routed exclusively via the machine.
  */
-export const DONT_ROUTED_SURFACES: readonly DontRoutedSurfaceGroup[] = [
+export const DONT_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
   // ── R1: Overcaller DONT actions after opponent's 1NT ────────
   {
     groupId: "overcaller-r1",
@@ -138,10 +132,10 @@ export const DONT_ROUTED_SURFACES: readonly DontRoutedSurfaceGroup[] = [
  * Create a surface router from routed surface groups.
  */
 export function createDontSurfaceRouter(
-  routedGroups: readonly DontRoutedSurfaceGroup[],
+  routedGroups: readonly RoutedSurfaceGroup[],
 ): (auction: Auction, seat: Seat) => readonly MeaningSurface[] {
   return (auction, seat) => {
-    const activeGroups = routedGroups.filter((g) => g.isActive(auction, seat));
+    const activeGroups = routedGroups.filter((g) => g.isActive?.(auction, seat));
     return activeGroups.flatMap((g) => g.surfaces);
   };
 }

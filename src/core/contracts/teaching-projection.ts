@@ -1,5 +1,6 @@
 import type { Call } from "../../engine/types";
 import type { ConditionEvidenceIR } from "./evidence-bundle";
+import type { PedagogicalRelation } from "./pedagogical-relations";
 
 /** Teaching-optimized view of a bid decision. */
 export interface TeachingProjection {
@@ -45,26 +46,13 @@ export interface ExplanationNode {
 export interface WhyNotEntry {
   readonly call: Call;
   readonly grade: "near-miss" | "wrong";
-  readonly familyRelation?: PedagogicalRelationEntry;
+  readonly familyRelation?: PedagogicalRelation;
   readonly explanation: readonly ExplanationNode[];
   readonly eliminationStage: string;
 }
 
-/** Inline pedagogical relation for WhyNotEntry (avoids circular import). */
-export interface PedagogicalRelationEntry {
-  readonly kind: PedagogicalRelationKind;
-  readonly a: string;
-  readonly b: string;
-}
-
-/** Pedagogical relation kind values (shared with pedagogical-relations.ts). */
-export type PedagogicalRelationKind =
-  | "same-family"
-  | "stronger-than"
-  | "weaker-than"
-  | "fallback-of"
-  | "continuation-of"
-  | "near-miss-of";
+/** Pedagogical relation kind values (derived from PedagogicalRelation). */
+export type PedagogicalRelationKind = PedagogicalRelation["kind"];
 
 /** How a convention contributed to the decision. */
 export interface ConventionContribution {
@@ -75,7 +63,7 @@ export interface ConventionContribution {
 }
 
 /** Compact description of a class of hands consistent with constraints. */
-export interface HandArchetypeSummary {
+interface HandArchetypeSummary {
   readonly label: string;
   readonly hcpRange: { readonly min: number; readonly max: number };
   readonly shapePattern: string;
@@ -83,7 +71,7 @@ export interface HandArchetypeSummary {
 }
 
 /** A representative example hand from the consistent space. */
-export interface WitnessHand {
+interface WitnessHand {
   readonly description: string;
   readonly hcp: number;
 }

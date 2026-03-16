@@ -48,12 +48,6 @@ export enum BidSuit {
   NoTrump = "NT",
 }
 
-export enum SpecialBid {
-  Pass = "Pass",
-  Double = "X",
-  Redouble = "XX",
-}
-
 export interface Hand {
   readonly cards: readonly Card[];
 }

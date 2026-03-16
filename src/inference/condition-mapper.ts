@@ -9,7 +9,7 @@ const SUIT_INDEX_TO_SUIT: Record<number, Suit> = {
   3: SuitEnum.Clubs,
 };
 
-/** Convert a ConditionInference into a partial HandInference. */
+/** @internal Convert a ConditionInference into a partial HandInference. */
 export function conditionToHandInference(
   ci: ConditionInference,
   seat: Seat,
@@ -66,6 +66,7 @@ export function conditionToHandInference(
 }
 
 /**
+ * @internal
  * Invert a ConditionInference from a rejected tree decision.
  * Returns a single inverse, an array (disjunction for ranges), or null.
  *
@@ -119,6 +120,7 @@ export function invertInference(
 }
 
 /**
+ * @internal
  * Resolve a disjunction (OR) of ConditionInference options against cumulative state.
  * Returns the first option that doesn't contradict cumulative, or null if all contradict.
  */

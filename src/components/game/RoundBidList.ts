@@ -2,7 +2,7 @@ import type { BidHistoryEntry } from "../../core/contracts";
 
 // ─── Round-by-round grouping ──────────────────────────────────
 
-export interface RoundGroup {
+interface RoundGroup {
   readonly roundNumber: number;
   readonly entries: readonly BidHistoryEntry[];
 }

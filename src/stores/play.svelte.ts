@@ -54,7 +54,7 @@ export interface PlayLogEntry {
   readonly trickIndex: number;
 }
 
-export interface PlayStoreConfig {
+interface PlayStoreConfig {
   deal: Deal;
   contract: Contract;
   effectiveUserSeat: Seat;
