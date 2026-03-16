@@ -1,7 +1,10 @@
-import type { MeaningSurface, FactOperator } from "./meaning-surface";
 import type { ConditionRole } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
-import type { FactConstraintIR } from "./agreement-module";
+import type {
+  PriorityClass,
+  ChoiceClosurePolicy,
+  FactConstraintIR,
+} from "./agreement-module";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;
@@ -11,6 +14,9 @@ export type SemanticClassId = string;
 
 /** Recommendation band — authored semantic priority. */
 export type RecommendationBand = "must" | "should" | "may" | "avoid";
+
+/** Operator for fact-based clause evaluation. */
+export type FactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
 
 /** Operator subset for evaluated meaning clauses (excludes "in" which is resolved during evaluation). */
 export type MeaningClauseOperator = Exclude<FactOperator, "in">;
@@ -149,4 +155,59 @@ export interface TransformTrace {
   readonly targetId: string;
   readonly sourceModuleId: string;
   readonly reason: string;
+}
+
+// ---------------------------------------------------------------------------
+// MeaningSurface types (merged from meaning-surface.ts to break circular dep)
+// ---------------------------------------------------------------------------
+
+export interface MeaningSurfaceClause {
+  readonly clauseId: string;
+  readonly factId: string;
+  readonly operator: FactOperator;
+  readonly value:
+    | number
+    | boolean
+    | string
+    | { min: number; max: number }
+    | readonly string[];
+  readonly description: string;
+  /** When true, this clause is included in the alert's public constraints.
+   *  Primitive hand facts (hand.*) are always public regardless of this flag.
+   *  Use this for bridge-derived or module facts the bundle wants to disclose. */
+  readonly isPublic?: boolean;
+}
+
+export interface MeaningSurface {
+  readonly meaningId: MeaningId;
+  readonly semanticClassId: SemanticClassId;
+  readonly moduleId: string;
+  readonly encoding: {
+    readonly defaultCall: Call;
+    readonly alternateEncodings?: readonly {
+      call: Call;
+      condition?: string;
+    }[];
+  };
+  readonly clauses: readonly MeaningSurfaceClause[];
+  readonly ranking: RankingMetadata;
+  /** Author-declared semantic priority class.
+   *  When set, the SystemProfile's `priorityClassMapping` resolves this to a
+   *  `RecommendationBand` at runtime, overriding `ranking.recommendationBand`.
+   *  Optional for backward compatibility — surfaces without this field use the
+   *  band from `ranking` directly. */
+  readonly priorityClass?: PriorityClass;
+  readonly sourceIntent: {
+    readonly type: string;
+    readonly params: Readonly<Record<string, string | number | boolean>>;
+  };
+  readonly teachingLabel: string;
+  /** Closure policy for entailed denials — known only to your partnership.
+   *  When a surface in a closed domain is chosen, unchosen peers' derived
+   *  public constraints become entailed denials for partnership posterior. */
+  readonly closurePolicy?: ChoiceClosurePolicy;
+  /** Explicit denials — constraints this bid actively communicates as NOT true.
+   *  e.g., deny-major explicitly denies hasFourCardMajor. */
+  readonly denies?: readonly FactConstraintIR[];
+  readonly surfaceBindings?: Readonly<Record<string, string>>;
 }

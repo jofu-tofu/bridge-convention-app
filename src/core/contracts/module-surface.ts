@@ -8,11 +8,8 @@ import type { PublicEvent, PublicConstraint } from "./agreement-module";
 import type { LatentBranchSet } from "./posterior";
 import type { EvidenceBundleIR } from "./evidence-bundle";
 
-/** Hand-independent public state derived from conversation machine registers.
- *  Pure DTO — caller extracts fields from machine state to avoid
- *  contracts/ importing from conventions/. */
-export interface PublicSnapshot {
-  readonly activeModuleIds: readonly string[];
+/** Conversation machine register state — shared by PublicSnapshot and debug views. */
+export interface MachineRegisters {
   readonly forcingState: ForcingState;
   readonly obligation: {
     readonly kind: string;
@@ -21,11 +18,18 @@ export interface PublicSnapshot {
   readonly agreedStrain: {
     readonly type: "none" | "suit" | "notrump";
     readonly suit?: string;
-    readonly confidence?: "tentative" | "agreed" | "forced";
+    readonly confidence?: string;
   };
   readonly competitionMode: string;
   readonly captain: string;
   readonly systemCapabilities: Readonly<Record<string, string>>;
+}
+
+/** Hand-independent public state derived from conversation machine registers.
+ *  Pure DTO — caller extracts fields from machine state to avoid
+ *  contracts/ importing from conventions/. */
+export interface PublicSnapshot extends MachineRegisters {
+  readonly activeModuleIds: readonly string[];
   readonly publicRegisters: Readonly<Record<string, unknown>>;
   readonly publicRecord?: readonly PublicEvent[];
   readonly publicCommitments?: readonly PublicConstraint[];

@@ -7,7 +7,6 @@ export * from "./tree-evaluation";
 export * from "./module-surface";
 export * from "./meaning";
 export * from "./fact-catalog";
-export * from "./meaning-surface";
 export * from "./semantic-classes";
 export * from "./provenance";
 export * from "./teaching-projection";
