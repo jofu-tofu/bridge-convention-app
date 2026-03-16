@@ -90,7 +90,7 @@ export function compilePublicHandSpace(snapshot: PublicSnapshot): PublicHandSpac
     }[] = [];
 
     for (const c of constraints) {
-      const isDenial = c.origin === "entailed-denial" || c.origin === "explicit-denial";
+      const isDenial = c.origin === "entailed-denial";
       if (isDenial) {
         clauses.push(negateConstraint(c.constraint));
       } else {

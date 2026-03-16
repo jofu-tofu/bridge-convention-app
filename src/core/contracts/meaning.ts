@@ -203,9 +203,6 @@ export interface MeaningSurface {
    *  When a surface in a closed domain is chosen, unchosen peers' derived
    *  public constraints become entailed denials for partnership posterior. */
   readonly closurePolicy?: ChoiceClosurePolicy;
-  /** Explicit denials — constraints this bid actively communicates as NOT true.
-   *  e.g., deny-major explicitly denies hasFourCardMajor. */
-  readonly denies?: readonly FactConstraintIR[];
   readonly surfaceBindings?: Readonly<Record<string, string>>;
 }
 

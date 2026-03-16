@@ -225,32 +225,6 @@ describe("extractCommitments", () => {
     expect(promises[0]!.sourceMeaning).toBe("meaning-a");
   });
 
-  it("extracts denial constraints when surface has denies", () => {
-    // Create a surface with denies
-    const surfaceWithDenials = makeSurface({
-      meaningId: "deny-surface",
-      encoding: { defaultCall: { type: "bid", level: 3, strain: "NT" } as Call },
-      denies: [
-        { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
-      ],
-    });
-
-    const routerWithDenials = (_a: Auction, _s: Seat) => [surfaceWithDenials];
-    const auction: Auction = {
-      entries: [
-        { seat: Seat.South, call: { type: "bid", level: 3, strain: "NT" } as Call },
-      ],
-      isComplete: false,
-    };
-
-    const result = extractCommitments(auction, Seat.South, routerWithDenials);
-
-    const denials = result.filter(c => c.origin === "explicit-denial");
-    expect(denials).toHaveLength(1);
-    expect(denials[0]!.constraint.factId).toBe("hand.suitLength.hearts");
-    expect(denials[0]!.strength).toBe("hard");
-  });
-
   it("no commitments when auction entry does not match any surface", () => {
     // 1NT doesn't match any of allTestSurfaces (which have 2C, 2D, 2H, 2S)
     const auction: Auction = {

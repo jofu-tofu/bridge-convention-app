@@ -128,20 +128,6 @@ export function extractCommitments(
         });
       }
 
-      // Explicit denials from the surface
-      if (matchingSurface.denies) {
-        for (const denial of matchingSurface.denies) {
-          commitments.push({
-            subject: entry.seat,
-            constraint: denial,
-            origin: "explicit-denial",
-            strength: "hard",
-            sourceCall: callStr,
-            sourceMeaning: matchingSurface.meaningId,
-          });
-        }
-      }
-
       // Derive entailed denials from closure policy
       if (matchingSurface.closurePolicy) {
         const entailedDenials = deriveEntailedDenials(

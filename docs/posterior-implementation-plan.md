@@ -65,7 +65,7 @@ FactorOrigin
   sourceConstraint: PublicConstraint ref
   sourceSurface?: MeaningSurface ref
   sourceModule?: string
-  originKind: "call-meaning" | "announcement" | "explicit-denial" | "entailed-denial"
+  originKind: "call-meaning" | "announcement" | "entailed-denial"
 
 AmbiguityFamilyIR               — public schema of unresolved alternatives
   familyId: string

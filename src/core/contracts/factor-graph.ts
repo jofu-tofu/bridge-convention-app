@@ -13,7 +13,6 @@ export interface FactorOrigin {
   readonly sourceModule?: string;
   readonly originKind:
     | "call-meaning"
-    | "explicit-denial"
     | "entailed-denial";
 }
 

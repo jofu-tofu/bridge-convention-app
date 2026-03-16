@@ -32,7 +32,7 @@ core/
     public-snapshot-builder.ts  buildSnapshotFromAuction() — Phase 1 output
     decision-surface-emitter.ts emitDecisionSurfaces() — Phase 2 output
     bundle-adapter.ts     bundleToRuntimeModules() — ConventionBundle → RuntimeModule[]
-    commitment-extractor.ts extractCommitments() — surfaces with publicConsequences → PublicConstraint[]
+    commitment-extractor.ts extractCommitments() — auto-derives PublicConstraint[] (promises + entailed denials from closure policy)
     profile-activation.ts resolveActiveModules() — SystemProfileIR activation
     profile-validation.ts validateProfile() — semantic collision detection
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
@@ -90,7 +90,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 **Profile activation:** `resolveActiveModules()` evaluates `SystemProfileIR` attachments against auction patterns, capabilities, and public guards. Exclusivity groups enforce one-winner-per-group.
 
-**Commitment extraction:** `extractCommitments()` matches auction calls against surfaces with `publicConsequences` to produce `PublicConstraint[]` (promises, denials, entailed denials).
+**Commitment extraction:** `extractCommitments()` matches auction calls against surfaces with `publicConsequences` to produce `PublicConstraint[]` (promises, entailed denials from closure policy).
 
 ## Test Architecture
 

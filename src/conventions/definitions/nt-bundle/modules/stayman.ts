@@ -195,9 +195,6 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
         ],
       },
     },
-    denies: [
-      { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true },
-    ],
   },
 ];
 

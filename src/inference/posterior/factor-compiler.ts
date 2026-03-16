@@ -64,7 +64,7 @@ function extractSuit(factId: string): SuitName | null {
 // ─── Factor compilation helpers ─────────────────────────────
 
 function isDenial(origin: PublicConstraint["origin"]): boolean {
-  return origin === "entailed-denial" || origin === "explicit-denial";
+  return origin === "entailed-denial";
 }
 
 function compileHcpRange(

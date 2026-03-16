@@ -118,7 +118,7 @@ describe("extractCommitments (NT bundle)", () => {
     expect(spadesDenial!.strength).toBe("entailed");
   });
 
-  it("extracts deny-major commitment as explicit-denial", () => {
+  it("extracts deny-major commitment as entailed-denial via closure policy", () => {
     const auction = buildAuction(Seat.North, [
       "1NT",
       "P",
@@ -128,15 +128,20 @@ describe("extractCommitments (NT bundle)", () => {
     ]);
     const commitments = extractCommitments(auction, Seat.South, surfaceRouter);
 
-    // 2D = deny-major: denies hasFourCardMajor
+    // 2D = deny-major: closure policy entails denial of 4-card majors
     const openerDenials = commitments.filter(
-      (c) => c.subject === (Seat.North as string) && c.origin === "explicit-denial",
+      (c) => c.subject === (Seat.North as string) && c.origin === "entailed-denial",
     );
-    expect(openerDenials).toHaveLength(1);
-    expect(openerDenials[0]!.constraint.factId).toBe(
-      "bridge.hasFourCardMajor",
+    // Closure policy produces entailed denials for hearts >= 4 and spades >= 4
+    expect(openerDenials.length).toBeGreaterThanOrEqual(2);
+    const heartsDenial = openerDenials.find(
+      (c) => c.constraint.factId === "hand.suitLength.hearts",
     );
-    expect(openerDenials[0]!.sourceMeaning).toBe("stayman:deny-major");
+    const spadesDenial = openerDenials.find(
+      (c) => c.constraint.factId === "hand.suitLength.spades",
+    );
+    expect(heartsDenial).toBeDefined();
+    expect(spadesDenial).toBeDefined();
   });
 });
 

@@ -113,7 +113,7 @@ export interface PublicEvent {
 export interface PublicConstraint {
   readonly subject: string;
   readonly constraint: FactConstraintIR;
-  readonly origin: "call-meaning" | "explicit-denial" | "entailed-denial";
+  readonly origin: "call-meaning" | "entailed-denial";
   readonly strength: "hard" | "entailed";
   readonly sourceCall?: string;
   readonly sourceMeaning?: string;

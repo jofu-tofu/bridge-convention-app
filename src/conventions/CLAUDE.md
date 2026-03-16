@@ -17,7 +17,7 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 ## Convention Authoring (Meaning Pipeline)
 
 A convention bundle provides:
-1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, and optional `publicConsequences`
+1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, and optional `closurePolicy` for entailed denials
 2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions
 3. **`conversationMachine`** — FSM tracking auction progression, producing `surfaceGroupId` per state and `MachineEffect` per transition
 4. **`systemProfile`** — `SystemProfileIR` declaring modules, attachments, exclusivity groups
