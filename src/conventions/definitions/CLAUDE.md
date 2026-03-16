@@ -23,14 +23,24 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `__tests__/` | Bundle-specific tests |
 
 
-**`nt-bundle/`** — Combines Stayman + Jacoby Transfers + Smolen into a single 1NT response bundle.
-- `config.ts` — `ConventionBundle` with `meaningSurfaces` (11 groups, 35 surfaces), `factExtensions` (staymanFacts, transferFacts, ntResponseFacts, smolenFacts), `surfaceRouter`, `conversationMachine`, `declaredCapabilities: { "opening.1nt": "active" }`. `memberIds: ["jacoby-transfers", "stayman", "smolen"]` (Jacoby first for tie-breaking priority).
-- `meaning-surfaces.ts` — 35 `MeaningSurface` definitions across responder R1 (5), opener Stayman response (3), opener transfer accept hearts (1) + spades (1), Stayman R3 after 2H/2S/2D (4+4+4 — includes 2 Smolen surfaces), transfer R3 after hearts/spades accept (4+4), opener Smolen placement hearts (2) + spades (2).
-- `facts.ts` — 4 `FactCatalogExtension`s: `staymanFacts` (module.stayman.*, posterior facts), `transferFacts` (module.transfer.*), `ntResponseFacts` (module.ntResponse.inviteValues/gameValues/slamValues), `smolenFacts` (module.smolen.hasFiveHearts/hasFiveSpades/hasFourSpades/hasFourHearts/openerHasHeartFit/openerHasSpadesFit).
-- `machine.ts` — 15-state hierarchical FSM + 5-state Smolen submachine: idle → nt-opened → responder-r1 → opener-stayman / opener-transfer-hearts / opener-transfer-spades → responder-r3 variants → smolen-invoke-hearts/spades → [submachine: smolen-continuation] → terminal / nt-contested. First real convention to use submachine invocation with guard-based routing.
+**`nt-bundle/`** — Bottom-up composition of Stayman + Jacoby Transfers + Smolen + Natural NT into a single 1NT response bundle. Each convention is a self-contained `NtConventionModule` in `modules/`; the bundle is assembled by `compose.ts`.
+- `modules/` — Convention modules (source of truth for all bidding logic):
+  - `module-types.ts` — `NtConventionModule` interface: surfaces, machine states, facts, explanations, pedagogical relations per convention.
+  - `stayman.ts` — Stayman convention: R1 surface (2C ask), opener response surfaces (show-hearts/spades/deny-major), R3 continuation surfaces, 4 FSM states, 2 facts + posterior evaluators.
+  - `jacoby-transfers.ts` — Jacoby Transfers convention: R1 surfaces (2D/2H transfer), opener accept surfaces, R3 continuation surfaces, 4 FSM states, 3 facts.
+  - `smolen.ts` — Smolen convention: R3 surfaces (3H/3S after 2D denial), opener placement surfaces, 2 FSM states + submachine (5 states), hooks into Stayman's R3-2D state via `hookTransitions`, 6 facts.
+  - `natural-nt.ts` — Natural NT responses: R1 surfaces (2NT invite, 3NT game), 1NT opening surface, R1 terminal transitions, 3 HCP threshold facts, shared explanation entries.
+- `compose.ts` — `composeNtModules()`: assembles `NtConventionModule[]` bottom-up into shared FSM infrastructure (idle, nt-opened, responder-r1, terminal, nt-contested), merged surface groups, combined facts/explanations/relations. Handles `hookTransitions` (e.g., Smolen prepending transitions to Stayman states).
+- `config.ts` — `ConventionBundle` composed from all 4 modules. `memberIds: ["jacoby-transfers", "stayman", "smolen"]` (Jacoby first for tie-breaking priority).
+- `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles, each composed from a subset of modules.
+- `meaning-surfaces.ts` — Re-export shim for backward compatibility. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
+- `facts.ts` — Re-export shim: `staymanFacts`, `transferFacts`, `ntResponseFacts`, `smolenFacts` from modules.
+- `machine.ts` — Re-export shim: `createNtConversationMachine()` delegates to `composeNtModules()`.
+- `semantic-classes.ts` — Re-export shim from modules.
+- `explanation-catalog.ts` — Composed from all modules' explanation entries.
+- `pedagogical-relations.ts` — `NT_CROSS_MODULE_RELATIONS` (cross-convention: Stayman↔Transfer, Smolen↔Stayman, Natural↔Stayman) + intra-module relations from each module.
 - `alternatives.ts` — 2 `AlternativeGroup`s: "NT response: transfer vs Stayman" + "After denial: Smolen vs 3NT".
-- `pedagogical-relations.ts` — `NT_PEDAGOGICAL_RELATIONS` graph (including Smolen relations).
-- `surface-routing.ts` — 11 `RoutedSurfaceGroup` entries (including opener-smolen-hearts/spades); `createNtSurfaceRouter()` delegates to `evaluateMachine()` with Smolen submachine map.
+- `surface-routing.ts` — `NT_ROUTED_SURFACES` and `createNtSurfaceRouter()` for backward compatibility.
 
 **`bergen-bundle/`** — Bergen Raises using the meaning pipeline with `$suit` binding parameterization for hearts and spades.
 - `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `surfaceRouter`, `conversationMachine`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.

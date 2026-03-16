@@ -15,3 +15,11 @@ export { createNtConversationMachine } from "./machine";
 export { NT_SAYC_PROFILE } from "./system-profile";
 export { NT_ROUTED_SURFACES, createNtSurfaceRouter } from "./surface-routing";
 export { NT_EXPLANATION_CATALOG } from "./explanation-catalog";
+
+// New bottom-up module exports
+export { staymanModule } from "./modules/stayman";
+export { jacobyTransfersModule } from "./modules/jacoby-transfers";
+export { smolenModule } from "./modules/smolen";
+export { naturalNtModule } from "./modules/natural-nt";
+export { composeNtModules } from "./compose";
+export type { NtConventionModule } from "./modules/module-types";
