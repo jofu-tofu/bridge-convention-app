@@ -12,16 +12,7 @@ function make2CStrategy(): ConventionBiddingStrategy {
   return {
     id: "test-strategy",
     name: "Test Convention",
-    getLastPracticalRecommendation() { return null; },
-    getAcceptableAlternatives() { return undefined; },
-    getIntentFamilies() { return undefined; },
-    getLastProvenance() { return null; },
-    getLastArbitration() { return null; },
-    getLastPosteriorSummary() { return null; },
-    getExplanationCatalog() { return undefined; },
-    getLastTeachingProjection() { return null; },
-    getLastFacts() { return null; },
-    getLastMachineSnapshot() { return null; },
+    getLastEvaluation() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },
@@ -37,16 +28,7 @@ function makeNoOpStrategy(): ConventionBiddingStrategy {
   return {
     id: "noop",
     name: "No-Op",
-    getLastPracticalRecommendation() { return null; },
-    getAcceptableAlternatives() { return undefined; },
-    getIntentFamilies() { return undefined; },
-    getLastProvenance() { return null; },
-    getLastArbitration() { return null; },
-    getLastPosteriorSummary() { return null; },
-    getExplanationCatalog() { return undefined; },
-    getLastTeachingProjection() { return null; },
-    getLastFacts() { return null; },
-    getLastMachineSnapshot() { return null; },
+    getLastEvaluation() { return null; },
     suggest(): null {
       return null;
     },
@@ -58,16 +40,7 @@ function makePrimaryWithAcceptableAlternativeStrategy(): ConventionBiddingStrate
   return {
     id: "test-with-alternative",
     name: "Test With Alternative",
-    getLastPracticalRecommendation() { return null; },
-    getAcceptableAlternatives() { return undefined; },
-    getIntentFamilies() { return undefined; },
-    getLastProvenance() { return null; },
-    getLastArbitration() { return null; },
-    getLastPosteriorSummary() { return null; },
-    getExplanationCatalog() { return undefined; },
-    getLastTeachingProjection() { return null; },
-    getLastFacts() { return null; },
-    getLastMachineSnapshot() { return null; },
+    getLastEvaluation() { return null; },
     suggest(): BidResult {
       return {
         call: { type: "bid", level: 2, strain: BidSuit.Clubs },

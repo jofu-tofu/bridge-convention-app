@@ -6,7 +6,7 @@ import {
 import { BidSuit } from "../../engine/types";
 import { makeTestSurface, makeContext, strongHandWith4Spades } from "./strategy-test-helpers";
 
-describe("getLastTeachingProjection — meaning pipeline", () => {
+describe("getLastEvaluation().teachingProjection — meaning pipeline", () => {
   it("returns non-null TeachingProjection with populated callViews after suggest", () => {
     const surface = makeTestSurface();
     const strategy = meaningToStrategy([surface], "test-module");
@@ -14,7 +14,7 @@ describe("getLastTeachingProjection — meaning pipeline", () => {
 
     strategy.suggest(context);
 
-    const projection = strategy.getLastTeachingProjection();
+    const projection = strategy.getLastEvaluation()?.teachingProjection ?? null;
     expect(projection).not.toBeNull();
     expect(projection!.callViews.length).toBeGreaterThan(0);
     expect(projection!.callViews[0]!.call).toEqual({
@@ -34,7 +34,7 @@ describe("getLastTeachingProjection — meaning pipeline", () => {
 
     strategy.suggest(context);
 
-    const projection = strategy.getLastTeachingProjection();
+    const projection = strategy.getLastEvaluation()?.teachingProjection ?? null;
     expect(projection).not.toBeNull();
     expect(projection!.callViews.length).toBeGreaterThan(0);
     expect(projection!.meaningViews.length).toBeGreaterThan(0);
@@ -42,7 +42,7 @@ describe("getLastTeachingProjection — meaning pipeline", () => {
 
   it("returns null before first suggest", () => {
     const strategy = meaningToStrategy([], "test-module");
-    expect(strategy.getLastTeachingProjection()).toBeNull();
+    expect(strategy.getLastEvaluation()?.teachingProjection ?? null).toBeNull();
   });
 
   it("returns null when suggest produces no match (no arbitration selected)", () => {
@@ -64,7 +64,7 @@ describe("getLastTeachingProjection — meaning pipeline", () => {
 
     // No selected candidate → still produces projection (provenance exists)
     // Acceptable-set entries appear in callViews with status "acceptable"
-    const projection = strategy.getLastTeachingProjection();
+    const projection = strategy.getLastEvaluation()?.teachingProjection ?? null;
     expect(projection).not.toBeNull();
     expect(projection!.callViews.filter(v => v.status === "truth")).toHaveLength(0);
   });

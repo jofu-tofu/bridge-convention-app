@@ -36,28 +36,32 @@ export interface MachineDebugSnapshot {
   readonly submachineStack: readonly { readonly parentMachineId: string; readonly returnStateId: string }[];
 }
 
-/** Extended strategy interface for convention-based strategies that produce practical recommendations.
- *  The accessor returns the recommendation from the most recent suggest() call (reset to null at start of each suggest()). */
-export interface ConventionBiddingStrategy extends BiddingStrategy {
-  getLastPracticalRecommendation(): PracticalRecommendation | null;
-  /** Convention-level alternative groups for teaching grading.
-   *  Returns the groups from the convention config, or undefined if not set. */
-  getAcceptableAlternatives(): readonly AlternativeGroup[] | undefined;
-  /** Convention-level intent families for relationship-aware grading.
-   *  Returns the families from the convention config, or undefined if not set. */
-  getIntentFamilies(): readonly IntentFamily[] | undefined;
-  /** Provenance from the most recent meaning-pipeline evaluation. Null when strategy doesn't produce this. */
-  getLastProvenance(): DecisionProvenance | null;
-  /** Full arbitration result from the most recent meaning-pipeline evaluation. Null when strategy doesn't produce this. */
-  getLastArbitration(): ArbitrationResult | null;
-  /** Posterior summary from the most recent suggest() call. Null when posterior engine not wired. */
-  getLastPosteriorSummary(): PosteriorSummary | null;
+/** Unified evaluation snapshot — all pipeline outputs from the most recent suggest() call. */
+export interface StrategyEvaluation {
+  /** Practical recommendation (what an experienced player might prefer). Null when not produced. */
+  readonly practicalRecommendation: PracticalRecommendation | null;
+  /** Convention-level alternative groups for teaching grading. Undefined if not configured. */
+  readonly acceptableAlternatives: readonly AlternativeGroup[] | undefined;
+  /** Convention-level intent families for relationship-aware grading. Undefined if not configured. */
+  readonly intentFamilies: readonly IntentFamily[] | undefined;
+  /** Provenance from the meaning-pipeline evaluation. Null when not produced. */
+  readonly provenance: DecisionProvenance | null;
+  /** Full arbitration result from the meaning-pipeline evaluation. Null when not produced. */
+  readonly arbitration: ArbitrationResult | null;
+  /** Posterior summary. Null when posterior engine not wired. */
+  readonly posteriorSummary: PosteriorSummary | null;
   /** Explanation catalog for enriching teaching projections. Undefined when not available. */
-  getExplanationCatalog(): ExplanationCatalogIR | undefined;
-  /** Teaching projection from the most recent meaning-pipeline evaluation. Null when strategy doesn't produce this. */
-  getLastTeachingProjection(): TeachingProjection | null;
-  /** Debug: evaluated facts from the most recent pipeline evaluation. */
-  getLastFacts(): EvaluatedFacts | null;
-  /** Debug: machine/protocol state from the most recent evaluation. */
-  getLastMachineSnapshot(): MachineDebugSnapshot | null;
+  readonly explanationCatalog: ExplanationCatalogIR | undefined;
+  /** Teaching projection from the meaning-pipeline evaluation. Null when not produced. */
+  readonly teachingProjection: TeachingProjection | null;
+  /** Evaluated facts from the pipeline evaluation. Null before first evaluation. */
+  readonly facts: EvaluatedFacts | null;
+  /** Machine/protocol state from the evaluation. Null when no machine is wired. */
+  readonly machineSnapshot: MachineDebugSnapshot | null;
+}
+
+/** Extended strategy interface for convention-based strategies that produce practical recommendations.
+ *  Returns the full evaluation snapshot from the most recent suggest() call (null before first suggest()). */
+export interface ConventionBiddingStrategy extends BiddingStrategy {
+  getLastEvaluation(): StrategyEvaluation | null;
 }

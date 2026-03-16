@@ -227,7 +227,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     expect(result).not.toBeNull();
 
     // The posterior summary should be available after suggest()
-    const summary = strategy.getLastPosteriorSummary();
+    const summary = strategy.getLastEvaluation()?.posteriorSummary ?? null;
     // Whether posterior is populated depends on whether commitments exist at 1NT-P stage.
     // The 1NT opening itself has no clauses that produce commitments (only responder bids do).
     // So at the 1NT-P stage, there may be no commitments → no posterior.

@@ -2,20 +2,19 @@ import type {
   BiddingContext,
   BidResult,
   ConventionBiddingStrategy,
+  StrategyEvaluation,
   AlternativeGroup,
   IntentFamily,
 } from "../../core/contracts";
 import type { MeaningSurface } from "../../core/contracts/meaning-surface";
 import type { CandidateTransform } from "../../core/contracts/meaning";
-import type { DecisionProvenance } from "../../core/contracts/provenance";
-import type { ArbitrationResult, PublicSnapshot } from "../../core/contracts/module-surface";
-import type { FactCatalog, EvaluatedFacts } from "../../core/contracts/fact-catalog";
+import type { PublicSnapshot } from "../../core/contracts/module-surface";
+import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider } from "../../core/contracts/posterior";
 import type { PosteriorBackend, PosteriorState } from "../../core/contracts/posterior-backend";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
-import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import type { Auction, Seat } from "../../engine/types";
 import type { ConversationMachine } from "../../conventions/core/runtime/machine-types";
 import type { RuntimeModule } from "../../conventions/core/runtime/types";
@@ -119,32 +118,26 @@ export function meaningToStrategy(
     intentFamilies?: readonly IntentFamily[];
   },
 ): ConventionBiddingStrategy {
-  let lastProvenance: DecisionProvenance | null = null;
-  let lastArbitration: ArbitrationResult | null = null;
-  let lastTeachingProjection: TeachingProjection | null = null;
-  let lastFacts: EvaluatedFacts | null = null;
+  let lastEvaluation: StrategyEvaluation | null = {
+    practicalRecommendation: null,
+    acceptableAlternatives: options?.acceptableAlternatives,
+    intentFamilies: options?.intentFamilies,
+    provenance: null,
+    arbitration: null,
+    posteriorSummary: null,
+    explanationCatalog: undefined,
+    teachingProjection: null,
+    facts: null,
+    machineSnapshot: null,
+  };
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
 
   return {
     id: moduleId,
     name: options?.name ?? moduleId,
-    getLastPracticalRecommendation() { return null; },
-    getAcceptableAlternatives() { return options?.acceptableAlternatives; },
-    getIntentFamilies() { return options?.intentFamilies; },
-    getLastProvenance() { return lastProvenance; },
-    getLastArbitration() { return lastArbitration; },
-    getLastPosteriorSummary() { return null; },
-    getExplanationCatalog() { return undefined; },
-    getLastTeachingProjection() { return lastTeachingProjection; },
-    getLastFacts() { return lastFacts; },
-    getLastMachineSnapshot() { return null; },
+    getLastEvaluation() { return lastEvaluation; },
     suggest(context: BiddingContext): BidResult | null {
-      lastProvenance = null;
-      lastArbitration = null;
-      lastTeachingProjection = null;
-      lastFacts = null;
-
       const { result, facts } = runMeaningPipeline({
         surfaces,
         transforms: options?.transforms,
@@ -152,10 +145,21 @@ export function meaningToStrategy(
         catalog,
       });
 
-      lastFacts = facts;
-      lastArbitration = result;
-      lastProvenance = result.provenance ?? null;
-      lastTeachingProjection = buildTeachingProjection(result, lastProvenance);
+      const provenance = result.provenance ?? null;
+      const teachingProjection = buildTeachingProjection(result, provenance);
+
+      lastEvaluation = {
+        practicalRecommendation: null,
+        acceptableAlternatives: options?.acceptableAlternatives,
+        intentFamilies: options?.intentFamilies,
+        provenance,
+        arbitration: result,
+        posteriorSummary: null,
+        explanationCatalog: undefined,
+        teachingProjection,
+        facts,
+        machineSnapshot: null,
+      };
 
       if (!result.selected) return null;
       return buildBidResult(result.selected, context, moduleId, result);
@@ -208,11 +212,18 @@ export function meaningBundleToStrategy(
 ): ConventionBiddingStrategy {
   const allSurfaces = moduleSurfaces.flatMap((m) => m.surfaces);
 
-  let lastProvenance: DecisionProvenance | null = null;
-  let lastArbitration: ArbitrationResult | null = null;
-  let lastPosteriorSummary: PosteriorSummary | null = null;
-  let lastTeachingProjection: TeachingProjection | null = null;
-  let lastFacts: EvaluatedFacts | null = null;
+  let lastEvaluation: StrategyEvaluation | null = {
+    practicalRecommendation: null,
+    acceptableAlternatives: options?.acceptableAlternatives,
+    intentFamilies: options?.intentFamilies,
+    provenance: null,
+    arbitration: null,
+    posteriorSummary: null,
+    explanationCatalog: options?.explanationCatalog,
+    teachingProjection: null,
+    facts: null,
+    machineSnapshot: null,
+  };
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
   const machineCache: MachineCache = { result: null, auctionLength: -1 };
@@ -221,23 +232,8 @@ export function meaningBundleToStrategy(
   return {
     id: bundleId,
     name: options?.name ?? bundleId,
-    getLastPracticalRecommendation() { return null; },
-    getAcceptableAlternatives() { return options?.acceptableAlternatives; },
-    getIntentFamilies() { return options?.intentFamilies; },
-    getLastProvenance() { return lastProvenance; },
-    getLastArbitration() { return lastArbitration; },
-    getLastPosteriorSummary() { return lastPosteriorSummary; },
-    getExplanationCatalog() { return options?.explanationCatalog; },
-    getLastTeachingProjection() { return lastTeachingProjection; },
-    getLastFacts() { return lastFacts; },
-    getLastMachineSnapshot() { return machineCache.result ? toMachineDebugSnapshot(machineCache.result) : null; },
+    getLastEvaluation() { return lastEvaluation; },
     suggest(context: BiddingContext): BidResult | null {
-      lastProvenance = null;
-      lastArbitration = null;
-      lastPosteriorSummary = null;
-      lastTeachingProjection = null;
-      lastFacts = null;
-
       // Phase 1: Select active surfaces for this auction position
       let selectedSurfaces: readonly MeaningSurface[];
       let machineTransforms: readonly CandidateTransform[] = [];
@@ -309,25 +305,36 @@ export function meaningBundleToStrategy(
         relationalContext,
       });
 
-      lastFacts = facts;
-
       // Phase 4: Build posterior summary from evaluated facts
+      let posteriorSummary: PosteriorSummary | null = null;
       if (posteriorProvider && posteriorState) {
         const partner = partnerSeat(context.seat);
-        lastPosteriorSummary = buildPosteriorSummary(catalog, facts, posteriorProvider, posteriorState, partner);
+        posteriorSummary = buildPosteriorSummary(catalog, facts, posteriorProvider, posteriorState, partner);
       }
 
       // Phase 5: Build output (teaching projection + BidResult)
-      lastArbitration = result;
-      lastProvenance = result.provenance ?? null;
-      lastTeachingProjection = buildTeachingProjection(
-        result, lastProvenance, options?.explanationCatalog, lastPosteriorSummary,
+      const provenance = result.provenance ?? null;
+      const teachingProjection = buildTeachingProjection(
+        result, provenance, options?.explanationCatalog, posteriorSummary,
         options?.pedagogicalRelations,
       );
 
+      lastEvaluation = {
+        practicalRecommendation: null,
+        acceptableAlternatives: options?.acceptableAlternatives,
+        intentFamilies: options?.intentFamilies,
+        provenance,
+        arbitration: result,
+        posteriorSummary,
+        explanationCatalog: options?.explanationCatalog,
+        teachingProjection,
+        facts,
+        machineSnapshot: machineCache.result ? toMachineDebugSnapshot(machineCache.result) : null,
+      };
+
       if (!result.selected) return null;
       const winningModuleId = result.selected.proposal.moduleId;
-      return buildBidResult(result.selected, context, winningModuleId, result, lastPosteriorSummary);
+      return buildBidResult(result.selected, context, winningModuleId, result, posteriorSummary);
     },
   };
 }

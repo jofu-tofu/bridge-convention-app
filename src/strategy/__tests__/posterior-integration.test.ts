@@ -273,7 +273,7 @@ describe("meaningBundleToStrategy — posterior integration", () => {
     );
 
     strategy.suggest(makeContext());
-    const summary = strategy.getLastPosteriorSummary();
+    const summary = strategy.getLastEvaluation()?.posteriorSummary ?? null;
     expect(summary).not.toBeNull();
     // sampleCount should reflect the actual particle count (150), not hardcoded 200
     expect(summary!.sampleCount).toBe(150);
@@ -294,7 +294,7 @@ describe("meaningBundleToStrategy — posterior integration", () => {
     );
 
     strategy.suggest(makeContext());
-    const summary = strategy.getLastPosteriorSummary();
+    const summary = strategy.getLastEvaluation()?.posteriorSummary ?? null;
     expect(summary).not.toBeNull();
     // confidence should NOT be 1 — it should reflect the per-fact confidence values
     // With 80 particles out of 200 totalRequested, confidence = 80/200 = 0.4

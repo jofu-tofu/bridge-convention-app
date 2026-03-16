@@ -128,7 +128,7 @@ describe("Machine Integration: full pipeline with FSM", () => {
     expect(formatCall(result!.call)).toBe("2D");
 
     // Transfer should be in truth set; Stayman eliminated by no-five-card-major clause
-    const arb = strategy.getLastArbitration?.();
+    const arb = strategy.getLastEvaluation?.()?.arbitration;
     expect(arb).not.toBeNull();
     const truthIds = arb!.truthSet.map((e) => e.proposal.meaningId);
     expect(truthIds).toContain("transfer:to-hearts");

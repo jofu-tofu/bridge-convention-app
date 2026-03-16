@@ -88,7 +88,7 @@ describe("meaningToStrategy", () => {
 });
 
 describe("meaningToStrategy accessors and extensions", () => {
-  it("getLastProvenance() returns provenance after suggest", () => {
+  it("getLastEvaluation().provenance returns provenance after suggest", () => {
     const surface = makeTestSurface();
     const strategy = meaningToStrategy([surface], "test-module");
     const context = makeContext(strongHandWith4Spades);
@@ -96,33 +96,33 @@ describe("meaningToStrategy accessors and extensions", () => {
     const result = strategy.suggest(context);
 
     expect(result).not.toBeNull();
-    const provenance = strategy.getLastProvenance();
+    const provenance = strategy.getLastEvaluation()?.provenance ?? null;
     expect(provenance).not.toBeNull();
     expect(provenance!.applicability).toBeDefined();
     expect(provenance!.arbitration.length).toBeGreaterThan(0);
   });
 
-  it("getLastArbitration() returns arbitration result after suggest", () => {
+  it("getLastEvaluation().arbitration returns arbitration result after suggest", () => {
     const surface = makeTestSurface();
     const strategy = meaningToStrategy([surface], "test-module");
     const context = makeContext(strongHandWith4Spades);
 
     strategy.suggest(context);
 
-    const arbitration = strategy.getLastArbitration();
+    const arbitration = strategy.getLastEvaluation()?.arbitration ?? null;
     expect(arbitration).not.toBeNull();
     expect(arbitration!.selected).not.toBeNull();
     expect(arbitration!.truthSet.length).toBeGreaterThan(0);
   });
 
-  it("getLastProvenance() is null before first suggest", () => {
+  it("getLastEvaluation().provenance is null before first suggest", () => {
     const strategy = meaningToStrategy([], "test-module");
-    expect(strategy.getLastProvenance()).toBeNull();
+    expect(strategy.getLastEvaluation()?.provenance ?? null).toBeNull();
   });
 
   it("getLastArbitration() is null before first suggest", () => {
     const strategy = meaningToStrategy([], "test-module");
-    expect(strategy.getLastArbitration()).toBeNull();
+    expect(strategy.getLastEvaluation()?.arbitration ?? null).toBeNull();
   });
 
   it("getLastProvenance() resets to null on no-match suggest", () => {
@@ -131,17 +131,17 @@ describe("meaningToStrategy accessors and extensions", () => {
 
     // First: match
     strategy.suggest(makeContext(strongHandWith4Spades));
-    expect(strategy.getLastProvenance()).not.toBeNull();
+    expect(strategy.getLastEvaluation()?.provenance ?? null).not.toBeNull();
 
     // Second: no match → provenance still populated (provenance is always set)
     strategy.suggest(makeContext(weakHandWith4Spades));
     // Provenance should still be populated even when no candidate selected
-    const prov = strategy.getLastProvenance();
+    const prov = strategy.getLastEvaluation()?.provenance ?? null;
     expect(prov).not.toBeNull();
     expect(prov!.eliminations.length).toBeGreaterThan(0);
   });
 
-  it("getAcceptableAlternatives() returns configured alternatives", () => {
+  it("getLastEvaluation().acceptableAlternatives returns configured alternatives", () => {
     const alts: readonly AlternativeGroup[] = [
       {
         label: "Test group",
@@ -153,10 +153,12 @@ describe("meaningToStrategy accessors and extensions", () => {
       acceptableAlternatives: alts,
     });
 
-    expect(strategy.getAcceptableAlternatives()).toBe(alts);
+    // Must call suggest() to populate the evaluation snapshot
+    strategy.suggest(makeContext(strongHandWith4Spades));
+    expect(strategy.getLastEvaluation()?.acceptableAlternatives).toBe(alts);
   });
 
-  it("getIntentFamilies() returns configured families", () => {
+  it("getLastEvaluation().intentFamilies returns configured families", () => {
     const families: readonly IntentFamily[] = [
       {
         id: "test-family",
@@ -170,7 +172,9 @@ describe("meaningToStrategy accessors and extensions", () => {
       intentFamilies: families,
     });
 
-    expect(strategy.getIntentFamilies()).toBe(families);
+    // Must call suggest() to populate the evaluation snapshot
+    strategy.suggest(makeContext(strongHandWith4Spades));
+    expect(strategy.getLastEvaluation()?.intentFamilies).toBe(families);
   });
 
   it("uses provided factCatalog extension", () => {
@@ -332,9 +336,9 @@ describe("meaningBundleToStrategy", () => {
     const context = makeContext(strongHandWith4Spades);
     strategy.suggest(context);
 
-    expect(strategy.getLastProvenance()).not.toBeNull();
-    expect(strategy.getLastArbitration()).not.toBeNull();
-    expect(strategy.getLastArbitration()!.selected).not.toBeNull();
+    expect(strategy.getLastEvaluation()?.provenance ?? null).not.toBeNull();
+    expect(strategy.getLastEvaluation()?.arbitration ?? null).not.toBeNull();
+    expect(strategy.getLastEvaluation()!.arbitration!.selected).not.toBeNull();
   });
 
   it("surfaceRouter filters surfaces by auction position", () => {
@@ -387,7 +391,7 @@ describe("meaningBundleToStrategy", () => {
     expect(result).toBeNull();
   });
 
-  it("getAcceptableAlternatives() and getIntentFamilies() return configured values", () => {
+  it("getLastEvaluation() acceptableAlternatives and intentFamilies return configured values", () => {
     const alts: readonly AlternativeGroup[] = [
       { label: "G1", members: ["x"], tier: "preferred" },
     ];
@@ -400,7 +404,7 @@ describe("meaningBundleToStrategy", () => {
       intentFamilies: families,
     });
 
-    expect(strategy.getAcceptableAlternatives()).toBe(alts);
-    expect(strategy.getIntentFamilies()).toBe(families);
+    expect(strategy.getLastEvaluation()?.acceptableAlternatives).toBe(alts);
+    expect(strategy.getLastEvaluation()?.intentFamilies).toBe(families);
   });
 });

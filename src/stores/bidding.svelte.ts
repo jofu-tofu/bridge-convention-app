@@ -8,13 +8,10 @@ import type {
   BidHistoryEntry,
   PracticalRecommendation,
   ConventionBiddingStrategy,
+  StrategyEvaluation,
   TeachingProjection,
-  MachineDebugSnapshot,
-  PosteriorSummary,
 } from "../core/contracts";
-import type { ArbitrationResult } from "../core/contracts/module-surface";
-import type { DecisionProvenance, EncodingTrace } from "../core/contracts/provenance";
-import type { EvaluatedFacts } from "../core/contracts/fact-catalog";
+import type { EncodingTrace } from "../core/contracts/provenance";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callsMatch } from "../engine/call-helpers";
@@ -43,15 +40,9 @@ export interface BidFeedback {
   readonly encodingTrace?: EncodingTrace;
 }
 
-/** Aggregated debug snapshot — all internal decision model state from the most recent pipeline evaluation. */
-export interface DebugSnapshot {
+/** Aggregated debug snapshot — strategy evaluation plus the expected bid. */
+export interface DebugSnapshot extends StrategyEvaluation {
   readonly expectedBid: BidResult | null;
-  readonly arbitration: ArbitrationResult | null;
-  readonly provenance: DecisionProvenance | null;
-  readonly posteriorSummary: PosteriorSummary | null;
-  readonly teachingProjection: TeachingProjection | null;
-  readonly facts: EvaluatedFacts | null;
-  readonly machineSnapshot: MachineDebugSnapshot | null;
 }
 
 /** A single entry in the persistent debug log — captures a snapshot at a specific moment. */
@@ -67,6 +58,20 @@ export interface DebugLogEntry {
 }
 
 const AI_BID_DELAY = 300;
+
+/** Default empty evaluation — used when no strategy is wired or before first suggest(). */
+const EMPTY_EVALUATION: StrategyEvaluation = {
+  practicalRecommendation: null,
+  acceptableAlternatives: undefined,
+  intentFamilies: undefined,
+  provenance: null,
+  arbitration: null,
+  posteriorSummary: null,
+  explanationCatalog: undefined,
+  teachingProjection: null,
+  facts: null,
+  machineSnapshot: null,
+};
 
 interface BiddingStoreConfig {
   deal: Deal;
@@ -116,18 +121,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
 
   /** Build a DebugSnapshot from the convention strategy's cached state. */
   function captureSnapshot(): DebugSnapshot {
-    if (!conventionStrategy) {
-      return { expectedBid: null, arbitration: null, provenance: null, posteriorSummary: null, teachingProjection: null, facts: null, machineSnapshot: null };
-    }
-    return {
-      expectedBid: null, // filled by caller when applicable
-      arbitration: conventionStrategy.getLastArbitration(),
-      provenance: conventionStrategy.getLastProvenance(),
-      posteriorSummary: conventionStrategy.getLastPosteriorSummary(),
-      teachingProjection: conventionStrategy.getLastTeachingProjection(),
-      facts: conventionStrategy.getLastFacts(),
-      machineSnapshot: conventionStrategy.getLastMachineSnapshot(),
-    };
+    const evaluation = conventionStrategy?.getLastEvaluation() ?? EMPTY_EVALUATION;
+    return { expectedBid: null, ...evaluation };
   }
 
   /** Append a debug log entry. */
@@ -211,10 +206,11 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       return;
     }
 
+    const strategyEval = conventionStrategy?.getLastEvaluation();
     const teachingResolution = resolveTeachingAnswer(
       expectedResult,
-      conventionStrategy?.getAcceptableAlternatives(),
-      conventionStrategy?.getIntentFamilies(),
+      strategyEval?.acceptableAlternatives,
+      strategyEval?.intentFamilies,
     );
     const grade = gradeBid(call, teachingResolution);
     const isCorrect = grade === BidGrade.Correct;
@@ -228,9 +224,9 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         explanation: "No convention bid applies — pass",
       },
       teachingResolution,
-      practicalRecommendation: conventionStrategy?.getLastPracticalRecommendation() ?? undefined,
-      teachingProjection: conventionStrategy?.getLastTeachingProjection() ?? undefined,
-      encodingTrace: conventionStrategy?.getLastProvenance()?.encoding[0] ?? undefined,
+      practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
+      teachingProjection: strategyEval?.teachingProjection ?? undefined,
+      encodingTrace: strategyEval?.provenance?.encoding[0] ?? undefined,
     };
 
     // Capture persistent debug log entry — strategy caches are fresh right now
@@ -279,7 +275,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         meaning: expectedResult?.meaning,
         isUser: true,
         isCorrect: expectedResult !== null,
-        teachingProjection: conventionStrategy?.getLastTeachingProjection() ?? undefined,
+        teachingProjection: conventionStrategy?.getLastEvaluation()?.teachingProjection ?? undefined,
       },
     ];
 
@@ -401,26 +397,19 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     /** DEV: returns all internal pipeline state from the most recent suggest() call.
      *  Calls suggest() first to ensure caches are populated, then reads all debug data. */
     getDebugSnapshot(): DebugSnapshot {
-      const empty: DebugSnapshot = {
-        expectedBid: null, arbitration: null, provenance: null,
-        posteriorSummary: null, teachingProjection: null, facts: null, machineSnapshot: null,
-      };
-      if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) return empty;
-      if (!activeSession.isUserSeat(currentTurn)) return empty;
+      if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) {
+        return { expectedBid: null, ...EMPTY_EVALUATION };
+      }
+      if (!activeSession.isUserSeat(currentTurn)) {
+        return { expectedBid: null, ...EMPTY_EVALUATION };
+      }
       const hand = activeDeal.hands[currentTurn];
       const evaluation = evaluateHand(hand);
       const expectedBid = conventionStrategy.suggest(
         createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
       );
-      return {
-        expectedBid,
-        arbitration: conventionStrategy.getLastArbitration(),
-        provenance: conventionStrategy.getLastProvenance(),
-        posteriorSummary: conventionStrategy.getLastPosteriorSummary(),
-        teachingProjection: conventionStrategy.getLastTeachingProjection(),
-        facts: conventionStrategy.getLastFacts(),
-        machineSnapshot: conventionStrategy.getLastMachineSnapshot(),
-      };
+      const strategyEval = conventionStrategy.getLastEvaluation() ?? EMPTY_EVALUATION;
+      return { expectedBid, ...strategyEval };
     },
   };
 }

@@ -192,16 +192,7 @@ describe("game store DDS state", () => {
     // Strategy that always suggests pass — any non-pass bid is wrong
     const strategy = {
       id: "test", name: "Test",
-      getLastPracticalRecommendation() { return null; },
-      getAcceptableAlternatives() { return undefined; },
-      getIntentFamilies() { return undefined; },
-      getLastProvenance() { return null; },
-      getLastArbitration() { return null; },
-      getLastPosteriorSummary() { return null; },
-      getExplanationCatalog() { return undefined; },
-      getLastTeachingProjection() { return null; },
-      getLastFacts() { return null; },
-      getLastMachineSnapshot() { return null; },
+      getLastEvaluation() { return null; },
       suggest() { return { call: { type: "pass" as const }, ruleName: null, explanation: "Pass" }; },
     };
 
