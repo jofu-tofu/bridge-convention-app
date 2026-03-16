@@ -93,11 +93,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let debugLog = $state<DebugLogEntry[]>([]);
   let debugTurnCounter = 0;
 
-  // Retry state
-  let preBidAuction = $state<Auction | null>(null);
-  let preBidTurn = $state<Seat | null>(null);
-  let preBidHistory = $state<BidHistoryEntry[] | null>(null);
-
   // Config set at init time — needs to be $state for $derived to track
   let activeDeal = $state<Deal | null>(null);
   let activeSession = $state<DrillSession | null>(null);
@@ -112,12 +107,11 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       !isProcessing,
   );
 
-  /** True when bid feedback is showing and should block further input. */
+  /** True when bid feedback is showing and should block further input.
+   *  Correct-path-only: any non-correct feedback blocks until retry. */
   const isFeedbackBlocking = $derived(
     bidFeedback !== null &&
-      bidFeedback.grade !== BidGrade.Correct &&
-      bidFeedback.grade !== BidGrade.CorrectNotPreferred &&
-      bidFeedback.grade !== BidGrade.Acceptable,
+      bidFeedback.grade !== BidGrade.Correct,
   );
 
   /** Build a DebugSnapshot from the convention strategy's cached state. */
@@ -211,21 +205,19 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       );
     }
 
-    let teachingResolution: TeachingResolution | null = null;
-    let grade: BidGrade;
-    if (expectedResult) {
-      teachingResolution = resolveTeachingAnswer(
-        expectedResult,
-        conventionStrategy?.getAcceptableAlternatives(),
-        conventionStrategy?.getIntentFamilies(),
-      );
-      grade = gradeBid(call, teachingResolution);
-    } else {
-      grade = callsMatch(call, { type: "pass" })
-        ? BidGrade.Correct
-        : BidGrade.Incorrect;
+    // Convention exhausted: no surfaces match, so no grading — let any bid through.
+    if (!expectedResult) {
+      await applyBidAndContinue(currentTurn, call, null);
+      return;
     }
-    const isCorrect = grade === BidGrade.Correct || grade === BidGrade.CorrectNotPreferred || grade === BidGrade.Acceptable;
+
+    const teachingResolution = resolveTeachingAnswer(
+      expectedResult,
+      conventionStrategy?.getAcceptableAlternatives(),
+      conventionStrategy?.getIntentFamilies(),
+    );
+    const grade = gradeBid(call, teachingResolution);
+    const isCorrect = grade === BidGrade.Correct;
 
     bidFeedback = {
       grade,
@@ -254,27 +246,25 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       });
     }
 
-    const auctionBeforeUser = auction;
+    // Correct-path-only: wrong bids are never applied to the auction.
+    // The user sees feedback and must retry until they get the correct bid.
     if (!isCorrect) {
-      preBidAuction = auction;
-      preBidTurn = currentTurn;
-      preBidHistory = [...bidHistory];
-    } else {
-      preBidAuction = null;
-      preBidTurn = null;
-      preBidHistory = null;
+      await tick();
+      return;
     }
 
-    const userBidEntry = { seat: currentTurn, call };
+    await applyBidAndContinue(currentTurn, call, expectedResult);
+  }
+
+  /** Apply a user bid to the auction and continue with AI bids. */
+  async function applyBidAndContinue(seat: Seat, call: Call, expectedResult: BidResult | null) {
+    const userBidEntry = { seat, call };
+    const auctionBeforeUser = auction;
     let newAuction: Auction;
     try {
       newAuction = await engine.addCall(auction, userBidEntry);
     } catch (e) {
-      // Roll back feedback state — the bid was never applied
       bidFeedback = null;
-      preBidAuction = null;
-      preBidTurn = null;
-      preBidHistory = null;
       throw e;
     }
     auction = newAuction;
@@ -284,74 +274,31 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     bidHistory = [
       ...bidHistory,
       {
-        seat: currentTurn,
+        seat,
         call,
         meaning: expectedResult?.meaning,
         isUser: true,
-        isCorrect,
-        expectedResult: !isCorrect ? (expectedResult ?? undefined) : undefined,
+        isCorrect: expectedResult !== null,
         teachingProjection: conventionStrategy?.getLastTeachingProjection() ?? undefined,
       },
     ];
 
-    currentTurn = nextSeat(currentTurn);
-
-    if (isCorrect) {
-      const complete = await engine.isAuctionComplete(auction);
-      if (complete) {
-        await onAuctionComplete?.(auction);
-        bidFeedback = null; await tick();
-        return;
-      }
-      await runAiBids();
-      bidFeedback = null; await tick();
-      return;
-    }
-
-    await tick();
-  }
-
-  async function dismissBidFeedbackImpl() {
-    bidFeedback = null;
+    currentTurn = nextSeat(seat);
 
     const complete = await engine.isAuctionComplete(auction);
     if (complete) {
       await onAuctionComplete?.(auction);
+      bidFeedback = null; await tick();
       return;
     }
-
     await runAiBids();
-    await tick();
+    bidFeedback = null; await tick();
   }
 
-  async function retryBidImpl() {
-    if (isProcessing) return;
-    if (!preBidAuction || !preBidTurn || !preBidHistory) return;
-    auction = preBidAuction;
-    currentTurn = preBidTurn;
-    bidHistory = preBidHistory;
+  /** Dismiss feedback and let the user try again.
+   *  Correct-path-only: auction was never modified, so just clear feedback. */
+  function retryBidImpl() {
     bidFeedback = null;
-    preBidAuction = null;
-    preBidTurn = null;
-    preBidHistory = null;
-
-    if (currentTurn) {
-      legalCalls = await engine.getLegalCalls(auction, currentTurn);
-    }
-
-    await tick();
-  }
-
-  async function skipFromFeedbackImpl() {
-    bidFeedback = null;
-
-    const complete = await engine.isAuctionComplete(auction);
-    if (!complete) {
-      await runAiBids();
-    }
-
-    await onSkipToExplanation?.(auction);
-    await tick();
   }
 
   async function init(config: BiddingStoreConfig) {
@@ -365,9 +312,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
 
     bidFeedback = null;
     error = null;
-    preBidAuction = null;
-    preBidTurn = null;
-    preBidHistory = null;
 
     if (initialAuction) {
       auction = initialAuction;
@@ -414,9 +358,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     bidFeedback = null;
     error = null;
     conventionStrategy = null;
-    preBidAuction = null;
-    preBidTurn = null;
-    preBidHistory = null;
     activeDeal = null;
     activeSession = null;
     onAuctionComplete = null;
@@ -444,20 +385,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         error = e instanceof Error ? e.message : "Unknown error during bid";
       });
     },
-    dismissBidFeedback(): void {
-      dismissBidFeedbackImpl().catch((e: unknown) => {
-        error = e instanceof Error ? e.message : "Unknown error dismissing feedback";
-      });
-    },
     retryBid(): void {
-      retryBidImpl().catch((e: unknown) => {
-        error = e instanceof Error ? e.message : "Unknown error retrying bid";
-      });
-    },
-    skipFromFeedback(): void {
-      skipFromFeedbackImpl().catch((e: unknown) => {
-        error = e instanceof Error ? e.message : "Unknown error skipping from feedback";
-      });
+      retryBidImpl();
     },
     /** DEV: returns the expected bid result for the current user turn, or null */
     getExpectedBid(): BidResult | null {

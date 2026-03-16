@@ -129,9 +129,9 @@ describe("bid feedback — user-facing behavior", () => {
       store.userBid({ type: "pass" }); // wrong — should be 2C
       await flushActions();
 
-      // Auction is paused: feedback is showing, not user's turn
+      // Auction is paused: feedback is showing, input is blocked
       expect(store.bidFeedback).not.toBeNull();
-      expect(store.isUserTurn).toBe(false);
+      expect(store.isFeedbackBlocking).toBe(true);
     });
 
     it("tells user what the correct bid was", async () => {
@@ -160,7 +160,7 @@ describe("bid feedback — user-facing behavior", () => {
       );
     });
 
-    it("auction resumes when user dismisses feedback", async () => {
+    it("user can retry after incorrect feedback (correct-path-only)", async () => {
       const store = makeStore();
       store.startDrill({
         deal: makeSimpleTestDeal(),
@@ -170,20 +170,24 @@ describe("bid feedback — user-facing behavior", () => {
         ewInferenceEngine: null,
       });
       await flushActions();
-      store.userBid({ type: "pass" });
+
+      expect(store.bidFeedback).toBeNull();
+
+      store.userBid({ type: "pass" }); // wrong
       await flushActions();
 
       expect(store.bidFeedback).not.toBeNull();
+      expect(store.bidFeedback!.grade).toBe(BidGrade.Incorrect);
 
-      store.dismissBidFeedback();
+      store.retryBid();
       await flushActions();
 
-      // Feedback gone, auction has moved on
+      // Feedback gone, user is back on turn (auction was never modified)
       expect(store.bidFeedback).toBeNull();
-      expect(store.isUserTurn).toBe(true); // AI all passed, back to user
+      expect(store.isUserTurn).toBe(true);
     });
 
-    it("user can skip directly to review", async () => {
+    it("wrong bid is not applied to the auction (correct-path-only)", async () => {
       const store = makeStore();
       store.startDrill({
         deal: makeSimpleTestDeal(),
@@ -193,14 +197,13 @@ describe("bid feedback — user-facing behavior", () => {
         ewInferenceEngine: null,
       });
       await flushActions();
-      store.userBid({ type: "pass" });
+
+      const auctionBefore = store.auction;
+      store.userBid({ type: "pass" }); // wrong
       await flushActions();
 
-      store.skipFromFeedback();
-      await flushActions();
-
-      expect(store.phase).toBe("EXPLANATION");
-      expect(store.bidFeedback).toBeNull();
+      // Auction unchanged — wrong bid was not applied
+      expect(store.auction).toBe(auctionBefore);
     });
   });
 
@@ -259,7 +262,7 @@ describe("bid feedback — user-facing behavior", () => {
   });
 
   describe("multi-grade feedback", () => {
-    it("acceptable bid gets Acceptable grade and auction continues (no retry)", async () => {
+    it("acceptable bid gets Acceptable grade but blocks (correct-path-only)", async () => {
       const store = makeStore();
       store.startDrill({
         deal: makeSimpleTestDeal(),
@@ -271,9 +274,14 @@ describe("bid feedback — user-facing behavior", () => {
       await flushActions();
 
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
-      expect(store.bidFeedback?.grade).toBe(BidGrade.Acceptable);
       await flushActions();
 
+      // Acceptable grade is shown but blocks — only #1 truth-set winner proceeds
+      expect(store.bidFeedback?.grade).toBe(BidGrade.Acceptable);
+      expect(store.isFeedbackBlocking).toBe(true);
+
+      store.retryBid();
+      await flushActions();
       expect(store.bidFeedback).toBeNull();
       expect(store.isUserTurn).toBe(true);
     });
@@ -293,7 +301,7 @@ describe("bid feedback — user-facing behavior", () => {
       await flushActions();
 
       expect(store.bidFeedback?.grade).toBe(BidGrade.Incorrect);
-      expect(store.isUserTurn).toBe(false);
+      expect(store.isFeedbackBlocking).toBe(true);
 
       store.retryBid();
       await flushActions();
@@ -301,7 +309,7 @@ describe("bid feedback — user-facing behavior", () => {
       expect(store.isUserTurn).toBe(true);
     });
 
-    it("BidFeedback.grade is the single source of truth for correctness", async () => {
+    it("acceptable bid is not applied to auction (correct-path-only)", async () => {
       const store = makeStore();
       store.startDrill({
         deal: makeSimpleTestDeal(),
@@ -315,10 +323,9 @@ describe("bid feedback — user-facing behavior", () => {
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
       await flushActions();
 
+      // Acceptable bid was not applied — no user entries in bid history
       const userEntries = store.bidHistory.filter((entry) => entry.isUser);
-      expect(userEntries).toHaveLength(1);
-      expect(userEntries[0]?.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
-      expect(userEntries[0]?.isCorrect).toBe(true);
+      expect(userEntries).toHaveLength(0);
     });
   });
 });

@@ -4,18 +4,13 @@ import {
   Seat,
   type Auction,
   type DealConstraints,
-  type SeatConstraint,
-  type Hand,
 } from "../engine/types";
 import type { DrillBundle } from "./types";
 import type { OpponentMode } from "./types";
-import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
+import type { ConventionBiddingStrategy } from "../core/contracts";
 import { createDrillConfig, buildBundleStrategy } from "./config-factory";
 import { createDrillSession } from "./session";
-import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
-import { passStrategy } from "../strategy/bidding/pass-strategy";
 import { getBundle } from "../conventions/core";
-import { evaluateHand } from "../engine/hand-evaluator";
 import { createInferenceEngine } from "../inference/inference-engine";
 
 /** 180° table rotation: N↔S, E↔W */
@@ -45,46 +40,6 @@ export function rotateAuction(auction: Auction): Auction {
     ...auction,
     entries: auction.entries.map((e) => ({ ...e, seat: rotateSeat180(e.seat) })),
   };
-}
-
-/**
- * Analyze a convention's defaultAuction for E/W pass positions.
- * For each opponent pass, create a SeatConstraint with a customCheck
- * that verifies the opponent strategy would actually pass at that point.
- */
-export function buildOpponentPassConstraints(
-  defaultAuction: Auction | undefined,
-  opponentStrategy: BiddingStrategy,
-): SeatConstraint[] {
-  if (!defaultAuction) return [];
-
-  const constraints: SeatConstraint[] = [];
-  for (let i = 0; i < defaultAuction.entries.length; i++) {
-    const entry = defaultAuction.entries[i]!;
-    const isOpponent = entry.seat === Seat.East || entry.seat === Seat.West;
-    if (isOpponent && entry.call.type === "pass") {
-      const auctionBefore: Auction = {
-        entries: defaultAuction.entries.slice(0, i),
-        isComplete: false,
-      };
-      const seat = entry.seat;
-      constraints.push({
-        seat,
-        customCheck: (hand: Hand) => {
-          const evaluation = evaluateHand(hand);
-          const result = opponentStrategy.suggest({
-            hand,
-            auction: auctionBefore,
-            seat,
-            evaluation,
-            opponentConventionIds: [],
-          });
-          return result === null || result.call.type === "pass";
-        },
-      });
-    }
-  }
-  return constraints;
 }
 
 export async function startDrill(
@@ -132,25 +87,8 @@ export async function startDrill(
     }
   }
 
-  // Build opponent constraints — use strategy matching opponent mode
-  let previewAuction = convention.defaultAuction
-    ? convention.defaultAuction(userSeat)
-    : undefined;
-  if (previewAuction && dealerRotated) {
-    previewAuction = rotateAuction(previewAuction);
-  }
-  const opponentStrategy = options?.opponentMode === "none"
-    ? passStrategy
-    : naturalFallbackStrategy;
-  const passConstraints = buildOpponentPassConstraints(
-    previewAuction,
-    opponentStrategy,
-  );
-
-  // Compose: convention's constraints (possibly rotated) + E/W pass constraints
   const constraints: DealConstraints = {
     ...resolvedConstraints,
-    seats: [...resolvedConstraints.seats, ...passConstraints],
     ...(rng ? { rng } : {}),
     ...(seed !== undefined ? { seed } : {}),
   };

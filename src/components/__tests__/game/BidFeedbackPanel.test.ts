@@ -26,7 +26,7 @@ describe("BidFeedbackPanel", () => {
   test("shows answer panel when answer is revealed", async () => {
     const feedback = makeWrongBidFeedback();
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
+      props: { feedback, onRetry: noop },
     });
 
     // Click the show answer button
@@ -41,7 +41,7 @@ describe("BidFeedbackPanel", () => {
   test("does not show fork point conditions when decisionTrace is undefined", async () => {
     const feedback = makeWrongBidFeedback();
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
+      props: { feedback, onRetry: noop },
     });
 
     const showBtn = screen.getByLabelText("Show answer");
@@ -55,7 +55,7 @@ describe("BidFeedbackPanel", () => {
   test("does not show fork point conditions when forkPoint is undefined", async () => {
     const feedback = makeWrongBidFeedback();
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
+      props: { feedback, onRetry: noop },
     });
 
     const showBtn = screen.getByLabelText("Show answer");
@@ -78,7 +78,7 @@ describe("BidFeedbackPanel", () => {
       teachingResolution: null,
     };
     render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop },
+      props: { feedback, onRetry: noop },
     });
 
     expect(screen.getByText("Correct!")).toBeTruthy();
@@ -110,7 +110,7 @@ describe("BidFeedbackPanel", () => {
       },
     };
     render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop },
+      props: { feedback, onRetry: noop },
     });
 
     expect(screen.getByText("Acceptable!")).toBeTruthy();
@@ -136,7 +136,7 @@ describe("BidFeedbackPanel", () => {
       practicalRecommendation,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop },
+      props: { feedback, onRetry: noop },
     });
 
     const note = container.querySelector("[data-testid='practical-note']");
@@ -164,7 +164,7 @@ describe("BidFeedbackPanel", () => {
       practicalRecommendation,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop },
+      props: { feedback, onRetry: noop },
     });
 
     const note = container.querySelector("[data-testid='practical-note']");
@@ -183,7 +183,7 @@ describe("BidFeedbackPanel", () => {
       teachingResolution: null,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop },
+      props: { feedback, onRetry: noop },
     });
 
     const note = container.querySelector("[data-testid='practical-note']");
@@ -209,7 +209,7 @@ describe("BidFeedbackPanel", () => {
       practicalRecommendation,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onContinue: noop, onSkipToReview: noop, onRetry: noop },
+      props: { feedback, onRetry: noop },
     });
 
     // Practical note on incorrect should show without needing to reveal answer

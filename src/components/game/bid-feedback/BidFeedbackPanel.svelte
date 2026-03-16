@@ -9,12 +9,10 @@
 
   interface Props {
     feedback: BidFeedback;
-    onContinue: () => void;
-    onSkipToReview: () => void;
-    onRetry?: () => void;
+    onRetry: () => void;
   }
 
-  let { feedback, onContinue, onSkipToReview, onRetry }: Props = $props();
+  let { feedback, onRetry }: Props = $props();
 
   const practicalRec = $derived(feedback.practicalRecommendation);
   const showPracticalNote = $derived(
@@ -29,7 +27,7 @@
 {:else if feedback.grade === BidGrade.Acceptable}
   <BidFeedbackAcceptable {feedback} {practicalRec} {showPracticalNote} />
 {:else if feedback.grade === BidGrade.NearMiss}
-  <BidFeedbackNearMiss {feedback} {onContinue} {onSkipToReview} {onRetry} {showPracticalNote} {practicalRec} />
+  <BidFeedbackNearMiss {feedback} {onRetry} {showPracticalNote} {practicalRec} />
 {:else}
-  <BidFeedbackIncorrect {feedback} {onContinue} {onSkipToReview} {onRetry} {showPracticalNote} {practicalRec} />
+  <BidFeedbackIncorrect {feedback} {onRetry} {showPracticalNote} {practicalRec} />
 {/if}

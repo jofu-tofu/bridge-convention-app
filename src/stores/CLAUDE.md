@@ -20,7 +20,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | `play.svelte.ts`     | Play sub-store — trick state, AI play loop, score calculation, legal plays                         |
 | `dds.svelte.ts`      | DDS sub-store — async DDS solve with timeout, stale-result guard, generation counter               |
 
-**Game store key methods:** `startDrill`, `userBid`, `dismissBidFeedback`, `skipFromFeedback`, `runAiBids`, `completeAuction`, `getExpectedBid` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `isDefenderPrompt` (declarer prompt); `startPlay`, `userPlayCard`, `runAiPlays`, `completeTrick`, `completePlay`, `skipToReview`, `triggerDDSSolve`, `getLegalPlaysForSeat`, `getRemainingCards` (play). See `game.svelte.ts` for signatures.
+**Game store key methods:** `startDrill`, `userBid`, `retryBid`, `runAiBids`, `completeAuction`, `getExpectedBid` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `isDefenderPrompt` (declarer prompt); `startPlay`, `userPlayCard`, `runAiPlays`, `completeTrick`, `completePlay`, `skipToReview`, `triggerDDSSolve`, `getLegalPlaysForSeat`, `getRemainingCards` (play). See `game.svelte.ts` for signatures.
 
 **Key state:** `effectiveUserSeat` — defaults to South, set to North on declarer swap. Reset by `startDrill()`. `isProcessing` + `playAborted` flags guard AI play loop races.
 
@@ -44,6 +44,10 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 **Play phase entry:** `acceptDeclarerSwap` (when user is dummy and chooses to play as declarer) or `acceptDefend` (when opponent declares and user chooses to defend) or `acceptSouthPlay` (when South declares and user chooses to play).
 
 **AI play behavior:** Heuristic strategy chain (opening leads, second-hand-low, third-hand-high, cover honor, trump management, discard, fallback) with 500ms delay between plays. Falls back to random play if no strategy configured.
+
+## Design Decisions
+
+- **Correct-path-only bidding.** Only the #1 truth-set winner (`BidGrade.Correct`) advances the auction. All other grades (`CorrectNotPreferred`, `Acceptable`, `NearMiss`, `Incorrect`) block with feedback and require retry. Wrong bids are never applied to the auction — the user sees feedback, retries, and the auction state is unchanged. Rationale: convention surfaces are authored for specific auction paths; allowing non-primary bids to proceed creates uncharted pipeline states. `dismissBidFeedback()` and `skipFromFeedback()` were removed; `retryBid()` simply clears feedback (no snapshot rollback needed since the auction was never modified).
 
 ## Gotchas
 

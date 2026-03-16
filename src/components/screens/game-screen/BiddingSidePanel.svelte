@@ -12,9 +12,7 @@
     disabled: boolean;
     isUserTurn: boolean;
     isFeedbackBlocking: boolean;
-    onDismissFeedback: () => void;
-    onSkipToReview: () => void;
-    onRetry?: () => void;
+    onRetry: () => void;
   }
 
   let {
@@ -23,8 +21,6 @@
     disabled,
     isUserTurn,
     isFeedbackBlocking: _isFeedbackBlocking,
-    onDismissFeedback,
-    onSkipToReview,
     onRetry,
   }: Props = $props();
 
@@ -60,8 +56,6 @@
     {#if bidFeedback}
       <BidFeedbackPanel
         feedback={bidFeedback}
-        onContinue={onDismissFeedback}
-        {onSkipToReview}
         {onRetry}
       />
     {/if}

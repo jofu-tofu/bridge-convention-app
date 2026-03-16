@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   startDrill,
-  buildOpponentPassConstraints,
   rotateSeat180,
   rotateDealConstraints,
   rotateAuction,
@@ -11,79 +10,14 @@ import {
   makeDeal,
 } from "../../test-support/engine-stub";
 import { Seat } from "../../engine/types";
-import type { SeatConstraint, DealConstraints } from "../../engine/types";
+import type { DealConstraints, SeatConstraint } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
 import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
 import { ntBundle } from "../../conventions/definitions/nt-bundle";
 import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
-import { passStrategy } from "../../strategy/bidding/pass-strategy";
-import { naturalFallbackStrategy } from "../../strategy/bidding/natural-fallback";
 import { buildAuction } from "../../engine/auction-helpers";
-import { parseHand } from "../../engine/notation";
 import { ConventionCategory } from "../../conventions/core/types";
 import type { ConventionConfig } from "../../conventions/core/types";
-
-describe("buildOpponentPassConstraints", () => {
-  it("returns empty array when defaultAuction is undefined", () => {
-    const result = buildOpponentPassConstraints(undefined, passStrategy);
-    expect(result).toEqual([]);
-  });
-
-  it("returns empty array when auction has no E/W passes", () => {
-    // Auction starts from East, no pass entries from E/W before a bid
-    const auction = buildAuction(Seat.East, ["1NT"]);
-    const result = buildOpponentPassConstraints(auction, passStrategy);
-    expect(result).toEqual([]);
-  });
-
-  it("returns SeatConstraint for East when auction has East pass", () => {
-    // 1NT by North, East passes
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const result = buildOpponentPassConstraints(auction, passStrategy);
-    expect(result).toHaveLength(1);
-    expect(result[0]!.seat).toBe(Seat.East);
-    expect(typeof result[0]!.customCheck).toBe("function");
-  });
-
-  it("passStrategy always accepts any hand (opponents always pass)", () => {
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const constraints = buildOpponentPassConstraints(auction, passStrategy);
-    const check = constraints[0]!.customCheck!;
-
-    // passStrategy always returns pass, so any hand is accepted
-    const anyHand = parseHand([
-      "SA", "SK", "SJ", "S9", "S4",
-      "HK", "H3", "H2",
-      "DQ", "D7", "D5",
-      "C8", "C2",
-    ]);
-    expect(check(anyHand)).toBe(true);
-  });
-
-  it("naturalFallbackStrategy rejects hands that would bid naturally", () => {
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const constraints = buildOpponentPassConstraints(auction, naturalFallbackStrategy);
-    const check = constraints[0]!.customCheck!;
-
-    // Strong hand with 5-card suit: 12 HCP, 5 spades → would bid, so rejected
-    const strongHand = parseHand([
-      "SA", "SK", "SQ", "SJ", "S9",
-      "HK", "H3",
-      "DQ", "D7", "D5",
-      "C8", "C4", "C2",
-    ]);
-    expect(check(strongHand)).toBe(false);
-
-    // Weak hand: 3 HCP, no 5-card suit → would pass, so accepted
-    const weakHand = parseHand([
-      "S9", "S8", "S4",
-      "H7", "H5", "H3", "H2",
-      "DQ", "D7", "D5",
-      "C8", "C4", "C2",
-    ]);
-    expect(check(weakHand)).toBe(true);
-  });
-});
 
 describe("startDrill", () => {
   beforeEach(() => {
@@ -104,25 +38,6 @@ describe("startDrill", () => {
     expect(bundle.deal).toBe(deal);
     expect(bundle.session).toBeDefined();
     expect(typeof bundle.session.getNextBid).toBe("function");
-  });
-
-  it("includes opponent pass constraints in generateDeal call", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
-
-    await startDrill(engine, ntBundleConventionConfig, Seat.South);
-
-    const constraints = generateDeal.mock.calls[0]![0];
-    // ntBundle has defaultAuction with East pass, so seats should include
-    // the convention's own constraints PLUS the opponent pass constraint
-    expect(constraints.seats.length).toBeGreaterThan(
-      ntBundleConventionConfig.dealConstraints.seats.length,
-    );
-    const eastConstraint = constraints.seats.find(
-      (s: SeatConstraint) => s.seat === Seat.East,
-    );
-    expect(eastConstraint).toBeDefined();
-    expect(typeof eastConstraint!.customCheck).toBe("function");
   });
 
   it("includes initialAuction from convention.defaultAuction when defined", async () => {
@@ -164,7 +79,7 @@ describe("startDrill", () => {
     expect(bundle.initialAuction).toBeUndefined();
   });
 
-  it("does not add opponent constraints when convention has no defaultAuction", async () => {
+  it("passes convention constraints directly to generateDeal", async () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
 
@@ -177,7 +92,6 @@ describe("startDrill", () => {
     await startDrill(engine, config, Seat.South);
 
     const constraints = generateDeal.mock.calls[0]![0];
-    // Without defaultAuction, seats should match convention's own constraints exactly
     expect(constraints.seats).toEqual(config.dealConstraints.seats);
   });
 

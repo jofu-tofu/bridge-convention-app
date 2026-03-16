@@ -16,8 +16,6 @@
     disabled: boolean;
     isUserTurn: boolean;
     isFeedbackBlocking: boolean;
-    onDismissFeedback: () => void;
-    onSkipToReview: () => void;
     onRetry: () => void;
   }
 
@@ -36,8 +34,6 @@
     disabled,
     isUserTurn,
     isFeedbackBlocking,
-    onDismissFeedback,
-    onSkipToReview,
     onRetry,
   }: Props = $props();
 </script>
@@ -64,8 +60,6 @@
       {disabled}
       {isUserTurn}
       {isFeedbackBlocking}
-      {onDismissFeedback}
-      {onSkipToReview}
       {onRetry}
     />
   </aside>

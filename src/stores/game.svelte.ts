@@ -511,9 +511,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
 
     // Bidding actions — delegated to bidding sub-store
     userBid: bidding.userBid,
-    dismissBidFeedback: bidding.dismissBidFeedback,
     retryBid: bidding.retryBid,
-    skipFromFeedback: bidding.skipFromFeedback,
     getExpectedBid: bidding.getExpectedBid,
     getDebugSnapshot: bidding.getDebugSnapshot,
 

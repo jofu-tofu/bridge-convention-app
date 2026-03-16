@@ -47,7 +47,13 @@
       const call = result?.call ?? { type: "pass" as const };
       raf = requestAnimationFrame(() => gameStore.userBid(call));
     } else if (phase === "BIDDING" && feedback) {
-      raf = requestAnimationFrame(() => gameStore.dismissBidFeedback());
+      // Correct-path-only: auto-retry then re-bid the correct answer
+      raf = requestAnimationFrame(() => {
+        gameStore.retryBid();
+        const result = gameStore.getExpectedBid();
+        const call = result?.call ?? { type: "pass" as const };
+        gameStore.userBid(call);
+      });
     } else if (phase === "DECLARER_PROMPT") {
       raf = requestAnimationFrame(() => gameStore.declinePrompt());
     }
@@ -239,8 +245,6 @@
         disabled={!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback}
         isUserTurn={gameStore.isUserTurn}
         isFeedbackBlocking={gameStore.isFeedbackBlocking}
-        onDismissFeedback={() => gameStore.dismissBidFeedback()}
-        onSkipToReview={() => gameStore.skipFromFeedback()}
         onRetry={() => gameStore.retryBid()}
       />
     {:else if gameStore.phase === "DECLARER_PROMPT" && gameStore.contract}

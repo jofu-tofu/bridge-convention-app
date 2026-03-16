@@ -81,7 +81,7 @@ components/
 
 - **Viewport lock:** `html`, `body`, `#app` use `overflow: clip` in `app.css` to prevent page-level scrolling. Side panels scroll internally.
 - **Autoplay effect:** GameScreen has a DEV-only `$effect` for `?autoplay=true` that uses `requestAnimationFrame` to defer actions per frame (not `tick()` which causes infinite microtask loops, not `setTimeout` which is a real timer).
-- **Store methods:** `userBid`, `userPlayCard`, `dismissBidFeedback`, `skipFromFeedback`, `skipToReview` return `void` (safe for onclick). Only `startDrill` and `getLegalPlaysForSeat` return Promises.
+- **Store methods:** `userBid`, `userPlayCard`, `retryBid`, `skipToReview` return `void` (safe for onclick). Only `startDrill` and `getLegalPlaysForSeat` return Promises.
 - GameScreen routes phases to extracted pure components (BiddingPhase, DeclarerPromptPhase, PlayingPhase, ExplanationPhase). GameScreen owns the legal-plays `$effect`.
 - BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/core/display/seat-mapping.ts`, not CSS rotation.
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.

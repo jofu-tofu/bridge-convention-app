@@ -16,14 +16,12 @@
 
   interface Props {
     feedback: BidFeedback;
-    onContinue: () => void;
-    onSkipToReview: () => void;
-    onRetry?: () => void;
+    onRetry: () => void;
     showPracticalNote: boolean;
     practicalRec: BidFeedback['practicalRecommendation'];
   }
 
-  let { feedback, onContinue, onSkipToReview, onRetry, showPracticalNote, practicalRec }: Props = $props();
+  let { feedback, onRetry, showPracticalNote, practicalRec }: Props = $props();
 
   let showAnswer = $state(false);
   let showDecisionSpace = $state(false);
@@ -117,17 +115,15 @@
     </div>
     <div class="flex items-center gap-1">
       <!-- Try Again (redo) -->
-      {#if onRetry}
-        <button
-          type="button"
-          class="p-1.5 rounded hover:bg-red-800/50 text-red-300 hover:text-red-100 transition-colors cursor-pointer"
-          onclick={onRetry}
-          title="Try Again"
-          aria-label="Try again"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-        </button>
-      {/if}
+      <button
+        type="button"
+        class="p-1.5 rounded hover:bg-red-800/50 text-red-300 hover:text-red-100 transition-colors cursor-pointer"
+        onclick={onRetry}
+        title="Try Again"
+        aria-label="Try again"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      </button>
       <!-- Show/Hide Answer (eye toggle) -->
       <button
         type="button"
@@ -141,26 +137,6 @@
         {:else}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         {/if}
-      </button>
-      <!-- Continue (forward arrow) -->
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-red-800/50 text-red-300 hover:text-red-100 transition-colors cursor-pointer"
-        onclick={onContinue}
-        title="Continue"
-        aria-label="Continue"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
-      </button>
-      <!-- Skip to Review (skip-forward) -->
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-red-800/50 text-red-400/50 hover:text-red-200 transition-colors cursor-pointer"
-        onclick={onSkipToReview}
-        title="Skip to Review"
-        aria-label="Skip to review"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
       </button>
     </div>
   </div>

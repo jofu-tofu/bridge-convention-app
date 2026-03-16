@@ -179,66 +179,55 @@ describe("game store DDS state", () => {
     expect(store.ddsError).toBeNull();
   });
 
-  it("triggers DDS solve after skipFromFeedback completes the auction", async () => {
+  it("wrong bid does not advance auction when convention is active (correct-path-only)", async () => {
     const solveDeal = vi.fn().mockResolvedValue(fakeDDSolution);
-    let auctionLength = 0;
     const engine = createStubEngine({
       solveDeal,
-      async addCall(auction, entry) {
-        const newEntries = [...auction.entries, entry];
-        auctionLength = newEntries.length;
-        return {
-          entries: newEntries,
-          // Auction completes after 4 passes (N, E, S, W all pass)
-          isComplete: newEntries.length >= 4,
-        };
-      },
       async isAuctionComplete(auction) {
         return auction.entries.length >= 4;
-      },
-      async getContract() {
-        // Return a contract once auction is complete
-        return auctionLength >= 4
-          ? {
-              level: 1 as const,
-              strain: BidSuit.NoTrump,
-              doubled: false,
-              redoubled: false,
-              declarer: Seat.North,
-            }
-          : null;
       },
     });
     const store = createGameStore(engine);
 
-    // Start drill with dealer=North. AI bids N(pass), E(pass), then it's user's turn (S).
+    // Strategy that always suggests pass — any non-pass bid is wrong
+    const strategy = {
+      id: "test", name: "Test",
+      getLastPracticalRecommendation() { return null; },
+      getAcceptableAlternatives() { return undefined; },
+      getIntentFamilies() { return undefined; },
+      getLastProvenance() { return null; },
+      getLastArbitration() { return null; },
+      getLastPosteriorSummary() { return null; },
+      getExplanationCatalog() { return undefined; },
+      getLastTeachingProjection() { return null; },
+      getLastFacts() { return null; },
+      getLastMachineSnapshot() { return null; },
+      suggest() { return { call: { type: "pass" as const }, ruleName: null, explanation: "Pass" }; },
+    };
+
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
-    const startPromise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+    const startPromise = store.startDrill({ deal, session, strategy, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(1200);
     await startPromise;
 
-    // User makes a wrong bid (anything triggers feedback since session strategy says pass)
+    // User makes a wrong bid (strategy says pass)
     expect(store.phase).toBe("BIDDING");
     await store.userBid({ type: "bid", level: 1, strain: BidSuit.Clubs });
     await vi.advanceTimersByTimeAsync(600);
 
-    // Should have feedback showing
+    // Should have feedback showing, auction not advanced
     expect(store.bidFeedback).not.toBeNull();
+    expect(store.phase).toBe("BIDDING");
 
-    // Skip from feedback — should complete auction and trigger DDS
-    const skipPromise = store.skipFromFeedback();
-    // Advance timers past AI bid delays (runAiBids uses 300ms delays)
-    await vi.advanceTimersByTimeAsync(1200);
-    await skipPromise;
+    // Retry clears feedback, user can try again
+    store.retryBid();
+    await vi.advanceTimersByTimeAsync(100);
 
-    expect(store.phase).toBe("EXPLANATION");
-    expect(store.contract).not.toBeNull();
-    expect(solveDeal).toHaveBeenCalledWith(deal);
-
-    // Flush for DDS resolve
-    await vi.advanceTimersByTimeAsync(0);
-    expect(store.ddsSolution).toEqual(fakeDDSolution);
+    expect(store.bidFeedback).toBeNull();
+    expect(store.isUserTurn).toBe(true);
+    // DDS was never triggered
+    expect(solveDeal).not.toHaveBeenCalled();
   });
 
   it("times out after 10 seconds", async () => {
