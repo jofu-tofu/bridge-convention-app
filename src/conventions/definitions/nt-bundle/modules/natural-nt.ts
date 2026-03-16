@@ -365,6 +365,27 @@ const NT_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
   },
 ];
 
+// ─── Terminal pass surface (auction settled — intentional pass) ───
+
+const TERMINAL_PASS_SURFACE: readonly MeaningSurface[] = [
+  {
+    meaningId: "bridge:terminal-pass",
+    semanticClassId: "bridge:terminal-pass",
+    moduleId: "natural-nt",
+    encoding: { defaultCall: { type: "pass" } },
+    clauses: [],
+    ranking: {
+      recommendationBand: "must",
+      specificity: 0,
+      modulePrecedence: 0,
+      intraModuleOrder: 0,
+    },
+    priorityClass: "neutralCorrect",
+    sourceIntent: { type: "TerminalPass", params: {} },
+    teachingLabel: "Pass (auction complete)",
+  },
+];
+
 // ─── Module assembly ─────────────────────────────────────────
 
 export const naturalNtModule: ConventionModule = {
@@ -374,6 +395,7 @@ export const naturalNtModule: ConventionModule = {
 
   surfaceGroups: [
     { groupId: "opener-1nt", surfaces: OPENER_1NT_SURFACE },
+    { groupId: "terminal-pass", surfaces: TERMINAL_PASS_SURFACE },
   ],
 
   entryTransitions: NT_R1_TRANSITIONS,

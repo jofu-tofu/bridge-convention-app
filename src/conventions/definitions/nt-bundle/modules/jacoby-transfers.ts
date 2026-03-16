@@ -431,6 +431,21 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     parentId: "nt-opened",
     transitions: [
       {
+        transitionId: "r3-4h-game",
+        match: { kind: "call", level: 4, strain: BidSuit.Hearts },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-3nt-hearts",
+        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-2nt-invite-hearts",
+        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
+      {
         transitionId: "r3-pass-wait-th",
         match: { kind: "pass" },
         target: "responder-r3-transfer-hearts",
@@ -443,6 +458,21 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     stateId: "responder-r3-transfer-spades",
     parentId: "nt-opened",
     transitions: [
+      {
+        transitionId: "r3-4s-game",
+        match: { kind: "call", level: 4, strain: BidSuit.Spades },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-3nt-spades",
+        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-2nt-invite-spades",
+        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
       {
         transitionId: "r3-pass-wait-ts",
         match: { kind: "pass" },

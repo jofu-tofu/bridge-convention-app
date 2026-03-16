@@ -56,7 +56,14 @@ export const NT_SKELETON: BundleSkeleton = {
     {
       stateId: "terminal",
       parentId: "nt-opened",
-      transitions: [],
+      transitions: [
+        {
+          transitionId: "terminal-absorb",
+          match: { kind: "pass" },
+          target: "terminal",
+        },
+      ],
+      surfaceGroupId: "terminal-pass",
     },
     {
       stateId: "nt-contested",

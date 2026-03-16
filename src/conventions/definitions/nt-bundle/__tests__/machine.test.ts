@@ -216,6 +216,40 @@ describe("createNtConversationMachine", () => {
     );
   });
 
+  it("1NT-P-2C-P-2S-P-2NT transitions to terminal (R3 bid absorbed)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT", "P", "2C", "P", "2S", "P", "2NT",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe("terminal");
+    expect(result.activeSurfaceGroupIds).toContain("terminal-pass");
+  });
+
+  it("1NT-P-2C-P-2H-P-4H transitions to terminal (game bid)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT", "P", "2C", "P", "2H", "P", "4H",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe("terminal");
+  });
+
+  it("1NT-P-2D-P-2H-P-3NT transitions to terminal (transfer R3 game)", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT", "P", "2D", "P", "2H", "P", "3NT",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe("terminal");
+  });
+
+  it("terminal state absorbs passes and stays terminal", () => {
+    const auction = buildAuction(Seat.North, [
+      "1NT", "P", "2C", "P", "2S", "P", "2NT", "P",
+    ]);
+    const result = evaluateMachine(machine, auction, Seat.South);
+    expect(result.context.currentStateId).toBe("terminal");
+    expect(result.activeSurfaceGroupIds).toContain("terminal-pass");
+  });
+
   it("interference: 1NT-X produces competitionMode Doubled", () => {
     // North=1NT, East=X
     const auction = buildAuction(Seat.North, ["1NT", "X"]);

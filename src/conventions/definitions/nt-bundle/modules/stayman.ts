@@ -593,6 +593,26 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
     parentId: "nt-opened",
     transitions: [
       {
+        transitionId: "r3-4h-game",
+        match: { kind: "call", level: 4, strain: BidSuit.Hearts },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-3h-invite",
+        match: { kind: "call", level: 3, strain: BidSuit.Hearts },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-3nt-no-fit",
+        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-2nt-invite-no-fit",
+        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
+      {
         transitionId: "r3-pass-wait-2h",
         match: { kind: "pass" },
         target: "responder-r3-stayman-2h",
@@ -604,6 +624,26 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
     stateId: "responder-r3-stayman-2s",
     parentId: "nt-opened",
     transitions: [
+      {
+        transitionId: "r3-4s-game",
+        match: { kind: "call", level: 4, strain: BidSuit.Spades },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-3s-invite",
+        match: { kind: "call", level: 3, strain: BidSuit.Spades },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-3nt-no-fit-s",
+        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-2nt-invite-no-fit-s",
+        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
+        target: "terminal",
+      },
       {
         transitionId: "r3-pass-wait-2s",
         match: { kind: "pass" },
