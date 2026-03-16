@@ -25,7 +25,10 @@ export interface InferredHoldings {
   readonly isBalanced: boolean | undefined;
 }
 
-/** Belief data for convention pipeline. Per-seat HCP ranges and suit length ranges. */
+/**
+ * @deprecated Use PosteriorQueryPort (from posterior-query.ts) for modern belief queries.
+ * Legacy belief data for convention pipeline. Per-seat HCP ranges and suit length ranges.
+ */
 export interface BeliefData {
   readonly beliefs: Record<Seat, {
     readonly hcpRange: NumberRange;

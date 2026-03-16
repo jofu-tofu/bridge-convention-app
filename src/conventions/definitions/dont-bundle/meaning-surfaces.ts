@@ -1,11 +1,7 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { BidSuit } from "../../../engine/types";
-import type { Call } from "../../../engine/types";
 import { DONT_CLASSES } from "./semantic-classes";
-
-function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
-  return { type: "bid", level, strain };
-}
+import { bid } from "../../core/surface-helpers";
 
 // ─── R1: Overcaller initial action (after opponent's 1NT) ───
 //

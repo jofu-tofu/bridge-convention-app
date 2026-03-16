@@ -1,6 +1,6 @@
 import type { AuctionPatternIR, PublicGuardIR } from "./predicate-surfaces";
 import type { CandidateTransform, SemanticClassId, RecommendationBand } from "./meaning";
-import type { FactOperator } from "./meaning-surface";
+import type { FactOperator } from "./meaning";
 import type { Call } from "../../engine/types";
 
 // ─── Module classification ──────────────────────────────────
@@ -84,7 +84,7 @@ export interface SystemProfileIR {
   readonly priorityClassMapping?: Readonly<Record<PriorityClass, RecommendationBand>>;
 }
 
-interface ModuleEntryIR {
+export interface ModuleEntryIR {
   readonly moduleId: string;
   readonly kind: ModuleKind;
   readonly attachments: readonly AttachmentIR[];

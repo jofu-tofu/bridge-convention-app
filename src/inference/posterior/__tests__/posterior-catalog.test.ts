@@ -36,9 +36,9 @@ function makeMockSeatPosterior(probabilities: Record<string, number>): SeatPoste
 }
 
 describe("createPosteriorFactEvaluators", () => {
-  it("returns map with exactly 3 entries by default, keys matching SHARED_POSTERIOR_FACT_IDS", () => {
+  it("returns map with exactly 5 entries by default, keys matching SHARED_POSTERIOR_FACT_IDS", () => {
     const evaluators = createPosteriorFactEvaluators();
-    expect(evaluators.size).toBe(3);
+    expect(evaluators.size).toBe(5);
     for (const id of SHARED_POSTERIOR_FACT_IDS) {
       expect(evaluators.has(id)).toBe(true);
     }

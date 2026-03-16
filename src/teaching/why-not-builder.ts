@@ -22,7 +22,7 @@ import type {
   ExplanationNode,
 } from "../core/contracts/teaching-projection";
 
-import type { PedagogicalRelation } from "../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../core/contracts/teaching-projection";
 
 import type { PedagogicalGraph } from "./pedagogical-graph";
 import { findRelationsFor } from "./pedagogical-graph";

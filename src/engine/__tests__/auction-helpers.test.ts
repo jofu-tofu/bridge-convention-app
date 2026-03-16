@@ -7,8 +7,8 @@ import {
   seatBidCount,
   auctionMatchesExact,
   parsePatternCall,
+  buildAuction as auctionFromBids,
 } from "../auction-helpers";
-import { auctionFromBids } from "../../conventions/__tests__/fixtures";
 
 describe("lastContractBid", () => {
   test("returns most recent contract bid, ignoring passes", () => {

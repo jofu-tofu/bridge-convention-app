@@ -1,19 +1,7 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { BidSuit } from "../../../engine/types";
-import type { Call } from "../../../engine/types";
 import { BERGEN_CLASSES } from "./semantic-classes";
-
-function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
-  return { type: "bid", level, strain };
-}
-
-function suitToBidSuit(suit: "hearts" | "spades"): BidSuit {
-  return suit === "hearts" ? BidSuit.Hearts : BidSuit.Spades;
-}
-
-function otherMajorBidSuit(suit: "hearts" | "spades"): BidSuit {
-  return suit === "hearts" ? BidSuit.Spades : BidSuit.Hearts;
-}
+import { bid, suitToBidSuit, otherMajorBidSuit } from "../../core/surface-helpers";
 
 /**
  * Create the 5 Bergen Raises R1 surfaces for a given major suit.

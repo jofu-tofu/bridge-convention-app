@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { MeaningSurface, MeaningSurfaceClause } from "../meaning-surface";
+import type { MeaningSurface, MeaningSurfaceClause } from "../meaning";
 import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
 

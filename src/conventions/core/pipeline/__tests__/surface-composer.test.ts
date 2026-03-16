@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { composeSurfaces, mergeUpstreamProvenance } from "../surface-composer";
 import type { CandidateTransform } from "../../../../core/contracts/meaning";
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { ArbitrationResult, SurfaceCompositionDiagnostic } from "../../../../core/contracts/module-surface";
 import { BidSuit } from "../../../../engine/types";
 
@@ -99,7 +99,7 @@ describe("composeSurfaces", () => {
     expect(result.composedSurfaces[0]!.meaningId).toBe("b");
   });
 
-  it("records appliedTransforms with affectedMeaningIds", () => {
+  it("records appliedTransforms with affectedIds", () => {
     const surfaces = [
       makeSurface({ meaningId: "target" }),
       makeSurface({ meaningId: "safe" }),
@@ -109,7 +109,7 @@ describe("composeSurfaces", () => {
     expect(result.appliedTransforms).toHaveLength(1);
     expect(result.appliedTransforms[0]!.kind).toBe("suppress");
     expect(result.appliedTransforms[0]!.targetId).toBe("target");
-    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["target"]);
+    expect(result.appliedTransforms[0]!.affectedIds).toEqual(["target"]);
   });
 
   it("suppress by semanticClassId records all affected meaningIds", () => {
@@ -122,7 +122,7 @@ describe("composeSurfaces", () => {
 
     expect(result.composedSurfaces).toHaveLength(1);
     expect(result.appliedTransforms).toHaveLength(1);
-    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["a", "b"]);
+    expect(result.appliedTransforms[0]!.affectedIds).toEqual(["a", "b"]);
   });
 
   it("logs diagnostic for unrecognized transform kind", () => {
@@ -223,7 +223,7 @@ describe("composeSurfaces", () => {
     expect(result.appliedTransforms).toHaveLength(1);
     expect(result.appliedTransforms[0]!.kind).toBe("inject");
     expect(result.appliedTransforms[0]!.targetId).toBe("injected:new");
-    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["injected:new"]);
+    expect(result.appliedTransforms[0]!.affectedIds).toEqual(["injected:new"]);
   });
 
   it("inject transform without surface field emits diagnostic", () => {
@@ -284,7 +284,7 @@ describe("composeSurfaces", () => {
     expect(kept.encoding.defaultCall).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
     expect(result.appliedTransforms).toHaveLength(1);
     expect(result.appliedTransforms[0]!.kind).toBe("remap");
-    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["remap:target"]);
+    expect(result.appliedTransforms[0]!.affectedIds).toEqual(["remap:target"]);
   });
 
   it("remap transform by semanticClassId applies to all matching surfaces", () => {
@@ -320,7 +320,7 @@ describe("composeSurfaces", () => {
     expect(remappedA.encoding.defaultCall).toEqual({ type: "bid", level: 3, strain: BidSuit.NoTrump });
     expect(remappedB.encoding.defaultCall).toEqual({ type: "bid", level: 3, strain: BidSuit.NoTrump });
     expect(result.appliedTransforms).toHaveLength(1);
-    expect(result.appliedTransforms[0]!.affectedMeaningIds).toEqual(["a", "b"]);
+    expect(result.appliedTransforms[0]!.affectedIds).toEqual(["a", "b"]);
   });
 
   it("remap on non-existent target emits warning diagnostic", () => {
@@ -456,7 +456,7 @@ describe("mergeUpstreamProvenance", () => {
       targetId: "target:bid",
       sourceModuleId: "mod",
       reason: "test reason",
-      affectedMeaningIds: ["target:bid"],
+      affectedIds: ["target:bid"],
     }];
 
     const merged = mergeUpstreamProvenance(baseResult, transforms);
@@ -464,7 +464,7 @@ describe("mergeUpstreamProvenance", () => {
     expect(merged.provenance!.transforms).toHaveLength(1);
     expect(merged.provenance!.transforms[0]!.transformId).toBe("t1");
     expect(merged.provenance!.transforms[0]!.kind).toBe("suppress");
-    expect(merged.provenance!.transforms[0]!.affectedCandidateIds).toEqual(["target:bid"]);
+    expect(merged.provenance!.transforms[0]!.affectedIds).toEqual(["target:bid"]);
   });
 
   it("preserves existing provenance fields", () => {
@@ -482,7 +482,7 @@ describe("mergeUpstreamProvenance", () => {
       targetId: "x",
       sourceModuleId: "mod",
       reason: "r",
-      affectedMeaningIds: [],
+      affectedIds: [],
     }]);
 
     expect(merged.provenance!.activation).toHaveLength(1);
@@ -504,7 +504,7 @@ describe("mergeUpstreamProvenance", () => {
       targetId: "x",
       sourceModuleId: "mod",
       reason: "r",
-      affectedMeaningIds: ["x"],
+      affectedIds: ["x"],
     }]);
 
     expect(merged.provenance!.transforms).toHaveLength(1);

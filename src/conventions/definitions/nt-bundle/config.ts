@@ -1,4 +1,4 @@
-import type { ConventionBundle } from "../../core/bundle";
+import { createBundle } from "../../core/bundle";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
@@ -30,7 +30,7 @@ const ntDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-export const ntBundle: ConventionBundle = {
+export const ntBundle = createBundle({
   id: "nt-bundle",
   name: "1NT Response Bundle",
   description: "Stayman + Jacoby Transfers responses to 1NT opening",
@@ -55,4 +55,4 @@ export const ntBundle: ConventionBundle = {
   explanationCatalog: composed.explanationCatalog,
   pedagogicalRelations: composed.pedagogicalRelations,
   acceptableAlternatives: ntCrossConventionAlternatives,
-};
+});

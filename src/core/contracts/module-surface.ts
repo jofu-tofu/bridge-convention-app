@@ -2,8 +2,8 @@ import type { Call } from "../../engine/types";
 import type { CandidateEligibility } from "./tree-evaluation";
 import type { ForcingState } from "./bidding";
 import type { MeaningProposal, TransformTrace } from "./meaning";
-import type { DecisionProvenance } from "./provenance";
-import type { MeaningSurface } from "./meaning-surface";
+import type { DecisionProvenance, TransformTraceEntry } from "./provenance";
+import type { MeaningSurface } from "./meaning";
 import type { PublicEvent, PublicConstraint } from "./agreement-module";
 import type { LatentBranchSet } from "./posterior";
 import type { EvidenceBundleIR } from "./evidence-bundle";
@@ -79,9 +79,7 @@ export interface SurfaceEvaluationResult {
 }
 
 /** Record of a single transform applied during surface composition. */
-export interface TransformApplication extends TransformTrace {
-  readonly affectedMeaningIds: readonly string[];
-}
+export type TransformApplication = TransformTraceEntry;
 
 /** Diagnostic emitted during surface composition. */
 export interface SurfaceCompositionDiagnostic {

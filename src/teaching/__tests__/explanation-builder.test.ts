@@ -54,7 +54,7 @@ function makeProposal(overrides: Partial<MeaningProposal> = {}): MeaningProposal
     ranking: makeRanking(),
     evidence: {
       factDependencies: ["hand.hcp"],
-      evaluatedConditions: [{ name: "hand.hcp", passed: true, description: "HCP >= 15" }],
+      evaluatedConditions: [{ conditionId: "hand.hcp", satisfied: true, description: "HCP >= 15" }],
       provenance: { moduleId: "stayman", nodeName: "ask-major", origin: "tree" },
     },
     sourceIntent: { type: "AskForMajor", params: {} },

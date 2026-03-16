@@ -4,7 +4,7 @@ import type {
   EliminationRecord,
 } from "../../../core/contracts/module-surface";
 import type { Call } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type {
   DecisionProvenance,
   EliminationTrace,
@@ -25,14 +25,7 @@ import type {
 } from "../../../core/contracts/evidence-bundle";
 import type { DeclaredEncoderKind } from "../../../core/contracts/agreement-module";
 import type { EncoderConfig } from "./encoder-resolver";
-
-/** Format a Call as a human-readable string for evidence output. */
-function formatCallForEvidence(call: Call): string {
-  if (call.type !== "bid") {
-    return call.type.charAt(0).toUpperCase() + call.type.slice(1);
-  }
-  return `${call.level}${call.strain}`;
-}
+import { formatCallForEvidence } from "../../../engine/call-helpers";
 
 /** Input to the arbitrator: a proposal paired with the surface it came from. */
 export interface ArbitrationInput {

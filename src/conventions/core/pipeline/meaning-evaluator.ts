@@ -1,21 +1,21 @@
 import type {
   MeaningSurface,
   MeaningSurfaceClause,
-} from "../../../core/contracts/meaning-surface";
+} from "../../../core/contracts/meaning";
 import type {
   MeaningProposal,
   MeaningClause,
   MeaningEvaluationEvidence,
   RankingMetadata,
-  RecommendationBand,
 } from "../../../core/contracts/meaning";
 import type {
   EvaluatedFacts,
   FactValue,
 } from "../../../core/contracts/fact-catalog";
 import { getFactValue } from "../../../core/contracts/fact-catalog";
-import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
+import type { DecisionSurfaceIR } from "../../../core/contracts/agreement-module";
 import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
+import { priorityClassToBand } from "./priority-mapping";
 
 /**
  * Resolve an author-declared priority class to a runtime recommendation band.
@@ -157,8 +157,8 @@ export function evaluateMeaningSurface(
     evaluatedConditions: evaluatedClauses.map((clause, i) => {
       const sourceClause = surface.clauses[i];
       return {
-        name: sourceClause?.clauseId ?? clause.factId,
-        passed: clause.satisfied,
+        conditionId: sourceClause?.clauseId ?? clause.factId,
+        satisfied: clause.satisfied,
         description: clause.description,
         conditionRole: "semantic" as const,
       };
@@ -214,26 +214,6 @@ function isMeaningSurface(
 }
 
 /**
- * Map PriorityClass back to RecommendationBand for building RankingMetadata
- * from a DecisionSurfaceIR.
- */
-function priorityClassToBand(pc: PriorityClass | undefined): RecommendationBand {
-  switch (pc) {
-    case "obligatory":
-      return "must";
-    case "preferredConventional":
-    case "preferredNatural":
-      return "should";
-    case "neutralCorrect":
-      return "may";
-    case "fallbackCorrect":
-      return "avoid";
-    default:
-      return "should";
-  }
-}
-
-/**
  * Evaluate a DecisionSurfaceIR against facts.
  *
  * When the surface has `inlineClauses` and `decisionProgram === "clause-evaluator"`,
@@ -279,8 +259,8 @@ function evaluateDecisionSurface(
   const evidence: MeaningEvaluationEvidence = {
     factDependencies: clauses.map((c) => c.factId),
     evaluatedConditions: clauses.map((c) => ({
-      name: c.factId,
-      passed: c.satisfied,
+      conditionId: c.factId,
+      satisfied: c.satisfied,
       description: c.description,
     })),
     provenance: {

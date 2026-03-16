@@ -7,7 +7,7 @@ import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation"
 import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import { formatHandSummary } from "../../core/display/hand-summary";

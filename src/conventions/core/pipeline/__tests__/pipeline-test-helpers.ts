@@ -39,7 +39,7 @@ export function makeMeaningProposal(
     ranking: makeRanking(),
     evidence: {
       factDependencies: ["hand.hcp"],
-      evaluatedConditions: [{ name: "hcp", passed: allSatisfied, description: "8+ HCP" }],
+      evaluatedConditions: [{ conditionId: "hcp", satisfied: allSatisfied, description: "8+ HCP" }],
       provenance: { moduleId: "test", nodeName: "test-node", origin: "tree" },
     },
     sourceIntent: { type: "test-intent", params: {} },

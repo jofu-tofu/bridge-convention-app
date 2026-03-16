@@ -110,8 +110,8 @@ describe("MeaningProposal", () => {
         factDependencies: ["hand.hcp"],
         evaluatedConditions: [
           {
-            name: "hasEnoughHCP",
-            passed: true,
+            conditionId: "hasEnoughHCP",
+            satisfied: true,
             description: "HCP >= 8",
             conditionRole: "semantic",
           },

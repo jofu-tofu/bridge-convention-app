@@ -18,7 +18,7 @@ import { createBiddingContext } from "../../core/context-factory";
 import { ForcingState } from "../../../core/contracts/bidding";
 
 // ── Meaning types ────────────────────────────────────────────
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type {
   MeaningProposal,
   CandidateTransform,
@@ -575,7 +575,7 @@ export function makeArbitrationInput(
     },
     evidence: {
       factDependencies: ["hand.hcp"],
-      evaluatedConditions: [{ name: "hcp", passed: allSatisfied, description: "8+ HCP" }],
+      evaluatedConditions: [{ conditionId: "hcp", satisfied: allSatisfied, description: "8+ HCP" }],
       provenance: { moduleId: "synth-module", nodeName: "synth-test", origin: "tree" },
     },
     sourceIntent: { type: "synth-intent", params: {} },

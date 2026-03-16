@@ -6,7 +6,7 @@ import {
 } from "../commitment-extractor";
 import type { Auction, Call } from "../../../../engine/types";
 import { Seat } from "../../../../engine/types";
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { ChoiceClosurePolicy } from "../../../../core/contracts/agreement-module";
 
 describe("formatCallString", () => {

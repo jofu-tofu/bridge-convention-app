@@ -143,6 +143,22 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     metadata: { inferable: true, explainable: true },
   },
   {
+    id: "bridge.partnerHas4DiamondsLikely",
+    layer: "bridge-derived",
+    world: "acting-hand",
+    description: "Posterior probability that partner has 4+ diamonds",
+    valueType: "number",
+    metadata: { inferable: true, explainable: true },
+  },
+  {
+    id: "bridge.partnerHas4ClubsLikely",
+    layer: "bridge-derived",
+    world: "acting-hand",
+    description: "Posterior probability that partner has 4+ clubs",
+    valueType: "number",
+    metadata: { inferable: true, explainable: true },
+  },
+  {
     id: "bridge.combinedHcpInRangeLikely",
     layer: "bridge-derived",
     world: "acting-hand",

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { meaningBundleToStrategy, buildSurfacesFromEvaluation } from "../bidding/meaning-strategy";
 import type { RuntimeModule, EvaluationResult } from "../../conventions/core/runtime/types";
-import type { MeaningSurface } from "../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { MachineState } from "../../conventions/core/runtime/machine-types";
 import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";

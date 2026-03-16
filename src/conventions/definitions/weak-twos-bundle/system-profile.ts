@@ -1,9 +1,7 @@
-import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
+import { createSaycProfile } from "../../core/profile-builder";
 
-export const WEAK_TWO_PROFILE: SystemProfileIR = {
+export const WEAK_TWO_PROFILE = createSaycProfile({
   profileId: "weak-two-sayc",
-  baseSystem: "sayc",
   modules: [
     {
       moduleId: "weak-two",
@@ -21,6 +19,4 @@ export const WEAK_TWO_PROFILE: SystemProfileIR = {
       ],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
-  priorityClassMapping: defaultPriorityClassMapping(),
-};
+});

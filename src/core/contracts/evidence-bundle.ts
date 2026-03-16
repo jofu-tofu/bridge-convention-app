@@ -1,22 +1,32 @@
 /**
  * Evidence types for decision program representations.
  *
- * ConditionEvidenceIR is the canonical evidence type for all pipeline
- * provenance and evidence bundles.
+ * ConditionResult is the shared base for all "did a condition pass?"
+ * shapes across evidence, teaching, and pipeline types.
+ *
+ * ConditionEvidenceIR extends it as the canonical evidence type for
+ * pipeline provenance and evidence bundles.
  */
 
 /** Role a condition plays in the evaluation pipeline. */
 export type ConditionRole = "semantic" | "inferential" | "pedagogical" | "routing";
 
-/** Evidence for a single condition evaluation. */
-export interface ConditionEvidenceIR {
-  readonly conditionId: string;
+/** Base condition evaluation result — shared across evidence, teaching, and pipeline types. */
+export interface ConditionResult {
+  readonly conditionId?: string;
   readonly factId?: string;
-  /** Parameters for parameterized facts (e.g. `{ suit: "hearts" }` for `suitLength(hearts)`). */
-  readonly params?: Readonly<Record<string, unknown>>;
   readonly satisfied: boolean;
+  readonly description?: string;
   readonly observedValue?: unknown;
   readonly threshold?: unknown;
+  readonly conditionRole?: ConditionRole;
+}
+
+/** Evidence for a single condition evaluation. */
+export interface ConditionEvidenceIR extends ConditionResult {
+  readonly conditionId: string;
+  /** Parameters for parameterized facts (e.g. `{ suit: "hearts" }` for `suitLength(hearts)`). */
+  readonly params?: Readonly<Record<string, unknown>>;
 }
 
 /** Evidence for why a meaning was rejected. */

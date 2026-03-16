@@ -12,13 +12,14 @@ import {
   type FactCatalogExtension,
   type FactEvaluatorFn,
 } from "../fact-catalog";
+// Integration test: exercises fact-catalog DTOs through the convention pipeline
 import { evaluateFacts, createSharedFactCatalog } from "../../../conventions/core/pipeline/fact-evaluator";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 
 describe("SHARED_FACTS", () => {
-  it("has 17 shared facts (6 primitive + 8 bridge-derived + 3 posterior-derived)", () => {
-    expect(SHARED_FACTS).toHaveLength(17);
+  it("has 19 shared facts (6 primitive + 8 bridge-derived + 5 posterior-derived)", () => {
+    expect(SHARED_FACTS).toHaveLength(19);
   });
 
   it("PRIMITIVE_FACTS has 6 entries", () => {
@@ -44,6 +45,8 @@ describe("SHARED_FACTS", () => {
     const posteriorIds = new Set([
       "bridge.partnerHas4HeartsLikely",
       "bridge.partnerHas4SpadesLikely",
+      "bridge.partnerHas4DiamondsLikely",
+      "bridge.partnerHas4ClubsLikely",
       "bridge.combinedHcpInRangeLikely",
     ]);
     for (const fact of SHARED_FACTS) {

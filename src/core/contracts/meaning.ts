@@ -1,4 +1,4 @@
-import type { ConditionRole } from "./evidence-bundle";
+import type { ConditionResult } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
 import type {
   PriorityClass,
@@ -46,12 +46,9 @@ export interface MeaningClause {
 /** Evidence for how and why a meaning was evaluated. */
 export interface MeaningEvaluationEvidence {
   readonly factDependencies: readonly string[];
-  readonly evaluatedConditions: readonly {
-    readonly name: string;
-    readonly passed: boolean;
-    readonly description: string;
-    readonly conditionRole?: ConditionRole;
-  }[];
+  readonly evaluatedConditions: readonly (ConditionResult & {
+    readonly conditionId: string;
+  })[];
   readonly provenance: {
     readonly moduleId: string;
     readonly roundName?: string;
@@ -211,3 +208,19 @@ export interface MeaningSurface {
   readonly denies?: readonly FactConstraintIR[];
   readonly surfaceBindings?: Readonly<Record<string, string>>;
 }
+
+// ---------------------------------------------------------------------------
+// Semantic class catalog (merged from semantic-classes.ts)
+// ---------------------------------------------------------------------------
+
+/**
+ * Convenience catalog of platform-owned canonical semantic class IDs.
+ * Modules declare their own semantic classes as plain string constants.
+ * This file is a convenience catalog, not a gating registry — adding a
+ * new convention MUST NOT require editing this file.
+ * (Frozen Contract #14 from Agreement Module IR spec)
+ */
+export const BRIDGE_SEMANTIC_CLASSES = {
+  NT_INVITE: "bridge:nt-invite",
+  NT_GAME: "bridge:to-3nt",
+} as const;

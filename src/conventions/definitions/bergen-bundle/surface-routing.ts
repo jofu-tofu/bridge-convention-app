@@ -1,18 +1,10 @@
-import type { Auction, Seat } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import type { RoutedSurfaceGroup } from "../../core/bundle/bundle-types";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
+import { MACHINE_ONLY } from "../../core/surface-helpers";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
 } from "./meaning-surfaces";
-
-/**
- * Machine-only surface groups: R2-R4 surfaces are only routed via the conversation machine.
- * These groups exist in the array for registry completeness but emit no surfaces
- * through the fallback router.
- */
-const MACHINE_ONLY: readonly MeaningSurface[] = [];
 
 /**
  * Routed surface groups for the Bergen Raises bundle.
@@ -193,11 +185,4 @@ export const BERGEN_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
 /**
  * Create a surface router from routed surface groups.
  */
-export function createBergenSurfaceRouter(
-  routedGroups: readonly RoutedSurfaceGroup[],
-): (auction: Auction, seat: Seat) => readonly MeaningSurface[] {
-  return (auction, seat) => {
-    const activeGroups = routedGroups.filter((g) => g.isActive?.(auction, seat));
-    return activeGroups.flatMap((g) => g.surfaces);
-  };
-}
+export { createFallbackSurfaceRouter as createBergenSurfaceRouter } from "../../core/surface-helpers";

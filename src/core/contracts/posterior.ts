@@ -25,6 +25,7 @@ export interface PublicHandSpace {
 }
 
 // ─── Seat posterior with query methods ──────────────────────
+/** @deprecated Use PosteriorBackend (posterior-backend.ts) + PosteriorQueryPort (posterior-query.ts) */
 export interface SeatPosterior {
   readonly seatId: string;
   readonly handSpace: PublicHandSpace;
@@ -117,10 +118,13 @@ export interface PosteriorFactProvider {
 export const SHARED_POSTERIOR_FACT_IDS = [
   "bridge.partnerHas4HeartsLikely",
   "bridge.partnerHas4SpadesLikely",
+  "bridge.partnerHas4DiamondsLikely",
+  "bridge.partnerHas4ClubsLikely",
   "bridge.combinedHcpInRangeLikely",
 ] as const;
 
 // ─── Posterior engine interface ─────────────────────────────
+/** @deprecated Use PosteriorBackend (posterior-backend.ts) + PosteriorQueryPort (posterior-query.ts) */
 export interface PosteriorEngine {
   readonly compilePublic: (snapshot: PublicSnapshot) => PublicHandSpace[];
   readonly conditionOnHand: (

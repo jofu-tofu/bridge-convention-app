@@ -5,10 +5,11 @@ import type {
 } from "../../../engine/types";
 import type {
   WitnessSpecIR,
-  SeatRole,
   PedagogicalControls,
 } from "../../../core/contracts/witness-spec";
 import type { HandPredicateIR } from "../../../core/contracts/predicate-surfaces";
+import { resolveRole } from "../pipeline/witness-generator";
+import { VULNERABILITY_MAP } from "../pipeline/witness-constants";
 
 /**
  * Extended DealConstraints that carries pedagogical metadata alongside
@@ -18,37 +19,8 @@ interface WitnessCompilationResult extends DealConstraints {
   readonly pedagogicalControls?: PedagogicalControls;
 }
 
-// ─── Seat ordering for rotation ───────────────────────────────
-// Clockwise: N -> E -> S -> W -> N
-const SEAT_ORDER: readonly Seat[] = [Seat.North, Seat.East, Seat.South, Seat.West];
-
-/**
- * Resolve a role-relative SeatRole to a compass Seat based on the user's seat.
- *
- * The mapping is:
- *   self      -> userSeat
- *   partner   -> opposite seat
- *   lho       -> seat to the left of user
- *   rho       -> seat to the right of user
- *   openingSide -> userSeat (convention: user's side is the opening side)
- */
-function resolveRole(role: SeatRole, userSeat: Seat): Seat {
-  const userIndex = SEAT_ORDER.indexOf(userSeat);
-  switch (role) {
-    case "self":
-      return userSeat;
-    case "partner":
-      return SEAT_ORDER[(userIndex + 2) % 4]!;
-    case "lho":
-      return SEAT_ORDER[(userIndex + 1) % 4]!;
-    case "rho":
-      return SEAT_ORDER[(userIndex + 3) % 4]!;
-    case "openingSide":
-      return userSeat;
-  }
-}
-
 // ─── Fact ID to suit mapping ──────────────────────────────────
+// Uses qualified keys (hand.suitLength.*) unlike the short keys in witness-constants
 const SUIT_FACT_MAP: Readonly<Record<string, Suit>> = {
   "hand.suitLength.spades": Suit.Spades,
   "hand.suitLength.hearts": Suit.Hearts,
@@ -59,14 +31,6 @@ const SUIT_FACT_MAP: Readonly<Record<string, Suit>> = {
 function extractSuit(factId: string): Suit | undefined {
   return SUIT_FACT_MAP[factId];
 }
-
-// ─── Vulnerability mapping ────────────────────────────────────
-const VULN_MAP: Readonly<Record<string, Vulnerability>> = {
-  none: Vulnerability.None,
-  ns: Vulnerability.NorthSouth,
-  ew: Vulnerability.EastWest,
-  both: Vulnerability.Both,
-};
 
 // ─── Mutable builder for accumulating per-seat constraints ────
 interface SeatConstraintBuilder {
@@ -246,7 +210,7 @@ export function compileWitnessSpec(
   const result: WitnessCompilationResult = {
     seats,
     ...(spec.maxAttempts !== undefined && { maxAttempts: spec.maxAttempts }),
-    ...(spec.setup?.vulnerability && { vulnerability: VULN_MAP[spec.setup.vulnerability] }),
+    ...(spec.setup?.vulnerability && { vulnerability: VULNERABILITY_MAP[spec.setup.vulnerability] }),
     ...(spec.setup?.dealerRole && { dealer: resolveRole(spec.setup.dealerRole, userSeat) }),
     ...(spec.pedagogicalControls && { pedagogicalControls: spec.pedagogicalControls }),
   };

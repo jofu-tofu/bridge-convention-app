@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { buildAuction } from "../../engine/auction-helpers";

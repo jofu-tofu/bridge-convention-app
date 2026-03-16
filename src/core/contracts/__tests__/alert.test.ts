@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveAlert, derivePublicConstraints } from "../alert";
 import type { AlertResolvable } from "../alert";
-import type { MeaningSurfaceClause } from "../meaning-surface";
+import type { MeaningSurfaceClause } from "../meaning";
 
 function makeSurface(overrides: Partial<AlertResolvable> = {}): AlertResolvable {
   return {

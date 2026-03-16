@@ -5,7 +5,7 @@ import {
   arbitrateMeanings,
   zipProposalsWithSurfaces,
 } from "../meaning-arbitrator";
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { DecisionSurfaceIR } from "../../../../core/contracts/agreement-module";
 import type { EvaluatedFacts, FactValue } from "../../../../core/contracts/fact-catalog";
 import { BidSuit } from "../../../../engine/types";

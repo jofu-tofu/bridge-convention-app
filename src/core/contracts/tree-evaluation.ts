@@ -1,12 +1,10 @@
 import type { Call } from "../../engine/types";
-import type { ConditionRole } from "./evidence-bundle";
+import type { ConditionResult } from "./evidence-bundle";
 import type { RecommendationBand } from "./meaning";
 
-export interface SiblingConditionDetail {
+export interface SiblingConditionDetail extends Omit<ConditionResult, "satisfied"> {
   readonly name: string;
   readonly description: string;
-  /** Primary role of this condition — teaching consumers filter by role !== "routing". */
-  readonly conditionRole?: ConditionRole;
 }
 
 /** Unified eligibility model — all dimensions that gate candidate selectability.

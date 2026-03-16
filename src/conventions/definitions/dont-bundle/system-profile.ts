@@ -1,9 +1,7 @@
-import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
+import { createSaycProfile } from "../../core/profile-builder";
 
-export const DONT_PROFILE: SystemProfileIR = {
+export const DONT_PROFILE = createSaycProfile({
   profileId: "dont-sayc",
-  baseSystem: "sayc",
   modules: [
     {
       moduleId: "dont",
@@ -15,6 +13,4 @@ export const DONT_PROFILE: SystemProfileIR = {
       ],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
-  priorityClassMapping: defaultPriorityClassMapping(),
-};
+});

@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import { makeSurface as _makeSurface, buildMachine } from "../../../../test-support/convention-factories";
 
 export { buildMachine };

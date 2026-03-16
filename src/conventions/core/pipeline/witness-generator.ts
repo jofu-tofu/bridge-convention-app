@@ -25,10 +25,9 @@ import type {
 import { Seat, Suit, Vulnerability } from "../../../engine/types";
 import { generateDeal } from "../../../engine/deal-generator";
 import { evaluateDealConstraint } from "./deal-constraint-evaluator";
+import { CLOCKWISE, SUIT_FACT_MAP, VULNERABILITY_MAP } from "./witness-constants";
 
 // ─── Seat-role resolution ──────────────────────────────────────────
-
-const CLOCKWISE: readonly Seat[] = [Seat.North, Seat.East, Seat.South, Seat.West];
 
 function oppositeSeat(s: Seat): Seat {
   const idx = CLOCKWISE.indexOf(s);
@@ -66,22 +65,6 @@ export function resolveRole(role: SeatRole, userSeat: Seat): Seat {
       return userSeat;
   }
 }
-
-// ─── Fact-ID → engine mapping ──────────────────────────────────────
-
-const SUIT_FACT_MAP: Record<string, Suit> = {
-  spades: Suit.Spades,
-  hearts: Suit.Hearts,
-  diamonds: Suit.Diamonds,
-  clubs: Suit.Clubs,
-};
-
-const VULNERABILITY_MAP: Record<string, Vulnerability> = {
-  none: Vulnerability.None,
-  ns: Vulnerability.NorthSouth,
-  ew: Vulnerability.EastWest,
-  both: Vulnerability.Both,
-};
 
 // ─── Hand predicate → SeatConstraint ───────────────────────────────
 

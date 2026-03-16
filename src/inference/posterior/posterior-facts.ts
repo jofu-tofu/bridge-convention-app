@@ -30,9 +30,9 @@ export type PosteriorFactHandler = (
 ) => PosteriorFactValue;
 
 /**
- * bridge:partnerHas4HeartsLikely / bridge:partnerHas4SpadesLikely
+ * bridge:partnerHas4{Suit}Likely
  * P(partner has 4+ in suit specified by conditionedOn[0]) over samples.
- * conditionedOn[0] is required: "H" for hearts, "S" for spades.
+ * conditionedOn[0] is required: "H" for hearts, "S" for spades, "D" for diamonds, "C" for clubs.
  */
 function partnerHas4InSuitLikely(
   request: PosteriorFactRequest,
@@ -210,6 +210,8 @@ function openerHasSecondMajorLikely(
 export const POSTERIOR_FACT_HANDLERS: ReadonlyMap<string, PosteriorFactHandler> = new Map([
   ["bridge.partnerHas4HeartsLikely", partnerHas4InSuitLikely],
   ["bridge.partnerHas4SpadesLikely", partnerHas4InSuitLikely],
+  ["bridge.partnerHas4DiamondsLikely", partnerHas4InSuitLikely],
+  ["bridge.partnerHas4ClubsLikely", partnerHas4InSuitLikely],
   ["bridge.nsHaveEightCardFitLikely", nsHaveEightCardFitLikely],
   ["bridge.combinedHcpInRangeLikely", combinedHcpInRangeLikely],
   ["bridge.openerStillBalancedLikely", openerStillBalancedLikely],

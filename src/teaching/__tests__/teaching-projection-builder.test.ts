@@ -16,7 +16,7 @@ import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { CandidateEligibility } from "../../core/contracts/tree-evaluation";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
 
 // -- Factories --
 
@@ -53,7 +53,7 @@ function makeProposal(overrides: Partial<MeaningProposal> = {}): MeaningProposal
     ranking: makeRanking(),
     evidence: {
       factDependencies: ["hand.hcp"],
-      evaluatedConditions: [{ name: "hand.hcp", passed: true, description: "HCP >= 15" }],
+      evaluatedConditions: [{ conditionId: "hand.hcp", satisfied: true, description: "HCP >= 15" }],
       provenance: {
         moduleId: "stayman",
         nodeName: "ask-major",

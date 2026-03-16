@@ -1,4 +1,4 @@
-import type { FactOperator } from "./meaning-surface";
+import type { FactConstraintIR } from "./agreement-module";
 
 // ─── Auction pattern matching ───────────────────────────────
 export type AuctionPatternIR =
@@ -15,11 +15,7 @@ export interface PublicGuardIR {
 
 // ─── Hand predicate (fact-based) ────────────────────────────
 export interface HandPredicateIR {
-  readonly clauses: readonly {
-    readonly factId: string;
-    readonly operator: FactOperator;
-    readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
-  }[];
+  readonly clauses: readonly FactConstraintIR[];
   readonly conjunction: "all" | "any";
 }
 

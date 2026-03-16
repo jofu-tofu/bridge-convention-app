@@ -1,29 +1,9 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type {
   DecisionSurfaceIR,
-  PriorityClass,
   FactConstraintIR,
 } from "../../../core/contracts/agreement-module";
-import type { RecommendationBand } from "../../../core/contracts/meaning";
-
-/**
- * Map RecommendationBand to PriorityClass.
- *
- * RecommendationBand is the authored semantic priority on MeaningSurface (via RankingMetadata).
- * PriorityClass is the richer IR equivalent on DecisionSurfaceIR.
- */
-function bandToPriorityClass(band: RecommendationBand): PriorityClass {
-  switch (band) {
-    case "must":
-      return "obligatory";
-    case "should":
-      return "preferredConventional";
-    case "may":
-      return "neutralCorrect";
-    case "avoid":
-      return "fallbackCorrect";
-  }
-}
+import { bandToPriorityClass } from "./priority-mapping";
 
 /**
  * Adapt a MeaningSurface to a DecisionSurfaceIR.

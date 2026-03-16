@@ -1,9 +1,7 @@
-import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
+import { createSaycProfile } from "../../core/profile-builder";
 
-export const BERGEN_PROFILE: SystemProfileIR = {
+export const BERGEN_PROFILE = createSaycProfile({
   profileId: "bergen-sayc",
-  baseSystem: "sayc",
   modules: [
     {
       moduleId: "bergen",
@@ -15,6 +13,4 @@ export const BERGEN_PROFILE: SystemProfileIR = {
       }],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
-  priorityClassMapping: defaultPriorityClassMapping(),
-};
+});

@@ -1,4 +1,4 @@
-import type { ConventionBundle } from "../../core/bundle/bundle-types";
+import { createBundle } from "../../core/bundle";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
@@ -47,7 +47,7 @@ const dontBundleDealConstraints: DealConstraints = {
   dealer: Seat.East,
 };
 
-export const dontBundle: ConventionBundle = {
+export const dontBundle = createBundle({
   id: "dont-bundle",
   name: "DONT Bundle",
   description:
@@ -86,4 +86,4 @@ export const dontBundle: ConventionBundle = {
   explanationCatalog: DONT_EXPLANATION_CATALOG,
   pedagogicalRelations: DONT_PEDAGOGICAL_RELATIONS,
   acceptableAlternatives: DONT_ALTERNATIVE_GROUPS,
-};
+});

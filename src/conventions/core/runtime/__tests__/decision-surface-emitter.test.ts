@@ -4,7 +4,7 @@ import { buildSnapshotFromAuction } from "../public-snapshot-builder";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import type { RuntimeModule } from "../types";
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import { makeSurface } from "./runtime-test-helpers";
 
 function makeModule(

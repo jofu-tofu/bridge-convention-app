@@ -1,4 +1,4 @@
-import type { ConventionBundle } from "../../core/bundle/bundle-types";
+import { createBundle } from "../../core/bundle";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
@@ -43,7 +43,7 @@ const weakTwoBundleDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-export const weakTwoBundle: ConventionBundle = {
+export const weakTwoBundle = createBundle({
   id: "weak-two-bundle",
   name: "Weak Two Bids Bundle",
   description: "Weak Two Bids with Ogust 2NT response system",
@@ -76,4 +76,4 @@ export const weakTwoBundle: ConventionBundle = {
   explanationCatalog: WEAK_TWO_EXPLANATION_CATALOG,
   pedagogicalRelations: WEAK_TWO_PEDAGOGICAL_RELATIONS,
   acceptableAlternatives: WEAK_TWO_ALTERNATIVE_GROUPS,
-};
+});

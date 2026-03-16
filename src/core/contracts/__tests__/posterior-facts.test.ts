@@ -9,8 +9,8 @@ import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../fact-c
 import { SHARED_POSTERIOR_FACT_IDS } from "../posterior";
 
 describe("POSTERIOR_DERIVED_FACTS", () => {
-  it("has exactly 3 shared entries (NT-specific facts moved to nt-bundle)", () => {
-    expect(POSTERIOR_DERIVED_FACTS).toHaveLength(3);
+  it("has exactly 5 shared entries (NT-specific facts moved to nt-bundle)", () => {
+    expect(POSTERIOR_DERIVED_FACTS).toHaveLength(5);
   });
 
   it("all entries have world=acting-hand, layer=bridge-derived, valueType=number", () => {
@@ -30,8 +30,8 @@ describe("POSTERIOR_DERIVED_FACTS", () => {
 });
 
 describe("SHARED_FACTS includes posterior facts", () => {
-  it("has 17 entries (6 primitive + 8 bridge-derived + 3 shared posterior)", () => {
-    expect(SHARED_FACTS).toHaveLength(17);
+  it("has 19 entries (6 primitive + 8 bridge-derived + 5 shared posterior)", () => {
+    expect(SHARED_FACTS).toHaveLength(19);
   });
 
   it("includes all shared posterior fact IDs", () => {
@@ -43,8 +43,8 @@ describe("SHARED_FACTS includes posterior facts", () => {
 });
 
 describe("SHARED_POSTERIOR_FACT_IDS", () => {
-  it("has exactly 3 entries matching POSTERIOR_DERIVED_FACTS", () => {
-    expect(SHARED_POSTERIOR_FACT_IDS).toHaveLength(3);
+  it("has exactly 5 entries matching POSTERIOR_DERIVED_FACTS", () => {
+    expect(SHARED_POSTERIOR_FACT_IDS).toHaveLength(5);
     const definedIds = POSTERIOR_DERIVED_FACTS.map((f) => f.id);
     for (const id of SHARED_POSTERIOR_FACT_IDS) {
       expect(definedIds).toContain(id);

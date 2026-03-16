@@ -6,14 +6,14 @@ import type {
   AlternativeGroup,
   IntentFamily,
 } from "../../core/contracts";
-import type { MeaningSurface } from "../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider } from "../../core/contracts/posterior";
 import type { PosteriorBackend, PosteriorState } from "../../core/contracts/posterior-backend";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import type { Auction, Seat } from "../../engine/types";
 import type { ConversationMachine } from "../../conventions/core/runtime/machine-types";
@@ -33,7 +33,7 @@ import type { PosteriorCache } from "./posterior-wiring";
 import { DEFAULT_SAMPLE_COUNT, buildPosteriorProvider, buildPosteriorSummary } from "./posterior-wiring";
 import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
 import type { MachineCache } from "./surface-selection";
-import { getMachineResult, selectActiveSurfaces, buildSurfacesFromEvaluation, toMachineDebugSnapshot } from "./surface-selection";
+import { selectActiveSurfaces, buildSurfacesFromEvaluation, toMachineDebugSnapshot } from "./surface-selection";
 
 // ─── Core Pipeline ─────────────────────────────────────────────
 //
@@ -256,11 +256,8 @@ export function meaningBundleToStrategy(
         selectedSurfaces = evalSurfaces;
         runtimeSnapshot = evalResult.publicSnapshot;
 
-        // Collect machine transforms through existing cache for transform merging
-        const machineResult = getMachineResult(
-          options.conversationMachine, context.auction, context.seat, machineCache,
-        );
-        machineTransforms = machineResult.collectedTransforms;
+        // Use transforms from the evaluation result (collected during machine evaluation)
+        machineTransforms = evalResult.collectedTransforms ?? [];
       } else {
         // Fallback: ad-hoc surface selection via machine, router, or all surfaces
         const selection = selectActiveSurfaces(

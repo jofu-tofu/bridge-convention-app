@@ -1,5 +1,6 @@
 import type { Auction, Seat } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 
 /** A runtime module that can emit decision surfaces for evaluation. */
@@ -36,4 +37,6 @@ export interface EvaluationResult {
   readonly publicSnapshot: PublicSnapshot;
   readonly decisionSurfaces: readonly DecisionSurfaceEntry[];
   readonly diagnostics: readonly RuntimeDiagnostic[];
+  /** Transforms collected from the conversation machine (if one was used). */
+  readonly collectedTransforms?: readonly CandidateTransform[];
 }

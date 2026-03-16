@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { bundleToRuntimeModules } from "../bundle-adapter";
 import type { ConventionBundle } from "../../bundle/bundle-types";
 import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";

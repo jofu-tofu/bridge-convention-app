@@ -4,7 +4,7 @@ import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { Auction, Seat } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
-import { formatCallString } from "./commitment-extractor";
+import { formatCallString } from "../../../engine/call-helpers";
 
 /**
  * Resolve a semantic role (e.g. "opener", "responder") to a compass Seat

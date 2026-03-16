@@ -9,12 +9,8 @@ import { num, bool, fv } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
-import type { Call } from "../../../../engine/types";
 import type { ConventionModule } from "../../../core/composition/module-types";
-
-function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
-  return { type: "bid", level, strain };
-}
+import { bid } from "../../../core/surface-helpers";
 
 // ─── Semantic classes ────────────────────────────────────────
 

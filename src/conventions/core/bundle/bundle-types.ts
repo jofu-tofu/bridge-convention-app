@@ -1,13 +1,19 @@
 import type { DealConstraints, Seat, Deal, Auction } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import type { ExplanationCatalogIR } from "../../../core/contracts/explanation-catalog";
 import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/tree-evaluation";
-import type { PedagogicalRelation } from "../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig } from "../types";
 import { ConventionCategory } from "../types";
 import type { ConversationMachine } from "../runtime/machine-types";
+
+export interface RoutedSurfaceGroup {
+  readonly groupId: string;
+  readonly surfaces: readonly MeaningSurface[];
+  readonly isActive?: (auction: Auction, seat: Seat) => boolean;
+}
 
 export interface ConventionBundle {
   readonly id: string;

@@ -1,4 +1,4 @@
-import type { PedagogicalRelation } from "../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 
 /**
  * Pedagogical relations for the Bergen Raises bundle.

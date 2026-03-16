@@ -23,7 +23,7 @@
 // ─── Partnership opening contexts ───────────────────────────
 // These describe what kind of opening bid the partnership has made.
 
-/** Partner opened 1NT (strong notrump, typically 15-17 HCP balanced). */
+/** Partner opened 1NT (range defined by system profile). */
 export const CAP_OPENING_1NT = "opening.1nt";
 
 /** Partner opened a major suit (1H or 1S). */

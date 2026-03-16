@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { meaningBundleToStrategy } from "../bidding/meaning-strategy";
 import type { PosteriorBackend, PosteriorState, WeightedParticle } from "../../core/contracts/posterior-backend";
 import type { ConditioningContext } from "../../core/contracts/posterior-query";
-import type { MeaningSurface } from "../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { Auction, Seat, Hand, HandEvaluation } from "../../engine/types";
 import { Suit, Rank, Seat as SeatEnum, BidSuit } from "../../engine/types";
 import type { BiddingContext } from "../../core/contracts";

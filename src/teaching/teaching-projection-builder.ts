@@ -25,7 +25,7 @@ import type {
   ExplanationEntry,
 } from "../core/contracts/explanation-catalog";
 
-import type { PedagogicalRelation } from "../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../core/contracts/teaching-projection";
 
 import type { PosteriorSummary } from "../core/contracts/recommendation";
 

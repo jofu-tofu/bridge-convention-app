@@ -1,5 +1,5 @@
 import type { Auction, Seat } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { RuntimeModule, EvaluationResult } from "./types";
 import type { ConversationMachine } from "./machine-types";
 import { evaluateMachine } from "./machine-evaluator";
@@ -58,6 +58,7 @@ export function evaluate(
     publicSnapshot,
     decisionSurfaces: entries,
     diagnostics,
+    collectedTransforms: machineResult?.collectedTransforms,
   };
 }
 

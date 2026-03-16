@@ -110,11 +110,13 @@ function makeSamples(
 // ── Registry ────────────────────────────────────────────────────────
 
 describe("POSTERIOR_FACT_HANDLERS registry", () => {
-  it("contains exactly the six expected handler keys", () => {
+  it("contains exactly the eight expected handler keys", () => {
     const keys = [...POSTERIOR_FACT_HANDLERS.keys()];
-    expect(keys).toHaveLength(6);
+    expect(keys).toHaveLength(8);
     expect(keys).toContain("bridge.partnerHas4HeartsLikely");
     expect(keys).toContain("bridge.partnerHas4SpadesLikely");
+    expect(keys).toContain("bridge.partnerHas4DiamondsLikely");
+    expect(keys).toContain("bridge.partnerHas4ClubsLikely");
     expect(keys).toContain("bridge.nsHaveEightCardFitLikely");
     expect(keys).toContain("bridge.combinedHcpInRangeLikely");
     expect(keys).toContain("bridge.openerStillBalancedLikely");

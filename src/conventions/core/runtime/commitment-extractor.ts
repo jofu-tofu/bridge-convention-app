@@ -3,17 +3,12 @@ import type {
   PublicConstraint,
   ChoiceClosurePolicy,
 } from "../../../core/contracts/agreement-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
-import { callsMatch } from "../../../engine/call-helpers";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
+import { callsMatch, formatCallString } from "../../../engine/call-helpers";
 import { derivePublicConstraints } from "../../../core/contracts/alert";
 
-/** Format a Call object into a human-readable string (e.g., "1NT", "P", "X", "XX"). */
-export function formatCallString(call: Call): string {
-  if (call.type === "bid") return `${call.level}${call.strain}`;
-  if (call.type === "pass") return "P";
-  if (call.type === "double") return "X";
-  return "XX";
-}
+// Re-export for backward compatibility — canonical location is engine/call-helpers
+export { formatCallString } from "../../../engine/call-helpers";
 
 /**
  * Derive entailed denials from a closure policy.

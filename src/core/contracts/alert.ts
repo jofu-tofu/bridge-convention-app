@@ -1,6 +1,6 @@
 import type { BidAlert } from "./bidding";
 import type { FactConstraintIR, PriorityClass } from "./agreement-module";
-import type { MeaningSurfaceClause } from "./meaning-surface";
+import type { MeaningSurfaceClause } from "./meaning";
 
 /** Source-intent types that imply artificial encoding — bids where the call
  *  doesn't mean what it normally would. */

@@ -4,7 +4,7 @@ import {
   evaluateAllSurfaces,
   resolvePriorityClass,
 } from "../meaning-evaluator";
-import type { MeaningSurface } from "../../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import type { EvaluatedFacts, FactValue } from "../../../../core/contracts/fact-catalog";
 import { BidSuit } from "../../../../engine/types";
 import type { PriorityClass } from "../../../../core/contracts/agreement-module";
@@ -292,14 +292,14 @@ describe("evaluateMeaningSurface", () => {
 
     expect(proposal.evidence.evaluatedConditions).toHaveLength(2);
     expect(proposal.evidence.evaluatedConditions[0]!).toEqual({
-      name: "hcp-min",
-      passed: true,
+      conditionId: "hcp-min",
+      satisfied: true,
       description: "At least 8 HCP",
       conditionRole: "semantic",
     });
     expect(proposal.evidence.evaluatedConditions[1]!).toEqual({
-      name: "has-major",
-      passed: true,
+      conditionId: "has-major",
+      satisfied: true,
       description: "Has a 4-card major",
       conditionRole: "semantic",
     });

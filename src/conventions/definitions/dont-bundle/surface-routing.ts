@@ -1,7 +1,6 @@
-import type { Auction, Seat } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
 import type { RoutedSurfaceGroup } from "../../core/bundle/bundle-types";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
+import { MACHINE_ONLY } from "../../core/surface-helpers";
 import {
   DONT_R1_SURFACES,
   DONT_ADVANCER_2H_SURFACES,
@@ -10,13 +9,6 @@ import {
   DONT_ADVANCER_2S_SURFACES,
   DONT_ADVANCER_DOUBLE_SURFACES,
 } from "./meaning-surfaces";
-
-/**
- * Machine-only surface groups: relay response surfaces are only routed via
- * the conversation machine. These groups exist for registry completeness but
- * emit no surfaces through the fallback router.
- */
-const MACHINE_ONLY: readonly MeaningSurface[] = [];
 
 /**
  * Routed surface groups for the DONT bundle.
@@ -131,11 +123,4 @@ export const DONT_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
 /**
  * Create a surface router from routed surface groups.
  */
-export function createDontSurfaceRouter(
-  routedGroups: readonly RoutedSurfaceGroup[],
-): (auction: Auction, seat: Seat) => readonly MeaningSurface[] {
-  return (auction, seat) => {
-    const activeGroups = routedGroups.filter((g) => g.isActive?.(auction, seat));
-    return activeGroups.flatMap((g) => g.surfaces);
-  };
-}
+export { createFallbackSurfaceRouter as createDontSurfaceRouter } from "../../core/surface-helpers";

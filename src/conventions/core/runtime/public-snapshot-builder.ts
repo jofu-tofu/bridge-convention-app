@@ -2,10 +2,10 @@ import type { Auction, Seat } from "../../../engine/types";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import { buildPublicSnapshot } from "../../../core/contracts/module-surface";
 import type { PublicEvent } from "../../../core/contracts/agreement-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { MachineRegisters } from "./machine-types";
 import { ForcingState } from "../../../core/contracts/bidding";
-import { formatCallString } from "./commitment-extractor";
+import { formatCallString } from "../../../engine/call-helpers";
 import { extractCommitments } from "./commitment-extractor";
 
 export function buildSnapshotFromAuction(

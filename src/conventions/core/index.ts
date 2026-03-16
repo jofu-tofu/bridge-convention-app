@@ -22,8 +22,8 @@ export {
 export { createBiddingContext } from "./context-factory";
 
 // ── Bundle (sub-barrel) ─────────────────────────────────────────────────
-export { findBundleForConvention, getBundle } from "./bundle";
-export type { ConventionBundle } from "./bundle";
+export { findBundleForConvention, getBundle, composeBundles, createBundle } from "./bundle";
+export type { ConventionBundle, CreateBundleConfig } from "./bundle";
 
 // ── Pipeline ────────────────────────────────────────────────────────────
 export {

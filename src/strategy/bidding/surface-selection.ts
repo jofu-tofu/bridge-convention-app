@@ -1,5 +1,5 @@
 import type { BiddingContext } from "../../core/contracts";
-import type { MeaningSurface } from "../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { MachineDebugSnapshot } from "../../core/contracts/recommendation";
 import type { Auction, Seat } from "../../engine/types";

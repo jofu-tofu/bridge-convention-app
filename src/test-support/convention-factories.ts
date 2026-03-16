@@ -7,7 +7,7 @@
 
 import { BidSuit, Seat } from "../engine/types";
 import type { Call } from "../engine/types";
-import type { MeaningSurface } from "../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../core/contracts/meaning";
 import type { RankingMetadata } from "../core/contracts/meaning";
 import type { ConversationMachine, MachineState } from "../conventions/core/runtime/machine-types";
 

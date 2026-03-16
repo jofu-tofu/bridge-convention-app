@@ -2,7 +2,7 @@ import type { Auction, Seat } from "../../../engine/types";
 import type { ConventionBundle } from "../bundle/bundle-types";
 import type { RuntimeModule } from "./types";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { resolveActiveModules } from "./profile-activation";
 
 /**

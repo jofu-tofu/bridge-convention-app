@@ -111,8 +111,6 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 | Gap | Impact | Blocks |
 |-----|--------|--------|
-| No submachine/invoke on `MachineState` | Can't compose machines (e.g., RKCB from multiple parents) | Pattern 5-6 (slam tools) |
-| No loop guards/iteration counters | Can't express variable-length exchanges safely | Pattern 5 (control bidding) |
 | `mergeRegisters` is a no-op in `machine-evaluator.ts` | Can't track custom per-machine state (relay step count, controls shown) | Pattern 2, 5, 6 |
 | `"call"` TransitionMatch doesn't check seatRole | Opponent bids can fire partnership transitions in competitive auctions | Pattern 3 (competitive) |
 | No `AttachmentIR` for host-state attachment | Add-on modules can't attach to host states | Pattern 4 (Negative Doubles, Drury) |

@@ -1,5 +1,5 @@
 import type { BiddingContext } from "../../core/contracts";
-import type { MeaningSurface } from "../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { FactCatalog, EvaluatedFacts } from "../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider, PosteriorFactValue } from "../../core/contracts/posterior";
 import type { PosteriorBackend, PosteriorState } from "../../core/contracts/posterior-backend";

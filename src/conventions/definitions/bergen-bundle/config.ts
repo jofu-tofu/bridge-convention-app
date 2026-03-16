@@ -1,4 +1,4 @@
-import type { ConventionBundle } from "../../core/bundle/bundle-types";
+import { createBundle } from "../../core/bundle";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
@@ -46,7 +46,7 @@ const bergenBundleDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-export const bergenBundle: ConventionBundle = {
+export const bergenBundle = createBundle({
   id: "bergen-bundle",
   name: "Bergen Raises Bundle",
   description: "Bergen Raises — constructive, limit, and preemptive responses to 1M opening",
@@ -86,4 +86,4 @@ export const bergenBundle: ConventionBundle = {
   explanationCatalog: BERGEN_EXPLANATION_CATALOG,
   pedagogicalRelations: BERGEN_PEDAGOGICAL_RELATIONS,
   acceptableAlternatives: BERGEN_ALTERNATIVE_GROUPS,
-};
+});

@@ -1,21 +1,9 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { BidSuit } from "../../../engine/types";
-import type { Call } from "../../../engine/types";
 import { WEAK_TWO_CLASSES } from "./semantic-classes";
+import { bid, suitToBidSuit } from "../../core/surface-helpers";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
-
-function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
-  return { type: "bid", level, strain };
-}
-
-function suitToBidSuit(suit: WeakTwoSuit): BidSuit {
-  switch (suit) {
-    case "hearts": return BidSuit.Hearts;
-    case "spades": return BidSuit.Spades;
-    case "diamonds": return BidSuit.Diamonds;
-  }
-}
 
 function suitLabel(suit: WeakTwoSuit): string {
   switch (suit) {

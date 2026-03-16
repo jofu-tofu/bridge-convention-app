@@ -1,5 +1,5 @@
 import type { CandidateTransform } from "../../../core/contracts/meaning";
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { Call } from "../../../engine/types";
 import type {
   ArbitrationResult,
@@ -76,7 +76,7 @@ export function composeSurfaces(
         targetId: t.targetId,
         sourceModuleId: t.sourceModuleId,
         reason: t.reason,
-        affectedMeaningIds: affected,
+        affectedIds: affected,
       });
       diagnostics.push({
         level: "info",
@@ -118,7 +118,7 @@ export function composeSurfaces(
         targetId: t.targetId,
         sourceModuleId: t.sourceModuleId,
         reason: t.reason,
-        affectedMeaningIds: affectedIds,
+        affectedIds: affectedIds,
       });
       diagnostics.push({
         level: "info",
@@ -149,7 +149,7 @@ export function composeSurfaces(
       targetId: t.targetId,
       sourceModuleId: t.sourceModuleId,
       reason: t.reason,
-      affectedMeaningIds: [t.surface.meaningId],
+      affectedIds: [t.surface.meaningId],
     });
     diagnostics.push({
       level: "info",
@@ -194,7 +194,7 @@ export function mergeUpstreamProvenance(
     targetId: t.targetId,
     sourceModuleId: t.sourceModuleId,
     reason: t.reason,
-    affectedCandidateIds: t.affectedMeaningIds,
+    affectedIds: t.affectedIds,
   }));
 
   const baseProv = result.provenance;

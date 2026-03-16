@@ -1,38 +1,11 @@
 import type { Hand, HandEvaluation } from "../../../engine/types";
 import type {
   FactCatalog,
-  FactDefinition,
   FactValue,
   HandFactResolverFn,
 } from "../../../core/contracts/fact-catalog";
 import { createSharedFactCatalog } from "./shared-fact-catalog";
-
-// ─── Topological sort (shared utility) ──────────────────────
-
-function topologicalSort(catalog: readonly FactDefinition[]): FactDefinition[] {
-  const byId = new Map<string, FactDefinition>();
-  for (const f of catalog) byId.set(f.id, f);
-
-  const visited = new Set<string>();
-  const sorted: FactDefinition[] = [];
-
-  function visit(id: string): void {
-    if (visited.has(id)) return;
-    visited.add(id);
-    const def = byId.get(id);
-    if (!def) return;
-    for (const dep of def.derivesFrom ?? []) {
-      visit(dep);
-    }
-    sorted.push(def);
-  }
-
-  for (const f of catalog) {
-    visit(f.id);
-  }
-
-  return sorted;
-}
+import { topologicalSort } from "./fact-utils";
 
 /**
  * Create a HandFactResolverFn that evaluates any factId against a hand
