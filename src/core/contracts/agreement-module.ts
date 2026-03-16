@@ -4,8 +4,8 @@ import type { FactOperator } from "./meaning";
 import type { Call } from "../../engine/types";
 
 // ─── Module classification ──────────────────────────────────
-type ActivationKind = "auction-pattern" | "host-attachment" | "invoke-only";
-type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-tool" | "defensive";
+export type ActivationKind = "auction-pattern" | "host-attachment" | "invoke-only";
+export type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-tool" | "defensive";
 
 // ─── Priority class → band mapping ─────────────────────────
 export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"
@@ -91,7 +91,7 @@ export interface ModuleEntryIR {
   readonly options?: Readonly<Record<string, unknown>>;
 }
 
-interface ConflictPolicyIR {
+export interface ConflictPolicyIR {
   readonly activationDefault: "simultaneous";
   readonly exclusivityGroups?: readonly { groupId: string; memberModuleIds: readonly string[] }[];
   readonly semanticClassAliases?: readonly { from: string; to: string }[];

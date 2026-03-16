@@ -32,7 +32,7 @@ bootstrap/
 
 **Rotation utilities** (`start-drill.ts`): `rotateSeat180(seat)` swaps N↔S, E↔W. `rotateDealConstraints(base, newDealer)` rotates all seat constraints. `rotateAuction(auction)` rotates all auction entry seats.
 
-**Config factory wiring:** `createDrillConfig()` builds both `nsInferenceConfig` and `ewInferenceConfig`. Options: `lookupConvention` (DI seam, currently unused).
+**Config factory wiring:** `createDrillConfig()` builds both `nsInferenceConfig` and `ewInferenceConfig`. Options: `lookupConvention` (DI seam, currently unused). `buildBundleStrategy()` converts bundles to runtime modules via `bundleToRuntimeModules()` and passes `evaluationRuntime` to `meaningBundleToStrategy()`, activating the two-phase `evaluate()` path in `meaning-strategy.ts`.
 
 ## Gotchas
 

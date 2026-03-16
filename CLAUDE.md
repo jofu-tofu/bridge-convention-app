@@ -159,7 +159,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 | Area | Alignment | Key gaps |
 |------|-----------|----------|
-| Pipeline (selection, teaching, provenance) | ~95% | Strategy pipeline wired to evaluation runtime. 5-grade taxonomy implemented. |
+| Pipeline (selection, teaching, provenance) | ~97% | Evaluation runtime path live via `config-factory.ts` → `bundleToRuntimeModules()` → `evaluationRuntime` option. 5-grade taxonomy implemented. |
 | Upstream (modules, profiles, machine) | ~80% | Profile-driven activation, submachines, two-phase evaluation all implemented. No host-attachment exercised. ActivationTrace always empty. |
 | Posterior engine | ~70% (boundary designed and implemented, consumer migration pending) | Contracts, factor compiler, backend, query port, CI boundary tests done. Old `PosteriorEngine` → `SeatPosterior` path still works. Consumer migration (Phase 4B) pending. |
 | Convention coverage | Patterns 1 + 3 + submachine | Stayman, Bergen, Weak Twos, DONT, Smolen. Patterns 2, 4-6 not yet exercised. |

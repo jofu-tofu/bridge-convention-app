@@ -12,6 +12,7 @@ import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { getBundle, createSharedFactCatalog } from "../conventions/core";
 import type { ConventionBundle } from "../conventions/core";
+import { bundleToRuntimeModules } from "../conventions/core/runtime/bundle-adapter";
 import { createFactCatalog } from "../core/contracts/fact-catalog";
 import { createTsBackend } from "../inference/posterior";
 import { createHandFactResolver } from "../conventions/core/pipeline/fact-evaluator";
@@ -30,6 +31,8 @@ export function buildBundleStrategy(
     ? createFactCatalog(createSharedFactCatalog(), ...bundle.factExtensions)
     : createSharedFactCatalog();
 
+  const { modules, getActiveIds } = bundleToRuntimeModules(bundle);
+
   return meaningBundleToStrategy(
     bundle.meaningSurfaces.map((g) => ({
       moduleId: g.groupId,
@@ -43,6 +46,7 @@ export function buildBundleStrategy(
       conversationMachine: bundle.conversationMachine,
       posteriorBackend: createTsBackend({ factResolver: createHandFactResolver(factCatalog) }),
       surfaceRouterForCommitments: bundle.surfaceRouter,
+      evaluationRuntime: { modules, getActiveIds },
       explanationCatalog: bundle.explanationCatalog,
       acceptableAlternatives: bundle.acceptableAlternatives,
       intentFamilies: bundle.intentFamilies,

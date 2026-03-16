@@ -10,7 +10,6 @@ export {
   OPENER_TRANSFER_HEARTS_SURFACES,
   INTERFERENCE_REDOUBLE_SURFACE,
 } from "./meaning-surfaces";
-export { STAYMAN_CLASSES, TRANSFER_CLASSES } from "./semantic-classes";
 export { createNtConversationMachine } from "./machine";
 export { NT_SAYC_PROFILE } from "./system-profile";
 export { NT_ROUTED_SURFACES, createNtSurfaceRouter } from "./surface-routing";

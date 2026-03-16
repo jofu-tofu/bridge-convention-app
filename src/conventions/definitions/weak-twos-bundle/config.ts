@@ -6,10 +6,20 @@ import { CAP_OPENING_WEAK_TWO } from "../../../core/contracts/capability-vocabul
 import { buildAuction } from "../../../engine/auction-helpers";
 import { WEAK_TWO_PROFILE } from "./system-profile";
 import { WEAK_TWO_ALTERNATIVE_GROUPS } from "./alternatives";
-import { composeWeakTwoModules } from "./compose";
-import { weakTwoModule } from "./module";
+import { compileProfileFromPackages } from "../../core/composition/compile-from-packages";
+import { WEAK_TWO_SKELETON } from "./compose";
+import { weakTwoPackage } from "./packages/weak-two";
 
-const composed = composeWeakTwoModules([weakTwoModule]);
+const composed = compileProfileFromPackages(
+  WEAK_TWO_PROFILE,
+  [weakTwoPackage],
+  {
+    machineId: WEAK_TWO_SKELETON.machineId,
+    skeletonStates: WEAK_TWO_SKELETON.states,
+    dispatchStateId: WEAK_TWO_SKELETON.dispatchStateId,
+    entrySurfaceGroupId: WEAK_TWO_SKELETON.entrySurfaceGroupId,
+  },
+);
 
 const weakTwoBundleDealConstraints: DealConstraints = {
   seats: [

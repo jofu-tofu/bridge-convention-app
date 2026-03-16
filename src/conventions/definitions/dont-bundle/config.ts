@@ -4,12 +4,22 @@ import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
 import { CAP_OPPONENT_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
+import { compileProfileFromPackages } from "../../core/composition/compile-from-packages";
+import { DONT_SKELETON } from "./compose";
 import { DONT_PROFILE } from "./system-profile";
 import { DONT_ALTERNATIVE_GROUPS } from "./alternatives";
-import { composeDontModules } from "./compose";
-import { dontModule } from "./module";
+import { dontPackage } from "./packages/dont";
 
-const composed = composeDontModules([dontModule]);
+const composed = compileProfileFromPackages(
+  DONT_PROFILE,
+  [dontPackage],
+  {
+    machineId: DONT_SKELETON.machineId,
+    skeletonStates: DONT_SKELETON.states,
+    dispatchStateId: DONT_SKELETON.dispatchStateId,
+    entrySurfaceGroupId: DONT_SKELETON.entrySurfaceGroupId,
+  },
+);
 
 const dontBundleDealConstraints: DealConstraints = {
   seats: [

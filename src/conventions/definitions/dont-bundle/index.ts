@@ -19,3 +19,4 @@ export { DONT_ROUTED_SURFACES, createDontSurfaceRouter } from "./surface-routing
 export { DONT_EXPLANATION_CATALOG } from "./explanation-catalog";
 export { DONT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 export { DONT_ALTERNATIVE_GROUPS } from "./alternatives";
+export { dontPackage } from "./packages/dont";

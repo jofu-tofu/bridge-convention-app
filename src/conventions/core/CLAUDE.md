@@ -36,6 +36,15 @@ core/
     profile-activation.ts resolveActiveModules() — SystemProfileIR activation
     profile-validation.ts validateProfile() — semantic collision detection
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
+  modules/              Package-based module authoring (new composition surface)
+    module-package.ts     ModulePackage — separates exports (facts, surfaces, explanations) from runtime (activation, machine, handoffs)
+    machine-fragment.ts   MachineFragment, FrontierDeclaration — module-local FSM contribution
+    handoff.ts            HandoffSpec, HandoffTrigger — cross-module coupling via frontiers/capabilities
+    surface-emitter.ts    SurfaceEmitterSpec — surface emission strategy (placeholder)
+    legacy-adapter.ts     conventionBundleToPackages(), packagesToConventionBundle() — migration bridge
+  profile/              Profile-centric composition
+    types.ts              CompiledProfile, LegacyCompiledProfile, ResolvedModuleEntry
+    compile-profile.ts    compileProfileFromBundle() — legacy adapter (bundle → LegacyCompiledProfile)
   witness/              Deal witness system
     witness-compiler.ts   compileWitnessSpec() — WitnessSpecIR → deal generation constraints
     witness-unsat.ts      detectUnsat() — satisfiability checking

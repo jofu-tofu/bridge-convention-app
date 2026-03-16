@@ -6,13 +6,35 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { createBundle } from "../../core/bundle";
 import { NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./system-profile";
 import { NT_CROSS_MODULE_RELATIONS } from "./pedagogical-relations";
-import { composeNtModules } from "./compose";
-import { staymanModule } from "./modules/stayman";
-import { jacobyTransfersModule } from "./modules/jacoby-transfers";
-import { naturalNtModule } from "./modules/natural-nt";
+import { compileProfileFromPackages } from "../../core/composition/compile-from-packages";
+import { NT_SKELETON } from "./compose";
+import { naturalNtPackage } from "./packages/natural-nt";
+import { staymanPackage } from "./packages/stayman";
+import { jacobyTransfersPackage } from "./packages/jacoby-transfers";
 
-const staymanComposed = composeNtModules([naturalNtModule, staymanModule], NT_CROSS_MODULE_RELATIONS);
-const transferComposed = composeNtModules([naturalNtModule, jacobyTransfersModule], NT_CROSS_MODULE_RELATIONS);
+const staymanComposed = compileProfileFromPackages(
+  NT_STAYMAN_ONLY_PROFILE,
+  [naturalNtPackage, staymanPackage],
+  {
+    machineId: NT_SKELETON.machineId,
+    skeletonStates: NT_SKELETON.states,
+    dispatchStateId: NT_SKELETON.dispatchStateId,
+    entrySurfaceGroupId: NT_SKELETON.entrySurfaceGroupId,
+    crossModuleRelations: NT_CROSS_MODULE_RELATIONS,
+  },
+);
+
+const transferComposed = compileProfileFromPackages(
+  NT_TRANSFERS_ONLY_PROFILE,
+  [naturalNtPackage, jacobyTransfersPackage],
+  {
+    machineId: NT_SKELETON.machineId,
+    skeletonStates: NT_SKELETON.states,
+    dispatchStateId: NT_SKELETON.dispatchStateId,
+    entrySurfaceGroupId: NT_SKELETON.entrySurfaceGroupId,
+    crossModuleRelations: NT_CROSS_MODULE_RELATIONS,
+  },
+);
 
 const staymanDealConstraints: DealConstraints = {
   seats: [

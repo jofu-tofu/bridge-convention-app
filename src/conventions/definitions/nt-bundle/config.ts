@@ -1,21 +1,29 @@
 import { createBundle } from "../../core/bundle";
 import type { DealConstraints } from "../../../engine/types";
-import { Seat, Suit } from "../../../engine/types";
+import { Seat } from "../../../engine/types";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { ConventionCategory } from "../../core/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { ntCrossConventionAlternatives } from "./alternatives";
 import { NT_SAYC_PROFILE } from "./system-profile";
 import { NT_CROSS_MODULE_RELATIONS } from "./pedagogical-relations";
-import { composeNtModules } from "./compose";
-import { staymanModule } from "./modules/stayman";
-import { jacobyTransfersModule } from "./modules/jacoby-transfers";
-import { smolenModule } from "./modules/smolen";
-import { naturalNtModule } from "./modules/natural-nt";
+import { compileProfileFromPackages } from "../../core/composition/compile-from-packages";
+import { NT_SKELETON } from "./compose";
+import { naturalNtPackage } from "./packages/natural-nt";
+import { jacobyTransfersPackage } from "./packages/jacoby-transfers";
+import { staymanPackage } from "./packages/stayman";
+import { smolenPackage } from "./packages/smolen";
 
-const composed = composeNtModules(
-  [naturalNtModule, jacobyTransfersModule, staymanModule, smolenModule],
-  NT_CROSS_MODULE_RELATIONS,
+const composed = compileProfileFromPackages(
+  NT_SAYC_PROFILE,
+  [naturalNtPackage, jacobyTransfersPackage, staymanPackage, smolenPackage],
+  {
+    machineId: NT_SKELETON.machineId,
+    skeletonStates: NT_SKELETON.states,
+    dispatchStateId: NT_SKELETON.dispatchStateId,
+    entrySurfaceGroupId: NT_SKELETON.entrySurfaceGroupId,
+    crossModuleRelations: NT_CROSS_MODULE_RELATIONS,
+  },
 );
 
 const ntDealConstraints: DealConstraints = {

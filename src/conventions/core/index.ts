@@ -70,3 +70,19 @@ export { buildConversationMachine } from "./runtime/machine-types";
 // ── Composition (bottom-up module assembly) ──────────────────────────────
 export type { ConventionModule, BundleSkeleton, ComposedBundle } from "./composition";
 export { composeModules } from "./composition";
+
+// ── Profile (profile-centric composition) ────────────────────────────────
+export type { CompiledProfile, ResolvedModuleEntry, LegacyCompiledProfile } from "./profile";
+export { compileProfileFromBundle } from "./profile";
+
+// ── Modules (package-based authoring) ────────────────────────────────────
+export type {
+  ModulePackage,
+  ModuleRequirement,
+  MeaningSurfaceContribution,
+} from "./modules";
+export type { MachineFragment, FrontierDeclaration } from "./modules";
+export type { HandoffSpec, HandoffTrigger } from "./modules";
+export type { SurfaceEmitterSpec } from "./modules";
+export type { BundleReconstructionMeta } from "./modules";
+export { conventionBundleToPackages, packagesToConventionBundle } from "./modules";

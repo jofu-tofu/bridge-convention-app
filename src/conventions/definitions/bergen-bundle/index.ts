@@ -10,8 +10,7 @@ export {
 export { createBergenConversationMachine } from "./machine";
 export { BERGEN_PROFILE } from "./system-profile";
 export { BERGEN_ROUTED_SURFACES, createBergenSurfaceRouter } from "./surface-routing";
-export { BERGEN_EXPLANATION_CATALOG, BERGEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
+export { BERGEN_EXPLANATION_CATALOG } from "./explanation-catalog";
 export { BERGEN_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 export { BERGEN_ALTERNATIVE_GROUPS } from "./alternatives";
-export { BERGEN_SKELETON, composeBergenModules } from "./compose";
-export { bergenModule } from "./module";
+export { bergenRaisesPackage } from "./packages/bergen-raises";
