@@ -231,6 +231,7 @@
         deal={gameStore.deal}
         faceUpSeats={gameStore.faceUpSeats}
         auction={gameStore.auction}
+        bidHistory={gameStore.bidHistory}
         legalCalls={gameStore.legalCalls}
         onBid={handleBid}
         disabled={!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback}

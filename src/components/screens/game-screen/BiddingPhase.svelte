@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Call, Deal, Seat } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
+  import type { BidHistoryEntry } from "../../../core/contracts";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -11,6 +12,7 @@
     deal: Deal;
     faceUpSeats: ReadonlySet<Seat>;
     auction: Auction;
+    bidHistory?: readonly BidHistoryEntry[];
     legalCalls: Call[];
     onBid: (call: Call) => void;
     disabled: boolean;
@@ -29,6 +31,7 @@
     deal,
     faceUpSeats,
     auction,
+    bidHistory,
     legalCalls,
     onBid,
     disabled,
@@ -47,6 +50,7 @@
         <AuctionTable
           entries={auction.entries}
           dealer={deal.dealer}
+          {bidHistory}
           compact
         />
       </div>

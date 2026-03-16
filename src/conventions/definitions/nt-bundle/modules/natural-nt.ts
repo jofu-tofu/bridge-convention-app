@@ -260,6 +260,22 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
     roles: ["inferential"],
   },
   {
+    explanationId: "nt.posterior.partnerHas4Diamonds",
+    factId: "bridge.partnerHas4DiamondsLikely",
+    templateKey: "nt.posterior.partnerHas4Diamonds",
+    displayText: "Partner likely has 4+ diamonds",
+    preferredLevel: "semantic",
+    roles: ["inferential"],
+  },
+  {
+    explanationId: "nt.posterior.partnerHas4Clubs",
+    factId: "bridge.partnerHas4ClubsLikely",
+    templateKey: "nt.posterior.partnerHas4Clubs",
+    displayText: "Partner likely has 4+ clubs",
+    preferredLevel: "semantic",
+    roles: ["inferential"],
+  },
+  {
     explanationId: "nt.posterior.nsHaveEightCardFit",
     factId: "bridge.nsHaveEightCardFitLikely",
     templateKey: "nt.posterior.nsHaveEightCardFit",

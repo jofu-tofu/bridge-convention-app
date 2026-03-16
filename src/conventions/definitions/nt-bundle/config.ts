@@ -23,8 +23,7 @@ const ntDealConstraints: DealConstraints = {
     { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
     {
       seat: Seat.South,
-      minHcp: 6,
-      minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 },
+      minHcp: 0,
     },
   ],
   dealer: Seat.North,

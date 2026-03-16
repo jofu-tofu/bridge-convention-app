@@ -48,6 +48,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 ## Design Decisions
 
 - **Correct-path-only bidding.** Only the #1 truth-set winner (`BidGrade.Correct`) advances the auction. All other grades (`CorrectNotPreferred`, `Acceptable`, `NearMiss`, `Incorrect`) block with feedback and require retry. Wrong bids are never applied to the auction — the user sees feedback, retries, and the auction state is unchanged. Rationale: convention surfaces are authored for specific auction paths; allowing non-primary bids to proceed creates uncharted pipeline states. `dismissBidFeedback()` and `skipFromFeedback()` were removed; `retryBid()` simply clears feedback (no snapshot rollback needed since the auction was never modified).
+- **Convention-exhausted = Pass.** When `conventionStrategy` exists but `suggest()` returns null (weak hand, second-round bid with no surfaces), the expected bid is Pass. The user's bid is graded against Pass — non-pass bids get `BidGrade.Incorrect` feedback and block until retry. When no `conventionStrategy` is wired at all, no correctness checking occurs (any bid accepted, `isCorrect` is undefined in history).
 
 ## Gotchas
 

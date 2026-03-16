@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Card as CardType } from "../../engine/types";
   import { SUIT_CARD_COLOR_CLASS } from "../../core/display/tokens";
-  import { SUIT_SYMBOLS } from "../../core/display/format";
+  import { SUIT_SYMBOLS, displayRank, formatCardLabel } from "../../core/display/format";
 
   interface Props {
     card: CardType;
@@ -22,6 +22,8 @@
 
   const colorClass = $derived(SUIT_CARD_COLOR_CLASS[card.suit]);
   const symbol = $derived(SUIT_SYMBOLS[card.suit]);
+  const rank = $derived(displayRank(card.rank));
+  const cardLabel = $derived(formatCardLabel(card.rank, card.suit));
   const cardStyle = "width: var(--card-width); height: var(--card-height); --card-font: calc(var(--card-width) * 0.32);";
   const hoverClass = $derived(
     mirrored
@@ -36,14 +38,14 @@
     <span
       class="absolute bottom-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--card-font);"
     >
-      {card.rank}<br />{symbol}
+      {rank}<br />{symbol}
     </span>
   {:else}
     <!-- Normal: top-left upright + bottom-right rotated 180° -->
     <span
       class="absolute top-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--card-font);"
     >
-      {card.rank}<br />{symbol}
+      {rank}<br />{symbol}
     </span>
   {/if}
 {/snippet}
@@ -56,7 +58,7 @@
       border-none p-0"
     style={cardStyle}
     {onclick}
-    aria-label="{card.rank} of {card.suit}"
+    aria-label={cardLabel}
     data-testid="card"
     data-suit={card.suit}
   >
@@ -66,7 +68,7 @@
   <div
     class="relative bg-card-face rounded-[--radius-md] shadow-md select-none"
     style={cardStyle}
-    aria-label="{card.rank} of {card.suit}"
+    aria-label={cardLabel}
     data-testid="card"
     data-suit={card.suit}
   >

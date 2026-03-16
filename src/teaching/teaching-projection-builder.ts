@@ -216,14 +216,18 @@ function buildPartnerSummary(
   catalogIndex?: CatalogIndex,
 ): string | undefined {
   const HIGH_CONFIDENCE = 0.55;
+  const MIN_PROBABILITY = 0.55;
   const insights: string[] = [];
 
   for (const fv of posterior.factValues) {
     if (fv.confidence < HIGH_CONFIDENCE) continue;
+    // Use expectedValue (the actual probability), not confidence (sample completion rate)
+    const probability = fv.expectedValue ?? 0;
+    if (probability < MIN_PROBABILITY) continue;
     // Look up label from catalog, fall back to factId
     const catalogEntry = catalogIndex?.byFactId.get(fv.factId);
     const label = catalogEntry?.displayText ?? fv.factId;
-    const pct = Math.round(fv.confidence * 100);
+    const pct = Math.round(probability * 100);
     insights.push(`${label} (${pct}%)`);
   }
 

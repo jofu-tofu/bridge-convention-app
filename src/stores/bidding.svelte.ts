@@ -161,6 +161,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
             call: result.call,
             meaning: result.meaning,
             isUser: false,
+            alertLabel: result.alert?.teachingLabel,
           },
         ];
 
@@ -191,24 +192,29 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     if (isProcessing) return;
     if (!currentTurn || !activeSession.isUserSeat(currentTurn)) return;
 
-    let expectedResult: BidResult | null = null;
-    if (conventionStrategy) {
-      const hand = activeDeal.hands[currentTurn];
-      const evaluation = evaluateHand(hand);
-      expectedResult = conventionStrategy.suggest(
-        createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
-      );
-    }
-
-    // Convention exhausted: no surfaces match, so no grading — let any bid through.
-    if (!expectedResult) {
+    // No convention strategy at all — no correctness checking, let any bid through.
+    if (!conventionStrategy) {
       await applyBidAndContinue(currentTurn, call, null);
       return;
     }
 
-    const strategyEval = conventionStrategy?.getLastEvaluation();
+    const hand = activeDeal.hands[currentTurn];
+    const evaluation = evaluateHand(hand);
+    const expectedResult = conventionStrategy.suggest(
+      createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
+    );
+
+    // Convention exhausted (no surfaces match) → expected bid is Pass.
+    // Still grade so the user gets feedback instead of silently accepting any bid.
+    const effectiveResult: BidResult = expectedResult ?? {
+      call: { type: "pass" },
+      ruleName: null,
+      explanation: "No convention bid applies — pass",
+    };
+
+    const strategyEval = conventionStrategy.getLastEvaluation();
     const teachingResolution = resolveTeachingAnswer(
-      expectedResult,
+      effectiveResult,
       strategyEval?.acceptableAlternatives,
       strategyEval?.intentFamilies,
     );
@@ -218,11 +224,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     bidFeedback = {
       grade,
       userCall: call,
-      expectedResult: expectedResult ?? {
-        call: { type: "pass" },
-        ruleName: null,
-        explanation: "No convention bid applies — pass",
-      },
+      expectedResult: effectiveResult,
       teachingResolution,
       practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
       teachingProjection: strategyEval?.teachingProjection ?? undefined,
@@ -237,7 +239,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         turnIndex: debugTurnCounter++,
         seat: currentTurn,
         call,
-        snapshot: { ...snap, expectedBid: expectedResult },
+        snapshot: { ...snap, expectedBid: effectiveResult },
         feedback: bidFeedback,
       });
     }
@@ -249,7 +251,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       return;
     }
 
-    await applyBidAndContinue(currentTurn, call, expectedResult);
+    await applyBidAndContinue(currentTurn, call, effectiveResult);
   }
 
   /** Apply a user bid to the auction and continue with AI bids. */
@@ -274,7 +276,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         call,
         meaning: expectedResult?.meaning,
         isUser: true,
-        isCorrect: expectedResult !== null,
+        isCorrect: expectedResult ? true : undefined,
+        alertLabel: expectedResult?.alert?.teachingLabel,
         teachingProjection: conventionStrategy?.getLastEvaluation()?.teachingProjection ?? undefined,
       },
     ];

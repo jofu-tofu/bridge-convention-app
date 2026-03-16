@@ -19,6 +19,11 @@ export function createDDSStore(engine: EnginePort) {
     ddsError = null;
     ddsSolution = null;
 
+    // Unwrap Svelte 5 $state proxy to a plain object before crossing
+    // the serialization boundary (Web Worker postMessage requires
+    // structured-cloneable data; Proxy objects are not cloneable).
+    const plainDeal: Deal = $state.snapshot(deal);
+
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -28,7 +33,7 @@ export function createDDSStore(engine: EnginePort) {
         );
       });
       const result = await Promise.race([
-        engine.solveDeal(deal),
+        engine.solveDeal(plainDeal),
         timeoutPromise,
       ]);
       // Guard against stale results

@@ -229,8 +229,48 @@ describe("bid feedback — user-facing behavior", () => {
       store.userBid({ type: "pass" });
       await flushActions();
 
-      // No strategy → compares against pass → correct → no feedback
+      // No strategy → no correctness checking → no feedback
       expect(store.bidFeedback).toBeNull();
+    });
+
+    it("non-pass bid gets Incorrect feedback when convention does not apply", async () => {
+      const store = makeStore();
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: makeNoOpStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
+      await flushActions();
+
+      // Strategy returned null → pass is the right call → 7NT should be rejected
+      store.userBid({ type: "bid", level: 7, strain: BidSuit.NoTrump });
+      await flushActions();
+
+      expect(store.bidFeedback).not.toBeNull();
+      expect(store.bidFeedback!.grade).toBe(BidGrade.Incorrect);
+      expect(store.bidFeedback!.expectedResult!.call).toEqual({ type: "pass" });
+      expect(store.isFeedbackBlocking).toBe(true);
+    });
+
+    it("non-pass bid is not applied to auction when convention does not apply", async () => {
+      const store = makeStore();
+      store.startDrill({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        strategy: makeNoOpStrategy(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
+      await flushActions();
+
+      const auctionBefore = store.auction;
+      store.userBid({ type: "bid", level: 7, strain: BidSuit.NoTrump });
+      await flushActions();
+
+      // Auction unchanged — wrong bid was not applied
+      expect(store.auction).toBe(auctionBefore);
     });
   });
 

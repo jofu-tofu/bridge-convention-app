@@ -51,10 +51,10 @@ describe("LearningScreen", () => {
     expect(screen.getByRole("button", { name: "1NT Responses" })).toBeTruthy();
   });
 
-  it("shows placeholder message for learning content", () => {
+  it("shows quick reference content for NT bundle", () => {
     renderLearningScreen();
-    // Meaning pipeline display not yet implemented — expect placeholder
-    expect(screen.getByText(/coming soon/i)).toBeTruthy();
+    expect(screen.getByText("Quick Reference")).toBeTruthy();
+    expect(screen.getByText(/After partner opens 1NT \(15-17 HCP\)/i)).toBeTruthy();
   });
 
   it("has a practice button in the convention toolbar", () => {

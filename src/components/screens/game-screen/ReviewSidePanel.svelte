@@ -4,7 +4,7 @@
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
-  import { formatContractWithDeclarer } from "../../../core/display/format";
+  import { formatContractWithDeclarer, formatRuleName } from "../../../core/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
@@ -162,7 +162,7 @@
             <span
               class="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs {roleColorClasses(mod.role)}"
             >
-              <span class="font-medium">{mod.moduleId}</span>
+              <span class="font-medium">{formatRuleName(mod.moduleId)}</span>
               <span class="opacity-70">{formatModuleRole(mod.role)}</span>
             </span>
           {/each}

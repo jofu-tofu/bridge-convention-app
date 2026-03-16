@@ -13,6 +13,7 @@
     isArtificialEncoder,
     formatEncoderKind,
   } from "./BidFeedbackPanel";
+  import { formatRuleName } from "../../../core/display/format";
 
   interface Props {
     feedback: BidFeedback;
@@ -225,7 +226,7 @@
               <span
                 class="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] {roleColorClasses(contrib.role)}"
               >
-                <span class="font-medium">{contrib.moduleId}</span>
+                <span class="font-medium">{formatRuleName(contrib.moduleId)}</span>
                 <span class="opacity-70">{formatModuleRole(contrib.role)}</span>
               </span>
             {/each}
@@ -258,7 +259,7 @@
                       {gradeStyle.label}
                     </span>
                   {/if}
-                  {#if entry.familyRelation}
+                  {#if entry.familyRelation && !(entry.grade === "near-miss" && entry.familyRelation.kind === "near-miss-of")}
                     <span class="text-[10px] text-purple-300/60 italic">
                       {formatRelationKind(entry.familyRelation.kind)}
                     </span>
@@ -299,7 +300,7 @@
             aria-expanded={showDecisionSpace}
           >
             <span class="shrink-0">{showDecisionSpace ? "▾" : "▸"}</span>
-            <span>Decision space ({eliminatedMeanings.length} eliminated meaning{eliminatedMeanings.length === 1 ? '' : 's'})</span>
+            <span>Other conventions considered ({eliminatedMeanings.length} ruled out)</span>
           </button>
           {#if showDecisionSpace}
             <div class="mt-1 space-y-0.5 ml-3">

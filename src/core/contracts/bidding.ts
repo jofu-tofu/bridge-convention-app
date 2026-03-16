@@ -69,6 +69,8 @@ export interface BidHistoryEntry {
   readonly isUser: boolean;
   readonly isCorrect?: boolean;
   readonly expectedResult?: BidResult;
+  /** Alert/announcement label for this bid (e.g., "Transfer to hearts", "15 to 17"). */
+  readonly alertLabel?: string;
   /** Teaching projection snapshot — persisted for review-phase convention analysis.
    *  Present for user bids when the meaning pipeline produced one. */
   readonly teachingProjection?: TeachingProjection;

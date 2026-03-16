@@ -1,4 +1,4 @@
-import { Suit, BidSuit } from "../../engine/types";
+import { Suit, BidSuit, Rank } from "../../engine/types";
 import type { Call, Contract } from "../../engine/types";
 
 export const SUIT_SYMBOLS: Record<Suit, string> = {
@@ -20,8 +20,8 @@ export function formatCall(call: Call): string {
   if (call.type === "bid") {
     return `${call.level}${STRAIN_SYMBOLS[call.strain]}`;
   }
-  if (call.type === "double") return "X";
-  if (call.type === "redouble") return "XX";
+  if (call.type === "double") return "Dbl";
+  if (call.type === "redouble") return "Rdbl";
   return "Pass";
 }
 
@@ -55,5 +55,40 @@ export function formatRuleName(name: string): string {
       return w.charAt(0).toUpperCase() + w.slice(1);
     })
     .join(" ");
+}
+
+/** Display a card rank for the UI. Converts "T" to "10" for user-facing display. */
+export function displayRank(rank: Rank): string {
+  return rank === Rank.Ten ? "10" : rank;
+}
+
+/** Full suit name for accessibility labels. */
+const SUIT_FULL_NAMES: Record<Suit, string> = {
+  [Suit.Spades]: "Spades",
+  [Suit.Hearts]: "Hearts",
+  [Suit.Diamonds]: "Diamonds",
+  [Suit.Clubs]: "Clubs",
+};
+
+/** Full rank name for accessibility labels. */
+const RANK_FULL_NAMES: Record<Rank, string> = {
+  [Rank.Two]: "2",
+  [Rank.Three]: "3",
+  [Rank.Four]: "4",
+  [Rank.Five]: "5",
+  [Rank.Six]: "6",
+  [Rank.Seven]: "7",
+  [Rank.Eight]: "8",
+  [Rank.Nine]: "9",
+  [Rank.Ten]: "10",
+  [Rank.Jack]: "Jack",
+  [Rank.Queen]: "Queen",
+  [Rank.King]: "King",
+  [Rank.Ace]: "Ace",
+};
+
+/** Format a card for accessible aria-label: "Queen of Hearts", "10 of Spades". */
+export function formatCardLabel(rank: Rank, suit: Suit): string {
+  return `${RANK_FULL_NAMES[rank]} of ${SUIT_FULL_NAMES[suit]}`;
 }
 

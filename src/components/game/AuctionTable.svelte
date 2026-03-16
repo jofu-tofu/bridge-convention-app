@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { AuctionEntry } from "../../engine/types";
+  import type { BidHistoryEntry } from "../../core/contracts";
   import { Seat } from "../../engine/types";
   import { SEAT_INDEX } from "../../engine/constants";
   import { formatCall } from "../../core/display/format";
@@ -9,9 +10,11 @@
     entries: readonly AuctionEntry[];
     dealer: Seat;
     compact?: boolean;
+    /** Optional bid history with alert labels for annotation display. */
+    bidHistory?: readonly BidHistoryEntry[];
   }
 
-  let { entries, dealer, compact = false }: Props = $props();
+  let { entries, dealer, compact = false, bidHistory }: Props = $props();
 
   const SEAT_LABELS = ["N", "E", "S", "W"];
 
@@ -19,6 +22,7 @@
     text: string;
     isPlaceholder: boolean;
     colorClass: string;
+    alertLabel?: string;
   }
 
   const rows = $derived.by(() => {
@@ -29,7 +33,8 @@
       cells.push({ text: "\u2014", isPlaceholder: true, colorClass: "" });
     }
 
-    for (const entry of entries) {
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i]!;
       let colorClass = "";
       if (entry.call.type === "bid") {
         colorClass = BID_SUIT_COLOR_CLASS[entry.call.strain] ?? "";
@@ -38,6 +43,7 @@
         text: formatCall(entry.call),
         isPlaceholder: false,
         colorClass,
+        alertLabel: bidHistory?.[i]?.alertLabel,
       });
     }
 
@@ -74,7 +80,15 @@
                 ? 'text-text-muted'
                 : cell.colorClass || 'text-text-primary'}"
             >
-              {cell.text}
+              <div class="flex flex-col items-center">
+                <span>{cell.text}</span>
+                {#if cell.alertLabel}
+                  <span
+                    class="text-[9px] text-amber-400/80 font-sans italic leading-tight"
+                    title={cell.alertLabel}
+                  >{cell.alertLabel}</span>
+                {/if}
+              </div>
             </td>
           {/each}
           {#if row.length < 4}

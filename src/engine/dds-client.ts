@@ -80,6 +80,14 @@ export function solveDealWasm(deal: Deal): Promise<DDSolution> {
   const id = nextId++;
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
-    worker!.postMessage({ id, deal });
+    // Defensive: ensure plain serializable data for postMessage.
+    // Svelte 5 $state proxies (or other non-cloneable wrappers) will
+    // cause "could not be cloned" errors if passed directly.
+    try {
+      worker!.postMessage({ id, deal });
+    } catch {
+      // Fallback: JSON round-trip strips any non-serializable wrappers
+      worker!.postMessage({ id, deal: JSON.parse(JSON.stringify(deal)) });
+    }
   });
 }
