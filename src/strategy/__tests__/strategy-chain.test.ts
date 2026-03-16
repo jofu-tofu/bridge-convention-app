@@ -5,7 +5,7 @@ import {
   auctionFromBids,
 } from "../../conventions/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import type { BiddingContext } from "../../conventions/core/types";
+import type { BiddingContext } from "../../core/contracts";
 import { createStrategyChain } from "../bidding/strategy-chain";
 import { passStrategy } from "../bidding/pass-strategy";
 

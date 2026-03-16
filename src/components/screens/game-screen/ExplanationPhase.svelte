@@ -8,7 +8,7 @@
   } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core";
-  import type { BidHistoryEntry } from "../../../stores/game.svelte";
+  import type { BidHistoryEntry } from "../../../core/contracts";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import HandFan from "../../game/HandFan.svelte";

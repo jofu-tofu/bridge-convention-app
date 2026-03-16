@@ -6,7 +6,6 @@
 export { ConventionCategory } from "./types";
 export type {
   ConventionConfig,
-  BiddingContext,
   ConventionLookup,
   ConventionTeaching,
 } from "./types";

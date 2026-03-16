@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import { Seat } from "../../engine/types";
 import { hand, auctionFromBids } from "../../conventions/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import type { BiddingContext } from "../../conventions/core/types";
+import type { BiddingContext } from "../../core/contracts";
 import { passStrategy } from "../bidding/pass-strategy";
 
 describe("passStrategy", () => {

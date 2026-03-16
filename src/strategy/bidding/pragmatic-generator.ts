@@ -6,7 +6,7 @@ import { BidSuit } from "../../engine/types";
 import type { Auction, Call, ContractBid, Seat } from "../../engine/types";
 import { isLegalCall } from "../../engine/auction";
 import { SUIT_ORDER, partnerSeat } from "../../engine/constants";
-import type { BiddingContext } from "../../conventions/core";
+import type { BiddingContext } from "../../core/contracts";
 import type { PrivateBeliefState } from "../../inference/private-belief";
 import { LEVEL_HCP_TABLE } from "./practical-scorer";
 

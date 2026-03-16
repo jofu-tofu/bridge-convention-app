@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { BidSuit } from "../../engine/types";
 import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
-import { BidGrade } from "../bidding.svelte";
+import { BidGrade } from "../../teaching/teaching-resolution";
 import { createStubEngine } from "../../test-support/engine-stub";
 import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "../../test-support/fixtures";

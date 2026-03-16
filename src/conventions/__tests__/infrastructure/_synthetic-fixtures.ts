@@ -59,7 +59,7 @@ import { createSharedFactCatalog } from "../../core/pipeline/fact-evaluator";
 import type { ArbitrationInput } from "../../core/pipeline/meaning-arbitrator";
 
 // ── Core types (for BiddingContext) ──────────────────────────
-import type { BiddingContext } from "../../core/types";
+import type { BiddingContext } from "../../../core/contracts";
 import { ConventionCategory } from "../../core/types";
 
 // ═══════════════════════════════════════════════════════════════

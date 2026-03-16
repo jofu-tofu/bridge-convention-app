@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BidFeedback } from "../../../stores/game.svelte";
-  import { BidGrade } from "../../../stores/bidding.svelte";
+  import { BidGrade } from "../../../teaching/teaching-resolution";
   import { formatCall } from "../../../core/display/format";
 
   interface Props {

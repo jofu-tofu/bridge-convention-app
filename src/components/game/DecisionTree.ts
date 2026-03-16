@@ -1,4 +1,4 @@
-import type { BiddingContext } from "../../conventions/core";
+import type { BiddingContext } from "../../core/contracts";
 import type { Call, Hand } from "../../engine/types";
 import { Seat, Suit, Rank } from "../../engine/types";
 import { createBiddingContext } from "../../conventions/core";

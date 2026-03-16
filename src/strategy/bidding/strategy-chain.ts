@@ -1,5 +1,5 @@
 import type { BiddingStrategy, BidResult } from "../../core/contracts";
-import type { BiddingContext } from "../../conventions/core";
+import type { BiddingContext } from "../../core/contracts";
 import { TraceCollector } from "./trace-collector";
 
 export interface StrategyChainOptions {

@@ -4,7 +4,6 @@ import type {
 } from "../../engine/types";
 import type { Seat } from "../../engine/types";
 import type { Auction } from "../../engine/types";
-export type { BiddingContext } from "../../core/contracts";
 
 export enum ConventionCategory {
   Asking = "Asking",

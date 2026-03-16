@@ -2,7 +2,7 @@
   import { SvelteMap } from "svelte/reactivity";
   import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core";
-  import type { BidHistoryEntry } from "../../../stores/game.svelte";
+  import type { BidHistoryEntry } from "../../../core/contracts";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
   import { formatContractWithDeclarer } from "../../../core/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BidFeedback } from "../../../stores/game.svelte";
-  import { BidGrade } from "../../../stores/bidding.svelte";
+  import { BidGrade } from "../../../teaching/teaching-resolution";
   import { callsMatch } from "../../../engine/call-helpers";
   import BidFeedbackCorrect from "./BidFeedbackCorrect.svelte";
   import BidFeedbackAcceptable from "./BidFeedbackAcceptable.svelte";
