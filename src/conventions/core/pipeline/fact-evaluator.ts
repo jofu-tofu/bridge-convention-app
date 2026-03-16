@@ -128,11 +128,11 @@ export function evaluateFacts(
   }
 
   // Posterior evaluators: run after all other evaluators.
-  // Each PosteriorFactEvaluatorFn handles null internally (see Fail-Open Policy).
+  // Each PosteriorFactEvaluator handles null internally (see Fail-Open Policy).
   if (posterior && catalog && "posteriorEvaluators" in catalog && catalog.posteriorEvaluators) {
-    for (const [factId, evaluator] of catalog.posteriorEvaluators) {
+    for (const [factId, entry] of catalog.posteriorEvaluators) {
       const request: PosteriorFactRequest = { factId, seatId: posteriorSeatId ?? "" };
-      const value = evaluator(posterior, request);
+      const value = entry.evaluate(posterior, request);
       facts.set(factId, value);
     }
   }

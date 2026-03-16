@@ -110,10 +110,11 @@ function makeSamples(
 // ── Registry ────────────────────────────────────────────────────────
 
 describe("POSTERIOR_FACT_HANDLERS registry", () => {
-  it("contains exactly the five expected handler keys", () => {
+  it("contains exactly the six expected handler keys", () => {
     const keys = [...POSTERIOR_FACT_HANDLERS.keys()];
-    expect(keys).toHaveLength(5);
-    expect(keys).toContain("bridge.partnerHas4CardMajorLikely");
+    expect(keys).toHaveLength(6);
+    expect(keys).toContain("bridge.partnerHas4HeartsLikely");
+    expect(keys).toContain("bridge.partnerHas4SpadesLikely");
     expect(keys).toContain("bridge.nsHaveEightCardFitLikely");
     expect(keys).toContain("bridge.combinedHcpInRangeLikely");
     expect(keys).toContain("bridge.openerStillBalancedLikely");
@@ -125,15 +126,16 @@ describe("POSTERIOR_FACT_HANDLERS registry", () => {
   });
 });
 
-// ── partnerHas4CardMajorLikely ──────────────────────────────────────
+// ── partnerHas4InSuitLikely ─────────────────────────────────────────
 
-describe("partnerHas4CardMajorLikely", () => {
+describe("partnerHas4InSuitLikely", () => {
   const handler = POSTERIOR_FACT_HANDLERS.get(
-    "bridge.partnerHas4CardMajorLikely",
+    "bridge.partnerHas4HeartsLikely",
   )!;
   const baseRequest: PosteriorFactRequest = {
-    factId: "bridge.partnerHas4CardMajorLikely",
+    factId: "bridge.partnerHas4HeartsLikely",
     seatId: "N",
+    conditionedOn: ["H"],
   };
 
   it("returns expectedValue 0 and confidence 0 for zero samples", () => {
@@ -173,19 +175,24 @@ describe("partnerHas4CardMajorLikely", () => {
   });
 
   it("conditions on spades when conditionedOn is S", () => {
+    const spadesHandler = POSTERIOR_FACT_HANDLERS.get(
+      "bridge.partnerHas4SpadesLikely",
+    )!;
     const request: PosteriorFactRequest = {
-      ...baseRequest,
+      factId: "bridge.partnerHas4SpadesLikely",
+      seatId: "N",
       conditionedOn: ["S"],
     };
     // threeHeartsHand has 4 spades
     const samples = makeSamples("N", threeHeartsHand, 5);
-    const result = handler(request, samples, dummyOwnHand, 5);
+    const result = spadesHandler(request, samples, dummyOwnHand, 5);
     expect(result.expectedValue).toBe(1.0);
   });
 
   it("conditions on diamonds when conditionedOn is D", () => {
     const request: PosteriorFactRequest = {
       ...baseRequest,
+      factId: "bridge.partnerHas4HeartsLikely",
       conditionedOn: ["D"],
     };
     const matchSamples = makeSamples("N", fourDiamondsHand, 3);
@@ -202,6 +209,7 @@ describe("partnerHas4CardMajorLikely", () => {
   it("conditions on clubs when conditionedOn is C", () => {
     const request: PosteriorFactRequest = {
       ...baseRequest,
+      factId: "bridge.partnerHas4HeartsLikely",
       conditionedOn: ["C"],
     };
     const samples = makeSamples("N", fourClubsHand, 5);
@@ -209,23 +217,29 @@ describe("partnerHas4CardMajorLikely", () => {
     expect(result.expectedValue).toBe(1.0);
   });
 
-  it("defaults to hearts when conditionedOn is absent", () => {
+  it("returns zero when conditionedOn is absent", () => {
+    const request: PosteriorFactRequest = {
+      factId: "bridge.partnerHas4HeartsLikely",
+      seatId: "N",
+    };
     const samples = [
       makeSample("N", fourHeartsHand),  // 4H ✓
       makeSample("N", threeHeartsHand), // 3H ✗
     ];
-    const result = handler(baseRequest, samples, dummyOwnHand, 2);
-    expect(result.expectedValue).toBeCloseTo(1 / 2);
+    const result = handler(request, samples, dummyOwnHand, 2);
+    expect(result.expectedValue).toBe(0);
+    expect(result.confidence).toBe(0);
   });
 
   it("propagates factId and seatId to the result", () => {
     const request: PosteriorFactRequest = {
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "E",
+      conditionedOn: ["H"],
     };
     const samples = makeSamples("E", fourHeartsHand, 1);
     const result = handler(request, samples, dummyOwnHand, 1);
-    expect(result.factId).toBe("bridge.partnerHas4CardMajorLikely");
+    expect(result.factId).toBe("bridge.partnerHas4HeartsLikely");
     expect(result.seatId).toBe("E");
   });
 });

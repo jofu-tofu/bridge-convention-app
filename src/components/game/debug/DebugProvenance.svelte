@@ -20,7 +20,36 @@
     {#if provenance}
       {@const prov = provenance}
 
-      <!-- Encoding traces -->
+      <!-- Transforms (surface composition: suppress/remap/inject) -->
+      {#if prov.transforms.length > 0}
+        <div class="mb-1.5">
+          <span class="text-text-muted font-semibold">Transforms:</span>
+          {#each prov.transforms as tr (tr.transformId)}
+            <div class="pl-2">
+              <span class="text-orange-300">{tr.kind}</span>
+              <span class="text-text-muted ml-1">{tr.targetId} — {tr.reason}</span>
+            </div>
+          {/each}
+        </div>
+      {/if}
+
+      <!-- Applicability (clause evaluation against facts) -->
+      {#if prov.applicability.evaluatedConditions.length > 0}
+        <div class="mb-1.5">
+          <span class="text-text-muted font-semibold">Applicability:</span>
+          {#each prov.applicability.evaluatedConditions as cond, i (i)}
+            <div class="pl-2">
+              <span class={cond.satisfied ? "text-green-400" : "text-red-400"}>{cond.satisfied ? "+" : "-"}</span>
+              <span class="text-text-primary ml-1">{cond.conditionId ?? ""}</span>
+              {#if cond.observedValue !== undefined}
+                <span class="text-text-muted ml-1">(got: {String(cond.observedValue)}{cond.threshold !== undefined ? `, need: ${String(cond.threshold)}` : ""})</span>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {/if}
+
+      <!-- Encoding (how meanings became concrete calls) -->
       {#if prov.encoding.length > 0}
         <div class="mb-1.5">
           <span class="text-text-muted font-semibold">Encoding:</span>
@@ -43,7 +72,7 @@
         </div>
       {/if}
 
-      <!-- Ranking traces -->
+      <!-- Ranking (arbitration: truth set, ranking inputs) -->
       {#if prov.arbitration.length > 0}
         <div class="mb-1.5">
           <span class="text-text-muted font-semibold">Ranking:</span>
@@ -51,35 +80,6 @@
             <div class="pl-2">
               <span class={at.truthSetMember ? "text-green-300" : "text-text-muted"}>{truncate(at.candidateId, 30)}</span>
               <span class="text-text-muted ml-1">band:{at.rankingInputs.recommendationBand} spec:{at.rankingInputs.specificity} mod:{at.rankingInputs.modulePrecedence}</span>
-            </div>
-          {/each}
-        </div>
-      {/if}
-
-      <!-- Applicability evidence -->
-      {#if prov.applicability.evaluatedConditions.length > 0}
-        <div class="mb-1.5">
-          <span class="text-text-muted font-semibold">Applicability:</span>
-          {#each prov.applicability.evaluatedConditions as cond, i (i)}
-            <div class="pl-2">
-              <span class={cond.satisfied ? "text-green-400" : "text-red-400"}>{cond.satisfied ? "+" : "-"}</span>
-              <span class="text-text-primary ml-1">{cond.conditionId ?? ""}</span>
-              {#if cond.observedValue !== undefined}
-                <span class="text-text-muted ml-1">(got: {String(cond.observedValue)}{cond.threshold !== undefined ? `, need: ${String(cond.threshold)}` : ""})</span>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      {/if}
-
-      <!-- Transform and other traces -->
-      {#if prov.transforms.length > 0}
-        <div class="mb-1.5">
-          <span class="text-text-muted font-semibold">Transforms:</span>
-          {#each prov.transforms as tr (tr.transformId)}
-            <div class="pl-2">
-              <span class="text-orange-300">{tr.kind}</span>
-              <span class="text-text-muted ml-1">{tr.targetId} — {tr.reason}</span>
             </div>
           {/each}
         </div>

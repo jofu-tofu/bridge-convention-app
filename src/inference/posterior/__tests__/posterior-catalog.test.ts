@@ -36,9 +36,9 @@ function makeMockSeatPosterior(probabilities: Record<string, number>): SeatPoste
 }
 
 describe("createPosteriorFactEvaluators", () => {
-  it("returns map with exactly 2 entries by default, keys matching SHARED_POSTERIOR_FACT_IDS", () => {
+  it("returns map with exactly 3 entries by default, keys matching SHARED_POSTERIOR_FACT_IDS", () => {
     const evaluators = createPosteriorFactEvaluators();
-    expect(evaluators.size).toBe(2);
+    expect(evaluators.size).toBe(3);
     for (const id of SHARED_POSTERIOR_FACT_IDS) {
       expect(evaluators.has(id)).toBe(true);
     }
@@ -46,7 +46,7 @@ describe("createPosteriorFactEvaluators", () => {
 
   it("returns map with custom IDs when explicit factIds are provided", () => {
     const customIds = [
-      "bridge.partnerHas4CardMajorLikely",
+      "bridge.partnerHas4HeartsLikely",
       "bridge.combinedHcpInRangeLikely",
       "bridge.nsHaveEightCardFitLikely",
       "bridge.openerStillBalancedLikely",
@@ -61,43 +61,54 @@ describe("createPosteriorFactEvaluators", () => {
 
   it("evaluator returns provider value when provider returns non-null", () => {
     const evaluators = createPosteriorFactEvaluators();
-    const evaluator = evaluators.get("bridge.partnerHas4CardMajorLikely")!;
+    const entry = evaluators.get("bridge.partnerHas4HeartsLikely")!;
     const provider = makeMockProvider({
-      "bridge.partnerHas4CardMajorLikely": {
-        factId: "bridge.partnerHas4CardMajorLikely",
+      "bridge.partnerHas4HeartsLikely": {
+        factId: "bridge.partnerHas4HeartsLikely",
         seatId: "N",
         expectedValue: 0.73,
         confidence: 1,
       },
     });
-    const result = evaluator(provider, { factId: "bridge.partnerHas4CardMajorLikely", seatId: "" });
-    expect(result.factId).toBe("bridge.partnerHas4CardMajorLikely");
+    const result = entry.evaluate(provider, { factId: "bridge.partnerHas4HeartsLikely", seatId: "" });
+    expect(result.factId).toBe("bridge.partnerHas4HeartsLikely");
     expect(result.value).toBe(0.73);
   });
 
   it("evaluator returns value 0 when provider returns null (fail-open)", () => {
     const evaluators = createPosteriorFactEvaluators();
-    const evaluator = evaluators.get("bridge.partnerHas4CardMajorLikely")!;
+    const entry = evaluators.get("bridge.partnerHas4HeartsLikely")!;
     const provider = makeMockProvider({});
-    const result = evaluator(provider, { factId: "bridge.partnerHas4CardMajorLikely", seatId: "" });
-    expect(result.factId).toBe("bridge.partnerHas4CardMajorLikely");
+    const result = entry.evaluate(provider, { factId: "bridge.partnerHas4HeartsLikely", seatId: "" });
+    expect(result.factId).toBe("bridge.partnerHas4HeartsLikely");
     expect(result.value).toBe(0);
+  });
+
+  it("entries with conditions carry conditionedOn", () => {
+    const conditionsMap = new Map([["bridge.combinedHcpInRangeLikely", ["25", "40"] as readonly string[]]]);
+    const evaluators = createPosteriorFactEvaluators(
+      ["bridge.combinedHcpInRangeLikely", "bridge.openerStillBalancedLikely"],
+      conditionsMap,
+    );
+    expect(evaluators.size).toBe(2);
+    expect(evaluators.get("bridge.combinedHcpInRangeLikely")!.conditionedOn).toEqual(["25", "40"]);
+    expect(evaluators.get("bridge.openerStillBalancedLikely")!.conditionedOn).toBeUndefined();
   });
 });
 
 describe("createPosteriorFactProvider", () => {
   it("queryFact delegates to SeatPosterior.probability and returns PosteriorFactValue", () => {
     const posterior = makeMockSeatPosterior({
-      "bridge.partnerHas4CardMajorLikely": 0.65,
+      "bridge.partnerHas4HeartsLikely": 0.65,
     });
     const provider = createPosteriorFactProvider(posterior);
     const result = provider.queryFact({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
       conditionedOn: ["H"],
     });
     expect(result).not.toBeNull();
-    expect(result!.factId).toBe("bridge.partnerHas4CardMajorLikely");
+    expect(result!.factId).toBe("bridge.partnerHas4HeartsLikely");
     expect(result!.seatId).toBe("N");
     expect(result!.expectedValue).toBe(0.65);
   });
@@ -114,7 +125,7 @@ describe("createPosteriorFactProvider", () => {
     };
     const provider = createPosteriorFactProvider(posterior);
     const result = provider.queryFact({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
     });
     expect(result).not.toBeNull();
@@ -126,12 +137,12 @@ describe("createPosteriorFactProvider", () => {
 
   it("confidence is 1 when effectiveSampleSize equals default sample count", () => {
     const posterior = makeMockSeatPosterior({
-      "bridge.partnerHas4CardMajorLikely": 0.65,
+      "bridge.partnerHas4HeartsLikely": 0.65,
     });
     // effectiveSampleSize = 200 (default), so confidence = 200/200 = 1
     const provider = createPosteriorFactProvider(posterior);
     const result = provider.queryFact({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
     });
     expect(result).not.toBeNull();
@@ -206,18 +217,18 @@ function makeMockPosteriorState(particleCount: number, hand: Hand): PosteriorSta
 
 describe("createPosteriorFactProviderFromBackend", () => {
   it("delegates to POSTERIOR_FACT_HANDLERS for known fact IDs", () => {
-    // North has 4 hearts — partnerHas4CardMajorLikely for hearts should be 1.0
+    // North has 4 hearts — partnerHas4HeartsLikely should be 1.0
     const state = makeMockPosteriorState(100, northHand);
     const provider = createPosteriorFactProviderFromBackend(state, ownHand, 200);
 
     const result = provider.queryFact({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
       conditionedOn: ["H"],
     });
 
     expect(result).not.toBeNull();
-    expect(result!.factId).toBe("bridge.partnerHas4CardMajorLikely");
+    expect(result!.factId).toBe("bridge.partnerHas4HeartsLikely");
     expect(result!.seatId).toBe("N");
     // All particles have 4 hearts → expectedValue should be 1.0
     expect(result!.expectedValue).toBe(1);
@@ -242,7 +253,7 @@ describe("createPosteriorFactProviderFromBackend", () => {
     const provider = createPosteriorFactProviderFromBackend(state, ownHand, 200);
 
     const result = provider.queryFact({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
       conditionedOn: ["H"],
     });
@@ -257,7 +268,7 @@ describe("createPosteriorFactProviderFromBackend", () => {
     const provider = createPosteriorFactProviderFromBackend(state, ownHand, 200);
 
     const result = provider.queryFact({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
       conditionedOn: ["H"],
     });

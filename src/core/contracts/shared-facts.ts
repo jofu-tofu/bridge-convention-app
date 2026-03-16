@@ -127,10 +127,18 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
 
 export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
   {
-    id: "bridge.partnerHas4CardMajorLikely",
+    id: "bridge.partnerHas4HeartsLikely",
     layer: "bridge-derived",
     world: "acting-hand",
-    description: "Posterior probability that partner has a 4+ card major in specified suit",
+    description: "Posterior probability that partner has 4+ hearts",
+    valueType: "number",
+    metadata: { inferable: true, explainable: true },
+  },
+  {
+    id: "bridge.partnerHas4SpadesLikely",
+    layer: "bridge-derived",
+    world: "acting-hand",
+    description: "Posterior probability that partner has 4+ spades",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
   },

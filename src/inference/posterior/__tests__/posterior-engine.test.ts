@@ -140,7 +140,7 @@ describe("createPosteriorEngine", () => {
 
     // Partner denied 4-card majors, so probability of 4+ hearts should be 0
     const probHearts = posterior.probability({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
       conditionedOn: ["H"],
     });
@@ -206,7 +206,7 @@ describe("createPosteriorEngine", () => {
     const posterior = engine.conditionOnHand(northSpace, Seat.South, southHand);
 
     const factIds = [
-      "bridge.partnerHas4CardMajorLikely",
+      "bridge.partnerHas4HeartsLikely",
       "bridge.nsHaveEightCardFitLikely",
       "bridge.openerStillBalancedLikely",
       "bridge.openerHasSecondMajorLikely",
@@ -216,7 +216,7 @@ describe("createPosteriorEngine", () => {
       const prob = posterior.probability({
         factId,
         seatId: "N",
-        conditionedOn: factId === "bridge.partnerHas4CardMajorLikely" ? ["H"] : undefined,
+        conditionedOn: factId === "bridge.partnerHas4HeartsLikely" ? ["H"] : undefined,
       });
       expect(prob).toBeGreaterThanOrEqual(0);
       expect(prob).toBeLessThanOrEqual(1);

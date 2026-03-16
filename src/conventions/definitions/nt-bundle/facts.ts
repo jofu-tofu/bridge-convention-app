@@ -66,16 +66,23 @@ const STAYMAN_EVALUATORS = new Map<string, FactEvaluatorFn>([
     fv("module.stayman.preferred", bool(m, "module.stayman.eligible") && !bool(m, "bridge.hasFiveCardMajor"))],
 ]);
 
+const posteriorEvaluators = createPosteriorFactEvaluators([
+  "bridge.partnerHas4HeartsLikely",
+  "bridge.partnerHas4SpadesLikely",
+  "bridge.combinedHcpInRangeLikely",
+  "bridge.nsHaveEightCardFitLikely",
+  "bridge.openerStillBalancedLikely",
+  "bridge.openerHasSecondMajorLikely",
+], new Map([
+  ["bridge.partnerHas4HeartsLikely", ["H"]],
+  ["bridge.partnerHas4SpadesLikely", ["S"]],
+  ["bridge.combinedHcpInRangeLikely", ["25", "40"]],
+]));
+
 export const staymanFacts: FactCatalogExtension = {
   definitions: [...STAYMAN_FACTS, ...NT_POSTERIOR_FACTS],
   evaluators: STAYMAN_EVALUATORS,
-  posteriorEvaluators: createPosteriorFactEvaluators([
-    "bridge.partnerHas4CardMajorLikely",
-    "bridge.combinedHcpInRangeLikely",
-    "bridge.nsHaveEightCardFitLikely",
-    "bridge.openerStillBalancedLikely",
-    "bridge.openerHasSecondMajorLikely",
-  ]),
+  posteriorEvaluators,
 };
 
 // ─── Transfer module facts ───────────────────────────────────

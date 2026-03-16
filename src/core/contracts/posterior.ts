@@ -49,6 +49,7 @@ export interface PosteriorFactValue {
   readonly expectedValue: number;
   readonly variance?: number;
   readonly confidence: number;
+  readonly conditionedOn?: readonly string[];
 }
 
 // ─── Belief view ────────────────────────────────────────────
@@ -114,7 +115,8 @@ export interface PosteriorFactProvider {
 /** Shared posterior fact IDs — generic facts parameterized via conditionedOn.
  *  Convention-specific posterior facts belong in their module's FactCatalogExtension. */
 export const SHARED_POSTERIOR_FACT_IDS = [
-  "bridge.partnerHas4CardMajorLikely",
+  "bridge.partnerHas4HeartsLikely",
+  "bridge.partnerHas4SpadesLikely",
   "bridge.combinedHcpInRangeLikely",
 ] as const;
 

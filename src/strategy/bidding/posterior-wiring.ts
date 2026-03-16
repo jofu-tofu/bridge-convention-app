@@ -75,12 +75,17 @@ export function buildPosteriorSummary(
   for (const id of posteriorIds) {
     const fv = facts.facts.get(id);
     if (fv) {
-      const queryResult = provider.queryFact({ factId: id, seatId: partnerSeatId });
+      const conditionedOn = catalog.posteriorEvaluators?.get(id)?.conditionedOn;
+      const request = conditionedOn
+        ? { factId: id, seatId: partnerSeatId, conditionedOn }
+        : { factId: id, seatId: partnerSeatId };
+      const queryResult = provider.queryFact(request);
       posteriorFacts.push({
         factId: id,
         seatId: partnerSeatId,
         expectedValue: queryResult?.expectedValue ?? (fv.value as number),
         confidence: queryResult?.confidence ?? 0,
+        conditionedOn: queryResult?.conditionedOn ?? conditionedOn,
       });
     }
   }

@@ -128,7 +128,7 @@ function auctionAfterTransferAcceptSpades(): Auction {
 // ─── Gold scenarios ─────────────────────────────────────────
 
 describe("posterior 1NT gold scenarios — end-to-end", () => {
-  it("scenario 1: after Stayman 2D denial, partnerHas4CardMajorLikely is low", () => {
+  it("scenario 1: after Stayman 2D denial, partnerHas4HeartsLikely is low", () => {
     // After 1NT-P-2C-P-2D-P, opener denied a 4-card major.
     // The commitment extractor derives entailed denials (no 4-card major).
     // Posterior should assign low probability to partner having a 4-card major.
@@ -149,7 +149,7 @@ describe("posterior 1NT gold scenarios — end-to-end", () => {
     // Condition on our hand (Stayman hand) and query partner-has-major
     const posterior = engine.conditionOnHand(northSpace!, SeatEnum.South, staymanHand);
     const majorProb = posterior.probability({
-      factId: "bridge.partnerHas4CardMajorLikely",
+      factId: "bridge.partnerHas4HeartsLikely",
       seatId: "N",
       conditionedOn: ["H"],
     });

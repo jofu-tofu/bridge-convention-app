@@ -161,7 +161,7 @@ describe("PosteriorEngine contract", () => {
       const posterior = engine.conditionOnHand(northSpace, Seat.South, southHand);
 
       const queries = [
-        { factId: "bridge.partnerHas4CardMajorLikely", seatId: "N", conditionedOn: ["H"] },
+        { factId: "bridge.partnerHas4HeartsLikely", seatId: "N", conditionedOn: ["H"] },
         { factId: "bridge.nsHaveEightCardFitLikely", seatId: "N" },
         { factId: "bridge.combinedHcpInRangeLikely", seatId: "N", conditionedOn: ["25", "40"] },
         { factId: "bridge.openerStillBalancedLikely", seatId: "N" },
@@ -222,7 +222,7 @@ describe("PosteriorEngine contract", () => {
 
       const posterior = engine.conditionOnHand(northSpace, Seat.South, southHand);
       const probHearts = posterior.probability({
-        factId: "bridge.partnerHas4CardMajorLikely",
+        factId: "bridge.partnerHas4HeartsLikely",
         seatId: "N",
         conditionedOn: ["H"],
       });
@@ -256,7 +256,7 @@ describe("PosteriorEngine contract", () => {
       const northSpace = spaces.find((s) => s.seatId === "N")!;
 
       const requestedIds = [
-        "bridge.partnerHas4CardMajorLikely",
+        "bridge.partnerHas4HeartsLikely",
         "bridge.combinedHcpInRangeLikely",
       ];
       const facts = engine.deriveActingHandFacts(northSpace, requestedIds);
@@ -274,7 +274,7 @@ describe("PosteriorEngine contract", () => {
 
       const facts = engine.deriveActingHandFacts(northSpace, [
         "bridge.openerStillBalancedLikely",
-        "bridge.partnerHas4CardMajorLikely",
+        "bridge.openerHasSecondMajorLikely",
       ]);
 
       for (const fact of facts) {

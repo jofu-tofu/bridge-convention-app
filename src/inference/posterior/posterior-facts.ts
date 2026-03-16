@@ -30,17 +30,21 @@ export type PosteriorFactHandler = (
 ) => PosteriorFactValue;
 
 /**
- * bridge:partnerHas4CardMajorLikely
- * P(partner has 4+ in specified suit via conditionedOn[0]) over samples.
+ * bridge:partnerHas4HeartsLikely / bridge:partnerHas4SpadesLikely
+ * P(partner has 4+ in suit specified by conditionedOn[0]) over samples.
+ * conditionedOn[0] is required: "H" for hearts, "S" for spades.
  */
-function partnerHas4CardMajorLikely(
+function partnerHas4InSuitLikely(
   request: PosteriorFactRequest,
   samples: ReadonlyMap<string, Hand>[],
   _ownHand: Hand,
   totalRequested: number,
 ): PosteriorFactValue {
-  const suitChar = request.conditionedOn?.[0] ?? "H";
-  const suit = SUIT_CHAR_MAP[suitChar] ?? Suit.Hearts;
+  const suitChar = request.conditionedOn?.[0];
+  if (!suitChar || !SUIT_CHAR_MAP[suitChar]) {
+    return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
+  }
+  const suit = SUIT_CHAR_MAP[suitChar]!;
 
   if (samples.length === 0) {
     return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
@@ -59,6 +63,7 @@ function partnerHas4CardMajorLikely(
     seatId: request.seatId,
     expectedValue: count / samples.length,
     confidence: samples.length / totalRequested,
+    conditionedOn: request.conditionedOn,
   };
 }
 
@@ -131,6 +136,7 @@ function combinedHcpInRangeLikely(
     seatId: request.seatId,
     expectedValue: count / samples.length,
     confidence: samples.length / totalRequested,
+    conditionedOn: request.conditionedOn,
   };
 }
 
@@ -202,7 +208,8 @@ function openerHasSecondMajorLikely(
 
 /** Registry of posterior fact handlers. */
 export const POSTERIOR_FACT_HANDLERS: ReadonlyMap<string, PosteriorFactHandler> = new Map([
-  ["bridge.partnerHas4CardMajorLikely", partnerHas4CardMajorLikely],
+  ["bridge.partnerHas4HeartsLikely", partnerHas4InSuitLikely],
+  ["bridge.partnerHas4SpadesLikely", partnerHas4InSuitLikely],
   ["bridge.nsHaveEightCardFitLikely", nsHaveEightCardFitLikely],
   ["bridge.combinedHcpInRangeLikely", combinedHcpInRangeLikely],
   ["bridge.openerStillBalancedLikely", openerStillBalancedLikely],

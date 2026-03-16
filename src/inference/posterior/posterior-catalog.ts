@@ -5,34 +5,42 @@ import type {
   SeatPosterior,
 } from "../../core/contracts/posterior";
 import { SHARED_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
-import type { PosteriorFactEvaluatorFn, FactValue } from "../../core/contracts/fact-catalog";
+import type { PosteriorFactEvaluator, FactValue } from "../../core/contracts/fact-catalog";
 import type { Hand } from "../../engine/types";
 import type { PosteriorState } from "../../core/contracts/posterior-backend";
 import { POSTERIOR_FACT_HANDLERS } from "./posterior-facts";
 
 /**
- * Create PosteriorFactEvaluatorFn instances that bridge posterior provider
+ * Create PosteriorFactEvaluator entries that bridge posterior provider
  * responses into FactValue entries for the fact catalog.
  *
+ * Each entry bundles the evaluator function with its conditionedOn parameters,
+ * so both live in one place on the FactCatalog.
+ *
  * Each evaluator:
- * 1. Calls provider.queryFact with the fact ID
+ * 1. Calls provider.queryFact with the fact ID (and conditionedOn if provided)
  * 2. If result is non-null: returns { factId, value: result.expectedValue }
  * 3. If result is null: returns { factId, value: 0 } (fail-open)
  */
 export function createPosteriorFactEvaluators(
   factIds?: readonly string[],
-): ReadonlyMap<string, PosteriorFactEvaluatorFn> {
-  const evaluators = new Map<string, PosteriorFactEvaluatorFn>();
+  conditionsMap?: ReadonlyMap<string, readonly string[]>,
+): ReadonlyMap<string, PosteriorFactEvaluator> {
+  const entries = new Map<string, PosteriorFactEvaluator>();
   const ids = factIds ?? SHARED_POSTERIOR_FACT_IDS;
+  const conditions = conditionsMap ?? new Map<string, readonly string[]>();
 
   for (const factId of ids) {
-    evaluators.set(factId, (provider: PosteriorFactProvider, request: PosteriorFactRequest): FactValue => {
-      const result = provider.queryFact(request);
+    const conditionedOn = conditions.get(factId);
+    const evaluate = (provider: PosteriorFactProvider, request: PosteriorFactRequest): FactValue => {
+      const enrichedRequest = conditionedOn ? { ...request, conditionedOn } : request;
+      const result = provider.queryFact(enrichedRequest);
       return { factId: request.factId, value: result?.expectedValue ?? 0 };
-    });
+    };
+    entries.set(factId, conditionedOn ? { evaluate, conditionedOn } : { evaluate });
   }
 
-  return evaluators;
+  return entries;
 }
 
 /** Default sample count used by createPosteriorEngine. */

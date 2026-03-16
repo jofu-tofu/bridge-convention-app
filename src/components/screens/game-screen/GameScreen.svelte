@@ -131,7 +131,7 @@
     Math.min(25 * rootFontSize, Math.max(16 * rootFontSize, availableW * 0.25)),
   );
 
-  const isDesktop = $derived(availableW > 1023);
+  const isDesktop = $derived(innerW > 1023);
   const tableScale = $derived(
     computeTableScale(availableW, innerH, {
       sidePanel: isDesktop,
@@ -146,7 +146,7 @@
   const tableOrigin = $derived(isDesktop ? "top left" : "center");
   const phaseContainerClass = $derived(
     isDesktop
-      ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[1fr] overflow-hidden"
+      ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] overflow-hidden"
       : "flex-1 flex flex-col overflow-hidden",
   );
   const sidePanelClass = $derived(

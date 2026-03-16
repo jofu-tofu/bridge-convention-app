@@ -95,15 +95,7 @@
   {/if}
 
   <div class="p-3 flex flex-col gap-1 min-w-[420px]">
-    <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
-    <DebugHandFacts facts={debugSnap?.facts ?? null} />
-    <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
-    <DebugPipeline arbitration={debugSnap?.arbitration ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
-    <DebugProvenance provenance={debugSnap?.provenance ?? null} />
-    <DebugTeaching {feedback} />
-    <DebugBidLog debugLog={gameStore.debugLog} />
-    <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
-    <DebugPublicBeliefs publicBeliefState={gameStore.publicBeliefState} allSeats={ALL_SEATS} />
+    <!-- Static context -->
     <DebugDealInfo
       conventionName={appStore.selectedConvention?.name ?? null}
       conventionId={appStore.selectedConvention?.id ?? null}
@@ -113,6 +105,17 @@
       phase={gameStore.phase}
     />
     <DebugAllHands deal={gameStore.deal} allSeats={ALL_SEATS} />
+    <!-- Pipeline stages (sequential) -->
+    <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
+    <DebugHandFacts facts={debugSnap?.facts ?? null} />
+    <DebugProvenance provenance={debugSnap?.provenance ?? null} />
+    <DebugPipeline arbitration={debugSnap?.arbitration ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
+    <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
+    <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
+    <!-- Post-pipeline -->
+    <DebugTeaching {feedback} />
+    <DebugPublicBeliefs publicBeliefState={gameStore.publicBeliefState} allSeats={ALL_SEATS} />
+    <DebugBidLog debugLog={gameStore.debugLog} />
     <DebugPlayLog playLog={gameStore.playLog} />
   </div>
 </aside>

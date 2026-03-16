@@ -5,12 +5,12 @@ import {
   createFactCatalog,
 } from "../fact-catalog";
 import type { FactCatalog, FactCatalogExtension } from "../fact-catalog";
-import type { PosteriorFactEvaluatorFn } from "../fact-catalog";
+import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../fact-catalog";
 import { SHARED_POSTERIOR_FACT_IDS } from "../posterior";
 
 describe("POSTERIOR_DERIVED_FACTS", () => {
-  it("has exactly 2 shared entries (NT-specific facts moved to nt-bundle)", () => {
-    expect(POSTERIOR_DERIVED_FACTS).toHaveLength(2);
+  it("has exactly 3 shared entries (NT-specific facts moved to nt-bundle)", () => {
+    expect(POSTERIOR_DERIVED_FACTS).toHaveLength(3);
   });
 
   it("all entries have world=acting-hand, layer=bridge-derived, valueType=number", () => {
@@ -30,8 +30,8 @@ describe("POSTERIOR_DERIVED_FACTS", () => {
 });
 
 describe("SHARED_FACTS includes posterior facts", () => {
-  it("has 16 entries (6 primitive + 8 bridge-derived + 2 shared posterior)", () => {
-    expect(SHARED_FACTS).toHaveLength(16);
+  it("has 17 entries (6 primitive + 8 bridge-derived + 3 shared posterior)", () => {
+    expect(SHARED_FACTS).toHaveLength(17);
   });
 
   it("includes all shared posterior fact IDs", () => {
@@ -43,8 +43,8 @@ describe("SHARED_FACTS includes posterior facts", () => {
 });
 
 describe("SHARED_POSTERIOR_FACT_IDS", () => {
-  it("has exactly 2 entries matching POSTERIOR_DERIVED_FACTS", () => {
-    expect(SHARED_POSTERIOR_FACT_IDS).toHaveLength(2);
+  it("has exactly 3 entries matching POSTERIOR_DERIVED_FACTS", () => {
+    expect(SHARED_POSTERIOR_FACT_IDS).toHaveLength(3);
     const definedIds = POSTERIOR_DERIVED_FACTS.map((f) => f.id);
     for (const id of SHARED_POSTERIOR_FACT_IDS) {
       expect(definedIds).toContain(id);
@@ -67,15 +67,15 @@ describe("createFactCatalog merges posteriorEvaluators", () => {
     const ext: FactCatalogExtension = {
       definitions: [],
       evaluators: new Map(),
-      posteriorEvaluators: new Map<string, PosteriorFactEvaluatorFn>([
-        ["bridge.partnerHas4CardMajorLikely", mockEvaluator],
+      posteriorEvaluators: new Map<string, PosteriorFactEvaluator>([
+        ["bridge.partnerHas4HeartsLikely", { evaluate: mockEvaluator }],
       ]),
     };
 
     const result = createFactCatalog(base, ext);
     expect(result.posteriorEvaluators).toBeDefined();
     expect(result.posteriorEvaluators!.size).toBe(1);
-    expect(result.posteriorEvaluators!.has("bridge.partnerHas4CardMajorLikely")).toBe(true);
+    expect(result.posteriorEvaluators!.has("bridge.partnerHas4HeartsLikely")).toBe(true);
   });
 
   it("merges posteriorEvaluators from multiple extensions", () => {
@@ -87,12 +87,12 @@ describe("createFactCatalog merges posteriorEvaluators", () => {
     const ext1: FactCatalogExtension = {
       definitions: [],
       evaluators: new Map(),
-      posteriorEvaluators: new Map([["bridge.partnerHas4CardMajorLikely", mockEval1]]),
+      posteriorEvaluators: new Map([["bridge.partnerHas4HeartsLikely", { evaluate: mockEval1 }]]),
     };
     const ext2: FactCatalogExtension = {
       definitions: [],
       evaluators: new Map(),
-      posteriorEvaluators: new Map([["bridge.nsHaveEightCardFitLikely", mockEval2]]),
+      posteriorEvaluators: new Map([["bridge.nsHaveEightCardFitLikely", { evaluate: mockEval2 }]]),
     };
 
     const result = createFactCatalog(base, ext1, ext2);

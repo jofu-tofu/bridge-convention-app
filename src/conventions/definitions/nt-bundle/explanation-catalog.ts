@@ -166,10 +166,18 @@ const NT_ENTRIES: ExplanationEntry[] = [
 
   // ─── Posterior facts ──────────────────────────────────────────
   {
-    explanationId: "nt.posterior.partnerHas4CardMajor",
-    factId: "bridge.partnerHas4CardMajorLikely",
-    templateKey: "nt.posterior.partnerHas4CardMajor",
-    displayText: "Partner likely has a 4-card major",
+    explanationId: "nt.posterior.partnerHas4Hearts",
+    factId: "bridge.partnerHas4HeartsLikely",
+    templateKey: "nt.posterior.partnerHas4Hearts",
+    displayText: "Partner likely has 4+ hearts",
+    preferredLevel: "semantic",
+    roles: ["inferential"],
+  },
+  {
+    explanationId: "nt.posterior.partnerHas4Spades",
+    factId: "bridge.partnerHas4SpadesLikely",
+    templateKey: "nt.posterior.partnerHas4Spades",
+    displayText: "Partner likely has 4+ spades",
     preferredLevel: "semantic",
     roles: ["inferential"],
   },

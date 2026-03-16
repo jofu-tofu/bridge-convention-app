@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { evaluateFacts, createSharedFactCatalog } from "../fact-evaluator";
 import type { FactCatalog } from "../../../../core/contracts/fact-catalog";
-import type { PosteriorFactEvaluatorFn } from "../../../../core/contracts/fact-catalog";
+import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../../../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider } from "../../../../core/contracts/posterior";
 import { Suit, Rank } from "../../../../engine/types";
 import type { Hand, HandEvaluation } from "../../../../engine/types";
@@ -53,7 +53,7 @@ describe("evaluateFacts with posterior provider", () => {
   it("without posterior param, produces same results as before", () => {
     const result = evaluateFacts(testHand, testEvaluation);
     expect(result.facts.get("hand.hcp")!.value).toBe(10);
-    expect(result.facts.has("bridge.partnerHas4CardMajorLikely")).toBe(false);
+    expect(result.facts.has("bridge.partnerHas4HeartsLikely")).toBe(false);
   });
 
   it("with posterior provider, produces posterior facts alongside standard facts", () => {
@@ -64,18 +64,18 @@ describe("evaluateFacts with posterior provider", () => {
 
     const catalog: FactCatalog = {
       ...createSharedFactCatalog(),
-      posteriorEvaluators: new Map([
-        ["bridge.partnerHas4CardMajorLikely", posteriorEval],
+      posteriorEvaluators: new Map<string, PosteriorFactEvaluator>([
+        ["bridge.partnerHas4HeartsLikely", { evaluate: posteriorEval }],
       ]),
     };
 
-    const provider = makeProvider({ "bridge.partnerHas4CardMajorLikely": 0.73 });
+    const provider = makeProvider({ "bridge.partnerHas4HeartsLikely": 0.73 });
     const result = evaluateFacts(testHand, testEvaluation, catalog, undefined, provider);
 
     // Standard fact still works
     expect(result.facts.get("hand.hcp")!.value).toBe(10);
     // Posterior fact is present
-    expect(result.facts.get("bridge.partnerHas4CardMajorLikely")!.value).toBe(0.73);
+    expect(result.facts.get("bridge.partnerHas4HeartsLikely")!.value).toBe(0.73);
   });
 
   it("null provider queryFact returns value 0 via evaluator (fail-open)", () => {
@@ -86,8 +86,8 @@ describe("evaluateFacts with posterior provider", () => {
 
     const catalog: FactCatalog = {
       ...createSharedFactCatalog(),
-      posteriorEvaluators: new Map([
-        ["bridge.partnerHas4CardMajorLikely", posteriorEval],
+      posteriorEvaluators: new Map<string, PosteriorFactEvaluator>([
+        ["bridge.partnerHas4HeartsLikely", { evaluate: posteriorEval }],
       ]),
     };
 
@@ -95,7 +95,7 @@ describe("evaluateFacts with posterior provider", () => {
     const provider = makeProvider({});
     const result = evaluateFacts(testHand, testEvaluation, catalog, undefined, provider);
 
-    expect(result.facts.get("bridge.partnerHas4CardMajorLikely")!.value).toBe(0);
+    expect(result.facts.get("bridge.partnerHas4HeartsLikely")!.value).toBe(0);
   });
 
   it("posterior facts are not populated when provider is not given", () => {
@@ -105,13 +105,13 @@ describe("evaluateFacts with posterior provider", () => {
 
     const catalog: FactCatalog = {
       ...createSharedFactCatalog(),
-      posteriorEvaluators: new Map([
-        ["bridge.partnerHas4CardMajorLikely", posteriorEval],
+      posteriorEvaluators: new Map<string, PosteriorFactEvaluator>([
+        ["bridge.partnerHas4HeartsLikely", { evaluate: posteriorEval }],
       ]),
     };
 
     // No provider → posterior evaluators should not run
     const result = evaluateFacts(testHand, testEvaluation, catalog);
-    expect(result.facts.has("bridge.partnerHas4CardMajorLikely")).toBe(false);
+    expect(result.facts.has("bridge.partnerHas4HeartsLikely")).toBe(false);
   });
 });

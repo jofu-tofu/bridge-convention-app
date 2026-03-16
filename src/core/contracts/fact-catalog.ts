@@ -77,12 +77,18 @@ export type PosteriorFactEvaluatorFn = (
   request: PosteriorFactRequest,
 ) => FactValue;
 
+/** A posterior evaluator bundled with its conditionedOn parameters. */
+export interface PosteriorFactEvaluator {
+  readonly evaluate: PosteriorFactEvaluatorFn;
+  readonly conditionedOn?: readonly string[];
+}
+
 /** A composed fact catalog: definitions + evaluators. */
 export interface FactCatalog {
   readonly definitions: readonly FactDefinition[];
   readonly evaluators: ReadonlyMap<string, FactEvaluatorFn>;
   readonly relationalEvaluators?: ReadonlyMap<string, RelationalFactEvaluatorFn>;
-  readonly posteriorEvaluators?: ReadonlyMap<string, PosteriorFactEvaluatorFn>;
+  readonly posteriorEvaluators?: ReadonlyMap<string, PosteriorFactEvaluator>;
 }
 
 /** An extension that a module contributes to a base catalog. */
@@ -90,7 +96,7 @@ export interface FactCatalogExtension {
   readonly definitions: readonly FactDefinition[];
   readonly evaluators: ReadonlyMap<string, FactEvaluatorFn>;
   readonly relationalEvaluators?: ReadonlyMap<string, RelationalFactEvaluatorFn>;
-  readonly posteriorEvaluators?: ReadonlyMap<string, PosteriorFactEvaluatorFn>;
+  readonly posteriorEvaluators?: ReadonlyMap<string, PosteriorFactEvaluator>;
 }
 
 /** Merge a base catalog with one or more extensions. Extensions override base on evaluator conflict. */
@@ -103,7 +109,7 @@ export function createFactCatalog(
   const mergedRelational = new Map<string, RelationalFactEvaluatorFn>(
     base.relationalEvaluators ?? [],
   );
-  const mergedPosterior = new Map<string, PosteriorFactEvaluatorFn>(
+  const mergedPosterior = new Map<string, PosteriorFactEvaluator>(
     base.posteriorEvaluators ?? [],
   );
 
@@ -118,8 +124,8 @@ export function createFactCatalog(
       }
     }
     if (ext.posteriorEvaluators) {
-      for (const [id, fn] of ext.posteriorEvaluators) {
-        mergedPosterior.set(id, fn);
+      for (const [id, entry] of ext.posteriorEvaluators) {
+        mergedPosterior.set(id, entry);
       }
     }
   }

@@ -42,7 +42,7 @@
   const hasFeedback = $derived(bidFeedback !== null);
 </script>
 
-<div class="min-w-0 shrink-0">
+<div class="min-w-0 min-h-0 flex-1 overflow-y-auto">
   <h2
     class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"
@@ -56,19 +56,19 @@
     {/if}
   </h2>
   <BidPanel {legalCalls} {onBid} {disabled} compact />
-</div>
-<div class="min-h-0 flex-1 overflow-y-auto" class:hidden={!hasFeedback}>
-  {#if bidFeedback}
-    <BidFeedbackPanel
-      feedback={bidFeedback}
-      onContinue={onDismissFeedback}
-      {onSkipToReview}
-      {onRetry}
-    />
+  <div class="mt-3" class:hidden={!hasFeedback}>
+    {#if bidFeedback}
+      <BidFeedbackPanel
+        feedback={bidFeedback}
+        onContinue={onDismissFeedback}
+        {onSkipToReview}
+        {onRetry}
+      />
+    {/if}
+  </div>
+  {#if DEV}
+    <div class="mt-3" class:hidden={hasFeedback}>
+      <DebugPanel />
+    </div>
   {/if}
 </div>
-{#if DEV}
-  <div class="mt-auto shrink-0" class:hidden={hasFeedback}>
-    <DebugPanel />
-  </div>
-{/if}

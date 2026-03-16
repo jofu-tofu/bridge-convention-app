@@ -23,10 +23,10 @@
   const scaledH = $derived(Math.round(tableHeight * scale));
 </script>
 
-<div class="flex-1 flex items-center justify-center p-2 min-w-0 overflow-hidden">
+<div class="flex-1 flex items-center justify-center p-2 min-w-0 min-h-0 overflow-hidden">
   <div
     class="relative"
-    style="width: {scaledW}px; max-width: 100%; height: {scaledH}px;"
+    style="width: {scaledW}px; max-width: 100%; height: {scaledH}px; max-height: 100%;"
   >
     <div
       class="absolute top-0 left-0"
