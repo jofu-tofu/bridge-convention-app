@@ -7,6 +7,7 @@
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
   import LearningScreen from "./components/screens/LearningScreen.svelte";
   import SettingsScreen from "./components/screens/SettingsScreen.svelte";
+  import CoverageScreen from "./components/screens/CoverageScreen.svelte";
 
   interface Props {
     engine: EnginePort;
@@ -30,5 +31,7 @@
     <LearningScreen />
   {:else if props.appStore.screen === "settings"}
     <SettingsScreen />
+  {:else if props.appStore.screen === "coverage"}
+    <CoverageScreen />
   {/if}
 </div>

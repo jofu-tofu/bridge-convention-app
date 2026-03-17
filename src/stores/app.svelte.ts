@@ -1,7 +1,7 @@
 import type { ConventionConfig } from "../conventions/core";
 import type { OpponentMode } from "../bootstrap/types";
 
-export type Screen = "select" | "game" | "learning" | "settings";
+export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
 
 export function createAppStore() {
   let currentScreen = $state<Screen>("select");
@@ -63,6 +63,10 @@ export function createAppStore() {
 
     navigateToSettings() {
       currentScreen = "settings";
+    },
+
+    navigateToCoverage() {
+      currentScreen = "coverage";
     },
 
     setDevSeed(seed: number | null) {

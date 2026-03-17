@@ -4,6 +4,13 @@ import { getConvention } from "../conventions/core";
 export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const params = new URLSearchParams(window.location.search);
 
+  // Coverage page — show all targetable FSM states
+  const coverageParam = params.get("coverage");
+  if (coverageParam === "true") {
+    store.navigateToCoverage();
+    return;
+  }
+
   // Seed parameter works in all modes — enables reproducible deals for sharing/debugging
   const seedParam = params.get("seed");
   if (seedParam !== null) {
