@@ -94,7 +94,7 @@ function matchKey(match: TransitionMatch): string {
     case "call":
       return `call:${match.level}${match.strain}`;
     case "pass":
-      return "pass";
+      return match.seatRole ? `pass:${match.seatRole}` : "pass";
     case "any-bid":
       return "any-bid";
     case "opponent-action": {
@@ -193,7 +193,12 @@ export function validateTransitionCompleteness(
         const covered =
           childExactKeys.has(exactKey) ||
           // "any-bid" on child covers any "call" from parent
-          (broad === "bid" && childBroadKeys.has("bid"));
+          (broad === "bid" && childBroadKeys.has("bid")) ||
+          // Bare "pass" (no seatRole) covers any seat-specific "pass:*"
+          (transition.match.kind === "pass" && childExactKeys.has("pass")) ||
+          // pass:self + pass:opponent on child covers bare "pass" from parent
+          (transition.match.kind === "pass" && !("seatRole" in transition.match && transition.match.seatRole) &&
+            childExactKeys.has("pass:self") && childExactKeys.has("pass:opponent"));
 
         if (!covered) {
           leaks.push({

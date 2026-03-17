@@ -40,7 +40,7 @@ export interface MachineTransition {
 export type TransitionMatch =
   | { readonly kind: "call"; readonly level: number; readonly strain: BidSuit }
   | { readonly kind: "any-bid" }
-  | { readonly kind: "pass" }
+  | { readonly kind: "pass"; readonly seatRole?: "self" | "partner" | "opponent" }
   | {
       readonly kind: "opponent-action";
       readonly callType?: "bid" | "double" | "redouble";

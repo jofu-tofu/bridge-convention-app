@@ -147,9 +147,9 @@ describe("NT bundle golden-master (characterization)", () => {
       const state = ntBundle.conversationMachine!.states.get("responder-r3-stayman-2d");
       expect(state).toBeDefined();
       // Smolen transitions (3H→smolen-invoke-hearts, 3S→smolen-invoke-spades) are prepended
-      // followed by Stayman's own transitions (3NT, 2NT, pass)
+      // followed by Stayman's own transitions (3NT, 2NT, pass:self, pass:opponent, pass:partner)
       const transitions = state!.transitions;
-      expect(transitions.length).toBe(5);
+      expect(transitions.length).toBe(7);
       expect(transitions[0]!.transitionId).toBe("r3-smolen-hearts");
       expect(transitions[1]!.transitionId).toBe("r3-smolen-spades");
       expect(transitions[2]!.transitionId).toBe("r3-3nt-after-denial");

@@ -449,9 +449,19 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
         target: "terminal",
       },
       {
-        transitionId: "r3-pass-wait-th",
-        match: { kind: "pass" },
+        transitionId: "r3-self-pass-th",
+        match: { kind: "pass", seatRole: "self" },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-opp-pass-wait-th",
+        match: { kind: "pass", seatRole: "opponent" },
         target: "responder-r3-transfer-hearts",
+      },
+      {
+        transitionId: "r3-partner-pass-th",
+        match: { kind: "pass", seatRole: "partner" },
+        target: "terminal",
       },
     ],
     surfaceGroupId: "responder-r3-after-transfer-hearts",
@@ -478,9 +488,19 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
         target: "terminal",
       },
       {
-        transitionId: "r3-pass-wait-ts",
-        match: { kind: "pass" },
+        transitionId: "r3-self-pass-ts",
+        match: { kind: "pass", seatRole: "self" },
+        target: "terminal",
+      },
+      {
+        transitionId: "r3-opp-pass-wait-ts",
+        match: { kind: "pass", seatRole: "opponent" },
         target: "responder-r3-transfer-spades",
+      },
+      {
+        transitionId: "r3-partner-pass-ts",
+        match: { kind: "pass", seatRole: "partner" },
+        target: "terminal",
       },
     ],
     surfaceGroupId: "responder-r3-after-transfer-spades",

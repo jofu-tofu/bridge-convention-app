@@ -95,7 +95,10 @@ export function matchTransition(
         call.strain === match.strain
       );
     case "pass":
-      return call.type === "pass";
+      if (call.type !== "pass") return false;
+      // When seatRole filter is specified, only match passes from that role
+      if (match.seatRole !== undefined && match.seatRole !== seatRole) return false;
+      return true;
     case "any-bid":
       return call.type === "bid";
     case "opponent-action": {
