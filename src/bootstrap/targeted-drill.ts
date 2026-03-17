@@ -12,17 +12,14 @@
 
 import type { EnginePort } from "../engine/port";
 import type { ConventionConfig, ConventionLookup } from "../conventions/core";
-import { Seat, type Auction, type DealConstraints } from "../engine/types";
+import { Seat, type Auction } from "../engine/types";
 import type { DrillBundle, OpponentMode } from "./types";
 import { createDrillConfig, buildBundleStrategy } from "./config-factory";
 import { createDrillSession } from "./session";
-import { getBundle } from "../conventions/core";
+import { getBundle, computeTopology, compilePathToTarget, buildSurfaceMap } from "../conventions/core";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
 import { buildAuction } from "../engine/auction-helpers";
-import type { MeaningSurface } from "../core/contracts/meaning";
-import { computeTopology } from "../conventions/core/runtime/machine-enumeration";
-import { compilePathToTarget } from "../conventions/core/runtime/coverage-spec-compiler";
 
 /**
  * Start a drill targeting a specific FSM state.
@@ -30,8 +27,8 @@ import { compilePathToTarget } from "../conventions/core/runtime/coverage-spec-c
  * Returns null if the state can't be targeted (not found, no path, etc.).
  * The caller should fall back to a normal drill in that case.
  */
-export async function startTargetedDrill(
-  engine: EnginePort,
+export function startTargetedDrill(
+  _engine: EnginePort,
   convention: ConventionConfig,
   userSeat: Seat,
   targetStateId: string,
@@ -39,7 +36,7 @@ export async function startTargetedDrill(
     lookupConvention?: ConventionLookup;
     opponentMode?: OpponentMode;
   },
-): Promise<DrillBundle | null> {
+): DrillBundle | null {
   const bundle = getBundle(convention.id);
   if (!bundle?.conversationMachine) return null;
 
@@ -51,10 +48,7 @@ export async function startTargetedDrill(
   if (!path) return null;
 
   // Build surface map for constraint compilation
-  const surfaceMap = new Map<string, readonly MeaningSurface[]>();
-  for (const group of bundle.meaningSurfaces ?? []) {
-    surfaceMap.set(group.groupId, group.surfaces);
-  }
+  const surfaceMap = buildSurfaceMap(bundle);
 
   // Compile the path into a coverage target
   const target = compilePathToTarget(path, machine, bundle, surfaceMap);

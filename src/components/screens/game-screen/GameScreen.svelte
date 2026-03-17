@@ -74,7 +74,7 @@
     // FSM-targeted drill: generate a deal that exercises a specific state
     const target = appStore.targetState;
     if (target) {
-      const bundle = await startTargetedDrill(engine, convention, userSeat, target, {
+      const bundle = startTargetedDrill(engine, convention, userSeat, target, {
         opponentMode: appStore.opponentMode,
       });
       if (bundle) {

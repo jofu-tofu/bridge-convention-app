@@ -16,19 +16,9 @@ import {
 import {
   compilePathToTarget,
   generateCoverageManifest,
+  buildSurfaceMap,
 } from "../coverage-spec-compiler";
 import { generateDeal } from "../../../../engine/deal-generator";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
-
-// ── Helpers ─────────────────────────────────────────────────────────
-
-function bundleSurfaceMap(bundle: ConventionBundle): Map<string, readonly MeaningSurface[]> {
-  const map = new Map<string, readonly MeaningSurface[]>();
-  for (const group of bundle.meaningSurfaces ?? []) {
-    map.set(group.groupId, group.surfaces);
-  }
-  return map;
-}
 
 // All bundles with FSMs to test generically
 const ALL_BUNDLES: { name: string; bundle: ConventionBundle }[] = [
@@ -162,7 +152,7 @@ describe("coverage-spec-compiler", () => {
     it.each(ALL_BUNDLES)("$name: compiles all paths to valid targets", ({ bundle }) => {
       const machine = bundle.conversationMachine!;
       const topology = computeTopology(machine);
-      const surfaceMap = bundleSurfaceMap(bundle);
+      const surfaceMap = buildSurfaceMap(bundle);
 
       for (const [stateId, path] of topology.paths) {
         if (stateId === machine.initialStateId) continue;

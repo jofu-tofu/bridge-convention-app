@@ -114,6 +114,7 @@ export function getSurfaceStates(
 export function matchToCall(match: TransitionMatch): Call | null {
   switch (match.kind) {
     case "call":
+      if (match.level < 1 || match.level > 7) return null;
       return {
         type: "bid",
         level: match.level as 1 | 2 | 3 | 4 | 5 | 6 | 7,
@@ -125,6 +126,7 @@ export function matchToCall(match: TransitionMatch): Call | null {
       if (match.callType === "double") return { type: "double" };
       if (match.callType === "redouble") return { type: "redouble" };
       if (match.callType === "bid" && match.level !== undefined && match.strain !== undefined) {
+        if (match.level < 1 || match.level > 7) return null;
         return {
           type: "bid",
           level: match.level as 1 | 2 | 3 | 4 | 5 | 6 | 7,
@@ -208,20 +210,22 @@ export function computeShortestPaths(
     targetStateId: initial,
   });
 
-  // BFS queue: [stateId, depth]
+  // BFS queue — use index to avoid O(n) shift()
   const queue: string[] = [initial];
+  let queueIdx = 0;
   const visited = new Set<string>([initial]);
 
-  while (queue.length > 0) {
-    const currentId = queue.shift()!;
+  while (queueIdx < queue.length) {
+    const currentId = queue[queueIdx]!;
+    queueIdx++;
     const currentPath = paths.get(currentId)!;
     const state = machine.states.get(currentId);
     if (!state) continue;
 
-    // Collect transitions: own + inherited (own first for natural paths)
-    const allTransitions = collectTransitionsWithOrigin(machine, currentId);
+    // Collect transitions: own + inherited (descendant-first for natural paths)
+    const allTransitions = collectInheritedTransitions(machine, currentId);
 
-    for (const { transition, originStateId: _origin } of allTransitions) {
+    for (const transition of allTransitions) {
       const target = transition.target;
       if (visited.has(target)) continue;
       if (!reachable.has(target)) continue;
@@ -271,19 +275,12 @@ export function computeShortestPaths(
   return paths;
 }
 
-/** Collect transitions from a state including inherited, tagged with origin. */
-function collectTransitionsWithOrigin(
+/** Collect transitions from a state including inherited, descendant-first. */
+function collectInheritedTransitions(
   machine: ConversationMachine,
   stateId: string,
-): { transition: MachineTransition; originStateId: string }[] {
-  const result: { transition: MachineTransition; originStateId: string }[] = [];
-  const chain = collectAncestorChain(machine.states, stateId);
-  for (const ancestor of chain) {
-    for (const t of ancestor.transitions) {
-      result.push({ transition: t, originStateId: ancestor.stateId });
-    }
-  }
-  return result;
+): readonly MachineTransition[] {
+  return collectAncestorChain(machine.states, stateId).flatMap((s) => s.transitions);
 }
 
 // ── Full Topology ───────────────────────────────────────────────────

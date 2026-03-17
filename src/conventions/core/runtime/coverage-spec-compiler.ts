@@ -7,12 +7,12 @@
 // This enables FSM-coverage-driven testing: for any reachable state,
 // we can generate a deal that exercises the auction path leading to it.
 
-import type { Seat, DealConstraints, SeatConstraint } from "../../../engine/types";
-import { Suit } from "../../../engine/types";
+import { Seat, Suit } from "../../../engine/types";
+import type { DealConstraints, SeatConstraint } from "../../../engine/types";
 import type { MeaningSurface, MeaningSurfaceClause } from "../../../core/contracts/meaning";
 import type { ConventionBundle } from "../bundle/bundle-types";
 import type { ConversationMachine } from "./machine-types";
-import type { StatePath, PathTransition, MachineTopology } from "./machine-enumeration";
+import type { StatePath } from "./machine-enumeration";
 import {
   computeTopology,
   pathToAuctionPrefix,
@@ -131,8 +131,8 @@ interface MutableSeatConstraint {
 
 // ── Surface Lookup ──────────────────────────────────────────────────
 
-/** Build a groupId → MeaningSurface[] lookup from a bundle. */
-function buildSurfaceMap(
+/** Build a groupId → MeaningSurface[] lookup from a bundle's meaningSurfaces. */
+export function buildSurfaceMap(
   bundle: ConventionBundle,
 ): Map<string, readonly MeaningSurface[]> {
   const map = new Map<string, readonly MeaningSurface[]>();
@@ -143,19 +143,6 @@ function buildSurfaceMap(
 }
 
 // ── Path → CoverageTarget Compilation ───────────────────────────────
-
-/** Determine which seat a role maps to, given the user is South and
- *  the dealer (from base constraints). */
-function roleToSeat(role: "self" | "partner" | "opponent", dealerIsNorth: boolean): Seat {
-  // Convention: user is South, partner is North.
-  // "self" = user's side, could be N or S depending on whose turn
-  // For constraint purposes: opener = North (dealer), responder = South (user)
-  if (role === "self" || role === "partner") {
-    // Both NS — we tighten both
-    return dealerIsNorth ? "S" as Seat : "N" as Seat;
-  }
-  return "E" as Seat; // opponent
-}
 
 /**
  * Compile a single FSM path into a CoverageTarget.
@@ -213,7 +200,9 @@ export function compilePathToTarget(
 
     // Determine which seat this surface constrains
     // Opener = North (dealer), Responder = South, Opponents = E/W
-    const seat = step.role === "opponent" ? ("E" as Seat) : (step.role === "self" ? ("S" as Seat) : ("N" as Seat));
+    const seat: Seat = step.role === "opponent"
+      ? Seat.East
+      : step.role === "self" ? Seat.South : Seat.North;
 
     if (!seatConstraints.has(seat)) {
       seatConstraints.set(seat, { seat });
