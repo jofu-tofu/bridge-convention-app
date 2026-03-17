@@ -19,7 +19,6 @@ import {
 import { bergenFacts } from "../facts";
 import { BERGEN_EXPLANATION_CATALOG } from "../explanation-catalog";
 import { BERGEN_PEDAGOGICAL_RELATIONS } from "../pedagogical-relations";
-import { BERGEN_ALTERNATIVE_GROUPS } from "../alternatives";
 
 // ─── Machine states contributed by the bergen-raises module ────────
 

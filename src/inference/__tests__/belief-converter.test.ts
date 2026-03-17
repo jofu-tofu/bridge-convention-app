@@ -2,27 +2,49 @@ import { describe, it, expect } from "vitest";
 import { Seat, Suit } from "../../engine/types";
 import { SUIT_ORDER, SEATS } from "../../engine/constants";
 import { createInitialBeliefState } from "../belief-accumulator";
-import type { PublicBeliefState } from "../types";
+import { applyAnnotation } from "../belief-accumulator";
+import type { PublicBeliefState, BidAnnotation } from "../types";
 import type { PrivateBeliefState } from "../private-belief";
 import type { BeliefData } from "../../core/contracts";
 import { toBeliefData } from "../belief-converter";
+
+import type { FactConstraintIR } from "../../core/contracts/agreement-module";
+
+function makeAnnotation(seat: Seat, constraints: readonly FactConstraintIR[]): BidAnnotation {
+  return { call: { type: "pass" }, seat, conventionId: null, meaning: "test", constraints };
+}
 
 function makePublicBelief(overrides?: Partial<Record<Seat, {
   hcpRange: { min: number; max: number };
   suitLengths: Record<Suit, { min: number; max: number }>;
 }>>): PublicBeliefState {
-  const initial = createInitialBeliefState();
-  if (!overrides) return initial;
+  let state = createInitialBeliefState();
+  if (!overrides) return state;
 
-  const beliefs = { ...initial.beliefs };
-  for (const [seat, data] of Object.entries(overrides)) {
-    beliefs[seat as Seat] = {
-      ...initial.beliefs[seat as Seat],
-      hcpRange: data.hcpRange,
-      suitLengths: data.suitLengths,
-    };
+  for (const [seatStr, data] of Object.entries(overrides)) {
+    const seat = seatStr as Seat;
+    const constraints: FactConstraintIR[] = [];
+    if (data.hcpRange.min > 0) constraints.push({ factId: "hand.hcp", operator: "gte", value: data.hcpRange.min });
+    if (data.hcpRange.max < 40) constraints.push({ factId: "hand.hcp", operator: "lte", value: data.hcpRange.max });
+    for (const [suit, range] of Object.entries(data.suitLengths)) {
+      if (range.min > 0) constraints.push({ factId: `hand.suitLength.${suitToName(suit as Suit)}`, operator: "gte", value: range.min });
+      if (range.max < 13) constraints.push({ factId: `hand.suitLength.${suitToName(suit as Suit)}`, operator: "lte", value: range.max });
+    }
+    if (constraints.length > 0) {
+      state = applyAnnotation(state, makeAnnotation(seat, constraints));
+    }
   }
-  return { beliefs, annotations: [] };
+  return state;
+}
+
+function suitToName(suit: Suit): string {
+  switch (suit) {
+    case Suit.Spades: return "spades";
+    case Suit.Hearts: return "hearts";
+    case Suit.Diamonds: return "diamonds";
+    case Suit.Clubs: return "clubs";
+    default: return "unknown";
+  }
 }
 
 describe("toBeliefData", () => {
@@ -101,7 +123,7 @@ describe("toBeliefData", () => {
     expect(result.beliefs[Seat.North].suitLengths[Suit.Diamonds]).toEqual({ min: 2, max: 7 });
     expect(result.beliefs[Seat.North].suitLengths[Suit.Clubs]).toEqual({ min: 2, max: 10 });
 
-    // North HCP from private override (now uses narrowed HCP range)
+    // North HCP from private override
     expect(result.beliefs[Seat.North].hcpRange).toEqual({ min: 15, max: 17 });
 
     // South, East, West should be unchanged from public
@@ -138,7 +160,7 @@ describe("toBeliefData", () => {
     const privateOverride: PrivateBeliefState = {
       seat: Seat.South,
       partnerSeat: Seat.North,
-      partnerHcpRange: { min: 10, max: 22 }, // narrowed from 37 by own HCP
+      partnerHcpRange: { min: 10, max: 22 },
       partnerSuitLengths: {
         [Suit.Spades]: { min: 0, max: 8 },
         [Suit.Hearts]: { min: 0, max: 9 },

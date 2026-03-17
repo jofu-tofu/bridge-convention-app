@@ -66,7 +66,7 @@
     </div>
 
     <!-- Bundle manifests -->
-    {#each manifests as manifest}
+    {#each manifests as manifest (manifest.bundleId)}
       {@const { decision, passThrough } = categorize(manifest.targets)}
       <section class="mb-10">
         <div class="mb-4 flex items-baseline gap-3">
@@ -82,7 +82,7 @@
             Decision States ({decision.length})
           </h3>
           <div class="grid gap-2 mb-4">
-            {#each decision as target}
+            {#each decision as target (target.stateId)}
               <a
                 href={targetUrl(manifest.bundleId, target.stateId)}
                 class="block rounded-lg bg-bg-card border border-border-subtle p-3 hover:border-blue-500 hover:bg-bg-card-hover transition-colors group"
@@ -110,7 +110,7 @@
                 </div>
                 {#if target.activeSurfaces.length > 0}
                   <div class="mt-2 flex flex-wrap gap-1">
-                    {#each target.activeSurfaces.slice(0, 6) as surface}
+                    {#each target.activeSurfaces.slice(0, 6) as surface (surface.teachingLabel)}
                       <span class="text-xs px-1.5 py-0.5 rounded bg-bg-deepest text-text-secondary">
                         {surface.teachingLabel}
                       </span>
@@ -134,7 +134,7 @@
               Other States ({passThrough.length})
             </summary>
             <div class="grid gap-1 mt-2">
-              {#each passThrough as target}
+              {#each passThrough as target (target.stateId)}
                 <a
                   href={targetUrl(manifest.bundleId, target.stateId)}
                   class="block rounded-md bg-bg-card/50 border border-border-subtle/50 px-3 py-2 hover:border-blue-500/50 transition-colors text-sm"
@@ -154,7 +154,7 @@
               Unreachable ({manifest.unreachableTargets.length})
             </summary>
             <div class="mt-2 text-sm text-text-muted">
-              {#each manifest.unreachableTargets as u}
+              {#each manifest.unreachableTargets as u (u.stateId)}
                 <div class="font-mono">{u.stateId}: {u.reason}</div>
               {/each}
             </div>

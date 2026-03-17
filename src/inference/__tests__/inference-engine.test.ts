@@ -95,7 +95,7 @@ describe("createInferenceEngine", () => {
     expect(own.calls).toHaveLength(0);
   });
 
-  it("accumulates inferences and returns merged results", () => {
+  it("accumulates constraints and returns derived beliefs", () => {
     const inference: HandInference = {
       seat: Seat.North,
       source: "test",
@@ -108,26 +108,26 @@ describe("createInferenceEngine", () => {
     const engine = createInferenceEngine(makeConfig(own, opponent), Seat.South);
 
     engine.processBid(bid1NT(), emptyAuction);
-    const result = engine.getInferences();
+    const result = engine.getBeliefs();
 
-    expect(result[Seat.North].hcpRange.min).toBe(15);
-    expect(result[Seat.North].hcpRange.max).toBe(17);
+    expect(result[Seat.North].ranges.hcp.min).toBe(15);
+    expect(result[Seat.North].ranges.hcp.max).toBe(17);
     // Other seats should have wide-open defaults
-    expect(result[Seat.South].hcpRange.min).toBe(0);
-    expect(result[Seat.South].hcpRange.max).toBe(40);
+    expect(result[Seat.South].ranges.hcp.min).toBe(0);
+    expect(result[Seat.South].ranges.hcp.max).toBe(40);
   });
 
-  it("does not push null inference from provider", () => {
+  it("does not push constraints from null inference", () => {
     const own = makeProvider(null);
     const opponent = makeProvider();
     const engine = createInferenceEngine(makeConfig(own, opponent), Seat.South);
 
     engine.processBid(bid1NT(), emptyAuction);
-    const result = engine.getInferences();
+    const result = engine.getBeliefs();
 
     // North should have wide-open defaults since null inference was not pushed
-    expect(result[Seat.North].hcpRange.min).toBe(0);
-    expect(result[Seat.North].hcpRange.max).toBe(40);
+    expect(result[Seat.North].ranges.hcp.min).toBe(0);
+    expect(result[Seat.North].ranges.hcp.max).toBe(40);
   });
 
   it("swallows provider errors silently", () => {
@@ -138,9 +138,9 @@ describe("createInferenceEngine", () => {
     // Should not throw
     expect(() => engine.processBid(bid1NT(), emptyAuction)).not.toThrow();
 
-    // Inferences should still be wide-open defaults
-    const result = engine.getInferences();
-    expect(result[Seat.North].hcpRange.min).toBe(0);
+    // Beliefs should still be wide-open defaults
+    const result = engine.getBeliefs();
+    expect(result[Seat.North].ranges.hcp.min).toBe(0);
   });
 
   it("timeline records snapshots after each processBid", () => {
@@ -157,8 +157,10 @@ describe("createInferenceEngine", () => {
     const timeline = engine.getTimeline();
     expect(timeline).toHaveLength(1);
     expect(timeline[0]!.entry).toBe(entry);
-    expect(timeline[0]!.newInference).toBe(inference);
-    expect(timeline[0]!.cumulativeInferences[Seat.North].hcpRange.min).toBe(12);
+    expect(timeline[0]!.newConstraints).toEqual([
+      { factId: "hand.hcp", operator: "gte", value: 12 },
+    ]);
+    expect(timeline[0]!.cumulativeBeliefs[Seat.North].ranges.hcp.min).toBe(12);
   });
 
   it("timeline records snapshot even when inference is null", () => {
@@ -170,7 +172,7 @@ describe("createInferenceEngine", () => {
 
     const timeline = engine.getTimeline();
     expect(timeline).toHaveLength(1);
-    expect(timeline[0]!.newInference).toBeNull();
+    expect(timeline[0]!.newConstraints).toEqual([]);
   });
 
   it("timeline records snapshot even when provider throws", () => {
@@ -182,10 +184,10 @@ describe("createInferenceEngine", () => {
 
     const timeline = engine.getTimeline();
     expect(timeline).toHaveLength(1);
-    expect(timeline[0]!.newInference).toBeNull();
+    expect(timeline[0]!.newConstraints).toEqual([]);
   });
 
-  it("reset clears all accumulated inferences and timeline", () => {
+  it("reset clears all accumulated constraints and timeline", () => {
     const inference: HandInference = { seat: Seat.North, source: "test", minHcp: 15, maxHcp: 17, suits: {} };
     const own = makeProvider(inference);
     const opponent = makeProvider();
@@ -193,16 +195,16 @@ describe("createInferenceEngine", () => {
 
     engine.processBid(bid1NT(), emptyAuction);
     expect(engine.getTimeline()).toHaveLength(1);
-    expect(engine.getInferences()[Seat.North].hcpRange.min).toBe(15);
+    expect(engine.getBeliefs()[Seat.North].ranges.hcp.min).toBe(15);
 
     engine.reset();
 
     expect(engine.getTimeline()).toHaveLength(0);
-    expect(engine.getInferences()[Seat.North].hcpRange.min).toBe(0);
-    expect(engine.getInferences()[Seat.North].hcpRange.max).toBe(40);
+    expect(engine.getBeliefs()[Seat.North].ranges.hcp.min).toBe(0);
+    expect(engine.getBeliefs()[Seat.North].ranges.hcp.max).toBe(40);
   });
 
-  it("processes multiple bids and narrows inferences", () => {
+  it("processes multiple bids and narrows beliefs", () => {
     let callCount = 0;
     const narrowingProvider: InferenceProvider = {
       id: "narrowing",
@@ -221,9 +223,9 @@ describe("createInferenceEngine", () => {
     engine.processBid(passEntry(Seat.North), auction1);
 
     // North should have min=15 (max of 12, 15) and max=17
-    const result = engine.getInferences();
-    expect(result[Seat.North].hcpRange.min).toBe(15);
-    expect(result[Seat.North].hcpRange.max).toBe(17);
+    const result = engine.getBeliefs();
+    expect(result[Seat.North].ranges.hcp.min).toBe(15);
+    expect(result[Seat.North].ranges.hcp.max).toBe(17);
     expect(engine.getTimeline()).toHaveLength(2);
   });
 });

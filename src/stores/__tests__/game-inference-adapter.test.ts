@@ -60,7 +60,7 @@ describe("game inference adapter characterization", () => {
   test("noopExtractor returns empty for any input", () => {
     const adapted = adaptBidResultLikeGameStore(makeBidResult());
 
-    const inferences = noopExtractor.extractInferences(adapted, Seat.South);
+    const inferences = noopExtractor.extractConstraints(adapted, Seat.South);
 
     expect(inferences).toEqual([]);
   });

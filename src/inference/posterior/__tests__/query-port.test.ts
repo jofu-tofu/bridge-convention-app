@@ -5,7 +5,7 @@ import { compileFactorGraph } from "../factor-compiler";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { PublicConstraint } from "../../../core/contracts/agreement-module";
 import type { ConditioningContext } from "../../../core/contracts/posterior-query";
-import type { PosteriorBackend, PosteriorState } from "../../../core/contracts/posterior-backend";
+import type { PosteriorState } from "../../../core/contracts/posterior-backend";
 import { ForcingState } from "../../../core/contracts/bidding";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand, Card } from "../../../engine/types";

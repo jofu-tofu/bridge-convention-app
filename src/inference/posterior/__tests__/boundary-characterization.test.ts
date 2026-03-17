@@ -14,7 +14,7 @@ import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { PublicConstraint } from "../../../core/contracts/agreement-module";
 import { ForcingState } from "../../../core/contracts/bidding";
 import { Suit, Rank, Seat } from "../../../engine/types";
-import type { Hand, Card } from "../../../engine/types";
+import type { Hand } from "../../../engine/types";
 
 // ─── Fixtures ───────────────────────────────────────────────
 

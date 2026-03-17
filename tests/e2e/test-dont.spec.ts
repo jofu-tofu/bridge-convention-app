@@ -17,6 +17,7 @@
  * the correct bid, the rule/explanation, and verifies against DONT logic.
  */
 import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // ── Per-seed expected data ────────────────────────────────────────────────────
 // Gathered from deterministic runs with seeds 1-15 and independently verified
@@ -281,7 +282,7 @@ function verifyDontBid(shape: [number, number, number, number]): string {
  * Returns an object with useful page accessors.
  */
 async function setupDontPractice(
-  page: import("@playwright/test").Page,
+  page: Page,
   seed: number,
 ) {
   await page.goto(`/?convention=dont-bundle&seed=${seed}`);
@@ -296,7 +297,7 @@ async function setupDontPractice(
  * Debug sections use native <details>/<summary> elements.
  * "Suggested Bid" starts open by default; all others start closed.
  */
-async function getDebugInfo(page: import("@playwright/test").Page) {
+async function getDebugInfo(page: Page) {
   // Open debug drawer if not already open
   const debugToggle = page.getByTestId("debug-toggle");
   await debugToggle.click();
@@ -356,7 +357,7 @@ test.describe("DONT Convention — Correctness verification (seeds 1-15)", () =>
       expect(
         computedBid,
         `Independent DONT rule verification failed for seed ${sd.seed}: ` +
-          `shape [${sd.shape}] should yield ${sd.expectedBid} but computed ${computedBid}`,
+          `shape [${sd.shape.join(',')}] should yield ${sd.expectedBid} but computed ${computedBid}`,
       ).toBe(sd.expectedBid);
 
       // ── 2. Load the game ─────────────────────────────────────────────────
@@ -575,7 +576,7 @@ test.describe("DONT Convention — Navigation and lifecycle", () => {
     }
   });
 
-  test("DONT deals have South with 8-15 HCP", async ({ page }) => {
+  test("DONT deals have South with 8-15 HCP", async ({ page: _page }) => {
     for (const sd of SEEDS) {
       expect(
         sd.hcp,

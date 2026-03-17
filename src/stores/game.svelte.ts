@@ -7,7 +7,7 @@ import type {
 import { Seat } from "../engine/types";
 import type { DrillSession, DrillBundle } from "../bootstrap/types";
 import type { BidResult } from "../core/contracts";
-import type { InferredHoldings } from "../core/contracts";
+import type { PublicBeliefs } from "../core/contracts";
 import type { InferenceEngine } from "../inference/inference-engine";
 import type {
   InferenceExtractorInput,
@@ -72,7 +72,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
   // Inference state — used during both bidding (processBid) and play (getInferences)
   let nsInferenceEngine = $state<InferenceEngine | null>(null);
   let ewInferenceEngine = $state<InferenceEngine | null>(null);
-  let playInferences = $state<Record<Seat, InferredHoldings> | null>(null);
+  let playInferences = $state<Record<Seat, PublicBeliefs> | null>(null);
 
   // Public belief state — kibitzer view, updated per bid
   let publicBeliefState = $state<PublicBeliefState>(createInitialBeliefState());
@@ -115,9 +115,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
   async function completeAuction(finalAuction: Auction) {
     // Capture inferences before transitioning — merge NS + EW data
     if (nsInferenceEngine || ewInferenceEngine) {
-      const nsInferences = nsInferenceEngine?.getInferences() ?? {};
-      const ewInferences = ewInferenceEngine?.getInferences() ?? {};
-      playInferences = { ...nsInferences, ...ewInferences } as Record<Seat, InferredHoldings>;
+      const nsBeliefs = nsInferenceEngine?.getBeliefs() ?? {};
+      const ewBeliefs = ewInferenceEngine?.getBeliefs() ?? {};
+      playInferences = { ...nsBeliefs, ...ewBeliefs } as Record<Seat, PublicBeliefs>;
     }
 
     const result = await engine.getContract(finalAuction);

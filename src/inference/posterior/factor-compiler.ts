@@ -97,7 +97,7 @@ function compileHcpRange(
   return {
     kind: "exclusion",
     seat,
-    constraint: `hcp ${operator} ${String(value)}`,
+    constraint: `hcp ${operator} ${JSON.stringify(value)}`,
     strength,
     origin,
   };
@@ -132,7 +132,7 @@ function compileSuitLength(
   return {
     kind: "exclusion",
     seat,
-    constraint: `${suit} length ${operator} ${String(value)}`,
+    constraint: `${suit} length ${operator} ${JSON.stringify(value)}`,
     strength,
     origin,
   };
@@ -177,7 +177,7 @@ function compileSingleConstraint(pc: PublicConstraint): FactorSpec {
   return {
     kind: "exclusion",
     seat: pc.subject,
-    constraint: `${factId} ${pc.constraint.operator} ${String(pc.constraint.value)}`,
+    constraint: `${factId} ${pc.constraint.operator} ${JSON.stringify(pc.constraint.value)}`,
     strength,
     origin,
   };

@@ -41,7 +41,7 @@
     remainingCards,
     rotated = false,
     vulnerability,
-    dealer,
+    dealer: _dealer,
   }: Props = $props();
 
   const southHcp = $derived(calculateHcp(hands[Seat.South]));

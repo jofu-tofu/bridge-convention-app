@@ -13,7 +13,7 @@ import { nextSeat, partnerSeat } from "../engine/constants";
 import type {
   PlayStrategy,
   PlayContext,
-  InferredHoldings,
+  PublicBeliefs,
 } from "../core/contracts";
 import { randomPlayStrategy } from "../strategy/play/random-play";
 import { delay } from "../core/util/delay";
@@ -59,7 +59,7 @@ interface PlayStoreConfig {
   contract: Contract;
   effectiveUserSeat: Seat;
   playStrategy: PlayStrategy | null;
-  inferences: Record<Seat, InferredHoldings> | null;
+  inferences: Record<Seat, PublicBeliefs> | null;
   onPlayComplete: (score: number | null) => void;
 }
 
@@ -84,7 +84,7 @@ export function createPlayStore(engine: EnginePort) {
   let activeDeal: Deal | null = null;
   let activeContract: Contract | null = null;
   let activeUserSeat: Seat | null = null;
-  let activeInferences: Record<Seat, InferredHoldings> | null = null;
+  let activeInferences: Record<Seat, PublicBeliefs> | null = null;
   let onPlayComplete: ((score: number | null) => void) | null = null;
 
   /** Check if a seat is user-controlled during play. */

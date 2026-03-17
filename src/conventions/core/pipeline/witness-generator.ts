@@ -17,12 +17,8 @@ import type {
   WitnessUnsatResult,
 } from "../../../core/contracts/witness-spec";
 import type { HandPredicateIR } from "../../../core/contracts/predicate-surfaces";
-import type {
-  DealConstraints,
-  SeatConstraint,
-  Deal,
-} from "../../../engine/types";
-import { Seat, Suit, Vulnerability } from "../../../engine/types";
+import { Suit } from "../../../engine/types";
+import type { Seat, Vulnerability, DealConstraints, SeatConstraint, Deal } from "../../../engine/types";
 import { generateDeal } from "../../../engine/deal-generator";
 import { evaluateDealConstraint } from "./deal-constraint-evaluator";
 import { CLOCKWISE, SUIT_FACT_MAP, VULNERABILITY_MAP } from "./witness-constants";

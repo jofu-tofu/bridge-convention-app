@@ -11,7 +11,6 @@ import {
   computeTopology,
   matchToCall,
   callToString,
-  pathToAuctionPrefix,
 } from "../machine-enumeration";
 import {
   compilePathToTarget,

@@ -87,7 +87,7 @@ export function solveDealWasm(deal: Deal): Promise<DDSolution> {
       worker!.postMessage({ id, deal });
     } catch {
       // Fallback: JSON round-trip strips any non-serializable wrappers
-      worker!.postMessage({ id, deal: JSON.parse(JSON.stringify(deal)) });
+      worker!.postMessage({ id, deal: JSON.parse(JSON.stringify(deal)) as Deal });
     }
   });
 }

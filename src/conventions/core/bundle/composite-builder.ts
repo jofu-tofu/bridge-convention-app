@@ -82,9 +82,9 @@ export function composeBundles(
 
   // ── Declared capabilities (merge all) ───────────────────────
   const capBundles = bundles.filter((b) => b.declaredCapabilities);
-  const declaredCapabilities =
+  const declaredCapabilities: Readonly<Record<string, string>> | undefined =
     capBundles.length > 0
-      ? Object.assign({}, ...capBundles.map((b) => b.declaredCapabilities))
+      ? Object.assign({}, ...capBundles.map((b) => b.declaredCapabilities)) as Readonly<Record<string, string>>
       : undefined;
 
   return {

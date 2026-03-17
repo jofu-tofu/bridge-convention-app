@@ -64,7 +64,7 @@
 
   let showAllCards = $state(false);
 
-  const allFaceUp: ReadonlySet<Seat> = new Set([Seat.North, Seat.East, Seat.South, Seat.West]);
+  const _allFaceUp: ReadonlySet<Seat> = new Set([Seat.North, Seat.East, Seat.South, Seat.West]);
 </script>
 
 <div class={phaseContainerClass}>

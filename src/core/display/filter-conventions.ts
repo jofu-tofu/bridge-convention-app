@@ -1,5 +1,5 @@
 import type { ConventionConfig } from "../contracts/convention";
-import { ConventionCategory } from "../contracts/convention";
+import type { ConventionCategory } from "../contracts/convention";
 
 export function filterConventions(
   conventions: readonly ConventionConfig[],

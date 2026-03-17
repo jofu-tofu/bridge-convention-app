@@ -29,6 +29,7 @@ export type { ConventionBundle, CreateBundleConfig } from "./bundle";
 export {
   evaluateFacts,
   createSharedFactCatalog,
+  createHandFactResolver,
 } from "./pipeline/fact-evaluator";
 export type { RelationalFactContext } from "./pipeline/fact-evaluator";
 
@@ -48,6 +49,7 @@ export {
 export { evaluate } from "./runtime/evaluation-runtime";
 export { evaluateMachine } from "./runtime/machine-evaluator";
 export { buildSnapshotFromAuction } from "./runtime/public-snapshot-builder";
+export { bundleToRuntimeModules } from "./runtime/bundle-adapter";
 
 export type {
   RuntimeModule,

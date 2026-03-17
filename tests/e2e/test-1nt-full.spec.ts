@@ -36,7 +36,7 @@ const SUIT_NAME_TO_SYMBOL: Record<string, string> = {
   clubs: "\u2663", Clubs: "\u2663", C: "\u2663", c: "\u2663",
 };
 
-function parseAriaLabel(label: string): ParsedCard {
+function _parseAriaLabel(label: string): ParsedCard {
   // aria-label format: "A of spades", "10 of hearts", "K of clubs", etc.
   const match = label.match(/^(.+?)\s+of\s+(.+)$/i);
   if (!match) return { rank: "?", suit: "?" };

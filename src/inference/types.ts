@@ -1,5 +1,6 @@
 import type { Seat, Auction, AuctionEntry, Call } from "../engine/types";
-import type { HandInference, InferredHoldings, BidAlert } from "../core/contracts";
+import type { HandInference, PublicBeliefs, BidAlert } from "../core/contracts";
+import type { FactConstraintIR } from "../core/contracts/agreement-module";
 
 // ConditionInference — structured inference metadata for condition → HandInference mapping.
 // Previously lived in conventions/core/types; now owned by inference layer.
@@ -20,14 +21,16 @@ export interface ConditionInference {
 export type {
   SuitInference,
   HandInference,
-  InferredHoldings,
+  PublicBeliefs,
+  DerivedRanges,
+  QualitativeConstraint,
 } from "../core/contracts";
 
 /** Snapshot of inference state after a single bid is processed. */
 export interface InferenceSnapshot {
   readonly entry: AuctionEntry;
-  readonly newInference: HandInference | null;
-  readonly cumulativeInferences: Record<Seat, InferredHoldings>;
+  readonly newConstraints: readonly FactConstraintIR[];
+  readonly cumulativeBeliefs: Record<Seat, PublicBeliefs>;
 }
 
 /** Determines how a partnership's bids are interpreted. */
@@ -50,12 +53,12 @@ export interface BidAnnotation {
   readonly seat: Seat;
   readonly conventionId: string | null;
   readonly meaning: string;
-  readonly inferences: readonly HandInference[];
+  readonly constraints: readonly FactConstraintIR[];
 }
 
 /** Public belief state — what a kibitzer can deduce from the auction. */
 export interface PublicBeliefState {
-  readonly beliefs: Record<Seat, InferredHoldings>;
+  readonly beliefs: Record<Seat, PublicBeliefs>;
   readonly annotations: readonly BidAnnotation[];
 }
 
@@ -70,12 +73,12 @@ export interface InferenceExtractorInput {
 }
 
 /**
- * Stable adapter for extracting HandInference[] from convention evaluation results.
+ * Stable adapter for extracting FactConstraintIR[] from convention evaluation results.
  * Decouples public belief layer from evaluator internals.
  * Current implementation: noop-extractor (placeholder) or posterior engine.
  */
 export interface InferenceExtractor {
-  extractInferences(result: InferenceExtractorInput, seat: Seat): readonly HandInference[];
+  extractConstraints(result: InferenceExtractorInput, seat: Seat): readonly FactConstraintIR[];
 }
 
 /** Per-observer configuration: how does THIS observer interpret bids? */

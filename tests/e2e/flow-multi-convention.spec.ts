@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /**
  * Multi-convention flow tests across different seeds.
@@ -29,7 +30,7 @@ interface GameData {
 }
 
 async function extractGameData(
-  page: import("@playwright/test").Page,
+  page: Page,
 ): Promise<GameData> {
   // Full page text
   const fullText = (await page.locator("body").innerText()) ?? "";

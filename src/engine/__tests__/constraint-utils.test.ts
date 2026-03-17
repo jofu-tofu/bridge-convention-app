@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { cleanConstraints } from "../constraint-utils";
-import { Seat, Suit } from "../types";
+import { Seat } from "../types";
 import type { DealConstraints } from "../types";
 
 describe("cleanConstraints", () => {

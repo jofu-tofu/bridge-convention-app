@@ -1,6 +1,7 @@
 import { tick } from "svelte";
 import type { EnginePort } from "../engine/port";
 import type { Deal, Call, Auction, AuctionEntry, Seat } from "../engine/types";
+import { BidSuit } from "../engine/types";
 import type { DrillSession } from "../bootstrap/types";
 import { delay } from "../core/util/delay";
 import type {
@@ -14,7 +15,7 @@ import type {
 import type { EncodingTrace } from "../core/contracts/provenance";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
-import { callsMatch } from "../engine/call-helpers";
+
 import { createBiddingContext } from "../conventions/core";
 import type { GameStoreOptions } from "./game.svelte";
 import {
@@ -102,7 +103,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let activeDeal = $state<Deal | null>(null);
   let activeSession = $state<DrillSession | null>(null);
   let onAuctionComplete: ((auction: Auction) => Promise<void>) | null = null;
-  let onSkipToExplanation: ((auction: Auction) => Promise<void>) | null = null;
+  let _onSkipToExplanation: ((auction: Auction) => Promise<void>) | null = null;
   let onProcessBid: ((bid: AuctionEntry, auctionBefore: Auction, bidResult: BidResult | null) => void) | null = null;
 
   const isUserTurn = $derived(
@@ -308,7 +309,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     activeSession = session;
     conventionStrategy = strategy;
     onAuctionComplete = config.onAuctionComplete;
-    onSkipToExplanation = config.onSkipToExplanation;
+    _onSkipToExplanation = config.onSkipToExplanation;
     onProcessBid = config.onProcessBid ?? null;
 
     bidFeedback = null;
@@ -318,7 +319,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       auction = initialAuction;
       bidHistory = initialAuction.entries.map((entry) => {
         // Add range announcement for 1NT opening (ACBL requires partner to announce "15 to 17")
-        const is1NT = entry.call.type === "bid" && entry.call.level === 1 && entry.call.strain === "NT";
+        const is1NT = entry.call.type === "bid" && entry.call.level === 1 && entry.call.strain === BidSuit.NoTrump;
         return {
           seat: entry.seat,
           call: entry.call,
@@ -366,7 +367,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     activeDeal = null;
     activeSession = null;
     onAuctionComplete = null;
-    onSkipToExplanation = null;
+    _onSkipToExplanation = null;
     onProcessBid = null;
     debugLog = [];
     debugTurnCounter = 0;

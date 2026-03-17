@@ -34,13 +34,13 @@ export function toBeliefData(
     }
 
     const suitLengths: Record<Suit, { readonly min: number; readonly max: number }> = {
-      [Suit.Spades]: { min: pub.suitLengths[Suit.Spades].min, max: pub.suitLengths[Suit.Spades].max },
-      [Suit.Hearts]: { min: pub.suitLengths[Suit.Hearts].min, max: pub.suitLengths[Suit.Hearts].max },
-      [Suit.Diamonds]: { min: pub.suitLengths[Suit.Diamonds].min, max: pub.suitLengths[Suit.Diamonds].max },
-      [Suit.Clubs]: { min: pub.suitLengths[Suit.Clubs].min, max: pub.suitLengths[Suit.Clubs].max },
+      [Suit.Spades]: { min: pub.ranges.suitLengths[Suit.Spades].min, max: pub.ranges.suitLengths[Suit.Spades].max },
+      [Suit.Hearts]: { min: pub.ranges.suitLengths[Suit.Hearts].min, max: pub.ranges.suitLengths[Suit.Hearts].max },
+      [Suit.Diamonds]: { min: pub.ranges.suitLengths[Suit.Diamonds].min, max: pub.ranges.suitLengths[Suit.Diamonds].max },
+      [Suit.Clubs]: { min: pub.ranges.suitLengths[Suit.Clubs].min, max: pub.ranges.suitLengths[Suit.Clubs].max },
     };
     return {
-      hcpRange: { min: pub.hcpRange.min, max: pub.hcpRange.max },
+      hcpRange: { min: pub.ranges.hcp.min, max: pub.ranges.hcp.max },
       suitLengths,
     };
   }

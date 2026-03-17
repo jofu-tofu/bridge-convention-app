@@ -1,4 +1,4 @@
-import type { PosteriorQueryPort, PosteriorQueryResult, InferenceHealth, FactorIntrospection } from "../../core/contracts/posterior-query";
+import type { PosteriorQueryPort, PosteriorQueryResult, FactorIntrospection } from "../../core/contracts/posterior-query";
 import type { PosteriorBackend, PosteriorState } from "../../core/contracts/posterior-backend";
 import type { SuitName } from "../../engine/types";
 

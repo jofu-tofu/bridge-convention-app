@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteSet } from "svelte/reactivity";
   import { listConventions } from "../../conventions/core/registry";
   import { ConventionCategory } from "../../conventions/core/types";
   import type { ConventionConfig } from "../../conventions/core/types";
@@ -9,7 +10,7 @@
 
   let searchQuery = $state("");
   let activeCategory = $state<ConventionCategory | null>(null);
-  let expandedIds = $state(new Set<string>());
+  let expandedIds = new SvelteSet<string>();
 
   const filteredConventions = $derived(
     filterConventions(listConventions(), searchQuery, activeCategory),
@@ -34,10 +35,8 @@
   }
 
   function toggleDetails(id: string) {
-    const next = new Set(expandedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    expandedIds = next;
+    if (expandedIds.has(id)) expandedIds.delete(id);
+    else expandedIds.add(id);
   }
 </script>
 

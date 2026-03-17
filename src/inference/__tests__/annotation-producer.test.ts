@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat } from "../../engine/types";
 import type { AuctionEntry, Auction } from "../../engine/types";
 import type { HandInference, BidAlert } from "../../core/contracts";
+import type { FactConstraintIR } from "../../core/contracts/agreement-module";
 import type { InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "../types";
 import { produceAnnotation } from "../annotation-producer";
 
@@ -16,9 +17,9 @@ function makeRuleResult(overrides: Partial<InferenceExtractorInput> = {}): Infer
   };
 }
 
-function makeStubExtractor(inferences: readonly HandInference[] = []): InferenceExtractor {
+function makeStubExtractor(constraints: readonly FactConstraintIR[] = []): InferenceExtractor {
   return {
-    extractInferences: (_result, _seat) => inferences,
+    extractConstraints: (_result, _seat) => constraints,
   };
 }
 
@@ -52,13 +53,10 @@ describe("produceAnnotation", () => {
     expect(annotation.conventionId).toBe("stayman");
   });
 
-  it("convention bid: inferences from extractor.extractInferences()", () => {
-    const testInference: HandInference = {
-      seat: Seat.South,
-      minHcp: 8,
-      suits: {},
-      source: "test",
-    };
+  it("convention bid: constraints from extractor.extractConstraints()", () => {
+    const testConstraints: FactConstraintIR[] = [
+      { factId: "hand.hcp", operator: "gte", value: 8 },
+    ];
     const ruleResult = makeRuleResult();
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" as never } };
 
@@ -66,15 +64,15 @@ describe("produceAnnotation", () => {
       entry,
       ruleResult,
       "stayman",
-      makeStubExtractor([testInference]),
+      makeStubExtractor(testConstraints),
       makeStubNaturalProvider(),
       emptyAuction,
     );
 
-    expect(annotation.inferences).toEqual([testInference]);
+    expect(annotation.constraints).toEqual(testConstraints);
   });
 
-  it("natural bid (null ruleResult): inferences from naturalProvider", () => {
+  it("natural bid (null ruleResult): constraints from naturalProvider converted at boundary", () => {
     const naturalInference: HandInference = {
       seat: Seat.East,
       minHcp: 12,
@@ -96,11 +94,13 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.meaning).toBe("Natural bid");
-    expect(annotation.inferences).toEqual([naturalInference]);
+    expect(annotation.constraints).toEqual([
+      { factId: "hand.hcp", operator: "gte", value: 12 },
+    ]);
     expect(annotation.conventionId).toBeNull();
   });
 
-  it("pass: meaning 'Pass', inferences empty", () => {
+  it("pass: meaning 'Pass', constraints empty", () => {
     const entry: AuctionEntry = { seat: Seat.North, call: { type: "pass" } };
 
     const annotation = produceAnnotation(
@@ -113,10 +113,10 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.meaning).toBe("Pass");
-    expect(annotation.inferences).toEqual([]);
+    expect(annotation.constraints).toEqual([]);
   });
 
-  it("double: meaning 'Double', inferences empty", () => {
+  it("double: meaning 'Double', constraints empty", () => {
     const entry: AuctionEntry = { seat: Seat.West, call: { type: "double" } };
 
     const annotation = produceAnnotation(
@@ -129,10 +129,10 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.meaning).toBe("Double");
-    expect(annotation.inferences).toEqual([]);
+    expect(annotation.constraints).toEqual([]);
   });
 
-  it("redouble: meaning 'Redouble', inferences empty", () => {
+  it("redouble: meaning 'Redouble', constraints empty", () => {
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "redouble" } };
 
     const annotation = produceAnnotation(
@@ -145,10 +145,10 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.meaning).toBe("Redouble");
-    expect(annotation.inferences).toEqual([]);
+    expect(annotation.constraints).toEqual([]);
   });
 
-  it("convention bid with alert publicConstraints: derives inference from constraints instead of natural", () => {
+  it("convention bid with alert publicConstraints: passes constraints through directly", () => {
     const alert: BidAlert = {
       publicConstraints: [
         { factId: "hand.hcp", operator: "gte", value: 8 },
@@ -168,15 +168,13 @@ describe("produceAnnotation", () => {
       emptyAuction,
     );
 
-    expect(annotation.inferences).toHaveLength(1);
-    expect(annotation.inferences[0]!.minHcp).toBe(8);
-    expect(annotation.inferences[0]!.suits).toEqual({
-      H: { minLength: 5 },
-    });
-    expect(annotation.inferences[0]!.source).toBe("alert:test-rule");
+    expect(annotation.constraints).toEqual([
+      { factId: "hand.hcp", operator: "gte", value: 8 },
+      { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
+    ]);
   });
 
-  it("convention bid with empty publicConstraints: falls back to natural inference", () => {
+  it("convention bid with empty publicConstraints: falls back to natural inference converted to constraints", () => {
     const alert: BidAlert = {
       publicConstraints: [],
       teachingLabel: "DONT bid",
@@ -199,6 +197,8 @@ describe("produceAnnotation", () => {
       emptyAuction,
     );
 
-    expect(annotation.inferences).toEqual([naturalInference]);
+    expect(annotation.constraints).toEqual([
+      { factId: "hand.hcp", operator: "gte", value: 10 },
+    ]);
   });
 });

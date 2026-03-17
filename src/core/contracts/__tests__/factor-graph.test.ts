@@ -12,7 +12,6 @@ import type {
   OwnHandPin,
   AuctionRecordPin,
   AlertPin,
-  AmbiguityFamilyIR,
 } from "../factor-graph";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";

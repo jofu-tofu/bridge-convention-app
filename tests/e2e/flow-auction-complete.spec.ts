@@ -84,8 +84,8 @@ test.describe("Stayman full auction — seed 42", () => {
 
     await logPhase(page, "after 2H");
     const auctionAfter2H = await logAuction(page, "after 2H");
-    const enabledAfter2H = await logEnabledButtons(page, "after 2H");
-    const bodyAfter2H = await logBodyText(page, "after 2H");
+    const _enabledAfter2H = await logEnabledButtons(page, "after 2H");
+    const _bodyAfter2H = await logBodyText(page, "after 2H");
 
     // Verify the auction progressed: should contain the 2H bid
     expect(auctionAfter2H).toContain("2");

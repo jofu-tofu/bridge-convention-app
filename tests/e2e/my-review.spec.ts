@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 test.setTimeout(90000);
 
@@ -13,7 +13,7 @@ test("Weak Two - verify seeds 6, 9, 10, 14 opener hearts", async ({ page }) => {
     const bodyText = await page.textContent("body");
     const northMatch = bodyText?.match(/N \((\d+) HCP\)\s*♠\s*(\S+?)♥\s*(\S+?)♦\s*(\S+?)♣\s*(\S+?)E/s);
     if (northMatch) {
-      const [_, nhcp, nspades, nhearts, ndiamonds, nclubs] = northMatch;
+      const [_, nhcp, _nspades, nhearts, _ndiamonds, _nclubs] = northMatch;
       console.log(`Seed ${seed}: N=${nhcp}HCP ♥=${nhearts.trim()} (${nhearts.trim().length} hearts)`);
     }
   }

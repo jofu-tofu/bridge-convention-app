@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 test("Visual evidence - Stayman with alert (seed 1)", async ({ page }) => {
   await page.goto("http://localhost:1420/?seed=1");
@@ -98,7 +98,7 @@ test("DONT response chain - check all alerts", async ({ page }) => {
   await page.waitForTimeout(2000);
   
   // Now we should be asked for our next bid
-  let bodyText = await page.locator("body").innerText();
+  const bodyText = await page.locator("body").innerText();
   console.log("=== DONT AFTER X ===");
   
   // Check if we need to bid again (reveal suit)

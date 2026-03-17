@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 test("Expand Other bids details in feedback - seed 1 stayman", async ({ page }) => {
   test.setTimeout(20000);
@@ -17,7 +17,7 @@ test("Expand Other bids details in feedback - seed 1 stayman", async ({ page }) 
   // They appear as clickable summary/details elements
   // First expand all details
   await page.evaluate(() => {
-    document.querySelectorAll("details").forEach(d => (d as HTMLDetailsElement).open = true);
+    document.querySelectorAll("details").forEach(d => d.open = true);
   });
   await page.waitForTimeout(500);
   
@@ -95,7 +95,7 @@ test("Weak Two: bid 2NT Ogust (which matched pipeline) - check grade", async ({ 
       await showBtn.click();
       await page.waitForTimeout(1000);
       await page.evaluate(() => {
-        document.querySelectorAll("details").forEach(d => (d as HTMLDetailsElement).open = true);
+        document.querySelectorAll("details").forEach(d => d.open = true);
       });
       await page.waitForTimeout(500);
       console.log("\n=== EXPANDED ===");

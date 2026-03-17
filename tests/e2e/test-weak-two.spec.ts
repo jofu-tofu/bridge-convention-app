@@ -127,7 +127,7 @@ async function extractAllHands(page: Page): Promise<HandInfo[]> {
   // Expand all <details> elements in the page
   await page.evaluate(() => {
     document.querySelectorAll("details").forEach((d) => {
-      (d as HTMLDetailsElement).open = true;
+      d.open = true;
     });
   });
   await page.waitForTimeout(200);
@@ -284,7 +284,7 @@ async function extractPipelineText(page: Page): Promise<string> {
     const summaries = document.querySelectorAll("summary");
     for (const s of summaries) {
       if (s.textContent?.includes("Pipeline")) {
-        const details = s.closest("details") as HTMLDetailsElement | null;
+        const details = s.closest("details");
         if (details) {
           details.open = true;
           return details.innerText;

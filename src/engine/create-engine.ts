@@ -5,7 +5,7 @@ import type { EnginePort } from "./port";
 
 // Runtime engine detection: Tauri IPC (desktop) or WASM (browser)
 export async function createEngine(): Promise<EnginePort> {
-  if ((window as any).__TAURI__) { // any: Tauri runtime global, not typed
+  if ((window as unknown as Record<string, unknown>).__TAURI__) { // Tauri runtime global, not typed
     return new TauriIpcEngine();
   }
   await initWasm();

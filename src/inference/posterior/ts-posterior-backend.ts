@@ -1,4 +1,4 @@
-import type { Hand } from "../../engine/types";
+import type { Hand, Seat } from "../../engine/types";
 import type { PosteriorBackend, PosteriorState, WeightedParticle, PosteriorQueryIR } from "../../core/contracts/posterior-backend";
 import type { ConditioningContext, PosteriorQueryResult, InferenceHealth, FactorIntrospection } from "../../core/contracts/posterior-query";
 import type { HandFactResolverFn } from "../../core/contracts/fact-catalog";
@@ -26,7 +26,7 @@ export function createTsBackend(options?: {
       const ownHand = context.ownHand ?? { cards: [] as never };
       const ownSeat = context.observerSeat;
 
-      const samples = sampleDeals(handSpaces, ownHand, ownSeat as any, sampleCount, seed, factResolver);
+      const samples = sampleDeals(handSpaces, ownHand, ownSeat as Seat, sampleCount, seed, factResolver);
 
       // Convert WeightedDealSample[] to WeightedParticle[]
       const particles: WeightedParticle[] = samples.map((sample) => ({

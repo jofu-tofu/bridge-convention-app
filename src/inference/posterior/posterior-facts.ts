@@ -44,7 +44,7 @@ function partnerHas4InSuitLikely(
   if (!suitChar || !SUIT_CHAR_MAP[suitChar]) {
     return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
   }
-  const suit = SUIT_CHAR_MAP[suitChar]!;
+  const suit = SUIT_CHAR_MAP[suitChar];
 
   if (samples.length === 0) {
     return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };

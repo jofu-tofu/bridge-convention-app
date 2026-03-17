@@ -1,9 +1,10 @@
-import type { InferenceConfig, InferredHoldings, HandInference } from "./types";
+import type { InferenceConfig, PublicBeliefs } from "./types";
 import type { Auction, AuctionEntry, Seat } from "../engine/types";
 import type { InferenceSnapshot } from "./types";
+import type { FactConstraintIR } from "../core/contracts/agreement-module";
 import { Seat as SeatEnum } from "../engine/types";
 import { partnerSeat } from "../engine/constants";
-import { mergeInferences } from "./merge";
+import { derivePublicBeliefs, handInferenceToConstraints } from "./derive-beliefs";
 
 const ALL_SEATS: Seat[] = [
   SeatEnum.North,
@@ -22,11 +23,11 @@ function isOwnPartnership(observerSeat: Seat, bidderSeat: Seat): boolean {
 export interface InferenceEngine {
   /** Process a single bid and update inferences. */
   processBid(entry: AuctionEntry, auctionBefore: Auction): void;
-  /** Get merged inferences for all seats. */
-  getInferences(): Record<Seat, InferredHoldings>;
+  /** Get derived public beliefs for all seats. */
+  getBeliefs(): Record<Seat, PublicBeliefs>;
   /** Get per-bid inference timeline snapshots. */
   getTimeline(): readonly InferenceSnapshot[];
-  /** Clear all accumulated inferences. */
+  /** Clear all accumulated constraints. */
   reset(): void;
 }
 
@@ -39,7 +40,7 @@ export function createInferenceEngine(
   config: InferenceConfig,
   observerSeat: Seat,
 ): InferenceEngine {
-  const rawInferences: Record<Seat, HandInference[]> = {
+  const rawConstraints: Record<Seat, FactConstraintIR[]> = {
     [SeatEnum.North]: [],
     [SeatEnum.East]: [],
     [SeatEnum.South]: [],
@@ -50,12 +51,12 @@ export function createInferenceEngine(
   // Used by DebugDrawer now and future play review features.
   const timeline: InferenceSnapshot[] = [];
 
-  function computeInferences(): Record<Seat, InferredHoldings> {
+  function computeBeliefs(): Record<Seat, PublicBeliefs> {
     return {
-      [SeatEnum.North]: mergeInferences(SeatEnum.North, rawInferences[SeatEnum.North]),
-      [SeatEnum.East]: mergeInferences(SeatEnum.East, rawInferences[SeatEnum.East]),
-      [SeatEnum.South]: mergeInferences(SeatEnum.South, rawInferences[SeatEnum.South]),
-      [SeatEnum.West]: mergeInferences(SeatEnum.West, rawInferences[SeatEnum.West]),
+      [SeatEnum.North]: derivePublicBeliefs(SeatEnum.North, rawConstraints[SeatEnum.North]),
+      [SeatEnum.East]: derivePublicBeliefs(SeatEnum.East, rawConstraints[SeatEnum.East]),
+      [SeatEnum.South]: derivePublicBeliefs(SeatEnum.South, rawConstraints[SeatEnum.South]),
+      [SeatEnum.West]: derivePublicBeliefs(SeatEnum.West, rawConstraints[SeatEnum.West]),
     };
   }
 
@@ -66,24 +67,21 @@ export function createInferenceEngine(
         ? config.ownPartnership
         : config.opponentPartnership;
 
-      let newInference: HandInference | null = null;
+      let newConstraints: readonly FactConstraintIR[] = [];
       try {
-        newInference = provider.inferFromBid(
-          entry,
-          auctionBefore,
-          bidderSeat,
-        ) ?? null;
-        if (newInference) {
-          rawInferences[bidderSeat].push(newInference);
+        const inference = provider.inferFromBid(entry, auctionBefore, bidderSeat) ?? null;
+        if (inference) {
+          newConstraints = handInferenceToConstraints(inference);
+          rawConstraints[bidderSeat].push(...newConstraints);
         }
       } catch {
         // Inference errors are silently swallowed — never thrown to callers
       }
-      timeline.push({ entry, newInference, cumulativeInferences: computeInferences() });
+      timeline.push({ entry, newConstraints, cumulativeBeliefs: computeBeliefs() });
     },
 
-    getInferences(): Record<Seat, InferredHoldings> {
-      return computeInferences();
+    getBeliefs(): Record<Seat, PublicBeliefs> {
+      return computeBeliefs();
     },
 
     getTimeline(): readonly InferenceSnapshot[] {
@@ -92,7 +90,7 @@ export function createInferenceEngine(
 
     reset(): void {
       for (const seat of ALL_SEATS) {
-        rawInferences[seat] = [];
+        rawConstraints[seat] = [];
       }
       timeline.length = 0;
     },

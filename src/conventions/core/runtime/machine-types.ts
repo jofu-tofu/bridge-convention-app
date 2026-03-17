@@ -3,7 +3,6 @@ export type { MachineRegisters };
 import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { ForcingState } from "../../../core/contracts/bidding";
 import type { Call, Seat, BidSuit, Auction } from "../../../engine/types";
-import { areSamePartnership } from "../../../engine/constants";
 import type { RuntimeDiagnostic } from "./types";
 import type { HandoffTrace } from "../../../core/contracts/provenance";
 

@@ -1,73 +1,14 @@
-import type { AuctionEntry, Auction, Seat, Suit } from "../engine/types";
+import type { AuctionEntry, Auction } from "../engine/types";
 import type { BidAnnotation, InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "./types";
-import type { HandInference, SuitInference } from "../core/contracts";
-import type { FactConstraintIR } from "../core/contracts";
-
-/** Map factId suffix → engine Suit value for suit-length constraints. */
-const SUIT_MAP: Record<string, Suit> = {
-  spades: "S" as Suit,
-  hearts: "H" as Suit,
-  diamonds: "D" as Suit,
-  clubs: "C" as Suit,
-};
-
-/** Convert structured publicConstraints (FactConstraintIR[]) to a HandInference.
- *  Handles direct HCP and suit-length constraints. Skips computed facts
- *  (e.g., bridge.hasFourCardMajor) that don't map to primitive ranges. */
-function constraintsToInference(
-  constraints: readonly FactConstraintIR[],
-  seat: Seat,
-  source: string,
-): HandInference | null {
-  let minHcp: number | undefined;
-  let maxHcp: number | undefined;
-  const suits: Partial<Record<Suit, SuitInference>> = {};
-  let extracted = false;
-
-  for (const c of constraints) {
-    // HCP constraints: hand.hcp
-    if (c.factId === "hand.hcp") {
-      if (c.operator === "gte" && typeof c.value === "number") {
-        minHcp = c.value;
-        extracted = true;
-      } else if (c.operator === "lte" && typeof c.value === "number") {
-        maxHcp = c.value;
-        extracted = true;
-      } else if (c.operator === "range" && typeof c.value === "object" && c.value !== null && "min" in c.value) {
-        const range = c.value as { min: number; max: number };
-        minHcp = range.min;
-        maxHcp = range.max;
-        extracted = true;
-      }
-      continue;
-    }
-
-    // Suit length constraints: hand.suitLength.{suit}
-    const suitMatch = c.factId.match(/^hand\.suitLength\.(\w+)$/);
-    if (suitMatch) {
-      const suitKey = SUIT_MAP[suitMatch[1]!];
-      if (!suitKey) continue;
-      const existing = suits[suitKey] ?? {};
-      if (c.operator === "gte" && typeof c.value === "number") {
-        suits[suitKey] = { ...existing, minLength: c.value };
-        extracted = true;
-      } else if (c.operator === "lte" && typeof c.value === "number") {
-        suits[suitKey] = { ...existing, maxLength: c.value };
-        extracted = true;
-      }
-    }
-  }
-
-  if (!extracted) return null;
-  return { seat, minHcp, maxHcp, suits, source };
-}
+import type { FactConstraintIR } from "../core/contracts/agreement-module";
+import { handInferenceToConstraints } from "./derive-beliefs";
 
 /**
  * Produce a BidAnnotation for a single auction entry.
  *
- * Convention bids: meaning/alert/inferences from the rule result + extractor.
- * Natural bids: inferences from the natural provider.
- * Pass/double/redouble: no inferences.
+ * Convention bids: constraints from the rule result alert + extractor.
+ * Natural bids: constraints converted from the natural provider.
+ * Pass/double/redouble: no constraints.
  */
 export function produceAnnotation(
   entry: AuctionEntry,
@@ -79,50 +20,42 @@ export function produceAnnotation(
 ): BidAnnotation {
   // Convention bid
   if (ruleResult) {
-    const inferences = extractor.extractInferences(ruleResult, entry.seat);
-    // When the convention extractor produces inferences, use them.
-    // When it returns empty (e.g. noopExtractor), try to derive inferences
-    // from the alert's publicConstraints (formal convention rules).
+    const extracted = extractor.extractConstraints(ruleResult, entry.seat);
+    // When the convention extractor produces constraints, use them.
+    // When it returns empty (e.g. noopExtractor), try to use the
+    // alert's publicConstraints directly (already FactConstraintIR[]).
     // Only fall back to the natural provider when no alert constraints exist.
-    if (inferences.length > 0) {
+    if (extracted.length > 0) {
       return {
         call: entry.call,
         seat: entry.seat,
         conventionId,
         meaning: ruleResult.meaning ?? ruleResult.explanation,
-        inferences,
+        constraints: extracted,
       };
     }
 
-    // Try to derive inferences from alert's publicConstraints
-    const alert = ruleResult.alert;
-    const alertInference = alert?.publicConstraints?.length
-      ? constraintsToInference(
-          alert.publicConstraints,
-          entry.seat,
-          `alert:${ruleResult.rule}`,
-        )
-      : null;
-
-    if (alertInference) {
+    // Use alert's publicConstraints directly — no lossy conversion
+    const alertConstraints: readonly FactConstraintIR[] = ruleResult.alert?.publicConstraints ?? [];
+    if (alertConstraints.length > 0) {
       return {
         call: entry.call,
         seat: entry.seat,
         conventionId,
         meaning: ruleResult.meaning ?? ruleResult.explanation,
-        inferences: [alertInference],
+        constraints: alertConstraints,
       };
     }
 
-    // Fall through with convention metadata but natural inferences
+    // Fall through with convention metadata but natural constraints
     if (entry.call.type === "bid") {
-      const naturalInference = naturalProvider.inferFromBid(entry, auctionBefore, entry.seat);
+      const naturalConstraints = inferNaturalConstraints(naturalProvider, entry, auctionBefore);
       return {
         call: entry.call,
         seat: entry.seat,
         conventionId,
         meaning: ruleResult.meaning ?? ruleResult.explanation,
-        inferences: naturalInference ? [naturalInference] : [],
+        constraints: naturalConstraints,
       };
     }
     return {
@@ -130,19 +63,19 @@ export function produceAnnotation(
       seat: entry.seat,
       conventionId,
       meaning: ruleResult.meaning ?? ruleResult.explanation,
-      inferences: [],
+      constraints: [],
     };
   }
 
   // Natural contract bid (not pass/double/redouble)
   if (entry.call.type === "bid") {
-    const naturalInference = naturalProvider.inferFromBid(entry, auctionBefore, entry.seat);
+    const naturalConstraints = inferNaturalConstraints(naturalProvider, entry, auctionBefore);
     return {
       call: entry.call,
       seat: entry.seat,
       conventionId: null,
       meaning: "Natural bid",
-      inferences: naturalInference ? [naturalInference] : [],
+      constraints: naturalConstraints,
     };
   }
 
@@ -158,6 +91,16 @@ export function produceAnnotation(
     seat: entry.seat,
     conventionId: null,
     meaning: meaningMap[entry.call.type] ?? entry.call.type,
-    inferences: [],
+    constraints: [],
   };
+}
+
+/** Get constraints from natural provider, converting HandInference at the boundary. */
+function inferNaturalConstraints(
+  provider: InferenceProvider,
+  entry: AuctionEntry,
+  auctionBefore: Auction,
+): readonly FactConstraintIR[] {
+  const inference = provider.inferFromBid(entry, auctionBefore, entry.seat);
+  return inference ? handInferenceToConstraints(inference) : [];
 }

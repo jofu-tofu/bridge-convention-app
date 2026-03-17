@@ -10,12 +10,10 @@ import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { passStrategy } from "../strategy/bidding/pass-strategy";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { getBundle, createSharedFactCatalog } from "../conventions/core";
+import { getBundle, createSharedFactCatalog, bundleToRuntimeModules, createHandFactResolver } from "../conventions/core";
 import type { ConventionBundle } from "../conventions/core";
-import { bundleToRuntimeModules } from "../conventions/core/runtime/bundle-adapter";
 import { createFactCatalog } from "../core/contracts/fact-catalog";
 import { createTsBackend } from "../inference/posterior";
-import { createHandFactResolver } from "../conventions/core/pipeline/fact-evaluator";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);

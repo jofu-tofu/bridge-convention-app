@@ -7,7 +7,7 @@ import type {
   Suit,
   Trick,
 } from "../../engine/types";
-import type { InferredHoldings } from "./inference";
+import type { PublicBeliefs } from "./inference";
 
 /** Context passed to play strategies for card selection. */
 export interface PlayContext {
@@ -21,7 +21,7 @@ export interface PlayContext {
   /** Visible after opening lead; undefined before dummy is revealed. */
   readonly dummyHand?: Hand;
   /** Auction inferences — optional, heuristics degrade gracefully without. */
-  readonly inferences?: Record<Seat, InferredHoldings>;
+  readonly inferences?: Record<Seat, PublicBeliefs>;
 }
 
 export interface PlayResult {

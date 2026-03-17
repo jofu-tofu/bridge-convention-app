@@ -38,14 +38,14 @@ export function conditionOnOwnHand(
   for (let i = 0; i < SUIT_ORDER.length; i++) {
     const suit = SUIT_ORDER[i]!;
     const ownLength = evaluation.shape[i]!;
-    const pub = partnerBeliefs.suitLengths[suit];
+    const pub = partnerBeliefs.ranges.suitLengths[suit];
     partnerSuitLengths[suit] = {
       min: Math.max(pub.min, 0),
       max: Math.min(pub.max, 13 - ownLength),
     };
   }
 
-  const pubHcp = partnerBeliefs.hcpRange;
+  const pubHcp = partnerBeliefs.ranges.hcp;
   return {
     seat,
     partnerSeat: partner,

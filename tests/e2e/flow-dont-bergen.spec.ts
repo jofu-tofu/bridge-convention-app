@@ -235,7 +235,7 @@ test.describe("DONT and Bergen Raises flow", () => {
     expect(dontState.southCards.length).toBeGreaterThan(0);
 
     // ---- Step 5: Make a bid -----------------------------------------------
-    let bidMade = "";
+    let _bidMade = "";
 
     if (dontState.sidePanelHeading.includes("Your bid")) {
       // It's our turn — pick the first enabled contract bid, or pass
@@ -249,7 +249,7 @@ test.describe("DONT and Bergen Raises flow", () => {
       if (bidToClick) {
         console.log(`Making bid: ${bidToClick.text} (${bidToClick.testId})`);
         await page.getByTestId(bidToClick.testId).click();
-        bidMade = bidToClick.text;
+        _bidMade = bidToClick.text;
       }
     } else {
       console.log(
@@ -274,7 +274,7 @@ test.describe("DONT and Bergen Raises flow", () => {
             `Making bid (after wait): ${bidToClick.text} (${bidToClick.testId})`,
           );
           await page.getByTestId(bidToClick.testId).click();
-          bidMade = bidToClick.text;
+          _bidMade = bidToClick.text;
         }
       } catch {
         console.log("Timed out waiting for our turn — phase may have advanced");
@@ -381,7 +381,7 @@ test.describe("DONT and Bergen Raises flow", () => {
     expect(bergenState.southCards.length).toBeGreaterThan(0);
 
     // ---- Make a bid -------------------------------------------------------
-    let bidMade = "";
+    let _bidMade = "";
     if (bergenState.sidePanelHeading.includes("Your bid")) {
       const contractBid = bergenState.enabledBids.find(
         (b) =>
@@ -393,7 +393,7 @@ test.describe("DONT and Bergen Raises flow", () => {
       if (bidToClick) {
         console.log(`Making bid: ${bidToClick.text} (${bidToClick.testId})`);
         await page.getByTestId(bidToClick.testId).click();
-        bidMade = bidToClick.text;
+        _bidMade = bidToClick.text;
       }
     } else {
       console.log("Not our turn yet — waiting...");
@@ -414,7 +414,7 @@ test.describe("DONT and Bergen Raises flow", () => {
             `Making bid (after wait): ${bidToClick.text} (${bidToClick.testId})`,
           );
           await page.getByTestId(bidToClick.testId).click();
-          bidMade = bidToClick.text;
+          _bidMade = bidToClick.text;
         }
       } catch {
         console.log("Timed out waiting for our turn");
