@@ -4,6 +4,7 @@
   import type { Call } from "../../../engine/types";
   import { getEngine, getGameStore, getAppStore } from "../../../stores/context";
   import { startDrill } from "../../../bootstrap/start-drill";
+  import { startTargetedDrill } from "../../../bootstrap/targeted-drill";
   import { computeTableScale } from "../../../core/display/table-scale";
   import { mulberry32 } from "../../../core/util/seeded-rng";
 
@@ -69,6 +70,22 @@
     const convention = appStore.selectedConvention;
     if (!convention) return;
     dealNumber++;
+
+    // FSM-targeted drill: generate a deal that exercises a specific state
+    const target = appStore.targetState;
+    if (target) {
+      const bundle = await startTargetedDrill(engine, convention, userSeat, target, {
+        opponentMode: appStore.opponentMode,
+      });
+      if (bundle) {
+        await gameStore.startDrill(bundle);
+        return;
+      }
+      // Fallback to normal drill if targeting fails
+      // eslint-disable-next-line no-console
+      console.warn(`[targetState] Failed to target state "${target}", falling back to normal drill`);
+    }
+
     const devSeed = getDevSeed();
     const devRng = devSeed !== undefined ? mulberry32(devSeed) : undefined;
     if (devSeed !== undefined) appStore.advanceDevDeal();

@@ -16,6 +16,8 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   // Convention/learn URL params work in all modes for deep linking
   const conventionParam = params.get("convention");
   const learnParam = params.get("learn");
+  const targetStateParam = params.get("targetState");
+
   if (learnParam) {
     try {
       const config = getConvention(learnParam);
@@ -30,6 +32,12 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     } catch {
       // Invalid param — silently ignore
     }
+  }
+
+  // Target state: drop into a specific FSM state for coverage testing
+  // Requires ?convention= to also be set so we know which bundle to target
+  if (targetStateParam) {
+    store.setTargetState(targetStateParam);
   }
 
   // Debug-only params (debug panel, autoplay) stay DEV-only
