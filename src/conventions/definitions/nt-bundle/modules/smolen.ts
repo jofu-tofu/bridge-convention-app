@@ -243,9 +243,35 @@ const SMOLEN_HOOK_TRANSITIONS: readonly {
 
 const SMOLEN_MACHINE_STATES: readonly MachineState[] = [
   {
-    stateId: "smolen-invoke-hearts",
+    stateId: "smolen-scope",
     parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double", "nt-opened-pass"],
+    transitions: [
+      {
+        transitionId: "smolen-opponent-interrupt",
+        match: { kind: "opponent-action" },
+        target: "smolen-interrupted",
+      },
+    ],
+    allowedParentTransitions: ["nt-opened-opponent-interrupt", "nt-opened-pass"],
+  },
+  {
+    stateId: "smolen-interrupted",
+    parentId: "smolen-scope",
+    transitions: [
+      {
+        transitionId: "smolen-interrupted-absorb",
+        match: { kind: "pass" },
+        target: "smolen-interrupted",
+      },
+    ],
+    surfaceGroupId: "smolen-interrupted",
+    entryEffects: { setCompetitionMode: "Contested" },
+    allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt"],
+  },
+  {
+    stateId: "smolen-invoke-hearts",
+    parentId: "smolen-scope",
+    allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt", "nt-opened-pass"],
     transitions: [],
     submachineRef: {
       machineId: "smolen-continuation",
@@ -258,8 +284,8 @@ const SMOLEN_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "smolen-invoke-spades",
-    parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double", "nt-opened-pass"],
+    parentId: "smolen-scope",
+    allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt", "nt-opened-pass"],
     transitions: [],
     submachineRef: {
       machineId: "smolen-continuation",
@@ -348,6 +374,7 @@ export function createSmolenSubmachine(): ConversationMachine {
       stateId: "smolen-contested",
       parentId: null,
       transitions: [],
+      surfaceGroupId: "smolen-contested",
       entryEffects: {
         setCompetitionMode: "Contested",
       },

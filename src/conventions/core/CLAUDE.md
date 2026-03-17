@@ -27,7 +27,7 @@ core/
   runtime/              Meaning-centric evaluation runtime (FSM + profiles + snapshots)
     machine-types.ts      ConversationMachine, MachineState, MachineTransition, MachineEffect, TransitionMatch
     machine-evaluator.ts  evaluateMachine() — generic FSM stepper (SCXML-inspired)
-    machine-validation.ts validateMachine() — structural checks (orphans, dangling refs)
+    machine-validation.ts 7 validators: validateMachine (structural), validateTransitionCompleteness (parent leaks), validateInterruptScoping (scope-only, local-target, coverage), validateRoleSafety (no opponent on call/any-bid), validateInterruptedStateWellFormedness (surfaceGroupId, competitionMode, pass handler), validateTerminalReachability, validateInterruptPathCompleteness (double + bid covered)
     evaluation-runtime.ts evaluate() — two-phase orchestrator (public snapshot → decision surfaces)
     public-snapshot-builder.ts  buildSnapshotFromAuction() — Phase 1 output
     decision-surface-emitter.ts emitDecisionSurfaces() — Phase 2 output
@@ -75,10 +75,11 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 **Key types:**
 - `MachineState` — `stateId`, `parentId` (hierarchy), `transitions`, `entryEffects`, `surfaceGroupId`, `transforms`
-- `MachineTransition` — 5-kind `TransitionMatch`: `call`, `any-bid`, `pass`, `opponent-action`, `predicate`
+- `MachineTransition` — 5-kind `TransitionMatch`: `call`, `any-bid`, `pass`, `opponent-action`, `predicate`. `allowedRoles` field overrides default role matching (see role-safe matching below).
 - `MachineEffect` — sets `forcingState`, `obligation`, `agreedStrain`, `competitionMode`, `captain`, `systemCapabilities`
+- `MachineContext` — includes `interruptedFromStateId` capturing the source state when a scope interrupt fires (provenance for interrupted states)
 
-**`evaluateMachine()`** walks auction entries with descendant-first transition preemption. Output: `MachineEvalResult` with `currentStateId`, `activeSurfaceGroupIds`, `collectedTransforms`. Machine-over-profile precedence: profile = "what's installed", machine = "what's live".
+**`evaluateMachine()`** walks auction entries with descendant-first transition preemption. **Role-safe matching:** `call` and `any-bid` transitions default to self+partner only — opponent bids are blocked unless `allowedRoles` explicitly includes opponents. Use `opponent-action` with `callType: "bid"` to match opponent bids. Output: `MachineEvalResult` with `currentStateId`, `activeSurfaceGroupIds`, `collectedTransforms`. Machine-over-profile precedence: profile = "what's installed", machine = "what's live".
 
 **`areSamePartnership()`** is used by machine `seatRole` functions — defined in `engine/constants.ts` and imported by machine files.
 
@@ -121,7 +122,6 @@ Every subsystem here exists because simpler designs failed the convention-univer
 | Gap | Impact | Blocks |
 |-----|--------|--------|
 | `mergeRegisters` is a no-op in `machine-evaluator.ts` | Can't track custom per-machine state (relay step count, controls shown) | Pattern 2, 5, 6 |
-| `"call"` TransitionMatch doesn't check seatRole | Opponent bids can fire partnership transitions in competitive auctions | Pattern 3 (competitive) |
 | No `AttachmentIR` for host-state attachment | Add-on modules can't attach to host states | Pattern 4 (Negative Doubles, Drury) |
 | `ActivationTrace` always `[]` in meaning arbitrator | Provenance can't answer "which modules were live and why?" | Diagnostics |
 | `evaluateFacts()` only evaluates `acting-hand` world | No `public` or `full-deal` world facts can be evaluated | Future scope |

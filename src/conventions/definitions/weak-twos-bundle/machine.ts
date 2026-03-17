@@ -8,23 +8,19 @@ import { buildConversationMachine } from "../../core/runtime/machine-types";
 /**
  * Create the Weak Two Bids Conversation Machine.
  *
- * State hierarchy (flat — no parent states):
+ * State hierarchy (scoped interrupt pattern):
  *   idle → weak-two-opened-{h,s,d} (on 2H / 2S / 2D)
  *
- *   weak-two-opened-{suit} → responder-r2-{suit} (on opponent pass)
- *                           → weak-two-contested (on opponent double/overcall)
+ *   weak-two-active (abstract scope parent — opponent-action inherited by all children)
+ *     ├─ weak-two-opened-{suit} → responder-r2-{suit} (on opponent pass)
+ *     ├─ responder-r2-{suit} → terminal (on game raise / invite / pass)
+ *     │                      → ogust-response-{suit} (on 2NT Ogust ask)
+ *     ├─ ogust-response-{suit} → terminal (on any Ogust response bid)
+ *     └─ weak-two-contested (end state for interference)
  *
- *   R2 — responder actions:
- *     responder-r2-{suit} → terminal (on game raise / invite / pass)
- *                         → ogust-response-{suit} (on 2NT Ogust ask)
+ *   terminal (end state, no parent — exempt from coverage)
  *
- *   R3 — opener Ogust response:
- *     ogust-response-{suit} → ogust-response-{suit} (pass self-loop)
- *                            → terminal (on any Ogust response bid)
- *
- *   terminal / weak-two-contested (end states)
- *
- * 12 states total.
+ * 13 states total.
  */
 export function createWeakTwoConversationMachine(): ConversationMachine {
   const states: MachineState[] = [
@@ -52,21 +48,30 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
       surfaceGroupId: "opener-r1",
     },
 
-    // ─── weak-two-opened: waiting for opponent pass or interference ─
+    // ─── Scope parent: opponent-action inherited by all active children ─
     {
-      stateId: "weak-two-opened-h",
+      stateId: "weak-two-active",
       parentId: null,
       transitions: [
         {
-          transitionId: "opened-h-opponent-double",
+          transitionId: "weak-two-opponent-double",
           match: { kind: "opponent-action", callType: "double" },
           target: "weak-two-contested",
         },
         {
-          transitionId: "opened-h-opponent-bid",
+          transitionId: "weak-two-opponent-bid",
           match: { kind: "opponent-action", callType: "bid" },
           target: "weak-two-contested",
         },
+      ],
+    },
+
+    // ─── weak-two-opened: waiting for opponent pass or interference ─
+    {
+      stateId: "weak-two-opened-h",
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+      transitions: [
         {
           transitionId: "opened-h-pass-to-responder",
           match: { kind: "pass" },
@@ -76,18 +81,9 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     },
     {
       stateId: "weak-two-opened-s",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
-        {
-          transitionId: "opened-s-opponent-double",
-          match: { kind: "opponent-action", callType: "double" },
-          target: "weak-two-contested",
-        },
-        {
-          transitionId: "opened-s-opponent-bid",
-          match: { kind: "opponent-action", callType: "bid" },
-          target: "weak-two-contested",
-        },
         {
           transitionId: "opened-s-pass-to-responder",
           match: { kind: "pass" },
@@ -97,18 +93,9 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     },
     {
       stateId: "weak-two-opened-d",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
-        {
-          transitionId: "opened-d-opponent-double",
-          match: { kind: "opponent-action", callType: "double" },
-          target: "weak-two-contested",
-        },
-        {
-          transitionId: "opened-d-opponent-bid",
-          match: { kind: "opponent-action", callType: "bid" },
-          target: "weak-two-contested",
-        },
         {
           transitionId: "opened-d-pass-to-responder",
           match: { kind: "pass" },
@@ -120,7 +107,8 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     // ─── R2: responder actions ──────────────────────────────────
     {
       stateId: "responder-r2-h",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
         {
           transitionId: "r2-h-game-raise",
@@ -150,7 +138,8 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     },
     {
       stateId: "responder-r2-s",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
         {
           transitionId: "r2-s-game-raise",
@@ -180,7 +169,8 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     },
     {
       stateId: "responder-r2-d",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
         {
           transitionId: "r2-d-game-raise",
@@ -212,7 +202,8 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     // ─── Ogust response: opener describes hand ──────────────────
     {
       stateId: "ogust-response-h",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
         {
           transitionId: "ogust-h-pass",
@@ -232,7 +223,8 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     },
     {
       stateId: "ogust-response-s",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
         {
           transitionId: "ogust-s-pass",
@@ -252,7 +244,8 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     },
     {
       stateId: "ogust-response-d",
-      parentId: null,
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
       transitions: [
         {
           transitionId: "ogust-d-pass",
@@ -279,8 +272,16 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
     },
     {
       stateId: "weak-two-contested",
-      parentId: null,
-      transitions: [],
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+      transitions: [
+        {
+          transitionId: "weak-two-contested-absorb",
+          match: { kind: "pass" },
+          target: "weak-two-contested",
+        },
+      ],
+      surfaceGroupId: "weak-two-interrupted",
       entryEffects: {
         setCompetitionMode: "Contested",
       },

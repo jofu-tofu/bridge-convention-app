@@ -35,14 +35,14 @@ export const NT_SKELETON: BundleSkeleton = {
       parentId: null,
       transitions: [
         {
-          transitionId: "nt-opened-opponent-double",
-          match: { kind: "opponent-action", callType: "double" },
-          target: "nt-contested",
-        },
-        {
           transitionId: "nt-opened-pass",
           match: { kind: "pass" },
           target: "responder-r1",
+        },
+        {
+          transitionId: "nt-opened-opponent-interrupt",
+          match: { kind: "opponent-action" },
+          target: "nt-contested",
         },
       ],
     },
@@ -52,7 +52,7 @@ export const NT_SKELETON: BundleSkeleton = {
       transitions: [],  // populated by module entryTransitions
       surfaceGroupId: "responder-r1",
       entryEffects: { setCaptain: "responder" },
-      allowedParentTransitions: ["nt-opened-opponent-double"],
+      allowedParentTransitions: ["nt-opened-opponent-interrupt"],
     },
     {
       stateId: "terminal",
@@ -65,7 +65,7 @@ export const NT_SKELETON: BundleSkeleton = {
         },
       ],
       surfaceGroupId: "terminal-pass",
-      allowedParentTransitions: ["nt-opened-opponent-double"],
+      allowedParentTransitions: ["nt-opened-opponent-interrupt"],
     },
     {
       stateId: "nt-contested",
@@ -77,8 +77,9 @@ export const NT_SKELETON: BundleSkeleton = {
           target: "nt-contested",
         },
       ],
+      surfaceGroupId: "nt-interrupted",
       entryEffects: { setCompetitionMode: "Doubled" },
-      allowedParentTransitions: ["nt-opened-opponent-double"],
+      allowedParentTransitions: ["nt-opened-opponent-interrupt"],
     },
   ],
 };

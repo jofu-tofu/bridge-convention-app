@@ -128,7 +128,7 @@ describe("Weak Two bundle golden-master", () => {
     );
   });
 
-  it("machine has all 12 expected states", () => {
+  it("machine has all 13 expected states", () => {
     const stateIds = Array.from(
       weakTwoBundle.conversationMachine!.states.keys(),
     ).sort();
@@ -141,6 +141,7 @@ describe("Weak Two bundle golden-master", () => {
       "responder-r2-h",
       "responder-r2-s",
       "terminal",
+      "weak-two-active",
       "weak-two-contested",
       "weak-two-opened-d",
       "weak-two-opened-h",

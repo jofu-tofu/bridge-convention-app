@@ -1,13 +1,12 @@
 import { createBundle } from "../../core/bundle";
 import type { DealConstraints } from "../../../engine/types";
-import { Seat, Suit, BidSuit } from "../../../engine/types";
+import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
 import { CAP_OPENING_MAJOR } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { compileProfileFromPackages } from "../../core/composition";
-import type { MachineState } from "../../core/runtime/machine-types";
+import { BERGEN_SKELETON } from "./compose";
 import { BERGEN_PROFILE } from "./system-profile";
-import { BERGEN_ROUTED_SURFACES, createBergenSurfaceRouter } from "./surface-routing";
 import { BERGEN_ALTERNATIVE_GROUPS } from "./alternatives";
 import { bergenRaisesPackage } from "./packages/bergen-raises";
 
@@ -32,87 +31,6 @@ const bergenBundleDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-// ─── Skeleton states (shared structure, not module-owned) ───────
-
-const BERGEN_SKELETON_STATES: readonly MachineState[] = [
-  // idle: dispatch on opening bid
-  {
-    stateId: "idle",
-    parentId: null,
-    transitions: [
-      {
-        transitionId: "idle-to-major-opened-hearts",
-        match: { kind: "call", level: 1, strain: BidSuit.Hearts },
-        target: "major-opened-hearts",
-      },
-      {
-        transitionId: "idle-to-major-opened-spades",
-        match: { kind: "call", level: 1, strain: BidSuit.Spades },
-        target: "major-opened-spades",
-      },
-    ],
-  },
-
-  // major-opened: waiting for opponent pass or interference
-  {
-    stateId: "major-opened-hearts",
-    parentId: null,
-    transitions: [
-      {
-        transitionId: "hearts-opponent-double",
-        match: { kind: "opponent-action", callType: "double" },
-        target: "bergen-contested",
-      },
-      {
-        transitionId: "hearts-opponent-bid",
-        match: { kind: "opponent-action", callType: "bid" },
-        target: "bergen-contested",
-      },
-      {
-        transitionId: "hearts-pass-to-responder",
-        match: { kind: "pass" },
-        target: "responder-r1-hearts",
-      },
-    ],
-  },
-  {
-    stateId: "major-opened-spades",
-    parentId: null,
-    transitions: [
-      {
-        transitionId: "spades-opponent-double",
-        match: { kind: "opponent-action", callType: "double" },
-        target: "bergen-contested",
-      },
-      {
-        transitionId: "spades-opponent-bid",
-        match: { kind: "opponent-action", callType: "bid" },
-        target: "bergen-contested",
-      },
-      {
-        transitionId: "spades-pass-to-responder",
-        match: { kind: "pass" },
-        target: "responder-r1-spades",
-      },
-    ],
-  },
-
-  // End states
-  {
-    stateId: "terminal",
-    parentId: null,
-    transitions: [],
-  },
-  {
-    stateId: "bergen-contested",
-    parentId: null,
-    transitions: [],
-    entryEffects: {
-      setCompetitionMode: "Contested",
-    },
-  },
-];
-
 // ─── Compile bundle from packages ───────────────────────────────
 
 const composed = compileProfileFromPackages(
@@ -120,7 +38,7 @@ const composed = compileProfileFromPackages(
   [bergenRaisesPackage],
   {
     machineId: "bergen-conversation",
-    skeletonStates: BERGEN_SKELETON_STATES,
+    skeletonStates: BERGEN_SKELETON.states,
     dispatchStateId: "idle",
     entrySurfaceGroupId: "responder-r1-hearts",
   },

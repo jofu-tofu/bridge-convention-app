@@ -116,6 +116,7 @@ describe("DONT bundle composition (golden-master)", () => {
       "overcaller-2d-relay",
       "wait-2c-relay",
       "overcaller-2c-relay",
+      "dont-contested",
     ];
     for (const stateId of childStates) {
       const state = machine.states.get(stateId);
@@ -129,7 +130,6 @@ describe("DONT bundle composition (golden-master)", () => {
     const machine = dontBundle.conversationMachine!;
     expect(machine.states.get("idle")?.parentId).toBeNull();
     expect(machine.states.get("terminal")?.parentId).toBeNull();
-    expect(machine.states.get("dont-contested")?.parentId).toBeNull();
     expect(machine.states.get("dont-active")?.parentId).toBeNull();
   });
 

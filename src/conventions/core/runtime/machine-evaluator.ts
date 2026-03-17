@@ -185,6 +185,7 @@ export function evaluateMachine(
   let registers = createDefaultRegisters();
   const stateHistory: string[] = [];
   const transitionHistory: string[] = [];
+  let interruptedFromStateId: string | null = null;
   const diagnostics: RuntimeDiagnostic[] = [];
   const submachineStack: SubmachineFrame[] = [];
   const handoffTraces: HandoffTrace[] = [];
@@ -219,6 +220,17 @@ export function evaluateMachine(
       // Skip submachine-return transitions during call matching
       if (transition.match.kind === "submachine-return") continue;
 
+      // Role filter: explicit allowedRoles overrides defaults; otherwise
+      // call/any-bid default to self+partner only (opponent bids are interference)
+      if (transition.allowedRoles) {
+        if (!transition.allowedRoles.includes(seatRole)) continue;
+      } else if (
+        (transition.match.kind === "call" || transition.match.kind === "any-bid") &&
+        seatRole === "opponent"
+      ) {
+        continue;
+      }
+
       let isMatch: boolean;
       if (transition.match.kind === "predicate") {
         isMatch = transition.match.test(entry.call, entry.seat, snapshot);
@@ -237,6 +249,10 @@ export function evaluateMachine(
       }
 
       transitionHistory.push(transition.transitionId);
+
+      if (transition.match.kind === "opponent-action") {
+        interruptedFromStateId = currentStateId;
+      }
 
       // Handle exitLoop: redirect to loop's exitTarget
       if (transition.exitLoop) {
@@ -288,6 +304,7 @@ export function evaluateMachine(
       stateHistory,
       transitionHistory,
       submachineStack,
+      interruptedFromStateId,
     } satisfies MachineContext,
     activeSurfaceGroupIds,
     collectedTransforms,

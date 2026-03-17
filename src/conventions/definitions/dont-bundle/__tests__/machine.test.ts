@@ -2,7 +2,15 @@ import { describe, it, expect } from "vitest";
 import { evaluateMachine } from "../../../core/runtime/machine-evaluator";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
-import { validateTransitionCompleteness, formatLeak } from "../../../core/runtime/machine-validation";
+import {
+  validateTransitionCompleteness,
+  validateInterruptScoping,
+  validateRoleSafety,
+  validateInterruptedStateWellFormedness,
+  validateTerminalReachability,
+  validateInterruptPathCompleteness,
+  formatLeak,
+} from "../../../core/runtime/machine-validation";
 import { createDontConversationMachine } from "../machine";
 
 describe("createDontConversationMachine", () => {
@@ -283,5 +291,37 @@ describe("createDontConversationMachine", () => {
       );
     }
     expect(leaks).toHaveLength(0);
+  });
+
+  it("passes interrupt scoping validation", () => {
+    const violations = validateInterruptScoping(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes role safety validation", () => {
+    const violations = validateRoleSafety(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes interrupted state well-formedness", () => {
+    const violations = validateInterruptedStateWellFormedness(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes terminal reachability", () => {
+    const violations = validateTerminalReachability(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes interrupt path completeness", () => {
+    const violations = validateInterruptPathCompleteness(machine);
+    // Filter: redouble is a warning; idle's opponent-action only matches 1NT
+    // (the convention trigger) so it legitimately doesn't cover double.
+    const errors = violations.filter(v =>
+      v.rule === "uncovered-action-type" &&
+      v.actionType !== "redouble" &&
+      v.stateId !== "idle"
+    );
+    expect(errors).toEqual([]);
   });
 });

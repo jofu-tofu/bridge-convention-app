@@ -13,10 +13,7 @@
  * are provided via the module's surfaceGroups so that the machine-based
  * surface router correctly resolves per-suit surface groups.
  */
-import type { ConventionModule } from "../../core/composition/module-types";
-import type { BundleSkeleton, ComposedBundle } from "../../core/composition/compose";
-import { composeModules } from "../../core/composition/compose";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+import type { BundleSkeleton } from "../../core/composition/compose";
 import { BidSuit } from "../../../engine/types";
 
 /**
@@ -24,8 +21,12 @@ import { BidSuit } from "../../../engine/types";
  *
  * State flow:
  *   idle → major-opened-hearts / major-opened-spades (on 1H / 1S)
- *     → bergen-contested (on opponent interference)
- *     → responder-r1-hearts / responder-r1-spades (on pass — dispatch points)
+ *
+ *   bergen-active (abstract parent — inherited interference transitions):
+ *     All children inherit:
+ *       → bergen-contested (on opponent double/overcall)
+ *
+ *     major-opened-hearts/spades → responder-r1-hearts/spades (on pass — dispatch points)
  *       → [module-owned post-R1 states]
  *     → terminal
  */
@@ -52,21 +53,32 @@ export const BERGEN_SKELETON: BundleSkeleton = {
       ],
     },
 
-    // ─── major-opened: waiting for opponent pass or interference ─
+    // ─── bergen-active: abstract parent with inherited interference ─
+    // All child states inherit these opponent-interference transitions.
+    // No surfaceGroupId — this is an abstract container for inheritance only.
     {
-      stateId: "major-opened-hearts",
+      stateId: "bergen-active",
       parentId: null,
       transitions: [
         {
-          transitionId: "hearts-opponent-double",
+          transitionId: "bergen-opponent-double",
           match: { kind: "opponent-action", callType: "double" },
           target: "bergen-contested",
         },
         {
-          transitionId: "hearts-opponent-bid",
+          transitionId: "bergen-opponent-bid",
           match: { kind: "opponent-action", callType: "bid" },
           target: "bergen-contested",
         },
+      ],
+    },
+
+    // ─── major-opened: waiting for opponent pass or interference ─
+    {
+      stateId: "major-opened-hearts",
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
+      transitions: [
         {
           transitionId: "hearts-pass-to-responder",
           match: { kind: "pass" },
@@ -76,18 +88,9 @@ export const BERGEN_SKELETON: BundleSkeleton = {
     },
     {
       stateId: "major-opened-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
-        {
-          transitionId: "spades-opponent-double",
-          match: { kind: "opponent-action", callType: "double" },
-          target: "bergen-contested",
-        },
-        {
-          transitionId: "spades-opponent-bid",
-          match: { kind: "opponent-action", callType: "bid" },
-          target: "bergen-contested",
-        },
         {
           transitionId: "spades-pass-to-responder",
           match: { kind: "pass" },
@@ -106,7 +109,8 @@ export const BERGEN_SKELETON: BundleSkeleton = {
     // Hearts: 3C=constructive, 3D=limit, 3H=preemptive, 3S=splinter, 4H=game
     {
       stateId: "responder-r1-hearts",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "r1-hearts-constructive",
@@ -145,7 +149,8 @@ export const BERGEN_SKELETON: BundleSkeleton = {
     // Spades: 3C=constructive, 3D=limit, 3S=preemptive, 3H=splinter, 4S=game
     {
       stateId: "responder-r1-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "r1-spades-constructive",
@@ -185,27 +190,25 @@ export const BERGEN_SKELETON: BundleSkeleton = {
     // ─── End states ─────────────────────────────────────────────
     {
       stateId: "terminal",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [],
     },
     {
       stateId: "bergen-contested",
-      parentId: null,
-      transitions: [],
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
+      surfaceGroupId: "bergen-interrupted",
+      transitions: [
+        {
+          transitionId: "bergen-contested-absorb",
+          match: { kind: "pass" },
+          target: "bergen-contested",
+        },
+      ],
       entryEffects: { setCompetitionMode: "Contested" },
     },
   ],
 };
 
-/**
- * Compose Bergen convention modules using the generic framework with the Bergen skeleton.
- *
- * @param modules - Convention modules to compose (order determines priority)
- * @param crossModuleRelations - Pedagogical relations that span module boundaries
- */
-export function composeBergenModules(
-  modules: readonly ConventionModule[],
-  crossModuleRelations: readonly PedagogicalRelation[] = [],
-): ComposedBundle {
-  return composeModules(BERGEN_SKELETON, modules, crossModuleRelations);
-}
+

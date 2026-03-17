@@ -377,9 +377,35 @@ const TRANSFER_R1_TRANSITIONS: readonly MachineTransition[] = [
 
 const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
   {
-    stateId: "opener-transfer-hearts",
+    stateId: "transfers-scope",
     parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    transitions: [
+      {
+        transitionId: "transfers-opponent-interrupt",
+        match: { kind: "opponent-action" },
+        target: "transfers-interrupted",
+      },
+    ],
+    allowedParentTransitions: ["nt-opened-opponent-interrupt", "nt-opened-pass"],
+  },
+  {
+    stateId: "transfers-interrupted",
+    parentId: "transfers-scope",
+    transitions: [
+      {
+        transitionId: "transfers-interrupted-absorb",
+        match: { kind: "pass" },
+        target: "transfers-interrupted",
+      },
+    ],
+    surfaceGroupId: "transfers-interrupted",
+    entryEffects: { setCompetitionMode: "Contested" },
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+  },
+  {
+    stateId: "opener-transfer-hearts",
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "transfer-h-pass",
@@ -404,8 +430,8 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
 
   {
     stateId: "opener-transfer-spades",
-    parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "transfer-s-pass",
@@ -430,8 +456,8 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
 
   {
     stateId: "responder-r3-transfer-hearts",
-    parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "r3-4h-game",
@@ -469,8 +495,8 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
 
   {
     stateId: "responder-r3-transfer-spades",
-    parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "r3-4s-game",

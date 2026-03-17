@@ -2,7 +2,15 @@ import { describe, it, expect } from "vitest";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { evaluateMachine } from "../../../core/runtime/machine-evaluator";
-import { validateTransitionCompleteness, formatLeak } from "../../../core/runtime/machine-validation";
+import {
+  validateTransitionCompleteness,
+  validateInterruptScoping,
+  validateRoleSafety,
+  validateInterruptedStateWellFormedness,
+  validateTerminalReachability,
+  validateInterruptPathCompleteness,
+  formatLeak,
+} from "../../../core/runtime/machine-validation";
 import { createWeakTwoConversationMachine } from "../machine";
 
 describe("Weak Two bundle conversation machine", () => {
@@ -19,7 +27,8 @@ describe("Weak Two bundle conversation machine", () => {
 
   it("contains all required states", () => {
     const requiredStates = [
-      "idle", "weak-two-opened-h", "weak-two-opened-s", "weak-two-opened-d",
+      "idle", "weak-two-active",
+      "weak-two-opened-h", "weak-two-opened-s", "weak-two-opened-d",
       "responder-r2-h", "responder-r2-s", "responder-r2-d",
       "ogust-response-h", "ogust-response-s", "ogust-response-d",
       "terminal", "weak-two-contested",
@@ -230,7 +239,7 @@ describe("Weak Two bundle conversation machine", () => {
       const result = evaluateMachine(machine, auction, Seat.South);
       expect(result.context.currentStateId).toBe("weak-two-contested");
       expect(result.context.registers.competitionMode).toBe("Contested");
-      expect(result.activeSurfaceGroupIds).toEqual([]);
+      expect(result.activeSurfaceGroupIds).toContain("weak-two-interrupted");
     });
 
     it("opponent overcall after 2H → weak-two-contested", () => {
@@ -286,5 +295,33 @@ describe("Weak Two bundle conversation machine", () => {
       );
     }
     expect(leaks).toHaveLength(0);
+  });
+
+  // ─── Interrupt scoping validation ─────────────────────────────
+
+  it("passes interrupt scoping validation", () => {
+    const violations = validateInterruptScoping(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes role safety validation", () => {
+    const violations = validateRoleSafety(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes interrupted state well-formedness", () => {
+    const violations = validateInterruptedStateWellFormedness(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes terminal reachability", () => {
+    const violations = validateTerminalReachability(machine);
+    expect(violations).toEqual([]);
+  });
+
+  it("passes interrupt path completeness", () => {
+    const violations = validateInterruptPathCompleteness(machine);
+    const errors = violations.filter(v => v.rule === "uncovered-action-type" && v.actionType !== "redouble");
+    expect(errors).toEqual([]);
   });
 });

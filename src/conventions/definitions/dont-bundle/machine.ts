@@ -61,7 +61,7 @@ export function createDontConversationMachine(): ConversationMachine {
       transitions: [
         {
           transitionId: "idle-to-overcaller-r1",
-          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          match: { kind: "opponent-action", callType: "bid", level: 1, strain: BidSuit.NoTrump },
           target: "overcaller-r1",
         },
       ],
@@ -463,8 +463,16 @@ export function createDontConversationMachine(): ConversationMachine {
     },
     {
       stateId: "dont-contested",
-      parentId: null,
-      transitions: [],
+      parentId: "dont-active",
+      allowedParentTransitions: ["opp-double", "opp-bid"],
+      surfaceGroupId: "dont-interrupted",
+      transitions: [
+        {
+          transitionId: "dont-contested-absorb",
+          match: { kind: "pass" },
+          target: "dont-contested",
+        },
+      ],
       entryEffects: {
         setCompetitionMode: "Doubled",
       },

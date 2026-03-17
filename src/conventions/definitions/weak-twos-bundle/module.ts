@@ -54,21 +54,12 @@ const WEAK_TWO_ENTRY_TRANSITIONS: readonly MachineTransition[] = [
 // responder R2 states, and Ogust R3 states.
 
 const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
-  // ── Opponent wait: pass → responder, interference → contested ──
+  // ── Opponent wait: pass → responder (interference inherited from weak-two-active) ──
   {
     stateId: "weak-two-opened-h",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
-      {
-        transitionId: "opened-h-opponent-double",
-        match: { kind: "opponent-action", callType: "double" },
-        target: "weak-two-contested",
-      },
-      {
-        transitionId: "opened-h-opponent-bid",
-        match: { kind: "opponent-action", callType: "bid" },
-        target: "weak-two-contested",
-      },
       {
         transitionId: "opened-h-pass-to-responder",
         match: { kind: "pass" },
@@ -78,18 +69,9 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "weak-two-opened-s",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
-      {
-        transitionId: "opened-s-opponent-double",
-        match: { kind: "opponent-action", callType: "double" },
-        target: "weak-two-contested",
-      },
-      {
-        transitionId: "opened-s-opponent-bid",
-        match: { kind: "opponent-action", callType: "bid" },
-        target: "weak-two-contested",
-      },
       {
         transitionId: "opened-s-pass-to-responder",
         match: { kind: "pass" },
@@ -99,18 +81,9 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "weak-two-opened-d",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
-      {
-        transitionId: "opened-d-opponent-double",
-        match: { kind: "opponent-action", callType: "double" },
-        target: "weak-two-contested",
-      },
-      {
-        transitionId: "opened-d-opponent-bid",
-        match: { kind: "opponent-action", callType: "bid" },
-        target: "weak-two-contested",
-      },
       {
         transitionId: "opened-d-pass-to-responder",
         match: { kind: "pass" },
@@ -122,7 +95,8 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   // ── R2: responder actions ─────────────────────────────────────
   {
     stateId: "responder-r2-h",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
       {
         transitionId: "r2-h-game-raise",
@@ -152,7 +126,8 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "responder-r2-s",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
       {
         transitionId: "r2-s-game-raise",
@@ -182,7 +157,8 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "responder-r2-d",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
       {
         transitionId: "r2-d-game-raise",
@@ -214,7 +190,8 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   // ── R3: Ogust response (opener describes hand) ────────────────
   {
     stateId: "ogust-response-h",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
       {
         transitionId: "ogust-h-pass",
@@ -234,7 +211,8 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "ogust-response-s",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
       {
         transitionId: "ogust-s-pass",
@@ -254,7 +232,8 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "ogust-response-d",
-    parentId: null,
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
     transitions: [
       {
         transitionId: "ogust-d-pass",

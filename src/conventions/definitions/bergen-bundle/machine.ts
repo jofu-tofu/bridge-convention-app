@@ -8,7 +8,7 @@ import { buildConversationMachine } from "../../core/runtime/machine-types";
 /**
  * Create the Bergen Raises Conversation Machine.
  *
- * State hierarchy (flat — no parent states):
+ * State hierarchy (hierarchical — uses bergen-active parent for inherited transitions):
  *   idle → major-opened-hearts / major-opened-spades (on partner 1H or 1S)
  *
  *   major-opened-hearts/spades → responder-r1 (on pass)
@@ -59,21 +59,32 @@ export function createBergenConversationMachine(): ConversationMachine {
       ],
     },
 
-    // ─── major-opened: waiting for opponent pass or interference ─
+    // ─── bergen-active: abstract parent with inherited interference ─
+    // All child states inherit these opponent-interference transitions.
+    // No surfaceGroupId — this is an abstract container for inheritance only.
     {
-      stateId: "major-opened-hearts",
+      stateId: "bergen-active",
       parentId: null,
       transitions: [
         {
-          transitionId: "hearts-opponent-double",
+          transitionId: "bergen-opponent-double",
           match: { kind: "opponent-action", callType: "double" },
           target: "bergen-contested",
         },
         {
-          transitionId: "hearts-opponent-bid",
+          transitionId: "bergen-opponent-bid",
           match: { kind: "opponent-action", callType: "bid" },
           target: "bergen-contested",
         },
+      ],
+    },
+
+    // ─── major-opened: waiting for opponent pass or interference ─
+    {
+      stateId: "major-opened-hearts",
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
+      transitions: [
         {
           transitionId: "hearts-pass-to-responder",
           match: { kind: "pass" },
@@ -83,18 +94,9 @@ export function createBergenConversationMachine(): ConversationMachine {
     },
     {
       stateId: "major-opened-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
-        {
-          transitionId: "spades-opponent-double",
-          match: { kind: "opponent-action", callType: "double" },
-          target: "bergen-contested",
-        },
-        {
-          transitionId: "spades-opponent-bid",
-          match: { kind: "opponent-action", callType: "bid" },
-          target: "bergen-contested",
-        },
         {
           transitionId: "spades-pass-to-responder",
           match: { kind: "pass" },
@@ -107,7 +109,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // Hearts: 3C=constructive, 3D=limit, 3H=preemptive, 3S=splinter, 4H=game
     {
       stateId: "responder-r1-hearts",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "r1-hearts-constructive",
@@ -148,7 +151,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // Spades: 3C=constructive, 3D=limit, 3S=preemptive, 3H=splinter, 4S=game
     {
       stateId: "responder-r1-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "r1-spades-constructive",
@@ -192,7 +196,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // After constructive (3C): opener decides game/try/signoff
     {
       stateId: "opener-after-constructive-hearts",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "constructive-hearts-pass",
@@ -222,7 +227,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     },
     {
       stateId: "opener-after-constructive-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "constructive-spades-pass",
@@ -254,7 +260,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // After limit (3D): opener accepts (game) or declines (signoff at 3M)
     {
       stateId: "opener-after-limit-hearts",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "limit-hearts-pass",
@@ -284,7 +291,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     },
     {
       stateId: "opener-after-limit-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "limit-spades-pass",
@@ -316,7 +324,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // After preemptive (3H for hearts / 3S for spades): opener passes or bids game → terminal
     {
       stateId: "opener-after-preemptive-hearts",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "preemptive-hearts-pass",
@@ -336,7 +345,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     },
     {
       stateId: "opener-after-preemptive-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "preemptive-spades-pass",
@@ -360,7 +370,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // R3: after opener bids game (4M) — responder just passes
     {
       stateId: "responder-after-game",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "after-game-pass",
@@ -381,7 +392,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // R3: after opener signs off (3M) — responder just passes
     {
       stateId: "responder-after-signoff",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "after-signoff-pass",
@@ -402,7 +414,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // R3: after opener makes game try — responder decides based on HCP (hearts)
     {
       stateId: "responder-after-game-try-hearts",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "game-try-hearts-pass",
@@ -423,7 +436,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // R3: after opener makes game try — responder decides based on HCP (spades)
     {
       stateId: "responder-after-game-try-spades",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "game-try-spades-pass",
@@ -445,7 +459,8 @@ export function createBergenConversationMachine(): ConversationMachine {
     // ─── R4: opener accepts responder's game-try decision ───────
     {
       stateId: "opener-r4-accept",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [
         {
           transitionId: "r4-accept-pass",
@@ -467,13 +482,22 @@ export function createBergenConversationMachine(): ConversationMachine {
     // ─── End states ─────────────────────────────────────────────
     {
       stateId: "terminal",
-      parentId: null,
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
       transitions: [],
     },
     {
       stateId: "bergen-contested",
-      parentId: null,
-      transitions: [],
+      parentId: "bergen-active",
+      allowedParentTransitions: ["bergen-opponent-double", "bergen-opponent-bid"],
+      surfaceGroupId: "bergen-interrupted",
+      transitions: [
+        {
+          transitionId: "bergen-contested-absorb",
+          match: { kind: "pass" },
+          target: "bergen-contested",
+        },
+      ],
       entryEffects: {
         setCompetitionMode: "Contested",
       },

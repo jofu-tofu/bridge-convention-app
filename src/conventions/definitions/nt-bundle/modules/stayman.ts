@@ -559,9 +559,35 @@ const STAYMAN_R1_TRANSITION: MachineTransition = {
 
 const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   {
-    stateId: "opener-stayman",
+    stateId: "stayman-scope",
     parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    transitions: [
+      {
+        transitionId: "stayman-opponent-interrupt",
+        match: { kind: "opponent-action" },
+        target: "stayman-interrupted",
+      },
+    ],
+    allowedParentTransitions: ["nt-opened-opponent-interrupt", "nt-opened-pass"],
+  },
+  {
+    stateId: "stayman-interrupted",
+    parentId: "stayman-scope",
+    transitions: [
+      {
+        transitionId: "stayman-interrupted-absorb",
+        match: { kind: "pass" },
+        target: "stayman-interrupted",
+      },
+    ],
+    surfaceGroupId: "stayman-interrupted",
+    entryEffects: { setCompetitionMode: "Contested" },
+    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
+  },
+  {
+    stateId: "opener-stayman",
+    parentId: "stayman-scope",
+    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "stayman-pass",
@@ -591,8 +617,8 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "responder-r3-stayman-2h",
-    parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    parentId: "stayman-scope",
+    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "r3-4h-game",
@@ -634,8 +660,8 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   },
   {
     stateId: "responder-r3-stayman-2s",
-    parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    parentId: "stayman-scope",
+    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "r3-4s-game",
@@ -678,8 +704,8 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
   // responder-r3-stayman-2d: Smolen transitions removed — added via hookTransitions
   {
     stateId: "responder-r3-stayman-2d",
-    parentId: "nt-opened",
-    allowedParentTransitions: ["nt-opened-opponent-double"],
+    parentId: "stayman-scope",
+    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
     transitions: [
       {
         transitionId: "r3-3nt-after-denial",

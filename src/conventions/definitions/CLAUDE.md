@@ -19,6 +19,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `explanation-catalog.ts` | `ExplanationCatalogIR` entries for teaching projections |
 | `pedagogical-relations.ts` | `PedagogicalRelation[]` graph (same-family, stronger-than, fallback-of, etc.) |
 | `alternatives.ts` | `AlternativeGroup[]` for cross-convention or within-bundle alternatives |
+| `compose.ts` | BundleSkeleton definition (shared FSM infrastructure states) |
+| `packages/` | ModulePackage definitions for profile-based compilation |
 | `index.ts` | Barrel exports |
 | `__tests__/` | Bundle-specific tests |
 
@@ -30,7 +32,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
   - `jacoby-transfers.ts` — Jacoby Transfers convention: R1 surfaces (2D/2H transfer), opener accept surfaces, R3 continuation surfaces, 4 FSM states, 3 facts.
   - `smolen.ts` — Smolen convention: R3 surfaces (3H/3S after 2D denial), opener placement surfaces, 2 FSM states + submachine (5 states), hooks into Stayman's R3-2D state via `hookTransitions`, 6 facts.
   - `natural-nt.ts` — Natural NT responses: R1 surfaces (2NT invite, 3NT game), 1NT opening surface, R1 terminal transitions, 3 HCP threshold facts, shared explanation entries.
-- `compose.ts` — `composeNtModules()`: assembles `ConventionModule[]` bottom-up into shared FSM infrastructure (idle, nt-opened, responder-r1, terminal, nt-contested), merged surface groups, combined facts/explanations/relations. Handles `hookTransitions` (e.g., Smolen prepending transitions to Stayman states).
+- `compose.ts` — `composeNtModules()`: assembles `ConventionModule[]` bottom-up into shared FSM infrastructure (idle, nt-opened, responder-r1, terminal) with per-module scope states (`stayman-scope`, `transfers-scope`, `smolen-scope`) that each own an interrupted target state for opponent interference. Merges surface groups, combined facts/explanations/relations. Handles `hookTransitions` (e.g., Smolen prepending transitions to Stayman states).
 - `config.ts` — `ConventionBundle` composed from all 4 modules. `memberIds: ["jacoby-transfers", "stayman", "smolen"]` (Jacoby first for tie-breaking priority).
 - `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles, each composed from a subset of modules.
 - `meaning-surfaces.ts` — Re-export shim for backward compatibility. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
@@ -46,13 +48,13 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `surfaceRouter`, `conversationMachine`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.
 - `meaning-surfaces.ts` — `createBergenR1Surfaces(suit)` factory producing 5 surfaces per suit (splinter, game, limit, constructive, preemptive) parameterized by `$suit` bindings. Also includes R2–R4 surfaces. 604 lines total.
 - `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4).
-- `machine.ts` — ~16-state flat FSM (`parentId: null` everywhere): idle → major-opened-hearts/spades → responder-r1 → R2 (opener-after-constructive/limit/preemptive) → R3 (responder-after-opener-rebid) → R4 → terminal / bergen-contested. Uses `surfaceGroupId` and `entryEffects` for `setCaptain`.
+- `machine.ts` — ~16-state hierarchical FSM using `bergen-active` abstract parent state that owns `opponent-action` interrupt transitions targeting local interrupted states. States: idle → major-opened-hearts/spades → responder-r1 → R2 (opener-after-constructive/limit/preemptive) → R3 (responder-after-opener-rebid) → R4 → terminal. Uses `surfaceGroupId` and `entryEffects` for `setCaptain`.
 - `alternatives.ts` — `BERGEN_ALTERNATIVE_GROUPS` (per-suit strength raise groups).
 - `pedagogical-relations.ts` — `BERGEN_PEDAGOGICAL_RELATIONS` graph.
 
 ## Convention Quick Reference
 
-- **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades) + Smolen (3H/3S game-forcing after 2D denial with 5-4 majors). 35 meaning surfaces, 4 fact extensions, 15-state hierarchical FSM + 5-state Smolen submachine (first real convention to use submachine invocation with guard-based routing). Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
+- **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades) + Smolen (3H/3S game-forcing after 2D denial with 5-4 majors). 35 meaning surfaces, 4 fact extensions, 15-state hierarchical FSM with per-module scope states (`stayman-scope`, `transfers-scope`, `smolen-scope`) for scoped opponent interrupts + 5-state Smolen submachine (first real convention to use submachine invocation with guard-based routing). Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
 - **Bergen Bundle (Bergen Raises):** Responder raises after 1M opening. Standard Bergen variant (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding factory for DRY heart/spade parameterization. Deal constraints: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
 - **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. Pattern 3 convention — first to use hierarchical parent/child states (21-state FSM with `dont-active` parent providing inherited interference transitions), predicate transitions (for matching doubles), and multi-stage relay (overcaller → advancer → overcaller reveal). 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
 
@@ -63,7 +65,7 @@ Every convention bundle must satisfy all items before being considered complete:
 1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `specificity`, `modulePrecedence`).
 2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state.
 3. **`surfaceRouter` for round-aware filtering.** Maps FSM state → surface group via `RoutedSurfaceGroup[]`. Without this, all surfaces are evaluated every round (expensive and semantically incorrect).
-4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, `terminal`, and a contested state.
+4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, and `terminal`. **Scoped interrupt pattern:** opponent interference is handled by abstract scope states (parent states with `opponent-action` transitions targeting local interrupted states) — not a single global contested sink. Design rule: external events are handled by the nearest enclosing interrupt scope. `call` and `any-bid` transitions are role-safe by default (self+partner only); use `opponent-action` with `callType: "bid"` to match opponent bids explicitly.
 5. **`systemProfile` for activation.** Profile-based module activation via `SystemProfileIR`. The legacy `activationFilter` field is optional and no longer needed when `systemProfile` is present.
 6. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate.
 7. **`convention-config.ts` wrapper.** Thin `ConventionConfig` that maps bundle fields to the registry interface. Required for UI picker compatibility.
@@ -234,26 +236,39 @@ export function create{Name}ConversationMachine(): ConversationMachine {
           },
         ],
       },
+      // Scope state — abstract parent that owns the interrupt transition.
+      // Child states inherit this opponent-action handler automatically.
+      {
+        stateId: "{name}-scope",
+        parentId: null,
+        isAbstract: true,
+        transitions: [
+          { on: { kind: "opponent-action" }, target: "{name}-interrupted" },
+        ],
+      },
       {
         stateId: "{name}-opened",
-        parentId: null,
+        parentId: "{name}-scope",  // child of scope — inherits interrupt
         surfaceGroupId: "responder-r1",  // links to meaningSurfaces groupId
         entryEffects: { setCaptain: "responder" },
         transitions: [
           // Transitions to next states...
-          { on: { kind: "opponent-action" }, target: "{name}-contested" },
+        ],
+      },
+      {
+        stateId: "{name}-interrupted",
+        parentId: "{name}-scope",  // local to scope — not a global sink
+        surfaceGroupId: "responder-r1-contested",
+        entryEffects: { setCompetitionMode: "contested" },
+        transitions: [
+          { on: { kind: "pass" }, target: "terminal" },
+          // Handle double, bid-over-bid, etc.
         ],
       },
       {
         stateId: "terminal",
         parentId: null,
         transitions: [],  // terminal — no outgoing transitions
-      },
-      {
-        stateId: "{name}-contested",
-        parentId: null,
-        entryEffects: { setCompetitionMode: "contested" },
-        transitions: [],
       },
     ],
   };
@@ -397,7 +412,7 @@ export const {NAME}_ALTERNATIVE_GROUPS: readonly AlternativeGroup[] = [
 2. Define `MeaningSurface[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
 3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses.
 4. Define module-local semantic class constants in `semantic-classes.ts`.
-5. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, `terminal`, and a contested state.
+5. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, and `terminal`. Use the **scoped interrupt pattern** for opponent interference: create abstract scope states (parents) with `opponent-action` transitions targeting local interrupted states. Do not use a single global contested sink. See the machine.ts template above and DONT's `dont-active` as the reference pattern.
 6. Wire `RoutedSurfaceGroup[]` in `surface-routing.ts` and create a router function that delegates to the machine.
 7. Define `SystemProfileIR` in `system-profile.ts`.
 8. Populate `ExplanationCatalogIR` in `explanation-catalog.ts` with template-keyed explanations.

@@ -95,8 +95,8 @@ describe("Bergen bundle golden master", () => {
 
   it("conversation machine has expected state count", () => {
     const stateCount = bergenBundle.conversationMachine!.states.size;
-    // idle + 2 major-opened + 2 r1 + 6 r2 + 4 r3 + 1 r4 + terminal + contested = 18
-    expect(stateCount).toBe(18);
+    // bergen-active + idle + 2 major-opened + 2 r1 + 6 r2 + 4 r3 + 1 r4 + terminal + contested = 19
+    expect(stateCount).toBe(19);
   });
 
   it("has system profile with bergen module", () => {

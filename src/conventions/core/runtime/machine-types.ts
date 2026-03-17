@@ -35,6 +35,7 @@ export interface MachineTransition {
   readonly effects?: MachineEffect;
   readonly guard?: (snapshot: PublicSnapshot) => boolean;
   readonly exitLoop?: boolean; // When true, this transition exits the current loop
+  readonly allowedRoles?: readonly ("self" | "partner" | "opponent")[];
 }
 
 export type TransitionMatch =
@@ -95,6 +96,7 @@ export interface MachineContext {
   readonly stateHistory: readonly string[];
   readonly transitionHistory: readonly string[];
   readonly submachineStack: readonly SubmachineFrame[];
+  readonly interruptedFromStateId: string | null;
 }
 
 export interface SubmachineFrame {

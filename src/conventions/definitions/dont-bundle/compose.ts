@@ -13,12 +13,9 @@
  *
  *   overcaller-r1 (dispatch) → [module-provided transitions]
  *   terminal (end state)
- *   dont-contested (end state — opponent interference)
+ *   dont-contested (child of dont-active — opponent interference)
  */
-import type { ConventionModule } from "../../core/composition/module-types";
-import type { BundleSkeleton, ComposedBundle } from "../../core/composition/compose";
-import { composeModules } from "../../core/composition/compose";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+import type { BundleSkeleton } from "../../core/composition/compose";
 import { BidSuit } from "../../../engine/types";
 
 /**
@@ -38,7 +35,7 @@ export const DONT_SKELETON: BundleSkeleton = {
       transitions: [
         {
           transitionId: "idle-to-overcaller-r1",
-          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          match: { kind: "opponent-action", callType: "bid", level: 1, strain: BidSuit.NoTrump },
           target: "overcaller-r1",
         },
       ],
@@ -84,8 +81,16 @@ export const DONT_SKELETON: BundleSkeleton = {
     // ── dont-contested ──────────────────────────────────────────
     {
       stateId: "dont-contested",
-      parentId: null,
-      transitions: [],
+      parentId: "dont-active",
+      allowedParentTransitions: ["opp-double", "opp-bid"],
+      surfaceGroupId: "dont-interrupted",
+      transitions: [
+        {
+          transitionId: "dont-contested-absorb",
+          match: { kind: "pass" },
+          target: "dont-contested",
+        },
+      ],
       entryEffects: {
         setCompetitionMode: "Doubled",
       },
@@ -93,15 +98,4 @@ export const DONT_SKELETON: BundleSkeleton = {
   ],
 };
 
-/**
- * Compose DONT convention modules using the generic framework with the DONT skeleton.
- *
- * @param modules - Convention modules to compose (order determines entry transition priority)
- * @param crossModuleRelations - Pedagogical relations that span module boundaries
- */
-export function composeDontModules(
-  modules: readonly ConventionModule[],
-  crossModuleRelations: readonly PedagogicalRelation[] = [],
-): ComposedBundle {
-  return composeModules(DONT_SKELETON, modules, crossModuleRelations);
-}
+

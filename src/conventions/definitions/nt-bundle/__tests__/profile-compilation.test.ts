@@ -96,7 +96,7 @@ describe("NT bundle golden-master (characterization)", () => {
     });
 
     it("has the expected number of states", () => {
-      expect(ntBundle.conversationMachine!.states.size).toBe(15);
+      expect(ntBundle.conversationMachine!.states.size).toBe(21);
     });
 
     it("contains all expected state IDs", () => {
@@ -114,9 +114,15 @@ describe("NT bundle golden-master (characterization)", () => {
         "responder-r3-stayman-2s",
         "responder-r3-transfer-hearts",
         "responder-r3-transfer-spades",
+        "smolen-interrupted",
         "smolen-invoke-hearts",
         "smolen-invoke-spades",
+        "smolen-scope",
+        "stayman-interrupted",
+        "stayman-scope",
         "terminal",
+        "transfers-interrupted",
+        "transfers-scope",
       ]);
     });
 

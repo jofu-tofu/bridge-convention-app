@@ -402,6 +402,218 @@ describe("evaluateMachine", () => {
       parentTransform,
     ]);
   });
+
+  it("interruptedFromStateId is null when no interruption", () => {
+    const idle: MachineState = {
+      stateId: "idle",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "t1",
+          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          target: "opened",
+        },
+      ],
+    };
+    const opened: MachineState = {
+      stateId: "opened",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "t2",
+          match: { kind: "pass" },
+          target: "done",
+        },
+      ],
+    };
+    const done: MachineState = {
+      stateId: "done",
+      parentId: null,
+      transitions: [],
+    };
+    const machine = buildMachine([idle, opened, done], "idle");
+    const auction = buildAuction(Seat.North, ["1NT", "P"]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.interruptedFromStateId).toBeNull();
+  });
+
+  it("interruptedFromStateId captures source state on opponent-action", () => {
+    const idle: MachineState = {
+      stateId: "idle",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "t-open",
+          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          target: "opened",
+        },
+      ],
+    };
+    const opened: MachineState = {
+      stateId: "opened",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "opp-dbl",
+          match: { kind: "opponent-action", callType: "double" },
+          target: "contested",
+        },
+        {
+          transitionId: "t-pass",
+          match: { kind: "pass" },
+          target: "responding",
+        },
+      ],
+    };
+    const responding: MachineState = {
+      stateId: "responding",
+      parentId: "opened",
+      transitions: [],
+      allowedParentTransitions: ["opp-dbl"],
+    };
+    const contested: MachineState = {
+      stateId: "contested",
+      parentId: null,
+      transitions: [],
+    };
+    const machine = buildMachine([idle, opened, responding, contested], "idle");
+    const auction = buildAuction(Seat.North, ["1NT", "X"]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.currentStateId).toBe("contested");
+    expect(result.context.interruptedFromStateId).toBe("opened");
+  });
+
+  it("interruptedFromStateId captures deep state on inherited opponent-action", () => {
+    const idle: MachineState = {
+      stateId: "idle",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "t-open",
+          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          target: "opened",
+        },
+      ],
+    };
+    const opened: MachineState = {
+      stateId: "opened",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "opp-dbl",
+          match: { kind: "opponent-action", callType: "double" },
+          target: "contested",
+        },
+        {
+          transitionId: "t-pass",
+          match: { kind: "pass" },
+          target: "responding",
+        },
+      ],
+    };
+    const responding: MachineState = {
+      stateId: "responding",
+      parentId: "opened",
+      transitions: [],
+      allowedParentTransitions: ["opp-dbl"],
+    };
+    const contested: MachineState = {
+      stateId: "contested",
+      parentId: null,
+      transitions: [],
+    };
+    const machine = buildMachine([idle, opened, responding, contested], "idle");
+    const auction = buildAuction(Seat.North, ["1NT", "P", "P", "X"]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.currentStateId).toBe("contested");
+    expect(result.context.interruptedFromStateId).toBe("responding");
+  });
+
+  it("allowedRoles restricts call matching", () => {
+    const idle: MachineState = {
+      stateId: "idle",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "t-activate",
+          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          target: "activated",
+          allowedRoles: ["opponent"],
+        },
+      ],
+    };
+    const activated: MachineState = {
+      stateId: "activated",
+      parentId: null,
+      transitions: [],
+    };
+    const machine = buildMachine([idle, activated], "idle");
+    const auction = buildAuction(Seat.North, ["1NT"]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.currentStateId).toBe("idle");
+  });
+
+  it("allowedRoles allows matching when role matches", () => {
+    const idle: MachineState = {
+      stateId: "idle",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "t-activate",
+          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          target: "activated",
+          allowedRoles: ["opponent"],
+        },
+      ],
+    };
+    const activated: MachineState = {
+      stateId: "activated",
+      parentId: null,
+      transitions: [],
+    };
+    const machine = buildMachine([idle, activated], "idle");
+    const auction = buildAuction(Seat.East, ["1NT"]);
+
+    const result = evaluateMachine(machine, auction, Seat.South);
+
+    expect(result.context.currentStateId).toBe("activated");
+  });
+
+  it("allowedRoles undefined on call/any-bid defaults to self+partner (opponent rejected)", () => {
+    const idle: MachineState = {
+      stateId: "idle",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "t-activate",
+          match: { kind: "call", level: 1, strain: BidSuit.NoTrump },
+          target: "activated",
+        },
+      ],
+    };
+    const activated: MachineState = {
+      stateId: "activated",
+      parentId: null,
+      transitions: [],
+    };
+    const machine = buildMachine([idle, activated], "idle");
+
+    const partnerAuction = buildAuction(Seat.North, ["1NT"]);
+    const partnerResult = evaluateMachine(machine, partnerAuction, Seat.South);
+    expect(partnerResult.context.currentStateId).toBe("activated");
+
+    const opponentAuction = buildAuction(Seat.East, ["1NT"]);
+    const opponentResult = evaluateMachine(machine, opponentAuction, Seat.South);
+    expect(opponentResult.context.currentStateId).toBe("idle");
+  });
 });
 
 describe("collectAncestorChain", () => {
@@ -846,8 +1058,8 @@ describe("submachine invocation", () => {
       ["sub1", sub1Machine],
       ["sub2", sub2Machine],
     ]);
-    // North=1C (→ parent invokes sub1), East=1D (→ sub1 invokes sub2), South=P (→ sub2 completes → cascade return)
-    const auction = buildAuction(Seat.North, ["1C", "1D", "P"]);
+    // North=1C (→ parent invokes sub1), East=P, South=1D (→ sub1 invokes sub2), West=P (→ sub2 completes → cascade return)
+    const auction = buildAuction(Seat.North, ["1C", "P", "1D", "P"]);
 
     const result = evaluateMachine(
       parentMachine,
@@ -1010,7 +1222,7 @@ describe("loop evaluation", () => {
           transitions: [
             {
               transitionId: "t-exit",
-              match: { kind: "pass" },
+              match: { kind: "pass", seatRole: "self" },
               target: "ignored",
               exitLoop: true,
             },
@@ -1030,15 +1242,15 @@ describe("loop evaluation", () => {
       "loop",
     );
 
-    // 3 bids then a pass → 3 iterations then exit
-    const auction = buildAuction(Seat.North, ["1C", "1D", "1H", "P"]);
+    // North(self)=1C(continue), East(opp)=P(no match), South(partner)=1D(continue), West(opp)=P(no match), North(self)=P(exit)
+    const auction = buildAuction(Seat.North, ["1C", "P", "1D", "P", "P"]);
 
-    const result = evaluateMachine(machine, auction, Seat.South);
+    const result = evaluateMachine(machine, auction, Seat.North);
 
     expect(result.context.currentStateId).toBe("done");
     expect(
       result.context.transitionHistory.filter((t) => t === "t-continue"),
-    ).toHaveLength(3);
+    ).toHaveLength(2);
     expect(result.context.transitionHistory).toContain("t-exit");
   });
 
@@ -1049,7 +1261,7 @@ describe("loop evaluation", () => {
         {
           stateId: "loop",
           parentId: null,
-          loopConfig: { maxIterations: 3, exitTarget: "done" },
+          loopConfig: { maxIterations: 2, exitTarget: "done" },
           transitions: [
             {
               transitionId: "t-continue",
@@ -1067,15 +1279,15 @@ describe("loop evaluation", () => {
       "loop",
     );
 
-    const auction = buildAuction(Seat.North, ["1C", "1D", "1H", "1S"]);
+    // North(self)=1C(iter 0→1), East(opp)=P(no match), South(partner)=1D(iter 1→max, auto-exit to done)
+    const auction = buildAuction(Seat.North, ["1C", "P", "1D"]);
 
-    const result = evaluateMachine(machine, auction, Seat.South);
+    const result = evaluateMachine(machine, auction, Seat.North);
 
     expect(result.context.currentStateId).toBe("done");
-    // 3 iterations: 1C, 1D succeed; 1H fires but redirects to done on re-entry
     expect(
       result.context.transitionHistory.filter((t) => t === "t-continue"),
-    ).toHaveLength(3);
+    ).toHaveLength(2);
   });
 
   it("loop counter resets on re-entry after exit", () => {
@@ -1100,7 +1312,7 @@ describe("loop evaluation", () => {
           transitions: [
             {
               transitionId: "t-reenter",
-              match: { kind: "pass" },
+              match: { kind: "any-bid" },
               target: "loop",
             },
           ],
@@ -1109,21 +1321,18 @@ describe("loop evaluation", () => {
       "loop",
     );
 
-    // First loop: 1C, 1D (hits max 2), auto-exit to "between"
-    // P → re-enter loop (counter should reset)
-    // Second loop: 1H, 1S (hits max 2), auto-exit to "between"
+    // First loop: North(self)=1C(iter0→1), East(opp)=P(no match), South(partner)=1D(iter1→max, auto-exit to "between")
+    // West(opp)=P(no match in between), North(self)=1H(→ re-enter loop via t-reenter, counter resets)
+    // East(opp)=P(no match), South(partner)=1S(iter0→1), West(opp)=P(no match), North(self)=2C(iter1→max, auto-exit to "between")
     const auction = buildAuction(Seat.North, [
-      "1C",
-      "1D",
-      "P",
-      "1H",
-      "1S",
+      "1C", "P", "1D",
+      "P", "1H",
+      "P", "1S", "P", "2C",
     ]);
 
-    const result = evaluateMachine(machine, auction, Seat.South);
+    const result = evaluateMachine(machine, auction, Seat.North);
 
     expect(result.context.currentStateId).toBe("between");
-    // 4 total t-continue transitions (2 per loop entry)
     expect(
       result.context.transitionHistory.filter((t) => t === "t-continue"),
     ).toHaveLength(4);

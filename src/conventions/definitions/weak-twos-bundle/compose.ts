@@ -4,15 +4,16 @@
  *
  * Skeleton states are the shared FSM infrastructure that exists
  * regardless of module content:
- *   idle (dispatch) → ... → terminal / weak-two-contested
+ *   idle (dispatch) → [module transitions] → ... → terminal / weak-two-contested
+ *
+ *   weak-two-active (abstract parent — inherited interference transitions):
+ *     All children inherit:
+ *       → weak-two-contested (on opponent double/overcall)
  *
  * The idle state is the dispatch point where the module contributes
  * its entry transitions (2H, 2S, 2D openings).
  */
-import type { ConventionModule } from "../../core/composition/module-types";
-import type { BundleSkeleton, ComposedBundle } from "../../core/composition/compose";
-import { composeModules } from "../../core/composition/compose";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+import type { BundleSkeleton } from "../../core/composition/compose";
 
 /**
  * The Weak Two skeleton — shared FSM infrastructure.
@@ -30,6 +31,23 @@ export const WEAK_TWO_SKELETON: BundleSkeleton = {
       transitions: [],  // populated by module entryTransitions
       surfaceGroupId: "opener-r1",
     },
+    // ── Scope parent: all active states inherit opponent-action handling ──
+    {
+      stateId: "weak-two-active",
+      parentId: null,
+      transitions: [
+        {
+          transitionId: "weak-two-opponent-double",
+          match: { kind: "opponent-action", callType: "double" },
+          target: "weak-two-contested",
+        },
+        {
+          transitionId: "weak-two-opponent-bid",
+          match: { kind: "opponent-action", callType: "bid" },
+          target: "weak-two-contested",
+        },
+      ],
+    },
     {
       stateId: "terminal",
       parentId: null,
@@ -37,8 +55,16 @@ export const WEAK_TWO_SKELETON: BundleSkeleton = {
     },
     {
       stateId: "weak-two-contested",
-      parentId: null,
-      transitions: [],
+      parentId: "weak-two-active",
+      transitions: [
+        {
+          transitionId: "weak-two-contested-absorb",
+          match: { kind: "pass" },
+          target: "weak-two-contested",
+        },
+      ],
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+      surfaceGroupId: "weak-two-interrupted",
       entryEffects: {
         setCompetitionMode: "Contested",
       },
@@ -46,15 +72,4 @@ export const WEAK_TWO_SKELETON: BundleSkeleton = {
   ],
 };
 
-/**
- * Compose Weak Two convention modules using the generic framework.
- *
- * @param modules - Convention modules to compose (order determines entry transition priority)
- * @param crossModuleRelations - Pedagogical relations that span module boundaries
- */
-export function composeWeakTwoModules(
-  modules: readonly ConventionModule[],
-  crossModuleRelations: readonly PedagogicalRelation[] = [],
-): ComposedBundle {
-  return composeModules(WEAK_TWO_SKELETON, modules, crossModuleRelations);
-}
+
