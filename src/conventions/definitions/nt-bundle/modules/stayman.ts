@@ -528,13 +528,6 @@ export const INTERFERENCE_REDOUBLE_SURFACE: MeaningSurface = {
       value: 10,
       description: "10+ HCP to redouble after opponent doubles 1NT",
     },
-    {
-      clauseId: "has-four-card-major",
-      factId: "bridge.hasFourCardMajor",
-      operator: "boolean",
-      value: true,
-      description: "At least one 4-card major (Stayman-like hand)",
-    },
   ],
   ranking: {
     recommendationBand: "must",
@@ -894,6 +887,7 @@ export const staymanModule: ConventionModule = {
     { groupId: "responder-r3-after-stayman-2h", surfaces: STAYMAN_R3_AFTER_2H_SURFACES },
     { groupId: "responder-r3-after-stayman-2s", surfaces: STAYMAN_R3_AFTER_2S_SURFACES },
     { groupId: "responder-r3-after-stayman-2d", surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
+    { groupId: "nt-interrupted", surfaces: [INTERFERENCE_REDOUBLE_SURFACE] },
   ],
 
   entryTransitions: [STAYMAN_R1_TRANSITION],

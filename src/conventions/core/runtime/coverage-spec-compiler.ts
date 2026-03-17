@@ -54,6 +54,19 @@ export interface CoverageManifest {
   }[];
 }
 
+// ── Binding Resolution ──────────────────────────────────────────────
+
+/** Replace `$key` placeholders in a factId with concrete values from bindings. */
+function resolveBindings(
+  factId: string,
+  bindings: Readonly<Record<string, string>>,
+): string {
+  return factId.replace(/\$(\w+)/g, (_, key) => {
+    const val = bindings[key];
+    return val !== undefined ? val : `$${key}`;
+  });
+}
+
 // ── Clause → SeatConstraint Compilation ─────────────────────────────
 
 const SUIT_FACT_MAP: Record<string, Suit> = {
@@ -209,9 +222,12 @@ export function compilePathToTarget(
     }
     const sc = seatConstraints.get(seat)!;
 
-    // Accumulate all clauses from the matching surface
+    // Accumulate all clauses from the matching surface, resolving $-bindings
     for (const clause of matchingSurface.clauses) {
-      accumulateClause(sc, clause);
+      const resolvedClause = matchingSurface.surfaceBindings
+        ? { ...clause, factId: resolveBindings(clause.factId, matchingSurface.surfaceBindings) }
+        : clause;
+      accumulateClause(sc, resolvedClause);
     }
   }
 

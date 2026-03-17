@@ -138,9 +138,10 @@ export function matchToCall(match: TransitionMatch): Call | null {
       return null;
     }
     case "any-bid":
-    case "predicate":
     case "submachine-return":
       return null;
+    case "predicate":
+      return match.callHint ?? null;
   }
 }
 

@@ -50,6 +50,7 @@ export type TransitionMatch =
   | {
       readonly kind: "predicate";
       readonly test: (call: Call, seat: Seat, snapshot: PublicSnapshot) => boolean;
+      readonly callHint?: Call;
     }
   | { readonly kind: "submachine-return" }; // matches when a submachine completes
 

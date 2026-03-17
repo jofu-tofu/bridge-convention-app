@@ -122,6 +122,7 @@ export function createDontConversationMachine(): ConversationMachine {
           match: {
             kind: "predicate",
             test: (call, _seat, _snapshot) => call.type === "double",
+            callHint: { type: "double" },
           },
           target: "wait-advancer-double",
         },

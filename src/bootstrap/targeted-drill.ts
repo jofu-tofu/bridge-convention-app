@@ -73,7 +73,7 @@ export function startTargetedDrill(
   // Build the drill config and session
   const config = createDrillConfig(convention.id, userSeat, {
     lookupConvention: options?.lookupConvention,
-    opponentMode: options?.opponentMode,
+    opponentMode: "none",  // Targeted drills suppress opponents to ensure convention path is exercised
   });
   const session = createDrillSession(config);
 
