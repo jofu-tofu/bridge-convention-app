@@ -7,8 +7,8 @@
 // This enables FSM-coverage-driven testing: for any reachable state,
 // we can generate a deal that exercises the auction path leading to it.
 
-import { Seat, Suit } from "../../../engine/types";
-import type { DealConstraints, SeatConstraint } from "../../../engine/types";
+import { Seat } from "../../../engine/types";
+import type { Suit, DealConstraints, SeatConstraint } from "../../../engine/types";
 import { compileFactClause, type MutableSeatConstraint } from "./fact-compiler";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { ConventionBundle } from "../bundle/bundle-types";

@@ -1,5 +1,4 @@
-import { Suit } from "../../../engine/types";
-import type { Seat, DealConstraints, SeatConstraint } from "../../../engine/types";
+import type { Suit, Seat, DealConstraints, SeatConstraint } from "../../../engine/types";
 import type {
   WitnessSpecIR,
   PedagogicalControls,
