@@ -6,6 +6,7 @@
   import { startDrill } from "../../../bootstrap/start-drill";
   import { startTargetedDrill } from "../../../bootstrap/targeted-drill";
   import { computeTableScale } from "../../../core/display/table-scale";
+  import { DESKTOP_MIN } from "../../../core/display/breakpoints.svelte";
   import { mulberry32 } from "../../../core/util/seeded-rng";
 
   import BiddingPhase from "./BiddingPhase.svelte";
@@ -145,7 +146,7 @@
     Math.min(25 * rootFontSize, Math.max(16 * rootFontSize, availableW * 0.25)),
   );
 
-  const isDesktop = $derived(innerW > 1023);
+  const isDesktop = $derived(innerW >= DESKTOP_MIN);
   const tableScale = $derived(
     computeTableScale(availableW, innerH, {
       sidePanel: isDesktop,
@@ -293,6 +294,7 @@
         legalPlays={gameStore.legalPlaysForCurrentPlayer}
         userControlledSeats={gameStore.userControlledSeats}
         remainingCards={gameStore.remainingCardsPerSeat}
+        tricks={gameStore.tricks}
         onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
         onSkipToReview={() => gameStore.skipToReview()}
       />

@@ -3,12 +3,17 @@
   import { listConventions } from "../../conventions/core";
   import type { ConventionConfig, ConventionTeaching } from "../../conventions/core";
   import { filterConventions } from "../../core/display/filter-conventions";
+  import { DESKTOP_MIN } from "../../core/display/breakpoints.svelte";
 
   const appStore = getAppStore();
 
   let searchQuery = $state("");
   let depthMode = $state<"compact" | "study" | "learn">("study");
   let headerCollapsed = $state(false);
+  let innerW = $state(1024);
+  let sidebarOpen = $state(false);
+
+  const isDesktop = $derived(innerW >= DESKTOP_MIN);
 
   const config = $derived(appStore.learningConvention);
 
@@ -22,12 +27,25 @@
 
   function handleConventionClick(conv: ConventionConfig) {
     appStore.navigateToLearning(conv);
+    if (!isDesktop) sidebarOpen = false;
   }
 </script>
 
+<svelte:window bind:innerWidth={innerW} />
+
 <main class="h-full flex flex-col bg-bg-base" aria-label="Convention learning">
   <!-- Header breadcrumb -->
-  <header class="shrink-0 px-6 py-4 border-b border-border-subtle">
+  <header class="shrink-0 px-6 py-4 border-b border-border-subtle flex items-center gap-3">
+    {#if !isDesktop}
+      <button
+        data-testid="sidebar-toggle"
+        class="shrink-0 p-1 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+        aria-label="Toggle sidebar"
+        onclick={() => sidebarOpen = !sidebarOpen}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
+      </button>
+    {/if}
     <button
       class="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
       aria-label="Back to convention selection"
@@ -49,11 +67,24 @@
     </button>
   </header>
 
-  <div class="flex flex-1 min-h-0">
+  <div class="flex flex-1 min-h-0 relative">
+    <!-- Sidebar overlay backdrop (mobile only) -->
+    {#if !isDesktop && sidebarOpen}
+      <button
+        data-testid="sidebar-overlay"
+        class="fixed inset-0 bg-black/50 z-30 cursor-default"
+        aria-label="Close sidebar"
+        onclick={() => sidebarOpen = false}
+      ></button>
+    {/if}
+
     <!-- Sidebar -->
-    <aside class="w-[280px] shrink-0 border-r border-border-subtle flex flex-col">
-      <div class="p-4 border-b border-border-subtle">
-        <h2 class="text-sm font-semibold text-text-primary mb-3">Conventions</h2>
+    {#if isDesktop || sidebarOpen}
+      <aside class="{isDesktop
+        ? 'w-[280px] shrink-0 border-r border-border-subtle flex flex-col'
+        : 'fixed inset-y-0 left-0 w-[280px] z-40 bg-bg-base border-r border-border-subtle flex flex-col'}">
+        <div class="p-4 border-b border-border-subtle">
+          <h2 class="text-sm font-semibold text-text-primary mb-3">Conventions</h2>
         <input
           type="text"
           placeholder="Search..."
@@ -76,12 +107,13 @@
         {/each}
       </nav>
     </aside>
+    {/if}
 
     <!-- Main content -->
     <div class="flex-1 flex flex-col min-h-0">
       {#if config}
         <!-- Convention toolbar — always visible -->
-        <div class="shrink-0 px-8 py-3 border-b border-border-subtle bg-bg-base flex items-center gap-4">
+        <div class="shrink-0 px-8 py-3 border-b border-border-subtle bg-bg-base flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <h1 class="text-xl font-semibold text-text-primary truncate">{config.name}</h1>
             <span class="shrink-0 rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1">
