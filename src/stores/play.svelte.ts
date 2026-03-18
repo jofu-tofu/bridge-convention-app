@@ -179,15 +179,15 @@ export function createPlayStore(engine: EnginePort) {
   }
 
   async function completeTrick() {
-    await scoreTrick();
-    const winner = currentPlayer!;
-
-    // Brief pause to show completed trick (separate from isProcessing to avoid race)
+    // Pause to show completed trick with all 4 cards visible
     isShowingTrickResult = true;
     await delay(TRICK_PAUSE);
     isShowingTrickResult = false;
 
     if (playAborted) return;
+
+    await scoreTrick();
+    const winner = currentPlayer!;
 
     if (tricks.length === 13) {
       await completePlay();
