@@ -8,7 +8,7 @@ UI display utilities and pure functions. Consumer of `engine/`, `conventions/cor
 | ---------------------- | ----------------------------------------------------------------- |
 | `format.ts`            | `formatCall()`, `formatRuleName()`, `SUIT_SYMBOLS`, `STRAIN_SYMBOLS` |
 | `hand-summary.ts`      | `formatHandSummary()` — compact shape + HCP summary for bidding feedback |
-| `tokens.ts`            | CSS design tokens, suit color classes (`BID_SUIT_COLOR_CLASS`, `SUIT_CARD_COLOR_CLASS`) |
+| `tokens.ts`            | CSS design tokens, suit color classes (`SUIT_COLOR_CLASS` for dark bg, `SUIT_CARD_COLOR_CLASS` for card faces, `BID_SUIT_COLOR_CLASS`) |
 | `sort-cards.ts`        | `sortCards()` — visual card ordering for hand display             |
 | `seat-mapping.ts`      | `viewSeat()` — logical-to-physical seat mapping for table rotation |
 | `filter-conventions.ts`| `filterConventions()` — convention picker search/filter           |

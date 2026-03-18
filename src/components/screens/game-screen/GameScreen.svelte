@@ -73,10 +73,14 @@
     dealNumber++;
 
     // FSM-targeted drill: generate a deal that exercises a specific state
+    // When targeting a specific state, suppress opponent interference so the
+    // convention sequence plays out cleanly — both for the targeted path and
+    // the fallback-to-normal-drill path.
     const target = appStore.targetState;
+    const effectiveOpponentMode = target ? "none" : appStore.opponentMode;
     if (target) {
       const bundle = startTargetedDrill(engine, convention, userSeat, target, {
-        opponentMode: appStore.opponentMode,
+        opponentMode: "none",
       });
       if (bundle) {
         await gameStore.startDrill(bundle);
@@ -91,7 +95,7 @@
     const devRng = devSeed !== undefined ? mulberry32(devSeed) : undefined;
     if (devSeed !== undefined) appStore.advanceDevDeal();
     const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, {
-      opponentMode: appStore.opponentMode,
+      opponentMode: effectiveOpponentMode,
     });
     await gameStore.startDrill(bundle);
   }

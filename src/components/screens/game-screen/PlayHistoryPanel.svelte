@@ -5,7 +5,7 @@
   import { Suit } from "../../../engine/types";
   import { SUIT_ORDER, SEAT_INDEX } from "../../../engine/constants";
   import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../core/display/format";
-  import { SUIT_CARD_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../../core/display/tokens";
+  import { SUIT_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../../core/display/tokens";
   import { sortCards } from "../../../core/display/sort-cards";
 
   interface Props {
@@ -22,7 +22,6 @@
 
   // Auto-scroll to bottom when new tricks are added
   $effect(() => {
-    // Access tricks.length to register the dependency
     const _len = tricks.length;
     if (scrollContainer) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
@@ -83,12 +82,12 @@
 </script>
 
 <section class="flex flex-col h-full min-h-0" aria-label="Play history">
-  <h2 class="text-[0.7em] font-medium text-text-muted mb-1 uppercase tracking-wider shrink-0 px-1">
+  <h2 class="text-[--text-label] font-medium text-text-muted mb-1 uppercase tracking-wider shrink-0 px-1">
     Trick History
   </h2>
 
   {#if tricks.length === 0}
-    <p class="text-[0.9em] text-text-muted italic px-1">No tricks played yet.</p>
+    <p class="text-[--text-body] text-text-muted italic px-1">No tricks played yet.</p>
   {:else}
     <div
       bind:this={scrollContainer}
@@ -97,19 +96,19 @@
       {#each tricks as trick, i (i)}
         <div class="bg-bg-card rounded-[--radius-md] px-2 py-1 border border-border-subtle">
           <div class="flex items-center gap-1.5">
-            <span class="text-text-muted font-mono text-[0.7em] w-3 shrink-0">{i + 1}</span>
-            <div class="flex gap-1 flex-wrap flex-1 text-[0.85em]">
+            <span class="text-text-muted font-mono text-[--text-label] w-3 shrink-0">{i + 1}</span>
+            <div class="flex gap-1 flex-wrap flex-1 text-[--text-detail]">
               {#each trick.plays as play (play.seat)}
                 <span class="inline-flex items-center gap-0.5 {play.seat === trick.winner ? 'font-bold' : 'opacity-70'}">
-                  <span class="text-text-muted text-[0.8em]">{play.seat}</span>
-                  <span class={SUIT_CARD_COLOR_CLASS[play.card.suit]}>
+                  <span class="text-text-muted text-[--text-detail]">{play.seat}</span>
+                  <span class={SUIT_COLOR_CLASS[play.card.suit]}>
                     {displayRank(play.card.rank)}{SUIT_SYMBOLS[play.card.suit]}
                   </span>
                 </span>
               {/each}
             </div>
             {#if trick.winner}
-              <span class="text-[0.7em] text-text-muted shrink-0" title="Winner">
+              <span class="text-[--text-label] text-text-muted shrink-0" title="Winner">
                 {trick.winner === declarerSeat ? 'Decl' : 'Def'}
               </span>
             {/if}
@@ -119,13 +118,37 @@
     </div>
   {/if}
 
-  <!-- Compact bid summary + cards played -->
-  {#if auction && auction.entries.length > 0}
-    <div class="shrink-0 border-t border-border-subtle mt-2 pt-2 space-y-2">
-      <!-- Compact auction table -->
+  <!-- Bottom summary: cards played + auction (always visible) -->
+  <div class="shrink-0 border-t border-border-subtle mt-2 pt-2 space-y-2">
+    <!-- Played cards as stacked mini-cards grouped by suit -->
+    {#if playedBySuit.length > 0}
       <div>
-        <h3 class="text-[0.6em] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Auction</h3>
-        <table class="w-full text-center text-[0.7em] font-mono" aria-label="Auction summary">
+        <h3 class="text-[--text-label] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Cards Played</h3>
+        <div class="space-y-0.5 px-1">
+          {#each playedBySuit as group (group.suit)}
+            <div class="flex items-center gap-1">
+              <span class="{SUIT_COLOR_CLASS[group.suit]} text-[--text-detail] shrink-0 w-3">{SUIT_SYMBOLS[group.suit]}</span>
+              <div class="flex played-stack">
+                {#each group.cards as card (card.rank)}
+                  <div
+                    class="mini-card bg-bg-elevated rounded-sm shadow-sm border border-border-subtle flex items-center justify-center {SUIT_COLOR_CLASS[card.suit]}"
+                    aria-label="{displayRank(card.rank)} of {card.suit}"
+                  >
+                    <span class="font-bold leading-none">{displayRank(card.rank)}</span>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Compact auction table (always shown) -->
+    {#if auction && dealer}
+      <div>
+        <h3 class="text-[--text-label] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Auction</h3>
+        <table class="w-full text-center text-[--text-label] font-mono" aria-label="Auction summary">
           <thead>
             <tr>
               {#each SEAT_LABELS as label (label)}
@@ -151,32 +174,8 @@
           </tbody>
         </table>
       </div>
-
-      <!-- Played cards as stacked mini-cards grouped by suit -->
-      {#if playedBySuit.length > 0}
-        <div>
-          <h3 class="text-[0.6em] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Cards Played</h3>
-          <div class="space-y-0.5 px-1">
-            {#each playedBySuit as group (group.suit)}
-              <div class="flex items-center gap-1">
-                <span class="{SUIT_CARD_COLOR_CLASS[group.suit]} text-[0.8em] shrink-0 w-3">{SUIT_SYMBOLS[group.suit]}</span>
-                <div class="flex played-stack">
-                  {#each group.cards as card (card.rank)}
-                    <div
-                      class="mini-card bg-card-face rounded-sm shadow-sm border border-black/10 flex items-center justify-center {SUIT_CARD_COLOR_CLASS[card.suit]}"
-                      aria-label="{displayRank(card.rank)} of {card.suit}"
-                    >
-                      <span class="font-bold leading-none">{displayRank(card.rank)}</span>
-                    </div>
-                  {/each}
-                </div>
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
-    </div>
-  {/if}
+    {/if}
+  </div>
 </section>
 
 <style>
@@ -184,7 +183,7 @@
     /* Scale mini-cards with the panel font so they stay proportional */
     width: 1.4em;
     height: 1.8em;
-    font-size: 0.7em;
+    font-size: var(--text-label);
     flex-shrink: 0;
   }
   .played-stack > .mini-card + .mini-card {

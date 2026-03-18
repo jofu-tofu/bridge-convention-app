@@ -64,6 +64,14 @@
   --card-overlap-v: var(--spacing-card-overlap-v);
   --table-width: var(--spacing-table-width);
   --table-height: var(--spacing-table-height);
+
+  /* Panel typography scale — em-relative, cascades from --panel-font
+     set on each <aside> by GameScreen so panels stay proportional to
+     the CSS-transformed table. */
+  --text-label: 0.7em;   /* section headings, muted labels */
+  --text-detail: 0.8em;  /* secondary info, seat labels, annotation */
+  --text-body: 0.9em;    /* primary readable content */
+  --text-value: 1.15em;  /* prominent values: contract, trick count */
 }
 
 html {

@@ -1,5 +1,14 @@
 import { Suit, BidSuit } from "../../engine/types";
 
+/** Suit colors for dark backgrounds (panels, trick history). */
+export const SUIT_COLOR_CLASS: Record<Suit, string> = {
+  [Suit.Spades]: "text-suit-spades",
+  [Suit.Hearts]: "text-suit-hearts",
+  [Suit.Diamonds]: "text-suit-diamonds",
+  [Suit.Clubs]: "text-suit-clubs",
+};
+
+/** Suit colors for white card faces (Card component). */
 export const SUIT_CARD_COLOR_CLASS: Record<Suit, string> = {
   [Suit.Spades]: "text-suit-card-spades",
   [Suit.Hearts]: "text-suit-card-hearts",

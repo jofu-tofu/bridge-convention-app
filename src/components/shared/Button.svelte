@@ -30,7 +30,7 @@
 
 <button
   type="button"
-  class="px-4 py-2 min-h-[--size-touch-target] rounded-[--radius-md] font-medium text-[0.9em] transition-colors {classes}"
+  class="px-4 py-2 min-h-[--size-touch-target] rounded-[--radius-md] font-medium text-[--text-body] transition-colors {classes}"
   {disabled}
   data-testid={testId}
   onclick={disabled ? undefined : onclick}

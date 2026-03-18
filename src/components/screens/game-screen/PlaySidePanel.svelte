@@ -23,7 +23,7 @@
     class="bg-bg-card rounded-[--radius-lg] p-2 border border-border-subtle"
   >
     <h2
-      class="text-[0.7em] font-medium text-text-muted mb-1 uppercase tracking-wider"
+      class="text-[--text-label] font-medium text-text-muted mb-1 uppercase tracking-wider"
     >
       Contract
     </h2>
@@ -34,10 +34,10 @@
 <section
   class="bg-bg-card rounded-[--radius-lg] p-2 border border-border-subtle"
 >
-  <h2 class="text-[0.7em] font-medium text-text-muted mb-1 uppercase tracking-wider">
+  <h2 class="text-[--text-label] font-medium text-text-muted mb-1 uppercase tracking-wider">
     Tricks
   </h2>
-  <div class="flex gap-4 text-[1.15em] font-mono text-text-primary">
+  <div class="flex gap-4 text-[--text-value] font-mono text-text-primary">
     <span>Decl: {declarerTricksWon}</span>
     <span>Def: {defenderTricksWon}</span>
   </div>
