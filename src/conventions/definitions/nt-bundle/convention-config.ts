@@ -22,7 +22,7 @@ export const ntBundleConventionConfig: ConventionConfig = {
       "4333 shape with 8-9 HCP — 2NT invite may be better than Stayman",
     ],
     tradeoff:
-      "Artificial bids (2C Stayman, 2D/2H transfers) give up natural meanings of those bids",
+      "Artificial bids (2♣ Stayman, 2♦/2♥ transfers) give up natural meanings of those bids",
     principle:
       "Finding an 8-card major fit is worth more than notrump; Stayman and transfers are tools to find that fit",
     roles:
@@ -38,7 +38,7 @@ export const ntStaymanConventionConfig: ConventionConfig = {
   }),
   teaching: {
     purpose:
-      "Find a 4-4 major-suit fit after partner opens 1NT using the 2C Stayman bid",
+      "Find a 4-4 major-suit fit after partner opens 1NT using the 2♣ Stayman bid",
     whenToUse:
       "Partner opens 1NT (15-17 HCP balanced). You have 8+ HCP and a 4-card major (no 5-card major).",
     whenNotToUse: [

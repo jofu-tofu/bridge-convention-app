@@ -152,13 +152,14 @@ export function compilePathToTarget(
   const seats: SeatConstraint[] = [];
   for (const [, sc] of seatConstraints) {
     // When we have both minLength (AND) and minLengthAny (OR) for the same suit,
-    // the AND constraint subsumes the OR for that suit — remove it from minLengthAny
-    // to avoid contradictions where both must be satisfied.
+    // the AND constraint subsumes the OR — clear minLengthAny entirely so the
+    // deal generator uses the specific suit from the path, not any suit from the base.
     if (sc.minLength && sc.minLengthAny) {
-      for (const suit of Object.keys(sc.minLength) as Suit[]) {
-        if (suit in sc.minLengthAny) {
-          delete sc.minLengthAny[suit];
-        }
+      const hasOverlap = (Object.keys(sc.minLength) as Suit[]).some(
+        suit => suit in sc.minLengthAny!,
+      );
+      if (hasOverlap) {
+        sc.minLengthAny = undefined;
       }
     }
 

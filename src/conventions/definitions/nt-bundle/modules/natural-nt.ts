@@ -252,7 +252,7 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
     explanationId: "nt.suit.fiveCardMajor",
     factId: "bridge.hasFiveCardMajor",
     templateKey: "nt.suit.fiveCardMajor.supporting",
-    displayText: "Has a 5-card major (prefer transfer)",
+    displayText: "Has a 5-card major",
     contrastiveTemplateKey: "nt.suit.fiveCardMajor.whyNot",
     contrastiveDisplayText: "No 5-card major",
     preferredLevel: "mechanical",

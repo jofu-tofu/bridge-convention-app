@@ -66,7 +66,7 @@ const STAYMAN_R1_SURFACE: MeaningSurface = {
       factId: "bridge.hasFiveCardMajor",
       operator: "boolean",
       value: false,
-      description: "No 5-card major (prefer transfer)",
+      description: "No 5-card major",
     },
   ],
   ranking: {
@@ -77,7 +77,7 @@ const STAYMAN_R1_SURFACE: MeaningSurface = {
   },
   priorityClass: "preferredConventional",
   sourceIntent: { type: "StaymanAsk", params: {} },
-  teachingLabel: "Stayman 2C",
+  teachingLabel: "Stayman 2♣",
 };
 
 // ─── Opener Stayman response surfaces ────────────────────────
@@ -181,7 +181,7 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     },
     priorityClass: "obligatory",
     sourceIntent: { type: "DenyMajor", params: {} },
-    teachingLabel: "Deny major (2D)",
+    teachingLabel: "Deny major (2♦)",
     closurePolicy: {
       exclusive: true,
       exhaustive: true,

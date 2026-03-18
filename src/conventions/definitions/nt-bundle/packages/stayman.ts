@@ -40,7 +40,7 @@ export const staymanPackage: ModulePackage = {
   moduleId: "stayman",
 
   meta: {
-    description: "Stayman 2C ask for 4-card majors after 1NT",
+    description: "Stayman 2♣ ask for 4-card majors after 1NT",
     kind: "add-on",
   },
 
