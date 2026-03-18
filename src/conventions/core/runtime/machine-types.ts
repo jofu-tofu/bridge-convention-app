@@ -39,13 +39,14 @@ export interface MachineTransition {
 
 export type TransitionMatch =
   | { readonly kind: "call"; readonly level: number; readonly strain: BidSuit }
-  | { readonly kind: "any-bid" }
+  | { readonly kind: "any-bid"; readonly callHint?: Call }
   | { readonly kind: "pass"; readonly seatRole?: "self" | "partner" | "opponent" }
   | {
       readonly kind: "opponent-action";
       readonly callType?: "bid" | "double" | "redouble";
       readonly level?: number; // Optional: filter to specific bid level
       readonly strain?: BidSuit; // Optional: filter to specific bid strain
+      readonly callHint?: Call; // Override default call for path compilation
     }
   | {
       readonly kind: "predicate";

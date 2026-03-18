@@ -16,6 +16,7 @@ import type {
 import { getFactValue } from "../../../core/contracts/fact-catalog";
 import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
 import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
+import { resolveFactId, resolveClause } from "./binding-resolver";
 import { priorityClassToBand } from "./priority-mapping";
 
 /**
@@ -38,25 +39,6 @@ export function resolvePriorityClass(
     return profileMapping[priorityClass];
   }
   return fallbackBand;
-}
-
-/**
- * Resolve $-prefixed binding references in factId before fact lookup.
- * Binding resolution lives in the meaning evaluator (not the fact evaluator)
- * because it transforms surface-level references into concrete fact IDs
- * before any fact catalog lookup occurs. This means no changes to
- * fact-evaluator.ts or the FactCatalog — existing primitive facts
- * (hand.suitLength.hearts, etc.) are reused directly.
- */
-function resolveFactId(
-  factId: string,
-  bindings?: Readonly<Record<string, string>>,
-): string {
-  if (!bindings) return factId;
-  return factId.replace(/\$(\w+)/g, (_, key: string) => {
-    const value = bindings[key];
-    return value !== undefined ? value : `$${key}`;
-  });
 }
 
 function evaluateClause(
@@ -185,7 +167,11 @@ export function evaluateMeaningSurface(
   const resolved = resolveAlert(surface);
 
   // Auto-derive public constraints from primitive/bridge-observable clauses
-  const publicConstraints = derivePublicConstraints(surface.clauses);
+  // Resolve $-bindings before deriving constraints so factIds are concrete
+  const resolvedClauses = bindings
+    ? surface.clauses.map(c => resolveClause(c, bindings))
+    : surface.clauses;
+  const publicConstraints = derivePublicConstraints(resolvedClauses);
 
   return {
     meaningId: surface.meaningId,

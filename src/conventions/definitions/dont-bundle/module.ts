@@ -56,6 +56,7 @@ const DONT_ENTRY_TRANSITIONS: readonly MachineTransition[] = [
     match: {
       kind: "predicate",
       test: (call, _seat, _snapshot) => call.type === "double",
+      callHint: { type: "double" },
     },
     target: "wait-advancer-double",
   },

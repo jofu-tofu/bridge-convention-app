@@ -6,6 +6,7 @@ import type {
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { callsMatch, formatCallString } from "../../../engine/call-helpers";
 import { derivePublicConstraints } from "../../../core/contracts/alert";
+import { resolveClause } from "../pipeline/binding-resolver";
 
 // Re-export for backward compatibility — canonical location is engine/call-helpers
 export { formatCallString } from "../../../engine/call-helpers";
@@ -60,8 +61,11 @@ export function deriveEntailedDenials(
   });
 
   for (const peer of peerSurfaces) {
-    // Auto-derive public constraints from peer's clauses
-    const peerConstraints = derivePublicConstraints(peer.clauses);
+    // Auto-derive public constraints from peer's clauses, resolving $-bindings
+    const resolvedClauses = peer.surfaceBindings
+      ? peer.clauses.map(c => resolveClause(c, peer.surfaceBindings))
+      : peer.clauses;
+    const peerConstraints = derivePublicConstraints(resolvedClauses);
 
     for (const constraint of peerConstraints) {
       denials.push({
@@ -116,7 +120,11 @@ export function extractCommitments(
       const callStr = formatCallString(entry.call);
 
       // Auto-derive public constraints from primitive/bridge-observable clauses
-      const publicConstraints = derivePublicConstraints(matchingSurface.clauses);
+      // Resolve $-bindings before deriving constraints so factIds are concrete
+      const resolvedClauses = matchingSurface.surfaceBindings
+        ? matchingSurface.clauses.map(c => resolveClause(c, matchingSurface.surfaceBindings))
+        : matchingSurface.clauses;
+      const publicConstraints = derivePublicConstraints(resolvedClauses);
       for (const constraint of publicConstraints) {
         commitments.push({
           subject: entry.seat,

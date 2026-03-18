@@ -7,6 +7,7 @@ import type {
 import type { HandPredicateIR } from "../../../core/contracts/predicate-surfaces";
 import { resolveRole } from "../pipeline/witness-generator";
 import { VULNERABILITY_MAP } from "../pipeline/witness-constants";
+import { compileFactClause, SUIT_FACT_MAP, type MutableSeatConstraint } from "../runtime/fact-compiler";
 
 /**
  * Extended DealConstraints that carries pedagogical metadata alongside
@@ -16,136 +17,33 @@ interface WitnessCompilationResult extends DealConstraints {
   readonly pedagogicalControls?: PedagogicalControls;
 }
 
-// ─── Fact ID to suit mapping ──────────────────────────────────
-// Uses qualified keys (hand.suitLength.*) unlike the short keys in witness-constants
-const SUIT_FACT_MAP: Readonly<Record<string, Suit>> = {
-  "hand.suitLength.spades": Suit.Spades,
-  "hand.suitLength.hearts": Suit.Hearts,
-  "hand.suitLength.diamonds": Suit.Diamonds,
-  "hand.suitLength.clubs": Suit.Clubs,
-};
+// ─── Fact compilation delegated to shared fact-compiler.ts ────
 
-function extractSuit(factId: string): Suit | undefined {
-  return SUIT_FACT_MAP[factId];
-}
-
-// ─── Mutable builder for accumulating per-seat constraints ────
-interface SeatConstraintBuilder {
-  seat: Seat;
-  minHcp?: number;
-  maxHcp?: number;
-  balanced?: boolean;
-  minLength: Partial<Record<Suit, number>>;
-  maxLength: Partial<Record<Suit, number>>;
-  minLengthAny?: Partial<Record<Suit, number>>;
-}
-
-function createBuilder(seat: Seat): SeatConstraintBuilder {
-  return { seat, minLength: {}, maxLength: {} };
-}
-
-function applyHcpClause(
-  builder: SeatConstraintBuilder,
-  operator: string,
-  value: number | boolean | string | { min: number; max: number } | readonly string[],
-): void {
-  switch (operator) {
-    case "gte":
-      builder.minHcp = Math.max(builder.minHcp ?? 0, value as number);
-      break;
-    case "lte":
-      builder.maxHcp = Math.min(builder.maxHcp ?? 37, value as number);
-      break;
-    case "eq":
-      builder.minHcp = value as number;
-      builder.maxHcp = value as number;
-      break;
-    case "range": {
-      const range = value as { min: number; max: number };
-      builder.minHcp = Math.max(builder.minHcp ?? 0, range.min);
-      builder.maxHcp = Math.min(builder.maxHcp ?? 37, range.max);
-      break;
-    }
-  }
-}
-
-function applySuitClause(
-  builder: SeatConstraintBuilder,
-  suit: Suit,
-  operator: string,
-  value: number | boolean | string | { min: number; max: number } | readonly string[],
-  isAnyConjunction: boolean,
-): void {
-  if (isAnyConjunction && operator === "gte") {
-    // For "any" conjunction, suit length gte becomes minLengthAny
-    if (!builder.minLengthAny) {
-      builder.minLengthAny = {};
-    }
-    builder.minLengthAny[suit] = value as number;
-    return;
-  }
-
-  switch (operator) {
-    case "gte":
-      builder.minLength[suit] = Math.max(
-        builder.minLength[suit] ?? 0,
-        value as number,
-      );
-      break;
-    case "lte":
-      builder.maxLength[suit] = Math.min(
-        builder.maxLength[suit] ?? 13,
-        value as number,
-      );
-      break;
-    case "eq":
-      builder.minLength[suit] = value as number;
-      builder.maxLength[suit] = value as number;
-      break;
-    case "range": {
-      const range = value as { min: number; max: number };
-      builder.minLength[suit] = Math.max(
-        builder.minLength[suit] ?? 0,
-        range.min,
-      );
-      builder.maxLength[suit] = Math.min(
-        builder.maxLength[suit] ?? 13,
-        range.max,
-      );
-      break;
-    }
-  }
+function createBuilder(seat: Seat): MutableSeatConstraint {
+  return { seat };
 }
 
 function applyPredicate(
-  builder: SeatConstraintBuilder,
+  builder: MutableSeatConstraint,
   predicate: HandPredicateIR,
 ): void {
   const isAnyConjunction = predicate.conjunction === "any";
 
   for (const clause of predicate.clauses) {
-    if (clause.factId === "hand.hcp") {
-      applyHcpClause(builder, clause.operator, clause.value);
-      continue;
-    }
-
-    if (clause.factId === "hand.isBalanced") {
-      if (clause.operator === "boolean") {
-        builder.balanced = clause.value as boolean;
+    if (isAnyConjunction) {
+      // For "any" conjunction with suit gte, use minLengthAny
+      const suit = SUIT_FACT_MAP[clause.factId];
+      if (suit !== undefined && clause.operator === "gte") {
+        if (!builder.minLengthAny) builder.minLengthAny = {};
+        builder.minLengthAny[suit] = clause.value as number;
+        continue;
       }
-      continue;
     }
-
-    const suit = extractSuit(clause.factId);
-    if (suit) {
-      applySuitClause(builder, suit, clause.operator, clause.value, isAnyConjunction);
-    }
-    // Unknown factIds are silently ignored — they may be bridge-derived
-    // or module-derived facts not representable in DealConstraints.
+    compileFactClause(builder, clause.factId, clause.operator, clause.value);
   }
 }
 
-function builderToConstraint(builder: SeatConstraintBuilder): SeatConstraint {
+function builderToConstraint(builder: MutableSeatConstraint): SeatConstraint {
   const result: {
     seat: Seat;
     minHcp?: number;
@@ -159,8 +57,8 @@ function builderToConstraint(builder: SeatConstraintBuilder): SeatConstraint {
   if (builder.minHcp !== undefined) result.minHcp = builder.minHcp;
   if (builder.maxHcp !== undefined) result.maxHcp = builder.maxHcp;
   if (builder.balanced !== undefined) result.balanced = builder.balanced;
-  if (Object.keys(builder.minLength).length > 0) result.minLength = builder.minLength;
-  if (Object.keys(builder.maxLength).length > 0) result.maxLength = builder.maxLength;
+  if (builder.minLength && Object.keys(builder.minLength).length > 0) result.minLength = builder.minLength;
+  if (builder.maxLength && Object.keys(builder.maxLength).length > 0) result.maxLength = builder.maxLength;
   if (builder.minLengthAny) result.minLengthAny = builder.minLengthAny;
 
   return result;
@@ -183,7 +81,7 @@ export function compileWitnessSpec(
   spec: WitnessSpecIR,
   userSeat: Seat,
 ): WitnessCompilationResult {
-  const builders = new Map<Seat, SeatConstraintBuilder>();
+  const builders = new Map<Seat, MutableSeatConstraint>();
 
   for (const layer of spec.layers) {
     if (layer.kind !== "seat") {

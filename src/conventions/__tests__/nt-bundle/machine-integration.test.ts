@@ -134,15 +134,16 @@ describe("Machine Integration: full pipeline with FSM", () => {
     expect(truthIds).toContain("transfer:to-hearts");
   });
 
-  // ─── Gold Scenario 6: 1NT-X system-off ──
-  it("[policy] scenario 6 — 1NT-X yields null (no surfaces active)", () => {
+  // ─── Gold Scenario 6: 1NT-X redouble with strength ──
+  it("[policy] scenario 6 — 1NT-X with 10+ HCP yields redouble", () => {
     const h = hand(
       "SK", "SQ", "S8", "S3", "HJ", "H7", "H4", "H2",
       "DA", "D5", "C8", "C3", "C2",
     );
     const { result } = suggestBid(h, ["1NT", "X"]);
-    // Machine moves to nt-contested — no surfaceGroupId, so no surfaces emitted
-    expect(result).toBeNull();
+    // Machine moves to nt-contested — redouble surface now active for 10+ HCP
+    expect(result).not.toBeNull();
+    expect(result!.call.type).toBe("redouble");
   });
 
   // ─── Gold Scenario 7: Stayman answer — opener shows hearts ──

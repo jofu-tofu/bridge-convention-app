@@ -123,21 +123,21 @@ export function matchToCall(match: TransitionMatch): Call | null {
     case "pass":
       return { type: "pass" };
     case "opponent-action": {
-      if (match.callType === "double") return { type: "double" };
-      if (match.callType === "redouble") return { type: "redouble" };
+      if (match.callType === "double") return match.callHint ?? { type: "double" };
+      if (match.callType === "redouble") return match.callHint ?? { type: "redouble" };
       if (match.callType === "bid" && match.level !== undefined && match.strain !== undefined) {
         if (match.level < 1 || match.level > 7) return null;
-        return {
+        return match.callHint ?? {
           type: "bid",
           level: match.level as 1 | 2 | 3 | 4 | 5 | 6 | 7,
           strain: match.strain,
         };
       }
-      // Generic opponent-action without specific call — use double as default
-      if (!match.callType) return { type: "double" };
-      return null;
+      // Generic opponent-action without specific call — use callHint or default to double
+      return match.callHint ?? { type: "double" };
     }
     case "any-bid":
+      return match.callHint ?? null;
     case "submachine-return":
       return null;
     case "predicate":

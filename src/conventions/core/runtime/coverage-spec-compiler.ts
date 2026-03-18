@@ -9,7 +9,8 @@
 
 import { Seat, Suit } from "../../../engine/types";
 import type { DealConstraints, SeatConstraint } from "../../../engine/types";
-import type { MeaningSurface, MeaningSurfaceClause } from "../../../core/contracts/meaning";
+import { compileFactClause, type MutableSeatConstraint } from "./fact-compiler";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { ConventionBundle } from "../bundle/bundle-types";
 import type { ConversationMachine } from "./machine-types";
 import type { StatePath } from "./machine-enumeration";
@@ -18,6 +19,7 @@ import {
   pathToAuctionPrefix,
   callToString,
 } from "./machine-enumeration";
+import { resolveFactId } from "../pipeline/binding-resolver";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -54,93 +56,8 @@ export interface CoverageManifest {
   }[];
 }
 
-// ── Binding Resolution ──────────────────────────────────────────────
-
-/** Replace `$key` placeholders in a factId with concrete values from bindings. */
-function resolveBindings(
-  factId: string,
-  bindings: Readonly<Record<string, string>>,
-): string {
-  return factId.replace(/\$(\w+)/g, (_, key) => {
-    const val = bindings[key];
-    return val !== undefined ? val : `$${key}`;
-  });
-}
-
 // ── Clause → SeatConstraint Compilation ─────────────────────────────
-
-const SUIT_FACT_MAP: Record<string, Suit> = {
-  "hand.suitLength.spades": Suit.Spades,
-  "hand.suitLength.hearts": Suit.Hearts,
-  "hand.suitLength.diamonds": Suit.Diamonds,
-  "hand.suitLength.clubs": Suit.Clubs,
-};
-
-/** Accumulate constraints from a MeaningSurfaceClause onto a mutable SeatConstraint. */
-function accumulateClause(
-  constraint: MutableSeatConstraint,
-  clause: MeaningSurfaceClause,
-): void {
-  // HCP constraints
-  if (clause.factId === "hand.hcp") {
-    if (clause.operator === "gte" && typeof clause.value === "number") {
-      constraint.minHcp = Math.max(constraint.minHcp ?? 0, clause.value);
-    } else if (clause.operator === "lte" && typeof clause.value === "number") {
-      constraint.maxHcp = Math.min(constraint.maxHcp ?? 37, clause.value);
-    } else if (clause.operator === "range" && typeof clause.value === "object" && "min" in clause.value) {
-      constraint.minHcp = Math.max(constraint.minHcp ?? 0, clause.value.min);
-      constraint.maxHcp = Math.min(constraint.maxHcp ?? 37, clause.value.max);
-    }
-    return;
-  }
-
-  // Suit length constraints
-  const suit = SUIT_FACT_MAP[clause.factId];
-  if (suit) {
-    if (clause.operator === "gte" && typeof clause.value === "number") {
-      if (!constraint.minLength) constraint.minLength = {};
-      constraint.minLength[suit] = Math.max(constraint.minLength[suit] ?? 0, clause.value);
-    } else if (clause.operator === "lte" && typeof clause.value === "number") {
-      if (!constraint.maxLength) constraint.maxLength = {};
-      constraint.maxLength[suit] = Math.min(constraint.maxLength[suit] ?? 13, clause.value);
-    }
-    return;
-  }
-
-  // Balanced constraint
-  if (clause.factId === "hand.isBalanced" || clause.factId === "bridge.isBalanced") {
-    if (clause.operator === "boolean" && clause.value === true) {
-      constraint.balanced = true;
-    }
-    return;
-  }
-
-  // Four-card major → need at least one 4-card major
-  if (clause.factId === "bridge.hasFourCardMajor" && clause.value === true) {
-    if (!constraint.minLengthAny) constraint.minLengthAny = {};
-    constraint.minLengthAny[Suit.Hearts] = Math.max(constraint.minLengthAny[Suit.Hearts] ?? 0, 4);
-    constraint.minLengthAny[Suit.Spades] = Math.max(constraint.minLengthAny[Suit.Spades] ?? 0, 4);
-    return;
-  }
-
-  // Five-card major → need at least one 5-card major
-  if (clause.factId === "bridge.hasFiveCardMajor" && clause.value === true) {
-    if (!constraint.minLengthAny) constraint.minLengthAny = {};
-    constraint.minLengthAny[Suit.Hearts] = Math.max(constraint.minLengthAny[Suit.Hearts] ?? 0, 5);
-    constraint.minLengthAny[Suit.Spades] = Math.max(constraint.minLengthAny[Suit.Spades] ?? 0, 5);
-    return;
-  }
-}
-
-interface MutableSeatConstraint {
-  seat: Seat;
-  minHcp?: number;
-  maxHcp?: number;
-  balanced?: boolean;
-  minLength?: Partial<Record<Suit, number>>;
-  maxLength?: Partial<Record<Suit, number>>;
-  minLengthAny?: Partial<Record<Suit, number>>;
-}
+// Delegated to shared fact-compiler.ts — see compileFactClause import.
 
 // ── Surface Lookup ──────────────────────────────────────────────────
 
@@ -225,9 +142,9 @@ export function compilePathToTarget(
     // Accumulate all clauses from the matching surface, resolving $-bindings
     for (const clause of matchingSurface.clauses) {
       const resolvedClause = matchingSurface.surfaceBindings
-        ? { ...clause, factId: resolveBindings(clause.factId, matchingSurface.surfaceBindings) }
+        ? { ...clause, factId: resolveFactId(clause.factId, matchingSurface.surfaceBindings) }
         : clause;
-      accumulateClause(sc, resolvedClause);
+      compileFactClause(sc, resolvedClause.factId, resolvedClause.operator, resolvedClause.value);
     }
   }
 

@@ -17,7 +17,7 @@ describe("NT bundle golden-master (characterization)", () => {
   describe("surface group structure", () => {
     it("has the expected number of surface groups", () => {
       expect(ntBundle.meaningSurfaces).toBeDefined();
-      expect(ntBundle.meaningSurfaces!.length).toBe(12);
+      expect(ntBundle.meaningSurfaces!.length).toBe(13);
     });
 
     it("has the expected surface count per group", () => {
@@ -61,7 +61,7 @@ describe("NT bundle golden-master (characterization)", () => {
         (sum, g) => sum + g.surfaces.length,
         0,
       );
-      expect(total).toBe(35);
+      expect(total).toBe(36);
     });
   });
 

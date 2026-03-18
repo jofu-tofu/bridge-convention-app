@@ -14,6 +14,7 @@ import {
   STAYMAN_R3_AFTER_2H_SURFACES,
   STAYMAN_R3_AFTER_2S_SURFACES,
   STAYMAN_R3_AFTER_2D_SURFACES,
+  INTERFERENCE_REDOUBLE_SURFACE,
 } from "../modules/stayman";
 
 /**
@@ -56,6 +57,8 @@ export const staymanPackage: ModulePackage = {
       { groupId: "responder-r3-after-stayman-2h", surfaces: [...STAYMAN_R3_AFTER_2H_SURFACES] },
       { groupId: "responder-r3-after-stayman-2s", surfaces: [...STAYMAN_R3_AFTER_2S_SURFACES] },
       { groupId: "responder-r3-after-stayman-2d", surfaces: [...STAYMAN_R3_AFTER_2D_SURFACES] },
+      // Skeleton surface group: interference handling
+      { groupId: "nt-interrupted", surfaces: [INTERFERENCE_REDOUBLE_SURFACE] },
     ],
 
     explanationEntries: staymanModule.explanationEntries,

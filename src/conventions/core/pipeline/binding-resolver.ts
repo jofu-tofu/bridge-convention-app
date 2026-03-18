@@ -1,0 +1,52 @@
+/**
+ * Canonical binding resolution for $-prefixed placeholders in fact IDs.
+ *
+ * Surface clauses use parameterized fact IDs like `hand.suitLength.$suit`
+ * with surfaceBindings `{ suit: "hearts" }`. This module provides the
+ * single source of truth for resolving those placeholders into concrete
+ * fact IDs before any downstream lookup.
+ */
+
+import type { MeaningSurfaceClause } from "../../../core/contracts/meaning";
+import type { FactConstraintIR } from "../../../core/contracts/agreement-module";
+
+/**
+ * Resolve $-prefixed binding references in a factId.
+ * Unresolved keys are left as-is (fail-closed).
+ */
+export function resolveFactId(
+  factId: string,
+  bindings?: Readonly<Record<string, string>>,
+): string {
+  if (!bindings) return factId;
+  return factId.replace(/\$(\w+)/g, (_, key: string) => {
+    const value = bindings[key];
+    return value !== undefined ? value : `$${key}`;
+  });
+}
+
+/**
+ * Resolve bindings in a MeaningSurfaceClause, returning a new clause
+ * with the resolved factId. Returns the same object if no resolution needed.
+ */
+export function resolveClause(
+  clause: MeaningSurfaceClause,
+  bindings?: Readonly<Record<string, string>>,
+): MeaningSurfaceClause {
+  if (!bindings) return clause;
+  const resolved = resolveFactId(clause.factId, bindings);
+  return resolved === clause.factId ? clause : { ...clause, factId: resolved };
+}
+
+/**
+ * Resolve bindings in a FactConstraintIR, returning a new constraint
+ * with the resolved factId. Returns the same object if no resolution needed.
+ */
+export function resolveConstraintBindings(
+  constraint: FactConstraintIR,
+  bindings?: Readonly<Record<string, string>>,
+): FactConstraintIR {
+  if (!bindings) return constraint;
+  const resolved = resolveFactId(constraint.factId, bindings);
+  return resolved === constraint.factId ? constraint : { ...constraint, factId: resolved };
+}
