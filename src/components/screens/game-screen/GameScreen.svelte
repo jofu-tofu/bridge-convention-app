@@ -300,6 +300,8 @@
         userControlledSeats={gameStore.userControlledSeats}
         remainingCards={gameStore.remainingCardsPerSeat}
         tricks={gameStore.tricks}
+        auction={gameStore.auction}
+        bidHistory={gameStore.bidHistory}
         onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
         onSkipToReview={() => gameStore.skipToReview()}
       />

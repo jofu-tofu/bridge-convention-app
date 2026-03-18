@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Seat } from "../../../engine/types";
-  import type { Card as CardType, Contract, Deal, PlayedCard, Suit, Trick } from "../../../engine/types";
+  import type { Card as CardType, Contract, Deal, PlayedCard, Suit, Trick, Auction } from "../../../engine/types";
+  import type { BidHistoryEntry } from "../../../core/contracts";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import TrickArea from "../../game/TrickArea.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -22,6 +23,8 @@
     userControlledSeats: readonly Seat[];
     remainingCards: Partial<Record<Seat, readonly CardType[]>> | undefined;
     tricks: readonly Trick[];
+    auction?: Auction;
+    bidHistory?: readonly BidHistoryEntry[];
     onPlayCard: (card: CardType, seat: Seat) => void;
     onSkipToReview: () => void;
   }
@@ -46,6 +49,8 @@
     userControlledSeats,
     remainingCards,
     tricks,
+    auction,
+    bidHistory,
     onPlayCard,
     onSkipToReview,
   }: Props = $props();
@@ -66,7 +71,7 @@
 <div class={containerClass}>
   <!-- Desktop: dedicated left panel for trick history -->
   <aside class="{sidePanelClass} hidden lg:flex" aria-label="Play history">
-    <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} />
+    <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} {deal} />
   </aside>
 
   <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
@@ -94,7 +99,7 @@
   <aside class={sidePanelClass} aria-label="Play controls">
     <!-- Mobile/tablet: trick history above controls (hidden on desktop where left panel shows it) -->
     <div class="lg:hidden max-h-48 min-h-0 overflow-hidden mb-2">
-      <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} />
+      <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} {deal} />
     </div>
     <PlaySidePanel
       {contract}
