@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build WASM artifacts (needed for type-check)
+        run: npm run wasm:build && npm run dds:ensure
+
       - name: Type-check & test
         run: |
           npm run check
