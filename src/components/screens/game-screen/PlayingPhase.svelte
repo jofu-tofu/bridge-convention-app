@@ -93,6 +93,8 @@
       {contract}
       {declarerTricksWon}
       {defenderTricksWon}
+      {tricks}
+      declarerSeat={contract?.declarer ?? null}
       {onSkipToReview}
     />
   </aside>
