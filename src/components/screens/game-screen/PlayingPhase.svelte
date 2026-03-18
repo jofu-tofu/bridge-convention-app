@@ -71,7 +71,7 @@
 <div class={containerClass}>
   <!-- Desktop: dedicated left panel for trick history -->
   <aside class="{sidePanelClass} hidden lg:flex" aria-label="Play history">
-    <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} {deal} />
+    <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} />
   </aside>
 
   <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
@@ -99,7 +99,7 @@
   <aside class={sidePanelClass} aria-label="Play controls">
     <!-- Mobile/tablet: trick history above controls (hidden on desktop where left panel shows it) -->
     <div class="lg:hidden max-h-48 min-h-0 overflow-hidden mb-2">
-      <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} {deal} />
+      <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} />
     </div>
     <PlaySidePanel
       {contract}

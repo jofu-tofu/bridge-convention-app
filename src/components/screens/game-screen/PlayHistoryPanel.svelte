@@ -1,13 +1,12 @@
 <script lang="ts">
-  import type { Trick, Seat, Deal, Card as CardType } from "../../../engine/types";
+  import type { Trick, Seat, Card as CardType } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import { Suit } from "../../../engine/types";
-  import { SUIT_ORDER } from "../../../engine/constants";
+  import { SUIT_ORDER, SEAT_INDEX } from "../../../engine/constants";
   import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../core/display/format";
   import { SUIT_CARD_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../../core/display/tokens";
   import { sortCards } from "../../../core/display/sort-cards";
-  import { SEAT_INDEX } from "../../../engine/constants";
 
   interface Props {
     tricks: readonly Trick[];
@@ -15,10 +14,9 @@
     auction?: Auction;
     dealer?: Seat;
     bidHistory?: readonly BidHistoryEntry[];
-    deal?: Deal;
   }
 
-  let { tricks, declarerSeat, auction, dealer, bidHistory, deal }: Props = $props();
+  let { tricks, declarerSeat, auction, dealer, bidHistory }: Props = $props();
 
   let scrollContainer: HTMLDivElement | undefined = $state();
 
@@ -33,19 +31,22 @@
 
   const SEAT_LABELS: Seat[] = ["N" as Seat, "E" as Seat, "S" as Seat, "W" as Seat];
 
-  /** Group cards by suit for a compact text display: ♠AKQ4 ♥KJ3 ♦T94 ♣J82 */
-  function formatHandBySuit(cards: readonly CardType[]): { suit: Suit; ranks: string }[] {
-    const sorted = sortCards(cards);
-    const groups: { suit: Suit; ranks: string }[] = [];
+  /** Collect all played cards from completed tricks, sorted by suit then rank. */
+  const playedBySuit = $derived.by(() => {
+    const allPlayed: CardType[] = [];
+    for (const trick of tricks) {
+      for (const play of trick.plays) {
+        allPlayed.push(play.card);
+      }
+    }
+    const sorted = sortCards(allPlayed);
+    const groups: { suit: Suit; cards: CardType[] }[] = [];
     for (const suit of SUIT_ORDER) {
-      const ranks = sorted
-        .filter((c) => c.suit === suit)
-        .map((c) => displayRank(c.rank))
-        .join("");
-      if (ranks) groups.push({ suit, ranks });
+      const cards = sorted.filter((c) => c.suit === suit);
+      if (cards.length > 0) groups.push({ suit, cards });
     }
     return groups;
-  }
+  });
 
   /** Build compact auction rows (same logic as AuctionTable). */
   interface AuctionCell {
@@ -118,8 +119,8 @@
     </div>
   {/if}
 
-  <!-- Compact bid summary + original hands -->
-  {#if auction && auction.entries.length > 0 && deal}
+  <!-- Compact bid summary + cards played -->
+  {#if auction && auction.entries.length > 0}
     <div class="shrink-0 border-t border-border-subtle mt-2 pt-2 space-y-2">
       <!-- Compact auction table -->
       <div>
@@ -151,24 +152,41 @@
         </table>
       </div>
 
-      <!-- Original hands sorted by suit -->
-      <div>
-        <h3 class="text-[10px] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Hands</h3>
-        <div class="space-y-0.5 px-1">
-          {#each SEAT_LABELS as seat (seat)}
-            <div class="flex items-baseline gap-1 text-[11px] leading-tight">
-              <span class="text-text-muted font-mono w-3 shrink-0">{seat}</span>
-              <span class="flex flex-wrap gap-x-1.5">
-                {#each formatHandBySuit(deal.hands[seat].cards) as group (group.suit)}
-                  <span class="whitespace-nowrap">
-                    <span class={SUIT_CARD_COLOR_CLASS[group.suit]}>{SUIT_SYMBOLS[group.suit]}</span><span class="text-text-primary">{group.ranks}</span>
-                  </span>
-                {/each}
-              </span>
-            </div>
-          {/each}
+      <!-- Played cards as stacked mini-cards grouped by suit -->
+      {#if playedBySuit.length > 0}
+        <div>
+          <h3 class="text-[10px] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Cards Played</h3>
+          <div class="space-y-1 px-1">
+            {#each playedBySuit as group (group.suit)}
+              <div class="flex items-center gap-1">
+                <span class="{SUIT_CARD_COLOR_CLASS[group.suit]} text-xs shrink-0 w-3">{SUIT_SYMBOLS[group.suit]}</span>
+                <div class="flex played-stack">
+                  {#each group.cards as card (card.rank)}
+                    <div
+                      class="mini-card bg-card-face rounded-sm shadow-sm border border-black/10 flex items-center justify-center {SUIT_CARD_COLOR_CLASS[card.suit]}"
+                      aria-label="{displayRank(card.rank)} of {card.suit}"
+                    >
+                      <span class="font-bold leading-none">{displayRank(card.rank)}</span>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            {/each}
+          </div>
         </div>
-      </div>
+      {/if}
     </div>
   {/if}
 </section>
+
+<style>
+  .mini-card {
+    width: 20px;
+    height: 26px;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .played-stack > .mini-card + .mini-card {
+    margin-left: -8px;
+  }
+</style>
