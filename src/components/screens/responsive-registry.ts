@@ -104,7 +104,7 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     path: "game-screen/PlaySidePanel.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
-    mobileNotes: "Vertical sections; embeds PlayHistoryPanel on mobile via lg:hidden",
+    mobileNotes: "Vertical sections: contract, tricks count, skip button",
   },
   {
     path: "game-screen/PlayHistoryPanel.svelte",

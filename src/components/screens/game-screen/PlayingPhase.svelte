@@ -50,18 +50,21 @@
     onSkipToReview,
   }: Props = $props();
 
-  // Use 3-column layout on desktop: [history] [table] [controls]
+  // Use 3-column layout on desktop: [compact history] [table] [controls]
+  // History panel uses the same side-panel width as the right panel;
+  // GameScreen accounts for both when computing table scale.
   const containerClass = $derived(
     phaseContainerClass.includes('grid-cols-')
       ? phaseContainerClass.replace(
           /grid-cols-\[1fr_var\(--width-side-panel\)\]/,
-          'grid-cols-[var(--width-side-panel)_1fr_var(--width-side-panel)]'
+          'grid-cols-[var(--width-side-panel)_minmax(0,1fr)_var(--width-side-panel)]'
         )
       : phaseContainerClass
   );
 </script>
 
 <div class={containerClass}>
+  <!-- Desktop: dedicated left panel for trick history -->
   <aside class="{sidePanelClass} hidden lg:flex" aria-label="Play history">
     <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} />
   </aside>
@@ -89,12 +92,14 @@
   </ScaledTableArea>
 
   <aside class={sidePanelClass} aria-label="Play controls">
+    <!-- Mobile/tablet: trick history above controls (hidden on desktop where left panel shows it) -->
+    <div class="lg:hidden max-h-48 min-h-0 overflow-hidden mb-2">
+      <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} />
+    </div>
     <PlaySidePanel
       {contract}
       {declarerTricksWon}
       {defenderTricksWon}
-      {tricks}
-      declarerSeat={contract?.declarer ?? null}
       {onSkipToReview}
     />
   </aside>

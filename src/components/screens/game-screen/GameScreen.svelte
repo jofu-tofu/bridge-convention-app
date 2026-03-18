@@ -147,21 +147,26 @@
   );
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
+  // PLAYING phase has a second (history) panel on the left — account for it in scale
+  const hasHistoryPanel = $derived(isDesktop && gameStore.phase === "PLAYING");
+  const effectiveSidePanelW = $derived(hasHistoryPanel ? sidePanelW * 2 : sidePanelW);
+  // gap-3 = 0.75rem per gap; 2 gaps in 3-col playing, 1 gap in 2-col bidding
+  const gridGaps = $derived(isDesktop ? (hasHistoryPanel ? 2 : 1) * 0.75 * rootFontSize : 0);
   const tableScale = $derived(
     computeTableScale(availableW, innerH, {
       sidePanel: isDesktop,
       tableW: tableBaseW,
       tableH: tableBaseH,
-      sidePanelW,
+      sidePanelW: effectiveSidePanelW,
       headerH: headerH || 64,
-      padding: 16,
+      padding: 32 + gridGaps,
     }),
   );
 
   const tableOrigin = $derived(isDesktop ? "top left" : "center");
   const phaseContainerClass = $derived(
     isDesktop
-      ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] overflow-hidden"
+      ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] gap-3 overflow-hidden"
       : "flex-1 flex flex-col overflow-hidden",
   );
   const sidePanelClass = $derived(

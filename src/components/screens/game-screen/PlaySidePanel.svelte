@@ -1,15 +1,12 @@
 <script lang="ts">
-  import type { Contract, Trick, Seat } from "../../../engine/types";
+  import type { Contract } from "../../../engine/types";
   import ContractDisplay from "./ContractDisplay.svelte";
-  import PlayHistoryPanel from "./PlayHistoryPanel.svelte";
   import Button from "../../shared/Button.svelte";
 
   interface Props {
     contract: Contract | null;
     declarerTricksWon: number;
     defenderTricksWon: number;
-    tricks: readonly Trick[];
-    declarerSeat: Seat | null;
     onSkipToReview: () => void;
   }
 
@@ -17,8 +14,6 @@
     contract,
     declarerTricksWon,
     defenderTricksWon,
-    tricks,
-    declarerSeat,
     onSkipToReview,
   }: Props = $props();
 </script>
@@ -46,11 +41,6 @@
     <span>Decl: {declarerTricksWon}</span>
     <span>Def: {defenderTricksWon}</span>
   </div>
-</section>
-
-<!-- Trick history (mobile/tablet only — desktop uses left panel) -->
-<section class="flex-1 min-h-0 overflow-hidden lg:hidden">
-  <PlayHistoryPanel {tricks} {declarerSeat} />
 </section>
 
 <div class="mt-auto">
