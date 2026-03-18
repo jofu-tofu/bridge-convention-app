@@ -25,8 +25,8 @@ describe("Weak Two bundle golden-master", () => {
 
   // ── Surface groups ────────────────────────────────────────────
 
-  it("has 7 meaning surface groups", () => {
-    expect(weakTwoBundle.meaningSurfaces).toHaveLength(7);
+  it("has 10 meaning surface groups", () => {
+    expect(weakTwoBundle.meaningSurfaces).toHaveLength(10);
   });
 
   it("has the correct surface group IDs", () => {
@@ -39,6 +39,9 @@ describe("Weak Two bundle golden-master", () => {
       "ogust-response-hearts",
       "ogust-response-spades",
       "ogust-response-diamonds",
+      "responder-after-ogust-hearts",
+      "responder-after-ogust-spades",
+      "responder-after-ogust-diamonds",
     ]);
   });
 
@@ -55,6 +58,9 @@ describe("Weak Two bundle golden-master", () => {
       { groupId: "ogust-response-hearts", count: 5 },
       { groupId: "ogust-response-spades", count: 5 },
       { groupId: "ogust-response-diamonds", count: 5 },
+      { groupId: "responder-after-ogust-hearts", count: 3 },
+      { groupId: "responder-after-ogust-spades", count: 3 },
+      { groupId: "responder-after-ogust-diamonds", count: 3 },
     ]);
   });
 
@@ -128,7 +134,7 @@ describe("Weak Two bundle golden-master", () => {
     );
   });
 
-  it("machine has all 13 expected states", () => {
+  it("machine has all 16 expected states", () => {
     const stateIds = Array.from(
       weakTwoBundle.conversationMachine!.states.keys(),
     ).sort();
@@ -137,6 +143,9 @@ describe("Weak Two bundle golden-master", () => {
       "ogust-response-d",
       "ogust-response-h",
       "ogust-response-s",
+      "responder-after-ogust-d",
+      "responder-after-ogust-h",
+      "responder-after-ogust-s",
       "responder-r2-d",
       "responder-r2-h",
       "responder-r2-s",
@@ -215,7 +224,12 @@ describe("Weak Two bundle golden-master", () => {
 
     const a4 = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C"]);
     const r4 = evaluateMachine(machine, a4, Seat.South);
-    expect(r4.context.currentStateId).toBe("terminal");
+    expect(r4.context.currentStateId).toBe("responder-after-ogust-h");
+    expect(r4.context.registers.captain).toBe("responder");
+
+    const a5 = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C", "P", "4H"]);
+    const r5 = evaluateMachine(machine, a5, Seat.South);
+    expect(r5.context.currentStateId).toBe("terminal");
   });
 
   // ── Explanation catalog ───────────────────────────────────────

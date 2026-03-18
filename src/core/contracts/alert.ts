@@ -16,6 +16,20 @@ const ANNOUNCE_INTENTS = new Set([
   "TransferToSpades",
 ]);
 
+/** Source-intent types for bids that are conventional but universally standard —
+ *  alertable for educational display but NOT ACBL-required alerts.
+ *  Per ACBL: Stayman is self-alerting, natural NT bids are never alerted,
+ *  and Weak Two openings are on the convention card (not alerted). */
+const STANDARD_INTENTS = new Set([
+  "StaymanAsk",       // Stayman 2C — standard, not alerted at ACBL
+  "ShowHearts",       // Stayman response — standard
+  "ShowSpades",       // Stayman response — standard
+  "DenyMajor",        // Stayman 2D denial — standard
+  "WeakTwoOpen",      // Weak Two opening — on convention card
+  "NTInvite",         // 2NT invite — natural
+  "NTGame",           // 3NT game — natural
+]);
+
 /** Determine if a clause represents publicly observable information.
  *  Two paths to being public:
  *  1. Primitive hand facts (hand.*) — universally disclosed when explaining any bid.
@@ -65,9 +79,9 @@ export function resolveAlert(surface: AlertResolvable): BidAlert | null {
 
   const annotationType = ANNOUNCE_INTENTS.has(surface.sourceIntent.type)
     ? "announce" as const
-    : ARTIFICIAL_INTENTS.has(surface.sourceIntent.type)
-      ? "alert" as const
-      : "educational" as const;
+    : STANDARD_INTENTS.has(surface.sourceIntent.type)
+      ? "educational" as const
+      : "alert" as const;
 
   return {
     publicConstraints: derivePublicConstraints(surface.clauses),

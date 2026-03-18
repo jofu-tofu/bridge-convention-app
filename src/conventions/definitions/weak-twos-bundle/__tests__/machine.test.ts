@@ -31,6 +31,7 @@ describe("Weak Two bundle conversation machine", () => {
       "weak-two-opened-h", "weak-two-opened-s", "weak-two-opened-d",
       "responder-r2-h", "responder-r2-s", "responder-r2-d",
       "ogust-response-h", "ogust-response-s", "ogust-response-d",
+      "responder-after-ogust-h", "responder-after-ogust-s", "responder-after-ogust-d",
       "terminal", "weak-two-contested",
     ];
     for (const stateId of requiredStates) {
@@ -176,7 +177,7 @@ describe("Weak Two bundle conversation machine", () => {
     });
   });
 
-  // ─── Ogust response → terminal ───────────────────────────────
+  // ─── Ogust response → responder-after-ogust ───────────────────
 
   describe("Ogust response transitions", () => {
     it("pass self-loops in ogust-response-h (opponent pass)", () => {
@@ -187,45 +188,86 @@ describe("Weak Two bundle conversation machine", () => {
       expect(result.activeSurfaceGroupIds).toContain("ogust-response-hearts");
     });
 
-    it("3C Ogust response → terminal (hearts)", () => {
+    it("3C Ogust response → responder-after-ogust-h (hearts)", () => {
       // 2H(N) P(E) 2NT(S) P(W) 3C(N)
       const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("terminal");
+      expect(result.context.currentStateId).toBe("responder-after-ogust-h");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-ogust-hearts");
+      expect(result.context.registers.captain).toBe("responder");
     });
 
-    it("3D Ogust response → terminal (hearts)", () => {
+    it("3D Ogust response → responder-after-ogust-h (hearts)", () => {
       const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3D"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("terminal");
+      expect(result.context.currentStateId).toBe("responder-after-ogust-h");
     });
 
-    it("3H Ogust response → terminal (hearts)", () => {
+    it("3H Ogust response → responder-after-ogust-h (hearts)", () => {
       const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3H"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("terminal");
+      expect(result.context.currentStateId).toBe("responder-after-ogust-h");
     });
 
-    it("3S Ogust response → terminal (hearts)", () => {
+    it("3S Ogust response → responder-after-ogust-h (hearts)", () => {
       const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3S"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("terminal");
+      expect(result.context.currentStateId).toBe("responder-after-ogust-h");
     });
 
-    it("3NT Ogust solid → terminal (hearts)", () => {
+    it("3NT Ogust solid → responder-after-ogust-h (hearts)", () => {
       const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3NT"]);
       const result = evaluateMachine(machine, auction, Seat.South);
-      expect(result.context.currentStateId).toBe("terminal");
+      expect(result.context.currentStateId).toBe("responder-after-ogust-h");
     });
 
-    it("Ogust response → terminal (spades)", () => {
+    it("Ogust response → responder-after-ogust-s (spades)", () => {
       const auction = buildAuction(Seat.North, ["2S", "P", "2NT", "P", "3C"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-ogust-s");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-ogust-spades");
+    });
+
+    it("Ogust response → responder-after-ogust-d (diamonds)", () => {
+      const auction = buildAuction(Seat.North, ["2D", "P", "2NT", "P", "3NT"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-ogust-d");
+      expect(result.activeSurfaceGroupIds).toContain("responder-after-ogust-diamonds");
+    });
+  });
+
+  // ─── Responder rebid after Ogust → terminal ───────────────────
+
+  describe("Responder rebid after Ogust", () => {
+    it("pass self-loops in responder-after-ogust-h (opponent pass)", () => {
+      // 2H(N) P(E) 2NT(S) P(W) 3C(N) P(E)
+      const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C", "P"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("responder-after-ogust-h");
+    });
+
+    it("responder bids game after Ogust → terminal (hearts)", () => {
+      // 2H(N) P(E) 2NT(S) P(W) 3C(N) P(E) 4H(S)
+      const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C", "P", "4H"]);
       const result = evaluateMachine(machine, auction, Seat.South);
       expect(result.context.currentStateId).toBe("terminal");
     });
 
-    it("Ogust response → terminal (diamonds)", () => {
-      const auction = buildAuction(Seat.North, ["2D", "P", "2NT", "P", "3NT"]);
+    it("responder signs off after Ogust → terminal (hearts)", () => {
+      // 2H(N) P(E) 2NT(S) P(W) 3C(N) P(E) 3H(S)
+      const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C", "P", "3H"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("terminal");
+    });
+
+    it("responder bids game after Ogust → terminal (spades)", () => {
+      const auction = buildAuction(Seat.North, ["2S", "P", "2NT", "P", "3D", "P", "4S"]);
+      const result = evaluateMachine(machine, auction, Seat.South);
+      expect(result.context.currentStateId).toBe("terminal");
+    });
+
+    it("responder bids game after Ogust → terminal (diamonds)", () => {
+      const auction = buildAuction(Seat.North, ["2D", "P", "2NT", "P", "3C", "P", "5D"]);
       const result = evaluateMachine(machine, auction, Seat.South);
       expect(result.context.currentStateId).toBe("terminal");
     });
@@ -265,13 +307,14 @@ describe("Weak Two bundle conversation machine", () => {
 
   describe("state history tracking", () => {
     it("records complete state history through Ogust path", () => {
-      // 2H(N) P(E) 2NT(S) P(W) 3C(N)
-      const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C"]);
+      // 2H(N) P(E) 2NT(S) P(W) 3C(N) P(E) 4H(S) — full Ogust to game
+      const auction = buildAuction(Seat.North, ["2H", "P", "2NT", "P", "3C", "P", "4H"]);
       const result = evaluateMachine(machine, auction, Seat.South);
       expect(result.context.stateHistory).toContain("idle");
       expect(result.context.stateHistory).toContain("weak-two-opened-h");
       expect(result.context.stateHistory).toContain("responder-r2-h");
       expect(result.context.stateHistory).toContain("ogust-response-h");
+      expect(result.context.stateHistory).toContain("responder-after-ogust-h");
       expect(result.context.stateHistory).toContain("terminal");
     });
 

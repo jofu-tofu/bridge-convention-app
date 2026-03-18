@@ -95,6 +95,41 @@ export const WEAK_TWO_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
       );
     },
   },
+
+  // ── R4: Responder rebid after Ogust (machine-only) ─────────
+  {
+    groupId: "responder-after-ogust-hearts",
+    surfaces: MACHINE_ONLY,
+    isActive: (auction, seat) => {
+      return (
+        auctionMatchesPrefix(auction, ["2H", "P", "2NT", "P"]) &&
+        auction.entries.length === 6 &&
+        seat !== auction.entries[0]!.seat
+      );
+    },
+  },
+  {
+    groupId: "responder-after-ogust-spades",
+    surfaces: MACHINE_ONLY,
+    isActive: (auction, seat) => {
+      return (
+        auctionMatchesPrefix(auction, ["2S", "P", "2NT", "P"]) &&
+        auction.entries.length === 6 &&
+        seat !== auction.entries[0]!.seat
+      );
+    },
+  },
+  {
+    groupId: "responder-after-ogust-diamonds",
+    surfaces: MACHINE_ONLY,
+    isActive: (auction, seat) => {
+      return (
+        auctionMatchesPrefix(auction, ["2D", "P", "2NT", "P"]) &&
+        auction.entries.length === 6 &&
+        seat !== auction.entries[0]!.seat
+      );
+    },
+  },
 ];
 
 /**

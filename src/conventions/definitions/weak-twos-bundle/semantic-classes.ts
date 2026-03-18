@@ -17,4 +17,9 @@ export const WEAK_TWO_CLASSES = {
   OGUST_MIN_GOOD: "weak-two:ogust-min-good",
   OGUST_MAX_BAD: "weak-two:ogust-max-bad",
   OGUST_MAX_GOOD: "weak-two:ogust-max-good",
+
+  // R4: Responder rebid after Ogust
+  POST_OGUST_GAME: "weak-two:post-ogust-game",
+  POST_OGUST_SIGNOFF: "weak-two:post-ogust-signoff",
+  POST_OGUST_PASS: "weak-two:post-ogust-pass",
 } as const;

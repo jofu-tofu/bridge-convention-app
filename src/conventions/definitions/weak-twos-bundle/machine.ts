@@ -15,12 +15,13 @@ import { buildConversationMachine } from "../../core/runtime/machine-types";
  *     ├─ weak-two-opened-{suit} → responder-r2-{suit} (on opponent pass)
  *     ├─ responder-r2-{suit} → terminal (on game raise / invite / pass)
  *     │                      → ogust-response-{suit} (on 2NT Ogust ask)
- *     ├─ ogust-response-{suit} → terminal (on any Ogust response bid)
+ *     ├─ ogust-response-{suit} → responder-after-ogust-{suit} (on any Ogust response bid)
+ *     ├─ responder-after-ogust-{suit} → terminal (on any rebid — natural)
  *     └─ weak-two-contested (end state for interference)
  *
  *   terminal (end state, no parent — exempt from coverage)
  *
- * 13 states total.
+ * 16 states total.
  */
 export function createWeakTwoConversationMachine(): ConversationMachine {
   const states: MachineState[] = [
@@ -213,7 +214,7 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
         {
           transitionId: "ogust-h-any-bid",
           match: { kind: "any-bid" },
-          target: "terminal",
+          target: "responder-after-ogust-h",
         },
       ],
       surfaceGroupId: "ogust-response-hearts",
@@ -234,7 +235,7 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
         {
           transitionId: "ogust-s-any-bid",
           match: { kind: "any-bid" },
-          target: "terminal",
+          target: "responder-after-ogust-s",
         },
       ],
       surfaceGroupId: "ogust-response-spades",
@@ -255,12 +256,77 @@ export function createWeakTwoConversationMachine(): ConversationMachine {
         {
           transitionId: "ogust-d-any-bid",
           match: { kind: "any-bid" },
-          target: "terminal",
+          target: "responder-after-ogust-d",
         },
       ],
       surfaceGroupId: "ogust-response-diamonds",
       entryEffects: {
         setCaptain: "opener",
+      },
+    },
+
+    // ─── R4: Responder rebid after Ogust response (natural) ───
+    {
+      stateId: "responder-after-ogust-h",
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+      transitions: [
+        {
+          transitionId: "post-ogust-h-pass",
+          match: { kind: "pass" },
+          target: "responder-after-ogust-h", // self-loop for opponent pass
+        },
+        {
+          transitionId: "post-ogust-h-any-bid",
+          match: { kind: "any-bid" },
+          target: "terminal",
+        },
+      ],
+      surfaceGroupId: "responder-after-ogust-hearts",
+      entryEffects: {
+        setCaptain: "responder",
+      },
+    },
+    {
+      stateId: "responder-after-ogust-s",
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+      transitions: [
+        {
+          transitionId: "post-ogust-s-pass",
+          match: { kind: "pass" },
+          target: "responder-after-ogust-s",
+        },
+        {
+          transitionId: "post-ogust-s-any-bid",
+          match: { kind: "any-bid" },
+          target: "terminal",
+        },
+      ],
+      surfaceGroupId: "responder-after-ogust-spades",
+      entryEffects: {
+        setCaptain: "responder",
+      },
+    },
+    {
+      stateId: "responder-after-ogust-d",
+      parentId: "weak-two-active",
+      allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+      transitions: [
+        {
+          transitionId: "post-ogust-d-pass",
+          match: { kind: "pass" },
+          target: "responder-after-ogust-d",
+        },
+        {
+          transitionId: "post-ogust-d-any-bid",
+          match: { kind: "any-bid" },
+          target: "terminal",
+        },
+      ],
+      surfaceGroupId: "responder-after-ogust-diamonds",
+      entryEffects: {
+        setCaptain: "responder",
       },
     },
 

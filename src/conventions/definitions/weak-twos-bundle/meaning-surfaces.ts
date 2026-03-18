@@ -133,6 +133,13 @@ export function createWeakTwoR2Surfaces(
           value: 16,
           description: "16+ HCP for Ogust ask",
         },
+        {
+          clauseId: "support-2-plus",
+          factId: `hand.suitLength.$suit`,
+          operator: "gte" as const,
+          value: 2,
+          description: "2+ support for Ogust (usually shows fit)",
+        },
       ],
       ranking: {
         recommendationBand: "must" as const,
@@ -383,6 +390,93 @@ export function createWeakTwoOgustSurfaces(
   ];
 }
 
+// ─── Round 4: Responder rebid after Ogust response ──────────
+//
+// After opener describes hand via Ogust, responder makes a natural
+// rebid. Responder MUST NOT pass when the contract sits in an
+// artificial suit (3C/3D for hearts/spades, 3C for diamonds).
+//
+// Game: 17+ HCP → bid game in agreed suit
+// Signoff: sign off in agreed suit at 3-level (when Ogust response
+//          was below the agreed suit)
+// Pass: fallback (when already in agreed suit or higher)
+
+export function createPostOgustSurfaces(
+  suit: WeakTwoSuit,
+): readonly MeaningSurface[] {
+  const bindings = { suit } as const;
+  const sl = suitLabel(suit);
+  const gameCall = gameRaiseBid(suit);
+  const gameLevel = suit === "diamonds" ? 5 : 4;
+
+  return [
+    // 1. Bid game: 17+ HCP → game in agreed suit (highest priority)
+    {
+      meaningId: `weak-two:post-ogust-game-${suit}`,
+      semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_GAME,
+      moduleId: "weak-two",
+      encoding: { defaultCall: gameCall },
+      clauses: [
+        {
+          clauseId: "hcp-17-plus",
+          factId: "hand.hcp",
+          operator: "gte" as const,
+          value: 17,
+          description: "17+ HCP — bid game after Ogust",
+        },
+      ],
+      ranking: {
+        recommendationBand: "must" as const,
+        specificity: 2,
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      priorityClass: "obligatory" as const,
+      sourceIntent: { type: "PostOgustGame", params: { suit } },
+      teachingLabel: `Bid game in ${suit}`,
+      surfaceBindings: bindings,
+    },
+
+    // 2. Sign off in agreed suit at 3-level (when Ogust response was below suit)
+    {
+      meaningId: `weak-two:post-ogust-signoff-${suit}`,
+      semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_SIGNOFF,
+      moduleId: "weak-two",
+      encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
+      clauses: [],
+      ranking: {
+        recommendationBand: "should" as const,
+        specificity: 1,
+        modulePrecedence: 0,
+        intraModuleOrder: 1,
+      },
+      priorityClass: "obligatory" as const,
+      sourceIntent: { type: "PostOgustSignoff", params: { suit } },
+      teachingLabel: `Sign off in ${suit}`,
+      surfaceBindings: bindings,
+    },
+
+    // 3. Pass (fallback — when already in agreed suit or 3NT)
+    {
+      meaningId: `weak-two:post-ogust-pass-${suit}`,
+      semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_PASS,
+      moduleId: "weak-two",
+      encoding: { defaultCall: { type: "pass" } },
+      clauses: [],
+      ranking: {
+        recommendationBand: "avoid" as const,
+        specificity: 0,
+        modulePrecedence: 0,
+        intraModuleOrder: 2,
+      },
+      priorityClass: "fallbackCorrect" as const,
+      sourceIntent: { type: "PostOgustPass", params: { suit } },
+      teachingLabel: "Pass",
+      surfaceBindings: bindings,
+    },
+  ];
+}
+
 // ─── Pre-instantiated surfaces ──────────────────────────────
 
 /** R1: Opener weak two surfaces (all 3 suits in one group). */
@@ -397,3 +491,8 @@ export const WEAK_TWO_R2_DIAMONDS_SURFACES = createWeakTwoR2Surfaces("diamonds")
 export const WEAK_TWO_OGUST_HEARTS_SURFACES = createWeakTwoOgustSurfaces("hearts");
 export const WEAK_TWO_OGUST_SPADES_SURFACES = createWeakTwoOgustSurfaces("spades");
 export const WEAK_TWO_OGUST_DIAMONDS_SURFACES = createWeakTwoOgustSurfaces("diamonds");
+
+/** R4: Responder rebid after Ogust surfaces per suit. */
+export const POST_OGUST_HEARTS_SURFACES = createPostOgustSurfaces("hearts");
+export const POST_OGUST_SPADES_SURFACES = createPostOgustSurfaces("spades");
+export const POST_OGUST_DIAMONDS_SURFACES = createPostOgustSurfaces("diamonds");

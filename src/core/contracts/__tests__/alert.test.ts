@@ -31,7 +31,8 @@ describe("resolveAlert", () => {
   it("returns alert for preferredConventional priorityClass", () => {
     const surface = makeSurface({
       priorityClass: "preferredConventional",
-      teachingLabel: "Stayman 2C",
+      sourceIntent: { type: "ConstructiveRaise" },
+      teachingLabel: "Constructive raise (3C)",
       clauses: [
         { clauseId: "hcp-8", factId: "hand.hcp", operator: "gte", value: 8, description: "8+ HCP" },
       ],
@@ -39,21 +40,32 @@ describe("resolveAlert", () => {
     const result = resolveAlert(surface);
     expect(result).toEqual({
       publicConstraints: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
-      teachingLabel: "Stayman 2C",
-      annotationType: "educational",
+      teachingLabel: "Constructive raise (3C)",
+      annotationType: "alert",
     });
+  });
+
+  it("returns educational for standard conventional intents (e.g., Stayman)", () => {
+    const surface = makeSurface({
+      priorityClass: "preferredConventional",
+      sourceIntent: { type: "StaymanAsk" },
+      teachingLabel: "Stayman 2♣",
+    });
+    const result = resolveAlert(surface);
+    expect(result?.annotationType).toBe("educational");
   });
 
   it("returns alert for obligatory priorityClass", () => {
     const surface = makeSurface({
       priorityClass: "obligatory",
-      teachingLabel: "Show hearts",
+      sourceIntent: { type: "DONTBothMajors" },
+      teachingLabel: "2H — both majors",
     });
     const result = resolveAlert(surface);
     expect(result).toEqual({
       publicConstraints: [],
-      teachingLabel: "Show hearts",
-      annotationType: "educational",
+      teachingLabel: "2H — both majors",
+      annotationType: "alert",
     });
   });
 

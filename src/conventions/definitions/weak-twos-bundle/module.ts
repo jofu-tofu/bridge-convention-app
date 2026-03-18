@@ -19,6 +19,9 @@ import {
   WEAK_TWO_OGUST_HEARTS_SURFACES,
   WEAK_TWO_OGUST_SPADES_SURFACES,
   WEAK_TWO_OGUST_DIAMONDS_SURFACES,
+  POST_OGUST_HEARTS_SURFACES,
+  POST_OGUST_SPADES_SURFACES,
+  POST_OGUST_DIAMONDS_SURFACES,
 } from "./meaning-surfaces";
 import { weakTwoFacts } from "./facts";
 import { WEAK_TWO_ENTRIES } from "./explanation-catalog";
@@ -201,7 +204,7 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
       {
         transitionId: "ogust-h-any-bid",
         match: { kind: "any-bid" },
-        target: "terminal",
+        target: "responder-after-ogust-h",
       },
     ],
     surfaceGroupId: "ogust-response-hearts",
@@ -222,7 +225,7 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
       {
         transitionId: "ogust-s-any-bid",
         match: { kind: "any-bid" },
-        target: "terminal",
+        target: "responder-after-ogust-s",
       },
     ],
     surfaceGroupId: "ogust-response-spades",
@@ -243,12 +246,77 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
       {
         transitionId: "ogust-d-any-bid",
         match: { kind: "any-bid" },
-        target: "terminal",
+        target: "responder-after-ogust-d",
       },
     ],
     surfaceGroupId: "ogust-response-diamonds",
     entryEffects: {
       setCaptain: "opener",
+    },
+  },
+
+  // ── R4: Responder rebid after Ogust response (natural) ──────
+  {
+    stateId: "responder-after-ogust-h",
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+    transitions: [
+      {
+        transitionId: "post-ogust-h-pass",
+        match: { kind: "pass" },
+        target: "responder-after-ogust-h", // self-loop for opponent pass
+      },
+      {
+        transitionId: "post-ogust-h-any-bid",
+        match: { kind: "any-bid" },
+        target: "terminal",
+      },
+    ],
+    surfaceGroupId: "responder-after-ogust-hearts",
+    entryEffects: {
+      setCaptain: "responder",
+    },
+  },
+  {
+    stateId: "responder-after-ogust-s",
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+    transitions: [
+      {
+        transitionId: "post-ogust-s-pass",
+        match: { kind: "pass" },
+        target: "responder-after-ogust-s",
+      },
+      {
+        transitionId: "post-ogust-s-any-bid",
+        match: { kind: "any-bid" },
+        target: "terminal",
+      },
+    ],
+    surfaceGroupId: "responder-after-ogust-spades",
+    entryEffects: {
+      setCaptain: "responder",
+    },
+  },
+  {
+    stateId: "responder-after-ogust-d",
+    parentId: "weak-two-active",
+    allowedParentTransitions: ["weak-two-opponent-double", "weak-two-opponent-bid"],
+    transitions: [
+      {
+        transitionId: "post-ogust-d-pass",
+        match: { kind: "pass" },
+        target: "responder-after-ogust-d",
+      },
+      {
+        transitionId: "post-ogust-d-any-bid",
+        match: { kind: "any-bid" },
+        target: "terminal",
+      },
+    ],
+    surfaceGroupId: "responder-after-ogust-diamonds",
+    entryEffects: {
+      setCaptain: "responder",
     },
   },
 ];
@@ -261,7 +329,7 @@ export const weakTwoModule: ConventionModule = {
   // R1: opener's weak two opening surfaces → dispatch state
   entrySurfaces: WEAK_TWO_R1_SURFACES,
 
-  // Post-entry surface groups for R2 + R3
+  // Post-entry surface groups for R2 + R3 + R4
   surfaceGroups: [
     { groupId: "responder-r2-hearts", surfaces: WEAK_TWO_R2_HEARTS_SURFACES },
     { groupId: "responder-r2-spades", surfaces: WEAK_TWO_R2_SPADES_SURFACES },
@@ -269,6 +337,9 @@ export const weakTwoModule: ConventionModule = {
     { groupId: "ogust-response-hearts", surfaces: WEAK_TWO_OGUST_HEARTS_SURFACES },
     { groupId: "ogust-response-spades", surfaces: WEAK_TWO_OGUST_SPADES_SURFACES },
     { groupId: "ogust-response-diamonds", surfaces: WEAK_TWO_OGUST_DIAMONDS_SURFACES },
+    { groupId: "responder-after-ogust-hearts", surfaces: POST_OGUST_HEARTS_SURFACES },
+    { groupId: "responder-after-ogust-spades", surfaces: POST_OGUST_SPADES_SURFACES },
+    { groupId: "responder-after-ogust-diamonds", surfaces: POST_OGUST_DIAMONDS_SURFACES },
   ],
 
   // Entry transitions injected into the skeleton's dispatch (idle) state
