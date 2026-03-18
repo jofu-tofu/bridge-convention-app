@@ -143,7 +143,7 @@
     </ScaledTableArea>
   {/if}
 
-  <aside class={sidePanelClass} aria-label="Review panel">
+  <aside class={sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
     <ReviewSidePanel
       {contract}
       {score}

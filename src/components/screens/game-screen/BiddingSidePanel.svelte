@@ -40,7 +40,7 @@
 
 <div class="min-w-0 min-h-0 flex-1 overflow-y-auto">
   <h2
-    class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider"
+    class="text-[0.7em] font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"
   >
     {#if hasFeedback}

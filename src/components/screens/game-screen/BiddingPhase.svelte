@@ -57,7 +57,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class={sidePanelClass} aria-label="Bidding controls">
+  <aside class={sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Bidding controls">
     <BiddingSidePanel
       {legalCalls}
       {onBid}

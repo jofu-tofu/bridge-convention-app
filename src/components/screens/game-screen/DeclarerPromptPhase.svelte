@@ -55,7 +55,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class={sidePanelClass} aria-label="Auction summary">
+  <aside class={sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Auction summary">
     <div
       class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
     >

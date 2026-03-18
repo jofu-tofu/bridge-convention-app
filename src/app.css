@@ -45,7 +45,7 @@
   --color-text-on-accent: #ffffff;
   --color-card-face: #ffffff;
   --size-touch-target: 2.75rem;
-  --width-side-panel: clamp(16rem, 25vw, 25rem);
+  --width-side-panel: clamp(13rem, 18vw, 20rem);
   /* px tokens below are used inside CSS-transformed areas (table/cards) where
      rem scaling would double-compound with the fluid root font-size above.
      rem tokens (above) scale with viewport; px tokens are fixed-size. */

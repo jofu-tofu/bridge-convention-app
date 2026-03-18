@@ -83,25 +83,25 @@
 </script>
 
 <section class="flex flex-col h-full min-h-0" aria-label="Play history">
-  <h2 class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider shrink-0 px-1">
+  <h2 class="text-[0.7em] font-medium text-text-muted mb-1 uppercase tracking-wider shrink-0 px-1">
     Trick History
   </h2>
 
   {#if tricks.length === 0}
-    <p class="text-sm text-text-muted italic px-1">No tricks played yet.</p>
+    <p class="text-[0.9em] text-text-muted italic px-1">No tricks played yet.</p>
   {:else}
     <div
       bind:this={scrollContainer}
       class="flex-1 overflow-y-auto space-y-1 min-h-0"
     >
       {#each tricks as trick, i (i)}
-        <div class="bg-bg-card rounded-[--radius-md] px-2 py-1.5 border border-border-subtle text-sm">
-          <div class="flex items-center gap-2">
-            <span class="text-text-muted font-mono text-xs w-4 shrink-0">{i + 1}</span>
-            <div class="flex gap-1.5 flex-wrap flex-1">
+        <div class="bg-bg-card rounded-[--radius-md] px-2 py-1 border border-border-subtle">
+          <div class="flex items-center gap-1.5">
+            <span class="text-text-muted font-mono text-[0.7em] w-3 shrink-0">{i + 1}</span>
+            <div class="flex gap-1 flex-wrap flex-1 text-[0.85em]">
               {#each trick.plays as play (play.seat)}
                 <span class="inline-flex items-center gap-0.5 {play.seat === trick.winner ? 'font-bold' : 'opacity-70'}">
-                  <span class="text-text-muted text-xs">{play.seat}</span>
+                  <span class="text-text-muted text-[0.8em]">{play.seat}</span>
                   <span class={SUIT_CARD_COLOR_CLASS[play.card.suit]}>
                     {displayRank(play.card.rank)}{SUIT_SYMBOLS[play.card.suit]}
                   </span>
@@ -109,7 +109,7 @@
               {/each}
             </div>
             {#if trick.winner}
-              <span class="text-xs text-text-muted shrink-0" title="Winner">
+              <span class="text-[0.7em] text-text-muted shrink-0" title="Winner">
                 {trick.winner === declarerSeat ? 'Decl' : 'Def'}
               </span>
             {/if}
@@ -124,8 +124,8 @@
     <div class="shrink-0 border-t border-border-subtle mt-2 pt-2 space-y-2">
       <!-- Compact auction table -->
       <div>
-        <h3 class="text-[10px] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Auction</h3>
-        <table class="w-full text-center text-[11px] font-mono" aria-label="Auction summary">
+        <h3 class="text-[0.6em] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Auction</h3>
+        <table class="w-full text-center text-[0.7em] font-mono" aria-label="Auction summary">
           <thead>
             <tr>
               {#each SEAT_LABELS as label (label)}
@@ -155,11 +155,11 @@
       <!-- Played cards as stacked mini-cards grouped by suit -->
       {#if playedBySuit.length > 0}
         <div>
-          <h3 class="text-[10px] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Cards Played</h3>
-          <div class="space-y-1 px-1">
+          <h3 class="text-[0.6em] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Cards Played</h3>
+          <div class="space-y-0.5 px-1">
             {#each playedBySuit as group (group.suit)}
               <div class="flex items-center gap-1">
-                <span class="{SUIT_CARD_COLOR_CLASS[group.suit]} text-xs shrink-0 w-3">{SUIT_SYMBOLS[group.suit]}</span>
+                <span class="{SUIT_CARD_COLOR_CLASS[group.suit]} text-[0.8em] shrink-0 w-3">{SUIT_SYMBOLS[group.suit]}</span>
                 <div class="flex played-stack">
                   {#each group.cards as card (card.rank)}
                     <div
@@ -181,12 +181,13 @@
 
 <style>
   .mini-card {
-    width: 20px;
-    height: 26px;
-    font-size: 10px;
+    /* Scale mini-cards with the panel font so they stay proportional */
+    width: 1.4em;
+    height: 1.8em;
+    font-size: 0.7em;
     flex-shrink: 0;
   }
   .played-stack > .mini-card + .mini-card {
-    margin-left: -8px;
+    margin-left: -0.55em;
   }
 </style>

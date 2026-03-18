@@ -143,7 +143,7 @@
   const tableBaseW = 800;
   const tableBaseH = 650;
   const sidePanelW = $derived(
-    Math.min(25 * rootFontSize, Math.max(16 * rootFontSize, availableW * 0.25)),
+    Math.min(20 * rootFontSize, Math.max(13 * rootFontSize, availableW * 0.18)),
   );
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
@@ -163,6 +163,13 @@
     }),
   );
 
+  // Panel font: scales with the table so text in panels and on the table
+  // feel proportional. Uses a dampened curve (0.5 + 0.5*scale) so panels
+  // don't shrink as aggressively as the table itself.
+  const panelFontPx = $derived(
+    Math.max(11, Math.round(rootFontSize * (0.5 + 0.5 * tableScale))),
+  );
+
   const tableOrigin = $derived(isDesktop ? "top left" : "center");
   const phaseContainerClass = $derived(
     isDesktop
@@ -170,7 +177,7 @@
       : "flex-1 flex flex-col overflow-hidden",
   );
   const sidePanelClass = $derived(
-    `${isDesktop ? "h-full" : "border-t border-border-subtle"} bg-bg-base p-4 flex flex-col min-h-0 overflow-hidden`,
+    `${isDesktop ? "h-full" : "border-t border-border-subtle"} bg-bg-base p-3 flex flex-col min-h-0 overflow-hidden`,
   );
 
   function handleBackToMenu() {
@@ -182,7 +189,7 @@
 <svelte:window bind:innerWidth={innerW} bind:innerHeight={innerH} />
 
 {#if gameStore.deal}
-  <main class="h-full flex flex-row" aria-label="Bridge drill">
+  <main class="h-full flex flex-row" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px;">
     <div class="flex-1 min-w-0 flex flex-col">
     <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
       Skip to game

@@ -11,7 +11,7 @@
   let { contract, size = "md" }: Props = $props();
 
   const textSize = $derived(
-    size === "sm" ? "text-sm" : size === "lg" ? "text-lg" : "text-base",
+    size === "sm" ? "text-[0.85em]" : size === "lg" ? "text-[1.15em]" : "text-[1em]",
   );
 </script>
 

@@ -70,7 +70,7 @@
 
 <div class={containerClass}>
   <!-- Desktop: dedicated left panel for trick history -->
-  <aside class="{sidePanelClass} hidden lg:flex" aria-label="Play history">
+  <aside class="{sidePanelClass} hidden lg:flex" style="font-size: var(--panel-font, 1rem);" aria-label="Play history">
     <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} />
   </aside>
 
@@ -96,7 +96,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class={sidePanelClass} aria-label="Play controls">
+  <aside class={sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Play controls">
     <!-- Mobile/tablet: trick history above controls (hidden on desktop where left panel shows it) -->
     <div class="lg:hidden max-h-48 min-h-0 overflow-hidden mb-2">
       <PlayHistoryPanel {tricks} declarerSeat={contract?.declarer ?? null} {auction} dealer={deal.dealer} {bidHistory} />
