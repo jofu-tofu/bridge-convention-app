@@ -10,9 +10,13 @@ core/
   types.ts              ConventionConfig, BiddingContext (re-exported from contracts), ConventionCategory
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
+  surface-helpers.ts    Surface utility functions
+  profile-builder.ts    Profile building utilities
   bundle/               Bundle registry (ConventionBundle CRUD)
     bundle-types.ts       ConventionBundle interface
     bundle-registry.ts    registerBundle, getBundle, findBundleForConvention
+    composite-builder.ts  Composite bundle builder for multi-module bundles
+    create-bundle.ts      Bundle factory from convention spec + base-track
   pipeline/             Meaning pipeline (surfaces → facts → evaluation → arbitration)
     fact-evaluator.ts     evaluateFacts() — 3-tier fact evaluation (primitive → bridge-derived → module-derived) + optional relational + posterior
     meaning-evaluator.ts  evaluateMeaningSurface(), evaluateAllSurfaces() — clause evaluation against facts
@@ -24,10 +28,17 @@ core/
     gate-order.ts         evaluateGates() — 4-gate sequence (semantic, obligation, encoder, legality)
     deal-constraint-evaluator.ts  evaluateDealConstraint() — fit-check, combined-hcp, custom constraints
     witness-generator.ts  resolveRole(), compileWitnessSpec(), generateWitnessSpec() — deal generation
+    binding-resolver.ts   $suit binding resolution for parameterized surfaces
+    hand-fact-resolver.ts Hand fact resolution utilities
+    priority-mapping.ts   Priority class mapping logic
+    fact-utils.ts         Fact evaluation utility functions
+    shared-fact-catalog.ts Shared fact catalog construction
+    witness-constants.ts  Witness generation constants
   runtime/              Meaning-centric evaluation runtime (FSM + profiles + snapshots)
     machine-types.ts      ConversationMachine, MachineState, MachineTransition, MachineEffect, TransitionMatch
     machine-evaluator.ts  evaluateMachine() — generic FSM stepper (SCXML-inspired)
     machine-validation.ts 7 validators: validateMachine (structural), validateTransitionCompleteness (parent leaks), validateInterruptScoping (scope-only, local-target, coverage), validateRoleSafety (no opponent on call/any-bid), validateInterruptedStateWellFormedness (surfaceGroupId, competitionMode, pass handler), validateTerminalReachability, validateInterruptPathCompleteness (double + bid covered)
+    machine-enumeration.ts Machine state enumeration for coverage analysis
     evaluation-runtime.ts evaluate() — two-phase orchestrator (public snapshot → decision surfaces)
     public-snapshot-builder.ts  buildSnapshotFromAuction() — Phase 1 output
     decision-surface-emitter.ts emitDecisionSurfaces() — Phase 2 output
@@ -35,8 +46,19 @@ core/
     commitment-extractor.ts extractCommitments() — auto-derives PublicConstraint[] (promises + entailed denials from closure policy)
     profile-activation.ts resolveActiveModules() — SystemProfileIR activation
     profile-validation.ts validateProfile() — semantic collision detection
+    fact-compiler.ts      FactConstraintIR compilation from surface conditions
+    coverage-spec-compiler.ts  Coverage spec compilation for CLI coverage runner
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
-  modules/              Package-based module authoring (new composition surface)
+  composition/          Module composition system (new: package-based composition)
+    module-package.ts     ModulePackage — separates exports from runtime
+    module-types.ts       ConventionModule type definition
+    machine-fragment.ts   MachineFragment, FrontierDeclaration — module-local FSM contribution
+    machine-assembler.ts  Machine assembly from fragments
+    compose.ts            Module composition orchestration
+    compile-from-packages.ts  Package → compiled module pipeline
+    handoff.ts            HandoffSpec, HandoffTrigger — cross-module coupling
+    interference-detector.ts  Interference pattern detection in composed machines
+  modules/              Package-based module authoring (legacy adapter layer)
     module-package.ts     ModulePackage — separates exports (facts, surfaces, explanations) from runtime (activation, machine, handoffs)
     machine-fragment.ts   MachineFragment, FrontierDeclaration — module-local FSM contribution
     handoff.ts            HandoffSpec, HandoffTrigger — cross-module coupling via frontiers/capabilities
@@ -45,6 +67,12 @@ core/
   profile/              Profile-centric composition
     types.ts              CompiledProfile, LegacyCompiledProfile, ResolvedModuleEntry
     compile-profile.ts    compileProfileFromBundle() — legacy adapter (bundle → LegacyCompiledProfile)
+    compile-from-packages.ts  Package-based profile compilation
+    machine-assembler.ts  Machine assembly from profile modules
+    registry-merger.ts    Registry merging for multi-bundle profiles
+  protocol/             Convention protocol system (see protocol/CLAUDE.md for details)
+    boot-router.ts, bridge-schema.ts, coverage-enumeration.ts, protocol-lifecycle.ts,
+    replay.ts, spec-assembler.ts, surface-stack.ts, types.ts
   witness/              Deal witness system
     witness-compiler.ts   compileWitnessSpec() — WitnessSpecIR → deal generation constraints
     witness-unsat.ts      detectUnsat() — satisfiability checking
@@ -141,4 +169,4 @@ how an agent acts here, remove it.
 
 **Staleness anchor:** This file assumes `core/registry.ts` and `core/pipeline/meaning-evaluator.ts` exist. If they don't, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-14 | version=3 | dir-commits-at-audit=60 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-18 | version=4 | dir-commits-at-audit=70 -->

@@ -17,7 +17,8 @@ Auction inference system — extracts hand information from bids with per-partne
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
 | `condition-mapper.ts` | `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` — maps `ConditionInference` → `HandInference` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
-| `merge.ts` | `mergeInferences()` — range intersection (narrowing), clamps contradictions |
+| `derive-beliefs.ts` | `derivePublicBeliefs()` — derives `PublicBeliefs` from accumulated `FactConstraintIR[]`. Replaces old `mergeInferences()` with lossless constraint-first model. Source of truth is always the raw constraints array; ranges and qualitative labels are computed from it. |
+| `inference-coordinator.ts` | `InferenceCoordinator` — coordinates NS and EW inference engines for a drill. Adapts `BidResult` → `InferenceExtractorInput`, manages belief state accumulation per deal. |
 | `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
 | `noop-extractor.ts` | `noopExtractor` — no-op `InferenceExtractor` used by the store |
@@ -34,9 +35,9 @@ Auction inference system — extracts hand information from bids with per-partne
 - Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `EvidenceBundleIR`, and `BidAlert`, live in `src/core/contracts/`.
 - `inference/types.ts` is the subsystem-local interface layer including the locally-owned `ConditionInference` type.
 
-## Merge Algorithm
+## Belief Derivation
 
-Range intersection: `min = max(all minHcp)`, `max = min(all maxHcp)`. Suit lengths same per suit. Contradictions clamp to last inference's values and log warning. Never throws.
+Constraint-first model via `derive-beliefs.ts`: accumulated `FactConstraintIR[]` per seat are the source of truth. `derivePublicBeliefs()` computes `DerivedRanges` (HCP min/max, per-suit length min/max) and qualitative constraints from the raw constraint array. This replaced the old `mergeInferences()` range-intersection approach with a lossless model — no information is discarded during accumulation.
 
 ## Negative Inference
 
@@ -51,7 +52,7 @@ Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` 
 
 - **`BidAnnotation`:** Per-bid record with call, seat, ruleName, conventionId, meaning, alert, inferences.
 - **`PublicBeliefState`:** `Record<Seat, InferredHoldings>` + `BidAnnotation[]`. Created fresh per deal via `createInitialBeliefState()`.
-- **`applyAnnotation()`:** Merges annotation inferences into seat's beliefs via `mergeInferences()`. Returns new immutable state.
+- **`applyAnnotation()`:** Merges annotation inferences into seat's beliefs. Returns new immutable state.
 - **`produceAnnotation()`:** Convention bids → inferences from extractor. Natural bids → inferences from `naturalInferenceProvider`. Pass/double/redouble → empty inferences.
 - **HCP narrowing:** `conditionOnOwnHand()` caps partner HCP max at `40 - ownHcp` (conservative bound). `toBeliefData()` uses narrowed `partnerHcpRange` for partner seat when private override present.
 - **`publicBeliefs` removed from `PublicSnapshot`** (Phase 2). Belief views are now accessed via `PosteriorQueryPort` instead of being eagerly attached to the snapshot. This decouples snapshot construction from posterior inference.
@@ -68,7 +69,7 @@ The old `PosteriorEngine` → `SeatPosterior` path still works and is used durin
 
 ## Gotchas
 
-- Inference errors never propagate to callers — `inferFromBid()` returns null, `mergeInferences()` clamps
+- Inference errors never propagate to callers — `inferFromBid()` returns null, belief derivation clamps contradictions
 - `isOwnPartnership()` checks bidder seat vs observer seat + partner
 
 ---
@@ -92,4 +93,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `inference-engine.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-03-15 | version=7 | tree-sig=dirs:2,files:17,exts:ts:16,md:2 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-03-18 | version=8 | tree-sig=dirs:2,files:17,exts:ts:16,md:2 -->

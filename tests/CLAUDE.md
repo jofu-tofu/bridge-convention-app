@@ -23,17 +23,33 @@ Playwright end-to-end smoke tests for user-facing behavior.
 
 **Key files:**
 
-| File                            | Role                                                               |
-| ------------------------------- | ------------------------------------------------------------------ |
-| `e2e/convention-select.spec.ts` | App loads with main content area; heading and description render   |
-| `e2e/play-phase.spec.ts`        | Autoplay reaches review; review content renders                   |
-| `e2e/dds-browser.spec.ts`       | DDS analysis tab renders in review phase                          |
-| `e2e/game-lifecycle.spec.ts`    | Full game lifecycle: start drill, bid, review, next deal           |
+| File                                   | Role                                                               |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| `e2e/convention-select.spec.ts`        | App loads with main content area; heading and description render    |
+| `e2e/game-lifecycle.spec.ts`           | Full game lifecycle: start drill, bid, review, next deal           |
+| `e2e/play-phase.spec.ts`              | Autoplay reaches review; review content renders                    |
+| `e2e/dds-browser.spec.ts`             | DDS analysis tab renders in review phase                           |
+| `e2e/explore-home.spec.ts`            | Home/explore screen rendering                                      |
+| `e2e/responsive-layout.spec.ts`       | Responsive mobile/tablet layout behavior                           |
+| `e2e/alert-audit.spec.ts`             | Alert annotation correctness audit                                 |
+| `e2e/my-review.spec.ts`               | Review phase UI and content validation                             |
+| `e2e/flow-test.spec.ts`               | General bidding flow smoke tests                                   |
+| `e2e/flow-stayman.spec.ts`            | Stayman convention-specific flow                                   |
+| `e2e/flow-dont-bergen.spec.ts`        | DONT and Bergen convention flows                                   |
+| `e2e/flow-auction-complete.spec.ts`   | Auction completion and phase transition                            |
+| `e2e/flow-details.spec.ts`            | Bid details and explanation UI flow                                |
+| `e2e/flow-edge-cases.spec.ts`         | Edge case handling in bidding flow                                 |
+| `e2e/flow-multi-convention.spec.ts`   | Multi-convention switching flow                                    |
+| `e2e/test-1nt-full.spec.ts`           | Full 1NT response convention coverage                              |
+| `e2e/test-bergen.spec.ts`             | Bergen Raises convention coverage                                  |
+| `e2e/test-dont.spec.ts`               | DONT convention coverage                                           |
+| `e2e/test-transfers.spec.ts`          | Jacoby Transfers convention coverage                               |
+| `e2e/test-weak-two.spec.ts`           | Weak Twos convention coverage                                      |
 
 ## Constraints
 
 - Full testing playbook in **TESTING.md** at project root
-- E2E tests are smoke tests only — keep count low (2-5 target)
+- E2E tests are smoke tests only — keep count low and focused on user-facing behavior
 
 ---
 
@@ -56,4 +72,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `e2e/convention-select.spec.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-25 | version=6 | dir-commits-at-audit=7 | tree-sig=dirs:1,files:4,exts:ts:4,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-18 | version=7 | dir-commits-at-audit=20 | tree-sig=dirs:1,files:20,exts:ts:20,md:1 -->

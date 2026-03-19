@@ -295,6 +295,14 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 
 ## Context Maintenance
 
+**Directory-level CLAUDE.md updates are mandatory.** When a session adds, removes, or renames files in a directory that has a `CLAUDE.md`, update that `CLAUDE.md` before committing. This includes:
+- Adding new files to the architecture table
+- Removing entries for deleted files
+- Updating descriptions when module responsibilities change
+- Bumping the `last-audited` date and `version` in the context-layer comment
+
+Do not defer CLAUDE.md updates to a follow-up task. The update is part of the change.
+
 **After modifying files in this project:** scan the entries above — if any claim is now
 false or incomplete, update this file before ending the task. Do not defer.
 

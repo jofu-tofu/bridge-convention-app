@@ -10,17 +10,20 @@ Convention bundles that each implement a bridge bidding convention using the mea
 |------|---------|
 | `config.ts` | `ConventionBundle` object wiring all bundle modules together |
 | `convention-config.ts` | Thin `ConventionConfig` wrapper for registry/UI compatibility |
+| `convention-spec.ts` | `ConventionSpec` declarative specification — single source of truth for bundle metadata, deal constraints, and member declarations |
+| `base-track.ts` | `BaseTrackTable` defining the FSM state→surface mapping as a declarative table. Used by `compose.ts` to build the conversation machine and surface routing. |
 | `meaning-surfaces.ts` | `MeaningSurface[]` definitions — the core bidding logic |
 | `facts.ts` | `FactCatalogExtension`s for module-derived facts |
 | `semantic-classes.ts` | Module-local semantic class constants (not in central registry) |
-| `surface-routing.ts` | `RoutedSurfaceGroup[]` for round-aware surface selection |
 | `machine.ts` | `ConversationMachine` FSM for hierarchical state tracking |
 | `system-profile.ts` | `SystemProfileIR` for profile-based module activation |
 | `explanation-catalog.ts` | `ExplanationCatalogIR` entries for teaching projections |
 | `pedagogical-relations.ts` | `PedagogicalRelation[]` graph (same-family, stronger-than, fallback-of, etc.) |
 | `alternatives.ts` | `AlternativeGroup[]` for cross-convention or within-bundle alternatives |
-| `compose.ts` | BundleSkeleton definition (shared FSM infrastructure states) |
+| `compose.ts` | Bundle composition from base-track table, convention spec, and module contributions |
 | `packages/` | ModulePackage definitions for profile-based compilation |
+| `module.ts` | *(dont-bundle, weak-twos-bundle only)* Single-module convention definition |
+| `surface-routing.ts` | *(nt-bundle only)* `RoutedSurfaceGroup[]` for round-aware surface selection. Newer bundles use `base-track.ts` instead. |
 | `index.ts` | Barrel exports |
 | `__tests__/` | Bundle-specific tests |
 
@@ -164,10 +167,9 @@ export const {name}Bundle: ConventionBundle = {
 ### meaning-surfaces.ts
 
 ```ts
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
-import { BRIDGE_SEMANTIC_CLASSES } from "../../../core/contracts/semantic-classes";
 import { {NAME}_SEMANTIC } from "./semantic-classes";
 
 const bid = (level: number, strain: BidSuit): Call => ({
@@ -295,7 +297,7 @@ export const {name}BundleConventionConfig: ConventionConfig = {
 ### surface-routing.ts
 
 ```ts
-import type { MeaningSurface } from "../../../core/contracts/meaning-surface";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { Auction, Seat } from "../../../engine/types";
 import type { ConversationMachine } from "../../core/runtime/machine-types";
 import { {NAME}_SURFACES } from "./meaning-surfaces";
@@ -380,7 +382,7 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalogIR =
 ### pedagogical-relations.ts
 
 ```ts
-import type { PedagogicalRelation } from "../../../core/contracts/pedagogical-relations";
+import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 
 export const {NAME}_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
   {
@@ -409,20 +411,22 @@ export const {NAME}_ALTERNATIVE_GROUPS: readonly AlternativeGroup[] = [
 ## Adding a Convention Bundle
 
 1. Create `definitions/{name}-bundle/` folder with the modules listed in the Folder Structure table above.
-2. Define `MeaningSurface[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
-3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses.
-4. Define module-local semantic class constants in `semantic-classes.ts`.
-5. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, and `terminal`. Use the **scoped interrupt pattern** for opponent interference: create abstract scope states (parents) with `opponent-action` transitions targeting local interrupted states. Do not use a single global contested sink. See the machine.ts template above and DONT's `dont-active` as the reference pattern.
-6. Wire `RoutedSurfaceGroup[]` in `surface-routing.ts` and create a router function that delegates to the machine.
-7. Define `SystemProfileIR` in `system-profile.ts`.
-8. Populate `ExplanationCatalogIR` in `explanation-catalog.ts` with template-keyed explanations.
-9. Define `PedagogicalRelation[]` in `pedagogical-relations.ts`.
-10. Define `AlternativeGroup[]` in `alternatives.ts`.
-11. Assemble the `ConventionBundle` in `config.ts`, wiring all modules.
-12. Create `convention-config.ts` — thin `ConventionConfig` wrapper for the registry.
-13. Create `index.ts` barrel with re-exports.
-14. Create `__tests__/` with at minimum: surface evaluation tests, machine tests, and config/factory E2E tests. Import shared helpers from `../../__tests__/fixtures`.
-15. Run the completeness checklist above before considering the bundle complete.
+2. Define `convention-spec.ts` with a `ConventionSpec` — the single source of truth for bundle metadata, deal constraints, and member declarations.
+3. Define `base-track.ts` with a `BaseTrackTable` — the declarative state→surface mapping used by `compose.ts`.
+4. Define `MeaningSurface[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
+5. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses.
+6. Define module-local semantic class constants in `semantic-classes.ts`.
+7. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, and `terminal`. Use the **scoped interrupt pattern** for opponent interference: create abstract scope states (parents) with `opponent-action` transitions targeting local interrupted states. Do not use a single global contested sink. See DONT's `dont-active` as the reference pattern.
+8. Define `SystemProfileIR` in `system-profile.ts`.
+9. Populate `ExplanationCatalogIR` in `explanation-catalog.ts` with template-keyed explanations.
+10. Define `PedagogicalRelation[]` in `pedagogical-relations.ts`.
+11. Define `AlternativeGroup[]` in `alternatives.ts`.
+12. Assemble the bundle in `compose.ts` using the base-track table and convention spec.
+13. Wire the `ConventionBundle` in `config.ts`.
+14. Create `convention-config.ts` — thin `ConventionConfig` wrapper for the registry.
+15. Create `index.ts` barrel with re-exports.
+16. Create `__tests__/` with at minimum: base-track tests, surface evaluation tests, machine tests, and config/factory E2E tests.
+17. Run the completeness checklist above before considering the bundle complete.
 
 ## Authoring Rules
 
@@ -452,22 +456,34 @@ export const {NAME}_ALTERNATIVE_GROUPS: readonly AlternativeGroup[] = [
 
 ```
 definitions/
+  __tests__/
+    convention-specs.test.ts             Cross-bundle convention spec validation
   nt-bundle/__tests__/
-    explanation-catalog.test.ts    Explanation catalog entry tests
-    machine.test.ts                FSM state transition tests
-    meaning-pipeline.test.ts       Surface evaluation pipeline tests
-    pedagogical-relations.test.ts  Relation graph validation
-    system-profile.test.ts         Profile activation tests
+    base-track.test.ts                   Base-track table validation
+    explanation-catalog.test.ts          Explanation catalog entry tests
+    machine.test.ts                      FSM state transition tests
+    meaning-pipeline.test.ts             Surface evaluation pipeline tests
+    pedagogical-relations.test.ts        Relation graph validation
+    profile-compilation.test.ts          Profile compilation tests
+    smolen.test.ts                       Smolen-specific tests
+    sub-bundles.test.ts                  Sub-bundle composition tests
+    system-profile.test.ts               Profile activation tests
   bergen-bundle/__tests__/
-    config-factory-e2e.test.ts     Bundle config + factory integration
-    machine.test.ts                FSM state transition tests
-    surface-evaluation.test.ts     Surface clause evaluation tests
+    base-track.test.ts                   Base-track table validation
+    config-factory-e2e.test.ts           Bundle config + factory integration
+    golden-master.test.ts                Golden master snapshot tests
+    machine.test.ts                      FSM state transition tests
+    surface-evaluation.test.ts           Surface clause evaluation tests
   weak-twos-bundle/__tests__/
-    machine.test.ts                FSM state transition tests
-    surface-evaluation.test.ts     Surface clause evaluation tests
+    base-track.test.ts                   Base-track table validation
+    golden-master.test.ts                Golden master snapshot tests
+    machine.test.ts                      FSM state transition tests
+    surface-evaluation.test.ts           Surface clause evaluation tests
   dont-bundle/__tests__/
-    machine.test.ts                Hierarchical FSM + predicate transition tests (33 tests)
-    surface-evaluation.test.ts     R1 overcaller + reveal + relay response tests (13 tests)
+    base-track.test.ts                   Base-track table validation
+    bundle-composition.test.ts           Bundle composition tests
+    machine.test.ts                      Hierarchical FSM + predicate transition tests
+    surface-evaluation.test.ts           R1 overcaller + reveal + relay response tests
 
 __tests__/                          (at src/conventions/__tests__/)
   fixtures.test.ts                 Shared test helper tests
@@ -495,4 +511,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `nt-bundle/config.ts`, `bergen-bundle/config.ts`, `weak-twos-bundle/config.ts`, and `dont-bundle/config.ts` exist.
 If any is missing, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-15 | version=6 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:50+,exts:ts:48+,md:1 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-18 | version=7 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:90+,exts:ts:88+,md:1 -->
