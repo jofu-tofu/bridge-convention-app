@@ -1,14 +1,15 @@
 <script lang="ts">
-  import type { BidFeedback } from "../../../stores/game.svelte";
+  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import { formatCall } from "../../../core/display/format";
 
   interface Props {
-    feedback: BidFeedback;
-    practicalRec: BidFeedback['practicalRecommendation'];
+    feedback: ViewportBidFeedback;
+    teaching: TeachingDetail | null;
+    practicalRec: TeachingDetail['practicalRecommendation'];
     showPracticalNote: boolean;
   }
 
-  let { feedback, practicalRec, showPracticalNote }: Props = $props();
+  let { feedback, teaching, practicalRec, showPracticalNote }: Props = $props();
 </script>
 
 <!-- Acceptable bid — teal flash -->
@@ -20,9 +21,9 @@
   <p class="text-fb-acceptable-emphasis font-mono text-[--text-value] mt-1">
     {formatCall(feedback.userCall)}
   </p>
-  {#if feedback.teachingResolution}
+  {#if teaching?.primaryBid}
     <p class="text-fb-acceptable-dim text-[--text-label] mt-1">
-      Textbook bid is <span class="font-mono">{formatCall(feedback.teachingResolution.primaryBid)}</span>
+      Textbook bid is <span class="font-mono">{formatCall(teaching.primaryBid)}</span>
     </p>
   {/if}
   {#if showPracticalNote && practicalRec}

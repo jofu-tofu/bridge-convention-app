@@ -1,15 +1,15 @@
 <script lang="ts">
-  import type { BidFeedback } from "../../../stores/game.svelte";
-  import { BidGrade } from "../../../teaching/teaching-resolution";
+  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import { formatCall } from "../../../core/display/format";
 
   interface Props {
-    feedback: BidFeedback;
-    practicalRec: BidFeedback['practicalRecommendation'];
+    feedback: ViewportBidFeedback;
+    teaching: TeachingDetail | null;
+    practicalRec: TeachingDetail['practicalRecommendation'];
     showPracticalNote: boolean;
   }
 
-  let { feedback, practicalRec, showPracticalNote }: Props = $props();
+  let { feedback, teaching, practicalRec, showPracticalNote }: Props = $props();
 </script>
 
 <!-- Correct bid — green flash -->
@@ -21,9 +21,9 @@
   <p class="text-fb-correct-emphasis font-mono text-[--text-value] mt-1">
     {formatCall(feedback.userCall)}
   </p>
-  {#if feedback.grade === BidGrade.CorrectNotPreferred && feedback.teachingResolution}
+  {#if feedback.grade === "correct-not-preferred" && teaching?.primaryBid}
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1" data-testid="not-preferred-note">
-      Though <span class="font-mono font-semibold">{formatCall(feedback.teachingResolution.primaryBid)}</span> is preferred
+      Though <span class="font-mono font-semibold">{formatCall(teaching.primaryBid)}</span> is preferred
     </p>
   {/if}
   {#if showPracticalNote && practicalRec}

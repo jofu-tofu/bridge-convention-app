@@ -1,16 +1,17 @@
 <script lang="ts">
-  import type { BidFeedback } from "../../../stores/game.svelte";
+  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import { formatCall } from "../../../core/display/format";
   import { callsMatch } from "../../../engine/call-helpers";
 
   interface Props {
-    feedback: BidFeedback;
+    feedback: ViewportBidFeedback;
+    teaching: TeachingDetail | null;
     onRetry: () => void;
     showPracticalNote: boolean;
-    practicalRec: BidFeedback['practicalRecommendation'];
+    practicalRec: TeachingDetail['practicalRecommendation'];
   }
 
-  let { feedback, onRetry, showPracticalNote, practicalRec }: Props = $props();
+  let { feedback, teaching, onRetry, showPracticalNote, practicalRec }: Props = $props();
 </script>
 
 <!-- Near miss — amber/orange feedback -->
@@ -36,12 +37,12 @@
       </button>
     </div>
   </div>
-  {#if feedback.teachingResolution}
+  {#if teaching?.primaryBid}
     <p class="text-fb-near-miss-dim/80 text-[--text-label]">
-      The correct bid is <span class="font-mono font-semibold">{formatCall(feedback.teachingResolution.primaryBid)}</span>
+      The correct bid is <span class="font-mono font-semibold">{formatCall(teaching.primaryBid)}</span>
     </p>
-    {#if feedback.teachingResolution.nearMissCalls}
-      {@const match = feedback.teachingResolution.nearMissCalls.find(
+    {#if teaching.nearMissCalls}
+      {@const match = teaching.nearMissCalls.find(
         entry => callsMatch(entry.call, feedback.userCall),
       )}
       {#if match}

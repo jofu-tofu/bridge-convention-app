@@ -1,22 +1,27 @@
 import { describe, test, expect } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
-import type { BidFeedback } from "../../../stores/game.svelte";
-import { BidGrade } from "../../../teaching/teaching-resolution";
-import type { PracticalRecommendation } from "../../../core/contracts";
-import type { BidResult } from "../../../core/contracts/bidding";
+import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
+import { formatCall } from "../../../core/display/format";
 
-function makeWrongBidFeedback(): BidFeedback {
-  const expectedResult: BidResult = {
-    call: { type: "bid", level: 2, strain: "C" as never },
-    ruleName: "stayman-ask",
-    explanation: "Stayman convention ask",
-  };
+function makeWrongViewportFeedback(): ViewportBidFeedback {
   return {
-    grade: BidGrade.Incorrect,
+    grade: "incorrect",
     userCall: { type: "pass" },
-    expectedResult,
-    teachingResolution: null,
+    userCallDisplay: "Pass",
+    correctCall: { type: "bid", level: 2, strain: "C" as never },
+    correctCallDisplay: "2C",
+    correctBidLabel: "Stayman",
+    correctBidExplanation: "Stayman convention ask",
+    requiresRetry: true,
+  };
+}
+
+function makeWrongTeaching(): TeachingDetail {
+  return {
+    handSummary: undefined,
+    fallbackExplanation: "Stayman convention ask",
+    primaryBid: { type: "bid", level: 2, strain: "C" as never },
   };
 }
 
@@ -24,9 +29,9 @@ describe("BidFeedbackPanel", () => {
   const noop = () => {};
 
   test("shows answer panel when answer is revealed", async () => {
-    const feedback = makeWrongBidFeedback();
+    const feedback = makeWrongViewportFeedback();
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching: makeWrongTeaching(), onRetry: noop },
     });
 
     // Click the show answer button
@@ -39,78 +44,65 @@ describe("BidFeedbackPanel", () => {
   });
 
   test("does not show fork point conditions when decisionTrace is undefined", async () => {
-    const feedback = makeWrongBidFeedback();
+    const feedback = makeWrongViewportFeedback();
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching: makeWrongTeaching(), onRetry: noop },
     });
 
     const showBtn = screen.getByLabelText("Show answer");
     await fireEvent.click(showBtn);
 
-    // With no conditions or fork point, no condition list rendered
     const conditionList = container.querySelector("[aria-label='Bid conditions']");
     expect(conditionList).toBeNull();
   });
 
   test("does not show fork point conditions when forkPoint is undefined", async () => {
-    const feedback = makeWrongBidFeedback();
+    const feedback = makeWrongViewportFeedback();
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching: makeWrongTeaching(), onRetry: noop },
     });
 
     const showBtn = screen.getByLabelText("Show answer");
     await fireEvent.click(showBtn);
 
-    // No fork point means no condition nodes from it
     const conditionList = container.querySelector("[aria-label='Bid conditions']");
     expect(conditionList).toBeNull();
   });
 
   test("shows correct bid display for correct feedback", () => {
-    const feedback: BidFeedback = {
-      grade: BidGrade.Correct,
+    const feedback: ViewportBidFeedback = {
+      grade: "correct",
       userCall: { type: "bid", level: 2, strain: "C" as never },
-      expectedResult: {
-        call: { type: "bid", level: 2, strain: "C" as never },
-        ruleName: "stayman-ask",
-        explanation: "Stayman",
-      },
-      teachingResolution: null,
+      userCallDisplay: "2C",
+      requiresRetry: false,
     };
     render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching: null, onRetry: noop },
     });
 
     expect(screen.getByText("Correct!")).toBeTruthy();
   });
 
   test("shows Acceptable feedback with teal styling and auto-dismiss", () => {
-    const feedback: BidFeedback = {
-      grade: BidGrade.Acceptable,
+    const feedback: ViewportBidFeedback = {
+      grade: "acceptable",
       userCall: { type: "bid", level: 2, strain: "D" as never },
-      expectedResult: {
-        call: { type: "bid", level: 2, strain: "C" as never },
-        ruleName: "stayman-ask",
-        explanation: "Stayman",
-      },
-      teachingResolution: {
-        primaryBid: { type: "bid", level: 2, strain: "C" as never },
-        acceptableBids: [
-          {
-            call: { type: "bid", level: 2, strain: "D" as never },
-            bidName: "stayman-alt",
-            meaning: "Alternative treatment",
-            reason: "preferred alternative: Alternative treatment",
-            fullCredit: true,
-            tier: "preferred",
-          },
-        ],
-        gradingType: "primary_plus_acceptable",
-        ambiguityScore: 0.6,
-      },
+      userCallDisplay: "2D",
+      requiresRetry: false,
+    };
+    const teaching: TeachingDetail = {
+      primaryBid: { type: "bid", level: 2, strain: "C" as never },
+      acceptableBids: [
+        {
+          call: { type: "bid", level: 2, strain: "D" as never },
+          meaning: "Alternative treatment",
+          reason: "preferred alternative: Alternative treatment",
+          fullCredit: true,
+        },
+      ],
     };
     render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching, onRetry: noop },
     });
 
     expect(screen.getByText("Acceptable!")).toBeTruthy();
@@ -118,25 +110,22 @@ describe("BidFeedbackPanel", () => {
   });
 
   test("shows practical note when practical call differs from teaching call", () => {
-    const practicalRecommendation: PracticalRecommendation = {
-      topCandidateBidName: "competitive-overcall",
-      topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
-      topScore: 8.5,
-      rationale: "Strong heart suit with competitive advantage",
-    };
-    const feedback: BidFeedback = {
-      grade: BidGrade.Correct,
+    const feedback: ViewportBidFeedback = {
+      grade: "correct",
       userCall: { type: "bid", level: 2, strain: "C" as never },
-      expectedResult: {
-        call: { type: "bid", level: 2, strain: "C" as never },
-        ruleName: "stayman-ask",
-        explanation: "Stayman",
+      userCallDisplay: "2C",
+      correctCall: { type: "bid", level: 2, strain: "C" as never },
+      correctCallDisplay: "2C",
+      requiresRetry: false,
+    };
+    const teaching: TeachingDetail = {
+      practicalRecommendation: {
+        topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
+        rationale: "Strong heart suit with competitive advantage",
       },
-      teachingResolution: null,
-      practicalRecommendation,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching, onRetry: noop },
     });
 
     const note = container.querySelector("[data-testid='practical-note']");
@@ -146,25 +135,22 @@ describe("BidFeedbackPanel", () => {
   });
 
   test("does not show practical note when practical call matches teaching call", () => {
-    const practicalRecommendation: PracticalRecommendation = {
-      topCandidateBidName: "stayman-ask",
-      topCandidateCall: { type: "bid", level: 2, strain: "C" as never },
-      topScore: 12.0,
-      rationale: "Stayman is correct here",
-    };
-    const feedback: BidFeedback = {
-      grade: BidGrade.Correct,
+    const feedback: ViewportBidFeedback = {
+      grade: "correct",
       userCall: { type: "bid", level: 2, strain: "C" as never },
-      expectedResult: {
-        call: { type: "bid", level: 2, strain: "C" as never },
-        ruleName: "stayman-ask",
-        explanation: "Stayman",
+      userCallDisplay: "2C",
+      correctCall: { type: "bid", level: 2, strain: "C" as never },
+      correctCallDisplay: "2C",
+      requiresRetry: false,
+    };
+    const teaching: TeachingDetail = {
+      practicalRecommendation: {
+        topCandidateCall: { type: "bid", level: 2, strain: "C" as never },
+        rationale: "Stayman is correct here",
       },
-      teachingResolution: null,
-      practicalRecommendation,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching, onRetry: noop },
     });
 
     const note = container.querySelector("[data-testid='practical-note']");
@@ -172,18 +158,14 @@ describe("BidFeedbackPanel", () => {
   });
 
   test("does not show practical note when practicalRecommendation is undefined", () => {
-    const feedback: BidFeedback = {
-      grade: BidGrade.Correct,
+    const feedback: ViewportBidFeedback = {
+      grade: "correct",
       userCall: { type: "bid", level: 2, strain: "C" as never },
-      expectedResult: {
-        call: { type: "bid", level: 2, strain: "C" as never },
-        ruleName: "stayman-ask",
-        explanation: "Stayman",
-      },
-      teachingResolution: null,
+      userCallDisplay: "2C",
+      requiresRetry: false,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching: null, onRetry: noop },
     });
 
     const note = container.querySelector("[data-testid='practical-note']");
@@ -191,25 +173,23 @@ describe("BidFeedbackPanel", () => {
   });
 
   test("shows practical note on incorrect feedback too", async () => {
-    const practicalRecommendation: PracticalRecommendation = {
-      topCandidateBidName: "competitive-overcall",
-      topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
-      topScore: 8.5,
-      rationale: "Strong heart suit",
-    };
-    const feedback: BidFeedback = {
-      grade: BidGrade.Incorrect,
+    const feedback: ViewportBidFeedback = {
+      grade: "incorrect",
       userCall: { type: "pass" },
-      expectedResult: {
-        call: { type: "bid", level: 2, strain: "C" as never },
-        ruleName: "stayman-ask",
-        explanation: "Stayman",
+      userCallDisplay: "Pass",
+      correctCall: { type: "bid", level: 2, strain: "C" as never },
+      correctCallDisplay: "2C",
+      requiresRetry: true,
+    };
+    const teaching: TeachingDetail = {
+      fallbackExplanation: "Stayman",
+      practicalRecommendation: {
+        topCandidateCall: { type: "bid", level: 2, strain: "H" as never },
+        rationale: "Strong heart suit",
       },
-      teachingResolution: null,
-      practicalRecommendation,
     };
     const { container } = render(BidFeedbackPanel, {
-      props: { feedback, onRetry: noop },
+      props: { feedback, teaching, onRetry: noop },
     });
 
     // Practical note on incorrect should show without needing to reveal answer

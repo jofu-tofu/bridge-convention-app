@@ -8,22 +8,17 @@ import { Seat } from "../engine/types";
 import type { DrillSession, DrillBundle } from "../bootstrap/types";
 import type { BidResult } from "../core/contracts";
 import type { PublicBeliefs } from "../core/contracts";
-import type { InferenceEngine } from "../inference/inference-engine";
 import type {
-  InferenceExtractorInput,
   InferenceSnapshot,
   PublicBeliefState,
 } from "../inference/types";
-import { createInitialBeliefState, applyAnnotation } from "../inference/belief-accumulator";
-import { produceAnnotation } from "../inference/annotation-producer";
-import { noopExtractor } from "../inference/noop-extractor";
-import { createNaturalInferenceProvider } from "../inference/natural-inference";
+import { createInferenceCoordinator } from "../inference/inference-coordinator";
 import { partnerSeat, areSamePartnership } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
 import { createPlayStore } from "./play.svelte";
 import { createBiddingStore } from "./bidding.svelte";
-import { buildBiddingViewport, buildViewportFeedback } from "../core/viewport";
-import type { BiddingViewport, ViewportBidFeedback } from "../core/viewport";
+import { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail } from "../core/viewport";
+import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
 
 export interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
@@ -52,17 +47,6 @@ const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
   EXPLANATION: ["DECLARER_PROMPT"],
 };
 
-/** Adapt BidResult (shared DTO) to InferenceExtractorInput.
- *  Convention inferences are extracted separately. Natural inference works via the provider. */
-function toExtractorInput(bidResult: BidResult): InferenceExtractorInput {
-  return {
-    rule: bidResult.ruleName ?? "unknown",
-    explanation: bidResult.explanation,
-    meaning: bidResult.meaning,
-    alert: bidResult.alert ?? null,
-  };
-}
-
 export function createGameStore(engine: EnginePort, options?: GameStoreOptions) {
   // Coordinator state — owns phase, deal, contract, and cross-cutting concerns
   let deal = $state<Deal | null>(null);
@@ -72,14 +56,10 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
   let drillSession = $state<DrillSession | null>(null);
   let conventionName = $state("");
 
-  // Inference state — used during both bidding (processBid) and play (getInferences)
-  let nsInferenceEngine = $state<InferenceEngine | null>(null);
-  let ewInferenceEngine = $state<InferenceEngine | null>(null);
+  // Inference coordinator — manages engines, belief state, and annotation production
+  const inference = createInferenceCoordinator();
   let playInferences = $state<Record<Seat, PublicBeliefs> | null>(null);
-
-  // Public belief state — kibitzer view, updated per bid
-  let publicBeliefState = $state<PublicBeliefState>(createInitialBeliefState());
-  const naturalProvider = createNaturalInferenceProvider();
+  let publicBeliefState = $state<PublicBeliefState>(inference.getPublicBeliefState());
 
   // Sub-stores
   const dds = createDDSStore(engine);
@@ -117,11 +97,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
 
   async function completeAuction(finalAuction: Auction) {
     // Capture inferences before transitioning — merge NS + EW data
-    if (nsInferenceEngine || ewInferenceEngine) {
-      const nsBeliefs = nsInferenceEngine?.getBeliefs() ?? {};
-      const ewBeliefs = ewInferenceEngine?.getBeliefs() ?? {};
-      playInferences = { ...nsBeliefs, ...ewBeliefs } as Record<Seat, PublicBeliefs>;
-    }
+    playInferences = inference.capturePlayInferences();
 
     const result = await engine.getContract(finalAuction);
     contract = result;
@@ -257,10 +233,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     effectiveUserSeat = null;
     drillSession = null;
     conventionName = "";
-    nsInferenceEngine = null;
-    ewInferenceEngine = null;
+    inference.reset();
     playInferences = null;
-    publicBeliefState = createInitialBeliefState();
+    publicBeliefState = inference.getPublicBeliefState();
     // Reset sub-stores
     bidding.reset();
     play.reset();
@@ -405,6 +380,13 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       return buildViewportFeedback(fb);
     },
 
+    /** Teaching detail from the evaluation oracle. Null when no feedback is active. */
+    get teachingDetail(): TeachingDetail | null {
+      const fb = bidding.bidFeedback;
+      if (!fb) return null;
+      return buildTeachingDetail(fb);
+    },
+
     /** Set the convention display name (called by UI layer with app store data). */
     setConventionName(name: string) {
       conventionName = name;
@@ -457,10 +439,10 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       return playInferences;
     },
     get inferenceTimeline(): readonly InferenceSnapshot[] {
-      return nsInferenceEngine?.getTimeline() ?? [];
+      return inference.getNSTimeline();
     },
     get ewInferenceTimeline(): readonly InferenceSnapshot[] {
-      return ewInferenceEngine?.getTimeline() ?? [];
+      return inference.getEWTimeline();
     },
 
     /** Get legal plays for a seat based on current trick context. */
@@ -508,13 +490,10 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       play.reset();
       dds.reset();
 
-      // Reset public belief state
-      publicBeliefState = createInitialBeliefState();
-
-      // Set up inference engines from bundle
+      // Initialize inference coordinator with engines from bundle
       playInferences = null;
-      nsInferenceEngine = bundle.nsInferenceEngine;
-      ewInferenceEngine = bundle.ewInferenceEngine;
+      inference.initialize(bundle.nsInferenceEngine, bundle.ewInferenceEngine);
+      publicBeliefState = inference.getPublicBeliefState();
 
       // Initialize bidding sub-store with callbacks
       await bidding.init({
@@ -525,20 +504,8 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
         onAuctionComplete: completeAuction,
         onSkipToExplanation: skipToExplanation,
         onProcessBid: (bid, auctionBefore, bidResult) => {
-          nsInferenceEngine?.processBid(bid, auctionBefore);
-          ewInferenceEngine?.processBid(bid, auctionBefore);
-
-          // Produce public belief annotation
           const conventionId = bundle.session.config.conventionId ?? null;
-          const annotation = produceAnnotation(
-            bid,
-            bidResult ? toExtractorInput(bidResult) : null,
-            bidResult?.ruleName ? conventionId : null,
-            noopExtractor,
-            naturalProvider,
-            auctionBefore,
-          );
-          publicBeliefState = applyAnnotation(publicBeliefState, annotation);
+          publicBeliefState = inference.processBid(bid, auctionBefore, bidResult, conventionId);
         },
       });
     },

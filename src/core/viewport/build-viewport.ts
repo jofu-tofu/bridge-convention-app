@@ -37,6 +37,7 @@ import type {
   AlternativeView,
   NearMissView,
   ConventionView,
+  TeachingDetail,
 } from "./player-viewport";
 
 import type {
@@ -289,5 +290,62 @@ export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFee
     partnerHandSpace,
     conventionsApplied,
     requiresRetry,
+  };
+}
+
+// ── Build Teaching Detail ───────────────────────────────────────────
+
+/**
+ * Extract the teaching detail from a BidFeedback-like object.
+ *
+ * This is the oracle-side teaching data, available ONLY after grading.
+ * Both CLI (--json diagnostics) and UI ("Show Answer" panels) consume
+ * this through the same type.
+ */
+export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
+  const projection = feedback.teachingProjection;
+  const resolution = feedback.teachingResolution;
+  const result = feedback.expectedResult;
+
+  return {
+    // Correct answer context
+    handSummary: result?.handSummary,
+    fallbackExplanation: result?.explanation,
+
+    // Teaching projection (when available)
+    primaryExplanation: projection?.primaryExplanation,
+    whyNot: projection?.whyNot,
+    conventionsApplied: projection?.conventionsApplied,
+    meaningViews: projection?.meaningViews,
+    callViews: projection?.callViews,
+
+    // Partner hand space
+    partnerSummary: projection?.handSpace?.partnerSummary,
+    archetypes: projection?.handSpace?.archetypes?.map((a) => ({
+      label: a.label,
+      hcpRange: a.hcpRange,
+      shapePattern: a.shapePattern,
+    })),
+
+    // Encoding trace
+    encoderKind: (feedback as { encodingTrace?: { encoderKind: import("../contracts/provenance").EncoderKind } }).encodingTrace?.encoderKind,
+
+    // Practical recommendation
+    practicalRecommendation: feedback.practicalRecommendation
+      ? {
+          topCandidateCall: feedback.practicalRecommendation.topCandidateCall,
+          rationale: feedback.practicalRecommendation.rationale,
+        }
+      : undefined,
+
+    // Teaching resolution
+    primaryBid: resolution?.primaryBid,
+    acceptableBids: resolution?.acceptableBids?.map((ab) => ({
+      call: ab.call,
+      meaning: ab.meaning,
+      reason: ab.reason,
+      fullCredit: ab.fullCredit,
+    })),
+    nearMissCalls: resolution?.nearMissCalls,
   };
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
   import type { Call } from "../../../engine/types";
-  import type { BidFeedback } from "../../../stores/game.svelte";
+  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import { formatCall } from "../../../core/display/format";
   import { callsMatch } from "../../../engine/call-helpers";
   import {
@@ -16,71 +16,65 @@
   import { formatRuleName } from "../../../core/display/format";
 
   interface Props {
-    feedback: BidFeedback;
+    feedback: ViewportBidFeedback;
+    teaching: TeachingDetail | null;
     onRetry: () => void;
     showPracticalNote: boolean;
-    practicalRec: BidFeedback['practicalRecommendation'];
+    practicalRec: TeachingDetail['practicalRecommendation'];
   }
 
-  let { feedback, onRetry, showPracticalNote, practicalRec }: Props = $props();
+  let { feedback, teaching, onRetry, showPracticalNote, practicalRec }: Props = $props();
 
   let showAnswer = $state(false);
   let showDecisionSpace = $state(false);
   let expandedWhyNot = new SvelteSet<number>();
-  const acceptableBids = $derived(feedback.teachingResolution?.acceptableBids ?? []);
-
-  // Teaching projection — unified contract from both pipelines
-  const projection = $derived(feedback.teachingProjection);
+  const acceptableBids = $derived(teaching?.acceptableBids ?? []);
 
   // Meaning display label from the live meaning view
   const liveMeaning = $derived(
-    projection?.meaningViews.find(v => v.status === "live"),
+    teaching?.meaningViews?.find(v => v.status === "live"),
   );
-  const meaningLabel = $derived(liveMeaning?.displayLabel ?? feedback.expectedResult?.meaning);
+  const meaningLabel = $derived(liveMeaning?.displayLabel ?? feedback.correctBidLabel);
 
   // Conditions from primary explanation (kind="condition" nodes)
   const conditionNodes = $derived(
-    projection?.primaryExplanation.filter(n => n.kind === "condition") ?? [],
+    teaching?.primaryExplanation?.filter(n => n.kind === "condition") ?? [],
   );
 
   // WhyNot entries — alternative bids with explanations
-  const whyNotEntries = $derived(projection?.whyNot ?? []);
+  const whyNotEntries = $derived(teaching?.whyNot ?? []);
 
   // Convention contributions — only show when multiple modules contributed
   const contributions = $derived(
-    (projection?.conventionsApplied ?? []).filter(c => c.meaningsProposed.length > 0),
+    (teaching?.conventionsApplied ?? []).filter(c => c.meaningsProposed.length > 0),
   );
   const showContributions = $derived(contributions.length > 1);
 
   // Multi-rationale detection: a call correct for more than one distinct reason
   const multiRationaleCall = $derived(
-    projection?.callViews.find(
+    teaching?.callViews?.find(
       cv => cv.status === "truth" && cv.projectionKind === "multi-rationale-same-call",
     ) ?? null,
   );
 
   // Decision space: all evaluated meanings (live + eliminated)
   const eliminatedMeanings = $derived(
-    (projection?.meaningViews ?? []).filter(v => v.status === "eliminated"),
+    (teaching?.meaningViews ?? []).filter(v => v.status === "eliminated"),
   );
   const showDecisionSpaceToggle = $derived(eliminatedMeanings.length > 0);
 
   // Partner hand space summary
-  const handSpace = $derived(projection?.handSpace);
-  const hasPartnerInfo = $derived(
-    handSpace != null && // eslint-disable-line eqeqeq -- intentional nullish check
-    handSpace.partnerSummary != null, // eslint-disable-line eqeqeq -- intentional nullish check
-  );
+  const hasPartnerInfo = $derived(teaching?.partnerSummary != null); // eslint-disable-line eqeqeq -- intentional nullish check
 
   // Encoding explanation — show when the meaning was encoded via an artificial mechanism
   const encodingNote = $derived(
-    feedback.encodingTrace && isArtificialEncoder(feedback.encodingTrace.encoderKind)
-      ? formatEncoderKind(feedback.encodingTrace.encoderKind)
+    teaching?.encoderKind && isArtificialEncoder(teaching.encoderKind)
+      ? formatEncoderKind(teaching.encoderKind)
       : null,
   );
 
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
-  let prevFeedback: BidFeedback | undefined;
+  let prevFeedback: ViewportBidFeedback | undefined;
   $effect.pre(() => {
     if (feedback !== prevFeedback) {
       showAnswer = false;
@@ -142,7 +136,7 @@
     </div>
   </div>
 
-  {#if showAnswer && feedback.expectedResult}
+  {#if showAnswer && feedback.correctCall}
     <div
       class="bg-fb-incorrect-surface/50 rounded px-3 py-2 mb-3 border border-fb-incorrect/30 min-w-0 space-y-2"
     >
@@ -150,7 +144,7 @@
       <div>
         <p class="text-[--text-label] text-fb-incorrect-text/70 mb-0.5">Correct bid:</p>
         <p class="font-mono font-bold text-[--text-value] text-fb-incorrect-bright">
-          {formatCall(feedback.expectedResult.call)}
+          {formatCall(feedback.correctCall)}
           {#if meaningLabel}
             <span class="font-sans font-normal text-[--text-detail] text-fb-incorrect-dim/80">— {meaningLabel}</span>
           {/if}
@@ -169,10 +163,10 @@
       </div>
 
       <!-- 2. Hand summary -->
-      {#if feedback.expectedResult.handSummary}
+      {#if teaching?.handSummary}
         <div>
           <p class="text-[--text-label] text-fb-incorrect-text/70 mb-0.5">Your hand:</p>
-          <p class="font-mono text-[--text-detail] text-fb-incorrect-dim">{feedback.expectedResult.handSummary}</p>
+          <p class="font-mono text-[--text-detail] text-fb-incorrect-dim">{teaching.handSummary}</p>
         </div>
       {/if}
 
@@ -194,20 +188,20 @@
             </li>
           {/each}
         </ul>
-      {:else if feedback.expectedResult.explanation}
+      {:else if teaching?.fallbackExplanation}
         <p class="text-fb-incorrect-dim/50 text-[--text-label] leading-tight">
-          {feedback.expectedResult.explanation}
+          {teaching.fallbackExplanation}
         </p>
       {/if}
 
       <!-- 4. Partner hand space -->
-      {#if hasPartnerInfo && handSpace}
+      {#if hasPartnerInfo && teaching}
         <div class="pt-1 border-t border-fb-incorrect/20">
           <p class="text-[--text-label] text-fb-incorrect-text/70 mb-0.5">What we know about partner:</p>
-          <p class="text-[--text-label] text-fb-incorrect-dim/70">{handSpace.partnerSummary}</p>
-          {#if handSpace.archetypes && handSpace.archetypes.length > 0}
+          <p class="text-[--text-label] text-fb-incorrect-dim/70">{teaching.partnerSummary}</p>
+          {#if teaching.archetypes && teaching.archetypes.length > 0}
             <div class="mt-1 space-y-0.5">
-              {#each handSpace.archetypes as archetype (archetype.label)}
+              {#each teaching.archetypes as archetype (archetype.label)}
                 <p class="text-[--text-annotation] text-fb-incorrect-text/50 font-mono">
                   {archetype.label}: {archetype.hcpRange.min}-{archetype.hcpRange.max} HCP, {archetype.shapePattern}
                 </p>

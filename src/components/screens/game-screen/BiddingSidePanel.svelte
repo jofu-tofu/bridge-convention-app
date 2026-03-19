@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Call } from "../../../engine/types";
-  import type { BidFeedback } from "../../../stores/game.svelte";
+  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import { getGameStore } from "../../../stores/context";
   import BidPanel from "../../game/BidPanel.svelte";
   import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
@@ -31,11 +31,13 @@
   // and class:hidden instead of {#if} to keep elements in the DOM.
   const gameStore = getGameStore();
 
-  let bidFeedback = $state.raw<BidFeedback | null>(null);
+  let viewportFeedback = $state.raw<ViewportBidFeedback | null>(null);
+  let teachingDetail = $state.raw<TeachingDetail | null>(null);
   $effect(() => {
-    bidFeedback = gameStore.bidFeedback;
+    viewportFeedback = gameStore.viewportFeedback;
+    teachingDetail = gameStore.teachingDetail;
   });
-  const hasFeedback = $derived(bidFeedback !== null);
+  const hasFeedback = $derived(viewportFeedback !== null);
 </script>
 
 <div class="min-w-0 min-h-0 flex-1 overflow-y-auto">
@@ -53,9 +55,10 @@
   </h2>
   <BidPanel {legalCalls} {onBid} {disabled} compact />
   <div class="mt-3" class:hidden={!hasFeedback}>
-    {#if bidFeedback}
+    {#if viewportFeedback}
       <BidFeedbackPanel
-        feedback={bidFeedback}
+        feedback={viewportFeedback}
+        teaching={teachingDetail}
         {onRetry}
       />
     {/if}

@@ -154,3 +154,70 @@ export interface ConventionView {
   readonly moduleId: string;
   readonly role: "primary" | "alternative" | "suppressed";
 }
+
+// ── Teaching Detail (oracle-derived, post-bid only) ─────────────────
+//
+// Rich teaching data from the evaluation oracle.  Available ONLY after
+// the player has bid and been graded.  Both CLI (--json output) and UI
+// ("Show Answer" expansion) consume this through the same type.
+//
+// This is NOT part of the playing sequence — it's the oracle's teaching
+// slice, exposed after grading for pedagogical feedback.
+
+import type { ExplanationNode, WhyNotEntry, ConventionContribution, MeaningView, CallProjection } from "../contracts/teaching-projection";
+import type { EncoderKind } from "../contracts/provenance";
+
+/** Post-bid teaching data derived from the evaluation oracle. */
+export interface TeachingDetail {
+  // ── Correct answer context ────────────────────────────────────
+  /** Hand summary for the correct bid (e.g., "4♠ 3♥ 3♦ 3♣, 15 HCP"). */
+  readonly handSummary?: string;
+  /** Fallback explanation when teaching projection is unavailable. */
+  readonly fallbackExplanation?: string;
+
+  // ── Teaching projection data ──────────────────────────────────
+  /** Primary explanation nodes (conditions with pass/fail). */
+  readonly primaryExplanation?: readonly ExplanationNode[];
+  /** Why-not entries for alternative bids. */
+  readonly whyNot?: readonly WhyNotEntry[];
+  /** Convention contributions (which modules were evaluated). */
+  readonly conventionsApplied?: readonly ConventionContribution[];
+  /** Meaning views: all meanings with live/eliminated status. */
+  readonly meaningViews?: readonly MeaningView[];
+  /** Call views: how each call was projected (truth/acceptable/wrong). */
+  readonly callViews?: readonly CallProjection[];
+
+  // ── Partner hand space ────────────────────────────────────────
+  /** Partner summary from hand space analysis. */
+  readonly partnerSummary?: string;
+  /** Hand archetypes (HCP ranges, shapes). */
+  readonly archetypes?: readonly {
+    readonly label: string;
+    readonly hcpRange: { readonly min: number; readonly max: number };
+    readonly shapePattern: string;
+  }[];
+
+  // ── Encoding trace ────────────────────────────────────────────
+  /** How the meaning was encoded into a concrete call (null for trivial). */
+  readonly encoderKind?: EncoderKind;
+
+  // ── Practical recommendation ──────────────────────────────────
+  /** Expert-level practical recommendation (when different from textbook). */
+  readonly practicalRecommendation?: {
+    readonly topCandidateCall: Call;
+    readonly rationale: string;
+  };
+
+  // ── Teaching resolution ───────────────────────────────────────
+  /** The primary (textbook) bid. */
+  readonly primaryBid?: Call;
+  /** Acceptable alternative bids with reasons. */
+  readonly acceptableBids?: readonly {
+    readonly call: Call;
+    readonly meaning: string;
+    readonly reason: string;
+    readonly fullCredit: boolean;
+  }[];
+  /** Near-miss bids with reasons. */
+  readonly nearMissCalls?: readonly { readonly call: Call; readonly reason: string }[];
+}

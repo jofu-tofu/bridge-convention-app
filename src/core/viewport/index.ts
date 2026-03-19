@@ -12,6 +12,7 @@ export type {
   AlternativeView,
   NearMissView,
   ConventionView,
+  TeachingDetail,
 } from "./player-viewport";
 
 export type {
@@ -25,6 +26,7 @@ export {
   buildEvaluationOracle,
   gradeAgainstOracle,
   buildViewportFeedback,
+  buildTeachingDetail,
 } from "./build-viewport";
 
 export type {
