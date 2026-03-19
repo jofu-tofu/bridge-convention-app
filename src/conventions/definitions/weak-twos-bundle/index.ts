@@ -16,7 +16,6 @@ export {
 } from "./meaning-surfaces";
 export { createWeakTwoConversationMachine } from "./machine";
 export { WEAK_TWO_PROFILE } from "./system-profile";
-export { WEAK_TWO_ROUTED_SURFACES, createWeakTwoSurfaceRouter } from "./surface-routing";
 export { WEAK_TWO_EXPLANATION_CATALOG } from "./explanation-catalog";
 export { WEAK_TWO_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 export { WEAK_TWO_ALTERNATIVE_GROUPS } from "./alternatives";
