@@ -78,13 +78,13 @@ Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bu
 
 ---
 
-## Tier 1: CLI Coverage (Primary — Convention Correctness)
+## Tier 1: CLI Coverage (Primary — Orchestrator Setup)
 
 ### Step 1: Determine Scope
 
 **Ask the user what they want reviewed if they didn't specify.** Options:
 - A specific bundle (e.g., `nt-bundle` for 1NT responses, Stayman, Jacoby Transfers)
-- Everything (`--all`)
+- Everything (run for each bundle)
 
 ### Step 2: Self-Test Baseline
 
@@ -100,95 +100,26 @@ Or for a single bundle:
 npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
 ```
 
-Parse the JSON output to get pass/fail/skip counts and identify failing atoms.
+Parse the JSON output to get pass/fail/skip counts. This gives the orchestrator a quick health check before spawning agents.
 
-### Step 3: Enumerate Targets
+### Step 3: Generate the Plan
 
-Use `list` to get all coverage atoms:
+Decide how many agents to spawn (see Tier 2 guidelines), then run the planner:
 
 ```bash
-npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
+npx tsx src/cli/coverage-runner.ts plan --bundle=nt-bundle --agents=N --coverage=2
 ```
 
-Each JSON line contains `baseStateId`, `surfaceId`, `meaningId`, `meaningLabel`. These identify testable (state, surface) pairs.
+This precomputes playthroughs across many seeds, uses greedy set cover to find the minimal set covering every reachable atom at least 2x, and splits them across N agents balanced by user bid count. The output is a JSON plan with per-agent seed assignments.
 
-### Step 4: Present and Grade Each Target
+Check the plan output for:
+- **`atomsCoveredAtTarget`** — how many atoms reached 2x coverage
+- **`uncoveredAtoms`** — atoms the planner couldn't cover (may need more seeds or indicate strategy gaps)
+- **`agents`** — per-agent seed lists and bid counts (should be roughly balanced)
 
-For each (state, surface) pair — especially those that failed in self-test — run the two-step agent protocol:
+### Step 4: Review Plan and Spawn Agents
 
-**Step 4a: Present the hand (NO answer shown)**
-```bash
-npx tsx src/cli/coverage-runner.ts present --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42
-```
-
-Returns JSON with hand, HCP, auction, legal calls — no correct answer. The `--seed=42` flag ensures deterministic deals.
-
-**Step 4b: Decide the bid**
-
-Read the viewport output. As a bridge expert, determine the correct bid based on the hand, auction, and convention rules.
-
-**Step 4c: Grade the bid**
-```bash
-npx tsx src/cli/coverage-runner.ts grade --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42 --bid=CALL
-```
-
-Returns structured JSON with `yourBid`, `correctBid`, `grade`, `correct`, `requiresRetry`, `feedback`. Exit code 0=correct, 1=wrong.
-
-**Step 4d: Retry if wrong**
-
-If `grade` returns `"correct": false`, read the feedback, reassess, and submit a different bid with another `grade` call.
-
-### Step 5: Categorize Results
-
-| Category | What It Means | Action |
-|----------|--------------|--------|
-| **correct: true** | Correct call, correct feedback | No action needed |
-| **correct: false — wrong correctBid** | The app recommends the wrong bid | CRITICAL finding — log state, surface, viewport, expected vs actual |
-| **correct: false — bad feedback** | Correct call but explanation is wrong or misleading | MAJOR finding — log the feedback text and what's wrong with it |
-| **requiresRetry: true** | Agent needed feedback to get right answer | Flag for review — may indicate unclear teaching |
-| **selftest skip** | Strategy returned null (no recommendation) | Flag for review — may indicate coverage gap |
-
-### Step 6: Analyze Findings
-
-For each failure:
-
-1. **Record the viewport** (from `present` output) — hand, auction, legal calls.
-2. **Record expected vs actual** — what the app said (from `grade` `correctBid`) vs what bridge rules dictate.
-3. **Verify correctness** — Use `webfetch` to check the convention rule against authoritative sources (bridgebum.com, larryco.com, bridgeguys.com). Every correctness claim must cite a URL you actually fetched.
-4. **Classify severity** per `EvaluationFramework.md` severity definitions.
-5. **Compute metrics:**
-   - **First-attempt accuracy:** % of targets where `grade` returned `correct: true` on first try
-   - **Post-feedback accuracy:** % where the correct call was made after reading `grade` feedback and retrying
-   - **Selftest pass rate:** from `selftest` output
-   - **Coverage:** total atoms tested / total atoms in the bundle
-
-### Step 7: Generate CLI Report
-
-```
-# CLI Coverage Report
-
-## Metrics
-- **Targets tested:** N
-- **First-attempt accuracy:** X%
-- **Post-feedback accuracy:** Y%
-- **Selftest pass rate:** P/T (X%)
-- **Failures:** N
-
-## Failures
-### Failure 1: [convention] — [targetState] / [targetSurface]
-- **Viewport:** [hand, auction, legal calls from `present`]
-- **Expected call:** [what bridge rules say]
-- **Actual call:** [what the app recommended via `grade`]
-- **Feedback text:** [what the app said]
-- **Reference:** [URL you fetched]
-- **Severity:** CRITICAL / MAJOR
-
-[...repeat for all failures...]
-
-## Selftest Skips
-| Bundle | Atom | Details |
-|--------|------|---------|
-```
+Use the plan output to spawn agents (see Tier 2). Each agent receives its seed list and follows the playthrough protocol.
 
 ---
 
@@ -236,7 +167,7 @@ Choose from these focus areas when defining agent assignments. Each agent should
 
 #### CLI Agent Prompt Template
 
-Each agent receives this prompt, customized with their assignment:
+Each agent receives this prompt, customized with their assignment and seed list:
 
 ---
 
@@ -246,28 +177,41 @@ You are evaluating the **convention correctness** of a bridge bidding practice a
 
 {ASSIGNMENT}
 
-## CLI Commands
+## Your Seeds
 
-The coverage-runner provides these commands. Run them via `exec` from `/home/joshua-fu/projects/bridge-convention-app`:
+You have been assigned these seeds to evaluate: {SEEDS}
 
+For each seed, follow the playthrough protocol below.
+
+## Playthrough Protocol
+
+For each assigned seed, evaluate one playthrough at a time:
+
+**1. Get the step count:**
 ```bash
-# List all coverage atoms for a bundle (JSON lines)
-npx tsx src/cli/coverage-runner.ts list --bundle=<bundleId>
-
-# Present a hand — returns hand, HCP, auction, legal calls (no correct answer)
-npx tsx src/cli/coverage-runner.ts present --bundle=<bundleId> --target=<stateId> --surface=<surfaceId> --seed=<N>
-
-# Grade a bid — returns correctBid, grade, correct, feedback
-npx tsx src/cli/coverage-runner.ts grade --bundle=<bundleId> --target=<stateId> --surface=<surfaceId> --seed=<N> --bid=<CALL>
-
-# Self-test — strategy vs itself across all atoms
-npx tsx src/cli/coverage-runner.ts selftest --bundle=<bundleId> --seed=42
-npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+npx tsx src/cli/coverage-runner.ts trace --bundle=<bundleId> --seed=<N> --phase=present
 ```
+This returns `totalSteps` — the number of user decision points.
 
-Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`
+**2. For each step (0 to totalSteps-1), one at a time:**
+```bash
+npx tsx src/cli/coverage-runner.ts trace --bundle=<bundleId> --seed=<N> --phase=present --step=<i>
+```
+This returns a viewport: the player's hand, HCP, auction so far, and legal calls. **No recommendation is shown.** You must decide the correct bid using bridge knowledge before proceeding.
 
-Same seed = same deal across `present` and `grade`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
+**3. Commit your answer**, then request the next step. The next step's auction will reveal what the strategy bid — but you've already committed.
+
+**4. Stop on disagreement.** If at any step your answer differs from the strategy's bid (visible in the next step's auction, or in the reveal), **stop evaluating this playthrough**. Record the finding and move to the next seed. Do NOT evaluate subsequent steps — their context is based on a bid you believe is wrong.
+
+**5. After all steps (or after stopping), get the reveal:**
+```bash
+npx tsx src/cli/coverage-runner.ts trace --bundle=<bundleId> --seed=<N> --phase=reveal
+```
+This shows every decision point (user + partner auto-bids) with the strategy's recommendations and atom IDs. Compare your committed answers against the strategy's. Also check partner auto-bids visible in the auction — flag any that look incorrect.
+
+## Reference Verification
+
+When you disagree with the strategy's bid, use `webfetch` to verify your answer against authoritative bridge sources (bridgebum.com, larryco.com, bridgeguys.com). Every correctness claim must cite a URL you actually fetched.
 
 ## Source Code Locations
 
@@ -275,7 +219,6 @@ Use `read` to examine these files for deeper analysis:
 
 - **Convention specs:** `src/conventions/definitions/<bundle>/convention-spec.ts`
 - **Convention modules:** `src/conventions/definitions/<bundle>/modules/`
-- **Coverage enumeration:** `src/conventions/core/protocol/coverage-enumeration.ts`
 - **Viewport boundary:** `src/core/viewport/build-viewport.ts`
 - **Teaching resolution:** `src/teaching/teaching-resolution.ts`
 - **Strategy adapter:** `src/strategy/bidding/protocol-adapter.ts`
@@ -293,10 +236,10 @@ The orchestrator found these issues. Focus your analysis on these areas:
 ## Rules
 
 1. **CLI and source code only.** Use `exec` to run coverage-runner commands. Use `read` to examine source files. Use `webfetch` to check bridge references. **Do NOT use the browser skill or Playwright.**
-2. **Evidence is mandatory.** Every finding needs CLI output (`present`/`grade` JSON) or source code excerpts as evidence.
-3. **Bridge expertise required.** Verify convention rules against authoritative sources using `webfetch`. Every correctness claim must cite a URL you actually fetched.
-4. **Structured output.** Report findings in the format below.
-5. **Be thorough.** Run `present`/`grade` for at least 10 coverage atoms per convention in your scope.
+2. **Stop on first error per playthrough.** If the strategy's bid is wrong at step N, do not evaluate steps N+1, N+2, etc. Record the finding and move to the next seed.
+3. **Commit before peeking.** Decide your answer for each step BEFORE requesting the next step or the reveal. Do not revise earlier answers based on later information.
+4. **Evidence is mandatory.** Every finding needs the viewport JSON (hand, auction) and a bridge reference URL.
+5. **Bridge expertise required.** Verify convention rules against authoritative sources using `webfetch`. Every correctness claim must cite a URL you actually fetched.
 
 ## Report Format
 
@@ -306,25 +249,29 @@ The orchestrator found these issues. Focus your analysis on these areas:
 ## Summary Verdict
 [PASS / FAIL / CONDITIONAL PASS]
 
+## Playthroughs Evaluated
+| Seed | Steps Evaluated | Steps Skipped | Findings |
+|------|----------------|---------------|----------|
+
 ## Findings
 
 ### Finding 1: [Title]
+- **Seed:** [seed]
+- **Step:** [step index in playthrough]
 - **Bundle:** [bundleId]
-- **Atom:** [baseStateId / surfaceId]
-- **Seed:** [seed used]
-- **Hand:** [from `present` output]
-- **Expected call:** [from bridge rules + reference]
-- **App's call:** [from `grade` correctBid]
-- **Feedback:** [from `grade` feedback]
-- **Reference:** [URL you fetched]
+- **Hand:** [from viewport — suits and HCP]
+- **Auction:** [auction so far]
+- **My answer:** [what you decided]
+- **App's answer:** [from reveal — strategy recommendation]
+- **Why mine is correct:** [bridge reasoning + reference URL]
 - **Severity:** CRITICAL / MAJOR / MINOR
+- **Subsequent steps skipped:** [number of steps not evaluated due to this error]
 
-## Selftest Results
-[Output from `selftest` command if run]
+## Partner Auto-Bid Issues
+[Any incorrect partner bids noticed in the auction context]
 
-## Atoms Reviewed
-| Bundle | Atom | Surface | Seed | Your Bid | App Bid | Match? |
-|--------|------|---------|------|----------|---------|--------|
+## Playthroughs Passed
+[Seeds where all steps matched — briefly note what was tested]
 ```
 
 ---
