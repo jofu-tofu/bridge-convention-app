@@ -82,7 +82,7 @@
         </div>
         <button
           type="button"
-          class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] shrink-0 rounded-[--radius-md] border px-3 py-2 text-sm transition-colors"
+          class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] shrink-0 rounded-[--radius-md] border px-3 py-2 text-[--text-detail] transition-colors"
           onclick={() => (showAllCards = !showAllCards)}
           aria-expanded={showAllCards}
           aria-label="Toggle all hands visibility"
@@ -98,7 +98,7 @@
           >
             <div class="mb-2 flex items-center gap-2">
               <span
-                class="rounded px-2 py-0.5 text-sm font-bold tracking-wide {seat ===
+                class="rounded px-2 py-0.5 text-[--text-detail] font-bold tracking-wide {seat ===
                 userSeat
                   ? 'bg-accent-primary-subtle text-accent-primary'
                   : 'bg-bg-elevated text-text-primary'}"
@@ -131,7 +131,7 @@
           </div>
           <button
             type="button"
-            class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] rounded-[--radius-md] border px-3 py-2 text-sm transition-colors"
+            class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] rounded-[--radius-md] border px-3 py-2 text-[--text-detail] transition-colors"
             onclick={() => (showAllCards = !showAllCards)}
             aria-expanded={showAllCards}
             aria-label="Toggle all hands visibility"

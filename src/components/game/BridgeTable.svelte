@@ -8,9 +8,14 @@
   import HandFan from "./HandFan.svelte";
 
   interface Props {
-    hands: Record<Seat, Hand>;
-    /** Set of seats whose cards should be shown face-up. */
-    faceUpSeats: ReadonlySet<Seat>;
+    /** All 4 hands (classic mode — requires faceUpSeats). */
+    hands?: Record<Seat, Hand>;
+    /** Set of seats whose cards should be shown face-up (classic mode). */
+    faceUpSeats?: ReadonlySet<Seat>;
+    /** Pre-filtered visible hands from a viewport (viewport mode).
+     *  When provided, only seats present in the map are rendered face-up.
+     *  Seats absent from the map are shown face-down with no cards. */
+    visibleHands?: Partial<Record<Seat, Hand>>;
     children?: Snippet;
     /** During play: legal cards for the active seat */
     legalPlays?: readonly CardType[];
@@ -33,6 +38,7 @@
   let {
     hands,
     faceUpSeats,
+    visibleHands,
     children,
     legalPlays = [],
     onPlayCard,
@@ -44,7 +50,16 @@
     dealer: _dealer,
   }: Props = $props();
 
-  const southHcp = $derived(calculateHcp(hands[Seat.South]));
+  // ── Mode detection: viewport mode when visibleHands is provided ───
+  const useViewport = $derived(visibleHands !== undefined);
+
+  const southHcp = $derived.by(() => {
+    if (useViewport) {
+      const southHand = visibleHands![Seat.South];
+      return southHand ? calculateHcp(southHand) : 0;
+    }
+    return calculateHcp(hands![Seat.South]);
+  });
 
   // Map physical screen positions to logical seats
   const northSeat = $derived(viewSeat(Seat.North, rotated));
@@ -53,14 +68,20 @@
   const westSeat = $derived(viewSeat(Seat.West, rotated));
 
   function isFaceUp(seat: Seat): boolean {
-    return faceUpSeats.has(seat);
+    if (useViewport) {
+      return seat in visibleHands!;
+    }
+    return faceUpSeats!.has(seat);
   }
 
   function getCards(seat: Seat): readonly CardType[] {
     if (remainingCards && remainingCards[seat]) {
       return remainingCards[seat];
     }
-    return hands[seat].cards;
+    if (useViewport) {
+      return visibleHands![seat]?.cards ?? [];
+    }
+    return hands![seat].cards;
   }
 
   function getSeatLegalPlays(seat: Seat): readonly CardType[] {
@@ -85,12 +106,12 @@
 
   function seatLabelClass(seat: Seat): string {
     const vul = vulnerability ? isVulnerable(seat, vulnerability) : false;
-    const bg = vul ? "bg-red-900/80 ring-1 ring-red-500/40" : "bg-bg-elevated/80";
-    const base = `text-sm font-bold ${bg} px-2.5 py-0.5 rounded-full`;
+    const bg = vul ? "bg-vulnerable/80 ring-1 ring-vulnerable-ring/40" : "bg-bg-elevated/80";
+    const base = `text-[--text-body] font-bold ${bg} px-2.5 py-0.5 rounded-full`;
     if (currentPlayer === seat) {
       return `${base} text-accent-primary`;
     }
-    return `${base} ${vul ? "text-red-300" : "text-text-secondary"}`;
+    return `${base} ${vul ? "text-vulnerable-text" : "text-text-secondary"}`;
   }
 </script>
 
@@ -171,7 +192,7 @@
         >{southSeat === Seat.South ? "S" : "N"}</span
       >
       <span
-        class="text-xs text-text-secondary bg-bg-elevated/60 px-1.5 py-0.5 rounded-full"
+        class="text-[--text-label] text-text-secondary bg-bg-elevated/60 px-1.5 py-0.5 rounded-full"
         data-testid="south-hcp"
         aria-label="{southHcp} high card points"
         >{southHcp} HCP</span

@@ -70,7 +70,7 @@ describe("AuctionTable", () => {
       props: { entries: [], dealer: Seat.North, compact: true },
     });
     const table = container.querySelector("table");
-    expect(table?.className).toContain("text-xs");
+    expect(table?.className).toContain("text-[--text-label]");
   });
 
   it("renders multiple rows for long auctions", () => {

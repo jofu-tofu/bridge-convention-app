@@ -102,6 +102,6 @@ describe("BidPanel", () => {
       props: { legalCalls: calls, onBid: () => {}, compact: true },
     });
     const button = container.querySelector("button");
-    expect(button?.className).toContain("text-xs");
+    expect(button?.className).toContain("text-[--text-label]");
   });
 });

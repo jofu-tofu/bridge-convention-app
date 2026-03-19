@@ -26,7 +26,7 @@
   <!-- Makeable Contracts Table -->
   <section>
     <div class="flex items-center gap-1.5 mb-2">
-      <h3 class="text-xs font-medium text-text-muted uppercase tracking-wide">
+      <h3 class="text-[--text-label] font-medium text-text-muted uppercase tracking-wide">
         Makeable Contracts
       </h3>
       <div class="group relative">
@@ -40,7 +40,7 @@
           </svg>
         </button>
         <div
-          class="absolute left-0 top-full mt-1 w-56 p-2.5 rounded-[--radius-md] bg-bg-elevated border border-border-subtle shadow-lg text-xs text-text-secondary leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity z-20"
+          class="absolute left-0 top-full mt-1 w-56 p-2.5 rounded-[--radius-md] bg-bg-elevated border border-border-subtle shadow-lg text-[--text-label] text-text-secondary leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity z-[--z-tooltip]"
           role="tooltip"
         >
           Double Dummy Solver (DDS) analysis showing the maximum tricks each seat can take as declarer in each strain, assuming perfect play by all four hands.
@@ -58,21 +58,21 @@
   {#if contract && score !== null && optimalTricks !== null}
     <section>
       <h3
-        class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wide"
+        class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wide"
       >
         Actual vs Optimal
       </h3>
       <div
         class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
       >
-        <div class="grid grid-cols-2 gap-2 text-sm">
+        <div class="grid grid-cols-2 gap-2 text-[--text-detail]">
           <span class="text-text-secondary">Your tricks:</span>
           <span class="font-mono text-text-primary">{declarerTricksWon}</span>
           <span class="text-text-secondary">DDS optimal:</span>
           <span class="font-mono text-text-primary">{optimalTricks}</span>
           <span class="text-text-secondary">Difference:</span>
           <span
-            class="font-mono {declarerTricksWon - optimalTricks >= 0 ? 'text-green-400' : 'text-red-400'}"
+            class="font-mono {declarerTricksWon - optimalTricks >= 0 ? 'text-accent-success' : 'text-accent-danger'}"
           >
             {declarerTricksWon - optimalTricks >= 0 ? `+${declarerTricksWon - optimalTricks}` : String(declarerTricksWon - optimalTricks)}
           </span>
@@ -85,18 +85,18 @@
   {#if ddsSolution.par}
     <section>
       <h3
-        class="text-xs font-medium text-text-muted mb-2 uppercase tracking-wide"
+        class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wide"
       >
         Par Score
       </h3>
       <div
         class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
       >
-        <p class="text-lg font-semibold text-text-primary font-mono">
+        <p class="text-[--text-value] font-semibold text-text-primary font-mono">
           {ddsSolution.par.score >= 0 ? "+" : ""}{ddsSolution.par.score}
         </p>
         {#if ddsSolution.par.contracts.length > 0}
-          <div class="text-sm text-text-secondary mt-1">
+          <div class="text-[--text-detail] text-text-secondary mt-1">
             {#each ddsSolution.par.contracts as pc (pc.declarer + pc.strain + pc.level)}
               <!-- Note: ParContract lacks `redoubled`, so formatContract(Contract) can't be used here -->
               <span class="mr-2">

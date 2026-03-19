@@ -71,8 +71,8 @@
       <button
         data-testid="bid-{callKey(call)}"
         class="{compact
-          ? 'px-1 py-1.5 text-xs'
-          : 'px-2 py-2.5 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated truncate
+          ? 'px-0.5 py-1.5 text-[--text-label]'
+          : 'px-1 py-2.5 text-[--text-detail]'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-center
           {legal
           ? 'hover:bg-bg-hover cursor-pointer'
           : 'opacity-30 cursor-default'} {getColorClass(call)}"
@@ -90,8 +90,8 @@
       <button
         data-testid="bid-{callKey(call)}"
         class="flex-1 {compact
-          ? 'px-1 py-1.5 text-xs'
-          : 'px-2 py-2.5 text-sm'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary truncate
+          ? 'px-1 py-1.5 text-[--text-label]'
+          : 'px-2 py-2.5 text-[--text-detail]'} min-h-[--size-touch-target] rounded-[--radius-sm] font-mono transition-colors bg-bg-elevated text-text-primary text-center
           {legal
           ? 'hover:bg-bg-hover cursor-pointer'
           : 'opacity-30 cursor-default'}"

@@ -131,7 +131,7 @@
               <div class="flex played-stack">
                 {#each group.cards as card (card.rank)}
                   <div
-                    class="mini-card bg-bg-elevated rounded-sm shadow-sm border border-border-subtle flex items-center justify-center {SUIT_COLOR_CLASS[card.suit]}"
+                    class="mini-card bg-bg-elevated rounded-[--radius-sm] shadow-sm border border-border-subtle flex items-center justify-center {SUIT_COLOR_CLASS[card.suit]}"
                     aria-label="{displayRank(card.rank)} of {card.suit}"
                   >
                     <span class="font-bold leading-none">{displayRank(card.rank)}</span>

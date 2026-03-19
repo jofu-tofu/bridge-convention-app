@@ -37,7 +37,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
 - **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
-- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `bootstrap/`, `stores/`, `components/`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
+- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `bootstrap/`, `stores/`, `components/`), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
 
 ## Conventions
 
@@ -113,6 +113,40 @@ tests/
 **Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. Details in `src/stores/CLAUDE.md`.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
+
+## Typography & Responsive Sizing
+
+The game screen uses a **single-source typography system** so that card text, panel text, and table-interior text all scale from one computed base (`--panel-font`). This prevents font-size drift across viewports, orientations, and future features.
+
+**How it works:**
+
+1. **`--panel-font`** — GameScreen computes a px value from viewport width + table scale: `Math.max(12, round(rootFontSize * (0.5 + 0.5 * tableScale)))`. Set as a CSS variable on `<main>`.
+2. **`--text-*` tokens** — em-relative CSS custom properties defined in `app.css :root`. They cascade from the local `font-size`, which is `--panel-font` in panels and a compensated value in the table.
+3. **ScaledTableArea font compensation** — The CSS-transform container sets `font-size: calc(--panel-font / scale)`, so after the transform, text appears at `--panel-font` size on screen.
+4. **Card text** — Uses `var(--text-value)` (1.2em), not a card-width ratio. Card rank/suit text matches panel `--text-value` in apparent size.
+5. **Z-index hierarchy** — `--z-header` (10), `--z-tooltip` (20), `--z-overlay` (30), `--z-modal` (40), `--z-above-all` (50). Use `z-[--z-header]` instead of `z-10`.
+
+**Token scale** (all em-relative, defined in `app.css`):
+
+| Token | Value | Purpose |
+|---|---|---|
+| `--text-annotation` | 0.65em | Tiny: alert annotations on bids |
+| `--text-label` | 0.75em | Section headings, muted labels |
+| `--text-detail` | 0.85em | Secondary info, seat labels |
+| `--text-body` | 1em | Primary readable content (= parent font) |
+| `--text-value` | 1.2em | Prominent: card rank/suit, contract, trick count |
+| `--text-heading` | 1.35em | Sub-section headings |
+| `--text-title` | 1.6em | Screen titles, hero text |
+
+**Rules:**
+
+- **Game screen components MUST use `--text-*` tokens** (via `text-[--text-label]` Tailwind syntax or `font-size: var(--text-label)`) instead of hardcoded `text-xs` / `text-sm` / `text-base`. **Enforced by ESLint** (`local/no-hardcoded-style-classes` — error).
+- **Raw Tailwind color-palette classes** (e.g. `text-red-400`, `bg-green-600`) are **banned** in game components. Use `--color-*` tokens from `app.css @theme` instead: existing semantics (`text-accent-success`, `bg-bg-card`), feedback palettes (`text-fb-incorrect-text`, `bg-fb-correct-bg/80`), phase badges (`bg-phase-bidding`), vulnerable seat (`text-vulnerable-text`), annotations (`text-annotation-announce`), supplementary notes (`text-note-encoding`). **Enforced by ESLint** (`local-colors/no-hardcoded-style-classes` — error).
+- **Non-game screens** (ConventionSelectScreen, LearningScreen, etc.) may use standard Tailwind text classes for now — they scale with the root `clamp(16px, 1.5vw, 28px)`.
+- **TypeScript typing:** `TextToken` type and `TEXT_TOKEN_CLASS` map in `src/core/display/tokens.ts`.
+- **Do NOT add new hardcoded px font-sizes** to game components. Derive from the token scale.
+- **ESLint rule:** `eslint-rules/no-hardcoded-style-classes.js` — bans hardcoded Tailwind text-size, raw color-palette, z-index (`z-10` etc.), and border-radius (`rounded-lg` etc.) classes. Scoped to `game-screen/` and `game/` (excluding debug components). All checks = error. Use `--text-*`, `--color-*`, `--z-*`, `--radius-*` tokens instead.
+- **Border-radius:** Use `rounded-[--radius-sm]` / `rounded-[--radius-md]` / `rounded-[--radius-lg]` / `rounded-[--radius-xl]` instead of raw Tailwind `rounded-sm/md/lg/xl`. `rounded-full` is allowed (it's a shape, not a configurable radius).
 
 ## Pedagogical Architecture
 

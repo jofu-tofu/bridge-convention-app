@@ -41,23 +41,23 @@
   role="dialog"
   aria-label={ariaLabel}
 >
-  <p class="text-base font-mono text-text-primary mb-1">
+  <p class="text-[--text-value] font-mono text-text-primary mb-1">
     {formatContractWithDeclarer(contract)}
   </p>
-  <p class="text-text-secondary text-xs mb-2">
+  <p class="text-text-secondary text-[--text-label] mb-2">
     {promptText}
   </p>
   <div class="flex gap-2 justify-center">
     <button
       type="button"
-      class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent transition-colors"
+      class="px-3 py-1.5 rounded-[--radius-md] text-[--text-label] font-medium bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent transition-colors"
       onclick={onAccept}
     >
       {acceptLabel}
     </button>
     <button
       type="button"
-      class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium bg-bg-elevated hover:bg-bg-hover text-text-primary border border-border-default transition-colors"
+      class="px-3 py-1.5 rounded-[--radius-md] text-[--text-label] font-medium bg-bg-elevated hover:bg-bg-hover text-text-primary border border-border-default transition-colors"
       onclick={onSkip}
     >
       Skip

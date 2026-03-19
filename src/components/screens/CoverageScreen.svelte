@@ -96,7 +96,7 @@
       <div class="grid gap-3">
         {#each bundles as bundle (bundle.id)}
           <button
-            class="block w-full text-left rounded-lg bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-card-hover transition-colors cursor-pointer group"
+            class="block w-full text-left rounded-[--radius-md] bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-card-hover transition-colors cursor-pointer group"
             onclick={() => selectBundle(bundle.id)}
           >
             <div class="flex items-center justify-between">
@@ -152,7 +152,7 @@
             {#each manifest.phase1Targets as target (target.stateId + ':' + (target.targetSurfaceId ?? ''))}
               <a
                 href={targetUrl(manifest.bundleId, target.stateId, target.targetSurfaceId)}
-                class="block rounded-lg bg-bg-card border border-border-subtle p-3 hover:border-green-500 hover:bg-bg-card-hover transition-colors group"
+                class="block rounded-[--radius-md] bg-bg-card border border-border-subtle p-3 hover:border-green-500 hover:bg-bg-card-hover transition-colors group"
               >
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
@@ -186,7 +186,7 @@
             {#each manifest.phase2Targets as target (target.stateId + ':' + (target.targetSurfaceId ?? ''))}
               <a
                 href={targetUrl(manifest.bundleId, target.stateId, target.targetSurfaceId)}
-                class="block rounded-lg bg-bg-card border border-border-subtle p-3 hover:border-amber-500 hover:bg-bg-card-hover transition-colors group"
+                class="block rounded-[--radius-md] bg-bg-card border border-border-subtle p-3 hover:border-amber-500 hover:bg-bg-card-hover transition-colors group"
               >
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">

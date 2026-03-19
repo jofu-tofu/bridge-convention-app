@@ -71,7 +71,7 @@
 >
   <!-- Header -->
   <div
-    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-2 flex items-center justify-between z-10 min-w-[420px]"
+    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-2 flex items-center justify-between z-[--z-header] min-w-[420px]"
   >
     <span class="text-text-primary font-semibold text-sm">Debug Console</span>
     <button

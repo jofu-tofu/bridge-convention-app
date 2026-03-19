@@ -104,7 +104,7 @@
     role="tab"
     aria-selected={activeTab === "bidding"}
     aria-controls="review-panel-bidding"
-    class="flex-1 px-3 py-1.5 text-sm font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'bidding'
+    class="flex-1 px-3 py-1.5 text-[--text-detail] font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'bidding'
       ? 'bg-bg-elevated text-text-primary'
       : 'text-text-muted hover:text-text-secondary'}"
     onclick={() => (activeTab = "bidding")}
@@ -116,7 +116,7 @@
     role="tab"
     aria-selected={activeTab === "analysis"}
     aria-controls="review-panel-analysis"
-    class="flex-1 px-3 py-1.5 text-sm font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'analysis'
+    class="flex-1 px-3 py-1.5 text-[--text-detail] font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'analysis'
       ? 'bg-bg-elevated text-text-primary'
       : 'text-text-muted hover:text-text-secondary'}"
     onclick={() => (activeTab = "analysis")}
@@ -130,15 +130,15 @@
   <div id="review-panel-bidding" role="tabpanel" aria-label="Bidding review">
     {#if contract}
       <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-        <p class="text-xs font-medium text-text-muted mb-1">Contract</p>
+        <p class="text-[--text-label] font-medium text-text-muted mb-1">Contract</p>
         <ContractDisplay {contract} />
         {#if score !== null}
           {@const result = formatResult()}
           {#if result}
             <p
-              class="text-base font-mono mt-2 {score >= 0
-                ? 'text-green-400'
-                : 'text-red-400'}"
+              class="text-[--text-value] font-mono mt-2 {score >= 0
+                ? 'text-accent-success'
+                : 'text-accent-danger'}"
               data-testid="score-result"
             >
               {result}
@@ -148,7 +148,7 @@
       </div>
     {:else}
       <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-        <p class="text-text-muted text-sm">Passed out — no contract.</p>
+        <p class="text-text-muted text-[--text-detail]">Passed out — no contract.</p>
       </div>
     {/if}
 
@@ -156,11 +156,11 @@
 
     {#if showConventionSummary}
       <div class="mt-3 bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-        <p class="text-xs font-medium text-text-muted mb-2">Conventions in this deal</p>
+        <p class="text-[--text-label] font-medium text-text-muted mb-2">Conventions in this deal</p>
         <div class="flex flex-wrap gap-1.5">
           {#each conventionSummary as mod (mod.moduleId)}
             <span
-              class="inline-flex items-center gap-1 rounded border px-2 py-1 text-xs {roleColorClasses(mod.role)}"
+              class="inline-flex items-center gap-1 rounded border px-2 py-1 text-[--text-detail] {roleColorClasses(mod.role)}"
             >
               <span class="font-medium">{formatRuleName(mod.moduleId)}</span>
               <span class="opacity-70">{formatModuleRole(mod.role)}</span>
@@ -175,17 +175,17 @@
     {#if ddsSolving}
       <div class="flex items-center gap-2 p-4" aria-live="polite">
         <div
-          class="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"
+          class="w-4 h-4 border-2 border-accent-primary border-t-transparent rounded-full animate-spin"
           aria-hidden="true"
         ></div>
-        <span class="text-text-secondary text-sm">Analyzing deal...</span>
+        <span class="text-text-secondary text-[--text-detail]">Analyzing deal...</span>
       </div>
     {:else if ddsError}
       <div
         class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
         role="alert"
       >
-        <p class="text-text-muted text-sm">{ddsError}</p>
+        <p class="text-text-muted text-[--text-detail]">{ddsError}</p>
       </div>
     {:else if ddsSolution}
       <AnalysisPanel
@@ -198,7 +198,7 @@
       <div
         class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
       >
-        <p class="text-text-muted text-sm">
+        <p class="text-text-muted text-[--text-detail]">
           DDS analysis not available.
         </p>
       </div>

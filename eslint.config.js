@@ -3,6 +3,7 @@ import sveltePlugin from "eslint-plugin-svelte";
 import svelteParser from "svelte-eslint-parser";
 import unusedImports from "eslint-plugin-unused-imports";
 import { rule as noFullScopeTrigger } from "./eslint-rules/no-full-scope-trigger.js";
+import { rule as noHardcodedStyleClasses } from "./eslint-rules/no-hardcoded-style-classes.js";
 
 const UNUSED_VAR_RULE = [
   "warn",
@@ -363,6 +364,44 @@ export default tseslint.config(
     },
     rules: {
       "local/no-full-scope-trigger": "warn",
+    },
+  },
+
+  // ── Design token enforcement: game screen components ──
+  // Text-size tokens are fully migrated → error.
+  // Raw color palette classes are not yet migrated → warn.
+  {
+    files: [
+      "src/components/screens/game-screen/**/*.svelte",
+      "src/components/game/**/*.svelte",
+    ],
+    ignores: [
+      "src/components/game/debug/**",
+      "src/components/game/Debug*.svelte",
+      "src/components/game/DecisionTree.svelte",
+    ],
+    plugins: {
+      local: { rules: { "no-hardcoded-style-classes": noHardcodedStyleClasses } },
+    },
+    rules: {
+      "local/no-hardcoded-style-classes": ["error", { banTextSizes: true, banRawColors: false }],
+    },
+  },
+  {
+    files: [
+      "src/components/screens/game-screen/**/*.svelte",
+      "src/components/game/**/*.svelte",
+    ],
+    ignores: [
+      "src/components/game/debug/**",
+      "src/components/game/Debug*.svelte",
+      "src/components/game/DecisionTree.svelte",
+    ],
+    plugins: {
+      "local-colors": { rules: { "no-hardcoded-style-classes": noHardcodedStyleClasses } },
+    },
+    rules: {
+      "local-colors/no-hardcoded-style-classes": ["error", { banTextSizes: false, banRawColors: true }],
     },
   },
 

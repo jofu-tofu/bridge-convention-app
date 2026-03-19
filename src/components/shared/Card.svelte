@@ -24,7 +24,7 @@
   const symbol = $derived(SUIT_SYMBOLS[card.suit]);
   const rank = $derived(displayRank(card.rank));
   const cardLabel = $derived(formatCardLabel(card.rank, card.suit));
-  const cardStyle = "width: var(--card-width); height: var(--card-height); --card-font: calc(var(--card-width) * 0.32);";
+  const cardStyle = "width: var(--card-width); height: var(--card-height);";
   const hoverClass = $derived(
     mirrored
       ? "motion-safe:hover:translate-y-1 hover:shadow-lg cursor-pointer motion-safe:transition-transform"
@@ -36,14 +36,14 @@
   {#if mirrored}
     <!-- Mirrored: text at bottom-left only, readable from across the table -->
     <span
-      class="absolute bottom-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--card-font);"
+      class="absolute bottom-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--text-value);"
     >
       {rank}<br />{symbol}
     </span>
   {:else}
     <!-- Normal: top-left upright + bottom-right rotated 180° -->
     <span
-      class="absolute top-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--card-font);"
+      class="absolute top-1 left-1.5 font-bold leading-none {colorClass}" style="font-size: var(--text-value);"
     >
       {rank}<br />{symbol}
     </span>

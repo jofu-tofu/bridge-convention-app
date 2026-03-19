@@ -13,7 +13,7 @@
 
   let {
     scale,
-    origin = "center",
+    origin: _origin = "top left",
     tableWidth = 800,
     tableHeight = 650,
     children,
@@ -30,7 +30,7 @@
   >
     <div
       class="absolute top-0 left-0"
-      style="width: {tableWidth}px; height: {tableHeight}px; transform: scale({scale}); transform-origin: {origin};"
+      style="width: {tableWidth}px; height: {tableHeight}px; transform: scale({scale}); transform-origin: top left; font-size: calc(var(--panel-font, 1rem) / {scale});"
     >
       {@render children()}
     </div>

@@ -84,6 +84,7 @@
       });
       if (bundle) {
         await gameStore.startDrill(bundle);
+        gameStore.setConventionName(convention?.name ?? "Drill");
         return;
       }
       // Fallback to normal drill if targeting fails
@@ -98,6 +99,7 @@
       opponentMode: effectiveOpponentMode,
     });
     await gameStore.startDrill(bundle);
+    gameStore.setConventionName(convention?.name ?? "Drill");
   }
 
   onMount(() => {
@@ -121,18 +123,18 @@
   // Phase display info
   const phaseInfo = $derived.by(() => {
     if (gameStore.phase === "BIDDING") {
-      return { label: "Bidding", color: "bg-blue-600", textColor: "text-blue-100" };
+      return { label: "Bidding", color: "bg-phase-bidding", textColor: "text-phase-bidding-text" };
     }
     if (gameStore.phase === "DECLARER_PROMPT") {
       if (gameStore.promptMode === "defender") {
-        return { label: "Defend", color: "bg-amber-600", textColor: "text-amber-100" };
+        return { label: "Defend", color: "bg-phase-playing", textColor: "text-phase-playing-text" };
       }
-      return { label: "Declarer", color: "bg-teal-600", textColor: "text-teal-100" };
+      return { label: "Declarer", color: "bg-phase-declarer", textColor: "text-phase-declarer-text" };
     }
     if (gameStore.phase === "PLAYING") {
-      return { label: "Playing", color: "bg-amber-600", textColor: "text-amber-100" };
+      return { label: "Playing", color: "bg-phase-playing", textColor: "text-phase-playing-text" };
     }
-    return { label: "Review", color: "bg-purple-600", textColor: "text-purple-100" };
+    return { label: "Review", color: "bg-phase-review", textColor: "text-phase-review-text" };
   });
 
   // Responsive table scaling — measure actual available space
@@ -171,7 +173,7 @@
   // feel proportional. Uses a dampened curve (0.5 + 0.5*scale) so panels
   // don't shrink as aggressively as the table itself.
   const panelFontPx = $derived(
-    Math.max(11, Math.round(rootFontSize * (0.5 + 0.5 * tableScale))),
+    Math.max(12, Math.round(rootFontSize * (0.5 + 0.5 * tableScale))),
   );
 
   const tableOrigin = $derived(isDesktop ? "top left" : "center");
@@ -195,17 +197,17 @@
 {#if gameStore.deal}
   <main class="h-full flex flex-row" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px;">
     <div class="flex-1 min-w-0 flex flex-col">
-    <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
+    <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[--z-above-all] focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
       Skip to game
     </a>
     <!-- Header -->
     <header
       bind:clientHeight={headerH}
-      class="flex items-center justify-between px-6 py-3 border-b border-border-subtle shrink-0 bg-bg-base relative z-10"
+      class="flex items-center justify-between px-3 sm:px-6 py-3 border-b border-border-subtle shrink-0 bg-bg-base relative z-[--z-header]"
     >
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         <button
-          class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
+          class="shrink-0 min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
           onclick={handleBackToMenu}
           aria-label="Back to menu"
           data-testid="back-to-menu"
@@ -224,19 +226,19 @@
             ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg
           >
         </button>
-        <h1 class="text-xl font-semibold text-text-primary">
+        <h1 class="text-[--text-heading] font-semibold text-text-primary truncate min-w-0">
           {appStore.selectedConvention?.name ?? "Drill"} Practice
         </h1>
         <span
-          class="px-2.5 py-0.5 rounded-full text-xs font-semibold {phaseInfo.color} {phaseInfo.textColor}"
+          class="shrink-0 px-2.5 py-0.5 rounded-full text-[--text-label] font-semibold {phaseInfo.color} {phaseInfo.textColor}"
           data-testid="game-phase"
         >
           {phaseInfo.label}
         </span>
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
       </div>
-      <div class="flex items-center gap-3">
-        <span class="text-text-secondary text-base">Deal #{dealNumber}</span>
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-text-secondary text-[--text-body]">Deal #{dealNumber}</span>
         {#if DEV}
           <button
             class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
@@ -254,7 +256,7 @@
     </header>
 
     <div id="game-content" class="flex-1 min-h-0 flex flex-col">
-    {#if gameStore.phase === "BIDDING"}
+    {#if gameStore.phase === "BIDDING" && gameStore.biddingViewport}
       <BiddingPhase
         {tableScale}
         {tableOrigin}
@@ -262,8 +264,7 @@
         {tableBaseH}
         {phaseContainerClass}
         {sidePanelClass}
-        deal={gameStore.deal}
-        faceUpSeats={gameStore.faceUpSeats}
+        viewport={gameStore.biddingViewport}
         auction={gameStore.auction}
         bidHistory={gameStore.bidHistory}
         legalCalls={gameStore.legalCalls}

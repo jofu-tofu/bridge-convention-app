@@ -86,9 +86,9 @@
     </div>
 
     <!-- Category filters -->
-    <div class="flex gap-2 mb-4 flex-wrap">
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
       <button
-        class="px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
+        class="shrink-0 px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
           {activeCategory === null
           ? 'bg-accent-primary text-text-on-accent'
           : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'}"
@@ -99,7 +99,7 @@
       </button>
       {#each categories as cat (cat)}
         <button
-          class="px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
+          class="shrink-0 px-4 py-2 min-h-[--size-touch-target] rounded-full text-sm font-medium transition-colors cursor-pointer
             {activeCategory === cat
             ? 'bg-accent-primary text-text-on-accent'
             : 'bg-bg-card text-text-secondary hover:bg-bg-hover border border-border-subtle'}"
@@ -134,13 +134,13 @@
                   {convention.description}
                 </p>
               </div>
-              <div class="flex flex-col items-end gap-2 ml-4 shrink-0">
+              <div class="flex flex-col items-end gap-2 ml-2 sm:ml-4 shrink-0">
                 <span class="text-xs text-text-muted border border-border-subtle rounded-full px-2.5 py-0.5">
                   {convention.category}
                 </span>
                 <div class="flex items-center gap-2">
                 <button
-                  class="p-2 rounded-xl bg-bg-hover text-text-secondary hover:text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer"
+                  class="p-2 rounded-[--radius-lg] bg-bg-hover text-text-secondary hover:text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer"
                   data-testid="learn-{convention.id}"
                   aria-label="Learn {convention.name}"
                   onclick={() => handleLearn(convention)}
@@ -159,7 +159,7 @@
                   ><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
                 </button>
                 <button
-                  class="p-2 rounded-xl bg-bg-hover text-text-secondary hover:text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer"
+                  class="p-2 rounded-[--radius-lg] bg-bg-hover text-text-secondary hover:text-accent-primary hover:bg-accent-primary/20 transition-colors cursor-pointer"
                   data-testid="practice-{convention.id}"
                   aria-label="Practice {convention.name}"
                   onclick={() => handleSelect(convention)}

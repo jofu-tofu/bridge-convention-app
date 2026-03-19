@@ -18,7 +18,7 @@
   ] as const;
 </script>
 
-<table class="w-full text-sm border-collapse table-fixed">
+<table class="w-full text-[--text-detail] border-collapse table-fixed">
   <caption class="sr-only">Makeable contracts by declarer and strain</caption>
   <thead>
     <tr>
@@ -38,7 +38,7 @@
           {@const count = tricks[seat]?.[strain] ?? 0}
           <td
             class="p-1.5 text-center font-mono {count >= 7
-              ? 'text-green-400'
+              ? 'text-accent-success'
               : 'text-text-muted'}"
           >
             {count}

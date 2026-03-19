@@ -72,7 +72,7 @@
     {#if !isDesktop && sidebarOpen}
       <button
         data-testid="sidebar-overlay"
-        class="fixed inset-0 bg-black/50 z-30 cursor-default"
+        class="fixed inset-0 bg-black/50 z-[--z-overlay] cursor-default"
         aria-label="Close sidebar"
         onclick={() => sidebarOpen = false}
       ></button>
@@ -82,7 +82,7 @@
     {#if isDesktop || sidebarOpen}
       <aside class="{isDesktop
         ? 'w-[280px] shrink-0 border-r border-border-subtle flex flex-col'
-        : 'fixed inset-y-0 left-0 w-[280px] z-40 bg-bg-base border-r border-border-subtle flex flex-col'}">
+        : 'fixed inset-y-0 left-0 w-[280px] z-[--z-modal] bg-bg-base border-r border-border-subtle flex flex-col'}">
         <div class="p-4 border-b border-border-subtle">
           <h2 class="text-sm font-semibold text-text-primary mb-3">Conventions</h2>
         <input
@@ -90,13 +90,13 @@
           placeholder="Search..."
           aria-label="Search conventions"
           bind:value={searchQuery}
-          class="w-full bg-bg-card border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted"
+          class="w-full bg-bg-card border border-border-subtle rounded-[--radius-md] px-3 py-2 text-sm text-text-primary placeholder-text-muted"
         />
       </div>
       <nav class="flex-1 overflow-y-auto py-2" aria-label="Convention list">
         {#each filteredConventions as conv (conv.id)}
           <button
-            class="w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer
+            class="w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer min-h-[--size-touch-target]
               {config?.id === conv.id
                 ? 'bg-accent-primary/10 text-accent-primary font-medium'
                 : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}"
@@ -113,45 +113,47 @@
     <div class="flex-1 flex flex-col min-h-0">
       {#if config}
         <!-- Convention toolbar — always visible -->
-        <div class="shrink-0 px-8 py-3 border-b border-border-subtle bg-bg-base flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-3 min-w-0 flex-1">
-            <h1 class="text-xl font-semibold text-text-primary truncate">{config.name}</h1>
+        <div class="shrink-0 px-4 sm:px-8 py-3 border-b border-border-subtle bg-bg-base flex flex-col gap-2">
+          <div class="flex items-center gap-3 min-w-0">
+            <h1 class="text-xl font-semibold text-text-primary truncate min-w-0 flex-1">{config.name}</h1>
             <span class="shrink-0 rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1">
               {config.category}
             </span>
           </div>
-          <!-- Depth mode tabs -->
-          <div class="shrink-0 flex gap-1 bg-[#1c2530] rounded-lg p-1" role="tablist" aria-label="Detail level">
-            {#each [
-              { mode: "compact" as const, label: "Compact" },
-              { mode: "study" as const, label: "Study" },
-              { mode: "learn" as const, label: "Learn" },
-            ] as tab (tab.mode)}
-              <button
-                role="tab"
-                aria-selected={depthMode === tab.mode}
-                class="px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer
-                  {depthMode === tab.mode
-                    ? 'bg-accent-primary text-text-on-accent font-medium'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'}"
-                onclick={() => depthMode = tab.mode}
-              >
-                {tab.label}
-              </button>
-            {/each}
+          <div class="flex items-center gap-3 flex-wrap">
+            <!-- Depth mode tabs -->
+            <div class="flex gap-1 bg-[#1c2530] rounded-[--radius-md] p-1" role="tablist" aria-label="Detail level">
+              {#each [
+                { mode: "compact" as const, label: "Compact" },
+                { mode: "study" as const, label: "Study" },
+                { mode: "learn" as const, label: "Learn" },
+              ] as tab (tab.mode)}
+                <button
+                  role="tab"
+                  aria-selected={depthMode === tab.mode}
+                  class="px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer
+                    {depthMode === tab.mode
+                      ? 'bg-accent-primary text-text-on-accent font-medium'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'}"
+                  onclick={() => depthMode = tab.mode}
+                >
+                  {tab.label}
+                </button>
+              {/each}
+            </div>
+            <button
+              class="shrink-0 px-5 py-2.5 bg-accent-primary text-text-on-accent rounded-[--radius-md] text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer min-h-[--size-touch-target]"
+              onclick={() => config && appStore.selectConvention(config)}
+            >
+              Practice
+            </button>
           </div>
-          <button
-            class="shrink-0 px-5 py-2.5 bg-accent-primary text-text-on-accent rounded-lg text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
-            onclick={() => config && appStore.selectConvention(config)}
-          >
-            Practice
-          </button>
         </div>
 
         <!-- Scrollable content -->
-        <div class="flex-1 overflow-y-auto p-8 space-y-7">
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-7">
           <!-- About This Convention card -->
-          <section class="bg-[#1c2530] rounded-xl border border-border-subtle">
+          <section class="bg-[#1c2530] rounded-[--radius-lg] border border-border-subtle">
             <button
               class="w-full flex items-center justify-between px-5 py-4 cursor-pointer"
               aria-expanded={!headerCollapsed}

@@ -14,20 +14,20 @@
 
 <!-- Correct bid — green flash -->
 <div
-  class="rounded-[--radius-md] border-2 border-green-500/60 bg-green-950/80 px-3 py-3 text-center min-w-0"
+  class="rounded-[--radius-md] border-2 border-fb-correct/60 bg-fb-correct-bg/80 px-3 py-3 text-center min-w-0"
   role="alert"
 >
-  <p class="text-green-300 font-semibold text-sm">Correct!</p>
-  <p class="text-green-400 font-mono text-lg mt-1">
+  <p class="text-fb-correct-text font-semibold text-[--text-detail]">Correct!</p>
+  <p class="text-fb-correct-emphasis font-mono text-[--text-value] mt-1">
     {formatCall(feedback.userCall)}
   </p>
   {#if feedback.grade === BidGrade.CorrectNotPreferred && feedback.teachingResolution}
-    <p class="text-green-200/70 text-xs mt-1" data-testid="not-preferred-note">
+    <p class="text-fb-correct-dim/70 text-[--text-label] mt-1" data-testid="not-preferred-note">
       Though <span class="font-mono font-semibold">{formatCall(feedback.teachingResolution.primaryBid)}</span> is preferred
     </p>
   {/if}
   {#if showPracticalNote && practicalRec}
-    <p class="text-amber-300/70 text-xs mt-2 italic" data-testid="practical-note">
+    <p class="text-fb-near-miss-text/70 text-[--text-label] mt-2 italic" data-testid="practical-note">
       Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
     </p>
   {/if}

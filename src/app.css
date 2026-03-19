@@ -32,6 +32,82 @@
   --color-border-strong: rgba(255, 255, 255, 0.18);
   --color-accent-primary-subtle: rgba(59, 130, 246, 0.15);
   --color-convention-highlight: rgba(59, 130, 246, 0.2);
+
+  /* ── Feedback palettes — tonal scale per grading state ──
+     Each state defines: base (borders/dividers), bg (panel), surface (content
+     area / hover bg), emphasis (icons/bright), text (readable), dim (secondary),
+     bright (highest contrast).  Opacity modifiers (/60 etc.) still work via
+     Tailwind's slash syntax.  Swap these 7-per-state values for a theme. */
+
+  /* Correct (green) */
+  --color-fb-correct: #22c55e;
+  --color-fb-correct-bg: #052e16;
+  --color-fb-correct-surface: #14532d;
+  --color-fb-correct-emphasis: #4ade80;
+  --color-fb-correct-text: #86efac;
+  --color-fb-correct-dim: #bbf7d0;
+  --color-fb-correct-bright: #dcfce7;
+
+  /* Acceptable (teal) */
+  --color-fb-acceptable: #14b8a6;
+  --color-fb-acceptable-bg: #042f2e;
+  --color-fb-acceptable-surface: #134e4a;
+  --color-fb-acceptable-emphasis: #2dd4bf;
+  --color-fb-acceptable-text: #5eead4;
+  --color-fb-acceptable-dim: #99f6e4;
+  --color-fb-acceptable-bright: #ccfbf1;
+
+  /* Near miss (amber) */
+  --color-fb-near-miss: #f59e0b;
+  --color-fb-near-miss-bg: #451a03;
+  --color-fb-near-miss-surface: #78350f;
+  --color-fb-near-miss-emphasis: #fbbf24;
+  --color-fb-near-miss-text: #fcd34d;
+  --color-fb-near-miss-dim: #fde68a;
+  --color-fb-near-miss-bright: #fef3c7;
+
+  /* Incorrect (red) */
+  --color-fb-incorrect: #ef4444;
+  --color-fb-incorrect-bg: #450a0a;
+  --color-fb-incorrect-surface: #7f1d1d;
+  --color-fb-incorrect-hover: #991b1b;
+  --color-fb-incorrect-emphasis: #f87171;
+  --color-fb-incorrect-text: #fca5a5;
+  --color-fb-incorrect-dim: #fecaca;
+  --color-fb-incorrect-bright: #fee2e2;
+
+  /* ── Phase badge colors ── */
+  --color-phase-bidding: #2563eb;
+  --color-phase-bidding-text: #dbeafe;
+  --color-phase-playing: #d97706;
+  --color-phase-playing-text: #fef3c7;
+  --color-phase-declarer: #0d9488;
+  --color-phase-declarer-text: #ccfbf1;
+  --color-phase-review: #9333ea;
+  --color-phase-review-text: #f3e8ff;
+
+  /* ── Vulnerable seat ── */
+  --color-vulnerable: #7f1d1d;
+  --color-vulnerable-ring: #ef4444;
+  --color-vulnerable-text: #fca5a5;
+
+  /* ── Auction annotations ── */
+  --color-annotation-announce: #60a5fa;
+  --color-annotation-alert: #fbbf24;
+
+  /* ── Supplementary note colors (one-off accents in feedback) ── */
+  --color-note-multi-rationale: #7dd3fc;
+  --color-note-encoding: #c4b5fd;
+  --color-note-relation: #d8b4fe;
+  --color-note-elimination: #a1a1aa;
+
+  /* ── Z-index hierarchy — prevents stacking-context collisions ── */
+  --z-header: 10;
+  --z-tooltip: 20;
+  --z-overlay: 30;
+  --z-modal: 40;
+  --z-above-all: 50;
+
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -65,13 +141,22 @@
   --table-width: var(--spacing-table-width);
   --table-height: var(--spacing-table-height);
 
-  /* Panel typography scale — em-relative, cascades from --panel-font
-     set on each <aside> by GameScreen so panels stay proportional to
-     the CSS-transformed table. */
-  --text-label: 0.7em;   /* section headings, muted labels */
-  --text-detail: 0.8em;  /* secondary info, seat labels, annotation */
-  --text-body: 0.9em;    /* primary readable content */
-  --text-value: 1.15em;  /* prominent values: contract, trick count */
+  /* Typography scale — em-relative tokens that cascade from the local
+     font-size context.  Inside game screens two contexts coexist:
+       • Panels: font-size set to --panel-font on each <aside>
+       • CSS-transformed table: ScaledTableArea sets a compensated
+         font-size (panel-font / game-scale) so that after the CSS
+         transform the text appears at --panel-font size on screen.
+     Both resolve to the same apparent size, so these tokens produce
+     visually consistent text everywhere.
+     Non-game screens inherit from the root font-size below. */
+  --text-annotation: 0.65em; /* tiny: alert annotations on bids */
+  --text-label: 0.75em;      /* section headings, muted labels */
+  --text-detail: 0.85em;     /* secondary info, seat labels */
+  --text-body: 1em;           /* primary readable content (= parent font) */
+  --text-value: 1.2em;       /* prominent: card rank/suit, contract, trick count */
+  --text-heading: 1.35em;    /* sub-section headings */
+  --text-title: 1.6em;       /* screen titles, hero text */
 }
 
 html {

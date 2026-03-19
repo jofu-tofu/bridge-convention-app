@@ -1,5 +1,43 @@
 import { Suit, BidSuit } from "../../engine/types";
 
+/*──────────────────────────────────────────────────────────────────────────────
+ * Typography tokens
+ *
+ * The app's em-relative type scale.  Every text element in game screens
+ * should use one of these tokens (via Tailwind `text-[--text-*]` or
+ * inline `font-size: var(--text-*)`) instead of hardcoded Tailwind size
+ * classes like text-xs / text-sm / text-base.
+ *
+ * Values are defined in app.css :root and cascade from the local font-size:
+ *   • In panels — cascades from --panel-font (set on <aside> by GameScreen)
+ *   • In the table — cascades from a compensated font-size on
+ *     ScaledTableArea that accounts for the CSS transform scale
+ *
+ * This means the SAME token produces the same apparent pixel size in both
+ * panels and on the CSS-transformed table.
+ *─────────────────────────────────────────────────────────────────────────── */
+
+/** Typography token names — CSS custom property names for the app's type scale. */
+export type TextToken =
+  | "--text-annotation"
+  | "--text-label"
+  | "--text-detail"
+  | "--text-body"
+  | "--text-value"
+  | "--text-heading"
+  | "--text-title";
+
+/** Map of token names to their Tailwind class equivalents. */
+export const TEXT_TOKEN_CLASS: Record<TextToken, string> = {
+  "--text-annotation": "text-[--text-annotation]",
+  "--text-label": "text-[--text-label]",
+  "--text-detail": "text-[--text-detail]",
+  "--text-body": "text-[--text-body]",
+  "--text-value": "text-[--text-value]",
+  "--text-heading": "text-[--text-heading]",
+  "--text-title": "text-[--text-title]",
+};
+
 /** Suit colors for dark backgrounds (panels, trick history). */
 export const SUIT_COLOR_CLASS: Record<Suit, string> = {
   [Suit.Spades]: "text-suit-spades",

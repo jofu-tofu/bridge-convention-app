@@ -10,6 +10,6 @@
 </script>
 
 <div class="flex flex-col gap-3">
-  <h3 class="text-lg font-semibold text-text-secondary">Bidding Review</h3>
+  <h3 class="text-[--text-value] font-semibold text-text-secondary">Bidding Review</h3>
   <RoundBidList {bidHistory} showExpectedResult />
 </div>

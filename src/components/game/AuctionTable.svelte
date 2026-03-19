@@ -32,8 +32,8 @@
    *  - educational: gray (informational label for learning, not ACBL-required) */
   function annotationClass(type?: "alert" | "announce" | "educational"): string {
     switch (type) {
-      case "announce": return "text-blue-400/80";
-      case "alert": return "text-amber-400/80";
+      case "announce": return "text-annotation-announce/80";
+      case "alert": return "text-annotation-alert/80";
       default: return "text-text-muted/70";
     }
   }
@@ -70,7 +70,7 @@
 </script>
 
 <div class="overflow-x-auto">
-  <table class="w-full text-center {compact ? 'text-xs' : 'text-sm'}">
+  <table class="w-full text-center {compact ? 'text-[--text-label]' : 'text-[--text-detail]'}">
     <caption class="sr-only">Auction sequence</caption>
     <thead>
       <tr>
@@ -98,7 +98,7 @@
                 <span>{cell.text}</span>
                 {#if cell.alertLabel}
                   <span
-                    class="text-[9px] {annotationClass(cell.annotationType)} font-sans italic leading-tight"
+                    class="text-[--text-annotation] {annotationClass(cell.annotationType)} font-sans italic leading-tight"
                     title={cell.alertLabel}
                   >{cell.alertLabel}</span>
                 {/if}
