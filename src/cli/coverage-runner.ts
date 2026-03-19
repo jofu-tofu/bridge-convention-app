@@ -1,14 +1,14 @@
 #!/usr/bin/env -S npx tsx
 // ── Bridge Convention Coverage CLI ──────────────────────────────────
 //
-// Protocol-frame-aware coverage runner. Enumerates coverage targets,
-// presents hands, grades bids, and runs self-test sessions.
+// Protocol-frame-aware coverage runner for convention evaluation.
 //
 // Subcommands:
 //   list      — enumerate all coverage atoms for a bundle
-//   present   — present a hand for an agent to bid (no correct answer)
-//   grade     — grade a submitted bid against the strategy
+//   eval      — per-atom evaluation (--atom, optional --bid for grading)
+//   play      — playthrough evaluation (--step, --bid, --reveal)
 //   selftest  — run strategy against itself for all atoms (CI)
+//   plan      — precompute two-phase evaluation plan
 
 // ── Side-effect import: registers all bundles + conventions ─────────
 import "../conventions";
@@ -42,6 +42,9 @@ import type {
 import type { ConventionSpec } from "../conventions/core/protocol/types";
 import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
 import type { BiddingContext } from "../core/contracts/bidding";
+import type { ConventionBiddingStrategy } from "../core/contracts/recommendation";
+import { resolveTeachingAnswer, gradeBid, BidGrade } from "../teaching/teaching-resolution";
+import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport/build-viewport";
 
 // ── Argument parsing ────────────────────────────────────────────────
 
@@ -171,10 +174,6 @@ function buildContext(
 }
 
 // ── Hand formatting ─────────────────────────────────────────────────
-
-function formatCard(card: Card): string {
-  return `${card.rank}${card.suit}`;
-}
 
 function formatHandBySuit(hand: Hand): Record<string, string[]> {
   const suits: Record<string, Card[]> = { S: [], H: [], D: [], C: [] };
@@ -310,17 +309,14 @@ switch (subcommand) {
   case "list":
     runList();
     break;
-  case "present":
-    runPresent();
+  case "eval":
+    runEval();
     break;
-  case "grade":
-    runGrade();
+  case "play":
+    runPlay();
     break;
   case "selftest":
     runSelftest();
-    break;
-  case "trace":
-    runTrace();
     break;
   case "plan":
     runPlan();
@@ -352,67 +348,72 @@ function runList(): void {
   }
 }
 
-// ── Subcommand: present ─────────────────────────────────────────────
+// ── Subcommand: eval ────────────────────────────────────────────────
+//
+// Per-atom evaluation. The --atom flag takes an atomId from the plan
+// (e.g., "responder-r1/sf:responder-r1/stayman:ask-major") and
+// internally parses it into target state + surface.
+//
+//   eval --bundle=X --atom=ATOM_ID --seed=N
+//     Returns sanitized viewport: seat, hand, hcp, auction, legalCalls.
+//     No correct answer, no internal identifiers beyond seat.
+//
+//   eval --bundle=X --atom=ATOM_ID --seed=N --bid=2C
+//     Returns viewport + full teaching feedback (ViewportBidFeedback + TeachingDetail).
+//     Exit code: 0=correct/acceptable, 1=wrong.
 
-function runPresent(): void {
+function parseAtomId(atomId: string): { stateId: string; surfaceId: string; meaningId: string } {
+  const parts = atomId.split("/");
+  if (parts.length < 3) {
+    console.error(`Invalid atom ID: "${atomId}" (expected stateId/surfaceId/meaningId)`);
+    process.exit(2);
+  }
+  return {
+    stateId: parts[0]!,
+    surfaceId: parts[1]!,
+    meaningId: parts.slice(2).join("/"),
+  };
+}
+
+function runEval(): void {
   const bundleId = requireArg(flags, "bundle");
-  const targetState = requireArg(flags, "target");
-  const surface = requireArg(flags, "surface");
+  const atomId = requireArg(flags, "atom");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
+  const bidStr = flags["bid"] as string | undefined;
 
+  const { stateId } = parseAtomId(atomId);
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
 
-  // Generate deal
   const deal = generateSeededDeal(bundle, seed);
   const userSeat = resolveUserSeat(bundle, deal);
+  const { auction, targeted } = resolveAuction(bundle, spec, deal, stateId, userSeat);
 
-  // Build targeted auction to reach the target state
-  const { auction, targeted } = resolveAuction(bundle, spec, deal, targetState, userSeat);
-
-  // Active seat = next bidder after the auction prefix
   const activeSeat = auction.entries.length > 0
     ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;
   const hand = deal.hands[activeSeat];
-
-  // Legal calls from the active seat's perspective
   const legalCalls = getLegalCalls(auction, activeSeat).map(callKey);
 
-  // Build viewport output (no correct answer)
-  const output = {
-    bundle: bundleId,
-    target: targetState,
-    surface,
-    seed,
-    seat: activeSeat,
-    targeted,
+  // Viewport — always included, always sanitized
+  const viewport = {
+    seat: activeSeat as string,
     hand: formatHandBySuit(hand),
-    handRaw: hand.cards.map(formatCard),
     hcp: evaluateHand(hand).hcp,
     auction: auction.entries.map((e) => ({
-      seat: e.seat,
+      seat: e.seat as string,
       call: callKey(e.call),
     })),
     legalCalls,
   };
 
-  console.log(JSON.stringify(output, null, 2));
-}
+  if (!bidStr || bidStr === "true") {
+    // No bid: return viewport only
+    console.log(JSON.stringify(viewport, null, 2));
+    return;
+  }
 
-// ── Subcommand: grade ───────────────────────────────────────────────
-
-function runGrade(): void {
-  const bundleId = requireArg(flags, "bundle");
-  const targetState = requireArg(flags, "target");
-  const surface = requireArg(flags, "surface");
-  const seed = optionalNumericArg(flags, "seed") ?? 42;
-  const bidStr = requireArg(flags, "bid");
-
-  const spec = resolveSpec(bundleId);
-  const bundle = resolveBundle(bundleId);
-
-  // Parse the submitted bid
+  // Bid submitted: grade with full teaching feedback
   let submittedCall: Call;
   try {
     submittedCall = parsePatternCall(bidStr);
@@ -421,71 +422,59 @@ function runGrade(): void {
     process.exit(2);
   }
 
-  // Same deal as present (same seed)
-  const deal = generateSeededDeal(bundle, seed);
-  const userSeat = resolveUserSeat(bundle, deal);
-
-  // Build targeted auction and determine active seat
-  const { auction, targeted } = resolveAuction(bundle, spec, deal, targetState, userSeat);
-  const activeSeat = auction.entries.length > 0
-    ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
-    : userSeat;
-  const hand = deal.hands[activeSeat];
-
-  // Build context from the active seat's perspective
-  const context = buildContext(hand, auction, activeSeat);
-
-  // Run strategy to get the correct bid
   const strategy = protocolSpecToStrategy(spec);
+  const context = buildContext(hand, auction, activeSeat);
   const result = strategy.suggest(context);
 
   if (!result) {
-    // Strategy has no recommendation — report as skip, not wrong
-    const output = {
-      bundle: bundleId,
-      target: targetState,
-      surface,
-      seed,
-      targeted,
-      yourBid: callKey(submittedCall),
-      correctBid: null,
+    console.log(JSON.stringify({
+      viewport,
       grade: "skip",
       correct: false,
       skip: true,
-      requiresRetry: false,
-      explanation: null,
-      meaning: null,
-      feedback: "Strategy returned null (no recommendation for this state/hand)",
-    };
-    console.log(JSON.stringify(output, null, 2));
-    process.exit(0); // skip is not a failure
+      feedback: null,
+      teaching: null,
+    }, null, 2));
+    process.exit(0);
     return;
   }
 
-  const correctCall = result.call;
-  const isCorrect = callsMatch(submittedCall, correctCall);
-
-  const output = {
-    bundle: bundleId,
-    target: targetState,
-    surface,
-    seed,
-    targeted,
-    yourBid: callKey(submittedCall),
-    correctBid: callKey(correctCall),
-    grade: isCorrect ? "correct" : "wrong",
-    correct: isCorrect,
-    skip: false,
-    requiresRetry: !isCorrect,
-    explanation: result.explanation ?? null,
-    meaning: result.meaning ?? null,
-    feedback: isCorrect
-      ? "Correct!"
-      : `Expected ${callKey(correctCall)}, got ${callKey(submittedCall)}`,
+  const strategyEval = (strategy as ConventionBiddingStrategy).getLastEvaluation?.() ?? null;
+  const teachingResolution = resolveTeachingAnswer(
+    result,
+    strategyEval?.acceptableAlternatives ?? undefined,
+    strategyEval?.intentFamilies ?? undefined,
+  );
+  const grade = gradeBid(submittedCall, teachingResolution);
+  const bidFeedback = {
+    grade,
+    userCall: submittedCall,
+    expectedResult: result,
+    teachingResolution,
+    practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
+    teachingProjection: strategyEval?.teachingProjection ?? undefined,
+    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? undefined,
+    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive,
+    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached,
   };
 
-  console.log(JSON.stringify(output, null, 2));
-  process.exit(isCorrect ? 0 : 1);
+  const viewportFeedback = buildViewportFeedback(bidFeedback);
+  const teachingDetail = buildTeachingDetail(bidFeedback);
+  const isCorrect = grade === BidGrade.Correct || grade === BidGrade.CorrectNotPreferred;
+  const isAcceptable = grade === BidGrade.Acceptable;
+
+  console.log(JSON.stringify({
+    viewport,
+    yourBid: callKey(submittedCall),
+    correctBid: callKey(result.call),
+    grade,
+    correct: isCorrect,
+    acceptable: isAcceptable,
+    skip: false,
+    feedback: viewportFeedback,
+    teaching: teachingDetail,
+  }, null, 2));
+  process.exit(isCorrect || isAcceptable ? 0 : 1);
 }
 
 // ── Subcommand: selftest ────────────────────────────────────────────
@@ -642,7 +631,7 @@ interface PlaythroughStep {
   readonly auctionSoFar: readonly { seat: string; call: string }[];
   readonly legalCalls: readonly string[];
   readonly recommendation: string;
-  /** Whether this is a user (player) decision point vs partner auto-bid. */
+  /** Whether this is a convention-player decision point (user or partner) vs opponent pass. */
   readonly isUserStep: boolean;
 }
 
@@ -757,7 +746,7 @@ function runSinglePlaythrough(
       auctionSoFar: entries.map((e) => ({ seat: e.seat as string, call: callKey(e.call) })),
       legalCalls: getLegalCalls(auction, activeSeat).map(callKey),
       recommendation: callKey(result.call),
-      isUserStep: activeSeat === userSeat,
+      isUserStep: activeSeat === userSeat || activeSeat === partner,
     });
 
     entries.push({ seat: activeSeat, call: result.call });
@@ -766,42 +755,102 @@ function runSinglePlaythrough(
   return { seed, steps, atomsCovered };
 }
 
-// ── Subcommand: trace ───────────────────────────────────────────────
+// ── Subcommand: play ────────────────────────────────────────────────
 //
-// Per-step modes:
-//   trace --phase=present --step=0
-//     Viewport only (hand, auction, legal calls). No answer.
+// Playthrough evaluation. Runs a full auction for a seed and lets the
+// agent step through each convention-player decision point.
 //
-//   trace --phase=present --step=0 --bid=2C
-//     Submit a bid → get viewport + grade + feedback in one shot.
-//     Mirrors the app: bid, then immediately see if you're right and why.
-//     Exit code: 0=correct, 1=wrong.
+//   play --bundle=X --seed=N
+//     Returns { totalSteps, step: <first viewport> }
 //
-// Utility modes:
-//   trace --phase=present
-//     (no --step) Just returns totalSteps.
+//   play --bundle=X --seed=N --step=N
+//     Returns viewport for step N (hand, seat, auction, legal calls)
 //
-//   trace --phase=reveal
+//   play --bundle=X --seed=N --step=N --bid=2C
+//     Returns { step: <viewport>, grade: <feedback+teaching>, nextStep: <next viewport> | null }
+//     One fewer round-trip: grade + next viewport in one call.
+//     Exit code: 0=correct/acceptable, 1=wrong.
+//
+//   play --bundle=X --seed=N --reveal
 //     Full trace with all recommendations and atom IDs.
-//
-// Protocol:
-//   1. trace --phase=present           → learn totalSteps
-//   2. trace --phase=present --step=0  → see viewport, decide answer
-//   3. trace --phase=present --step=0 --bid=2C  → submit, get feedback
-//   4. If wrong: record finding, stop. If right: move to step 1.
-//   5. trace --phase=reveal            → full comparison at end
 
-function runTrace(): void {
+function buildStepViewport(s: PlaythroughStep): Record<string, unknown> {
+  return {
+    index: s.stepIndex,
+    seat: s.seat,
+    hand: s.hand,
+    hcp: s.hcp,
+    auctionSoFar: s.auctionSoFar,
+    legalCalls: s.legalCalls,
+  };
+}
+
+function gradePlaythroughStep(
+  s: PlaythroughStep,
+  submittedCall: Call,
+  spec: ConventionSpec,
+  bundle: ConventionBundle,
+  seed: number,
+): { viewportFeedback: ReturnType<typeof buildViewportFeedback>; teachingDetail: ReturnType<typeof buildTeachingDetail>; isCorrect: boolean; isAcceptable: boolean } {
+  // Rebuild context for this step to get full teaching feedback
+  const deal = generateSeededDeal(bundle, seed);
+  const activeSeat = s.seat as Seat;
+  const hand = deal.hands[activeSeat];
+  const auction: Auction = { entries: s.auctionSoFar.map((e) => ({ seat: e.seat as Seat, call: parsePatternCall(e.call) })), isComplete: false };
+  const context = buildContext(hand, auction, activeSeat);
+
+  const strategy = protocolSpecToStrategy(spec);
+  const result = strategy.suggest(context);
+
+  if (!result) {
+    const emptyFeedback = buildViewportFeedback({
+      grade: BidGrade.Incorrect,
+      userCall: submittedCall,
+      expectedResult: null,
+      teachingResolution: null,
+    });
+    const emptyTeaching = buildTeachingDetail({
+      grade: BidGrade.Incorrect,
+      userCall: submittedCall,
+      expectedResult: null,
+      teachingResolution: null,
+    });
+    return { viewportFeedback: emptyFeedback, teachingDetail: emptyTeaching, isCorrect: false, isAcceptable: false };
+  }
+
+  const strategyEval = (strategy as ConventionBiddingStrategy).getLastEvaluation?.() ?? null;
+  const teachingResolution = resolveTeachingAnswer(
+    result,
+    strategyEval?.acceptableAlternatives ?? undefined,
+    strategyEval?.intentFamilies ?? undefined,
+  );
+  const grade = gradeBid(submittedCall, teachingResolution);
+  const bidFeedback = {
+    grade,
+    userCall: submittedCall,
+    expectedResult: result,
+    teachingResolution,
+    practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
+    teachingProjection: strategyEval?.teachingProjection ?? undefined,
+    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? undefined,
+    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive,
+    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached,
+  };
+
+  return {
+    viewportFeedback: buildViewportFeedback(bidFeedback),
+    teachingDetail: buildTeachingDetail(bidFeedback),
+    isCorrect: grade === BidGrade.Correct || grade === BidGrade.CorrectNotPreferred,
+    isAcceptable: grade === BidGrade.Acceptable,
+  };
+}
+
+function runPlay(): void {
   const bundleId = requireArg(flags, "bundle");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
-  const phase = (flags["phase"] as string) ?? "reveal";
   const stepIdx = optionalNumericArg(flags, "step");
   const bidStr = flags["bid"] as string | undefined;
-
-  if (phase !== "present" && phase !== "reveal") {
-    console.error("trace --phase must be 'present' or 'reveal'");
-    process.exit(2);
-  }
+  const reveal = flags["reveal"] === true;
 
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
@@ -810,84 +859,77 @@ function runTrace(): void {
   const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap);
   const userSteps = result.steps.filter((s) => s.isUserStep);
 
-  if (phase === "present") {
-    if (stepIdx === undefined) {
-      console.log(JSON.stringify({
-        bundle: bundleId,
-        seed,
-        phase: "present",
-        totalSteps: userSteps.length,
-      }, null, 2));
-    } else {
-      if (stepIdx < 0 || stepIdx >= userSteps.length) {
-        console.error(`Step ${stepIdx} out of range (0-${userSteps.length - 1})`);
-        process.exit(2);
-      }
-      const s = userSteps[stepIdx]!;
-      const viewport = {
-        stepIndex: stepIdx,
-        seat: s.seat,
-        hand: s.hand,
-        hcp: s.hcp,
-        auctionSoFar: s.auctionSoFar,
-        legalCalls: s.legalCalls,
-      };
-
-      if (bidStr && bidStr !== "true") {
-        // --bid provided: grade and return feedback
-        let submittedCall: Call;
-        try {
-          submittedCall = parsePatternCall(bidStr);
-        } catch {
-          console.error(`Invalid bid: "${bidStr}"`);
-          process.exit(2);
-        }
-
-        const appCall = parsePatternCall(s.recommendation);
-        const isCorrect = callsMatch(submittedCall, appCall);
-
-        console.log(JSON.stringify({
-          bundle: bundleId,
-          seed,
-          phase: "present",
-          totalSteps: userSteps.length,
-          step: viewport,
-          grade: {
-            yourBid: callKey(submittedCall),
-            appBid: s.recommendation,
-            correct: isCorrect,
-            meaning: s.meaningLabel,
-            stateId: s.stateId,
-            atomId: s.atomId,
-            feedback: isCorrect
-              ? `Correct! ${s.meaningLabel ?? ""}`
-              : `Expected ${s.recommendation}, got ${callKey(submittedCall)}.${s.meaningLabel ? " The correct bid is: " + s.meaningLabel + "." : ""}`,
-          },
-        }, null, 2));
-        process.exit(isCorrect ? 0 : 1);
-      } else {
-        // No --bid: viewport only
-        console.log(JSON.stringify({
-          bundle: bundleId,
-          seed,
-          phase: "present",
-          totalSteps: userSteps.length,
-          step: viewport,
-        }, null, 2));
-      }
-    }
-  } else {
-    // Reveal: full trace — all steps (user + partner) with answers
+  if (reveal) {
+    // Full trace with all recommendations and atom IDs
     console.log(JSON.stringify({
-      bundle: bundleId,
       seed,
-      phase: "reveal",
-      totalSteps: result.steps.length,
-      userSteps: userSteps.length,
+      totalSteps: userSteps.length,
       steps: result.steps,
       atomsCovered: result.atomsCovered,
     }, null, 2));
+    return;
   }
+
+  if (stepIdx === undefined) {
+    // No step: return totalSteps + first viewport
+    console.log(JSON.stringify({
+      seed,
+      totalSteps: userSteps.length,
+      step: userSteps.length > 0 ? buildStepViewport(userSteps[0]!) : null,
+    }, null, 2));
+    return;
+  }
+
+  if (stepIdx < 0 || stepIdx >= userSteps.length) {
+    console.error(`Step ${stepIdx} out of range (0-${userSteps.length - 1})`);
+    process.exit(2);
+  }
+
+  const s = userSteps[stepIdx]!;
+  const viewport = buildStepViewport(s);
+
+  if (!bidStr || bidStr === "true") {
+    // No bid: viewport only for this step
+    console.log(JSON.stringify({
+      seed,
+      totalSteps: userSteps.length,
+      step: viewport,
+    }, null, 2));
+    return;
+  }
+
+  // Bid submitted: grade + next viewport
+  let submittedCall: Call;
+  try {
+    submittedCall = parsePatternCall(bidStr);
+  } catch {
+    console.error(`Invalid bid: "${bidStr}"`);
+    process.exit(2);
+  }
+
+  const { viewportFeedback, teachingDetail, isCorrect, isAcceptable } =
+    gradePlaythroughStep(s, submittedCall, spec, bundle, seed);
+
+  const nextStepIdx = stepIdx + 1;
+  const nextStep = nextStepIdx < userSteps.length
+    ? buildStepViewport(userSteps[nextStepIdx]!)
+    : null;
+
+  console.log(JSON.stringify({
+    seed,
+    totalSteps: userSteps.length,
+    step: viewport,
+    yourBid: callKey(submittedCall),
+    grade: viewportFeedback.grade,
+    correct: isCorrect,
+    acceptable: isAcceptable,
+    feedback: viewportFeedback,
+    teaching: teachingDetail,
+    nextStep,
+    complete: nextStep === null,
+  }, null, 2));
+
+  process.exit(isCorrect || isAcceptable ? 0 : 1);
 }
 
 // ── Subcommand: plan ────────────────────────────────────────────────
@@ -952,6 +994,27 @@ function runPlan(): void {
         transitionBid = lastT.call ? callKey(lastT.call) : null;
       }
       stateInfo.set(stateId, { depth, parentStateId, transitionBid });
+    }
+  }
+
+  // Build dependency graph for stop-on-error propagation
+  const dependencyGraph: Record<string, {
+    depth: number;
+    parentStateId: string | null;
+    children: string[];
+  }> = {};
+
+  for (const [stateId, info] of stateInfo) {
+    dependencyGraph[stateId] = {
+      depth: info.depth,
+      parentStateId: info.parentStateId,
+      children: [],
+    };
+  }
+
+  for (const [stateId, info] of stateInfo) {
+    if (info.parentStateId && dependencyGraph[info.parentStateId]) {
+      dependencyGraph[info.parentStateId]!.children.push(stateId);
     }
   }
 
@@ -1021,15 +1084,44 @@ function runPlan(): void {
   // Sort by depth (BFS order)
   atomPlans.sort((a, b) => a.depth - b.depth);
 
-  // Split across agents, balanced by atom count, preserving BFS order
-  const agents: { atoms: AtomPlan[] }[] = [];
-  for (let i = 0; i < agentCount; i++) {
-    agents.push({ atoms: [] });
+  // Phase 1 atoms are orchestrator-driven (no per-agent split needed)
+
+  // ── Phase 2: Playthrough seed selection ──
+  // Use unique seeds from Phase 1 — they're known to exercise interesting states.
+  // Run playthroughs to get step counts for balanced agent distribution.
+  const atomCallMap = buildAtomCallMap(spec);
+  const uniqueSeeds = [...new Set(atomPlans.flatMap((a) => a.seeds))];
+
+  const playthroughInfo: { seed: number; userSteps: number; atomsCovered: string[] }[] = [];
+  for (const seed of uniqueSeeds) {
+    try {
+      const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap);
+      const userSteps = result.steps.filter((s) => s.isUserStep);
+      playthroughInfo.push({
+        seed,
+        userSteps: userSteps.length,
+        atomsCovered: [...result.atomsCovered],
+      });
+    } catch {
+      // Skip seeds that error during playthrough
+    }
   }
-  for (const atom of atomPlans) {
-    // Assign each atom to the agent with fewest atoms (round-robin by load)
-    const minAgent = agents.reduce((a, b) => (a.atoms.length <= b.atoms.length ? a : b));
-    minAgent.atoms.push(atom);
+
+  // Distribute across agents balanced by step count
+  const phase2Agents: { agentIndex: number; seeds: number[]; estimatedSteps: number }[] = [];
+  for (let i = 0; i < agentCount; i++) {
+    phase2Agents.push({ agentIndex: i, seeds: [], estimatedSteps: 0 });
+  }
+
+  // Sort by step count descending — assign largest first for better balance
+  playthroughInfo.sort((a, b) => b.userSteps - a.userSteps);
+
+  for (const pt of playthroughInfo) {
+    const minAgent = phase2Agents.reduce((a, b) =>
+      a.estimatedSteps <= b.estimatedSteps ? a : b,
+    );
+    minAgent.seeds.push(pt.seed);
+    minAgent.estimatedSteps += pt.userSteps;
   }
 
   // Stats
@@ -1045,14 +1137,15 @@ function runPlan(): void {
     atomsCoveredAtTarget: covered,
     uncoveredAtoms: uncovered,
     maxDepth: Math.max(0, ...atomPlans.map((a) => a.depth)),
-    agents: agents.map((a, i) => ({
-      agentIndex: i,
-      totalAtoms: a.atoms.length,
-      // Atoms in BFS order with all info the agent needs
-      atoms: a.atoms.map((ap) => ({
+
+    // Phase 1: Per-atom targeted evaluation (orchestrator-private)
+    phase1: {
+      description: "Per-atom targeted evaluation. Orchestrator walks atoms in BFS order, calls `eval --atom=ATOM_ID --seed=N` for viewports, grades with `eval --atom=ATOM_ID --seed=N --bid=X`, enforces stop-on-error via dependency graph.",
+      atoms: atomPlans.map((ap) => ({
         atomId: ap.atomId,
         stateId: ap.stateId,
         surfaceId: ap.surfaceId,
+        meaningId: ap.meaningId,
         meaningLabel: ap.meaningLabel,
         expectedBid: ap.expectedBid,
         depth: ap.depth,
@@ -1060,7 +1153,20 @@ function runPlan(): void {
         transitionBid: ap.transitionBid,
         seeds: ap.seeds,
       })),
-    })),
+      dependencyGraph,
+    },
+
+    // Phase 2: Playthrough integration testing (agent-driven)
+    phase2: {
+      description: "Playthrough integration testing. Agents run full playthroughs end-to-end using `play` command. Seeds are from Phase 1, balanced by step count.",
+      totalPlaythroughSeeds: playthroughInfo.length,
+      agents: phase2Agents.map((a) => ({
+        agentIndex: a.agentIndex,
+        bundleId,
+        seeds: a.seeds,
+        estimatedSteps: a.estimatedSteps,
+      })),
+    },
   }, null, 2));
 }
 
@@ -1069,22 +1175,28 @@ function runPlan(): void {
 function printUsage(): void {
   console.error("Usage: coverage-runner.ts <subcommand> [options]");
   console.error("");
-  console.error("Subcommands:");
-  console.error("  list      --bundle=<id>           List all coverage atoms");
-  console.error("  present   --bundle=<id> --target=<state> --surface=<surface> [--seed=N]");
-  console.error("            Present a hand (no correct answer)");
-  console.error("  grade     --bundle=<id> --target=<state> --surface=<surface> --bid=<bid> [--seed=N]");
-  console.error("            Grade a submitted bid");
-  console.error("  selftest  --bundle=<id> [--seed=N]   Run strategy self-test");
-  console.error("  selftest  --all [--seed=N]            Self-test all bundles");
-  console.error("  trace     --bundle=<id> --phase=present [--seed=N]");
-  console.error("            Get step count for a playthrough");
-  console.error("  trace     --bundle=<id> --phase=present --step=N [--seed=N]");
-  console.error("            Single viewport (no answer) — agent commits before next step");
-  console.error("  trace     --bundle=<id> --phase=reveal [--seed=N]");
-  console.error("            Full playthrough trace with all recommendations");
+  console.error("── Planning & diagnostics ──────────────────────────────────────");
+  console.error("  list      --bundle=<id>                    List all coverage atoms");
   console.error("  plan      --bundle=<id> --agents=N [--coverage=2] [--max-seeds=500] [--seed=0]");
-  console.error("            Precompute playthrough plan for agent sweep");
+  console.error("            Precompute two-phase evaluation plan");
+  console.error("  selftest  --bundle=<id> [--seed=N]         Strategy self-test");
+  console.error("  selftest  --all [--seed=N]                 Self-test all bundles");
+  console.error("");
+  console.error("── Per-atom evaluation (Phase 1, orchestrator-driven) ─────────");
+  console.error("  eval      --bundle=<id> --atom=<atomId> --seed=N");
+  console.error("            Returns sanitized viewport (seat, hand, hcp, auction, legal calls)");
+  console.error("  eval      --bundle=<id> --atom=<atomId> --seed=N --bid=<bid>");
+  console.error("            Returns viewport + full teaching feedback + grade");
+  console.error("");
+  console.error("── Playthrough evaluation (Phase 2, agent-driven) ─────────────");
+  console.error("  play      --bundle=<id> --seed=N");
+  console.error("            Returns { totalSteps, step: <first viewport> }");
+  console.error("  play      --bundle=<id> --seed=N --step=N");
+  console.error("            Returns viewport for step N");
+  console.error("  play      --bundle=<id> --seed=N --step=N --bid=<bid>");
+  console.error("            Returns grade + teaching + next step viewport");
+  console.error("  play      --bundle=<id> --seed=N --reveal");
+  console.error("            Full trace with all recommendations and atom IDs");
   console.error("");
   console.error("Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error");
   console.error("");

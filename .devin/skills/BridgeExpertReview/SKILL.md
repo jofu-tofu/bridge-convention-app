@@ -32,10 +32,10 @@ Running the **[WorkflowName]** workflow from the **BridgeExpertReview** skill...
 ```
 User: "Run a bridge expert review of the app"
 -> Invokes RunReview workflow
--> Tier 1: Runs `selftest --all --seed=42` for baseline, then `list`/`present`/`grade` per target
--> For each failure: records viewport (from `present`), feedback (from `grade`), verifies against bridge sources
+-> Tier 1: Runs `selftest --all --seed=42` for baseline, then `list`/`eval` per atom
+-> For each failure: records viewport (from `eval`), feedback (from `eval --bid`), verifies against bridge sources
 -> Tier 2: Spawns CLI agents based on scope (e.g., one per convention, or by concern area)
--> CLI agents use `exec` to run coverage-runner `present`/`grade` + `read` to analyze source code
+-> CLI agents use `exec` to run coverage-runner `eval`/`play` + `read` to analyze source code
 -> Compiles all findings into prioritized feedback with severity, evidence, and references
 ```
 
@@ -43,7 +43,7 @@ User: "Run a bridge expert review of the app"
 ```
 User: "Compile the bridge review feedback"
 -> Invokes CompileFeedback workflow
--> Reads `grade` JSON responses + CLI agent reports
+-> Reads `eval --bid` JSON responses + CLI agent reports
 -> Deduplicates, cross-references, and severity-ranks all findings
 -> Produces a single prioritized action list with CLI metrics
 ```
@@ -53,7 +53,7 @@ User: "Compile the bridge review feedback"
 User: "Run a bridge expert review focused on Stayman"
 -> Invokes RunReview workflow with focus hint
 -> Tier 1: Runs `npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle` to enumerate targets
--> For each Stayman-related atom: `present` -> decide bid -> `grade` -> retry if wrong
--> Tier 2: CLI agents deep-dive into nt-bundle with `present`/`grade` loops
+-> For each Stayman-related atom: `eval` -> decide bid -> `eval --bid` -> retry if wrong
+-> Tier 2: CLI agents deep-dive into nt-bundle with `eval`/`play` loops
 -> Reports correctness issues with state/surface IDs for precise reproducibility
 ```

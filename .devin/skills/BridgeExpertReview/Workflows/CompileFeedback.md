@@ -8,13 +8,13 @@
 
 ## Purpose
 
-Take CLI coverage-runner JSON output (`grade`, `selftest`) and CLI agent evaluation reports and compile them into a single, deduplicated, prioritized action list with quantitative metrics.
+Take CLI coverage-runner JSON output (`eval --bid`, `selftest`) and CLI agent evaluation reports and compile them into a single, deduplicated, prioritized action list with quantitative metrics.
 
 ## Input Sources
 
 | Source | Type | Contains |
 |--------|------|----------|
-| **CLI `grade` JSON** | Structured JSON | Per-target responses: `yourBid`, `correctBid`, `grade`, `correct`, `requiresRetry`, `feedback` |
+| **CLI `eval --bid` JSON** | Structured JSON | Per-target responses: `yourBid`, `correctBid`, `grade`, `correct`, `requiresRetry`, `feedback` |
 | **CLI `selftest` JSON** | Structured JSON | Aggregate pass/fail/skip counts and per-atom results |
 | **CLI agent reports** | Structured text | Deep-dive convention logic findings, teaching content issues, coverage completeness analysis |
 
@@ -22,19 +22,19 @@ Take CLI coverage-runner JSON output (`grade`, `selftest`) and CLI agent evaluat
 
 ### Step 1: Parse CLI JSON Results
 
-Read the CLI `grade` and `selftest` JSON responses. Extract:
+Read the CLI `eval --bid` and `selftest` JSON responses. Extract:
 
 1. **Aggregate metrics:**
    - Total targets tested (from `selftest` totalAtoms)
-   - First-attempt accuracy (% where `grade` returned `correct: true` on first try)
+   - First-attempt accuracy (% where `eval --bid` returned `correct: true` on first try)
    - Post-feedback accuracy (% correct after reading feedback and retrying)
    - Selftest pass rate (pass / totalAtoms)
    - Failure count by severity
 
 2. **Per-failure details:**
    - Bundle, target (state), surface
-   - Hand and auction from `present` output
-   - `correctBid` vs `yourBid` from `grade` response
+   - Hand and auction from `eval` output
+   - `correctBid` vs `yourBid` from `eval --bid` response
    - `feedback` text
    - `grade` value (correct or wrong)
 
@@ -127,7 +127,7 @@ Output the final report in this format:
 - **Category:** [from Step 5 categories]
 - **Convention:** [convention ID]
 - **Coverage atom:** [baseStateId / surfaceId]
-- **What the code does:** [from `grade` JSON — correctBid, feedback]
+- **What the code does:** [from `eval --bid` JSON — correctBid, feedback]
 - **What is correct:** [with reference]
 - **Reference:** [URL or standard]
 - **Evidence:** [CLI output or source code excerpt]

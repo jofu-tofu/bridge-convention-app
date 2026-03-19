@@ -8,18 +8,20 @@
 
 ### Tier 1: CLI Coverage Runner (Primary)
 
-The CLI coverage-runner (`src/cli/coverage-runner.ts`) tests convention correctness headlessly using four subcommands:
+The CLI coverage-runner (`src/cli/coverage-runner.ts`) tests convention correctness headlessly using these subcommands:
 
-- **`list --bundle=X`** — enumerate all coverage atoms (JSON lines with baseStateId, surfaceId, meaningId, meaningLabel)
-- **`present --bundle=X --target=Y --surface=Z --seed=N`** — generate a deal and show hand, HCP, auction, legal calls — no correct answer
-- **`grade --bundle=X --target=Y --surface=Z --seed=N --bid=CALL`** — submit a bid and get structured JSON feedback
+- **`list --bundle=X`** — enumerate all coverage atoms
+- **`eval --bundle=X --atom=ATOM_ID --seed=N`** — show hand, HCP, auction, legal calls (no correct answer)
+- **`eval --bundle=X --atom=ATOM_ID --seed=N --bid=CALL`** — submit a bid, get full teaching feedback (ViewportBidFeedback + TeachingDetail)
+- **`play --bundle=X --seed=N [--step=N] [--bid=CALL] [--reveal]`** — playthrough evaluation
 - **`selftest --bundle=X --seed=N`** or **`selftest --all --seed=N`** — strategy vs itself across all atoms
+- **`plan --bundle=X --agents=N [--coverage=2]`** — precompute two-phase evaluation plan
 
-Same seed = same deal across `present` and `grade`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
+Same seed = same deal across `eval` and `eval --bid`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 
 Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`.
 
-The `grade` command returns structured JSON:
+The `eval --bid` command returns structured JSON:
 - **`yourBid`:** the bid submitted
 - **`correctBid`:** the strategy's recommended bid
 - **`grade`:** "correct" or "wrong"
@@ -52,7 +54,7 @@ These metrics are computed from CLI JSON output and form the quantitative backbo
 
 | Metric | Definition | Target |
 |--------|-----------|--------|
-| **First-attempt accuracy** | % of targets where `grade` returned `correct: true` on first try | 100% for a correct app |
+| **First-attempt accuracy** | % of targets where `eval --bid` returned `correct: true` on first try | 100% for a correct app |
 | **Post-feedback accuracy** | % of targets where the correct call was made after seeing feedback | 100% — feedback should always lead to the right answer |
 | **Selftest pass rate** | pass / totalAtoms from `selftest` output | 100% of non-skip atoms |
 | **Coverage** | Total atoms tested / total atoms in the bundle | 100% of reachable atoms |
@@ -227,11 +229,11 @@ When verifying correctness, agents MUST use `webfetch` and cite actual URLs. Pre
 
 ### CLI Report
 
-The CLI `grade` command returns structured JSON per target. The orchestrator collects these responses and parses them into the CLI Coverage Report format defined in `RunReview.md` Step 6. Key fields per `grade` response:
+The CLI `eval --bid` command returns structured JSON per target. The orchestrator collects these responses and parses them into the CLI Coverage Report format defined in `RunReview.md` Step 6. Key fields per `eval --bid` response:
 - `yourBid`, `grade`, `correct`, `requiresRetry`
 - `correctBid`, `conditions`, `feedback`
-- Convention, targetState, targetSurface (from the `list`/`present`/`grade` parameters)
-- BiddingViewport from `present` (hand, auction, alerts, legal calls)
+- Convention, targetState, targetSurface (from the `list`/`eval` parameters)
+- BiddingViewport from `eval` (hand, auction, alerts, legal calls)
 - Result: correct / incorrect / infeasible
 
 ### CLI Agent Reports
