@@ -15,32 +15,35 @@ import { BidGrade } from "../core/contracts/teaching-grading";
 import type { BidResult } from "../core/contracts/bidding";
 import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport/build-viewport";
 
-import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat } from "./shared";
+import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat, BiddingViewport, Deal } from "./shared";
 import { Vulnerability,
-  callKey, parsePatternCall, getLegalCalls, evaluateHand,
-  generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext,
-  formatHandBySuit, nextSeatClockwise, partnerOf,
+  callKey,
+  generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, nextSeatClockwise, partnerOf, buildCliViewport,
 } from "./shared";
 
 // ── Types ───────────────────────────────────────────────────────────
 
+/** Internal tracking data for each convention-player decision point.
+ *  Carries both player-visible data (via BiddingViewport) and internal
+ *  metadata (stateId, atomId, recommendation) for plan/selftest use. */
 export interface PlaythroughStep {
   readonly stepIndex: number;
-  readonly seat: string;
+  /** Convention state metadata (internal — not exposed to agents). */
   readonly stateId: string | null;
   readonly atomId: string | null;
   readonly meaningLabel: string | null;
-  readonly hand: Record<string, string[]>;
-  readonly hcp: number;
-  readonly auctionSoFar: readonly { seat: string; call: string }[];
-  readonly legalCalls: readonly string[];
   readonly recommendation: string;
-  /** Whether this is a convention-player decision point (user or partner) vs opponent pass. */
   readonly isUserStep: boolean;
+  /** Context needed to rebuild the viewport on demand. */
+  readonly seat: Seat;
+  readonly auctionEntries: readonly { seat: Seat; call: Call }[];
 }
 
 export interface PlaythroughResult {
   readonly seed: number;
+  readonly deal: Deal;
+  readonly userSeat: Seat;
+  readonly bundleName: string;
   readonly steps: readonly PlaythroughStep[];
   readonly atomsCovered: readonly string[];
 }
@@ -158,14 +161,11 @@ export function runSinglePlaythrough(
 
     steps.push({
       stepIndex: steps.length,
-      seat: activeSeat as string,
+      seat: activeSeat,
       stateId,
       atomId,
       meaningLabel,
-      hand: formatHandBySuit(hand),
-      hcp: evaluateHand(hand).hcp,
-      auctionSoFar: entries.map((e) => ({ seat: e.seat as string, call: callKey(e.call) })),
-      legalCalls: getLegalCalls(auction, activeSeat).map(callKey),
+      auctionEntries: [...entries],
       recommendation: callKey(result.call),
       isUserStep: activeSeat === userSeat || activeSeat === partner,
     });
@@ -173,19 +173,50 @@ export function runSinglePlaythrough(
     entries.push({ seat: activeSeat, call: result.call });
   }
 
-  return { seed, steps, atomsCovered };
+  return { seed, deal, userSeat, bundleName: bundle.name, steps, atomsCovered };
 }
 
 // ── Step viewport ───────────────────────────────────────────────────
 
-export function buildStepViewport(s: PlaythroughStep): Record<string, unknown> {
+/**
+ * Build a proper BiddingViewport for a playthrough step.
+ * Uses the same buildBiddingViewport() as the UI — same information boundary.
+ */
+export function buildStepViewport(
+  s: PlaythroughStep,
+  result: PlaythroughResult,
+  spec: ConventionSpec,
+  vulnerability: Vulnerability = Vulnerability.None,
+): BiddingViewport {
+  const strategy = protocolSpecToStrategy(spec);
+  const auction: Auction = { entries: [...s.auctionEntries], isComplete: false };
+  return buildCliViewport({
+    deal: result.deal,
+    auction,
+    userSeat: result.userSeat,
+    activeSeat: s.seat,
+    strategy,
+    bundleName: result.bundleName,
+    vulnerability,
+  });
+}
+
+/**
+ * Build a reveal-mode step object with internal metadata.
+ * Only used by `play --reveal` — includes recommendation and atom IDs.
+ */
+export function buildRevealStep(
+  s: PlaythroughStep,
+): Record<string, unknown> {
   return {
-    index: s.stepIndex,
+    stepIndex: s.stepIndex,
     seat: s.seat,
-    hand: s.hand,
-    hcp: s.hcp,
-    auctionSoFar: s.auctionSoFar,
-    legalCalls: s.legalCalls,
+    stateId: s.stateId,
+    atomId: s.atomId,
+    meaningLabel: s.meaningLabel,
+    auctionSoFar: s.auctionEntries.map((e) => ({ seat: e.seat, call: callKey(e.call) })),
+    recommendation: s.recommendation,
+    isUserStep: s.isUserStep,
   };
 }
 
@@ -201,9 +232,9 @@ export function gradePlaythroughStep(
 ): { viewportFeedback: ReturnType<typeof buildViewportFeedback>; teachingDetail: ReturnType<typeof buildTeachingDetail>; isCorrect: boolean; isAcceptable: boolean } {
   // Rebuild context for this step to get full teaching feedback
   const deal = generateSeededDeal(bundle, seed, vulnerability);
-  const activeSeat = s.seat as Seat;
+  const activeSeat = s.seat;
   const hand = deal.hands[activeSeat];
-  const auction: Auction = { entries: s.auctionSoFar.map((e) => ({ seat: e.seat as Seat, call: parsePatternCall(e.call) })), isComplete: false };
+  const auction: Auction = { entries: [...s.auctionEntries], isComplete: false };
   const context = buildContext(hand, auction, activeSeat, vulnerability);
 
   const strategy = protocolSpecToStrategy(spec);

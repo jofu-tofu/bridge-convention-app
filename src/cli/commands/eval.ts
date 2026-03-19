@@ -11,10 +11,10 @@ import { buildViewportFeedback, buildTeachingDetail } from "../../core/viewport/
 
 import type { Flags, Vulnerability, ConventionSpec, Call } from "../shared";
 import {
-  callKey, parsePatternCall, getLegalCalls, evaluateHand,
+  callKey, parsePatternCall,
   requireArg, optionalNumericArg,
   resolveSpec, resolveBundle, generateSeededDeal, resolveUserSeat,
-  resolveAuction, buildContext, formatHandBySuit, nextSeatClockwise,
+  resolveAuction, buildContext, buildCliViewport, nextSeatClockwise,
 } from "../shared";
 
 // ── Atom parsing ────────────────────────────────────────────────────
@@ -63,25 +63,18 @@ export function runEval(flags: Flags, vuln: Vulnerability): void {
 
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
-  const { auction, targeted: _targeted } = resolveAuction(bundle, spec, deal, stateId, userSeat);
+  const { auction } = resolveAuction(bundle, spec, deal, stateId, userSeat);
+  const strategy = protocolSpecToStrategy(spec);
 
   const activeSeat = auction.entries.length > 0
     ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;
-  const hand = deal.hands[activeSeat];
-  const legalCalls = getLegalCalls(auction, activeSeat).map(callKey);
 
-  // Viewport — always included, always sanitized
-  const viewport = {
-    seat: activeSeat as string,
-    hand: formatHandBySuit(hand),
-    hcp: evaluateHand(hand).hcp,
-    auction: auction.entries.map((e) => ({
-      seat: e.seat as string,
-      call: callKey(e.call),
-    })),
-    legalCalls,
-  };
+  // Viewport — uses the same buildBiddingViewport() as the UI
+  const viewport = buildCliViewport({
+    deal, auction, userSeat, activeSeat, strategy,
+    bundleName: bundle.name, vulnerability: vuln,
+  });
 
   if (!bidStr || bidStr === "true") {
     // No bid: return viewport only
@@ -98,7 +91,7 @@ export function runEval(flags: Flags, vuln: Vulnerability): void {
     process.exit(2);
   }
 
-  const strategy = protocolSpecToStrategy(spec);
+  const hand = deal.hands[activeSeat];
   const context = buildContext(hand, auction, activeSeat, vuln);
   const result = strategy.suggest(context);
 

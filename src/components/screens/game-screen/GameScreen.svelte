@@ -207,8 +207,8 @@
 <svelte:window bind:innerWidth={innerW} bind:innerHeight={innerH} />
 
 {#if gameStore.deal}
-  <main class="h-full flex flex-row" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px;">
-    <div class="flex-1 min-w-0 flex flex-col">
+  <main class="h-full w-full flex flex-row overflow-hidden" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px; --width-side-panel: {sidePanelW}px;">
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden" style="max-width: {availableW}px;">
     <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[--z-above-all] focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
       Skip to game
     </a>

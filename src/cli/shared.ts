@@ -2,7 +2,7 @@
 //
 // Pure functions shared across CLI subcommands: argument parsing,
 // settings resolution, spec/bundle lookup, deal generation,
-// auction construction, and hand formatting.
+// auction construction, hand formatting, and viewport construction.
 
 import { getConventionSpec } from "../conventions/spec-registry";
 import {
@@ -28,14 +28,18 @@ import type {
   Card,
 } from "../engine/types";
 import type { ConventionSpec, ConventionBundle } from "../conventions/core";
-import type { BiddingContext } from "../core/contracts/bidding";
+import type { BiddingContext, BidHistoryEntry } from "../core/contracts/bidding";
+import type { BiddingStrategy } from "../core/contracts/bidding";
 import type { OpponentMode } from "../core/contracts/drill";
+import type { BiddingViewport } from "../core/viewport/player-viewport";
+import { buildBiddingViewport } from "../core/viewport/build-viewport";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 
 export { Seat, Vulnerability };
 export { callKey, parsePatternCall, getLegalCalls, evaluateHand };
-export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode };
+export { buildBiddingViewport };
+export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -299,4 +303,98 @@ export function resolveAuction(
 
   const targeted = buildTargetedAuction(defaultAuction, path, userSeat);
   return { auction: targeted, targeted: true };
+}
+
+// ── Viewport construction ───────────────────────────────────────────
+//
+// The CLI must use the SAME viewport boundary as the UI. These helpers
+// bridge CLI-available data into buildBiddingViewport() inputs.
+
+/**
+ * Build a BidHistoryEntry[] from auction entries by replaying each
+ * convention-player bid through the strategy to extract alert info.
+ *
+ * Opponent passes get no alert. Convention-player bids get the alert
+ * from the strategy's BidResult (same path the UI store uses).
+ */
+export function buildCliBidHistory(
+  auction: Auction,
+  deal: Deal,
+  userSeat: Seat,
+  strategy: BiddingStrategy,
+  vulnerability: Vulnerability = Vulnerability.None,
+): BidHistoryEntry[] {
+  const partner = partnerOf(userSeat);
+  const history: BidHistoryEntry[] = [];
+
+  for (let i = 0; i < auction.entries.length; i++) {
+    const entry = auction.entries[i]!;
+    const isConventionPlayer = entry.seat === userSeat || entry.seat === partner;
+
+    if (!isConventionPlayer) {
+      // Opponent bid — no convention alert
+      history.push({
+        seat: entry.seat,
+        call: entry.call,
+        isUser: false,
+      });
+      continue;
+    }
+
+    // Convention player — replay through strategy to get alert info
+    const auctionBefore: Auction = {
+      entries: auction.entries.slice(0, i),
+      isComplete: false,
+    };
+    const hand = deal.hands[entry.seat];
+    const ctx = buildContext(hand, auctionBefore, entry.seat, vulnerability);
+    const result = strategy.suggest(ctx);
+
+    history.push({
+      seat: entry.seat,
+      call: entry.call,
+      meaning: result?.meaning,
+      isUser: entry.seat === userSeat,
+      alertLabel: result?.alert?.teachingLabel,
+      annotationType: result?.alert?.annotationType,
+    });
+  }
+
+  return history;
+}
+
+/**
+ * Build a proper BiddingViewport for the CLI using the same
+ * buildBiddingViewport() function the UI uses.
+ *
+ * This is the SINGLE information boundary — the CLI sees exactly
+ * what a player would see in the Svelte UI.
+ */
+export function buildCliViewport(opts: {
+  deal: Deal;
+  auction: Auction;
+  userSeat: Seat;
+  activeSeat: Seat;
+  strategy: BiddingStrategy;
+  bundleName: string;
+  vulnerability?: Vulnerability;
+}): BiddingViewport {
+  const { deal, auction, userSeat, activeSeat, strategy, bundleName, vulnerability } = opts;
+
+  const bidHistory = buildCliBidHistory(
+    auction, deal, userSeat, strategy,
+    vulnerability ?? deal.vulnerability,
+  );
+
+  return buildBiddingViewport({
+    deal,
+    userSeat: activeSeat,
+    auction,
+    bidHistory,
+    legalCalls: getLegalCalls(auction, activeSeat),
+    faceUpSeats: new Set([activeSeat]),
+    conventionName: bundleName,
+    isUserTurn: true,
+    currentBidder: activeSeat,
+  });
 }

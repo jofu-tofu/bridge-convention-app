@@ -10,6 +10,7 @@ import {
   buildAtomCallMap,
   runSinglePlaythrough,
   buildStepViewport,
+  buildRevealStep,
   gradePlaythroughStep,
 } from "../playthrough";
 
@@ -32,7 +33,7 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
     console.log(JSON.stringify({
       seed,
       totalSteps: userSteps.length,
-      steps: result.steps,
+      steps: result.steps.map((s) => buildRevealStep(s)),
       atomsCovered: result.atomsCovered,
     }, null, 2));
     return;
@@ -43,7 +44,7 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
     console.log(JSON.stringify({
       seed,
       totalSteps: userSteps.length,
-      step: userSteps.length > 0 ? buildStepViewport(userSteps[0]!) : null,
+      step: userSteps.length > 0 ? buildStepViewport(userSteps[0]!, result, spec, vuln) : null,
     }, null, 2));
     return;
   }
@@ -54,7 +55,7 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   }
 
   const s = userSteps[stepIdx]!;
-  const viewport = buildStepViewport(s);
+  const viewport = buildStepViewport(s, result, spec, vuln);
 
   if (!bidStr || bidStr === "true") {
     // No bid: viewport only for this step
@@ -80,7 +81,7 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
 
   const nextStepIdx = stepIdx + 1;
   const nextStep = nextStepIdx < userSteps.length
-    ? buildStepViewport(userSteps[nextStepIdx]!)
+    ? buildStepViewport(userSteps[nextStepIdx]!, result, spec, vuln)
     : null;
 
   console.log(JSON.stringify({
