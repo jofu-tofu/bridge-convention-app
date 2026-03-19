@@ -10,16 +10,19 @@
 
 The CLI coverage-runner (`src/cli/coverage-runner.ts`) tests convention correctness headlessly using these subcommands:
 
+- **`bundles`** — discover all available bundles (JSON array with id, name, atomCount)
+- **`describe --bundle=X`** — inspect a bundle (atoms, depth, strategy coverage)
 - **`list --bundle=X`** — enumerate all coverage atoms
 - **`eval --bundle=X --atom=ATOM_ID --seed=N`** — show hand, HCP, auction, legal calls (no correct answer)
 - **`eval --bundle=X --atom=ATOM_ID --seed=N --bid=CALL`** — submit a bid, get full teaching feedback (ViewportBidFeedback + TeachingDetail)
 - **`play --bundle=X --seed=N [--step=N] [--bid=CALL] [--reveal]`** — playthrough evaluation
 - **`selftest --bundle=X --seed=N`** or **`selftest --all --seed=N`** — strategy vs itself across all atoms
 - **`plan --bundle=X --agents=N [--coverage=2]`** — precompute two-phase evaluation plan
+- **`help`** or **`<subcommand> --help`** — show global or per-subcommand help
 
 Same seed = same deal across `eval` and `eval --bid`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 
-Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`.
+**Do not hardcode bundle IDs.** Use `bundles` to discover available bundles at runtime. Invalid atom IDs are rejected with exit code 2.
 
 The `eval --bid` command returns structured JSON:
 - **`yourBid`:** the bid submitted

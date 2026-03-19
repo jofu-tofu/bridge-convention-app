@@ -56,7 +56,7 @@
       {#each parseTree.modules as mod (mod.moduleId)}
         {@const isSelected = mod.verdict === "selected"}
         {@const isEliminated = mod.verdict === "eliminated"}
-        <div class={moduleClasses(mod.verdict)} role="treeitem">
+        <div class={moduleClasses(mod.verdict)} role="treeitem" aria-selected={isSelected}>
           <!-- Module header -->
           <div class="flex items-center gap-1.5 flex-wrap">
             {#if isSelected}

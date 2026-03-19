@@ -5,9 +5,9 @@ Headless CLI for evaluating bridge convention correctness. Two evaluation modes:
 ## Commands
 
 ```
-── Global settings (apply to all subcommands) ────────────────
-  --vuln=<none|ns|ew|both>        Vulnerability (default: none)
-  --opponents=<natural|none>      Opponent bidding mode (default: none)
+── Self-discovery ─────────────────────────────────────────────
+  bundles                                    List all available bundles (JSON)
+  describe  --bundle=<id>                    Inspect a bundle (atoms, depth, coverage)
 
 ── Planning & diagnostics ──────────────────────────────────────
   list      --bundle=<id>                    List all coverage atoms
@@ -22,12 +22,35 @@ Headless CLI for evaluating bridge convention correctness. Two evaluation modes:
   play      --bundle=<id> --seed=N
   play      --bundle=<id> --seed=N --step=N [--bid=<bid>]
   play      --bundle=<id> --seed=N --reveal
+
+── Help ────────────────────────────────────────────────────────
+  help                                       Show global help
+  <subcommand> --help                        Show subcommand help
 ```
+
+Global settings: `--vuln=<none|ns|ew|both>`, `--opponents=<natural|none>`, `--help`.
 
 Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 Same seed = same deal across all commands. Deterministic (Mulberry32 PRNG).
 
-Available bundles: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`.
+Bundle IDs are discovered at runtime via `bundles` subcommand. Do not hardcode bundle IDs — use self-discovery.
+
+## Agent Self-Discovery Workflow
+
+Agents should discover the CLI's capabilities at runtime rather than relying on documentation:
+
+```bash
+# 1. List available bundles
+npx tsx src/cli/coverage-runner.ts bundles
+
+# 2. Inspect a specific bundle (atoms, depth, strategy coverage)
+npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+
+# 3. Get per-subcommand help
+npx tsx src/cli/coverage-runner.ts eval --help
+```
+
+`bundles` returns a JSON array with `id`, `name`, `description`, `category`, `atomCount` for each bundle. `describe` returns full atom list with IDs usable in `eval --atom=<id>`.
 
 ## Two-Phase Evaluation Pipeline
 
@@ -48,7 +71,7 @@ npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle \
 
 **Key properties:**
 - `eval` output is always sanitized — no internal state IDs, expected bids, or dependency tree
-- `--atom` takes an atomId from the plan output (format: `stateId/surfaceId/meaningId`)
+- `--atom` takes an atomId from the plan output (format: `stateId/surfaceId/meaningId`). Invalid atom IDs are rejected with exit code 2
 - With `--bid`: returns `ViewportBidFeedback` (conditions, alternatives, near-misses, conventions) + `TeachingDetail` (whyNot, meaningViews, callViews, ambiguityScore, partner hand space)
 - 5-level grading: correct, correct-not-preferred, acceptable, near-miss, incorrect
 - Both opener (N) and responder (S) atoms are testable — the active seat is determined by the BFS path

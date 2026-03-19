@@ -38,9 +38,9 @@ describe("ntBaseTrack", () => {
   describe("opening pattern", () => {
     it("has exactly one opening pattern for 1NT", () => {
       expect(ntBaseTrack.openingPatterns).toHaveLength(1);
-      const pattern = ntBaseTrack.openingPatterns[0];
+      const pattern = ntBaseTrack.openingPatterns[0]!;
       expect(pattern.prefix).toHaveLength(1);
-      expect(pattern.prefix[0].call).toEqual({
+      expect(pattern.prefix[0]!.call).toEqual({
         type: "bid",
         level: 1,
         strain: BidSuit.NoTrump,
@@ -105,7 +105,7 @@ describe("ntBaseTrack", () => {
   // ── responder-r1 transitions ─────────────────────────────────
 
   describe("responder-r1 transitions", () => {
-    const r1 = ntBaseTrack.states["responder-r1"];
+    const r1 = ntBaseTrack.states["responder-r1"]!;
 
     it("has a Stayman transition on 2C", () => {
       const t = findBidTransition(r1.eventTransitions, 2, BidSuit.Clubs);
@@ -155,7 +155,7 @@ describe("ntBaseTrack", () => {
   // ── Stayman continuation transitions ──────────────────────────
 
   describe("opener-stayman transitions", () => {
-    const state = ntBaseTrack.states["opener-stayman"];
+    const state = ntBaseTrack.states["opener-stayman"]!;
 
     it("transitions to r3-2h on 2H", () => {
       const t = findBidTransition(state.eventTransitions, 2, BidSuit.Hearts);
@@ -174,7 +174,7 @@ describe("ntBaseTrack", () => {
   });
 
   describe("responder-r3-stayman-2d includes Smolen hooks", () => {
-    const state = ntBaseTrack.states["responder-r3-stayman-2d"];
+    const state = ntBaseTrack.states["responder-r3-stayman-2d"]!;
 
     it("has 3H → smolen-invoke-hearts", () => {
       const t = findBidTransition(state.eventTransitions, 3, BidSuit.Hearts);
@@ -193,17 +193,17 @@ describe("ntBaseTrack", () => {
 
   describe("surface fragments", () => {
     it("references correct surfaces for responder-r1", () => {
-      const r1 = ntBaseTrack.states["responder-r1"];
+      const r1 = ntBaseTrack.states["responder-r1"]!;
       expect(r1.surface).toBe("sf:responder-r1");
-      const frag = NT_SURFACE_FRAGMENTS["sf:responder-r1"];
+      const frag = NT_SURFACE_FRAGMENTS["sf:responder-r1"]!;
       expect(frag).toBeDefined();
       expect(frag.surfaces.length).toBeGreaterThan(0);
     });
 
     it("opener-stayman references the stayman response surface", () => {
-      const state = ntBaseTrack.states["opener-stayman"];
+      const state = ntBaseTrack.states["opener-stayman"]!;
       expect(state.surface).toBe("sf:opener-stayman-response");
-      const frag = NT_SURFACE_FRAGMENTS["sf:opener-stayman-response"];
+      const frag = NT_SURFACE_FRAGMENTS["sf:opener-stayman-response"]!;
       expect(frag).toBeDefined();
       // Show hearts, show spades, deny major
       expect(frag.surfaces).toHaveLength(3);
@@ -211,25 +211,25 @@ describe("ntBaseTrack", () => {
 
     it("transfer accept states have surfaces", () => {
       expect(
-        NT_SURFACE_FRAGMENTS["sf:opener-transfer-accept"].surfaces.length,
+        NT_SURFACE_FRAGMENTS["sf:opener-transfer-accept"]!.surfaces.length,
       ).toBeGreaterThan(0);
       expect(
-        NT_SURFACE_FRAGMENTS["sf:opener-transfer-accept-spades"].surfaces.length,
+        NT_SURFACE_FRAGMENTS["sf:opener-transfer-accept-spades"]!.surfaces.length,
       ).toBeGreaterThan(0);
     });
 
     it("Smolen placement states reference opener-smolen fragments", () => {
-      expect(ntBaseTrack.states["opener-place-hearts"].surface).toBe(
+      expect(ntBaseTrack.states["opener-place-hearts"]!.surface).toBe(
         "sf:opener-smolen-hearts",
       );
-      expect(ntBaseTrack.states["opener-place-spades"].surface).toBe(
+      expect(ntBaseTrack.states["opener-place-spades"]!.surface).toBe(
         "sf:opener-smolen-spades",
       );
       expect(
-        NT_SURFACE_FRAGMENTS["sf:opener-smolen-hearts"].surfaces.length,
+        NT_SURFACE_FRAGMENTS["sf:opener-smolen-hearts"]!.surfaces.length,
       ).toBeGreaterThan(0);
       expect(
-        NT_SURFACE_FRAGMENTS["sf:opener-smolen-spades"].surfaces.length,
+        NT_SURFACE_FRAGMENTS["sf:opener-smolen-spades"]!.surfaces.length,
       ).toBeGreaterThan(0);
     });
 
@@ -256,7 +256,7 @@ describe("ntBaseTrack", () => {
 
   describe("entry effects", () => {
     it("responder-r1 sets captain to responder", () => {
-      const r1 = ntBaseTrack.states["responder-r1"];
+      const r1 = ntBaseTrack.states["responder-r1"]!;
       expect(r1.onEnter).toContainEqual({
         op: "setReg",
         path: "captain.side",
@@ -265,7 +265,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("opener-stayman sets obligation.kind to ShowMajor", () => {
-      const state = ntBaseTrack.states["opener-stayman"];
+      const state = ntBaseTrack.states["opener-stayman"]!;
       expect(state.onEnter).toContainEqual({
         op: "setReg",
         path: "obligation.kind",
@@ -274,7 +274,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("opener-stayman sets obligation.side to opener", () => {
-      const state = ntBaseTrack.states["opener-stayman"];
+      const state = ntBaseTrack.states["opener-stayman"]!;
       expect(state.onEnter).toContainEqual({
         op: "setReg",
         path: "obligation.side",
@@ -283,7 +283,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("nt-contested sets competition.mode to doubled", () => {
-      const state = ntBaseTrack.states["nt-contested"];
+      const state = ntBaseTrack.states["nt-contested"]!;
       expect(state.onEnter).toContainEqual({
         op: "setReg",
         path: "competition.mode",
@@ -292,7 +292,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("stayman-interrupted sets competition.mode to contested", () => {
-      const state = ntBaseTrack.states["stayman-interrupted"];
+      const state = ntBaseTrack.states["stayman-interrupted"]!;
       expect(state.onEnter).toContainEqual({
         op: "setReg",
         path: "competition.mode",
@@ -301,7 +301,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("opener-transfer-hearts sets agreement strain to hearts", () => {
-      const state = ntBaseTrack.states["opener-transfer-hearts"];
+      const state = ntBaseTrack.states["opener-transfer-hearts"]!;
       expect(state.onEnter).toContainEqual({
         op: "setReg",
         path: "agreement.strain",
@@ -315,7 +315,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("smolen-invoke-hearts sets forcing state to game", () => {
-      const state = ntBaseTrack.states["smolen-invoke-hearts"];
+      const state = ntBaseTrack.states["smolen-invoke-hearts"]!;
       expect(state.onEnter).toContainEqual({
         op: "setReg",
         path: "forcing.state",
@@ -324,7 +324,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("opener-place-hearts sets captain to opener", () => {
-      const state = ntBaseTrack.states["opener-place-hearts"];
+      const state = ntBaseTrack.states["opener-place-hearts"]!;
       expect(state.onEnter).toContainEqual({
         op: "setReg",
         path: "captain.side",
@@ -337,38 +337,38 @@ describe("ntBaseTrack", () => {
 
   describe("semantic tags", () => {
     it("responder-r1 exports agreement.pending", () => {
-      expect(ntBaseTrack.states["responder-r1"].exportTags).toContain(
+      expect(ntBaseTrack.states["responder-r1"]!.exportTags).toContain(
         "agreement.pending",
       );
     });
 
     it("opener-stayman exports agreement.pending", () => {
-      expect(ntBaseTrack.states["opener-stayman"].exportTags).toContain(
+      expect(ntBaseTrack.states["opener-stayman"]!.exportTags).toContain(
         "agreement.pending",
       );
     });
 
     it("transfer accept states export agreement.tentative", () => {
       expect(
-        ntBaseTrack.states["opener-transfer-hearts"].exportTags,
+        ntBaseTrack.states["opener-transfer-hearts"]!.exportTags,
       ).toContain("agreement.tentative");
       expect(
-        ntBaseTrack.states["opener-transfer-spades"].exportTags,
+        ntBaseTrack.states["opener-transfer-spades"]!.exportTags,
       ).toContain("agreement.tentative");
     });
 
     it("Smolen placement states export agreement.final", () => {
-      expect(ntBaseTrack.states["opener-place-hearts"].exportTags).toContain(
+      expect(ntBaseTrack.states["opener-place-hearts"]!.exportTags).toContain(
         "agreement.final",
       );
-      expect(ntBaseTrack.states["opener-place-spades"].exportTags).toContain(
+      expect(ntBaseTrack.states["opener-place-spades"]!.exportTags).toContain(
         "agreement.final",
       );
     });
 
     it("terminal has no export tags", () => {
       expect(
-        ntBaseTrack.states["terminal"].exportTags,
+        ntBaseTrack.states["terminal"]!.exportTags,
       ).toBeUndefined();
     });
   });
@@ -378,9 +378,9 @@ describe("ntBaseTrack", () => {
   describe("state walk: opening → nt-opened → responder-r1 → opener-stayman", () => {
     it("follows the correct path through the spec", () => {
       // 1. Opening pattern selects this track, entering nt-opened
-      const pattern = ntBaseTrack.openingPatterns[0];
+      const pattern = ntBaseTrack.openingPatterns[0]!;
       expect(pattern.startState).toBe("nt-opened");
-      const startState = ntBaseTrack.states[pattern.startState];
+      const startState = ntBaseTrack.states[pattern.startState]!;
       expect(startState).toBeDefined();
 
       // 2. Opponent passes → nt-opened transitions to responder-r1
@@ -389,7 +389,7 @@ describe("ntBaseTrack", () => {
       );
       expect(passTransition).toBeDefined();
       expect(passTransition!.goto).toBe("responder-r1");
-      const r1State = ntBaseTrack.states[passTransition!.goto as string];
+      const r1State = ntBaseTrack.states[passTransition!.goto as string]!;
       expect(r1State).toBeDefined();
 
       // 3. Responder bids 2C → responder-r1 transitions to opener-stayman
@@ -401,7 +401,7 @@ describe("ntBaseTrack", () => {
       expect(staymanTransition).toBeDefined();
       expect(staymanTransition!.goto).toBe("opener-stayman");
       const staymanState =
-        ntBaseTrack.states[staymanTransition!.goto as string];
+        ntBaseTrack.states[staymanTransition!.goto as string]!;
       expect(staymanState).toBeDefined();
 
       // 4. Verify the final state has the expected surface and effects

@@ -82,15 +82,17 @@ export function assembleConventionSpec(options: {
     }
   }
 
-  // Compile the boot router from base-role modules' opening patterns.
-  const baseModules = getBaseModules({ modules: allModules } as ConventionSpec);
-  compileBootRouter(baseModules);
-
-  return {
+  const spec: ConventionSpec = {
     id,
     name,
     schema,
     modules: allModules,
     surfaces: allSurfaces,
   };
+
+  // Compile the boot router from base-role modules' opening patterns.
+  const baseModules = getBaseModules(spec);
+  compileBootRouter(baseModules);
+
+  return spec;
 }

@@ -22,9 +22,15 @@ The CLI coverage-runner exercises this boundary headlessly across all (state, su
 
 ## CLI Reference
 
-All subcommands use `--flag=value` syntax. Same seed = same deal across calls. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
+All subcommands use `--flag=value` syntax. Same seed = same deal across calls. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error. Run `<subcommand> --help` for detailed usage.
 
 ```bash
+# Self-discovery — list all available bundles (JSON array)
+npx tsx src/cli/coverage-runner.ts bundles
+
+# Inspect a bundle — atoms, depth, strategy coverage (JSON)
+npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+
 # List all coverage atoms for a bundle (JSON lines)
 npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
 
@@ -45,7 +51,7 @@ npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
 npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
 ```
 
-Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`.
+**Do not hardcode bundle IDs.** Use `bundles` to discover available bundles at runtime. Use `describe --bundle=<id>` to get atom IDs for `eval`.
 
 ### `eval --bid` JSON response shape
 
@@ -82,11 +88,28 @@ Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bu
 
 ## Tier 1: Selftest Baseline (Quick Health Check)
 
-### Step 1: Determine Scope
+### Step 1: Discover Available Bundles
+
+**First, use the CLI to discover what's available — do not rely on hardcoded bundle lists:**
+
+```bash
+cd /home/joshua-fu/projects/bridge-convention-app
+npx tsx src/cli/coverage-runner.ts bundles
+```
+
+This returns a JSON array of all registered bundles with `id`, `name`, `description`, `category`, and `atomCount`. Use this to determine scope.
 
 **Ask the user what they want reviewed if they didn't specify.** Options:
 - A specific bundle (e.g., `nt-bundle` for 1NT responses, Stayman, Jacoby Transfers)
-- Everything (run for each bundle)
+- Everything (run for each bundle from the `bundles` output)
+
+For a targeted review, use `describe` to inspect the bundle before proceeding:
+
+```bash
+npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+```
+
+This shows atom count, max BFS depth, strategy coverage percentage, and the full atom list with IDs.
 
 ### Step 2: Self-Test Baseline
 
@@ -230,6 +253,18 @@ Each agent receives this prompt, customized with their bundle and seed list:
 ---
 
 You are evaluating the **convention correctness** of a bridge bidding practice app by playing through full auction sequences using its CLI. You must use the `exec` tool to run CLI commands, the `read` tool to examine source files, and `webfetch` to verify bridge rules against authoritative sources. **Do NOT invoke the browser skill or use Playwright. Do NOT navigate to any URLs in a browser. All evaluation is done via CLI and source code.**
+
+## CLI Self-Discovery
+
+Before starting, familiarize yourself with the CLI:
+
+```bash
+# See all available subcommands and flags
+npx tsx src/cli/coverage-runner.ts help
+
+# Get detailed help for a specific subcommand
+npx tsx src/cli/coverage-runner.ts play --help
+```
 
 ## Your Assignment
 

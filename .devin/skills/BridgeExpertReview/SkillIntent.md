@@ -22,7 +22,7 @@ Manual QA of bridge convention correctness requires deep domain knowledge that m
 
 | Decision | Chosen Approach | Alternatives Rejected | Why |
 |---|---|---|---|
-| CLI-first testing | CLI coverage-runner with `list`/`eval`/`play`/`selftest`/`plan` for logic, CLI agents for deep analysis | Browser-only evaluation | CLI tests every coverage atom exhaustively in seconds. Browser agents are slow, non-deterministic, and can't guarantee full coverage. |
+| CLI-first testing | CLI coverage-runner with `bundles`/`describe`/`list`/`eval`/`play`/`selftest`/`plan` for logic, CLI agents for deep analysis | Browser-only evaluation | CLI tests every coverage atom exhaustively in seconds. Browser agents are slow, non-deterministic, and can't guarantee full coverage. |
 | All agents use CLI | Spawned agents use `exec` + `read`, never browser skill | Browser agents for UI validation | Browser skill is unreliable for convention correctness testing. CLI + source code analysis is deterministic and comprehensive. |
 | PlayerViewport boundary | CLI uses BiddingViewport (what player sees), never EvaluationOracle | CLI reads source code directly | The viewport boundary preserves the "evaluate what the user sees" principle. |
 | Dynamic agent count | Orchestrator decides agent count and focus based on scope | Fixed 3 or 5 agents | Different review scopes need different parallelism. One convention needs fewer agents than four. Orchestrator assigns non-overlapping scopes. |

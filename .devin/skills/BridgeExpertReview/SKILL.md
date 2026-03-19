@@ -32,7 +32,7 @@ Running the **[WorkflowName]** workflow from the **BridgeExpertReview** skill...
 ```
 User: "Run a bridge expert review of the app"
 -> Invokes RunReview workflow
--> Tier 1: Runs `selftest --all --seed=42` for baseline, then `list`/`eval` per atom
+-> Tier 1: Discovers bundles via `bundles`, runs `selftest --all --seed=42` for baseline
 -> For each failure: records viewport (from `eval`), feedback (from `eval --bid`), verifies against bridge sources
 -> Tier 2: Spawns CLI agents based on scope (e.g., one per convention, or by concern area)
 -> CLI agents use `exec` to run coverage-runner `eval`/`play` + `read` to analyze source code
@@ -52,7 +52,7 @@ User: "Compile the bridge review feedback"
 ```
 User: "Run a bridge expert review focused on Stayman"
 -> Invokes RunReview workflow with focus hint
--> Tier 1: Runs `npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle` to enumerate targets
+-> Tier 1: Runs `bundles` to discover available bundles, then `describe --bundle=nt-bundle` to inspect atoms
 -> For each Stayman-related atom: `eval` -> decide bid -> `eval --bid` -> retry if wrong
 -> Tier 2: CLI agents deep-dive into nt-bundle with `eval`/`play` loops
 -> Reports correctness issues with state/surface IDs for precise reproducibility

@@ -34,11 +34,11 @@ const weakTwoBundleDealConstraints: DealConstraints = {
  * Strategy is now handled by the protocol frame architecture (convention-spec.ts).
  */
 export const weakTwoBundle: ConventionBundle = {
-  id: "weak-two-bundle",
+  id: "weak-twos-bundle",
   name: "Weak Two Bids Bundle",
   description: "Weak Two Bids with Ogust 2NT response system",
   category: ConventionCategory.Constructive,
-  memberIds: ["weak-two-bundle", "weak-twos"],
+  memberIds: ["weak-twos-bundle", "weak-twos"],
   dealConstraints: weakTwoBundleDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {

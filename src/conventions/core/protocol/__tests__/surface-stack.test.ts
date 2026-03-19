@@ -374,6 +374,7 @@ describe("buildSurfaceStack", () => {
       name: "Stayman",
       attachWhen: { op: "true" },
       initialStateId: "ask",
+      facts: { definitions: [], evaluators: new Map() },
       states: {
         ask: {
           id: "ask",

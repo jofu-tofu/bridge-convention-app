@@ -13,7 +13,7 @@
 // ── Side-effect import: registers all bundles + conventions ─────────
 import "../conventions";
 
-import { listConventionSpecs, getConventionSpec } from "../conventions/spec-registry";
+import { getConventionSpec } from "../conventions/spec-registry";
 import {
   generateProtocolCoverageManifest,
   enumerateBaseTrackStates,
@@ -21,7 +21,7 @@ import {
   getBaseModules,
   replay,
 } from "../conventions/core";
-import { getBundle } from "../conventions/core/bundle";
+import { getBundle, listBundles } from "../conventions/core/bundle";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { generateDeal } from "../engine/deal-generator";
@@ -116,17 +116,20 @@ function parseOpponentMode(args: Record<string, string | true>): OpponentMode {
 
 // ── Resolve spec + bundle ───────────────────────────────────────────
 
+/** Print available bundle IDs from the bundle registry (single source of truth). */
+function printAvailableBundles(): void {
+  for (const b of listBundles()) {
+    if (b.internal) continue;
+    console.error(`  ${b.id} — ${b.name}`);
+  }
+}
+
 function resolveSpec(bundleId: string): ConventionSpec {
   const spec = getConventionSpec(bundleId);
   if (!spec) {
-    console.error(`Unknown convention spec: "${bundleId}"`);
-    console.error("Available specs:");
-    const seen = new Set<string>();
-    for (const s of listConventionSpecs()) {
-      if (seen.has(s.id)) continue;
-      seen.add(s.id);
-      console.error(`  ${s.id} — ${s.name}`);
-    }
+    console.error(`Unknown bundle: "${bundleId}"`);
+    console.error("Available bundles:");
+    printAvailableBundles();
     process.exit(2);
   }
   return spec;
@@ -135,7 +138,9 @@ function resolveSpec(bundleId: string): ConventionSpec {
 function resolveBundle(bundleId: string): ConventionBundle {
   const bundle = getBundle(bundleId);
   if (!bundle) {
-    console.error(`Unknown bundle: "${bundleId}" (no ConventionBundle registered)`);
+    console.error(`Unknown bundle: "${bundleId}"`);
+    console.error("Available bundles:");
+    printAvailableBundles();
     process.exit(2);
   }
   return bundle;
@@ -338,9 +343,15 @@ const flags = parseArgs(rawArgs.slice(1));
 const vuln = parseVulnerability(flags);
 const opponentMode = parseOpponentMode(flags);
 
-if (!subcommand || subcommand === "--help" || subcommand === "-h") {
+if (!subcommand || subcommand === "--help" || subcommand === "-h" || subcommand === "help") {
   printUsage();
-  process.exit(2);
+  process.exit(subcommand ? 0 : 2);
+}
+
+// Per-subcommand --help
+if (flags["help"] === true || flags["h"] === true) {
+  printSubcommandHelp(subcommand);
+  process.exit(0);
 }
 
 switch (subcommand) {
@@ -358,6 +369,12 @@ switch (subcommand) {
     break;
   case "plan":
     runPlan();
+    break;
+  case "bundles":
+    runBundles();
+    break;
+  case "describe":
+    runDescribe();
     break;
   default:
     console.error(`Unknown subcommand: "${subcommand}"`);
@@ -413,6 +430,23 @@ function parseAtomId(atomId: string): { stateId: string; surfaceId: string; mean
   };
 }
 
+/** Validate that an atom ID exists in the bundle's coverage manifest. */
+function validateAtomId(
+  atomId: string,
+  spec: ConventionSpec,
+): void {
+  const manifest = generateProtocolCoverageManifest(spec);
+  const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
+  const exists = allAtoms.some(
+    (a) => `${a.baseStateId}/${a.surfaceId}/${a.meaningId}` === atomId,
+  );
+  if (!exists) {
+    console.error(`Unknown atom: "${atomId}"`);
+    console.error("Use 'list --bundle=<id>' to see valid atom IDs.");
+    process.exit(2);
+  }
+}
+
 function runEval(): void {
   const bundleId = requireArg(flags, "bundle");
   const atomId = requireArg(flags, "atom");
@@ -422,6 +456,7 @@ function runEval(): void {
   const { stateId } = parseAtomId(atomId);
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
+  validateAtomId(atomId, spec);
 
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
@@ -530,14 +565,11 @@ function runSelftest(): void {
   const specs: { id: string; spec: ConventionSpec; bundle: ConventionBundle }[] = [];
 
   if (all) {
-    // Deduplicate by spec id (aliases share specs)
-    const seen = new Set<string>();
-    for (const spec of listConventionSpecs()) {
-      if (seen.has(spec.id)) continue;
-      seen.add(spec.id);
-      const bundle = getBundle(spec.id);
-      if (bundle) {
-        specs.push({ id: spec.id, spec, bundle });
+    for (const bundle of listBundles()) {
+      if (bundle.internal) continue;
+      const spec = getConventionSpec(bundle.id);
+      if (spec) {
+        specs.push({ id: bundle.id, spec, bundle });
       }
     }
   } else {
@@ -1238,45 +1270,249 @@ function runPlan(): void {
   }, null, 2));
 }
 
-// ── Usage ───────────────────────────────────────────────────────────
+// ── Subcommand: bundles (self-discovery) ────────────────────────────
+
+function runBundles(): void {
+  const bundles = listBundles().filter((b) => !b.internal);
+  const result = bundles.map((b) => {
+    const spec = getConventionSpec(b.id);
+    let atomCount = 0;
+    if (spec) {
+      const manifest = generateProtocolCoverageManifest(spec);
+      atomCount = manifest.baseAtoms.length + manifest.protocolAtoms.length;
+    }
+    return {
+      id: b.id,
+      name: b.name,
+      description: b.description ?? null,
+      category: b.category ?? null,
+      atomCount,
+      memberIds: b.memberIds,
+    };
+  });
+  console.log(JSON.stringify(result, null, 2));
+}
+
+// ── Subcommand: describe ────────────────────────────────────────────
+
+function runDescribe(): void {
+  const bundleId = requireArg(flags, "bundle");
+  const spec = resolveSpec(bundleId);
+  const bundle = resolveBundle(bundleId);
+
+  const manifest = generateProtocolCoverageManifest(spec);
+  const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
+
+  // Compute depth info
+  const stateDepths = new Map<string, number>();
+  for (const track of getBaseModules(spec)) {
+    const paths = enumerateBaseTrackStates(track);
+    for (const [stateId, path] of paths) {
+      stateDepths.set(stateId, Math.max(0, path.transitions.length - 1));
+    }
+  }
+  const maxDepth = stateDepths.size > 0
+    ? Math.max(...stateDepths.values())
+    : 0;
+
+  // Group atoms by state
+  const stateAtomCounts = new Map<string, number>();
+  for (const atom of allAtoms) {
+    stateAtomCounts.set(
+      atom.baseStateId,
+      (stateAtomCounts.get(atom.baseStateId) ?? 0) + 1,
+    );
+  }
+
+  // Compute strategy coverage via selftest at seed 42
+  const strategy = protocolSpecToStrategy(spec);
+  let covered = 0;
+  let skipped = 0;
+  for (let i = 0; i < allAtoms.length; i++) {
+    const atom = allAtoms[i]!;
+    const atomSeed = 42 + i;
+    try {
+      const deal = generateSeededDeal(bundle, atomSeed, vuln);
+      const userSeat = resolveUserSeat(bundle, deal);
+      const { auction } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
+      const activeSeat = auction.entries.length > 0
+        ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+        : userSeat;
+      const hand = deal.hands[activeSeat];
+      const context = buildContext(hand, auction, activeSeat, vuln);
+      const result = strategy.suggest(context);
+      if (result) covered++;
+      else skipped++;
+    } catch {
+      skipped++;
+    }
+  }
+
+  const states = [...stateAtomCounts.entries()].map(([stateId, count]) => ({
+    stateId,
+    depth: stateDepths.get(stateId) ?? 0,
+    atomCount: count,
+  }));
+  states.sort((a, b) => a.depth - b.depth || a.stateId.localeCompare(b.stateId));
+
+  console.log(JSON.stringify({
+    id: bundle.id,
+    name: bundle.name,
+    description: bundle.description ?? null,
+    category: bundle.category ?? null,
+    totalAtoms: allAtoms.length,
+    maxDepth,
+    strategyCoverage: {
+      covered,
+      skipped,
+      percent: allAtoms.length > 0
+        ? Math.round((covered / allAtoms.length) * 100)
+        : 0,
+    },
+    states,
+    atoms: allAtoms.map((a) => ({
+      atomId: `${a.baseStateId}/${a.surfaceId}/${a.meaningId}`,
+      meaningLabel: a.meaningLabel,
+      depth: stateDepths.get(a.baseStateId) ?? 0,
+    })),
+  }, null, 2));
+}
+
+// ── Usage + per-subcommand help ─────────────────────────────────────
 
 function printUsage(): void {
   console.error("Usage: coverage-runner.ts <subcommand> [options]");
   console.error("");
-  console.error("── Global settings (apply to all subcommands) ────────────────");
+  console.error("Subcommands:");
+  console.error("  bundles                                    List all available bundles (JSON)");
+  console.error("  describe  --bundle=<id>                    Inspect a bundle (atoms, depth, coverage)");
+  console.error("  list      --bundle=<id>                    List all coverage atoms (JSON lines)");
+  console.error("  eval      --bundle=<id> --atom=<id> --seed=N [--bid=<bid>]");
+  console.error("                                             Per-atom evaluation (Phase 1)");
+  console.error("  play      --bundle=<id> --seed=N [--step=N] [--bid=<bid>] [--reveal]");
+  console.error("                                             Playthrough evaluation (Phase 2)");
+  console.error("  selftest  --bundle=<id> | --all [--seed=N] Strategy self-test (CI)");
+  console.error("  plan      --bundle=<id> --agents=N [...]   Precompute evaluation plan");
+  console.error("  help                                       Show this help");
+  console.error("");
+  console.error("Global settings:");
   console.error("  --vuln=<none|ns|ew|both>        Vulnerability (default: none)");
-  console.error("  --opponents=<natural|none>      Opponent bidding mode (default: none)");
-  console.error("");
-  console.error("── Planning & diagnostics ──────────────────────────────────────");
-  console.error("  list      --bundle=<id>                    List all coverage atoms");
-  console.error("  plan      --bundle=<id> --agents=N [--coverage=2] [--max-seeds=500] [--seed=0]");
-  console.error("            Precompute two-phase evaluation plan");
-  console.error("  selftest  --bundle=<id> [--seed=N]         Strategy self-test");
-  console.error("  selftest  --all [--seed=N]                 Self-test all bundles");
-  console.error("");
-  console.error("── Per-atom evaluation (Phase 1, orchestrator-driven) ─────────");
-  console.error("  eval      --bundle=<id> --atom=<atomId> --seed=N");
-  console.error("            Returns sanitized viewport (seat, hand, hcp, auction, legal calls)");
-  console.error("  eval      --bundle=<id> --atom=<atomId> --seed=N --bid=<bid>");
-  console.error("            Returns viewport + full teaching feedback + grade");
-  console.error("");
-  console.error("── Playthrough evaluation (Phase 2, agent-driven) ─────────────");
-  console.error("  play      --bundle=<id> --seed=N");
-  console.error("            Returns { totalSteps, step: <first viewport> }");
-  console.error("  play      --bundle=<id> --seed=N --step=N");
-  console.error("            Returns viewport for step N");
-  console.error("  play      --bundle=<id> --seed=N --step=N --bid=<bid>");
-  console.error("            Returns grade + teaching + next step viewport");
-  console.error("  play      --bundle=<id> --seed=N --reveal");
-  console.error("            Full trace with all recommendations and atom IDs");
+  console.error("  --opponents=<natural|none>       Opponent bidding mode (default: none)");
+  console.error("  --help                           Show help (global or per-subcommand)");
   console.error("");
   console.error("Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error");
   console.error("");
   console.error("Available bundles:");
-  const seen = new Set<string>();
-  for (const spec of listConventionSpecs()) {
-    if (seen.has(spec.id)) continue;
-    seen.add(spec.id);
-    console.error(`  ${spec.id} — ${spec.name}`);
+  printAvailableBundles();
+  console.error("");
+  console.error("Tip: Run '<subcommand> --help' for detailed subcommand usage.");
+}
+
+function printSubcommandHelp(cmd: string): void {
+  switch (cmd) {
+    case "bundles":
+      console.error("bundles — List all available convention bundles.");
+      console.error("");
+      console.error("Usage: coverage-runner.ts bundles");
+      console.error("");
+      console.error("Returns JSON array of bundles with id, name, description, atomCount.");
+      console.error("Use this for self-discovery: find valid bundle IDs before calling other commands.");
+      break;
+
+    case "describe":
+      console.error("describe — Inspect a single bundle in detail.");
+      console.error("");
+      console.error("Usage: coverage-runner.ts describe --bundle=<id>");
+      console.error("");
+      console.error("Returns JSON with:");
+      console.error("  - Bundle metadata (id, name, description, category)");
+      console.error("  - Total atom count and max BFS depth");
+      console.error("  - Strategy coverage (how many atoms the strategy handles)");
+      console.error("  - Per-state breakdown (stateId, depth, atomCount)");
+      console.error("  - Full atom list with atomId, meaningLabel, depth");
+      console.error("");
+      console.error("Tip: Use atom IDs from describe output with 'eval --atom=<id>'.");
+      break;
+
+    case "list":
+      console.error("list — Enumerate all coverage atoms for a bundle.");
+      console.error("");
+      console.error("Usage: coverage-runner.ts list --bundle=<id>");
+      console.error("");
+      console.error("Outputs one JSON object per line (JSON lines format).");
+      console.error("Each line has: baseStateId, surfaceId, meaningId, meaningLabel.");
+      console.error("");
+      console.error("Atom ID format: <baseStateId>/<surfaceId>/<meaningId>");
+      console.error("Use these IDs with 'eval --atom=<atomId>'.");
+      break;
+
+    case "eval":
+      console.error("eval — Per-atom targeted evaluation (Phase 1, orchestrator-driven).");
+      console.error("");
+      console.error("Usage:");
+      console.error("  eval --bundle=<id> --atom=<atomId> --seed=N");
+      console.error("    Returns sanitized viewport: seat, hand, hcp, auction, legalCalls.");
+      console.error("    No correct answer — agent must decide based on bridge knowledge.");
+      console.error("");
+      console.error("  eval --bundle=<id> --atom=<atomId> --seed=N --bid=<bid>");
+      console.error("    Submits a bid. Returns viewport + grade + teaching feedback.");
+      console.error("    Exit code: 0=correct/acceptable, 1=wrong.");
+      console.error("");
+      console.error("Grades: correct, correct-not-preferred, acceptable, near-miss, incorrect");
+      console.error("");
+      console.error("Bid format: P (pass), X (double), XX (redouble), 1C..7NT");
+      break;
+
+    case "play":
+      console.error("play — Playthrough evaluation (Phase 2, agent-driven).");
+      console.error("");
+      console.error("Usage:");
+      console.error("  play --bundle=<id> --seed=N");
+      console.error("    Start: returns { totalSteps, step: <first viewport> }");
+      console.error("");
+      console.error("  play --bundle=<id> --seed=N --step=N");
+      console.error("    Get viewport for step N (no bid yet).");
+      console.error("");
+      console.error("  play --bundle=<id> --seed=N --step=N --bid=<bid>");
+      console.error("    Submit bid: returns grade + teaching + nextStep viewport.");
+      console.error("    One fewer round-trip than separate step + bid calls.");
+      console.error("    Exit code: 0=correct/acceptable, 1=wrong.");
+      console.error("");
+      console.error("  play --bundle=<id> --seed=N --reveal");
+      console.error("    Full trace: all steps with recommendations and atom IDs.");
+      break;
+
+    case "selftest":
+      console.error("selftest — Run strategy against itself for all atoms (CI mode).");
+      console.error("");
+      console.error("Usage:");
+      console.error("  selftest --bundle=<id> [--seed=N]");
+      console.error("  selftest --all [--seed=N]");
+      console.error("");
+      console.error("Tests each atom: generates deal, runs strategy, verifies determinism.");
+      console.error("Results: pass (strategy recommends a bid), skip (null), fail (non-deterministic).");
+      console.error("Exit code: 0=no failures, 1=at least one failure.");
+      break;
+
+    case "plan":
+      console.error("plan — Precompute two-phase evaluation plan.");
+      console.error("");
+      console.error("Usage:");
+      console.error("  plan --bundle=<id> --agents=N [--coverage=2] [--max-seeds=500] [--seed=0]");
+      console.error("");
+      console.error("Output:");
+      console.error("  phase1 — Per-atom BFS-ordered list with atomId, expectedBid, seeds, depth.");
+      console.error("           Includes dependencyGraph for stop-on-error propagation.");
+      console.error("           Orchestrator-private: never sent to agents.");
+      console.error("");
+      console.error("  phase2 — Seed assignments per agent, balanced by step count.");
+      console.error("           Agent-facing: agents use 'play' to walk these seeds.");
+      break;
+
+    default:
+      console.error(`Unknown subcommand: "${cmd}"`);
+      console.error("");
+      printUsage();
+      break;
   }
 }

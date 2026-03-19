@@ -123,6 +123,7 @@ function makeProtocol(overrides?: Partial<ProtocolModuleSpec>): ProtocolModuleSp
       value: "opened",
     },
     initialStateId: "ask",
+    facts: { definitions: [], evaluators: new Map() },
     states: {
       ask: {
         id: "ask",
@@ -361,6 +362,7 @@ describe("replay", () => {
         value: "opened",
       },
       initialStateId: "active",
+      facts: { definitions: [], evaluators: new Map() },
       states: {
         active: {
           id: "active",
@@ -497,6 +499,7 @@ describe("replay", () => {
         value: "opened",
       },
       initialStateId: "active",
+      facts: { definitions: [], evaluators: new Map() },
       states: {
         active: {
           id: "active",
