@@ -27,17 +27,6 @@ export type TextToken =
   | "--text-heading"
   | "--text-title";
 
-/** Map of token names to their Tailwind class equivalents. */
-export const TEXT_TOKEN_CLASS: Record<TextToken, string> = {
-  "--text-annotation": "text-[--text-annotation]",
-  "--text-label": "text-[--text-label]",
-  "--text-detail": "text-[--text-detail]",
-  "--text-body": "text-[--text-body]",
-  "--text-value": "text-[--text-value]",
-  "--text-heading": "text-[--text-heading]",
-  "--text-title": "text-[--text-title]",
-};
-
 /** Suit colors for dark backgrounds (panels, trick history). */
 export const SUIT_COLOR_CLASS: Record<Suit, string> = {
   [Suit.Spades]: "text-suit-spades",

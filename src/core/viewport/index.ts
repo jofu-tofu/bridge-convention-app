@@ -23,13 +23,10 @@ export type {
 // Build functions
 export {
   buildBiddingViewport,
-  buildEvaluationOracle,
-  gradeAgainstOracle,
   buildViewportFeedback,
   buildTeachingDetail,
 } from "./build-viewport";
 
 export type {
   BuildBiddingViewportInput,
-  BuildOracleInput,
 } from "./build-viewport";

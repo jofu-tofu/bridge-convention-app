@@ -9,6 +9,14 @@
 import type { PedagogicalRelationKind } from "../../../core/contracts/teaching-projection";
 import type { EncoderKind } from "../../../core/contracts/provenance";
 
+/** Human-readable ambiguity description. Returns null when score is 0 (clear-cut). */
+export function formatAmbiguity(score: number): string | null {
+  if (score === 0) return null;
+  if (score <= 0.3) return "Mildly ambiguous";
+  if (score <= 0.6) return "Moderately ambiguous — alternatives exist";
+  return "Highly ambiguous — multiple bids are reasonable";
+}
+
 /** Map pedagogical relation kinds to short display labels. */
 export function formatRelationKind(kind: PedagogicalRelationKind): string {
   switch (kind) {

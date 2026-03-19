@@ -5,7 +5,6 @@ export { BERGEN_CLASSES } from "./semantic-classes";
 export {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
-  createBergenR1Surfaces,
 } from "./meaning-surfaces";
 // machine.ts removed — protocol frame architecture replaces ConversationMachine
 export { BERGEN_PROFILE } from "./system-profile";

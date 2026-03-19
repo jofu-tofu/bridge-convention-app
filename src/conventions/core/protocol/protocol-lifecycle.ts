@@ -11,6 +11,8 @@
 
 import { Seat } from "../../../engine/types";
 import type { Call, AuctionEntry } from "../../../engine/types";
+import { partnerSeat, areSamePartnership } from "../../../engine/constants";
+import { callKey } from "../../../engine/call-helpers";
 import type {
   BoolExpr,
   Ref,
@@ -50,22 +52,6 @@ export interface ExpressionContext {
 }
 
 // ── Seat helpers ────────────────────────────────────────────────────
-
-/** Get the partner seat. */
-function partnerOf(seat: Seat): Seat {
-  const partners: Record<string, Seat> = {
-    N: Seat.South,
-    S: Seat.North,
-    E: Seat.West,
-    W: Seat.East,
-  };
-  return partners[seat]!;
-}
-
-/** Are two seats on the same team? */
-function sameTeam(a: Seat, b: Seat): boolean {
-  return a === b || partnerOf(a) === b;
-}
 
 /** Get team identifier for a seat. */
 function teamOf(seat: Seat): "NS" | "EW" {
@@ -360,14 +346,6 @@ function findProtocolLocal(
 
 // ── Event Pattern Matching ──────────────────────────────────────────
 
-/** Serialize a Call to a deterministic string key. */
-function callKey(call: Call): string {
-  if (call.type === "bid") return `${call.level}${call.strain}`;
-  if (call.type === "pass") return "P";
-  if (call.type === "double") return "X";
-  return "XX";
-}
-
 /** Check whether an event matches an EventPattern. */
 function matchesEventPattern(
   pattern: EventPattern,
@@ -382,10 +360,10 @@ function matchesEventPattern(
         if (eventSeat !== observerSeat) return false;
         break;
       case "partner":
-        if (eventSeat !== partnerOf(observerSeat)) return false;
+        if (eventSeat !== partnerSeat(observerSeat)) return false;
         break;
       case "opponent":
-        if (sameTeam(eventSeat, observerSeat)) return false;
+        if (areSamePartnership(eventSeat, observerSeat)) return false;
         break;
     }
   }

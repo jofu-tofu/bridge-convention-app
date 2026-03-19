@@ -12,6 +12,7 @@
     whyNotGradeClasses,
     isArtificialEncoder,
     formatEncoderKind,
+    formatAmbiguity,
   } from "./BidFeedbackPanel";
   import { formatRuleName } from "../../../core/display/format";
 
@@ -73,12 +74,25 @@
       : null,
   );
 
+  // Decision metadata — ambiguity and grading type
+  const ambiguityNote = $derived(
+    teaching?.ambiguityScore != null ? formatAmbiguity(teaching.ambiguityScore) : null, // eslint-disable-line eqeqeq -- intentional nullish check
+  );
+
+  // Practical score breakdown
+  const scoreBreakdown = $derived(teaching?.practicalScoreBreakdown ?? null);
+  let showScoreBreakdown = $state(false);
+
+  // Fallback reached — no convention surface matched
+  const fallbackNote = $derived(teaching?.fallbackReached === true);
+
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
   let prevFeedback: ViewportBidFeedback | undefined;
   $effect.pre(() => {
     if (feedback !== prevFeedback) {
       showAnswer = false;
       showDecisionSpace = false;
+      showScoreBreakdown = false;
       expandedWhyNot.clear();
     }
     prevFeedback = feedback;
@@ -160,6 +174,11 @@
         {#if encodingNote}
           <p class="text-[--text-label] text-note-encoding/60 mt-0.5 italic">{encodingNote}</p>
         {/if}
+        {#if fallbackNote}
+          <p class="text-[--text-label] text-fb-incorrect-text/50 mt-0.5 italic">
+            No convention applies here — pass by default
+          </p>
+        {/if}
       </div>
 
       <!-- 2. Hand summary -->
@@ -191,6 +210,13 @@
       {:else if teaching?.fallbackExplanation}
         <p class="text-fb-incorrect-dim/50 text-[--text-label] leading-tight">
           {teaching.fallbackExplanation}
+        </p>
+      {/if}
+
+      <!-- 3b. Ambiguity note -->
+      {#if ambiguityNote}
+        <p class="text-[--text-annotation] text-fb-incorrect-text/40 italic">
+          {ambiguityNote}
         </p>
       {/if}
 
@@ -321,6 +347,28 @@
     <p class="text-fb-near-miss-text/70 text-[--text-label] mt-2 italic" data-testid="practical-note">
       Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
     </p>
+    {#if scoreBreakdown}
+      <button
+        type="button"
+        class="text-[--text-annotation] text-fb-incorrect-text/40 hover:text-fb-incorrect-dim transition-colors cursor-pointer mt-1 flex items-center gap-1"
+        onclick={() => { showScoreBreakdown = !showScoreBreakdown; }}
+        aria-expanded={showScoreBreakdown}
+      >
+        <span class="shrink-0">{showScoreBreakdown ? "▾" : "▸"}</span>
+        <span>Score breakdown</span>
+      </button>
+      {#if showScoreBreakdown}
+        <div class="ml-3 mt-0.5 text-[--text-annotation] text-fb-incorrect-text/40 font-mono space-y-0.5">
+          <p>Fit: {scoreBreakdown.fitScore.toFixed(1)}</p>
+          <p>HCP: {scoreBreakdown.hcpScore.toFixed(1)}</p>
+          <p>Convention distance: {scoreBreakdown.conventionDistance.toFixed(1)}</p>
+          {#if scoreBreakdown.misunderstandingRisk > 0}
+            <p>Misunderstanding risk: {scoreBreakdown.misunderstandingRisk.toFixed(1)}</p>
+          {/if}
+          <p class="font-semibold">Total: {scoreBreakdown.totalScore.toFixed(1)}</p>
+        </div>
+      {/if}
+    {/if}
   {/if}
 
 </div>

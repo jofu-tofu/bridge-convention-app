@@ -5,7 +5,8 @@
 // suppress/inject/remap transform model with declarative fragment
 // relations: augment, compete, shadow.
 
-import type { Call, Seat, ContractBid } from "../../../engine/types";
+import type { Call, Seat } from "../../../engine/types";
+import { callKey } from "../../../engine/call-helpers";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type {
   SurfaceFragment,
@@ -52,15 +53,6 @@ export interface CompositionTraceEntry {
 }
 
 // ── Call Key Helpers ─────────────────────────────────────────────────
-
-/** Serialize a Call to a deterministic string key. */
-function callKey(call: Call): string {
-  if (call.type === "pass") return "P";
-  if (call.type === "double") return "X";
-  if (call.type === "redouble") return "XX";
-  const bid = call as ContractBid;
-  return `${bid.level}${bid.strain}`;
-}
 
 /** Check whether a specific call is covered by an actionCoverage spec. */
 function isCovered(call: Call, coverage: "all" | readonly Call[]): boolean {

@@ -6,20 +6,14 @@ import type {
 import { num, fv } from "../../../core/contracts/fact-catalog";
 import { Rank, Suit } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
+import { SUIT_NAME_MAP } from "../../../engine/constants";
 
 // ─── Top honor counting helper ──────────────────────────────
 
 const TOP_HONORS = new Set([Rank.Ace, Rank.King, Rank.Queen]);
 
-const SUIT_NAME_TO_ENUM: Record<string, Suit> = {
-  hearts: Suit.Hearts,
-  spades: Suit.Spades,
-  diamonds: Suit.Diamonds,
-  clubs: Suit.Clubs,
-};
-
 function countTopHonorsInSuit(hand: Hand, suitName: string): number {
-  const suit = SUIT_NAME_TO_ENUM[suitName] ?? Suit.Clubs;
+  const suit = SUIT_NAME_MAP[suitName as keyof typeof SUIT_NAME_MAP] ?? Suit.Clubs;
   return hand.cards.filter(
     (c) => c.suit === suit && TOP_HONORS.has(c.rank),
   ).length;

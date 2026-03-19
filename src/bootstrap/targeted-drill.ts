@@ -8,14 +8,9 @@
 
 import type { EnginePort } from "../engine/port";
 import type { ConventionConfig } from "../conventions/core";
-import { Seat } from "../engine/types";
+import type { Seat } from "../engine/types";
 import type { DrillBundle, OpponentMode } from "./types";
-import { createProtocolDrillConfig } from "./config-factory";
-import { createDrillSession } from "./session";
 import { getConventionSpec } from "../conventions/spec-registry";
-import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
-import { createInferenceEngine } from "../inference/inference-engine";
-import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
 
 /**
  * Start a drill targeting a specific state.

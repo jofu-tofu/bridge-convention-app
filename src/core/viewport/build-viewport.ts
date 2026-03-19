@@ -8,12 +8,11 @@ import { type Seat, type Vulnerability, type Call, type Hand, type Deal, type Au
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { formatCall } from "../display/format";
 import { formatHandSummary } from "../display/hand-summary";
-import type { BidHistoryEntry, BidResult, BidAlert } from "../contracts/bidding";
+import type { BidHistoryEntry, BidResult } from "../contracts/bidding";
 import type { MeaningSurface } from "../contracts/meaning";
 import type { TeachingProjection } from "../contracts/teaching-projection";
-import type { TeachingResolution, AcceptableBid } from "../../teaching/teaching-resolution";
-import { BidGrade, gradeBid } from "../../teaching/teaching-resolution";
-import type { StrategyEvaluation } from "../contracts/recommendation";
+import type { TeachingResolution } from "../../teaching/teaching-resolution";
+import { BidGrade } from "../../teaching/teaching-resolution";
 import type { PracticalScoreBreakdown } from "../../strategy/bidding/practical-types";
 
 // Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
@@ -46,11 +45,6 @@ import type {
   ConventionView,
   TeachingDetail,
 } from "./player-viewport";
-
-import type {
-  EvaluationOracle,
-  OracleGradingResult,
-} from "./evaluation-oracle";
 
 // ── Build Bidding Viewport ──────────────────────────────────────────
 
@@ -145,61 +139,6 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
     biddingOptions,
     isUserTurn,
     currentBidder,
-  };
-}
-
-// ── Build Evaluation Oracle ─────────────────────────────────────────
-
-export interface BuildOracleInput {
-  readonly deal: Deal;
-  readonly bidResult: BidResult;
-  readonly teachingResolution: TeachingResolution;
-  readonly strategyEvaluation?: StrategyEvaluation;
-  readonly targetSurfaceId?: string;
-}
-
-/**
- * Build an EvaluationOracle (answer key) from engine evaluation output.
- *
- * This is NEVER exposed to the player or agent.  It's used only for
- * grading and post-mortem diagnostics.
- */
-export function buildEvaluationOracle(input: BuildOracleInput): EvaluationOracle {
-  const { deal, bidResult, teachingResolution, strategyEvaluation, targetSurfaceId } = input;
-
-  return {
-    allHands: deal.hands,
-    expectedCall: bidResult.call,
-    expectedSurfaceId: targetSurfaceId,
-    expectedAlert: bidResult.alert,
-    teachingResolution,
-    bidResult,
-    strategyEvaluation,
-    teachingProjection: strategyEvaluation?.teachingProjection ?? undefined,
-  };
-}
-
-// ── Grade a Bid Against the Oracle ──────────────────────────────────
-
-/**
- * Grade a player's bid against the oracle using the teaching resolution.
- *
- * This is the same grading logic the UI uses, but decoupled from Svelte state.
- */
-export function gradeAgainstOracle(
-  userCall: Call,
-  oracle: EvaluationOracle,
-): OracleGradingResult {
-  const { teachingResolution } = oracle;
-  const grade: BidGrade = gradeBid(userCall, teachingResolution);
-
-  const requiresRetry = grade === BidGrade.NearMiss || grade === BidGrade.Incorrect;
-
-  return {
-    grade: grade as ViewportBidGrade,
-    userCall,
-    expectedCall: oracle.expectedCall,
-    requiresRetry,
   };
 }
 

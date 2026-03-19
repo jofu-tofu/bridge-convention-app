@@ -10,9 +10,6 @@ export {
   WEAK_TWO_OGUST_HEARTS_SURFACES,
   WEAK_TWO_OGUST_SPADES_SURFACES,
   WEAK_TWO_OGUST_DIAMONDS_SURFACES,
-  createWeakTwoR1Surfaces,
-  createWeakTwoR2Surfaces,
-  createWeakTwoOgustSurfaces,
 } from "./meaning-surfaces";
 // machine.ts removed — protocol frame architecture replaces ConversationMachine
 export { WEAK_TWO_PROFILE } from "./system-profile";

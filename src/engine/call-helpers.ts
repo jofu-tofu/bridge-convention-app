@@ -9,13 +9,16 @@ export function callsMatch(a: Call, b: Call): boolean {
   return true; // pass === pass, double === double, etc.
 }
 
-/** Format a Call object into a short string (e.g., "1NT", "P", "X", "XX"). */
-export function formatCallString(call: Call): string {
+/** Serialize a Call to a deterministic string key (e.g., "1NT", "P", "X", "XX"). */
+export function callKey(call: Call): string {
   if (call.type === "bid") return `${call.level}${call.strain}`;
   if (call.type === "pass") return "P";
   if (call.type === "double") return "X";
   return "XX";
 }
+
+/** Format a Call object into a short string (e.g., "1NT", "P", "X", "XX"). */
+export const formatCallString = callKey;
 
 /** Format a Call as a human-readable string for evidence output (e.g., "1NT", "Pass", "Double"). */
 export function formatCallForEvidence(call: Call): string {

@@ -6,17 +6,10 @@ import { BidSuit } from "../../engine/types";
 import type { Auction, Call, ContractBid, Seat } from "../../engine/types";
 import { isLegalCall } from "../../engine/auction";
 import { SUIT_ORDER, partnerSeat } from "../../engine/constants";
+import { callKey } from "../../engine/call-helpers";
 import type { BiddingContext } from "../../core/contracts";
 import type { PrivateBeliefState } from "../../inference/private-belief";
 import { LEVEL_HCP_TABLE } from "./practical-scorer";
-
-/** Create a string key from a Call for deduplication against existing candidates. */
-function callKeyForDedup(call: Call): string {
-  if (call.type === "bid") return `${call.level}${call.strain}`;
-  if (call.type === "double") return "X";
-  if (call.type === "redouble") return "XX";
-  return call.type;
-}
 
 export enum DistortionType {
   ConservativeNTDowngrade = "conservative-nt-downgrade",
@@ -101,7 +94,7 @@ function tryConservativeNTDowngrade(
     strain: BidSuit.NoTrump,
   };
 
-  const key = callKeyForDedup(downgradedCall);
+  const key = callKey(downgradedCall);
   if (existingCalls.has(key)) return null;
 
   const legal = isLegalCall(context.auction, downgradedCall, context.seat);
@@ -144,7 +137,7 @@ function tryCompetitiveOvercalls(
     const overcall = findCheapestLegalBidInSuit(context.auction, context.seat, bidSuit);
     if (!overcall) continue;
 
-    const key = callKeyForDedup(overcall);
+    const key = callKey(overcall);
     if (existingCalls.has(key)) continue;
 
     results.push({

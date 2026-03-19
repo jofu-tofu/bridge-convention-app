@@ -7,7 +7,9 @@
 // Determinism guarantee: given the same history + spec, always produces
 // the same snapshot. This is critical for inference/posterior.
 
-import type { Call, Seat, ContractBid } from "../../../engine/types";
+import type { Call, Seat } from "../../../engine/types";
+import { partnerSeat, areSamePartnership } from "../../../engine/constants";
+import { callKey } from "../../../engine/call-helpers";
 import type {
   ConventionSpec,
   RuntimeSnapshot,
@@ -28,22 +30,6 @@ import { buildSurfaceStack, composeSurfaceStack } from "./surface-stack";
 
 // ── Seat-relative actor resolution ──────────────────────────────────
 
-/** Get the partner seat. */
-function partnerOf(seat: Seat): Seat {
-  const partners: Record<string, Seat> = {
-    N: "S" as Seat,
-    S: "N" as Seat,
-    E: "W" as Seat,
-    W: "E" as Seat,
-  };
-  return partners[seat]!;
-}
-
-/** Are two seats on the same team? */
-function sameTeam(a: Seat, b: Seat): boolean {
-  return a === b || partnerOf(a) === b;
-}
-
 /** Resolve an actor pattern relative to the observer seat. */
 function matchesActor(
   pattern: EventPattern["actor"],
@@ -52,19 +38,9 @@ function matchesActor(
 ): boolean {
   if (!pattern || pattern === "any") return true;
   if (pattern === "self") return eventSeat === observerSeat;
-  if (pattern === "partner") return eventSeat === partnerOf(observerSeat);
-  if (pattern === "opponent") return !sameTeam(eventSeat, observerSeat);
+  if (pattern === "partner") return eventSeat === partnerSeat(observerSeat);
+  if (pattern === "opponent") return !areSamePartnership(eventSeat, observerSeat);
   return false;
-}
-
-// ── Call serialization ──────────────────────────────────────────────
-
-function callKey(call: Call): string {
-  if (call.type === "pass") return "P";
-  if (call.type === "double") return "X";
-  if (call.type === "redouble") return "XX";
-  const bid = call as ContractBid;
-  return `${bid.level}${bid.strain}`;
 }
 
 // ── Event pattern matching ──────────────────────────────────────────
