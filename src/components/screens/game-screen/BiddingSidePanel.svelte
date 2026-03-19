@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { Call } from "../../../engine/types";
   import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
-  import { getGameStore } from "../../../stores/context";
   import BidPanel from "../../game/BidPanel.svelte";
   import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
   import DebugPanel from "../../game/DebugPanel.svelte";
@@ -13,6 +12,8 @@
     isUserTurn: boolean;
     isFeedbackBlocking: boolean;
     onRetry: () => void;
+    viewportFeedback: ViewportBidFeedback | null;
+    teachingDetail: TeachingDetail | null;
   }
 
   let {
@@ -22,21 +23,12 @@
     isUserTurn,
     isFeedbackBlocking: _isFeedbackBlocking,
     onRetry,
+    viewportFeedback,
+    teachingDetail,
   }: Props = $props();
 
   const DEV = import.meta.env.DEV;
 
-  // WORKAROUND: Svelte 5 $derived doesn't reliably track through store
-  // getter chains after async operations. Using $effect for eager tracking
-  // and class:hidden instead of {#if} to keep elements in the DOM.
-  const gameStore = getGameStore();
-
-  let viewportFeedback = $state.raw<ViewportBidFeedback | null>(null);
-  let teachingDetail = $state.raw<TeachingDetail | null>(null);
-  $effect(() => {
-    viewportFeedback = gameStore.viewportFeedback;
-    teachingDetail = gameStore.teachingDetail;
-  });
   const hasFeedback = $derived(viewportFeedback !== null);
 </script>
 

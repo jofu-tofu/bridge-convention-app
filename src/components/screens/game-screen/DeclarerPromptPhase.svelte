@@ -2,13 +2,13 @@
   import { Seat } from "../../../engine/types";
   import type { Contract, Deal } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
+  import { getLayoutConfig } from "../../../stores/context";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import DeclarerPrompt from "../../game/DeclarerPrompt.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
-  import type { LayoutProps } from "./layout-props";
 
-  interface Props extends LayoutProps {
+  interface Props {
     deal: Deal;
     userSeat: Seat;
     faceUpSeats: ReadonlySet<Seat>;
@@ -20,12 +20,6 @@
   }
 
   const {
-    tableScale,
-    tableOrigin,
-    tableBaseW,
-    tableBaseH,
-    phaseContainerClass,
-    sidePanelClass,
     deal,
     userSeat,
     faceUpSeats,
@@ -35,10 +29,12 @@
     onAccept,
     onSkip,
   }: Props = $props();
+
+  const layout = getLayoutConfig();
 </script>
 
-<div class={phaseContainerClass}>
-  <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
+<div class={layout.phaseContainerClass}>
+  <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
     <BridgeTable
       hands={deal.hands}
       {faceUpSeats}
@@ -55,7 +51,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class={sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Auction summary">
+  <aside class={layout.sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Auction summary">
     <div
       class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
     >

@@ -1,14 +1,9 @@
 <script lang="ts">
-  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
+  import type { BidFeedbackBaseProps } from "./types";
   import { formatCall } from "../../../core/display/format";
   import { formatAmbiguity } from "./BidFeedbackPanel";
 
-  interface Props {
-    feedback: ViewportBidFeedback;
-    teaching: TeachingDetail | null;
-    practicalRec: TeachingDetail['practicalRecommendation'];
-    showPracticalNote: boolean;
-  }
+  interface Props extends BidFeedbackBaseProps {}
 
   let { feedback, teaching, practicalRec, showPracticalNote }: Props = $props();
 

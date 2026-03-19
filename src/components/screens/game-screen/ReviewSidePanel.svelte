@@ -1,25 +1,23 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
-  import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
+  import type { Contract, Vulnerability, Deal } from "../../../engine/types";
   import { Vulnerability as Vul } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
   import { formatContractWithDeclarer, formatRuleName } from "../../../core/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
+  import type { DDSAnalysisProps } from "./shared-props";
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
   import Button from "../../shared/Button.svelte";
 
-  interface Props {
+  interface Props extends DDSAnalysisProps {
     contract: Contract | null;
     score: number | null;
     declarerTricksWon: number;
     bidHistory: BidHistoryEntry[];
-    ddsSolution: DDSolution | null;
-    ddsSolving: boolean;
-    ddsError: string | null;
     vulnerability: Vulnerability;
     dealNumber: number;
     onNextDeal: () => void;

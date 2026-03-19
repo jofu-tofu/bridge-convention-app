@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { Seat } from "../../../engine/types";
   import type { Call } from "../../../engine/types";
-  import { getEngine, getGameStore, getAppStore } from "../../../stores/context";
+  import { getEngine, getGameStore, getAppStore, setLayoutConfig } from "../../../stores/context";
   import { startDrill } from "../../../bootstrap/start-drill";
   import { startTargetedDrill } from "../../../bootstrap/targeted-drill";
   import { computeTableScale } from "../../../core/display/table-scale";
@@ -186,6 +186,17 @@
     `${isDesktop ? "h-full" : "border-t border-border-subtle"} bg-bg-base p-3 flex flex-col min-h-0 overflow-hidden`,
   );
 
+  // Expose layout configuration via context so phase components can read it
+  // without prop drilling. Uses getters so derived values stay reactive.
+  setLayoutConfig({
+    get tableScale() { return tableScale; },
+    get tableOrigin() { return tableOrigin; },
+    tableBaseW,
+    tableBaseH,
+    get phaseContainerClass() { return phaseContainerClass; },
+    get sidePanelClass() { return sidePanelClass; },
+  });
+
   function handleBackToMenu() {
     gameStore.reset();
     appStore.navigateToMenu();
@@ -258,12 +269,6 @@
     <div id="game-content" class="flex-1 min-h-0 flex flex-col">
     {#if gameStore.phase === "BIDDING" && gameStore.biddingViewport}
       <BiddingPhase
-        {tableScale}
-        {tableOrigin}
-        {tableBaseW}
-        {tableBaseH}
-        {phaseContainerClass}
-        {sidePanelClass}
         viewport={gameStore.biddingViewport}
         auction={gameStore.auction}
         bidHistory={gameStore.bidHistory}
@@ -273,15 +278,11 @@
         isUserTurn={gameStore.isUserTurn}
         isFeedbackBlocking={gameStore.isFeedbackBlocking}
         onRetry={() => gameStore.retryBid()}
+        viewportFeedback={gameStore.viewportFeedback}
+        teachingDetail={gameStore.teachingDetail}
       />
     {:else if gameStore.phase === "DECLARER_PROMPT" && gameStore.contract}
       <DeclarerPromptPhase
-        {tableScale}
-        {tableOrigin}
-        {tableBaseW}
-        {tableBaseH}
-        {phaseContainerClass}
-        {sidePanelClass}
         deal={gameStore.deal}
         {userSeat}
         faceUpSeats={gameStore.faceUpSeats}
@@ -293,12 +294,6 @@
       />
     {:else if gameStore.phase === "PLAYING" && gameStore.deal}
       <PlayingPhase
-        {tableScale}
-        {tableOrigin}
-        {tableBaseW}
-        {tableBaseH}
-        {phaseContainerClass}
-        {sidePanelClass}
         rotated={gameStore.rotated}
         faceUpSeats={gameStore.faceUpSeats}
         deal={gameStore.deal}
@@ -319,12 +314,6 @@
       />
     {:else if gameStore.phase === "EXPLANATION"}
       <ExplanationPhase
-        {tableScale}
-        {tableOrigin}
-        {tableBaseW}
-        {tableBaseH}
-        {phaseContainerClass}
-        {sidePanelClass}
         deal={gameStore.deal}
         {userSeat}
         faceUpSeats={gameStore.faceUpSeats}

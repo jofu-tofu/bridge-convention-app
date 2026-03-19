@@ -1,15 +1,9 @@
 <script lang="ts">
-  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
+  import type { BidFeedbackInteractiveProps } from "./types";
   import { formatCall } from "../../../core/display/format";
   import { callsMatch } from "../../../engine/call-helpers";
 
-  interface Props {
-    feedback: ViewportBidFeedback;
-    teaching: TeachingDetail | null;
-    onRetry: () => void;
-    showPracticalNote: boolean;
-    practicalRec: TeachingDetail['practicalRecommendation'];
-  }
+  interface Props extends BidFeedbackInteractiveProps {}
 
   let { feedback, teaching, onRetry, showPracticalNote, practicalRec }: Props = $props();
 </script>

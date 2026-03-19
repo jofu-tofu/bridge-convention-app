@@ -2,21 +2,21 @@
   import { Seat } from "../../../engine/types";
   import type {
     Contract,
-    DDSolution,
     Vulnerability,
     Deal,
   } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../core/contracts";
+  import { getLayoutConfig } from "../../../stores/context";
+  import type { DDSAnalysisProps } from "./shared-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import HandFan from "../../game/HandFan.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import ReviewSidePanel from "./ReviewSidePanel.svelte";
-  import type { LayoutProps } from "./layout-props";
 
-  interface Props extends LayoutProps {
+  interface Props extends DDSAnalysisProps {
     deal: Deal;
     userSeat: Seat;
     faceUpSeats: ReadonlySet<Seat>;
@@ -25,9 +25,6 @@
     score: number | null;
     declarerTricksWon: number;
     bidHistory: BidHistoryEntry[];
-    ddsSolution: DDSolution | null;
-    ddsSolving: boolean;
-    ddsError: string | null;
     vulnerability: Vulnerability;
     dealNumber: number;
     onNextDeal: () => void;
@@ -37,12 +34,6 @@
   }
 
   const {
-    tableScale,
-    tableOrigin,
-    tableBaseW,
-    tableBaseH,
-    phaseContainerClass,
-    sidePanelClass,
     deal,
     userSeat,
     faceUpSeats,
@@ -62,12 +53,14 @@
     convention,
   }: Props = $props();
 
+  const layout = getLayoutConfig();
+
   let showAllCards = $state(false);
 
   const _allFaceUp: ReadonlySet<Seat> = new Set([Seat.North, Seat.East, Seat.South, Seat.West]);
 </script>
 
-<div class={phaseContainerClass}>
+<div class={layout.phaseContainerClass}>
   {#if showAllCards}
     <div class="flex min-w-0 flex-1 flex-col gap-3 overflow-auto p-4">
       <div class="flex items-center justify-between">
@@ -114,10 +107,10 @@
     </div>
   {:else}
     <ScaledTableArea
-      scale={tableScale}
-      origin={tableOrigin}
-      tableWidth={tableBaseW}
-      tableHeight={tableBaseH}
+      scale={layout.tableScale}
+      origin={layout.tableOrigin}
+      tableWidth={layout.tableBaseW}
+      tableHeight={layout.tableBaseH}
     >
       <BridgeTable hands={deal.hands} {faceUpSeats} vulnerability={deal.vulnerability} dealer={deal.dealer}>
         <div class="flex flex-col items-center gap-2">
@@ -145,7 +138,7 @@
     </ScaledTableArea>
   {/if}
 
-  <aside class={sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
+  <aside class={layout.sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
     <ReviewSidePanel
       {contract}
       {score}

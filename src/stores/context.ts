@@ -2,6 +2,7 @@ import { setContext, getContext } from "svelte";
 import type { EnginePort } from "../engine/port";
 import type { createGameStore } from "../stores/game.svelte";
 import type { createAppStore } from "../stores/app.svelte";
+import type { LayoutProps } from "../components/screens/game-screen/layout-props";
 
 type GameStore = ReturnType<typeof createGameStore>;
 type AppStore = ReturnType<typeof createAppStore>;
@@ -9,6 +10,7 @@ type AppStore = ReturnType<typeof createAppStore>;
 const ENGINE_KEY = Symbol("engine");
 const GAME_STORE_KEY = Symbol("game-store");
 const APP_STORE_KEY = Symbol("app-store");
+const LAYOUT_KEY = Symbol("layout");
 
 // Engine context
 export function setEngine(engine: EnginePort): void {
@@ -35,4 +37,13 @@ export function setAppStore(store: AppStore): void {
 
 export function getAppStore(): AppStore {
   return getContext<AppStore>(APP_STORE_KEY);
+}
+
+// Layout context
+export function setLayoutConfig(config: LayoutProps): void {
+  setContext(LAYOUT_KEY, config);
+}
+
+export function getLayoutConfig(): LayoutProps {
+  return getContext<LayoutProps>(LAYOUT_KEY);
 }

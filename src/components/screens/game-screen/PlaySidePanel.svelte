@@ -1,12 +1,11 @@
 <script lang="ts">
   import type { Contract } from "../../../engine/types";
+  import type { TrickScoreProps } from "./shared-props";
   import ContractDisplay from "./ContractDisplay.svelte";
   import Button from "../../shared/Button.svelte";
 
-  interface Props {
+  interface Props extends TrickScoreProps {
     contract: Contract | null;
-    declarerTricksWon: number;
-    defenderTricksWon: number;
     onSkipToReview: () => void;
   }
 
