@@ -97,6 +97,7 @@
     if (devSeed !== undefined) appStore.advanceDevDeal();
     const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, {
       opponentMode: effectiveOpponentMode,
+      tuning: appStore.drillTuning,
     });
     await gameStore.startDrill(bundle);
     gameStore.setConventionName(convention?.name ?? "Drill");
@@ -250,6 +251,16 @@
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <span class="text-text-secondary text-[--text-body]">Deal #{dealNumber}</span>
+        {#if gameStore.phase !== "EXPLANATION"}
+          <button
+            class="px-3 py-1.5 rounded-[--radius-md] text-[--text-detail] font-medium bg-bg-elevated hover:bg-bg-hover text-text-primary border border-border-default cursor-pointer transition-colors"
+            onclick={handleNextDeal}
+            aria-label="New deal"
+            data-testid="new-deal"
+          >
+            New Deal
+          </button>
+        {/if}
         {#if DEV}
           <button
             class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"

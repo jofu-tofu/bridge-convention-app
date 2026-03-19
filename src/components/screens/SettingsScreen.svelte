@@ -1,8 +1,56 @@
 <script lang="ts">
-  import type { OpponentMode } from "../../bootstrap/types";
+  import type { OpponentMode, VulnerabilityDistribution } from "../../bootstrap/types";
+  import { DEFAULT_DRILL_TUNING } from "../../bootstrap/types";
   import { getAppStore } from "../../stores/context";
 
   const appStore = getAppStore();
+
+  const VULN_KEYS = ["none", "ours", "theirs", "both"] as const;
+  const VULN_LABELS: Record<typeof VULN_KEYS[number], string> = {
+    none: "None",
+    ours: "Us Vulnerable",
+    theirs: "Them Vulnerable",
+    both: "Both Vulnerable",
+  };
+
+  function isVulnEnabled(key: typeof VULN_KEYS[number]): boolean {
+    return appStore.drillTuning.vulnerabilityDistribution[key] > 0;
+  }
+
+  function toggleVuln(key: typeof VULN_KEYS[number]) {
+    const current = appStore.drillTuning.vulnerabilityDistribution;
+    const enabled = current[key] > 0;
+    // Don't allow disabling all — at least one must remain
+    if (enabled) {
+      const othersEnabled = VULN_KEYS.some((k) => k !== key && current[k] > 0);
+      if (!othersEnabled) return;
+    }
+    const updated: VulnerabilityDistribution = {
+      ...current,
+      [key]: enabled ? 0 : 1,
+    };
+    appStore.setVulnerabilityDistribution(updated);
+  }
+
+  function resetVuln() {
+    appStore.setVulnerabilityDistribution(
+      DEFAULT_DRILL_TUNING.vulnerabilityDistribution,
+    );
+  }
+
+  const vulnSummary = $derived.by(() => {
+    const dist = appStore.drillTuning.vulnerabilityDistribution;
+    const active = VULN_KEYS.filter((k) => dist[k] > 0);
+    if (active.length === 4) return "Equal distribution across all four states.";
+    if (active.length === 1) return `Always: ${VULN_LABELS[active[0]!]}.`;
+    return `Active: ${active.map((k) => VULN_LABELS[k]).join(", ")}.`;
+  });
+
+  const isDefaultVuln = $derived.by(() => {
+    const dist = appStore.drillTuning.vulnerabilityDistribution;
+    const def = DEFAULT_DRILL_TUNING.vulnerabilityDistribution;
+    return VULN_KEYS.every((k) => (dist[k] > 0) === (def[k] > 0));
+  });
 </script>
 
 <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Settings">
@@ -28,11 +76,60 @@
           ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg
         >
       </button>
-      <h1 class="text-3xl font-bold text-text-primary">Settings</h1>
+      <h1 class="text-3xl font-bold text-text-primary">Practice Settings</h1>
     </div>
   </div>
 
   <div class="flex-1 overflow-y-auto pb-6 space-y-6">
+    <!-- Vulnerability Distribution -->
+    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-base font-semibold text-text-primary">
+          Vulnerability
+        </h2>
+        {#if !isDefaultVuln}
+          <button
+            class="text-xs text-accent-primary hover:text-accent-primary-hover cursor-pointer transition-colors"
+            onclick={resetVuln}
+            data-testid="vuln-reset"
+          >
+            Reset to default
+          </button>
+        {/if}
+      </div>
+      <p class="text-sm text-text-secondary mb-3">
+        Choose which vulnerability conditions appear in practice deals.
+      </p>
+      <div class="grid grid-cols-2 gap-2" role="group" aria-label="Vulnerability states">
+        {#each VULN_KEYS as key (key)}
+          {@const enabled = isVulnEnabled(key)}
+          <button
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-[--radius-md] border text-sm font-medium cursor-pointer transition-colors
+              {enabled
+                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
+                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
+            onclick={() => toggleVuln(key)}
+            aria-pressed={enabled}
+            data-testid="vuln-toggle-{key}"
+          >
+            <span
+              class="w-4 h-4 rounded-sm border-2 flex items-center justify-center shrink-0 transition-colors
+                {enabled ? 'bg-accent-primary border-accent-primary' : 'border-border-default bg-bg-base'}"
+              aria-hidden="true"
+            >
+              {#if enabled}
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              {/if}
+            </span>
+            {VULN_LABELS[key]}
+          </button>
+        {/each}
+      </div>
+      <p class="text-xs text-text-muted mt-2">
+        {vulnSummary}
+      </p>
+    </section>
+
     <!-- Opponent Interference -->
     <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
       <label class="block text-base font-semibold text-text-primary mb-1" for="opponent-mode">
@@ -56,6 +153,33 @@
           ? "Opponents bid naturally with 6+ HCP and a 5+ card suit."
           : "Opponents always pass."}
       </p>
+    </section>
+
+    <!-- Off-Convention Deals -->
+    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-base font-semibold text-text-primary">
+          Off-Convention Deals
+        </h2>
+        <span class="text-xs text-text-muted bg-bg-elevated px-2 py-0.5 rounded-full">
+          Coming soon
+        </span>
+      </div>
+      <p class="text-sm text-text-secondary mb-3">
+        Include deals where the convention doesn't apply, so you can practice
+        recognizing when to pass.
+      </p>
+      <div class="opacity-50 pointer-events-none">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            class="w-4 h-4 rounded-sm accent-accent-primary"
+            checked={appStore.drillTuning.includeOffConvention ?? false}
+            disabled
+          />
+          <span class="text-sm text-text-primary">Include off-convention deals</span>
+        </label>
+      </div>
     </section>
   </div>
 </main>

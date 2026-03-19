@@ -1,5 +1,6 @@
 import type { ConventionConfig } from "../conventions/core";
-import type { OpponentMode } from "../bootstrap/types";
+import type { OpponentMode, DrillTuning, VulnerabilityDistribution } from "../bootstrap/types";
+import { DEFAULT_DRILL_TUNING } from "../bootstrap/types";
 
 export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
 
@@ -27,6 +28,36 @@ export function createAppStore() {
     return "natural";
   }
   let opponentMode = $state<OpponentMode>(loadOpponentMode());
+
+  // Drill tuning — persisted to localStorage
+  const DRILL_TUNING_KEY = "bridge-app:drill-tuning";
+  function loadDrillTuning(): DrillTuning {
+    try {
+      const raw = localStorage.getItem(DRILL_TUNING_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<DrillTuning>;
+        const vd = parsed.vulnerabilityDistribution;
+        if (
+          vd &&
+          typeof vd.none === "number" &&
+          typeof vd.ours === "number" &&
+          typeof vd.theirs === "number" &&
+          typeof vd.both === "number"
+        ) {
+          return {
+            ...DEFAULT_DRILL_TUNING,
+            ...parsed,
+            vulnerabilityDistribution: vd,
+          };
+        }
+      }
+    } catch { /* SSR or storage unavailable */ }
+    return DEFAULT_DRILL_TUNING;
+  }
+  function saveDrillTuning(tuning: DrillTuning) {
+    try { localStorage.setItem(DRILL_TUNING_KEY, JSON.stringify(tuning)); } catch { /* ignore */ }
+  }
+  let drillTuning = $state<DrillTuning>(loadDrillTuning());
 
   return {
     get screen() {
@@ -123,6 +154,25 @@ export function createAppStore() {
     setOpponentMode(mode: OpponentMode) {
       opponentMode = mode;
       try { localStorage.setItem(OPPONENT_MODE_KEY, mode); } catch { /* ignore */ }
+    },
+
+    get drillTuning() {
+      return drillTuning;
+    },
+
+    setVulnerabilityDistribution(dist: VulnerabilityDistribution) {
+      drillTuning = { ...drillTuning, vulnerabilityDistribution: dist };
+      saveDrillTuning(drillTuning);
+    },
+
+    setIncludeOffConvention(include: boolean) {
+      drillTuning = { ...drillTuning, includeOffConvention: include };
+      saveDrillTuning(drillTuning);
+    },
+
+    setOffConventionRate(rate: number) {
+      drillTuning = { ...drillTuning, offConventionRate: Math.max(0, Math.min(1, rate)) };
+      saveDrillTuning(drillTuning);
     },
 
     get targetState() {
