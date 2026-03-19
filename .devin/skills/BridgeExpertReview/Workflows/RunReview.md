@@ -197,17 +197,28 @@ This returns `totalSteps` — the number of user decision points.
 ```bash
 npx tsx src/cli/coverage-runner.ts trace --bundle=<bundleId> --seed=<N> --phase=present --step=<i>
 ```
-This returns a viewport: the player's hand, HCP, auction so far, and legal calls. **No recommendation is shown.** You must decide the correct bid using bridge knowledge before proceeding.
+This returns a viewport: the player's hand, HCP, auction so far, and legal calls. **No recommendation is shown.** Decide the correct bid using bridge knowledge.
 
-**3. Commit your answer**, then request the next step. The next step's auction will reveal what the strategy bid — but you've already committed.
+**3. Submit your bid:**
+```bash
+npx tsx src/cli/coverage-runner.ts trace --bundle=<bundleId> --seed=<N> --phase=present --step=<i> --bid=<CALL>
+```
+This returns your bid + the app's recommendation + feedback in one shot — just like the app's UI. The `grade` object in the response tells you:
+- `correct`: whether your bid matches the app's
+- `appBid`: what the app recommends
+- `meaning`: the convention meaning (e.g., "Stayman 2♣")
+- `feedback`: teaching feedback text
 
-**4. Stop on disagreement.** If at any step your answer differs from the strategy's bid (visible in the next step's auction, or in the reveal), **stop evaluating this playthrough**. Record the finding and move to the next seed. Do NOT evaluate subsequent steps — their context is based on a bid you believe is wrong.
+**4. Evaluate the result:**
+- If `correct: true` and you agree the app's bid is right → move to the next step.
+- If `correct: false` and you think YOUR bid is right (not the app's) → record a finding. The app is teaching something wrong. **Stop this playthrough** — subsequent steps are in a polluted context. Move to the next seed.
+- If `correct: false` and you realize the app is right → note your mistake, continue to the next step.
 
-**5. After all steps (or after stopping), get the reveal:**
+**5. After all steps (or after stopping), optionally get the full reveal:**
 ```bash
 npx tsx src/cli/coverage-runner.ts trace --bundle=<bundleId> --seed=<N> --phase=reveal
 ```
-This shows every decision point (user + partner auto-bids) with the strategy's recommendations and atom IDs. Compare your committed answers against the strategy's. Also check partner auto-bids visible in the auction — flag any that look incorrect.
+This shows all decision points (user + partner auto-bids) with recommendations and atom IDs. Check partner auto-bids in the auction for any that look incorrect.
 
 ## Reference Verification
 

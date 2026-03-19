@@ -768,33 +768,35 @@ function runSinglePlaythrough(
 
 // ── Subcommand: trace ───────────────────────────────────────────────
 //
-// Three modes:
-//   trace --bundle=X --seed=N --phase=present --step=0
-//     Outputs a single viewport (hand, auction, legal calls) for one
-//     decision point. No answer revealed. The agent evaluates with
-//     bridge knowledge and commits before requesting the next step.
+// Per-step modes:
+//   trace --phase=present --step=0
+//     Viewport only (hand, auction, legal calls). No answer.
 //
-//   trace --bundle=X --seed=N --phase=present
-//     (no --step) Outputs only totalSteps so the agent knows how many
-//     steps to iterate.
+//   trace --phase=present --step=0 --bid=2C
+//     Submit a bid → get viewport + grade + feedback in one shot.
+//     Mirrors the app: bid, then immediately see if you're right and why.
+//     Exit code: 0=correct, 1=wrong.
 //
-//   trace --bundle=X --seed=N --phase=reveal
-//     Outputs the full trace including all recommendations and atom IDs.
-//     The agent compares their committed answers against the strategy's.
+// Utility modes:
+//   trace --phase=present
+//     (no --step) Just returns totalSteps.
 //
-// Same seed = same playthrough. The protocol is:
+//   trace --phase=reveal
+//     Full trace with all recommendations and atom IDs.
+//
+// Protocol:
 //   1. trace --phase=present           → learn totalSteps
-//   2. trace --phase=present --step=0  → see viewport, commit answer
-//   3. trace --phase=present --step=1  → see viewport (auction reveals
-//      step 0's bid, but agent already committed), commit answer
-//   4. ... repeat for each step ...
-//   5. trace --phase=reveal            → compare all answers
+//   2. trace --phase=present --step=0  → see viewport, decide answer
+//   3. trace --phase=present --step=0 --bid=2C  → submit, get feedback
+//   4. If wrong: record finding, stop. If right: move to step 1.
+//   5. trace --phase=reveal            → full comparison at end
 
 function runTrace(): void {
   const bundleId = requireArg(flags, "bundle");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const phase = (flags["phase"] as string) ?? "reveal";
   const stepIdx = optionalNumericArg(flags, "step");
+  const bidStr = flags["bid"] as string | undefined;
 
   if (phase !== "present" && phase !== "reveal") {
     console.error("trace --phase must be 'present' or 'reveal'");
@@ -810,7 +812,6 @@ function runTrace(): void {
 
   if (phase === "present") {
     if (stepIdx === undefined) {
-      // No --step: just report how many user steps
       console.log(JSON.stringify({
         bundle: bundleId,
         seed,
@@ -818,26 +819,62 @@ function runTrace(): void {
         totalSteps: userSteps.length,
       }, null, 2));
     } else {
-      // Single step viewport — no recommendation, no atom ID
       if (stepIdx < 0 || stepIdx >= userSteps.length) {
         console.error(`Step ${stepIdx} out of range (0-${userSteps.length - 1})`);
         process.exit(2);
       }
       const s = userSteps[stepIdx]!;
-      console.log(JSON.stringify({
-        bundle: bundleId,
-        seed,
-        phase: "present",
-        totalSteps: userSteps.length,
-        step: {
-          stepIndex: stepIdx,
-          seat: s.seat,
-          hand: s.hand,
-          hcp: s.hcp,
-          auctionSoFar: s.auctionSoFar,
-          legalCalls: s.legalCalls,
-        },
-      }, null, 2));
+      const viewport = {
+        stepIndex: stepIdx,
+        seat: s.seat,
+        hand: s.hand,
+        hcp: s.hcp,
+        auctionSoFar: s.auctionSoFar,
+        legalCalls: s.legalCalls,
+      };
+
+      if (bidStr && bidStr !== "true") {
+        // --bid provided: grade and return feedback
+        let submittedCall: Call;
+        try {
+          submittedCall = parsePatternCall(bidStr);
+        } catch {
+          console.error(`Invalid bid: "${bidStr}"`);
+          process.exit(2);
+        }
+
+        const appCall = parsePatternCall(s.recommendation);
+        const isCorrect = callsMatch(submittedCall, appCall);
+
+        console.log(JSON.stringify({
+          bundle: bundleId,
+          seed,
+          phase: "present",
+          totalSteps: userSteps.length,
+          step: viewport,
+          grade: {
+            yourBid: callKey(submittedCall),
+            appBid: s.recommendation,
+            correct: isCorrect,
+            meaning: s.meaningLabel,
+            stateId: s.stateId,
+            atomId: s.atomId,
+            feedback: isCorrect
+              ? `Correct! ${s.meaningLabel ?? ""}`
+              : `Expected ${s.recommendation}, got ${callKey(submittedCall)}.${s.meaningLabel ? " The correct bid is: " + s.meaningLabel + "." : ""}`,
+          },
+        }, null, 2));
+        process.exit(isCorrect ? 0 : 1);
+      } else {
+        // No --bid: viewport only
+        console.log(JSON.stringify({
+          bundle: bundleId,
+          seed,
+          phase: "present",
+          totalSteps: userSteps.length,
+          step: viewport,
+        }, null, 2));
+      }
     }
   } else {
     // Reveal: full trace — all steps (user + partner) with answers
