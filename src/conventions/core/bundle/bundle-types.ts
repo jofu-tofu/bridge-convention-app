@@ -5,8 +5,8 @@ import type { ExplanationCatalogIR } from "../../../core/contracts/explanation-c
 import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/tree-evaluation";
 import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import type { ConventionConfig } from "../types";
-import { ConventionCategory } from "../types";
+import type { ConventionConfig } from "../../../core/contracts/convention";
+import { ConventionCategory } from "../../../core/contracts/convention";
 import type { ConversationMachine } from "../runtime/machine-types";
 
 export interface RoutedSurfaceGroup {

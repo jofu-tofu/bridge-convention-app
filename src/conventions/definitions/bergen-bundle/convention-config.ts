@@ -1,6 +1,6 @@
 import { createConventionConfigFromBundle } from "../../core/bundle";
-import type { ConventionConfig } from "../../core/types";
-import { ConventionCategory } from "../../core/types";
+import type { ConventionConfig } from "../../../core/contracts/convention";
+import { ConventionCategory } from "../../../core/contracts/convention";
 import { bergenBundle } from "./config";
 
 export const bergenBundleConventionConfig: ConventionConfig = {

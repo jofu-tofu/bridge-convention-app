@@ -14,8 +14,8 @@ import type { DealConstraints, SeatConstraint } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
 import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
 import { buildAuction } from "../../engine/auction-helpers";
-import { ConventionCategory } from "../../conventions/core/types";
-import type { ConventionConfig } from "../../conventions/core/types";
+import { ConventionCategory } from "../../conventions/core";
+import type { ConventionConfig } from "../../conventions/core";
 
 describe("startDrill", () => {
   beforeEach(() => {

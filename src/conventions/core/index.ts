@@ -3,12 +3,12 @@
 // Internal files within conventions/ use direct paths.
 
 // ── Types & Config ──────────────────────────────────────────────────────
-export { ConventionCategory } from "./types";
+export { ConventionCategory } from "../../core/contracts/convention";
 export type {
   ConventionConfig,
   ConventionLookup,
   ConventionTeaching,
-} from "./types";
+} from "../../core/contracts/convention";
 
 // ── Registry ────────────────────────────────────────────────────────────
 export {

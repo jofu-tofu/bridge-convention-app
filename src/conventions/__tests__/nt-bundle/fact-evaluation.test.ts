@@ -8,7 +8,7 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts, createSharedFactCatalog } from "../../core/pipeline/fact-evaluator";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
-import { staymanFacts, transferFacts, ntResponseFacts } from "../../definitions/nt-bundle/facts";
+import { staymanFacts, transferFacts, ntResponseFacts } from "../../definitions/nt-bundle";
 
 /** Create a full catalog with shared + module facts. */
 function fullCatalog() {

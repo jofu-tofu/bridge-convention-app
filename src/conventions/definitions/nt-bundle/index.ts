@@ -3,15 +3,16 @@ export { ntBundleConventionConfig } from "./convention-config";
 export { ntStaymanBundle, ntTransfersBundle } from "./sub-bundles";
 export { ntCrossConventionAlternatives } from "./alternatives";
 export { NT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-export { staymanFacts, transferFacts, ntResponseFacts } from "./facts";
+export { staymanFacts } from "./modules/stayman";
+export { transferFacts } from "./modules/jacoby-transfers";
+export { ntResponseFacts } from "./modules/natural-nt";
 export {
   RESPONDER_SURFACES,
   OPENER_STAYMAN_SURFACES,
   OPENER_TRANSFER_HEARTS_SURFACES,
   INTERFERENCE_REDOUBLE_SURFACE,
-} from "./meaning-surfaces";
-// machine.ts removed — protocol frame architecture replaces ConversationMachine
-// surface-routing.ts removed — protocol frame handles surface routing
+  STAYMAN_R3_AFTER_2D_SURFACES,
+} from "./composed-surfaces";
 export { NT_SAYC_PROFILE } from "./system-profile";
 export { NT_EXPLANATION_CATALOG } from "./explanation-catalog";
 

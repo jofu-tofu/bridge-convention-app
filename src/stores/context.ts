@@ -2,7 +2,7 @@ import { setContext, getContext } from "svelte";
 import type { EnginePort } from "../engine/port";
 import type { createGameStore } from "../stores/game.svelte";
 import type { createAppStore } from "../stores/app.svelte";
-import type { LayoutProps } from "../components/screens/game-screen/layout-props";
+import type { LayoutProps } from "../core/display/layout-props";
 
 type GameStore = ReturnType<typeof createGameStore>;
 type AppStore = ReturnType<typeof createAppStore>;

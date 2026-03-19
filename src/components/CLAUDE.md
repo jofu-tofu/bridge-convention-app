@@ -39,7 +39,7 @@ components/
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
       ExplanationPhase.svelte        Review phase with showAllCards toggle
-      layout-props.ts                Shared LayoutProps interface (6 members)
+      layout-props.ts                (moved to src/core/display/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, skip-to-review
       ReviewSidePanel.svelte         Tabbed review: Bidding + Analysis, next deal / back to menu

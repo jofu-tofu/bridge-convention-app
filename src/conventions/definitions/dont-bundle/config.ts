@@ -1,7 +1,7 @@
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
-import { ConventionCategory } from "../../core/types";
+import { ConventionCategory } from "../../../core/contracts/convention";
 import { CAP_OPPONENT_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { DONT_PROFILE } from "./system-profile";

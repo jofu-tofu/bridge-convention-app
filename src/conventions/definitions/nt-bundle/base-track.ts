@@ -48,7 +48,7 @@ import {
 import {
   RESPONDER_SURFACES,
   STAYMAN_R3_AFTER_2D_SURFACES,
-} from "./meaning-surfaces";
+} from "./composed-surfaces";
 import { NT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 
 // ── Surface Fragments ────────────────────────────────────────────────

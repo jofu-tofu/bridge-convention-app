@@ -2,7 +2,7 @@ import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat } from "../../../engine/types";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
-import { ConventionCategory } from "../../core/types";
+import { ConventionCategory } from "../../../core/contracts/convention";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { ntCrossConventionAlternatives } from "./alternatives";
 import { NT_SAYC_PROFILE } from "./system-profile";

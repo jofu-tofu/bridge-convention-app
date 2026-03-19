@@ -1,7 +1,7 @@
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
-import { ConventionCategory } from "../../core/types";
+import { ConventionCategory } from "../../../core/contracts/convention";
 import { CAP_OPENING_WEAK_TWO } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { WEAK_TWO_PROFILE } from "./system-profile";

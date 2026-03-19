@@ -43,7 +43,7 @@ describe("ConventionSelectScreen", () => {
   it("filterConventions filters by category", async () => {
     const { filterConventions } =
       await import("../../../core/display/filter-conventions");
-    const { ConventionCategory } = await import("../../../conventions/core/types");
+    const { ConventionCategory } = await import("../../../conventions/core");
     const conventions = listConventions();
     const result = filterConventions(
       conventions,

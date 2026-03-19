@@ -1,4 +1,5 @@
-// Re-export shim — canonical definitions now live in modules/.
+// Composed NT surfaces — re-exports individual module surfaces and defines
+// cross-module composed surfaces (RESPONDER_SURFACES, STAYMAN_R3_AFTER_2D_SURFACES).
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { staymanModule } from "./modules/stayman";
 import { jacobyTransfersModule } from "./modules/jacoby-transfers";

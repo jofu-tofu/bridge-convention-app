@@ -50,7 +50,7 @@ import {
   OPENER_SMOLEN_HEARTS_SURFACES,
   OPENER_SMOLEN_SPADES_SURFACES,
   OPENER_1NT_SURFACE,
-} from "../../../definitions/nt-bundle/meaning-surfaces";
+} from "../../../definitions/nt-bundle/composed-surfaces";
 
 // ─── Weak Twos surfaces ─────────────────────────────────────
 import {
