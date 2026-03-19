@@ -1,5 +1,5 @@
 import type { SystemProfileIR, ModuleEntryIR } from "../../core/contracts/agreement-module";
-import { defaultPriorityClassMapping } from "../../core/contracts/agreement-module";
+import { defaultPriorityClassMapping, defaultObligationMapping } from "../../core/contracts/agreement-module";
 
 interface ProfileConfig {
   readonly profileId: string;
@@ -16,6 +16,7 @@ export function createSaycProfile(config: ProfileConfig): SystemProfileIR {
     baseSystem: "sayc",
     modules: config.modules,
     conflictPolicy: { activationDefault: "simultaneous" },
+    obligationMapping: defaultObligationMapping(),
     priorityClassMapping: defaultPriorityClassMapping(),
   };
 }

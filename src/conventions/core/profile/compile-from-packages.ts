@@ -6,7 +6,7 @@
  */
 
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import { defaultPriorityClassMapping } from "../../../core/contracts/agreement-module";
+import { defaultPriorityClassMapping, defaultObligationMapping } from "../../../core/contracts/agreement-module";
 import type { ModulePackage } from "../modules";
 import type {
   CompiledProfile,
@@ -114,6 +114,8 @@ export function compileProfileFromPackages(
   const machine = assembleMachine(machineId, fragments, handoffs);
 
   // i. Resolve policy
+  const obligationMapping =
+    profile.obligationMapping ?? defaultObligationMapping();
   const priorityClassMapping =
     profile.priorityClassMapping ?? defaultPriorityClassMapping();
 
@@ -129,6 +131,6 @@ export function compileProfileFromPackages(
       capabilities,
     },
     machine,
-    policy: { priorityClassMapping },
+    policy: { obligationMapping, priorityClassMapping },
   };
 }

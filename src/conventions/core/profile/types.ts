@@ -11,6 +11,7 @@ import type {
   SystemProfileIR,
   AttachmentIR,
   PriorityClass,
+  ObligationLevel,
 } from "../../../core/contracts/agreement-module";
 import type { FactCatalog } from "../../../core/contracts/fact-catalog";
 import type { ExplanationCatalogIR } from "../../../core/contracts/explanation-catalog";
@@ -69,6 +70,8 @@ export interface CompiledProfile {
   };
   readonly machine: ConversationMachine;
   readonly policy: {
+    readonly obligationMapping: Readonly<Record<ObligationLevel, RecommendationBand>>;
+    /** @deprecated Use obligationMapping instead. */
     readonly priorityClassMapping: Readonly<Record<PriorityClass, RecommendationBand>>;
   };
 }

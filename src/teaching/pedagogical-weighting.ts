@@ -2,11 +2,16 @@ import type { PedagogicalControls } from "../core/contracts/witness-spec";
 
 /**
  * Distribution parameters for scenario sampling in deal generation.
- * Each field represents the fraction of deals that should target that scenario category.
- * All fields sum to 1.0.
+ *
+ * Represented as 2 independent parameters on a 2-simplex:
+ * - nearBoundary + competitive must be <= 1.0
+ * - positive is derived as the residual: 1.0 - nearBoundary - competitive
+ *
+ * Use `createScenarioDistribution()` to construct with invariant enforcement.
  */
 export interface ScenarioDistribution {
-  /** Fraction of deals where the convention clearly applies (hand meets all conditions). */
+  /** Fraction of deals where the convention clearly applies (hand meets all conditions).
+   *  Derived: 1.0 - nearBoundary - competitive. */
   readonly positive: number;
   /** Fraction of deals near decision boundaries (hand barely qualifies or barely misses). */
   readonly nearBoundary: number;
@@ -14,23 +19,27 @@ export interface ScenarioDistribution {
   readonly competitive: number;
 }
 
-const POSITIVE_ONLY: ScenarioDistribution = {
-  positive: 1.0,
-  nearBoundary: 0,
-  competitive: 0,
-};
+/** Construct a ScenarioDistribution from the 2 independent parameters.
+ *  Enforces the sum-to-1.0 invariant and validates non-negative values. */
+export function createScenarioDistribution(
+  nearBoundary: number,
+  competitive: number,
+): ScenarioDistribution {
+  if (nearBoundary < 0 || competitive < 0) {
+    throw new Error(`ScenarioDistribution: parameters must be non-negative (got nearBoundary=${nearBoundary}, competitive=${competitive})`);
+  }
+  if (nearBoundary + competitive > 1.0 + 1e-10) {
+    throw new Error(`ScenarioDistribution: nearBoundary + competitive must be <= 1.0 (got ${nearBoundary + competitive})`);
+  }
+  const positive = Math.max(0, 1.0 - nearBoundary - competitive);
+  return { positive, nearBoundary, competitive };
+}
 
-const TEACHING_DEFAULT: ScenarioDistribution = {
-  positive: 0.6,
-  nearBoundary: 0.25,
-  competitive: 0.15,
-};
+const POSITIVE_ONLY: ScenarioDistribution = createScenarioDistribution(0, 0);
 
-const BALANCED: ScenarioDistribution = {
-  positive: 0.5,
-  nearBoundary: 0.25,
-  competitive: 0.25,
-};
+const TEACHING_DEFAULT: ScenarioDistribution = createScenarioDistribution(0.25, 0.15);
+
+const BALANCED: ScenarioDistribution = createScenarioDistribution(0.25, 0.25);
 
 /**
  * Maps a pedagogical weighting mode to scenario distribution parameters.

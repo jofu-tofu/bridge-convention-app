@@ -132,6 +132,12 @@ describe("Seam type invariants", () => {
           seatRole: () => "self",
         },
         policy: {
+          obligationMapping: {
+            forced: "must",
+            preferred: "should",
+            acceptable: "may",
+            residual: "avoid",
+          },
           priorityClassMapping: {
             obligatory: "must",
             preferredConventional: "should",
@@ -149,6 +155,7 @@ describe("Seam type invariants", () => {
       expect(compiled.registries.explanations).toBeDefined();
       expect(compiled.indexes.activation).toBeDefined();
       expect(compiled.indexes.capabilities).toBeDefined();
+      expect(compiled.policy.obligationMapping).toBeDefined();
       expect(compiled.policy.priorityClassMapping).toBeDefined();
     });
 
@@ -179,6 +186,12 @@ describe("Seam type invariants", () => {
           seatRole: () => "self",
         },
         policy: {
+          obligationMapping: {
+            forced: "must",
+            preferred: "should",
+            acceptable: "may",
+            residual: "avoid",
+          },
           priorityClassMapping: {
             obligatory: "must",
             preferredConventional: "should",

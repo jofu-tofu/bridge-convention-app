@@ -7,7 +7,41 @@ import type { Call } from "../../engine/types";
 export type ActivationKind = "auction-pattern" | "host-attachment" | "invoke-only";
 export type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-tool" | "defensive";
 
-// ─── Priority class → band mapping ─────────────────────────
+// ─── Priority specification ─────────────────────────────────
+
+/** How strongly convention logic requires this bid.
+ *  - "forced": Only legal response in this closure domain (e.g., forced rebid, Ogust step).
+ *  - "preferred": Best bid given the hand, but alternatives exist.
+ *  - "acceptable": Correct but not preferred; typically a natural fallback.
+ *  - "residual": What you bid when nothing else applies (e.g., Pass as fallback). */
+export type ObligationLevel = "forced" | "preferred" | "acceptable" | "residual";
+
+/** Whether the bid carries conventional (artificial/partnership-agreed) meaning
+ *  that opponents are entitled to know about.
+ *  - "conventional": Artificial or partnership-agreed meaning (alertable per ACBL).
+ *  - "natural": Meaning follows from standard bridge logic (not alertable). */
+export type Conventionality = "conventional" | "natural";
+
+/** Factored priority specification — separates obligation strength from conventionality.
+ *  Closed union of the four empirically attested combinations. */
+export type PrioritySpec =
+  | { readonly obligation: "forced"; readonly conventionality: "conventional" }
+  | { readonly obligation: "preferred"; readonly conventionality: "conventional" }
+  | { readonly obligation: "acceptable"; readonly conventionality: "natural" }
+  | { readonly obligation: "residual"; readonly conventionality: "natural" };
+
+// ─── PrioritySpec constructors ──────────────────────────────
+/** Forced conventional bid (e.g., forced rebid, Ogust step, accept transfer). */
+export const FORCED_CONVENTIONAL: PrioritySpec = { obligation: "forced", conventionality: "conventional" };
+/** Preferred conventional bid (e.g., Stayman ask, transfer bid, invite raise). */
+export const PREFERRED_CONVENTIONAL: PrioritySpec = { obligation: "preferred", conventionality: "conventional" };
+/** Acceptable natural bid (e.g., NT invite, NT game, NT opening). */
+export const ACCEPTABLE_NATURAL: PrioritySpec = { obligation: "acceptable", conventionality: "natural" };
+/** Residual natural bid (e.g., Pass as fallback when nothing else applies). */
+export const RESIDUAL_NATURAL: PrioritySpec = { obligation: "residual", conventionality: "natural" };
+
+// ─── Legacy PriorityClass (deprecated) ──────────────────────
+/** @deprecated Use PrioritySpec instead. Retained for DecisionSurfaceIR backward compatibility. */
 export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"
                           | "neutralCorrect" | "fallbackCorrect";
 
@@ -78,9 +112,12 @@ export interface SystemProfileIR {
   readonly baseSystem: string;
   readonly modules: readonly ModuleEntryIR[];
   readonly conflictPolicy: ConflictPolicyIR;
-  /** Profile-level mapping from author-declared priority classes to runtime bands.
-   *  When present, surfaces with a `priorityClass` resolve their recommendationBand
+  /** Profile-level mapping from obligation levels to runtime bands.
+   *  When present, surfaces with a `prioritySpec` resolve their recommendationBand
    *  through this mapping instead of using the surface-level band directly. */
+  readonly obligationMapping?: Readonly<Record<ObligationLevel, RecommendationBand>>;
+  /** @deprecated Use obligationMapping instead.
+   *  Profile-level mapping from author-declared priority classes to runtime bands. */
   readonly priorityClassMapping?: Readonly<Record<PriorityClass, RecommendationBand>>;
 }
 
@@ -119,8 +156,21 @@ export interface PublicConstraint {
   readonly sourceMeaning?: string;
 }
 
-// ─── Default priority-class → band mapping ──────────────────
-/** The standard mapping from author-declared priority classes to runtime bands.
+// ─── Default obligation → band mapping ──────────────────────
+/** The standard mapping from obligation levels to runtime recommendation bands.
+ *  Profiles may override this with their own `obligationMapping`. */
+export function defaultObligationMapping(): Readonly<Record<ObligationLevel, RecommendationBand>> {
+  return {
+    forced: "must",
+    preferred: "should",
+    acceptable: "may",
+    residual: "avoid",
+  };
+}
+
+// ─── Legacy default priority-class → band mapping ───────────
+/** @deprecated Use defaultObligationMapping() instead.
+ *  The standard mapping from author-declared priority classes to runtime bands.
  *  Profiles may override this with their own `priorityClassMapping`. */
 export function defaultPriorityClassMapping(): Readonly<Record<PriorityClass, RecommendationBand>> {
   return {
@@ -130,4 +180,13 @@ export function defaultPriorityClassMapping(): Readonly<Record<PriorityClass, Re
     neutralCorrect: "may",
     fallbackCorrect: "avoid",
   };
+}
+
+/** Convert a PrioritySpec to a legacy PriorityClass.
+ *  Used during migration for backward compatibility with DecisionSurfaceIR. */
+export function prioritySpecToClass(spec: PrioritySpec): PriorityClass {
+  if (spec.obligation === "forced" && spec.conventionality === "conventional") return "obligatory";
+  if (spec.obligation === "preferred" && spec.conventionality === "conventional") return "preferredConventional";
+  if (spec.obligation === "acceptable" && spec.conventionality === "natural") return "neutralCorrect";
+  return "fallbackCorrect";
 }

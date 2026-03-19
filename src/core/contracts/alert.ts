@@ -1,5 +1,5 @@
 import type { BidAlert } from "./bidding";
-import type { FactConstraintIR, PriorityClass } from "./agreement-module";
+import type { FactConstraintIR, PriorityClass, PrioritySpec } from "./agreement-module";
 import type { MeaningSurfaceClause } from "./meaning";
 
 /** Source-intent types that imply artificial encoding — bids where the call
@@ -63,6 +63,8 @@ export function derivePublicConstraints(
 /** Minimal shape for alert resolution — works with both MeaningSurface and
  *  any intermediate DTO that threads these fields. */
 export interface AlertResolvable {
+  readonly prioritySpec?: PrioritySpec;
+  /** @deprecated Use prioritySpec instead. */
   readonly priorityClass?: PriorityClass;
   readonly sourceIntent: { readonly type: string };
   readonly clauses: readonly MeaningSurfaceClause[];
@@ -91,9 +93,12 @@ export function resolveAlert(surface: AlertResolvable): BidAlert | null {
 }
 
 function isAlertable(
-  surface: Pick<AlertResolvable, "priorityClass" | "sourceIntent">,
+  surface: Pick<AlertResolvable, "prioritySpec" | "priorityClass" | "sourceIntent">,
 ): boolean {
-  if (
+  // Prefer prioritySpec (factored type) over legacy priorityClass
+  if (surface.prioritySpec) {
+    if (surface.prioritySpec.conventionality === "conventional") return true;
+  } else if (
     surface.priorityClass === "preferredConventional" ||
     surface.priorityClass === "obligatory"
   ) {

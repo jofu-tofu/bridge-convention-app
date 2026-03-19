@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { resolveAlert, derivePublicConstraints } from "../alert";
 import type { AlertResolvable } from "../alert";
 import type { MeaningSurfaceClause } from "../meaning";
+import { FORCED_CONVENTIONAL, PREFERRED_CONVENTIONAL, ACCEPTABLE_NATURAL, RESIDUAL_NATURAL } from "../agreement-module";
 
 function makeSurface(overrides: Partial<AlertResolvable> = {}): AlertResolvable {
   return {
@@ -90,6 +91,58 @@ describe("resolveAlert", () => {
     });
     const result = resolveAlert(surface);
     expect(result?.annotationType).toBe("announce");
+  });
+
+  // ─── PrioritySpec (factored type) tests ────────────────────
+  it("returns alert for conventional prioritySpec", () => {
+    const surface = makeSurface({
+      prioritySpec: FORCED_CONVENTIONAL,
+      sourceIntent: { type: "DONTBothMajors" },
+      teachingLabel: "2H — both majors",
+    });
+    const result = resolveAlert(surface);
+    expect(result).not.toBeNull();
+    expect(result?.annotationType).toBe("alert");
+  });
+
+  it("returns alert for preferred conventional prioritySpec", () => {
+    const surface = makeSurface({
+      prioritySpec: PREFERRED_CONVENTIONAL,
+      sourceIntent: { type: "ConstructiveRaise" },
+      teachingLabel: "Constructive raise",
+    });
+    const result = resolveAlert(surface);
+    expect(result).not.toBeNull();
+    expect(result?.annotationType).toBe("alert");
+  });
+
+  it("returns null for acceptable natural prioritySpec", () => {
+    const surface = makeSurface({
+      prioritySpec: ACCEPTABLE_NATURAL,
+      sourceIntent: { type: "NTInvite" },
+      teachingLabel: "NT invite",
+    });
+    expect(resolveAlert(surface)).toBeNull();
+  });
+
+  it("returns null for residual natural prioritySpec", () => {
+    const surface = makeSurface({
+      prioritySpec: RESIDUAL_NATURAL,
+      sourceIntent: { type: "WeakPass" },
+      teachingLabel: "Pass",
+    });
+    expect(resolveAlert(surface)).toBeNull();
+  });
+
+  it("prioritySpec takes precedence over priorityClass", () => {
+    // prioritySpec says natural, legacy priorityClass says conventional
+    const surface = makeSurface({
+      prioritySpec: ACCEPTABLE_NATURAL,
+      priorityClass: "obligatory",
+      sourceIntent: { type: "NaturalBid" },
+      teachingLabel: "Test",
+    });
+    expect(resolveAlert(surface)).toBeNull();
   });
 });
 

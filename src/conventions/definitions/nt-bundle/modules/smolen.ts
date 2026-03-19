@@ -17,6 +17,7 @@ import type { PedagogicalRelation } from "../../../../core/contracts/teaching-pr
 import { BidSuit } from "../../../../engine/types";
 import type { ConventionModule } from "../../../core/composition/module-types";
 import { bid } from "../../../core/surface-helpers";
+import { FORCED_CONVENTIONAL, PREFERRED_CONVENTIONAL, ACCEPTABLE_NATURAL, RESIDUAL_NATURAL } from "../../../../core/contracts/agreement-module";
 import { staymanModule } from "./stayman";
 
 // ─── Semantic classes ────────────────────────────────────────
@@ -67,6 +68,7 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
       modulePrecedence: 1,
       intraModuleOrder: 0,
     },
+    prioritySpec: PREFERRED_CONVENTIONAL,
     priorityClass: "preferredConventional",
     sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
     teachingLabel: "Smolen 3H (5H + 4S, game force)",
@@ -106,6 +108,7 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
       modulePrecedence: 1,
       intraModuleOrder: 1,
     },
+    prioritySpec: PREFERRED_CONVENTIONAL,
     priorityClass: "preferredConventional",
     sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
     teachingLabel: "Smolen 3S (5S + 4H, game force)",
@@ -135,6 +138,7 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly MeaningSurface[] = [
       modulePrecedence: 1,
       intraModuleOrder: 0,
     },
+    prioritySpec: FORCED_CONVENTIONAL,
     priorityClass: "obligatory",
     sourceIntent: { type: "SmolenPlacement", params: { suit: "hearts" } },
     teachingLabel: "4H (heart fit found)",
@@ -159,6 +163,7 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly MeaningSurface[] = [
       modulePrecedence: 1,
       intraModuleOrder: 1,
     },
+    prioritySpec: FORCED_CONVENTIONAL,
     priorityClass: "obligatory",
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
     teachingLabel: "3NT (no heart fit)",
@@ -186,6 +191,7 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly MeaningSurface[] = [
       modulePrecedence: 1,
       intraModuleOrder: 0,
     },
+    prioritySpec: FORCED_CONVENTIONAL,
     priorityClass: "obligatory",
     sourceIntent: { type: "SmolenPlacement", params: { suit: "spades" } },
     teachingLabel: "4S (spade fit found)",
@@ -210,6 +216,7 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly MeaningSurface[] = [
       modulePrecedence: 1,
       intraModuleOrder: 1,
     },
+    prioritySpec: FORCED_CONVENTIONAL,
     priorityClass: "obligatory",
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
     teachingLabel: "3NT (no spade fit)",

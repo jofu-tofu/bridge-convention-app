@@ -113,9 +113,11 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
         call,
         callDisplay: formatCall(call),
         teachingLabel: surface.teachingLabel,
-        isAlertable: surface.priorityClass === "obligatory" ||
-          surface.priorityClass === "preferredConventional" ||
-          false,
+        isAlertable: surface.prioritySpec
+          ? surface.prioritySpec.conventionality === "conventional"
+          : surface.priorityClass === "obligatory" ||
+            surface.priorityClass === "preferredConventional" ||
+            false,
         recommendation: surface.ranking.recommendationBand as BiddingOptionView["recommendation"],
       });
     }

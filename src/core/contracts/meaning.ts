@@ -2,6 +2,7 @@ import type { ConditionResult } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
 import type {
   PriorityClass,
+  PrioritySpec,
   ChoiceClosurePolicy,
   FactConstraintIR,
 } from "./agreement-module";
@@ -188,7 +189,12 @@ export interface MeaningSurface {
   };
   readonly clauses: readonly MeaningSurfaceClause[];
   readonly ranking: RankingMetadata;
-  /** Author-declared semantic priority class.
+  /** Factored priority specification — separates obligation strength from conventionality.
+   *  When set, the pipeline resolves recommendationBand from `prioritySpec.obligation`
+   *  and alertability from `prioritySpec.conventionality`. */
+  readonly prioritySpec?: PrioritySpec;
+  /** @deprecated Use prioritySpec instead.
+   *  Author-declared semantic priority class.
    *  When set, the SystemProfile's `priorityClassMapping` resolves this to a
    *  `RecommendationBand` at runtime, overriding `ranking.recommendationBand`.
    *  Optional for backward compatibility — surfaces without this field use the

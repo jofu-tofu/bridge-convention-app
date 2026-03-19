@@ -14,12 +14,44 @@ import type {
   FactValue,
 } from "../../../core/contracts/fact-catalog";
 import { getFactValue } from "../../../core/contracts/fact-catalog";
-import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
+import type { DecisionSurfaceIR, PriorityClass, PrioritySpec, ObligationLevel } from "../../../core/contracts/agreement-module";
 import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
 import { resolveFactId, resolveClause } from "./binding-resolver";
-import { priorityClassToBand } from "./priority-mapping";
+import { obligationToBand, priorityClassToBand } from "./priority-mapping";
 
 /**
+ * Resolve a PrioritySpec or legacy PriorityClass to a runtime recommendation band.
+ *
+ * Resolution logic (in priority order):
+ * 1. If `prioritySpec` is set → use obligation mapping (or default obligationToBand).
+ * 2. If legacy `priorityClass` is set AND `profileMapping` exists → use the mapping.
+ * 3. Otherwise → return `fallbackBand` (the surface's existing recommendationBand).
+ *
+ * @internal
+ */
+export function resolvePriority(
+  prioritySpec: PrioritySpec | undefined,
+  priorityClass: PriorityClass | undefined,
+  obligationMap: Readonly<Record<ObligationLevel, RecommendationBand>> | undefined,
+  profileMapping: Readonly<Record<PriorityClass, RecommendationBand>> | undefined,
+  fallbackBand: RecommendationBand,
+): RecommendationBand {
+  // Prefer factored prioritySpec
+  if (prioritySpec !== undefined) {
+    if (obligationMap !== undefined) {
+      return obligationMap[prioritySpec.obligation];
+    }
+    return obligationToBand(prioritySpec.obligation);
+  }
+  // Legacy path
+  if (priorityClass !== undefined && profileMapping !== undefined) {
+    return profileMapping[priorityClass];
+  }
+  return fallbackBand;
+}
+
+/**
+ * @deprecated Use resolvePriority instead.
  * Resolve an author-declared priority class to a runtime recommendation band.
  *
  * Resolution logic:
@@ -153,9 +185,11 @@ export function evaluateMeaningSurface(
     },
   };
 
-  // Resolve recommendationBand: priorityClass + profileMapping wins over surface band
-  const resolvedBand = resolvePriorityClass(
+  // Resolve recommendationBand: prioritySpec > priorityClass + profileMapping > surface band
+  const resolvedBand = resolvePriority(
+    surface.prioritySpec,
     surface.priorityClass,
+    undefined, // obligationMap — use default when not profile-provided
     profileMapping,
     surface.ranking.recommendationBand,
   );
