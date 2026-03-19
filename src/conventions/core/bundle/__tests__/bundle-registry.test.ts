@@ -14,6 +14,10 @@ function makeBundle(id: string, memberIds: string[] = []): ConventionBundle {
     name: `Bundle ${id}`,
     memberIds,
     dealConstraints: { seats: [] },
+    explanationCatalog: { version: "1.0.0", entries: [] },
+    pedagogicalRelations: [],
+    acceptableAlternatives: [],
+    intentFamilies: [],
   };
 }
 

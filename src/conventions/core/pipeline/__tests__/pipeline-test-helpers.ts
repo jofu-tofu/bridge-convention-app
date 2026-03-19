@@ -36,7 +36,7 @@ export function makeMeaningProposal(
       satisfied: allSatisfied,
       description: "8+ HCP",
     }],
-    ranking: makeRanking(),
+    ranking: { ...makeRanking(), specificity: 0 },
     evidence: {
       factDependencies: ["hand.hcp"],
       evaluatedConditions: [{ conditionId: "hcp", satisfied: allSatisfied, description: "8+ HCP" }],

@@ -58,7 +58,7 @@ describe("evaluateProposal", () => {
   it("sets addToEncoded=true for failed-semantic may-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
-      ranking: makeRanking({ recommendationBand: "may" }),
+      ranking: { ...makeRanking({ recommendationBand: "may" }), specificity: 0 },
     });
 
     const result = evaluateProposal(input);
@@ -71,7 +71,7 @@ describe("evaluateProposal", () => {
   it("sets addToEncoded=true for failed-semantic should-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
-      ranking: makeRanking({ recommendationBand: "should" }),
+      ranking: { ...makeRanking({ recommendationBand: "should" }), specificity: 0 },
     });
 
     const result = evaluateProposal(input);
@@ -83,7 +83,7 @@ describe("evaluateProposal", () => {
   it("sets addToEncoded=false for failed-semantic avoid-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
-      ranking: makeRanking({ recommendationBand: "avoid" }),
+      ranking: { ...makeRanking({ recommendationBand: "avoid" }), specificity: 0 },
     });
 
     const result = evaluateProposal(input);

@@ -12,66 +12,15 @@ import type {
 import type {
   EvaluatedFacts,
   FactValue,
+  FactCatalogExtension,
 } from "../../../core/contracts/fact-catalog";
 import { getFactValue } from "../../../core/contracts/fact-catalog";
-import type { DecisionSurfaceIR, PriorityClass, PrioritySpec, ObligationLevel } from "../../../core/contracts/agreement-module";
+import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
 import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
 import { resolveFactId, resolveClause } from "./binding-resolver";
-import { obligationToBand, priorityClassToBand } from "./priority-mapping";
-
-/**
- * Resolve a PrioritySpec or legacy PriorityClass to a runtime recommendation band.
- *
- * Resolution logic (in priority order):
- * 1. If `prioritySpec` is set → use obligation mapping (or default obligationToBand).
- * 2. If legacy `priorityClass` is set AND `profileMapping` exists → use the mapping.
- * 3. Otherwise → return `fallbackBand` (the surface's existing recommendationBand).
- *
- * @internal
- */
-export function resolvePriority(
-  prioritySpec: PrioritySpec | undefined,
-  priorityClass: PriorityClass | undefined,
-  obligationMap: Readonly<Record<ObligationLevel, RecommendationBand>> | undefined,
-  profileMapping: Readonly<Record<PriorityClass, RecommendationBand>> | undefined,
-  fallbackBand: RecommendationBand,
-): RecommendationBand {
-  // Prefer factored prioritySpec
-  if (prioritySpec !== undefined) {
-    if (obligationMap !== undefined) {
-      return obligationMap[prioritySpec.obligation];
-    }
-    return obligationToBand(prioritySpec.obligation);
-  }
-  // Legacy path
-  if (priorityClass !== undefined && profileMapping !== undefined) {
-    return profileMapping[priorityClass];
-  }
-  return fallbackBand;
-}
-
-/**
- * @deprecated Use resolvePriority instead.
- * Resolve an author-declared priority class to a runtime recommendation band.
- *
- * Resolution logic:
- * - If `priorityClass` is set AND `profileMapping` exists → use the mapping.
- * - Otherwise → return `fallbackBand` (the surface's existing recommendationBand).
- *
- * This keeps backward compatibility: surfaces without a priorityClass, or
- * profiles without a mapping, continue to use the surface-level band directly.
- * @internal
- */
-export function resolvePriorityClass(
-  priorityClass: PriorityClass | undefined,
-  profileMapping: Readonly<Record<PriorityClass, RecommendationBand>> | undefined,
-  fallbackBand: RecommendationBand,
-): RecommendationBand {
-  if (priorityClass !== undefined && profileMapping !== undefined) {
-    return profileMapping[priorityClass];
-  }
-  return fallbackBand;
-}
+import { priorityClassToBand } from "./priority-mapping";
+import type { ConstraintDimension } from "../../../core/contracts/meaning";
+import { deriveSpecificity } from "./specificity-deriver";
 
 function evaluateClause(
   clause: MeaningSurfaceClause,
@@ -154,7 +103,8 @@ function evaluateClause(
 export function evaluateMeaningSurface(
   surface: MeaningSurface,
   facts: EvaluatedFacts,
-  profileMapping?: Readonly<Record<PriorityClass, RecommendationBand>>,
+  factExtensions?: readonly FactCatalogExtension[],
+  inheritedDimensions?: readonly ConstraintDimension[],
 ): MeaningProposal {
   const bindings = surface.surfaceBindings;
   const evaluatedClauses: MeaningClause[] = surface.clauses.map((clause) =>
@@ -185,19 +135,23 @@ export function evaluateMeaningSurface(
     },
   };
 
-  // Resolve recommendationBand: prioritySpec > priorityClass + profileMapping > surface band
-  const resolvedBand = resolvePriority(
-    surface.prioritySpec,
-    surface.priorityClass,
-    undefined, // obligationMap — use default when not profile-provided
-    profileMapping,
-    surface.ranking.recommendationBand,
-  );
-  const resolvedRanking: RankingMetadata = resolvedBand !== surface.ranking.recommendationBand
-    ? { ...surface.ranking, recommendationBand: resolvedBand }
-    : surface.ranking;
+  // recommendationBand is authored directly on ranking — no priority resolution needed
+  const resolvedBand = surface.ranking.recommendationBand;
 
-  // Resolve alertability from priorityClass/sourceIntent
+  // Derive specificity from clause dimensions (source of truth)
+  const derivation = factExtensions
+    ? deriveSpecificity(surface, factExtensions, inheritedDimensions)
+    : undefined;
+
+  const resolvedRanking: RankingMetadata = {
+    recommendationBand: resolvedBand,
+    specificity: derivation?.advisorySpecificity ?? 0,
+    modulePrecedence: surface.ranking.modulePrecedence,
+    intraModuleOrder: surface.ranking.intraModuleOrder,
+    ...(derivation ? { specificityBasis: derivation.basis } : {}),
+  };
+
+  // Resolve alertability from sourceIntent.type (derived, not hand-authored)
   const resolved = resolveAlert(surface);
 
   // Auto-derive public constraints from primitive/bridge-observable clauses
@@ -313,14 +267,19 @@ export function evaluateAllSurfaces(
   surfaces: readonly MeaningSurface[] | readonly DecisionSurfaceIR[],
   facts: EvaluatedFacts,
   profileMapping?: Readonly<Record<PriorityClass, RecommendationBand>>,
+  factExtensions?: readonly FactCatalogExtension[],
+  inheritedDimsLookup?: ReadonlyMap<string, readonly ConstraintDimension[]>,
 ): readonly MeaningProposal[] {
   if (surfaces.length === 0) return [];
 
   const first = surfaces[0]!;
   if (isMeaningSurface(first)) {
-    // MeaningSurface path: pass profileMapping for priorityClass resolution
+    // MeaningSurface path: recommendationBand comes from authored ranking directly
     return (surfaces as readonly MeaningSurface[]).map((surface) =>
-      evaluateMeaningSurface(surface, facts, profileMapping),
+      evaluateMeaningSurface(
+        surface, facts, factExtensions,
+        inheritedDimsLookup?.get(surface.meaningId),
+      ),
     );
   }
 

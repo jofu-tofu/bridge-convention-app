@@ -33,7 +33,6 @@ function makeSurface(
     clauses: [],
     ranking: {
       recommendationBand: "should",
-      specificity: 1,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
@@ -62,7 +61,6 @@ describe("adaptMeaningSurface", () => {
     const surface = makeSurface({
       ranking: {
         recommendationBand: "should",
-        specificity: 2,
         modulePrecedence: 5,
         intraModuleOrder: 3,
       },
@@ -120,7 +118,6 @@ describe("adaptMeaningSurface", () => {
     const surface = makeSurface({
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -135,7 +132,6 @@ describe("adaptMeaningSurface", () => {
     const surface = makeSurface({
       ranking: {
         recommendationBand: "should",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -149,7 +145,6 @@ describe("adaptMeaningSurface", () => {
     const surface = makeSurface({
       ranking: {
         recommendationBand: "may",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -163,7 +158,6 @@ describe("adaptMeaningSurface", () => {
     const surface = makeSurface({
       ranking: {
         recommendationBand: "avoid",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },

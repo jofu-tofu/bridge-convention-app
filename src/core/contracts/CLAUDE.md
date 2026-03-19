@@ -42,42 +42,42 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 ## Design Decisions
 
 - **Semantic ownership test for every field.** Before adding a field to a contract type, ask: "does this describe what this type IS in bridge terms, or is it metadata for a different concern?" `MeaningSurface` = what a bid means (clauses, encoding, ranking). `BidResult` = what bid was chosen and why. `BidAnnotation` = what a bid reveals to the table. Display formatting, pipeline routing, and table procedures should be derived or computed, not stored. If a field threads through multiple types just to reach a UI consumer, find a different path.
-- **Public constraints are auto-derived, not declared.** Alertability is derived from `prioritySpec.conventionality` (or legacy `priorityClass`/`sourceIntent`). Public constraints come from `hand.*` clauses (auto-public) + `isPublic: true` clauses (bundle-declared). Convention authors write clauses once; the framework derives everything else. See `alert.ts` for `resolveAlert()` and `derivePublicConstraints()`.
+- **Public constraints and alertability are auto-derived, not declared.** Alertability is derived from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). `MeaningSurface` does not carry `prioritySpec` or `priorityClass`; the pipeline derives alertability in `resolveAlert()`. Public constraints come from `hand.*` clauses (auto-public) + `isPublic: true` clauses (bundle-declared). Convention authors write clauses and `sourceIntent` once; the framework derives everything else. See `alert.ts` for `isAlertable()`, `resolveAlert()`, and `derivePublicConstraints()`.
 - **`DecisionSurfaceIR` is consumed via dual-path adapter in the pipeline.** `evaluateAllSurfaces()` accepts both `MeaningSurface[]` and `DecisionSurfaceIR[]`. The adapter `adaptMeaningSurface()` / `adaptMeaningSurfaces()` in `conventions/core/pipeline/surface-adapter.ts` maps `MeaningSurface` to `DecisionSurfaceIR`. Existing `MeaningSurface[]` callers are unchanged.
 - **`DeclaredEncoderKind` (agreement-module.ts) is distinct from `EncoderKind` (provenance.ts).** `DeclaredEncoderKind` describes the authored encoder type on a surface (`"direct"`, `"choice-set"`, `"frontier-step"`, `"relay-map"`). `EncoderKind` describes how encoding was resolved at runtime (`"default-call"`, `"resolver"`, etc.).
 - **`ConditionEvidenceIR` is the sole evidence type.** Unified from the former `ConditionEvidence` (provenance.ts, removed) and `ConditionEvidenceIR` (evidence-bundle.ts). Fields: `conditionId`, `satisfied`, `factId?`, `observedValue?`, `threshold?`. Used by `EvidenceBundleIR`, `ApplicabilityEvidence.evaluatedConditions`, `EliminationTrace.evidence`, and `MeaningView.supportingEvidence`.
 
 ## Specificity Derivation System
 
-The `specificity` field in `RankingMetadata` is **derived from constraint dimensions**, not hand-authored. The system uses a communicative-dimension ontology to compute specificity from the facts a surface's clauses reference.
+The `specificity` field is **pipeline-derived, not hand-authored**. `MeaningSurface.ranking` uses `AuthoredRankingMetadata` which excludes `specificity` and `specificityBasis`. The pipeline computes specificity via `deriveSpecificity()` at evaluation time and produces a full `RankingMetadata` (with specificity) on `MeaningProposal`. Convention authors cannot and should not set specificity values.
 
 ### Architecture
 
-1. **`ConstraintDimension`** (meaning.ts): 6-member union type representing communicative dimensions: `suitIdentity`, `suitLength`, `pointRange`, `shapeClass`, `suitRelation`, `suitQuality`.
+1. **`AuthoredRankingMetadata`** (meaning.ts): What convention authors write — `recommendationBand`, `modulePrecedence`, `intraModuleOrder`. No specificity.
 
-2. **`constrainsDimensions`** (fact-catalog.ts): REQUIRED field on `FactDefinition`. Lists which dimensions a fact communicates to partner when used in a clause. Assignment rules:
+2. **`RankingMetadata`** (meaning.ts): Extends `AuthoredRankingMetadata` with `specificity` (number) and `specificityBasis?` (SpecificityBasis). Produced by the pipeline, consumed by arbitration.
+
+3. **`ConstraintDimension`** (meaning.ts): 6-member union type representing communicative dimensions: `suitIdentity`, `suitLength`, `pointRange`, `shapeClass`, `suitRelation`, `suitQuality`.
+
+4. **`constrainsDimensions`** (fact-catalog.ts): REQUIRED field on `FactDefinition`. Lists which dimensions a fact communicates to partner when used in a clause. Assignment rules:
    - Describes what the BID COMMUNICATES, not what the evaluator code reads
    - Boolean facts wrapping multiple checks list the communicative dimensions of the bid, not the code's dependencies
    - Posterior-derived facts use `[]` (they don't contribute to specificity)
 
-3. **`deriveSpecificity()`** (conventions/core/pipeline/specificity-deriver.ts): Computes specificity by collecting the union of constraint dimensions across a surface's clauses. Key rules:
+5. **`deriveSpecificity()`** (conventions/core/pipeline/specificity-deriver.ts): Computes specificity by collecting the union of constraint dimensions across a surface's clauses. Called by `evaluateMeaningSurface()` at pipeline time. Key rules:
    - Boolean clauses with `value: false` are exclusion gates — they contribute nothing when mixed with positive clauses; they contribute `shapeClass` when they ARE the surface's meaning
    - `lte` on suit length = "no fit" = always `shapeClass`
    - Suit-length thresholds below 3 are vacuous (don't count)
    - $suit-bound clauses don't add `suitIdentity` (suit was established by context)
-   - Narrow HCP ranges (explicit gte+lte bounds within 5 points) add a `shapeClass` bonus
+   - Inherited dimensions from prior-round context are unioned in
 
-4. **`classifySpecificityBasis()`** (specificity-classifier.ts): Labels each surface as "derived" / "asserted" / "partial" based on clause transparency.
+6. **`classifySpecificityBasis()`** (specificity-classifier.ts): Labels each surface as "derived" / "asserted" / "partial" based on clause transparency.
 
-5. **Linearization canons** (specificity-canons.ts): Numbered rules for resolving incomparable dimension sets. Canon 1 = dimensional count, Canon 2 = dimension priority order.
-
-### Why this exists
-
-The specificity values in the codebase were originally AI-authored (not human bridge expert authored). The derivation system replaces subjective number-picking with a principled computation from a shared domain ontology. The 6-dimension ontology achieves 85%+ match with the original authored values, with mismatches concentrated in convention-context cases (accumulated information from prior bidding rounds) that pure dimension counting can't capture.
+7. **Linearization canons** (specificity-canons.ts): Numbered rules for resolving incomparable dimension sets. Canon 1 = dimensional count, Canon 2 = dimension priority order.
 
 ### Adding new conventions
 
-When adding a new `FactDefinition`, you MUST provide `constrainsDimensions`. The type system enforces this. When adding a new `MeaningSurface`, specificity should be derived via `deriveSpecificity()` — do not hand-pick numbers.
+When adding a new `FactDefinition`, you MUST provide `constrainsDimensions`. The type system enforces this. When adding a new `MeaningSurface`, do NOT set `specificity` — `AuthoredRankingMetadata` does not have that field. The pipeline derives it automatically from your clauses and fact definitions.
 
 ## Gotchas
 

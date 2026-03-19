@@ -40,19 +40,13 @@ export function composeBundles(
     : undefined;
 
   // ── Pedagogical relations (concatenate) ─────────────────────
-  const pedagogicalRelations = bundles.some((b) => b.pedagogicalRelations)
-    ? bundles.flatMap((b) => b.pedagogicalRelations ?? [])
-    : undefined;
+  const pedagogicalRelations = bundles.flatMap((b) => b.pedagogicalRelations);
 
   // ── Acceptable alternatives (concatenate) ───────────────────
-  const acceptableAlternatives = bundles.some((b) => b.acceptableAlternatives)
-    ? bundles.flatMap((b) => b.acceptableAlternatives ?? [])
-    : undefined;
+  const acceptableAlternatives = bundles.flatMap((b) => b.acceptableAlternatives);
 
   // ── Intent families (concatenate) ───────────────────────────
-  const intentFamilies = bundles.some((b) => b.intentFamilies)
-    ? bundles.flatMap((b) => b.intentFamilies ?? [])
-    : undefined;
+  const intentFamilies = bundles.flatMap((b) => b.intentFamilies);
 
   // ── Explanation catalog (merge entries, deduplicate) ─────────
   const explanationCatalog = mergeExplanationCatalogs(bundles);
@@ -109,15 +103,12 @@ export function composeBundles(
 
 function mergeExplanationCatalogs(
   bundles: readonly ConventionBundle[],
-): ExplanationCatalogIR | undefined {
-  const withCatalogs = bundles.filter((b) => b.explanationCatalog);
-  if (withCatalogs.length === 0) return undefined;
-
+): ExplanationCatalogIR {
   const seen = new Set<string>();
   const merged: ExplanationEntry[] = [];
 
-  for (const bundle of withCatalogs) {
-    for (const entry of bundle.explanationCatalog!.entries) {
+  for (const bundle of bundles) {
+    for (const entry of bundle.explanationCatalog.entries) {
       if (!seen.has(entry.explanationId)) {
         seen.add(entry.explanationId);
         merged.push(entry);
@@ -126,7 +117,7 @@ function mergeExplanationCatalogs(
   }
 
   return {
-    version: withCatalogs[0]!.explanationCatalog!.version,
+    version: bundles[0]!.explanationCatalog.version,
     entries: merged,
   };
 }

@@ -3,7 +3,6 @@ import type {
   DecisionSurfaceIR,
   FactConstraintIR,
 } from "../../../core/contracts/agreement-module";
-import { prioritySpecToClass } from "../../../core/contracts/agreement-module";
 import { bandToPriorityClass } from "./priority-mapping";
 
 /**
@@ -33,15 +32,13 @@ export function adaptMeaningSurface(surface: MeaningSurface): DecisionSurfaceIR 
     modulePrecedence: surface.ranking.modulePrecedence,
     exclusivityGroup: undefined,
     defaultSemanticClassId: surface.semanticClassId,
-    defaultPriorityClass: surface.prioritySpec
-      ? prioritySpecToClass(surface.prioritySpec)
-      : bandToPriorityClass(surface.ranking.recommendationBand),
+    defaultPriorityClass: bandToPriorityClass(surface.ranking.recommendationBand),
     inlineClauses: inlineClauses.length > 0 ? inlineClauses : undefined,
     teachingLabel: surface.teachingLabel,
     defaultCall: surface.encoding.defaultCall,
     sourceIntent: surface.sourceIntent,
     intraModuleOrder: surface.ranking.intraModuleOrder,
-    specificity: surface.ranking.specificity,
+    specificity: undefined,
   };
 }
 

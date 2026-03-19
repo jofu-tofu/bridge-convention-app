@@ -12,7 +12,6 @@ import { BidSuit } from "../../../../engine/types";
 import { BRIDGE_SEMANTIC_CLASSES } from "../../../../core/contracts/meaning";
 
 import { bid } from "../../../core/surface-helpers";
-import { FORCED_CONVENTIONAL, PREFERRED_CONVENTIONAL, ACCEPTABLE_NATURAL, RESIDUAL_NATURAL } from "../../../../core/contracts/agreement-module";
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
@@ -47,12 +46,9 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "may",
-      specificity: 1,
       modulePrecedence: 2,
       intraModuleOrder: 0,
     },
-    prioritySpec: ACCEPTABLE_NATURAL,
-    priorityClass: "neutralCorrect",
     sourceIntent: { type: "NTInvite", params: {} },
     teachingLabel: "NT invite",
   },
@@ -87,12 +83,9 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "may",
-      specificity: 1,
       modulePrecedence: 2,
       intraModuleOrder: 1,
     },
-    prioritySpec: ACCEPTABLE_NATURAL,
-    priorityClass: "neutralCorrect",
     sourceIntent: { type: "NTGame", params: {} },
     teachingLabel: "3NT game",
   },
@@ -133,12 +126,9 @@ export const OPENER_1NT_SURFACE: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 2, // derived: pointRange + shapeClass
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
-    prioritySpec: ACCEPTABLE_NATURAL,
-    priorityClass: "neutralCorrect",
     sourceIntent: { type: "NTOpening", params: {} },
     teachingLabel: "15 to 17",
   },
@@ -383,12 +373,9 @@ const TERMINAL_PASS_SURFACE: readonly MeaningSurface[] = [
     clauses: [],
     ranking: {
       recommendationBand: "must",
-      specificity: 0,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
-    prioritySpec: ACCEPTABLE_NATURAL,
-    priorityClass: "neutralCorrect",
     sourceIntent: { type: "TerminalPass", params: {} },
     teachingLabel: "Pass (auction complete)",
   },

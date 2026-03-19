@@ -49,7 +49,6 @@ const dummySurface: MeaningSurface = {
   clauses: [],
   ranking: {
     recommendationBand: "should",
-    specificity: 1,
     modulePrecedence: 0,
     intraModuleOrder: 0,
   },
@@ -66,6 +65,10 @@ function makeBundleWithSurfaces(
     memberIds: ["test-conv"],
     dealConstraints: { seats: [], dealer: Seat.North },
     meaningSurfaces: [{ groupId: "test-group", surfaces: [dummySurface] }],
+    explanationCatalog: { version: "1.0.0", entries: [] },
+    pedagogicalRelations: [],
+    acceptableAlternatives: [],
+    intentFamilies: [],
     ...overrides,
   };
 }

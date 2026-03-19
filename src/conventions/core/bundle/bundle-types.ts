@@ -48,13 +48,13 @@ export interface ConventionBundle {
   /** Human-readable description for UI display. */
   readonly description?: string;
   /** Explanation catalog for enriching teaching projections with template keys. */
-  readonly explanationCatalog?: ExplanationCatalogIR;
+  readonly explanationCatalog: ExplanationCatalogIR;
   /** Pedagogical relations for enriching WhyNot entries with family/strength relationships. */
-  readonly pedagogicalRelations?: readonly PedagogicalRelation[];
+  readonly pedagogicalRelations: readonly PedagogicalRelation[];
   /** Alternative groups for grading acceptable alternatives in teaching resolution. */
-  readonly acceptableAlternatives?: readonly AlternativeGroup[];
+  readonly acceptableAlternatives: readonly AlternativeGroup[];
   /** Intent families for relationship-aware credit in teaching resolution. */
-  readonly intentFamilies?: readonly IntentFamily[];
+  readonly intentFamilies: readonly IntentFamily[];
 }
 
 /**

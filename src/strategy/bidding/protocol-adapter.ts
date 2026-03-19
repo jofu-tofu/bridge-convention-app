@@ -75,6 +75,7 @@ export function protocolSpecToStrategy(
         surfaces: composed.visibleSurfaces,
         context,
         catalog,
+        inheritedDimsLookup: composed.inheritedDimsLookup,
       });
 
       // Step 4: Build output

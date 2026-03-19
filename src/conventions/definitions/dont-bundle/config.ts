@@ -6,6 +6,8 @@ import { CAP_OPPONENT_1NT } from "../../../core/contracts/capability-vocabulary"
 import { buildAuction } from "../../../engine/auction-helpers";
 import { DONT_PROFILE } from "./system-profile";
 import { DONT_ALTERNATIVE_GROUPS } from "./alternatives";
+import { DONT_EXPLANATION_CATALOG } from "./explanation-catalog";
+import { DONT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 
 const dontBundleDealConstraints: DealConstraints = {
   seats: [
@@ -50,4 +52,7 @@ export const dontBundle: ConventionBundle = {
   },
   systemProfile: DONT_PROFILE,
   acceptableAlternatives: DONT_ALTERNATIVE_GROUPS,
+  explanationCatalog: DONT_EXPLANATION_CATALOG,
+  pedagogicalRelations: DONT_PEDAGOGICAL_RELATIONS,
+  intentFamilies: [],
 };

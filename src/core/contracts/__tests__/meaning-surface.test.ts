@@ -23,7 +23,6 @@ describe("MeaningSurface", () => {
       ],
       ranking: {
         recommendationBand: "should",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -62,7 +61,6 @@ describe("MeaningSurface", () => {
       clauses: [],
       ranking: {
         recommendationBand: "should",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -148,7 +146,6 @@ describe("MeaningSurface", () => {
       clauses: [],
       ranking: {
         recommendationBand: "must",
-        specificity: 0,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -166,7 +163,6 @@ describe("MeaningSurface", () => {
       clauses: [],
       ranking: {
         recommendationBand: "may",
-        specificity: 0,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },

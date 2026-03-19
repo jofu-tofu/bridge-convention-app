@@ -28,7 +28,6 @@ function makeSurface(overrides?: Partial<MeaningSurface>): MeaningSurface {
     clauses: [],
     ranking: {
       recommendationBand: "should",
-      specificity: 1,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
@@ -193,7 +192,6 @@ describe("composeSurfaceStack", () => {
       encoding: { defaultCall: bid2C },
       ranking: {
         recommendationBand: "should",
-        specificity: 2,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -203,7 +201,6 @@ describe("composeSurfaceStack", () => {
       encoding: { defaultCall: bid2C },
       ranking: {
         recommendationBand: "may",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },

@@ -1,5 +1,4 @@
 import type { MeaningSurface } from "../../../../core/contracts/meaning";
-import { FORCED_CONVENTIONAL, PREFERRED_CONVENTIONAL, ACCEPTABLE_NATURAL, RESIDUAL_NATURAL } from "../../../../core/contracts/agreement-module";
 import type { MachineState, MachineTransition } from "../../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
@@ -50,12 +49,9 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 2, // derived: suitLength + suitIdentity
       modulePrecedence: 0,
       intraModuleOrder: 1,
     },
-    prioritySpec: PREFERRED_CONVENTIONAL,
-    priorityClass: "preferredConventional",
     sourceIntent: { type: "TransferToHearts", params: {} },
     teachingLabel: "Transfer to hearts",
   },
@@ -76,12 +72,9 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 2, // derived: suitLength + suitIdentity
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
-    prioritySpec: PREFERRED_CONVENTIONAL,
-    priorityClass: "preferredConventional",
     sourceIntent: { type: "TransferToSpades", params: {} },
     teachingLabel: "Transfer to spades",
   },
@@ -98,12 +91,9 @@ export const OPENER_TRANSFER_HEARTS_SURFACES: readonly MeaningSurface[] = [
     clauses: [],
     ranking: {
       recommendationBand: "must",
-      specificity: 0,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
-    prioritySpec: FORCED_CONVENTIONAL,
-    priorityClass: "obligatory",
     sourceIntent: { type: "AcceptTransfer", params: { suit: "hearts" } },
     teachingLabel: "Accept transfer to hearts",
   },
@@ -118,12 +108,9 @@ export const OPENER_TRANSFER_SPADES_SURFACES: readonly MeaningSurface[] = [
     clauses: [],
     ranking: {
       recommendationBand: "must",
-      specificity: 0,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
-    prioritySpec: FORCED_CONVENTIONAL,
-    priorityClass: "obligatory",
     sourceIntent: { type: "AcceptTransfer", params: { suit: "spades" } },
     teachingLabel: "Accept transfer to spades",
   },
@@ -148,12 +135,9 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 1,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
-    prioritySpec: FORCED_CONVENTIONAL,
-    priorityClass: "obligatory",
     sourceIntent: { type: "Signoff", params: { suit: "hearts" } },
     teachingLabel: "Pass (signoff in hearts)",
   },
@@ -181,12 +165,9 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 3,
       modulePrecedence: 0,
       intraModuleOrder: 1,
     },
-    prioritySpec: FORCED_CONVENTIONAL,
-    priorityClass: "obligatory",
     sourceIntent: { type: "GameInMajor", params: { suit: "hearts" } },
     teachingLabel: "4H game",
   },
@@ -214,13 +195,10 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 2,
       modulePrecedence: 0,
       intraModuleOrder: 2,
     },
-    prioritySpec: PREFERRED_CONVENTIONAL,
-    priorityClass: "preferredConventional",
-    sourceIntent: { type: "NTGame", params: { suit: "hearts" } },
+    sourceIntent: { type: "TransferNTGame", params: { suit: "hearts" } },
     teachingLabel: "3NT (5 hearts, let opener choose)",
   },
 
@@ -240,12 +218,9 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 1,
       modulePrecedence: 0,
       intraModuleOrder: 3,
     },
-    prioritySpec: PREFERRED_CONVENTIONAL,
-    priorityClass: "preferredConventional",
     sourceIntent: { type: "Invite", params: { suit: "hearts" } },
     teachingLabel: "2NT invite",
   },
@@ -268,12 +243,9 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 1,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
-    prioritySpec: FORCED_CONVENTIONAL,
-    priorityClass: "obligatory",
     sourceIntent: { type: "Signoff", params: { suit: "spades" } },
     teachingLabel: "Pass (signoff in spades)",
   },
@@ -301,12 +273,9 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 3,
       modulePrecedence: 0,
       intraModuleOrder: 1,
     },
-    prioritySpec: FORCED_CONVENTIONAL,
-    priorityClass: "obligatory",
     sourceIntent: { type: "GameInMajor", params: { suit: "spades" } },
     teachingLabel: "4S game",
   },
@@ -334,13 +303,10 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 2,
       modulePrecedence: 0,
       intraModuleOrder: 2,
     },
-    prioritySpec: PREFERRED_CONVENTIONAL,
-    priorityClass: "preferredConventional",
-    sourceIntent: { type: "NTGame", params: { suit: "spades" } },
+    sourceIntent: { type: "TransferNTGame", params: { suit: "spades" } },
     teachingLabel: "3NT (5 spades, let opener choose)",
   },
 
@@ -360,12 +326,9 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 1,
       modulePrecedence: 0,
       intraModuleOrder: 3,
     },
-    prioritySpec: PREFERRED_CONVENTIONAL,
-    priorityClass: "preferredConventional",
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     teachingLabel: "2NT invite",
   },

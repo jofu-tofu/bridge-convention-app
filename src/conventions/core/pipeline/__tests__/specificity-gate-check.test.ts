@@ -186,52 +186,24 @@ for (const fragment of Object.values(allFragments)) {
   }
 }
 
-// ─── Gate check tests ───────────────────────────────────────
+// ─── Specificity derivation tests ───────────────────────────
 
-describe("Phase 3 Gate Check: derived vs authored specificity", () => {
-  it("should report all mismatches between derived and authored specificity", () => {
-    const mismatches: { meaningId: string; authored: number; derived: number }[] = [];
-
+describe("Specificity derivation: regression suite across all bundles", () => {
+  it("should derive a non-negative specificity for every surface", () => {
     for (const surface of allSurfaces) {
       const inherited = inheritedDimsLookup.get(surface.meaningId);
       const result = deriveSpecificity(surface, allFactExtensions, inherited);
-      if (result.advisorySpecificity !== surface.ranking.specificity) {
-        mismatches.push({
-          meaningId: surface.meaningId,
-          authored: surface.ranking.specificity,
-          derived: result.advisorySpecificity,
-        });
-      }
+      expect(result.advisorySpecificity).toBeGreaterThanOrEqual(0);
     }
-
-    // Report mismatches for debugging
-    if (mismatches.length > 0) {
-      console.log("Mismatches found:");
-      for (const m of mismatches) {
-        console.log(`  ${m.meaningId}: authored=${m.authored} derived=${m.derived}`);
-      }
-    }
-
-    // This test reports mismatches for diagnostics. Derived specificity is the
-    // source of truth — expect zero mismatches (authored values match derived).
-    console.log(`MISMATCH count: ${mismatches.length} / ${allSurfaces.length}`);
-    for (const m of mismatches) {
-      console.log(`  MISMATCH ${m.meaningId}: authored=${m.authored} derived=${m.derived}`);
-    }
-    // Expect zero mismatches — authored values are set to match derived values
-    expect(mismatches.length).toBe(0);
   });
 
-  it("should achieve 100% match rate (derived = source of truth)", () => {
-    let matches = 0;
+  it("should produce a valid basis classification for every surface", () => {
+    const validBases = new Set(["derived", "asserted", "partial"]);
     for (const surface of allSurfaces) {
       const inherited = inheritedDimsLookup.get(surface.meaningId);
       const result = deriveSpecificity(surface, allFactExtensions, inherited);
-      if (result.advisorySpecificity === surface.ranking.specificity) matches++;
+      expect(validBases.has(result.basis)).toBe(true);
     }
-    const matchRate = matches / allSurfaces.length;
-    console.log(`Match rate: ${matches}/${allSurfaces.length} = ${(matchRate * 100).toFixed(1)}%`);
-    expect(matchRate).toBe(1.0);
   });
 
   it("should cover all surfaces (sanity check)", () => {
@@ -249,7 +221,19 @@ describe("Phase 3 Gate Check: derived vs authored specificity", () => {
     expect(uniqueIds.size).toBe(ids.length);
   });
 
-  it("should report per-bundle match rates", () => {
+  it("should give surfaces with more clauses equal or higher specificity", () => {
+    // Sanity: surfaces with clauses should generally have higher specificity
+    // than surfaces with no clauses (pass/accept surfaces).
+    for (const surface of allSurfaces) {
+      const inherited = inheritedDimsLookup.get(surface.meaningId);
+      const result = deriveSpecificity(surface, allFactExtensions, inherited);
+      if (surface.clauses.length === 0 && !inherited) {
+        expect(result.advisorySpecificity).toBe(0);
+      }
+    }
+  });
+
+  it("should report per-bundle derivation stats", () => {
     const bundles = [
       { name: "Bergen", surfaces: bergenSurfaces },
       { name: "DONT", surfaces: dontSurfaces },
@@ -258,32 +242,17 @@ describe("Phase 3 Gate Check: derived vs authored specificity", () => {
     ];
 
     for (const bundle of bundles) {
-      let matches = 0;
-      const bundleMismatches: { meaningId: string; authored: number; derived: number }[] = [];
-
+      const specificities: number[] = [];
       for (const surface of bundle.surfaces) {
         const inherited = inheritedDimsLookup.get(surface.meaningId);
         const result = deriveSpecificity(surface, allFactExtensions, inherited);
-        if (result.advisorySpecificity === surface.ranking.specificity) {
-          matches++;
-        } else {
-          bundleMismatches.push({
-            meaningId: surface.meaningId,
-            authored: surface.ranking.specificity,
-            derived: result.advisorySpecificity,
-          });
-        }
+        specificities.push(result.advisorySpecificity);
       }
-
-      const rate = matches / bundle.surfaces.length;
+      const avg = specificities.reduce((a, b) => a + b, 0) / specificities.length;
+      const max = Math.max(...specificities);
       console.log(
-        `${bundle.name}: ${matches}/${bundle.surfaces.length} = ${(rate * 100).toFixed(1)}%`,
+        `${bundle.name}: ${bundle.surfaces.length} surfaces, avg=${avg.toFixed(1)}, max=${max}`,
       );
-      if (bundleMismatches.length > 0) {
-        for (const m of bundleMismatches) {
-          console.log(`  MISMATCH ${m.meaningId}: authored=${m.authored} derived=${m.derived}`);
-        }
-      }
     }
   });
 });

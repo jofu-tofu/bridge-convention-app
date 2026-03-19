@@ -6,6 +6,8 @@ import { CAP_OPENING_MAJOR } from "../../../core/contracts/capability-vocabulary
 import { buildAuction } from "../../../engine/auction-helpers";
 import { BERGEN_PROFILE } from "./system-profile";
 import { BERGEN_ALTERNATIVE_GROUPS } from "./alternatives";
+import { BERGEN_EXPLANATION_CATALOG } from "./explanation-catalog";
+import { BERGEN_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 
 // ─── Deal constraints ───────────────────────────────────────────
 
@@ -48,4 +50,7 @@ export const bergenBundle: ConventionBundle = {
   },
   systemProfile: BERGEN_PROFILE,
   acceptableAlternatives: BERGEN_ALTERNATIVE_GROUPS,
+  explanationCatalog: BERGEN_EXPLANATION_CATALOG,
+  pedagogicalRelations: BERGEN_PEDAGOGICAL_RELATIONS,
+  intentFamilies: [],
 };

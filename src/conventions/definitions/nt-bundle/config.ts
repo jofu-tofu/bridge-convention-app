@@ -5,6 +5,8 @@ import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { ConventionCategory } from "../../../core/contracts/convention";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { ntCrossConventionAlternatives } from "./alternatives";
+import { NT_EXPLANATION_CATALOG } from "./explanation-catalog";
+import { NT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 import { NT_SAYC_PROFILE } from "./system-profile";
 
 const ntDealConstraints: DealConstraints = {
@@ -38,4 +40,7 @@ export const ntBundle: ConventionBundle = {
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   systemProfile: NT_SAYC_PROFILE,
   acceptableAlternatives: ntCrossConventionAlternatives,
+  explanationCatalog: NT_EXPLANATION_CATALOG,
+  pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
+  intentFamilies: [],
 };

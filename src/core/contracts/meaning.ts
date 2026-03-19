@@ -1,8 +1,6 @@
 import type { ConditionResult } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
 import type {
-  PriorityClass,
-  PrioritySpec,
   ChoiceClosurePolicy,
   FactConstraintIR,
 } from "./agreement-module";
@@ -35,16 +33,24 @@ export type FactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
 /** Operator subset for evaluated meaning clauses (excludes "in" which is resolved during evaluation). */
 export type MeaningClauseOperator = Exclude<FactOperator, "in">;
 
-/** Ranking metadata — the frozen ranking knob matrix. */
-export interface RankingMetadata {
+/** Authored ranking metadata — what convention authors write.
+ *  Excludes `specificity` and `specificityBasis`, which are derived by the
+ *  pipeline via `deriveSpecificity()`. */
+export interface AuthoredRankingMetadata {
   /** Authored semantic priority. Replaces implicit orderKey-as-truth. */
   readonly recommendationBand: RecommendationBand;
-  /** More specific conventions beat general ones. Higher = more specific. */
-  readonly specificity: number;
   /** Cross-module tiebreaker. Lower = higher priority. Never decides truth. */
   readonly modulePrecedence: number;
   /** Preserves DFS orderKey for backward compat. Deterministic last resort. */
   readonly intraModuleOrder: number;
+}
+
+/** Resolved ranking metadata — the frozen ranking knob matrix.
+ *  Produced by the pipeline from AuthoredRankingMetadata + derived specificity. */
+export interface RankingMetadata extends AuthoredRankingMetadata {
+  /** More specific conventions beat general ones. Higher = more specific.
+   *  Derived by deriveSpecificity() — never hand-authored. */
+  readonly specificity: number;
   /** How the specificity value was determined:
    *  - "derived": all clauses reference primitive or bridge-derived facts with known constraint structure
    *  - "asserted": at least one clause references an opaque module-derived boolean fact
@@ -98,7 +104,7 @@ export interface MeaningProposal {
   /** Structured constraints auto-derived from primitive/bridge-observable clauses.
    *  Threaded through the pipeline for BidAlert construction in the strategy layer. */
   readonly publicConstraints?: readonly FactConstraintIR[];
-  /** True when this bid is alertable (derived from priorityClass/sourceIntent). */
+  /** True when this bid is alertable (derived from sourceIntent.type). */
   readonly isAlertable?: boolean;
 }
 
@@ -206,18 +212,7 @@ export interface MeaningSurface {
     }[];
   };
   readonly clauses: readonly MeaningSurfaceClause[];
-  readonly ranking: RankingMetadata;
-  /** Factored priority specification — separates obligation strength from conventionality.
-   *  When set, the pipeline resolves recommendationBand from `prioritySpec.obligation`
-   *  and alertability from `prioritySpec.conventionality`. */
-  readonly prioritySpec?: PrioritySpec;
-  /** @deprecated Use prioritySpec instead.
-   *  Author-declared semantic priority class.
-   *  When set, the SystemProfile's `priorityClassMapping` resolves this to a
-   *  `RecommendationBand` at runtime, overriding `ranking.recommendationBand`.
-   *  Optional for backward compatibility — surfaces without this field use the
-   *  band from `ranking` directly. */
-  readonly priorityClass?: PriorityClass;
+  readonly ranking: AuthoredRankingMetadata;
   readonly sourceIntent: {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;

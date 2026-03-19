@@ -71,11 +71,9 @@ const STAYMAN_R1_SURFACE: MeaningSurface = {
   ],
   ranking: {
     recommendationBand: "should",
-    specificity: 2,
     modulePrecedence: 1,
     intraModuleOrder: 0,
   },
-  priorityClass: "preferredConventional",
   sourceIntent: { type: "StaymanAsk", params: {} },
   teachingLabel: "Stayman 2♣",
 };
@@ -99,11 +97,9 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 2,
       modulePrecedence: 1,
       intraModuleOrder: 0,
     },
-    priorityClass: "obligatory",
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "hearts" } },
     teachingLabel: "Show hearts",
     closurePolicy: {
@@ -137,11 +133,9 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 2,
       modulePrecedence: 1,
       intraModuleOrder: 1,
     },
-    priorityClass: "obligatory",
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "spades" } },
     teachingLabel: "Show spades",
     closurePolicy: {
@@ -175,11 +169,9 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 1,
       modulePrecedence: 1,
       intraModuleOrder: 2,
     },
-    priorityClass: "obligatory",
     sourceIntent: { type: "DenyMajor", params: {} },
     teachingLabel: "Deny major (2♦)",
     closurePolicy: {
@@ -224,11 +216,9 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 3,
       modulePrecedence: 1,
       intraModuleOrder: 0,
     },
-    priorityClass: "obligatory",
     sourceIntent: { type: "RaiseGame", params: { suit: "hearts" } },
     teachingLabel: "Raise to game in hearts",
   },
@@ -256,11 +246,9 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 3,
       modulePrecedence: 1,
       intraModuleOrder: 1,
     },
-    priorityClass: "preferredConventional",
     sourceIntent: { type: "RaiseInvite", params: { suit: "hearts" } },
     teachingLabel: "Invite in hearts",
   },
@@ -288,12 +276,10 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 2,
       modulePrecedence: 1,
       intraModuleOrder: 2,
     },
-    priorityClass: "preferredConventional",
-    sourceIntent: { type: "NTGame", params: { reason: "no-heart-fit" } },
+    sourceIntent: { type: "StaymanNTGame", params: { reason: "no-heart-fit" } },
     teachingLabel: "3NT (no heart fit)",
   },
 
@@ -320,12 +306,10 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "may",
-      specificity: 2,
       modulePrecedence: 1,
       intraModuleOrder: 3,
     },
-    priorityClass: "neutralCorrect",
-    sourceIntent: { type: "NTInvite", params: { reason: "no-heart-fit" } },
+    sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-heart-fit" } },
     teachingLabel: "2NT invite (no heart fit)",
   },
 ];
@@ -354,11 +338,9 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 3,
       modulePrecedence: 1,
       intraModuleOrder: 0,
     },
-    priorityClass: "obligatory",
     sourceIntent: { type: "RaiseGame", params: { suit: "spades" } },
     teachingLabel: "Raise to game in spades",
   },
@@ -386,11 +368,9 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 3,
       modulePrecedence: 1,
       intraModuleOrder: 1,
     },
-    priorityClass: "preferredConventional",
     sourceIntent: { type: "RaiseInvite", params: { suit: "spades" } },
     teachingLabel: "Invite in spades",
   },
@@ -418,12 +398,10 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 2,
       modulePrecedence: 1,
       intraModuleOrder: 2,
     },
-    priorityClass: "preferredConventional",
-    sourceIntent: { type: "NTGame", params: { reason: "no-spade-fit" } },
+    sourceIntent: { type: "StaymanNTGame", params: { reason: "no-spade-fit" } },
     teachingLabel: "3NT (no spade fit)",
   },
 
@@ -450,12 +428,10 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "may",
-      specificity: 2,
       modulePrecedence: 1,
       intraModuleOrder: 3,
     },
-    priorityClass: "neutralCorrect",
-    sourceIntent: { type: "NTInvite", params: { reason: "no-spade-fit" } },
+    sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-spade-fit" } },
     teachingLabel: "2NT invite (no spade fit)",
   },
 ];
@@ -478,12 +454,10 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 1,
       modulePrecedence: 1,
       intraModuleOrder: 0,
     },
-    priorityClass: "obligatory",
-    sourceIntent: { type: "NTGame", params: { reason: "denial" } },
+    sourceIntent: { type: "StaymanNTGame", params: { reason: "denial" } },
     teachingLabel: "3NT after denial",
   },
 
@@ -503,12 +477,10 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 1,
       modulePrecedence: 1,
       intraModuleOrder: 1,
     },
-    priorityClass: "preferredConventional",
-    sourceIntent: { type: "NTInvite", params: { reason: "denial" } },
+    sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     teachingLabel: "2NT invite after denial",
   },
 ];
@@ -531,11 +503,9 @@ export const INTERFERENCE_REDOUBLE_SURFACE: MeaningSurface = {
   ],
   ranking: {
     recommendationBand: "must",
-    specificity: 1, // derived: pointRange
     modulePrecedence: 0,
     intraModuleOrder: 0,
   },
-  priorityClass: "obligatory",
   sourceIntent: { type: "RedoubleStrength", params: {} },
   teachingLabel: "Redouble (showing 10+ HCP)",
 };

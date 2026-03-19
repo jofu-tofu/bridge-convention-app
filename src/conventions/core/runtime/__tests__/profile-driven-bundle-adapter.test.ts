@@ -17,7 +17,6 @@ function makeSurface(moduleId: string, meaningId: string): MeaningSurface {
     clauses: [],
     ranking: {
       recommendationBand: "should",
-      specificity: 1,
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
@@ -108,6 +107,10 @@ function makeBundleWithSurfaces(
     meaningSurfaces: [
       { groupId: "group-a", surfaces: [makeSurface("mod-a", "mod-a:meaning")] },
     ],
+    explanationCatalog: { version: "1.0.0", entries: [] },
+    pedagogicalRelations: [],
+    acceptableAlternatives: [],
+    intentFamilies: [],
     ...overrides,
   };
 }

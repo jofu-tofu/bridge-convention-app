@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { resolveAlert, derivePublicConstraints } from "../alert";
+import { resolveAlert, isAlertable, derivePublicConstraints } from "../alert";
 import type { AlertResolvable } from "../alert";
 import type { MeaningSurfaceClause } from "../meaning";
-import { FORCED_CONVENTIONAL, PREFERRED_CONVENTIONAL, ACCEPTABLE_NATURAL, RESIDUAL_NATURAL } from "../agreement-module";
 
 function makeSurface(overrides: Partial<AlertResolvable> = {}): AlertResolvable {
   return {
@@ -13,25 +12,47 @@ function makeSurface(overrides: Partial<AlertResolvable> = {}): AlertResolvable 
   };
 }
 
+describe("isAlertable", () => {
+  it("returns false for natural intent types", () => {
+    expect(isAlertable("NTInvite")).toBe(false);
+    expect(isAlertable("NTGame")).toBe(false);
+    expect(isAlertable("NTOpening")).toBe(false);
+    expect(isAlertable("TerminalPass")).toBe(false);
+    expect(isAlertable("DONTPass")).toBe(false);
+    expect(isAlertable("WeakPass")).toBe(false);
+    expect(isAlertable("PostOgustPass")).toBe(false);
+    expect(isAlertable("DONTAcceptSpadesFallback")).toBe(false);
+    expect(isAlertable("PreemptiveRaise")).toBe(false);
+  });
+
+  it("returns true for conventional intent types", () => {
+    expect(isAlertable("StaymanAsk")).toBe(true);
+    expect(isAlertable("DONTBothMajors")).toBe(true);
+    expect(isAlertable("Splinter")).toBe(true);
+    expect(isAlertable("ConstructiveRaise")).toBe(true);
+    expect(isAlertable("TransferToHearts")).toBe(true);
+    expect(isAlertable("frontier-step")).toBe(true);
+  });
+});
+
 describe("resolveAlert", () => {
-  it("returns null for natural surfaces", () => {
-    const surface = makeSurface({ priorityClass: "neutralCorrect" });
+  it("returns null for natural intent types", () => {
+    const surface = makeSurface({ sourceIntent: { type: "NTInvite" } });
     expect(resolveAlert(surface)).toBeNull();
   });
 
-  it("returns null for fallbackCorrect surfaces", () => {
-    const surface = makeSurface({ priorityClass: "fallbackCorrect" });
+  it("returns null for fallback natural intents", () => {
+    const surface = makeSurface({ sourceIntent: { type: "DONTAcceptSpadesFallback" } });
     expect(resolveAlert(surface)).toBeNull();
   });
 
-  it("returns null for preferredNatural surfaces", () => {
-    const surface = makeSurface({ priorityClass: "preferredNatural" });
+  it("returns null for preemptive raise (natural)", () => {
+    const surface = makeSurface({ sourceIntent: { type: "PreemptiveRaise" } });
     expect(resolveAlert(surface)).toBeNull();
   });
 
-  it("returns alert for preferredConventional priorityClass", () => {
+  it("returns alert for conventional intent with clauses", () => {
     const surface = makeSurface({
-      priorityClass: "preferredConventional",
       sourceIntent: { type: "ConstructiveRaise" },
       teachingLabel: "Constructive raise (3C)",
       clauses: [
@@ -48,7 +69,6 @@ describe("resolveAlert", () => {
 
   it("returns educational for standard conventional intents (e.g., Stayman)", () => {
     const surface = makeSurface({
-      priorityClass: "preferredConventional",
       sourceIntent: { type: "StaymanAsk" },
       teachingLabel: "Stayman 2♣",
     });
@@ -56,9 +76,8 @@ describe("resolveAlert", () => {
     expect(result?.annotationType).toBe("educational");
   });
 
-  it("returns alert for obligatory priorityClass", () => {
+  it("returns alert for conventional intent (DONTBothMajors)", () => {
     const surface = makeSurface({
-      priorityClass: "obligatory",
       sourceIntent: { type: "DONTBothMajors" },
       teachingLabel: "2H — both majors",
     });
@@ -85,7 +104,6 @@ describe("resolveAlert", () => {
 
   it("returns announce annotationType for transfer intents", () => {
     const surface = makeSurface({
-      priorityClass: "preferredConventional",
       sourceIntent: { type: "TransferToHearts" },
       teachingLabel: "Transfer to hearts",
     });
@@ -93,54 +111,18 @@ describe("resolveAlert", () => {
     expect(result?.annotationType).toBe("announce");
   });
 
-  // ─── PrioritySpec (factored type) tests ────────────────────
-  it("returns alert for conventional prioritySpec", () => {
+  it("returns null for TerminalPass", () => {
     const surface = makeSurface({
-      prioritySpec: FORCED_CONVENTIONAL,
-      sourceIntent: { type: "DONTBothMajors" },
-      teachingLabel: "2H — both majors",
-    });
-    const result = resolveAlert(surface);
-    expect(result).not.toBeNull();
-    expect(result?.annotationType).toBe("alert");
-  });
-
-  it("returns alert for preferred conventional prioritySpec", () => {
-    const surface = makeSurface({
-      prioritySpec: PREFERRED_CONVENTIONAL,
-      sourceIntent: { type: "ConstructiveRaise" },
-      teachingLabel: "Constructive raise",
-    });
-    const result = resolveAlert(surface);
-    expect(result).not.toBeNull();
-    expect(result?.annotationType).toBe("alert");
-  });
-
-  it("returns null for acceptable natural prioritySpec", () => {
-    const surface = makeSurface({
-      prioritySpec: ACCEPTABLE_NATURAL,
-      sourceIntent: { type: "NTInvite" },
-      teachingLabel: "NT invite",
-    });
-    expect(resolveAlert(surface)).toBeNull();
-  });
-
-  it("returns null for residual natural prioritySpec", () => {
-    const surface = makeSurface({
-      prioritySpec: RESIDUAL_NATURAL,
-      sourceIntent: { type: "WeakPass" },
+      sourceIntent: { type: "TerminalPass" },
       teachingLabel: "Pass",
     });
     expect(resolveAlert(surface)).toBeNull();
   });
 
-  it("prioritySpec takes precedence over priorityClass", () => {
-    // prioritySpec says natural, legacy priorityClass says conventional
+  it("returns null for WeakPass", () => {
     const surface = makeSurface({
-      prioritySpec: ACCEPTABLE_NATURAL,
-      priorityClass: "obligatory",
-      sourceIntent: { type: "NaturalBid" },
-      teachingLabel: "Test",
+      sourceIntent: { type: "WeakPass" },
+      teachingLabel: "Pass",
     });
     expect(resolveAlert(surface)).toBeNull();
   });

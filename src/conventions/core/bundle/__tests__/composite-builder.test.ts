@@ -15,6 +15,10 @@ function makeBundle(
     name: `Bundle ${id}`,
     memberIds,
     dealConstraints: { seats: [] },
+    explanationCatalog: { version: "1.0.0", entries: [] },
+    pedagogicalRelations: [],
+    acceptableAlternatives: [],
+    intentFamilies: [],
     ...extras,
   };
 }
@@ -108,7 +112,7 @@ describe("composeBundles", () => {
     expect(composite.factExtensions![1]).toBe(extB);
   });
 
-  it("returns undefined for optional fields when no bundle provides them", () => {
+  it("returns empty arrays/catalogs for required fields when no bundle provides them", () => {
     const a = makeBundle("a", []);
     const b = makeBundle("b", []);
 
@@ -116,9 +120,10 @@ describe("composeBundles", () => {
 
     expect(composite.meaningSurfaces).toBeUndefined();
     expect(composite.factExtensions).toBeUndefined();
-    expect(composite.pedagogicalRelations).toBeUndefined();
-    expect(composite.acceptableAlternatives).toBeUndefined();
-    expect(composite.explanationCatalog).toBeUndefined();
+    expect(composite.pedagogicalRelations).toEqual([]);
+    expect(composite.acceptableAlternatives).toEqual([]);
+    expect(composite.intentFamilies).toEqual([]);
+    expect(composite.explanationCatalog).toEqual({ version: "1.0.0", entries: [] });
     expect(composite.systemProfile).toBeUndefined();
     expect(composite.conversationMachine).toBeUndefined();
     expect(composite.surfaceRouter).toBeUndefined();

@@ -6,6 +6,8 @@ import { CAP_OPENING_WEAK_TWO } from "../../../core/contracts/capability-vocabul
 import { buildAuction } from "../../../engine/auction-helpers";
 import { WEAK_TWO_PROFILE } from "./system-profile";
 import { WEAK_TWO_ALTERNATIVE_GROUPS } from "./alternatives";
+import { WEAK_TWO_EXPLANATION_CATALOG } from "./explanation-catalog";
+import { WEAK_TWO_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 
 const weakTwoBundleDealConstraints: DealConstraints = {
   seats: [
@@ -47,4 +49,7 @@ export const weakTwoBundle: ConventionBundle = {
   declaredCapabilities: { [CAP_OPENING_WEAK_TWO]: "active" },
   systemProfile: WEAK_TWO_PROFILE,
   acceptableAlternatives: WEAK_TWO_ALTERNATIVE_GROUPS,
+  explanationCatalog: WEAK_TWO_EXPLANATION_CATALOG,
+  pedagogicalRelations: WEAK_TWO_PEDAGOGICAL_RELATIONS,
+  intentFamilies: [],
 };

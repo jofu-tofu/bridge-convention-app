@@ -4,6 +4,7 @@ import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../../core/contracts/convention";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
+import { createExplanationCatalog } from "../../../core/contracts/explanation-catalog";
 import { NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./system-profile";
 
 const staymanDealConstraints: DealConstraints = {
@@ -43,6 +44,10 @@ export const ntStaymanBundle: ConventionBundle = {
   defaultAuction: ntDefaultAuction,
   declaredCapabilities: ntDeclaredCapabilities,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
+  explanationCatalog: createExplanationCatalog([]),
+  pedagogicalRelations: [],
+  acceptableAlternatives: [],
+  intentFamilies: [],
 };
 
 export const ntTransfersBundle: ConventionBundle = {
@@ -55,4 +60,8 @@ export const ntTransfersBundle: ConventionBundle = {
   defaultAuction: ntDefaultAuction,
   declaredCapabilities: ntDeclaredCapabilities,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,
+  explanationCatalog: createExplanationCatalog([]),
+  pedagogicalRelations: [],
+  acceptableAlternatives: [],
+  intentFamilies: [],
 };
