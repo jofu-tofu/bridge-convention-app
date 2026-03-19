@@ -1,4 +1,4 @@
-import type { NumberRange, Seat, Suit } from "../../engine/types";
+import type { Auction, AuctionEntry, NumberRange, Seat, Suit } from "../../engine/types";
 import type { FactConstraintIR } from "./agreement-module";
 
 export interface SuitInference {
@@ -58,4 +58,19 @@ export interface BeliefData {
     readonly hcpRange: NumberRange;
     readonly suitLengths: Record<Suit, NumberRange>;
   }>;
+}
+
+// ─── Inference strategy interface ────────────────────────────
+
+/** Determines how a partnership's bids are interpreted.
+ *  Implementations live in inference/ (natural-inference, partner-interpretation). */
+export interface InferenceProvider {
+  readonly id: string;
+  readonly name: string;
+  /** Given a bid and auction state, what does it reveal? */
+  inferFromBid(
+    entry: AuctionEntry,
+    auctionBefore: Auction,
+    seat: Seat,
+  ): HandInference | null;
 }

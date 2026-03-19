@@ -15,6 +15,17 @@ export interface PosteriorSummary {
   readonly confidence: number;
 }
 
+/** Component-level breakdown of the practical score.
+ *  Allows consumers to see how fit, HCP, convention distance, and
+ *  misunderstanding risk contributed to the recommendation. */
+export interface PracticalScoreBreakdown {
+  readonly fitScore: number;
+  readonly hcpScore: number;
+  readonly conventionDistance: number;
+  readonly misunderstandingRisk: number;
+  readonly totalScore: number;
+}
+
 /** Practical recommendation — what an experienced player might prefer given imperfect information.
  *  Separate from teaching grading (which is deterministic and unchanged by this). */
 export interface PracticalRecommendation {
@@ -22,16 +33,8 @@ export interface PracticalRecommendation {
   readonly topCandidateCall: Call;
   readonly topScore: number;
   readonly rationale: string;
-  /** Component-level breakdown of the practical score.
-   *  Allows consumers to see how fit, HCP, convention distance, and
-   *  misunderstanding risk contributed to the recommendation. */
-  readonly scoreBreakdown?: {
-    readonly fitScore: number;
-    readonly hcpScore: number;
-    readonly conventionDistance: number;
-    readonly misunderstandingRisk: number;
-    readonly totalScore: number;
-  };
+  /** Component-level breakdown of the practical score. */
+  readonly scoreBreakdown?: PracticalScoreBreakdown;
 }
 
 /** Lightweight DTO for convention machine state — avoids importing from conventions/core. */

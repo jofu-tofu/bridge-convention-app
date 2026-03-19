@@ -11,24 +11,24 @@ import type {
   ConventionBiddingStrategy,
   StrategyEvaluation,
   TeachingProjection,
+  TeachingResolution,
+  PracticalScoreBreakdown,
 } from "../core/contracts";
+import { BidGrade } from "../core/contracts/teaching-grading";
 import type { EncodingTrace } from "../core/contracts/provenance";
-import type { PracticalScoreBreakdown } from "../strategy/bidding/practical-types";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 
 import { createBiddingContext } from "../conventions/core";
 import type { GameStoreOptions } from "./game.svelte";
 import {
-  BidGrade,
   resolveTeachingAnswer,
   gradeBid,
 } from "../teaching/teaching-resolution";
-import type { TeachingResolution } from "../teaching/teaching-resolution";
 
 export type { BidHistoryEntry } from "../core/contracts";
-export { BidGrade } from "../teaching/teaching-resolution";
-export type { TeachingResolution } from "../teaching/teaching-resolution";
+export { BidGrade } from "../core/contracts/teaching-grading";
+export type { TeachingResolution } from "../core/contracts";
 
 export interface BidFeedback {
   readonly grade: BidGrade;

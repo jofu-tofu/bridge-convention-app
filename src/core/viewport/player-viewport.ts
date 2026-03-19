@@ -11,7 +11,7 @@
 //   2. CLI harness — serializes the viewport as JSON for agent evaluation
 
 import type { Call, Hand, Seat, Vulnerability, SuitLength, DistributionPoints } from "../../engine/types";
-import type { BidGrade } from "../../teaching/teaching-resolution";
+import type { BidGrade } from "../contracts/teaching-grading";
 
 // ── Bidding Viewport ────────────────────────────────────────────────
 

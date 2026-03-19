@@ -65,6 +65,48 @@ const strategyImports = [
     message: "Module boundary violation: no strategy imports",
   },
 ];
+const teachingImports = [
+  {
+    name: "../teaching/*",
+    message: "Module boundary violation: no teaching imports",
+  },
+  {
+    name: "../../teaching/*",
+    message: "Module boundary violation: no teaching imports",
+  },
+  {
+    name: "../../../teaching/*",
+    message: "Module boundary violation: no teaching imports",
+  },
+];
+const bootstrapImports = [
+  {
+    name: "../bootstrap/*",
+    message: "Module boundary violation: no bootstrap imports",
+  },
+  {
+    name: "../../bootstrap/*",
+    message: "Module boundary violation: no bootstrap imports",
+  },
+  {
+    name: "../../../bootstrap/*",
+    message: "Module boundary violation: no bootstrap imports",
+  },
+];
+const inferenceImports = [
+  {
+    name: "../inference/*",
+    message: "Module boundary violation: no inference imports",
+  },
+  {
+    name: "../../inference/*",
+    message: "Module boundary violation: no inference imports",
+  },
+  {
+    name: "../../../inference/*",
+    message: "Module boundary violation: no inference imports",
+  },
+];
 
 /** @type {import("eslint").Linter.Config[]} */
 export default tseslint.config(
@@ -496,6 +538,86 @@ export default tseslint.config(
                     "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
             message: "Import from 'conventions/core' barrel instead of deep paths",
           }],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: core/viewport/ ──
+  {
+    files: ["src/core/viewport/**/*.ts"],
+    ignores: ["src/core/viewport/__tests__/**", "src/core/viewport/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            ...teachingImports,
+            ...bootstrapImports,
+            ...inferenceImports,
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: inference/ ──
+  {
+    files: ["src/inference/**/*.ts"],
+    ignores: ["src/inference/__tests__/**", "src/inference/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...strategyImports,
+            ...teachingImports,
+            ...bootstrapImports,
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: strategy/ ──
+  {
+    files: ["src/strategy/**/*.ts"],
+    ignores: ["src/strategy/__tests__/**", "src/strategy/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+            ...bootstrapImports,
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: bootstrap/ ──
+  {
+    files: ["src/bootstrap/**/*.ts"],
+    ignores: ["src/bootstrap/__tests__/**", "src/bootstrap/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+          ],
         },
       ],
     },

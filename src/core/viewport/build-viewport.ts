@@ -4,7 +4,7 @@
 // This is the SINGLE function that enforces the information boundary.
 // Both the Svelte UI and the CLI harness call this same function.
 
-import { type Seat, type Vulnerability, type Call, type Hand, type Deal, type Auction } from "../../engine/types";
+import { type Seat, type Call, type Hand, type Deal, type Auction } from "../../engine/types";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { formatCall } from "../display/format";
 import { formatHandSummary } from "../display/hand-summary";
@@ -12,9 +12,10 @@ import type { BidHistoryEntry, BidResult } from "../contracts/bidding";
 import type { MeaningSurface } from "../contracts/meaning";
 import { isAlertable as isAlertableFromIntent } from "../contracts/alert";
 import type { TeachingProjection } from "../contracts/teaching-projection";
-import type { TeachingResolution } from "../../teaching/teaching-resolution";
-import { BidGrade } from "../../teaching/teaching-resolution";
-import type { PracticalScoreBreakdown } from "../../strategy/bidding/practical-types";
+import type { TeachingResolution } from "../contracts/teaching-grading";
+import type { BidGrade } from "../contracts/teaching-grading";
+import type { PracticalScoreBreakdown } from "../contracts/recommendation";
+import type { EncoderKind } from "../contracts/provenance";
 
 // Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
 // Defined here to avoid importing the Svelte store in CLI context.
@@ -258,7 +259,7 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
     })),
 
     // Encoding trace
-    encoderKind: (feedback as { encodingTrace?: { encoderKind: import("../contracts/provenance").EncoderKind } }).encodingTrace?.encoderKind,
+    encoderKind: (feedback as { encodingTrace?: { encoderKind: EncoderKind } }).encodingTrace?.encoderKind,
 
     // Practical recommendation
     practicalRecommendation: feedback.practicalRecommendation

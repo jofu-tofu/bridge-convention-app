@@ -6,9 +6,9 @@
 //   2. Post-mortem diagnostics (after the session ends)
 //   3. Aggregate reporting (accuracy metrics)
 
-import type { Call, Deal, Hand, Seat } from "../../engine/types";
+import type { Call, Hand, Seat } from "../../engine/types";
 import type { BidResult, BidAlert } from "../contracts/bidding";
-import type { TeachingResolution } from "../../teaching/teaching-resolution";
+import type { TeachingResolution } from "../contracts/teaching-grading";
 import type { TeachingProjection } from "../contracts/teaching-projection";
 import type { StrategyEvaluation } from "../contracts/recommendation";
 

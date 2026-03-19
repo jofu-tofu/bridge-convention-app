@@ -1,5 +1,5 @@
-import type { Seat, Auction, AuctionEntry, Call } from "../engine/types";
-import type { HandInference, PublicBeliefs, BidAlert } from "../core/contracts";
+import type { Seat, AuctionEntry, Call } from "../engine/types";
+import type { PublicBeliefs, BidAlert, InferenceProvider } from "../core/contracts";
 import type { FactConstraintIR } from "../core/contracts/agreement-module";
 
 // ConditionInference — structured inference metadata for condition → HandInference mapping.
@@ -24,6 +24,7 @@ export type {
   PublicBeliefs,
   DerivedRanges,
   QualitativeConstraint,
+  InferenceProvider,
 } from "../core/contracts";
 
 /** Snapshot of inference state after a single bid is processed. */
@@ -31,18 +32,6 @@ export interface InferenceSnapshot {
   readonly entry: AuctionEntry;
   readonly newConstraints: readonly FactConstraintIR[];
   readonly cumulativeBeliefs: Record<Seat, PublicBeliefs>;
-}
-
-/** Determines how a partnership's bids are interpreted. */
-export interface InferenceProvider {
-  readonly id: string;
-  readonly name: string;
-  /** Given a bid and auction state, what does it reveal? */
-  inferFromBid(
-    entry: AuctionEntry,
-    auctionBefore: Auction,
-    seat: Seat,
-  ): HandInference | null;
 }
 
 // ─── Public belief state types ──────────────────────────────

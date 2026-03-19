@@ -1,16 +1,11 @@
 // Practical scorer types — local to strategy/bidding/.
 // Only PracticalRecommendation crosses to contracts/.
 
-import type { ResolvedCandidateDTO } from "../../core/contracts";
+import type { ResolvedCandidateDTO, PracticalScoreBreakdown } from "../../core/contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 
-export interface PracticalScoreBreakdown {
-  readonly fitScore: number;
-  readonly hcpScore: number;
-  readonly conventionDistance: number;
-  readonly misunderstandingRisk: number;
-  readonly totalScore: number;
-}
+// Re-export from contracts so existing importers continue to work
+export type { PracticalScoreBreakdown } from "../../core/contracts";
 
 /** Discriminated union for scorer input — normative (from convention pipeline) or pragmatic (tactical). */
 export type ScorableCandidate =
