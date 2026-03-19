@@ -188,7 +188,7 @@
   <div class="area-center" data-testid="table-center">
     {#if showVulBadge}
       <span
-        class="inline-block text-[0.65rem] font-semibold bg-vulnerable/80 text-vulnerable-text ring-1 ring-vulnerable-ring/40 px-2 py-0.5 rounded-full mb-1"
+        class="inline-flex items-center gap-1 text-[0.7rem] font-semibold tracking-wide text-accent-danger bg-accent-danger/10 border border-accent-danger/20 px-2.5 py-0.5 rounded-[--radius-sm] mb-1"
         data-testid="vul-badge"
         aria-label={vulBadgeLabel()}
       >{vulBadgeLabel()}</span>

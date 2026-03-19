@@ -98,4 +98,15 @@
       </button>
     {/each}
   </div>
+
+  <div class="flex items-center justify-center gap-3 text-[--text-annotation] text-text-muted" aria-label="Bid availability legend">
+    <span class="flex items-center gap-1">
+      <span class="inline-block w-2 h-2 rounded-sm bg-bg-elevated" aria-hidden="true"></span>
+      Available
+    </span>
+    <span class="flex items-center gap-1">
+      <span class="inline-block w-2 h-2 rounded-sm bg-bg-elevated opacity-30" aria-hidden="true"></span>
+      Unavailable
+    </span>
+  </div>
 </div>
