@@ -22,6 +22,8 @@ import { partnerSeat, areSamePartnership } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
 import { createPlayStore } from "./play.svelte";
 import { createBiddingStore } from "./bidding.svelte";
+import { buildBiddingViewport, buildViewportFeedback } from "../core/viewport";
+import type { BiddingViewport, ViewportBidFeedback } from "../core/viewport";
 
 export interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
@@ -68,6 +70,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
   let contract = $state<Contract | null>(null);
   let effectiveUserSeat = $state<Seat | null>(null);
   let drillSession = $state<DrillSession | null>(null);
+  let conventionName = $state("");
 
   // Inference state — used during both bidding (processBid) and play (getInferences)
   let nsInferenceEngine = $state<InferenceEngine | null>(null);
@@ -253,6 +256,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     contract = null;
     effectiveUserSeat = null;
     drillSession = null;
+    conventionName = "";
     nsInferenceEngine = null;
     ewInferenceEngine = null;
     playInferences = null;
@@ -375,6 +379,37 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       return getFaceUpSeats();
     },
 
+    // ── Viewport getters ──────────────────────────────────────────
+
+    /** Player-safe viewport for the bidding phase. Null when deal or turn is unavailable. */
+    get biddingViewport(): BiddingViewport | null {
+      if (!deal || !bidding.currentTurn) return null;
+      const seat = userSeat ?? Seat.South;
+      return buildBiddingViewport({
+        deal,
+        userSeat: seat,
+        auction: bidding.auction,
+        bidHistory: bidding.bidHistory,
+        legalCalls: bidding.legalCalls,
+        faceUpSeats: getFaceUpSeats(),
+        conventionName,
+        isUserTurn: bidding.isUserTurn,
+        currentBidder: bidding.currentTurn,
+      });
+    },
+
+    /** Viewport-safe bid feedback. Null when no feedback is active. */
+    get viewportFeedback(): ViewportBidFeedback | null {
+      const fb = bidding.bidFeedback;
+      if (!fb) return null;
+      return buildViewportFeedback(fb);
+    },
+
+    /** Set the convention display name (called by UI layer with app store data). */
+    setConventionName(name: string) {
+      conventionName = name;
+    },
+
     // --- Namespaced sub-store accessors ---
     get bidding() {
       return {
@@ -464,6 +499,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     async startDrill(bundle: DrillBundle) {
       deal = bundle.deal;
       drillSession = bundle.session;
+      conventionName = bundle.session.config.conventionId;
       contract = null;
       phase = "BIDDING";
       effectiveUserSeat = null;

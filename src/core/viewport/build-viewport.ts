@@ -1,0 +1,293 @@
+// ── Viewport Builder ────────────────────────────────────────────────
+//
+// Constructs the player-safe viewport from engine state.
+// This is the SINGLE function that enforces the information boundary.
+// Both the Svelte UI and the CLI harness call this same function.
+
+import { type Seat, type Vulnerability, type Call, type Hand, type Deal, type Auction } from "../../engine/types";
+import { evaluateHand } from "../../engine/hand-evaluator";
+import { formatCall } from "../display/format";
+import { formatHandSummary } from "../display/hand-summary";
+import type { BidHistoryEntry, BidResult, BidAlert } from "../contracts/bidding";
+import type { MeaningSurface } from "../contracts/meaning";
+import type { TeachingProjection } from "../contracts/teaching-projection";
+import type { TeachingResolution, AcceptableBid } from "../../teaching/teaching-resolution";
+import { BidGrade, gradeBid } from "../../teaching/teaching-resolution";
+import type { StrategyEvaluation } from "../contracts/recommendation";
+
+// Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
+// Defined here to avoid importing the Svelte store in CLI context.
+interface BidFeedbackLike {
+  readonly grade: BidGrade;
+  readonly userCall: Call;
+  readonly expectedResult: BidResult | null;
+  readonly teachingResolution: TeachingResolution | null;
+  readonly practicalRecommendation?: { topCandidateBidName: string; topCandidateCall: Call; topScore: number; rationale: string };
+  readonly teachingProjection?: TeachingProjection;
+}
+
+import type {
+  BiddingViewport,
+  HandEvaluationView,
+  AuctionEntryView,
+  BiddingOptionView,
+  ViewportBidFeedback,
+  ViewportBidGrade,
+  ConditionView,
+  AlternativeView,
+  NearMissView,
+  ConventionView,
+} from "./player-viewport";
+
+import type {
+  EvaluationOracle,
+  OracleGradingResult,
+} from "./evaluation-oracle";
+
+// ── Build Bidding Viewport ──────────────────────────────────────────
+
+export interface BuildBiddingViewportInput {
+  readonly deal: Deal;
+  readonly userSeat: Seat;
+  readonly auction: Auction;
+  readonly bidHistory: readonly BidHistoryEntry[];
+  readonly legalCalls: readonly Call[];
+  readonly faceUpSeats: ReadonlySet<Seat>;
+  readonly conventionName: string;
+  readonly isUserTurn: boolean;
+  readonly currentBidder: Seat;
+  /** Active meaning surfaces at the current state (system-card knowledge). */
+  readonly activeSurfaces?: readonly MeaningSurface[];
+}
+
+/**
+ * Build a BiddingViewport from engine state.
+ *
+ * This is the information boundary.  The returned viewport contains
+ * ONLY what a player in `userSeat` can legitimately see.
+ */
+export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingViewport {
+  const {
+    deal, userSeat, auction, bidHistory, legalCalls,
+    faceUpSeats, conventionName, isUserTurn, currentBidder,
+    activeSurfaces,
+  } = input;
+
+  // Player's hand only
+  const hand = deal.hands[userSeat];
+  const eval_ = evaluateHand(hand);
+  const handEvaluation: HandEvaluationView = {
+    hcp: eval_.hcp,
+    shape: eval_.shape,
+    isBalanced: eval_.distribution.total === 0, // Shortness 0 = balanced heuristic
+    totalPoints: eval_.totalPoints,
+  };
+
+  // Visible hands — only face-up seats
+  const visibleHands: Partial<Record<Seat, Hand>> = {};
+  for (const seat of faceUpSeats) {
+    visibleHands[seat] = deal.hands[seat];
+  }
+
+  // Auction entries with alert annotations
+  const auctionEntries: AuctionEntryView[] = [];
+  for (let i = 0; i < auction.entries.length; i++) {
+    const entry = auction.entries[i]!;
+    const historyEntry = bidHistory[i];
+    auctionEntries.push({
+      seat: entry.seat,
+      call: entry.call,
+      callDisplay: formatCall(entry.call),
+      alertLabel: historyEntry?.alertLabel,
+      annotationType: historyEntry?.annotationType,
+    });
+  }
+
+  // Bidding options from active surfaces (system-card knowledge)
+  const biddingOptions: BiddingOptionView[] = [];
+  if (activeSurfaces) {
+    for (const surface of activeSurfaces) {
+      const call = surface.encoding.defaultCall;
+      biddingOptions.push({
+        call,
+        callDisplay: formatCall(call),
+        teachingLabel: surface.teachingLabel,
+        isAlertable: surface.priorityClass === "obligatory" ||
+          surface.priorityClass === "preferredConventional" ||
+          false,
+        recommendation: surface.ranking.recommendationBand as BiddingOptionView["recommendation"],
+      });
+    }
+  }
+
+  return {
+    seat: userSeat,
+    conventionName,
+    hand,
+    handEvaluation,
+    handSummary: formatHandSummary(eval_),
+    visibleHands,
+    auctionEntries,
+    dealer: deal.dealer,
+    vulnerability: deal.vulnerability,
+    legalCalls,
+    biddingOptions,
+    isUserTurn,
+    currentBidder,
+  };
+}
+
+// ── Build Evaluation Oracle ─────────────────────────────────────────
+
+export interface BuildOracleInput {
+  readonly deal: Deal;
+  readonly bidResult: BidResult;
+  readonly teachingResolution: TeachingResolution;
+  readonly strategyEvaluation?: StrategyEvaluation;
+  readonly targetSurfaceId?: string;
+}
+
+/**
+ * Build an EvaluationOracle (answer key) from engine evaluation output.
+ *
+ * This is NEVER exposed to the player or agent.  It's used only for
+ * grading and post-mortem diagnostics.
+ */
+export function buildEvaluationOracle(input: BuildOracleInput): EvaluationOracle {
+  const { deal, bidResult, teachingResolution, strategyEvaluation, targetSurfaceId } = input;
+
+  return {
+    allHands: deal.hands,
+    expectedCall: bidResult.call,
+    expectedSurfaceId: targetSurfaceId,
+    expectedAlert: bidResult.alert,
+    teachingResolution,
+    bidResult,
+    strategyEvaluation,
+    teachingProjection: strategyEvaluation?.teachingProjection ?? undefined,
+  };
+}
+
+// ── Grade a Bid Against the Oracle ──────────────────────────────────
+
+/**
+ * Grade a player's bid against the oracle using the teaching resolution.
+ *
+ * This is the same grading logic the UI uses, but decoupled from Svelte state.
+ */
+export function gradeAgainstOracle(
+  userCall: Call,
+  oracle: EvaluationOracle,
+): OracleGradingResult {
+  const { teachingResolution } = oracle;
+  const grade: BidGrade = gradeBid(userCall, teachingResolution);
+
+  const gradeMap: Record<BidGrade, ViewportBidGrade> = {
+    [BidGrade.Correct]: "correct",
+    [BidGrade.CorrectNotPreferred]: "correct-not-preferred",
+    [BidGrade.Acceptable]: "acceptable",
+    [BidGrade.NearMiss]: "near-miss",
+    [BidGrade.Incorrect]: "incorrect",
+  };
+
+  const requiresRetry = grade === BidGrade.NearMiss || grade === BidGrade.Incorrect;
+
+  return {
+    grade: gradeMap[grade],
+    userCall,
+    expectedCall: oracle.expectedCall,
+    requiresRetry,
+  };
+}
+
+// ── Build Viewport Feedback ─────────────────────────────────────────
+
+/**
+ * Convert engine BidFeedback into a viewport-safe ViewportBidFeedback.
+ *
+ * Strips internal evaluation data, keeping only what a human player
+ * would see in the feedback panel.
+ */
+export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFeedback {
+  const gradeMap: Record<string, ViewportBidGrade> = {
+    [BidGrade.Correct]: "correct",
+    [BidGrade.CorrectNotPreferred]: "correct-not-preferred",
+    [BidGrade.Acceptable]: "acceptable",
+    [BidGrade.NearMiss]: "near-miss",
+    [BidGrade.Incorrect]: "incorrect",
+  };
+
+  const grade = gradeMap[feedback.grade] ?? "incorrect";
+  const requiresRetry = grade === "near-miss" || grade === "incorrect";
+
+  // Correct answer (from expected result)
+  const correctCall = feedback.expectedResult?.call;
+  const correctCallDisplay = correctCall ? formatCall(correctCall) : undefined;
+  const correctBidLabel = feedback.expectedResult?.alert?.teachingLabel
+    ?? feedback.expectedResult?.meaning;
+  const correctBidExplanation = feedback.expectedResult?.explanation;
+
+  // Conditions from teaching projection
+  let conditions: ConditionView[] | undefined;
+  if (feedback.teachingProjection?.primaryExplanation) {
+    conditions = feedback.teachingProjection.primaryExplanation
+      .filter((n) => n.kind === "condition")
+      .map((n) => ({
+        description: n.content,
+        passed: n.passed ?? true,
+      }));
+  }
+
+  // Acceptable alternatives
+  let acceptableAlternatives: AlternativeView[] | undefined;
+  if (feedback.teachingResolution?.acceptableBids?.length) {
+    acceptableAlternatives = feedback.teachingResolution.acceptableBids.map((ab) => ({
+      call: ab.call,
+      callDisplay: formatCall(ab.call),
+      label: ab.meaning,
+      reason: ab.reason,
+      fullCredit: ab.fullCredit,
+    }));
+  }
+
+  // Near misses
+  let nearMisses: NearMissView[] | undefined;
+  if (feedback.teachingResolution?.nearMissCalls?.length) {
+    nearMisses = feedback.teachingResolution.nearMissCalls.map((nm) => ({
+      call: nm.call,
+      callDisplay: formatCall(nm.call),
+      reason: nm.reason,
+    }));
+  }
+
+  // Partner hand space
+  let partnerHandSpace: string | undefined;
+  if (feedback.teachingProjection?.handSpace?.partnerSummary) {
+    partnerHandSpace = feedback.teachingProjection.handSpace.partnerSummary;
+  }
+
+  // Convention contributions
+  let conventionsApplied: ConventionView[] | undefined;
+  if (feedback.teachingProjection?.conventionsApplied?.length) {
+    conventionsApplied = feedback.teachingProjection.conventionsApplied.map((c) => ({
+      moduleId: c.moduleId,
+      role: c.role,
+    }));
+  }
+
+  return {
+    grade,
+    userCall: feedback.userCall,
+    userCallDisplay: formatCall(feedback.userCall),
+    correctCall,
+    correctCallDisplay,
+    correctBidLabel,
+    correctBidExplanation,
+    conditions,
+    acceptableAlternatives,
+    nearMisses,
+    partnerHandSpace,
+    conventionsApplied,
+    requiresRetry,
+  };
+}

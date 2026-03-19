@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { Call, Deal, Seat } from "../../../engine/types";
+  import type { Call } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
   import type { BidHistoryEntry } from "../../../core/contracts";
+  import type { BiddingViewport } from "../../../core/viewport";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -9,8 +10,7 @@
   import type { LayoutProps } from "./layout-props";
 
   interface Props extends LayoutProps {
-    deal: Deal;
-    faceUpSeats: ReadonlySet<Seat>;
+    viewport: BiddingViewport;
     auction: Auction;
     bidHistory?: readonly BidHistoryEntry[];
     legalCalls: Call[];
@@ -28,8 +28,7 @@
     tableBaseH,
     phaseContainerClass,
     sidePanelClass,
-    deal,
-    faceUpSeats,
+    viewport,
     auction,
     bidHistory,
     legalCalls,
@@ -43,13 +42,13 @@
 
 <div class={phaseContainerClass}>
   <ScaledTableArea scale={tableScale} origin={tableOrigin} tableWidth={tableBaseW} tableHeight={tableBaseH}>
-    <BridgeTable hands={deal.hands} {faceUpSeats} vulnerability={deal.vulnerability} dealer={deal.dealer}>
+    <BridgeTable visibleHands={viewport.visibleHands} vulnerability={viewport.vulnerability} dealer={viewport.dealer}>
       <div
         class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
       >
         <AuctionTable
           entries={auction.entries}
-          dealer={deal.dealer}
+          dealer={viewport.dealer}
           {bidHistory}
           compact
         />

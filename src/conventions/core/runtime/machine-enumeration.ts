@@ -146,7 +146,7 @@ export function matchToCall(match: TransitionMatch): Call | null {
 }
 
 /** Infer the seat role a transition expects. */
-export function inferTransitionRole(
+function inferTransitionRole(
   transition: MachineTransition,
 ): "self" | "partner" | "opponent" {
   if (transition.allowedRoles && transition.allowedRoles.length > 0) {
@@ -165,7 +165,7 @@ export function inferTransitionRole(
 // ── Forward Edge Map ────────────────────────────────────────────────
 
 /** Build a forward edge map including inherited parent transitions. */
-export function buildForwardEdges(
+function buildForwardEdges(
   machine: ConversationMachine,
   reachable: ReadonlySet<string>,
 ): Map<string, Set<string>> {
@@ -197,7 +197,7 @@ export function buildForwardEdges(
  * to produce the most natural auction sequences.  When no own-transition
  * path exists, falls back to inherited transitions.
  */
-export function computeShortestPaths(
+function computeShortestPaths(
   machine: ConversationMachine,
   reachable: ReadonlySet<string>,
 ): Map<string, StatePath> {
