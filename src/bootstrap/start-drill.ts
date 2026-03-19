@@ -2,12 +2,14 @@ import type { EnginePort } from "../engine/port";
 import type { ConventionConfig } from "../conventions/core";
 import {
   Seat,
+  Vulnerability,
   type Auction,
   type Deal,
   type DealConstraints,
 } from "../engine/types";
 import type { DrillBundle } from "./types";
-import type { OpponentMode } from "./types";
+import type { OpponentMode, DrillTuning, VulnerabilityDistribution } from "./types";
+import { DEFAULT_DRILL_TUNING } from "./types";
 import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
 import { getConventionSpec } from "../conventions/spec-registry";
@@ -45,6 +47,30 @@ export function rotateAuction(auction: Auction): Auction {
   };
 }
 
+/** Pick a Vulnerability value from weighted distribution.
+ *  "ours"/"theirs" are resolved relative to the user's partnership. */
+export function pickVulnerability(
+  dist: VulnerabilityDistribution,
+  userSeat: Seat,
+  roll: number,
+): Vulnerability {
+  const total = dist.none + dist.ours + dist.theirs + dist.both;
+  if (total <= 0) return Vulnerability.None;
+  const target = roll * total;
+  const userIsNS = userSeat === Seat.North || userSeat === Seat.South;
+
+  let acc = dist.none;
+  if (target < acc) return Vulnerability.None;
+
+  acc += dist.ours;
+  if (target < acc) return userIsNS ? Vulnerability.NorthSouth : Vulnerability.EastWest;
+
+  acc += dist.theirs;
+  if (target < acc) return userIsNS ? Vulnerability.EastWest : Vulnerability.NorthSouth;
+
+  return Vulnerability.Both;
+}
+
 export async function startDrill(
   engine: EnginePort,
   convention: ConventionConfig,
@@ -53,6 +79,7 @@ export async function startDrill(
   seed?: number,
   options?: {
     opponentMode?: OpponentMode;
+    tuning?: DrillTuning;
   },
 ): Promise<DrillBundle> {
   const config = createProtocolDrillConfig(convention.id, userSeat, {
@@ -80,8 +107,16 @@ export async function startDrill(
     }
   }
 
+  // Resolve vulnerability from tuning distribution
+  const tuning = options?.tuning ?? DEFAULT_DRILL_TUNING;
+  const vulRoll = rng ? rng() : Math.random();
+  const vulnerability = pickVulnerability(
+    tuning.vulnerabilityDistribution, userSeat, vulRoll,
+  );
+
   const constraints: DealConstraints = {
     ...resolvedConstraints,
+    vulnerability,
     ...(rng ? { rng } : {}),
     ...(seed !== undefined ? { seed } : {}),
   };

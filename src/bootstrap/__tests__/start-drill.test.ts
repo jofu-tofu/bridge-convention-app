@@ -4,12 +4,13 @@ import {
   rotateSeat180,
   rotateDealConstraints,
   rotateAuction,
+  pickVulnerability,
 } from "../start-drill";
 import {
   createStubEngine,
   makeDeal,
 } from "../../test-support/engine-stub";
-import { Seat } from "../../engine/types";
+import { Seat, Vulnerability } from "../../engine/types";
 import type { DealConstraints, SeatConstraint } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
 import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
@@ -270,5 +271,96 @@ describe("rotateAuction", () => {
     const result = rotateAuction(auction);
     expect(result.entries[0]!.seat).toBe(Seat.West);
     expect(result.entries[1]!.seat).toBe(Seat.North);
+  });
+});
+
+describe("pickVulnerability", () => {
+  const equal = { none: 1, ours: 1, theirs: 1, both: 1 };
+
+  it("returns None for roll in first quarter", () => {
+    expect(pickVulnerability(equal, Seat.South, 0.0)).toBe(Vulnerability.None);
+    expect(pickVulnerability(equal, Seat.South, 0.24)).toBe(Vulnerability.None);
+  });
+
+  it("returns ours (NorthSouth for South user) for roll in second quarter", () => {
+    expect(pickVulnerability(equal, Seat.South, 0.26)).toBe(Vulnerability.NorthSouth);
+    expect(pickVulnerability(equal, Seat.North, 0.26)).toBe(Vulnerability.NorthSouth);
+  });
+
+  it("returns theirs (EastWest for South user) for roll in third quarter", () => {
+    expect(pickVulnerability(equal, Seat.South, 0.51)).toBe(Vulnerability.EastWest);
+    expect(pickVulnerability(equal, Seat.North, 0.51)).toBe(Vulnerability.EastWest);
+  });
+
+  it("returns Both for roll in last quarter", () => {
+    expect(pickVulnerability(equal, Seat.South, 0.76)).toBe(Vulnerability.Both);
+    expect(pickVulnerability(equal, Seat.South, 0.99)).toBe(Vulnerability.Both);
+  });
+
+  it("flips ours/theirs for East user seat", () => {
+    // For East user, "ours" = EastWest, "theirs" = NorthSouth
+    expect(pickVulnerability(equal, Seat.East, 0.26)).toBe(Vulnerability.EastWest);
+    expect(pickVulnerability(equal, Seat.East, 0.51)).toBe(Vulnerability.NorthSouth);
+  });
+
+  it("respects unequal weights", () => {
+    // Only "both" has weight → always Both
+    const allBoth = { none: 0, ours: 0, theirs: 0, both: 1 };
+    expect(pickVulnerability(allBoth, Seat.South, 0.0)).toBe(Vulnerability.Both);
+    expect(pickVulnerability(allBoth, Seat.South, 0.99)).toBe(Vulnerability.Both);
+  });
+
+  it("returns None for zero-weight distribution", () => {
+    const empty = { none: 0, ours: 0, theirs: 0, both: 0 };
+    expect(pickVulnerability(empty, Seat.South, 0.5)).toBe(Vulnerability.None);
+  });
+});
+
+describe("startDrill vulnerability", () => {
+  beforeEach(() => {
+    clearRegistry();
+    registerConvention(ntBundleConventionConfig);
+  });
+
+  it("assigns vulnerability from tuning distribution to generated deal", async () => {
+    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
+    const engine = createStubEngine({ generateDeal });
+
+    // RNG: first call for dealer (not used — no allowedDealers), second for vulnerability
+    let callCount = 0;
+    const rng = () => {
+      callCount++;
+      return 0.76; // → Both in equal distribution
+    };
+
+    await startDrill(engine, ntBundleConventionConfig, Seat.South, rng);
+
+    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
+    expect(constraints.vulnerability).toBe(Vulnerability.Both);
+  });
+
+  it("uses default equal distribution when no tuning provided", async () => {
+    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
+    const engine = createStubEngine({ generateDeal });
+
+    // RNG returns 0.1 → first quarter → None
+    await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.1);
+
+    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
+    expect(constraints.vulnerability).toBe(Vulnerability.None);
+  });
+
+  it("respects custom tuning override", async () => {
+    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
+    const engine = createStubEngine({ generateDeal });
+
+    await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.5, undefined, {
+      tuning: {
+        vulnerabilityDistribution: { none: 0, ours: 0, theirs: 0, both: 1 },
+      },
+    });
+
+    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
+    expect(constraints.vulnerability).toBe(Vulnerability.Both);
   });
 });

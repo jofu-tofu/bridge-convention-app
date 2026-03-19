@@ -119,6 +119,20 @@
     }
     return `${base} ${vul ? "text-vulnerable-text" : "text-text-secondary"}`;
   }
+
+  function vulBadgeLabel(): string {
+    switch (vulnerability) {
+      case Vulnerability.None: return "None Vul";
+      case Vulnerability.NorthSouth: return "N-S Vul";
+      case Vulnerability.EastWest: return "E-W Vul";
+      case Vulnerability.Both: return "Both Vul";
+      default: return "";
+    }
+  }
+
+  const showVulBadge = $derived(
+    vulnerability !== undefined && vulnerability !== Vulnerability.None,
+  );
 </script>
 
 <div
@@ -166,6 +180,13 @@
 
   <!-- Center area (auction or tricks) — dedicated grid cell, cannot overlap hands -->
   <div class="area-center" data-testid="table-center">
+    {#if showVulBadge}
+      <span
+        class="inline-block text-[0.65rem] font-semibold bg-vulnerable/80 text-vulnerable-text ring-1 ring-vulnerable-ring/40 px-2 py-0.5 rounded-full mb-1"
+        data-testid="vul-badge"
+        aria-label={vulBadgeLabel()}
+      >{vulBadgeLabel()}</span>
+    {/if}
     {#if children}
       {@render children()}
     {/if}
