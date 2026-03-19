@@ -47,6 +47,13 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     store.setTargetState(targetStateParam);
   }
 
+  // Target surface: exercise a specific meaning surface at the target state
+  // Requires ?targetState= to also be set
+  const targetSurfaceParam = params.get("targetSurface");
+  if (targetSurfaceParam) {
+    store.setTargetSurface(targetSurfaceParam);
+  }
+
   // Debug-only params (debug panel, autoplay) stay DEV-only
   if (!import.meta.env.DEV) return;
 

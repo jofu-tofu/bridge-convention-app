@@ -16,3 +16,7 @@ export { assembleMachine } from "./machine-assembler";
 export type { AssembleMachineOptions, AssembleMachineResult } from "./machine-assembler";
 export { compileProfileFromPackages } from "./compile-from-packages";
 export type { CompileFromPackagesOptions } from "./compile-from-packages";
+
+// ── Interference detection ──────────────────────────────────────────
+export { detectModuleInterference } from "./interference-detector";
+export type { ModuleInterference, InterferenceReport } from "./interference-detector";

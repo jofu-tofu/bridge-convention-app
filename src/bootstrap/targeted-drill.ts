@@ -17,6 +17,7 @@ import type { DrillBundle, OpponentMode } from "./types";
 import { createDrillConfig, buildBundleStrategy } from "./config-factory";
 import { createDrillSession } from "./session";
 import { getBundle, computeTopology, compilePathToTarget, buildSurfaceMap } from "../conventions/core";
+import { injectSurfaceConstraints } from "../conventions/core/runtime/coverage-spec-compiler";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
 import { buildAuction } from "../engine/auction-helpers";
@@ -26,6 +27,10 @@ import { buildAuction } from "../engine/auction-helpers";
  *
  * Returns null if the state can't be targeted (not found, no path, etc.).
  * The caller should fall back to a normal drill in that case.
+ *
+ * When `targetSurfaceId` is provided, the deal generator is constrained to
+ * produce a hand that exercises that specific meaning surface at the target
+ * state — enabling controlled (state, surface) pair coverage.
  */
 export function startTargetedDrill(
   _engine: EnginePort,
@@ -35,6 +40,7 @@ export function startTargetedDrill(
   options?: {
     lookupConvention?: ConventionLookup;
     opponentMode?: OpponentMode;
+    targetSurfaceId?: string;
   },
 ): DrillBundle | null {
   const bundle = getBundle(convention.id);
@@ -53,10 +59,15 @@ export function startTargetedDrill(
   // Compile the path into a coverage target
   const target = compilePathToTarget(path, machine, bundle, surfaceMap);
 
+  // When a specific surface is requested, tighten deal constraints to exercise it
+  const dealConstraints = options?.targetSurfaceId
+    ? injectSurfaceConstraints(target.dealConstraints, target.activeSurfaces, options.targetSurfaceId, Seat.South)
+    : target.dealConstraints;
+
   // Generate a deal satisfying the compiled constraints
   let deal;
   try {
-    const result = tsGenerateDeal(target.dealConstraints);
+    const result = tsGenerateDeal(dealConstraints);
     deal = result.deal;
   } catch {
     // Constraints too tight — fall back
@@ -64,7 +75,7 @@ export function startTargetedDrill(
   }
 
   // Build the prefilled auction from the path
-  const dealer = target.dealConstraints.dealer ?? Seat.North;
+  const dealer = dealConstraints.dealer ?? Seat.North;
   let initialAuction: Auction | undefined;
   if (target.auctionPrefix.length > 0) {
     initialAuction = buildAuction(dealer, [...target.auctionPrefix]);

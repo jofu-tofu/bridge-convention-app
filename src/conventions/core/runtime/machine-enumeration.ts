@@ -326,3 +326,194 @@ export function pathToAuctionPrefix(path: StatePath): string[] {
   }
   return bids;
 }
+
+// ── Tree LP (Minimal Leaf Multiplicities) ───────────────────────────
+//
+// Solves the covering LP on the BFS path tree to compute the minimum
+// number of test sessions needed for complete (state, surface) coverage.
+//
+// The LP:
+//   Minimize  Σ_{l ∈ leaves} t(l)
+//   s.t.  ∀s ∈ V: Σ_{l ∈ leaves(subtree(s))} t(l) ≥ surfaceCount(s)
+//         t(l) ≥ 0, integer
+//
+// Because the constraints are laminar (nested subtrees), the LP
+// relaxation has zero integrality gap and can be solved in O(|V|) time
+// via a single bottom-up pass.
+
+/** Result of the tree LP computation. */
+export interface TreeLPResult {
+  /** Total minimum test sessions needed. */
+  readonly totalSessions: number;
+  /** Multiplicity per leaf: how many sessions target each leaf. */
+  readonly leafMultiplicities: ReadonlyMap<string, number>;
+  /** States where surface count exceeds natural subtree traffic (cost drivers). */
+  readonly bottleneckStates: readonly {
+    readonly stateId: string;
+    readonly surfaceCount: number;
+    readonly subtreeTraffic: number;
+    readonly deficit: number;
+  }[];
+}
+
+/**
+ * Build a parent→children map from the BFS path tree.
+ *
+ * In the BFS path tree, the parent of state S is the second-to-last
+ * state in its BFS path (path.stateIds[path.stateIds.length - 2]).
+ */
+export function buildPathTreeChildren(
+  paths: ReadonlyMap<string, StatePath>,
+): Map<string, string[]> {
+  const children = new Map<string, string[]>();
+  for (const [stateId, path] of paths) {
+    if (path.stateIds.length < 2) continue; // root has no parent
+    const parentId = path.stateIds[path.stateIds.length - 2]!;
+    let siblings = children.get(parentId);
+    if (!siblings) {
+      siblings = [];
+      children.set(parentId, siblings);
+    }
+    siblings.push(stateId);
+  }
+  return children;
+}
+
+/**
+ * Compute the set of path-tree leaves for each state's subtree.
+ *
+ * A path-tree leaf is a state with no children in the BFS path tree
+ * (typically terminal states, but also unreachable-from-here states).
+ */
+function computeSubtreeLeaves(
+  root: string,
+  children: ReadonlyMap<string, readonly string[]>,
+): Map<string, Set<string>> {
+  const subtreeLeaves = new Map<string, Set<string>>();
+
+  function dfs(nodeId: string): Set<string> {
+    const kids = children.get(nodeId);
+    if (!kids || kids.length === 0) {
+      // Leaf node
+      const leafSet = new Set([nodeId]);
+      subtreeLeaves.set(nodeId, leafSet);
+      return leafSet;
+    }
+    const combined = new Set<string>();
+    for (const child of kids) {
+      for (const leaf of dfs(child)) {
+        combined.add(leaf);
+      }
+    }
+    subtreeLeaves.set(nodeId, combined);
+    return combined;
+  }
+
+  dfs(root);
+  return subtreeLeaves;
+}
+
+/**
+ * Compute the provably minimal number of test sessions needed to cover
+ * all (state, surface) pairs via the tree LP.
+ *
+ * @param topology - The FSM topology (from computeTopology)
+ * @param surfaceCounts - Map of stateId → number of meaning surfaces at that state.
+ *                        States not in the map are treated as having 0 surfaces.
+ * @returns TreeLPResult with leaf multiplicities and bottleneck analysis
+ */
+export function computeMinimalLeafMultiplicities(
+  topology: MachineTopology,
+  surfaceCounts: ReadonlyMap<string, number>,
+): TreeLPResult {
+  const { paths } = topology;
+  const root = [...paths.entries()].find(
+    ([, p]) => p.stateIds.length === 1,
+  )?.[0];
+  if (!root) {
+    return { totalSessions: 0, leafMultiplicities: new Map(), bottleneckStates: [] };
+  }
+
+  const children = buildPathTreeChildren(paths);
+  const subtreeLeafSets = computeSubtreeLeaves(root, children);
+
+  // Identify path-tree leaves (states with no children in the BFS tree)
+  const pathTreeLeaves = new Set<string>();
+  for (const stateId of topology.reachableStates) {
+    if (!children.has(stateId) || children.get(stateId)!.length === 0) {
+      pathTreeLeaves.add(stateId);
+    }
+  }
+
+  // Initialize leaf multiplicities: t(l) = surfaceCount(l) or 0
+  const leafMult = new Map<string, number>();
+  for (const leafId of pathTreeLeaves) {
+    leafMult.set(leafId, surfaceCounts.get(leafId) ?? 0);
+  }
+
+  // Bottom-up pass: post-order traversal via DFS
+  const bottleneckStates: {
+    stateId: string;
+    surfaceCount: number;
+    subtreeTraffic: number;
+    deficit: number;
+  }[] = [];
+
+  function postOrder(nodeId: string): void {
+    const kids = children.get(nodeId);
+    if (kids) {
+      for (const child of kids) {
+        postOrder(child);
+      }
+    }
+
+    // Compute current subtree traffic
+    const leaves = subtreeLeafSets.get(nodeId);
+    if (!leaves || leaves.size === 0) return;
+
+    let traffic = 0;
+    for (const leafId of leaves) {
+      traffic += leafMult.get(leafId) ?? 0;
+    }
+
+    const needed = surfaceCounts.get(nodeId) ?? 0;
+    if (traffic < needed) {
+      const deficit = needed - traffic;
+      bottleneckStates.push({
+        stateId: nodeId,
+        surfaceCount: needed,
+        subtreeTraffic: traffic,
+        deficit,
+      });
+
+      // Distribute deficit to a leaf in the subtree
+      // Pick the leaf with the smallest current multiplicity for balance
+      let minLeaf: string | null = null;
+      let minMult = Infinity;
+      for (const leafId of leaves) {
+        const m = leafMult.get(leafId) ?? 0;
+        if (m < minMult) {
+          minMult = m;
+          minLeaf = leafId;
+        }
+      }
+      if (minLeaf) {
+        leafMult.set(minLeaf, (leafMult.get(minLeaf) ?? 0) + deficit);
+      }
+    }
+  }
+
+  postOrder(root);
+
+  // Compute total sessions
+  let totalSessions = 0;
+  for (const [, mult] of leafMult) {
+    totalSessions += mult;
+  }
+
+  return {
+    totalSessions,
+    leafMultiplicities: leafMult,
+    bottleneckStates,
+  };
+}

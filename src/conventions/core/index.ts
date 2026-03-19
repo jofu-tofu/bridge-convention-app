@@ -71,9 +71,28 @@ export { buildConversationMachine } from "./runtime/machine-types";
 
 // ── Coverage (FSM-driven deal targeting) ─────────────────────────────
 export { computeTopology } from "./runtime/machine-enumeration";
-export type { MachineTopology, StatePath, PathTransition } from "./runtime/machine-enumeration";
-export { compilePathToTarget, generateCoverageManifest, buildSurfaceMap } from "./runtime/coverage-spec-compiler";
-export type { CoverageTarget, CoverageManifest } from "./runtime/coverage-spec-compiler";
+export type { MachineTopology, StatePath, PathTransition, TreeLPResult } from "./runtime/machine-enumeration";
+export { buildPathTreeChildren, computeMinimalLeafMultiplicities } from "./runtime/machine-enumeration";
+export {
+  compilePathToTarget,
+  generateCoverageManifest,
+  buildSurfaceMap,
+  generateOptimizedManifest,
+  enumerateCoverageUniverse,
+  injectSurfaceConstraints,
+  computePathCoveredPairs,
+  checkTargetFeasibility,
+  computeCoverageHash,
+  classifyBidAgainstSurfaces,
+} from "./runtime/coverage-spec-compiler";
+export type {
+  CoverageTarget,
+  CoverageManifest,
+  SurfaceCoveragePair,
+  SurfaceCoverageTarget,
+  OptimizedCoverageManifest,
+  BidClassification,
+} from "./runtime/coverage-spec-compiler";
 
 // ── Composition (bottom-up module assembly) ──────────────────────────────
 export type { ConventionModule, BundleSkeleton, ComposedBundle } from "./composition";

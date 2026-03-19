@@ -14,6 +14,7 @@ export function createAppStore() {
   let learningConvention = $state<ConventionConfig | null>(null);
   let autoplay = $state(false);
   let targetState = $state<string | null>(null);
+  let targetSurface = $state<string | null>(null);
 
   // Opponent strategy preference — persisted to localStorage
   const OPPONENT_MODE_KEY = "bridge-app:opponent-mode";
@@ -129,6 +130,14 @@ export function createAppStore() {
 
     setTargetState(state: string | null) {
       targetState = state;
+    },
+
+    get targetSurface() {
+      return targetSurface;
+    },
+
+    setTargetSurface(surface: string | null) {
+      targetSurface = surface;
     },
   };
 }
