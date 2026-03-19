@@ -3,7 +3,7 @@
   import type { Hand, Card as CardType } from "../../engine/types";
   import { Seat, Vulnerability } from "../../engine/types";
   import { viewSeat } from "../../core/display/seat-mapping";
-  import { calculateHcp } from "../../engine/hand-evaluator";
+  import { calculateHcp, getSuitLength, calculateDistributionPoints } from "../../engine/hand-evaluator";
   import { isVulnerable } from "../../engine/scoring";
   import HandFan from "./HandFan.svelte";
 
@@ -59,6 +59,12 @@
       return southHand ? calculateHcp(southHand) : 0;
     }
     return calculateHcp(hands![Seat.South]);
+  });
+
+  const southDistPoints = $derived.by(() => {
+    const hand = useViewport ? visibleHands![Seat.South] : hands?.[Seat.South];
+    if (!hand) return 0;
+    return calculateDistributionPoints(getSuitLength(hand)).total;
   });
 
   // Map physical screen positions to logical seats
@@ -194,8 +200,8 @@
       <span
         class="text-[--text-label] text-text-secondary bg-bg-elevated/60 px-1.5 py-0.5 rounded-full"
         data-testid="south-hcp"
-        aria-label="{southHcp} high card points"
-        >{southHcp} HCP</span
+        aria-label="{southHcp} high card points{southDistPoints > 0 ? ` plus ${southDistPoints} distribution` : ''}"
+        >{southHcp} HCP{#if southDistPoints > 0}<span class="text-text-secondary/60"> + {southDistPoints} dist</span>{/if}</span
       >
     </div>
     <HandFan

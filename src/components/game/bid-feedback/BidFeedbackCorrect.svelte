@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import { formatCall } from "../../../core/display/format";
+  import { formatAmbiguity } from "./BidFeedbackPanel";
 
   interface Props {
     feedback: ViewportBidFeedback;
@@ -10,6 +11,10 @@
   }
 
   let { feedback, teaching, practicalRec, showPracticalNote }: Props = $props();
+
+  const ambiguityNote = $derived(
+    teaching?.ambiguityScore != null ? formatAmbiguity(teaching.ambiguityScore) : null, // eslint-disable-line eqeqeq -- intentional nullish check
+  );
 </script>
 
 <!-- Correct bid — green flash -->
@@ -25,6 +30,9 @@
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1" data-testid="not-preferred-note">
       Though <span class="font-mono font-semibold">{formatCall(teaching.primaryBid)}</span> is preferred
     </p>
+  {/if}
+  {#if ambiguityNote}
+    <p class="text-fb-correct-dim/50 text-[--text-annotation] mt-1 italic">{ambiguityNote}</p>
   {/if}
   {#if showPracticalNote && practicalRec}
     <p class="text-fb-near-miss-text/70 text-[--text-label] mt-2 italic" data-testid="practical-note">
