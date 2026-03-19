@@ -1,7 +1,7 @@
 <!-- Full-lifecycle debug drawer — comprehensive decision model inspector.
      Surfaces all internal pipeline state: facts, machine, arbitration, provenance,
      teaching, posterior, and beliefs. Uses persistent debug log so data survives
-     between turns. See also: DebugPanel.svelte (inline correct bid hint).
+     between turns.
 
      Layout: At-a-glance summary (always visible) + 3 collapsible groups:
        1. Context (deal info, hands)

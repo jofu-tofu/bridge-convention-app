@@ -3,8 +3,6 @@
   import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import BidPanel from "../../game/BidPanel.svelte";
   import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
-  import DebugPanel from "../../game/DebugPanel.svelte";
-
   interface Props {
     legalCalls: Call[];
     onBid: (call: Call) => void;
@@ -26,8 +24,6 @@
     viewportFeedback,
     teachingDetail,
   }: Props = $props();
-
-  const DEV = import.meta.env.DEV;
 
   const hasFeedback = $derived(viewportFeedback !== null);
 </script>
@@ -55,9 +51,4 @@
       />
     {/if}
   </div>
-  {#if DEV}
-    <div class="mt-3" class:hidden={hasFeedback}>
-      <DebugPanel />
-    </div>
-  {/if}
 </div>

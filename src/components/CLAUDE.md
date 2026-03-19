@@ -64,7 +64,6 @@ components/
     DecisionTree.svelte              Interactive expand/collapse tree with depth modes (compact/study/learn) for progressive teaching disclosure
     DeclarerPrompt.svelte            Declarer/defender choice buttons (used by DeclarerPromptPhase)
     DebugDrawer.svelte               Full-lifecycle debug overlay (dev only) — groups sections into Context / Decision Pipeline / Feedback & History
-    DebugPanel.svelte                Bidding-phase suggested bid display in BiddingSidePanel
     debug/
       DebugSection.svelte            Reusable collapsible section with count badges, inline preview, nested support
       DebugAtAGlance.svelte          Always-visible summary card (state, expected bid, grade, pipeline stats)
