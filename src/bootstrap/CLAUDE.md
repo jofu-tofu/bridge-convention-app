@@ -28,6 +28,8 @@ bootstrap/
 6. Creates inference engines from config's inference configs
 7. Returns `DrillBundle` — caller wires it to the game store
 
+**Options:** `startDrill` accepts an options object including `targetSurfaceId` for surface-level targeting (used by `?targetSurface=Z` URL param and CLI coverage runner to exercise a specific meaning surface at the target auction state).
+
 **DrillBundle:** `{ deal, session, initialAuction?, strategy?, nsInferenceEngine, ewInferenceEngine }`. Decouples bootstrap from store — bootstrap assembles dependencies, store applies them.
 
 **Rotation utilities** (`start-drill.ts`): `rotateSeat180(seat)` swaps N↔S, E↔W. `rotateDealConstraints(base, newDealer)` rotates all seat constraints. `rotateAuction(auction)` rotates all auction entry seats.
@@ -45,4 +47,4 @@ bootstrap/
 
 **Staleness anchor:** This file assumes `types.ts` exists. If it doesn't, this file is stale.
 
-<!-- context-layer: generated=2026-03-07 | version=1 | tree-sig=dirs:2,files:5,exts:ts:4,md:1 -->
+<!-- context-layer: generated=2026-03-07 | last-audited=2026-03-18 | version=2 | tree-sig=dirs:2,files:5,exts:ts:4,md:1 -->

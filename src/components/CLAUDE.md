@@ -32,6 +32,7 @@ components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
     LearningScreen.svelte            Learning screen with sidebar, decision tree with layered depth modes (compact/study/learn), convention teaching header
+    CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
       BiddingPhase.svelte            Bidding phase template (pure — data via props)
@@ -72,7 +73,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (browse convention rules with layered depth: compact/study/learn)
+**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (browse convention rules with layered depth: compact/study/learn) | ConventionSelectScreen → CoverageScreen (bundle picker → target drill-down)
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
@@ -84,6 +85,7 @@ components/
 - **Autoplay effect:** GameScreen has a DEV-only `$effect` for `?autoplay=true` that uses `requestAnimationFrame` to defer actions per frame (not `tick()` which causes infinite microtask loops, not `setTimeout` which is a real timer).
 - **Store methods:** `userBid`, `userPlayCard`, `retryBid`, `skipToReview` return `void` (safe for onclick). Only `startDrill` and `getLegalPlaysForSeat` return Promises.
 - GameScreen routes phases to extracted pure components (BiddingPhase, DeclarerPromptPhase, PlayingPhase, ExplanationPhase). GameScreen owns the legal-plays `$effect`.
+- BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. See `src/core/viewport/CLAUDE.md`.
 - BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/core/display/seat-mapping.ts`, not CSS rotation.
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.
 - User seat hardcoded to `Seat.South` — future: configurable.
@@ -110,4 +112,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `App.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-25 | version=9 | dir-commits-at-audit=19 | tree-sig=dirs:9,files:47,exts:svelte:31,ts:15,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-18 | version=10 | dir-commits-at-audit=19 | tree-sig=dirs:9,files:48,exts:svelte:32,ts:15,md:1 -->

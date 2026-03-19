@@ -14,7 +14,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| `app.svelte.ts`      | `createAppStore()` — screen navigation (`select`/`game`/`learning`), selected convention, `learningConvention` state, dev seed state, autoplay flag |
+| `app.svelte.ts`      | `createAppStore()` — screen navigation (`select`/`game`/`learning`/`coverage`), selected convention, `learningConvention` state, `coverageBundle` state, dev seed state, autoplay flag |
 | `game.svelte.ts`     | `createGameStore(engine)` — coordinator/facade, phase machine, drill lifecycle, delegates to sub-stores |
 | `bidding.svelte.ts`  | Bidding sub-store — auction state, bid history, feedback, AI bid loop, convention strategy          |
 | `play.svelte.ts`     | Play sub-store — trick state, AI play loop, score calculation, legal plays                         |
@@ -25,6 +25,8 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 **Key state:** `effectiveUserSeat` — defaults to South, set to North on declarer swap. Reset by `startDrill()`. `isProcessing` + `playAborted` flags guard AI play loop races.
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
+
+**Viewport getters:** `gameStore.biddingViewport` — `$derived` `BiddingViewport` computed from current state (see `src/core/viewport/`). `gameStore.viewportFeedback` — `$derived` `ViewportBidFeedback` computed after grading. Both enforce the player information boundary: components consume these instead of raw deal/engine state.
 
 **Exported types:** `BidFeedback` (with `grade: BidGrade`, `teachingResolution: TeachingResolution | null`, `practicalRecommendation?: PracticalRecommendation` sourced from `ConventionBiddingStrategy.getLastEvaluation().practicalRecommendation`, `teachingProjection?: TeachingProjection` sourced from `ConventionBiddingStrategy.getLastEvaluation().teachingProjection`, not from `BidResult`, `encodingTrace?: EncodingTrace`). `resolveTeachingAnswer()` is called with `intentFamilies` from `conventionStrategy.getLastEvaluation()?.intentFamilies`, `BidGrade`, `TeachingResolution` (re-exported from `teaching/teaching-resolution`), `BidHistoryEntry` (re-exported from `contracts/`, now includes `teachingProjection?: TeachingProjection` for review phase), `GamePhase`, `PlayLogEntry`, `seatController()`.
 
@@ -80,4 +82,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-02-25 | version=9 | dir-commits-at-audit=13 | tree-sig=dirs:2,files:19,exts:ts:18,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-18 | version=10 | dir-commits-at-audit=13 | tree-sig=dirs:2,files:19,exts:ts:18,md:1 -->

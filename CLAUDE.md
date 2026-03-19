@@ -31,6 +31,9 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **URL routing:** `?convention=nt-bundle` jumps to game screen with that convention (IDs: `nt-bundle`, `nt-stayman`, `nt-transfers`, `bergen-bundle`). `?learn=nt-bundle` jumps to learning screen.
 - **Deterministic seed:** `?seed=42` seeds the PRNG for reproducible deals. Seed advances per deal (42, 43, 44...). Reload resets.
 - **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=nt-bundle&autoplay=true`
+- **Target surface:** `?targetSurface=Z` exercises a specific meaning surface at target state
+- **Coverage screen:** `?coverage=true&convention=X` opens coverage screen for a specific bundle
+- **CLI coverage:** `npx tsx src/cli/coverage-runner.ts --bundle=nt-bundle` runs headless coverage tests
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
 
 ## Code Hygiene
@@ -50,6 +53,8 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **No `const enum`** — breaks Vite/isolatedModules; use regular `enum`
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
+- **PlayerViewport boundary.** Bidding phase never accesses raw `Deal`. Everything the player sees flows through `BiddingViewport` (`src/core/viewport/`). `EvaluationOracle` is the answer key — only grading code touches it.
+- **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
 ## Design Philosophy
 
@@ -66,6 +71,7 @@ src/
   core/            Shared infrastructure
     contracts/       Cross-boundary DTOs and strategy interfaces (bidding, meaning, facts, provenance, posterior)
     display/         UI display utilities (format, hand-summary, tokens, sort-cards, seat-mapping, hcp)
+    viewport/        Player information boundary (BiddingViewport, EvaluationOracle)
     util/            Zero-dep pure utilities (delay, seeded-rng)
   conventions/     Convention system
     core/            Registry, context factory, bundle registry, meaning pipeline (pipeline/), runtime (runtime/) — public API via index.ts barrel
@@ -76,6 +82,7 @@ src/
     bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
   bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
+  cli/             Headless coverage test runner
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
   components/      Svelte UI components
@@ -100,11 +107,13 @@ tests/
 | Contracts | `src/core/contracts/index.ts` | Cross-boundary DTOs and strategy interfaces |
 | Display | `src/core/display/format.ts` | UI display utilities |
 | Util | `src/core/util/delay.ts` | Zero-dep pure utilities |
+| Viewport | `src/core/viewport/player-viewport.ts` | Player information boundary (BiddingViewport, EvaluationOracle) |
 | Conventions | `src/conventions/core/index.ts` | Convention system (core/ + definitions/) |
 | Teaching | `src/teaching/teaching-resolution.ts` | Teaching resolution and projection |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline) |
 | Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
+| CLI | `src/cli/coverage-runner.ts` | Headless coverage test runner |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
 | Components | — | Svelte UI (screens/game/shared) |
@@ -266,6 +275,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/engine/CLAUDE.md` — engine purity, module graph, key patterns
 - `src/core/CLAUDE.md` — shared infrastructure overview (contracts, display, util)
 - `src/core/contracts/CLAUDE.md` — cross-boundary contract inventory and dependency rules
+- `src/core/viewport/CLAUDE.md` — player information boundary (BiddingViewport, EvaluationOracle)
 - `src/conventions/CLAUDE.md` — registry pattern, convention bundles
 - `src/conventions/core/CLAUDE.md` — runtime, pipeline, bundle systems
 - `src/conventions/definitions/CLAUDE.md` — convention bundle authoring guide
@@ -273,6 +283,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port, migration status
 - `src/strategy/CLAUDE.md` — meaning-strategy pattern, play heuristics
 - `src/bootstrap/CLAUDE.md` — DrillConfig, DrillSession, DrillBundle, drill lifecycle
+- `src/cli/CLAUDE.md` — headless coverage test runner
 - `src/core/display/CLAUDE.md` — display utility inventory, dependency rules
 - `src/teaching/CLAUDE.md` — convention evaluation for teaching
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
@@ -308,4 +319,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-15 | version=15 | dir-commits-at-audit=62 | tree-sig=dirs:18,files:150+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-18 | version=16 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->
