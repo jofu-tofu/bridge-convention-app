@@ -17,6 +17,10 @@
     return appStore.drillTuning.vulnerabilityDistribution[key] > 0;
   }
 
+  // Track last non-zero weight per key so toggling off→on restores it
+  // (future-proofs for sliders that set weights like 3, 0.5, etc.)
+  const lastNonZero: Record<string, number> = {};
+
   function toggleVuln(key: typeof VULN_KEYS[number]) {
     const current = appStore.drillTuning.vulnerabilityDistribution;
     const enabled = current[key] > 0;
@@ -24,10 +28,11 @@
     if (enabled) {
       const othersEnabled = VULN_KEYS.some((k) => k !== key && current[k] > 0);
       if (!othersEnabled) return;
+      lastNonZero[key] = current[key];
     }
     const updated: VulnerabilityDistribution = {
       ...current,
-      [key]: enabled ? 0 : 1,
+      [key]: enabled ? 0 : (lastNonZero[key] ?? 1),
     };
     appStore.setVulnerabilityDistribution(updated);
   }
@@ -38,18 +43,28 @@
     );
   }
 
+  function vulnPercent(weight: number, total: number): number {
+    return total > 0 ? Math.round((weight / total) * 100) : 0;
+  }
+
   const vulnSummary = $derived.by(() => {
     const dist = appStore.drillTuning.vulnerabilityDistribution;
     const active = VULN_KEYS.filter((k) => dist[k] > 0);
-    if (active.length === 4) return "Equal distribution across all four states.";
+    const total = VULN_KEYS.reduce((sum, k) => sum + dist[k], 0);
+    if (active.length === 0) return "No vulnerability states selected.";
     if (active.length === 1) return `Always: ${VULN_LABELS[active[0]!]}.`;
-    return `Active: ${active.map((k) => VULN_LABELS[k]).join(", ")}.`;
+    // Check if all active weights are equal
+    const allEqual = active.every((k) => dist[k] === dist[active[0]!]);
+    if (allEqual && active.length === 4) return "Equal distribution across all four states.";
+    if (allEqual) return `Equal distribution: ${active.map((k) => VULN_LABELS[k]).join(", ")}.`;
+    // Show percentages for non-uniform weights
+    return active.map((k) => `${VULN_LABELS[k]} ${vulnPercent(dist[k], total)}%`).join(", ") + ".";
   });
 
   const isDefaultVuln = $derived.by(() => {
     const dist = appStore.drillTuning.vulnerabilityDistribution;
     const def = DEFAULT_DRILL_TUNING.vulnerabilityDistribution;
-    return VULN_KEYS.every((k) => (dist[k] > 0) === (def[k] > 0));
+    return VULN_KEYS.every((k) => dist[k] === def[k]);
   });
 </script>
 
