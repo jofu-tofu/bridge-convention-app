@@ -764,10 +764,39 @@ function runSinglePlaythrough(
 }
 
 // ── Subcommand: trace ───────────────────────────────────────────────
+//
+// Three modes:
+//   trace --bundle=X --seed=N --phase=present --step=0
+//     Outputs a single viewport (hand, auction, legal calls) for one
+//     decision point. No answer revealed. The agent evaluates with
+//     bridge knowledge and commits before requesting the next step.
+//
+//   trace --bundle=X --seed=N --phase=present
+//     (no --step) Outputs only totalSteps so the agent knows how many
+//     steps to iterate.
+//
+//   trace --bundle=X --seed=N --phase=reveal
+//     Outputs the full trace including all recommendations and atom IDs.
+//     The agent compares their committed answers against the strategy's.
+//
+// Same seed = same playthrough. The protocol is:
+//   1. trace --phase=present           → learn totalSteps
+//   2. trace --phase=present --step=0  → see viewport, commit answer
+//   3. trace --phase=present --step=1  → see viewport (auction reveals
+//      step 0's bid, but agent already committed), commit answer
+//   4. ... repeat for each step ...
+//   5. trace --phase=reveal            → compare all answers
 
 function runTrace(): void {
   const bundleId = requireArg(flags, "bundle");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
+  const phase = (flags["phase"] as string) ?? "reveal";
+  const stepIdx = optionalNumericArg(flags, "step");
+
+  if (phase !== "present" && phase !== "reveal") {
+    console.error("trace --phase must be 'present' or 'reveal'");
+    process.exit(2);
+  }
 
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
@@ -775,12 +804,48 @@ function runTrace(): void {
 
   const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap);
 
-  console.log(JSON.stringify({
-    bundle: bundleId,
-    seed,
-    steps: result.steps,
-    atomsCovered: result.atomsCovered,
-  }, null, 2));
+  if (phase === "present") {
+    if (stepIdx === undefined) {
+      // No --step: just report how many steps
+      console.log(JSON.stringify({
+        bundle: bundleId,
+        seed,
+        phase: "present",
+        totalSteps: result.steps.length,
+      }, null, 2));
+    } else {
+      // Single step viewport — no recommendation, no atom ID
+      if (stepIdx < 0 || stepIdx >= result.steps.length) {
+        console.error(`Step ${stepIdx} out of range (0-${result.steps.length - 1})`);
+        process.exit(2);
+      }
+      const s = result.steps[stepIdx]!;
+      console.log(JSON.stringify({
+        bundle: bundleId,
+        seed,
+        phase: "present",
+        totalSteps: result.steps.length,
+        step: {
+          stepIndex: s.stepIndex,
+          seat: s.seat,
+          hand: s.hand,
+          hcp: s.hcp,
+          auctionSoFar: s.auctionSoFar,
+          legalCalls: s.legalCalls,
+        },
+      }, null, 2));
+    }
+  } else {
+    // Full trace with answers
+    console.log(JSON.stringify({
+      bundle: bundleId,
+      seed,
+      phase: "reveal",
+      totalSteps: result.steps.length,
+      steps: result.steps,
+      atomsCovered: result.atomsCovered,
+    }, null, 2));
+  }
 }
 
 // ── Subcommand: plan ────────────────────────────────────────────────
@@ -904,7 +969,12 @@ function printUsage(): void {
   console.error("            Grade a submitted bid");
   console.error("  selftest  --bundle=<id> [--seed=N]   Run strategy self-test");
   console.error("  selftest  --all [--seed=N]            Self-test all bundles");
-  console.error("  trace     --bundle=<id> [--seed=N]    Full playthrough trace");
+  console.error("  trace     --bundle=<id> --phase=present [--seed=N]");
+  console.error("            Get step count for a playthrough");
+  console.error("  trace     --bundle=<id> --phase=present --step=N [--seed=N]");
+  console.error("            Single viewport (no answer) — agent commits before next step");
+  console.error("  trace     --bundle=<id> --phase=reveal [--seed=N]");
+  console.error("            Full playthrough trace with all recommendations");
   console.error("  plan      --bundle=<id> --agents=N [--coverage=2] [--max-seeds=500] [--seed=0]");
   console.error("            Precompute playthrough plan for agent sweep");
   console.error("");
