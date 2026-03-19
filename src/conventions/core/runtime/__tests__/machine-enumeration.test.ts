@@ -656,7 +656,9 @@ function makeMockSurface(meaningId: string, teachingLabel: string, defaultCall: 
     clauses: [],
     ranking: {
       recommendationBand: "may" as any,
-      sortOrder: 0,
+      specificity: 0,
+      modulePrecedence: 0,
+      intraModuleOrder: 0,
     },
     sourceIntent: { type: "test", params: {} },
     teachingLabel,
@@ -677,7 +679,7 @@ function makeMockModule(
       target: `${moduleId}-state-${i}`,
     })),
     machineStates: [],
-    facts: { factEntries: [] },
+    facts: { definitions: [], evaluators: new Map() },
     explanationEntries: [],
     pedagogicalRelations: [],
   };
@@ -698,7 +700,7 @@ function makeMockModuleWithGuard(
       guard: () => true,
     })),
     machineStates: [],
-    facts: { factEntries: [] },
+    facts: { definitions: [], evaluators: new Map() },
     explanationEntries: [],
     pedagogicalRelations: [],
   };

@@ -4,9 +4,15 @@ import { getConvention } from "../conventions/core";
 export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const params = new URLSearchParams(window.location.search);
 
-  // Coverage page — show all targetable FSM states
+  // Coverage page — show targetable FSM states
+  // ?coverage=true           → bundle picker
+  // ?coverage=true&convention=X → that bundle's coverage targets
   const coverageParam = params.get("coverage");
   if (coverageParam === "true") {
+    const coverageConvention = params.get("convention");
+    if (coverageConvention) {
+      store.setCoverageBundle(coverageConvention);
+    }
     store.navigateToCoverage();
     return;
   }

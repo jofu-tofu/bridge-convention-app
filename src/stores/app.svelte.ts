@@ -15,6 +15,7 @@ export function createAppStore() {
   let autoplay = $state(false);
   let targetState = $state<string | null>(null);
   let targetSurface = $state<string | null>(null);
+  let coverageBundle = $state<string | null>(null);
 
   // Opponent strategy preference — persisted to localStorage
   const OPPONENT_MODE_KEY = "bridge-app:opponent-mode";
@@ -138,6 +139,14 @@ export function createAppStore() {
 
     setTargetSurface(surface: string | null) {
       targetSurface = surface;
+    },
+
+    get coverageBundle() {
+      return coverageBundle;
+    },
+
+    setCoverageBundle(bundleId: string | null) {
+      coverageBundle = bundleId;
     },
   };
 }
