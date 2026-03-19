@@ -8,13 +8,24 @@
 
 ### Tier 1: CLI Coverage Runner (Primary)
 
-The CLI coverage-runner (`src/cli/coverage-runner.ts`) tests convention correctness headlessly by exercising every (state, surface) pair. It produces structured JSON with:
+The CLI coverage-runner (`src/cli/coverage-runner.ts`) tests convention correctness headlessly using four subcommands:
 
-- **BiddingViewport:** what the player sees (hand, auction, alerts, legal calls)
-- **Expected vs actual call:** what bridge rules say vs what the app recommended
-- **Feedback text:** the explanation shown after bidding
-- **First-attempt accuracy:** did the agent get the right answer before seeing feedback?
-- **Post-feedback accuracy:** did the agent get the right answer after feedback?
+- **`list --bundle=X`** — enumerate all (state, surface) targets for a bundle
+- **`present --bundle=X --target=Y --surface=Z --seed=N`** — generate a deal and show the BiddingViewport (hand, auction, alerts, legal calls) without revealing the answer
+- **`grade --bundle=X --target=Y --surface=Z --seed=N --bid=CALL`** — submit a bid and get structured feedback JSON
+- **`selftest --bundle=X --seed=N`** or **`selftest --all --seed=N`** — CI self-test (strategy vs itself)
+
+Same seed = same deal across `present` and `grade`. Exit codes: 0=correct, 1=wrong, 2=arg error.
+
+The `grade` command returns structured JSON with:
+
+- **`yourBid`:** the bid submitted
+- **`grade`:** Correct, CorrectNotPreferred, Acceptable, NearMiss, or Incorrect
+- **`correct`:** boolean — was the bid accepted?
+- **`requiresRetry`:** boolean — should the agent try again?
+- **`correctBid`:** the recommended bid
+- **`conditions`:** constraint descriptions (HCP range, suit length, etc.)
+- **`feedback`:** explanation text shown after bidding
 
 **CLI handles these evaluation areas (no browser needed):**
 - Convention logic correctness (wrong bid recommendations)
@@ -217,16 +228,16 @@ When verifying correctness, agents MUST use `webfetch` and cite actual URLs. Pre
 
 ### CLI Report
 
-The CLI coverage-runner produces structured JSON. The orchestrator parses this into the CLI Coverage Report format defined in `RunReview.md` Step 5. Key fields per target:
-- Convention, targetState, targetSurface
-- BiddingViewport (hand, auction, alerts, legal calls)
-- Expected call, actual call, first-attempt accuracy, post-feedback accuracy
-- Feedback text
-- Result: PASS / FAIL / INFEASIBLE
+The CLI `grade` command returns structured JSON per target. The orchestrator collects these responses and parses them into the CLI Coverage Report format defined in `RunReview.md` Step 6. Key fields per `grade` response:
+- `yourBid`, `grade`, `correct`, `requiresRetry`
+- `correctBid`, `conditions`, `feedback`
+- Convention, targetState, targetSurface (from the `list`/`present`/`grade` parameters)
+- BiddingViewport from `present` (hand, auction, alerts, legal calls)
+- Result: correct / incorrect / infeasible
 
 ### Browser Agent Reports
 
-Every browser agent produces a report following the template in `RunReview.md` Step 9. Key requirements:
+Every browser agent produces a report following the template in `RunReview.md` Step 10. Key requirements:
 
 1. **Evidence is mandatory** — No finding without a screenshot path or DOM text excerpt
 2. **UI focus** — Browser agents validate rendering, not convention logic (CLI does that)

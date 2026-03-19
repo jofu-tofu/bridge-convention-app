@@ -29,72 +29,93 @@ The CLI coverage-runner exercises this boundary headlessly across all (state, su
 - A specific convention within a bundle
 - Everything (`--all`)
 
-### Step 2: Run CLI Coverage Runner
+### Step 2: Enumerate Targets
 
-Run the headless coverage-runner. This tests every (state, surface) pair via the optimized two-phase algorithm without needing a browser or dev server.
-
-**Full coverage (all bundles):**
-```bash
-cd /home/joshua-fu/projects/bridge-convention-app
-npx tsx src/cli/coverage-runner.ts --all --json --seed=42
-```
+Use the `list` subcommand to discover all (state, surface) pairs for the bundle(s) under review.
 
 **Targeted bundle:**
 ```bash
-npx tsx src/cli/coverage-runner.ts --bundle=nt-bundle --json --seed=42
+cd /home/joshua-fu/projects/bridge-convention-app
+npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
 ```
 
-The `--seed=42` flag ensures deterministic, reproducible results. The `--json` flag produces structured output.
+This outputs all target state + surface pairs that can be tested.
 
-### Step 3: Parse CLI JSON Output
+### Step 3: Present and Grade Each Target
 
-The CLI produces structured JSON with these fields per target:
+For each (state, surface) target from `list`, run the two-step agent protocol:
+
+**Step 3a: Present the hand (NO answer shown)**
+```bash
+npx tsx src/cli/coverage-runner.ts present --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42
+```
+
+The `present` command returns the `BiddingViewport` — hand, auction history, alerts, legal calls — without revealing the correct answer. The `--seed=42` flag ensures deterministic, reproducible deals.
+
+**Step 3b: Decide the bid**
+
+Read the viewport output. As a bridge expert, determine the correct bid based on the hand, auction, and convention rules.
+
+**Step 3c: Grade the bid**
+```bash
+npx tsx src/cli/coverage-runner.ts grade --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42 --bid=CALL
+```
+
+The `grade` command returns structured JSON:
 
 ```json
 {
-  "convention": "nt-bundle",
-  "targetState": "opener-rebid-after-stayman",
-  "targetSurface": "bid-2H",
-  "viewport": {
-    "hand": "♠AK73 ♥QJ84 ♦K9 ♣A52",
-    "auction": ["1NT", "2♣"],
-    "alerts": ["15-17 HCP"],
-    "legalCalls": ["2♦", "2♥", "2♠", "Pass"]
-  },
-  "expectedCall": "2♥",
-  "actualCall": "2♥",
-  "firstAttemptCorrect": true,
-  "postFeedbackCorrect": true,
-  "feedback": "Correct! With both 4-card majors, bid hearts first (up-the-line).",
-  "result": "PASS"
+  "yourBid": "2H",
+  "grade": "Correct",
+  "correct": true,
+  "requiresRetry": false,
+  "correctBid": "2H",
+  "conditions": ["4+ hearts", "15-17 HCP"],
+  "feedback": "Correct! With both 4-card majors, bid hearts first (up-the-line)."
 }
 ```
 
-Parse the JSON and categorize results:
+Same seed = same deal across `present` and `grade`. Exit codes: 0=correct, 1=wrong, 2=arg error.
+
+**Step 3d: Retry if wrong**
+
+If `grade` returns `"correct": false` and `"requiresRetry": true`, read the feedback, reassess, and submit a different bid with another `grade` call.
+
+**Full self-test (CI mode):**
+```bash
+npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
+npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+```
+
+Self-test runs the engine's own strategy against itself across all targets.
+
+### Step 4: Parse and Categorize Grade Results
+
+Categorize results from the `grade` responses:
 
 | Category | What It Means | Action |
 |----------|--------------|--------|
-| **PASS** | Correct call, correct feedback | No action needed |
-| **FAIL — wrong expected call** | The app recommends the wrong bid | CRITICAL finding — log state, surface, viewport, expected vs actual |
-| **FAIL — bad feedback** | Correct call but explanation is wrong or misleading | MAJOR finding — log the feedback text and what's wrong with it |
-| **FAIL — first attempt wrong, post-feedback correct** | Agent needed feedback to get right answer | Flag for review — may indicate unclear UI, not necessarily a bug |
+| **correct: true** | Correct call, correct feedback | No action needed |
+| **correct: false — wrong correctBid** | The app recommends the wrong bid | CRITICAL finding — log state, surface, viewport, expected vs actual |
+| **correct: false — bad feedback** | Correct call but explanation is wrong or misleading | MAJOR finding — log the feedback text and what's wrong with it |
+| **requiresRetry: true** | Agent needed feedback to get right answer | Flag for review — may indicate unclear UI, not necessarily a bug |
 | **INFEASIBLE** | No deal can reach this (state, surface) pair | Expected for some pairs — log but don't flag as error |
 
-### Step 4: Analyze CLI Results
+### Step 5: Analyze CLI Results
 
 For each failure:
 
-1. **Record the BiddingViewport** — this is what the player sees. Include hand, auction, alerts, legal calls.
-2. **Record expected vs actual** — what the app said vs what bridge rules dictate.
+1. **Record the BiddingViewport** (from `present` output) — this is what the player sees. Include hand, auction, alerts, legal calls.
+2. **Record expected vs actual** — what the app said (from `grade` `correctBid`) vs what bridge rules dictate.
 3. **Verify correctness** — Use `webfetch` to check the convention rule against authoritative sources (bridgebum.com, larryco.com, bridgeguys.com). Every correctness claim must cite a URL you actually fetched.
 4. **Classify severity** per `EvaluationFramework.md` severity definitions.
 5. **Compute metrics:**
-   - **First-attempt accuracy:** % of targets where the correct call was made on first try
-   - **Post-feedback accuracy:** % where the correct call was made after seeing feedback
+   - **First-attempt accuracy:** % of targets where `grade` returned `correct: true` on first try
+   - **Post-feedback accuracy:** % where the correct call was made after reading `grade` feedback and retrying
    - **Infeasible pair count:** how many (state, surface) pairs are unreachable
-   - **Coverage:** total targets tested / total targets in the bundle
+   - **Coverage:** total targets tested (from `list`) / total targets in the bundle
 
-### Step 5: Generate CLI Report
+### Step 6: Generate CLI Report
 
 ```
 # CLI Coverage Report
@@ -128,7 +149,7 @@ For each failure:
 
 **Run this tier only after Tier 1 completes.** The CLI handles logic correctness; the browser validates what the user actually sees on screen.
 
-### Step 6: Build and Serve a Stable Snapshot
+### Step 7: Build and Serve a Stable Snapshot
 
 Build a production snapshot and serve it on a stable port:
 
@@ -140,7 +161,7 @@ npm run preview -- --port 4173 &
 
 Wait for the preview server to respond on port 4173. If the build fails, fall back to the dev server on port 1420 (warn the user that HMR may cause instability).
 
-### Step 7: Smoke-Check the App
+### Step 8: Smoke-Check the App
 
 Before spawning browser agents, verify the app loads. Write a quick Playwright script that:
 
@@ -150,11 +171,11 @@ Before spawning browser agents, verify the app loads. Write a quick Playwright s
 
 If the app didn't load, **stop and tell the user** — don't spawn agents against a broken build.
 
-### Step 8: Load Evaluation Framework
+### Step 9: Load Evaluation Framework
 
 Read `../Standards/EvaluationFramework.md` to get agent personas, bridge references, and the structured report format.
 
-### Step 9: Spawn Browser UI Agents
+### Step 10: Spawn Browser UI Agents
 
 Launch **3 parallel subagents** using `run_subagent` with `profile: "subagent_general"`. Browser agents focus ONLY on UI rendering — the CLI already validated convention logic.
 
@@ -249,11 +270,11 @@ Test at least 10 distinct screens/states.
 
 ---
 
-### Step 10: Wait and Collect
+### Step 11: Wait and Collect
 
 All 3 browser agents run in background. When each completes, read its output. Store raw reports.
 
-### Step 11: Merge Tier 1 + Tier 2
+### Step 12: Merge Tier 1 + Tier 2
 
 Combine CLI coverage results with browser UI findings:
 
@@ -262,7 +283,7 @@ Combine CLI coverage results with browser UI findings:
 3. If a CLI failure is confirmed by a browser agent seeing wrong UI, boost severity
 4. Browser-only issues (rendering bugs the CLI can't detect) go in a separate UI section
 
-### Step 12: Hand Off to CompileFeedback
+### Step 13: Hand Off to CompileFeedback
 
 Invoke the CompileFeedback workflow to:
 1. Merge CLI JSON results with browser agent reports
@@ -271,7 +292,7 @@ Invoke the CompileFeedback workflow to:
 4. Produce a single prioritized action list
 5. Report coverage metrics from CLI
 
-### Step 13: Present Results
+### Step 14: Present Results
 
 Output the compiled report to the user with:
 - **CLI metrics:** first-attempt accuracy, post-feedback accuracy, infeasible pairs, coverage %

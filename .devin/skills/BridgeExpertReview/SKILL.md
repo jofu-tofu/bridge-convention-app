@@ -32,8 +32,9 @@ Running the **[WorkflowName]** workflow from the **BridgeExpertReview** skill...
 ```
 User: "Run a bridge expert review of the app"
 -> Invokes RunReview workflow
--> Tier 1: Runs `npx tsx src/cli/coverage-runner.ts --all --json` for full coverage
--> Parses JSON: identifies failures, infeasible pairs, first-attempt vs post-feedback accuracy
+-> Tier 1: Runs `list` to enumerate targets, then `present`/`grade` loop per target
+-> Self-test baseline: `npx tsx src/cli/coverage-runner.ts selftest --all --seed=42`
+-> For each failure: records viewport (from `present`), feedback (from `grade`), verifies against bridge sources
 -> Tier 2: Spawns browser agents for UI spot-checks (suit symbols, alert rendering, layout)
 -> Compiles all findings into prioritized feedback with severity, evidence, and references
 ```
@@ -42,7 +43,7 @@ User: "Run a bridge expert review of the app"
 ```
 User: "Compile the bridge review feedback"
 -> Invokes CompileFeedback workflow
--> Reads CLI JSON output + browser agent reports
+-> Reads `grade` JSON responses + browser agent reports
 -> Deduplicates, cross-references, and severity-ranks all findings
 -> Produces a single prioritized action list with CLI metrics
 ```
@@ -51,8 +52,8 @@ User: "Compile the bridge review feedback"
 ```
 User: "Run a bridge expert review focused on Stayman"
 -> Invokes RunReview workflow with focus hint
--> Tier 1: Runs `npx tsx src/cli/coverage-runner.ts --bundle=nt-bundle --json`
--> Parses JSON for all Stayman-related (state, surface) pairs
+-> Tier 1: Runs `npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle` to enumerate targets
+-> For each Stayman-related target: `present` → decide bid → `grade` → retry if wrong
 -> Tier 2: Browser agents spot-check Stayman UI at ?coverage=true&convention=nt-bundle
 -> Reports correctness issues with state/surface IDs for precise reproducibility
 ```

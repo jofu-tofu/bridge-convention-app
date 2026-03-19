@@ -33,7 +33,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=nt-bundle&autoplay=true`
 - **Target surface:** `?targetSurface=Z` exercises a specific meaning surface at target state
 - **Coverage screen:** `?coverage=true&convention=X` opens coverage screen for a specific bundle
-- **CLI coverage:** `npx tsx src/cli/coverage-runner.ts --bundle=nt-bundle` runs headless coverage tests
+- **CLI coverage:** `npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle` runs headless coverage tests. Subcommands: `list` (enumerate targets), `present` (show viewport), `grade` (submit bid, get feedback), `selftest` (CI mode). Same seed = same deal across `present`/`grade`.
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
 
 ## Code Hygiene

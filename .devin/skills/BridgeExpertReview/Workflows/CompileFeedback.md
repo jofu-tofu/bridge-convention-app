@@ -14,28 +14,28 @@ Take CLI coverage-runner JSON output and browser UI agent reports and compile th
 
 | Source | Type | Contains |
 |--------|------|----------|
-| **CLI JSON output** | Structured JSON | Per-target pass/fail, viewport snapshots, expected/actual calls, feedback text, first-attempt & post-feedback accuracy |
+| **CLI JSON output** | Structured JSON | Per-target `grade` responses: `yourBid`, `grade`, `correct`, `requiresRetry`, `correctBid`, `conditions`, `feedback` |
 | **Browser agent reports** | Structured text | UI rendering issues — suit symbols, alert display, layout, navigation |
 
 ## Workflow Steps
 
 ### Step 1: Parse CLI JSON Results
 
-Read the CLI coverage-runner JSON output. Extract:
+Read the CLI `grade` JSON responses. Extract:
 
 1. **Aggregate metrics:**
-   - Total targets tested
-   - First-attempt accuracy (% correct on first try)
-   - Post-feedback accuracy (% correct after seeing feedback)
+   - Total targets tested (from `list` output)
+   - First-attempt accuracy (% where `grade` returned `correct: true` on first try)
+   - Post-feedback accuracy (% correct after reading feedback and retrying)
    - Infeasible pair count
    - Failure count by severity
 
 2. **Per-failure details:**
    - Convention, targetState, targetSurface
-   - BiddingViewport (hand, auction, alerts, legal calls)
-   - Expected call vs actual call
-   - Feedback text
-   - Result category (FAIL — wrong call, FAIL — bad feedback, etc.)
+   - BiddingViewport from `present` (hand, auction, alerts, legal calls)
+   - `correctBid` vs `yourBid` from `grade` response
+   - `feedback` text
+   - `grade` value (Correct, CorrectNotPreferred, Acceptable, NearMiss, Incorrect)
 
 3. **Infeasible pairs list** — these are (state, surface) combinations where no deal can reach that state. Log them but do not flag as errors.
 
@@ -174,6 +174,6 @@ Output the final report in this format:
 
 Based on the compiled report, suggest:
 - Which issues to fix first (group by root cause when possible — a single FSM state fix may resolve multiple CLI failures)
-- Whether a re-run of the CLI coverage-runner is needed after fixes (`npx tsx src/cli/coverage-runner.ts --all --json --seed=42` to verify)
+- Whether a re-run of the CLI coverage-runner is needed after fixes (`npx tsx src/cli/coverage-runner.ts selftest --all --seed=42` to verify)
 - Any areas that need deeper browser investigation (e.g., "Alert rendering on mobile viewports was not tested")
 - Whether infeasible pairs represent design gaps or expected constraints
