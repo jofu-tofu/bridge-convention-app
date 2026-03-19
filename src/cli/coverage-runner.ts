@@ -642,6 +642,8 @@ interface PlaythroughStep {
   readonly auctionSoFar: readonly { seat: string; call: string }[];
   readonly legalCalls: readonly string[];
   readonly recommendation: string;
+  /** Whether this is a user (player) decision point vs partner auto-bid. */
+  readonly isUserStep: boolean;
 }
 
 interface PlaythroughResult {
@@ -755,6 +757,7 @@ function runSinglePlaythrough(
       auctionSoFar: entries.map((e) => ({ seat: e.seat as string, call: callKey(e.call) })),
       legalCalls: getLegalCalls(auction, activeSeat).map(callKey),
       recommendation: callKey(result.call),
+      isUserStep: activeSeat === userSeat,
     });
 
     entries.push({ seat: activeSeat, call: result.call });
@@ -803,30 +806,31 @@ function runTrace(): void {
   const atomCallMap = buildAtomCallMap(spec);
 
   const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap);
+  const userSteps = result.steps.filter((s) => s.isUserStep);
 
   if (phase === "present") {
     if (stepIdx === undefined) {
-      // No --step: just report how many steps
+      // No --step: just report how many user steps
       console.log(JSON.stringify({
         bundle: bundleId,
         seed,
         phase: "present",
-        totalSteps: result.steps.length,
+        totalSteps: userSteps.length,
       }, null, 2));
     } else {
       // Single step viewport — no recommendation, no atom ID
-      if (stepIdx < 0 || stepIdx >= result.steps.length) {
-        console.error(`Step ${stepIdx} out of range (0-${result.steps.length - 1})`);
+      if (stepIdx < 0 || stepIdx >= userSteps.length) {
+        console.error(`Step ${stepIdx} out of range (0-${userSteps.length - 1})`);
         process.exit(2);
       }
-      const s = result.steps[stepIdx]!;
+      const s = userSteps[stepIdx]!;
       console.log(JSON.stringify({
         bundle: bundleId,
         seed,
         phase: "present",
-        totalSteps: result.steps.length,
+        totalSteps: userSteps.length,
         step: {
-          stepIndex: s.stepIndex,
+          stepIndex: stepIdx,
           seat: s.seat,
           hand: s.hand,
           hcp: s.hcp,
@@ -836,12 +840,13 @@ function runTrace(): void {
       }, null, 2));
     }
   } else {
-    // Full trace with answers
+    // Reveal: full trace — all steps (user + partner) with answers
     console.log(JSON.stringify({
       bundle: bundleId,
       seed,
       phase: "reveal",
       totalSteps: result.steps.length,
+      userSteps: userSteps.length,
       steps: result.steps,
       atomsCovered: result.atomsCovered,
     }, null, 2));
@@ -914,22 +919,25 @@ function runPlan(): void {
     }
   }
 
-  // Split across agents balanced by bid count (largest-first greedy)
-  const seedItems = selectedSeeds.map((s) => ({
-    seed: s,
-    bids: cache.get(s)!.steps.length,
-    atoms: cache.get(s)!.atomsCovered,
-  }));
-  seedItems.sort((a, b) => b.bids - a.bids);
+  // Split across agents balanced by user bid count (largest-first greedy)
+  const seedItems = selectedSeeds.map((s) => {
+    const r = cache.get(s)!;
+    return {
+      seed: s,
+      userBids: r.steps.filter((st) => st.isUserStep).length,
+      atoms: r.atomsCovered,
+    };
+  });
+  seedItems.sort((a, b) => b.userBids - a.userBids);
 
-  const agents: { seeds: number[]; totalBids: number; atoms: string[] }[] = [];
+  const agents: { seeds: number[]; totalUserBids: number; atoms: string[] }[] = [];
   for (let i = 0; i < agentCount; i++) {
-    agents.push({ seeds: [], totalBids: 0, atoms: [] });
+    agents.push({ seeds: [], totalUserBids: 0, atoms: [] });
   }
   for (const item of seedItems) {
-    const minAgent = agents.reduce((a, b) => (a.totalBids <= b.totalBids ? a : b));
+    const minAgent = agents.reduce((a, b) => (a.totalUserBids <= b.totalUserBids ? a : b));
     minAgent.seeds.push(item.seed);
-    minAgent.totalBids += item.bids;
+    minAgent.totalUserBids += item.userBids;
     minAgent.atoms.push(...item.atoms);
   }
 
@@ -946,11 +954,11 @@ function runPlan(): void {
     atomsCoveredAtTarget: coveredAtTarget,
     uncoveredAtoms: uncovered,
     selectedSeeds: selectedSeeds.length,
-    totalBids: seedItems.reduce((sum, s) => sum + s.bids, 0),
+    totalUserBids: seedItems.reduce((sum, s) => sum + s.userBids, 0),
     agents: agents.map((a, i) => ({
       agentIndex: i,
       seeds: a.seeds,
-      totalBids: a.totalBids,
+      totalUserBids: a.totalUserBids,
       uniqueAtoms: [...new Set(a.atoms)].length,
     })),
   }, null, 2));
