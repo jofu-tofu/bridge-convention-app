@@ -9,6 +9,7 @@
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import BiddingSidePanel from "./BiddingSidePanel.svelte";
+  import BiddingSettingsPanel from "./BiddingSettingsPanel.svelte";
 
   interface Props {
     viewport: BiddingViewport;
@@ -22,6 +23,7 @@
     onRetry: () => void;
     viewportFeedback: ViewportBidFeedback | null;
     teachingDetail: TeachingDetail | null;
+    onNewDeal: () => void;
   }
 
   const {
@@ -36,12 +38,30 @@
     onRetry,
     viewportFeedback,
     teachingDetail,
+    onNewDeal,
   }: Props = $props();
 
   const layout = getLayoutConfig();
+
+  // Use 3-column layout on desktop: [settings] [table] [bidding controls]
+  // Settings panel uses the same side-panel width as the right panel;
+  // GameScreen accounts for both when computing table scale.
+  const containerClass = $derived(
+    layout.phaseContainerClass.includes('grid-cols-')
+      ? layout.phaseContainerClass.replace(
+          /grid-cols-\[1fr_var\(--width-side-panel\)\]/,
+          'grid-cols-[var(--width-side-panel)_minmax(0,1fr)_var(--width-side-panel)]'
+        )
+      : layout.phaseContainerClass
+  );
 </script>
 
-<div class={layout.phaseContainerClass}>
+<div class={containerClass}>
+  <!-- Desktop: settings panel on the left -->
+  <aside class="{layout.sidePanelClass} hidden lg:flex" style="font-size: var(--panel-font, 1rem);" aria-label="Practice settings">
+    <BiddingSettingsPanel {onNewDeal} />
+  </aside>
+
   <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
     <BridgeTable visibleHands={viewport.visibleHands} vulnerability={viewport.vulnerability} dealer={viewport.dealer}>
       <div

@@ -154,11 +154,11 @@
   );
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
-  // PLAYING phase has a second (history) panel on the left — account for it in scale
-  const hasHistoryPanel = $derived(isDesktop && gameStore.phase === "PLAYING");
-  const effectiveSidePanelW = $derived(hasHistoryPanel ? sidePanelW * 2 : sidePanelW);
-  // gap-3 = 0.75rem per gap; 2 gaps in 3-col playing, 1 gap in 2-col bidding
-  const gridGaps = $derived(isDesktop ? (hasHistoryPanel ? 2 : 1) * 0.75 * rootFontSize : 0);
+  // BIDDING and PLAYING phases have a second panel on the left — account for both in scale
+  const hasTwoPanels = $derived(isDesktop && (gameStore.phase === "PLAYING" || gameStore.phase === "BIDDING"));
+  const effectiveSidePanelW = $derived(hasTwoPanels ? sidePanelW * 2 : sidePanelW);
+  // gap-3 = 0.75rem per gap; 2 gaps in 3-col layout, 1 gap in 2-col layout
+  const gridGaps = $derived(isDesktop ? (hasTwoPanels ? 2 : 1) * 0.75 * rootFontSize : 0);
   const tableScale = $derived(
     computeTableScale(availableW, innerH, {
       sidePanel: isDesktop,
@@ -291,6 +291,7 @@
         onRetry={() => gameStore.retryBid()}
         viewportFeedback={gameStore.viewportFeedback}
         teachingDetail={gameStore.teachingDetail}
+        onNewDeal={handleNextDeal}
       />
     {:else if gameStore.phase === "DECLARER_PROMPT" && gameStore.contract}
       <DeclarerPromptPhase
