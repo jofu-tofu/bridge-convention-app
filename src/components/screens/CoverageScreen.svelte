@@ -1,10 +1,8 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
   import { listConventionSpecs, getConventionSpec } from "../../conventions/spec-registry";
-  import { generateProtocolCoverageManifest } from "../../conventions/core/protocol/coverage-enumeration";
-  import type { ProtocolCoverageManifest, ProtocolCoverageAtom } from "../../conventions/core/protocol/coverage-enumeration";
-  import type { ConventionSpec } from "../../conventions/core/protocol/types";
-  import { getBaseModules } from "../../conventions/core/protocol/types";
+  import { generateProtocolCoverageManifest, getBaseModules } from "../../conventions/core";
+  import type { ProtocolCoverageManifest, ProtocolCoverageAtom, ConventionSpec } from "../../conventions/core";
 
   const appStore = getAppStore();
 

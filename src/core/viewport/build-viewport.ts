@@ -21,16 +21,16 @@ import type { PracticalScoreBreakdown } from "../../strategy/bidding/practical-t
 interface BidFeedbackLike {
   readonly grade: BidGrade;
   readonly userCall: Call;
-  readonly expectedResult: BidResult | null;
-  readonly teachingResolution: TeachingResolution | null;
-  readonly practicalRecommendation?: { topCandidateBidName: string; topCandidateCall: Call; topScore: number; rationale: string };
-  readonly teachingProjection?: TeachingProjection;
+  readonly expectedResult: BidResult;
+  readonly teachingResolution: TeachingResolution;
+  readonly practicalRecommendation: { topCandidateBidName: string; topCandidateCall: Call; topScore: number; rationale: string } | null;
+  readonly teachingProjection: TeachingProjection | null;
   /** Score breakdown from the practical scorer (when available). */
-  readonly practicalScoreBreakdown?: PracticalScoreBreakdown;
+  readonly practicalScoreBreakdown: PracticalScoreBreakdown | null;
   /** Whether the evidence bundle reported exhaustive evaluation. */
-  readonly evaluationExhaustive?: boolean;
+  readonly evaluationExhaustive: boolean;
   /** Whether the evidence bundle reported fallback was reached (no surface matched). */
-  readonly fallbackReached?: boolean;
+  readonly fallbackReached: boolean;
 }
 
 import type {
@@ -152,11 +152,11 @@ export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFee
   const requiresRetry = grade === "near-miss" || grade === "incorrect";
 
   // Correct answer (from expected result)
-  const correctCall = feedback.expectedResult?.call;
-  const correctCallDisplay = correctCall ? formatCall(correctCall) : undefined;
-  const correctBidLabel = feedback.expectedResult?.alert?.teachingLabel
-    ?? feedback.expectedResult?.meaning;
-  const correctBidExplanation = feedback.expectedResult?.explanation;
+  const correctCall = feedback.expectedResult.call;
+  const correctCallDisplay = formatCall(correctCall);
+  const correctBidLabel = feedback.expectedResult.alert?.teachingLabel
+    ?? feedback.expectedResult.meaning;
+  const correctBidExplanation = feedback.expectedResult.explanation;
 
   // Conditions from teaching projection
   let conditions: ConditionView[] | undefined;
@@ -171,7 +171,7 @@ export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFee
 
   // Acceptable alternatives
   let acceptableAlternatives: AlternativeView[] | undefined;
-  if (feedback.teachingResolution?.acceptableBids?.length) {
+  if (feedback.teachingResolution.acceptableBids?.length) {
     acceptableAlternatives = feedback.teachingResolution.acceptableBids.map((ab) => ({
       call: ab.call,
       callDisplay: formatCall(ab.call),
@@ -183,7 +183,7 @@ export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFee
 
   // Near misses
   let nearMisses: NearMissView[] | undefined;
-  if (feedback.teachingResolution?.nearMissCalls?.length) {
+  if (feedback.teachingResolution.nearMissCalls?.length) {
     nearMisses = feedback.teachingResolution.nearMissCalls.map((nm) => ({
       call: nm.call,
       callDisplay: formatCall(nm.call),
@@ -239,8 +239,8 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
 
   return {
     // Correct answer context
-    handSummary: result?.handSummary,
-    fallbackExplanation: result?.explanation,
+    handSummary: result.handSummary,
+    fallbackExplanation: result.explanation,
 
     // Teaching projection (when available)
     primaryExplanation: projection?.primaryExplanation,
@@ -269,18 +269,18 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
       : undefined,
 
     // Teaching resolution
-    primaryBid: resolution?.primaryBid,
-    acceptableBids: resolution?.acceptableBids?.map((ab) => ({
+    primaryBid: resolution.primaryBid,
+    acceptableBids: resolution.acceptableBids?.map((ab) => ({
       call: ab.call,
       meaning: ab.meaning,
       reason: ab.reason,
       fullCredit: ab.fullCredit,
     })),
-    nearMissCalls: resolution?.nearMissCalls,
+    nearMissCalls: resolution.nearMissCalls,
 
     // Decision metadata (from teaching resolution)
-    ambiguityScore: resolution?.ambiguityScore,
-    gradingType: resolution?.gradingType,
+    ambiguityScore: resolution.ambiguityScore,
+    gradingType: resolution.gradingType,
 
     // Practical score breakdown
     practicalScoreBreakdown: feedback.practicalScoreBreakdown

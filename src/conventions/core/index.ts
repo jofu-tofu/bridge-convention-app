@@ -70,3 +70,6 @@ export { buildConversationMachine } from "./runtime/machine-types";
 // ── Protocol Frame Architecture ─────────────────────────────────────────
 export type { ConventionSpec, ModuleSpec, BaseModuleSpec, ProtocolModuleSpec } from "./protocol/types";
 export { getBaseModules, getProtocolModules } from "./protocol/types";
+export { replay, computeActiveSurfaces } from "./protocol/replay";
+export { generateProtocolCoverageManifest, enumerateBaseTrackStates } from "./protocol/coverage-enumeration";
+export type { ProtocolCoverageManifest, ProtocolCoverageAtom, BaseTrackPath } from "./protocol/coverage-enumeration";

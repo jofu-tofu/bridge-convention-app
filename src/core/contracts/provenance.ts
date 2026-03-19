@@ -3,6 +3,9 @@ import type { ConditionEvidenceIR } from "./evidence-bundle";
 import type { TransformTrace } from "./meaning";
 import type { SurfaceCompositionDiagnostic } from "./module-surface";
 
+/** @deprecated Use TransformTrace directly — affectedIds is now on TransformTrace. */
+export type TransformTraceEntry = TransformTrace;
+
 /** Kind of encoder used for call assignment. */
 export type EncoderKind = "default-call" | "resolver" | "alternate-encoding" | "frontier-step" | "relay-map";
 
@@ -13,7 +16,7 @@ export interface DecisionProvenance {
   /** Module activation traces (which modules were live and why). */
   readonly activation: readonly ActivationTrace[];
   /** Transforms applied during arbitration (suppress, inject, remap). */
-  readonly transforms: readonly TransformTraceEntry[];
+  readonly transforms: readonly TransformTrace[];
   /** Encoding traces (how meanings became concrete calls). */
   readonly encoding: readonly EncodingTrace[];
   /** Legality traces (which calls were legal/illegal). */
@@ -54,13 +57,6 @@ export interface ActivationTrace {
   readonly activated: boolean;
   readonly matchedPattern?: string;
   readonly reason?: string;
-}
-
-/** Trace of a transform applied during arbitration.
- *  Extended from the basic TransformTrace in meaning.ts with provenance fields. */
-export interface TransformTraceEntry extends TransformTrace {
-  /** IDs of candidates/meanings affected by this transform. */
-  readonly affectedIds?: readonly string[];
 }
 
 /** Arbitration trace per candidate — truth-set membership, ranking inputs. */

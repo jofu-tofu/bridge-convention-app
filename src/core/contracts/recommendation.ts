@@ -50,18 +50,18 @@ export interface MachineDebugSnapshot {
 export interface StrategyEvaluation {
   /** Practical recommendation (what an experienced player might prefer). Null when not produced. */
   readonly practicalRecommendation: PracticalRecommendation | null;
-  /** Convention-level alternative groups for teaching grading. Undefined if not configured. */
-  readonly acceptableAlternatives: readonly AlternativeGroup[] | undefined;
-  /** Convention-level intent families for relationship-aware grading. Undefined if not configured. */
-  readonly intentFamilies: readonly IntentFamily[] | undefined;
+  /** Convention-level alternative groups for teaching grading. Null if not configured. */
+  readonly acceptableAlternatives: readonly AlternativeGroup[] | null;
+  /** Convention-level intent families for relationship-aware grading. Null if not configured. */
+  readonly intentFamilies: readonly IntentFamily[] | null;
   /** Provenance from the meaning-pipeline evaluation. Null when not produced. */
   readonly provenance: DecisionProvenance | null;
   /** Full arbitration result from the meaning-pipeline evaluation. Null when not produced. */
   readonly arbitration: ArbitrationResult | null;
   /** Posterior summary. Null when posterior engine not wired. */
   readonly posteriorSummary: PosteriorSummary | null;
-  /** Explanation catalog for enriching teaching projections. Undefined when not available. */
-  readonly explanationCatalog: ExplanationCatalogIR | undefined;
+  /** Explanation catalog for enriching teaching projections. Null when not available. */
+  readonly explanationCatalog: ExplanationCatalogIR | null;
   /** Teaching projection from the meaning-pipeline evaluation. Null when not produced. */
   readonly teachingProjection: TeachingProjection | null;
   /** Evaluated facts from the pipeline evaluation. Null before first evaluation. */

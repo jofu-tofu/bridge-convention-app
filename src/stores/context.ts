@@ -1,10 +1,9 @@
 import { setContext, getContext } from "svelte";
 import type { EnginePort } from "../engine/port";
-import type { createGameStore } from "../stores/game.svelte";
+import type { GameStore } from "./types";
 import type { createAppStore } from "../stores/app.svelte";
 import type { LayoutProps } from "../core/display/layout-props";
 
-type GameStore = ReturnType<typeof createGameStore>;
 type AppStore = ReturnType<typeof createAppStore>;
 
 const ENGINE_KEY = Symbol("engine");

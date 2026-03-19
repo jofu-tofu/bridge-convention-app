@@ -18,9 +18,9 @@ import {
   generateProtocolCoverageManifest,
   enumerateBaseTrackStates,
   type BaseTrackPath,
-} from "../conventions/core/protocol/coverage-enumeration";
-import { getBaseModules } from "../conventions/core/protocol/types";
-import { replay } from "../conventions/core/protocol/replay";
+  getBaseModules,
+  replay,
+} from "../conventions/core";
 import { getBundle } from "../conventions/core/bundle";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createBiddingContext } from "../conventions/core/context-factory";
@@ -39,7 +39,7 @@ import type {
   DealConstraints,
   Card,
 } from "../engine/types";
-import type { ConventionSpec } from "../conventions/core/protocol/types";
+import type { ConventionSpec } from "../conventions/core";
 import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
 import type { BiddingContext } from "../core/contracts/bidding";
 import type { ConventionBiddingStrategy } from "../core/contracts/recommendation";
@@ -489,11 +489,11 @@ function runEval(): void {
     userCall: submittedCall,
     expectedResult: result,
     teachingResolution,
-    practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
-    teachingProjection: strategyEval?.teachingProjection ?? undefined,
-    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? undefined,
-    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive,
-    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached,
+    practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
+    teachingProjection: strategyEval?.teachingProjection ?? null,
+    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
+    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive ?? false,
+    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached ?? false,
   };
 
   const viewportFeedback = buildViewportFeedback(bidFeedback);
@@ -855,17 +855,33 @@ function gradePlaythroughStep(
   const result = strategy.suggest(context);
 
   if (!result) {
+    const fallbackResult: import("../core/contracts").BidResult = {
+      call: { type: "pass" },
+      ruleName: null,
+      explanation: "No convention bid applies",
+    };
+    const fallbackResolution = resolveTeachingAnswer(fallbackResult);
     const emptyFeedback = buildViewportFeedback({
       grade: BidGrade.Incorrect,
       userCall: submittedCall,
-      expectedResult: null,
-      teachingResolution: null,
+      expectedResult: fallbackResult,
+      teachingResolution: fallbackResolution,
+      practicalRecommendation: null,
+      teachingProjection: null,
+      practicalScoreBreakdown: null,
+      evaluationExhaustive: false,
+      fallbackReached: true,
     });
     const emptyTeaching = buildTeachingDetail({
       grade: BidGrade.Incorrect,
       userCall: submittedCall,
-      expectedResult: null,
-      teachingResolution: null,
+      expectedResult: fallbackResult,
+      teachingResolution: fallbackResolution,
+      practicalRecommendation: null,
+      teachingProjection: null,
+      practicalScoreBreakdown: null,
+      evaluationExhaustive: false,
+      fallbackReached: true,
     });
     return { viewportFeedback: emptyFeedback, teachingDetail: emptyTeaching, isCorrect: false, isAcceptable: false };
   }
@@ -882,11 +898,11 @@ function gradePlaythroughStep(
     userCall: submittedCall,
     expectedResult: result,
     teachingResolution,
-    practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
-    teachingProjection: strategyEval?.teachingProjection ?? undefined,
-    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? undefined,
-    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive,
-    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached,
+    practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
+    teachingProjection: strategyEval?.teachingProjection ?? null,
+    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
+    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive ?? false,
+    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached ?? false,
   };
 
   return {

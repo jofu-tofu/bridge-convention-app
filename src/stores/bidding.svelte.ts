@@ -33,19 +33,19 @@ export type { TeachingResolution } from "../teaching/teaching-resolution";
 export interface BidFeedback {
   readonly grade: BidGrade;
   readonly userCall: Call;
-  readonly expectedResult: BidResult | null;
-  readonly teachingResolution: TeachingResolution | null;
-  readonly practicalRecommendation?: PracticalRecommendation;
-  readonly teachingProjection?: TeachingProjection;
+  readonly expectedResult: BidResult;
+  readonly teachingResolution: TeachingResolution;
+  readonly practicalRecommendation: PracticalRecommendation | null;
+  readonly teachingProjection: TeachingProjection | null;
   /** Encoding trace for the selected meaning (how it became a concrete call).
    *  Null when provenance is unavailable. */
-  readonly encodingTrace?: EncodingTrace;
+  readonly encodingTrace: EncodingTrace | null;
   /** Component-level breakdown from the practical scorer. */
-  readonly practicalScoreBreakdown?: PracticalScoreBreakdown;
+  readonly practicalScoreBreakdown: PracticalScoreBreakdown | null;
   /** True when the pipeline evaluated every possible meaning (no early exit). */
-  readonly evaluationExhaustive?: boolean;
+  readonly evaluationExhaustive: boolean;
   /** True when no convention surface matched and the pipeline fell back to a default bid. */
-  readonly fallbackReached?: boolean;
+  readonly fallbackReached: boolean;
 }
 
 /** Aggregated debug snapshot — strategy evaluation plus the expected bid. */
@@ -70,18 +70,18 @@ const AI_BID_DELAY = 300;
 /** Default empty evaluation — used when no strategy is wired or before first suggest(). */
 const EMPTY_EVALUATION: StrategyEvaluation = {
   practicalRecommendation: null,
-  acceptableAlternatives: undefined,
-  intentFamilies: undefined,
+  acceptableAlternatives: null,
+  intentFamilies: null,
   provenance: null,
   arbitration: null,
   posteriorSummary: null,
-  explanationCatalog: undefined,
+  explanationCatalog: null,
   teachingProjection: null,
   facts: null,
   machineSnapshot: null,
 };
 
-interface BiddingStoreConfig {
+export interface BiddingStoreConfig {
   deal: Deal;
   session: DrillSession;
   strategy: ConventionBiddingStrategy | null;
@@ -224,8 +224,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     const strategyEval = conventionStrategy.getLastEvaluation();
     const teachingResolution = resolveTeachingAnswer(
       effectiveResult,
-      strategyEval?.acceptableAlternatives,
-      strategyEval?.intentFamilies,
+      strategyEval?.acceptableAlternatives ?? undefined,
+      strategyEval?.intentFamilies ?? undefined,
     );
     const grade = gradeBid(call, teachingResolution);
     const isCorrect = grade === BidGrade.Correct;
@@ -235,12 +235,12 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       userCall: call,
       expectedResult: effectiveResult,
       teachingResolution,
-      practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
-      teachingProjection: strategyEval?.teachingProjection ?? undefined,
-      encodingTrace: strategyEval?.provenance?.encoding[0] ?? undefined,
-      practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? undefined,
-      evaluationExhaustive: strategyEval?.arbitration?.evidenceBundle?.exhaustive,
-      fallbackReached: strategyEval?.arbitration?.evidenceBundle?.fallbackReached,
+      practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
+      teachingProjection: strategyEval?.teachingProjection ?? null,
+      encodingTrace: strategyEval?.provenance?.encoding[0] ?? null,
+      practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
+      evaluationExhaustive: strategyEval?.arbitration?.evidenceBundle?.exhaustive ?? false,
+      fallbackReached: strategyEval?.arbitration?.evidenceBundle?.fallbackReached ?? false,
     };
 
     // Capture persistent debug log entry — strategy caches are fresh right now

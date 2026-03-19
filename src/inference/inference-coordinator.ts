@@ -3,7 +3,7 @@ import type { Seat } from "../engine/types";
 import type { BidResult } from "../core/contracts";
 import type { PublicBeliefs } from "../core/contracts";
 import type { InferenceEngine } from "./inference-engine";
-import type { InferenceExtractorInput, InferenceSnapshot, PublicBeliefState } from "./types";
+import type { InferenceExtractor, InferenceExtractorInput, InferenceSnapshot, PublicBeliefState } from "./types";
 import { createInitialBeliefState, applyAnnotation } from "./belief-accumulator";
 import { produceAnnotation } from "./annotation-producer";
 import { noopExtractor } from "./noop-extractor";
@@ -61,7 +61,9 @@ export interface InferenceCoordinator {
  * The coordinator is a plain (non-reactive) service. The game store holds
  * reactive proxies that read from it.
  */
-export function createInferenceCoordinator(): InferenceCoordinator {
+export function createInferenceCoordinator(
+  extractor: InferenceExtractor = noopExtractor,
+): InferenceCoordinator {
   let nsEngine: InferenceEngine | null = null;
   let ewEngine: InferenceEngine | null = null;
   let beliefState: PublicBeliefState = createInitialBeliefState();
@@ -83,7 +85,7 @@ export function createInferenceCoordinator(): InferenceCoordinator {
         entry,
         extractorInput,
         bidResult?.ruleName ? conventionId : null,
-        noopExtractor,
+        extractor,
         naturalProvider,
         auctionBefore,
       );

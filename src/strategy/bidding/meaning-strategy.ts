@@ -124,12 +124,12 @@ export function meaningToStrategy(
 ): ConventionBiddingStrategy {
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
-    acceptableAlternatives: options?.acceptableAlternatives,
-    intentFamilies: options?.intentFamilies,
+    acceptableAlternatives: options?.acceptableAlternatives ?? null,
+    intentFamilies: options?.intentFamilies ?? null,
     provenance: null,
     arbitration: null,
     posteriorSummary: null,
-    explanationCatalog: undefined,
+    explanationCatalog: null,
     teachingProjection: null,
     facts: null,
     machineSnapshot: null,
@@ -154,12 +154,12 @@ export function meaningToStrategy(
 
       lastEvaluation = {
         practicalRecommendation: null,
-        acceptableAlternatives: options?.acceptableAlternatives,
-        intentFamilies: options?.intentFamilies,
+        acceptableAlternatives: options?.acceptableAlternatives ?? null,
+        intentFamilies: options?.intentFamilies ?? null,
         provenance,
         arbitration: result,
         posteriorSummary: null,
-        explanationCatalog: undefined,
+        explanationCatalog: null,
         teachingProjection,
         facts,
         machineSnapshot: null,

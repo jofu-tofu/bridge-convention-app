@@ -177,22 +177,16 @@ export interface TransformTrace {
   readonly targetId: string;
   readonly sourceModuleId: string;
   readonly reason: string;
+  /** IDs of candidates/meanings affected by this transform. */
+  readonly affectedIds?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
 // MeaningSurface types (merged from meaning-surface.ts to break circular dep)
 // ---------------------------------------------------------------------------
 
-export interface MeaningSurfaceClause {
+export interface MeaningSurfaceClause extends FactConstraintIR {
   readonly clauseId: string;
-  readonly factId: string;
-  readonly operator: FactOperator;
-  readonly value:
-    | number
-    | boolean
-    | string
-    | { min: number; max: number }
-    | readonly string[];
   readonly description: string;
   /** When true, this clause is included in the alert's public constraints.
    *  Primitive hand facts (hand.*) are always public regardless of this flag.

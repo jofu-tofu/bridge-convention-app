@@ -13,9 +13,8 @@ import type {
   StrategyEvaluation,
 } from "../../core/contracts";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
-import type { ConventionSpec } from "../../conventions/core/protocol/types";
-import { replay, computeActiveSurfaces } from "../../conventions/core/protocol/replay";
-import { createSharedFactCatalog } from "../../conventions/core";
+import type { ConventionSpec } from "../../conventions/core";
+import { replay, computeActiveSurfaces, createSharedFactCatalog } from "../../conventions/core";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { runMeaningPipeline } from "./meaning-strategy";
 import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
@@ -43,12 +42,12 @@ export function protocolSpecToStrategy(
 
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
-    acceptableAlternatives: undefined,
-    intentFamilies: undefined,
+    acceptableAlternatives: null,
+    intentFamilies: null,
     provenance: null,
     arbitration: null,
     posteriorSummary: null,
-    explanationCatalog: undefined,
+    explanationCatalog: null,
     teachingProjection: null,
     facts: null,
     machineSnapshot: null,
@@ -84,12 +83,12 @@ export function protocolSpecToStrategy(
 
       lastEvaluation = {
         practicalRecommendation: null,
-        acceptableAlternatives: undefined,
-        intentFamilies: undefined,
+        acceptableAlternatives: null,
+        intentFamilies: null,
         provenance,
         arbitration: result,
         posteriorSummary: null,
-        explanationCatalog: undefined,
+        explanationCatalog: null,
         teachingProjection,
         facts,
         machineSnapshot: null,
