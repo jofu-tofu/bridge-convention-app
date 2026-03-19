@@ -67,9 +67,13 @@ function isDenial(origin: PublicConstraint["origin"]): boolean {
   return origin === "entailed-denial";
 }
 
-function compileHcpRange(
+/** Shared logic for compiling HCP-range and suit-length constraints. */
+function compileRangeConstraint(
   constraint: PublicConstraint,
+  kind: "hcp-range" | "suit-length",
+  maxVal: number,
   denial: boolean,
+  extraFields?: Record<string, unknown>,
 ): FactorSpec {
   const { operator, value } = constraint.constraint;
   const seat = constraint.subject;
@@ -77,65 +81,32 @@ function compileHcpRange(
   const origin = buildOrigin(constraint);
 
   if (denial) {
-    // Denial negation: gte X → lte X-1, lte X → gte X+1
     if (operator === "gte" && typeof value === "number") {
-      return { kind: "hcp-range", seat, min: 0, max: value - 1, strength, origin };
+      return { kind, seat, min: 0, max: value - 1, strength, origin, ...extraFields } as FactorSpec;
     }
     if (operator === "lte" && typeof value === "number") {
-      return { kind: "hcp-range", seat, min: value + 1, max: MAX_HCP, strength, origin };
+      return { kind, seat, min: value + 1, max: maxVal, strength, origin, ...extraFields } as FactorSpec;
     }
   }
 
   if (operator === "gte" && typeof value === "number") {
-    return { kind: "hcp-range", seat, min: value, max: MAX_HCP, strength, origin };
+    return { kind, seat, min: value, max: maxVal, strength, origin, ...extraFields } as FactorSpec;
   }
   if (operator === "lte" && typeof value === "number") {
-    return { kind: "hcp-range", seat, min: 0, max: value, strength, origin };
+    return { kind, seat, min: 0, max: value, strength, origin, ...extraFields } as FactorSpec;
   }
 
   // Fallback for unsupported operators — treat as exclusion
-  return {
-    kind: "exclusion",
-    seat,
-    constraint: `hcp ${operator} ${JSON.stringify(value)}`,
-    strength,
-    origin,
-  };
+  const label = kind === "hcp-range" ? "hcp" : `${(extraFields as { suit?: string })?.suit} length`;
+  return { kind: "exclusion", seat, constraint: `${label} ${operator} ${JSON.stringify(value)}`, strength, origin };
 }
 
-function compileSuitLength(
-  constraint: PublicConstraint,
-  suit: SuitName,
-  denial: boolean,
-): FactorSpec {
-  const { operator, value } = constraint.constraint;
-  const seat = constraint.subject;
-  const strength = mapStrength(constraint.strength);
-  const origin = buildOrigin(constraint);
+function compileHcpRange(constraint: PublicConstraint, denial: boolean): FactorSpec {
+  return compileRangeConstraint(constraint, "hcp-range", MAX_HCP, denial);
+}
 
-  if (denial) {
-    if (operator === "gte" && typeof value === "number") {
-      return { kind: "suit-length", seat, suit, min: 0, max: value - 1, strength, origin };
-    }
-    if (operator === "lte" && typeof value === "number") {
-      return { kind: "suit-length", seat, suit, min: value + 1, max: MAX_SUIT_LENGTH, strength, origin };
-    }
-  }
-
-  if (operator === "gte" && typeof value === "number") {
-    return { kind: "suit-length", seat, suit, min: value, max: MAX_SUIT_LENGTH, strength, origin };
-  }
-  if (operator === "lte" && typeof value === "number") {
-    return { kind: "suit-length", seat, suit, min: 0, max: value, strength, origin };
-  }
-
-  return {
-    kind: "exclusion",
-    seat,
-    constraint: `${suit} length ${operator} ${JSON.stringify(value)}`,
-    strength,
-    origin,
-  };
+function compileSuitLength(constraint: PublicConstraint, suit: SuitName, denial: boolean): FactorSpec {
+  return compileRangeConstraint(constraint, "suit-length", MAX_SUIT_LENGTH, denial, { suit });
 }
 
 function compileIsBalanced(

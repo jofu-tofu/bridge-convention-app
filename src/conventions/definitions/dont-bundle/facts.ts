@@ -6,12 +6,9 @@ import type {
 import { fv } from "../../../core/contracts/fact-catalog";
 import type { Hand } from "../../../engine/types";
 import { Suit } from "../../../engine/types";
+import { suitLengthOf } from "../../../engine/hand-evaluator";
 
 // ─── Helpers ────────────────────────────────────────────────
-
-function suitLength(hand: Hand, suit: Suit): number {
-  return hand.cards.filter((c) => c.suit === suit).length;
-}
 
 function longestSuitExcluding(
   hand: Hand,
@@ -22,9 +19,9 @@ function longestSuitExcluding(
   );
   if (suits.length === 0) return { suit: Suit.Clubs, length: 0 };
   let best = suits[0]!;
-  let bestLen = suitLength(hand, best);
+  let bestLen = suitLengthOf(hand, best);
   for (const s of suits.slice(1)) {
-    const len = suitLength(hand, s);
+    const len = suitLengthOf(hand, s);
     if (len > bestLen) {
       best = s;
       bestLen = len;
@@ -232,8 +229,8 @@ const DONT_FACTS: readonly FactDefinition[] = [
 const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   // Overcaller R1 facts
   ["module.dont.bothMajors", (h, _ev, _m) => {
-    const hearts = suitLength(h, Suit.Hearts);
-    const spades = suitLength(h, Suit.Spades);
+    const hearts = suitLengthOf(h, Suit.Hearts);
+    const spades = suitLengthOf(h, Suit.Spades);
     return fv(
       "module.dont.bothMajors",
       (hearts >= 5 && spades >= 4) || (spades >= 5 && hearts >= 4),
@@ -241,9 +238,9 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   }],
 
   ["module.dont.diamondsAndMajor", (h, _ev, _m) => {
-    const diamonds = suitLength(h, Suit.Diamonds);
-    const hearts = suitLength(h, Suit.Hearts);
-    const spades = suitLength(h, Suit.Spades);
+    const diamonds = suitLengthOf(h, Suit.Diamonds);
+    const hearts = suitLengthOf(h, Suit.Hearts);
+    const spades = suitLengthOf(h, Suit.Spades);
     return fv(
       "module.dont.diamondsAndMajor",
       diamonds >= 5 && (hearts >= 4 || spades >= 4),
@@ -251,10 +248,10 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   }],
 
   ["module.dont.clubsAndHigher", (h, _ev, _m) => {
-    const clubs = suitLength(h, Suit.Clubs);
-    const diamonds = suitLength(h, Suit.Diamonds);
-    const hearts = suitLength(h, Suit.Hearts);
-    const spades = suitLength(h, Suit.Spades);
+    const clubs = suitLengthOf(h, Suit.Clubs);
+    const diamonds = suitLengthOf(h, Suit.Diamonds);
+    const hearts = suitLengthOf(h, Suit.Hearts);
+    const spades = suitLengthOf(h, Suit.Spades);
     return fv(
       "module.dont.clubsAndHigher",
       clubs >= 5 && (diamonds >= 4 || hearts >= 4 || spades >= 4),
@@ -262,16 +259,16 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   }],
 
   ["module.dont.naturalSpades", (h, _ev, _m) => {
-    const spades = suitLength(h, Suit.Spades);
+    const spades = suitLengthOf(h, Suit.Spades);
     return fv("module.dont.naturalSpades", spades >= 6);
   }],
 
   ["module.dont.singleSuited", (h, _ev, _m) => {
     const lengths: { suit: Suit; length: number }[] = [
-      { suit: Suit.Spades, length: suitLength(h, Suit.Spades) },
-      { suit: Suit.Hearts, length: suitLength(h, Suit.Hearts) },
-      { suit: Suit.Diamonds, length: suitLength(h, Suit.Diamonds) },
-      { suit: Suit.Clubs, length: suitLength(h, Suit.Clubs) },
+      { suit: Suit.Spades, length: suitLengthOf(h, Suit.Spades) },
+      { suit: Suit.Hearts, length: suitLengthOf(h, Suit.Hearts) },
+      { suit: Suit.Diamonds, length: suitLengthOf(h, Suit.Diamonds) },
+      { suit: Suit.Clubs, length: suitLengthOf(h, Suit.Clubs) },
     ];
     // Find the longest suit
     const longest = lengths.reduce((a, b) => (b.length > a.length ? b : a));
@@ -313,9 +310,9 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   // 2C relay response facts (after 2C → 2D): among D, H, S find which has 4+
   // and is longest; ties broken by higher ranking (S > H > D)
   ["module.dont.clubsHigherDiamonds", (h, _ev, _m) => {
-    const d = suitLength(h, Suit.Diamonds);
-    const hr = suitLength(h, Suit.Hearts);
-    const s = suitLength(h, Suit.Spades);
+    const d = suitLengthOf(h, Suit.Diamonds);
+    const hr = suitLengthOf(h, Suit.Hearts);
+    const s = suitLengthOf(h, Suit.Spades);
     // Diamonds is the higher suit if D4+ and D >= H and D >= S
     // But ties broken by higher ranking: S > H > D, so D must be strictly longer
     // than any 4+ suit ranked above it
@@ -324,9 +321,9 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   }],
 
   ["module.dont.clubsHigherHearts", (h, _ev, _m) => {
-    const d = suitLength(h, Suit.Diamonds);
-    const hr = suitLength(h, Suit.Hearts);
-    const s = suitLength(h, Suit.Spades);
+    const d = suitLengthOf(h, Suit.Diamonds);
+    const hr = suitLengthOf(h, Suit.Hearts);
+    const s = suitLengthOf(h, Suit.Spades);
     // Hearts is the higher suit if H4+ and H >= D and H >= S
     // Ties broken by higher ranking: S > H, so hearts must be strictly longer
     // than spades if spades also qualifies, but beats diamonds on ties
@@ -335,9 +332,9 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   }],
 
   ["module.dont.clubsHigherSpades", (h, _ev, _m) => {
-    const d = suitLength(h, Suit.Diamonds);
-    const hr = suitLength(h, Suit.Hearts);
-    const s = suitLength(h, Suit.Spades);
+    const d = suitLengthOf(h, Suit.Diamonds);
+    const hr = suitLengthOf(h, Suit.Hearts);
+    const s = suitLengthOf(h, Suit.Spades);
     // Spades is the higher suit if S4+ and S >= H and S >= D
     // Spades wins ties as highest ranking
     const isSpades = s >= 4 && s >= hr && s >= d;
@@ -346,47 +343,47 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
 
   // 2D relay response facts (after 2D → 2H): between H and S
   ["module.dont.diamondsMajorHearts", (h, _ev, _m) => {
-    const hr = suitLength(h, Suit.Hearts);
-    const s = suitLength(h, Suit.Spades);
+    const hr = suitLengthOf(h, Suit.Hearts);
+    const s = suitLengthOf(h, Suit.Spades);
     // Hearts is the major if H4+ and H > S (spades wins ties as higher ranking)
     return fv("module.dont.diamondsMajorHearts", hr >= 4 && hr > s);
   }],
 
   ["module.dont.diamondsMajorSpades", (h, _ev, _m) => {
-    const hr = suitLength(h, Suit.Hearts);
-    const s = suitLength(h, Suit.Spades);
+    const hr = suitLengthOf(h, Suit.Hearts);
+    const s = suitLengthOf(h, Suit.Spades);
     // Spades is the major if S4+ and S >= H (spades wins ties)
     return fv("module.dont.diamondsMajorSpades", s >= 4 && s >= hr);
   }],
 
   // Advancer support facts
   ["module.dont.hasHeartSupport", (h, _ev, _m) =>
-    fv("module.dont.hasHeartSupport", suitLength(h, Suit.Hearts) >= 3)],
+    fv("module.dont.hasHeartSupport", suitLengthOf(h, Suit.Hearts) >= 3)],
 
   ["module.dont.hasSpadeSupport", (h, _ev, _m) =>
-    fv("module.dont.hasSpadeSupport", suitLength(h, Suit.Spades) >= 3)],
+    fv("module.dont.hasSpadeSupport", suitLengthOf(h, Suit.Spades) >= 3)],
 
   ["module.dont.hasDiamondSupport", (h, _ev, _m) =>
-    fv("module.dont.hasDiamondSupport", suitLength(h, Suit.Diamonds) >= 3)],
+    fv("module.dont.hasDiamondSupport", suitLengthOf(h, Suit.Diamonds) >= 3)],
 
   ["module.dont.hasClubSupport", (h, _ev, _m) =>
-    fv("module.dont.hasClubSupport", suitLength(h, Suit.Clubs) >= 3)],
+    fv("module.dont.hasClubSupport", suitLengthOf(h, Suit.Clubs) >= 3)],
 
   ["module.dont.hasLongMinor", (h, _ev, _m) => {
-    const clubs = suitLength(h, Suit.Clubs);
-    const diamonds = suitLength(h, Suit.Diamonds);
+    const clubs = suitLengthOf(h, Suit.Clubs);
+    const diamonds = suitLengthOf(h, Suit.Diamonds);
     return fv("module.dont.hasLongMinor", clubs >= 6 || diamonds >= 6);
   }],
 
   ["module.dont.longMinorIsClubs", (h, _ev, _m) => {
-    const clubs = suitLength(h, Suit.Clubs);
-    const diamonds = suitLength(h, Suit.Diamonds);
+    const clubs = suitLengthOf(h, Suit.Clubs);
+    const diamonds = suitLengthOf(h, Suit.Diamonds);
     return fv("module.dont.longMinorIsClubs", clubs >= 6 && clubs >= diamonds);
   }],
 
   ["module.dont.longMinorIsDiamonds", (h, _ev, _m) => {
-    const clubs = suitLength(h, Suit.Clubs);
-    const diamonds = suitLength(h, Suit.Diamonds);
+    const clubs = suitLengthOf(h, Suit.Clubs);
+    const diamonds = suitLengthOf(h, Suit.Diamonds);
     return fv("module.dont.longMinorIsDiamonds", diamonds >= 6 && diamonds > clubs);
   }],
 ]);

@@ -7,7 +7,7 @@
 
 import type { Call, Seat } from "../../../engine/types";
 import { callKey } from "../../../engine/call-helpers";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { MeaningSurface, ConstraintDimension } from "../../../core/contracts/meaning";
 import type {
   SurfaceFragment,
   SurfaceRelation,
@@ -39,6 +39,9 @@ export interface ComposedSurface {
   readonly requiredFactEvaluatorIds: readonly string[];
   /** Trace of how composition was performed. */
   readonly compositionTrace: readonly CompositionTraceEntry[];
+  /** Maps meaningId → inherited constraint dimensions from the containing fragment.
+   *  Used by the pipeline to pass inherited dimensions to deriveSpecificity(). */
+  readonly inheritedDimsLookup: ReadonlyMap<string, readonly ConstraintDimension[]>;
 }
 
 /** Trace entry for a single fragment's participation in the composition. */
@@ -53,6 +56,16 @@ export interface CompositionTraceEntry {
 }
 
 // ── Call Key Helpers ─────────────────────────────────────────────────
+
+/** Per-action tracking entry used during surface composition. */
+interface ActionMapEntry {
+  call: Call;
+  controllingEntry: SurfaceStackEntry;
+  supportingEntries: { entry: SurfaceStackEntry; ruleId: string }[];
+  blockedBy: { ownerId: string; surfaceId: string; reason: "shadow" | "ban" }[];
+  status: "recommended" | "available" | "blocked" | "shadowed";
+  meaning: string;
+}
 
 /** Check whether a specific call is covered by an actionCoverage spec. */
 function isCovered(call: Call, coverage: "all" | readonly Call[]): boolean {
@@ -86,6 +99,7 @@ export function composeSurfaceStack(
       actionResolutions: [],
       requiredFactEvaluatorIds: [],
       compositionTrace: [],
+      inheritedDimsLookup: new Map(),
     };
   }
 
@@ -103,20 +117,9 @@ export function composeSurfaceStack(
   const visibleSurfaces: MeaningSurface[] = [];
   const compositionTrace: CompositionTraceEntry[] = [];
   const requiredFactIds = new Set<string>();
+  const inheritedDimsLookup = new Map<string, readonly ConstraintDimension[]>();
 
-  // Per-action tracking for resolution.
-  // Maps action key → { call, controllingEntry, supportingEntries, blockedBy }
-  const actionMap = new Map<
-    string,
-    {
-      call: Call;
-      controllingEntry: SurfaceStackEntry;
-      supportingEntries: { entry: SurfaceStackEntry; ruleId: string }[];
-      blockedBy: { ownerId: string; surfaceId: string; reason: "shadow" | "ban" }[];
-      status: "recommended" | "available" | "blocked" | "shadowed";
-      meaning: string;
-    }
-  >();
+  const actionMap = new Map<string, ActionMapEntry>();
 
   // Track which fragments shadowed which other fragments.
   // Maps lower-fragment surfaceId → shadowing fragment surfaceId.
@@ -170,13 +173,13 @@ export function composeSurfaceStack(
       }
 
       // Add all surfaces from the shadow fragment.
-      addSurfaces(fragment, entry, visibleSurfaces, actionMap, requiredFactIds);
+      addSurfaces(fragment, entry, visibleSurfaces, actionMap, requiredFactIds, inheritedDimsLookup);
 
       // Apply legalMask bans.
       applyLegalMask(fragment, entry, actionMap);
     } else if (fragment.relation === "compete") {
       // Compete: add surfaces regardless of coverage — ranking decides.
-      addSurfaces(fragment, entry, visibleSurfaces, actionMap, requiredFactIds);
+      addSurfaces(fragment, entry, visibleSurfaces, actionMap, requiredFactIds, inheritedDimsLookup);
       applyLegalMask(fragment, entry, actionMap);
     } else {
       // Augment: add surfaces only for uncovered actions.
@@ -196,6 +199,9 @@ export function composeSurfaceStack(
         if (!coveredActions.has(key)) {
           visibleSurfaces.push(surface);
           trackAction(surface, entry, actionMap);
+          if (fragment.inheritedDimensions && fragment.inheritedDimensions.length > 0) {
+            inheritedDimsLookup.set(surface.meaningId, fragment.inheritedDimensions);
+          }
         }
       }
 
@@ -238,6 +244,7 @@ export function composeSurfaceStack(
     actionResolutions,
     requiredFactEvaluatorIds: [...requiredFactIds],
     compositionTrace: finalTrace,
+    inheritedDimsLookup,
   };
 }
 
@@ -247,33 +254,23 @@ function addSurfaces(
   fragment: SurfaceFragment,
   entry: SurfaceStackEntry,
   visibleSurfaces: MeaningSurface[],
-  actionMap: Map<string, {
-    call: Call;
-    controllingEntry: SurfaceStackEntry;
-    supportingEntries: { entry: SurfaceStackEntry; ruleId: string }[];
-    blockedBy: { ownerId: string; surfaceId: string; reason: "shadow" | "ban" }[];
-    status: "recommended" | "available" | "blocked" | "shadowed";
-    meaning: string;
-  }>,
+  actionMap: Map<string, ActionMapEntry>,
   requiredFactIds: Set<string>,
+  inheritedDimsLookup?: Map<string, readonly ConstraintDimension[]>,
 ): void {
   for (const surface of fragment.surfaces) {
     visibleSurfaces.push(surface);
     trackAction(surface, entry, actionMap);
+    if (inheritedDimsLookup && fragment.inheritedDimensions && fragment.inheritedDimensions.length > 0) {
+      inheritedDimsLookup.set(surface.meaningId, fragment.inheritedDimensions);
+    }
   }
 }
 
 function trackAction(
   surface: MeaningSurface,
   entry: SurfaceStackEntry,
-  actionMap: Map<string, {
-    call: Call;
-    controllingEntry: SurfaceStackEntry;
-    supportingEntries: { entry: SurfaceStackEntry; ruleId: string }[];
-    blockedBy: { ownerId: string; surfaceId: string; reason: "shadow" | "ban" }[];
-    status: "recommended" | "available" | "blocked" | "shadowed";
-    meaning: string;
-  }>,
+  actionMap: Map<string, ActionMapEntry>,
 ): void {
   const key = callKey(surface.encoding.defaultCall);
   const existing = actionMap.get(key);
@@ -299,14 +296,7 @@ function trackAction(
 function applyLegalMask(
   fragment: SurfaceFragment,
   entry: SurfaceStackEntry,
-  actionMap: Map<string, {
-    call: Call;
-    controllingEntry: SurfaceStackEntry;
-    supportingEntries: { entry: SurfaceStackEntry; ruleId: string }[];
-    blockedBy: { ownerId: string; surfaceId: string; reason: "shadow" | "ban" }[];
-    status: "recommended" | "available" | "blocked" | "shadowed";
-    meaning: string;
-  }>,
+  actionMap: Map<string, ActionMapEntry>,
 ): void {
   if (!fragment.legalMask) return;
 

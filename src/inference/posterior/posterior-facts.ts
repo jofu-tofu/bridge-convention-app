@@ -1,8 +1,7 @@
 import type { Hand } from "../../engine/types";
 import type { PosteriorFactRequest, PosteriorFactValue } from "../../core/contracts/posterior";
 import { Suit } from "../../engine/types";
-import { calculateHcpAndShape, isBalanced } from "../../engine/hand-evaluator";
-import { HCP_VALUES } from "../../engine/constants";
+import { calculateHcp, calculateHcpAndShape, isBalanced, suitLengthOf } from "../../engine/hand-evaluator";
 
 /** Map suit character to Suit enum. */
 const SUIT_CHAR_MAP: Record<string, Suit> = {
@@ -12,22 +11,51 @@ const SUIT_CHAR_MAP: Record<string, Suit> = {
   C: Suit.Clubs,
 };
 
-/** Count cards of a specific suit in a hand. */
-function suitLength(hand: Hand, suit: Suit): number {
-  return hand.cards.filter((c) => c.suit === suit).length;
-}
-
-/** Calculate HCP for a hand. */
-function handHcp(hand: Hand): number {
-  return hand.cards.reduce((sum, c) => sum + HCP_VALUES[c.rank], 0);
-}
-
 export type PosteriorFactHandler = (
   request: PosteriorFactRequest,
   samples: ReadonlyMap<string, Hand>[],
   ownHand: Hand,
   totalRequested: number,
 ) => PosteriorFactValue;
+
+// ── Sampling helpers ────────────────────────────────────────
+
+/** Zero-result when samples are empty. */
+function emptyResult(request: PosteriorFactRequest): PosteriorFactValue {
+  return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
+}
+
+/**
+ * Higher-order factory: given a predicate over (sampleHands, request, ownHand),
+ * returns a PosteriorFactHandler that counts matching samples.
+ */
+function countingSampler(
+  predicate: (
+    sampleHands: ReadonlyMap<string, Hand>,
+    request: PosteriorFactRequest,
+    ownHand: Hand,
+  ) => boolean,
+  extras?: (request: PosteriorFactRequest) => Partial<PosteriorFactValue>,
+): PosteriorFactHandler {
+  return (request, samples, ownHand, totalRequested) => {
+    if (samples.length === 0) return emptyResult(request);
+
+    let count = 0;
+    for (const sampleHands of samples) {
+      if (predicate(sampleHands, request, ownHand)) count++;
+    }
+
+    return {
+      factId: request.factId,
+      seatId: request.seatId,
+      expectedValue: count / samples.length,
+      confidence: samples.length / totalRequested,
+      ...extras?.(request),
+    };
+  };
+}
+
+// ── Fact handlers ───────────────────────────────────────────
 
 /**
  * bridge:partnerHas4{Suit}Likely
@@ -42,18 +70,16 @@ function partnerHas4InSuitLikely(
 ): PosteriorFactValue {
   const suitChar = request.conditionedOn?.[0];
   if (!suitChar || !SUIT_CHAR_MAP[suitChar]) {
-    return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
+    return emptyResult(request);
   }
   const suit = SUIT_CHAR_MAP[suitChar];
 
-  if (samples.length === 0) {
-    return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
-  }
+  if (samples.length === 0) return emptyResult(request);
 
   let count = 0;
   for (const sampleHands of samples) {
     const hand = sampleHands.get(request.seatId);
-    if (hand && suitLength(hand, suit) >= 4) {
+    if (hand && suitLengthOf(hand, suit) >= 4) {
       count++;
     }
   }
@@ -71,140 +97,60 @@ function partnerHas4InSuitLikely(
  * bridge:nsHaveEightCardFitLikely
  * P(combined 8+ in hearts or spades) over samples.
  */
-function nsHaveEightCardFitLikely(
-  request: PosteriorFactRequest,
-  samples: ReadonlyMap<string, Hand>[],
-  ownHand: Hand,
-  totalRequested: number,
-): PosteriorFactValue {
-  if (samples.length === 0) {
-    return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
-  }
-
-  const ownHearts = suitLength(ownHand, Suit.Hearts);
-  const ownSpades = suitLength(ownHand, Suit.Spades);
-
-  let count = 0;
-  for (const sampleHands of samples) {
+const nsHaveEightCardFitLikely: PosteriorFactHandler = countingSampler(
+  (sampleHands, request, ownHand) => {
     const partnerHand = sampleHands.get(request.seatId);
-    if (!partnerHand) continue;
-    const partnerHearts = suitLength(partnerHand, Suit.Hearts);
-    const partnerSpades = suitLength(partnerHand, Suit.Spades);
-    if (ownHearts + partnerHearts >= 8 || ownSpades + partnerSpades >= 8) {
-      count++;
-    }
-  }
-
-  return {
-    factId: request.factId,
-    seatId: request.seatId,
-    expectedValue: count / samples.length,
-    confidence: samples.length / totalRequested,
-  };
-}
+    if (!partnerHand) return false;
+    const ownHearts = suitLengthOf(ownHand, Suit.Hearts);
+    const ownSpades = suitLengthOf(ownHand, Suit.Spades);
+    const partnerHearts = suitLengthOf(partnerHand, Suit.Hearts);
+    const partnerSpades = suitLengthOf(partnerHand, Suit.Spades);
+    return ownHearts + partnerHearts >= 8 || ownSpades + partnerSpades >= 8;
+  },
+);
 
 /**
  * bridge:combinedHcpInRangeLikely
  * P(combined HCP in range specified via conditionedOn [min, max]) over samples.
  */
-function combinedHcpInRangeLikely(
-  request: PosteriorFactRequest,
-  samples: ReadonlyMap<string, Hand>[],
-  ownHand: Hand,
-  totalRequested: number,
-): PosteriorFactValue {
-  const minHcp = Number(request.conditionedOn?.[0] ?? 0);
-  const maxHcp = Number(request.conditionedOn?.[1] ?? 40);
-  const ownHcp = handHcp(ownHand);
-
-  if (samples.length === 0) {
-    return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
-  }
-
-  let count = 0;
-  for (const sampleHands of samples) {
+const combinedHcpInRangeLikely: PosteriorFactHandler = countingSampler(
+  (sampleHands, request, ownHand) => {
+    const minHcp = Number(request.conditionedOn?.[0] ?? 0);
+    const maxHcp = Number(request.conditionedOn?.[1] ?? 40);
+    const ownHcp = calculateHcp(ownHand);
     const partnerHand = sampleHands.get(request.seatId);
-    if (!partnerHand) continue;
-    const combined = ownHcp + handHcp(partnerHand);
-    if (combined >= minHcp && combined <= maxHcp) {
-      count++;
-    }
-  }
-
-  return {
-    factId: request.factId,
-    seatId: request.seatId,
-    expectedValue: count / samples.length,
-    confidence: samples.length / totalRequested,
-    conditionedOn: request.conditionedOn,
-  };
-}
+    if (!partnerHand) return false;
+    const combined = ownHcp + calculateHcp(partnerHand);
+    return combined >= minHcp && combined <= maxHcp;
+  },
+  (request) => ({ conditionedOn: request.conditionedOn }),
+);
 
 /**
  * bridge:openerStillBalancedLikely
  * P(opener has balanced shape) over samples.
  */
-function openerStillBalancedLikely(
-  request: PosteriorFactRequest,
-  samples: ReadonlyMap<string, Hand>[],
-  _ownHand: Hand,
-  totalRequested: number,
-): PosteriorFactValue {
-  if (samples.length === 0) {
-    return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
-  }
-
-  let count = 0;
-  for (const sampleHands of samples) {
+const openerStillBalancedLikely: PosteriorFactHandler = countingSampler(
+  (sampleHands, request) => {
     const hand = sampleHands.get(request.seatId);
-    if (!hand) continue;
+    if (!hand) return false;
     const { shape } = calculateHcpAndShape(hand);
-    if (isBalanced(shape)) {
-      count++;
-    }
-  }
-
-  return {
-    factId: request.factId,
-    seatId: request.seatId,
-    expectedValue: count / samples.length,
-    confidence: samples.length / totalRequested,
-  };
-}
+    return isBalanced(shape);
+  },
+);
 
 /**
  * bridge:openerHasSecondMajorLikely
  * P(opener has a second 4-card major) over samples.
  * "Second major" means 4+ in both hearts AND spades.
  */
-function openerHasSecondMajorLikely(
-  request: PosteriorFactRequest,
-  samples: ReadonlyMap<string, Hand>[],
-  _ownHand: Hand,
-  totalRequested: number,
-): PosteriorFactValue {
-  if (samples.length === 0) {
-    return { factId: request.factId, seatId: request.seatId, expectedValue: 0, confidence: 0 };
-  }
-
-  let count = 0;
-  for (const sampleHands of samples) {
+const openerHasSecondMajorLikely: PosteriorFactHandler = countingSampler(
+  (sampleHands, request) => {
     const hand = sampleHands.get(request.seatId);
-    if (!hand) continue;
-    const hearts = suitLength(hand, Suit.Hearts);
-    const spades = suitLength(hand, Suit.Spades);
-    if (hearts >= 4 && spades >= 4) {
-      count++;
-    }
-  }
-
-  return {
-    factId: request.factId,
-    seatId: request.seatId,
-    expectedValue: count / samples.length,
-    confidence: samples.length / totalRequested,
-  };
-}
+    if (!hand) return false;
+    return suitLengthOf(hand, Suit.Hearts) >= 4 && suitLengthOf(hand, Suit.Spades) >= 4;
+  },
+);
 
 /** Registry of posterior fact handlers. */
 export const POSTERIOR_FACT_HANDLERS: ReadonlyMap<string, PosteriorFactHandler> = new Map([

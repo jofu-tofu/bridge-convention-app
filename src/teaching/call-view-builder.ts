@@ -29,44 +29,33 @@ import type {
 export function buildCallViews(arbitration: ArbitrationResult): CallProjection[] {
   const views: CallProjection[] = [];
 
-  // Truth set entries
   const truthCallGroups = groupByCall(arbitration.truthSet);
   for (const [, encodeds] of truthCallGroups) {
-    const meaningIds = encodeds.map(e => e.proposal.meaningId);
-    const call = encodeds[0]!.call;
-    const projectionKind = classifyProjectionKind(encodeds);
-    const primaryMeaning = selectPrimaryMeaning(encodeds);
-
-    views.push({
-      call,
-      status: "truth",
-      supportingMeanings: meaningIds,
-      primaryMeaning,
-      projectionKind,
-    });
+    views.push(buildProjection(encodeds, "truth"));
   }
 
-  // Acceptable set entries (not already in truth set by call)
   const truthCallKeys = new Set([...truthCallGroups.keys()]);
   const acceptableCallGroups = groupByCall(arbitration.acceptableSet);
   for (const [key, encodeds] of acceptableCallGroups) {
     if (truthCallKeys.has(key)) continue;
-
-    const meaningIds = encodeds.map(e => e.proposal.meaningId);
-    const call = encodeds[0]!.call;
-    const projectionKind = classifyProjectionKind(encodeds);
-    const primaryMeaning = selectPrimaryMeaning(encodeds);
-
-    views.push({
-      call,
-      status: "acceptable",
-      supportingMeanings: meaningIds,
-      primaryMeaning,
-      projectionKind,
-    });
+    views.push(buildProjection(encodeds, "acceptable"));
   }
 
   return views;
+}
+
+/** Build a single CallProjection from a group of encoded proposals. */
+function buildProjection(
+  encodeds: readonly EncodedProposal[],
+  status: CallProjection["status"],
+): CallProjection {
+  return {
+    call: encodeds[0]!.call,
+    status,
+    supportingMeanings: encodeds.map(e => e.proposal.meaningId),
+    primaryMeaning: selectPrimaryMeaning(encodeds),
+    projectionKind: classifyProjectionKind(encodeds),
+  };
 }
 
 /** Group encoded proposals by their concrete call. */

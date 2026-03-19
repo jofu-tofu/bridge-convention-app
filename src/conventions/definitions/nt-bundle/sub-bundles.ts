@@ -1,7 +1,7 @@
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
-import { ConventionCategory } from "../../core/types";
+import { ConventionCategory } from "../../../core/contracts/convention";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./system-profile";
@@ -22,6 +22,13 @@ const transferDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
+const ntDefaultAuction = (seat: typeof Seat[keyof typeof Seat]) => {
+  if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
+  return undefined;
+};
+
+const ntDeclaredCapabilities = { [CAP_OPENING_1NT]: "active" } as const;
+
 /**
  * Minimal sub-bundles for legacy registration.
  * Strategy is now handled by the protocol frame architecture.
@@ -33,11 +40,8 @@ export const ntStaymanBundle: ConventionBundle = {
   category: ConventionCategory.Asking,
   memberIds: ["stayman"],
   dealConstraints: staymanDealConstraints,
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
-    return undefined;
-  },
-  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
+  defaultAuction: ntDefaultAuction,
+  declaredCapabilities: ntDeclaredCapabilities,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
 };
 
@@ -48,10 +52,7 @@ export const ntTransfersBundle: ConventionBundle = {
   category: ConventionCategory.Constructive,
   memberIds: ["jacoby-transfers"],
   dealConstraints: transferDealConstraints,
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
-    return undefined;
-  },
-  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
+  defaultAuction: ntDefaultAuction,
+  declaredCapabilities: ntDeclaredCapabilities,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,
 };

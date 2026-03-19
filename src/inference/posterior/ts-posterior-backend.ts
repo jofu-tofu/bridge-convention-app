@@ -4,8 +4,8 @@ import type { ConditioningContext, PosteriorQueryResult, InferenceHealth, Factor
 import type { HandFactResolverFn } from "../../core/contracts/fact-catalog";
 import { sampleDeals } from "./posterior-sampler";
 import { compilePublicHandSpace } from "./posterior-compiler";
-import { calculateHcpAndShape, isBalanced } from "../../engine/hand-evaluator";
-import { HCP_VALUES, SUIT_NAME_MAP } from "../../engine/constants";
+import { calculateHcp, calculateHcpAndShape, isBalanced, suitLengthOf } from "../../engine/hand-evaluator";
+import { SUIT_NAME_MAP } from "../../engine/constants";
 
 const DEFAULT_SAMPLE_COUNT = 200;
 const DEFAULT_SEED = 12345;
@@ -54,7 +54,7 @@ export function createTsBackend(options?: {
           for (const p of particles) {
             const hand = p.world.hiddenDeal.get(query.seat);
             if (hand) {
-              totalHcp += hand.cards.reduce((sum, c) => sum + HCP_VALUES[c.rank], 0);
+              totalHcp += calculateHcp(hand);
             }
           }
           return { value: totalHcp / particles.length, health };
@@ -66,7 +66,7 @@ export function createTsBackend(options?: {
           for (const p of particles) {
             const hand = p.world.hiddenDeal.get(query.seat);
             if (hand && suit !== undefined) {
-              totalLen += hand.cards.filter((c) => c.suit === suit).length;
+              totalLen += suitLengthOf(hand, suit);
             }
           }
           return { value: totalLen / particles.length, health };
@@ -82,7 +82,7 @@ export function createTsBackend(options?: {
             for (const seatId of query.seats) {
               const hand = p.world.hiddenDeal.get(seatId);
               if (hand) {
-                combined += hand.cards.filter((c) => c.suit === suit).length;
+                combined += suitLengthOf(hand, suit);
               }
             }
             if (combined >= query.threshold) count++;
@@ -109,7 +109,7 @@ export function createTsBackend(options?: {
             for (const seatId of query.seats) {
               const hand = p.world.hiddenDeal.get(seatId);
               if (hand) {
-                total += hand.cards.reduce((sum, c) => sum + HCP_VALUES[c.rank], 0);
+                total += calculateHcp(hand);
               }
             }
             if (total >= query.min && total <= query.max) count++;

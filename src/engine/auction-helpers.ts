@@ -70,17 +70,25 @@ export function buildAuction(dealer: Seat, bids: string[]): Auction {
   return auction;
 }
 
+/** Internal: match auction entries against pattern calls. */
+function matchPattern(
+  auction: Auction,
+  pattern: readonly string[],
+): boolean {
+  for (let i = 0; i < pattern.length; i++) {
+    const expected = parsePatternCall(pattern[i]!);
+    if (!callsMatch(auction.entries[i]!.call, expected)) return false;
+  }
+  return true;
+}
+
 /** Prefix-match: auction entries must start with exactly these calls (auction may be longer). */
 export function auctionMatchesPrefix(
   auction: Auction,
   pattern: readonly string[],
 ): boolean {
   if (auction.entries.length < pattern.length) return false;
-  for (let i = 0; i < pattern.length; i++) {
-    const expected = parsePatternCall(pattern[i]!);
-    if (!callsMatch(auction.entries[i]!.call, expected)) return false;
-  }
-  return true;
+  return matchPattern(auction, pattern);
 }
 
 /** Exact-match: auction entries must have exactly the same calls as pattern (same length). @internal */
@@ -89,9 +97,5 @@ export function auctionMatchesExact(
   pattern: string[],
 ): boolean {
   if (auction.entries.length !== pattern.length) return false;
-  for (let i = 0; i < pattern.length; i++) {
-    const expected = parsePatternCall(pattern[i]!);
-    if (!callsMatch(auction.entries[i]!.call, expected)) return false;
-  }
-  return true;
+  return matchPattern(auction, pattern);
 }

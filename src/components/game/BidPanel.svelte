@@ -5,6 +5,7 @@
   import type { Call, ContractBid } from "../../engine/types";
   import { BidSuit } from "../../engine/types";
   import { formatCall } from "../../core/display/format";
+  import { callKey } from "../../engine/call-helpers";
   import { BID_SUIT_COLOR_CLASS } from "../../core/display/tokens";
 
   interface Props {
@@ -42,11 +43,6 @@
     { type: "double" },
     { type: "redouble" },
   ];
-
-  function callKey(call: Call): string {
-    if (call.type === "bid") return `${call.level}${call.strain}`;
-    return call.type;
-  }
 
   const legalSet = $derived(new Set(legalCalls.map(callKey)));
 

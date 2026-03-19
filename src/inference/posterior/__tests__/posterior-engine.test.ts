@@ -1,45 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { createPosteriorEngine } from "../posterior-engine";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import { ForcingState } from "../../../core/contracts/bidding";
-import { Suit, Rank, Seat } from "../../../engine/types";
-import type { Hand, Card } from "../../../engine/types";
-
-function makeSnapshot(commitments: readonly PublicConstraint[]): PublicSnapshot {
-  return {
-    activeModuleIds: [],
-    forcingState: ForcingState.Nonforcing,
-    obligation: { kind: "none", obligatedSide: "opener" },
-    agreedStrain: { type: "none" },
-    competitionMode: "uncontested",
-    captain: "responder",
-    systemCapabilities: {},
-    publicRegisters: {},
-    publicCommitments: commitments,
-  };
-}
-
-function makeHand(cards: Card[]): Hand {
-  return { cards };
-}
-
-// South hand: 10 HCP, 4 spades, 3 hearts, 3 diamonds, 3 clubs
-const southHand: Hand = makeHand([
-  { suit: Suit.Spades, rank: Rank.Ace },
-  { suit: Suit.Spades, rank: Rank.King },
-  { suit: Suit.Spades, rank: Rank.Five },
-  { suit: Suit.Spades, rank: Rank.Three },
-  { suit: Suit.Hearts, rank: Rank.Queen },
-  { suit: Suit.Hearts, rank: Rank.Six },
-  { suit: Suit.Hearts, rank: Rank.Two },
-  { suit: Suit.Diamonds, rank: Rank.Jack },
-  { suit: Suit.Diamonds, rank: Rank.Seven },
-  { suit: Suit.Diamonds, rank: Rank.Four },
-  { suit: Suit.Clubs, rank: Rank.Eight },
-  { suit: Suit.Clubs, rank: Rank.Five },
-  { suit: Suit.Clubs, rank: Rank.Three },
-]);
+import { Seat } from "../../../engine/types";
+import { makeSnapshot, southHand } from "./posterior-test-fixtures";
 
 describe("createPosteriorEngine", () => {
   it("compilePublic delegates to compiler and returns hand spaces", () => {

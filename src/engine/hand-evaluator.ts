@@ -19,12 +19,13 @@ export function calculateHcp(hand: Hand): number {
   return hand.cards.reduce((sum, card) => sum + HCP_VALUES[card.rank], 0);
 }
 
-export function getSuitLength(hand: Hand): SuitLength {
+/** Count all four suit lengths in a single pass. */
+function countSuits(cards: readonly Card[]): SuitLength {
   let spades = 0;
   let hearts = 0;
   let diamonds = 0;
   let clubs = 0;
-  for (const card of hand.cards) {
+  for (const card of cards) {
     switch (card.suit) {
       case Suit.Spades:
         spades++;
@@ -41,6 +42,15 @@ export function getSuitLength(hand: Hand): SuitLength {
     }
   }
   return [spades, hearts, diamonds, clubs] as const;
+}
+
+export function getSuitLength(hand: Hand): SuitLength {
+  return countSuits(hand.cards);
+}
+
+/** Count cards of a specific suit in a hand. */
+export function suitLengthOf(hand: Hand, suit: Suit): number {
+  return hand.cards.filter((c) => c.suit === suit).length;
 }
 
 export function isBalanced(shape: SuitLength): boolean {
@@ -88,28 +98,11 @@ export function calculateHcpAndShape(hand: Hand): {
   shape: SuitLength;
 } {
   let hcp = 0;
-  let spades = 0;
-  let hearts = 0;
-  let diamonds = 0;
-  let clubs = 0;
+  const shape = countSuits(hand.cards);
   for (const card of hand.cards) {
     hcp += HCP_VALUES[card.rank];
-    switch (card.suit) {
-      case Suit.Spades:
-        spades++;
-        break;
-      case Suit.Hearts:
-        hearts++;
-        break;
-      case Suit.Diamonds:
-        diamonds++;
-        break;
-      case Suit.Clubs:
-        clubs++;
-        break;
-    }
   }
-  return { hcp, shape: [spades, hearts, diamonds, clubs] as const };
+  return { hcp, shape };
 }
 
 /** @internal */

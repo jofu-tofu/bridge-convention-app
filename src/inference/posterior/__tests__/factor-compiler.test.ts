@@ -1,32 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { compileFactorGraph, validateFactorGraph } from "../factor-compiler";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import { ForcingState } from "../../../core/contracts/bidding";
 import type {
   HcpRangeFactor,
   SuitLengthFactor,
   ShapeFactor,
   ExclusionFactor,
 } from "../../../core/contracts/factor-graph";
-
-function makeSnapshot(
-  commitments: readonly PublicConstraint[],
-  latentBranches?: PublicSnapshot["latentBranches"],
-): PublicSnapshot {
-  return {
-    activeModuleIds: [],
-    forcingState: ForcingState.Nonforcing,
-    obligation: { kind: "none", obligatedSide: "opener" },
-    agreedStrain: { type: "none" },
-    competitionMode: "uncontested",
-    captain: "responder",
-    systemCapabilities: {},
-    publicRegisters: {},
-    publicCommitments: commitments,
-    ...(latentBranches ? { latentBranches } : {}),
-  };
-}
+import { makeSnapshot } from "./posterior-test-fixtures";
 
 describe("compileFactorGraph", () => {
   it("compiles HCP range from call-meaning (1NT: 15-17 HCP)", () => {

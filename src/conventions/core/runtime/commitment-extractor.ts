@@ -4,12 +4,12 @@ import type {
   ChoiceClosurePolicy,
 } from "../../../core/contracts/agreement-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
-import { callsMatch, formatCallString } from "../../../engine/call-helpers";
+import { callsMatch, callKey } from "../../../engine/call-helpers";
 import { derivePublicConstraints } from "../../../core/contracts/alert";
 import { resolveClause } from "../pipeline/binding-resolver";
 
 // Re-export for backward compatibility — canonical location is engine/call-helpers
-export { formatCallString } from "../../../engine/call-helpers";
+export { callKey as formatCallString } from "../../../engine/call-helpers";
 
 /**
  * Derive entailed denials from a closure policy.
@@ -41,7 +41,7 @@ export function deriveEntailedDenials(
   }
 
   const denials: PublicConstraint[] = [];
-  const callStr = formatCallString(entry.call);
+  const callStr = callKey(entry.call);
 
   // Re-query active surfaces at the same position to find peer surfaces
   const activeSurfaces = surfaceRouter(subAuction, entry.seat);
@@ -117,7 +117,7 @@ export function extractCommitments(
     );
 
     if (matchingSurface) {
-      const callStr = formatCallString(entry.call);
+      const callStr = callKey(entry.call);
 
       // Auto-derive public constraints from primitive/bridge-observable clauses
       // Resolve $-bindings before deriving constraints so factIds are concrete

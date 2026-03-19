@@ -57,11 +57,9 @@ export function createBergenR1Surfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 4,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "Splinter", params: { suit } },
       teachingLabel: `Splinter (3${suit === "hearts" ? "S" : "H"})`,
       surfaceBindings: bindings,
@@ -91,11 +89,9 @@ export function createBergenR1Surfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 3,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "GameRaise", params: { suit } },
       teachingLabel: `Game raise (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -125,11 +121,9 @@ export function createBergenR1Surfaces(
       ],
       ranking: {
         recommendationBand: "should",
-        specificity: 3,
         modulePrecedence: 0,
         intraModuleOrder: 2,
       },
-      priorityClass: "preferredConventional",
       sourceIntent: { type: "LimitRaise", params: { suit } },
       teachingLabel: "Limit raise (3D)",
       surfaceBindings: bindings,
@@ -159,11 +153,9 @@ export function createBergenR1Surfaces(
       ],
       ranking: {
         recommendationBand: "should",
-        specificity: 3, // derived: pointRange + suitLength + suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 3,
       },
-      priorityClass: "preferredConventional",
       sourceIntent: { type: "ConstructiveRaise", params: { suit } },
       teachingLabel: "Constructive raise (3C)",
       surfaceBindings: bindings,
@@ -193,11 +185,9 @@ export function createBergenR1Surfaces(
       ],
       ranking: {
         recommendationBand: "may",
-        specificity: 3, // derived: pointRange + suitLength + suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 4,
       },
-      priorityClass: "neutralCorrect",
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
       teachingLabel: `Preemptive raise (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -242,11 +232,9 @@ export function createBergenR2AfterConstructiveSurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept constructive → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -269,11 +257,9 @@ export function createBergenR2AfterConstructiveSurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: "Decline constructive → pass",
       surfaceBindings: bindings,
@@ -312,11 +298,9 @@ export function createBergenR2AfterLimitSurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept limit raise → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -339,11 +323,9 @@ export function createBergenR2AfterLimitSurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Decline limit raise → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -382,11 +364,9 @@ export function createBergenR2AfterPreemptiveSurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "RaiseToGame", params: { suit } },
       teachingLabel: `Bid game over preemptive (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -409,11 +389,9 @@ export function createBergenR2AfterPreemptiveSurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "AcceptPartnerDecision", params: { suit } },
       teachingLabel: "Pass over preemptive",
       surfaceBindings: bindings,
@@ -422,59 +400,6 @@ export function createBergenR2AfterPreemptiveSurfaces(
 }
 
 // ─── Round 3: Responder continuations ───────────────────────
-
-/**
- * R3 surface after opener bids game (4M).
- *
- * Responder unconditionally passes — game has been reached.
- * No suit parameterization needed since the call is always Pass.
- */
-export function createBergenR3AfterGameSurfaces(): readonly MeaningSurface[] {
-  return [
-    {
-      meaningId: "bergen:responder-accept-game",
-      semanticClassId: BERGEN_CLASSES.RESPONDER_ACCEPT_GAME,
-      moduleId: "bergen",
-      encoding: { defaultCall: { type: "pass" } },
-      clauses: [],
-      ranking: {
-        recommendationBand: "must",
-        specificity: 0,
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
-      priorityClass: "obligatory",
-      sourceIntent: { type: "AcceptPartnerDecision", params: {} },
-      teachingLabel: "Accept partner's game bid → pass",
-    },
-  ];
-}
-
-/**
- * R3 surface after opener signs off (3M or Pass).
- *
- * Responder unconditionally passes — the auction is over.
- */
-export function createBergenR3AfterSignoffSurfaces(): readonly MeaningSurface[] {
-  return [
-    {
-      meaningId: "bergen:responder-accept-signoff",
-      semanticClassId: BERGEN_CLASSES.RESPONDER_ACCEPT_SIGNOFF,
-      moduleId: "bergen",
-      encoding: { defaultCall: { type: "pass" } },
-      clauses: [],
-      ranking: {
-        recommendationBand: "must",
-        specificity: 0,
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
-      priorityClass: "obligatory",
-      sourceIntent: { type: "AcceptPartnerDecision", params: {} },
-      teachingLabel: "Accept partner's signoff → pass",
-    },
-  ];
-}
 
 /**
  * R3 surfaces after opener makes a help-suit game try.
@@ -507,11 +432,9 @@ export function createBergenR3AfterGameTrySurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept game try → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -534,11 +457,9 @@ export function createBergenR3AfterGameTrySurfaces(
       ],
       ranking: {
         recommendationBand: "must",
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
-      priorityClass: "obligatory",
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Reject game try → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -548,30 +469,69 @@ export function createBergenR3AfterGameTrySurfaces(
 
 // ─── Round 4: Opener final acceptance ───────────────────────
 
+// ─── Shared pass surface factory ────────────────────────────
+
+/** Create a single-element pass surface used in R3 and R4 terminal states. */
+function createBergenPassSurface(
+  meaningId: string,
+  semanticClassId: string,
+  teachingLabel: string,
+): readonly MeaningSurface[] {
+  return [
+    {
+      meaningId,
+      semanticClassId,
+      moduleId: "bergen",
+      encoding: { defaultCall: { type: "pass" } },
+      clauses: [],
+      ranking: {
+        recommendationBand: "must",
+        modulePrecedence: 0,
+        intraModuleOrder: 0,
+      },
+      sourceIntent: { type: "AcceptPartnerDecision", params: {} },
+      teachingLabel,
+    },
+  ];
+}
+
+/**
+ * R3 surface after opener bids game directly (4M).
+ *
+ * Responder unconditionally passes — game has been bid.
+ */
+export function createBergenR3AfterGameSurfaces(): readonly MeaningSurface[] {
+  return createBergenPassSurface(
+    "bergen:responder-accept-game",
+    BERGEN_CLASSES.RESPONDER_ACCEPT_GAME,
+    "Accept partner's game bid → pass",
+  );
+}
+
+/**
+ * R3 surface after opener signs off (3M or Pass).
+ *
+ * Responder unconditionally passes — the auction is over.
+ */
+export function createBergenR3AfterSignoffSurfaces(): readonly MeaningSurface[] {
+  return createBergenPassSurface(
+    "bergen:responder-accept-signoff",
+    BERGEN_CLASSES.RESPONDER_ACCEPT_SIGNOFF,
+    "Accept partner's signoff → pass",
+  );
+}
+
 /**
  * R4 surface after responder decides on the game try.
  *
  * Opener unconditionally passes — responder has made the final decision.
  */
 export function createBergenR4Surfaces(): readonly MeaningSurface[] {
-  return [
-    {
-      meaningId: "bergen:opener-accept-after-try",
-      semanticClassId: BERGEN_CLASSES.OPENER_ACCEPT_AFTER_TRY,
-      moduleId: "bergen",
-      encoding: { defaultCall: { type: "pass" } },
-      clauses: [],
-      ranking: {
-        recommendationBand: "must",
-        specificity: 0,
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
-      priorityClass: "obligatory",
-      sourceIntent: { type: "AcceptPartnerDecision", params: {} },
-      teachingLabel: "Accept partner's decision on game try → pass",
-    },
-  ];
+  return createBergenPassSurface(
+    "bergen:opener-accept-after-try",
+    BERGEN_CLASSES.OPENER_ACCEPT_AFTER_TRY,
+    "Accept partner's decision on game try → pass",
+  );
 }
 
 // ─── Pre-instantiated surfaces ──────────────────────────────

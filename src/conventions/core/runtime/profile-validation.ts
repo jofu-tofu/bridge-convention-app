@@ -26,8 +26,9 @@ export function validateProfile(
     return diagnostics;
   }
 
-  // Track call → { semanticClassId, moduleId } for collision detection
+  // Single pass: detect both collision directions simultaneously
   const callMeanings = new Map<string, { semanticClassId: string; moduleId: string }>();
+  const semanticClassCalls = new Map<string, { defaultCall: string; moduleId: string }>();
 
   for (const module of profile.modules) {
     const surfaces = surfaceLookup(module.moduleId);
@@ -35,15 +36,16 @@ export function validateProfile(
     for (const surface of surfaces) {
       if (!surface.semanticClassId) continue;
 
-      const existing = callMeanings.get(surface.defaultCall);
-      if (existing) {
-        if (existing.semanticClassId !== surface.semanticClassId) {
+      // Check call → semanticClassId collision
+      const existingCall = callMeanings.get(surface.defaultCall);
+      if (existingCall) {
+        if (existingCall.semanticClassId !== surface.semanticClassId) {
           diagnostics.push({
             level: "error",
             moduleId: module.moduleId,
             message:
               `Semantic collision on call "${surface.defaultCall}": ` +
-              `module "${existing.moduleId}" assigns "${existing.semanticClassId}" ` +
+              `module "${existingCall.moduleId}" assigns "${existingCall.semanticClassId}" ` +
               `but module "${module.moduleId}" assigns "${surface.semanticClassId}"`,
           });
         }
@@ -53,27 +55,17 @@ export function validateProfile(
           moduleId: module.moduleId,
         });
       }
-    }
-  }
 
-  // Second pass: detect same semanticClassId with different defaultCalls
-  const semanticClassCalls = new Map<string, { defaultCall: string; moduleId: string }>();
-
-  for (const module of profile.modules) {
-    const surfaces = surfaceLookup(module.moduleId);
-
-    for (const surface of surfaces) {
-      if (!surface.semanticClassId) continue;
-
-      const existing = semanticClassCalls.get(surface.semanticClassId);
-      if (existing) {
-        if (existing.defaultCall !== surface.defaultCall) {
+      // Check semanticClassId → call collision
+      const existingClass = semanticClassCalls.get(surface.semanticClassId);
+      if (existingClass) {
+        if (existingClass.defaultCall !== surface.defaultCall) {
           diagnostics.push({
             level: "error",
             moduleId: module.moduleId,
             message:
               `Semantic collision on semanticClassId "${surface.semanticClassId}": ` +
-              `module "${existing.moduleId}" encodes as "${existing.defaultCall}" ` +
+              `module "${existingClass.moduleId}" encodes as "${existingClass.defaultCall}" ` +
               `but module "${module.moduleId}" encodes as "${surface.defaultCall}"`,
           });
         }

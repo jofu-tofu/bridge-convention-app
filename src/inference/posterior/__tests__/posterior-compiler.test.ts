@@ -1,22 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { compilePublicHandSpace } from "../posterior-compiler";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import { ForcingState } from "../../../core/contracts/bidding";
-
-function makeSnapshot(commitments: readonly PublicConstraint[]): PublicSnapshot {
-  return {
-    activeModuleIds: [],
-    forcingState: ForcingState.Nonforcing,
-    obligation: { kind: "none", obligatedSide: "opener" },
-    agreedStrain: { type: "none" },
-    competitionMode: "uncontested",
-    captain: "responder",
-    systemCapabilities: {},
-    publicRegisters: {},
-    publicCommitments: commitments,
-  };
-}
+import { makeSnapshot } from "./posterior-test-fixtures";
 
 describe("compilePublicHandSpace", () => {
   it("extracts HCP range constraints from 1NT opening commitment (15-17 HCP)", () => {

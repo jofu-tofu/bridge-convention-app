@@ -4,7 +4,7 @@ import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { Auction, Seat } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
-import { formatCallString } from "../../../engine/call-helpers";
+import { callKey } from "../../../engine/call-helpers";
 
 /**
  * Resolve a semantic role (e.g. "opener", "responder") to a compass Seat
@@ -53,7 +53,7 @@ function matchesAuctionPattern(
 
       return auction.entries.some(e => {
         if (pattern.byRole && e.seat !== roleSeat) return false;
-        return formatCallString(e.call) === pattern.call;
+        return callKey(e.call) === pattern.call;
       });
     }
     case "by-role": {
@@ -65,7 +65,7 @@ function matchesAuctionPattern(
       for (let i = auction.entries.length - 1; i >= 0; i--) {
         const entry = auction.entries[i]!;
         if (entry.seat === seat) {
-          return formatCallString(entry.call) === pattern.lastCall;
+          return callKey(entry.call) === pattern.lastCall;
         }
       }
       return false; // role's seat never acted

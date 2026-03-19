@@ -3,6 +3,7 @@ import { Suit, Seat, Vulnerability } from "../types";
 import type { Card, Deal, DealConstraints } from "../types";
 import { checkConstraints, generateDeal } from "../deal-generator";
 import { calculateHcp } from "../hand-evaluator";
+import { mulberry32 } from "../../core/util/seeded-rng";
 import { hand } from "./fixtures";
 
 // Fixture deal with known properties
@@ -574,17 +575,6 @@ describe("multi-seat constraints", () => {
 });
 
 describe("deal-generator edge cases", () => {
-  /** Simple seeded PRNG (mulberry32) for deterministic edge case tests. */
-  function createSeededRng(seed: number): () => number {
-    let s = seed | 0;
-    return () => {
-      s = (s + 0x6d2b79f5) | 0;
-      let t = Math.imul(s ^ (s >>> 15), 1 | s);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
   test("all 4 seats constrained (HCP conservation)", () => {
     // N:15-17 balanced, S:8+, E:5+, W:5+ — total HCP=40 means this is tight but feasible
     const constraints: DealConstraints = {
@@ -624,7 +614,7 @@ describe("deal-generator edge cases", () => {
   });
 
   test("empty constraints object produces valid deal in 1 iteration", () => {
-    const rng = createSeededRng(42);
+    const rng = mulberry32(42);
     const result = generateDeal({ seats: [] }, rng);
     expect(result.iterations).toBe(1);
     const allCards = [
@@ -638,28 +628,17 @@ describe("deal-generator edge cases", () => {
 });
 
 describe("seeded RNG", () => {
-  /** Simple seeded PRNG (mulberry32) for deterministic tests. */
-  function createSeededRng(seed: number): () => number {
-    let s = seed | 0;
-    return () => {
-      s = (s + 0x6d2b79f5) | 0;
-      let t = Math.imul(s ^ (s >>> 15), 1 | s);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
   test("same seed produces identical deals", () => {
-    const rng1 = createSeededRng(42);
-    const rng2 = createSeededRng(42);
+    const rng1 = mulberry32(42);
+    const rng2 = mulberry32(42);
     const deal1 = generateDeal({ seats: [] }, rng1);
     const deal2 = generateDeal({ seats: [] }, rng2);
     expect(deal1.deal).toEqual(deal2.deal);
   });
 
   test("different seeds produce different deals", () => {
-    const rng1 = createSeededRng(42);
-    const rng2 = createSeededRng(999);
+    const rng1 = mulberry32(42);
+    const rng2 = mulberry32(999);
     const deal1 = generateDeal({ seats: [] }, rng1);
     const deal2 = generateDeal({ seats: [] }, rng2);
     const cards1 = deal1.deal.hands[Seat.North].cards.map(
@@ -672,7 +651,7 @@ describe("seeded RNG", () => {
   });
 
   test("seeded deal with constraints still satisfies them", () => {
-    const rng = createSeededRng(123);
+    const rng = mulberry32(123);
     const constraints: DealConstraints = {
       seats: [{ seat: Seat.North, minHcp: 12 }],
     };

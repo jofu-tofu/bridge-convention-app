@@ -5,7 +5,7 @@ import type { PublicEvent } from "../../../core/contracts/agreement-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { MachineRegisters } from "./machine-types";
 import { ForcingState } from "../../../core/contracts/bidding";
-import { formatCallString } from "../../../engine/call-helpers";
+import { callKey } from "../../../engine/call-helpers";
 import { extractCommitments } from "./commitment-extractor";
 
 export function buildSnapshotFromAuction(
@@ -44,7 +44,7 @@ export function buildSnapshotFromAuction(
 function buildPublicRecord(auction: Auction): readonly PublicEvent[] {
   return auction.entries.map((entry, index) => ({
     eventIndex: index,
-    call: formatCallString(entry.call),
+    call: callKey(entry.call),
     seat: entry.seat,
   }));
 }

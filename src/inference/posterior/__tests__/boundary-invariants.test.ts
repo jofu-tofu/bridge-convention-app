@@ -1,22 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { compileFactorGraph } from "../factor-compiler";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import { ForcingState } from "../../../core/contracts/bidding";
-
-function makeSnapshot(commitments: readonly PublicConstraint[]): PublicSnapshot {
-  return {
-    activeModuleIds: [],
-    forcingState: ForcingState.Nonforcing,
-    obligation: { kind: "none", obligatedSide: "opener" },
-    agreedStrain: { type: "none" },
-    competitionMode: "uncontested",
-    captain: "responder",
-    systemCapabilities: {},
-    publicRegisters: {},
-    publicCommitments: commitments,
-  };
-}
+import { makeSnapshot } from "./posterior-test-fixtures";
 
 describe("posterior boundary invariants", () => {
   it("schema closure: no file in posterior/ imports from conventions/definitions/", async () => {

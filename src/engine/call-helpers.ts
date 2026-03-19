@@ -17,9 +17,6 @@ export function callKey(call: Call): string {
   return "XX";
 }
 
-/** Format a Call object into a short string (e.g., "1NT", "P", "X", "XX"). */
-export const formatCallString = callKey;
-
 /** Format a Call as a human-readable string for evidence output (e.g., "1NT", "Pass", "Double"). */
 export function formatCallForEvidence(call: Call): string {
   if (call.type !== "bid") {

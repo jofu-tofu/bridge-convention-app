@@ -1,71 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { createTsBackend } from "../ts-posterior-backend";
 import { compileFactorGraph } from "../factor-compiler";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { PublicConstraint } from "../../../core/contracts/agreement-module";
 import type { ConditioningContext } from "../../../core/contracts/posterior-query";
-import { ForcingState } from "../../../core/contracts/bidding";
 import { Suit, Rank } from "../../../engine/types";
-import type { Hand, Card } from "../../../engine/types";
-
-// ─── Test fixtures (shared with posterior-engine.test.ts) ───
-
-function makeSnapshot(commitments: readonly PublicConstraint[]): PublicSnapshot {
-  return {
-    activeModuleIds: [],
-    forcingState: ForcingState.Nonforcing,
-    obligation: { kind: "none", obligatedSide: "opener" },
-    agreedStrain: { type: "none" },
-    competitionMode: "uncontested",
-    captain: "responder",
-    systemCapabilities: {},
-    publicRegisters: {},
-    publicCommitments: commitments,
-  };
-}
-
-function makeHand(cards: Card[]): Hand {
-  return { cards };
-}
-
-// South hand: 10 HCP, 4 spades, 3 hearts, 3 diamonds, 3 clubs
-const southHand: Hand = makeHand([
-  { suit: Suit.Spades, rank: Rank.Ace },
-  { suit: Suit.Spades, rank: Rank.King },
-  { suit: Suit.Spades, rank: Rank.Five },
-  { suit: Suit.Spades, rank: Rank.Three },
-  { suit: Suit.Hearts, rank: Rank.Queen },
-  { suit: Suit.Hearts, rank: Rank.Six },
-  { suit: Suit.Hearts, rank: Rank.Two },
-  { suit: Suit.Diamonds, rank: Rank.Jack },
-  { suit: Suit.Diamonds, rank: Rank.Seven },
-  { suit: Suit.Diamonds, rank: Rank.Four },
-  { suit: Suit.Clubs, rank: Rank.Eight },
-  { suit: Suit.Clubs, rank: Rank.Five },
-  { suit: Suit.Clubs, rank: Rank.Three },
-]);
-
-// 1NT commitment patterns: 15-17 HCP, balanced
-const oneNtCommitments: readonly PublicConstraint[] = [
-  {
-    subject: "N",
-    constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
-    origin: "call-meaning",
-    strength: "hard",
-  },
-  {
-    subject: "N",
-    constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
-    origin: "call-meaning",
-    strength: "hard",
-  },
-  {
-    subject: "N",
-    constraint: { factId: "hand.isBalanced", operator: "boolean", value: true },
-    origin: "call-meaning",
-    strength: "hard",
-  },
-];
+import type { Hand } from "../../../engine/types";
+import { makeSnapshot, makeHand, southHand, oneNtCommitments } from "./posterior-test-fixtures";
 
 function makeConditioningContext(
   commitments: readonly PublicConstraint[],
