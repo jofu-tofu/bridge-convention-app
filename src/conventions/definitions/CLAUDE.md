@@ -12,7 +12,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `convention-config.ts` | Thin `ConventionConfig` wrapper for registry/UI compatibility |
 | `convention-spec.ts` | `ConventionSpec` declarative specification — single source of truth for bundle metadata, deal constraints, and member declarations |
 | `base-track.ts` | `BaseTrackTable` defining the FSM state→surface mapping as a declarative table. Used by `compose.ts` to build the conversation machine and surface routing. |
-| `meaning-surfaces.ts` | `MeaningSurface[]` definitions — the core bidding logic |
+| `meaning-surfaces.ts` | `MeaningSurface[]` definitions — the core bidding logic (single-module bundles). In multi-module bundles like nt-bundle, this is `composed-surfaces.ts` (cross-module composition re-exports). |
 | `facts.ts` | `FactCatalogExtension`s for module-derived facts |
 | `semantic-classes.ts` | Module-local semantic class constants (not in central registry) |
 | `machine.ts` | `ConversationMachine` FSM for hierarchical state tracking |
@@ -38,8 +38,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `compose.ts` — `composeNtModules()`: assembles `ConventionModule[]` bottom-up into shared FSM infrastructure (idle, nt-opened, responder-r1, terminal) with per-module scope states (`stayman-scope`, `transfers-scope`, `smolen-scope`) that each own an interrupted target state for opponent interference. Merges surface groups, combined facts/explanations/relations. Handles `hookTransitions` (e.g., Smolen prepending transitions to Stayman states).
 - `config.ts` — `ConventionBundle` composed from all 4 modules. `memberIds: ["jacoby-transfers", "stayman", "smolen"]` (Jacoby first for tie-breaking priority).
 - `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles, each composed from a subset of modules.
-- `meaning-surfaces.ts` — Re-export shim for backward compatibility. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
-- `facts.ts` — Re-export shim: `staymanFacts`, `transferFacts`, `ntResponseFacts`, `smolenFacts` from modules.
+- `composed-surfaces.ts` — Cross-module composition re-exports. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
+- ~~`facts.ts`~~ — Removed. Facts (`staymanFacts`, `transferFacts`, `ntResponseFacts`, `smolenFacts`) are now re-exported directly from `modules/` via the barrel `index.ts`.
 - `machine.ts` — Re-export shim: `createNtConversationMachine()` delegates to `composeNtModules()`.
 - `semantic-classes.ts` — Re-export shim from modules.
 - `explanation-catalog.ts` — Composed from all modules' explanation entries.
@@ -65,7 +65,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 Every convention bundle must satisfy all items before being considered complete:
 
-1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `specificity`, `modulePrecedence`). **Specificity is derived from the communicative dimensions of the surface's clauses** — use `deriveSpecificity()` from `conventions/core/pipeline/specificity-deriver.ts` rather than hand-picking a number. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
+1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `modulePrecedence`, `intraModuleOrder`). **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
 2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state.
 3. **`surfaceRouter` for round-aware filtering.** Maps FSM state → surface group via `RoutedSurfaceGroup[]`. Without this, all surfaces are evaluated every round (expensive and semantically incorrect).
 4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, and `terminal`. **Scoped interrupt pattern:** opponent interference is handled by abstract scope states (parent states with `opponent-action` transitions targeting local interrupted states) — not a single global contested sink. Design rule: external events are handled by the nearest enclosing interrupt scope. `call` and `any-bid` transitions are role-safe by default (self+partner only); use `opponent-action` with `callType: "bid"` to match opponent bids explicitly.
@@ -80,7 +80,7 @@ Every convention bundle must satisfy all items before being considered complete:
 
 ## Type Reference
 
-### ConventionConfig (`core/types.ts`)
+### ConventionConfig (`core/contracts/convention.ts`)
 
 The minimal registry interface. Bundles expose this via `convention-config.ts` wrappers.
 
@@ -107,6 +107,7 @@ The full bundle interface — the primary authoring surface for new conventions.
 | `memberIds` | Yes | `readonly string[]` | Convention IDs this bundle implements. Order matters for tie-breaking priority. |
 | `internal` | No | `boolean` | If `true`, hidden from UI picker (e.g., parity testing). |
 | `dealConstraints` | Yes | `DealConstraints` | Seat-specific HCP, shape, and balanced constraints. |
+| `offConventionConstraints` | No | `DealConstraints` | Anti-constraints for off-convention drills (hands where the convention doesn't apply). Used by `startDrill()` when `DrillTuning.includeOffConvention` is set. |
 | `defaultAuction` | No | `(seat, deal?) => Auction \| undefined` | Pre-filled auction for drill start. |
 | `activationFilter` | No | `(auction, seat) => readonly string[]` | Legacy activation filter. Optional when `systemProfile` is present. |
 | `meaningSurfaces` | No* | `readonly { groupId: string; surfaces: readonly MeaningSurface[] }[]` | Meaning surfaces organized by group. When present, the meaning pipeline is used. |
@@ -117,13 +118,12 @@ The full bundle interface — the primary authoring surface for new conventions.
 | `declaredCapabilities` | No | `Readonly<Record<string, string>>` | Capabilities injected into profile-based activation. Bundles without this get none. |
 | `category` | No | `ConventionCategory` | Convention category for UI grouping. |
 | `description` | No | `string` | Human-readable description for UI display. |
-| `explanationCatalog` | No | `ExplanationCatalogIR` | Explanation catalog for enriching teaching projections. |
+| `explanationCatalog` | Yes | `ExplanationCatalogIR` | Explanation catalog for enriching teaching projections. |
+| `pedagogicalRelations` | Yes | `readonly PedagogicalRelation[]` | Relationship edges between surfaces (same-family, stronger-than, fallback-of, continuation-of, near-miss-of). |
+| `acceptableAlternatives` | Yes | `readonly AlternativeGroup[]` | Groups of hands where multiple bids are reasonable, for grading. |
+| `intentFamilies` | Yes | `readonly IntentFamily[]` | Relationship-aware credit for near-miss grading. |
 
 *Required in practice for a meaning-pipeline convention, though TypeScript marks it optional.
-
-**Companion exports** (not on `ConventionBundle`, exported from separate modules):
-- `PedagogicalRelation[]` — from `pedagogical-relations.ts`
-- `AlternativeGroup[]` — from `alternatives.ts`
 
 ## File Templates
 
@@ -133,7 +133,7 @@ Skeleton templates for a new convention bundle. Replace `{name}` with bundle ID 
 
 ```ts
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
-import { ConventionCategory } from "../../core/types";
+import { ConventionCategory } from "../../../core/contracts/convention";
 import { {NAME}_SURFACES } from "./meaning-surfaces";
 import { {name}Facts } from "./facts";
 import { create{Name}SurfaceRouter } from "./surface-routing";
@@ -185,7 +185,8 @@ export const {NAME}_SURFACES: readonly MeaningSurface[] = [
       { factId: "hand.suitLength.clubs", operator: "gte", value: 4 },
     ],
     semanticClass: {NAME}_SEMANTIC.MY_CLASS,
-    ranking: { band: "should", specificity: 2, modulePrecedence: 1 }, // specificity: use deriveSpecificity() to compute from clause dimensions
+    ranking: { band: "should", modulePrecedence: 1, intraModuleOrder: 0 },
+    // specificity is pipeline-derived from clause dimensions — do NOT set it here
     // Optional: bindings: { suit: "hearts" } for parameterized surfaces
   },
   // Additional surfaces...
@@ -280,7 +281,7 @@ export function create{Name}ConversationMachine(): ConversationMachine {
 ### convention-config.ts
 
 ```ts
-import type { ConventionConfig } from "../../core/types";
+import type { ConventionConfig } from "../../../core/contracts/convention";
 import { {name}Bundle } from "./config";
 
 export const {name}BundleConventionConfig: ConventionConfig = {

@@ -53,6 +53,10 @@ components/
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Three-branch bid feedback (Correct green/Acceptable teal/Incorrect red) with show-answer toggle, tree fork display, acceptable badges on siblings, optional amber practical note, convention contribution badges, pedagogical relation labels, WhyNot grade distinction, multi-rationale indicator, meaning landscape section, encoding explanation, partner hand space summary, elimination stage annotations
     BidFeedbackPanel.ts              Companion .ts file with convention-agnostic display helpers for TeachingProjection rendering: formatRelationKind, formatEliminationStage, formatModuleRole, roleColorClasses, whyNotGradeClasses, isArtificialEncoder, formatEncoderKind
+    bid-feedback/
+      BidFeedbackIncorrect.svelte    Incorrect bid feedback panel (integrates ParseTreePanel)
+      BidFeedbackNearMiss.svelte     Near-miss bid feedback panel (integrates ParseTreePanel)
+      ParseTreePanel.svelte          Post-bid decision chain visualization — shows which convention modules were considered, accepted, or eliminated, with per-module conditions and verdicts (selected/applicable/eliminated)
     RoundBidList.svelte              Shared round-by-round bid list (configurable expand state, expected result, test IDs)
     BiddingReview.svelte             Thin wrapper over RoundBidList (expanded siblings, shows expected)
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)

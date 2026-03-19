@@ -7,7 +7,6 @@ Infrastructure for the meaning-centric convention system: registry, meaning pipe
 ```
 core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
-  types.ts              ConventionConfig, BiddingContext (re-exported from contracts), ConventionCategory
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   surface-helpers.ts    Surface utility functions
