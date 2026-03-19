@@ -116,11 +116,10 @@ function setupTarget(
 
   const rng = seed !== undefined ? createSeededRng(seed) : undefined;
 
-  // Generate deal
+  // Generate deal — rng is the second parameter, not a constraint field
   let deal: Deal;
   try {
-    const constraints = rng ? { ...target.dealConstraints, rng } : target.dealConstraints;
-    deal = generateDeal(constraints).deal;
+    deal = generateDeal(target.dealConstraints, rng).deal;
   } catch {
     return { error: "Deal generation failed — constraints infeasible for this seed" };
   }
@@ -459,8 +458,7 @@ function runSelfTestTarget(
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     let deal: Deal;
     try {
-      const constraints = rng ? { ...target.dealConstraints, rng } : target.dealConstraints;
-      deal = generateDeal(constraints).deal;
+      deal = generateDeal(target.dealConstraints, rng).deal;
     } catch { continue; }
 
     const dealer = target.dealConstraints.dealer ?? Seat.North;

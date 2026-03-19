@@ -316,14 +316,99 @@ export function callToString(call: Call): string {
   return `${bid.level}${bid.strain}`;
 }
 
-/** Extract the auction prefix (bid strings) from a path. */
-export function pathToAuctionPrefix(path: StatePath): string[] {
-  const bids: string[] = [];
-  for (const step of path.transitions) {
-    if (step.call) {
-      bids.push(callToString(step.call));
+/** Extract the auction prefix (bid strings) from a path.
+ *
+ * When a machine is provided, uses its `seatRole` function to map
+ * each transition to a seat position and inserts opponent passes
+ * to maintain correct 4-seat rotation (N→E→S→W→N...).
+ *
+ * Without a machine, emits raw calls without pass insertion.
+ */
+export function pathToAuctionPrefix(
+  path: StatePath,
+  machine?: ConversationMachine,
+): string[] {
+  if (!machine) {
+    // Legacy: raw calls without pass insertion
+    const bids: string[] = [];
+    for (const step of path.transitions) {
+      if (step.call) bids.push(callToString(step.call));
     }
+    return bids;
   }
+
+  // With machine: use the seatRole function to determine each transition's
+  // seat, then fill gaps with opponent passes.
+  //
+  // The machine.seatRole(auction, userSeat, callSeat) → "self"|"partner"|"opponent"
+  // tells us which seat made each bid.  We simulate the auction position
+  // to insert passes for seats that were skipped.
+
+  // Collect the concrete calls with their roles
+  const steps: { call: Call; matchKind: string; seatRole?: string }[] = [];
+  for (const step of path.transitions) {
+    if (!step.call) continue;
+    steps.push({
+      call: step.call,
+      matchKind: step.match.kind,
+      seatRole: step.match.kind === "pass" ? (step.match as { seatRole?: string }).seatRole : undefined,
+    });
+  }
+
+  if (steps.length === 0) return [];
+
+  // Build the auction by assigning each step to its correct seat position.
+  // The pattern in a standard convention FSM (dealer=N, user=S):
+  //   Position 0: N (opener/partner)
+  //   Position 1: E (opponent)
+  //   Position 2: S (responder/self)
+  //   Position 3: W (opponent)
+  //
+  // Partnership bids go to even positions (0, 2, 4, 6, ...),
+  // opponent bids go to odd positions (1, 3, 5, 7, ...).
+  // We determine each step's type from the transition match kind:
+  //   - "opponent-action" → opponent seat
+  //   - "pass" with seatRole="opponent" → opponent seat
+  //   - everything else → partnership seat (alternating opener/responder)
+
+  const bids: string[] = [];
+  let currentPos = 0; // Current auction seat position
+
+  for (const step of steps) {
+    // Determine if this is an opponent action or a partnership bid.
+    // "opponent-action" is always opponent.
+    // "pass" without explicit seatRole="self" or seatRole="partner" is opponent
+    // (in convention FSMs, inter-bid passes are opponent passes).
+    // "call" and "any-bid" are partnership bids.
+    const isOpponent = step.matchKind === "opponent-action" ||
+      (step.matchKind === "pass" && step.seatRole !== "self" && step.seatRole !== "partner");
+
+    if (isOpponent) {
+      // Opponent action: advance to the next odd position
+      // (opponents are at positions 1, 3, 5, ...)
+      while (currentPos % 2 === 0) {
+        bids.push("P");
+        currentPos++;
+      }
+    } else {
+      // Partnership bid: advance to the next even position
+      // (partnership bids are at positions 0, 2, 4, ...)
+      while (currentPos % 2 !== 0) {
+        bids.push("P");
+        currentPos++;
+      }
+    }
+
+    bids.push(callToString(step.call));
+    currentPos++;
+  }
+
+  // If the last bid was a partnership bid (even position), the next seat
+  // is an opponent.  Append one pass so the auction lands on the user's turn.
+  if (bids.length > 0 && currentPos % 2 !== 0) {
+    bids.push("P");
+  }
+
   return bids;
 }
 

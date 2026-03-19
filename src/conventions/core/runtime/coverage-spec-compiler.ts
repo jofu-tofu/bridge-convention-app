@@ -194,7 +194,7 @@ export function compilePathToTarget(
   return {
     stateId: path.targetStateId,
     surfaceGroupId: targetState?.surfaceGroupId,
-    auctionPrefix: pathToAuctionPrefix(path),
+    auctionPrefix: pathToAuctionPrefix(path, machine),
     dealConstraints,
     activeSurfaces,
     hasUnresolvableSteps,
