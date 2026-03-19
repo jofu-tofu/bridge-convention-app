@@ -16,7 +16,10 @@ import "../conventions";
 import { listConventionSpecs, getConventionSpec } from "../conventions/spec-registry";
 import {
   generateProtocolCoverageManifest,
+  enumerateBaseTrackStates,
+  type BaseTrackPath,
 } from "../conventions/core/protocol/coverage-enumeration";
+import { getBaseModules } from "../conventions/core/protocol/types";
 import { getBundle } from "../conventions/core/bundle";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createBiddingContext } from "../conventions/core/context-factory";
@@ -185,6 +188,112 @@ function formatHandBySuit(hand: Hand): Record<string, string[]> {
   };
 }
 
+// ── Targeted auction from BFS paths ─────────────────────────────────
+
+function nextSeatClockwise(seat: Seat): Seat {
+  switch (seat) {
+    case Seat.North: return Seat.East;
+    case Seat.East: return Seat.South;
+    case Seat.South: return Seat.West;
+    case Seat.West: return Seat.North;
+  }
+}
+
+function partnerOf(seat: Seat): Seat {
+  switch (seat) {
+    case Seat.North: return Seat.South;
+    case Seat.South: return Seat.North;
+    case Seat.East: return Seat.West;
+    case Seat.West: return Seat.East;
+  }
+}
+
+/**
+ * Find the BFS path to a target state across all base tracks.
+ */
+function findPathToState(
+  spec: ConventionSpec,
+  targetStateId: string,
+): BaseTrackPath | null {
+  for (const track of getBaseModules(spec)) {
+    const paths = enumerateBaseTrackStates(track);
+    const path = paths.get(targetStateId);
+    if (path) return path;
+  }
+  return null;
+}
+
+/**
+ * Build an auction that reaches a target state by following the BFS path.
+ *
+ * The default auction covers the boot pattern (e.g., N: 1NT) plus the first
+ * transition (e.g., E: Pass). Remaining transitions are appended, with
+ * opponent passes inserted where the BFS skips them.
+ */
+function buildTargetedAuction(
+  defaultAuction: Auction,
+  path: BaseTrackPath,
+  userSeat: Seat,
+): Auction {
+  const entries = [...defaultAuction.entries];
+
+  // First transition is covered by the default auction (opponent pass after opening)
+  const transitionsToAdd = path.transitions.slice(1);
+  if (transitionsToAdd.length === 0) return { entries, isComplete: false };
+
+  let currentSeat = nextSeatClockwise(entries[entries.length - 1]!.seat);
+  const partner = partnerOf(userSeat);
+
+  for (const transition of transitionsToAdd) {
+    if (!transition.call) continue;
+
+    const isPass = transition.call.type === "pass";
+
+    // For non-pass convention bids: skip over opponent seats with passes
+    if (!isPass) {
+      while (currentSeat !== userSeat && currentSeat !== partner) {
+        entries.push({ seat: currentSeat, call: { type: "pass" } });
+        currentSeat = nextSeatClockwise(currentSeat);
+      }
+    }
+
+    entries.push({ seat: currentSeat, call: transition.call });
+    currentSeat = nextSeatClockwise(currentSeat);
+  }
+
+  // Fill opponent passes so the next bidder is a convention player
+  while (currentSeat !== userSeat && currentSeat !== partner) {
+    entries.push({ seat: currentSeat, call: { type: "pass" } });
+    currentSeat = nextSeatClockwise(currentSeat);
+  }
+
+  return { entries, isComplete: false };
+}
+
+/**
+ * Build the auction for a target state. Falls back to the default auction
+ * if no BFS path is found or the path has null calls.
+ */
+function resolveAuction(
+  bundle: ConventionBundle,
+  spec: ConventionSpec,
+  deal: Deal,
+  targetStateId: string,
+  userSeat: Seat,
+): { auction: Auction; targeted: boolean } {
+  const defaultAuction = buildInitialAuction(bundle, userSeat, deal);
+  const path = findPathToState(spec, targetStateId);
+  if (!path) return { auction: defaultAuction, targeted: false };
+
+  // Check for null calls in the path (can't build a concrete auction)
+  if (path.transitions.some((t) => t.call === null)) {
+    return { auction: defaultAuction, targeted: false };
+  }
+
+  const targeted = buildTargetedAuction(defaultAuction, path, userSeat);
+  return { auction: targeted, targeted: true };
+}
+
 // ── Main dispatch ───────────────────────────────────────────────────
 
 const rawArgs = process.argv.slice(2);
@@ -244,19 +353,24 @@ function runPresent(): void {
   const surface = requireArg(flags, "surface");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
 
-  resolveSpec(bundleId); // validate spec exists
+  const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
 
   // Generate deal
   const deal = generateSeededDeal(bundle, seed);
   const userSeat = resolveUserSeat(bundle, deal);
-  const hand = deal.hands[userSeat];
 
-  // Build auction
-  const auction = buildInitialAuction(bundle, userSeat, deal);
+  // Build targeted auction to reach the target state
+  const { auction, targeted } = resolveAuction(bundle, spec, deal, targetState, userSeat);
 
-  // Legal calls
-  const legalCalls = getLegalCalls(auction, userSeat).map(callKey);
+  // Active seat = next bidder after the auction prefix
+  const activeSeat = auction.entries.length > 0
+    ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+    : userSeat;
+  const hand = deal.hands[activeSeat];
+
+  // Legal calls from the active seat's perspective
+  const legalCalls = getLegalCalls(auction, activeSeat).map(callKey);
 
   // Build viewport output (no correct answer)
   const output = {
@@ -264,7 +378,8 @@ function runPresent(): void {
     target: targetState,
     surface,
     seed,
-    seat: userSeat,
+    seat: activeSeat,
+    targeted,
     hand: formatHandBySuit(hand),
     handRaw: hand.cards.map(formatCard),
     hcp: evaluateHand(hand).hcp,
@@ -302,36 +417,64 @@ function runGrade(): void {
   // Same deal as present (same seed)
   const deal = generateSeededDeal(bundle, seed);
   const userSeat = resolveUserSeat(bundle, deal);
-  const hand = deal.hands[userSeat];
 
-  // Build auction and context
-  const auction = buildInitialAuction(bundle, userSeat, deal);
-  const context = buildContext(hand, auction, userSeat);
+  // Build targeted auction and determine active seat
+  const { auction, targeted } = resolveAuction(bundle, spec, deal, targetState, userSeat);
+  const activeSeat = auction.entries.length > 0
+    ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+    : userSeat;
+  const hand = deal.hands[activeSeat];
+
+  // Build context from the active seat's perspective
+  const context = buildContext(hand, auction, activeSeat);
 
   // Run strategy to get the correct bid
   const strategy = protocolSpecToStrategy(spec);
   const result = strategy.suggest(context);
 
-  const correctCall = result?.call ?? null;
-  const isCorrect = correctCall !== null && callsMatch(submittedCall, correctCall);
+  if (!result) {
+    // Strategy has no recommendation — report as skip, not wrong
+    const output = {
+      bundle: bundleId,
+      target: targetState,
+      surface,
+      seed,
+      targeted,
+      yourBid: callKey(submittedCall),
+      correctBid: null,
+      grade: "skip",
+      correct: false,
+      skip: true,
+      requiresRetry: false,
+      explanation: null,
+      meaning: null,
+      feedback: "Strategy returned null (no recommendation for this state/hand)",
+    };
+    console.log(JSON.stringify(output, null, 2));
+    process.exit(0); // skip is not a failure
+    return;
+  }
+
+  const correctCall = result.call;
+  const isCorrect = callsMatch(submittedCall, correctCall);
 
   const output = {
     bundle: bundleId,
     target: targetState,
     surface,
     seed,
+    targeted,
     yourBid: callKey(submittedCall),
-    correctBid: correctCall ? callKey(correctCall) : null,
+    correctBid: callKey(correctCall),
     grade: isCorrect ? "correct" : "wrong",
     correct: isCorrect,
+    skip: false,
     requiresRetry: !isCorrect,
-    explanation: result?.explanation ?? null,
-    meaning: result?.meaning ?? null,
+    explanation: result.explanation ?? null,
+    meaning: result.meaning ?? null,
     feedback: isCorrect
       ? "Correct!"
-      : correctCall
-        ? `Expected ${callKey(correctCall)}, got ${callKey(submittedCall)}`
-        : "No recommendation from strategy",
+      : `Expected ${callKey(correctCall)}, got ${callKey(submittedCall)}`,
   };
 
   console.log(JSON.stringify(output, null, 2));
@@ -376,6 +519,8 @@ function runSelftest(): void {
     bundle: string;
     atom: string;
     status: "pass" | "fail" | "skip";
+    targeted: boolean;
+    activeSeat?: string;
     correctBid?: string;
     details?: string;
   }[] = [];
@@ -394,11 +539,18 @@ function runSelftest(): void {
         // Generate deal for this atom
         const deal = generateSeededDeal(bundle, atomSeed);
         const userSeat = resolveUserSeat(bundle, deal);
-        const hand = deal.hands[userSeat];
 
-        // Build auction and context
-        const auction = buildInitialAuction(bundle, userSeat, deal);
-        const context = buildContext(hand, auction, userSeat);
+        // Build targeted auction to reach the atom's state
+        const { auction, targeted } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
+
+        // Determine active seat at the target state
+        const activeSeat = auction.entries.length > 0
+          ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+          : userSeat;
+        const hand = deal.hands[activeSeat];
+
+        // Build context from the active seat's perspective
+        const context = buildContext(hand, auction, activeSeat);
 
         // Run strategy
         const result = strategy.suggest(context);
@@ -409,15 +561,15 @@ function runSelftest(): void {
             bundle: id,
             atom: atomLabel,
             status: "skip",
+            targeted,
+            activeSeat: activeSeat as string,
             details: "Strategy returned null (no recommendation)",
           });
           continue;
         }
 
-        // Self-test: strategy bid should be legal and non-null
+        // Self-test: strategy bid should be deterministic
         const bidKey = callKey(result.call);
-
-        // Verify the bid against itself — re-run with same context
         const verifyResult = strategy.suggest(context);
         if (!verifyResult || !callsMatch(result.call, verifyResult.call)) {
           totalFail++;
@@ -425,6 +577,8 @@ function runSelftest(): void {
             bundle: id,
             atom: atomLabel,
             status: "fail",
+            targeted,
+            activeSeat: activeSeat as string,
             correctBid: bidKey,
             details: "Strategy is non-deterministic",
           });
@@ -436,6 +590,8 @@ function runSelftest(): void {
           bundle: id,
           atom: atomLabel,
           status: "pass",
+          targeted,
+          activeSeat: activeSeat as string,
           correctBid: bidKey,
         });
       } catch (err: unknown) {
@@ -445,6 +601,7 @@ function runSelftest(): void {
           bundle: id,
           atom: atomLabel,
           status: "fail",
+          targeted: false,
           details: `Error: ${msg}`,
         });
       }
