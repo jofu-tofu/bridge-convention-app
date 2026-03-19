@@ -24,48 +24,45 @@ export type FactorSpec =
   | ExclusionFactor
   | FitFactor;
 
-export interface HcpRangeFactor {
-  readonly kind: "hcp-range";
-  readonly seat: string;
-  readonly min: number;
-  readonly max: number;
+/** Common properties shared by all factor types. */
+export interface BaseFactor {
   readonly strength: FactorStrength;
   readonly origin: FactorOrigin;
 }
 
-export interface SuitLengthFactor {
-  readonly kind: "suit-length";
+/** Factor constrained to a single seat. */
+export interface SingleSeatFactor extends BaseFactor {
   readonly seat: string;
+}
+
+export interface HcpRangeFactor extends SingleSeatFactor {
+  readonly kind: "hcp-range";
+  readonly min: number;
+  readonly max: number;
+}
+
+export interface SuitLengthFactor extends SingleSeatFactor {
+  readonly kind: "suit-length";
   readonly suit: SuitName;
   readonly min: number;
   readonly max: number;
-  readonly strength: FactorStrength;
-  readonly origin: FactorOrigin;
 }
 
-export interface ShapeFactor {
+export interface ShapeFactor extends SingleSeatFactor {
   readonly kind: "shape";
-  readonly seat: string;
   readonly pattern: string; // "balanced", "semi-balanced", etc.
-  readonly strength: FactorStrength;
-  readonly origin: FactorOrigin;
 }
 
-export interface ExclusionFactor {
+export interface ExclusionFactor extends SingleSeatFactor {
   readonly kind: "exclusion";
-  readonly seat: string;
   readonly constraint: string; // description of what's excluded
-  readonly strength: FactorStrength;
-  readonly origin: FactorOrigin;
 }
 
-export interface FitFactor {
+export interface FitFactor extends BaseFactor {
   readonly kind: "fit";
   readonly seats: readonly string[];
   readonly suit: SuitName;
   readonly minCombined: number;
-  readonly strength: FactorStrength;
-  readonly origin: FactorOrigin;
 }
 
 // ─── Ambiguity schema ───────────────────────────────────────

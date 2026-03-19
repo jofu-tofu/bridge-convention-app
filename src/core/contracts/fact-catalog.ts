@@ -83,14 +83,6 @@ export interface PosteriorFactEvaluator {
   readonly conditionedOn?: readonly string[];
 }
 
-/** A composed fact catalog: definitions + evaluators. */
-export interface FactCatalog {
-  readonly definitions: readonly FactDefinition[];
-  readonly evaluators: ReadonlyMap<string, FactEvaluatorFn>;
-  readonly relationalEvaluators?: ReadonlyMap<string, RelationalFactEvaluatorFn>;
-  readonly posteriorEvaluators?: ReadonlyMap<string, PosteriorFactEvaluator>;
-}
-
 /** An extension that a module contributes to a base catalog. */
 export interface FactCatalogExtension {
   readonly definitions: readonly FactDefinition[];
@@ -98,6 +90,9 @@ export interface FactCatalogExtension {
   readonly relationalEvaluators?: ReadonlyMap<string, RelationalFactEvaluatorFn>;
   readonly posteriorEvaluators?: ReadonlyMap<string, PosteriorFactEvaluator>;
 }
+
+/** A composed fact catalog: definitions + evaluators. Structurally identical to an extension. */
+export interface FactCatalog extends FactCatalogExtension {}
 
 /** Merge a base catalog with one or more extensions. Extensions override base on evaluator conflict. */
 export function createFactCatalog(

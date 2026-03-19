@@ -185,18 +185,10 @@ export function gradeAgainstOracle(
   const { teachingResolution } = oracle;
   const grade: BidGrade = gradeBid(userCall, teachingResolution);
 
-  const gradeMap: Record<BidGrade, ViewportBidGrade> = {
-    [BidGrade.Correct]: "correct",
-    [BidGrade.CorrectNotPreferred]: "correct-not-preferred",
-    [BidGrade.Acceptable]: "acceptable",
-    [BidGrade.NearMiss]: "near-miss",
-    [BidGrade.Incorrect]: "incorrect",
-  };
-
   const requiresRetry = grade === BidGrade.NearMiss || grade === BidGrade.Incorrect;
 
   return {
-    grade: gradeMap[grade],
+    grade: grade as ViewportBidGrade,
     userCall,
     expectedCall: oracle.expectedCall,
     requiresRetry,
@@ -212,15 +204,7 @@ export function gradeAgainstOracle(
  * would see in the feedback panel.
  */
 export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFeedback {
-  const gradeMap: Record<string, ViewportBidGrade> = {
-    [BidGrade.Correct]: "correct",
-    [BidGrade.CorrectNotPreferred]: "correct-not-preferred",
-    [BidGrade.Acceptable]: "acceptable",
-    [BidGrade.NearMiss]: "near-miss",
-    [BidGrade.Incorrect]: "incorrect",
-  };
-
-  const grade = gradeMap[feedback.grade] ?? "incorrect";
+  const grade = feedback.grade as ViewportBidGrade;
   const requiresRetry = grade === "near-miss" || grade === "incorrect";
 
   // Correct answer (from expected result)

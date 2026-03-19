@@ -11,6 +11,7 @@
 //   2. CLI harness — serializes the viewport as JSON for agent evaluation
 
 import type { Call, Hand, Seat, Vulnerability, SuitLength } from "../../engine/types";
+import type { BidGrade } from "../../teaching/teaching-resolution";
 
 // ── Bidding Viewport ────────────────────────────────────────────────
 
@@ -87,12 +88,7 @@ export interface BiddingOptionView {
 // projection of the engine's BidFeedback — same information a human
 // player would see in the UI feedback panel.
 
-export type ViewportBidGrade =
-  | "correct"
-  | "correct-not-preferred"
-  | "acceptable"
-  | "near-miss"
-  | "incorrect";
+export type ViewportBidGrade = `${BidGrade}`;
 
 /** Feedback shown to the player after bidding. */
 export interface ViewportBidFeedback {
