@@ -14,7 +14,7 @@ export {
   createWeakTwoR2Surfaces,
   createWeakTwoOgustSurfaces,
 } from "./meaning-surfaces";
-export { createWeakTwoConversationMachine } from "./machine";
+// machine.ts removed — protocol frame architecture replaces ConversationMachine
 export { WEAK_TWO_PROFILE } from "./system-profile";
 export { WEAK_TWO_EXPLANATION_CATALOG } from "./explanation-catalog";
 export { WEAK_TWO_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";

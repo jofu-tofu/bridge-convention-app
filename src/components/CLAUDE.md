@@ -59,8 +59,24 @@ components/
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
     DecisionTree.svelte              Interactive expand/collapse tree with depth modes (compact/study/learn) for progressive teaching disclosure
     DeclarerPrompt.svelte            Declarer/defender choice buttons (used by DeclarerPromptPhase)
-    DebugDrawer.svelte               Full-lifecycle debug overlay (dev only)
+    DebugDrawer.svelte               Full-lifecycle debug overlay (dev only) — groups sections into Context / Decision Pipeline / Feedback & History
     DebugPanel.svelte                Bidding-phase suggested bid display in BiddingSidePanel
+    debug/
+      DebugSection.svelte            Reusable collapsible section with count badges, inline preview, nested support
+      DebugAtAGlance.svelte          Always-visible summary card (state, expected bid, grade, pipeline stats)
+      DebugDealInfo.svelte           Convention, seed, dealer, vulnerability, phase
+      DebugAllHands.svelte           Compact single-line-per-seat hand display with HCP
+      DebugConventionMachine.svelte  Machine state registers + collapsible history/transitions/diagnostics
+      DebugHandFacts.svelte          Evaluated facts table
+      DebugProvenance.svelte         Decision provenance with collapsible sub-sections
+      DebugPipeline.svelte           Arbitration results with collapsible matched/eliminated/why-not
+      DebugPosterior.svelte          Posterior summary with collapsible fact values
+      DebugSuggestedBid.svelte       Selected bid with metadata
+      DebugTeaching.svelte           Bid grading feedback with collapsible alternatives
+      DebugPublicBeliefs.svelte      Per-seat belief ranges with collapsible annotations
+      DebugBidLog.svelte             Collapsible per-entry bid history
+      DebugPlayLog.svelte            Card play history by trick
+      debug-helpers.ts               Formatting utilities (fmtCall, formatSuitCards, fmtFactValue, truncate)
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
@@ -112,4 +128,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `App.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-18 | version=10 | dir-commits-at-audit=19 | tree-sig=dirs:9,files:48,exts:svelte:32,ts:15,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-18 | version=11 | dir-commits-at-audit=20 | tree-sig=dirs:10,files:50,exts:svelte:34,ts:15,md:1 -->

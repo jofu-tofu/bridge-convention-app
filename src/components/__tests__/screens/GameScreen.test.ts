@@ -5,18 +5,14 @@ import {
   clearRegistry,
   registerConvention,
 } from "../../../conventions/core/registry";
-import { registerBundle, clearBundleRegistry } from "../../../conventions/core/bundle";
 import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
-import { ntBundle } from "../../../conventions/definitions/nt-bundle/config";
 import { createStubEngine, makeDeal } from "../../../test-support/engine-stub";
 
 // GameScreen uses Svelte context heavily — test the extracted logic
 describe("GameScreen", () => {
   beforeEach(() => {
     clearRegistry();
-    clearBundleRegistry();
     registerConvention(ntBundleConventionConfig);
-    registerBundle(ntBundle);
   });
 
   it("startDrill calls engine.generateDeal", async () => {

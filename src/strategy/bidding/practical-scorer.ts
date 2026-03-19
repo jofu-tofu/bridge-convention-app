@@ -143,6 +143,7 @@ export function buildPracticalRecommendation(
     topCandidateCall: topCall,
     topScore: top.practicalScore,
     rationale: topMeaning,
+    scoreBreakdown: top.scoreBreakdown,
   };
 }
 

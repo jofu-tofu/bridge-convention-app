@@ -10,7 +10,7 @@ import type { ExplanationEntry } from "../../../../core/contracts/explanation-ca
 import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
 import { BRIDGE_SEMANTIC_CLASSES } from "../../../../core/contracts/meaning";
-import type { ConventionModule } from "../../../core/composition/module-types";
+
 import { bid } from "../../../core/surface-helpers";
 import { FORCED_CONVENTIONAL, PREFERRED_CONVENTIONAL, ACCEPTABLE_NATURAL, RESIDUAL_NATURAL } from "../../../../core/contracts/agreement-module";
 
@@ -393,7 +393,7 @@ const TERMINAL_PASS_SURFACE: readonly MeaningSurface[] = [
 
 // ─── Module assembly ─────────────────────────────────────────
 
-export const naturalNtModule: ConventionModule = {
+export const naturalNtModule = {
   moduleId: "natural-nt",
 
   entrySurfaces: NT_R1_SURFACES,

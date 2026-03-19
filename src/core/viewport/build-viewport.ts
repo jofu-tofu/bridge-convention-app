@@ -14,6 +14,7 @@ import type { TeachingProjection } from "../contracts/teaching-projection";
 import type { TeachingResolution, AcceptableBid } from "../../teaching/teaching-resolution";
 import { BidGrade, gradeBid } from "../../teaching/teaching-resolution";
 import type { StrategyEvaluation } from "../contracts/recommendation";
+import type { PracticalScoreBreakdown } from "../../strategy/bidding/practical-types";
 
 // Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
 // Defined here to avoid importing the Svelte store in CLI context.
@@ -24,6 +25,12 @@ interface BidFeedbackLike {
   readonly teachingResolution: TeachingResolution | null;
   readonly practicalRecommendation?: { topCandidateBidName: string; topCandidateCall: Call; topScore: number; rationale: string };
   readonly teachingProjection?: TeachingProjection;
+  /** Score breakdown from the practical scorer (when available). */
+  readonly practicalScoreBreakdown?: PracticalScoreBreakdown;
+  /** Whether the evidence bundle reported exhaustive evaluation. */
+  readonly evaluationExhaustive?: boolean;
+  /** Whether the evidence bundle reported fallback was reached (no surface matched). */
+  readonly fallbackReached?: boolean;
 }
 
 import type {
@@ -82,6 +89,7 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
     shape: eval_.shape,
     isBalanced: eval_.distribution.total === 0, // Shortness 0 = balanced heuristic
     totalPoints: eval_.totalPoints,
+    distributionPoints: eval_.distribution,
   };
 
   // Visible hands — only face-up seats
@@ -333,5 +341,18 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
       fullCredit: ab.fullCredit,
     })),
     nearMissCalls: resolution?.nearMissCalls,
+
+    // Decision metadata (from teaching resolution)
+    ambiguityScore: resolution?.ambiguityScore,
+    gradingType: resolution?.gradingType,
+
+    // Practical score breakdown
+    practicalScoreBreakdown: feedback.practicalScoreBreakdown
+      ? { ...feedback.practicalScoreBreakdown }
+      : undefined,
+
+    // Evaluation completeness (from evidence bundle)
+    evaluationExhaustive: feedback.evaluationExhaustive,
+    fallbackReached: feedback.fallbackReached,
   };
 }

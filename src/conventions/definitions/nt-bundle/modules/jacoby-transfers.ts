@@ -10,7 +10,7 @@ import { num, bool, fv } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
-import type { ConventionModule } from "../../../core/composition/module-types";
+
 import { bid } from "../../../core/surface-helpers";
 
 // ─── Semantic classes ────────────────────────────────────────
@@ -670,7 +670,7 @@ const TRANSFER_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 
 // ─── Module assembly ─────────────────────────────────────────
 
-export const jacobyTransfersModule: ConventionModule = {
+export const jacobyTransfersModule = {
   moduleId: "jacoby-transfers",
 
   entrySurfaces: TRANSFER_R1_SURFACES,

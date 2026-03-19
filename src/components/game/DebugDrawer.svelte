@@ -1,24 +1,30 @@
 <!-- Full-lifecycle debug drawer — comprehensive decision model inspector.
      Surfaces all internal pipeline state: facts, machine, arbitration, provenance,
      teaching, posterior, and beliefs. Uses persistent debug log so data survives
-     between turns. See also: DebugPanel.svelte (inline correct bid hint). -->
+     between turns. See also: DebugPanel.svelte (inline correct bid hint).
+
+     Layout: At-a-glance summary (always visible) + 3 collapsible groups:
+       1. Context (deal info, hands)
+       2. Decision Pipeline (machine, facts, provenance, pipeline, posterior, suggested bid)
+       3. Feedback & History (teaching, beliefs, bid log, play log) -->
 <script lang="ts">
   import { Seat } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../stores/context";
   import type { DebugSnapshot } from "../../stores/bidding.svelte";
   import type { BidFeedback } from "../../stores/game.svelte";
 
-  import DebugSuggestedBid from "./debug/DebugSuggestedBid.svelte";
-  import DebugHandFacts from "./debug/DebugHandFacts.svelte";
-  import DebugConventionMachine from "./debug/DebugConventionMachine.svelte";
-  import DebugPipeline from "./debug/DebugPipeline.svelte";
-  import DebugProvenance from "./debug/DebugProvenance.svelte";
-  import DebugTeaching from "./debug/DebugTeaching.svelte";
-  import DebugBidLog from "./debug/DebugBidLog.svelte";
-  import DebugPosterior from "./debug/DebugPosterior.svelte";
-  import DebugPublicBeliefs from "./debug/DebugPublicBeliefs.svelte";
+  import DebugAtAGlance from "./debug/DebugAtAGlance.svelte";
   import DebugDealInfo from "./debug/DebugDealInfo.svelte";
   import DebugAllHands from "./debug/DebugAllHands.svelte";
+  import DebugConventionMachine from "./debug/DebugConventionMachine.svelte";
+  import DebugHandFacts from "./debug/DebugHandFacts.svelte";
+  import DebugProvenance from "./debug/DebugProvenance.svelte";
+  import DebugPipeline from "./debug/DebugPipeline.svelte";
+  import DebugPosterior from "./debug/DebugPosterior.svelte";
+  import DebugSuggestedBid from "./debug/DebugSuggestedBid.svelte";
+  import DebugTeaching from "./debug/DebugTeaching.svelte";
+  import DebugPublicBeliefs from "./debug/DebugPublicBeliefs.svelte";
+  import DebugBidLog from "./debug/DebugBidLog.svelte";
   import DebugPlayLog from "./debug/DebugPlayLog.svelte";
 
   interface Props {
@@ -71,15 +77,15 @@
 >
   <!-- Header -->
   <div
-    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-2 flex items-center justify-between z-[--z-header] min-w-[420px]"
+    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-1.5 flex items-center justify-between z-[--z-header] min-w-[420px]"
   >
-    <span class="text-text-primary font-semibold text-sm">Debug Console</span>
+    <span class="text-text-primary font-semibold text-xs tracking-wide">DEBUG</span>
     <button
       class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer"
       onclick={() => appStore.toggleDebugPanel()}
       aria-label="Close debug panel"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M18 6 6 18" /><path d="m6 6 12 12" />
       </svg>
     </button>
@@ -88,34 +94,54 @@
   <!-- Engine status bar -->
   {#if appStore.engineStatus}
     <div
-      class="px-3 py-1.5 text-xs font-mono border-b border-border-subtle {appStore.engineStatus.includes('UNREACHABLE') ? 'bg-red-900/80 text-red-200' : 'bg-green-900/80 text-green-200'}"
+      class="px-3 py-1 text-[10px] font-mono border-b border-border-subtle {appStore.engineStatus.includes('UNREACHABLE') ? 'bg-red-900/80 text-red-200' : 'bg-green-900/80 text-green-200'}"
     >
       {appStore.engineStatus}
     </div>
   {/if}
 
-  <div class="p-3 flex flex-col gap-1 min-w-[420px]">
-    <!-- Static context -->
-    <DebugDealInfo
-      conventionName={appStore.selectedConvention?.name ?? null}
-      conventionId={appStore.selectedConvention?.id ?? null}
-      devSeed={appStore.devSeed}
-      dealer={gameStore.deal?.dealer}
-      vulnerability={gameStore.deal?.vulnerability}
-      phase={gameStore.phase}
-    />
-    <DebugAllHands deal={gameStore.deal} allSeats={ALL_SEATS} />
-    <!-- Pipeline stages (sequential) -->
-    <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
-    <DebugHandFacts facts={debugSnap?.facts ?? null} />
-    <DebugProvenance provenance={debugSnap?.provenance ?? null} />
-    <DebugPipeline arbitration={debugSnap?.arbitration ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
-    <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
-    <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
-    <!-- Post-pipeline -->
-    <DebugTeaching {feedback} />
-    <DebugPublicBeliefs publicBeliefState={gameStore.publicBeliefState} allSeats={ALL_SEATS} />
-    <DebugBidLog debugLog={gameStore.debugLog} />
-    <DebugPlayLog playLog={gameStore.playLog} />
+  <div class="p-2 flex flex-col gap-2 min-w-[420px]">
+    <!-- At-a-glance summary — always visible -->
+    <DebugAtAGlance snapshot={debugSnap} {feedback} phase={gameStore.phase} />
+
+    <!-- Group 1: Context -->
+    <details>
+      <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Context</summary>
+      <div class="pt-1 flex flex-col gap-0.5">
+        <DebugDealInfo
+          conventionName={appStore.selectedConvention?.name ?? null}
+          conventionId={appStore.selectedConvention?.id ?? null}
+          devSeed={appStore.devSeed}
+          dealer={gameStore.deal?.dealer}
+          vulnerability={gameStore.deal?.vulnerability}
+          phase={gameStore.phase}
+        />
+        <DebugAllHands deal={gameStore.deal} allSeats={ALL_SEATS} />
+      </div>
+    </details>
+
+    <!-- Group 2: Decision Pipeline -->
+    <details open>
+      <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Decision Pipeline</summary>
+      <div class="pt-1 flex flex-col gap-0.5">
+        <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
+        <DebugPipeline arbitration={debugSnap?.arbitration ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
+        <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
+        <DebugHandFacts facts={debugSnap?.facts ?? null} />
+        <DebugProvenance provenance={debugSnap?.provenance ?? null} />
+        <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
+      </div>
+    </details>
+
+    <!-- Group 3: Feedback & History -->
+    <details>
+      <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Feedback & History</summary>
+      <div class="pt-1 flex flex-col gap-0.5">
+        <DebugTeaching {feedback} />
+        <DebugPublicBeliefs publicBeliefState={gameStore.publicBeliefState} allSeats={ALL_SEATS} />
+        <DebugBidLog debugLog={gameStore.debugLog} />
+        <DebugPlayLog playLog={gameStore.playLog} />
+      </div>
+    </details>
   </div>
 </aside>

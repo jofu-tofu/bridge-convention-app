@@ -13,9 +13,9 @@ export {
   DONT_2C_RELAY_SURFACES,
   DONT_2D_RELAY_SURFACES,
 } from "./meaning-surfaces";
-export { createDontConversationMachine } from "./machine";
+// machine.ts removed — protocol frame architecture replaces ConversationMachine
 export { DONT_PROFILE } from "./system-profile";
 export { DONT_EXPLANATION_CATALOG } from "./explanation-catalog";
 export { DONT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 export { DONT_ALTERNATIVE_GROUPS } from "./alternatives";
-export { dontPackage } from "./packages/dont";
+// packages/dont.ts removed — protocol frame architecture replaces package system

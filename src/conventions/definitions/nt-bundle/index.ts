@@ -10,9 +10,9 @@ export {
   OPENER_TRANSFER_HEARTS_SURFACES,
   INTERFERENCE_REDOUBLE_SURFACE,
 } from "./meaning-surfaces";
-export { createNtConversationMachine } from "./machine";
+// machine.ts removed — protocol frame architecture replaces ConversationMachine
+// surface-routing.ts removed — protocol frame handles surface routing
 export { NT_SAYC_PROFILE } from "./system-profile";
-export { NT_ROUTED_SURFACES, createNtSurfaceRouter } from "./surface-routing";
 export { NT_EXPLANATION_CATALOG } from "./explanation-catalog";
 
 // New bottom-up module exports
@@ -20,5 +20,5 @@ export { staymanModule } from "./modules/stayman";
 export { jacobyTransfersModule } from "./modules/jacoby-transfers";
 export { smolenModule } from "./modules/smolen";
 export { naturalNtModule } from "./modules/natural-nt";
-export { composeNtModules, NT_SKELETON } from "./compose";
+// compose.ts removed — protocol frame architecture replaces module composition
 

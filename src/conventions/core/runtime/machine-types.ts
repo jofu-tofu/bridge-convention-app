@@ -3,6 +3,7 @@ export type { MachineRegisters };
 import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { ForcingState } from "../../../core/contracts/bidding";
 import type { Call, Seat, BidSuit, Auction } from "../../../engine/types";
+import { areSamePartnership } from "../../../engine/constants";
 import type { RuntimeDiagnostic } from "./types";
 import type { HandoffTrace } from "../../../core/contracts/provenance";
 
@@ -106,5 +107,29 @@ export interface SubmachineFrame {
   readonly parentRegisters: MachineRegisters;
 }
 
-// Re-export from machine-evaluator for backward compatibility
-export { buildConversationMachine } from "./machine-evaluator";
+// ── Builder ─────────────────────────────────────────────────────
+
+function defaultSeatRole(
+  _auction: Auction,
+  seat: Seat,
+  callSeat: Seat,
+): "self" | "partner" | "opponent" {
+  if (seat === callSeat) return "self";
+  return areSamePartnership(seat, callSeat) ? "partner" : "opponent";
+}
+
+/** Build a ConversationMachine from an array of states with standard defaults. */
+export function buildConversationMachine(
+  machineId: string,
+  states: readonly MachineState[],
+  initialStateId = "idle",
+): ConversationMachine {
+  const stateMap = new Map<string, MachineState>();
+  for (const s of states) stateMap.set(s.stateId, s);
+  return {
+    machineId,
+    states: stateMap,
+    initialStateId,
+    seatRole: defaultSeatRole,
+  };
+}

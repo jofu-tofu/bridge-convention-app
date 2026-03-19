@@ -3,8 +3,6 @@ import { startDrill } from "../start-drill";
 import { createStubEngine, makeDeal } from "../../test-support/engine-stub";
 import { Seat } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
-import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
-import { ntBundle } from "../../conventions/definitions/nt-bundle";
 import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
 import { mulberry32 } from "../../core/util/seeded-rng";
 import { generateDeal } from "../../engine/deal-generator";
@@ -12,9 +10,7 @@ import { generateDeal } from "../../engine/deal-generator";
 describe("seed determinism", () => {
   beforeEach(() => {
     clearRegistry();
-    clearBundleRegistry();
     registerConvention(ntBundleConventionConfig);
-    registerBundle(ntBundle);
   });
 
   it("same seed produces identical deals through startDrill", async () => {

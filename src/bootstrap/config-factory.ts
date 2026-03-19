@@ -1,96 +1,44 @@
 import { Seat } from "../engine/types";
-import type { BiddingStrategy, ConventionBiddingStrategy } from "../core/contracts";
+import type { BiddingStrategy } from "../core/contracts";
 import type { DrillConfig } from "./types";
 import type { OpponentMode } from "./types";
 import type { InferenceConfig } from "../inference/types";
-import type { ConventionLookup } from "../conventions/core";
-import { meaningBundleToStrategy } from "../strategy/bidding/meaning-strategy";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { passStrategy } from "../strategy/bidding/pass-strategy";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { getBundle, createSharedFactCatalog, bundleToRuntimeModules, createHandFactResolver } from "../conventions/core";
-import type { ConventionBundle } from "../conventions/core";
-import { createFactCatalog } from "../core/contracts/fact-catalog";
-import { createTsBackend } from "../inference/posterior";
+import { getConventionSpec } from "../conventions/spec-registry";
+import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
 
-/** Build a meaning-pipeline strategy from a ConventionBundle.
- *  Returns the strategy or null if the bundle has no meaningSurfaces. */
-export function buildBundleStrategy(
-  bundle: ConventionBundle,
-): ConventionBiddingStrategy | null {
-  if (!bundle.meaningSurfaces || bundle.meaningSurfaces.length === 0) return null;
-
-  const factCatalog = bundle.factExtensions && bundle.factExtensions.length > 0
-    ? createFactCatalog(createSharedFactCatalog(), ...bundle.factExtensions)
-    : createSharedFactCatalog();
-
-  const { modules, getActiveIds } = bundleToRuntimeModules(bundle);
-
-  return meaningBundleToStrategy(
-    bundle.meaningSurfaces.map((g) => ({
-      moduleId: g.groupId,
-      surfaces: [...g.surfaces],
-    })),
-    bundle.id,
-    {
-      name: bundle.name,
-      factCatalog,
-      surfaceRouter: bundle.surfaceRouter,
-      conversationMachine: bundle.conversationMachine,
-      submachines: bundle.submachines,
-      posteriorBackend: createTsBackend({ factResolver: createHandFactResolver(factCatalog) }),
-      surfaceRouterForCommitments: bundle.surfaceRouter,
-      evaluationRuntime: { modules, getActiveIds },
-      explanationCatalog: bundle.explanationCatalog,
-      acceptableAlternatives: bundle.acceptableAlternatives,
-      intentFamilies: bundle.intentFamilies,
-      pedagogicalRelations: bundle.pedagogicalRelations,
-    },
-  );
-}
+// ── Protocol frame architecture path ────────────────────────────────
 
 /**
- * Creates a DrillConfig for a given convention and user seat.
- * - N/S partnership uses the bundle strategy (meaning pipeline)
- * - E/W partnership uses natural fallback (bids with 6+ HCP and 5+ suit, else passes)
- * - User seat gets "user"
- * - Wires inference configs: natural for all partnerships
- * - Defaults to heuristic play strategy
+ * Creates a DrillConfig from a ConventionSpec (protocol frame architecture).
+ * Throws if no ConventionSpec is registered for the given ID.
  */
-export function createDrillConfig(
+export function createProtocolDrillConfig(
   conventionId: string,
   userSeat: Seat,
-  options?: {
-    lookupConvention?: ConventionLookup;
-    opponentMode?: OpponentMode;
-  },
+  options?: { opponentMode?: OpponentMode },
 ): DrillConfig {
-  // Look up the bundle
-  const bundle = getBundle(conventionId);
-  if (!bundle) {
+  const spec = getConventionSpec(conventionId);
+  if (!spec) {
     throw new Error(
-      `No bundle registered for "${conventionId}". Only bundle-based conventions are supported.`,
+      `No ConventionSpec registered for "${conventionId}".`,
     );
   }
 
-  const bundleStrategy = buildBundleStrategy(bundle);
-  if (!bundleStrategy) {
-    throw new Error(
-      `Bundle "${conventionId}" has no meaning surfaces — cannot build strategy.`,
-    );
-  }
-
-  const strategy = createStrategyChain([bundleStrategy, naturalFallbackStrategy]);
+  const protocolStrategy = protocolSpecToStrategy(spec);
+  const strategy = createStrategyChain([protocolStrategy, naturalFallbackStrategy]);
   const ewStrategy = options?.opponentMode === "none"
     ? passStrategy
     : createStrategyChain([naturalFallbackStrategy]);
 
-  // N/S = convention strategy, E/W = natural fallback, user seat = "user"
+  // N/S = protocol strategy, E/W = natural fallback, user seat = "user"
   function seatStrategy(seat: Seat): BiddingStrategy | "user" {
     if (seat === userSeat) return "user";
     if (NS_SEATS.has(seat)) return strategy;
@@ -104,7 +52,6 @@ export function createDrillConfig(
   };
 
   // Inference: natural for all partnerships
-  // (Convention inference is not yet wired for the meaning pipeline)
   const naturalProvider = createNaturalInferenceProvider();
   const nsInferenceConfig: InferenceConfig = {
     ownPartnership: naturalProvider,

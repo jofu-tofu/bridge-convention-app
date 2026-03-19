@@ -1,4 +1,4 @@
-import { createBundle } from "../../core/bundle";
+import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
@@ -6,24 +6,9 @@ import { CAP_OPENING_WEAK_TWO } from "../../../core/contracts/capability-vocabul
 import { buildAuction } from "../../../engine/auction-helpers";
 import { WEAK_TWO_PROFILE } from "./system-profile";
 import { WEAK_TWO_ALTERNATIVE_GROUPS } from "./alternatives";
-import { compileProfileFromPackages } from "../../core/composition/compile-from-packages";
-import { WEAK_TWO_SKELETON } from "./compose";
-import { weakTwoPackage } from "./packages/weak-two";
-
-const composed = compileProfileFromPackages(
-  WEAK_TWO_PROFILE,
-  [weakTwoPackage],
-  {
-    machineId: WEAK_TWO_SKELETON.machineId,
-    skeletonStates: WEAK_TWO_SKELETON.states,
-    dispatchStateId: WEAK_TWO_SKELETON.dispatchStateId,
-    entrySurfaceGroupId: WEAK_TWO_SKELETON.entrySurfaceGroupId,
-  },
-);
 
 const weakTwoBundleDealConstraints: DealConstraints = {
   seats: [
-    // North = opener: 5-11 HCP, 6+ in any of D/H/S
     {
       seat: Seat.North,
       minHcp: 5,
@@ -34,7 +19,6 @@ const weakTwoBundleDealConstraints: DealConstraints = {
         [Suit.Spades]: 6,
       },
     },
-    // South = responder: 14+ HCP
     {
       seat: Seat.South,
       minHcp: 14,
@@ -43,13 +27,16 @@ const weakTwoBundleDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-export const weakTwoBundle = createBundle({
+/**
+ * Minimal ConventionBundle for legacy registration.
+ * Strategy is now handled by the protocol frame architecture (convention-spec.ts).
+ */
+export const weakTwoBundle: ConventionBundle = {
   id: "weak-two-bundle",
   name: "Weak Two Bids Bundle",
   description: "Weak Two Bids with Ogust 2NT response system",
   category: ConventionCategory.Constructive,
   memberIds: ["weak-two-bundle", "weak-twos"],
-  composed,
   dealConstraints: weakTwoBundleDealConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {
@@ -60,4 +47,4 @@ export const weakTwoBundle = createBundle({
   declaredCapabilities: { [CAP_OPENING_WEAK_TWO]: "active" },
   systemProfile: WEAK_TWO_PROFILE,
   acceptableAlternatives: WEAK_TWO_ALTERNATIVE_GROUPS,
-});
+};

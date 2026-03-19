@@ -11,7 +11,6 @@ import type {
   MachineState,
   MachineTransition,
 } from "../../core/runtime/machine-types";
-import type { ConventionModule } from "../../core/composition/module-types";
 import { BidSuit } from "../../../engine/types";
 import {
   DONT_R1_SURFACES,
@@ -395,7 +394,7 @@ const DONT_MACHINE_STATES: readonly MachineState[] = [
 
 // ─── Module assembly ─────────────────────────────────────────────────
 
-export const dontModule: ConventionModule = {
+export const dontModule = {
   moduleId: "dont",
 
   entrySurfaces: DONT_R1_SURFACES,

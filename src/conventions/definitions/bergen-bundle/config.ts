@@ -1,14 +1,11 @@
-import { createBundle } from "../../core/bundle";
+import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 import { ConventionCategory } from "../../core/types";
 import { CAP_OPENING_MAJOR } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
-import { compileProfileFromPackages } from "../../core/composition";
-import { BERGEN_SKELETON } from "./compose";
 import { BERGEN_PROFILE } from "./system-profile";
 import { BERGEN_ALTERNATIVE_GROUPS } from "./alternatives";
-import { bergenRaisesPackage } from "./packages/bergen-raises";
 
 // ─── Deal constraints ───────────────────────────────────────────
 
@@ -31,22 +28,11 @@ const bergenBundleDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
-// ─── Compile bundle from packages ───────────────────────────────
-
-const composed = compileProfileFromPackages(
-  BERGEN_PROFILE,
-  [bergenRaisesPackage],
-  {
-    machineId: "bergen-conversation",
-    skeletonStates: BERGEN_SKELETON.states,
-    dispatchStateId: "idle",
-    entrySurfaceGroupId: "responder-r1-hearts",
-  },
-);
-
-// ─── Bundle assembly ────────────────────────────────────────────
-
-export const bergenBundle = createBundle({
+/**
+ * Minimal ConventionBundle for legacy registration.
+ * Strategy is now handled by the protocol frame architecture (convention-spec.ts).
+ */
+export const bergenBundle: ConventionBundle = {
   id: "bergen-bundle",
   name: "Bergen Raises Bundle",
   description: "Bergen Raises — constructive, limit, and preemptive responses to 1M opening",
@@ -60,7 +46,6 @@ export const bergenBundle = createBundle({
     }
     return undefined;
   },
-  composed,
   systemProfile: BERGEN_PROFILE,
   acceptableAlternatives: BERGEN_ALTERNATIVE_GROUPS,
-});
+};

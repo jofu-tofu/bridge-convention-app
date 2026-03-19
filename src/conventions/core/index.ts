@@ -22,8 +22,8 @@ export {
 export { createBiddingContext } from "./context-factory";
 
 // ── Bundle (sub-barrel) ─────────────────────────────────────────────────
-export { findBundleForConvention, getBundle, composeBundles, createBundle } from "./bundle";
-export type { ConventionBundle, CreateBundleConfig } from "./bundle";
+export { findBundleForConvention, getBundle, composeBundles } from "./bundle";
+export type { ConventionBundle } from "./bundle";
 
 // ── Pipeline ────────────────────────────────────────────────────────────
 export {
@@ -45,9 +45,7 @@ export {
   mergeUpstreamProvenance,
 } from "./pipeline/surface-composer";
 
-// ── Runtime ─────────────────────────────────────────────────────────────
-export { evaluate } from "./runtime/evaluation-runtime";
-export { evaluateMachine } from "./runtime/machine-evaluator";
+// ── Runtime (remaining) ─────────────────────────────────────────────────
 export { buildSnapshotFromAuction } from "./runtime/public-snapshot-builder";
 export { bundleToRuntimeModules } from "./runtime/bundle-adapter";
 
@@ -69,47 +67,6 @@ export type {
 } from "./runtime/machine-types";
 export { buildConversationMachine } from "./runtime/machine-types";
 
-// ── Coverage (FSM-driven deal targeting) ─────────────────────────────
-export { computeTopology } from "./runtime/machine-enumeration";
-export type { MachineTopology, StatePath, PathTransition, TreeLPResult } from "./runtime/machine-enumeration";
-export { buildPathTreeChildren, computeMinimalLeafMultiplicities } from "./runtime/machine-enumeration";
-export {
-  compilePathToTarget,
-  generateCoverageManifest,
-  buildSurfaceMap,
-  generateOptimizedManifest,
-  enumerateCoverageUniverse,
-  injectSurfaceConstraints,
-  computePathCoveredPairs,
-  checkTargetFeasibility,
-  computeCoverageHash,
-  classifyBidAgainstSurfaces,
-} from "./runtime/coverage-spec-compiler";
-export type {
-  CoverageTarget,
-  CoverageManifest,
-  SurfaceCoveragePair,
-  SurfaceCoverageTarget,
-  OptimizedCoverageManifest,
-  BidClassification,
-} from "./runtime/coverage-spec-compiler";
-
-// ── Composition (bottom-up module assembly) ──────────────────────────────
-export type { ConventionModule, BundleSkeleton, ComposedBundle } from "./composition";
-export { composeModules } from "./composition";
-
-// ── Profile (profile-centric composition) ────────────────────────────────
-export type { CompiledProfile, ResolvedModuleEntry, LegacyCompiledProfile } from "./profile";
-export { compileProfileFromBundle } from "./profile";
-
-// ── Modules (package-based authoring) ────────────────────────────────────
-export type {
-  ModulePackage,
-  ModuleRequirement,
-  MeaningSurfaceContribution,
-} from "./modules";
-export type { MachineFragment, FrontierDeclaration } from "./modules";
-export type { HandoffSpec, HandoffTrigger } from "./modules";
-export type { SurfaceEmitterSpec } from "./modules";
-export type { BundleReconstructionMeta } from "./modules";
-export { conventionBundleToPackages, packagesToConventionBundle } from "./modules";
+// ── Protocol Frame Architecture ─────────────────────────────────────────
+export type { ConventionSpec, ModuleSpec, BaseModuleSpec, ProtocolModuleSpec } from "./protocol/types";
+export { getBaseModules, getProtocolModules } from "./protocol/types";

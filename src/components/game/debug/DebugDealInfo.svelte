@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Seat, Vulnerability } from "../../../engine/types";
+  import DebugSection from "./DebugSection.svelte";
 
   interface Props {
     conventionName: string | null;
@@ -13,18 +14,19 @@
   let { conventionName, conventionId, devSeed, dealer, vulnerability, phase }: Props = $props();
 </script>
 
-<details>
-  <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">Deal Info</summary>
-  <div class="pl-2 py-1 flex flex-col gap-0.5">
-    <div>
-      Convention: <span class="text-text-primary">{conventionName ?? "None"}</span>
-      <span class="text-text-muted">({conventionId ?? "\u2014"})</span>
-    </div>
+<DebugSection title="Deal Info" preview="{conventionName ?? 'None'} | {dealer ?? '\u2014'} | {phase}">
+  <div class="text-[10px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-0">
+    <span class="text-text-muted">convention</span>
+    <span class="text-text-primary">{conventionName ?? "None"} <span class="text-text-muted">({conventionId ?? "\u2014"})</span></span>
     {#if devSeed !== null}
-      <div>Seed: <span class="text-text-primary">{devSeed}</span></div>
+      <span class="text-text-muted">seed</span>
+      <span class="text-text-primary">{devSeed}</span>
     {/if}
-    <div>Dealer: <span class="text-text-primary">{dealer ?? "\u2014"}</span></div>
-    <div>Vulnerability: <span class="text-text-primary">{vulnerability ?? "\u2014"}</span></div>
-    <div>Phase: <span class="text-text-primary">{phase}</span></div>
+    <span class="text-text-muted">dealer</span>
+    <span class="text-text-primary">{dealer ?? "\u2014"}</span>
+    <span class="text-text-muted">vul</span>
+    <span class="text-text-primary">{vulnerability ?? "\u2014"}</span>
+    <span class="text-text-muted">phase</span>
+    <span class="text-text-primary">{phase}</span>
   </div>
-</details>
+</DebugSection>

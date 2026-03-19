@@ -13,6 +13,7 @@ import type {
   TeachingProjection,
 } from "../core/contracts";
 import type { EncodingTrace } from "../core/contracts/provenance";
+import type { PracticalScoreBreakdown } from "../strategy/bidding/practical-types";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 
@@ -39,6 +40,12 @@ export interface BidFeedback {
   /** Encoding trace for the selected meaning (how it became a concrete call).
    *  Null when provenance is unavailable. */
   readonly encodingTrace?: EncodingTrace;
+  /** Component-level breakdown from the practical scorer. */
+  readonly practicalScoreBreakdown?: PracticalScoreBreakdown;
+  /** True when the pipeline evaluated every possible meaning (no early exit). */
+  readonly evaluationExhaustive?: boolean;
+  /** True when no convention surface matched and the pipeline fell back to a default bid. */
+  readonly fallbackReached?: boolean;
 }
 
 /** Aggregated debug snapshot — strategy evaluation plus the expected bid. */
@@ -231,6 +238,9 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       practicalRecommendation: strategyEval?.practicalRecommendation ?? undefined,
       teachingProjection: strategyEval?.teachingProjection ?? undefined,
       encodingTrace: strategyEval?.provenance?.encoding[0] ?? undefined,
+      practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? undefined,
+      evaluationExhaustive: strategyEval?.arbitration?.evidenceBundle?.exhaustive,
+      fallbackReached: strategyEval?.arbitration?.evidenceBundle?.fallbackReached,
     };
 
     // Capture persistent debug log entry — strategy caches are fresh right now

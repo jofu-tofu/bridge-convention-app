@@ -1,5 +1,5 @@
 import type { EnginePort } from "../engine/port";
-import type { ConventionConfig, ConventionLookup } from "../conventions/core";
+import type { ConventionConfig } from "../conventions/core";
 import {
   Seat,
   type Auction,
@@ -8,10 +8,10 @@ import {
 } from "../engine/types";
 import type { DrillBundle } from "./types";
 import type { OpponentMode } from "./types";
-import type { ConventionBiddingStrategy } from "../core/contracts";
-import { createDrillConfig, buildBundleStrategy } from "./config-factory";
+import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
-import { getBundle } from "../conventions/core";
+import { getConventionSpec } from "../conventions/spec-registry";
+import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
@@ -52,30 +52,20 @@ export async function startDrill(
   rng?: () => number,
   seed?: number,
   options?: {
-    lookupConvention?: ConventionLookup;
     opponentMode?: OpponentMode;
   },
 ): Promise<DrillBundle> {
-  const config = createDrillConfig(convention.id, userSeat, {
-    lookupConvention: options?.lookupConvention,
+  const config = createProtocolDrillConfig(convention.id, userSeat, {
     opponentMode: options?.opponentMode,
   });
   const session = createDrillSession(config);
 
-  // Build strategy: always meaning pipeline via bundle
-  const bundle = getBundle(convention.id);
-  if (!bundle) {
-    throw new Error(
-      `No bundle registered for "${convention.id}". Only bundle-based conventions are supported.`,
-    );
+  // Build strategy from the protocol spec
+  const spec = getConventionSpec(convention.id);
+  if (!spec) {
+    throw new Error(`No ConventionSpec registered for "${convention.id}".`);
   }
-  const bundleStrategy = buildBundleStrategy(bundle);
-  if (!bundleStrategy) {
-    throw new Error(
-      `Bundle "${convention.id}" has no meaning surfaces — cannot build strategy.`,
-    );
-  }
-  const strategy: ConventionBiddingStrategy = bundleStrategy;
+  const strategy = protocolSpecToStrategy(spec);
 
   // Resolve dealer randomization
   let resolvedConstraints = convention.dealConstraints;
@@ -97,10 +87,7 @@ export async function startDrill(
   };
 
   // When a seed is provided, use the TS-side deal generator for guaranteed
-  // deterministic results.  The WASM engine path (JS Number → Rust u64 via
-  // serde_wasm_bindgen) can silently drop the seed, falling back to a
-  // non-deterministic thread_rng.  The TS generator takes the seeded RNG
-  // directly, so the same seed always produces the same deal.
+  // deterministic results.
   let deal: Deal;
   if (seed !== undefined) {
     const dealRng = rng ?? mulberry32(seed);

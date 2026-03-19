@@ -12,8 +12,6 @@ import {
 import { Seat } from "../../engine/types";
 import type { DealConstraints, SeatConstraint } from "../../engine/types";
 import { clearRegistry, registerConvention } from "../../conventions/core/registry";
-import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
-import { ntBundle } from "../../conventions/definitions/nt-bundle";
 import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
 import { buildAuction } from "../../engine/auction-helpers";
 import { ConventionCategory } from "../../conventions/core/types";
@@ -22,9 +20,7 @@ import type { ConventionConfig } from "../../conventions/core/types";
 describe("startDrill", () => {
   beforeEach(() => {
     clearRegistry();
-    clearBundleRegistry();
     registerConvention(ntBundleConventionConfig);
-    registerBundle(ntBundle);
   });
 
   it("returns bundle with generated deal and session", async () => {
@@ -95,15 +91,20 @@ describe("startDrill", () => {
     expect(constraints.seats).toEqual(config.dealConstraints.seats);
   });
 
-  it("throws when no bundle is registered for the convention", async () => {
-    clearBundleRegistry();
+  it("throws when no ConventionSpec is registered for the convention", async () => {
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(makeDeal()),
     });
 
+    // Use a convention ID that has no ConventionSpec registered
+    const unknownConvention: ConventionConfig = {
+      ...ntBundleConventionConfig,
+      id: "unknown-convention",
+    };
+
     await expect(
-      startDrill(engine, ntBundleConventionConfig, Seat.South),
-    ).rejects.toThrowError(/No bundle registered/);
+      startDrill(engine, unknownConvention, Seat.South),
+    ).rejects.toThrowError(/No ConventionSpec registered/);
   });
 
   it("rotates constraints when allowedDealers picks a different dealer", async () => {

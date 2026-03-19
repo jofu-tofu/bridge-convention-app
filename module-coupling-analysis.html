@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bridge Convention App — Module Coupling Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: { 850: '#1a2332' },
+          }
+        }
+      }
+    }
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      flowchart: { curve: 'basis', htmlLabels: true, padding: 15 },
+      themeVariables: {
+        darkMode: true,
+        background: '#1e293b',
+        primaryColor: '#3b82f6',
+        primaryTextColor: '#f1f5f9',
+        primaryBorderColor: '#60a5fa',
+        lineColor: '#94a3b8',
+        secondaryColor: '#1e40af',
+        tertiaryColor: '#0f172a',
+        fontSize: '14px',
+      }
+    });
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .prose-content { max-width: 75ch; }
+    .toc-link.active { color: #60a5fa; font-weight: 600; border-left-color: #3b82f6; }
+    .matrix-cell { min-width: 3.5rem; text-align: center; }
+    .heat-0 { background-color: #0f172a; color: #64748b; }
+    .heat-low { background-color: #1e3a5f; color: #93c5fd; }
+    .heat-med { background-color: #1e40af; color: #dbeafe; }
+    .heat-high { background-color: #dc2626; color: #fef2f2; }
+    .heat-circ { background-color: #f59e0b; color: #1e293b; font-weight: 700; }
+    .concern-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-critical { background: #dc2626; color: white; }
+    .badge-warning { background: #f59e0b; color: #1e293b; }
+    .badge-info { background: #3b82f6; color: white; }
+    .badge-ok { background: #22c55e; color: white; }
+    pre.mermaid { background: transparent !important; }
+    .mermaid svg { max-width: 100%; }
+    details summary { cursor: pointer; }
+    details summary::-webkit-details-marker { color: #60a5fa; }
+    @media (max-width: 1024px) { .sidebar-toc { display: none; } }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-200 min-h-screen">
+
+  <!-- Sticky ToC Sidebar -->
+  <nav class="sidebar-toc fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-700 overflow-y-auto p-4 z-50">
+    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Contents</h2>
+    <ul class="space-y-1 text-sm" id="toc-list">
+      <li><a href="#overview" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">System Overview</a></li>
+      <li><a href="#module-map" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Module Map</a></li>
+      <li><a href="#dependency-graph" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Dependency Graph</a></li>
+      <li><a href="#coupling-matrix" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Coupling Matrix</a></li>
+      <li><a href="#type-flows" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Type Flows</a></li>
+      <li><a href="#deep-engine" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Engine (Pure Core)</a></li>
+      <li><a href="#deep-conventions" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Conventions Core</a></li>
+      <li><a href="#deep-shared" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Shared Types</a></li>
+      <li><a href="#deep-strategy" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Strategy</a></li>
+      <li><a href="#deep-inference" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Inference</a></li>
+      <li><a href="#deep-drill" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Drill (Wiring Hub)</a></li>
+      <li><a href="#deep-display" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Display</a></li>
+      <li><a href="#deep-stores" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Stores</a></li>
+      <li><a href="#coupling-concerns" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Coupling Concerns</a></li>
+      <li><a href="#duplicated-code" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Duplicated Code</a></li>
+      <li><a href="#reexport-chains" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Re-export Chains</a></li>
+      <li><a href="#refactoring" class="toc-link block py-1 px-2 border-l-2 border-transparent text-slate-400 hover:text-blue-400 transition-colors">Refactoring Observations</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="ml-64 p-8 max-w-6xl">
+
+    <!-- Title -->
+    <header class="mb-12">
+      <h1 class="text-4xl font-bold text-white mb-3">Module Coupling Analysis</h1>
+      <p class="text-lg text-slate-400">bridge-convention-app &mdash; 10 modules, ~150 source files, ~17,700 LOC</p>
+      <p class="text-sm text-slate-500 mt-2">Generated 2026-03-07. Source: static import analysis of <code class="text-blue-400">src/</code></p>
+    </header>
+
+    <!-- ==================== SECTION: Overview ==================== -->
+    <section id="overview" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">System Overview</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        The bridge-convention-app teaches bridge bidding conventions through interactive drills.
+        Its TypeScript frontend is organized into <strong>10 distinct modules</strong> with an intended layered architecture:
+        a pure game engine at the bottom, convention definitions and evaluation in the middle,
+        and strategy/inference/drill/display/stores at the top driving the Svelte 5 UI.
+      </p>
+      <p class="text-slate-300 mb-6 prose-content">
+        <strong>Key finding:</strong> The <code class="text-blue-400">conventions/core/</code> module is the gravitational center of the codebase
+        (38 files, 5,206 LOC) with high fan-in and fan-out. A bidirectional type dependency between
+        <code class="text-blue-400">shared/</code> and <code class="text-blue-400">conventions/core/</code> creates an architectural cycle.
+        The <code class="text-blue-400">drill/config-factory.ts</code> file is a wiring mega-hub that imports from 5 different modules.
+      </p>
+
+      <!-- Module Stats Table -->
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-400 border-b border-slate-700">
+              <th class="py-2 px-3">Module</th>
+              <th class="py-2 px-3 text-right">Files</th>
+              <th class="py-2 px-3 text-right">LOC</th>
+              <th class="py-2 px-3">Role</th>
+              <th class="py-2 px-3 text-right">Fan-out</th>
+              <th class="py-2 px-3 text-right">Fan-in</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-300">
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-blue-400">engine/</td>
+              <td class="py-2 px-3 text-right">18</td>
+              <td class="py-2 px-3 text-right">1,951</td>
+              <td class="py-2 px-3">Pure game logic (types, auction, scoring, play, deals)</td>
+              <td class="py-2 px-3 text-right"><span class="badge-ok concern-badge">0</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-critical concern-badge">ALL</span></td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-blue-400">shared/</td>
+              <td class="py-2 px-3 text-right">2</td>
+              <td class="py-2 px-3 text-right">272</td>
+              <td class="py-2 px-3">Cross-boundary DTOs (BidResult, BiddingStrategy, etc.)</td>
+              <td class="py-2 px-3 text-right"><span class="badge-warning concern-badge">2</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">7</span></td>
+            </tr>
+            <tr class="border-b border-slate-800 bg-slate-800/30">
+              <td class="py-2 px-3 font-mono text-yellow-400">conventions/core/</td>
+              <td class="py-2 px-3 text-right font-bold">38</td>
+              <td class="py-2 px-3 text-right font-bold">5,206</td>
+              <td class="py-2 px-3">Registry, protocol, tree, overlay, candidate pipeline</td>
+              <td class="py-2 px-3 text-right"><span class="badge-warning concern-badge">2</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-critical concern-badge">6</span></td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-blue-400">conventions/definitions/</td>
+              <td class="py-2 px-3 text-right">41</td>
+              <td class="py-2 px-3 text-right">3,805</td>
+              <td class="py-2 px-3">5 convention folders (Stayman, Bergen, SAYC, Weak Twos, Lebensohl)</td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">2</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-ok concern-badge">0</span></td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-blue-400">inference/</td>
+              <td class="py-2 px-3 text-right">13</td>
+              <td class="py-2 px-3 text-right">1,449</td>
+              <td class="py-2 px-3">Auction inference, beliefs, partner interpretation</td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">3</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">3</span></td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-blue-400">strategy/</td>
+              <td class="py-2 px-3 text-right">13</td>
+              <td class="py-2 px-3 text-right">1,725</td>
+              <td class="py-2 px-3">Bidding strategy adapter, play heuristics, practical scorer</td>
+              <td class="py-2 px-3 text-right"><span class="badge-warning concern-badge">4</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">2</span></td>
+            </tr>
+            <tr class="border-b border-slate-800 bg-slate-800/30">
+              <td class="py-2 px-3 font-mono text-yellow-400">drill/</td>
+              <td class="py-2 px-3 text-right">5</td>
+              <td class="py-2 px-3 text-right">485</td>
+              <td class="py-2 px-3">Session lifecycle, config wiring, teaching resolution</td>
+              <td class="py-2 px-3 text-right"><span class="badge-critical concern-badge">5</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">2</span></td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-blue-400">display/</td>
+              <td class="py-2 px-3 text-right">13</td>
+              <td class="py-2 px-3 text-right">1,330</td>
+              <td class="py-2 px-3">UI display utilities (format, tree-display, teaching content)</td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">3</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-info concern-badge">2</span></td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-blue-400">stores/</td>
+              <td class="py-2 px-3 text-right">6</td>
+              <td class="py-2 px-3 text-right">1,455</td>
+              <td class="py-2 px-3">Svelte 5 rune stores (game coordinator, bidding, play, DDS)</td>
+              <td class="py-2 px-3 text-right"><span class="badge-critical concern-badge">6</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-ok concern-badge">1</span></td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-mono text-blue-400">util/</td>
+              <td class="py-2 px-3 text-right">3</td>
+              <td class="py-2 px-3 text-right">14</td>
+              <td class="py-2 px-3">Zero-dep utilities (delay, seeded RNG)</td>
+              <td class="py-2 px-3 text-right"><span class="badge-ok concern-badge">0</span></td>
+              <td class="py-2 px-3 text-right"><span class="badge-ok concern-badge">1</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500"><strong>Fan-out</strong> = number of other modules this module imports from. <strong>Fan-in</strong> = number of other modules that import from this one. Highlighted rows indicate coupling concerns.</p>
+    </section>
+
+    <!-- ==================== SECTION: Module Map ==================== -->
+    <section id="module-map" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Module Map</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        The intended architecture is a layered DAG (directed acyclic graph). Lower layers know nothing about upper layers.
+        The engine is the pure foundation; shared types sit at the boundary; conventions, inference, and strategy form the domain logic;
+        drill/display/stores wire everything together for the UI.
+      </p>
+
+      <pre class="mermaid">
+graph TB
+  subgraph "Layer 0: Foundation"
+    ENGINE["engine/<br/><small>18 files, 1951 LOC</small><br/><small>types, auction, scoring, play, deals</small>"]
+    UTIL["util/<br/><small>3 files, 14 LOC</small><br/><small>delay, seeded-rng</small>"]
+  end
+
+  subgraph "Layer 1: Boundary Types"
+    SHARED["shared/<br/><small>2 files, 272 LOC</small><br/><small>BidResult, BiddingStrategy, ConditionDetail,</small><br/><small>TreeEvalSummary, EvaluationTrace, etc.</small>"]
+  end
+
+  subgraph "Layer 2: Domain Logic"
+    CORE["conventions/core/<br/><small>38 files, 5206 LOC</small><br/><small>registry, protocol, tree,</small><br/><small>overlay, candidate pipeline</small>"]
+    DEFS["conventions/definitions/<br/><small>41 files, 3805 LOC</small><br/><small>stayman, bergen, sayc,</small><br/><small>weak-twos, lebensohl-lite</small>"]
+    INFERENCE["inference/<br/><small>13 files, 1449 LOC</small><br/><small>inference engine, beliefs,</small><br/><small>partner interpretation</small>"]
+    STRATEGY["strategy/<br/><small>13 files, 1725 LOC</small><br/><small>convention adapter, play heuristics,</small><br/><small>practical scorer</small>"]
+  end
+
+  subgraph "Layer 3: Integration"
+    DRILL["drill/<br/><small>5 files, 485 LOC</small><br/><small>session, config-factory,</small><br/><small>teaching resolution</small>"]
+    DISPLAY["display/<br/><small>13 files, 1330 LOC</small><br/><small>format, tree-display,</small><br/><small>teaching content</small>"]
+  end
+
+  subgraph "Layer 4: UI"
+    STORES["stores/<br/><small>6 files, 1455 LOC</small><br/><small>game coordinator,</small><br/><small>bidding, play, DDS</small>"]
+    COMPONENTS["components/<br/><small>~47 files</small><br/><small>Svelte 5 UI</small>"]
+  end
+
+  SHARED --> ENGINE
+  SHARED -.->|CIRCULAR| CORE
+
+  CORE --> ENGINE
+  CORE --> SHARED
+  DEFS --> CORE
+  DEFS --> ENGINE
+
+  INFERENCE --> ENGINE
+  INFERENCE --> SHARED
+  INFERENCE --> CORE
+
+  STRATEGY --> ENGINE
+  STRATEGY --> SHARED
+  STRATEGY --> CORE
+  STRATEGY --> INFERENCE
+
+  DRILL --> ENGINE
+  DRILL --> SHARED
+  DRILL --> CORE
+  DRILL --> STRATEGY
+  DRILL --> INFERENCE
+
+  DISPLAY --> ENGINE
+  DISPLAY --> SHARED
+  DISPLAY --> CORE
+
+  STORES --> ENGINE
+  STORES --> SHARED
+  STORES --> DRILL
+  STORES --> INFERENCE
+  STORES --> STRATEGY
+  STORES --> CORE
+
+  COMPONENTS --> STORES
+  COMPONENTS --> ENGINE
+  COMPONENTS --> DISPLAY
+
+  style CORE fill:#92400e,stroke:#f59e0b,stroke-width:3px,color:#fef3c7
+  style DRILL fill:#7f1d1d,stroke:#dc2626,stroke-width:2px,color:#fecaca
+  style STORES fill:#7f1d1d,stroke:#dc2626,stroke-width:2px,color:#fecaca
+  style ENGINE fill:#14532d,stroke:#22c55e,stroke-width:2px,color:#dcfce7
+      </pre>
+      <p class="text-xs text-slate-500 mt-2">
+        <span class="inline-block w-3 h-3 bg-green-900 border border-green-500 mr-1"></span> Clean (zero fan-out) &nbsp;
+        <span class="inline-block w-3 h-3 bg-yellow-900 border border-yellow-500 mr-1"></span> Gravitational center (high fan-in + fan-out) &nbsp;
+        <span class="inline-block w-3 h-3 bg-red-900 border border-red-500 mr-1"></span> Wiring hubs (high fan-out) &nbsp;
+        <span class="text-slate-400">Dashed line = circular dependency</span>
+      </p>
+    </section>
+
+    <!-- ==================== SECTION: Dependency Graph ==================== -->
+    <section id="dependency-graph" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Dependency Graph (Import Edges)</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        Each arrow represents one or more <code class="text-blue-400">import</code> statements from the source module to the target.
+        The number on each edge is the count of import lines (not unique symbols &mdash; one import line may bring in multiple symbols).
+        Thicker edges indicate heavier coupling.
+      </p>
+
+      <pre class="mermaid">
+graph LR
+  ENGINE["engine/"]
+  SHARED["shared/"]
+  CORE["conv/core/"]
+  DEFS["conv/defs/"]
+  INF["inference/"]
+  STRAT["strategy/"]
+  DRILL["drill/"]
+  DISP["display/"]
+  STORES["stores/"]
+
+  SHARED -->|"4 imports"| ENGINE
+  SHARED -.->|"4 imports<br/>CIRCULAR"| CORE
+
+  CORE -->|"36 imports"| ENGINE
+  CORE -->|"7 imports"| SHARED
+
+  DEFS -->|"~30 imports"| CORE
+  DEFS -->|"~20 imports"| ENGINE
+
+  INF -->|"27 imports"| ENGINE
+  INF -->|"7 imports"| SHARED
+  INF -->|"9 imports"| CORE
+
+  STRAT -->|"23 imports"| ENGINE
+  STRAT -->|"13 imports"| SHARED
+  STRAT -->|"20 imports"| CORE
+  STRAT -->|"4 imports"| INF
+
+  DRILL -->|"11 imports"| ENGINE
+  DRILL -->|"6 imports"| SHARED
+  DRILL -->|"8 imports"| CORE
+  DRILL -->|"9 imports"| STRAT
+  DRILL -->|"4 imports"| INF
+
+  DISP -->|"18 imports"| ENGINE
+  DISP -->|"3 imports"| SHARED
+  DISP -->|"18 imports"| CORE
+
+  STORES -->|"17 imports"| ENGINE
+  STORES -->|"5 imports"| SHARED
+  STORES -->|"2 imports"| CORE
+  STORES -->|"6 imports"| DRILL
+  STORES -->|"6 imports"| INF
+  STORES -->|"1 import"| STRAT
+
+  linkStyle 1 stroke:#f59e0b,stroke-width:3px,stroke-dasharray:5
+
+  style ENGINE fill:#14532d,stroke:#22c55e,color:#dcfce7
+  style CORE fill:#92400e,stroke:#f59e0b,stroke-width:3px,color:#fef3c7
+  style DRILL fill:#7f1d1d,stroke:#dc2626,color:#fecaca
+  style STORES fill:#7f1d1d,stroke:#dc2626,color:#fecaca
+      </pre>
+    </section>
+
+    <!-- ==================== SECTION: Coupling Matrix ==================== -->
+    <section id="coupling-matrix" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Coupling Matrix</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        Import density between each module pair. <strong>Rows are importers</strong> (who depends), <strong>columns are imported</strong> (who is depended upon).
+        Read as: "row module has N import lines from column module."
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="text-xs font-mono border-collapse">
+          <thead>
+            <tr>
+              <th class="py-2 px-2 text-left text-slate-400 border-b border-slate-700">Importer &#8595; &nbsp; Imported &#8594;</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">engine</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">shared</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">conv/core</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">conv/defs</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">inference</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">strategy</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">drill</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">display</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">stores</th>
+              <th class="matrix-cell py-2 px-2 text-slate-400 border-b border-slate-700">util</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="py-1 px-2 text-green-400 font-bold border-b border-slate-800">engine/</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-blue-400 font-bold border-b border-slate-800">shared/</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">4</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-circ border-b border-slate-800">4 &#9888;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-yellow-400 font-bold border-b border-slate-800">conv/core/</td>
+              <td class="matrix-cell heat-high border-b border-slate-800">36</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">7</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-blue-400 font-bold border-b border-slate-800">conv/defs/</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">~20</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">~30</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-blue-400 font-bold border-b border-slate-800">inference/</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">27</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">7</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">9</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-blue-400 font-bold border-b border-slate-800">strategy/</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">23</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">13</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">20</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">4</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-red-400 font-bold border-b border-slate-800">drill/</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">11</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">6</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">8</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">4</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">9</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-blue-400 font-bold border-b border-slate-800">display/</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">18</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">3</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">18</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-red-400 font-bold border-b border-slate-800">stores/</td>
+              <td class="matrix-cell heat-med border-b border-slate-800">17</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">5</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">2</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">6</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">1</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">6</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">0</td>
+              <td class="matrix-cell heat-0 border-b border-slate-800">&mdash;</td>
+              <td class="matrix-cell heat-low border-b border-slate-800">1</td>
+            </tr>
+            <tr><td class="py-1 px-2 text-green-400 font-bold">util/</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">0</td>
+              <td class="matrix-cell heat-0">&mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex gap-4 mt-4 text-xs">
+        <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 heat-0 border border-slate-700"></span> 0 (no dep)</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 heat-low border border-slate-700"></span> 1-13 (light)</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 heat-med border border-slate-700"></span> 14-30 (moderate)</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 heat-high border border-slate-700"></span> 30+ (heavy)</span>
+        <span class="flex items-center gap-1"><span class="inline-block w-4 h-4 heat-circ border border-slate-700"></span> Circular</span>
+      </div>
+
+      <div class="mt-6 p-4 border border-yellow-700 bg-yellow-950/30 rounded-lg">
+        <h4 class="text-yellow-400 font-bold text-sm mb-2">Observations from the Matrix</h4>
+        <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+          <li><strong>conventions/core/ has 36 imports from engine/</strong> &mdash; the heaviest single coupling edge in the codebase</li>
+          <li><strong>shared/ and conventions/core/ are mutually dependent</strong> &mdash; the only circular dependency (marked with &#9888;)</li>
+          <li><strong>drill/ touches 5 modules</strong> &mdash; highest fan-out of any non-UI module</li>
+          <li><strong>strategy/bidding/ has 20 imports from conventions/core/</strong> &mdash; deep structural coupling, not just type imports</li>
+          <li><strong>display/ has 18 imports from conventions/core/</strong> &mdash; a surprising amount for a "display utility" module</li>
+          <li><strong>engine/ is clean</strong> &mdash; zero external imports (as intended)</li>
+          <li><strong>util/ is clean</strong> &mdash; zero external imports</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Type Flows ==================== -->
+    <section id="type-flows" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Type Flows</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        The most-traveled types in this codebase cross multiple module boundaries.
+        Understanding which types travel the farthest reveals where coupling is structural (types designed to cross boundaries)
+        versus accidental (types leaking across layers).
+      </p>
+
+      <pre class="mermaid">
+graph LR
+  subgraph "Origin: engine/types.ts"
+    ET["Call, Seat, Hand,<br/>Suit, Auction,<br/>Card, Contract"]
+  end
+
+  subgraph "Origin: shared/types.ts"
+    ST["BidResult,<br/>BiddingStrategy,<br/>TreeEvalSummary,<br/>EvaluationTrace,<br/>CandidateBid"]
+  end
+
+  subgraph "Origin: conventions/core/types.ts"
+    CT["BiddingContext,<br/>ConventionConfig,<br/>ConventionLookup,<br/>RuleCondition,<br/>ConditionInference"]
+  end
+
+  subgraph "Origin: conventions/core/ deep files"
+    CD["BeliefData<br/>(effective-context.ts)<br/>ResolvedCandidate<br/>(candidate-generator.ts)<br/>TreeEvalResult<br/>(tree-evaluator.ts)"]
+  end
+
+  ET --> ST
+  ET --> CT
+  ET --> CD
+
+  ST --> DRILL["drill/"]
+  ST --> STORES["stores/"]
+  ST --> STRATEGY["strategy/"]
+  ST --> DISPLAY["display/"]
+  ST --> INF["inference/"]
+
+  CT --> STRATEGY
+  CT --> DRILL
+  CT --> DISPLAY
+  CT --> STORES
+  CT --> INF
+
+  CD --> STRATEGY
+  CD --> DRILL
+  CD --> INF
+
+  style ET fill:#14532d,stroke:#22c55e,color:#dcfce7
+  style ST fill:#1e3a5f,stroke:#3b82f6,color:#dbeafe
+  style CT fill:#92400e,stroke:#f59e0b,color:#fef3c7
+  style CD fill:#7f1d1d,stroke:#dc2626,color:#fecaca
+      </pre>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+          <h4 class="text-sm font-bold text-green-400 mb-2">Structural Types (Designed to Travel)</h4>
+          <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+            <li><code class="text-green-300">Call</code>, <code class="text-green-300">Seat</code>, <code class="text-green-300">Hand</code> &mdash; domain vocabulary, used everywhere</li>
+            <li><code class="text-green-300">BidResult</code> &mdash; the convention pipeline's output DTO, designed to cross from strategy/ to stores/ to components/</li>
+            <li><code class="text-green-300">BiddingStrategy</code> &mdash; the strategy interface, consumed by drill/ and stores/</li>
+            <li><code class="text-green-300">BiddingContext</code> &mdash; input context for all convention evaluation</li>
+          </ul>
+        </div>
+        <div class="p-4 bg-slate-800 rounded-lg border border-red-900">
+          <h4 class="text-sm font-bold text-red-400 mb-2">Leaky Types (Deep-Module Types Crossing Boundaries)</h4>
+          <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+            <li><code class="text-red-300">BeliefData</code> from <code>effective-context.ts</code> &mdash; imported by strategy/, drill/, inference/</li>
+            <li><code class="text-red-300">ResolvedCandidate</code> from <code>candidate-generator.ts</code> &mdash; imported by strategy/ for mapping to DTOs</li>
+            <li><code class="text-red-300">TreeEvalResult</code> from <code>tree-evaluator.ts</code> &mdash; imported by strategy/ and inference/</li>
+            <li><code class="text-red-300">ProtocolEvalResult</code> from <code>protocol.ts</code> &mdash; imported by inference/</li>
+            <li><code class="text-red-300">PrivateBeliefState</code> from <code>inference/private-belief.ts</code> &mdash; imported by strategy/</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Engine ==================== -->
+    <section id="deep-engine" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Engine (Pure Core)</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        The engine is the cleanest module: <strong>zero external imports</strong> (the one <code>type</code>-only import from conventions/ in <code>bid-suggester.ts</code> is erased at runtime).
+        It defines the domain vocabulary used by all other modules.
+      </p>
+
+      <pre class="mermaid">
+graph TB
+  TYPES["types.ts<br/><small>183 LOC - All enums and interfaces</small>"]
+  CONST["constants.ts<br/><small>104 LOC - Orderings, HCP values</small>"]
+  HAND["hand-evaluator.ts<br/><small>148 LOC - HCP, shape, balanced</small>"]
+  DEAL["deal-generator.ts<br/><small>172 LOC - Rejection sampling</small>"]
+  AUCTION["auction.ts<br/><small>258 LOC - Legality, completion</small>"]
+  AHELP["auction-helpers.ts<br/><small>91 LOC - Query utils</small>"]
+  PLAY["play.ts<br/><small>60 LOC - Trick rules</small>"]
+  SCORE["scoring.ts<br/><small>176 LOC - Duplicate scoring</small>"]
+  PORT["port.ts<br/><small>53 LOC - EnginePort interface</small>"]
+  CALL["call-helpers.ts<br/><small>10 LOC - callsMatch</small>"]
+  BID["bid-suggester.ts<br/><small>37 LOC - suggestBid</small>"]
+  NOTE["notation.ts<br/><small>50 LOC - parseCard/parseHand</small>"]
+
+  CONST --> TYPES
+  HAND --> TYPES
+  HAND --> CONST
+  DEAL --> TYPES
+  DEAL --> CONST
+  DEAL --> HAND
+  AUCTION --> TYPES
+  AUCTION --> CONST
+  AHELP --> TYPES
+  AHELP --> AUCTION
+  AHELP --> CONST
+  PLAY --> TYPES
+  PLAY --> CONST
+  SCORE --> TYPES
+  PORT --> TYPES
+  CALL --> TYPES
+  BID --> TYPES
+  BID --> HAND
+  NOTE --> TYPES
+  NOTE --> CONST
+
+  style TYPES fill:#14532d,stroke:#22c55e,color:#dcfce7
+  style PORT fill:#1e3a5f,stroke:#3b82f6,color:#dbeafe
+      </pre>
+
+      <details class="mt-4">
+        <summary class="text-blue-400 font-bold cursor-pointer hover:text-blue-300">Key exported types from engine/types.ts</summary>
+        <div class="mt-2 p-4 bg-slate-800 rounded-lg text-sm font-mono">
+          <div class="grid grid-cols-2 gap-2">
+            <div><strong class="text-green-400">Enums:</strong> Suit, Rank, Seat, Vulnerability, BidSuit, SpecialBid</div>
+            <div><strong class="text-green-400">Card types:</strong> Card, Hand, SuitLength</div>
+            <div><strong class="text-green-400">Bidding:</strong> Call, ContractBid, SpecialCall, AuctionEntry, Auction</div>
+            <div><strong class="text-green-400">Game:</strong> Deal, Contract, Score, PlayedCard, Trick</div>
+            <div><strong class="text-green-400">Evaluation:</strong> HandEvaluation, DealConstraints, SeatConstraint</div>
+            <div><strong class="text-green-400">DDS:</strong> DDSolution, ParInfo, ParContract</div>
+          </div>
+        </div>
+      </details>
+
+      <div class="mt-4 p-3 bg-green-950/30 border border-green-800 rounded-lg text-sm text-green-300">
+        <strong>Verdict:</strong> Engine is well-isolated. The one concern (<code>bid-suggester.ts</code> importing <code>BiddingContext</code> type from conventions/) is type-only and documented. <code>EnginePort</code> provides a clean async boundary for UI consumption.
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Conventions Core ==================== -->
+    <section id="deep-conventions" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Conventions Core (Gravitational Center)</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        At <strong>38 files and 5,206 LOC</strong>, conventions/core/ is by far the largest module. It contains the registry, protocol engine,
+        tree system, overlay system, dialogue state, intent system, and the full candidate pipeline. Six other modules import from it.
+      </p>
+
+      <pre class="mermaid">
+graph TB
+  subgraph "Registry Layer"
+    REG["registry.ts<br/><small>registerConvention, evaluateBiddingRules</small>"]
+    DIAG["diagnostics.ts<br/><small>analyzeConvention, getDiagnostics</small>"]
+  end
+
+  subgraph "Protocol Layer"
+    PROTO["protocol.ts<br/><small>ConventionProtocol, ProtocolRound</small>"]
+    PEVAL["protocol-evaluator.ts<br/><small>evaluateProtocol, computeRole</small>"]
+  end
+
+  subgraph "Tree Layer"
+    RTREE["rule-tree.ts<br/><small>RuleNode, DecisionNode, IntentNode</small>"]
+    TEVAL["tree-evaluator.ts<br/><small>evaluateTree, TreeEvalResult</small>"]
+    TCOMPAT["tree-compat.ts<br/><small>flattenTree, flattenProtocol</small>"]
+  end
+
+  subgraph "Candidate Pipeline"
+    ICOLL["intent-collector.ts<br/><small>collectIntentProposals</small>"]
+    CGEN["candidate-generator.ts<br/><small>generateCandidates</small>"]
+    CSEL["candidate-selector.ts<br/><small>selectMatchedCandidate</small>"]
+    CBLD["candidate-builder.ts<br/><small>IntentNode to CandidateBid</small>"]
+    ECTX["effective-context.ts<br/><small>EffectiveConventionContext, BeliefData</small>"]
+    ICLASS["interference-classifier.ts<br/><small>classifyInterference</small>"]
+  end
+
+  subgraph "Overlay System"
+    OLAY["overlay.ts<br/><small>ConventionOverlayPatch</small>"]
+    OTREE["overlay-tree-replacement.ts<br/><small>applyOverlayTreeReplacement</small>"]
+  end
+
+  subgraph "Dialogue System"
+    DSTATE["dialogue/dialogue-state.ts<br/><small>DialogueState, TransitionRule</small>"]
+    DMGR["dialogue/dialogue-manager.ts<br/><small>computeDialogueState</small>"]
+    DTRANS["dialogue/dialogue-transitions.ts"]
+    DBASE["dialogue/baseline-transitions.ts"]
+    DHELP["dialogue/helpers.ts"]
+    DEVT["dialogue/event-classifier.ts"]
+  end
+
+  subgraph "Intent System"
+    INODE["intent/intent-node.ts<br/><small>IntentNode, intentBid</small>"]
+    ISEM["intent/semantic-intent.ts<br/><small>SemanticIntent, SemanticIntentType</small>"]
+    IRES["intent/intent-resolver.ts<br/><small>IntentResolverFn, ResolverResult</small>"]
+  end
+
+  subgraph "Conditions"
+    COND["conditions/auction-conditions.ts"]
+    HCOND["conditions/hand-conditions.ts"]
+    RB["conditions/rule-builders.ts"]
+    AQ["conditions/auction-query.ts"]
+  end
+
+  subgraph "Other"
+    TYPES["types.ts<br/><small>ConventionConfig, BiddingContext</small>"]
+    CEVAL["condition-evaluator.ts"]
+    INFAPI["inference-api.ts<br/><small>evaluateForInference</small>"]
+    SIB["sibling-finder.ts<br/><small>findSiblingBids</small>"]
+    CFAC["context-factory.ts<br/><small>createBiddingContext</small>"]
+  end
+
+  REG --> PEVAL
+  REG --> TEVAL
+  REG --> OLAY
+  REG --> OTREE
+  REG --> ECTX
+  PEVAL --> PROTO
+  PEVAL --> TEVAL
+  TEVAL --> RTREE
+  TEVAL --> CEVAL
+  CGEN --> ICOLL
+  CGEN --> CBLD
+  CGEN --> OLAY
+  CGEN --> OTREE
+  CGEN --> ECTX
+  CSEL --> CGEN
+  ICOLL --> RTREE
+  ICOLL --> INODE
+  INFAPI --> TCOMPAT
+  INFAPI --> PEVAL
+  INFAPI --> CFAC
+  SIB --> RTREE
+
+  style REG fill:#92400e,stroke:#f59e0b,color:#fef3c7
+  style CGEN fill:#92400e,stroke:#f59e0b,color:#fef3c7
+  style ECTX fill:#7f1d1d,stroke:#dc2626,color:#fecaca
+  style TYPES fill:#1e3a5f,stroke:#3b82f6,color:#dbeafe
+      </pre>
+
+      <div class="mt-4 p-4 border border-yellow-700 bg-yellow-950/30 rounded-lg">
+        <h4 class="text-yellow-400 font-bold text-sm mb-2">Why conventions/core/ is the gravitational center</h4>
+        <ul class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+          <li><strong>6 modules import from it:</strong> strategy/, inference/, drill/, display/, stores/, shared/ (the most fan-in of any module)</li>
+          <li><strong>38 files with deep internal coupling:</strong> The candidate pipeline alone involves 6 files (intent-collector, candidate-generator, candidate-selector, candidate-builder, effective-context, interference-classifier)</li>
+          <li><strong>Consumers import from 8+ different core files:</strong> <code>strategy/bidding/convention-strategy.ts</code> imports from registry, effective-context, candidate-generator, candidate-selector. <code>tree-eval-mapper.ts</code> imports from types, rule-tree, tree-evaluator, sibling-finder, candidate-generator.</li>
+          <li><strong>Types defined deep inside core/ leak outward:</strong> <code>BeliefData</code> from <code>effective-context.ts</code>, <code>ResolvedCandidate</code> from <code>candidate-generator.ts</code>, <code>TreeEvalResult</code> from <code>tree-evaluator.ts</code> are all consumed by external modules</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Shared ==================== -->
+    <section id="deep-shared" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Shared Types (Boundary Layer)</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        The <code class="text-blue-400">shared/</code> module has just 2 files (272 LOC) but carries enormous weight:
+        it defines the DTOs that cross from conventions/strategy through stores to components.
+        Its <strong>bidirectional dependency with conventions/core/</strong> is the codebase's only circular dependency.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+          <h4 class="text-sm font-bold text-blue-400 mb-3">shared/types.ts (261 LOC)</h4>
+          <p class="text-xs text-slate-400 mb-2">20 types/interfaces, 1 enum</p>
+          <ul class="text-xs text-slate-300 space-y-1 font-mono">
+            <li class="text-yellow-300">ForcingState (enum)</li>
+            <li>BidAlert, SuitInference, HandInference, InferredHoldings</li>
+            <li>ConditionDetail, TreePathEntry, TreeForkPoint</li>
+            <li>SiblingConditionDetail, SiblingBid, CandidateBid</li>
+            <li>ResolvedCandidateDTO, TreeEvalSummary</li>
+            <li>EvaluationTrace, TreeInferenceConditionEntry, TreeInferenceData</li>
+            <li>PracticalRecommendation</li>
+            <li class="text-green-300">BidResult (the main output DTO)</li>
+            <li>BidHistoryEntry</li>
+            <li class="text-green-300">BiddingStrategy, PlayContext, PlayResult, PlayStrategy</li>
+          </ul>
+        </div>
+        <div class="p-4 bg-slate-800 rounded-lg border border-red-900">
+          <h4 class="text-sm font-bold text-red-400 mb-3">The Circular Dependency</h4>
+          <pre class="mermaid">
+graph LR
+  S["shared/types.ts"]
+  C["conventions/core/types.ts"]
+  E["engine/types.ts"]
+
+  S -->|"imports BiddingContext"| C
+  C -->|"imports ForcingState,<br/>CandidateBid, SiblingBid"| S
+  S -->|"imports Call, Seat, Hand..."| E
+  C -->|"imports Call, Seat, Hand..."| E
+
+  linkStyle 0 stroke:#f59e0b,stroke-width:3px
+  linkStyle 1 stroke:#f59e0b,stroke-width:3px
+          </pre>
+          <p class="text-xs text-slate-400 mt-2">
+            <strong>Why it exists:</strong> <code>BiddingStrategy.suggest()</code> takes a <code>BiddingContext</code> parameter
+            (defined in conventions/core/types.ts). Meanwhile, conventions/core/ needs <code>ForcingState</code>, <code>CandidateBid</code>,
+            and <code>SiblingBid</code> from shared/types.ts for its pipeline output.
+          </p>
+          <p class="text-xs text-red-300 mt-2">
+            <strong>Impact:</strong> These modules cannot be loaded independently. Changing either requires awareness of the other.
+            TypeScript's <code>import type</code> makes this safe at runtime (no circular initialization), but it couples the type systems.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Strategy ==================== -->
+    <section id="deep-strategy" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Strategy</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        Strategy wraps convention evaluation into <code class="text-blue-400">BiddingStrategy</code> and <code class="text-blue-400">PlayStrategy</code>
+        interfaces. The <code class="text-blue-400">convention-strategy.ts</code> file is the primary adapter between conventions/core/ and the rest of the system.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h4 class="text-sm font-bold text-blue-400 mb-3">strategy/bidding/ (8 files)</h4>
+          <ul class="text-sm text-slate-300 space-y-1">
+            <li><code class="text-yellow-300">convention-strategy.ts</code> &mdash; <code>conventionToStrategy(config, options?)</code> &mdash; the mega-adapter</li>
+            <li><code>strategy-chain.ts</code> &mdash; <code>createStrategyChain()</code> tries strategies in order</li>
+            <li><code>tree-eval-mapper.ts</code> &mdash; maps TreeEvalResult to TreeEvalSummary DTO</li>
+            <li><code>practical-scorer.ts</code> &mdash; pure scoring functions</li>
+            <li><code>practical-types.ts</code> &mdash; local types for practical pipeline</li>
+            <li><code>pragmatic-generator.ts</code> &mdash; tactical bids (NT downgrade, overcall, etc.)</li>
+            <li><code>natural-fallback.ts</code> &mdash; fallback strategy for natural bids</li>
+            <li><code>pass-strategy.ts</code> &mdash; always-pass placeholder</li>
+            <li><code>fit-ranker.ts</code> &mdash; candidate ranking by fit confidence</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-red-400 mb-3">convention-strategy.ts imports</h4>
+          <p class="text-xs text-slate-400 mb-2">This single file imports from 5 modules:</p>
+          <ul class="text-xs text-slate-300 space-y-1 font-mono">
+            <li class="text-yellow-300">conventions/core/types &mdash; ConventionConfig, BiddingContext, ConventionLookup</li>
+            <li class="text-yellow-300">conventions/core/registry &mdash; evaluateBiddingRules</li>
+            <li class="text-yellow-300">conventions/core/effective-context &mdash; buildEffectiveContext, BeliefData</li>
+            <li class="text-yellow-300">conventions/core/candidate-generator &mdash; generateCandidates, ResolvedCandidate</li>
+            <li class="text-yellow-300">conventions/core/candidate-selector &mdash; selectMatchedCandidate</li>
+            <li class="text-blue-300">shared/types &mdash; ForcingState, BidResult, etc.</li>
+            <li class="text-blue-300">shared/hand-summary &mdash; formatHandSummary</li>
+            <li class="text-green-300">engine/constants &mdash; partnerSeat, SUIT_ORDER</li>
+            <li class="text-purple-300">inference/private-belief &mdash; PrivateBeliefState</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 bg-yellow-950/30 border border-yellow-800 rounded-lg text-sm">
+        <strong class="text-yellow-400">Coupling concern:</strong> <code>convention-strategy.ts</code> reaches into <strong>5 different files within conventions/core/</strong>
+        (types, registry, effective-context, candidate-generator, candidate-selector). This is not just importing types &mdash;
+        it imports runtime functions like <code>evaluateBiddingRules()</code>, <code>buildEffectiveContext()</code>, <code>generateCandidates()</code>,
+        and <code>selectMatchedCandidate()</code>. Any refactor of the candidate pipeline requires updating this file.
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Inference ==================== -->
+    <section id="deep-inference" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Inference</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        The inference module extracts hand information from bids with per-partnership information asymmetry.
+        It imports from 3 modules (engine, shared, conventions/core) and is consumed by strategy/ and stores/.
+      </p>
+
+      <pre class="mermaid">
+graph TB
+  subgraph "inference/"
+    IE["inference-engine.ts<br/><small>createInferenceEngine</small>"]
+    NI["natural-inference.ts<br/><small>SAYC-default inference</small>"]
+    CI["convention-inference.ts<br/><small>Convention-aware inference</small>"]
+    CM["condition-mapper.ts<br/><small>extractInference, invertInference</small>"]
+    MG["merge.ts<br/><small>mergeInferences</small>"]
+    BA["belief-accumulator.ts<br/><small>PublicBeliefState</small>"]
+    AP["annotation-producer.ts<br/><small>produceAnnotation</small>"]
+    PIE["protocol-inference-extractor.ts<br/><small>protocolInferenceExtractor</small>"]
+    TIE["tree-inference-extractor.ts<br/><small>extractInferencesFromDTO</small>"]
+    PB["private-belief.ts<br/><small>conditionOnOwnHand</small>"]
+    BC["belief-converter.ts<br/><small>toBeliefData</small>"]
+    PI["partner-interpretation.ts<br/><small>computePartnerInterpretation</small>"]
+    TY["types.ts<br/><small>InferenceProvider, etc.</small>"]
+  end
+
+  IE --> NI
+  IE --> CI
+  IE --> TY
+  CI -->|"imports from"| CORE["conventions/core/"]
+  CM -->|"imports from"| CORE
+  PIE -->|"imports from"| CORE
+  BC -->|"imports from"| CORE
+  PB -->|"exported to"| STRAT["strategy/"]
+  PI -->|"exported to"| STRAT
+  BA -->|"exported to"| STORES["stores/"]
+  AP -->|"exported to"| STORES
+
+  style CORE fill:#92400e,stroke:#f59e0b,color:#fef3c7
+  style STRAT fill:#1e3a5f,stroke:#3b82f6,color:#dbeafe
+  style STORES fill:#1e3a5f,stroke:#3b82f6,color:#dbeafe
+      </pre>
+
+      <div class="mt-4 p-4 bg-slate-800 rounded-lg border border-slate-700 text-sm">
+        <h4 class="text-blue-400 font-bold mb-2">Inference imports from conventions/core/</h4>
+        <table class="w-full text-xs">
+          <thead><tr class="text-slate-400"><th class="text-left py-1">inference/ file</th><th class="text-left py-1">imports from core/</th><th class="text-left py-1">what</th></tr></thead>
+          <tbody class="text-slate-300">
+            <tr><td class="py-1"><code>types.ts</code></td><td><code>core/types</code></td><td>re-exports <code>ConditionInference</code></td></tr>
+            <tr><td class="py-1"><code>condition-mapper.ts</code></td><td><code>core/types</code></td><td><code>RuleCondition</code>, <code>ConditionInference</code></td></tr>
+            <tr><td class="py-1"><code>belief-converter.ts</code></td><td><code>core/effective-context</code></td><td><code>BeliefData</code></td></tr>
+            <tr><td class="py-1"><code>protocol-inference-extractor.ts</code></td><td><code>core/tree-evaluator</code>, <code>core/protocol</code></td><td><code>TreeEvalResult</code>, <code>ProtocolEvalResult</code></td></tr>
+            <tr><td class="py-1"><code>convention-inference.ts</code></td><td><code>core/registry</code>, <code>core/inference-api</code>, <code>core/types</code></td><td><code>getConvention</code>, <code>evaluateForInference</code>, <code>InferenceRuleDTO</code>, <code>ConventionConfig</code></td></tr>
+          </tbody>
+        </table>
+        <p class="text-xs text-slate-400 mt-2">
+          <strong>Note:</strong> The <code>inference-api.ts</code> in core/ was specifically created as a narrow DTO bridge
+          to prevent inference/ from importing deep core internals like <code>flattenProtocol</code> and <code>evaluateProtocol</code>.
+          However, <code>protocol-inference-extractor.ts</code> still imports <code>TreeEvalResult</code> and <code>ProtocolEvalResult</code> directly from core/.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Drill ==================== -->
+    <section id="deep-drill" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Drill (Wiring Hub)</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        Drill is small (5 files, 485 LOC) but has the <strong>highest fan-out of any non-UI module</strong>: it imports from
+        engine/, shared/, conventions/core/, strategy/, and inference/. The <code class="text-blue-400">config-factory.ts</code> file
+        is a wiring mega-hub.
+      </p>
+
+      <pre class="mermaid">
+graph LR
+  CF["config-factory.ts<br/><small>createDrillConfig</small><br/><small>20 import lines from 5 modules</small>"]
+
+  CF -->|"Seat"| ENGINE["engine/"]
+  CF -->|"BiddingStrategy,<br/>ForcingState"| SHARED["shared/"]
+  CF -->|"getConvention, ConventionConfig,<br/>computeDialogueState, BeliefData"| CORE["conv/core/"]
+  CF -->|"conventionToStrategy,<br/>passStrategy, createStrategyChain,<br/>naturalFallback, heuristicPlay,<br/>fitRanker"| STRAT["strategy/"]
+  CF -->|"naturalInferenceProvider,<br/>conventionInferenceProvider"| INF["inference/"]
+
+  style CF fill:#7f1d1d,stroke:#dc2626,stroke-width:3px,color:#fecaca
+  style CORE fill:#92400e,stroke:#f59e0b,color:#fef3c7
+      </pre>
+
+      <div class="mt-4 p-3 bg-red-950/30 border border-red-800 rounded-lg text-sm">
+        <strong class="text-red-400">Coupling concern:</strong> <code>config-factory.ts</code> has <strong>20 import lines</strong> pulling from
+        5 different modules. It's responsible for wiring together the convention strategy, inference providers,
+        play strategies, strategy chains, and forcing filters. This makes it fragile &mdash; any interface change
+        in strategy/, inference/, or conventions/core/ requires updating this file.
+        <br/><br/>
+        <strong class="text-slate-400">However:</strong> This is a <em>composition root</em> pattern &mdash; a single place where all dependencies are wired together.
+        The question is whether this responsibility should live in drill/ or be elevated to a dedicated wiring module.
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Display ==================== -->
+    <section id="deep-display" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Display</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        Display utilities should be thin adapters that format data for the UI.
+        Surprisingly, display/ has <strong>18 import lines from conventions/core/</strong> &mdash; as many as from engine/.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+          <h4 class="text-sm font-bold text-blue-400 mb-3">Files with conventions/core/ dependencies</h4>
+          <ul class="text-xs text-slate-300 space-y-2">
+            <li>
+              <code class="text-yellow-300">rules-display.ts</code> &mdash; imports <code>ConventionConfig</code>, <code>ConditionResult</code>,
+              <code>evaluateConditions</code>, <code>buildExplanation</code>, <code>createBiddingContext</code>, <code>getEffectiveRules</code>
+              <br/><span class="text-red-400 text-xs">Runtime imports: evaluateConditions, buildExplanation, createBiddingContext, getEffectiveRules</span>
+            </li>
+            <li>
+              <code class="text-yellow-300">tree-display.ts</code> &mdash; imports <code>RuleNode</code>, <code>DecisionNode</code>,
+              <code>IntentNode</code>, <code>ConventionExplanations</code>, <code>BiddingContext</code>
+            </li>
+            <li>
+              <code class="text-yellow-300">condition-explanations.ts</code> &mdash; imports <code>RuleCondition</code>, <code>BiddingContext</code>, <code>ConventionExplanations</code>
+            </li>
+            <li>
+              <code class="text-yellow-300">teaching-content.ts</code> &mdash; imports <code>ConventionConfig</code>, <code>ProtocolRound</code>,
+              <code>RuleNode</code>, <code>DecisionNode</code>, <code>IntentNode</code>
+            </li>
+            <li>
+              <code class="text-yellow-300">debug-bid-eval.ts</code> &mdash; imports <code>ConventionConfig</code>, <code>ConditionResult</code>, <code>evaluateAllBiddingRules</code>, <code>reconstructBiddingContext</code>
+            </li>
+            <li>
+              <code class="text-yellow-300">dummy-context.ts</code> &mdash; imports <code>BiddingContext</code>, <code>createBiddingContext</code>
+            </li>
+            <li>
+              <code class="text-yellow-300">filter-conventions.ts</code> &mdash; imports <code>ConventionConfig</code>
+            </li>
+          </ul>
+        </div>
+        <div class="p-4 bg-slate-800 rounded-lg border border-yellow-900">
+          <h4 class="text-sm font-bold text-yellow-400 mb-3">Analysis</h4>
+          <p class="text-sm text-slate-300 mb-3">
+            7 out of 13 display/ files import from conventions/core/. Several import <strong>runtime functions</strong>,
+            not just types:
+          </p>
+          <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+            <li><code>evaluateConditions()</code> from condition-evaluator.ts</li>
+            <li><code>buildExplanation()</code> from condition-evaluator.ts</li>
+            <li><code>createBiddingContext()</code> from context-factory.ts</li>
+            <li><code>getEffectiveRules()</code> from registry.ts</li>
+            <li><code>evaluateAllBiddingRules()</code> from registry.ts</li>
+            <li><code>reconstructBiddingContext()</code> from debug-utils.ts</li>
+          </ul>
+          <p class="text-xs text-yellow-300 mt-3">
+            This means display/ is not a pure formatting layer &mdash; it actively calls into the convention
+            evaluation pipeline. This is a significant coupling concern for a module named "display."
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Deep Dive - Stores ==================== -->
+    <section id="deep-stores" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Stores</h2>
+      <p class="text-slate-300 mb-4 prose-content">
+        Stores is the integration layer: 6 files importing from <strong>6 different modules</strong> (engine, shared, conventions/core, drill, inference, strategy).
+        As the topmost non-component module, high fan-out is expected. The concern is whether it imports <em>too deep</em> into lower modules.
+      </p>
+
+      <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+        <h4 class="text-sm font-bold text-blue-400 mb-3">Store-level import summary</h4>
+        <table class="w-full text-xs">
+          <thead><tr class="text-slate-400"><th class="text-left py-1">Store file</th><th class="text-left py-1">Imports from</th></tr></thead>
+          <tbody class="text-slate-300">
+            <tr class="border-b border-slate-700"><td class="py-2"><code>game.svelte.ts</code></td>
+              <td>engine/ (port, types, Seat), drill/ (DrillSession), shared/ (BiddingStrategy, BidResult, InferredHoldings), inference/ (InferenceEngine, InferenceSnapshot, PublicBeliefState, belief-accumulator, annotation-producer, protocol-inference-extractor, natural-inference), engine/constants (partnerSeat)</td>
+            </tr>
+            <tr class="border-b border-slate-700"><td class="py-2"><code>bidding.svelte.ts</code></td>
+              <td>engine/ (port, types, constants, hand-evaluator, call-helpers), drill/ (DrillSession, teaching-resolution), shared/ (BidResult, BidHistoryEntry, etc.), conventions/core/ (createBiddingContext)</td>
+            </tr>
+            <tr class="border-b border-slate-700"><td class="py-2"><code>play.svelte.ts</code></td>
+              <td>engine/ (port, types, constants), shared/ (PlayStrategy, PlayContext, etc.), strategy/ (randomPlayStrategy), util/ (delay)</td>
+            </tr>
+            <tr class="border-b border-slate-700"><td class="py-2"><code>dds.svelte.ts</code></td>
+              <td>engine/ (port, types) &mdash; minimal coupling</td>
+            </tr>
+            <tr class="border-b border-slate-700"><td class="py-2"><code>app.svelte.ts</code></td>
+              <td>conventions/core/ (ConventionConfig) &mdash; type-only</td>
+            </tr>
+            <tr><td class="py-2"><code>context.ts</code></td>
+              <td>engine/ (EnginePort), stores/ (own types) &mdash; DI helpers</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-3 bg-slate-800/50 border border-slate-600 rounded-lg text-sm text-slate-300">
+        <strong class="text-blue-400">Observation:</strong> <code>game.svelte.ts</code> has the heaviest import footprint, pulling from 5+ modules
+        including 7 different files from inference/. This is where the inference engine lifecycle is managed:
+        creating engines, processing bids through annotation producers, maintaining belief state.
+        Notably, stores/ does <em>not</em> import deeply from conventions/core/ &mdash; only <code>createBiddingContext</code>
+        and <code>ConventionConfig</code> (type). The heavy convention wiring is delegated to drill/.
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Coupling Concerns ==================== -->
+    <section id="coupling-concerns" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Coupling Concerns</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        Ranked by severity. Each concern is an observation, not a prescription.
+      </p>
+
+      <!-- Concern 1 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-red-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-critical concern-badge">Critical</span>
+          <h3 class="text-lg font-bold text-white">shared/ and conventions/core/ circular dependency</h3>
+        </div>
+        <p class="text-sm text-slate-300 mb-3">
+          <code>shared/types.ts</code> imports <code>BiddingContext</code> from <code>conventions/core/types.ts</code>.
+          <code>conventions/core/</code> imports <code>ForcingState</code>, <code>CandidateBid</code>, <code>SiblingBid</code>, <code>SiblingConditionDetail</code>, <code>BidAlert</code> from <code>shared/types.ts</code>.
+        </p>
+        <p class="text-sm text-slate-300 mb-2"><strong>Root cause:</strong> <code>BiddingStrategy.suggest()</code> in shared/ takes a <code>BiddingContext</code> parameter, which is defined in conventions/core/. Meanwhile, the candidate pipeline in core/ needs shared DTO types for its output.</p>
+        <p class="text-sm text-slate-300"><strong>Blast radius:</strong> Neither module can be understood, tested, or loaded in isolation. Any type change in either module requires checking the other.</p>
+      </div>
+
+      <!-- Concern 2 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-yellow-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-warning concern-badge">Warning</span>
+          <h3 class="text-lg font-bold text-white">conventions/core/ is too large and has too many external consumers</h3>
+        </div>
+        <p class="text-sm text-slate-300 mb-3">
+          38 files, 5,206 LOC, consumed by 6 modules. Internal subsystems (candidate pipeline, overlay system, dialogue system, intent system)
+          each have 4-7 files with tight internal coupling. External consumers import from 8+ different files within core/.
+        </p>
+        <p class="text-sm text-slate-300"><strong>Symptom:</strong> Changing any part of the candidate pipeline (e.g., how <code>generateCandidates()</code> works)
+        requires checking <code>strategy/bidding/convention-strategy.ts</code>, <code>tree-eval-mapper.ts</code>, and potentially <code>inference/convention-inference.ts</code>.
+        The module has no clear internal boundaries separating its subsystems.</p>
+      </div>
+
+      <!-- Concern 3 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-yellow-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-warning concern-badge">Warning</span>
+          <h3 class="text-lg font-bold text-white">strategy/bidding/ reaches deep into conventions/core/ internals</h3>
+        </div>
+        <p class="text-sm text-slate-300 mb-3">
+          <code>convention-strategy.ts</code> imports from 5 different core/ files and calls 4 runtime functions
+          (<code>evaluateBiddingRules</code>, <code>buildEffectiveContext</code>, <code>generateCandidates</code>, <code>selectMatchedCandidate</code>).
+          <code>tree-eval-mapper.ts</code> imports from 4 core/ files.
+        </p>
+        <p class="text-sm text-slate-300"><strong>Symptom:</strong> Strategy is not consuming a stable interface &mdash;
+        it's orchestrating the candidate pipeline step-by-step. If the pipeline's internal structure changes, strategy must change too.</p>
+      </div>
+
+      <!-- Concern 4 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-yellow-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-warning concern-badge">Warning</span>
+          <h3 class="text-lg font-bold text-white">display/ imports runtime functions from conventions/core/</h3>
+        </div>
+        <p class="text-sm text-slate-300 mb-3">
+          7 of 13 display files import from conventions/core/. Several import <strong>runtime functions</strong>
+          (<code>evaluateConditions</code>, <code>buildExplanation</code>, <code>createBiddingContext</code>,
+          <code>getEffectiveRules</code>, <code>evaluateAllBiddingRules</code>, <code>reconstructBiddingContext</code>).
+        </p>
+        <p class="text-sm text-slate-300"><strong>Symptom:</strong> A module called "display" should format data, not evaluate conventions.
+        Files like <code>rules-display.ts</code> and <code>debug-bid-eval.ts</code> are doing convention evaluation work that belongs elsewhere.</p>
+      </div>
+
+      <!-- Concern 5 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-blue-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-info concern-badge">Info</span>
+          <h3 class="text-lg font-bold text-white">drill/config-factory.ts is a mega-hub</h3>
+        </div>
+        <p class="text-sm text-slate-300 mb-3">
+          20 import lines from 5 modules (engine, shared, conventions/core, strategy, inference).
+          This is a composition root &mdash; acceptable in principle, but concentrated in a module named "drill"
+          rather than a dedicated wiring/bootstrap module.
+        </p>
+        <p class="text-sm text-slate-300"><strong>Trade-off:</strong> Composition roots are necessary. The question is whether
+        drill/ is the right home for this responsibility, or whether it should be elevated to a top-level wiring module
+        that drill/, stores/, and the app bootstrap all consume.</p>
+      </div>
+
+      <!-- Concern 6 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-blue-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-info concern-badge">Info</span>
+          <h3 class="text-lg font-bold text-white">Deep-module types leak across boundaries</h3>
+        </div>
+        <p class="text-sm text-slate-300 mb-3">
+          Types like <code>BeliefData</code> (effective-context.ts), <code>ResolvedCandidate</code> (candidate-generator.ts),
+          <code>TreeEvalResult</code> (tree-evaluator.ts), and <code>ProtocolEvalResult</code> (protocol.ts) are defined
+          deep inside conventions/core/ but imported by strategy/ and inference/.
+        </p>
+        <p class="text-sm text-slate-300"><strong>Symptom:</strong> External modules need knowledge of core/'s internal file structure.
+        If files are renamed or types move, multiple external modules break. Some of these should be elevated to
+        the core/ public surface (index.ts or a dedicated API types file).</p>
+      </div>
+
+      <!-- Concern 7 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-green-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-ok concern-badge">OK</span>
+          <h3 class="text-lg font-bold text-white">engine/ purity is well-maintained</h3>
+        </div>
+        <p class="text-sm text-slate-300">
+          Engine has zero runtime imports from any other app module. The one <code>import type</code> in <code>bid-suggester.ts</code>
+          is erased at runtime and documented. Transport adapters properly isolated.
+        </p>
+      </div>
+
+      <!-- Concern 8 -->
+      <div class="mb-6 p-5 bg-slate-800 rounded-lg border-l-4 border-green-500">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge-ok concern-badge">OK</span>
+          <h3 class="text-lg font-bold text-white">No upward dependencies from lower layers</h3>
+        </div>
+        <p class="text-sm text-slate-300">
+          engine/ never imports from strategy/, inference/, drill/, display/, stores/, or components/.
+          conventions/core/ never imports from strategy/ or inference/. The layered architecture holds &mdash;
+          dependencies flow downward with the notable exception of the shared/ &#8596; conventions/core/ cycle.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Duplicated Code ==================== -->
+    <section id="duplicated-code" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Duplicated Code Across Modules</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        The subagent analysis found several cases of duplicated logic across module boundaries.
+        These are not just DRY violations &mdash; they represent hidden coupling where the same concept is maintained in multiple places.
+      </p>
+
+      <div class="space-y-4">
+        <div class="p-4 bg-slate-800 rounded-lg border border-yellow-800">
+          <h4 class="text-sm font-bold text-yellow-400 mb-2">1. <code>LEVEL_HCP_TABLE</code> duplicated in strategy/</h4>
+          <p class="text-xs text-slate-300 mb-2">
+            The HCP floor per bid level table appears in both <code>practical-scorer.ts</code> (line 10-12)
+            and <code>pragmatic-generator.ts</code> (line 26-28) with identical values.
+          </p>
+          <p class="text-xs text-slate-400">Should be a shared constant in <code>strategy/bidding/</code> or <code>engine/constants.ts</code>.</p>
+        </div>
+
+        <div class="p-4 bg-slate-800 rounded-lg border border-yellow-800">
+          <h4 class="text-sm font-bold text-yellow-400 mb-2">2. <code>callKey()</code> / <code>callKeyForDedup()</code> duplicated</h4>
+          <p class="text-xs text-slate-300 mb-2">
+            <code>pragmatic-generator.ts</code> has a local <code>callKey()</code> function (lines 39-47)
+            that is functionally identical to <code>callKeyForDedup()</code> exported from <code>tree-eval-mapper.ts</code> (lines 194-201).
+          </p>
+          <p class="text-xs text-slate-400">The pragmatic generator builds an <code>existingCalls</code> set but uses its own key function instead of the exported one.</p>
+        </div>
+
+        <div class="p-4 bg-slate-800 rounded-lg border border-yellow-800">
+          <h4 class="text-sm font-bold text-yellow-400 mb-2">3. <code>mergeToCumulative</code> logic duplicated in inference/</h4>
+          <p class="text-xs text-slate-300 mb-2">
+            Nearly identical cumulative merge logic appears in both <code>protocol-inference-extractor.ts</code> (lines 71-94)
+            and <code>tree-inference-extractor.ts</code> (lines 66-89).
+          </p>
+          <p class="text-xs text-slate-400">Could be extracted to a shared helper in <code>inference/</code>.</p>
+        </div>
+
+        <div class="p-4 bg-slate-800 rounded-lg border border-yellow-800">
+          <h4 class="text-sm font-bold text-yellow-400 mb-2">4. <code>delay</code> function duplicated in stores/</h4>
+          <p class="text-xs text-slate-300 mb-2">
+            <code>play.svelte.ts</code> imports <code>delay</code> from <code>util/delay</code>,
+            but <code>bidding.svelte.ts</code> defines its own inline <code>defaultDelay</code> function. They are functionally identical.
+          </p>
+          <p class="text-xs text-slate-400">Minor inconsistency &mdash; both should use <code>util/delay</code>.</p>
+        </div>
+
+        <div class="p-4 bg-slate-800 rounded-lg border border-yellow-800">
+          <h4 class="text-sm font-bold text-yellow-400 mb-2">5. <code>PrivateBeliefState</code> construction duplicated</h4>
+          <p class="text-xs text-slate-300 mb-2">
+            <code>convention-strategy.ts</code> constructs <code>PrivateBeliefState</code> inline (lines 151-167)
+            rather than calling <code>conditionOnOwnHand()</code> from <code>inference/private-belief.ts</code>,
+            duplicating the narrowing logic.
+          </p>
+          <p class="text-xs text-slate-400">This means changes to belief narrowing must be made in two places.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Re-export Chains ==================== -->
+    <section id="reexport-chains" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Re-export Chains</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        Types that are re-exported through multiple modules create indirection.
+        Consumers may import the same type from different locations, causing confusion about the canonical source.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-400 border-b border-slate-700">
+              <th class="py-2 px-3">Type</th>
+              <th class="py-2 px-3">Canonical Source</th>
+              <th class="py-2 px-3">Re-exported Through</th>
+              <th class="py-2 px-3">Hops</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-300 text-xs">
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-yellow-300">ForcingState</td>
+              <td class="py-2 px-3"><code>shared/types.ts</code></td>
+              <td class="py-2 px-3"><code>dialogue-state.ts</code> &rarr; <code>dialogue/index.ts</code></td>
+              <td class="py-2 px-3">3</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-yellow-300">BidAlert</td>
+              <td class="py-2 px-3"><code>shared/types.ts</code></td>
+              <td class="py-2 px-3"><code>conventions/core/rule-tree.ts</code></td>
+              <td class="py-2 px-3">2</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-yellow-300">ConditionInference</td>
+              <td class="py-2 px-3"><code>conventions/core/types.ts</code></td>
+              <td class="py-2 px-3"><code>inference/types.ts</code></td>
+              <td class="py-2 px-3">2</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-yellow-300">BidGrade</td>
+              <td class="py-2 px-3"><code>drill/teaching-resolution.ts</code></td>
+              <td class="py-2 px-3"><code>stores/bidding.svelte.ts</code></td>
+              <td class="py-2 px-3">2</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2 px-3 font-mono text-yellow-300">TeachingResolution</td>
+              <td class="py-2 px-3"><code>drill/teaching-resolution.ts</code></td>
+              <td class="py-2 px-3"><code>stores/bidding.svelte.ts</code></td>
+              <td class="py-2 px-3">2</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-mono text-yellow-300">BidHistoryEntry</td>
+              <td class="py-2 px-3"><code>shared/types.ts</code></td>
+              <td class="py-2 px-3"><code>stores/bidding.svelte.ts</code> &rarr; <code>stores/game.svelte.ts</code></td>
+              <td class="py-2 px-3">3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-3 bg-slate-800/50 border border-slate-600 rounded-lg text-sm text-slate-300">
+        <strong class="text-blue-400">Pattern:</strong> Re-exports through stores/ are intentional &mdash; components import from stores/
+        to avoid depending on drill/ or shared/ directly. The conventions/core/ re-exports
+        (<code>ForcingState</code>, <code>BidAlert</code>) exist for backward compatibility.
+        Consumers should prefer the canonical source for clarity.
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: Refactoring Observations ==================== -->
+    <section id="refactoring" class="mb-16">
+      <h2 class="text-2xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Refactoring Observations</h2>
+      <p class="text-slate-300 mb-6 prose-content">
+        Based on the coupling analysis, here are architectural observations that could inform a refactoring effort.
+        These are observations, not recommendations &mdash; the right approach depends on your priorities and constraints.
+      </p>
+
+      <div class="space-y-6">
+
+        <div class="p-5 bg-slate-800 rounded-lg border border-slate-700">
+          <h3 class="text-base font-bold text-white mb-2">1. Break the shared/ &#8596; conventions/core/ cycle</h3>
+          <p class="text-sm text-slate-300 mb-3">
+            The cycle exists because <code>BiddingStrategy.suggest()</code> in shared/ takes <code>BiddingContext</code> (defined in core/)
+            as a parameter. Options:
+          </p>
+          <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+            <li><strong>Move <code>BiddingContext</code> to shared/</strong> &mdash; it's really a cross-boundary type. Would require moving or re-exporting its dependencies too.</li>
+            <li><strong>Make <code>BiddingStrategy.suggest()</code> generic</strong> &mdash; use a type parameter or a simpler context interface defined in shared/.</li>
+            <li><strong>Introduce a <code>contracts/</code> or <code>api/</code> module</strong> &mdash; a new module that owns all cross-boundary interfaces, replacing shared/.</li>
+          </ul>
+        </div>
+
+        <div class="p-5 bg-slate-800 rounded-lg border border-slate-700">
+          <h3 class="text-base font-bold text-white mb-2">2. Give conventions/core/ a public API surface</h3>
+          <p class="text-sm text-slate-300 mb-3">
+            External modules import from 8+ different files within core/. This means they depend on core/'s internal file structure.
+            A facade pattern could help:
+          </p>
+          <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+            <li>Define explicit public APIs for each external consumer: <code>core/api/strategy-api.ts</code>, <code>core/api/inference-api.ts</code> (already partially exists), <code>core/api/display-api.ts</code></li>
+            <li>Have external modules import only from the API files, never from internal modules like <code>candidate-generator.ts</code></li>
+            <li>The candidate pipeline orchestration currently done in <code>convention-strategy.ts</code> could move inside core/ behind a facade</li>
+          </ul>
+        </div>
+
+        <div class="p-5 bg-slate-800 rounded-lg border border-slate-700">
+          <h3 class="text-base font-bold text-white mb-2">3. Split conventions/core/ into subsystems</h3>
+          <p class="text-sm text-slate-300 mb-3">
+            At 38 files, core/ contains at least 5 distinct subsystems that could be separate modules:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono text-slate-300">
+            <div class="p-2 bg-slate-900 rounded"><strong class="text-blue-400">Tree system:</strong> rule-tree, tree-evaluator, tree-compat</div>
+            <div class="p-2 bg-slate-900 rounded"><strong class="text-blue-400">Protocol system:</strong> protocol, protocol-evaluator</div>
+            <div class="p-2 bg-slate-900 rounded"><strong class="text-blue-400">Candidate pipeline:</strong> intent-collector, candidate-generator, candidate-selector, candidate-builder, effective-context</div>
+            <div class="p-2 bg-slate-900 rounded"><strong class="text-blue-400">Dialogue system:</strong> dialogue/, event-classifier</div>
+            <div class="p-2 bg-slate-900 rounded"><strong class="text-blue-400">Overlay system:</strong> overlay, overlay-tree-replacement</div>
+          </div>
+        </div>
+
+        <div class="p-5 bg-slate-800 rounded-lg border border-slate-700">
+          <h3 class="text-base font-bold text-white mb-2">4. Reclassify display/ files that do evaluation</h3>
+          <p class="text-sm text-slate-300 mb-3">
+            Files like <code>rules-display.ts</code>, <code>debug-bid-eval.ts</code>, and <code>teaching-content.ts</code>
+            call into the convention evaluation pipeline. They could be:
+          </p>
+          <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+            <li><strong>Moved to a <code>teaching/</code> or <code>evaluation/</code> module</strong> that explicitly depends on conventions/core/</li>
+            <li><strong>Refactored to accept pre-computed data</strong> instead of calling evaluation functions directly</li>
+            <li>The pure formatting utilities (<code>format.ts</code>, <code>tokens.ts</code>, <code>sort-cards.ts</code>, <code>seat-mapping.ts</code>, <code>hcp.ts</code>, <code>table-scale.ts</code>) would remain in display/</li>
+          </ul>
+        </div>
+
+        <div class="p-5 bg-slate-800 rounded-lg border border-slate-700">
+          <h3 class="text-base font-bold text-white mb-2">5. Consider a dedicated wiring/bootstrap module</h3>
+          <p class="text-sm text-slate-300">
+            <code>drill/config-factory.ts</code> is a composition root that imports from 5 modules.
+            If wiring logic also exists in stores/ (inference engine lifecycle in <code>game.svelte.ts</code>),
+            extracting a <code>wiring/</code> or <code>bootstrap/</code> module could centralize all dependency assembly
+            and reduce drill/'s fan-out from 5 to 2-3.
+          </p>
+        </div>
+
+        <div class="p-5 bg-slate-800 rounded-lg border border-slate-700">
+          <h3 class="text-base font-bold text-white mb-2">6. Consolidate duplicated logic</h3>
+          <p class="text-sm text-slate-300">
+            Five instances of duplicated code were found across module boundaries (see Duplicated Code section above).
+            The most impactful are the <code>PrivateBeliefState</code> construction duplication between strategy/ and inference/
+            (logic divergence risk) and the <code>mergeToCumulative</code> duplication within inference/ (easy fix).
+            The <code>LEVEL_HCP_TABLE</code> and <code>callKey</code> duplications within strategy/ are low-risk but easy wins.
+          </p>
+        </div>
+
+        <div class="p-5 bg-slate-800 rounded-lg border border-slate-700">
+          <h3 class="text-base font-bold text-white mb-2">7. Overall architecture health</h3>
+          <p class="text-sm text-slate-300 mb-3">
+            Despite the coupling concerns, the architecture is fundamentally sound:
+          </p>
+          <ul class="text-sm text-slate-300 space-y-1 list-disc list-inside">
+            <li><strong>No runtime circular dependencies</strong> &mdash; all cycles are type-only, erased by TypeScript</li>
+            <li><strong>Dependencies flow downward</strong> &mdash; engine/ is never imported by upper layers except through types</li>
+            <li><strong>Convention definitions are self-contained</strong> &mdash; no cross-convention imports</li>
+            <li><strong>Play strategies are fully isolated</strong> &mdash; only depend on engine/ and shared/</li>
+            <li><strong>Components never imported by non-UI code</strong> &mdash; UI boundary is clean</li>
+            <li><strong>DI patterns (ConventionLookup, EnginePort, factory functions) enable testability</strong></li>
+          </ul>
+          <p class="text-sm text-slate-300 mt-3">
+            The main risk is <strong>gravitational pull toward conventions/core/</strong> &mdash; as the module grows,
+            more external modules depend on its internals, making future changes increasingly expensive.
+            A public API surface and internal modularization would address this proactively.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Back to top -->
+    <div class="text-center mt-12 mb-8">
+      <a href="#overview" class="text-blue-400 hover:text-blue-300 text-sm">Back to top</a>
+    </div>
+
+  </main>
+
+  <!-- Active ToC Highlighting -->
+  <script>
+    const sections = document.querySelectorAll('section[id]');
+    const tocLinks = document.querySelectorAll('.toc-link');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach(link => link.classList.remove('active'));
+          const activeLink = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+          if (activeLink) activeLink.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+  </script>
+
+</body>
+</html>

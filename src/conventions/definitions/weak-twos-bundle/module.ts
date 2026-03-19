@@ -9,7 +9,7 @@
  * Entry point: the idle/dispatch state where the opener chooses a weak two bid.
  */
 import type { MachineState, MachineTransition } from "../../core/runtime/machine-types";
-import type { ConventionModule } from "../../core/composition/module-types";
+
 import { BidSuit } from "../../../engine/types";
 import {
   WEAK_TWO_R1_SURFACES,
@@ -323,7 +323,7 @@ const WEAK_TWO_MACHINE_STATES: readonly MachineState[] = [
 
 // ─── Module assembly ────────────────────────────────────────────
 
-export const weakTwoModule: ConventionModule = {
+export const weakTwoModule = {
   moduleId: "weak-two",
 
   // R1: opener's weak two opening surfaces → dispatch state

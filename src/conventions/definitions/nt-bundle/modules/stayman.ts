@@ -10,7 +10,7 @@ import { createPosteriorFactEvaluators } from "../../../../inference/posterior";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
-import type { ConventionModule } from "../../../core/composition/module-types";
+
 import { bid } from "../../../core/surface-helpers";
 
 // ─── Semantic classes ────────────────────────────────────────
@@ -873,7 +873,7 @@ const STAYMAN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 
 // ─── Module assembly ─────────────────────────────────────────
 
-export const staymanModule: ConventionModule = {
+export const staymanModule = {
   moduleId: "stayman",
 
   exposedStates: {

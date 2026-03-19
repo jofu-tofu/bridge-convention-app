@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PosteriorSummary } from "../../../core/contracts";
   import type { PosteriorFactValue } from "../../../core/contracts/posterior";
+  import DebugSection from "./DebugSection.svelte";
 
   interface Props {
     posteriorSummary: PosteriorSummary | null;
@@ -21,7 +22,6 @@
     if (fv.factId === "bridge.combinedHcpInRangeLikely") {
       return `[${fv.conditionedOn[0]}–${fv.conditionedOn[1]} HCP]`;
     }
-    // Suit-parameterized facts: show readable suit name
     if (fv.conditionedOn.length === 1 && SUIT_LABELS[fv.conditionedOn[0]!]) {
       return `[${SUIT_LABELS[fv.conditionedOn[0]!]}]`;
     }
@@ -36,41 +36,33 @@
   }
 </script>
 
-<details>
-  <summary class="text-text-primary font-semibold text-sm cursor-pointer py-1">
-    Posterior
-    {#if posteriorSummary}
-      <span class="text-text-muted font-normal">({posteriorSummary.sampleCount} samples)</span>
+<DebugSection
+  title="Posterior"
+  preview={posteriorSummary ? `${posteriorSummary.sampleCount} samples, ${(posteriorSummary.confidence * 100).toFixed(0)}% conf` : null}
+>
+  {#if posteriorSummary}
+    {@const ps = posteriorSummary}
+    <div class="text-[10px]">
+      <span class="text-text-muted">samples:</span> <span class="text-text-primary">{ps.sampleCount}</span>
+      <span class="text-text-muted ml-2">confidence:</span> <span class="text-text-primary">{(ps.confidence * 100).toFixed(1)}%</span>
+    </div>
+    {#if ps.factValues.length > 0}
+      <DebugSection title="Fact Values" count={ps.factValues.length} nested>
+        {#each ps.factValues as fv (fv.factId + fv.seatId)}
+          {@const condition = formatCondition(fv)}
+          <div class="text-[10px] leading-tight">
+            <span class="text-text-primary">{shortName(fv.factId)}</span>
+            <span class="text-text-muted ml-0.5">({fv.seatId})</span>
+            {#if condition}
+              <span class="text-violet-400 ml-0.5">{condition}</span>
+            {/if}
+            <span class="{probColor(fv.expectedValue)} ml-0.5">{(fv.expectedValue * 100).toFixed(1)}%</span>
+            <span class="text-text-muted ml-0.5">conf:{(fv.confidence * 100).toFixed(0)}%</span>
+          </div>
+        {/each}
+      </DebugSection>
     {/if}
-  </summary>
-  <div class="pl-2 py-1">
-    {#if posteriorSummary}
-      {@const ps = posteriorSummary}
-      <div class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 mb-1">
-        <span class="text-text-muted">samples</span>
-        <span class="text-text-primary">{ps.sampleCount}</span>
-        <span class="text-text-muted">confidence</span>
-        <span class="text-text-primary">{(ps.confidence * 100).toFixed(1)}%</span>
-      </div>
-      {#if ps.factValues.length > 0}
-        <div>
-          <span class="text-text-muted font-semibold">Fact Values:</span>
-          {#each ps.factValues as fv (fv.factId + fv.seatId)}
-            {@const condition = formatCondition(fv)}
-            <div class="pl-2">
-              <span class="text-text-primary">{shortName(fv.factId)}</span>
-              <span class="text-text-muted ml-1">({fv.seatId})</span>
-              {#if condition}
-                <span class="text-violet-400 ml-1">{condition}</span>
-              {/if}
-              <span class="{probColor(fv.expectedValue)} ml-1">{(fv.expectedValue * 100).toFixed(1)}%</span>
-              <span class="text-text-muted ml-1">conf:{(fv.confidence * 100).toFixed(0)}%</span>
-            </div>
-          {/each}
-        </div>
-      {/if}
-    {:else}
-      <div class="text-text-muted italic">No posterior data (not wired or no samples)</div>
-    {/if}
-  </div>
-</details>
+  {:else}
+    <div class="text-text-muted italic text-[10px]">No posterior data</div>
+  {/if}
+</DebugSection>

@@ -15,7 +15,7 @@ import { ForcingState } from "../../../../core/contracts/bidding";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../../engine/types";
-import type { ConventionModule } from "../../../core/composition/module-types";
+
 import { bid } from "../../../core/surface-helpers";
 import { FORCED_CONVENTIONAL, PREFERRED_CONVENTIONAL, ACCEPTABLE_NATURAL, RESIDUAL_NATURAL } from "../../../../core/contracts/agreement-module";
 import { staymanModule } from "./stayman";
@@ -539,7 +539,7 @@ const SMOLEN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
 
 const smolenSub = createSmolenSubmachine();
 
-export const smolenModule: ConventionModule = {
+export const smolenModule = {
   moduleId: "smolen",
 
   entrySurfaces: [],

@@ -1,110 +1,48 @@
 // ── Targeted Drill ─────────────────────────────────────────────────
 //
-// Generates a drill that drops the user into a specific FSM state.
+// Generates a drill that drops the user into a specific state.
 // Used by ?targetState= URL param and the BridgeExpertReview skill.
 //
-// Flow:
-// 1. Look up the bundle for the convention
-// 2. Compute FSM topology + path to target state
-// 3. Compile path into DealConstraints + auction prefix
-// 4. Generate a deal satisfying those constraints
-// 5. Return a DrillBundle with the prefilled auction
+// TODO: Port targeting to use protocol frame coverage enumeration
+// instead of the old FSM topology system.
 
 import type { EnginePort } from "../engine/port";
-import type { ConventionConfig, ConventionLookup } from "../conventions/core";
-import { Seat, type Auction } from "../engine/types";
+import type { ConventionConfig } from "../conventions/core";
+import { Seat } from "../engine/types";
 import type { DrillBundle, OpponentMode } from "./types";
-import { createDrillConfig, buildBundleStrategy } from "./config-factory";
+import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
-import { getBundle, computeTopology, compilePathToTarget, buildSurfaceMap } from "../conventions/core";
-import { injectSurfaceConstraints } from "../conventions/core/runtime/coverage-spec-compiler";
+import { getConventionSpec } from "../conventions/spec-registry";
+import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
-import { buildAuction } from "../engine/auction-helpers";
 
 /**
- * Start a drill targeting a specific FSM state.
+ * Start a drill targeting a specific state.
  *
- * Returns null if the state can't be targeted (not found, no path, etc.).
+ * Returns null if the state can't be targeted.
  * The caller should fall back to a normal drill in that case.
  *
- * When `targetSurfaceId` is provided, the deal generator is constrained to
- * produce a hand that exercises that specific meaning surface at the target
- * state — enabling controlled (state, surface) pair coverage.
+ * NOTE: State targeting currently requires the old FSM topology system which
+ * has been removed. This function returns null until targeting is ported to
+ * the protocol frame coverage enumeration system.
  */
 export function startTargetedDrill(
   _engine: EnginePort,
   convention: ConventionConfig,
   userSeat: Seat,
-  targetStateId: string,
-  options?: {
-    lookupConvention?: ConventionLookup;
+  _targetStateId: string,
+  _options?: {
     opponentMode?: OpponentMode;
     targetSurfaceId?: string;
   },
 ): DrillBundle | null {
-  const bundle = getBundle(convention.id);
-  if (!bundle?.conversationMachine) return null;
+  // State targeting not yet ported to protocol frame architecture.
+  // Fall back to null so caller can start a normal drill.
+  const spec = getConventionSpec(convention.id);
+  if (!spec) return null;
 
-  const machine = bundle.conversationMachine;
-  const topology = computeTopology(machine);
-
-  // Find the path to the target state
-  const path = topology.paths.get(targetStateId);
-  if (!path) return null;
-
-  // Build surface map for constraint compilation
-  const surfaceMap = buildSurfaceMap(bundle);
-
-  // Compile the path into a coverage target
-  const target = compilePathToTarget(path, machine, bundle, surfaceMap);
-
-  // When a specific surface is requested, tighten deal constraints to exercise it
-  const dealConstraints = options?.targetSurfaceId
-    ? injectSurfaceConstraints(target.dealConstraints, target.activeSurfaces, options.targetSurfaceId, Seat.South)
-    : target.dealConstraints;
-
-  // Generate a deal satisfying the compiled constraints
-  let deal;
-  try {
-    const result = tsGenerateDeal(dealConstraints);
-    deal = result.deal;
-  } catch {
-    // Constraints too tight — fall back
-    return null;
-  }
-
-  // Build the prefilled auction from the path
-  const dealer = dealConstraints.dealer ?? Seat.North;
-  let initialAuction: Auction | undefined;
-  if (target.auctionPrefix.length > 0) {
-    initialAuction = buildAuction(dealer, [...target.auctionPrefix]);
-  }
-
-  // Build the drill config and session
-  const config = createDrillConfig(convention.id, userSeat, {
-    lookupConvention: options?.lookupConvention,
-    opponentMode: "none",  // Targeted drills suppress opponents to ensure convention path is exercised
-  });
-  const session = createDrillSession(config);
-
-  const bundleStrategy = buildBundleStrategy(bundle);
-  if (!bundleStrategy) return null;
-
-  // Create inference engines
-  const nsInferenceEngine = config.nsInferenceConfig
-    ? createInferenceEngine(config.nsInferenceConfig, Seat.North)
-    : null;
-  const ewInferenceEngine = config.ewInferenceConfig
-    ? createInferenceEngine(config.ewInferenceConfig, Seat.East)
-    : null;
-
-  return {
-    deal,
-    session,
-    initialAuction,
-    strategy: bundleStrategy,
-    nsInferenceEngine,
-    ewInferenceEngine,
-  };
+  // TODO: Use protocol coverage enumeration to compute path to target state
+  // and generate appropriate deal constraints + auction prefix.
+  return null;
 }

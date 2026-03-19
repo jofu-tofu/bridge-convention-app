@@ -10,7 +10,7 @@
 //   1. Svelte UI — renders the viewport as pixels
 //   2. CLI harness — serializes the viewport as JSON for agent evaluation
 
-import type { Call, Hand, Seat, Vulnerability, SuitLength } from "../../engine/types";
+import type { Call, Hand, Seat, Vulnerability, SuitLength, DistributionPoints } from "../../engine/types";
 import type { BidGrade } from "../../teaching/teaching-resolution";
 
 // ── Bidding Viewport ────────────────────────────────────────────────
@@ -54,6 +54,9 @@ export interface HandEvaluationView {
   readonly shape: SuitLength; // [spades, hearts, diamonds, clubs]
   readonly isBalanced: boolean;
   readonly totalPoints: number;
+  /** Distribution point breakdown: shortness (voids/singletons/doubletons)
+   *  and length (suits longer than 4 cards). */
+  readonly distributionPoints: DistributionPoints;
 }
 
 /** A single auction entry as the player sees it. */
@@ -216,4 +219,32 @@ export interface TeachingDetail {
   }[];
   /** Near-miss bids with reasons. */
   readonly nearMissCalls?: readonly { readonly call: Call; readonly reason: string }[];
+
+  // ── Decision metadata ─────────────────────────────────────────
+  /** How ambiguous the bid decision was (0 = clear-cut, 0.8 = highly ambiguous).
+   *  Derived from the number and tier of acceptable alternatives. */
+  readonly ambiguityScore?: number;
+  /** How the teaching grading was resolved.
+   *  "exact" = only one correct bid; "primary_plus_acceptable" = primary + alternatives;
+   *  "intent_based" = intent-family-aware grading. */
+  readonly gradingType?: "exact" | "primary_plus_acceptable" | "intent_based";
+
+  // ── Practical score breakdown ─────────────────────────────────
+  /** Component-level breakdown of the practical scorer's recommendation.
+   *  Shows how fit, HCP, convention distance, and misunderstanding risk
+   *  contributed to the practical recommendation. */
+  readonly practicalScoreBreakdown?: {
+    readonly fitScore: number;
+    readonly hcpScore: number;
+    readonly conventionDistance: number;
+    readonly misunderstandingRisk: number;
+    readonly totalScore: number;
+  };
+
+  // ── Evaluation completeness ───────────────────────────────────
+  /** True when the pipeline evaluated every possible meaning (no early exit). */
+  readonly evaluationExhaustive?: boolean;
+  /** True when no convention surface matched and the pipeline fell back
+   *  to a default bid (typically Pass). */
+  readonly fallbackReached?: boolean;
 }
