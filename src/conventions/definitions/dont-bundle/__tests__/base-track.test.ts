@@ -7,7 +7,7 @@ describe("DONT BaseTrackSpec", () => {
 
   it("has correct id and name", () => {
     expect(DONT_BASE_TRACK.id).toBe("dont");
-    expect(DONT_BASE_TRACK.name).toBe("DONT (Disturb Opponents' No Trump)");
+    expect(DONT_BASE_TRACK.name).toBe("DONT (Disturb Opponents' Notrump)");
   });
 
   // ── Opening patterns ───────────────────────────────────────

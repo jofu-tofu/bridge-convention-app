@@ -16,6 +16,9 @@ export type SemanticClassId = string;
 /** Recommendation band — authored semantic priority. */
 export type RecommendationBand = "must" | "should" | "may" | "avoid";
 
+/** How the specificity value was determined. */
+export type SpecificityBasis = "derived" | "asserted" | "partial";
+
 /** Operator for fact-based clause evaluation. */
 export type FactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
 
@@ -32,6 +35,11 @@ export interface RankingMetadata {
   readonly modulePrecedence: number;
   /** Preserves DFS orderKey for backward compat. Deterministic last resort. */
   readonly intraModuleOrder: number;
+  /** How the specificity value was determined:
+   *  - "derived": all clauses reference primitive or bridge-derived facts with known constraint structure
+   *  - "asserted": at least one clause references an opaque module-derived boolean fact
+   *  - "partial": mix of derived and asserted clauses */
+  readonly specificityBasis?: SpecificityBasis;
 }
 
 /** A single clause in a meaning proposal. */

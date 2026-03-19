@@ -1,5 +1,5 @@
 /**
- * DONT (Disturb Opponents' No Trump) — BaseTrackSpec for the protocol frame
+ * DONT (Disturb Opponents' Notrump) — BaseTrackSpec for the protocol frame
  * architecture.
  *
  * Converts the DONT skeleton + machine FSM into a single self-contained
@@ -544,7 +544,7 @@ const DONT_STATES: Readonly<Record<string, FrameStateSpec>> = {
 export const DONT_BASE_TRACK: BaseModuleSpec = {
   role: "base" as const,
   id: "dont",
-  name: "DONT (Disturb Opponents' No Trump)",
+  name: "DONT (Disturb Opponents' Notrump)",
   openingPatterns: [
     {
       prefix: [

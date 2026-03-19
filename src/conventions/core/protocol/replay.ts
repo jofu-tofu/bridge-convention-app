@@ -704,35 +704,48 @@ interface BootResult {
 
 function advanceBootRouter(
   snapshot: RuntimeSnapshot,
-  event: { call: Call; seat: Seat },
+  eventsSoFar: readonly { call: Call; seat: Seat }[],
   spec: ConventionSpec,
   observerSeat: Seat,
 ): BootResult {
-  // If no boot router in spec, or base already selected, no-op.
+  // If base already selected, no-op.
   if (snapshot.base) {
     return { snapshot, trackSelected: false };
   }
 
-  // Walk the boot router trie.
-  // If spec doesn't have a compiled boot router, try direct opening pattern matching.
-  const key = callKey(event.call);
-
-  // Try compiled boot router if available.
-  // The boot router is a compiled trie — check if convention spec defines one.
-  // For now, use direct opening pattern matching.
+  // Match accumulated events against all opening patterns (supports
+  // both single-event and multi-event prefixes).
   let bestTrackId: string | undefined;
   let bestPriority = Infinity;
+  let bestStartState: string | undefined;
 
   for (const track of getBaseModules(spec)) {
     for (const pattern of track.openingPatterns) {
-      if (pattern.prefix.length === 1) {
-        // Single-event prefix — check if it matches this event.
-        if (matchesEventPattern(pattern.prefix[0]!, event, observerSeat)) {
-          const priority = pattern.priority ?? Infinity;
-          if (priority < bestPriority) {
-            bestPriority = priority;
-            bestTrackId = track.id;
-          }
+      const prefixLen = pattern.prefix.length;
+      if (prefixLen === 0 || eventsSoFar.length < prefixLen) continue;
+
+      // Check if the last `prefixLen` events match this pattern's prefix.
+      const startIdx = eventsSoFar.length - prefixLen;
+      let allMatch = true;
+      for (let i = 0; i < prefixLen; i++) {
+        if (
+          !matchesEventPattern(
+            pattern.prefix[i]!,
+            eventsSoFar[startIdx + i]!,
+            observerSeat,
+          )
+        ) {
+          allMatch = false;
+          break;
+        }
+      }
+
+      if (allMatch) {
+        const priority = pattern.priority ?? Infinity;
+        if (bestTrackId === undefined || priority < bestPriority) {
+          bestPriority = priority;
+          bestTrackId = track.id;
+          bestStartState = pattern.startState;
         }
       }
     }
@@ -740,18 +753,7 @@ function advanceBootRouter(
 
   if (bestTrackId) {
     const track = getBaseModules(spec).find((t) => t.id === bestTrackId)!;
-    // Find the matching pattern to get the start state.
-    let startState = track.initialStateId;
-    for (const pattern of track.openingPatterns) {
-      if (pattern.prefix.length === 1) {
-        if (
-          matchesEventPattern(pattern.prefix[0]!, event, observerSeat)
-        ) {
-          startState = pattern.startState;
-          break;
-        }
-      }
-    }
+    const startState = bestStartState ?? track.initialStateId;
 
     const base: BaseTrackInstance = {
       trackId: bestTrackId,
@@ -822,15 +824,30 @@ export function replay(
     ply: 0,
   };
 
+  // Accumulated events for multi-event boot prefix matching.
+  const eventsSoFar: { call: Call; seat: Seat }[] = [];
+
   for (const event of history) {
+    eventsSoFar.push(event);
+
     // a. Advance boot router.
     const bootResult = advanceBootRouter(
       snapshot,
-      event,
+      eventsSoFar,
       spec,
       observerSeat,
     );
     snapshot = bootResult.snapshot;
+
+    // b. If the boot router just selected a track on this event,
+    //    skip frame processing — the boot event establishes the
+    //    initial state but should not also drive a state transition.
+    if (bootResult.trackSelected) {
+      // Still run settle phase for protocol attachment.
+      snapshot = settleProtocolLifecycle(snapshot, spec, observerSeat);
+      snapshot = { ...snapshot, ply: snapshot.ply + 1 };
+      continue;
+    }
 
     // c. Build ordered frame list.
     const frames = buildFrameList(snapshot, spec);

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
   import type { Contract, DDSolution, Vulnerability, Deal } from "../../../engine/types";
+  import { Vulnerability as Vul } from "../../../engine/types";
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
@@ -36,7 +37,7 @@
     ddsSolution,
     ddsSolving,
     ddsError,
-    vulnerability: _vulnerability,
+    vulnerability,
     dealNumber,
     onNextDeal,
     onBackToMenu,
@@ -78,6 +79,16 @@
     }));
   });
   const showConventionSummary = $derived(conventionSummary.length > 1);
+
+  /** Human-readable vulnerability label */
+  function formatVulnerability(v: Vulnerability): string {
+    switch (v) {
+      case Vul.None: return "None Vul";
+      case Vul.NorthSouth: return "N-S Vul";
+      case Vul.EastWest: return "E-W Vul";
+      case Vul.Both: return "Both Vul";
+    }
+  }
 
   /** Format contract result like "3NT= — +400" or "2H -1 — -100" */
   function formatResult(): string | null {
@@ -130,7 +141,15 @@
   <div id="review-panel-bidding" role="tabpanel" aria-label="Bidding review">
     {#if contract}
       <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-        <p class="text-[--text-label] font-medium text-text-muted mb-1">Contract</p>
+        <div class="flex items-center justify-between mb-1">
+          <p class="text-[--text-label] font-medium text-text-muted">Contract</p>
+          <span
+            class="text-[--text-annotation] px-2 py-0.5 rounded-full font-medium {vulnerability === Vul.None
+              ? 'bg-bg-elevated text-text-muted'
+              : 'bg-vulnerable/80 text-vulnerable-text ring-1 ring-vulnerable-ring/40'}"
+            data-testid="vulnerability-label"
+          >{formatVulnerability(vulnerability)}</span>
+        </div>
         <ContractDisplay {contract} />
         {#if score !== null}
           {@const result = formatResult()}
@@ -148,7 +167,15 @@
       </div>
     {:else}
       <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
-        <p class="text-text-muted text-[--text-detail]">Passed out — no contract.</p>
+        <div class="flex items-center justify-between mb-1">
+          <p class="text-text-muted text-[--text-detail]">Passed out — no contract.</p>
+          <span
+            class="text-[--text-annotation] px-2 py-0.5 rounded-full font-medium {vulnerability === Vul.None
+              ? 'bg-bg-elevated text-text-muted'
+              : 'bg-vulnerable/80 text-vulnerable-text ring-1 ring-vulnerable-ring/40'}"
+            data-testid="vulnerability-label"
+          >{formatVulnerability(vulnerability)}</span>
+        </div>
       </div>
     {/if}
 

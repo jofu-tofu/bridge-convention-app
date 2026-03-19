@@ -1,109 +1,491 @@
 #!/usr/bin/env -S npx tsx
 // ── Bridge Convention Coverage CLI ──────────────────────────────────
 //
-// Enumerates coverage targets from ConventionSpec modules and
-// optionally runs automated self-test sessions.
+// Protocol-frame-aware coverage runner. Enumerates coverage targets,
+// presents hands, grades bids, and runs self-test sessions.
 //
-// Modes:
-//   list     — enumerate all coverage atoms for a convention
-//   summary  — show coverage stats (base states, protocol states, atoms)
+// Subcommands:
+//   list      — enumerate all coverage atoms for a bundle
+//   present   — present a hand for an agent to bid (no correct answer)
+//   grade     — grade a submitted bid against the strategy
+//   selftest  — run strategy against itself for all atoms (CI)
+
+// ── Side-effect import: registers all bundles + conventions ─────────
+import "../conventions";
 
 import { listConventionSpecs, getConventionSpec } from "../conventions/spec-registry";
 import {
   generateProtocolCoverageManifest,
-  type ProtocolCoverageManifest,
 } from "../conventions/core/protocol/coverage-enumeration";
-import { getBaseModules, getProtocolModules } from "../conventions/core/protocol/types";
+import { getBundle } from "../conventions/core/bundle";
+import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
+import { createBiddingContext } from "../conventions/core/context-factory";
+import { generateDeal } from "../engine/deal-generator";
+import { mulberry32 } from "../core/util/seeded-rng";
+import { evaluateHand } from "../engine/hand-evaluator";
+import { callKey, callsMatch } from "../engine/call-helpers";
+import { parsePatternCall } from "../engine/auction-helpers";
+import { getLegalCalls } from "../engine/auction";
+import { Seat, Vulnerability } from "../engine/types";
+import type {
+  Auction,
+  Call,
+  Hand,
+  Deal,
+  DealConstraints,
+  Card,
+} from "../engine/types";
+import type { ConventionSpec } from "../conventions/core/protocol/types";
+import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
+import type { BiddingContext } from "../core/contracts/bidding";
 
-const args = process.argv.slice(2);
-const mode = args[0] ?? "summary";
-const conventionId = args[1];
+// ── Argument parsing ────────────────────────────────────────────────
+
+function parseArgs(argv: string[]): Record<string, string | true> {
+  const result: Record<string, string | true> = {};
+  for (const arg of argv) {
+    if (arg.startsWith("--")) {
+      const eqIdx = arg.indexOf("=");
+      if (eqIdx !== -1) {
+        result[arg.slice(2, eqIdx)] = arg.slice(eqIdx + 1);
+      } else {
+        result[arg.slice(2)] = true;
+      }
+    }
+  }
+  return result;
+}
+
+function requireArg(args: Record<string, string | true>, name: string): string {
+  const val = args[name];
+  if (val === undefined || val === true) {
+    console.error(`Missing required argument: --${name}`);
+    process.exit(2);
+  }
+  return val;
+}
+
+function optionalNumericArg(args: Record<string, string | true>, name: string): number | undefined {
+  const val = args[name];
+  if (val === undefined || val === true) return undefined;
+  const n = Number(val);
+  if (isNaN(n)) {
+    console.error(`Invalid numeric argument: --${name}=${val}`);
+    process.exit(2);
+  }
+  return n;
+}
+
+// ── Resolve spec + bundle ───────────────────────────────────────────
+
+function resolveSpec(bundleId: string): ConventionSpec {
+  const spec = getConventionSpec(bundleId);
+  if (!spec) {
+    console.error(`Unknown convention spec: "${bundleId}"`);
+    console.error("Available specs:");
+    const seen = new Set<string>();
+    for (const s of listConventionSpecs()) {
+      if (seen.has(s.id)) continue;
+      seen.add(s.id);
+      console.error(`  ${s.id} — ${s.name}`);
+    }
+    process.exit(2);
+  }
+  return spec;
+}
+
+function resolveBundle(bundleId: string): ConventionBundle {
+  const bundle = getBundle(bundleId);
+  if (!bundle) {
+    console.error(`Unknown bundle: "${bundleId}" (no ConventionBundle registered)`);
+    process.exit(2);
+  }
+  return bundle;
+}
+
+// ── Deal generation ─────────────────────────────────────────────────
+
+function generateSeededDeal(
+  bundle: ConventionBundle,
+  seed: number,
+): Deal {
+  const rng = mulberry32(seed);
+  const constraints: DealConstraints = {
+    ...bundle.dealConstraints,
+  };
+  const result = generateDeal(constraints, rng);
+  return result.deal;
+}
+
+// ── Auction + context setup ─────────────────────────────────────────
+
+/**
+ * Determine the user seat for the convention.
+ * Most conventions have the responder as South. The default auction
+ * function from the bundle determines this — if there's an initial
+ * auction for that seat, it's the user seat.
+ */
+function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
+  const candidates: Seat[] = [Seat.South, Seat.East, Seat.North, Seat.West];
+  for (const seat of candidates) {
+    if (bundle.defaultAuction) {
+      const auction = bundle.defaultAuction(seat, deal);
+      if (auction && auction.entries.length > 0) {
+        return seat;
+      }
+    }
+  }
+  return Seat.South;
+}
+
+function buildInitialAuction(
+  bundle: ConventionBundle,
+  userSeat: Seat,
+  deal: Deal,
+): Auction {
+  if (bundle.defaultAuction) {
+    const auction = bundle.defaultAuction(userSeat, deal);
+    if (auction) return auction;
+  }
+  return { entries: [], isComplete: false };
+}
+
+function buildContext(
+  hand: Hand,
+  auction: Auction,
+  seat: Seat,
+): BiddingContext {
+  const evaluation = evaluateHand(hand);
+  return createBiddingContext({
+    hand,
+    auction,
+    seat,
+    evaluation,
+    vulnerability: Vulnerability.None,
+    dealer: auction.entries.length > 0 ? auction.entries[0]!.seat : Seat.North,
+  });
+}
+
+// ── Hand formatting ─────────────────────────────────────────────────
+
+function formatCard(card: Card): string {
+  return `${card.rank}${card.suit}`;
+}
+
+function formatHandBySuit(hand: Hand): Record<string, string[]> {
+  const suits: Record<string, Card[]> = { S: [], H: [], D: [], C: [] };
+  for (const card of hand.cards) {
+    suits[card.suit]!.push(card);
+  }
+  return {
+    S: suits.S!.map((c) => c.rank),
+    H: suits.H!.map((c) => c.rank),
+    D: suits.D!.map((c) => c.rank),
+    C: suits.C!.map((c) => c.rank),
+  };
+}
+
+// ── Main dispatch ───────────────────────────────────────────────────
+
+const rawArgs = process.argv.slice(2);
+const subcommand = rawArgs[0];
+const flags = parseArgs(rawArgs.slice(1));
+
+if (!subcommand || subcommand === "--help" || subcommand === "-h") {
+  printUsage();
+  process.exit(2);
+}
+
+switch (subcommand) {
+  case "list":
+    runList();
+    break;
+  case "present":
+    runPresent();
+    break;
+  case "grade":
+    runGrade();
+    break;
+  case "selftest":
+    runSelftest();
+    break;
+  default:
+    console.error(`Unknown subcommand: "${subcommand}"`);
+    printUsage();
+    process.exit(2);
+}
+
+// ── Subcommand: list ────────────────────────────────────────────────
+
+function runList(): void {
+  const bundleId = requireArg(flags, "bundle");
+  const spec = resolveSpec(bundleId);
+  const manifest = generateProtocolCoverageManifest(spec);
+
+  const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
+  for (const atom of allAtoms) {
+    const line = {
+      baseStateId: atom.baseStateId,
+      surfaceId: atom.surfaceId,
+      meaningId: atom.meaningId,
+      meaningLabel: atom.meaningLabel,
+      involvesProtocol: atom.involvesProtocol,
+      activeProtocols: atom.activeProtocols,
+    };
+    console.log(JSON.stringify(line));
+  }
+}
+
+// ── Subcommand: present ─────────────────────────────────────────────
+
+function runPresent(): void {
+  const bundleId = requireArg(flags, "bundle");
+  const targetState = requireArg(flags, "target");
+  const surface = requireArg(flags, "surface");
+  const seed = optionalNumericArg(flags, "seed") ?? 42;
+
+  resolveSpec(bundleId); // validate spec exists
+  const bundle = resolveBundle(bundleId);
+
+  // Generate deal
+  const deal = generateSeededDeal(bundle, seed);
+  const userSeat = resolveUserSeat(bundle, deal);
+  const hand = deal.hands[userSeat];
+
+  // Build auction
+  const auction = buildInitialAuction(bundle, userSeat, deal);
+
+  // Legal calls
+  const legalCalls = getLegalCalls(auction, userSeat).map(callKey);
+
+  // Build viewport output (no correct answer)
+  const output = {
+    bundle: bundleId,
+    target: targetState,
+    surface,
+    seed,
+    seat: userSeat,
+    hand: formatHandBySuit(hand),
+    handRaw: hand.cards.map(formatCard),
+    hcp: evaluateHand(hand).hcp,
+    auction: auction.entries.map((e) => ({
+      seat: e.seat,
+      call: callKey(e.call),
+    })),
+    legalCalls,
+  };
+
+  console.log(JSON.stringify(output, null, 2));
+}
+
+// ── Subcommand: grade ───────────────────────────────────────────────
+
+function runGrade(): void {
+  const bundleId = requireArg(flags, "bundle");
+  const targetState = requireArg(flags, "target");
+  const surface = requireArg(flags, "surface");
+  const seed = optionalNumericArg(flags, "seed") ?? 42;
+  const bidStr = requireArg(flags, "bid");
+
+  const spec = resolveSpec(bundleId);
+  const bundle = resolveBundle(bundleId);
+
+  // Parse the submitted bid
+  let submittedCall: Call;
+  try {
+    submittedCall = parsePatternCall(bidStr);
+  } catch {
+    console.error(`Invalid bid: "${bidStr}"`);
+    process.exit(2);
+  }
+
+  // Same deal as present (same seed)
+  const deal = generateSeededDeal(bundle, seed);
+  const userSeat = resolveUserSeat(bundle, deal);
+  const hand = deal.hands[userSeat];
+
+  // Build auction and context
+  const auction = buildInitialAuction(bundle, userSeat, deal);
+  const context = buildContext(hand, auction, userSeat);
+
+  // Run strategy to get the correct bid
+  const strategy = protocolSpecToStrategy(spec);
+  const result = strategy.suggest(context);
+
+  const correctCall = result?.call ?? null;
+  const isCorrect = correctCall !== null && callsMatch(submittedCall, correctCall);
+
+  const output = {
+    bundle: bundleId,
+    target: targetState,
+    surface,
+    seed,
+    yourBid: callKey(submittedCall),
+    correctBid: correctCall ? callKey(correctCall) : null,
+    grade: isCorrect ? "correct" : "wrong",
+    correct: isCorrect,
+    requiresRetry: !isCorrect,
+    explanation: result?.explanation ?? null,
+    meaning: result?.meaning ?? null,
+    feedback: isCorrect
+      ? "Correct!"
+      : correctCall
+        ? `Expected ${callKey(correctCall)}, got ${callKey(submittedCall)}`
+        : "No recommendation from strategy",
+  };
+
+  console.log(JSON.stringify(output, null, 2));
+  process.exit(isCorrect ? 0 : 1);
+}
+
+// ── Subcommand: selftest ────────────────────────────────────────────
+
+function runSelftest(): void {
+  const bundleId = flags["bundle"] as string | undefined;
+  const all = flags["all"] === true;
+  const seed = optionalNumericArg(flags, "seed") ?? 42;
+
+  if (!bundleId && !all) {
+    console.error("selftest requires --bundle=<id> or --all");
+    process.exit(2);
+  }
+
+  const specs: { id: string; spec: ConventionSpec; bundle: ConventionBundle }[] = [];
+
+  if (all) {
+    // Deduplicate by spec id (aliases share specs)
+    const seen = new Set<string>();
+    for (const spec of listConventionSpecs()) {
+      if (seen.has(spec.id)) continue;
+      seen.add(spec.id);
+      const bundle = getBundle(spec.id);
+      if (bundle) {
+        specs.push({ id: spec.id, spec, bundle });
+      }
+    }
+  } else {
+    const spec = resolveSpec(bundleId!);
+    const bundle = resolveBundle(bundleId!);
+    specs.push({ id: bundleId!, spec, bundle });
+  }
+
+  let totalPass = 0;
+  let totalFail = 0;
+  let totalSkip = 0;
+  const results: {
+    bundle: string;
+    atom: string;
+    status: "pass" | "fail" | "skip";
+    correctBid?: string;
+    details?: string;
+  }[] = [];
+
+  for (const { id, spec, bundle } of specs) {
+    const manifest = generateProtocolCoverageManifest(spec);
+    const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
+    const strategy = protocolSpecToStrategy(spec);
+
+    for (let i = 0; i < allAtoms.length; i++) {
+      const atom = allAtoms[i]!;
+      const atomSeed = seed + i;
+      const atomLabel = `${atom.baseStateId}/${atom.surfaceId}/${atom.meaningId}`;
+
+      try {
+        // Generate deal for this atom
+        const deal = generateSeededDeal(bundle, atomSeed);
+        const userSeat = resolveUserSeat(bundle, deal);
+        const hand = deal.hands[userSeat];
+
+        // Build auction and context
+        const auction = buildInitialAuction(bundle, userSeat, deal);
+        const context = buildContext(hand, auction, userSeat);
+
+        // Run strategy
+        const result = strategy.suggest(context);
+
+        if (!result) {
+          totalSkip++;
+          results.push({
+            bundle: id,
+            atom: atomLabel,
+            status: "skip",
+            details: "Strategy returned null (no recommendation)",
+          });
+          continue;
+        }
+
+        // Self-test: strategy bid should be legal and non-null
+        const bidKey = callKey(result.call);
+
+        // Verify the bid against itself — re-run with same context
+        const verifyResult = strategy.suggest(context);
+        if (!verifyResult || !callsMatch(result.call, verifyResult.call)) {
+          totalFail++;
+          results.push({
+            bundle: id,
+            atom: atomLabel,
+            status: "fail",
+            correctBid: bidKey,
+            details: "Strategy is non-deterministic",
+          });
+          continue;
+        }
+
+        totalPass++;
+        results.push({
+          bundle: id,
+          atom: atomLabel,
+          status: "pass",
+          correctBid: bidKey,
+        });
+      } catch (err: unknown) {
+        totalFail++;
+        const msg = err instanceof Error ? err.message : String(err);
+        results.push({
+          bundle: id,
+          atom: atomLabel,
+          status: "fail",
+          details: `Error: ${msg}`,
+        });
+      }
+    }
+  }
+
+  // Output summary
+  const output = {
+    seed,
+    totalAtoms: results.length,
+    pass: totalPass,
+    fail: totalFail,
+    skip: totalSkip,
+    results,
+  };
+
+  console.log(JSON.stringify(output, null, 2));
+  process.exit(totalFail > 0 ? 1 : 0);
+}
+
+// ── Usage ───────────────────────────────────────────────────────────
 
 function printUsage(): void {
-  console.log("Usage: coverage-runner.ts <mode> [conventionId]");
-  console.log("");
-  console.log("Modes:");
-  console.log("  summary  [id]   — Show coverage stats (default: all conventions)");
-  console.log("  list     <id>   — List all coverage atoms for a convention");
-  console.log("");
-  console.log("Available conventions:");
+  console.error("Usage: coverage-runner.ts <subcommand> [options]");
+  console.error("");
+  console.error("Subcommands:");
+  console.error("  list      --bundle=<id>           List all coverage atoms");
+  console.error("  present   --bundle=<id> --target=<state> --surface=<surface> [--seed=N]");
+  console.error("            Present a hand (no correct answer)");
+  console.error("  grade     --bundle=<id> --target=<state> --surface=<surface> --bid=<bid> [--seed=N]");
+  console.error("            Grade a submitted bid");
+  console.error("  selftest  --bundle=<id> [--seed=N]   Run strategy self-test");
+  console.error("  selftest  --all [--seed=N]            Self-test all bundles");
+  console.error("");
+  console.error("Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error");
+  console.error("");
+  console.error("Available bundles:");
+  const seen = new Set<string>();
   for (const spec of listConventionSpecs()) {
-    console.log(`  ${spec.id} — ${spec.name}`);
+    if (seen.has(spec.id)) continue;
+    seen.add(spec.id);
+    console.error(`  ${spec.id} — ${spec.name}`);
   }
-}
-
-function printSummary(manifest: ProtocolCoverageManifest): void {
-  console.log(`\n${manifest.specName} (${manifest.specId})`);
-  console.log(`  Base states:     ${manifest.totalBaseStates}`);
-  console.log(`  Protocol states: ${manifest.totalProtocolStates}`);
-  console.log(`  Base atoms:      ${manifest.baseAtoms.length}`);
-  console.log(`  Protocol atoms:  ${manifest.protocolAtoms.length}`);
-  console.log(`  Total atoms:     ${manifest.totalAtoms}`);
-  if (manifest.unreachable.length > 0) {
-    console.log(`  Unreachable:     ${manifest.unreachable.length}`);
-    for (const u of manifest.unreachable) {
-      console.log(`    - ${u.stateId}: ${u.reason}`);
-    }
-  }
-}
-
-function printAtoms(manifest: ProtocolCoverageManifest): void {
-  console.log(`\n${manifest.specName} — ${manifest.totalAtoms} coverage atoms\n`);
-
-  if (manifest.baseAtoms.length > 0) {
-    console.log("── Base Track Atoms ──");
-    for (const atom of manifest.baseAtoms) {
-      console.log(`  [${atom.baseStateId}] ${atom.meaningLabel} (${atom.surfaceId})`);
-    }
-  }
-
-  if (manifest.protocolAtoms.length > 0) {
-    console.log("\n── Protocol Atoms ──");
-    for (const atom of manifest.protocolAtoms) {
-      const proto = atom.activeProtocols[0];
-      const protoLabel = proto ? ` via ${proto.protocolId}@${proto.stateId}` : "";
-      console.log(`  [${atom.baseStateId}] ${atom.meaningLabel}${protoLabel} (${atom.surfaceId})`);
-    }
-  }
-
-  if (manifest.unreachable.length > 0) {
-    console.log("\n── Unreachable ──");
-    for (const u of manifest.unreachable) {
-      console.log(`  ${u.stateId}: ${u.reason}`);
-    }
-  }
-}
-
-// ── Main ────────────────────────────────────────────────────────────
-
-if (mode === "summary") {
-  if (conventionId) {
-    const spec = getConventionSpec(conventionId);
-    if (!spec) {
-      console.error(`Unknown convention: ${conventionId}`);
-      printUsage();
-      process.exit(1);
-    }
-    printSummary(generateProtocolCoverageManifest(spec));
-  } else {
-    for (const spec of listConventionSpecs()) {
-      printSummary(generateProtocolCoverageManifest(spec));
-    }
-  }
-} else if (mode === "list") {
-  if (!conventionId) {
-    console.error("list mode requires a convention ID");
-    printUsage();
-    process.exit(1);
-  }
-  const spec = getConventionSpec(conventionId);
-  if (!spec) {
-    console.error(`Unknown convention: ${conventionId}`);
-    printUsage();
-    process.exit(1);
-  }
-  printAtoms(generateProtocolCoverageManifest(spec));
-} else {
-  printUsage();
-  process.exit(1);
 }

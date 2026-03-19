@@ -1,4 +1,4 @@
-/** DONT (Disturbing Opponent's No Trump) semantic class IDs -- module-local, not in the central registry. */
+/** DONT (Disturbing Opponents' Notrump) semantic class IDs -- module-local, not in the central registry. */
 export const DONT_CLASSES = {
   // R1: Overcaller initial actions
   BOTH_MAJORS: "dont:both-majors",           // 2H — both majors 5-4+

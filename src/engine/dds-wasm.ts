@@ -183,9 +183,6 @@ export interface DDSModule {
   ): number;
   _malloc(size: number): number;
   _free(ptr: number): void;
-  HEAP8: Int8Array;
-  HEAPU8: Uint8Array;
-  HEAP32: Int32Array;
   getValue(ptr: number, type: string): number;
   setValue(ptr: number, value: number, type: string): void;
   stringToUTF8(str: string, outPtr: number, maxBytesToWrite: number): void;
@@ -195,6 +192,10 @@ export interface DDSModule {
  * Solve a deal using the DDS WASM module.
  * Allocates struct memory, calls CalcAllTablesPBN, unpacks results.
  * Par is always null (mode=-1 skips par calculation).
+ *
+ * Uses setValue/getValue/stringToUTF8 (exported by Emscripten) instead of
+ * direct HEAPU8.buffer access — newer Emscripten builds do NOT expose the
+ * HEAP typed-array views on the Module object.
  */
 export function solveWithModule(
   module: DDSModule,
@@ -209,21 +210,19 @@ export function solveWithModule(
   const parPtr = module._malloc(ALL_PAR_SIZE);
 
   try {
-    // Pack input
-    const dealsView = new DataView(
-      module.HEAPU8.buffer,
-      dealsPtr,
-      DEALS_PBN_SIZE,
-    );
-    packDealsPBN(pbn, dealsView);
+    // Pack ddTableDealsPBN: { int noOfTables; struct ddTableDealPBN deals[...]; }
+    module.setValue(dealsPtr, 1, "i32"); // noOfTables = 1
+    module.stringToUTF8(pbn, dealsPtr + 4, 80); // PBN string (null-terminated)
 
     // Trump filter: all zeros = solve all 5 strains
     for (let i = 0; i < 5; i++) {
       module.setValue(filterPtr + i * 4, 0, "i32");
     }
 
-    // Zero results
-    module.HEAPU8.fill(0, resPtr, resPtr + TABLES_RES_SIZE);
+    // Zero results (int32-aligned)
+    for (let i = 0; i < TABLES_RES_SIZE; i += 4) {
+      module.setValue(resPtr + i, 0, "i32");
+    }
 
     // Call DDS
     const ret = module._CalcAllTablesPBN(
@@ -238,13 +237,20 @@ export function solveWithModule(
       throw new Error(`DDS CalcAllTablesPBN failed with code ${ret}`);
     }
 
-    // Unpack results — skip noOfBoards (4 bytes), results start at offset 4
-    const resView = new DataView(
-      module.HEAPU8.buffer,
-      resPtr,
-      TABLES_RES_SIZE,
-    );
-    const tricks = unpackResults(resView, 4);
+    // Unpack results via getValue — skip noOfBoards (4 bytes at resPtr)
+    // resTable[strain][seat] — 5 strains × 4 seats, each int32.
+    const tricks = {} as Record<Seat, Record<BidSuit, number>>;
+    for (const seat of DDS_SEAT_MAP) {
+      tricks[seat] = {} as Record<BidSuit, number>;
+    }
+    for (let strainIdx = 0; strainIdx < 5; strainIdx++) {
+      const strain = DDS_STRAIN_MAP[strainIdx]!;
+      for (let seatIdx = 0; seatIdx < 4; seatIdx++) {
+        const seat = DDS_SEAT_MAP[seatIdx]!;
+        const addr = resPtr + 4 + (strainIdx * 4 + seatIdx) * 4;
+        tricks[seat][strain] = module.getValue(addr, "i32");
+      }
+    }
 
     return { tricks, par: null };
   } finally {

@@ -117,7 +117,7 @@
   role="alert"
 >
   <div class="flex items-center justify-between mb-2">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 min-w-0 overflow-hidden">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-fb-incorrect-emphasis shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
       <span class="text-fb-incorrect-text font-semibold text-[--text-detail]">Incorrect</span>
       <span class="font-mono font-bold text-[--text-detail] text-fb-incorrect-dim">{formatCall(feedback.userCall)}</span>

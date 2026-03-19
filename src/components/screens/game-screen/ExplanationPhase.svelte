@@ -77,6 +77,7 @@
           <AuctionTable
             entries={auction.entries}
             dealer={deal.dealer}
+            {bidHistory}
             compact
           />
         </div>
@@ -126,6 +127,7 @@
             <AuctionTable
               entries={auction.entries}
               dealer={deal.dealer}
+              {bidHistory}
               compact
             />
           </div>

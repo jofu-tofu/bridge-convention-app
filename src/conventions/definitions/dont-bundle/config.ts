@@ -37,7 +37,7 @@ export const dontBundle: ConventionBundle = {
   id: "dont-bundle",
   name: "DONT Bundle",
   description:
-    "DONT (Disturbing Opponent's No Trump) — competitive overcalls after opponent's 1NT",
+    "DONT (Disturbing Opponents' Notrump) — competitive overcalls after opponent's 1NT",
   category: ConventionCategory.Defensive,
   memberIds: ["dont-bundle", "dont"],
   declaredCapabilities: { [CAP_OPPONENT_1NT]: "active" },

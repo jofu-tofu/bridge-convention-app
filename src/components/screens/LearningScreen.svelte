@@ -240,9 +240,9 @@
                     <h4 class="font-medium text-text-primary mb-1">After partner opens 1NT (15-17 HCP):</h4>
                     <ul class="list-disc ml-5 space-y-1">
                       <li><span class="font-mono text-text-primary">Pass</span> — 0-7 HCP, no 5-card major</li>
-                      <li><span class="font-mono text-text-primary">2♣</span> (Stayman) — 8+ HCP with a 4-card major, no 5-card major</li>
-                      <li><span class="font-mono text-text-primary">2♦</span> (Transfer) — 5+ hearts, any HCP</li>
-                      <li><span class="font-mono text-text-primary">2♥</span> (Transfer) — 5+ spades, any HCP</li>
+                      <li><span class="font-mono text-suit-clubs">2♣</span> (Stayman) — 8+ HCP with a 4-card major, no 5-card major</li>
+                      <li><span class="font-mono text-suit-diamonds">2♦</span> (Transfer) — 5+ hearts, any HCP</li>
+                      <li><span class="font-mono text-suit-hearts">2♥</span> (Transfer) — 5+ spades, any HCP</li>
                       <li><span class="font-mono text-text-primary">2NT</span> — 8-9 HCP, no 4-card major, no 5-card major (invitational)</li>
                       <li><span class="font-mono text-text-primary">3NT</span> — 10-15 HCP, no 4-card major, no 5-card major (game)</li>
                     </ul>
@@ -259,8 +259,8 @@
                     <h4 class="font-medium text-text-primary mb-1">Alerts & Announcements:</h4>
                     <ul class="list-disc ml-5 space-y-1">
                       <li><span class="font-mono text-text-primary">1NT</span> — Partner announces "15 to 17"</li>
-                      <li><span class="font-mono text-text-primary">2♣</span> (Stayman) — Not alerted (standard)</li>
-                      <li><span class="font-mono text-text-primary">2♦/2♥</span> (Transfer) — Partner announces "Transfer"</li>
+                      <li><span class="font-mono text-suit-clubs">2♣</span> (Stayman) — Not alerted (standard)</li>
+                      <li><span class="font-mono"><span class="text-suit-diamonds">2♦</span>/<span class="text-suit-hearts">2♥</span></span> (Transfer) — Partner announces "Transfer"</li>
                     </ul>
                   </div>
                 </div>

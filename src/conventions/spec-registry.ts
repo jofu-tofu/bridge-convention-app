@@ -15,6 +15,14 @@ const CONVENTION_SPECS: Map<string, ConventionSpec> = new Map([
   ["bergen-bundle", bergenConventionSpec],
   ["weak-twos-bundle", weakTwosConventionSpec],
   ["dont-bundle", dontConventionSpec],
+
+  // ── Aliases for legacy sub-bundle / mismatched IDs ──────────────────
+  // The legacy registry exposes these IDs via registerConvention/registerBundle,
+  // but they share the same protocol-frame spec as their parent bundle.
+  // Deal constraints (from ConventionBundle) handle hand-generation scoping.
+  ["nt-stayman", ntConventionSpec],
+  ["nt-transfers", ntConventionSpec],
+  ["weak-two-bundle", weakTwosConventionSpec], // legacy bundle ID (missing trailing "s")
 ]);
 
 export function getConventionSpec(id: string): ConventionSpec | undefined {
@@ -22,5 +30,6 @@ export function getConventionSpec(id: string): ConventionSpec | undefined {
 }
 
 export function listConventionSpecs(): ConventionSpec[] {
-  return Array.from(CONVENTION_SPECS.values());
+  // Deduplicate: the same spec object may appear under multiple alias keys.
+  return [...new Set(CONVENTION_SPECS.values())];
 }

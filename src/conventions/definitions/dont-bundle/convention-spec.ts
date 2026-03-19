@@ -11,7 +11,7 @@ import { DONT_BASE_TRACK, DONT_SURFACE_FRAGMENTS } from "./base-track";
 
 export const dontConventionSpec = assembleConventionSpec({
   id: "dont-bundle",
-  name: "DONT (Disturb Opponents' No Trump)",
+  name: "DONT (Disturb Opponents' Notrump)",
   modules: [
     {
       module: { ...DONT_BASE_TRACK, role: "base" as const },

@@ -8,7 +8,7 @@ export const dontBundleConventionConfig: ConventionConfig = {
   ...createConventionConfigFromBundle(dontBundle, {
     name: "DONT (Bundle)",
     description:
-      "DONT — Disturbing Opponent's No Trump: competitive overcalls showing distributional hands",
+      "DONT — Disturbing Opponents' Notrump: competitive overcalls showing distributional hands",
     categoryFallback: ConventionCategory.Defensive,
   }),
   allowedDealers: [Seat.East],
