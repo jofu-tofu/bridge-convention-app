@@ -891,6 +891,31 @@ function runTrace(): void {
 }
 
 // ── Subcommand: plan ────────────────────────────────────────────────
+//
+// Per-atom BFS-ordered plan with dependency tree.
+//
+// For each atom, finds a seed where the strategy recommends the atom's
+// expected bid at the target state. Atoms are sorted by BFS depth so
+// agents test shallow states first. Dependency info lets agents skip
+// subtrees when an upstream bid is found to be wrong.
+
+function getExpectedCallForAtom(
+  spec: ConventionSpec,
+  atom: { baseStateId: string; meaningId: string },
+): Call | null {
+  for (const track of getBaseModules(spec)) {
+    const state = track.states[atom.baseStateId];
+    if (!state?.surface) continue;
+    const fragment = spec.surfaces[state.surface];
+    if (!fragment) continue;
+    for (const surface of fragment.surfaces) {
+      if (surface.meaningId === atom.meaningId) {
+        return surface.encoding?.defaultCall ?? null;
+      }
+    }
+  }
+  return null;
+}
 
 function runPlan(): void {
   const bundleId = requireArg(flags, "bundle");
@@ -901,102 +926,140 @@ function runPlan(): void {
 
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
-  const atomCallMap = buildAtomCallMap(spec);
+  const strategy = protocolSpecToStrategy(spec);
 
   // All atoms from coverage manifest
   const manifest = generateProtocolCoverageManifest(spec);
   const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
-  const allAtomIds = new Set(
-    allAtoms.map((a) => `${a.baseStateId}/${a.surfaceId}/${a.meaningId}`),
-  );
 
-  // Precompute playthroughs
-  const cache = new Map<number, PlaythroughResult>();
-  for (let s = baseSeed; s < baseSeed + maxSeeds; s++) {
-    const result = runSinglePlaythrough(bundle, spec, s, atomCallMap);
-    if (result.steps.length > 0 && result.atomsCovered.length > 0) {
-      cache.set(s, result);
+  // Build BFS depth + parent info for each state
+  const stateInfo = new Map<string, {
+    depth: number;
+    parentStateId: string | null;
+    transitionBid: string | null;
+  }>();
+
+  for (const track of getBaseModules(spec)) {
+    const paths = enumerateBaseTrackStates(track);
+    for (const [stateId, path] of paths) {
+      // Depth = transitions after the initial pass (first transition is opening pass)
+      const depth = Math.max(0, path.transitions.length - 1);
+      let parentStateId: string | null = null;
+      let transitionBid: string | null = null;
+      if (path.transitions.length >= 2) {
+        const lastT = path.transitions[path.transitions.length - 1]!;
+        parentStateId = lastT.fromStateId;
+        transitionBid = lastT.call ? callKey(lastT.call) : null;
+      }
+      stateInfo.set(stateId, { depth, parentStateId, transitionBid });
     }
   }
 
-  // Greedy set cover for targetCoverage per atom
-  const atomCounts = new Map<string, number>();
-  for (const id of allAtomIds) atomCounts.set(id, 0);
+  // For each atom: find seeds where the strategy recommends the expected bid
+  type AtomPlan = {
+    atomId: string;
+    stateId: string;
+    surfaceId: string;
+    meaningId: string;
+    meaningLabel: string;
+    expectedBid: string;
+    depth: number;
+    parentStateId: string | null;
+    transitionBid: string | null;
+    seeds: number[];
+  };
 
-  const selectedSeeds: number[] = [];
+  const atomPlans: AtomPlan[] = [];
 
-  while (true) {
-    // Count atoms still needing coverage
-    let needed = 0;
-    for (const count of atomCounts.values()) {
-      if (count < targetCoverage) needed++;
-    }
-    if (needed === 0) break;
+  for (const atom of allAtoms) {
+    const expectedCall = getExpectedCallForAtom(spec, atom);
+    if (!expectedCall) continue;
 
-    // Find best seed (covers most under-covered atoms)
-    let bestSeed = -1;
-    let bestScore = 0;
-    for (const [s, result] of cache) {
-      if (selectedSeeds.includes(s)) continue;
-      let score = 0;
-      for (const atomId of result.atomsCovered) {
-        if ((atomCounts.get(atomId) ?? 0) < targetCoverage) score++;
+    const info = stateInfo.get(atom.baseStateId);
+    const depth = info?.depth ?? 0;
+    const parentStateId = info?.parentStateId ?? null;
+    const transitionBid = info?.transitionBid ?? null;
+
+    const seeds: number[] = [];
+
+    for (let s = baseSeed; s < baseSeed + maxSeeds && seeds.length < targetCoverage; s++) {
+      try {
+        const deal = generateSeededDeal(bundle, s);
+        const userSeat = resolveUserSeat(bundle, deal);
+        const { auction, targeted } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
+        if (!targeted) continue;
+
+        const activeSeat = auction.entries.length > 0
+          ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+          : userSeat;
+        const hand = deal.hands[activeSeat];
+        const context = buildContext(hand, auction, activeSeat);
+        const result = strategy.suggest(context);
+
+        if (result && callsMatch(result.call, expectedCall)) {
+          seeds.push(s);
+        }
+      } catch {
+        // Skip seeds that error
       }
-      if (score > bestScore) {
-        bestScore = score;
-        bestSeed = s;
-      }
     }
 
-    if (bestSeed === -1 || bestScore === 0) break; // Can't improve
-
-    selectedSeeds.push(bestSeed);
-    for (const atomId of cache.get(bestSeed)!.atomsCovered) {
-      atomCounts.set(atomId, (atomCounts.get(atomId) ?? 0) + 1);
-    }
+    atomPlans.push({
+      atomId: `${atom.baseStateId}/${atom.surfaceId}/${atom.meaningId}`,
+      stateId: atom.baseStateId,
+      surfaceId: atom.surfaceId,
+      meaningId: atom.meaningId,
+      meaningLabel: atom.meaningLabel,
+      expectedBid: callKey(expectedCall),
+      depth,
+      parentStateId,
+      transitionBid,
+      seeds,
+    });
   }
 
-  // Split across agents balanced by user bid count (largest-first greedy)
-  const seedItems = selectedSeeds.map((s) => {
-    const r = cache.get(s)!;
-    return {
-      seed: s,
-      userBids: r.steps.filter((st) => st.isUserStep).length,
-      atoms: r.atomsCovered,
-    };
-  });
-  seedItems.sort((a, b) => b.userBids - a.userBids);
+  // Sort by depth (BFS order)
+  atomPlans.sort((a, b) => a.depth - b.depth);
 
-  const agents: { seeds: number[]; totalUserBids: number; atoms: string[] }[] = [];
+  // Split across agents, balanced by atom count, preserving BFS order
+  const agents: { atoms: AtomPlan[] }[] = [];
   for (let i = 0; i < agentCount; i++) {
-    agents.push({ seeds: [], totalUserBids: 0, atoms: [] });
+    agents.push({ atoms: [] });
   }
-  for (const item of seedItems) {
-    const minAgent = agents.reduce((a, b) => (a.totalUserBids <= b.totalUserBids ? a : b));
-    minAgent.seeds.push(item.seed);
-    minAgent.totalUserBids += item.userBids;
-    minAgent.atoms.push(...item.atoms);
+  for (const atom of atomPlans) {
+    // Assign each atom to the agent with fewest atoms (round-robin by load)
+    const minAgent = agents.reduce((a, b) => (a.atoms.length <= b.atoms.length ? a : b));
+    minAgent.atoms.push(atom);
   }
 
-  // Coverage stats
-  const coveredAtTarget = [...atomCounts.values()].filter((c) => c >= targetCoverage).length;
-  const uncovered = [...atomCounts.entries()]
-    .filter(([, c]) => c < targetCoverage)
-    .map(([id, c]) => ({ atomId: id, coverage: c }));
+  // Stats
+  const covered = atomPlans.filter((a) => a.seeds.length >= targetCoverage).length;
+  const uncovered = atomPlans
+    .filter((a) => a.seeds.length < targetCoverage)
+    .map((a) => ({ atomId: a.atomId, seedsFound: a.seeds.length }));
 
   console.log(JSON.stringify({
     bundle: bundleId,
     targetCoverage,
-    totalAtoms: allAtomIds.size,
-    atomsCoveredAtTarget: coveredAtTarget,
+    totalAtoms: atomPlans.length,
+    atomsCoveredAtTarget: covered,
     uncoveredAtoms: uncovered,
-    selectedSeeds: selectedSeeds.length,
-    totalUserBids: seedItems.reduce((sum, s) => sum + s.userBids, 0),
+    maxDepth: Math.max(0, ...atomPlans.map((a) => a.depth)),
     agents: agents.map((a, i) => ({
       agentIndex: i,
-      seeds: a.seeds,
-      totalUserBids: a.totalUserBids,
-      uniqueAtoms: [...new Set(a.atoms)].length,
+      totalAtoms: a.atoms.length,
+      // Atoms in BFS order with all info the agent needs
+      atoms: a.atoms.map((ap) => ({
+        atomId: ap.atomId,
+        stateId: ap.stateId,
+        surfaceId: ap.surfaceId,
+        meaningLabel: ap.meaningLabel,
+        expectedBid: ap.expectedBid,
+        depth: ap.depth,
+        parentStateId: ap.parentStateId,
+        transitionBid: ap.transitionBid,
+        seeds: ap.seeds,
+      })),
     })),
   }, null, 2));
 }
