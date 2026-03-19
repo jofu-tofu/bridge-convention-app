@@ -133,7 +133,7 @@ export const OPENER_1NT_SURFACE: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "must",
-      specificity: 3,
+      specificity: 2, // derived: pointRange + shapeClass
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
@@ -174,6 +174,7 @@ const NT_RESPONSE_FACTS: readonly FactDefinition[] = [
     description: "Invite-range HCP opposite 1NT (8-9)",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
   },
   {
     id: "module.ntResponse.gameValues",
@@ -182,6 +183,7 @@ const NT_RESPONSE_FACTS: readonly FactDefinition[] = [
     description: "Game-range HCP opposite 1NT (10+)",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
   },
   {
     id: "module.ntResponse.slamValues",
@@ -190,6 +192,7 @@ const NT_RESPONSE_FACTS: readonly FactDefinition[] = [
     description: "Slam-range HCP opposite 1NT (15+)",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
   },
 ];
 

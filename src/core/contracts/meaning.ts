@@ -19,6 +19,16 @@ export type RecommendationBand = "must" | "should" | "may" | "avoid";
 /** How the specificity value was determined. */
 export type SpecificityBasis = "derived" | "asserted" | "partial";
 
+/** Communicative constraint dimensions for specificity derivation.
+ *  Each dimension represents a type of hand information a bid communicates to partner. */
+export type ConstraintDimension =
+  | "suitIdentity"   // which specific suit(s) the bid promises
+  | "suitLength"     // min/max cards in specific suits
+  | "pointRange"     // HCP or total point bounds
+  | "shapeClass"     // distributional shape (balanced, two-suited, shortage, etc.)
+  | "suitRelation"   // relational constraints between suits
+  | "suitQuality";   // honor holdings, suit solidity (A/K/Q count, "solid suit")
+
 /** Operator for fact-based clause evaluation. */
 export type FactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
 

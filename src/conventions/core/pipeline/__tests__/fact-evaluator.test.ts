@@ -100,6 +100,7 @@ describe("evaluateFacts", () => {
         description: "Synthetic test fact",
         valueType: "boolean" as const,
         derivesFrom: ["bridge.hasFourCardMajor"],
+        constrainsDimensions: [],
       }],
       evaluators: new Map([
         ["synth.test", (_h: unknown, _ev: unknown, evaluated: ReadonlyMap<string, { value: unknown }>) => ({
@@ -128,6 +129,7 @@ describe("evaluateFacts", () => {
         description: "Has no evaluator",
         valueType: "boolean",
         derivesFrom: [],
+        constrainsDimensions: [],
       }],
       evaluators: new Map(),
     });

@@ -29,6 +29,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "Count of A, K, Q in hearts",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitQuality"],
   },
   {
     id: "module.weakTwo.topHonorCount.spades",
@@ -37,6 +38,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "Count of A, K, Q in spades",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitQuality"],
   },
   {
     id: "module.weakTwo.topHonorCount.diamonds",
@@ -45,6 +47,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "Count of A, K, Q in diamonds",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitQuality"],
   },
   {
     id: "module.weakTwo.isMinimum",
@@ -53,6 +56,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "Opener is minimum for weak two (5-8 HCP)",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
   },
   {
     id: "module.weakTwo.isMaximum",
@@ -61,6 +65,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "Opener is maximum for weak two (9-11 HCP)",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
   },
   {
     id: "module.weakTwo.isSolid.hearts",
@@ -69,6 +74,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "All three top honors (AKQ) in hearts",
     valueType: "boolean",
     derivesFrom: ["module.weakTwo.topHonorCount.hearts"],
+    constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
   },
   {
     id: "module.weakTwo.isSolid.spades",
@@ -77,6 +83,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "All three top honors (AKQ) in spades",
     valueType: "boolean",
     derivesFrom: ["module.weakTwo.topHonorCount.spades"],
+    constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
   },
   {
     id: "module.weakTwo.isSolid.diamonds",
@@ -85,6 +92,7 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "All three top honors (AKQ) in diamonds",
     valueType: "boolean",
     derivesFrom: ["module.weakTwo.topHonorCount.diamonds"],
+    constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
   },
 ];
 

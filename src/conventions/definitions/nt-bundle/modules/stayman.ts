@@ -531,7 +531,7 @@ export const INTERFERENCE_REDOUBLE_SURFACE: MeaningSurface = {
   ],
   ranking: {
     recommendationBand: "must",
-    specificity: 3,
+    specificity: 1, // derived: pointRange
     modulePrecedence: 0,
     intraModuleOrder: 0,
   },
@@ -740,6 +740,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that N/S have an 8+ card major fit",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
   {
     id: "bridge.openerStillBalancedLikely",
@@ -748,6 +749,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that opener has balanced shape",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
   {
     id: "bridge.openerHasSecondMajorLikely",
@@ -756,6 +758,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that opener has a second 4-card major",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
 ];
 
@@ -767,6 +770,7 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
     description: "Eligible for Stayman (4+ card major AND 8+ HCP)",
     valueType: "boolean",
     derivesFrom: ["bridge.hasFourCardMajor", "hand.hcp"],
+    constrainsDimensions: ["suitIdentity"],
   },
   {
     id: "module.stayman.preferred",
@@ -775,6 +779,7 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
     description: "Stayman preferred (eligible AND no 5-card major)",
     valueType: "boolean",
     derivesFrom: ["module.stayman.eligible", "bridge.hasFiveCardMajor"],
+    constrainsDimensions: ["suitIdentity"],
   },
 ];
 

@@ -11,6 +11,7 @@
 //   { bootNode, baseModule?, protocols[], registers, tags, doneLatches }
 
 import type { Call, Seat, Auction } from "../../../engine/types";
+import type { ConstraintDimension } from "../../../core/contracts/meaning";
 import type { MeaningSurface, RankingMetadata } from "../../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
@@ -326,6 +327,14 @@ export interface SurfaceFragment {
   readonly surfaces: readonly MeaningSurface[];
   /** Fact evaluator IDs needed by these surfaces. */
   readonly factEvaluatorIds?: readonly string[];
+  /** Constraint dimensions accumulated from prior-round surface groups.
+   *  When present, the specificity deriver unions these with each surface's
+   *  own derived dimensions so that later-round surfaces reflect the full
+   *  communicative context established by earlier bids.
+   *
+   *  Example: post-Ogust surfaces inherit ["suitIdentity"] because the weak
+   *  two opening already established which suit is being discussed. */
+  readonly inheritedDimensions?: readonly ConstraintDimension[];
 }
 
 // ── Runtime Snapshot ────────────────────────────────────────────────

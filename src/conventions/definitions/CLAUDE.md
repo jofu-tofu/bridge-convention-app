@@ -65,7 +65,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 Every convention bundle must satisfy all items before being considered complete:
 
-1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `specificity`, `modulePrecedence`).
+1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `specificity`, `modulePrecedence`). **Specificity is derived from the communicative dimensions of the surface's clauses** — use `deriveSpecificity()` from `conventions/core/pipeline/specificity-deriver.ts` rather than hand-picking a number. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
 2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state.
 3. **`surfaceRouter` for round-aware filtering.** Maps FSM state → surface group via `RoutedSurfaceGroup[]`. Without this, all surfaces are evaluated every round (expensive and semantically incorrect).
 4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, and `terminal`. **Scoped interrupt pattern:** opponent interference is handled by abstract scope states (parent states with `opponent-action` transitions targeting local interrupted states) — not a single global contested sink. Design rule: external events are handled by the nearest enclosing interrupt scope. `call` and `any-bid` transitions are role-safe by default (self+partner only); use `opponent-action` with `callType: "bid"` to match opponent bids explicitly.
@@ -185,7 +185,7 @@ export const {NAME}_SURFACES: readonly MeaningSurface[] = [
       { factId: "hand.suitLength.clubs", operator: "gte", value: 4 },
     ],
     semanticClass: {NAME}_SEMANTIC.MY_CLASS,
-    ranking: { band: "should", specificity: 2, modulePrecedence: 1 },
+    ranking: { band: "should", specificity: 2, modulePrecedence: 1 }, // specificity: use deriveSpecificity() to compute from clause dimensions
     // Optional: bindings: { suit: "hearts" } for parameterized surfaces
   },
   // Additional surfaces...

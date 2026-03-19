@@ -151,6 +151,7 @@ describe("createFactCatalog", () => {
           description: "Test fact",
           valueType: "boolean",
           derivesFrom: ["hand.hcp"],
+          constrainsDimensions: [],
         },
       ],
       evaluators: new Map(),
@@ -195,6 +196,7 @@ describe("createFactCatalog", () => {
         description: "ext1",
         valueType: "boolean",
         derivesFrom: [],
+        constrainsDimensions: [],
       }],
       evaluators: new Map([["ext1.fact", (_h, _ev) => ({ factId: "ext1.fact", value: true })]]),
     };
@@ -206,6 +208,7 @@ describe("createFactCatalog", () => {
         description: "ext2",
         valueType: "number",
         derivesFrom: [],
+        constrainsDimensions: [],
       }],
       evaluators: new Map([["ext2.fact", (_h, _ev) => ({ factId: "ext2.fact", value: 42 })]]),
     };
@@ -223,6 +226,7 @@ describe("createFactCatalog", () => {
         description: "Test",
         valueType: "boolean",
         derivesFrom: [],
+        constrainsDimensions: [],
       }],
       evaluators: new Map([["module.test.fact", (_h, _ev) => ({ factId: "module.test.fact", value: true })]]),
     };
@@ -260,6 +264,7 @@ describe("topological evaluation order", () => {
       description: "Derives from bridge.hasFourCardMajor",
       valueType: "boolean",
       derivesFrom: ["bridge.hasFourCardMajor"],
+      constrainsDimensions: [],
     };
 
     // Module evaluator that reads bridge.hasFourCardMajor — only works if evaluated after
@@ -294,6 +299,7 @@ describe("topological evaluation order", () => {
       description: "Has no evaluator registered",
       valueType: "boolean",
       derivesFrom: [],
+      constrainsDimensions: [],
     };
 
     const catalogWithOrphan = createFactCatalog(createSharedFactCatalog(), {

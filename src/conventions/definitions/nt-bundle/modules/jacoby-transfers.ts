@@ -50,7 +50,7 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 3,
+      specificity: 2, // derived: suitLength + suitIdentity
       modulePrecedence: 0,
       intraModuleOrder: 1,
     },
@@ -76,7 +76,7 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     ],
     ranking: {
       recommendationBand: "should",
-      specificity: 3,
+      specificity: 2, // derived: suitLength + suitIdentity
       modulePrecedence: 0,
       intraModuleOrder: 0,
     },
@@ -556,6 +556,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     description: "Transfer target suit (hearts, spades, or none)",
     valueType: "string",
     derivesFrom: ["hand.suitLength.hearts", "hand.suitLength.spades"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.transfer.eligible",
@@ -564,6 +565,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     description: "Eligible for Jacoby transfer (5+ card major)",
     valueType: "boolean",
     derivesFrom: ["bridge.hasFiveCardMajor"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.transfer.preferred",
@@ -572,6 +574,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     description: "Transfer preferred (eligible with 5+ card suit)",
     valueType: "boolean",
     derivesFrom: ["module.transfer.eligible"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
 ];
 

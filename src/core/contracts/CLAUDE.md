@@ -21,7 +21,7 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | `recommendation.ts` | `PracticalRecommendation`, `PosteriorSummary`, `StrategyEvaluation` (unified DTO: all pipeline outputs from last suggest()), `ConventionBiddingStrategy` (extends `BiddingStrategy` with single `getLastEvaluation(): StrategyEvaluation \| null`) |
 | `module-surface.ts` | `PublicSnapshot` (with epistemic layers: `publicRecord`, `publicCommitments`, `latentBranches` — populated by runtime's `buildSnapshotFromAuction()`; `publicBeliefs` removed in Phase 2, belief views now via `PosteriorQueryPort`), `ModuleSurface`, `MultiModuleSurface`, `EncodedProposal`, `EliminationRecord`, `ArbitrationResult`, `SurfaceEvaluationResult`, `TransformApplication`, `SurfaceCompositionDiagnostic`, `buildPublicSnapshot()` |
 | `meaning.ts` | `MeaningId`, `SemanticClassId`, `RecommendationBand`, `RankingMetadata`, `MeaningClause`, `EvidenceBundle`, `MeaningProposal`, `BAND_PRIORITY`, `compareRanking()`, `CandidateTransform`, `TransformTrace`, `MeaningSurfaceClause`, `MeaningSurface` (with optional `alert`, `closurePolicy`), `BRIDGE_SEMANTIC_CLASSES` (platform-owned canonical IDs — convenience catalog, not a gating registry). `MeaningSurface` = authored, hand-independent meaning units (pre-evaluation). Public constraints auto-derived from primitive/bridge-observable clauses via `derivePublicConstraints()`. |
-| `fact-catalog.ts` | `FactLayer`, `EvaluationWorld`, `FactMetadata`, `FactDefinition` (with `derivesFrom`, optional `metadata`), `FactValue`, `EvaluatedFacts`, `getFactValue()`, `FactEvaluatorFn`, `RelationalFactEvaluatorFn`, `FactCatalog` (with optional `relationalEvaluators`, optional `posteriorEvaluators`), `FactCatalogExtension`, `createFactCatalog()`, `PRIMITIVE_FACTS` (6), `BRIDGE_DERIVED_FACTS` (8, including 4 relational: `supportForBoundSuit`, `fitWithBoundSuit`, `shortageInSuit`, `totalPointsForRaise`, plus `hasShortage` non-relational), `SHARED_FACTS` (19 = primitive + bridge-derived + posterior-derived) |
+| `fact-catalog.ts` | `FactLayer`, `EvaluationWorld`, `FactMetadata`, `FactDefinition` (with `derivesFrom`, optional `metadata`, required `constrainsDimensions`), `FactValue`, `EvaluatedFacts`, `getFactValue()`, `FactEvaluatorFn`, `RelationalFactEvaluatorFn`, `FactCatalog` (with optional `relationalEvaluators`, optional `posteriorEvaluators`), `FactCatalogExtension`, `createFactCatalog()`, `PRIMITIVE_FACTS` (6), `BRIDGE_DERIVED_FACTS` (8, including 4 relational: `supportForBoundSuit`, `fitWithBoundSuit`, `shortageInSuit`, `totalPointsForRaise`, plus `hasShortage` non-relational), `SHARED_FACTS` (19 = primitive + bridge-derived + posterior-derived) |
 | `alert.ts` | `AlertResolvable`, `resolveAlert()`, `derivePublicConstraints()` — derives `BidAlert` from surface properties and auto-derives public constraints from primitive/bridge-observable clauses. `derivePublicConstraints()` is also used by `commitment-extractor.ts`. |
 | `provenance.ts` | `EncoderKind`, `DecisionProvenance` (with optional `surfaceDiagnostics`), `ApplicabilityEvidence`, `EliminationTrace`, `ActivationTrace`, `TransformTraceEntry`, `ArbitrationTrace`, `EncodingTrace`, `LegalityTrace`, `HandoffTrace` — full decision provenance DTOs for pipeline tracing. `ApplicabilityEvidence.evaluatedConditions` and `EliminationTrace.evidence` use `ConditionEvidenceIR` from `evidence-bundle.ts`. |
 | `teaching-projection.ts` | `TeachingProjection`, `CallProjection`, `MeaningView`, `ExplanationNode`, `WhyNotEntry`, `PedagogicalRelation` (discriminated union), `PedagogicalRelationEntry`, `PedagogicalRelationKind`, `ConventionContribution`, `HandArchetypeSummary`, `WitnessHand`, `SeatRelativeHandSpaceSummary` (with optional `partnerSummary`, `archetypes`, `witnessHands`) — teaching-optimized views for "why not X?" UI |
@@ -46,6 +46,38 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 - **`DecisionSurfaceIR` is consumed via dual-path adapter in the pipeline.** `evaluateAllSurfaces()` accepts both `MeaningSurface[]` and `DecisionSurfaceIR[]`. The adapter `adaptMeaningSurface()` / `adaptMeaningSurfaces()` in `conventions/core/pipeline/surface-adapter.ts` maps `MeaningSurface` to `DecisionSurfaceIR`. Existing `MeaningSurface[]` callers are unchanged.
 - **`DeclaredEncoderKind` (agreement-module.ts) is distinct from `EncoderKind` (provenance.ts).** `DeclaredEncoderKind` describes the authored encoder type on a surface (`"direct"`, `"choice-set"`, `"frontier-step"`, `"relay-map"`). `EncoderKind` describes how encoding was resolved at runtime (`"default-call"`, `"resolver"`, etc.).
 - **`ConditionEvidenceIR` is the sole evidence type.** Unified from the former `ConditionEvidence` (provenance.ts, removed) and `ConditionEvidenceIR` (evidence-bundle.ts). Fields: `conditionId`, `satisfied`, `factId?`, `observedValue?`, `threshold?`. Used by `EvidenceBundleIR`, `ApplicabilityEvidence.evaluatedConditions`, `EliminationTrace.evidence`, and `MeaningView.supportingEvidence`.
+
+## Specificity Derivation System
+
+The `specificity` field in `RankingMetadata` is **derived from constraint dimensions**, not hand-authored. The system uses a communicative-dimension ontology to compute specificity from the facts a surface's clauses reference.
+
+### Architecture
+
+1. **`ConstraintDimension`** (meaning.ts): 6-member union type representing communicative dimensions: `suitIdentity`, `suitLength`, `pointRange`, `shapeClass`, `suitRelation`, `suitQuality`.
+
+2. **`constrainsDimensions`** (fact-catalog.ts): REQUIRED field on `FactDefinition`. Lists which dimensions a fact communicates to partner when used in a clause. Assignment rules:
+   - Describes what the BID COMMUNICATES, not what the evaluator code reads
+   - Boolean facts wrapping multiple checks list the communicative dimensions of the bid, not the code's dependencies
+   - Posterior-derived facts use `[]` (they don't contribute to specificity)
+
+3. **`deriveSpecificity()`** (conventions/core/pipeline/specificity-deriver.ts): Computes specificity by collecting the union of constraint dimensions across a surface's clauses. Key rules:
+   - Boolean clauses with `value: false` are exclusion gates — they contribute nothing when mixed with positive clauses; they contribute `shapeClass` when they ARE the surface's meaning
+   - `lte` on suit length = "no fit" = always `shapeClass`
+   - Suit-length thresholds below 3 are vacuous (don't count)
+   - $suit-bound clauses don't add `suitIdentity` (suit was established by context)
+   - Narrow HCP ranges (explicit gte+lte bounds within 5 points) add a `shapeClass` bonus
+
+4. **`classifySpecificityBasis()`** (specificity-classifier.ts): Labels each surface as "derived" / "asserted" / "partial" based on clause transparency.
+
+5. **Linearization canons** (specificity-canons.ts): Numbered rules for resolving incomparable dimension sets. Canon 1 = dimensional count, Canon 2 = dimension priority order.
+
+### Why this exists
+
+The specificity values in the codebase were originally AI-authored (not human bridge expert authored). The derivation system replaces subjective number-picking with a principled computation from a shared domain ontology. The 6-dimension ontology achieves 85%+ match with the original authored values, with mismatches concentrated in convention-context cases (accumulated information from prior bidding rounds) that pure dimension counting can't capture.
+
+### Adding new conventions
+
+When adding a new `FactDefinition`, you MUST provide `constrainsDimensions`. The type system enforces this. When adding a new `MeaningSurface`, specificity should be derived via `deriveSpecificity()` — do not hand-pick numbers.
 
 ## Gotchas
 

@@ -56,7 +56,7 @@ export function createWeakTwoR1Surfaces(): readonly MeaningSurface[] {
     ],
     ranking: {
       recommendationBand: "must" as const,
-      specificity: 2,
+      specificity: 3, // derived: pointRange + suitLength + suitIdentity
       modulePrecedence: 0,
       intraModuleOrder: order,
     },
@@ -181,7 +181,7 @@ export function createWeakTwoR2Surfaces(
       ],
       ranking: {
         recommendationBand: "should" as const,
-        specificity: 2,
+        specificity: 3, // derived: pointRange + suitLength + suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 2,
       },
@@ -478,7 +478,7 @@ export function createPostOgustSurfaces(
       clauses: [],
       ranking: {
         recommendationBand: "avoid" as const,
-        specificity: 0,
+        specificity: 1, // derived: inherited suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 2,
       },

@@ -401,6 +401,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     description: "Hand has 5+ hearts (for 3H Smolen showing 5H)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.hearts"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.smolen.hasFiveSpades",
@@ -409,6 +410,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     description: "Hand has 5+ spades (for 3S Smolen showing 5S)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.smolen.hasFourSpades",
@@ -417,6 +419,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     description: "Hand has exactly 4 spades (needed for 3H Smolen: 4S+5H)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.smolen.hasFourHearts",
@@ -425,6 +428,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     description: "Hand has exactly 4 hearts (needed for 3S Smolen: 5S+4H)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.hearts"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.smolen.openerHasHeartFit",
@@ -433,6 +437,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     description: "Opener has 3+ hearts (heart fit for Smolen placement)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.hearts"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.smolen.openerHasSpadesFit",
@@ -441,6 +446,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     description: "Opener has 3+ spades (spade fit for Smolen placement)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
 ];
 

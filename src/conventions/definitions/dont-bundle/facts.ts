@@ -44,6 +44,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "H5+S4+ or S5+H4+ — both majors for 2H bid",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
   },
   {
     id: "module.dont.diamondsAndMajor",
@@ -52,6 +53,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "D5+ and (H4+ or S4+) — diamonds + a major for 2D bid",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
   },
   {
     id: "module.dont.clubsAndHigher",
@@ -60,6 +62,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "C5+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
   },
   {
     id: "module.dont.naturalSpades",
@@ -68,6 +71,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "S6+ — natural spades for 2S bid",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.singleSuited",
@@ -76,6 +80,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "One suit 6+, no other suit 4+, longest suit is not spades — for double",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["shapeClass", "suitLength"],
   },
 
   // Overcaller reveal facts (after X → 2C)
@@ -86,6 +91,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "The 6+ single suit is clubs",
     valueType: "boolean",
     derivesFrom: ["module.dont.singleSuited"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.singleSuitDiamonds",
@@ -94,6 +100,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "The 6+ single suit is diamonds",
     valueType: "boolean",
     derivesFrom: ["module.dont.singleSuited"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.singleSuitHearts",
@@ -102,6 +109,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "The 6+ single suit is hearts",
     valueType: "boolean",
     derivesFrom: ["module.dont.singleSuited"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
 
   // 2C relay response facts (after 2C → 2D)
@@ -112,6 +120,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "With clubs as anchor, higher suit is diamonds",
     valueType: "boolean",
     derivesFrom: ["module.dont.clubsAndHigher"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.clubsHigherHearts",
@@ -120,6 +129,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "With clubs as anchor, higher suit is hearts",
     valueType: "boolean",
     derivesFrom: ["module.dont.clubsAndHigher"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.clubsHigherSpades",
@@ -128,6 +138,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "With clubs as anchor, higher suit is spades",
     valueType: "boolean",
     derivesFrom: ["module.dont.clubsAndHigher"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
 
   // 2D relay response facts (after 2D → 2H)
@@ -138,6 +149,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "With diamonds as anchor, the major is hearts",
     valueType: "boolean",
     derivesFrom: ["module.dont.diamondsAndMajor"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.diamondsMajorSpades",
@@ -146,6 +158,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "With diamonds as anchor, the major is spades",
     valueType: "boolean",
     derivesFrom: ["module.dont.diamondsAndMajor"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
 
   // Advancer support facts
@@ -156,6 +169,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "3+ hearts",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.hasSpadeSupport",
@@ -164,6 +178,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "3+ spades",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.hasDiamondSupport",
@@ -172,6 +187,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "3+ diamonds",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.hasClubSupport",
@@ -180,6 +196,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "3+ clubs",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.hasLongMinor",
@@ -188,6 +205,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "6+ in clubs or diamonds (for minor escape)",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "module.dont.longMinorIsClubs",
@@ -196,6 +214,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "Longer minor is clubs (for 3C escape)",
     valueType: "boolean",
     derivesFrom: ["module.dont.hasLongMinor"],
+    constrainsDimensions: ["suitIdentity", "suitLength", "shapeClass"],
   },
   {
     id: "module.dont.longMinorIsDiamonds",
@@ -204,6 +223,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     description: "Longer minor is diamonds (for 3D escape)",
     valueType: "boolean",
     derivesFrom: ["module.dont.hasLongMinor"],
+    constrainsDimensions: ["suitIdentity", "suitLength", "shapeClass"],
   },
 ];
 

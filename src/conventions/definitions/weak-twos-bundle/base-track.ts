@@ -134,6 +134,7 @@ export const WEAK_TWO_SURFACE_FRAGMENTS: Readonly<Record<string, SurfaceFragment
     layerPriority: 100,
     actionCoverage: "all",
     surfaces: POST_OGUST_HEARTS_SURFACES,
+    inheritedDimensions: ["suitIdentity"],
   },
   "weak-two:responder-after-ogust-spades": {
     id: "weak-two:responder-after-ogust-spades",
@@ -141,6 +142,7 @@ export const WEAK_TWO_SURFACE_FRAGMENTS: Readonly<Record<string, SurfaceFragment
     layerPriority: 100,
     actionCoverage: "all",
     surfaces: POST_OGUST_SPADES_SURFACES,
+    inheritedDimensions: ["suitIdentity"],
   },
   "weak-two:responder-after-ogust-diamonds": {
     id: "weak-two:responder-after-ogust-diamonds",
@@ -148,6 +150,7 @@ export const WEAK_TWO_SURFACE_FRAGMENTS: Readonly<Record<string, SurfaceFragment
     layerPriority: 100,
     actionCoverage: "all",
     surfaces: POST_OGUST_DIAMONDS_SURFACES,
+    inheritedDimensions: ["suitIdentity"],
   },
 };
 

@@ -15,6 +15,7 @@ const BERGEN_FACTS: readonly FactDefinition[] = [
     description: "Has 4+ card support in at least one major",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.hearts", "hand.suitLength.spades"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
 ];
 

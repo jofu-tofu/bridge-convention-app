@@ -1,6 +1,7 @@
 import type { Hand, HandEvaluation } from "../../engine/types";
 import type { PublicConstraint } from "./agreement-module";
 import type { PosteriorFactProvider, PosteriorFactRequest } from "./posterior";
+import type { ConstraintDimension } from "./meaning";
 
 // Re-export extracted modules for backward compatibility
 export { num, bool, fv } from "./fact-helpers";
@@ -32,6 +33,22 @@ export interface FactDefinition {
   readonly valueType: "number" | "boolean" | "string";
   readonly derivesFrom?: readonly string[];
   readonly metadata?: FactMetadata;
+  /** Communicative constraint dimensions this fact provides when used in a bid's clause.
+   *  REQUIRED. Describes what information the bid communicates to partner when this
+   *  fact is checked — NOT what the evaluator code reads internally.
+   *  
+   *  Rules for assignment:
+   *  - "suitIdentity": the fact identifies which specific suit(s) are promised
+   *  - "suitLength": the fact constrains min/max cards in specific suits  
+   *  - "pointRange": the fact constrains HCP or total point bounds
+   *  - "shapeClass": the fact constrains distributional shape (balanced, shortage, etc.)
+   *  - "suitRelation": the fact constrains relationships between suits
+   *  - "suitQuality": the fact constrains honor holdings or suit solidity
+   *  
+   *  For boolean facts that wrap multiple conditions (e.g., module.dont.bothMajors),
+   *  list the dimensions the BID COMMUNICATES, not what the evaluator reads.
+   *  Specificity is derived from the union of dimensions across a surface's clauses. */
+  readonly constrainsDimensions: readonly ConstraintDimension[];
 }
 
 /** A concrete fact value. */

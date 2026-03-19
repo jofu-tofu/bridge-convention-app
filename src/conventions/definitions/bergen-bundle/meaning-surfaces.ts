@@ -159,7 +159,7 @@ export function createBergenR1Surfaces(
       ],
       ranking: {
         recommendationBand: "should",
-        specificity: 2,
+        specificity: 3, // derived: pointRange + suitLength + suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 3,
       },
@@ -193,7 +193,7 @@ export function createBergenR1Surfaces(
       ],
       ranking: {
         recommendationBand: "may",
-        specificity: 2,
+        specificity: 3, // derived: pointRange + suitLength + suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 4,
       },

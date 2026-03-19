@@ -13,6 +13,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
     description: "High card points",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["pointRange"],
   },
   {
     id: "hand.suitLength.spades",
@@ -21,6 +22,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
     description: "Number of spades",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "hand.suitLength.hearts",
@@ -29,6 +31,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
     description: "Number of hearts",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "hand.suitLength.diamonds",
@@ -37,6 +40,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
     description: "Number of diamonds",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "hand.suitLength.clubs",
@@ -45,6 +49,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
     description: "Number of clubs",
     valueType: "number",
     derivesFrom: [],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "hand.isBalanced",
@@ -53,6 +58,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
     description: "Hand is balanced (4-3-3-3, 4-4-3-2, 5-3-3-2)",
     valueType: "boolean",
     derivesFrom: [],
+    constrainsDimensions: ["shapeClass"],
   },
 ];
 
@@ -64,6 +70,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Has at least one 4+ card major",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts"],
+    constrainsDimensions: ["suitIdentity"],
   },
   {
     id: "bridge.hasFiveCardMajor",
@@ -72,6 +79,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Has at least one 5+ card major",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts"],
+    constrainsDimensions: ["suitIdentity"],
   },
   {
     id: "bridge.majorPattern",
@@ -81,6 +89,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
       "Major suit pattern classification (none, one-four, both-four, one-five, five-four, five-five)",
     valueType: "string",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts"],
+    constrainsDimensions: ["suitIdentity", "suitRelation"],
   },
   {
     id: "bridge.supportForBoundSuit",
@@ -89,6 +98,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Length in the suit specified by $suit binding",
     valueType: "number",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts", "hand.suitLength.diamonds", "hand.suitLength.clubs"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "bridge.fitWithBoundSuit",
@@ -97,6 +107,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "8+ combined cards in the bound suit (own length + partner's promised min)",
     valueType: "boolean",
     derivesFrom: ["bridge.supportForBoundSuit"],
+    constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
     id: "bridge.hasShortage",
@@ -106,6 +117,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts", "hand.suitLength.diamonds", "hand.suitLength.clubs"],
     metadata: { negatable: true, explainable: true },
+    constrainsDimensions: ["shapeClass"],
   },
   {
     id: "bridge.shortageInSuit",
@@ -114,6 +126,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Has 0-1 cards in the suit specified by $suit binding",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts", "hand.suitLength.diamonds", "hand.suitLength.clubs"],
+    constrainsDimensions: ["suitIdentity", "shapeClass"],
   },
   {
     id: "bridge.totalPointsForRaise",
@@ -122,6 +135,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Dummy points (HCP + shortage points) for raising the bound suit",
     valueType: "number",
     derivesFrom: ["hand.hcp", "hand.suitLength.spades", "hand.suitLength.hearts", "hand.suitLength.diamonds", "hand.suitLength.clubs"],
+    constrainsDimensions: ["pointRange"],
   },
 ];
 
@@ -133,6 +147,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that partner has 4+ hearts",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
   {
     id: "bridge.partnerHas4SpadesLikely",
@@ -141,6 +156,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that partner has 4+ spades",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
   {
     id: "bridge.partnerHas4DiamondsLikely",
@@ -149,6 +165,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that partner has 4+ diamonds",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
   {
     id: "bridge.partnerHas4ClubsLikely",
@@ -157,6 +174,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that partner has 4+ clubs",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
   {
     id: "bridge.combinedHcpInRangeLikely",
@@ -165,6 +183,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Posterior probability that combined HCP falls in specified range",
     valueType: "number",
     metadata: { inferable: true, explainable: true },
+    constrainsDimensions: [],
   },
 ];
 
