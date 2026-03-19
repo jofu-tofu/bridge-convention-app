@@ -5,6 +5,10 @@ Headless CLI for evaluating bridge convention correctness. Two evaluation modes:
 ## Commands
 
 ```
+── Global settings (apply to all subcommands) ────────────────
+  --vuln=<none|ns|ew|both>        Vulnerability (default: none)
+  --opponents=<natural|none>      Opponent bidding mode (default: none)
+
 ── Planning & diagnostics ──────────────────────────────────────
   list      --bundle=<id>                    List all coverage atoms
   plan      --bundle=<id> --agents=N [...]   Precompute two-phase evaluation plan
@@ -101,12 +105,21 @@ Playthrough-based testing over-covers shallow atoms (depth 0 is hit on every see
 ### Both seats are testable
 Atoms include both opener (North) and responder (South) states. The BFS path determines which seat is active. In playthroughs, both convention-player bids are presented as steps.
 
+## Settings Flags
+
+### `--vuln=<none|ns|ew|both>`
+Sets vulnerability for deal generation and bidding context. Maps to the app's `VulnerabilityDistribution` setting — the CLI uses explicit values rather than weighted random distribution since it's about deterministic, reproducible evaluation. Default: `none`.
+
+### `--opponents=<natural|none>`
+Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setting.
+- **`none`** (default): Opponents always pass. Used for targeted evaluation where the auction path is controlled.
+- **`natural`**: Opponents bid naturally (6+ HCP, 5+ card suit). Affects `play` and `plan` subcommands where full auctions are run. In `eval` targeted auctions, opponents still pass to maintain the BFS path.
+
 ## Known Gaps (Future Work)
 
 | Gap | Description |
 |-----|-------------|
 | **Seed selection bias** | Phase 1 only tests hands where the convention *should* apply. No ambiguous/negative cases. |
-| **Vulnerability rotation** | `buildContext()` hardcodes `Vulnerability.None`. Real bidding varies by vulnerability. |
 | **Multi-bundle interaction** | Bundles tested in isolation. No cross-bundle convention conflict testing. |
 | **Protocol atom approximation** | `wouldProtocolLikelyAttach()` is heuristic. Some protocol atoms may be missed. |
 | **Teaching feedback accuracy** | We grade bids, not feedback text. Feedback could be wrong even when the bid is right. |

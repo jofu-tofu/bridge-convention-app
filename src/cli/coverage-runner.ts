@@ -45,6 +45,9 @@ import type { BiddingContext } from "../core/contracts/bidding";
 import type { ConventionBiddingStrategy } from "../core/contracts/recommendation";
 import { resolveTeachingAnswer, gradeBid, BidGrade } from "../teaching/teaching-resolution";
 import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport/build-viewport";
+import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
+import { createStrategyChain } from "../strategy/bidding/strategy-chain";
+import type { OpponentMode } from "../bootstrap/types";
 
 // ── Argument parsing ────────────────────────────────────────────────
 
@@ -83,6 +86,34 @@ function optionalNumericArg(args: Record<string, string | true>, name: string): 
   return n;
 }
 
+// ── Settings parsing ────────────────────────────────────────────────
+
+const VULN_MAP: Record<string, Vulnerability> = {
+  none: Vulnerability.None,
+  ns: Vulnerability.NorthSouth,
+  ew: Vulnerability.EastWest,
+  both: Vulnerability.Both,
+};
+
+function parseVulnerability(args: Record<string, string | true>): Vulnerability {
+  const val = args["vuln"];
+  if (val === undefined || val === true) return Vulnerability.None;
+  const mapped = VULN_MAP[val.toLowerCase()];
+  if (mapped === undefined) {
+    console.error(`Invalid --vuln value: "${val}" (expected: none, ns, ew, both)`);
+    process.exit(2);
+  }
+  return mapped;
+}
+
+function parseOpponentMode(args: Record<string, string | true>): OpponentMode {
+  const val = args["opponents"];
+  if (val === undefined || val === true) return "none";
+  if (val === "natural" || val === "none") return val;
+  console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
+  process.exit(2);
+}
+
 // ── Resolve spec + bundle ───────────────────────────────────────────
 
 function resolveSpec(bundleId: string): ConventionSpec {
@@ -115,10 +146,12 @@ function resolveBundle(bundleId: string): ConventionBundle {
 function generateSeededDeal(
   bundle: ConventionBundle,
   seed: number,
+  vulnerability?: Vulnerability,
 ): Deal {
   const rng = mulberry32(seed);
   const constraints: DealConstraints = {
     ...bundle.dealConstraints,
+    ...(vulnerability !== undefined ? { vulnerability } : {}),
   };
   const result = generateDeal(constraints, rng);
   return result.deal;
@@ -161,6 +194,7 @@ function buildContext(
   hand: Hand,
   auction: Auction,
   seat: Seat,
+  vulnerability: Vulnerability = Vulnerability.None,
 ): BiddingContext {
   const evaluation = evaluateHand(hand);
   return createBiddingContext({
@@ -168,7 +202,7 @@ function buildContext(
     auction,
     seat,
     evaluation,
-    vulnerability: Vulnerability.None,
+    vulnerability,
     dealer: auction.entries.length > 0 ? auction.entries[0]!.seat : Seat.North,
   });
 }
@@ -300,6 +334,10 @@ const rawArgs = process.argv.slice(2);
 const subcommand = rawArgs[0];
 const flags = parseArgs(rawArgs.slice(1));
 
+// Settings flags (shared across subcommands)
+const vuln = parseVulnerability(flags);
+const opponentMode = parseOpponentMode(flags);
+
 if (!subcommand || subcommand === "--help" || subcommand === "-h") {
   printUsage();
   process.exit(2);
@@ -385,7 +423,7 @@ function runEval(): void {
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
 
-  const deal = generateSeededDeal(bundle, seed);
+  const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
   const { auction, targeted } = resolveAuction(bundle, spec, deal, stateId, userSeat);
 
@@ -423,7 +461,7 @@ function runEval(): void {
   }
 
   const strategy = protocolSpecToStrategy(spec);
-  const context = buildContext(hand, auction, activeSeat);
+  const context = buildContext(hand, auction, activeSeat, vuln);
   const result = strategy.suggest(context);
 
   if (!result) {
@@ -533,7 +571,7 @@ function runSelftest(): void {
 
       try {
         // Generate deal for this atom
-        const deal = generateSeededDeal(bundle, atomSeed);
+        const deal = generateSeededDeal(bundle, atomSeed, vuln);
         const userSeat = resolveUserSeat(bundle, deal);
 
         // Build targeted auction to reach the atom's state
@@ -546,7 +584,7 @@ function runSelftest(): void {
         const hand = deal.hands[activeSeat];
 
         // Build context from the active seat's perspective
-        const context = buildContext(hand, auction, activeSeat);
+        const context = buildContext(hand, auction, activeSeat, vuln);
 
         // Run strategy
         const result = strategy.suggest(context);
@@ -678,11 +716,16 @@ function runSinglePlaythrough(
   spec: ConventionSpec,
   seed: number,
   atomCallMap: Map<string, { atomId: string; meaningLabel: string }>,
+  vulnerability: Vulnerability = Vulnerability.None,
+  opponents: OpponentMode = "none",
 ): PlaythroughResult {
-  const deal = generateSeededDeal(bundle, seed);
+  const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
   const partner = partnerOf(userSeat);
   const strategy = protocolSpecToStrategy(spec);
+  const ewStrategy = opponents === "natural"
+    ? createStrategyChain([naturalFallbackStrategy])
+    : null;
 
   const initAuction = buildInitialAuction(bundle, userSeat, deal);
   const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
@@ -696,9 +739,17 @@ function runSinglePlaythrough(
       ? nextSeatClockwise(entries[entries.length - 1]!.seat)
       : userSeat;
 
-    // Opponent → pass
+    // Opponent turn
     if (activeSeat !== userSeat && activeSeat !== partner) {
-      entries.push({ seat: activeSeat, call: { type: "pass" } });
+      let opponentCall: Call = { type: "pass" };
+      if (ewStrategy) {
+        const hand = deal.hands[activeSeat];
+        const auction: Auction = { entries: [...entries], isComplete: false };
+        const ctx = buildContext(hand, auction, activeSeat, vulnerability);
+        const ewResult = ewStrategy.suggest(ctx);
+        if (ewResult) opponentCall = ewResult.call;
+      }
+      entries.push({ seat: activeSeat, call: opponentCall });
       // Check 3 consecutive passes after a bid → auction complete
       if (entries.length >= 4) {
         const tail = entries.slice(-3);
@@ -710,7 +761,7 @@ function runSinglePlaythrough(
     // Convention player's turn
     const hand = deal.hands[activeSeat];
     const auction: Auction = { entries: [...entries], isComplete: false };
-    const context = buildContext(hand, auction, activeSeat);
+    const context = buildContext(hand, auction, activeSeat, vulnerability);
     const result = strategy.suggest(context);
 
     if (!result) break; // Strategy done
@@ -791,13 +842,14 @@ function gradePlaythroughStep(
   spec: ConventionSpec,
   bundle: ConventionBundle,
   seed: number,
+  vulnerability: Vulnerability = Vulnerability.None,
 ): { viewportFeedback: ReturnType<typeof buildViewportFeedback>; teachingDetail: ReturnType<typeof buildTeachingDetail>; isCorrect: boolean; isAcceptable: boolean } {
   // Rebuild context for this step to get full teaching feedback
-  const deal = generateSeededDeal(bundle, seed);
+  const deal = generateSeededDeal(bundle, seed, vulnerability);
   const activeSeat = s.seat as Seat;
   const hand = deal.hands[activeSeat];
   const auction: Auction = { entries: s.auctionSoFar.map((e) => ({ seat: e.seat as Seat, call: parsePatternCall(e.call) })), isComplete: false };
-  const context = buildContext(hand, auction, activeSeat);
+  const context = buildContext(hand, auction, activeSeat, vulnerability);
 
   const strategy = protocolSpecToStrategy(spec);
   const result = strategy.suggest(context);
@@ -856,7 +908,7 @@ function runPlay(): void {
   const bundle = resolveBundle(bundleId);
   const atomCallMap = buildAtomCallMap(spec);
 
-  const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap);
+  const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap, vuln, opponentMode);
   const userSteps = result.steps.filter((s) => s.isUserStep);
 
   if (reveal) {
@@ -908,7 +960,7 @@ function runPlay(): void {
   }
 
   const { viewportFeedback, teachingDetail, isCorrect, isAcceptable } =
-    gradePlaythroughStep(s, submittedCall, spec, bundle, seed);
+    gradePlaythroughStep(s, submittedCall, spec, bundle, seed, vuln);
 
   const nextStepIdx = stepIdx + 1;
   const nextStep = nextStepIdx < userSteps.length
@@ -1047,7 +1099,7 @@ function runPlan(): void {
 
     for (let s = baseSeed; s < baseSeed + maxSeeds && seeds.length < targetCoverage; s++) {
       try {
-        const deal = generateSeededDeal(bundle, s);
+        const deal = generateSeededDeal(bundle, s, vuln);
         const userSeat = resolveUserSeat(bundle, deal);
         const { auction, targeted } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
         if (!targeted) continue;
@@ -1056,7 +1108,7 @@ function runPlan(): void {
           ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
           : userSeat;
         const hand = deal.hands[activeSeat];
-        const context = buildContext(hand, auction, activeSeat);
+        const context = buildContext(hand, auction, activeSeat, vuln);
         const result = strategy.suggest(context);
 
         if (result && callsMatch(result.call, expectedCall)) {
@@ -1095,7 +1147,7 @@ function runPlan(): void {
   const playthroughInfo: { seed: number; userSteps: number; atomsCovered: string[] }[] = [];
   for (const seed of uniqueSeeds) {
     try {
-      const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap);
+      const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap, vuln, opponentMode);
       const userSteps = result.steps.filter((s) => s.isUserStep);
       playthroughInfo.push({
         seed,
@@ -1174,6 +1226,10 @@ function runPlan(): void {
 
 function printUsage(): void {
   console.error("Usage: coverage-runner.ts <subcommand> [options]");
+  console.error("");
+  console.error("── Global settings (apply to all subcommands) ────────────────");
+  console.error("  --vuln=<none|ns|ew|both>        Vulnerability (default: none)");
+  console.error("  --opponents=<natural|none>      Opponent bidding mode (default: none)");
   console.error("");
   console.error("── Planning & diagnostics ──────────────────────────────────────");
   console.error("  list      --bundle=<id>                    List all coverage atoms");
