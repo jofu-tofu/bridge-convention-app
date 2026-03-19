@@ -64,6 +64,15 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
 
 export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   {
+    id: "bridge.isVulnerable",
+    layer: "bridge-derived",
+    world: "acting-hand",
+    description: "Whether the acting player's side is vulnerable",
+    valueType: "boolean",
+    derivesFrom: [],
+    constrainsDimensions: [],
+  },
+  {
     id: "bridge.hasFourCardMajor",
     layer: "bridge-derived",
     world: "acting-hand",

@@ -18,16 +18,16 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 
 describe("SHARED_FACTS", () => {
-  it("has 19 shared facts (6 primitive + 8 bridge-derived + 5 posterior-derived)", () => {
-    expect(SHARED_FACTS).toHaveLength(19);
+  it("has 20 shared facts (6 primitive + 9 bridge-derived + 5 posterior-derived)", () => {
+    expect(SHARED_FACTS).toHaveLength(20);
   });
 
   it("PRIMITIVE_FACTS has 6 entries", () => {
     expect(PRIMITIVE_FACTS).toHaveLength(6);
   });
 
-  it("BRIDGE_DERIVED_FACTS has 8 entries", () => {
-    expect(BRIDGE_DERIVED_FACTS).toHaveLength(8);
+  it("BRIDGE_DERIVED_FACTS has 9 entries", () => {
+    expect(BRIDGE_DERIVED_FACTS).toHaveLength(9);
   });
 
   it("every fact has required fields", () => {

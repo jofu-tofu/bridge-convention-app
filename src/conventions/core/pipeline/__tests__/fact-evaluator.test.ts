@@ -151,6 +151,27 @@ describe("evaluateFacts", () => {
     expect(val(result, "bridge.hasFourCardMajor")).toBe(true);
     expect(val(result, "bridge.hasFiveCardMajor")).toBe(true);
   });
+
+  it("pre-seeds bridge.isVulnerable when isVulnerable param is provided", () => {
+    const h = hand("SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H3", "D6", "D4", "D3", "C8", "C3");
+    const ev = evaluateHand(h);
+    const vulResult = evaluateFacts(h, ev, undefined, undefined, undefined, undefined, true);
+    expect(vulResult.facts.get("bridge.isVulnerable")?.value).toBe(true);
+    // 10 standard + 1 pre-seeded = 11
+    expect(vulResult.facts.size).toBe(11);
+
+    const nvResult = evaluateFacts(h, ev, undefined, undefined, undefined, undefined, false);
+    expect(nvResult.facts.get("bridge.isVulnerable")?.value).toBe(false);
+    expect(nvResult.facts.size).toBe(11);
+  });
+
+  it("does not include bridge.isVulnerable when isVulnerable param is omitted", () => {
+    const h = hand("SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H3", "D6", "D4", "D3", "C8", "C3");
+    const ev = evaluateHand(h);
+    const result = evaluateFacts(h, ev);
+    expect(result.facts.has("bridge.isVulnerable")).toBe(false);
+    expect(result.facts.size).toBe(10);
+  });
 });
 
 describe("relational facts", () => {

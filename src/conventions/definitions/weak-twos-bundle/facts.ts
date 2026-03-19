@@ -53,9 +53,9 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     id: "module.weakTwo.isMinimum",
     layer: "module-derived",
     world: "acting-hand",
-    description: "Opener is minimum for weak two (5-8 HCP)",
+    description: "Opener is minimum for weak two (5-8 NV, 6-8 vul)",
     valueType: "boolean",
-    derivesFrom: ["hand.hcp"],
+    derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
     constrainsDimensions: ["pointRange"],
   },
   {
@@ -65,6 +65,15 @@ const WEAK_TWO_FACTS: readonly FactDefinition[] = [
     description: "Opener is maximum for weak two (9-11 HCP)",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
+  },
+  {
+    id: "module.weakTwo.inOpeningHcpRange",
+    layer: "module-derived",
+    world: "acting-hand",
+    description: "HCP in weak two opening range (5-11 NV, 6-11 vul)",
+    valueType: "boolean",
+    derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
     constrainsDimensions: ["pointRange"],
   },
   {
@@ -105,14 +114,24 @@ const WEAK_TWO_EVALUATORS = new Map<string, FactEvaluatorFn>([
   ["module.weakTwo.topHonorCount.diamonds", (h, _ev, _m) =>
     fv("module.weakTwo.topHonorCount.diamonds", countTopHonorsInSuit(h, "diamonds"))],
 
-  // Min/max classification
+  // Min/max classification (vulnerability-aware)
   ["module.weakTwo.isMinimum", (_h, _ev, m) => {
     const hcp = num(m, "hand.hcp");
-    return fv("module.weakTwo.isMinimum", hcp >= 5 && hcp <= 8);
+    const vul = m.get("bridge.isVulnerable")?.value === true;
+    const minHcp = vul ? 6 : 5;
+    return fv("module.weakTwo.isMinimum", hcp >= minHcp && hcp <= 8);
   }],
   ["module.weakTwo.isMaximum", (_h, _ev, m) => {
     const hcp = num(m, "hand.hcp");
     return fv("module.weakTwo.isMaximum", hcp >= 9 && hcp <= 11);
+  }],
+
+  // Opening HCP range (vulnerability-aware)
+  ["module.weakTwo.inOpeningHcpRange", (_h, _ev, m) => {
+    const hcp = num(m, "hand.hcp");
+    const vul = m.get("bridge.isVulnerable")?.value === true;
+    const minHcp = vul ? 6 : 5;
+    return fv("module.weakTwo.inOpeningHcpRange", hcp >= minHcp && hcp <= 11);
   }],
 
   // Solid (AKQ) per suit

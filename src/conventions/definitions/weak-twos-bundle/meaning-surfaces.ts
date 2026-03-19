@@ -47,16 +47,15 @@ export function createWeakTwoR1Surfaces(): readonly MeaningSurface[] {
         description: `6+ ${suit}`,
       },
       {
-        clauseId: "hcp-5-11",
-        factId: "hand.hcp",
-        operator: "range" as const,
-        value: { min: 5, max: 11 },
-        description: "5-11 HCP for weak two",
+        clauseId: "opening-hcp-range",
+        factId: "module.weakTwo.inOpeningHcpRange",
+        operator: "boolean" as const,
+        value: true,
+        description: "HCP in opening range (6-11 vul, 5-11 NV)",
       },
     ],
     ranking: {
       recommendationBand: "must" as const,
-      specificity: 3, // derived: pointRange + suitLength + suitIdentity
       modulePrecedence: 0,
       intraModuleOrder: order,
     },
@@ -111,7 +110,6 @@ export function createWeakTwoR2Surfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 3,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -146,7 +144,6 @@ export function createWeakTwoR2Surfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
@@ -181,7 +178,6 @@ export function createWeakTwoR2Surfaces(
       ],
       ranking: {
         recommendationBand: "should" as const,
-        specificity: 3, // derived: pointRange + suitLength + suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 2,
       },
@@ -201,7 +197,6 @@ export function createWeakTwoR2Surfaces(
       clauses: [],
       ranking: {
         recommendationBand: "avoid" as const,
-        specificity: 0,
         modulePrecedence: 0,
         intraModuleOrder: 3,
       },
@@ -217,7 +212,7 @@ export function createWeakTwoR2Surfaces(
 // ─── Round 3: Ogust rebid (opener describes hand) ───────────
 //
 // After 2NT Ogust ask, opener classifies hand along two dimensions:
-//   1. Strength: minimum (5-8 HCP) vs maximum (9-11 HCP)
+//   1. Strength: minimum (5-8 NV / 6-8 vul) vs maximum (9-11 HCP)
 //   2. Quality: bad (0-1 top honors) vs good (2+ top honors)
 // Special case: solid (AKQ in suit) → 3NT
 //
@@ -248,7 +243,6 @@ export function createWeakTwoOgustSurfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 4,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -259,7 +253,7 @@ export function createWeakTwoOgustSurfaces(
       surfaceBindings: bindings,
     },
 
-    // 2. Min bad: 5-8 HCP, 0-1 top honors → 3C
+    // 2. Min bad: 5-8 NV / 6-8 vul HCP, 0-1 top honors → 3C
     {
       meaningId: `weak-two:ogust-min-bad-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_BAD,
@@ -271,7 +265,7 @@ export function createWeakTwoOgustSurfaces(
           factId: "module.weakTwo.isMinimum",
           operator: "boolean" as const,
           value: true,
-          description: "Minimum range (5-8 HCP)",
+          description: "Minimum range (5-8 NV, 6-8 vul)",
         },
         {
           clauseId: "top-honors-lte-1",
@@ -283,7 +277,6 @@ export function createWeakTwoOgustSurfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 3,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
@@ -294,7 +287,7 @@ export function createWeakTwoOgustSurfaces(
       surfaceBindings: bindings,
     },
 
-    // 3. Min good: 5-8 HCP, 2+ top honors → 3D
+    // 3. Min good: 5-8 NV / 6-8 vul HCP, 2+ top honors → 3D
     {
       meaningId: `weak-two:ogust-min-good-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_GOOD,
@@ -306,7 +299,7 @@ export function createWeakTwoOgustSurfaces(
           factId: "module.weakTwo.isMinimum",
           operator: "boolean" as const,
           value: true,
-          description: "Minimum range (5-8 HCP)",
+          description: "Minimum range (5-8 NV, 6-8 vul)",
         },
         {
           clauseId: "top-honors-gte-2",
@@ -318,7 +311,6 @@ export function createWeakTwoOgustSurfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 3,
         modulePrecedence: 0,
         intraModuleOrder: 2,
       },
@@ -353,7 +345,6 @@ export function createWeakTwoOgustSurfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 3,
         modulePrecedence: 0,
         intraModuleOrder: 3,
       },
@@ -388,7 +379,6 @@ export function createWeakTwoOgustSurfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 3,
         modulePrecedence: 0,
         intraModuleOrder: 4,
       },
@@ -438,7 +428,6 @@ export function createPostOgustSurfaces(
       ],
       ranking: {
         recommendationBand: "must" as const,
-        specificity: 2,
         modulePrecedence: 0,
         intraModuleOrder: 0,
       },
@@ -458,7 +447,6 @@ export function createPostOgustSurfaces(
       clauses: [],
       ranking: {
         recommendationBand: "should" as const,
-        specificity: 1,
         modulePrecedence: 0,
         intraModuleOrder: 1,
       },
@@ -478,7 +466,6 @@ export function createPostOgustSurfaces(
       clauses: [],
       ranking: {
         recommendationBand: "avoid" as const,
-        specificity: 1, // derived: inherited suitIdentity
         modulePrecedence: 0,
         intraModuleOrder: 2,
       },

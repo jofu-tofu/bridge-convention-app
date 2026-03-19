@@ -71,6 +71,6 @@ Min/max split: 11 HCP threshold.
 
 - Only handles direct seat overcall (South over East's 1NT). Balancing seat not implemented.
 - Advancer 2NT inquiry bid is not in the tree (handled by AI strategy when available). Overcaller rebid responses to 2NT ARE implemented.
-- No vulnerability-dependent HCP adjustments
+- No vulnerability-dependent HCP adjustments (infrastructure exists via `bridge.isVulnerable` fact for future use)
 - West (RHO of overcaller) assumed to pass — no handling of West's interference
 - Support thresholds: 3+ for suited bids, 2+ for natural 2S, always relay after double

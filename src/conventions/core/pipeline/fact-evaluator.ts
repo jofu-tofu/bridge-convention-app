@@ -47,6 +47,9 @@ export function evaluateFacts(
   posterior?: PosteriorFactProvider,
   /** Seat ID to query posterior facts about (e.g. partner seat). Required when posterior is provided. */
   posteriorSeatId?: string,
+  /** Pre-computed vulnerability flag for the acting player's side.
+   *  When provided, seeds bridge.isVulnerable before evaluators run. */
+  isVulnerable?: boolean,
 ): EvaluatedFacts {
   let effectiveDefinitions: readonly FactDefinition[];
   let effectiveEvaluators: ReadonlyMap<string, FactEvaluatorFn>;
@@ -79,6 +82,11 @@ export function evaluateFacts(
   const sorted = topologicalSort(standardDefs);
 
   const facts = new Map<string, FactValue>();
+
+  // Pre-seed context facts not derivable from hand analysis
+  if (isVulnerable !== undefined) {
+    facts.set("bridge.isVulnerable", { factId: "bridge.isVulnerable", value: isVulnerable });
+  }
 
   for (const def of sorted) {
     const evaluator = effectiveEvaluators.get(def.id);
