@@ -20,6 +20,21 @@ const ntDealConstraints: DealConstraints = {
   dealer: Seat.North,
 };
 
+/** Off-convention: South has a hand where no convention response applies.
+ *  North still opens 1NT, but South is too weak (0-7 HCP) to respond
+ *  with any convention — the correct action is Pass. */
+const ntOffConventionConstraints: DealConstraints = {
+  seats: [
+    { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
+    {
+      seat: Seat.South,
+      minHcp: 0,
+      maxHcp: 7,
+    },
+  ],
+  dealer: Seat.North,
+};
+
 /**
  * Minimal ConventionBundle for legacy registration.
  * Strategy is now handled by the protocol frame architecture (convention-spec.ts).
@@ -31,6 +46,7 @@ export const ntBundle: ConventionBundle = {
   category: ConventionCategory.Constructive,
   memberIds: ["jacoby-transfers", "stayman", "smolen"],
   dealConstraints: ntDealConstraints,
+  offConventionConstraints: ntOffConventionConstraints,
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {
       return buildAuction(Seat.North, ["1NT", "P"]);

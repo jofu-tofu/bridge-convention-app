@@ -19,6 +19,10 @@ export interface TeachingProjection {
   readonly whyNot: readonly WhyNotEntry[];
   readonly conventionsApplied: readonly ConventionContribution[];
   readonly handSpace: SeatRelativeHandSpaceSummary;
+  /** Post-bid parse tree showing the full decision chain:
+   *  which conventions were considered, why each was accepted/rejected,
+   *  and the path to the correct bid. */
+  readonly parseTree?: ParseTreeView;
 }
 
 /** How a specific call appears in the teaching view. */
@@ -93,4 +97,53 @@ export interface SeatRelativeHandSpaceSummary {
   readonly partnerSummary?: string;
   readonly archetypes?: readonly HandArchetypeSummary[];
   readonly witnessHands?: readonly WitnessHand[];
+}
+
+// ── Parse Tree ──────────────────────────────────────────────────────
+//
+// A structured decision-chain view showing how the system arrived at
+// the correct bid.  Presented post-bid so users see the full
+// "recognition → execution" path without cueing effects.
+
+/** Verdict for a single convention module in the parse tree. */
+export type ParseTreeModuleVerdict = "selected" | "applicable" | "eliminated";
+
+/** One condition evaluated for a convention module. */
+export interface ParseTreeCondition {
+  readonly factId: string;
+  readonly description: string;
+  readonly satisfied: boolean;
+  readonly observedValue?: unknown;
+}
+
+/** A convention module node in the parse tree. */
+export interface ParseTreeModuleNode {
+  readonly moduleId: string;
+  readonly displayLabel: string;
+  readonly verdict: ParseTreeModuleVerdict;
+  /** Key conditions that determined this module's verdict. */
+  readonly conditions: readonly ParseTreeCondition[];
+  /** Meanings this module proposed (with pass/fail status). */
+  readonly meanings: readonly {
+    readonly meaningId: string;
+    readonly displayLabel: string;
+    readonly matched: boolean;
+    readonly call?: Call;
+  }[];
+  /** Why this module was eliminated (when verdict is "eliminated"). */
+  readonly eliminationReason?: string;
+}
+
+/** The full parse-tree view of a bid decision.
+ *  Structured as: hand facts → convention modules → selected bid. */
+export interface ParseTreeView {
+  /** Convention modules that were evaluated, ordered: selected first,
+   *  then other applicable, then eliminated. */
+  readonly modules: readonly ParseTreeModuleNode[];
+  /** The winning module + meaning path (null when fallback reached). */
+  readonly selectedPath: {
+    readonly moduleId: string;
+    readonly meaningId: string;
+    readonly call: Call;
+  } | null;
 }

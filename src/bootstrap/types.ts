@@ -73,4 +73,7 @@ export interface DrillBundle {
   strategy?: ConventionBiddingStrategy;
   nsInferenceEngine: InferenceEngine | null;
   ewInferenceEngine: InferenceEngine | null;
+  /** True when this deal was generated as an off-convention hand
+   *  (the convention doesn't apply; user should bid naturally). */
+  isOffConvention?: boolean;
 }

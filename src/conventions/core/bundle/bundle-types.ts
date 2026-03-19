@@ -23,6 +23,10 @@ export interface ConventionBundle {
   /** If true, hidden from UI picker (e.g., parity testing bundle). */
   readonly internal?: boolean;
   readonly dealConstraints: DealConstraints;
+  /** Deal constraints for off-convention hands (convention doesn't apply).
+   *  Used when the user enables off-convention practice in drill tuning.
+   *  When absent, a generic inversion of dealConstraints is used. */
+  readonly offConventionConstraints?: DealConstraints;
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   /** Meaning surfaces organized by group.
    *  When present, the meaning pipeline is used for this bundle. */
@@ -75,6 +79,7 @@ export function createConventionConfigFromBundle(
     description: overrides.description ?? bundle.description ?? "",
     category: bundle.category ?? overrides.categoryFallback ?? ConventionCategory.Constructive,
     dealConstraints: bundle.dealConstraints,
+    offConventionConstraints: bundle.offConventionConstraints,
     defaultAuction: bundle.defaultAuction,
     internal: bundle.internal,
   };

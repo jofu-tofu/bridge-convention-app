@@ -114,6 +114,23 @@ export async function startDrill(
     tuning.vulnerabilityDistribution, userSeat, vulRoll,
   );
 
+  // Resolve off-convention deal selection
+  let isOffConvention = false;
+  if (tuning.includeOffConvention) {
+    const offConvRate = tuning.offConventionRate ?? 0.3;
+    const offRoll = rng ? rng() : Math.random();
+    if (offRoll < offConvRate) {
+      // Use off-convention constraints if available, otherwise skip
+      const offConstraints = convention.offConventionConstraints;
+      if (offConstraints) {
+        resolvedConstraints = dealerRotated
+          ? rotateDealConstraints(offConstraints, resolvedConstraints.dealer!)
+          : offConstraints;
+        isOffConvention = true;
+      }
+    }
+  }
+
   const constraints: DealConstraints = {
     ...resolvedConstraints,
     vulnerability,
@@ -153,5 +170,6 @@ export async function startDrill(
     strategy,
     nsInferenceEngine,
     ewInferenceEngine,
+    isOffConvention,
   };
 }

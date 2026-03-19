@@ -2,10 +2,13 @@
   import type { BidFeedbackInteractiveProps } from "./types";
   import { formatCall } from "../../../core/display/format";
   import { callsMatch } from "../../../engine/call-helpers";
+  import ParseTreePanel from "./ParseTreePanel.svelte";
 
   interface Props extends BidFeedbackInteractiveProps {}
 
   let { feedback, teaching, onRetry, showPracticalNote, practicalRec }: Props = $props();
+
+  const parseTree = $derived(teaching?.parseTree ?? null);
 </script>
 
 <!-- Near miss — amber/orange feedback -->
@@ -43,6 +46,11 @@
         <p class="text-fb-near-miss-text/60 text-[--text-label] mt-1" data-testid="near-miss-reason">{match.reason}</p>
       {/if}
     {/if}
+  {/if}
+  {#if parseTree && parseTree.modules.length > 0}
+    <div class="mt-2">
+      <ParseTreePanel {parseTree} />
+    </div>
   {/if}
   {#if showPracticalNote && practicalRec}
     <p class="text-fb-near-miss-text/70 text-[--text-label] mt-2 italic" data-testid="practical-note">

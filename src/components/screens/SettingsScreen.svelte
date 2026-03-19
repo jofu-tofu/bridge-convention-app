@@ -176,25 +176,43 @@
         <h2 class="text-base font-semibold text-text-primary">
           Off-Convention Deals
         </h2>
-        <span class="text-xs text-text-muted bg-bg-elevated px-2 py-0.5 rounded-full">
-          Coming soon
-        </span>
       </div>
       <p class="text-sm text-text-secondary mb-3">
         Include deals where the convention doesn't apply, so you can practice
         recognizing when to pass.
       </p>
-      <div class="opacity-50 pointer-events-none">
-        <label class="flex items-center gap-3 cursor-pointer">
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          class="w-4 h-4 rounded-sm accent-accent-primary"
+          checked={appStore.drillTuning.includeOffConvention ?? false}
+          onchange={(e) => appStore.setIncludeOffConvention(e.currentTarget.checked)}
+          data-testid="off-convention-toggle"
+        />
+        <span class="text-sm text-text-primary">Include off-convention deals</span>
+      </label>
+      {#if appStore.drillTuning.includeOffConvention}
+        <div class="mt-3">
+          <label class="block text-sm text-text-secondary mb-1.5" for="off-conv-rate">
+            Frequency: {Math.round((appStore.drillTuning.offConventionRate ?? 0.3) * 100)}% of deals
+          </label>
           <input
-            type="checkbox"
-            class="w-4 h-4 rounded-sm accent-accent-primary"
-            checked={appStore.drillTuning.includeOffConvention ?? false}
-            disabled
+            id="off-conv-rate"
+            type="range"
+            min="0.1"
+            max="0.7"
+            step="0.05"
+            value={appStore.drillTuning.offConventionRate ?? 0.3}
+            oninput={(e) => appStore.setOffConventionRate(parseFloat(e.currentTarget.value))}
+            class="w-full max-w-xs accent-accent-primary cursor-pointer"
+            data-testid="off-convention-rate"
           />
-          <span class="text-sm text-text-primary">Include off-convention deals</span>
-        </label>
-      </div>
+          <p class="text-xs text-text-muted mt-1">
+            About {Math.round((appStore.drillTuning.offConventionRate ?? 0.3) * 100)}% of practice
+            deals will be hands where the convention doesn't apply.
+          </p>
+        </div>
+      {/if}
     </section>
   </div>
 </main>

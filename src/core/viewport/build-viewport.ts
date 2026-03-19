@@ -290,5 +290,8 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
     // Evaluation completeness (from evidence bundle)
     evaluationExhaustive: feedback.evaluationExhaustive,
     fallbackReached: feedback.fallbackReached,
+
+    // Parse tree (from teaching projection)
+    parseTree: projection?.parseTree,
   };
 }

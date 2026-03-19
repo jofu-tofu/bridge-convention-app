@@ -163,7 +163,7 @@ export interface ConventionView {
 // This is NOT part of the playing sequence — it's the oracle's teaching
 // slice, exposed after grading for pedagogical feedback.
 
-import type { ExplanationNode, WhyNotEntry, ConventionContribution, MeaningView, CallProjection } from "../contracts/teaching-projection";
+import type { ExplanationNode, WhyNotEntry, ConventionContribution, MeaningView, CallProjection, ParseTreeView } from "../contracts/teaching-projection";
 import type { EncoderKind } from "../contracts/provenance";
 
 /** Post-bid teaching data derived from the evaluation oracle. */
@@ -247,4 +247,10 @@ export interface TeachingDetail {
   /** True when no convention surface matched and the pipeline fell back
    *  to a default bid (typically Pass). */
   readonly fallbackReached?: boolean;
+
+  // ── Parse tree ────────────────────────────────────────────────
+  /** Post-bid parse tree showing the full decision chain:
+   *  which conventions were considered, why each was accepted/rejected,
+   *  and the path to the correct bid. */
+  readonly parseTree?: ParseTreeView;
 }

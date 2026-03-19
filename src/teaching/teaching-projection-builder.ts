@@ -37,6 +37,7 @@ import { buildCallViews } from "./call-view-builder";
 import { buildMeaningViews } from "./meaning-view-builder";
 import { buildPrimaryExplanation, buildClauseDescriptionIndex } from "./explanation-builder";
 import { buildWhyNot } from "./why-not-builder";
+import { buildParseTree } from "./parse-tree-builder";
 
 // -- Options --
 
@@ -129,6 +130,7 @@ export function projectTeaching(
   const whyNot = buildWhyNot(arbitration, provenance, catalogIndex, pedGraph, truthMeaningIds);
   const conventionsApplied = buildConventionContributions(arbitration, provenance);
   const handSpace = buildHandSpace(options, catalogIndex);
+  const parseTree = buildParseTree(arbitration, provenance, catalogIndex);
 
   return {
     callViews,
@@ -137,6 +139,7 @@ export function projectTeaching(
     whyNot,
     conventionsApplied,
     handSpace,
+    parseTree,
   };
 }
 

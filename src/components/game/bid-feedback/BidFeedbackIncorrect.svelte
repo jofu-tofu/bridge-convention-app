@@ -16,6 +16,7 @@
     formatAmbiguity,
   } from "./BidFeedbackPanel";
   import { formatRuleName } from "../../../core/display/format";
+  import ParseTreePanel from "./ParseTreePanel.svelte";
 
   interface Props extends BidFeedbackInteractiveProps {}
 
@@ -80,6 +81,9 @@
 
   // Fallback reached — no convention surface matched
   const fallbackNote = $derived(teaching?.fallbackReached === true);
+
+  // Parse tree — decision chain view
+  const parseTree = $derived(teaching?.parseTree ?? null);
 
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
   let prevFeedback: ViewportBidFeedback | undefined;
@@ -303,6 +307,11 @@
             {/each}
           </div>
         </div>
+      {/if}
+
+      <!-- 6b. Parse tree: decision chain -->
+      {#if parseTree && parseTree.modules.length > 0}
+        <ParseTreePanel {parseTree} />
       {/if}
 
       <!-- 7. Decision space: meanings evaluated (expandable) -->

@@ -36,6 +36,9 @@ export interface ConventionConfig {
   /** Teaching metadata — optional, populated in explanations.ts per convention. */
   readonly teaching?: ConventionTeaching;
   readonly dealConstraints: DealConstraints;
+  /** Deal constraints for off-convention hands (convention doesn't apply).
+   *  Used when the user enables off-convention practice in drill tuning. */
+  readonly offConventionConstraints?: DealConstraints;
   /** Returns the default auction context for a given seat, or undefined for empty auction. */
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   /** If true, convention is internal (e.g., SAYC for opponents) and hidden from UI picker. */
