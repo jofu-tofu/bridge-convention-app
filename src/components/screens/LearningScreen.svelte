@@ -131,7 +131,7 @@
                 <button
                   role="tab"
                   aria-selected={depthMode === tab.mode}
-                  class="px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer
+                  class="px-3 py-1.5 text-sm rounded-[--radius-md] transition-colors cursor-pointer
                     {depthMode === tab.mode
                       ? 'bg-accent-primary text-text-on-accent font-medium'
                       : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'}"

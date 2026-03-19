@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { Hand, Card as CardType } from "../../engine/types";
-  import { Seat, Vulnerability } from "../../engine/types";
+  import { Seat, Rank, Suit as SuitEnum, Vulnerability } from "../../engine/types";
   import { viewSeat } from "../../core/display/seat-mapping";
   import { calculateHcp, getSuitLength, calculateDistributionPoints } from "../../engine/hand-evaluator";
   import { isVulnerable } from "../../engine/scoring";
@@ -53,6 +53,12 @@
   // ── Mode detection: viewport mode when visibleHands is provided ───
   const useViewport = $derived(visibleHands !== undefined);
 
+  // 13 placeholder cards for rendering face-down hands on desktop
+  const PLACEHOLDER_CARDS: readonly CardType[] = Array.from({ length: 13 }, (_, i) => ({
+    suit: [SuitEnum.Spades, SuitEnum.Hearts, SuitEnum.Diamonds, SuitEnum.Clubs][Math.floor(i / 4)]!,
+    rank: Object.values(Rank)[i]!,
+  }));
+
   const southHcp = $derived.by(() => {
     if (useViewport) {
       const southHand = visibleHands![Seat.South];
@@ -85,7 +91,7 @@
       return remainingCards[seat];
     }
     if (useViewport) {
-      return visibleHands![seat]?.cards ?? [];
+      return visibleHands![seat]?.cards ?? PLACEHOLDER_CARDS;
     }
     return hands![seat].cards;
   }
@@ -143,7 +149,7 @@
   data-testid="bridge-table"
 >
   <!-- Physical top position (North normally, South when rotated) -->
-  <div class="area-north">
+  <div class="area-north" class:max-lg:invisible={useViewport && !isFaceUp(northSeat)}>
     <HandFan
       cards={getCards(northSeat)}
       faceUp={isFaceUp(northSeat)}
@@ -162,7 +168,7 @@
   </div>
 
   <!-- Physical left position (West normally, East when rotated) + label -->
-  <div class="area-west">
+  <div class="area-west" class:max-lg:invisible={useViewport && !isFaceUp(westSeat)}>
     <HandFan
       cards={getCards(westSeat)}
       faceUp={isFaceUp(westSeat)}
@@ -193,7 +199,7 @@
   </div>
 
   <!-- Physical right position (East normally, West when rotated) + label -->
-  <div class="area-east">
+  <div class="area-east" class:max-lg:invisible={useViewport && !isFaceUp(eastSeat)}>
     <span
       class={seatLabelClass(eastSeat)}
       data-testid="seat-label-{eastSeat}"

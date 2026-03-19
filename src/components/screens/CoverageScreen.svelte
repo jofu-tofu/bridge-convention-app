@@ -95,7 +95,7 @@
       <div class="grid gap-3">
         {#each specs as spec (spec.id)}
           <button
-            class="block w-full text-left rounded-lg bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-card-hover transition-colors cursor-pointer group"
+            class="block w-full text-left rounded-[--radius-lg] bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-card-hover transition-colors cursor-pointer group"
             onclick={() => selectSpec(spec.id)}
           >
             <div class="flex items-center justify-between">
@@ -128,13 +128,13 @@
       <!-- View toggle -->
       <div class="mb-6 flex gap-2">
         <button
-          class="px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer {showByTrack ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
+          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {showByTrack ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
           onclick={() => showByTrack = true}
         >
           By Track ({manifest.baseAtoms.length} base + {manifest.protocolAtoms.length} protocol)
         </button>
         <button
-          class="px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer {!showByTrack ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
+          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {!showByTrack ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
           onclick={() => showByTrack = false}
         >
           All Atoms ({manifest.totalAtoms})
@@ -151,7 +151,7 @@
             {#each manifest.baseAtoms as atom (atom.baseStateId + ':' + atom.meaningId)}
               <a
                 href={targetUrl(manifest.specId, atom.baseStateId, atom.meaningId)}
-                class="block rounded-lg bg-bg-card border border-border-subtle p-3 hover:border-green-500 hover:bg-bg-card-hover transition-colors group"
+                class="block rounded-[--radius-lg] bg-bg-card border border-border-subtle p-3 hover:border-green-500 hover:bg-bg-card-hover transition-colors group"
               >
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
@@ -183,7 +183,7 @@
             {#each manifest.protocolAtoms as atom (atom.baseStateId + ':' + atom.meaningId + ':' + (atom.activeProtocols[0]?.protocolId ?? ''))}
               <a
                 href={targetUrl(manifest.specId, atom.baseStateId, atom.meaningId)}
-                class="block rounded-lg bg-bg-card border border-border-subtle p-3 hover:border-amber-500 hover:bg-bg-card-hover transition-colors group"
+                class="block rounded-[--radius-lg] bg-bg-card border border-border-subtle p-3 hover:border-amber-500 hover:bg-bg-card-hover transition-colors group"
               >
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
@@ -235,7 +235,7 @@
           {#each [...manifest.baseAtoms, ...manifest.protocolAtoms] as atom (atom.baseStateId + ':' + atom.meaningId + ':' + (atom.activeProtocols[0]?.protocolId ?? ''))}
             <a
               href={targetUrl(manifest.specId, atom.baseStateId, atom.meaningId)}
-              class="block rounded-md bg-bg-card/50 border border-border-subtle/50 px-3 py-2 hover:border-blue-500/50 transition-colors text-sm"
+              class="block rounded-[--radius-md] bg-bg-card/50 border border-border-subtle/50 px-3 py-2 hover:border-blue-500/50 transition-colors text-sm"
             >
               <span class="font-mono text-text-secondary">{atom.baseStateId}</span>
               <span class="{atom.involvesProtocol ? 'text-amber-400' : 'text-green-400'} ml-1">{atom.meaningLabel}</span>

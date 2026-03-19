@@ -124,7 +124,7 @@
 <div
   role="tree"
   aria-label="Convention decision tree"
-  class="bg-[#1c2530] rounded-xl py-4"
+  class="bg-[#1c2530] rounded-[--radius-xl] py-4"
 >
   {#each visibleRows as row, i (row.id)}
     {@const isExpanded = expandedNodes.has(row.id)}
@@ -211,7 +211,7 @@
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 py-1">
             {#if call}
-              <span class="bg-[#22c55e] rounded-md px-2.5 py-1 text-white font-mono font-bold text-xs shrink-0">
+              <span class="bg-[#22c55e] rounded-[--radius-md] px-2.5 py-1 text-white font-mono font-bold text-xs shrink-0">
                 {formatCall(call)}
               </span>
             {/if}
