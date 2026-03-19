@@ -70,7 +70,7 @@ describe("ConventionSpec assemblies", () => {
   describe("dontConventionSpec", () => {
     it("has correct id and name", () => {
       expect(dontConventionSpec.id).toBe("dont-bundle");
-      expect(dontConventionSpec.name).toBe("DONT (Disturb Opponents' No Trump)");
+      expect(dontConventionSpec.name).toBe("DONT (Disturb Opponents' Notrump)");
     });
 
     it("has base modules", () => {

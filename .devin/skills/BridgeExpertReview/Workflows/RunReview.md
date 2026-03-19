@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Orchestrate a two-tier adversarial review of the bridge practice app. **Tier 1 (CLI)** runs the headless coverage-runner to test every (state, surface) pair for convention correctness — this is fast, comprehensive, and handles 95% of testing. **Tier 2 (Browser)** spawns specialist subagents to validate UI rendering that the CLI cannot assess: suit symbols, layout, alert display, and teaching feedback presentation.
+Orchestrate a two-tier adversarial review of the bridge practice app. **Tier 1 (CLI)** runs the headless coverage-runner to test every coverage atom for convention correctness — fast, comprehensive, deterministic. **Tier 2 (CLI Agents)** spawns specialist subagents that use the same CLI to deep-dive into specific conventions or problem areas. All evaluation is CLI-based — agents use `exec` and `read`, never the browser skill.
 
 **Key architecture:** The app provides a PlayerViewport information boundary:
 - **BiddingViewport** — what the player sees (hand, auction, alerts, legal calls)
@@ -20,102 +20,149 @@ The CLI coverage-runner exercises this boundary headlessly across all (state, su
 
 ---
 
+## CLI Reference
+
+All four subcommands use `--flag=value` syntax. Same seed = same deal across `present` and `grade`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
+
+```bash
+# List all coverage atoms for a bundle (JSON lines)
+npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
+
+# Present a hand — agent reads viewport, decides bid (no correct answer shown)
+npx tsx src/cli/coverage-runner.ts present --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42
+
+# Grade a bid — submit a call, get structured JSON feedback
+npx tsx src/cli/coverage-runner.ts grade --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42 --bid=2C
+
+# Self-test — strategy bids against itself across all atoms
+npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
+npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+```
+
+Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`.
+
+### `grade` JSON response shape
+
+```json
+{
+  "bundle": "nt-bundle",
+  "target": "STATE",
+  "surface": "SURFACE",
+  "seed": 42,
+  "yourBid": "2C",
+  "correctBid": "2C",
+  "grade": "correct",
+  "correct": true,
+  "requiresRetry": false,
+  "explanation": "...",
+  "meaning": "...",
+  "feedback": "Correct!"
+}
+```
+
+### `selftest` JSON response shape
+
+```json
+{
+  "seed": 42,
+  "totalAtoms": 36,
+  "pass": 34,
+  "fail": 1,
+  "skip": 1,
+  "results": [
+    { "bundle": "nt-bundle", "atom": "stateId/surfaceId/meaningId", "status": "pass", "correctBid": "2C" },
+    { "bundle": "nt-bundle", "atom": "stateId/surfaceId/meaningId", "status": "fail", "details": "..." }
+  ]
+}
+```
+
+---
+
 ## Tier 1: CLI Coverage (Primary — Convention Correctness)
 
 ### Step 1: Determine Scope
 
 **Ask the user what they want reviewed if they didn't specify.** Options:
 - A specific bundle (e.g., `nt-bundle` for 1NT responses, Stayman, Jacoby Transfers)
-- A specific convention within a bundle
 - Everything (`--all`)
 
-### Step 2: Enumerate Targets
+### Step 2: Self-Test Baseline
 
-Use the `list` subcommand to discover all (state, surface) pairs for the bundle(s) under review.
+Run the self-test first to get a quick pass/fail overview:
 
-**Targeted bundle:**
 ```bash
 cd /home/joshua-fu/projects/bridge-convention-app
+npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+```
+
+Or for a single bundle:
+```bash
+npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
+```
+
+Parse the JSON output to get pass/fail/skip counts and identify failing atoms.
+
+### Step 3: Enumerate Targets
+
+Use `list` to get all coverage atoms:
+
+```bash
 npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
 ```
 
-This outputs all target state + surface pairs that can be tested.
+Each JSON line contains `baseStateId`, `surfaceId`, `meaningId`, `meaningLabel`. These identify testable (state, surface) pairs.
 
-### Step 3: Present and Grade Each Target
+### Step 4: Present and Grade Each Target
 
-For each (state, surface) target from `list`, run the two-step agent protocol:
+For each (state, surface) pair — especially those that failed in self-test — run the two-step agent protocol:
 
-**Step 3a: Present the hand (NO answer shown)**
+**Step 4a: Present the hand (NO answer shown)**
 ```bash
 npx tsx src/cli/coverage-runner.ts present --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42
 ```
 
-The `present` command returns the `BiddingViewport` — hand, auction history, alerts, legal calls — without revealing the correct answer. The `--seed=42` flag ensures deterministic, reproducible deals.
+Returns JSON with hand, HCP, auction, legal calls — no correct answer. The `--seed=42` flag ensures deterministic deals.
 
-**Step 3b: Decide the bid**
+**Step 4b: Decide the bid**
 
 Read the viewport output. As a bridge expert, determine the correct bid based on the hand, auction, and convention rules.
 
-**Step 3c: Grade the bid**
+**Step 4c: Grade the bid**
 ```bash
 npx tsx src/cli/coverage-runner.ts grade --bundle=nt-bundle --target=STATE --surface=SURFACE --seed=42 --bid=CALL
 ```
 
-The `grade` command returns structured JSON:
+Returns structured JSON with `yourBid`, `correctBid`, `grade`, `correct`, `requiresRetry`, `feedback`. Exit code 0=correct, 1=wrong.
 
-```json
-{
-  "yourBid": "2H",
-  "grade": "Correct",
-  "correct": true,
-  "requiresRetry": false,
-  "correctBid": "2H",
-  "conditions": ["4+ hearts", "15-17 HCP"],
-  "feedback": "Correct! With both 4-card majors, bid hearts first (up-the-line)."
-}
-```
+**Step 4d: Retry if wrong**
 
-Same seed = same deal across `present` and `grade`. Exit codes: 0=correct, 1=wrong, 2=arg error.
+If `grade` returns `"correct": false`, read the feedback, reassess, and submit a different bid with another `grade` call.
 
-**Step 3d: Retry if wrong**
-
-If `grade` returns `"correct": false` and `"requiresRetry": true`, read the feedback, reassess, and submit a different bid with another `grade` call.
-
-**Full self-test (CI mode):**
-```bash
-npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
-npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
-```
-
-Self-test runs the engine's own strategy against itself across all targets.
-
-### Step 4: Parse and Categorize Grade Results
-
-Categorize results from the `grade` responses:
+### Step 5: Categorize Results
 
 | Category | What It Means | Action |
 |----------|--------------|--------|
 | **correct: true** | Correct call, correct feedback | No action needed |
 | **correct: false — wrong correctBid** | The app recommends the wrong bid | CRITICAL finding — log state, surface, viewport, expected vs actual |
 | **correct: false — bad feedback** | Correct call but explanation is wrong or misleading | MAJOR finding — log the feedback text and what's wrong with it |
-| **requiresRetry: true** | Agent needed feedback to get right answer | Flag for review — may indicate unclear UI, not necessarily a bug |
-| **INFEASIBLE** | No deal can reach this (state, surface) pair | Expected for some pairs — log but don't flag as error |
+| **requiresRetry: true** | Agent needed feedback to get right answer | Flag for review — may indicate unclear teaching |
+| **selftest skip** | Strategy returned null (no recommendation) | Flag for review — may indicate coverage gap |
 
-### Step 5: Analyze CLI Results
+### Step 6: Analyze Findings
 
 For each failure:
 
-1. **Record the BiddingViewport** (from `present` output) — this is what the player sees. Include hand, auction, alerts, legal calls.
+1. **Record the viewport** (from `present` output) — hand, auction, legal calls.
 2. **Record expected vs actual** — what the app said (from `grade` `correctBid`) vs what bridge rules dictate.
 3. **Verify correctness** — Use `webfetch` to check the convention rule against authoritative sources (bridgebum.com, larryco.com, bridgeguys.com). Every correctness claim must cite a URL you actually fetched.
 4. **Classify severity** per `EvaluationFramework.md` severity definitions.
 5. **Compute metrics:**
    - **First-attempt accuracy:** % of targets where `grade` returned `correct: true` on first try
    - **Post-feedback accuracy:** % where the correct call was made after reading `grade` feedback and retrying
-   - **Infeasible pair count:** how many (state, surface) pairs are unreachable
-   - **Coverage:** total targets tested (from `list`) / total targets in the bundle
+   - **Selftest pass rate:** from `selftest` output
+   - **Coverage:** total atoms tested / total atoms in the bundle
 
-### Step 6: Generate CLI Report
+### Step 7: Generate CLI Report
 
 ```
 # CLI Coverage Report
@@ -124,180 +171,192 @@ For each failure:
 - **Targets tested:** N
 - **First-attempt accuracy:** X%
 - **Post-feedback accuracy:** Y%
-- **Infeasible pairs:** Z
+- **Selftest pass rate:** P/T (X%)
 - **Failures:** N
 
 ## Failures
 ### Failure 1: [convention] — [targetState] / [targetSurface]
-- **Viewport:** [hand, auction, alerts]
+- **Viewport:** [hand, auction, legal calls from `present`]
 - **Expected call:** [what bridge rules say]
-- **Actual call:** [what the app recommended]
+- **Actual call:** [what the app recommended via `grade`]
 - **Feedback text:** [what the app said]
 - **Reference:** [URL you fetched]
 - **Severity:** CRITICAL / MAJOR
 
 [...repeat for all failures...]
 
-## Infeasible Pairs
-| Convention | Target State | Target Surface | Why Infeasible |
-|-----------|-------------|---------------|----------------|
+## Selftest Skips
+| Bundle | Atom | Details |
+|--------|------|---------|
 ```
 
 ---
 
-## Tier 2: Browser UI Validation (Secondary — Rendering & UX)
+## Tier 2: CLI Evaluation Agents (Convention Correctness Deep-Dive)
 
-**Run this tier only after Tier 1 completes.** The CLI handles logic correctness; the browser validates what the user actually sees on screen.
+**Run this tier after Tier 1 completes.** The orchestrator handles the initial pass; CLI agents deep-dive into specific conventions or problem areas using the same CLI.
 
-### Step 7: Build and Serve a Stable Snapshot
+### Step 8: Prepare CLI Agent Context
 
-Build a production snapshot and serve it on a stable port:
+Gather context for the spawned agents:
 
-```bash
-cd /home/joshua-fu/projects/bridge-convention-app
-npm run build
-npm run preview -- --port 4173 &
-```
+1. Collect the `selftest` JSON output and Tier 1 report from Steps 2-7.
+2. Read `../Standards/EvaluationFramework.md` for agent personas and bridge references.
+3. Identify which conventions/atoms need deeper investigation.
 
-Wait for the preview server to respond on port 4173. If the build fails, fall back to the dev server on port 1420 (warn the user that HMR may cause instability).
+### Step 9: Spawn CLI Evaluation Agents
 
-### Step 8: Smoke-Check the App
+Spawn parallel subagents using `run_subagent` with `profile: "subagent_general"`. All agents evaluate convention correctness using the CLI coverage-runner and source code analysis. **Do NOT use the browser skill or Playwright.**
 
-Before spawning browser agents, verify the app loads. Write a quick Playwright script that:
+**All agents run as background subagents** (`is_background: true`) so they execute in parallel.
 
-1. Navigates to http://localhost:4173
-2. Takes a screenshot
-3. Checks that the home screen rendered (not a WASM error, blank page, or crash)
+**Focus agents on Tier 1 findings.** If the orchestrator found issues, direct agents to those specific conventions and atoms.
 
-If the app didn't load, **stop and tell the user** — don't spawn agents against a broken build.
+#### How Many Agents to Spawn
 
-### Step 9: Load Evaluation Framework
+The orchestrator decides the number and focus of agents based on the review scope. Use your judgment — more conventions in scope means more agents. Some guidelines:
 
-Read `../Standards/EvaluationFramework.md` to get agent personas, bridge references, and the structured report format.
+- **Single convention** (e.g., `nt-bundle`): 1-2 agents may suffice (one for convention logic, one for teaching content).
+- **Multiple conventions** (e.g., `nt-bundle` + `bergen-bundle`): Consider one agent per convention, or split by concern (logic vs. teaching) across conventions.
+- **All conventions**: Consider one agent per convention (4 agents), or group related conventions. You can also add a dedicated coverage-completeness agent that cross-checks all conventions.
+- **Large scope with many Tier 1 findings**: Spawn additional agents to focus on specific problem areas.
 
-### Step 10: Spawn Browser UI Agents
+There is no fixed agent count. Assign each agent a clear, non-overlapping scope so they don't duplicate work.
 
-Launch **3 parallel subagents** using `run_subagent` with `profile: "subagent_general"`. Browser agents focus ONLY on UI rendering — the CLI already validated convention logic.
+#### Agent Focus Areas
 
-**All 3 agents run as background subagents** (`is_background: true`) so they execute in parallel.
+Choose from these focus areas when defining agent assignments. Each agent should cover one or more:
 
-**Focus browser agents on failures from Tier 1.** If the CLI found failures, direct browser agents to those specific states using coverage URLs:
-```
-http://localhost:4173/?convention=X&targetState=Y&targetSurface=Z
-```
+| Focus Area | What to Check |
+|-----------|---------------|
+| **Convention logic** (for a specific bundle) | Run `present`/`grade` loops for coverage atoms. Verify the strategy's recommended bids against authoritative bridge sources. |
+| **Teaching & feedback** (for a specific bundle) | Grade intentionally wrong bids and verify the feedback text is accurate, not misleading. Read convention spec source for teaching labels. |
+| **Coverage completeness** (across bundles) | Run `selftest --all`. Cross-reference atoms against expected convention states. Identify skips, verify failure reasons, check edge cases. |
+| **Alert & annotation rules** (across bundles) | Read convention module source. Verify alert/announce annotations match ACBL regulations. |
 
-#### Agent Assignments
+#### CLI Agent Prompt Template
 
-| Agent | Focus | What to Check |
-|-------|-------|---------------|
-| **UI Rendering Agent** | Suit symbols, card display, hand layout | Suit colors (♠♣ black, ♥♦ red), card grouping by suit, rank order within suits, HCP display accuracy |
-| **Alert & Annotation Agent** | Alert badges, announcement text, feedback display | Alerts appear on the right bids, alert text describes meaning not just "Alert", feedback messages render completely, no truncation |
-| **Navigation & Flow Agent** | Page transitions, coverage drill-down, convention picker | Coverage URL scheme works (?coverage=true), target links navigate correctly, back button works, no state loss |
-
-#### Browser Agent Prompt Template
-
-Each browser agent receives this prompt, customized with their assignment:
+Each agent receives this prompt, customized with their assignment:
 
 ---
 
-You are evaluating the **UI rendering** of a bridge bidding practice app. Convention correctness has already been validated by the CLI coverage-runner — your job is to verify that what the user SEES on screen is correct.
-
-**You are NOT testing bid logic.** The CLI already did that. You are testing:
-- Do suit symbols render correctly? (♠♣ black, ♥♦ red)
-- Do cards display in correct order? (AKQJT98765432 within each suit)
-- Do alerts appear on the right bids with meaningful text?
-- Does feedback render completely without truncation?
-- Do coverage URLs navigate to the right states?
-- Is the layout usable and clear?
+You are evaluating the **convention correctness** of a bridge bidding practice app using its CLI coverage-runner. You must use the `exec` tool to run CLI commands and the `read` tool to examine source files. **Do NOT invoke the browser skill or use Playwright. Do NOT navigate to any URLs in a browser. All evaluation is done via CLI and source code.**
 
 ## Your Assignment
 
 {ASSIGNMENT}
 
-## How to Interact
+## CLI Commands
 
-The app runs at http://localhost:4173 (stable production build). Use Playwright:
+The coverage-runner provides these commands. Run them via `exec` from `/home/joshua-fu/projects/bridge-convention-app`:
 
 ```bash
-npx playwright open "http://localhost:4173"
+# List all coverage atoms for a bundle (JSON lines)
+npx tsx src/cli/coverage-runner.ts list --bundle=<bundleId>
+
+# Present a hand — returns hand, HCP, auction, legal calls (no correct answer)
+npx tsx src/cli/coverage-runner.ts present --bundle=<bundleId> --target=<stateId> --surface=<surfaceId> --seed=<N>
+
+# Grade a bid — returns correctBid, grade, correct, feedback
+npx tsx src/cli/coverage-runner.ts grade --bundle=<bundleId> --target=<stateId> --surface=<surfaceId> --seed=<N> --bid=<CALL>
+
+# Self-test — strategy vs itself across all atoms
+npx tsx src/cli/coverage-runner.ts selftest --bundle=<bundleId> --seed=42
+npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
 ```
 
-### Coverage Drill-Down URLs
+Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`
 
-Use these to navigate directly to specific states:
-- `http://localhost:4173/?coverage=true` — bundle picker
-- `http://localhost:4173/?coverage=true&convention=X` — bundle's targets
-- `http://localhost:4173/?convention=X&targetState=Y&targetSurface=Z` — specific (state, surface) drill
+Same seed = same deal across `present` and `grade`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 
-{CLI_FAILURE_URLS}
+## Source Code Locations
 
-### Focus Areas from CLI Failures
+Use `read` to examine these files for deeper analysis:
 
-The CLI found these failures. Navigate to each and verify what the UI shows:
+- **Convention specs:** `src/conventions/definitions/<bundle>/convention-spec.ts`
+- **Convention modules:** `src/conventions/definitions/<bundle>/modules/`
+- **Coverage enumeration:** `src/conventions/core/protocol/coverage-enumeration.ts`
+- **Viewport boundary:** `src/core/viewport/build-viewport.ts`
+- **Teaching resolution:** `src/teaching/teaching-resolution.ts`
+- **Strategy adapter:** `src/strategy/bidding/protocol-adapter.ts`
 
-{CLI_FAILURES_SUMMARY}
+## Evaluation Framework
+
+{EVALUATION_FRAMEWORK}
+
+## Tier 1 Findings
+
+The orchestrator found these issues. Focus your analysis on these areas:
+
+{TIER1_FINDINGS}
 
 ## Rules
 
-1. **Browser only.** Use Playwright to interact. Navigate, click, screenshot, read.
-2. **No source code.** You evaluate what you SEE, not what was written.
-3. **UI focus.** Do NOT re-test bid logic. The CLI is authoritative for correctness. You test rendering.
-4. **Evidence is mandatory.** Every finding needs a screenshot path or DOM text excerpt.
-5. **Keep exploring.** Navigate the coverage drill-down, try multiple conventions, check edge cases.
+1. **CLI and source code only.** Use `exec` to run coverage-runner commands. Use `read` to examine source files. Use `webfetch` to check bridge references. **Do NOT use the browser skill or Playwright.**
+2. **Evidence is mandatory.** Every finding needs CLI output (`present`/`grade` JSON) or source code excerpts as evidence.
+3. **Bridge expertise required.** Verify convention rules against authoritative sources using `webfetch`. Every correctness claim must cite a URL you actually fetched.
+4. **Structured output.** Report findings in the format below.
+5. **Be thorough.** Run `present`/`grade` for at least 10 coverage atoms per convention in your scope.
 
 ## Report Format
 
 ```
-# {ASSIGNMENT_NAME} — UI Review Report
+# {ASSIGNMENT_NAME} — CLI Evaluation Report
 
 ## Summary Verdict
 [PASS / FAIL / CONDITIONAL PASS]
 
-## UI Issues Found
-### Issue 1: [Title]
-- **What I saw:** [screenshot or text excerpt]
-- **What is correct:** [expected rendering]
-- **URL tested:** [the URL where this was found]
+## Findings
+
+### Finding 1: [Title]
+- **Bundle:** [bundleId]
+- **Atom:** [baseStateId / surfaceId]
+- **Seed:** [seed used]
+- **Hand:** [from `present` output]
+- **Expected call:** [from bridge rules + reference]
+- **App's call:** [from `grade` correctBid]
+- **Feedback:** [from `grade` feedback]
+- **Reference:** [URL you fetched]
 - **Severity:** CRITICAL / MAJOR / MINOR
-- **Evidence:** [screenshot path]
 
-## Scenarios Tested
-| URL | What I Checked | Result |
-|-----|----------------|--------|
+## Selftest Results
+[Output from `selftest` command if run]
+
+## Atoms Reviewed
+| Bundle | Atom | Surface | Seed | Your Bid | App Bid | Match? |
+|--------|------|---------|------|----------|---------|--------|
 ```
-
-Test at least 10 distinct screens/states.
 
 ---
 
-### Step 11: Wait and Collect
+### Step 10: Wait and Collect
 
-All 3 browser agents run in background. When each completes, read its output. Store raw reports.
+All CLI agents run in background. When each completes, read its output. Store raw reports.
 
-### Step 12: Merge Tier 1 + Tier 2
+### Step 11: Merge Tier 1 + Tier 2
 
-Combine CLI coverage results with browser UI findings:
+Combine orchestrator results with CLI agent findings:
 
-1. CLI failures are the primary issue list (convention correctness)
-2. Browser findings supplement with UI rendering issues
-3. If a CLI failure is confirmed by a browser agent seeing wrong UI, boost severity
-4. Browser-only issues (rendering bugs the CLI can't detect) go in a separate UI section
+1. Orchestrator findings are the initial issue list (from Tier 1 selftest + present/grade)
+2. CLI agent findings supplement with deep convention analysis
+3. If an orchestrator finding is confirmed by a CLI agent, boost confidence
+4. CLI-agent-only findings (deeper issues the orchestrator missed) go in a separate section
 
-### Step 13: Hand Off to CompileFeedback
+### Step 12: Hand Off to CompileFeedback
 
 Invoke the CompileFeedback workflow to:
-1. Merge CLI JSON results with browser agent reports
+1. Merge orchestrator results with CLI agent reports
 2. Deduplicate findings
 3. Sort by severity: CRITICAL > MAJOR > MINOR
 4. Produce a single prioritized action list
 5. Report coverage metrics from CLI
 
-### Step 14: Present Results
+### Step 13: Present Results
 
 Output the compiled report to the user with:
-- **CLI metrics:** first-attempt accuracy, post-feedback accuracy, infeasible pairs, coverage %
-- Total issues found per severity (CLI + browser)
+- **CLI metrics:** first-attempt accuracy, post-feedback accuracy, selftest pass rate
+- Total issues found per severity (orchestrator + CLI agents)
 - Top 5 most critical findings with full evidence
 - Recommended fix priority order
-- Coverage summary (% of (state, surface) pairs tested, any gaps)
+- Coverage summary (atoms per bundle, pass/fail/skip)
 - Overall verdict (would an expert bridge player trust this app?)

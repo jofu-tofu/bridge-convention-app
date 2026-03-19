@@ -8,49 +8,50 @@
 
 ## Purpose
 
-Take CLI coverage-runner JSON output and browser UI agent reports and compile them into a single, deduplicated, prioritized action list with quantitative metrics.
+Take CLI coverage-runner JSON output (`grade`, `selftest`) and CLI agent evaluation reports and compile them into a single, deduplicated, prioritized action list with quantitative metrics.
 
 ## Input Sources
 
 | Source | Type | Contains |
 |--------|------|----------|
-| **CLI JSON output** | Structured JSON | Per-target `grade` responses: `yourBid`, `grade`, `correct`, `requiresRetry`, `correctBid`, `conditions`, `feedback` |
-| **Browser agent reports** | Structured text | UI rendering issues — suit symbols, alert display, layout, navigation |
+| **CLI `grade` JSON** | Structured JSON | Per-target responses: `yourBid`, `correctBid`, `grade`, `correct`, `requiresRetry`, `feedback` |
+| **CLI `selftest` JSON** | Structured JSON | Aggregate pass/fail/skip counts and per-atom results |
+| **CLI agent reports** | Structured text | Deep-dive convention logic findings, teaching content issues, coverage completeness analysis |
 
 ## Workflow Steps
 
 ### Step 1: Parse CLI JSON Results
 
-Read the CLI `grade` JSON responses. Extract:
+Read the CLI `grade` and `selftest` JSON responses. Extract:
 
 1. **Aggregate metrics:**
-   - Total targets tested (from `list` output)
+   - Total targets tested (from `selftest` totalAtoms)
    - First-attempt accuracy (% where `grade` returned `correct: true` on first try)
    - Post-feedback accuracy (% correct after reading feedback and retrying)
-   - Infeasible pair count
+   - Selftest pass rate (pass / totalAtoms)
    - Failure count by severity
 
 2. **Per-failure details:**
-   - Convention, targetState, targetSurface
-   - BiddingViewport from `present` (hand, auction, alerts, legal calls)
+   - Bundle, target (state), surface
+   - Hand and auction from `present` output
    - `correctBid` vs `yourBid` from `grade` response
    - `feedback` text
-   - `grade` value (Correct, CorrectNotPreferred, Acceptable, NearMiss, Incorrect)
+   - `grade` value (correct or wrong)
 
-3. **Infeasible pairs list** — these are (state, surface) combinations where no deal can reach that state. Log them but do not flag as errors.
+3. **Selftest skips** — atoms where the strategy returned null. Log them but do not flag as errors.
 
-### Step 2: Collect Browser Agent Reports
+### Step 2: Collect CLI Agent Reports
 
-Gather UI reports from the 3 browser agents (UI Rendering, Alert & Annotation, Navigation & Flow). Each report follows the structured format from `RunReview.md` Step 9.
+Gather evaluation reports from all spawned CLI agents. Each report follows the structured format from `RunReview.md` Step 8.
 
 ### Step 3: Merge and Deduplicate
 
-Compare findings across CLI results and all browser agents:
+Compare findings across orchestrator results and all CLI agents:
 
-- **CLI failure + browser confirmation:** Same issue seen in both CLI JSON (wrong call) and browser screenshot. Merge into one finding with both evidence sources.
-- **CLI-only findings:** Convention logic errors that don't need visual confirmation. Keep as-is.
-- **Browser-only findings:** UI rendering issues the CLI can't detect (wrong suit colors, truncated text, broken layout). Keep as-is in a separate UI section.
-- **Duplicate browser findings:** Two browser agents found the same rendering issue. Keep the version with the strongest evidence, note cross-validation.
+- **Orchestrator finding + agent confirmation:** Same issue seen in both orchestrator analysis and CLI agent source code review. Merge into one finding with both evidence sources.
+- **Orchestrator-only findings:** Issues from coverage enumeration that agents didn't flag. Keep as-is.
+- **Agent-only findings:** Deeper issues agents found via source code analysis that the orchestrator missed. Keep as-is in a separate section.
+- **Duplicate agent findings:** Two CLI agents found the same issue. Keep the version with the strongest evidence, note cross-validation.
 
 ### Step 4: Cross-Reference and Re-Rank
 
@@ -58,33 +59,31 @@ Apply these severity adjustment rules:
 
 | Condition | Adjustment |
 |-----------|-----------|
-| CLI failure: wrong expected call (app recommends wrong bid) | Always CRITICAL — never downgrade |
+| CLI failure: wrong correctBid (app recommends wrong bid) | Always CRITICAL — never downgrade |
 | CLI failure: bad feedback (correct call but wrong explanation) | At least MAJOR |
-| CLI failure confirmed by browser agent seeing wrong UI | Boost confidence, keep severity |
-| Found by 2+ browser agents independently | Upgrade severity one level |
+| Orchestrator finding confirmed by CLI agent | Boost confidence, keep severity |
+| Found by 2+ CLI agents independently | Upgrade severity one level |
 | Contradicts ACBL regulations or Laws of Bridge | Always CRITICAL |
 | Terminology issue that would confuse a novice | At least MAJOR |
-| UI rendering issue only (cosmetic, no bridge knowledge impact) | Cap at MINOR |
+| Selftest skip (strategy returned null) | Informational — separate section |
 | Agent marked CRITICAL but evidence is ambiguous | Keep CRITICAL, flag for manual review |
 | **Feature gap** (missing functionality, not wrong behavior) | **Separate section — do NOT mix with correctness errors** |
-| **Infeasible pair** (no deal can reach this state/surface) | **Separate section — not an error** |
 
 ### Step 5: Categorize
 
-**First, separate correctness errors from feature gaps and infeasible pairs.** These are fundamentally different:
-- Correctness errors (from CLI + browser) go in the main issue list with severity rankings
-- UI rendering issues (browser-only) go in a "UI Issues" section
+**First, separate correctness errors from feature gaps and unreachable states.** These are fundamentally different:
+- Correctness errors (from orchestrator + CLI agents) go in the main issue list with severity rankings
+- Coverage gaps go in a "Coverage Gaps" section
 - Feature gaps go in a "Feature Gaps" section at the end
-- Infeasible pairs go in an "Infeasible Pairs" section (informational)
+- Unreachable states go in an "Unreachable States" section (informational)
 
 Group correctness findings into action categories:
 
-1. **Convention Logic Errors** — The app recommends the wrong bid or grades a correct bid as wrong (from CLI)
-2. **Teaching Content Errors** — Explanations, feedback text, or "why not X?" reasoning is incorrect (from CLI)
-3. **Alert/Announcement Violations** — Alerts missing, wrong, or not following ACBL standards (from CLI + browser)
-4. **UI Rendering Errors** — Suit symbols, card display, layout issues (from browser only)
-5. **Terminology Errors** — Bridge terms used incorrectly or non-standardly (from browser)
-6. **Navigation/Flow Issues** — Coverage URLs broken, state loss, transitions wrong (from browser)
+1. **Convention Logic Errors** — The convention spec implements the wrong rule (from CLI agent analysis)
+2. **Teaching Content Errors** — Explanations, feedback text, or teaching labels are incorrect (from CLI agent analysis)
+3. **Alert/Announcement Violations** — Alert rules don't follow ACBL standards (from CLI agent analysis)
+4. **Coverage Completeness Issues** — Missing states, unexpected unreachable states (from CLI coverage output)
+5. **Terminology Errors** — Bridge terms used incorrectly in source code (from CLI agent analysis)
 
 ### Step 6: Produce Compiled Report
 
@@ -94,9 +93,8 @@ Output the final report in this format:
 # Bridge Expert Review — Compiled Report
 
 **Date:** [date]
-**Method:** CLI coverage-runner (Tier 1) + Browser UI agents (Tier 2)
-**Scope:** [conventions/bundles tested]
-**CLI seed:** 42
+**Method:** CLI coverage-runner (Tier 1) + CLI evaluation agents (Tier 2)
+**Scope:** [conventions tested]
 
 ## CLI Coverage Metrics
 | Metric | Value |
@@ -104,7 +102,7 @@ Output the final report in this format:
 | Targets tested | N |
 | First-attempt accuracy | X% |
 | Post-feedback accuracy | Y% |
-| Infeasible pairs | Z |
+| Selftest pass rate | P/T (X%) |
 | Failures (CRITICAL) | N |
 | Failures (MAJOR) | N |
 
@@ -115,24 +113,24 @@ Output the final report in this format:
 ## Issue Summary
 | Source | Severity | Count | Categories |
 |--------|----------|-------|-----------|
-| CLI | CRITICAL | N | [which categories] |
-| CLI | MAJOR | N | [which categories] |
-| Browser | CRITICAL | N | [which categories] |
-| Browser | MAJOR | N | [which categories] |
-| Browser | MINOR | N | [which categories] |
+| Orchestrator | CRITICAL | N | [which categories] |
+| Orchestrator | MAJOR | N | [which categories] |
+| CLI Agents | CRITICAL | N | [which categories] |
+| CLI Agents | MAJOR | N | [which categories] |
+| CLI Agents | MINOR | N | [which categories] |
 | **Total** | | **N** | |
 
 ## Critical Issues (fix before any expert sees this app)
 
 ### 1. [Title]
-- **Source:** CLI / Browser / Both
+- **Source:** Orchestrator / CLI Agent / Both
 - **Category:** [from Step 5 categories]
-- **Convention:** [bundle/convention ID]
-- **Target:** [targetState / targetSurface]
-- **What the app does:** [exact behavior — from CLI viewport or browser screenshot]
+- **Convention:** [convention ID]
+- **Coverage atom:** [baseStateId / surfaceId]
+- **What the code does:** [from `grade` JSON — correctBid, feedback]
 - **What is correct:** [with reference]
 - **Reference:** [URL or standard]
-- **Evidence:** [CLI viewport JSON or screenshot path]
+- **Evidence:** [CLI output or source code excerpt]
 - **Recommended fix:** [brief description of what needs to change]
 
 [...repeat for all critical issues...]
@@ -149,17 +147,17 @@ Output the final report in this format:
 [List things the CLI passed and agents noted as correct — important for calibration]
 
 ## Testing Coverage
-| Source | Scope | Targets/Scenarios | Issues Found |
-|--------|-------|-------------------|-------------|
-| CLI | [bundles] | N targets | N failures |
-| Browser: UI Rendering | [screens checked] | N scenarios | N issues |
-| Browser: Alerts | [screens checked] | N scenarios | N issues |
-| Browser: Navigation | [URLs tested] | N scenarios | N issues |
+| Source | Scope | Atoms/Items Reviewed | Issues Found |
+|--------|-------|---------------------|-------------|
+| Orchestrator | [conventions] | N atoms | N findings |
+| CLI Agent: [agent 1 name] | [scope] | N atoms | N findings |
+| CLI Agent: [agent 2 name] | [scope] | N items | N findings |
+| ... | ... | ... | ... |
 
-## Infeasible Pairs
-| Convention | Target State | Target Surface |
-|-----------|-------------|---------------|
-[...from CLI output...]
+## Selftest Skips
+| Bundle | Atom | Details |
+|--------|------|---------|
+[...from `selftest` output where status="skip"...]
 
 ## Feature Gaps (missing functionality, NOT correctness errors)
 - [Features that don't exist yet but would improve the app]
@@ -173,7 +171,7 @@ Output the final report in this format:
 ### Step 7: Suggest Next Steps
 
 Based on the compiled report, suggest:
-- Which issues to fix first (group by root cause when possible — a single FSM state fix may resolve multiple CLI failures)
-- Whether a re-run of the CLI coverage-runner is needed after fixes (`npx tsx src/cli/coverage-runner.ts selftest --all --seed=42` to verify)
-- Any areas that need deeper browser investigation (e.g., "Alert rendering on mobile viewports was not tested")
-- Whether infeasible pairs represent design gaps or expected constraints
+- Which issues to fix first (group by root cause when possible — a single convention spec fix may resolve multiple findings)
+- Whether a re-run of the CLI is needed after fixes (`npx tsx src/cli/coverage-runner.ts selftest --all --seed=42` to verify)
+- Any areas that need deeper investigation
+- Whether selftest skips represent design gaps or expected constraints

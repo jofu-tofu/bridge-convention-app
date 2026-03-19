@@ -10,22 +10,24 @@
 
 The CLI coverage-runner (`src/cli/coverage-runner.ts`) tests convention correctness headlessly using four subcommands:
 
-- **`list --bundle=X`** — enumerate all (state, surface) targets for a bundle
-- **`present --bundle=X --target=Y --surface=Z --seed=N`** — generate a deal and show the BiddingViewport (hand, auction, alerts, legal calls) without revealing the answer
-- **`grade --bundle=X --target=Y --surface=Z --seed=N --bid=CALL`** — submit a bid and get structured feedback JSON
-- **`selftest --bundle=X --seed=N`** or **`selftest --all --seed=N`** — CI self-test (strategy vs itself)
+- **`list --bundle=X`** — enumerate all coverage atoms (JSON lines with baseStateId, surfaceId, meaningId, meaningLabel)
+- **`present --bundle=X --target=Y --surface=Z --seed=N`** — generate a deal and show hand, HCP, auction, legal calls — no correct answer
+- **`grade --bundle=X --target=Y --surface=Z --seed=N --bid=CALL`** — submit a bid and get structured JSON feedback
+- **`selftest --bundle=X --seed=N`** or **`selftest --all --seed=N`** — strategy vs itself across all atoms
 
-Same seed = same deal across `present` and `grade`. Exit codes: 0=correct, 1=wrong, 2=arg error.
+Same seed = same deal across `present` and `grade`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 
-The `grade` command returns structured JSON with:
+Available bundle IDs: `nt-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`.
 
+The `grade` command returns structured JSON:
 - **`yourBid`:** the bid submitted
-- **`grade`:** Correct, CorrectNotPreferred, Acceptable, NearMiss, or Incorrect
-- **`correct`:** boolean — was the bid accepted?
+- **`correctBid`:** the strategy's recommended bid
+- **`grade`:** "correct" or "wrong"
+- **`correct`:** boolean
 - **`requiresRetry`:** boolean — should the agent try again?
-- **`correctBid`:** the recommended bid
-- **`conditions`:** constraint descriptions (HCP range, suit length, etc.)
-- **`feedback`:** explanation text shown after bidding
+- **`explanation`:** explanation from the strategy
+- **`meaning`:** meaning label for the correct bid
+- **`feedback`:** human-readable feedback string
 
 **CLI handles these evaluation areas (no browser needed):**
 - Convention logic correctness (wrong bid recommendations)
@@ -33,17 +35,14 @@ The `grade` command returns structured JSON with:
 - Constraint validation (HCP ranges, suit lengths, shape requirements)
 - Coverage completeness (are all bidding states reachable?)
 
-### Tier 2: Browser UI Agents (Secondary)
+### Tier 2: CLI Evaluation Agents (Deep-Dive)
 
-Browser agents validate what the CLI cannot: visual rendering, layout, and interactive UX. They use 3 specialist roles instead of the original 5, because convention correctness testing has moved to the CLI.
+CLI evaluation agents perform deep convention analysis using `exec` (to run coverage-runner commands) and `read` (to examine source code). They do NOT use the browser skill or Playwright. The orchestrator decides how many agents to spawn based on the review scope — there is no fixed count. Agents are assigned non-overlapping focus areas from the list below:
 
-**Browser handles these evaluation areas:**
-- Suit symbol rendering (colors, shapes)
-- Card display and hand layout
-- Alert badge display and annotation text
-- Feedback message rendering (truncation, formatting)
-- Navigation and page transitions
-- Coverage URL drill-down functionality
+**CLI agents handle these evaluation areas:**
+- Deep convention logic verification (source code analysis against bridge references)
+- Teaching content accuracy (labels, feedback messages, condition descriptions)
+- Coverage completeness (unreachable states, missing atoms, edge cases)
 
 ---
 
@@ -53,10 +52,10 @@ These metrics are computed from CLI JSON output and form the quantitative backbo
 
 | Metric | Definition | Target |
 |--------|-----------|--------|
-| **First-attempt accuracy** | % of (state, surface) targets where the correct call was made on first try | 100% for a correct app |
+| **First-attempt accuracy** | % of targets where `grade` returned `correct: true` on first try | 100% for a correct app |
 | **Post-feedback accuracy** | % of targets where the correct call was made after seeing feedback | 100% — feedback should always lead to the right answer |
-| **Infeasible pair count** | Number of (state, surface) pairs where no deal can reach that state | Informational — not an error, but high counts may indicate design gaps |
-| **Coverage** | Total targets tested / total targets in the bundle | 100% of reachable pairs |
+| **Selftest pass rate** | pass / totalAtoms from `selftest` output | 100% of non-skip atoms |
+| **Coverage** | Total atoms tested / total atoms in the bundle | 100% of reachable atoms |
 | **Failure count** | Number of targets that failed (wrong call or bad feedback) | 0 for a correct app |
 
 **Interpreting CLI results:**
@@ -64,10 +63,10 @@ These metrics are computed from CLI JSON output and form the quantitative backbo
 | Result | Meaning | Severity |
 |--------|---------|----------|
 | PASS | Correct call, correct feedback | None |
-| FAIL — wrong expected call | App recommends the wrong bid for this hand/auction | CRITICAL |
+| FAIL — wrong correctBid | App recommends the wrong bid for this hand/auction | CRITICAL |
 | FAIL — bad feedback | Correct call but explanation is wrong or misleading | MAJOR |
-| FAIL — first attempt wrong, post-feedback correct | Ambiguous UI led to wrong first choice, feedback corrected it | Review needed |
-| INFEASIBLE | No deal can reach this (state, surface) pair | Informational |
+| FAIL — first attempt wrong, post-feedback correct | Ambiguous teaching led to wrong first choice, feedback corrected it | Review needed |
+| SKIP | Strategy returned null (no recommendation) | Informational |
 
 ---
 
@@ -96,13 +95,13 @@ Convention correctness is now evaluated by the CLI coverage-runner, not a browse
 - [ ] Edge case: hands that are borderline (e.g., 14 HCP for 1NT opening range) — check that the app handles range boundaries correctly
 - [ ] Verify that AI opponents' bids (if any) make basic sense — no 1NT opening with 8 HCP
 
-### Browser Agent 1: UI Rendering Agent (covers terminology & display)
+### CLI Agent 1: Convention Logic Agent (covers convention rules & display)
 
-**Persona:** Bridge journalist who has written for the ACBL Bulletin and Bridge World magazine for 15 years. Extremely particular about correct bridge terminology and notation. Will notice if "No Trump" is written instead of "Notrump" or if suit symbols are in the wrong order.
+**Persona:** Bridge journalist who has written for the ACBL Bulletin and Bridge World magazine for 15 years, combined with tournament director expertise. Extremely particular about correct convention rules and terminology.
 
-**Specialty:** Verify all bridge terminology, notation, suit symbols, and display conventions match standard bridge practice. This agent validates what the CLI cannot see — the visual rendering layer.
+**Specialty:** Verify all convention rules in the source code match standard bridge practice. Uses CLI `list` output to identify all coverage atoms, then reads convention spec source code to verify each rule against authoritative bridge references.
 
-**Checklist:**
+**Checklist (verified via source code analysis + webfetch):**
 - [ ] Suit ranking displayed correctly: Spades > Hearts > Diamonds > Clubs (high to low)
 - [ ] Suit symbols correct: spades (black), hearts (red), diamonds (red), clubs (black)
 - [ ] "Notrump" or "NT" — not "No Trump" or "NoTrump" or "no-trump"
@@ -119,13 +118,13 @@ Convention correctness is now evaluated by the CLI coverage-runner, not a browse
 - [ ] "Game" = 3NT, 4H, 4S, 5C, 5D. "Slam" = 6-level. "Grand slam" = 7-level.
 - [ ] "Trick" terminology used correctly (not "round" or "turn" for tricks)
 
-### Browser Agent 2: Alert & Annotation Agent
+### CLI Agent 2: Teaching & Feedback Agent
 
-**Persona:** ACBL tournament director who enforces alerting regulations at NABCs (North American Bridge Championships). Has adjudicated hundreds of alerting disputes. Knows exactly what must be alerted, what must be announced, and what is self-alerting.
+**Persona:** ACBL tournament director who enforces alerting regulations at NABCs (North American Bridge Championships), combined with professional bridge teacher expertise. Has adjudicated hundreds of alerting disputes and knows exactly what must be alerted, what must be announced, and what is self-alerting.
 
-**Specialty:** Verify that alerts and announcements **render correctly in the UI** and follow ACBL General Convention Chart regulations. The CLI validates alert logic; this agent validates alert display.
+**Specialty:** Verify that alert rules and teaching content in the convention spec source code follow ACBL General Convention Chart regulations. Reads convention module source to check alert annotations, teaching labels, and feedback messages. Uses `exec` and `read` only — no browser.
 
-**Checklist:**
+**Checklist (verified via source code analysis + webfetch):**
 - [ ] 1NT opening: ANNOUNCE the range (e.g., "15 to 17")
 - [ ] Stayman 2C: Do NOT alert (considered standard, self-alerting at most levels)
 - [ ] Jacoby Transfers (2D/2H over 1NT): ALERT required (conventional meaning)
@@ -142,7 +141,7 @@ Convention correctness is now evaluated by the CLI coverage-runner, not a browse
 - [ ] Alerts use the alert strip/card (visual indicator)
 - [ ] Check that alerts appear at the RIGHT TIME — the PARTNER of the bidder alerts, not the bidder themselves (this is a common app mistake)
 
-### CLI Evaluation: Teaching & Feedback Accuracy (replaces Agent 4)
+### CLI Teaching & Feedback: Accuracy Analysis
 
 **Persona knowledge applied to CLI feedback analysis:** Professional bridge teacher who runs group lessons and mentors new duplicate players. Has a gift for explaining why a bid is correct and why alternatives are wrong. Very sensitive to misleading or confusing explanations.
 
@@ -164,13 +163,13 @@ Convention correctness is now evaluated by the CLI coverage-runner, not a browse
 - [ ] Feedback tone is encouraging, not condescending
 - [ ] No factual errors in supplementary information (e.g., links, convention descriptions)
 
-### Browser Agent 3: Navigation & Flow Agent
+### CLI Agent 3: Coverage Completeness Agent
 
-**Persona:** Experienced online bridge player who plays daily on BBO (Bridge Base Online). Knows exactly how a bridge game should flow. Also evaluates the coverage drill-down UI and navigation UX.
+**Persona:** Experienced online bridge player who plays daily on BBO (Bridge Base Online) and also has software testing expertise. Knows exactly how a bridge game should flow and what convention states should exist. Also evaluates coverage completeness and edge cases.
 
-**Specialty:** Verify that game flow, navigation, page transitions, and coverage URL scheme work correctly from a user's perspective.
+**Specialty:** Verify that the coverage enumeration is complete — all expected convention states have atoms, unreachable states make sense, and edge cases are handled. Runs `list` and `summary` for all conventions, then cross-references against expected states from bridge knowledge. Uses `exec` and `read` only — no browser.
 
-**Checklist:**
+**Checklist (verified via CLI output + source code analysis):**
 - [ ] Bidding proceeds clockwise: dealer bids first, then left-hand opponent, partner, right-hand opponent
 - [ ] User always bids as South (verify this is consistent)
 - [ ] After three consecutive passes, the auction ends (unless only one bid has been made total, in which case the opener's LHO must still pass)
@@ -235,19 +234,19 @@ The CLI `grade` command returns structured JSON per target. The orchestrator col
 - BiddingViewport from `present` (hand, auction, alerts, legal calls)
 - Result: correct / incorrect / infeasible
 
-### Browser Agent Reports
+### CLI Agent Reports
 
-Every browser agent produces a report following the template in `RunReview.md` Step 10. Key requirements:
+Every CLI agent produces a report following the template in `RunReview.md` Step 8. Key requirements:
 
-1. **Evidence is mandatory** — No finding without a screenshot path or DOM text excerpt
-2. **UI focus** — Browser agents validate rendering, not convention logic (CLI does that)
+1. **Evidence is mandatory** — No finding without CLI output or source code excerpts
+2. **CLI and source code only** — Agents use `exec` and `read`, never the browser skill
 3. **Severity must be justified** — Explain why this severity level, not just assert it
-4. **Scenarios table is mandatory** — List every URL/screen tested with pass/fail
-5. **Minimum 10 screens** — Agents must check at least 10 distinct screens/states
+4. **Atoms table is mandatory** — List every coverage atom reviewed with pass/fail
+5. **Minimum 10 atoms** — Agents must review at least 10 coverage atoms per convention
 
 ### Combined Metrics
 
-The compiled report (see `CompileFeedback.md`) merges CLI metrics with browser findings:
-- CLI first-attempt accuracy and post-feedback accuracy are the primary quality signals
-- Browser issues supplement with rendering and UX quality
-- A convention correctness error (from CLI) is always more severe than a UI rendering issue (from browser)
+The compiled report (see `CompileFeedback.md`) merges orchestrator metrics with CLI agent findings:
+- CLI first-attempt accuracy and selftest pass rate are the primary quality signals
+- CLI agent findings supplement with deep convention analysis
+- A convention correctness error is always more severe than a coverage gap
