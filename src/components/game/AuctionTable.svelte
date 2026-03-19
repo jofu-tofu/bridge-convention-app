@@ -12,9 +12,11 @@
     compact?: boolean;
     /** Optional bid history with alert labels for annotation display. */
     bidHistory?: readonly BidHistoryEntry[];
+    /** When false, hides gray educational annotations (keeps alerts & announcements). */
+    showEducationalAnnotations?: boolean;
   }
 
-  let { entries, dealer, compact = false, bidHistory }: Props = $props();
+  let { entries, dealer, compact = false, bidHistory, showEducationalAnnotations = true }: Props = $props();
 
   const SEAT_LABELS = ["N", "E", "S", "W"];
 
@@ -52,12 +54,14 @@
       if (entry.call.type === "bid") {
         colorClass = BID_SUIT_COLOR_CLASS[entry.call.strain] ?? "";
       }
+      const type = bidHistory?.[i]?.annotationType;
+      const hidden = type === "educational" && !showEducationalAnnotations;
       cells.push({
         text: formatCall(entry.call),
         isPlaceholder: false,
         colorClass,
-        alertLabel: bidHistory?.[i]?.alertLabel,
-        annotationType: bidHistory?.[i]?.annotationType,
+        alertLabel: hidden ? undefined : bidHistory?.[i]?.alertLabel,
+        annotationType: hidden ? undefined : type,
       });
     }
 
@@ -67,6 +71,8 @@
     }
     return result;
   });
+
+  let legendOpen = $state(false);
 </script>
 
 <div class="overflow-x-auto">
@@ -81,6 +87,43 @@
               : 'py-1'} text-text-muted font-medium">{label}</th
           >
         {/each}
+        <th class="w-0 p-0">
+          <div class="relative inline-block">
+            <button
+              class="text-text-muted/60 hover:text-text-secondary transition-colors cursor-pointer p-0.5"
+              onclick={() => legendOpen = !legendOpen}
+              aria-label="Annotation color legend"
+              aria-expanded={legendOpen}
+              data-testid="annotation-legend-toggle"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+              </svg>
+            </button>
+            {#if legendOpen}
+              <div
+                class="absolute right-0 top-full mt-1 z-[--z-tooltip] bg-bg-card border border-border-default rounded-[--radius-md] shadow-lg p-2 text-left whitespace-nowrap text-[--text-annotation]"
+                role="tooltip"
+              >
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-annotation-announce shrink-0" aria-hidden="true"></span>
+                  <span class="text-annotation-announce">Announce</span>
+                  <span class="text-text-muted">&mdash; stated aloud</span>
+                </div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-annotation-alert shrink-0" aria-hidden="true"></span>
+                  <span class="text-annotation-alert">Alert</span>
+                  <span class="text-text-muted">&mdash; conventional bid</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-text-muted shrink-0" aria-hidden="true"></span>
+                  <span class="text-text-muted">Educational</span>
+                  <span class="text-text-muted">&mdash; for learning</span>
+                </div>
+              </div>
+            {/if}
+          </div>
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -110,6 +153,8 @@
               <td class="px-3 {compact ? 'py-0.5' : 'py-1'}"></td>
             {/each}
           {/if}
+          <!-- Empty cell to match info icon column -->
+          <td class="w-0 p-0"></td>
         </tr>
       {/each}
     </tbody>

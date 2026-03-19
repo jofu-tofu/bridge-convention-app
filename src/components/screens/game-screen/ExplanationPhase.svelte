@@ -9,6 +9,7 @@
   import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import { getLayoutConfig } from "../../../stores/context";
+  import { getAppStore } from "../../../stores/context";
   import type { DDSAnalysisProps } from "./shared-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
@@ -54,6 +55,7 @@
   }: Props = $props();
 
   const layout = getLayoutConfig();
+  const appStore = getAppStore();
 
   let showAllCards = $state(false);
 
@@ -71,6 +73,7 @@
             entries={auction.entries}
             dealer={deal.dealer}
             {bidHistory}
+            showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
             compact
           />
         </div>
@@ -121,6 +124,7 @@
               entries={auction.entries}
               dealer={deal.dealer}
               {bidHistory}
+              showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
               compact
             />
           </div>

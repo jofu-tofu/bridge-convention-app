@@ -3,6 +3,7 @@
   import type { Contract, Deal } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
   import { getLayoutConfig } from "../../../stores/context";
+  import { getAppStore } from "../../../stores/context";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import DeclarerPrompt from "../../game/DeclarerPrompt.svelte";
@@ -31,6 +32,7 @@
   }: Props = $props();
 
   const layout = getLayoutConfig();
+  const appStore = getAppStore();
 </script>
 
 <div class={layout.phaseContainerClass}>
@@ -58,6 +60,7 @@
       <AuctionTable
         entries={auction.entries}
         dealer={deal.dealer}
+        showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
         compact
       />
     </div>

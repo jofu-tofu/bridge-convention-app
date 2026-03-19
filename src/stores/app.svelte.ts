@@ -1,6 +1,6 @@
 import type { ConventionConfig } from "../conventions/core";
-import type { OpponentMode, DrillTuning, VulnerabilityDistribution } from "../core/contracts/drill";
-import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
+import type { OpponentMode, DrillTuning, VulnerabilityDistribution, DisplaySettings } from "../core/contracts/drill";
+import { DEFAULT_DRILL_TUNING, DEFAULT_DISPLAY_SETTINGS } from "../core/contracts/drill";
 
 export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
 
@@ -58,6 +58,23 @@ export function createAppStore() {
     try { localStorage.setItem(DRILL_TUNING_KEY, JSON.stringify(tuning)); } catch { /* ignore */ }
   }
   let drillTuning = $state<DrillTuning>(loadDrillTuning());
+
+  // Display settings — persisted to localStorage
+  const DISPLAY_SETTINGS_KEY = "bridge-app:display-settings";
+  function loadDisplaySettings(): DisplaySettings {
+    try {
+      const raw = localStorage.getItem(DISPLAY_SETTINGS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<DisplaySettings>;
+        return { ...DEFAULT_DISPLAY_SETTINGS, ...parsed };
+      }
+    } catch { /* SSR or storage unavailable */ }
+    return DEFAULT_DISPLAY_SETTINGS;
+  }
+  function saveDisplaySettings(settings: DisplaySettings) {
+    try { localStorage.setItem(DISPLAY_SETTINGS_KEY, JSON.stringify(settings)); } catch { /* ignore */ }
+  }
+  let displaySettings = $state<DisplaySettings>(loadDisplaySettings());
 
   return {
     get screen() {
@@ -173,6 +190,15 @@ export function createAppStore() {
     setOffConventionRate(rate: number) {
       drillTuning = { ...drillTuning, offConventionRate: Math.max(0, Math.min(1, rate)) };
       saveDrillTuning(drillTuning);
+    },
+
+    get displaySettings() {
+      return displaySettings;
+    },
+
+    setShowEducationalAnnotations(show: boolean) {
+      displaySettings = { ...displaySettings, showEducationalAnnotations: show };
+      saveDisplaySettings(displaySettings);
     },
 
     get targetState() {

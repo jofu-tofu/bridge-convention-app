@@ -148,6 +148,26 @@
         </div>
       {/if}
     </div>
+
+    <!-- Display settings (UI-only, do not affect deal generation) -->
+    <div class="border-t border-border-subtle pt-3">
+      <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Display</h3>
+      <label class="flex items-center gap-2 cursor-pointer px-1">
+        <input
+          type="checkbox"
+          class="w-3.5 h-3.5 rounded-[--radius-sm] accent-accent-primary"
+          checked={appStore.displaySettings.showEducationalAnnotations}
+          onchange={(e) => appStore.setShowEducationalAnnotations(e.currentTarget.checked)}
+          data-testid="settings-edu-annotations"
+        />
+        <span class="text-[--text-detail] text-text-primary">Educational labels</span>
+      </label>
+      <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
+        {appStore.displaySettings.showEducationalAnnotations
+          ? "Show all bid annotations"
+          : "Only alerts & announcements"}
+      </p>
+    </div>
   </div>
 
   <!-- New Deal button — anchored to bottom -->

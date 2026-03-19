@@ -5,6 +5,7 @@
   import type { BiddingViewport } from "../../../core/viewport";
   import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
   import { getLayoutConfig } from "../../../stores/context";
+  import { getAppStore } from "../../../stores/context";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -42,6 +43,7 @@
   }: Props = $props();
 
   const layout = getLayoutConfig();
+  const appStore = getAppStore();
 
   // Use 3-column layout on desktop: [settings] [table] [bidding controls]
   // Settings panel uses the same side-panel width as the right panel;
@@ -71,6 +73,7 @@
           entries={auction.entries}
           dealer={viewport.dealer}
           {bidHistory}
+          showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
           compact
         />
       </div>

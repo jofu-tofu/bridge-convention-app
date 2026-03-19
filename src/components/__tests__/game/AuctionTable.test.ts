@@ -10,7 +10,7 @@ describe("AuctionTable", () => {
       props: { entries: [], dealer: Seat.North },
     });
     const headers = container.querySelectorAll("th");
-    expect(headers).toHaveLength(4);
+    expect(headers).toHaveLength(5); // N, E, S, W + info icon column
     expect(headers[0]?.textContent).toBe("N");
     expect(headers[1]?.textContent).toBe("E");
     expect(headers[2]?.textContent).toBe("S");
