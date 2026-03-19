@@ -4,15 +4,16 @@ Dependency assembly and drill lifecycle — session management, config construct
 
 ## Conventions
 
-- **Dependency direction:** `bootstrap/ → engine/ + conventions/core/ + contracts/ + strategy/ + inference/`. Nothing imports from bootstrap/ except `stores/` and `components/`.
+- **Dependency direction:** `bootstrap/ → engine/ + conventions/core/ + contracts/ + strategy/ + inference/`. Nothing imports from bootstrap/ except `stores/` (type-only for `DrillConfig`, `DrillSession`, `DrillBundle`).
 - **DrillBundle is the bridge between bootstrap and stores.** `startDrill()` returns a `DrillBundle` containing deal, session, inference engines, and strategy. The caller (GameScreen) passes the bundle to `gameStore.startDrill(bundle)`.
 - **No Svelte imports.** Bootstrap is plain .ts — inference engines are created statically (no dynamic import workaround needed).
+- **Drill tuning types live in `core/contracts/drill.ts`.** `OpponentMode`, `VulnerabilityDistribution`, `DrillTuning`, `DEFAULT_DRILL_TUNING` are re-exported from `bootstrap/types.ts` for backwards compatibility but canonically live in contracts.
 
 ## Architecture
 
 ```
 bootstrap/
-  types.ts            DrillConfig, DrillSession, DrillBundle, DrillTuning, VulnerabilityDistribution, DEFAULT_DRILL_TUNING
+  types.ts            DrillConfig, DrillSession, DrillBundle (+ re-exports drill tuning types from contracts/drill.ts)
   session.ts          createDrillSession() — DrillSession implementation
   config-factory.ts   createDrillConfig() — builds DrillConfig from convention ID + user seat
   start-drill.ts      startDrill() + pickVulnerability() + rotation utilities (rotateSeat180, rotateDealConstraints, rotateAuction)

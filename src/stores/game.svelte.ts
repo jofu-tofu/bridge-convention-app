@@ -6,7 +6,6 @@ import type {
 } from "../engine/types";
 import { Seat } from "../engine/types";
 import type { DrillSession, DrillBundle } from "../bootstrap/types";
-import type { BidResult } from "../core/contracts";
 import type { PublicBeliefs } from "../core/contracts";
 import type {
   InferenceSnapshot,

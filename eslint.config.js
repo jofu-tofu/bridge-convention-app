@@ -220,6 +220,53 @@ export default tseslint.config(
     },
   },
 
+  // ── Module boundary: cli/ ──
+  {
+    files: ["src/cli/**/*.ts"],
+    ignores: ["src/cli/__tests__/**", "src/cli/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+          ],
+          patterns: [{
+            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
+                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
+            message: "Import from 'conventions/core' barrel instead of deep paths",
+          }],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: stores/ ──
+  {
+    files: ["src/stores/**/*.ts", "src/stores/**/*.svelte.ts"],
+    ignores: ["src/stores/__tests__/**", "src/stores/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...componentImports,
+            {
+              name: "../cli/*",
+              message: "stores/ must not import cli/",
+            },
+            {
+              name: "../../cli/*",
+              message: "stores/ must not import cli/",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // ── Module boundary: engine/ ──
   {
     files: ["src/engine/**/*.ts"],

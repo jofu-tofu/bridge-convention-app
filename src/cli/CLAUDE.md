@@ -41,13 +41,13 @@ Agents should discover the CLI's capabilities at runtime rather than relying on 
 
 ```bash
 # 1. List available bundles
-npx tsx src/cli/coverage-runner.ts bundles
+npx tsx src/cli/main.ts bundles
 
 # 2. Inspect a specific bundle (atoms, depth, strategy coverage)
-npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+npx tsx src/cli/main.ts describe --bundle=nt-bundle
 
 # 3. Get per-subcommand help
-npx tsx src/cli/coverage-runner.ts eval --help
+npx tsx src/cli/main.ts eval --help
 ```
 
 `bundles` returns a JSON array with `id`, `name`, `description`, `category`, `atomCount` for each bundle. `describe` returns full atom list with IDs usable in `eval --atom=<id>`.
@@ -61,11 +61,11 @@ reads the plan, walks atoms in BFS order, and calls `eval` for each.
 
 ```bash
 # Viewport only — sanitized (seat, hand, HCP, auction, legal calls). No answer.
-npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle \
+npx tsx src/cli/main.ts eval --bundle=nt-bundle \
   --atom=responder-r1/sf:responder-r1/stayman:ask-major --seed=3
 
 # Submit bid — returns full teaching feedback (ViewportBidFeedback + TeachingDetail)
-npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle \
+npx tsx src/cli/main.ts eval --bundle=nt-bundle \
   --atom=responder-r1/sf:responder-r1/stayman:ask-major --seed=3 --bid=2C
 ```
 
@@ -85,16 +85,16 @@ individually correct but don't compose into a coherent sequence).
 
 ```bash
 # Start playthrough — returns totalSteps + first viewport
-npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=1
+npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=1
 
 # Get viewport for step N
-npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=1 --step=0
+npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=1 --step=0
 
 # Submit bid — returns grade + teaching + next step viewport (one fewer round-trip)
-npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=1 --step=0 --bid=2H
+npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=1 --step=0 --bid=2H
 
 # Full reveal — all steps with recommendations and atom IDs
-npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=1 --reveal
+npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=1 --reveal
 ```
 
 **Key properties:**
@@ -107,7 +107,7 @@ npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=1 --reveal
 Precomputes the evaluation plan with two sections:
 
 ```bash
-npx tsx src/cli/coverage-runner.ts plan --bundle=nt-bundle --agents=3 --coverage=2
+npx tsx src/cli/main.ts plan --bundle=nt-bundle --agents=3 --coverage=2
 ```
 
 Output has:
@@ -151,11 +151,24 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 
 | File | Purpose |
 |------|---------|
-| `src/cli/coverage-runner.ts` | CLI entry point — all subcommands |
+| `src/cli/main.ts` | CLI entry point — dispatch + settings |
+| `src/cli/shared.ts` | Shared utilities — arg parsing, spec/bundle resolution, deal generation, auction builder |
+| `src/cli/playthrough.ts` | Playthrough infrastructure — types, single-run, grading |
+| `src/cli/commands/info.ts` | `list`, `bundles`, `describe` subcommands |
+| `src/cli/commands/eval.ts` | `eval` subcommand — per-atom targeted evaluation |
+| `src/cli/commands/selftest.ts` | `selftest` subcommand — strategy self-test |
+| `src/cli/commands/play.ts` | `play` subcommand — playthrough evaluation |
+| `src/cli/commands/plan.ts` | `plan` subcommand — two-phase evaluation plan |
+| `src/cli/help.ts` | Usage text and per-subcommand help |
 | `src/core/viewport/build-viewport.ts` | `buildViewportFeedback()`, `buildTeachingDetail()` — information boundary |
 | `src/core/viewport/player-viewport.ts` | `ViewportBidFeedback`, `TeachingDetail` type definitions |
-| `src/teaching/teaching-resolution.ts` | `resolveTeachingAnswer()`, `gradeBid()`, `BidGrade` — 5-level grading |
-| `src/strategy/bidding/protocol-adapter.ts` | `protocolSpecToStrategy()` — ConventionSpec → strategy |
+| `src/core/contracts/teaching-grading.ts` | `BidGrade`, `TeachingResolution`, `AcceptableBid` — grading contracts |
+| `src/teaching/teaching-resolution.ts` | `resolveTeachingAnswer()`, `gradeBid()` — 5-level grading implementation |
+| `src/strategy/bidding/protocol-adapter.ts` | `protocolSpecToStrategy()` — ConventionSpec to strategy |
 | `src/conventions/core/protocol/coverage-enumeration.ts` | BFS atom enumeration, coverage manifest |
 | `src/engine/deal-generator.ts` | Constraint-based deal generation with seeded PRNG |
 | `src/core/util/seeded-rng.ts` | `mulberry32()` — deterministic PRNG |
+
+## Module Boundary
+
+**Staleness anchor:** `src/cli/main.ts` must exist and import from `./shared` and `./commands/*`.

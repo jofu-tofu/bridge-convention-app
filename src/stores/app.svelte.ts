@@ -1,6 +1,6 @@
 import type { ConventionConfig } from "../conventions/core";
-import type { OpponentMode, DrillTuning, VulnerabilityDistribution } from "../bootstrap/types";
-import { DEFAULT_DRILL_TUNING } from "../bootstrap/types";
+import type { OpponentMode, DrillTuning, VulnerabilityDistribution } from "../core/contracts/drill";
+import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
 
 export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
 

@@ -1,0 +1,153 @@
+// ── CLI selftest command ────────────────────────────────────────────
+
+import {
+  generateProtocolCoverageManifest,
+} from "../../conventions/core";
+import { listBundles } from "../../conventions/core/bundle";
+import { getConventionSpec } from "../../conventions/spec-registry";
+import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import { callsMatch } from "../../engine/call-helpers";
+
+import type { Flags, ConventionSpec, ConventionBundle, Vulnerability } from "../shared";
+import {
+  callKey,
+  optionalNumericArg,
+  resolveSpec, resolveBundle, generateSeededDeal, resolveUserSeat,
+  resolveAuction, buildContext, nextSeatClockwise,
+} from "../shared";
+
+export function runSelftest(flags: Flags, vuln: Vulnerability): void {
+  const bundleId = flags["bundle"] as string | undefined;
+  const all = flags["all"] === true;
+  const seed = optionalNumericArg(flags, "seed") ?? 42;
+
+  if (!bundleId && !all) {
+    console.error("selftest requires --bundle=<id> or --all");
+    process.exit(2);
+  }
+
+  const specs: { id: string; spec: ConventionSpec; bundle: ConventionBundle }[] = [];
+
+  if (all) {
+    for (const bundle of listBundles()) {
+      if (bundle.internal) continue;
+      const spec = getConventionSpec(bundle.id);
+      if (spec) {
+        specs.push({ id: bundle.id, spec, bundle });
+      }
+    }
+  } else {
+    const spec = resolveSpec(bundleId!);
+    const bundle = resolveBundle(bundleId!);
+    specs.push({ id: bundleId!, spec, bundle });
+  }
+
+  let totalPass = 0;
+  let totalFail = 0;
+  let totalSkip = 0;
+  const results: {
+    bundle: string;
+    atom: string;
+    status: "pass" | "fail" | "skip";
+    targeted: boolean;
+    activeSeat?: string;
+    correctBid?: string;
+    details?: string;
+  }[] = [];
+
+  for (const { id, spec, bundle } of specs) {
+    const manifest = generateProtocolCoverageManifest(spec);
+    const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
+    const strategy = protocolSpecToStrategy(spec);
+
+    for (let i = 0; i < allAtoms.length; i++) {
+      const atom = allAtoms[i]!;
+      const atomSeed = seed + i;
+      const atomLabel = `${atom.baseStateId}/${atom.surfaceId}/${atom.meaningId}`;
+
+      try {
+        // Generate deal for this atom
+        const deal = generateSeededDeal(bundle, atomSeed, vuln);
+        const userSeat = resolveUserSeat(bundle, deal);
+
+        // Build targeted auction to reach the atom's state
+        const { auction, targeted } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
+
+        // Determine active seat at the target state
+        const activeSeat = auction.entries.length > 0
+          ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+          : userSeat;
+        const hand = deal.hands[activeSeat];
+
+        // Build context from the active seat's perspective
+        const context = buildContext(hand, auction, activeSeat, vuln);
+
+        // Run strategy
+        const result = strategy.suggest(context);
+
+        if (!result) {
+          totalSkip++;
+          results.push({
+            bundle: id,
+            atom: atomLabel,
+            status: "skip",
+            targeted,
+            activeSeat: activeSeat as string,
+            details: "Strategy returned null (no recommendation)",
+          });
+          continue;
+        }
+
+        // Self-test: strategy bid should be deterministic
+        const bidKey = callKey(result.call);
+        const verifyResult = strategy.suggest(context);
+        if (!verifyResult || !callsMatch(result.call, verifyResult.call)) {
+          totalFail++;
+          results.push({
+            bundle: id,
+            atom: atomLabel,
+            status: "fail",
+            targeted,
+            activeSeat: activeSeat as string,
+            correctBid: bidKey,
+            details: "Strategy is non-deterministic",
+          });
+          continue;
+        }
+
+        totalPass++;
+        results.push({
+          bundle: id,
+          atom: atomLabel,
+          status: "pass",
+          targeted,
+          activeSeat: activeSeat as string,
+          correctBid: bidKey,
+        });
+      } catch (err: unknown) {
+        totalFail++;
+        const msg = err instanceof Error ? err.message : String(err);
+        results.push({
+          bundle: id,
+          atom: atomLabel,
+          status: "fail",
+          targeted: false,
+          details: `Error: ${msg}`,
+        });
+      }
+    }
+  }
+
+  // Output summary
+  const output = {
+    seed,
+    totalAtoms: results.length,
+    pass: totalPass,
+    fail: totalFail,
+    skip: totalSkip,
+    results,
+  };
+
+  console.log(JSON.stringify(output, null, 2));
+  process.exit(totalFail > 0 ? 1 : 0);
+}

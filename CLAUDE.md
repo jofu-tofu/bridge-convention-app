@@ -33,14 +33,14 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=nt-bundle&autoplay=true`
 - **Target surface:** `?targetSurface=Z` exercises a specific meaning surface at target state
 - **Coverage screen:** `?coverage=true&convention=X` opens coverage screen for a specific bundle
-- **CLI coverage:** `npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle` runs headless coverage tests. Subcommands: `list` (enumerate atoms), `eval` (per-atom evaluation), `play` (playthrough evaluation), `selftest` (CI mode), `plan` (evaluation plan). Same seed = same deal across `eval`/`eval --bid`.
+- **CLI coverage:** `npx tsx src/cli/main.ts list --bundle=nt-bundle` runs headless coverage tests. Subcommands: `list` (enumerate atoms), `eval` (per-atom evaluation), `play` (playthrough evaluation), `selftest` (CI mode), `plan` (evaluation plan). Same seed = same deal across `eval`/`eval --bid`.
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-pass`, `bid-double`, `bid-redouble`
 
 ## Code Hygiene
 
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
 - **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
-- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `bootstrap/`, `stores/`, `components/`), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
+- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `bootstrap/`, `stores/`, `cli/`, `components/`), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
 
 ## Conventions
 
@@ -82,9 +82,9 @@ src/
     bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
   bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
-  cli/             Headless coverage test runner
+  cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
-  stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI)
+  stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI, dev-params)
   components/      Svelte UI components
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
     game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
@@ -113,7 +113,7 @@ tests/
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline) |
 | Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
-| CLI | `src/cli/coverage-runner.ts` | Headless coverage test runner |
+| CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
 | Components | — | Svelte UI (screens/game/shared) |

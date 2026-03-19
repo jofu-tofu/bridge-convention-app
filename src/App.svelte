@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { EnginePort } from "./engine/port";
   import { createEngine } from "./engine/create-engine";
-  import { applyDevParams } from "./bootstrap/dev-params";
+  import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
   import AppShell from "./AppShell.svelte";

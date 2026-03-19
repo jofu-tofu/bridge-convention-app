@@ -1,4 +1,4 @@
-import type { createAppStore } from "../stores/app.svelte";
+import type { createAppStore } from "./app.svelte";
 import { getConvention } from "../conventions/core";
 
 export function applyDevParams(store: ReturnType<typeof createAppStore>): void {

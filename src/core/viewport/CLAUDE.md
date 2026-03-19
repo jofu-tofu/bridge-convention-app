@@ -16,7 +16,7 @@ Everything the player sees flows through `BiddingViewport`. No component or CLI 
 ## Two Consumers
 
 1. **Svelte UI** — Game store exposes `biddingViewport` computed getter; BiddingPhase receives it as prop
-2. **CLI harness** — `src/cli/coverage-runner.ts` calls buildBiddingViewport() directly
+2. **CLI harness** — `src/cli/playthrough.ts` and `src/cli/commands/eval.ts` call buildViewportFeedback() and buildTeachingDetail() directly
 
 ## Information Boundary
 

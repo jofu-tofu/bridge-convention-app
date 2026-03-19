@@ -1,0 +1,302 @@
+// ── CLI shared utilities ────────────────────────────────────────────
+//
+// Pure functions shared across CLI subcommands: argument parsing,
+// settings resolution, spec/bundle lookup, deal generation,
+// auction construction, and hand formatting.
+
+import { getConventionSpec } from "../conventions/spec-registry";
+import {
+  enumerateBaseTrackStates,
+  type BaseTrackPath,
+  getBaseModules,
+} from "../conventions/core";
+import { getBundle, listBundles } from "../conventions/core/bundle";
+import { createBiddingContext } from "../conventions/core/context-factory";
+import { generateDeal } from "../engine/deal-generator";
+import { mulberry32 } from "../core/util/seeded-rng";
+import { evaluateHand } from "../engine/hand-evaluator";
+import { callKey } from "../engine/call-helpers";
+import { parsePatternCall } from "../engine/auction-helpers";
+import { getLegalCalls } from "../engine/auction";
+import { Seat, Vulnerability } from "../engine/types";
+import type {
+  Auction,
+  Call,
+  Hand,
+  Deal,
+  DealConstraints,
+  Card,
+} from "../engine/types";
+import type { ConventionSpec, ConventionBundle } from "../conventions/core";
+import type { BiddingContext } from "../core/contracts/bidding";
+import type { OpponentMode } from "../core/contracts/drill";
+
+// ── Re-exports for convenience ──────────────────────────────────────
+
+export { Seat, Vulnerability };
+export { callKey, parsePatternCall, getLegalCalls, evaluateHand };
+export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode };
+
+// ── Flags type ──────────────────────────────────────────────────────
+
+export type Flags = Record<string, string | true>;
+
+// ── Argument parsing ────────────────────────────────────────────────
+
+export function parseArgs(argv: string[]): Flags {
+  const result: Flags = {};
+  for (const arg of argv) {
+    if (arg.startsWith("--")) {
+      const eqIdx = arg.indexOf("=");
+      if (eqIdx !== -1) {
+        result[arg.slice(2, eqIdx)] = arg.slice(eqIdx + 1);
+      } else {
+        result[arg.slice(2)] = true;
+      }
+    }
+  }
+  return result;
+}
+
+export function requireArg(args: Flags, name: string): string {
+  const val = args[name];
+  if (val === undefined || val === true) {
+    console.error(`Missing required argument: --${name}`);
+    process.exit(2);
+  }
+  return val;
+}
+
+export function optionalNumericArg(args: Flags, name: string): number | undefined {
+  const val = args[name];
+  if (val === undefined || val === true) return undefined;
+  const n = Number(val);
+  if (isNaN(n)) {
+    console.error(`Invalid numeric argument: --${name}=${val}`);
+    process.exit(2);
+  }
+  return n;
+}
+
+// ── Settings parsing ────────────────────────────────────────────────
+
+const VULN_MAP: Record<string, Vulnerability> = {
+  none: Vulnerability.None,
+  ns: Vulnerability.NorthSouth,
+  ew: Vulnerability.EastWest,
+  both: Vulnerability.Both,
+};
+
+export function parseVulnerability(args: Flags): Vulnerability {
+  const val = args["vuln"];
+  if (val === undefined || val === true) return Vulnerability.None;
+  const mapped = VULN_MAP[val.toLowerCase()];
+  if (mapped === undefined) {
+    console.error(`Invalid --vuln value: "${val}" (expected: none, ns, ew, both)`);
+    process.exit(2);
+  }
+  return mapped;
+}
+
+export function parseOpponentMode(args: Flags): OpponentMode {
+  const val = args["opponents"];
+  if (val === undefined || val === true) return "none";
+  if (val === "natural" || val === "none") return val;
+  console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
+  process.exit(2);
+}
+
+// ── Resolve spec + bundle ───────────────────────────────────────────
+
+/** Print available bundle IDs from the bundle registry (single source of truth). */
+export function printAvailableBundles(): void {
+  for (const b of listBundles()) {
+    if (b.internal) continue;
+    console.error(`  ${b.id} — ${b.name}`);
+  }
+}
+
+export function resolveSpec(bundleId: string): ConventionSpec {
+  const spec = getConventionSpec(bundleId);
+  if (!spec) {
+    console.error(`Unknown bundle: "${bundleId}"`);
+    console.error("Available bundles:");
+    printAvailableBundles();
+    process.exit(2);
+  }
+  return spec;
+}
+
+export function resolveBundle(bundleId: string): ConventionBundle {
+  const bundle = getBundle(bundleId);
+  if (!bundle) {
+    console.error(`Unknown bundle: "${bundleId}"`);
+    console.error("Available bundles:");
+    printAvailableBundles();
+    process.exit(2);
+  }
+  return bundle;
+}
+
+// ── Deal generation ─────────────────────────────────────────────────
+
+export function generateSeededDeal(
+  bundle: ConventionBundle,
+  seed: number,
+  vulnerability?: Vulnerability,
+): Deal {
+  const rng = mulberry32(seed);
+  const constraints: DealConstraints = {
+    ...bundle.dealConstraints,
+    ...(vulnerability !== undefined ? { vulnerability } : {}),
+  };
+  const result = generateDeal(constraints, rng);
+  return result.deal;
+}
+
+// ── Auction + context setup ─────────────────────────────────────────
+
+export function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
+  const candidates: Seat[] = [Seat.South, Seat.East, Seat.North, Seat.West];
+  for (const seat of candidates) {
+    if (bundle.defaultAuction) {
+      const auction = bundle.defaultAuction(seat, deal);
+      if (auction && auction.entries.length > 0) {
+        return seat;
+      }
+    }
+  }
+  return Seat.South;
+}
+
+export function buildInitialAuction(
+  bundle: ConventionBundle,
+  userSeat: Seat,
+  deal: Deal,
+): Auction {
+  if (bundle.defaultAuction) {
+    const auction = bundle.defaultAuction(userSeat, deal);
+    if (auction) return auction;
+  }
+  return { entries: [], isComplete: false };
+}
+
+export function buildContext(
+  hand: Hand,
+  auction: Auction,
+  seat: Seat,
+  vulnerability: Vulnerability = Vulnerability.None,
+): BiddingContext {
+  const evaluation = evaluateHand(hand);
+  return createBiddingContext({
+    hand,
+    auction,
+    seat,
+    evaluation,
+    vulnerability,
+    dealer: auction.entries.length > 0 ? auction.entries[0]!.seat : Seat.North,
+  });
+}
+
+// ── Hand formatting ─────────────────────────────────────────────────
+
+export function formatHandBySuit(hand: Hand): Record<string, string[]> {
+  const suits: Record<string, Card[]> = { S: [], H: [], D: [], C: [] };
+  for (const card of hand.cards) {
+    suits[card.suit]!.push(card);
+  }
+  return {
+    S: suits.S!.map((c) => c.rank),
+    H: suits.H!.map((c) => c.rank),
+    D: suits.D!.map((c) => c.rank),
+    C: suits.C!.map((c) => c.rank),
+  };
+}
+
+// ── Targeted auction from BFS paths ─────────────────────────────────
+
+export function nextSeatClockwise(seat: Seat): Seat {
+  switch (seat) {
+    case Seat.North: return Seat.East;
+    case Seat.East: return Seat.South;
+    case Seat.South: return Seat.West;
+    case Seat.West: return Seat.North;
+  }
+}
+
+export function partnerOf(seat: Seat): Seat {
+  switch (seat) {
+    case Seat.North: return Seat.South;
+    case Seat.South: return Seat.North;
+    case Seat.East: return Seat.West;
+    case Seat.West: return Seat.East;
+  }
+}
+
+export function findPathToState(
+  spec: ConventionSpec,
+  targetStateId: string,
+): BaseTrackPath | null {
+  for (const track of getBaseModules(spec)) {
+    const paths = enumerateBaseTrackStates(track);
+    const path = paths.get(targetStateId);
+    if (path) return path;
+  }
+  return null;
+}
+
+export function buildTargetedAuction(
+  defaultAuction: Auction,
+  path: BaseTrackPath,
+  userSeat: Seat,
+): Auction {
+  const entries = [...defaultAuction.entries];
+
+  const transitionsToAdd = path.transitions.slice(1);
+  if (transitionsToAdd.length === 0) return { entries, isComplete: false };
+
+  let currentSeat = nextSeatClockwise(entries[entries.length - 1]!.seat);
+  const partner = partnerOf(userSeat);
+
+  for (const transition of transitionsToAdd) {
+    if (!transition.call) continue;
+
+    const isPass = transition.call.type === "pass";
+
+    if (!isPass) {
+      while (currentSeat !== userSeat && currentSeat !== partner) {
+        entries.push({ seat: currentSeat, call: { type: "pass" } });
+        currentSeat = nextSeatClockwise(currentSeat);
+      }
+    }
+
+    entries.push({ seat: currentSeat, call: transition.call });
+    currentSeat = nextSeatClockwise(currentSeat);
+  }
+
+  while (currentSeat !== userSeat && currentSeat !== partner) {
+    entries.push({ seat: currentSeat, call: { type: "pass" } });
+    currentSeat = nextSeatClockwise(currentSeat);
+  }
+
+  return { entries, isComplete: false };
+}
+
+export function resolveAuction(
+  bundle: ConventionBundle,
+  spec: ConventionSpec,
+  deal: Deal,
+  targetStateId: string,
+  userSeat: Seat,
+): { auction: Auction; targeted: boolean } {
+  const defaultAuction = buildInitialAuction(bundle, userSeat, deal);
+  const path = findPathToState(spec, targetStateId);
+  if (!path) return { auction: defaultAuction, targeted: false };
+
+  if (path.transitions.some((t) => t.call === null)) {
+    return { auction: defaultAuction, targeted: false };
+  }
+
+  const targeted = buildTargetedAuction(defaultAuction, path, userSeat);
+  return { auction: targeted, targeted: true };
+}

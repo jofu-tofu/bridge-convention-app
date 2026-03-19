@@ -16,10 +16,12 @@ import type {
   DDSolution,
 } from "../engine/types";
 import type { Suit } from "../engine/types";
-import type { DrillBundle, DrillSession } from "../bootstrap/types";
+import type { DrillBundle } from "../bootstrap/types";
 import type { BidResult } from "../core/contracts";
 import type { PublicBeliefs } from "../core/contracts";
 import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
+import type { BiddingStoreConfig } from "./bidding.svelte";
+import type { PlayStoreConfig } from "./play.svelte";
 import type {
   BidFeedback,
   BidHistoryEntry,
@@ -42,7 +44,7 @@ export interface BiddingStore {
   readonly bidFeedback: BidFeedback | null;
   readonly error: string | null;
   readonly debugLog: DebugLogEntry[];
-  init(config: import("./bidding.svelte").BiddingStoreConfig): Promise<void>;
+  init(config: BiddingStoreConfig): Promise<void>;
   reset(): void;
   userBid(call: Call): void;
   retryBid(): void;
@@ -71,7 +73,7 @@ export interface PlayStore {
   getRemainingCards(seat: Seat): Card[];
   refreshLegalPlays(): Promise<void>;
   getLegalPlaysForSeat(seat: Seat): Promise<Card[]>;
-  startPlay(config: import("./play.svelte").PlayStoreConfig): void;
+  startPlay(config: PlayStoreConfig): void;
   userPlayCard(card: Card, seat: Seat): void;
   skipToReview(): void;
   reset(): void;
