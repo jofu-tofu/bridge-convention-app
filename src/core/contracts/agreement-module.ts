@@ -106,10 +106,15 @@ type ClosureDomain =
   | { readonly kind: "semantic-class-set"; readonly ids: readonly string[] }
   | { readonly kind: "module-frontier"; readonly id: string };
 
+import type { SystemConfig } from "./system-config";
+
 // ─── System Profile ─────────────────────────────────────────
 export interface SystemProfileIR {
   readonly profileId: string;
   readonly baseSystem: string;
+  /** System-level bidding configuration (HCP ranges, thresholds).
+   *  When present, convention modules use these values instead of hardcoded defaults. */
+  readonly systemConfig?: SystemConfig;
   readonly modules: readonly ModuleEntryIR[];
   readonly conflictPolicy: ConflictPolicyIR;
   /** Profile-level mapping from obligation levels to runtime bands.

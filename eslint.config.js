@@ -520,6 +520,32 @@ export default tseslint.config(
     },
   },
 
+  // ── System config boundary: convention module files ──
+  // Convention modules should receive SystemConfig via factory parameters (DI),
+  // not import concrete system config values directly. The SAYC_SYSTEM_CONFIG
+  // import in module files is a legacy compat layer for backward-compatible
+  // default exports — new modules should avoid it.
+  {
+    files: ["src/conventions/definitions/modules/**/*.ts"],
+    ignores: ["**/__tests__/**", "**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "warn",
+        {
+          paths: [
+            {
+              name: "../../../core/contracts/system-config",
+              importNames: ["SAYC_SYSTEM_CONFIG"],
+              message: "Convention modules should receive SystemConfig via factory parameters (DI). " +
+                "Import the type `SystemConfig` instead and accept it as a parameter. " +
+                "SAYC_SYSTEM_CONFIG is only allowed for legacy backward-compatible default exports.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // ── Protocol trigger scope: convention files ──
   {
     files: ["src/conventions/definitions/**/*.ts", "src/conventions/core/**/*.ts"],

@@ -20,5 +20,6 @@ export * from "./posterior-query";
 export * from "./posterior-backend";
 export * from "./alert";
 export * from "./convention";
+export * from "./system-config";
 export * from "./teaching-grading";
 export * from "./drill";

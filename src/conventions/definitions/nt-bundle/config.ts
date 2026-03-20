@@ -4,36 +4,41 @@ import { Seat } from "../../../engine/types";
 import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { ConventionCategory } from "../../../core/contracts/convention";
 import { buildAuction } from "../../../engine/auction-helpers";
+import type { SystemConfig } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { ntCrossConventionAlternatives } from "./alternatives";
 import { NT_EXPLANATION_CATALOG } from "./explanation-catalog";
 import { NT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 import { NT_SAYC_PROFILE } from "./system-profile";
 
-const ntDealConstraints: DealConstraints = {
-  seats: [
-    { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-    {
-      seat: Seat.South,
-      minHcp: 0,
-    },
-  ],
-  dealer: Seat.North,
-};
+/** Factory: creates NT deal constraints from system config. */
+export function createNtDealConstraints(sys: SystemConfig): DealConstraints {
+  return {
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      {
+        seat: Seat.South,
+        minHcp: 0,
+      },
+    ],
+    dealer: Seat.North,
+  };
+}
 
-/** Off-convention: South has a hand where no convention response applies.
- *  North still opens 1NT, but South is too weak (0-7 HCP) to respond
- *  with any convention — the correct action is Pass. */
-const ntOffConventionConstraints: DealConstraints = {
-  seats: [
-    { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-    {
-      seat: Seat.South,
-      minHcp: 0,
-      maxHcp: 7,
-    },
-  ],
-  dealer: Seat.North,
-};
+/** Factory: creates off-convention deal constraints from system config. */
+export function createNtOffConventionConstraints(sys: SystemConfig): DealConstraints {
+  return {
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      {
+        seat: Seat.South,
+        minHcp: 0,
+        maxHcp: sys.responderThresholds.inviteMin - 1,
+      },
+    ],
+    dealer: Seat.North,
+  };
+}
 
 /**
  * Minimal ConventionBundle for legacy registration.
@@ -45,8 +50,9 @@ export const ntBundle: ConventionBundle = {
   description: "Stayman + Jacoby Transfers + Smolen responses to 1NT opening",
   category: ConventionCategory.Constructive,
   memberIds: ["jacoby-transfers", "stayman", "smolen"],
-  dealConstraints: ntDealConstraints,
-  offConventionConstraints: ntOffConventionConstraints,
+  systemConfig: SAYC_SYSTEM_CONFIG,
+  dealConstraints: createNtDealConstraints(SAYC_SYSTEM_CONFIG),
+  offConventionConstraints: createNtOffConventionConstraints(SAYC_SYSTEM_CONFIG),
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) {
       return buildAuction(Seat.North, ["1NT", "P"]);

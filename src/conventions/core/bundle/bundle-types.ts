@@ -7,6 +7,7 @@ import type { PedagogicalRelation } from "../../../core/contracts/teaching-proje
 import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig } from "../../../core/contracts/convention";
 import { ConventionCategory } from "../../../core/contracts/convention";
+import type { SystemConfig } from "../../../core/contracts/system-config";
 import type { ConversationMachine } from "../runtime/machine-types";
 
 export interface RoutedSurfaceGroup {
@@ -22,6 +23,10 @@ export interface ConventionBundle {
   readonly memberIds: readonly string[];
   /** If true, hidden from UI picker (e.g., parity testing bundle). */
   readonly internal?: boolean;
+  /** System-level bidding configuration (HCP ranges, thresholds).
+   *  Convention modules use this to parameterize system-dependent values
+   *  (e.g. 1NT range, invite/game thresholds) instead of hardcoding them. */
+  readonly systemConfig?: SystemConfig;
   readonly dealConstraints: DealConstraints;
   /** Deal constraints for off-convention hands (convention doesn't apply).
    *  Used when the user enables off-convention practice in drill tuning.

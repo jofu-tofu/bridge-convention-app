@@ -15,22 +15,27 @@ import type {
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { BidSuit } from "../../../engine/types";
+import type { SystemConfig } from "../../../core/contracts/system-config";
 
 // ── Module surface and fact imports ──────────────────────────────────
 
 import {
   OPENER_1NT_SURFACE,
   ntResponseFacts,
+  createNtResponseFacts,
   naturalNtModule,
-} from "./modules/natural-nt";
+  createNaturalNtModule,
+} from "../modules/natural-nt";
 import {
   OPENER_STAYMAN_SURFACES,
   STAYMAN_R3_AFTER_2H_SURFACES,
   STAYMAN_R3_AFTER_2S_SURFACES,
   INTERFERENCE_REDOUBLE_SURFACE,
   staymanFacts,
+  createStaymanFacts,
   staymanModule,
-} from "./modules/stayman";
+  createStaymanModule,
+} from "../modules/stayman";
 import {
   OPENER_TRANSFER_HEARTS_SURFACES,
   OPENER_TRANSFER_SPADES_SURFACES,
@@ -41,14 +46,17 @@ import {
   OPENER_ACCEPT_INVITE_HEARTS_SURFACES,
   OPENER_ACCEPT_INVITE_SPADES_SURFACES,
   transferFacts,
+  createTransferFacts,
   jacobyTransfersModule,
-} from "./modules/jacoby-transfers";
+  createJacobyTransfersModule,
+} from "../modules/jacoby-transfers";
 import {
   OPENER_SMOLEN_HEARTS_SURFACES,
   OPENER_SMOLEN_SPADES_SURFACES,
   smolenFacts,
   smolenModule,
-} from "./modules/smolen";
+  createSmolenModule,
+} from "../modules/smolen";
 import {
   RESPONDER_SURFACES,
   STAYMAN_R3_AFTER_2D_SURFACES,
@@ -159,6 +167,28 @@ const mergedFacts: FactCatalogExtension = {
   ]),
   posteriorEvaluators: staymanFacts.posteriorEvaluators,
 };
+
+/** Factory: creates merged facts parameterized by system config. */
+export function createMergedFacts(sys: SystemConfig): FactCatalogExtension {
+  const ntFacts = createNtResponseFacts(sys);
+  const stFacts = createStaymanFacts(sys);
+  const trFacts = createTransferFacts(sys);
+  return {
+    definitions: [
+      ...ntFacts.definitions,
+      ...stFacts.definitions,
+      ...trFacts.definitions,
+      ...smolenFacts.definitions,
+    ],
+    evaluators: new Map([
+      ...ntFacts.evaluators,
+      ...stFacts.evaluators,
+      ...trFacts.evaluators,
+      ...smolenFacts.evaluators,
+    ]),
+    posteriorEvaluators: stFacts.posteriorEvaluators,
+  };
+}
 
 // ── Merged Explanation Entries ────────────────────────────────────────
 
@@ -867,7 +897,7 @@ const states: Readonly<Record<string, FrameStateSpec>> = {
 
 // ── BaseTrackSpec Export ──────────────────────────────────────────────
 
-/** The 1NT base track for the protocol frame architecture. */
+/** The 1NT base track for the protocol frame architecture (SAYC defaults). */
 export const ntBaseTrack: BaseModuleSpec = {
   role: "base" as const,
   id: "nt-1",
@@ -892,3 +922,43 @@ export const ntBaseTrack: BaseModuleSpec = {
 
   pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
 };
+
+/** Factory: creates the 1NT base track parameterized by system config. */
+export function createNtBaseTrack(sys: SystemConfig): BaseModuleSpec {
+  const configuredModules = {
+    naturalNt: createNaturalNtModule(sys),
+    stayman: createStaymanModule(sys),
+    jacobyTransfers: createJacobyTransfersModule(sys),
+    smolen: createSmolenModule(sys),
+  };
+
+  return {
+    role: "base" as const,
+    id: "nt-1",
+    name: "1NT Response System",
+
+    openingPatterns: [
+      {
+        prefix: [{ call: { type: "bid", level: 1, strain: BidSuit.NoTrump } }],
+        startState: "nt-opened",
+      },
+    ],
+
+    openingSurface: "sf:opener-1nt",
+
+    states,
+
+    initialStateId: "nt-opened",
+
+    facts: createMergedFacts(sys),
+
+    explanationEntries: [
+      ...configuredModules.naturalNt.explanationEntries,
+      ...configuredModules.stayman.explanationEntries,
+      ...configuredModules.jacobyTransfers.explanationEntries,
+      ...configuredModules.smolen.explanationEntries,
+    ],
+
+    pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
+  };
+}
