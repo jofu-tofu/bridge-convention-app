@@ -5,7 +5,9 @@ description: CLI-first adversarial evaluation of a bridge app. Runs headless cov
 
 # BridgeExpertReview
 
-Two-tier adversarial evaluation of the bridge practice app. **Tier 1 (CLI)** runs the headless coverage-runner to enumerate all coverage atoms and analyzes convention correctness via source code. **Tier 2 (CLI Agents)** spawns specialist subagents that use the CLI and source code to deep-dive into convention logic, teaching content, and coverage completeness. The orchestrator decides how many agents to spawn based on the review scope. All agents use `exec` and `read` tools — **never the browser skill or Playwright**. A single inaccuracy is treated as a site-credibility failure.
+Two-tier adversarial evaluation of the bridge practice app. **Tier 1 (CLI)** runs the headless coverage-runner to enumerate all coverage atoms and analyzes convention correctness via source code. **Tier 2 (CLI Agents)** spawns specialist subagents that use the CLI and source code to deep-dive into convention logic, teaching content, and coverage completeness. Both Phase 1 (per-atom evaluation) and Phase 2 (playthrough evaluation) are parallelized across agents using the plan command's pre-computed agent assignments. The orchestrator decides how many agents to spawn based on the review scope. All agents use `exec` and `read` tools — **never the browser skill or Playwright**. A single inaccuracy is treated as a site-credibility failure.
+
+The entire review runs in a **disposable git worktree** (`/tmp/bridge-expert-review-*`) so the main working tree stays free for development. The worktree is cleaned up automatically when the review completes.
 
 > **For agents modifying this skill:** Read `SkillIntent.md` before making changes.
 
@@ -32,11 +34,13 @@ Running the **[WorkflowName]** workflow from the **BridgeExpertReview** skill...
 ```
 User: "Run a bridge expert review of the app"
 -> Invokes RunReview workflow
+-> Step 0: Creates a disposable git worktree in /tmp, installs deps
 -> Tier 1: Discovers bundles via `bundles`, runs `selftest --all --seed=42` for baseline
--> For each failure: records viewport (from `eval`), feedback (from `eval --bid`), verifies against bridge sources
--> Tier 2: Spawns CLI agents based on scope (e.g., one per convention, or by concern area)
--> CLI agents use `exec` to run coverage-runner `eval`/`play` + `read` to analyze source code
+-> Generates plan with `plan --agents=N --coverage=2` for Phase 1 atom batches and Phase 2 seed lists
+-> Phase 1: Spawns parallel agents, each evaluating their batch of atoms (each atom × 2 seeds) via `eval`
+-> Phase 2: Spawns parallel agents for playthrough evaluation via `play`
 -> Compiles all findings into prioritized feedback with severity, evidence, and references
+-> Cleans up the worktree
 ```
 
 **Example 2: Compile existing feedback**

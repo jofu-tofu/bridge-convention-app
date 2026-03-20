@@ -26,9 +26,11 @@ Manual QA of bridge convention correctness requires deep domain knowledge that m
 | All agents use CLI | Spawned agents use `exec` + `read`, never browser skill | Browser agents for UI validation | Browser skill is unreliable for convention correctness testing. CLI + source code analysis is deterministic and comprehensive. |
 | PlayerViewport boundary | CLI uses BiddingViewport (what player sees), never EvaluationOracle | CLI reads source code directly | The viewport boundary preserves the "evaluate what the user sees" principle. |
 | Dynamic agent count | Orchestrator decides agent count and focus based on scope | Fixed 3 or 5 agents | Different review scopes need different parallelism. One convention needs fewer agents than four. Orchestrator assigns non-overlapping scopes. |
+| Phase 1 parallelization | Atoms distributed across parallel agents in subtree-preserving batches, each atom tested with coverage seeds (default 2) | Orchestrator walks atoms sequentially | Parallel agents complete Phase 1 faster. Subtree-preserving batches keep parent-child atoms together for local stop-on-error without cross-agent coordination. |
 | Structured evidence | CLI output + source code excerpts as evidence | Free-form text output | Structured evidence enables precise failure identification and reproducibility. |
 | Deterministic seeds | `--seed=42` for reproducible CLI runs | Random seeds | Deterministic = reproducible results. Same seed always produces same failures, enabling regression testing. |
 | Two-phase coverage algorithm | CLI uses optimized two-phase algorithm for all (state, surface) pairs | Random seed exploration | Two-phase guarantees every reachable state/surface is tested. Random exploration has coverage gaps. |
+| Worktree isolation | Review runs in a disposable `git worktree` in `/tmp`, cleaned up after | Run in main working tree | Developer can keep working in the main tree while the review runs. Worktree is a snapshot of HEAD — deterministic, no interference with uncommitted work. |
 
 ## Explicit Out-of-Scope
 
@@ -58,3 +60,4 @@ Manual QA of bridge convention correctness requires deep domain knowledge that m
 - Agents must webfetch at least 2 independent bridge sources when flagging convention errors.
 - The skill never modifies app source code. It is read-only with respect to the codebase.
 - CLI seeds must be documented for reproducibility (`--seed=42` by default).
+- The review runs in a disposable git worktree (`/tmp/bridge-expert-review-*`), not the main working tree. The worktree is removed after the review completes.

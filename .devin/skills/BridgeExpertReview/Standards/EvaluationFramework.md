@@ -42,7 +42,13 @@ The `eval --bid` command returns structured JSON:
 
 ### Tier 2: CLI Evaluation Agents (Deep-Dive)
 
-CLI evaluation agents perform deep convention analysis using `exec` (to run coverage-runner commands) and `read` (to examine source code). They do NOT use the browser skill or Playwright. The orchestrator decides how many agents to spawn based on the review scope — there is no fixed count. Agents are assigned non-overlapping focus areas from the list below:
+CLI evaluation agents perform deep convention analysis using `exec` (to run coverage-runner commands) and `read` (to examine source code). They do NOT use the browser skill or Playwright. The orchestrator decides how many agents to spawn based on the review scope — there is no fixed count.
+
+**Phase 1 agents** evaluate per-atom correctness in parallel. Each agent receives a batch of atoms (with seeds) and calls `eval` / `eval --bid` independently. Atoms are assigned in subtree-preserving batches so stop-on-error propagation works locally within each agent.
+
+**Phase 2 agents** evaluate playthrough integration. Each agent receives seed assignments and walks full auction sequences using `play`.
+
+**Both phases run in parallel.** Agents are assigned non-overlapping work from the plan command's pre-computed distributions.
 
 **CLI agents handle these evaluation areas:**
 - Deep convention logic verification (source code analysis against bridge references)

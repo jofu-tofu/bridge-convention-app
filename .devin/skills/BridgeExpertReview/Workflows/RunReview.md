@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Orchestrate a two-tier adversarial review of the bridge practice app. **Tier 1 (CLI)** runs the headless coverage-runner to test every coverage atom for convention correctness — fast, comprehensive, deterministic. **Tier 2 (CLI Agents)** spawns specialist subagents that use the same CLI to deep-dive into specific conventions or problem areas. All evaluation is CLI-based — agents use `exec` and `read`, never the browser skill.
+Orchestrate a two-tier adversarial review of the bridge practice app. **Tier 1 (CLI)** runs the headless coverage-runner to test every coverage atom for convention correctness — fast, comprehensive, deterministic. **Tier 2 (CLI Agents)** spawns specialist subagents that use the same CLI to deep-dive into specific conventions or problem areas. Both Phase 1 (per-atom) and Phase 2 (playthrough) evaluation are parallelized across agents. All evaluation is CLI-based — agents use `exec` and `read`, never the browser skill.
 
 **Key architecture:** The app provides a PlayerViewport information boundary:
 - **BiddingViewport** — what the player sees (hand, auction, alerts, legal calls)
@@ -20,35 +20,60 @@ The CLI coverage-runner exercises this boundary headlessly across all (state, su
 
 ---
 
+## Step 0: Worktree Setup
+
+The review runs in a **disposable git worktree** so the main working tree stays free for development. All CLI commands, source code reads, and agent work happen inside the worktree. The worktree is removed automatically when the review completes (see [Worktree Cleanup](#worktree-cleanup)).
+
+```bash
+# Create a detached worktree from HEAD at a temp location
+REVIEW_DIR="/tmp/bridge-expert-review-$$"
+git -C /home/joshua-fu/projects/bridge-convention-app worktree add --detach "$REVIEW_DIR" HEAD
+
+# Install dependencies (fast — uses lockfile)
+cd "$REVIEW_DIR" && npm ci --ignore-scripts
+```
+
+> **`REVIEW_DIR` is the root for everything below.** Every CLI command and source-code path in this workflow uses `$REVIEW_DIR` instead of the main repo path. When spawning subagents, substitute the literal resolved path.
+
+After setup, verify the worktree is healthy:
+
+```bash
+npx tsx "$REVIEW_DIR/src/cli/coverage-runner.ts" bundles
+```
+
+If this fails, fall back to the main repo path and warn the user that the worktree could not be created.
+
+---
+
 ## CLI Reference
 
-All subcommands use `--flag=value` syntax. Same seed = same deal across calls. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error. Run `<subcommand> --help` for detailed usage.
+All subcommands use `--flag=value` syntax. Same seed = same deal across calls. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error. Run `<subcommand> --help` for detailed usage. **All commands run from `$REVIEW_DIR`.**
 
 ```bash
 # Self-discovery — list all available bundles (JSON array)
-npx tsx src/cli/coverage-runner.ts bundles
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts bundles
 
 # Inspect a bundle — atoms, depth, strategy coverage (JSON)
-npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
 
 # List all coverage atoms for a bundle (JSON lines)
-npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
 
 # Per-atom evaluation — viewport only (no answer)
-npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42
 
 # Per-atom evaluation — submit bid, get full teaching feedback
-npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42 --bid=2C
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42 --bid=2C
 
 # Playthrough — get step count + first viewport
-npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=42
 
 # Playthrough — step through with grading (returns next viewport too)
-npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=42 --step=0 --bid=2H
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=42 --step=0 --bid=2H
 
 # Self-test — strategy bids against itself across all atoms
-npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
-npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
 ```
 
 **Do not hardcode bundle IDs.** Use `bundles` to discover available bundles at runtime. Use `describe --bundle=<id>` to get atom IDs for `eval`.
@@ -93,8 +118,7 @@ npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
 **First, use the CLI to discover what's available — do not rely on hardcoded bundle lists:**
 
 ```bash
-cd /home/joshua-fu/projects/bridge-convention-app
-npx tsx src/cli/coverage-runner.ts bundles
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts bundles
 ```
 
 This returns a JSON array of all registered bundles with `id`, `name`, `description`, `category`, and `atomCount`. Use this to determine scope.
@@ -106,7 +130,7 @@ This returns a JSON array of all registered bundles with `id`, `name`, `descript
 For a targeted review, use `describe` to inspect the bundle before proceeding:
 
 ```bash
-npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
 ```
 
 This shows atom count, max BFS depth, strategy coverage percentage, and the full atom list with IDs.
@@ -116,100 +140,220 @@ This shows atom count, max BFS depth, strategy coverage percentage, and the full
 Run the self-test first to get a quick pass/fail overview:
 
 ```bash
-cd /home/joshua-fu/projects/bridge-convention-app
-npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
 ```
 
 Or for a single bundle:
 ```bash
-npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
 ```
 
 Parse the JSON output to get pass/fail/skip counts. This gives the orchestrator a quick health check before launching the two-phase evaluation pipeline.
 
 ### Step 3: Generate the Plan
 
-Decide how many agents to spawn for Phase 2, then run the planner:
+Decide how many agents to spawn, then run the planner:
 
 ```bash
-npx tsx src/cli/coverage-runner.ts plan --bundle=nt-bundle --agents=N --coverage=2
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts plan --bundle=nt-bundle --agents=N --coverage=2
 ```
 
-The plan output now contains **two sections**:
+The plan output contains **two sections**, both with pre-computed agent assignments:
 
-- **`phase1`** — Per-atom list with BFS ordering, dependency graph, seeds, and expected bids. **This is orchestrator-private — NEVER sent to agents.** The orchestrator uses it to drive Phase 1 and track stop-on-error propagation.
+- **`phase1`** — Per-atom list with BFS ordering, dependency graph, seeds, and expected bids. The full atom list is orchestrator-private. **`phase1.agents`** contains per-agent atom batches (atom IDs + seeds, **no expectedBid**) with subtree-preserving assignment and per-agent dependency subgraphs. Agents call `eval` themselves.
 - **`phase2`** — Playthrough seed assignments per agent, balanced by step count. Each agent receives only its seed list.
 
 Check the plan output for:
 - **Coverage gaps** — atoms the planner couldn't cover (may need more seeds or indicate strategy gaps)
 - **Uncovered atoms** — atoms with no valid seeds
-- **Agent balance** — per-agent seed lists and step counts (should be roughly balanced)
+- **Agent balance** — both `phase1.agents` (atom counts) and `phase2.agents` (step counts) should be roughly balanced
 
 ---
 
-## Phase 1: Per-Atom Targeted Evaluation (Orchestrator-Driven)
+## Phase 1: Per-Atom Targeted Evaluation (Parallel Agents)
 
-The orchestrator walks every coverage atom in BFS order, presents sanitized viewports to the evaluation agent, collects bids, grades them, and enforces stop-on-error propagation using the dependency graph. **The agent NEVER sees atom IDs, expected bids, or the dependency tree.**
+Phase 1 distributes atoms across parallel agents. Each agent evaluates its batch of atoms independently, calling `eval` to get viewports and `eval --bid` to submit bids. The plan assigns atoms in **subtree-preserving batches** so parent-child atoms stay in the same agent, enabling local stop-on-error propagation without cross-agent coordination.
 
-### Step 4: Walk Atoms in BFS Order
+**The agent NEVER sees `expectedBid` or the full dependency tree.** Agents receive only atom IDs, seeds, and their dependency subgraph (for stop-on-error). The `eval` command itself enforces the information boundary — viewports never contain the correct answer.
 
-Using `phase1.atoms` from the plan (already sorted by BFS depth), process each atom:
+### Step 4: Spawn Phase 1 Agents
 
-**1. Pick the first available seed for the atom.**
+Using `phase1.agents` from the plan, spawn parallel subagents with `run_subagent` (profile: `"subagent_general"`, `is_background: true`).
 
-**2. Call `eval` to get a sanitized viewport:**
-```bash
-npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=N
+Each agent receives:
+- Bundle ID
+- Their atom batch: array of `{ atomId, seeds }` — **stripped of `expectedBid` and `stateId`**
+- Their dependency subgraph (for stop-on-error)
+- The Phase 1 evaluation protocol (below)
+
+**Stripping orchestrator-private fields:** The plan's `phase1.agents[].atoms` includes `expectedBid` and `stateId`. Before building the agent prompt, strip these fields. Agents only need `atomId` and `seeds`. The dependency subgraph uses state IDs internally but agents treat it as an opaque stop-on-error mechanism — they extract the `stateId` from the atom ID format (`<stateId>/<surfaceId>/<meaningId>`) only when checking the dependency graph.
+
+#### How Many Agents to Spawn
+
+Use the same `--agents=N` count for both phases. The plan pre-balances both Phase 1 atom batches and Phase 2 seed lists for that count.
+
+- **Single convention** (e.g., `nt-bundle`): 2-3 agents
+- **Multiple conventions**: 3-4 agents
+- **All conventions**: 4-5 agents
+
+#### Phase 1 Agent Prompt Template
+
+Each agent receives this prompt, customized with their bundle, atom batch, and dependency subgraph:
+
+---
+
+You are evaluating the **convention correctness** of a bridge bidding practice app by testing individual bidding decisions using its CLI. For each atom (a specific bidding decision point), you will see a hand and auction, decide the correct bid using your bridge knowledge, then submit it to see if the app agrees. Each atom is tested with multiple seeds (different hands). You must use the `exec` tool to run CLI commands, the `read` tool to examine source files, and `webfetch` to verify bridge rules against authoritative sources. **Do NOT invoke the browser skill or use Playwright. Do NOT navigate to any URLs in a browser. All evaluation is done via CLI and source code.**
+
+## Working Directory
+
+All CLI commands and source file reads use this directory (a disposable git worktree):
+
+```
+{REVIEW_DIR}
 ```
 
-The `eval` output is always sanitized. The output contains ONLY:
-- Hand (suits and HCP)
+**Always `cd` to this directory before running CLI commands.**
+
+## CLI Self-Discovery
+
+Before starting, familiarize yourself with the CLI:
+
+```bash
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts help
+
+# Get detailed help for eval
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --help
+```
+
+## Your Assignment
+
+- **Bundle:** {BUNDLE_ID}
+- **Atoms:** {ATOM_COUNT} atoms, {TOTAL_EVAL_CALLS} total eval calls
+- **Atom list:**
+
+```json
+{ATOM_LIST_JSON}
+```
+
+Each entry has `atomId` and `seeds` (an array of seed numbers). For every atom, evaluate **each seed** independently.
+
+## Dependency Subgraph (Stop-on-Error)
+
+```json
+{DEPENDENCY_SUBGRAPH_JSON}
+```
+
+This maps state IDs to `{ depth, parentStateId, children }`. Extract the state ID from an atom ID by taking the first segment before the first `/`. When an atom's bid is **wrong and you believe the app is incorrect**, mark the atom's state and all descendant states as polluted. Skip all remaining atoms in polluted states.
+
+## Evaluation Protocol
+
+For each atom in your list, process all its seeds:
+
+**1. Get the sanitized viewport:**
+```bash
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N>
+```
+
+The output contains ONLY what a human player would see:
+- Hand (suits and cards)
+- Hand evaluation (HCP, shape, balanced)
 - Auction so far
-- Legal calls
+- Legal calls and bidding options
 
-No atom ID, seed, or expected bid is included — the agent sees only what a human player would see.
+No correct answer is included. You must decide based on bridge knowledge alone.
 
-**3. Present the sanitized viewport to the evaluation agent:**
+**2. Decide the correct bid.** Study the hand, HCP, shape, and auction. Apply your knowledge of the convention being taught. **Commit to your bid before proceeding.**
 
-> "Given this hand and auction, what should South bid?"
-
-The agent decides using bridge knowledge alone. It has no hint about what atom is being tested or what the expected bid is.
-
-**4. Submit the agent's bid for evaluation:**
+**3. Submit your bid:**
 ```bash
-npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=N --bid=AGENT_BID
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N> --bid=<CALL>
 ```
 
-This returns the full teaching feedback including grade, correct bid, conventions applied, and teaching explanations.
+This returns the full grade + teaching feedback:
+- `grade`: correct, correct-not-preferred, acceptable, near-miss, incorrect
+- `correct`, `acceptable`: boolean flags
+- `yourBid`, `correctBid`: what you bid vs. what the app recommends
+- `feedback`: conditions, alternatives, near-misses, conventions applied
+- `teaching`: detailed teaching explanations
 
-**5. Feed the evaluation feedback back to the agent (inline feedback).**
+**4. Evaluate the result:**
+- If you agree with the app (whether your bid matched or not) → continue to the next seed/atom.
+- If you disagree with the app (you believe the app's bid is wrong) → record a finding. Check the dependency subgraph: extract the state ID from the atom ID, look it up, and mark all descendant states as polluted. Skip remaining atoms in polluted states.
+- If the grade is `acceptable` or `correct-not-preferred` → note it but continue. These are valid alternatives.
 
-The agent sees whether it was correct, the app's bid, the convention meaning, and teaching feedback. This allows the agent to learn from mistakes within the session.
+**5. Repeat for each seed of this atom, then move to the next atom.**
 
-### Step 5: Stop-on-Error Propagation
+## Rules
 
-When an evaluation comes back wrong:
+1. **CLI and source code only.** Use `exec` to run coverage-runner commands. Use `read` to examine source files. Use `webfetch` to check bridge references. **Do NOT use the browser skill or Playwright.**
+2. **Stop-on-error propagation.** When the app's bid is wrong, skip all atoms in descendant states. Log which atoms were skipped and why.
+3. **Commit before peeking.** Decide your answer BEFORE submitting your bid. Do not revise earlier answers based on later information.
+4. **Evidence is mandatory.** Every finding needs the viewport JSON (hand, auction) and a bridge reference URL.
+5. **Bridge expertise required.** Verify convention rules against authoritative sources using `webfetch` (bridgebum.com, larryco.com, bridgeguys.com). Every correctness claim must cite a URL you actually fetched.
+6. **Test every seed.** Each atom has multiple seeds. Test all of them — different hands may expose different issues.
 
-1. **Record the finding** — sanitized viewport, agent bid, correct bid, feedback from eval JSON.
-2. **Look up the atom's `stateId`** in `phase1.dependencyGraph`.
-3. **Collect all descendant states** — children, grandchildren, etc. recursively.
-4. **Mark all atoms in descendant states as polluted** — skip them entirely.
-5. **Continue** to the next non-polluted atom at the same or lesser BFS depth.
-6. **Log:** `"Skipping N atoms in subtree of [stateId] due to upstream failure"`
+## Source Code Locations
 
-This prevents testing deeper atoms whose auction context depends on a bid already found to be wrong. Testing them would produce meaningless results — the auction would already be in a state the agent disagrees with.
+Use `read` to examine these files (all paths relative to `{REVIEW_DIR}`) for deeper analysis:
 
-### Step 6: Record Phase 1 Results
+- **Convention specs:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
+- **Convention modules:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
+- **Viewport boundary:** `{REVIEW_DIR}/src/core/viewport/build-viewport.ts`
+- **Teaching resolution:** `{REVIEW_DIR}/src/teaching/teaching-resolution.ts`
+- **Strategy adapter:** `{REVIEW_DIR}/src/strategy/bidding/protocol-adapter.ts`
 
-Compile the following metrics:
+## Report Format
+
+```
+# Phase 1 Agent Report
+
+## Summary
+[PASS / FAIL / CONDITIONAL PASS]
+
+## Atoms Evaluated
+| Atom ID | Seeds Tested | Seeds Correct | Seeds Wrong | Polluted? |
+|---------|-------------|---------------|-------------|-----------|
+
+## Findings
+### Finding N: [Title]
+- Atom ID: [atom ID]
+- Seed: [seed]
+- Hand: [from viewport]
+- Auction: [auction so far]
+- My bid: [what agent decided]
+- App bid: [from eval response]
+- Why mine is correct: [bridge reasoning + reference URL]
+- Severity: CRITICAL / MAJOR / MINOR
+
+## Polluted Subtrees
+| Root State | Cause (Atom ID) | Atoms Skipped |
+|-----------|-----------------|---------------|
+
+## Atoms Passed
+[Atom IDs where all seeds matched]
+```
+
+---
+
+### Step 5: Collect Phase 1 Results
+
+Wait for all Phase 1 background agents to complete. Collect their structured reports.
+
+### Step 6: Merge Phase 1 Agent Reports
+
+Compile the following metrics across all Phase 1 agents:
 
 | Metric | Description |
 |--------|-------------|
-| **Atoms tested** | Total atoms presented to the agent |
-| **Atoms correct** | Agent bid matched the app |
-| **Atoms wrong** | Agent bid differed from the app |
+| **Atoms tested** | Total atoms evaluated across all agents |
+| **Atoms correct** | All seeds matched the app |
+| **Atoms wrong** | Agent disagreed with the app on at least one seed |
 | **Atoms polluted (skipped)** | Skipped due to upstream failure — list which upstream atom caused each skip |
-| **Coverage gaps** | Atoms with no valid seeds |
+| **Coverage gaps** | Atoms with no valid seeds (from plan output) |
+
+Cross-agent findings:
+- **Same atom found wrong by multiple agents** (if seeds are distributed) — boost confidence
+- **Polluted subtrees** — aggregate across agents since subtrees are agent-local
 
 Findings list — each entry contains:
 - Sanitized viewport (hand, auction, legal calls)
@@ -226,7 +370,7 @@ Phase 2 tests end-to-end auction flow. While Phase 1 tests each atom in isolatio
 
 ### Step 7: Spawn Playthrough Agents
 
-Using `phase2.agents` from the plan, spawn parallel subagents with `run_subagent` (profile: `"subagent_general"`, `is_background: true`).
+Using `phase2.agents` from the plan, spawn parallel subagents with `run_subagent` (profile: `"subagent_general"`, `is_background: true`). **Phase 2 agents can be launched in parallel with Phase 1 agents** — they are independent. However, if you want Phase 1 findings to inform Phase 2 analysis, wait for Phase 1 to complete first and include findings in the Phase 2 agent prompts.
 
 Each agent receives **ONLY**:
 - Bundle ID
@@ -254,16 +398,25 @@ Each agent receives this prompt, customized with their bundle and seed list:
 
 You are evaluating the **convention correctness** of a bridge bidding practice app by playing through full auction sequences using its CLI. You must use the `exec` tool to run CLI commands, the `read` tool to examine source files, and `webfetch` to verify bridge rules against authoritative sources. **Do NOT invoke the browser skill or use Playwright. Do NOT navigate to any URLs in a browser. All evaluation is done via CLI and source code.**
 
+## Working Directory
+
+All CLI commands and source file reads use this directory (a disposable git worktree):
+
+```
+{REVIEW_DIR}
+```
+
+**Always `cd` to this directory before running CLI commands.**
+
 ## CLI Self-Discovery
 
 Before starting, familiarize yourself with the CLI:
 
 ```bash
-# See all available subcommands and flags
-npx tsx src/cli/coverage-runner.ts help
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts help
 
 # Get detailed help for a specific subcommand
-npx tsx src/cli/coverage-runner.ts play --help
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --help
 ```
 
 ## Your Assignment
@@ -279,7 +432,7 @@ For each assigned seed, evaluate one complete playthrough:
 
 **1. Get the step count + first viewport:**
 ```bash
-npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N>
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N>
 ```
 This returns `totalSteps` — the number of user decision points — and the first step's viewport.
 
@@ -289,7 +442,7 @@ Study the viewport (hand, HCP, auction so far, legal calls). **No recommendation
 
 Then, submit your bid:
 ```bash
-npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --step=<i> --bid=<CALL>
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --step=<i> --bid=<CALL>
 ```
 This returns your bid + the app's recommendation + feedback + the next step's viewport. The response includes:
 - `correct`: whether your bid matches the app's
@@ -307,7 +460,7 @@ This returns your bid + the app's recommendation + feedback + the next step's vi
 
 **4. After all steps (or after stopping), optionally get the full reveal:**
 ```bash
-npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --reveal
+cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --reveal
 ```
 This shows all decision points (user + partner auto-bids) with recommendations and atom IDs. Check partner auto-bids in the auction for any that look incorrect.
 
@@ -321,17 +474,17 @@ This shows all decision points (user + partner auto-bids) with recommendations a
 
 ## Source Code Locations
 
-Use `read` to examine these files for deeper analysis:
+Use `read` to examine these files (all paths relative to `{REVIEW_DIR}`) for deeper analysis:
 
-- **Convention specs:** `src/conventions/definitions/<bundle>/convention-spec.ts`
-- **Convention modules:** `src/conventions/definitions/<bundle>/modules/`
-- **Viewport boundary:** `src/core/viewport/build-viewport.ts`
-- **Teaching resolution:** `src/teaching/teaching-resolution.ts`
-- **Strategy adapter:** `src/strategy/bidding/protocol-adapter.ts`
+- **Convention specs:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
+- **Convention modules:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
+- **Viewport boundary:** `{REVIEW_DIR}/src/core/viewport/build-viewport.ts`
+- **Teaching resolution:** `{REVIEW_DIR}/src/teaching/teaching-resolution.ts`
+- **Strategy adapter:** `{REVIEW_DIR}/src/strategy/bidding/protocol-adapter.ts`
 
 ## Phase 1 Findings
 
-The orchestrator found these issues during per-atom targeted evaluation. Focus your analysis on these areas:
+The Phase 1 agents found these issues during per-atom targeted evaluation. Focus your analysis on these areas:
 
 {PHASE1_FINDINGS}
 
@@ -368,7 +521,7 @@ The orchestrator found these issues during per-atom targeted evaluation. Focus y
 
 ### Step 8: Collect Results
 
-Collect Phase 1 results (from orchestrator) and Phase 2 agent reports (from background subagents). Wait for all background agents to complete before proceeding.
+Collect Phase 1 agent reports and Phase 2 agent reports (all from background subagents). Wait for all background agents to complete before proceeding.
 
 ### Step 9: Merge and Deduplicate
 
@@ -399,17 +552,31 @@ The `eval` command always returns sanitized output — there is no unsanitized m
 
 ### Orchestrator-Private Plan Data
 
-The plan's `phase1` section is orchestrator-private. It contains `expectedBid` and `stateId` for every atom — this **MUST NOT** be sent to agents. The orchestrator uses it to:
-1. Call `eval` with the correct atom/seed arguments
-2. Track the dependency graph for stop-on-error propagation
-3. Map agent bids back to specific atoms for the findings report
+The plan's `phase1` section contains orchestrator-private data including `expectedBid` for every atom and the full dependency graph. The `phase1.agents` section provides pre-stripped agent assignments, but agents must still NOT receive the `expectedBid` or `stateId` fields from their atom lists. The orchestrator uses the full plan to:
+1. Build agent prompts with stripped atom lists (only `atomId` + `seeds`)
+2. Include per-agent dependency subgraphs for stop-on-error
+3. Map agent findings back to specific atoms for the aggregated report
 
-The agents only ever see sanitized viewports. They never know which atom they're testing, what the expected bid is, or how atoms relate to each other in the convention tree.
+The agents call `eval` themselves but the information boundary is preserved: `eval` without `--bid` never exposes the correct answer, and `eval --bid` only reveals it after the agent has committed.
 
 ### Source Code Locations
+
+All paths are relative to `$REVIEW_DIR`:
 
 - **Convention specs:** `src/conventions/definitions/<bundle>/convention-spec.ts`
 - **Convention modules:** `src/conventions/definitions/<bundle>/modules/`
 - **Viewport boundary:** `src/core/viewport/build-viewport.ts`
 - **Teaching resolution:** `src/teaching/teaching-resolution.ts`
 - **Strategy adapter:** `src/strategy/bidding/protocol-adapter.ts`
+
+---
+
+## Worktree Cleanup
+
+**After the review is complete** (all agents finished, report compiled), remove the disposable worktree:
+
+```bash
+git -C /home/joshua-fu/projects/bridge-convention-app worktree remove "$REVIEW_DIR" --force
+```
+
+If cleanup fails (e.g., a subagent still has a file open), log a warning and tell the user to run the command manually. The worktree is in `/tmp` so it will also be cleaned up on reboot.

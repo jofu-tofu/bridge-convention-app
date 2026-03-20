@@ -159,6 +159,160 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   // Sort by depth (BFS order)
   atomPlans.sort((a, b) => a.depth - b.depth);
 
+  // ── Phase 1: Distribute atoms across agents in subtree-preserving batches ──
+  // Find the root stateId for each atom by tracing up the dependency graph
+  function findRoot(stateId: string): string {
+    let cur = stateId;
+    while (dependencyGraph[cur]?.parentStateId) {
+      cur = dependencyGraph[cur]!.parentStateId!;
+    }
+    return cur;
+  }
+
+  // Index atoms by stateId for fast lookup (only atoms with seeds — uncovered atoms can't be evaluated)
+  const atomsByState = new Map<string, AtomPlan[]>();
+  for (const ap of atomPlans) {
+    if (ap.seeds.length === 0) continue;
+    if (!atomsByState.has(ap.stateId)) atomsByState.set(ap.stateId, []);
+    atomsByState.get(ap.stateId)!.push(ap);
+  }
+
+  // Collect all atoms in a subtree rooted at stateId
+  function collectSubtreeAtoms(stateId: string): AtomPlan[] {
+    const result = [...(atomsByState.get(stateId) ?? [])];
+    const children = dependencyGraph[stateId]?.children ?? [];
+    for (const child of children) {
+      result.push(...collectSubtreeAtoms(child));
+    }
+    return result;
+  }
+
+  // Build assignable chunks: recursively split large subtrees at child boundaries
+  // to produce groups small enough for balanced distribution, while keeping
+  // parent-child atoms together within each chunk.
+  const coveredAtomCount = atomPlans.filter((a) => a.seeds.length > 0).length;
+  const idealChunkSize = Math.ceil(coveredAtomCount / Math.max(agentCount, 1));
+
+  type AtomChunk = { rootState: string; atoms: AtomPlan[] };
+
+  function splitIntoChunks(stateId: string): AtomChunk[] {
+    const allAtoms = collectSubtreeAtoms(stateId);
+    if (allAtoms.length === 0) return [];
+
+    const children = dependencyGraph[stateId]?.children ?? [];
+    // If this subtree fits in one agent's share, or has no children to split on, keep it whole
+    if (allAtoms.length <= idealChunkSize || children.length === 0) {
+      return [{ rootState: stateId, atoms: allAtoms }];
+    }
+
+    // Atoms directly at this state (not in any child subtree)
+    const directAtoms = atomsByState.get(stateId) ?? [];
+
+    // Recursively split each child subtree
+    const childChunks: AtomChunk[] = [];
+    for (const child of children) {
+      childChunks.push(...splitIntoChunks(child));
+    }
+
+    // If there are direct atoms at this state, attach them to the largest child chunk
+    // (they share the dependency relationship most closely)
+    if (directAtoms.length > 0) {
+      if (childChunks.length > 0) {
+        const largest = childChunks.reduce((a, b) =>
+          a.atoms.length >= b.atoms.length ? a : b,
+        );
+        largest.atoms.unshift(...directAtoms);
+      } else {
+        childChunks.push({ rootState: stateId, atoms: directAtoms });
+      }
+    }
+
+    return childChunks;
+  }
+
+  // Build chunks from all root states
+  const roots = new Set<string>();
+  for (const ap of atomPlans) {
+    roots.add(findRoot(ap.stateId));
+  }
+
+  let allChunks: AtomChunk[] = [];
+  for (const root of roots) {
+    allChunks.push(...splitIntoChunks(root));
+  }
+
+  // Final pass: split any remaining oversized chunks into idealChunkSize pieces.
+  // This handles linear chains where subtree-splitting can't produce multiple chunks.
+  // Atoms at the same BFS depth are independent, so splitting is safe.
+  const refined: AtomChunk[] = [];
+  for (const chunk of allChunks) {
+    if (chunk.atoms.length <= idealChunkSize) {
+      refined.push(chunk);
+    } else {
+      // Sort by depth so stop-on-error still works within each sub-chunk
+      chunk.atoms.sort((a, b) => a.depth - b.depth);
+      for (let i = 0; i < chunk.atoms.length; i += idealChunkSize) {
+        refined.push({
+          rootState: chunk.rootState,
+          atoms: chunk.atoms.slice(i, i + idealChunkSize),
+        });
+      }
+    }
+  }
+  allChunks = refined;
+
+  // Sort chunks largest-first for greedy assignment
+  allChunks.sort((a, b) => b.atoms.length - a.atoms.length);
+
+  // Greedy assignment: assign each chunk to the agent with the fewest eval calls
+  const phase1Agents: { agentIndex: number; atoms: AtomPlan[]; estimatedEvalCalls: number }[] = [];
+  for (let i = 0; i < agentCount; i++) {
+    phase1Agents.push({ agentIndex: i, atoms: [], estimatedEvalCalls: 0 });
+  }
+
+  for (const chunk of allChunks) {
+    const minAgent = phase1Agents.reduce((a, b) =>
+      a.estimatedEvalCalls <= b.estimatedEvalCalls ? a : b,
+    );
+    minAgent.atoms.push(...chunk.atoms);
+    minAgent.estimatedEvalCalls += chunk.atoms.length * targetCoverage;
+  }
+
+  // Re-sort each agent's atoms by BFS depth for correct evaluation order
+  for (const agent of phase1Agents) {
+    agent.atoms.sort((a, b) => a.depth - b.depth);
+  }
+
+  // Build per-agent dependency subgraphs (only states relevant to their atoms)
+  function buildSubgraph(atoms: AtomPlan[]): typeof dependencyGraph {
+    const relevantStates = new Set<string>();
+    for (const ap of atoms) {
+      // Trace the full path from this atom's state to the root
+      let cur: string | null = ap.stateId;
+      while (cur) {
+        relevantStates.add(cur);
+        cur = dependencyGraph[cur]?.parentStateId ?? null;
+      }
+      // Include children of this state
+      const entry = dependencyGraph[ap.stateId];
+      if (entry) {
+        for (const child of entry.children) relevantStates.add(child);
+      }
+    }
+    const subgraph: typeof dependencyGraph = {};
+    for (const stateId of relevantStates) {
+      const entry = dependencyGraph[stateId];
+      if (entry) {
+        subgraph[stateId] = {
+          depth: entry.depth,
+          parentStateId: entry.parentStateId,
+          children: entry.children.filter((c) => relevantStates.has(c)),
+        };
+      }
+    }
+    return subgraph;
+  }
+
   // ── Phase 2: Playthrough seed selection ──
   const atomCallMap = buildAtomCallMap(spec);
   const uniqueSeeds = [...new Set(atomPlans.flatMap((a) => a.seeds))];
@@ -209,9 +363,9 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
     uncoveredAtoms: uncovered,
     maxDepth: Math.max(0, ...atomPlans.map((a) => a.depth)),
 
-    // Phase 1: Per-atom targeted evaluation (orchestrator-private)
+    // Phase 1: Per-atom targeted evaluation (orchestrator-private, parallelized)
     phase1: {
-      description: "Per-atom targeted evaluation. Orchestrator walks atoms in BFS order, calls `eval --atom=ATOM_ID --seed=N` for viewports, grades with `eval --atom=ATOM_ID --seed=N --bid=X`, enforces stop-on-error via dependency graph.",
+      description: "Per-atom targeted evaluation distributed across parallel agents. Each agent evaluates its batch of atoms (each atom × coverage seeds), walking in BFS order with stop-on-error via its dependency subgraph. Subtree-preserving assignment keeps parent-child atoms in the same agent.",
       atoms: atomPlans.map((ap) => ({
         atomId: ap.atomId,
         stateId: ap.stateId,
@@ -225,6 +379,20 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
         seeds: ap.seeds,
       })),
       dependencyGraph,
+      agents: phase1Agents.map((a) => ({
+        agentIndex: a.agentIndex,
+        bundleId,
+        estimatedEvalCalls: a.estimatedEvalCalls,
+        atomCount: a.atoms.length,
+        atoms: a.atoms.map((ap) => ({
+          atomId: ap.atomId,
+          stateId: ap.stateId,
+          expectedBid: ap.expectedBid,
+          depth: ap.depth,
+          seeds: ap.seeds,
+        })),
+        dependencySubgraph: buildSubgraph(a.atoms),
+      })),
     },
 
     // Phase 2: Playthrough integration testing (agent-driven)

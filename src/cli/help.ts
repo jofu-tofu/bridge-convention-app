@@ -126,6 +126,10 @@ export function printSubcommandHelp(cmd: string): void {
       console.error("  phase1 — Per-atom BFS-ordered list with atomId, expectedBid, seeds, depth.");
       console.error("           Includes dependencyGraph for stop-on-error propagation.");
       console.error("           Orchestrator-private: never sent to agents.");
+      console.error("           phase1.agents — Atom batches distributed across N agents.");
+      console.error("             Each agent gets subtree-preserving atom batches (parent-child");
+      console.error("             atoms stay together) with per-agent dependencySubgraph.");
+      console.error("             Balanced by estimated eval calls (atoms × coverage).");
       console.error("");
       console.error("  phase2 — Seed assignments per agent, balanced by step count.");
       console.error("           Agent-facing: agents use 'play' to walk these seeds.");
