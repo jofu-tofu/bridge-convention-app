@@ -25,6 +25,8 @@ src-tauri/crates/bridge-wasm/pkg/
 test-results/
 playwright-report/
 playwright/.cache/
+screenshots-e2e/
+screenshots-edge-cases/
 
 # Coverage output
 coverage/
