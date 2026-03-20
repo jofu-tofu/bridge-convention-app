@@ -8,23 +8,24 @@ export const ntBundleConventionConfig: ConventionConfig = {
   ...createConventionConfigFromBundle(ntBundle, {
     name: "1NT Responses",
     description:
-      "Full 1NT response system: Stayman + Jacoby Transfers + natural bids — practice choosing between conventions",
+      "Full 1NT response system: Stayman + Jacoby Transfers + Smolen + natural bids — practice choosing between conventions",
     categoryFallback: ConventionCategory.Asking,
   }),
   teaching: {
     purpose:
-      "Find the best contract after partner opens 1NT: major-suit fit via Stayman or transfers, or notrump game/invite",
+      "Find the best contract after partner opens 1NT: major-suit fit via Stayman, transfers, or Smolen, or notrump game/invite",
     whenToUse:
-      "Partner opens 1NT (15-17 HCP balanced). You choose between Stayman (4-card major, 8+ HCP), Jacoby Transfer (5+ card major), or natural NT bids (no major).",
+      "Partner opens 1NT (15-17 HCP balanced). You choose between Stayman (4-card major, 8+ HCP), Jacoby Transfer (5+ card major), Smolen (5-4 in majors, game values — bid Stayman then show pattern), or natural NT bids (no major).",
     whenNotToUse: [
       "0-7 HCP with no 5-card major — pass",
-      "5+ card major — use transfer, not Stayman, even with 4 in the other major",
+      "5+ card major with no 4-card in the other major — use transfer, not Stayman",
+      "5-4 in majors with only invite values (8-9 HCP) — transfer to the 5-card major",
       "4333 shape with 8-9 HCP — 2NT invite may be better than Stayman",
     ],
     tradeoff:
-      "Artificial bids (2♣ Stayman, 2♦/2♥ transfers) give up natural meanings of those bids",
+      "Artificial bids (2♣ Stayman, 2♦/2♥ transfers, Smolen 3H/3S) give up natural meanings of those bids",
     principle:
-      "Finding an 8-card major fit is worth more than notrump; Stayman and transfers are tools to find that fit",
+      "Finding an 8-card major fit is worth more than notrump; Stayman, transfers, and Smolen are tools to find that fit while keeping the strong hand as declarer",
     roles:
       "Responder is captain after 1NT — opener describes, responder decides the final contract",
   },

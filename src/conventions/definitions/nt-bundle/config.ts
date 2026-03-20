@@ -42,7 +42,7 @@ const ntOffConventionConstraints: DealConstraints = {
 export const ntBundle: ConventionBundle = {
   id: "nt-bundle",
   name: "1NT Response Bundle",
-  description: "Stayman + Jacoby Transfers responses to 1NT opening",
+  description: "Stayman + Jacoby Transfers + Smolen responses to 1NT opening",
   category: ConventionCategory.Constructive,
   memberIds: ["jacoby-transfers", "stayman", "smolen"],
   dealConstraints: ntDealConstraints,

@@ -26,14 +26,14 @@ function val(result: ReturnType<typeof factsFor>, id: string) {
 }
 
 describe("NT bundle fact evaluation", () => {
-  it("evaluates all 18 facts with full catalog (shared + module extensions)", () => {
+  it("evaluates all 21 facts with full catalog (shared + module extensions)", () => {
     const result = factsFor(
       "SA", "SK", "S5", "S2",
       "HQ", "HJ", "H9", "H3",
       "D8", "D6", "D4",
       "C7", "C3",
     );
-    expect(result.facts.size).toBe(18);
+    expect(result.facts.size).toBe(21);
     expect(result.world).toBe("acting-hand");
   });
 
@@ -170,7 +170,7 @@ describe("NT bundle fact evaluation", () => {
     const ev = evaluateHand(h);
     const catalog = fullCatalog();
     const result = evaluateFacts(h, ev, catalog);
-    expect(result.facts.size).toBe(18);
+    expect(result.facts.size).toBe(21);
     expect(result.facts.has("module.stayman.eligible")).toBe(true);
   });
 });

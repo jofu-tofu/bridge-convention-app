@@ -30,6 +30,89 @@ export const SMOLEN_CLASSES = {
   PLACE_THREE_NT: "smolen:place-three-nt",
 } as const;
 
+// ─── Entry surfaces (Stayman for Smolen) ─────────────────────
+
+/** 
+ * Smolen entry: bid 2C (Stayman) with 5-4 in majors and game values.
+ * These override the Jacoby Transfer entry for Smolen-eligible hands.
+ * After opener's 2D denial, responder follows up with 3H/3S (Smolen).
+ */
+const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
+  {
+    meaningId: "smolen:stayman-entry-5h4s",
+    semanticClassId: "smolen:stayman-entry",
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(2, BidSuit.Clubs) },
+    clauses: [
+      {
+        clauseId: "game-values",
+        factId: "module.ntResponse.gameValues",
+        operator: "boolean",
+        value: true,
+        description: "Game values opposite 1NT (10+ HCP)",
+      },
+      {
+        clauseId: "five-hearts",
+        factId: "module.smolen.hasFiveHearts",
+        operator: "boolean",
+        value: true,
+        description: "5+ hearts",
+      },
+      {
+        clauseId: "four-spades",
+        factId: "module.smolen.hasFourSpades",
+        operator: "boolean",
+        value: true,
+        description: "Exactly 4 spades",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      modulePrecedence: 2,
+      intraModuleOrder: 0,
+    },
+    sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
+    teachingLabel: "Stayman 2♣ (planning Smolen)",
+  },
+
+  {
+    meaningId: "smolen:stayman-entry-5s4h",
+    semanticClassId: "smolen:stayman-entry",
+    moduleId: "smolen",
+    encoding: { defaultCall: bid(2, BidSuit.Clubs) },
+    clauses: [
+      {
+        clauseId: "game-values",
+        factId: "module.ntResponse.gameValues",
+        operator: "boolean",
+        value: true,
+        description: "Game values opposite 1NT (10+ HCP)",
+      },
+      {
+        clauseId: "five-spades",
+        factId: "module.smolen.hasFiveSpades",
+        operator: "boolean",
+        value: true,
+        description: "5+ spades",
+      },
+      {
+        clauseId: "four-hearts",
+        factId: "module.smolen.hasFourHearts",
+        operator: "boolean",
+        value: true,
+        description: "Exactly 4 hearts",
+      },
+    ],
+    ranking: {
+      recommendationBand: "must",
+      modulePrecedence: 2,
+      intraModuleOrder: 1,
+    },
+    sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
+    teachingLabel: "Stayman 2♣ (planning Smolen)",
+  },
+];
+
 // ─── R3 Smolen surfaces (contributed to responder-r3-after-stayman-2d) ───
 
 const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
@@ -510,6 +593,22 @@ const SMOLEN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
     preferredLevel: "mechanical",
     roles: ["supporting", "blocking"],
   },
+  {
+    explanationId: "nt.smolen.staymanEntry5h4s",
+    meaningId: "smolen:stayman-entry-5h4s",
+    templateKey: "nt.smolen.staymanEntry5h4s.semantic",
+    displayText: "Stayman 2♣ with 5 hearts + 4 spades, planning Smolen",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  {
+    explanationId: "nt.smolen.staymanEntry5s4h",
+    meaningId: "smolen:stayman-entry-5s4h",
+    templateKey: "nt.smolen.staymanEntry5s4h.semantic",
+    displayText: "Stayman 2♣ with 5 spades + 4 hearts, planning Smolen",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
 ];
 
 // ─── Pedagogical relations ───────────────────────────────────
@@ -520,6 +619,11 @@ const SMOLEN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
     a: "smolen:bid-short-hearts",
     b: "smolen:bid-short-spades",
   },
+  {
+    kind: "same-family",
+    a: "smolen:stayman-entry-5h4s",
+    b: "smolen:stayman-entry-5s4h",
+  },
 ];
 
 // ─── Module assembly ─────────────────────────────────────────
@@ -529,7 +633,7 @@ const smolenSub = createSmolenSubmachine();
 export const smolenModule = {
   moduleId: "smolen",
 
-  entrySurfaces: [],
+  entrySurfaces: SMOLEN_ENTRY_SURFACES,
 
   surfaceGroups: [
     { groupId: "responder-r3-after-stayman-2d", surfaces: SMOLEN_R3_SURFACES },

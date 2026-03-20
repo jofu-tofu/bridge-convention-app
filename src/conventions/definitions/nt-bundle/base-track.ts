@@ -36,6 +36,10 @@ import {
   OPENER_TRANSFER_SPADES_SURFACES,
   TRANSFER_R3_HEARTS_SURFACES,
   TRANSFER_R3_SPADES_SURFACES,
+  OPENER_PLACE_HEARTS_SURFACES,
+  OPENER_PLACE_SPADES_SURFACES,
+  OPENER_ACCEPT_INVITE_HEARTS_SURFACES,
+  OPENER_ACCEPT_INVITE_SPADES_SURFACES,
   transferFacts,
   jacobyTransfersModule,
 } from "./modules/jacoby-transfers";
@@ -117,6 +121,22 @@ export const NT_SURFACE_FRAGMENTS: Readonly<Record<string, SurfaceFragment>> = {
     OPENER_SMOLEN_SPADES_SURFACES,
   ),
   "sf:terminal-pass": fragment("sf:terminal-pass", terminalPassSurfaces),
+  "sf:opener-place-after-transfer-hearts": fragment(
+    "sf:opener-place-after-transfer-hearts",
+    OPENER_PLACE_HEARTS_SURFACES,
+  ),
+  "sf:opener-place-after-transfer-spades": fragment(
+    "sf:opener-place-after-transfer-spades",
+    OPENER_PLACE_SPADES_SURFACES,
+  ),
+  "sf:opener-accept-invite-hearts": fragment(
+    "sf:opener-accept-invite-hearts",
+    OPENER_ACCEPT_INVITE_HEARTS_SURFACES,
+  ),
+  "sf:opener-accept-invite-spades": fragment(
+    "sf:opener-accept-invite-spades",
+    OPENER_ACCEPT_INVITE_SPADES_SURFACES,
+  ),
   "sf:nt-interrupted": fragment("sf:nt-interrupted", [
     INTERFERENCE_REDOUBLE_SURFACE,
   ]),
@@ -530,12 +550,12 @@ const states: Readonly<Record<string, FrameStateSpec>> = {
       {
         transitionId: "r3-3nt-hearts",
         when: { call: { type: "bid", level: 3, strain: BidSuit.NoTrump } },
-        goto: "terminal",
+        goto: "opener-place-after-transfer-hearts",
       },
       {
         transitionId: "r3-2nt-invite-hearts",
         when: { call: { type: "bid", level: 2, strain: BidSuit.NoTrump } },
-        goto: "terminal",
+        goto: "opener-accept-invite-hearts",
       },
       {
         transitionId: "r3-self-pass-th",
@@ -572,12 +592,12 @@ const states: Readonly<Record<string, FrameStateSpec>> = {
       {
         transitionId: "r3-3nt-spades",
         when: { call: { type: "bid", level: 3, strain: BidSuit.NoTrump } },
-        goto: "terminal",
+        goto: "opener-place-after-transfer-spades",
       },
       {
         transitionId: "r3-2nt-invite-spades",
         when: { call: { type: "bid", level: 2, strain: BidSuit.NoTrump } },
-        goto: "terminal",
+        goto: "opener-accept-invite-spades",
       },
       {
         transitionId: "r3-self-pass-ts",
@@ -612,6 +632,114 @@ const states: Readonly<Record<string, FrameStateSpec>> = {
         transitionId: "transfers-interrupted-absorb",
         when: { callType: "pass" },
         goto: "STAY",
+      },
+    ],
+  },
+
+  // ─── Opener placement after responder's 3NT ("let opener choose") ──
+
+  "opener-place-after-transfer-hearts": {
+    id: "opener-place-after-transfer-hearts",
+    surface: "sf:opener-place-after-transfer-hearts",
+    exportTags: ["agreement.final"],
+    onEnter: [
+      { op: "setReg", path: "captain.side", value: "opener" },
+    ],
+    eventTransitions: [
+      {
+        transitionId: "place-th-correct-4h",
+        when: { call: { type: "bid", level: 4, strain: BidSuit.Hearts } },
+        goto: "terminal",
+      },
+      {
+        transitionId: "place-th-pass-3nt",
+        when: { callType: "pass" },
+        goto: "terminal",
+      },
+      {
+        transitionId: "place-th-opponent-interrupt",
+        when: { actor: "opponent" },
+        goto: "transfers-interrupted",
+      },
+    ],
+  },
+
+  "opener-place-after-transfer-spades": {
+    id: "opener-place-after-transfer-spades",
+    surface: "sf:opener-place-after-transfer-spades",
+    exportTags: ["agreement.final"],
+    onEnter: [
+      { op: "setReg", path: "captain.side", value: "opener" },
+    ],
+    eventTransitions: [
+      {
+        transitionId: "place-ts-correct-4s",
+        when: { call: { type: "bid", level: 4, strain: BidSuit.Spades } },
+        goto: "terminal",
+      },
+      {
+        transitionId: "place-ts-pass-3nt",
+        when: { callType: "pass" },
+        goto: "terminal",
+      },
+      {
+        transitionId: "place-ts-opponent-interrupt",
+        when: { actor: "opponent" },
+        goto: "transfers-interrupted",
+      },
+    ],
+  },
+
+  // ─── Opener invite acceptance after responder's 2NT ────────
+
+  "opener-accept-invite-hearts": {
+    id: "opener-accept-invite-hearts",
+    surface: "sf:opener-accept-invite-hearts",
+    exportTags: ["agreement.final"],
+    onEnter: [
+      { op: "setReg", path: "captain.side", value: "opener" },
+    ],
+    eventTransitions: [
+      {
+        transitionId: "accept-invite-h-3nt",
+        when: { call: { type: "bid", level: 3, strain: BidSuit.NoTrump } },
+        goto: "terminal",
+      },
+      {
+        transitionId: "accept-invite-h-pass",
+        when: { callType: "pass" },
+        goto: "terminal",
+      },
+      {
+        transitionId: "accept-invite-h-opponent-interrupt",
+        when: { actor: "opponent" },
+        goto: "transfers-interrupted",
+      },
+    ],
+  },
+
+  "opener-accept-invite-spades": {
+    id: "opener-accept-invite-spades",
+    surface: "sf:opener-accept-invite-spades",
+    exportTags: ["agreement.final"],
+    onEnter: [
+      { op: "setReg", path: "captain.side", value: "opener" },
+    ],
+    eventTransitions: [
+      {
+        transitionId: "accept-invite-s-3nt",
+        when: { call: { type: "bid", level: 3, strain: BidSuit.NoTrump } },
+        goto: "terminal",
+      },
+      {
+        transitionId: "accept-invite-s-pass",
+        when: { callType: "pass" },
+        goto: "terminal",
+      },
+      {
+        transitionId: "accept-invite-s-opponent-interrupt",
+        when: { actor: "opponent" },
+        goto: "transfers-interrupted",
       },
     ],
   },
