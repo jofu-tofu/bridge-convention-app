@@ -57,7 +57,7 @@ Manual QA of bridge convention correctness requires deep domain knowledge that m
 - The CLI coverage-runner runs without a dev server — it exercises the evaluation pipeline headlessly.
 - CLI evaluation agents use `subagent_general` profile (need exec + read for CLI commands and source analysis).
 - All spawned agents use CLI tools (`exec`, `read`, `webfetch`) — never the browser skill or Playwright.
-- Agents must webfetch at least 2 independent bridge sources when flagging convention errors.
+- Agents must webfetch at least 1 authoritative bridge source when flagging convention errors. Webfetch is not required for passing evaluations.
 - The skill never modifies app source code. It is read-only with respect to the codebase.
 - CLI seeds must be documented for reproducibility (`--seed=42` by default).
 - The review runs in a disposable git worktree (`/tmp/bridge-expert-review-*`), not the main working tree. The worktree is removed after the review completes.

@@ -206,7 +206,7 @@ Convention correctness is now evaluated by the CLI coverage-runner, not a browse
 
 ## Reference Sources
 
-When verifying correctness, agents MUST use `webfetch` and cite actual URLs. Preferred sources in priority order:
+When verifying correctness, agents MUST use `webfetch` and cite actual URLs. **This applies only to findings — do not webfetch for passing evaluations.** Preferred sources in priority order:
 
 | Source | URL | Use For |
 |--------|-----|---------|
@@ -247,13 +247,13 @@ The CLI `eval --bid` command returns structured JSON per target. The orchestrato
 
 ### CLI Agent Reports
 
-Every CLI agent produces a report following the template in `RunReview.md` Step 8. Key requirements:
+Every CLI agent (Phase 1 and Phase 2) produces a report following the templates in `RunReview.md`. Key requirements:
 
-1. **Evidence is mandatory** — No finding without CLI output or source code excerpts
-2. **CLI and source code only** — Agents use `exec` and `read`, never the browser skill
+1. **Evidence for findings only** — webfetch and source code reads are only required when the agent disagrees with the app. Passing evaluations need no investigation.
+2. **CLI only** — Agents use `exec` to run CLI commands. **Never the browser skill or Playwright.**
 3. **Severity must be justified** — Explain why this severity level, not just assert it
-4. **Atoms table is mandatory** — List every coverage atom reviewed with pass/fail
-5. **Minimum 10 atoms** — Agents must review at least 10 coverage atoms per convention
+4. **Results table is mandatory** — List every atom (Phase 1) or seed (Phase 2) with pass/fail
+5. **Evaluate every assigned item** — Agents must evaluate all atoms/seeds in their batch (except those skipped by stop-on-error)
 
 ### Combined Metrics
 

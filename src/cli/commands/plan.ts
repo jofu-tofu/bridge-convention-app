@@ -37,10 +37,12 @@ function getExpectedCallForAtom(
 
 export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: OpponentMode): void {
   const bundleId = requireArg(flags, "bundle");
-  const agentCount = optionalNumericArg(flags, "agents") ?? 3;
+  const minAgentCount = optionalNumericArg(flags, "agents") ?? 3;
   const targetCoverage = optionalNumericArg(flags, "coverage") ?? 2;
   const maxSeeds = optionalNumericArg(flags, "max-seeds") ?? 500;
   const baseSeed = optionalNumericArg(flags, "seed") ?? 0;
+  const maxAtomsPerAgent = optionalNumericArg(flags, "max-atoms") ?? 8;
+  const maxSeedsPerAgent = optionalNumericArg(flags, "max-seeds-per-agent") ?? 5;
 
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
@@ -191,7 +193,9 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   // to produce groups small enough for balanced distribution, while keeping
   // parent-child atoms together within each chunk.
   const coveredAtomCount = atomPlans.filter((a) => a.seeds.length > 0).length;
-  const idealChunkSize = Math.ceil(coveredAtomCount / Math.max(agentCount, 1));
+  // Auto-scale: ensure no agent exceeds maxAtomsPerAgent
+  const phase1AgentCount = Math.max(minAgentCount, Math.ceil(coveredAtomCount / maxAtomsPerAgent));
+  const idealChunkSize = Math.ceil(coveredAtomCount / Math.max(phase1AgentCount, 1));
 
   type AtomChunk = { rootState: string; atoms: AtomPlan[] };
 
@@ -266,7 +270,7 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
 
   // Greedy assignment: assign each chunk to the agent with the fewest eval calls
   const phase1Agents: { agentIndex: number; atoms: AtomPlan[]; estimatedEvalCalls: number }[] = [];
-  for (let i = 0; i < agentCount; i++) {
+  for (let i = 0; i < phase1AgentCount; i++) {
     phase1Agents.push({ agentIndex: i, atoms: [], estimatedEvalCalls: 0 });
   }
 
@@ -333,8 +337,10 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   }
 
   // Distribute across agents balanced by step count
+  // Auto-scale: ensure no agent exceeds maxSeedsPerAgent
+  const phase2AgentCount = Math.max(minAgentCount, Math.ceil(playthroughInfo.length / maxSeedsPerAgent));
   const phase2Agents: { agentIndex: number; seeds: number[]; estimatedSteps: number }[] = [];
-  for (let i = 0; i < agentCount; i++) {
+  for (let i = 0; i < phase2AgentCount; i++) {
     phase2Agents.push({ agentIndex: i, seeds: [], estimatedSteps: 0 });
   }
 
@@ -342,11 +348,19 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   playthroughInfo.sort((a, b) => b.userSteps - a.userSteps);
 
   for (const pt of playthroughInfo) {
-    const minAgent = phase2Agents.reduce((a, b) =>
-      a.estimatedSteps <= b.estimatedSteps ? a : b,
-    );
-    minAgent.seeds.push(pt.seed);
-    minAgent.estimatedSteps += pt.userSteps;
+    // Find the agent with fewest steps that hasn't hit the seed cap
+    const eligible = phase2Agents.filter((a) => a.seeds.length < maxSeedsPerAgent);
+    if (eligible.length === 0) {
+      // All agents at cap — add a new overflow agent
+      const overflow = { agentIndex: phase2Agents.length, seeds: [pt.seed], estimatedSteps: pt.userSteps };
+      phase2Agents.push(overflow);
+    } else {
+      const minAgent = eligible.reduce((a, b) =>
+        a.estimatedSteps <= b.estimatedSteps ? a : b,
+      );
+      minAgent.seeds.push(pt.seed);
+      minAgent.estimatedSteps += pt.userSteps;
+    }
   }
 
   // Stats
@@ -379,7 +393,9 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
         seeds: ap.seeds,
       })),
       dependencyGraph,
-      agents: phase1Agents.map((a) => ({
+      agents: phase1Agents
+        .filter((a) => a.atoms.length > 0)
+        .map((a) => ({
         agentIndex: a.agentIndex,
         bundleId,
         estimatedEvalCalls: a.estimatedEvalCalls,
@@ -399,7 +415,9 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
     phase2: {
       description: "Playthrough integration testing. Agents run full playthroughs end-to-end using `play` command. Seeds are from Phase 1, balanced by step count.",
       totalPlaythroughSeeds: playthroughInfo.length,
-      agents: phase2Agents.map((a) => ({
+      agents: phase2Agents
+        .filter((a) => a.seeds.length > 0)
+        .map((a) => ({
         agentIndex: a.agentIndex,
         bundleId,
         seeds: a.seeds,

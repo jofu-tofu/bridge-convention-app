@@ -117,21 +117,26 @@ export function printSubcommandHelp(cmd: string): void {
       break;
 
     case "plan":
-      console.error("plan — Precompute two-phase evaluation plan.");
+      console.error("plan — Precompute two-phase evaluation plan with auto-scaled agent counts.");
       console.error("");
       console.error("Usage:");
-      console.error("  plan --bundle=<id> --agents=N [--coverage=2] [--max-seeds=500] [--seed=0]");
+      console.error("  plan --bundle=<id> [--agents=3] [--coverage=2] [--max-seeds=500] [--seed=0]");
+      console.error("       [--max-atoms=8] [--max-seeds-per-agent=5]");
+      console.error("");
+      console.error("Agent scaling:");
+      console.error("  --agents=N                Minimum agent count (default 3).");
+      console.error("  --max-atoms=N             Max atoms per Phase 1 agent (default 8).");
+      console.error("  --max-seeds-per-agent=N   Max seeds per Phase 2 agent (default 5).");
+      console.error("  Agent counts auto-scale upward to respect per-agent caps.");
       console.error("");
       console.error("Output:");
       console.error("  phase1 — Per-atom BFS-ordered list with atomId, expectedBid, seeds, depth.");
       console.error("           Includes dependencyGraph for stop-on-error propagation.");
       console.error("           Orchestrator-private: never sent to agents.");
-      console.error("           phase1.agents — Atom batches distributed across N agents.");
-      console.error("             Each agent gets subtree-preserving atom batches (parent-child");
-      console.error("             atoms stay together) with per-agent dependencySubgraph.");
-      console.error("             Balanced by estimated eval calls (atoms × coverage).");
+      console.error("           phase1.agents — Auto-scaled atom batches. Subtree-preserving");
+      console.error("             assignment keeps parent-child atoms together.");
       console.error("");
-      console.error("  phase2 — Seed assignments per agent, balanced by step count.");
+      console.error("  phase2 — Auto-scaled seed assignments per agent, balanced by step count.");
       console.error("           Agent-facing: agents use 'play' to walk these seeds.");
       break;
 

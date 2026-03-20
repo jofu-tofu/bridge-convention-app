@@ -152,13 +152,17 @@ Parse the JSON output to get pass/fail/skip counts. This gives the orchestrator 
 
 ### Step 3: Generate the Plan
 
-Decide how many agents to spawn, then run the planner:
+Run the planner. The `--agents` flag sets a minimum — the plan **auto-scales upward** to keep per-agent work under the caps (`--max-atoms` for Phase 1, `--max-seeds-per-agent` for Phase 2):
 
 ```bash
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts plan --bundle=nt-bundle --agents=N --coverage=2
+cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts plan --bundle=nt-bundle --agents=3 --coverage=2
 ```
 
-The plan output contains **two sections**, both with pre-computed agent assignments:
+Optional tuning flags:
+- `--max-atoms=8` — max atoms per Phase 1 agent (default 8; lower = more agents)
+- `--max-seeds-per-agent=5` — max seeds per Phase 2 agent (default 5; lower = more agents)
+
+The plan output contains **two sections**, both with pre-computed, auto-scaled agent assignments:
 
 - **`phase1`** — Per-atom list with BFS ordering, dependency graph, seeds, and expected bids. The full atom list is orchestrator-private. **`phase1.agents`** contains per-agent atom batches (atom IDs + seeds, **no expectedBid**) with subtree-preserving assignment and per-agent dependency subgraphs. Agents call `eval` themselves.
 - **`phase2`** — Playthrough seed assignments per agent, balanced by step count. Each agent receives only its seed list.
@@ -166,7 +170,7 @@ The plan output contains **two sections**, both with pre-computed agent assignme
 Check the plan output for:
 - **Coverage gaps** — atoms the planner couldn't cover (may need more seeds or indicate strategy gaps)
 - **Uncovered atoms** — atoms with no valid seeds
-- **Agent balance** — both `phase1.agents` (atom counts) and `phase2.agents` (step counts) should be roughly balanced
+- **Agent counts** — the plan may create more agents than `--agents` specified if needed to respect the per-agent caps
 
 ---
 
@@ -190,11 +194,7 @@ Each agent receives:
 
 #### How Many Agents to Spawn
 
-Use the same `--agents=N` count for both phases. The plan pre-balances both Phase 1 atom batches and Phase 2 seed lists for that count.
-
-- **Single convention** (e.g., `nt-bundle`): 2-3 agents
-- **Multiple conventions**: 3-4 agents
-- **All conventions**: 4-5 agents
+The plan auto-scales agent counts. Spawn one subagent per entry in `phase1.agents` — do not hardcode agent counts. The plan ensures no agent gets more than `--max-atoms` atoms (default 8).
 
 #### Phase 1 Agent Prompt Template
 
@@ -202,27 +202,14 @@ Each agent receives this prompt, customized with their bundle, atom batch, and d
 
 ---
 
-You are evaluating the **convention correctness** of a bridge bidding practice app by testing individual bidding decisions using its CLI. For each atom (a specific bidding decision point), you will see a hand and auction, decide the correct bid using your bridge knowledge, then submit it to see if the app agrees. Each atom is tested with multiple seeds (different hands). You must use the `exec` tool to run CLI commands, the `read` tool to examine source files, and `webfetch` to verify bridge rules against authoritative sources. **Do NOT invoke the browser skill or use Playwright. Do NOT navigate to any URLs in a browser. All evaluation is done via CLI and source code.**
+You are evaluating the **convention correctness** of a bridge bidding practice app by testing individual bidding decisions using its CLI. For each atom (a specific bidding decision point), you will see a hand and auction, decide the correct bid using your bridge knowledge, then submit it to see if the app agrees. Each atom is tested with multiple seeds (different hands). **Do NOT invoke the browser skill or use Playwright.**
+
+**Efficiency is critical.** You have a small batch — evaluate every atom quickly. Do NOT read source code or fetch URLs unless you **disagree** with the app. Passing evaluations need no investigation.
 
 ## Working Directory
 
-All CLI commands and source file reads use this directory (a disposable git worktree):
-
 ```
 {REVIEW_DIR}
-```
-
-**Always `cd` to this directory before running CLI commands.**
-
-## CLI Self-Discovery
-
-Before starting, familiarize yourself with the CLI:
-
-```bash
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts help
-
-# Get detailed help for eval
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --help
 ```
 
 ## Your Assignment
@@ -254,53 +241,42 @@ For each atom in your list, process all its seeds:
 cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N>
 ```
 
-The output contains ONLY what a human player would see:
-- Hand (suits and cards)
-- Hand evaluation (HCP, shape, balanced)
-- Auction so far
-- Legal calls and bidding options
+The output contains ONLY what a human player would see: hand, hand evaluation (HCP, shape), auction so far, legal calls. No correct answer is included.
 
-No correct answer is included. You must decide based on bridge knowledge alone.
-
-**2. Decide the correct bid.** Study the hand, HCP, shape, and auction. Apply your knowledge of the convention being taught. **Commit to your bid before proceeding.**
+**2. Decide the correct bid.** Study the hand, HCP, shape, and auction. **Commit to your bid before proceeding.**
 
 **3. Submit your bid:**
 ```bash
 cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N> --bid=<CALL>
 ```
 
-This returns the full grade + teaching feedback:
-- `grade`: correct, correct-not-preferred, acceptable, near-miss, incorrect
-- `correct`, `acceptable`: boolean flags
-- `yourBid`, `correctBid`: what you bid vs. what the app recommends
-- `feedback`: conditions, alternatives, near-misses, conventions applied
-- `teaching`: detailed teaching explanations
+Returns: `grade`, `correct`, `acceptable`, `yourBid`, `correctBid`, `feedback`, `teaching`.
 
 **4. Evaluate the result:**
-- If you agree with the app (whether your bid matched or not) → continue to the next seed/atom.
-- If you disagree with the app (you believe the app's bid is wrong) → record a finding. Check the dependency subgraph: extract the state ID from the atom ID, look it up, and mark all descendant states as polluted. Skip remaining atoms in polluted states.
-- If the grade is `acceptable` or `correct-not-preferred` → note it but continue. These are valid alternatives.
+- **Agree with the app** (match or you accept you were wrong) → continue to next seed/atom. No further investigation.
+- **Disagree with the app** (you believe the app's bid is wrong) → **investigate and record a finding** (see [Investigating Findings](#investigating-findings) below). Apply stop-on-error: mark descendant states as polluted, skip remaining atoms in those states.
+- **`acceptable` or `correct-not-preferred`** → note it, continue. No investigation needed.
 
 **5. Repeat for each seed of this atom, then move to the next atom.**
 
 ## Rules
 
-1. **CLI and source code only.** Use `exec` to run coverage-runner commands. Use `read` to examine source files. Use `webfetch` to check bridge references. **Do NOT use the browser skill or Playwright.**
-2. **Stop-on-error propagation.** When the app's bid is wrong, skip all atoms in descendant states. Log which atoms were skipped and why.
-3. **Commit before peeking.** Decide your answer BEFORE submitting your bid. Do not revise earlier answers based on later information.
-4. **Evidence is mandatory.** Every finding needs the viewport JSON (hand, auction) and a bridge reference URL.
-5. **Bridge expertise required.** Verify convention rules against authoritative sources using `webfetch` (bridgebum.com, larryco.com, bridgeguys.com). Every correctness claim must cite a URL you actually fetched.
-6. **Test every seed.** Each atom has multiple seeds. Test all of them — different hands may expose different issues.
+1. **Speed first.** Evaluate every atom+seed as fast as possible. Only slow down to investigate when you disagree with the app.
+2. **CLI only.** Use `exec` to run CLI commands. **Do NOT use the browser skill or Playwright.**
+3. **Stop-on-error propagation.** When the app's bid is wrong, skip all atoms in descendant states. Log which atoms were skipped and why.
+4. **Commit before peeking.** Decide your answer BEFORE submitting. Do not revise based on later information.
+5. **Test every seed.** Each atom has multiple seeds. Test all of them — different hands may expose different issues.
 
-## Source Code Locations
+## Investigating Findings
 
-Use `read` to examine these files (all paths relative to `{REVIEW_DIR}`) for deeper analysis:
+**Only when you disagree with the app's bid**, do the following before recording the finding:
 
-- **Convention specs:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
-- **Convention modules:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
-- **Viewport boundary:** `{REVIEW_DIR}/src/core/viewport/build-viewport.ts`
-- **Teaching resolution:** `{REVIEW_DIR}/src/teaching/teaching-resolution.ts`
-- **Strategy adapter:** `{REVIEW_DIR}/src/strategy/bidding/protocol-adapter.ts`
+1. **Verify with `webfetch`** — fetch at least one authoritative bridge source (bridgebum.com, larryco.com, bridgeguys.com) to confirm your bid is correct.
+2. **Optionally read source code** — if the convention logic is unclear, examine:
+   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
+   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
+
+**Do NOT webfetch or read source code for passing evaluations.**
 
 ## Report Format
 
@@ -379,16 +355,7 @@ Each agent receives **ONLY**:
 
 **NO state IDs, atom IDs, expected bids, or dependency tree information.**
 
-#### How Many Agents to Spawn
-
-The orchestrator decides the number of agents based on the review scope:
-
-- **Single convention** (e.g., `nt-bundle`): 1-2 agents
-- **Multiple conventions** (e.g., `nt-bundle` + `bergen-bundle`): One agent per convention
-- **All conventions**: One agent per convention (4 agents), or group related conventions
-- **Large scope with many Phase 1 findings**: Spawn additional agents to focus on problem areas
-
-The plan's `phase2.agents` section provides pre-balanced seed assignments. Use them directly.
+The plan's `phase2.agents` section provides pre-balanced, auto-scaled seed assignments. Use them directly — spawn one subagent per entry.
 
 #### Playthrough Agent Prompt Template
 
@@ -396,27 +363,14 @@ Each agent receives this prompt, customized with their bundle and seed list:
 
 ---
 
-You are evaluating the **convention correctness** of a bridge bidding practice app by playing through full auction sequences using its CLI. You must use the `exec` tool to run CLI commands, the `read` tool to examine source files, and `webfetch` to verify bridge rules against authoritative sources. **Do NOT invoke the browser skill or use Playwright. Do NOT navigate to any URLs in a browser. All evaluation is done via CLI and source code.**
+You are evaluating the **convention correctness** of a bridge bidding practice app by playing through full auction sequences using its CLI. For each seed, you will step through a complete bidding sequence, deciding each bid using your bridge knowledge, then submitting it to see if the app agrees. **Do NOT invoke the browser skill or use Playwright.**
+
+**Efficiency is critical.** You have a small batch — evaluate every seed quickly. Do NOT read source code or fetch URLs unless you **disagree** with the app. Passing playthroughs need no investigation.
 
 ## Working Directory
 
-All CLI commands and source file reads use this directory (a disposable git worktree):
-
 ```
 {REVIEW_DIR}
-```
-
-**Always `cd` to this directory before running CLI commands.**
-
-## CLI Self-Discovery
-
-Before starting, familiarize yourself with the CLI:
-
-```bash
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts help
-
-# Get detailed help for a specific subcommand
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --help
 ```
 
 ## Your Assignment
@@ -428,59 +382,54 @@ For each seed, follow the playthrough protocol below. You are testing whether th
 
 ## Playthrough Protocol
 
-For each assigned seed, evaluate one complete playthrough:
+For each assigned seed:
 
 **1. Get the step count + first viewport:**
 ```bash
 cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N>
 ```
-This returns `totalSteps` — the number of user decision points — and the first step's viewport.
+Returns `totalSteps` and the first step's viewport.
 
-**2. For each step (0 to totalSteps-1), one at a time:**
+**2. For each step (0 to totalSteps-1):**
 
-Study the viewport (hand, HCP, auction so far, legal calls). **No recommendation is shown.** Decide the correct bid using your bridge knowledge. **Commit to your bid before proceeding.**
+Study the viewport (hand, HCP, auction, legal calls). **Commit to your bid before proceeding.**
 
-Then, submit your bid:
+Submit your bid:
 ```bash
 cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --step=<i> --bid=<CALL>
 ```
-This returns your bid + the app's recommendation + feedback + the next step's viewport. The response includes:
-- `correct`: whether your bid matches the app's
-- `correctBid`: what the app recommends
-- `grade`: evaluation result (correct/wrong/acceptable)
-- `feedback`: structured feedback with conventions applied
-- `teaching`: teaching explanations including whyNot for wrong bids
-- `nextStep`: the next step's viewport (if `complete: false`)
-- `complete`: whether the playthrough is finished
+
+Returns: `grade`, `correct`, `correctBid`, `feedback`, `teaching`, `nextStep`, `complete`.
 
 **3. Evaluate the result:**
-- If `correct: true` and you agree the app's bid is right → use `nextStep` viewport and continue.
-- If `correct: false` and you think **your bid is right** (not the app's) → record a finding. The app is teaching something wrong. **Stop this playthrough** — subsequent steps are in a polluted auction context. Move to the next seed.
-- If `correct: false` and you realize the app is right → note your mistake, use `nextStep` viewport and continue.
+- **Agree with the app** → use `nextStep` viewport, continue. No further investigation.
+- **Disagree with the app** (you believe the app's bid is wrong) → **investigate and record a finding** (see [Investigating Findings](#investigating-findings-1) below). **Stop this playthrough** — subsequent steps are in a polluted auction context. Move to the next seed.
+- **You were wrong and accept the app is correct** → use `nextStep` viewport, continue. No investigation needed.
 
-**4. After all steps (or after stopping), optionally get the full reveal:**
-```bash
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --reveal
-```
-This shows all decision points (user + partner auto-bids) with recommendations and atom IDs. Check partner auto-bids in the auction for any that look incorrect.
+**4. Repeat until `complete: true`, then move to the next seed.**
 
 ## Rules
 
-1. **CLI and source code only.** Use `exec` to run coverage-runner commands. Use `read` to examine source files. Use `webfetch` to check bridge references. **Do NOT use the browser skill or Playwright.**
-2. **Stop on first real error per playthrough.** If the strategy's bid is wrong at step N, do not evaluate steps N+1, N+2, etc. The auction context is polluted. Record the finding and move to the next seed.
-3. **Commit before peeking.** Decide your answer for each step BEFORE submitting your bid. Do not revise earlier answers based on later information.
-4. **Evidence is mandatory.** Every finding needs the viewport JSON (hand, auction) and a bridge reference URL.
-5. **Bridge expertise required.** Verify convention rules against authoritative sources using `webfetch` (bridgebum.com, larryco.com, bridgeguys.com). Every correctness claim must cite a URL you actually fetched.
+1. **Speed first.** Evaluate every seed as fast as possible. Only slow down to investigate when you disagree with the app.
+2. **CLI only.** Use `exec` to run CLI commands. **Do NOT use the browser skill or Playwright.**
+3. **Stop on first real error per playthrough.** If the app's bid is wrong at step N, do not evaluate steps N+1, N+2, etc. Record the finding and move to the next seed.
+4. **Commit before peeking.** Decide your answer BEFORE submitting. Do not revise based on later information.
 
-## Source Code Locations
+## Investigating Findings
 
-Use `read` to examine these files (all paths relative to `{REVIEW_DIR}`) for deeper analysis:
+**Only when you disagree with the app's bid**, do the following before recording the finding:
 
-- **Convention specs:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
-- **Convention modules:** `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
-- **Viewport boundary:** `{REVIEW_DIR}/src/core/viewport/build-viewport.ts`
-- **Teaching resolution:** `{REVIEW_DIR}/src/teaching/teaching-resolution.ts`
-- **Strategy adapter:** `{REVIEW_DIR}/src/strategy/bidding/protocol-adapter.ts`
+1. **Verify with `webfetch`** — fetch at least one authoritative bridge source (bridgebum.com, larryco.com, bridgeguys.com) to confirm your bid is correct.
+2. **Optionally read source code** — if the convention logic is unclear, examine:
+   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
+   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
+3. **Optionally get the full reveal** for the current seed:
+   ```bash
+   cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --reveal
+   ```
+   This shows all decision points with recommendations and atom IDs.
+
+**Do NOT webfetch, read source code, or run `--reveal` for passing playthroughs.**
 
 ## Phase 1 Findings
 
