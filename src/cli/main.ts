@@ -15,7 +15,7 @@
 // ── Side-effect import: registers all bundles + conventions ─────────
 import "../conventions";
 
-import { parseArgs, parseVulnerability, parseOpponentMode } from "./shared";
+import { parseArgs, parseVulnerability, parseOpponentMode, parseScenarioConfig } from "./shared";
 import { runList, runBundles, runDescribe } from "./commands/info";
 import { runEval } from "./commands/eval";
 import { runSelftest } from "./commands/selftest";
@@ -28,10 +28,6 @@ import { printUsage, printSubcommandHelp } from "./help";
 const rawArgs = process.argv.slice(2);
 const subcommand = rawArgs[0];
 const flags = parseArgs(rawArgs.slice(1));
-
-// Settings flags (shared across subcommands)
-const vuln = parseVulnerability(flags);
-const opponentMode = parseOpponentMode(flags);
 
 if (!subcommand || subcommand === "--help" || subcommand === "-h" || subcommand === "help") {
   printUsage();
@@ -49,22 +45,22 @@ switch (subcommand) {
     runList(flags);
     break;
   case "eval":
-    runEval(flags, vuln);
+    runEval(flags, parseVulnerability(flags));
     break;
   case "play":
-    runPlay(flags, vuln, opponentMode);
+    runPlay(flags, parseVulnerability(flags), parseOpponentMode(flags));
     break;
   case "selftest":
-    runSelftest(flags, vuln);
+    runSelftest(flags, parseVulnerability(flags));
     break;
   case "plan":
-    runPlan(flags, vuln, opponentMode);
+    runPlan(flags, parseScenarioConfig(flags));
     break;
   case "bundles":
     runBundles();
     break;
   case "describe":
-    runDescribe(flags, vuln);
+    runDescribe(flags, parseVulnerability(flags));
     break;
   default:
     console.error(`Unknown subcommand: "${subcommand}"`);

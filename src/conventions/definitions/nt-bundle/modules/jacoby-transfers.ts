@@ -196,9 +196,9 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
       {
         clauseId: "hearts-exactly-5",
         factId: "hand.suitLength.hearts",
-        operator: "lte",
+        operator: "eq",
         value: 5,
-        description: "5 hearts (offer 3NT as alternative to 4H)",
+        description: "Exactly 5 hearts (offer 3NT as alternative to 4H)",
       },
     ],
     ranking: {
@@ -304,9 +304,9 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
       {
         clauseId: "spades-exactly-5",
         factId: "hand.suitLength.spades",
-        operator: "lte",
+        operator: "eq",
         value: 5,
-        description: "5 spades (offer 3NT as alternative to 4S)",
+        description: "Exactly 5 spades (offer 3NT as alternative to 4S)",
       },
     ],
     ranking: {
@@ -643,12 +643,12 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
       {
         transitionId: "r3-3nt-hearts",
         match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-        target: "terminal",
+        target: "opener-place-after-transfer-hearts",
       },
       {
         transitionId: "r3-2nt-invite-hearts",
         match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-        target: "terminal",
+        target: "opener-accept-invite-hearts",
       },
       {
         transitionId: "r3-self-pass-th",
@@ -682,12 +682,12 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
       {
         transitionId: "r3-3nt-spades",
         match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-        target: "terminal",
+        target: "opener-place-after-transfer-spades",
       },
       {
         transitionId: "r3-2nt-invite-spades",
         match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-        target: "terminal",
+        target: "opener-accept-invite-spades",
       },
       {
         transitionId: "r3-self-pass-ts",
@@ -706,6 +706,90 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
       },
     ],
     surfaceGroupId: "responder-r3-after-transfer-spades",
+  },
+
+  // ─── Opener placement states (after responder's 3NT "let opener choose") ──
+
+  {
+    stateId: "opener-place-after-transfer-hearts",
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    transitions: [
+      {
+        transitionId: "place-th-correct-4h",
+        match: { kind: "call", level: 4, strain: BidSuit.Hearts },
+        target: "terminal",
+      },
+      {
+        transitionId: "place-th-pass",
+        match: { kind: "pass" },
+        target: "terminal",
+      },
+    ],
+    surfaceGroupId: "opener-place-after-transfer-hearts",
+    entryEffects: { setCaptain: "opener" },
+  },
+
+  {
+    stateId: "opener-place-after-transfer-spades",
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    transitions: [
+      {
+        transitionId: "place-ts-correct-4s",
+        match: { kind: "call", level: 4, strain: BidSuit.Spades },
+        target: "terminal",
+      },
+      {
+        transitionId: "place-ts-pass",
+        match: { kind: "pass" },
+        target: "terminal",
+      },
+    ],
+    surfaceGroupId: "opener-place-after-transfer-spades",
+    entryEffects: { setCaptain: "opener" },
+  },
+
+  // ─── Opener invite acceptance states (after responder's 2NT invite) ──
+
+  {
+    stateId: "opener-accept-invite-hearts",
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    transitions: [
+      {
+        transitionId: "accept-invite-h-bid",
+        match: { kind: "any-bid" },
+        target: "terminal",
+      },
+      {
+        transitionId: "accept-invite-h-pass",
+        match: { kind: "pass" },
+        target: "terminal",
+      },
+    ],
+    surfaceGroupId: "opener-accept-invite-hearts",
+    entryEffects: { setCaptain: "opener" },
+  },
+
+  {
+    stateId: "opener-accept-invite-spades",
+    parentId: "transfers-scope",
+    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    transitions: [
+      {
+        transitionId: "accept-invite-s-bid",
+        match: { kind: "any-bid" },
+        target: "terminal",
+      },
+      {
+        transitionId: "accept-invite-s-pass",
+        match: { kind: "pass" },
+        target: "terminal",
+      },
+    ],
+    surfaceGroupId: "opener-accept-invite-spades",
+    entryEffects: { setCaptain: "opener" },
   },
 ];
 

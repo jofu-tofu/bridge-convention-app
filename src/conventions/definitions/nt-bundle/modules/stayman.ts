@@ -61,13 +61,6 @@ const STAYMAN_R1_SURFACE: MeaningSurface = {
       description: "At least one 4-card major",
       isPublic: true,
     },
-    {
-      clauseId: "no-five-card-major",
-      factId: "bridge.hasFiveCardMajor",
-      operator: "boolean",
-      value: false,
-      description: "No 5-card major",
-    },
   ],
   ranking: {
     recommendationBand: "should",
@@ -746,9 +739,9 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
     id: "module.stayman.preferred",
     layer: "module-derived",
     world: "acting-hand",
-    description: "Stayman preferred (eligible AND no 5-card major)",
+    description: "Stayman preferred (eligible for Stayman)",
     valueType: "boolean",
-    derivesFrom: ["module.stayman.eligible", "bridge.hasFiveCardMajor"],
+    derivesFrom: ["module.stayman.eligible"],
     constrainsDimensions: ["suitIdentity"],
   },
 ];
@@ -757,7 +750,7 @@ const STAYMAN_EVALUATORS = new Map<string, FactEvaluatorFn>([
   ["module.stayman.eligible", (_h, _ev, m) =>
     fv("module.stayman.eligible", bool(m, "bridge.hasFourCardMajor") && num(m, "hand.hcp") >= 8)],
   ["module.stayman.preferred", (_h, _ev, m) =>
-    fv("module.stayman.preferred", bool(m, "module.stayman.eligible") && !bool(m, "bridge.hasFiveCardMajor"))],
+    fv("module.stayman.preferred", bool(m, "module.stayman.eligible"))],
 ]);
 
 const posteriorEvaluators = createPosteriorFactEvaluators([

@@ -87,7 +87,7 @@ export function runSinglePlaythrough(
   seed: number,
   atomCallMap: Map<string, { atomId: string; meaningLabel: string }>,
   vulnerability: Vulnerability = Vulnerability.None,
-  opponents: OpponentMode = "none",
+  opponents: OpponentMode = "natural",
 ): PlaythroughResult {
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);

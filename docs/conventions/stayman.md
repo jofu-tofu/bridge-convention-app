@@ -27,8 +27,8 @@
 
 | Rule | Bid | Condition | Source |
 | --- | --- | --- | --- |
-| `stayman-rebid-smolen-hearts` | 3H | 10+ HCP, 4S + 5H (game-forcing Smolen) | bridgebum/stayman |
-| `stayman-rebid-smolen-spades` | 3S | 10+ HCP, 5S + 4H (game-forcing Smolen) | bridgebum/stayman |
+| `stayman-rebid-smolen-hearts` | 3H | 10+ HCP, 4H + 5S (game-forcing Smolen, bid SHORT major) | bridgebum/smolen |
+| `stayman-rebid-smolen-spades` | 3S | 10+ HCP, 4S + 5H (game-forcing Smolen, bid SHORT major) | bridgebum/smolen |
 | `stayman-rebid-no-fit` | 3NT | 10+ HCP, signoff | bridgebum/stayman |
 | `stayman-rebid-no-fit-invite` | 2NT | 8-9 HCP, invitational | bridgebum/stayman |
 

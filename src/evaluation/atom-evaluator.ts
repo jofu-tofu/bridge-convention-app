@@ -22,7 +22,7 @@ import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport } from
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
 import { evaluateHand } from "../engine/hand-evaluator";
-import { callKey } from "../engine/call-helpers";
+import { callKey, callsMatch } from "../engine/call-helpers";
 import { parsePatternCall } from "../engine/auction-helpers";
 import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
@@ -106,7 +106,7 @@ function findPathToState(spec: ConventionSpec, targetStateId: string): BaseTrack
 
 function buildTargetedAuction(defaultAuction: Auction, path: BaseTrackPath, userSeat: Seat): Auction {
   const entries = [...defaultAuction.entries];
-  const transitionsToAdd = path.transitions.slice(1);
+  const transitionsToAdd = path.transitions;
   if (transitionsToAdd.length === 0) return { entries, isComplete: false };
 
   let currentSeat = nextSeatClockwise(entries[entries.length - 1]!.seat);
@@ -155,11 +155,15 @@ function buildBidHistory(
     const auctionBefore: Auction = { entries: auction.entries.slice(0, i), isComplete: false };
     const ctx = buildContext(deal.hands[entry.seat], auctionBefore, entry.seat, vulnerability);
     const result = strategy.suggest(ctx);
+    // Only use the strategy's alert/meaning when the suggested bid matches the actual bid.
+    // In targeted auctions, the forced bid may differ from what the strategy would suggest
+    // for the given hand, which would produce wrong alert labels.
+    const bidMatches = result && callsMatch(result.call, entry.call);
     history.push({
       seat: entry.seat, call: entry.call,
-      meaning: result?.meaning, isUser: entry.seat === userSeat,
-      alertLabel: result?.alert?.teachingLabel,
-      annotationType: result?.alert?.annotationType,
+      meaning: bidMatches ? result?.meaning : undefined, isUser: entry.seat === userSeat,
+      alertLabel: bidMatches ? result?.alert?.teachingLabel : undefined,
+      annotationType: bidMatches ? result?.alert?.annotationType : undefined,
     });
   }
   return history;

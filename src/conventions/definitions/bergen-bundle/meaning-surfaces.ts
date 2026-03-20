@@ -240,12 +240,12 @@ export function createBergenR2AfterConstructiveSurfaces(
       surfaceBindings: bindings,
     },
 
-    // Opener signoff: ≤13 HCP → Pass
+    // Opener signoff: ≤13 HCP → 3M (return to trump suit)
     {
       meaningId: `bergen:opener-signoff-after-constructive-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE,
       moduleId: "bergen",
-      encoding: { defaultCall: { type: "pass" } },
+      encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
           clauseId: "hcp-13-or-less",
@@ -261,7 +261,7 @@ export function createBergenR2AfterConstructiveSurfaces(
         intraModuleOrder: 1,
       },
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
-      teachingLabel: "Decline constructive → pass",
+      teachingLabel: `Decline constructive → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
     },
   ];

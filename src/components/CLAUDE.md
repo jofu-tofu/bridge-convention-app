@@ -100,6 +100,7 @@ components/
 
 ## Gotchas
 
+- **Layout sizing is JS-driven.** GameScreen is the single source of truth for all layout dimensions. `availableW` (viewport minus debug panel) feeds `rootFontSize`, `sidePanelW`, and `tableScale`. These are set as inline CSS variables (`--width-side-panel`, `--game-scale`, `--panel-font`) on `<main>`. **Do NOT define layout sizing variables in `app.css` with `vw`/`%` units** — they won't account for panels that steal viewport space (e.g., the debug drawer). If you need a new layout-dependent variable, derive it from `availableW` in GameScreen and set it inline.
 - **Viewport lock:** `html`, `body`, `#app` use `overflow: clip` in `app.css` to prevent page-level scrolling. Side panels scroll internally.
 - **Autoplay effect:** GameScreen has a DEV-only `$effect` for `?autoplay=true` that uses `requestAnimationFrame` to defer actions per frame (not `tick()` which causes infinite microtask loops, not `setTimeout` which is a real timer).
 - **Store methods:** `userBid`, `userPlayCard`, `retryBid`, `skipToReview` return `void` (safe for onclick). Only `startDrill` and `getLegalPlaysForSeat` return Promises.

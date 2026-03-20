@@ -16,10 +16,14 @@ const CONVENTION_SPECS: Map<string, ConventionSpec> = new Map([
   ["weak-twos-bundle", weakTwosConventionSpec],
   ["dont-bundle", dontConventionSpec],
 
-  // ── Aliases for legacy sub-bundle / mismatched IDs ──────────────────
-  // The legacy registry exposes these IDs via registerConvention/registerBundle,
-  // but they share the same protocol-frame spec as their parent bundle.
-  // Deal constraints (from ConventionBundle) handle hand-generation scoping.
+  // ── Aliases for sub-bundle IDs ──────────────────────────────────────
+  // These share the full parent ConventionSpec. The base track includes all
+  // modules (Stayman, Jacoby Transfers, Smolen), so atom enumeration returns
+  // atoms for all modules — not just the sub-bundle's focus. Deal constraints
+  // (from ConventionBundle) handle hand-generation scoping, and the plan
+  // command's "uncovered atoms" list reflects atoms outside the sub-bundle's
+  // scope. TODO: create dedicated sub-bundle specs with filtered base tracks
+  // for precise atom scoping.
   ["nt-stayman", ntConventionSpec],
   ["nt-transfers", ntConventionSpec],
   ["weak-two-bundle", weakTwosConventionSpec], // legacy bundle ID (missing trailing "s")

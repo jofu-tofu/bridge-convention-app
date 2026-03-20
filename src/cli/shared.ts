@@ -104,10 +104,91 @@ export function parseVulnerability(args: Flags): Vulnerability {
 
 export function parseOpponentMode(args: Flags): OpponentMode {
   const val = args["opponents"];
-  if (val === undefined || val === true) return "none";
+  if (val === undefined || val === true) return "natural";
   if (val === "natural" || val === "none") return val;
   console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
   process.exit(2);
+}
+
+// ── Per-seed scenario config (plan command) ─────────────────────────
+//
+// "fixed"  — every seed uses the same vulnerability / opponent mode.
+// "mixed"  — each seed gets a deterministic assignment drawn from a
+//            uniform distribution (vulnerability × opponents).
+
+export type VulnMode =
+  | { type: "fixed"; value: Vulnerability }
+  | { type: "mixed" };
+
+export type OpponentsModeConfig =
+  | { type: "fixed"; value: OpponentMode }
+  | { type: "mixed"; naturalRate: number };
+
+export interface ScenarioConfig {
+  vuln: VulnMode;
+  opponents: OpponentsModeConfig;
+}
+
+export function parseScenarioConfig(args: Flags): ScenarioConfig {
+  // Vulnerability
+  let vuln: VulnMode;
+  const vulnVal = args["vuln"];
+  if (vulnVal === undefined || vulnVal === true) {
+    vuln = { type: "fixed", value: Vulnerability.None };
+  } else if (typeof vulnVal === "string" && vulnVal.toLowerCase() === "mixed") {
+    vuln = { type: "mixed" };
+  } else if (typeof vulnVal === "string") {
+    const mapped = VULN_MAP[vulnVal.toLowerCase()];
+    if (mapped === undefined) {
+      console.error(`Invalid --vuln value: "${vulnVal}" (expected: none, ns, ew, both, mixed)`);
+      process.exit(2);
+    }
+    vuln = { type: "fixed", value: mapped };
+  } else {
+    vuln = { type: "fixed", value: Vulnerability.None };
+  }
+
+  // Opponents
+  let opponents: OpponentsModeConfig;
+  const oppVal = args["opponents"];
+  if (oppVal === undefined || oppVal === true) {
+    opponents = { type: "fixed", value: "natural" };
+  } else if (typeof oppVal === "string" && oppVal.toLowerCase() === "mixed") {
+    opponents = { type: "mixed", naturalRate: 0.5 };
+  } else if (oppVal === "natural" || oppVal === "none") {
+    opponents = { type: "fixed", value: oppVal };
+  } else {
+    console.error(`Invalid --opponents value: "${oppVal}" (expected: natural, none, mixed)`);
+    process.exit(2);
+  }
+
+  return { vuln, opponents };
+}
+
+/** Deterministically assign a (vulnerability, opponents) pair to a seed.
+ *  Uses an RNG offset from the deal-generation RNG to avoid correlation. */
+export function assignSeedScenario(
+  seed: number,
+  config: ScenarioConfig,
+  userSeat: Seat = Seat.South,
+): { vulnerability: Vulnerability; opponents: OpponentMode } {
+  const vulnerability = config.vuln.type === "fixed"
+    ? config.vuln.value
+    : pickVulnUniform(mulberry32(seed ^ 0x5C3A_410F)());
+
+  const opponents = config.opponents.type === "fixed"
+    ? config.opponents.value
+    : (mulberry32(seed ^ 0xA7E2_B93D)() < config.opponents.naturalRate ? "natural" : "none");
+
+  return { vulnerability, opponents };
+}
+
+/** Pick a vulnerability from a uniform distribution over all 4 states. */
+function pickVulnUniform(roll: number): Vulnerability {
+  if (roll < 0.25) return Vulnerability.None;
+  if (roll < 0.50) return Vulnerability.NorthSouth;
+  if (roll < 0.75) return Vulnerability.EastWest;
+  return Vulnerability.Both;
 }
 
 // ── Resolve spec + bundle ───────────────────────────────────────────
