@@ -23,6 +23,7 @@
   let { feedback, teaching, onRetry, showPracticalNote, practicalRec }: Props = $props();
 
   let showAnswer = $state(false);
+  let showMoreDetails = $state(false);
   let showDecisionSpace = $state(false);
   let expandedWhyNot = new SvelteSet<number>();
   const acceptableBids = $derived(teaching?.acceptableBids ?? []);
@@ -38,8 +39,22 @@
     teaching?.primaryExplanation?.filter(n => n.kind === "condition") ?? [],
   );
 
+  // Split conditions: failing first (the key takeaway), then passing
+  const failingConditions = $derived(conditionNodes.filter(n => !n.passed));
+  const passingConditions = $derived(conditionNodes.filter(n => n.passed));
+
   // WhyNot entries — alternative bids with explanations
   const whyNotEntries = $derived(teaching?.whyNot ?? []);
+
+  // The user's specific bid in whyNot (surface this prominently)
+  const userBidWhyNot = $derived(
+    whyNotEntries.find(e => callsMatch(e.call, feedback.userCall)),
+  );
+
+  // Remaining whyNot entries (excluding the user's bid)
+  const otherWhyNotEntries = $derived(
+    whyNotEntries.filter(e => !callsMatch(e.call, feedback.userCall)),
+  );
 
   // Convention contributions — only show when multiple modules contributed
   const contributions = $derived(
@@ -85,11 +100,20 @@
   // Parse tree — decision chain view
   const parseTree = $derived(teaching?.parseTree ?? null);
 
+  // Has any "more details" content worth showing
+  const hasMoreDetails = $derived(
+    showContributions ||
+    otherWhyNotEntries.length > 0 ||
+    (parseTree != null && parseTree.modules.length > 0) || // eslint-disable-line eqeqeq -- intentional nullish check
+    showDecisionSpaceToggle,
+  );
+
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
   let prevFeedback: ViewportBidFeedback | undefined;
   $effect.pre(() => {
     if (feedback !== prevFeedback) {
       showAnswer = false;
+      showMoreDetails = false;
       showDecisionSpace = false;
       showScoreBreakdown = false;
       expandedWhyNot.clear();
@@ -150,20 +174,19 @@
   </div>
 
   {#if showAnswer && feedback.correctCall}
-    <div
-      class="bg-fb-incorrect-surface/50 rounded px-3 py-2 mb-3 border border-fb-incorrect/30 min-w-0 space-y-2"
-    >
-      <!-- 1. Correct bid + meaning -->
-      <div>
-        <p class="text-[--text-label] text-fb-incorrect-text/70 mb-0.5">Correct bid:</p>
-        <p class="font-mono font-bold text-[--text-value] text-fb-incorrect-bright">
+    <div class="min-w-0 space-y-3">
+
+      <!-- ═══ SECTION 1: The correct answer (hero) ═══ -->
+      <div class="bg-fb-incorrect-surface/50 rounded px-3 py-2.5 border border-fb-incorrect/30">
+        <p class="text-[--text-annotation] text-fb-incorrect-text/60 uppercase tracking-wide mb-1">You should bid</p>
+        <p class="font-mono font-bold text-[--text-heading] text-fb-incorrect-bright leading-tight">
           {formatCall(feedback.correctCall)}
-          {#if meaningLabel}
-            <span class="font-sans font-normal text-[--text-detail] text-fb-incorrect-dim/80">— {meaningLabel}</span>
-          {/if}
         </p>
+        {#if meaningLabel}
+          <p class="text-[--text-detail] text-fb-incorrect-dim/80 mt-0.5">{meaningLabel}</p>
+        {/if}
         {#if multiRationaleCall}
-          <p class="text-[--text-label] text-note-multi-rationale/70 mt-0.5">
+          <p class="text-[--text-label] text-note-multi-rationale/70 mt-1">
             Correct for more than one reason
             {#if multiRationaleCall.supportingMeanings.length > 0}
               — supported by {multiRationaleCall.supportingMeanings.length} meanings
@@ -171,174 +194,240 @@
           </p>
         {/if}
         {#if encodingNote}
-          <p class="text-[--text-label] text-note-encoding/60 mt-0.5 italic">{encodingNote}</p>
+          <p class="text-[--text-label] text-note-encoding/60 mt-1 italic">{encodingNote}</p>
         {/if}
         {#if fallbackNote}
-          <p class="text-[--text-label] text-fb-incorrect-text/50 mt-0.5 italic">
+          <p class="text-[--text-label] text-fb-incorrect-text/50 mt-1 italic">
             No convention applies here — pass by default
           </p>
         {/if}
+        {#if ambiguityNote}
+          <p class="text-[--text-annotation] text-fb-incorrect-text/40 mt-1 italic">{ambiguityNote}</p>
+        {/if}
       </div>
 
-      <!-- 2. Hand summary -->
-      {#if teaching?.handSummary}
-        <div>
-          <p class="text-[--text-label] text-fb-incorrect-text/70 mb-0.5">Your hand:</p>
-          <p class="font-mono text-[--text-detail] text-fb-incorrect-dim">{teaching.handSummary}</p>
+      <!-- ═══ SECTION 2: What went wrong (key takeaway) ═══ -->
+      {#if failingConditions.length > 0}
+        <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-accent-danger/20">
+          <p class="text-[--text-annotation] text-accent-danger/80 uppercase tracking-wide mb-1.5">
+            {failingConditions.length === 1 ? "Where it breaks down" : "Where it breaks down"}
+          </p>
+          <ul class="space-y-1" role="list" aria-label="Failed conditions">
+            {#each failingConditions as node, ci (node.content + '-fail-' + ci)}
+              <li class="flex items-start gap-1.5">
+                <span class="text-accent-danger shrink-0 mt-0.5" aria-hidden="true">✗</span>
+                <span class="sr-only">Failed:</span>
+                <span class="text-fb-incorrect-dim break-words text-[--text-label]">{node.content}</span>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {:else if teaching?.fallbackExplanation}
+        <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-fb-incorrect/20">
+          <p class="text-fb-incorrect-dim/60 text-[--text-label] leading-tight">
+            {teaching.fallbackExplanation}
+          </p>
         </div>
       {/if}
 
-      <!-- 3. Conditions from teaching projection -->
-      {#if conditionNodes.length > 0}
-        <ul class="space-y-1" role="list" aria-label="Bid conditions">
-          {#each conditionNodes as node, ci (node.content + '-' + ci)}
-            <li class="flex items-center gap-1.5">
-              <span
-                class={node.passed
-                  ? "text-accent-success"
-                  : "text-accent-danger"}
-                aria-hidden="true">{node.passed ? "✓" : "✗"}</span
-              >
-              <span class="sr-only"
-                >{node.passed ? "Passed:" : "Failed:"}</span
-              >
-              <span class="text-fb-incorrect-dim/70 break-words text-[--text-label]">{node.content}</span>
-            </li>
-          {/each}
-        </ul>
-      {:else if teaching?.fallbackExplanation}
-        <p class="text-fb-incorrect-dim/50 text-[--text-label] leading-tight">
-          {teaching.fallbackExplanation}
-        </p>
+      <!-- ═══ SECTION 3: Why not YOUR bid? (the user's mental question) ═══ -->
+      {#if userBidWhyNot && userBidWhyNot.explanation.length > 0}
+        <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-fb-incorrect/20">
+          <p class="text-[--text-annotation] text-fb-incorrect-text/60 uppercase tracking-wide mb-1.5">
+            Why not <span class="font-mono font-semibold normal-case">{formatCall(feedback.userCall)}</span>?
+          </p>
+          <ul class="space-y-1" role="list" aria-label="Why your bid doesn't work">
+            {#each userBidWhyNot.explanation as expNode, ei (expNode.content + '-user-' + ei)}
+              <li class="flex items-start gap-1.5">
+                {#if expNode.kind === "condition"}
+                  <span
+                    class="{expNode.passed ? 'text-accent-success' : 'text-accent-danger'} shrink-0 mt-0.5"
+                    aria-hidden="true"
+                  >{expNode.passed ? "✓" : "✗"}</span>
+                {:else}
+                  <span class="text-fb-incorrect-text/30 shrink-0 mt-0.5" aria-hidden="true">·</span>
+                {/if}
+                <span class="text-fb-incorrect-dim/80 text-[--text-label]">{expNode.content}</span>
+              </li>
+            {/each}
+          </ul>
+          {#if userBidWhyNot.eliminationStage}
+            <p class="text-[--text-annotation] text-fb-incorrect-text/40 mt-1.5 italic">
+              {formatEliminationStage(userBidWhyNot.eliminationStage)}
+            </p>
+          {/if}
+        </div>
       {/if}
 
-      <!-- 3b. Ambiguity note -->
-      {#if ambiguityNote}
-        <p class="text-[--text-annotation] text-fb-incorrect-text/40 italic">
-          {ambiguityNote}
-        </p>
-      {/if}
-
-      <!-- 4. Partner hand space -->
-      {#if hasPartnerInfo && teaching}
-        <div class="pt-1 border-t border-fb-incorrect/20">
-          <p class="text-[--text-label] text-fb-incorrect-text/70 mb-0.5">What we know about partner:</p>
-          <p class="text-[--text-label] text-fb-incorrect-dim/70">{teaching.partnerSummary}</p>
-          {#if teaching.archetypes && teaching.archetypes.length > 0}
-            <div class="mt-1 space-y-0.5">
-              {#each teaching.archetypes as archetype (archetype.label)}
-                <p class="text-[--text-annotation] text-fb-incorrect-text/50 font-mono">
-                  {archetype.label}: {archetype.hcpRange.min}-{archetype.hcpRange.max} HCP, {archetype.shapePattern}
-                </p>
-              {/each}
+      <!-- ═══ SECTION 4: Your hand + partner context (quick reference) ═══ -->
+      {#if teaching?.handSummary || hasPartnerInfo}
+        <div class="rounded px-3 py-2 border border-fb-incorrect/15 space-y-2">
+          {#if teaching?.handSummary}
+            <div>
+              <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-0.5">Your hand</p>
+              <p class="font-mono text-[--text-detail] text-fb-incorrect-dim">{teaching.handSummary}</p>
+            </div>
+          {/if}
+          {#if hasPartnerInfo && teaching}
+            <div>
+              <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-0.5">Partner's hand</p>
+              <p class="text-[--text-label] text-fb-incorrect-dim/70">{teaching.partnerSummary}</p>
+              {#if teaching.archetypes && teaching.archetypes.length > 0}
+                <div class="mt-1 space-y-0.5">
+                  {#each teaching.archetypes as archetype (archetype.label)}
+                    <p class="text-[--text-annotation] text-fb-incorrect-text/50 font-mono">
+                      {archetype.label}: {archetype.hcpRange.min}-{archetype.hcpRange.max} HCP, {archetype.shapePattern}
+                    </p>
+                  {/each}
+                </div>
+              {/if}
             </div>
           {/if}
         </div>
       {/if}
 
-      <!-- 5. Convention contributions -->
-      {#if showContributions}
-        <div class="pt-1 border-t border-fb-incorrect/20">
-          <p class="text-[--text-label] text-fb-incorrect-text/70 mb-1">Conventions evaluated:</p>
-          <div class="flex flex-wrap gap-1">
-            {#each contributions as contrib (contrib.moduleId)}
-              <span
-                class="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[--text-annotation] {roleColorClasses(contrib.role)}"
-              >
-                <span class="font-medium">{formatRuleName(contrib.moduleId)}</span>
-                <span class="opacity-70">{formatModuleRole(contrib.role)}</span>
-              </span>
+      <!-- ═══ SECTION 5: Requirements for the correct bid (passing conditions) ═══ -->
+      {#if passingConditions.length > 0}
+        <div class="rounded px-3 py-2 border border-fb-incorrect/15">
+          <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-1.5">
+            Requirements met
+          </p>
+          <ul class="space-y-0.5" role="list" aria-label="Passing conditions">
+            {#each passingConditions as node, ci (node.content + '-pass-' + ci)}
+              <li class="flex items-start gap-1.5">
+                <span class="text-accent-success/60 shrink-0 mt-0.5" aria-hidden="true">✓</span>
+                <span class="sr-only">Passed:</span>
+                <span class="text-fb-incorrect-dim/50 break-words text-[--text-label]">{node.content}</span>
+              </li>
             {/each}
-          </div>
+          </ul>
         </div>
       {/if}
 
-      <!-- 6. Other Bids (from whyNot entries) -->
-      {#if whyNotEntries.length > 0}
-        <div class="pt-1 border-t border-fb-incorrect/20">
-          <p class="text-[--text-label] text-fb-incorrect-text/70 mb-1">Other bids:</p>
-          <div class="space-y-1">
-            {#each whyNotEntries as entry, wi (wi)}
-              <div class="text-[--text-label]">
-                <button
-                  type="button"
-                  class="flex items-center gap-1 text-left cursor-pointer hover:text-fb-incorrect-bright transition-colors w-full flex-wrap"
-                  onclick={() => toggleWhyNot(wi)}
-                  aria-expanded={expandedWhyNot.has(wi)}
-                >
-                  <span class="text-fb-incorrect-text/50 shrink-0">{expandedWhyNot.has(wi) ? "▾" : "▸"}</span>
-                  <span class="font-mono font-bold text-fb-incorrect-dim/80">{formatCall(entry.call)}</span>
-                  {#if isAcceptableWhyNot(entry.call)}
-                    <span class="rounded bg-fb-acceptable-surface/70 border border-fb-acceptable/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-fb-acceptable-dim">
-                      acceptable
-                    </span>
-                  {:else}
-                    {@const gradeStyle = whyNotGradeClasses(entry.grade)}
-                    <span class="rounded border px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide {gradeStyle.badge}">
-                      {gradeStyle.label}
-                    </span>
-                  {/if}
-                  {#if entry.familyRelation && !(entry.grade === "near-miss" && entry.familyRelation.kind === "near-miss-of")}
-                    <span class="text-[--text-annotation] text-note-relation/60 italic">
-                      {formatRelationKind(entry.familyRelation.kind)}
-                    </span>
-                  {/if}
-                  {#if entry.eliminationStage}
-                    <span class="text-[--text-annotation] text-note-elimination/50">
-                      ({formatEliminationStage(entry.eliminationStage)})
-                    </span>
-                  {/if}
-                </button>
-                {#if expandedWhyNot.has(wi) && entry.explanation.length > 0}
-                  <ul class="ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Why not this bid">
-                    {#each entry.explanation as expNode, ei (expNode.content + '-' + ei)}
-                      <li class="flex items-center gap-1.5 text-fb-incorrect-text/50">
-                        {#if expNode.kind === "condition"}
-                          <span class={expNode.passed ? "text-accent-success" : "text-accent-danger"} aria-hidden="true">{expNode.passed ? "✓" : "✗"}</span>
-                        {:else}
-                          <span class="text-fb-incorrect-text/30" aria-hidden="true">·</span>
-                        {/if}
-                        <span>{expNode.content}</span>
-                      </li>
-                    {/each}
-                  </ul>
-                {/if}
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
-
-      <!-- 6b. Parse tree: decision chain -->
-      {#if parseTree && parseTree.modules.length > 0}
-        <ParseTreePanel {parseTree} />
-      {/if}
-
-      <!-- 7. Decision space: meanings evaluated (expandable) -->
-      {#if showDecisionSpaceToggle}
-        <div class="pt-1 border-t border-fb-incorrect/20">
+      <!-- ═══ SECTION 6: More details (collapsed — technical deep dive) ═══ -->
+      {#if hasMoreDetails}
+        <div class="border-t border-fb-incorrect/15 pt-1">
           <button
             type="button"
-            class="text-[--text-label] text-fb-incorrect-text/50 hover:text-fb-incorrect-dim transition-colors cursor-pointer flex items-center gap-1"
-            onclick={() => { showDecisionSpace = !showDecisionSpace; }}
-            aria-expanded={showDecisionSpace}
+            class="text-[--text-label] text-fb-incorrect-text/40 hover:text-fb-incorrect-dim transition-colors cursor-pointer flex items-center gap-1"
+            onclick={() => { showMoreDetails = !showMoreDetails; }}
+            aria-expanded={showMoreDetails}
           >
-            <span class="shrink-0">{showDecisionSpace ? "▾" : "▸"}</span>
-            <span>Other conventions considered ({eliminatedMeanings.length} ruled out)</span>
+            <span class="shrink-0">{showMoreDetails ? "▾" : "▸"}</span>
+            <span>More details</span>
           </button>
-          {#if showDecisionSpace}
-            <div class="mt-1 space-y-0.5 ml-3">
-              {#each eliminatedMeanings as mv (mv.meaningId)}
-                <div class="text-[--text-annotation] flex items-start gap-1.5">
-                  <span class="text-fb-incorrect-emphasis/50 shrink-0" aria-hidden="true">✗</span>
-                  <div>
-                    <span class="text-fb-incorrect-dim/60">{mv.displayLabel}</span>
-                    {#if mv.eliminationReason}
-                      <span class="text-fb-incorrect-text/40"> — {mv.eliminationReason}</span>
-                    {/if}
+
+          {#if showMoreDetails}
+            <div class="mt-2 space-y-2 ml-1">
+
+              <!-- Convention contributions -->
+              {#if showContributions}
+                <div>
+                  <p class="text-[--text-annotation] text-fb-incorrect-text/50 mb-1">Conventions involved:</p>
+                  <div class="flex flex-wrap gap-1">
+                    {#each contributions as contrib (contrib.moduleId)}
+                      <span
+                        class="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[--text-annotation] {roleColorClasses(contrib.role)}"
+                      >
+                        <span class="font-medium">{formatRuleName(contrib.moduleId)}</span>
+                        <span class="opacity-70">{formatModuleRole(contrib.role)}</span>
+                      </span>
+                    {/each}
                   </div>
                 </div>
-              {/each}
+              {/if}
+
+              <!-- Other bids considered -->
+              {#if otherWhyNotEntries.length > 0}
+                <div>
+                  <p class="text-[--text-annotation] text-fb-incorrect-text/50 mb-1">Other bids considered:</p>
+                  <div class="space-y-1">
+                    {#each otherWhyNotEntries as entry, wi (wi)}
+                      <div class="text-[--text-label]">
+                        <button
+                          type="button"
+                          class="flex items-center gap-1 text-left cursor-pointer hover:text-fb-incorrect-bright transition-colors w-full flex-wrap"
+                          onclick={() => toggleWhyNot(wi)}
+                          aria-expanded={expandedWhyNot.has(wi)}
+                        >
+                          <span class="text-fb-incorrect-text/50 shrink-0">{expandedWhyNot.has(wi) ? "▾" : "▸"}</span>
+                          <span class="font-mono font-bold text-fb-incorrect-dim/80">{formatCall(entry.call)}</span>
+                          {#if isAcceptableWhyNot(entry.call)}
+                            <span class="rounded bg-fb-acceptable-surface/70 border border-fb-acceptable/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-fb-acceptable-dim">
+                              acceptable
+                            </span>
+                          {:else}
+                            {@const gradeStyle = whyNotGradeClasses(entry.grade)}
+                            <span class="rounded border px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide {gradeStyle.badge}">
+                              {gradeStyle.label}
+                            </span>
+                          {/if}
+                          {#if entry.familyRelation && !(entry.grade === "near-miss" && entry.familyRelation.kind === "near-miss-of")}
+                            <span class="text-[--text-annotation] text-note-relation/60 italic">
+                              {formatRelationKind(entry.familyRelation.kind)}
+                            </span>
+                          {/if}
+                          {#if entry.eliminationStage}
+                            <span class="text-[--text-annotation] text-note-elimination/50">
+                              ({formatEliminationStage(entry.eliminationStage)})
+                            </span>
+                          {/if}
+                        </button>
+                        {#if expandedWhyNot.has(wi) && entry.explanation.length > 0}
+                          <ul class="ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Why not this bid">
+                            {#each entry.explanation as expNode, ei (expNode.content + '-' + ei)}
+                              <li class="flex items-center gap-1.5 text-fb-incorrect-text/50">
+                                {#if expNode.kind === "condition"}
+                                  <span class={expNode.passed ? "text-accent-success" : "text-accent-danger"} aria-hidden="true">{expNode.passed ? "✓" : "✗"}</span>
+                                {:else}
+                                  <span class="text-fb-incorrect-text/30" aria-hidden="true">·</span>
+                                {/if}
+                                <span>{expNode.content}</span>
+                              </li>
+                            {/each}
+                          </ul>
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+
+              <!-- Parse tree: decision chain -->
+              {#if parseTree && parseTree.modules.length > 0}
+                <ParseTreePanel {parseTree} />
+              {/if}
+
+              <!-- Decision space: meanings evaluated (expandable) -->
+              {#if showDecisionSpaceToggle}
+                <div>
+                  <button
+                    type="button"
+                    class="text-[--text-label] text-fb-incorrect-text/50 hover:text-fb-incorrect-dim transition-colors cursor-pointer flex items-center gap-1"
+                    onclick={() => { showDecisionSpace = !showDecisionSpace; }}
+                    aria-expanded={showDecisionSpace}
+                  >
+                    <span class="shrink-0">{showDecisionSpace ? "▾" : "▸"}</span>
+                    <span>Other conventions considered ({eliminatedMeanings.length} ruled out)</span>
+                  </button>
+                  {#if showDecisionSpace}
+                    <div class="mt-1 space-y-0.5 ml-3">
+                      {#each eliminatedMeanings as mv (mv.meaningId)}
+                        <div class="text-[--text-annotation] flex items-start gap-1.5">
+                          <span class="text-fb-incorrect-emphasis/50 shrink-0" aria-hidden="true">✗</span>
+                          <div>
+                            <span class="text-fb-incorrect-dim/60">{mv.displayLabel}</span>
+                            {#if mv.eliminationReason}
+                              <span class="text-fb-incorrect-text/40"> — {mv.eliminationReason}</span>
+                            {/if}
+                          </div>
+                        </div>
+                      {/each}
+                    </div>
+                  {/if}
+                </div>
+              {/if}
+
             </div>
           {/if}
         </div>
