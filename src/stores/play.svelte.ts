@@ -15,7 +15,7 @@ import type {
   PlayContext,
   PublicBeliefs,
 } from "../core/contracts";
-import { randomPlayStrategy } from "../strategy/play/random-play";
+import { randomPlayStrategy } from "../service";
 import { delay } from "../core/util/delay";
 
 const AI_PLAY_DELAY = 500;

@@ -30,6 +30,7 @@ import type {
 } from "./bidding.svelte";
 import type { PlayLogEntry } from "./play.svelte";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
+import type { GamePhase } from "./phase-machine";
 
 // ── Bidding Store ───────────────────────────────────────────────────
 
@@ -91,7 +92,6 @@ export interface DDSStore {
 
 // ── Game Store ──────────────────────────────────────────────────────
 
-type GamePhase = "BIDDING" | "DECLARER_PROMPT" | "PLAYING" | "EXPLANATION";
 type PromptMode = "defender" | "south-declarer" | "declarer-swap";
 
 export interface GameStore {

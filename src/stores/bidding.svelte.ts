@@ -2,7 +2,7 @@ import { tick } from "svelte";
 import type { EnginePort } from "../engine/port";
 import type { Deal, Call, Auction, AuctionEntry, Seat } from "../engine/types";
 import { BidSuit } from "../engine/types";
-import type { DrillSession } from "../bootstrap/types";
+import type { DrillSession } from "../service";
 import { delay } from "../core/util/delay";
 import type {
   BidResult,
@@ -14,15 +14,15 @@ import { BidGrade } from "../core/contracts/teaching-grading";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 
-import { createBiddingContext } from "../conventions/core";
+import { createBiddingContext } from "../service";
 import type { GameStoreOptions } from "./game.svelte";
-import { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
+import { assembleBidFeedback } from "../service";
 
 export type { BidHistoryEntry } from "../core/contracts";
 export { BidGrade } from "../core/contracts/teaching-grading";
 export type { TeachingResolution } from "../core/contracts";
 
-import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
+import type { BidFeedbackDTO } from "../service";
 export type BidFeedback = BidFeedbackDTO;
 
 /** Aggregated debug snapshot — strategy evaluation plus the expected bid. */

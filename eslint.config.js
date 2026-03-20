@@ -337,7 +337,60 @@ export default tseslint.config(
               name: "../../cli/*",
               message: "stores/ must not import cli/",
             },
+            {
+              name: "../bootstrap/*",
+              message: "stores must use service layer, not bootstrap directly",
+            },
+            {
+              name: "../../bootstrap/*",
+              message: "stores must use service layer, not bootstrap directly",
+            },
+            {
+              name: "../conventions/*",
+              message: "stores must use service layer, not conventions directly",
+            },
+            {
+              name: "../../conventions/*",
+              message: "stores must use service layer, not conventions directly",
+            },
+            {
+              name: "../strategy/*",
+              message: "stores must use service layer, not strategy directly",
+            },
+            {
+              name: "../../strategy/*",
+              message: "stores must use service layer, not strategy directly",
+            },
+            {
+              name: "../teaching/*",
+              message: "stores must use service layer, not teaching directly",
+            },
+            {
+              name: "../../teaching/*",
+              message: "stores must use service layer, not teaching directly",
+            },
+            {
+              name: "../inference/*",
+              message: "stores must use service layer, not inference directly",
+            },
+            {
+              name: "../../inference/*",
+              message: "stores must use service layer, not inference directly",
+            },
+            {
+              name: "../core/viewport/*",
+              message: "stores must use service layer for viewport construction",
+            },
+            {
+              name: "../../core/viewport/*",
+              message: "stores must use service layer for viewport construction",
+            },
           ],
+          patterns: [{
+            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
+                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
+            message: "Import from 'conventions/core' barrel instead of deep paths",
+          }],
         },
       ],
     },
@@ -772,11 +825,28 @@ export default tseslint.config(
     },
   },
 
+  // ── Module boundary: service/ ──
+  {
+    files: ["src/service/**/*.ts"],
+    ignores: ["src/service/__tests__/**", "src/service/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+          ],
+        },
+      ],
+    },
+  },
+
   // ── Barrel enforcement: conventions/core/ ──
   {
     files: [
       "src/strategy/**/*.ts", "src/inference/**/*.ts", "src/bootstrap/**/*.ts",
-      "src/stores/**/*.ts", "src/stores/**/*.svelte.ts",
       "src/components/**/*.ts", "src/components/**/*.svelte",
       "src/engine/**/*.ts",
     ],

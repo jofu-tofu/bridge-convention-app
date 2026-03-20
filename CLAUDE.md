@@ -82,6 +82,7 @@ src/
   strategy/        AI strategies
     bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
+  service/         Session-handle-oriented service layer — owns game state, exposes viewport-only data
   bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
   evaluation/      Type-enforced viewport boundary — facade for strategy→viewport→grading pipeline
   cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
@@ -114,6 +115,7 @@ tests/
 | Teaching | `src/teaching/teaching-resolution.ts` | Teaching resolution and projection |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline) |
+| Service | `src/service/index.ts` | Session-handle service layer (local-service, bidding/play/dds controllers) |
 | Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
 | Evaluation | `src/evaluation/index.ts` | Type-enforced viewport boundary (facade for strategy/teaching/viewport pipeline) |
 | CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
@@ -287,6 +289,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/inference/CLAUDE.md` — inference architecture, posterior engine, new posterior boundary
 - `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port, migration status
 - `src/strategy/CLAUDE.md` — meaning-strategy pattern, play heuristics
+- `src/service/CLAUDE.md` — session-handle service layer, viewport-only boundary, controllers
 - `src/bootstrap/CLAUDE.md` — DrillConfig, DrillSession, DrillBundle, drill lifecycle
 - `src/cli/CLAUDE.md` — headless coverage test runner
 - `src/core/display/CLAUDE.md` — display utility inventory, dependency rules

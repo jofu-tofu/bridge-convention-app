@@ -5,30 +5,28 @@ import type {
   Contract,
 } from "../engine/types";
 import { Seat } from "../engine/types";
-import type { DrillSession, DrillBundle } from "../bootstrap/types";
+import type { DrillSession, DrillBundle } from "../service";
 import type { PublicBeliefs } from "../core/contracts";
 import type {
   InferenceSnapshot,
   PublicBeliefState,
-} from "../inference/types";
-import { createInferenceCoordinator } from "../inference/inference-coordinator";
+} from "../service";
+import { createInferenceCoordinator } from "../service";
 import { partnerSeat, areSamePartnership } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
 import { createPlayStore } from "./play.svelte";
 import { createBiddingStore } from "./bidding.svelte";
-import { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail } from "../core/viewport";
-import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
+import { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail } from "../service";
+import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../service";
+import { isValidTransition } from "./phase-machine";
+import type { GamePhase } from "./phase-machine";
+
+export type { GamePhase } from "./phase-machine";
 
 export interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
   delayFn?: (ms: number) => Promise<void>;
 }
-
-type GamePhase =
-  | "BIDDING"
-  | "DECLARER_PROMPT"
-  | "PLAYING"
-  | "EXPLANATION";
 
 // Re-export types from sub-stores for backward compat
 export type { BidHistoryEntry, BidFeedback } from "./bidding.svelte";
@@ -37,14 +35,6 @@ export type { BidHistoryEntry, BidFeedback } from "./bidding.svelte";
 export { seatController } from "./play.svelte";
 
 type PromptMode = "defender" | "south-declarer" | "declarer-swap";
-
-/** Valid phase transitions. Key = source phase, value = allowed target phases. */
-const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
-  BIDDING: ["DECLARER_PROMPT", "EXPLANATION"],
-  DECLARER_PROMPT: ["PLAYING", "EXPLANATION"],
-  PLAYING: ["EXPLANATION"],
-  EXPLANATION: ["DECLARER_PROMPT"],
-};
 
 export function createGameStore(engine: EnginePort, options?: GameStoreOptions) {
   // Coordinator state — owns phase, deal, contract, and cross-cutting concerns
@@ -74,8 +64,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
    * DEV mode throws on invalid transitions; prod mode warns and returns false.
    */
   function transitionTo(target: GamePhase): boolean {
-    const allowed = VALID_TRANSITIONS[phase];
-    if (allowed.includes(target)) {
+    if (isValidTransition(phase, target)) {
       phase = target;
       return true;
     }
