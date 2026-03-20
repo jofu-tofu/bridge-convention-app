@@ -3,9 +3,9 @@
 import {
   generateProtocolCoverageManifest,
 } from "../../conventions/core";
-import { listBundles } from "../../conventions/core/bundle";
+import { listBundles } from "../../conventions/core";
 import { getConventionSpec } from "../../conventions/spec-registry";
-import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
 import type { Flags, ConventionSpec, ConventionBundle, Vulnerability } from "../shared";
@@ -58,7 +58,7 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
   for (const { id, spec, bundle } of specs) {
     const manifest = generateProtocolCoverageManifest(spec);
     const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
-    const strategy = protocolSpecToStrategy(spec);
+    const strategy = createSpecStrategy(spec);
 
     for (let i = 0; i < allAtoms.length; i++) {
       const atom = allAtoms[i]!;

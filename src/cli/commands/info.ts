@@ -5,9 +5,9 @@ import {
   enumerateBaseTrackStates,
   getBaseModules,
 } from "../../conventions/core";
-import { listBundles } from "../../conventions/core/bundle";
+import { listBundles } from "../../conventions/core";
 import { getConventionSpec } from "../../conventions/spec-registry";
-import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 
 import type { Flags, Vulnerability } from "../shared";
 import {
@@ -92,7 +92,7 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   }
 
   // Compute strategy coverage via selftest at seed 42
-  const strategy = protocolSpecToStrategy(spec);
+  const strategy = createSpecStrategy(spec);
   let covered = 0;
   let skipped = 0;
   for (let i = 0; i < allAtoms.length; i++) {

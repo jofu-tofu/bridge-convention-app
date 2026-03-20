@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { OpponentMode, VulnerabilityDistribution } from "../../bootstrap/types";
-  import { DEFAULT_DRILL_TUNING } from "../../bootstrap/types";
+  import type { OpponentMode, VulnerabilityDistribution } from "../../core/contracts/drill";
+  import { DEFAULT_DRILL_TUNING } from "../../core/contracts/drill";
   import { getAppStore } from "../../stores/context";
 
   const appStore = getAppStore();

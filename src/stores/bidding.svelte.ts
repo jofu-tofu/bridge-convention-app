@@ -7,46 +7,23 @@ import { delay } from "../core/util/delay";
 import type {
   BidResult,
   BidHistoryEntry,
-  PracticalRecommendation,
   ConventionBiddingStrategy,
   StrategyEvaluation,
-  TeachingProjection,
-  TeachingResolution,
-  PracticalScoreBreakdown,
 } from "../core/contracts";
 import { BidGrade } from "../core/contracts/teaching-grading";
-import type { EncodingTrace } from "../core/contracts/provenance";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 
 import { createBiddingContext } from "../conventions/core";
 import type { GameStoreOptions } from "./game.svelte";
-import {
-  resolveTeachingAnswer,
-  gradeBid,
-} from "../teaching/teaching-resolution";
+import { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
 
 export type { BidHistoryEntry } from "../core/contracts";
 export { BidGrade } from "../core/contracts/teaching-grading";
 export type { TeachingResolution } from "../core/contracts";
 
-export interface BidFeedback {
-  readonly grade: BidGrade;
-  readonly userCall: Call;
-  readonly expectedResult: BidResult;
-  readonly teachingResolution: TeachingResolution;
-  readonly practicalRecommendation: PracticalRecommendation | null;
-  readonly teachingProjection: TeachingProjection | null;
-  /** Encoding trace for the selected meaning (how it became a concrete call).
-   *  Null when provenance is unavailable. */
-  readonly encodingTrace: EncodingTrace | null;
-  /** Component-level breakdown from the practical scorer. */
-  readonly practicalScoreBreakdown: PracticalScoreBreakdown | null;
-  /** True when the pipeline evaluated every possible meaning (no early exit). */
-  readonly evaluationExhaustive: boolean;
-  /** True when no convention surface matched and the pipeline fell back to a default bid. */
-  readonly fallbackReached: boolean;
-}
+import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
+export type BidFeedback = BidFeedbackDTO;
 
 /** Aggregated debug snapshot — strategy evaluation plus the expected bid. */
 export interface DebugSnapshot extends StrategyEvaluation {
@@ -222,26 +199,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     };
 
     const strategyEval = conventionStrategy.getLastEvaluation();
-    const teachingResolution = resolveTeachingAnswer(
-      effectiveResult,
-      strategyEval?.acceptableAlternatives ?? undefined,
-      strategyEval?.intentFamilies ?? undefined,
-    );
-    const grade = gradeBid(call, teachingResolution);
-    const isCorrect = grade === BidGrade.Correct;
-
-    bidFeedback = {
-      grade,
-      userCall: call,
-      expectedResult: effectiveResult,
-      teachingResolution,
-      practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
-      teachingProjection: strategyEval?.teachingProjection ?? null,
-      encodingTrace: strategyEval?.provenance?.encoding[0] ?? null,
-      practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
-      evaluationExhaustive: strategyEval?.arbitration?.evidenceBundle?.exhaustive ?? false,
-      fallbackReached: strategyEval?.arbitration?.evidenceBundle?.fallbackReached ?? false,
-    };
+    bidFeedback = assembleBidFeedback(call, effectiveResult, strategyEval);
+    const isCorrect = bidFeedback.grade === BidGrade.Correct;
 
     // Capture persistent debug log entry — strategy caches are fresh right now
     if (import.meta.env.DEV) {

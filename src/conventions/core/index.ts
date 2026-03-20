@@ -22,7 +22,7 @@ export {
 export { createBiddingContext } from "./context-factory";
 
 // ── Bundle (sub-barrel) ─────────────────────────────────────────────────
-export { findBundleForConvention, getBundle, composeBundles } from "./bundle";
+export { findBundleForConvention, getBundle, listBundles, composeBundles } from "./bundle";
 export type { ConventionBundle } from "./bundle";
 
 // ── Pipeline ────────────────────────────────────────────────────────────

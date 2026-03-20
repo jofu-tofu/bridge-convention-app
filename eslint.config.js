@@ -232,12 +232,88 @@ export default tseslint.config(
             ...svelteImports,
             ...storeImports,
             ...componentImports,
+            ...strategyImports,
+            ...teachingImports,
           ],
           patterns: [{
             group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
+                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
+                      "*/conventions/core/context-factory"],
             message: "Import from 'conventions/core' barrel instead of deep paths",
           }],
+        },
+      ],
+    },
+  },
+
+  // ── Module boundary: components/ ──
+  {
+    files: ["src/components/**/*.svelte", "src/components/**/*.ts"],
+    ignores: [
+      "src/components/__tests__/**",
+      "src/components/**/*.test.ts",
+      "src/components/game/debug/**",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...strategyImports,
+            ...teachingImports,
+            ...inferenceImports,
+          ],
+          patterns: [{
+            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
+                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
+                      "*/conventions/core/context-factory"],
+            message: "Import from 'conventions/core' barrel instead of deep paths",
+          }],
+        },
+      ],
+    },
+  },
+
+  // ── Viewport boundary enforcement: agent-facing CLI commands ──
+  // eval.ts and play.ts must use the evaluation/ facade — no direct
+  // access to strategy, teaching, viewport builders, or convention internals.
+  {
+    files: ["src/cli/commands/eval.ts", "src/cli/commands/play.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            ...svelteImports,
+            ...storeImports,
+            ...componentImports,
+          ],
+          patterns: [
+            {
+              group: ["**/strategy/**"],
+              message: "Agent-facing commands must use evaluation/ facade, not strategy/ directly",
+            },
+            {
+              group: ["**/teaching/**"],
+              message: "Agent-facing commands must use evaluation/ facade, not teaching/ directly",
+            },
+            {
+              group: ["**/conventions/**"],
+              message: "Agent-facing commands must use evaluation/ facade, not conventions/ directly",
+            },
+            {
+              group: ["**/core/viewport/**"],
+              message: "Agent-facing commands must use evaluation/ facade, not core/viewport/ directly",
+            },
+            {
+              group: ["**/core/contracts/**"],
+              message: "Agent-facing commands must use evaluation/ facade, not core/contracts/ directly",
+            },
+            {
+              group: ["**/engine/**"],
+              message: "Agent-facing commands must use evaluation/ facade or cli/shared for engine types",
+            },
+          ],
         },
       ],
     },

@@ -5,7 +5,7 @@ import {
   enumerateBaseTrackStates,
   getBaseModules,
 } from "../../conventions/core";
-import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
 import type { Flags, OpponentMode, Vulnerability, ConventionSpec, Call } from "../shared";
@@ -44,7 +44,7 @@ export function runPlan(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
 
   const spec = resolveSpec(bundleId);
   const bundle = resolveBundle(bundleId);
-  const strategy = protocolSpecToStrategy(spec);
+  const strategy = createSpecStrategy(spec);
 
   // All atoms from coverage manifest
   const manifest = generateProtocolCoverageManifest(spec);

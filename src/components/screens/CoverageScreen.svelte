@@ -2,7 +2,7 @@
   import { getAppStore } from "../../stores/context";
   import { listConventionSpecs, getConventionSpec } from "../../conventions/spec-registry";
   import { generateProtocolCoverageManifest, getBaseModules } from "../../conventions/core";
-  import type { ProtocolCoverageManifest, ProtocolCoverageAtom, ConventionSpec } from "../../conventions/core";
+  import type { ProtocolCoverageManifest, ConventionSpec } from "../../conventions/core";
 
   const appStore = getAppStore();
 

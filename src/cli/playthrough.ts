@@ -7,11 +7,8 @@ import {
   replay,
   getBaseModules,
 } from "../conventions/core";
-import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
-import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
-import { createStrategyChain } from "../strategy/bidding/strategy-chain";
-import { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
-import { BidGrade } from "../core/contracts/teaching-grading";
+import { createSpecStrategy, createOpponentStrategy } from "../bootstrap/strategy-factory";
+import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder";
 import type { BidResult } from "../core/contracts/bidding";
 import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport/build-viewport";
 
@@ -95,9 +92,9 @@ export function runSinglePlaythrough(
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
   const partner = partnerOf(userSeat);
-  const strategy = protocolSpecToStrategy(spec);
+  const strategy = createSpecStrategy(spec);
   const ewStrategy = opponents === "natural"
-    ? createStrategyChain([naturalFallbackStrategy])
+    ? createOpponentStrategy("natural")
     : null;
 
   const initAuction = buildInitialAuction(bundle, userSeat, deal);
@@ -188,7 +185,7 @@ export function buildStepViewport(
   spec: ConventionSpec,
   vulnerability: Vulnerability = Vulnerability.None,
 ): BiddingViewport {
-  const strategy = protocolSpecToStrategy(spec);
+  const strategy = createSpecStrategy(spec);
   const auction: Auction = { entries: [...s.auctionEntries], isComplete: false };
   return buildCliViewport({
     deal: result.deal,
@@ -237,7 +234,7 @@ export function gradePlaythroughStep(
   const auction: Auction = { entries: [...s.auctionEntries], isComplete: false };
   const context = buildContext(hand, auction, activeSeat, vulnerability);
 
-  const strategy = protocolSpecToStrategy(spec);
+  const strategy = createSpecStrategy(spec);
   const result = strategy.suggest(context);
 
   if (!result) {
@@ -246,57 +243,22 @@ export function gradePlaythroughStep(
       ruleName: null,
       explanation: "No convention bid applies",
     };
-    const fallbackResolution = resolveTeachingAnswer(fallbackResult);
-    const emptyFeedback = buildViewportFeedback({
-      grade: BidGrade.Incorrect,
-      userCall: submittedCall,
-      expectedResult: fallbackResult,
-      teachingResolution: fallbackResolution,
-      practicalRecommendation: null,
-      teachingProjection: null,
-      practicalScoreBreakdown: null,
-      evaluationExhaustive: false,
-      fallbackReached: true,
-    });
-    const emptyTeaching = buildTeachingDetail({
-      grade: BidGrade.Incorrect,
-      userCall: submittedCall,
-      expectedResult: fallbackResult,
-      teachingResolution: fallbackResolution,
-      practicalRecommendation: null,
-      teachingProjection: null,
-      practicalScoreBreakdown: null,
-      evaluationExhaustive: false,
-      fallbackReached: true,
-    });
-    return { viewportFeedback: emptyFeedback, teachingDetail: emptyTeaching, isCorrect: false, isAcceptable: false };
+    const fallbackFeedback = assembleBidFeedback(submittedCall, fallbackResult, null);
+    return {
+      viewportFeedback: buildViewportFeedback(fallbackFeedback),
+      teachingDetail: buildTeachingDetail(fallbackFeedback),
+      isCorrect: false,
+      isAcceptable: false,
+    };
   }
 
   const strategyEval = (strategy).getLastEvaluation?.() ?? null;
-  const teachingResolution = resolveTeachingAnswer(
-    result,
-    strategyEval?.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? undefined,
-  );
-  const grade = gradeBid(submittedCall, teachingResolution);
-  const bidFeedback = {
-    grade,
-    userCall: submittedCall,
-    expectedResult: result,
-    teachingResolution,
-    practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
-    teachingProjection: strategyEval?.teachingProjection ?? null,
-    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive ?? false,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached ?? false,
-  };
+  const bidFeedback = assembleBidFeedback(submittedCall, result, strategyEval);
 
   return {
     viewportFeedback: buildViewportFeedback(bidFeedback),
     teachingDetail: buildTeachingDetail(bidFeedback),
-    isCorrect: grade === BidGrade.Correct || grade === BidGrade.CorrectNotPreferred,
-    isAcceptable: grade === BidGrade.Acceptable,
+    isCorrect: bidFeedback.grade === BidGrade.Correct || bidFeedback.grade === BidGrade.CorrectNotPreferred,
+    isAcceptable: bidFeedback.grade === BidGrade.Acceptable,
   };
 }

@@ -2,8 +2,8 @@
   import { SvelteMap } from "svelte/reactivity";
   import type { Contract, Vulnerability, Deal } from "../../../engine/types";
   import { Vulnerability as Vul } from "../../../engine/types";
-  import type { ConventionConfig } from "../../../conventions/core";
   import type { BidHistoryEntry } from "../../../core/contracts";
+  import type { ConventionConfig } from "../../../core/contracts/convention";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
   import { formatContractWithDeclarer, formatRuleName } from "../../../core/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";

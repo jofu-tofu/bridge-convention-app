@@ -6,7 +6,7 @@
     Deal,
   } from "../../../engine/types";
   import type { Auction } from "../../../engine/types";
-  import type { ConventionConfig } from "../../../conventions/core";
+  import type { ConventionConfig } from "../../../core/contracts/convention";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";

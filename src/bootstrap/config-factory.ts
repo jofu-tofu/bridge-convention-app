@@ -3,13 +3,10 @@ import type { BiddingStrategy } from "../core/contracts";
 import type { DrillConfig } from "./types";
 import type { OpponentMode } from "./types";
 import type { InferenceConfig } from "../inference/types";
-import { createStrategyChain } from "../strategy/bidding/strategy-chain";
-import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
-import { passStrategy } from "../strategy/bidding/pass-strategy";
+import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { getConventionSpec } from "../conventions/spec-registry";
-import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
@@ -32,11 +29,8 @@ export function createProtocolDrillConfig(
     );
   }
 
-  const protocolStrategy = protocolSpecToStrategy(spec);
-  const strategy = createStrategyChain([protocolStrategy, naturalFallbackStrategy]);
-  const ewStrategy = options?.opponentMode === "none"
-    ? passStrategy
-    : createStrategyChain([naturalFallbackStrategy]);
+  const strategy = createSpecStrategyWithFallback(spec);
+  const ewStrategy = createOpponentStrategy(options?.opponentMode ?? "natural");
 
   // N/S = protocol strategy, E/W = natural fallback, user seat = "user"
   function seatStrategy(seat: Seat): BiddingStrategy | "user" {
