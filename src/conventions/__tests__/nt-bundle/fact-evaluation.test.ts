@@ -8,7 +8,9 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts, createSharedFactCatalog } from "../../core/pipeline/fact-evaluator";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
-import { staymanFacts, transferFacts, ntResponseFacts } from "../../definitions/nt-bundle";
+import { staymanFacts } from "../../definitions/modules/stayman";
+import { transferFacts } from "../../definitions/modules/jacoby-transfers";
+import { ntResponseFacts } from "../../definitions/modules/natural-nt";
 import { createSystemFactCatalog } from "../../core/pipeline/system-fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 

@@ -50,7 +50,6 @@ export const bergenModule: ConventionModule = {
     { groupId: "opener-r4", surfaces: BERGEN_R4_SURFACES },
   ],
 
-  // FSM handled by protocol frame (base-track.ts)
   entryTransitions: [],
   machineStates: [],
 
@@ -61,11 +60,3 @@ export const bergenModule: ConventionModule = {
   alternatives: BERGEN_ALTERNATIVE_GROUPS,
   intentFamilies: [],
 };
-
-// Re-export individual pieces for backward compatibility
-export { bergenFacts } from "./facts";
-export { BERGEN_CLASSES } from "./semantic-classes";
-export { BERGEN_EXPLANATION_ENTRIES, BERGEN_EXPLANATION_CATALOG } from "./explanation-catalog";
-export { BERGEN_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-export { BERGEN_ALTERNATIVE_GROUPS } from "./alternatives";
-export * from "./meaning-surfaces";

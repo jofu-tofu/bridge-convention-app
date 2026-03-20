@@ -8,7 +8,6 @@
  */
 
 import type { MeaningSurfaceClause } from "../../../core/contracts/meaning";
-import type { FactConstraintIR } from "../../../core/contracts/agreement-module";
 
 /**
  * Resolve $-prefixed binding references in a factId.
@@ -36,17 +35,4 @@ export function resolveClause(
   if (!bindings) return clause;
   const resolved = resolveFactId(clause.factId, bindings);
   return resolved === clause.factId ? clause : { ...clause, factId: resolved };
-}
-
-/**
- * Resolve bindings in a FactConstraintIR, returning a new constraint
- * with the resolved factId. Returns the same object if no resolution needed.
- */
-export function resolveConstraintBindings(
-  constraint: FactConstraintIR,
-  bindings?: Readonly<Record<string, string>>,
-): FactConstraintIR {
-  if (!bindings) return constraint;
-  const resolved = resolveFactId(constraint.factId, bindings);
-  return resolved === constraint.factId ? constraint : { ...constraint, factId: resolved };
 }

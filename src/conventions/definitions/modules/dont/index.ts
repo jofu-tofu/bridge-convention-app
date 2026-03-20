@@ -39,7 +39,6 @@ export const dontModule: ConventionModule = {
     { groupId: "relay-2d", surfaces: DONT_2D_RELAY_SURFACES },
   ],
 
-  // FSM handled by protocol frame (base-track.ts)
   entryTransitions: [],
   machineStates: [],
 
@@ -50,11 +49,3 @@ export const dontModule: ConventionModule = {
   alternatives: DONT_ALTERNATIVE_GROUPS,
   intentFamilies: [],
 };
-
-// Re-export individual pieces for backward compatibility
-export { dontFacts } from "./facts";
-export { DONT_CLASSES } from "./semantic-classes";
-export { DONT_ENTRIES, DONT_EXPLANATION_CATALOG } from "./explanation-catalog";
-export { DONT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-export { DONT_ALTERNATIVE_GROUPS } from "./alternatives";
-export * from "./meaning-surfaces";

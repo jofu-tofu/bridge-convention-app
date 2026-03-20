@@ -41,7 +41,6 @@ export const weakTwosModule: ConventionModule = {
     { groupId: "post-ogust-diamonds", surfaces: POST_OGUST_DIAMONDS_SURFACES },
   ],
 
-  // FSM handled by protocol frame (base-track.ts)
   entryTransitions: [],
   machineStates: [],
 
@@ -52,11 +51,3 @@ export const weakTwosModule: ConventionModule = {
   alternatives: WEAK_TWO_ALTERNATIVE_GROUPS,
   intentFamilies: [],
 };
-
-// Re-export individual pieces for backward compatibility
-export { weakTwoFacts } from "./facts";
-export { WEAK_TWO_CLASSES } from "./semantic-classes";
-export { WEAK_TWO_ENTRIES, WEAK_TWO_EXPLANATION_CATALOG } from "./explanation-catalog";
-export { WEAK_TWO_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-export { WEAK_TWO_ALTERNATIVE_GROUPS } from "./alternatives";
-export * from "./meaning-surfaces";
