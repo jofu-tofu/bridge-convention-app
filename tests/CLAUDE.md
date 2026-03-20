@@ -25,6 +25,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 
 | File                                   | Role                                                               |
 | -------------------------------------- | ------------------------------------------------------------------ |
+| `e2e/smoke.spec.ts`                    | Primary smoke tests: home, navigation, bidding, settings, all conventions |
 | `e2e/convention-select.spec.ts`        | App loads with main content area; heading and description render    |
 | `e2e/game-lifecycle.spec.ts`           | Full game lifecycle: start drill, bid, review, next deal           |
 | `e2e/play-phase.spec.ts`              | Autoplay reaches review; review content renders                    |
@@ -72,4 +73,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `e2e/convention-select.spec.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-18 | version=7 | dir-commits-at-audit=20 | tree-sig=dirs:1,files:20,exts:ts:20,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-20 | version=8 | dir-commits-at-audit=21 | tree-sig=dirs:1,files:21,exts:ts:21,md:1 -->
