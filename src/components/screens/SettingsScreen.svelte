@@ -8,8 +8,8 @@
   const VULN_KEYS = ["none", "ours", "theirs", "both"] as const;
   const VULN_LABELS: Record<typeof VULN_KEYS[number], string> = {
     none: "None",
-    ours: "Us Vulnerable",
-    theirs: "Them Vulnerable",
+    ours: "NS Vulnerable",
+    theirs: "EW Vulnerable",
     both: "Both Vulnerable",
   };
 

@@ -333,17 +333,21 @@ describe("startDrill vulnerability", () => {
       return 0.76; // → Both in equal distribution
     };
 
-    await startDrill(engine, ntBundleConventionConfig, Seat.South, rng);
+    await startDrill(engine, ntBundleConventionConfig, Seat.South, rng, undefined, {
+      tuning: {
+        vulnerabilityDistribution: { none: 1, ours: 1, theirs: 1, both: 1 },
+      },
+    });
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
     expect(constraints.vulnerability).toBe(Vulnerability.Both);
   });
 
-  it("uses default equal distribution when no tuning provided", async () => {
+  it("uses default none-only distribution when no tuning provided", async () => {
     const generateDeal = vi.fn().mockResolvedValue(makeDeal());
     const engine = createStubEngine({ generateDeal });
 
-    // RNG returns 0.1 → first quarter → None
+    // Default distribution is none-only, so any RNG value yields None
     await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.1);
 
     const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;

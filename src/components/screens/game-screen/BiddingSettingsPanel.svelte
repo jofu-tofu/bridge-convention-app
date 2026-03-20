@@ -14,8 +14,8 @@
   const VULN_KEYS = ["none", "ours", "theirs", "both"] as const;
   const VULN_SHORT: Record<typeof VULN_KEYS[number], string> = {
     none: "None",
-    ours: "Us",
-    theirs: "Them",
+    ours: "NS",
+    theirs: "EW",
     both: "Both",
   };
 

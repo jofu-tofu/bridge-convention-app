@@ -34,9 +34,9 @@ export interface DrillTuning {
   readonly offConventionRate?: number;
 }
 
-/** Sensible default: equal distribution across all four vulnerability states. */
+/** Sensible default: no vulnerability. */
 export const DEFAULT_DRILL_TUNING: DrillTuning = {
-  vulnerabilityDistribution: { none: 1, ours: 1, theirs: 1, both: 1 },
+  vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 },
 };
 
 // ─── Display settings ───────────────────────────────────────
