@@ -121,7 +121,8 @@
   --color-text-on-accent: #ffffff;
   --color-card-face: #ffffff;
   --size-touch-target: 2.75rem;
-  --width-side-panel: clamp(13rem, 18vw, 20rem);
+  /* --width-side-panel is set inline by GameScreen.svelte from JS layout math
+     (accounts for debug panel, viewport, etc.). Do NOT define it statically here. */
   /* px tokens below are used inside CSS-transformed areas (table/cards) where
      rem scaling would double-compound with the fluid root font-size above.
      rem tokens (above) scale with viewport; px tokens are fixed-size. */
@@ -150,9 +151,9 @@
      Both resolve to the same apparent size, so these tokens produce
      visually consistent text everywhere.
      Non-game screens inherit from the root font-size below. */
-  --text-annotation: 0.65em; /* tiny: alert annotations on bids */
-  --text-label: 0.75em;      /* section headings, muted labels */
-  --text-detail: 0.85em;     /* secondary info, seat labels */
+  --text-annotation: 0.6em;  /* tiny: alert annotations on bids */
+  --text-label: 0.7em;       /* section headings, muted labels */
+  --text-detail: 0.8em;      /* secondary info, seat labels */
   --text-body: 1em;           /* primary readable content (= parent font) */
   --text-value: 1.2em;       /* prominent: card rank/suit, contract, trick count */
   --text-heading: 1.35em;    /* sub-section headings */

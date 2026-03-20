@@ -28,7 +28,7 @@
   const hasFeedback = $derived(viewportFeedback !== null);
 </script>
 
-<div class="min-w-0 min-h-0 flex-1 overflow-y-auto">
+<div class="min-w-0 min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
   <h2
     class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"

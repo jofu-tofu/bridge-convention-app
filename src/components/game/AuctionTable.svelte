@@ -75,14 +75,14 @@
   let legendOpen = $state(false);
 </script>
 
-<div class="overflow-x-auto">
+<div class="overflow-hidden">
   <table class="w-full text-center {compact ? 'text-[--text-label]' : 'text-[--text-detail]'}">
     <caption class="sr-only">Auction sequence</caption>
     <thead>
       <tr>
         {#each SEAT_LABELS as label (label)}
           <th
-            class="px-3 {compact
+            class="{compact ? 'px-2' : 'px-3'} {compact
               ? 'py-0.5'
               : 'py-1'} text-text-muted font-medium">{label}</th
           >
@@ -131,7 +131,7 @@
         <tr class="border-t border-border-subtle">
           {#each row as cell, cellIdx (rowIdx * 4 + cellIdx)}
             <td
-              class="px-3 {compact
+              class="{compact ? 'px-2' : 'px-3'} {compact
                 ? 'py-0.5'
                 : 'py-1'} font-mono {cell.isPlaceholder
                 ? 'text-text-muted'
@@ -150,7 +150,7 @@
           {/each}
           {#if row.length < 4}
             {#each Array(4 - row.length) as _, padIdx (padIdx)}
-              <td class="px-3 {compact ? 'py-0.5' : 'py-1'}"></td>
+              <td class="{compact ? 'px-2' : 'px-3'} {compact ? 'py-0.5' : 'py-1'}"></td>
             {/each}
           {/if}
           <!-- Empty cell to match info icon column -->
