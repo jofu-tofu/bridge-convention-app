@@ -179,8 +179,6 @@
     >
       New Deal
     </button>
-    <p class="text-[--text-annotation] text-text-muted mt-1 text-center">
-      Settings apply on next deal
-    </p>
+
   </div>
 </section>

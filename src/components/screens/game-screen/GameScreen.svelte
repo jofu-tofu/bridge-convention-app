@@ -138,7 +138,11 @@
     return { label: "Review", color: "bg-phase-review", textColor: "text-phase-review-text" };
   });
 
-  // Responsive table scaling — measure actual available space
+  // Responsive layout — single source of truth for all sizing.
+  // availableW accounts for debug panel; all downstream values (rootFontSize,
+  // sidePanelW, tableScale) derive from it. CSS variables (--width-side-panel,
+  // --game-scale, --panel-font) are set inline on <main>, NOT in app.css,
+  // so they always reflect the actual available space.
   let innerW = $state(1024);
   let innerH = $state(768);
   let headerH = $state(0);
@@ -251,16 +255,6 @@
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <span class="text-text-secondary text-[--text-body]">Deal #{dealNumber}</span>
-        {#if gameStore.phase !== "EXPLANATION"}
-          <button
-            class="px-3 py-1.5 rounded-[--radius-md] text-[--text-detail] font-medium bg-bg-elevated hover:bg-bg-hover text-text-primary border border-border-default cursor-pointer transition-colors"
-            onclick={handleNextDeal}
-            aria-label="New deal"
-            data-testid="new-deal"
-          >
-            New Deal
-          </button>
-        {/if}
         {#if DEV}
           <button
             class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
