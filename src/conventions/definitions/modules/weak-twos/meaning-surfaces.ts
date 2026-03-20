@@ -35,7 +35,7 @@ export function createWeakTwoR1Surfaces(): readonly MeaningSurface[] {
   return suits.map(({ suit, order, cls }) => ({
     meaningId: `weak-two:open-2${suitLabel(suit).toLowerCase()}`,
     semanticClassId: cls,
-    moduleId: "weak-two",
+    moduleId: "weak-twos",
     encoding: { defaultCall: bid(2, suitToBidSuit(suit)) },
     clauses: [
       {
@@ -87,7 +87,7 @@ export function createWeakTwoR2Surfaces(
     {
       meaningId: `weak-two:game-raise-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.GAME_RAISE,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: gameCall },
       clauses: [
         {
@@ -119,7 +119,7 @@ export function createWeakTwoR2Surfaces(
     {
       meaningId: `weak-two:ogust-ask-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_ASK,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
       clauses: [
         {
@@ -151,7 +151,7 @@ export function createWeakTwoR2Surfaces(
     {
       meaningId: `weak-two:invite-raise-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.INVITE_RAISE,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
       clauses: [
         {
@@ -183,7 +183,7 @@ export function createWeakTwoR2Surfaces(
     {
       meaningId: `weak-two:weak-pass-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.WEAK_PASS,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
       ranking: {
@@ -219,7 +219,7 @@ export function createWeakTwoOgustSurfaces(
     {
       meaningId: `weak-two:ogust-solid-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_SOLID,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
       clauses: [
         {
@@ -244,7 +244,7 @@ export function createWeakTwoOgustSurfaces(
     {
       meaningId: `weak-two:ogust-min-bad-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_BAD,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(3, BidSuit.Clubs) },
       clauses: [
         {
@@ -276,7 +276,7 @@ export function createWeakTwoOgustSurfaces(
     {
       meaningId: `weak-two:ogust-min-good-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_GOOD,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(3, BidSuit.Diamonds) },
       clauses: [
         {
@@ -308,7 +308,7 @@ export function createWeakTwoOgustSurfaces(
     {
       meaningId: `weak-two:ogust-max-bad-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MAX_BAD,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(3, BidSuit.Hearts) },
       clauses: [
         {
@@ -340,7 +340,7 @@ export function createWeakTwoOgustSurfaces(
     {
       meaningId: `weak-two:ogust-max-good-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MAX_GOOD,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(3, BidSuit.Spades) },
       clauses: [
         {
@@ -394,7 +394,7 @@ export function createPostOgustSurfaces(
     {
       meaningId: `weak-two:post-ogust-game-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_GAME,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: gameCall },
       clauses: [
         {
@@ -419,7 +419,7 @@ export function createPostOgustSurfaces(
     {
       meaningId: `weak-two:post-ogust-signoff-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_SIGNOFF,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
       clauses: [],
       ranking: {
@@ -436,7 +436,7 @@ export function createPostOgustSurfaces(
     {
       meaningId: `weak-two:post-ogust-pass-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_PASS,
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
       ranking: {

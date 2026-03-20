@@ -4,7 +4,7 @@ export const WEAK_TWO_PROFILE = createSaycProfile({
   profileId: "weak-two-sayc",
   modules: [
     {
-      moduleId: "weak-two",
+      moduleId: "weak-twos",
       kind: "add-on",
       attachments: [
         {
