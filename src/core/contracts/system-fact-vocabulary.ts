@@ -16,6 +16,9 @@
 
 // ─── Responder point-range facts ────────────────────────────
 
+/** Responder is below the invite threshold — too weak to act (e.g. 0-7 in SAYC). */
+export const SYSTEM_RESPONDER_WEAK_HAND = "system.responder.weakHand" as const;
+
 /** Responder has invitational values opposite a 1NT opening. */
 export const SYSTEM_RESPONDER_INVITE_VALUES = "system.responder.inviteValues" as const;
 
@@ -34,6 +37,7 @@ export const SYSTEM_OPENER_NOT_MINIMUM = "system.opener.notMinimum" as const;
 
 /** All system-provided fact IDs. Used for catalog validation and documentation. */
 export const SYSTEM_FACT_IDS = [
+  SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
   SYSTEM_RESPONDER_SLAM_VALUES,

@@ -18,6 +18,7 @@ import type {
 import { num, fv } from "./fact-helpers";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import {
+  SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
   SYSTEM_RESPONDER_SLAM_VALUES,
@@ -27,6 +28,15 @@ import {
 // ─── Fact definitions (system-agnostic metadata) ────────────
 
 const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
+  {
+    id: SYSTEM_RESPONDER_WEAK_HAND,
+    layer: "bridge-derived",
+    world: "acting-hand",
+    description: "Responder is below the invite threshold — too weak to act",
+    valueType: "boolean",
+    derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
+  },
   {
     id: SYSTEM_RESPONDER_INVITE_VALUES,
     layer: "bridge-derived",
@@ -70,6 +80,8 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
 /** Creates system-semantic fact evaluators parameterized by the active SystemConfig. */
 function createSystemEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
   return new Map<string, FactEvaluatorFn>([
+    [SYSTEM_RESPONDER_WEAK_HAND, (_h, _ev, m) =>
+      fv(SYSTEM_RESPONDER_WEAK_HAND, num(m, "hand.hcp") < sys.responderThresholds.inviteMin)],
     [SYSTEM_RESPONDER_INVITE_VALUES, (_h, _ev, m) => {
       const hcp = num(m, "hand.hcp");
       return fv(SYSTEM_RESPONDER_INVITE_VALUES,

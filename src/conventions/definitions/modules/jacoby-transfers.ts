@@ -12,6 +12,7 @@ import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import {
+  SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
   SYSTEM_OPENER_NOT_MINIMUM,
@@ -142,10 +143,10 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "weak-hand",
-        factId: "hand.hcp",
-        operator: "lte",
-        value: 7,
-        description: "Less than 8 HCP (weak hand, signoff)",
+        factId: SYSTEM_RESPONDER_WEAK_HAND,
+        operator: "boolean",
+        value: true,
+        description: "Below invite threshold (weak hand, signoff)",
       },
     ],
     ranking: {
@@ -250,10 +251,10 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "weak-hand",
-        factId: "hand.hcp",
-        operator: "lte",
-        value: 7,
-        description: "Less than 8 HCP (weak hand, signoff)",
+        factId: SYSTEM_RESPONDER_WEAK_HAND,
+        operator: "boolean",
+        value: true,
+        description: "Below invite threshold (weak hand, signoff)",
       },
     ],
     ranking: {
