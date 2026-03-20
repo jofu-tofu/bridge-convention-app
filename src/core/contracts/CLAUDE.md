@@ -57,7 +57,7 @@ The `specificity` field is **pipeline-derived, not hand-authored**. `MeaningSurf
 
 ### Architecture
 
-1. **`AuthoredRankingMetadata`** (meaning.ts): What convention authors write — `recommendationBand`, `modulePrecedence`, `intraModuleOrder`. No specificity.
+1. **`AuthoredRankingMetadata`** (meaning.ts): What convention authors write — `recommendationBand`, `intraModuleOrder`, optional `modulePrecedence` (defaults to 0, stamped positionally by `composeModules()` — not hand-authored). No specificity.
 
 2. **`RankingMetadata`** (meaning.ts): Extends `AuthoredRankingMetadata` with `specificity` (number) and `specificityBasis?` (SpecificityBasis). Produced by the pipeline, consumed by arbitration.
 

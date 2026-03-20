@@ -72,7 +72,13 @@ function collectTagMembers(modules: readonly ConventionModule[]): TagMember[] {
 
 // ── Validation ──────────────────────────────────────────────────────
 
-function validateTagGroup(groupKey: string, members: readonly TagMember[]): void {
+/**
+ * Validate a tag group. Returns true if the group is complete and should be
+ * derived, false if it is incomplete (e.g., missing members from modules not
+ * present in a sub-bundle). Structural errors (duplicates, mixed roles/ordinals)
+ * still throw — those indicate authoring bugs, not module subsetting.
+ */
+function validateTagGroup(groupKey: string, members: readonly TagMember[]): boolean {
   const first = members[0];
   if (!first) throw new Error(`Empty tag group: ${groupKey}`);
   const derives = first.tagDef.derives;
@@ -118,27 +124,19 @@ function validateTagGroup(groupKey: string, members: readonly TagMember[]): void
         );
       }
       if (hasRoles) {
-        if (!members.some((m) => m.role === "a")) {
-          throw new Error(`Directed tag group "${groupKey}" has no role "a" members`);
-        }
-        if (!members.some((m) => m.role === "b")) {
-          throw new Error(`Directed tag group "${groupKey}" has no role "b" members`);
-        }
+        // Incomplete directed group — skip when a role is missing (module not in bundle)
+        if (!members.some((m) => m.role === "a")) return false;
+        if (!members.some((m) => m.role === "b")) return false;
       }
-      if (hasOrdinals && members.length < 2) {
-        throw new Error(
-          `Ordinal chain "${groupKey}" requires ≥2 members, got ${members.length}`,
-        );
-      }
+      // Incomplete ordinal chain — skip when only 1 member present
+      if (hasOrdinals && members.length < 2) return false;
     }
   } else {
-    // Alternative-group and intent-family tags need ≥2 members
-    if (members.length < 2) {
-      throw new Error(
-        `Tag group "${groupKey}" (${derives.type}) requires ≥2 members, got ${members.length}`,
-      );
-    }
+    // Alternative-group and intent-family tags need ≥2 members; skip if incomplete
+    if (members.length < 2) return false;
   }
+
+  return true;
 }
 
 // ── Derivation ──────────────────────────────────────────────────────
@@ -250,7 +248,7 @@ export function derivePedagogicalContent(
   const intentFamilies: IntentFamily[] = [];
 
   for (const [groupKey, members] of groups) {
-    validateTagGroup(groupKey, members);
+    if (!validateTagGroup(groupKey, members)) continue;
 
     const derives = members[0]!.tagDef.derives;
     const scope = members[0]!.scope;

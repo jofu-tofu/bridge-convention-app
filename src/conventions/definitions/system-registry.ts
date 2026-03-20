@@ -9,12 +9,15 @@
 
 import type { BiddingSystem } from "./bidding-system";
 import type { ConventionBundle } from "../core/bundle/bundle-types";
+import type { ConventionSpec } from "../core/protocol/types";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
 import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import { getModules } from "./module-registry";
 import { derivePedagogicalContent } from "./derive-cross-module";
+import { composeModules } from "../core/composition/compose-modules";
+import { assembleConventionSpec } from "../core/protocol/spec-assembler";
 
 // ── System definitions ──────────────────────────────────────────────
 
@@ -22,7 +25,8 @@ import { Seat, Suit } from "../../engine/types";
 import { ConventionCategory } from "../../core/contracts/convention";
 import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPPONENT_1NT } from "../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../engine/auction-helpers";
-import { NT_SAYC_PROFILE } from "./nt-bundle/system-profile";
+import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./nt-bundle/system-profile";
+import { NT_SKELETON } from "./nt-bundle/skeleton";
 import { BERGEN_PROFILE } from "./bergen-bundle/system-profile";
 import { DONT_PROFILE } from "./dont-bundle/system-profile";
 import { WEAK_TWO_PROFILE } from "./weak-twos-bundle/system-profile";
@@ -52,6 +56,51 @@ const ntSystem: BiddingSystem = {
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
+  skeleton: NT_SKELETON,
+};
+
+const ntStaymanSystem: BiddingSystem = {
+  id: "nt-stayman",
+  name: "Stayman Only",
+  description: "Practice Stayman responses to 1NT opening (no Jacoby Transfers)",
+  category: ConventionCategory.Asking,
+  profile: NT_STAYMAN_ONLY_PROFILE,
+  moduleIds: ["natural-nt", "stayman"],
+  dealConstraints: {
+    seats: [
+      { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
+      { seat: Seat.South, minHcp: 8, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
+    ],
+    dealer: Seat.North,
+  },
+  defaultAuction: (seat) => {
+    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
+    return undefined;
+  },
+  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
+  skeleton: NT_SKELETON,
+};
+
+const ntTransfersSystem: BiddingSystem = {
+  id: "nt-transfers",
+  name: "Jacoby Transfers Only",
+  description: "Practice Jacoby Transfer responses to 1NT opening (no Stayman)",
+  category: ConventionCategory.Constructive,
+  profile: NT_TRANSFERS_ONLY_PROFILE,
+  moduleIds: ["natural-nt", "jacoby-transfers"],
+  dealConstraints: {
+    seats: [
+      { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
+      { seat: Seat.South, minHcp: 0, minLengthAny: { [Suit.Spades]: 5, [Suit.Hearts]: 5 } },
+    ],
+    dealer: Seat.North,
+  },
+  defaultAuction: (seat) => {
+    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
+    return undefined;
+  },
+  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
+  skeleton: NT_SKELETON,
 };
 
 const bergenSystem: BiddingSystem = {
@@ -118,7 +167,7 @@ const weakTwosSystem: BiddingSystem = {
 
 // ── Registry ────────────────────────────────────────────────────────
 
-const ALL_SYSTEMS: readonly BiddingSystem[] = [ntSystem, bergenSystem, dontSystem, weakTwosSystem];
+const ALL_SYSTEMS: readonly BiddingSystem[] = [ntSystem, ntStaymanSystem, ntTransfersSystem, bergenSystem, dontSystem, weakTwosSystem];
 const SYSTEM_MAP = new Map<string, BiddingSystem>(ALL_SYSTEMS.map((s) => [s.id, s]));
 
 /** Look up a bidding system by ID. */
@@ -152,14 +201,15 @@ export function aggregateModuleContent(system: BiddingSystem): {
   };
 }
 
-// ── Backward compatibility ──────────────────────────────────────────
+// ── Bundle + Spec generation ──────────────────────────────────────────
 
 /** Derive a ConventionBundle from a BiddingSystem + module registry.
- *  Use this only for backward compatibility with code that still expects ConventionBundle. */
+ *  When the system has a skeleton, composeModules() auto-generates surfaces/facts. */
 export function bundleFromSystem(system: BiddingSystem): ConventionBundle {
   const { explanationCatalog, pedagogicalRelations, acceptableAlternatives, intentFamilies } =
     aggregateModuleContent(system);
-  return {
+
+  const base: ConventionBundle = {
     id: system.id,
     name: system.name,
     description: system.description,
@@ -176,7 +226,50 @@ export function bundleFromSystem(system: BiddingSystem): ConventionBundle {
     acceptableAlternatives,
     intentFamilies,
   };
+
+  // When skeleton is available, compose modules to add surfaces/facts
+  if (system.skeleton) {
+    const modules = getModules(system.moduleIds);
+    const composed = composeModules(
+      modules,
+      system.skeleton,
+      system.id,
+      system.name,
+    );
+    return {
+      ...base,
+      meaningSurfaces: composed.meaningSurfaceGroups,
+      factExtensions: [composed.mergedFacts],
+    };
+  }
+
+  return base;
+}
+
+/** Derive a ConventionSpec from a BiddingSystem with a skeleton.
+ *  Returns undefined if the system has no skeleton (use hand-authored spec). */
+export function specFromSystem(system: BiddingSystem): ConventionSpec | undefined {
+  if (!system.skeleton) return undefined;
+
+  const modules = getModules(system.moduleIds);
+  const composed = composeModules(
+    modules,
+    system.skeleton,
+    system.id,
+    system.name,
+  );
+
+  return assembleConventionSpec({
+    id: system.id,
+    name: system.name,
+    modules: [
+      {
+        module: composed.baseTrack,
+        surfaces: composed.surfaceFragments,
+      },
+    ],
+  });
 }
 
 // Re-export system definitions for direct access
-export { ntSystem, bergenSystem, dontSystem, weakTwosSystem };
+export { ntSystem, ntStaymanSystem, ntTransfersSystem, bergenSystem, dontSystem, weakTwosSystem };

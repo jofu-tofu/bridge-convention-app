@@ -13,6 +13,7 @@
 import type { DealConstraints, Deal, Seat, Auction } from "../../engine/types";
 import type { SystemProfileIR } from "../../core/contracts/agreement-module";
 import type { ConventionCategory } from "../../core/contracts/convention";
+import type { BundleSkeleton } from "../core/composition/compose-modules";
 
 export interface BiddingSystem {
   /** Unique system identifier (kebab-case). */
@@ -41,4 +42,8 @@ export interface BiddingSystem {
   /** Capabilities injected into profile-based activation. */
   readonly declaredCapabilities?: Readonly<Record<string, string>>;
 
+  /** Bundle skeleton for generic module composition.
+   *  When present, `composeModules()` auto-generates the BaseModuleSpec,
+   *  SurfaceFragments, and ConventionSpec from the skeleton + modules. */
+  readonly skeleton?: BundleSkeleton;
 }

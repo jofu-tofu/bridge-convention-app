@@ -124,7 +124,7 @@ describe("derivePedagogicalContent validation", () => {
     };
   }
 
-  it("throws when directed relation tag is missing role:a", () => {
+  it("skips directed relation tag missing role:a (incomplete group)", () => {
     const tag: PedagogicalTagDef = {
       id: "test-directed",
       label: "Test",
@@ -133,10 +133,11 @@ describe("derivePedagogicalContent validation", () => {
     const mod = makeModule([
       makeSurface("x", "x", [{ tag, scope: "s", role: "b" }]),
     ]);
-    expect(() => derivePedagogicalContent([mod])).toThrow('has no role "a" members');
+    const result = derivePedagogicalContent([mod]);
+    expect(result.relations).toEqual([]);
   });
 
-  it("throws when directed relation tag is missing role:b", () => {
+  it("skips directed relation tag missing role:b (incomplete group)", () => {
     const tag: PedagogicalTagDef = {
       id: "test-directed",
       label: "Test",
@@ -145,7 +146,8 @@ describe("derivePedagogicalContent validation", () => {
     const mod = makeModule([
       makeSurface("x", "x", [{ tag, scope: "s", role: "a" }]),
     ]);
-    expect(() => derivePedagogicalContent([mod])).toThrow('has no role "b" members');
+    const result = derivePedagogicalContent([mod]);
+    expect(result.relations).toEqual([]);
   });
 
   it("throws when symmetric relation tag uses roles", () => {
@@ -161,7 +163,7 @@ describe("derivePedagogicalContent validation", () => {
     expect(() => derivePedagogicalContent([mod])).toThrow("must not use roles");
   });
 
-  it("throws when alternative-group tag has fewer than 2 members", () => {
+  it("skips alternative-group tag with fewer than 2 members (incomplete group)", () => {
     const tag: PedagogicalTagDef = {
       id: "test-group",
       label: "Test",
@@ -170,7 +172,8 @@ describe("derivePedagogicalContent validation", () => {
     const mod = makeModule([
       makeSurface("x", "x", [{ tag, scope: "My Group" }]),
     ]);
-    expect(() => derivePedagogicalContent([mod])).toThrow("requires ≥2 members");
+    const result = derivePedagogicalContent([mod]);
+    expect(result.alternatives).toEqual([]);
   });
 
   it("throws on duplicate (tag, scope, meaningId) tuples", () => {

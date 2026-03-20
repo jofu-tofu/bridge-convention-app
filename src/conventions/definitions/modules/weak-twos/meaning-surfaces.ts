@@ -14,7 +14,7 @@ import {
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
-const WEAK_TWOS_CTX: ModuleContext = { moduleId: "weak-twos", modulePrecedence: 0 };
+const WEAK_TWOS_CTX: ModuleContext = { moduleId: "weak-twos" };
 
 function suitLabel(suit: WeakTwoSuit): string {
   switch (suit) {

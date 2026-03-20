@@ -7,8 +7,9 @@ Convention bundles that each implement a bridge bidding convention using the mea
 **Shared files** (at `definitions/` root):
 - `pedagogical-vocabulary.ts` — 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`). Modules annotate surfaces with these + a scope string to express any pedagogical relationship.
 - `derive-cross-module.ts` — `derivePedagogicalContent(modules)` — derives all pedagogical relations, alternatives, and intent families from `pedagogicalTags` on surfaces. Groups by `(tagId, scope)`. Supports ordinal chains for strength progressions. Called by `aggregateModuleContent()` in `system-registry.ts`.
-- `bidding-system.ts` — `BiddingSystem` interface for system-level composition.
-- `system-registry.ts` — System definitions and module aggregation.
+- `surface-group-vocabulary.ts` — Shared constants for cross-module surface groupIds. Typos caught at compile time.
+- `bidding-system.ts` — `BiddingSystem` interface for system-level composition. Includes optional `skeleton: BundleSkeleton` for generic module composition.
+- `system-registry.ts` — System definitions (including NT sub-bundle systems), module aggregation, `bundleFromSystem()` (auto-composes when skeleton present), `specFromSystem()` (derives ConventionSpec from skeleton).
 - `module-registry.ts` — Convention module registry.
 
 **Architectural rule:** ALL pedagogical content (relations, alternatives, intent families) — both intra-module and cross-module — is derived from `pedagogicalTags` on surfaces. `ConventionModule` has no `pedagogicalRelations`, `alternatives`, or `intentFamilies` fields. Modules are portable building blocks: compose any set into a bundle and pedagogical content derives automatically. Do not create standalone `pedagogical-relations.ts` or `alternatives.ts` files.
@@ -35,16 +36,15 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `__tests__/` | Bundle-specific tests |
 
 
-**`nt-bundle/`** — Bottom-up composition of Stayman + Jacoby Transfers + Smolen + Natural NT into a single 1NT response bundle. Each convention is a self-contained `ConventionModule` (from `conventions/core/composition`) in `modules/`; the bundle is assembled by `compose.ts`.
+**`nt-bundle/`** — Bottom-up composition of Stayman + Jacoby Transfers + Smolen + Natural NT into a single 1NT response bundle. Each convention is a self-contained `ConventionModule` in `modules/`; the bundle is auto-composed via `composeModules()` from `skeleton.ts` + module registry.
 - `modules/` — Convention modules (source of truth for all bidding logic):
-  - ~~`module-types.ts`~~ — Removed. Was an alias for `ConventionModule` from `conventions/core/composition/module-types`. Import `ConventionModule` directly.
-  - `stayman.ts` — Stayman convention: R1 surface (2C ask), opener response surfaces (show-hearts/spades/deny-major), R3 continuation surfaces, 4 FSM states, 2 facts + posterior evaluators.
-  - `jacoby-transfers.ts` — Jacoby Transfers convention: R1 surfaces (2D/2H transfer), opener accept surfaces, R3 continuation surfaces, 4 FSM states, 3 facts.
-  - `smolen.ts` — Smolen convention: R3 surfaces (3H/3S after 2D denial), opener placement surfaces, 2 FSM states + submachine (5 states), hooks into Stayman's R3-2D state via `hookTransitions`, 6 facts.
-  - `natural-nt.ts` — Natural NT responses: R1 surfaces (2NT invite, 3NT game), 1NT opening surface, R1 terminal transitions, 3 HCP threshold facts, shared explanation entries.
-- `compose.ts` — `composeNtModules()`: assembles `ConventionModule[]` bottom-up into shared FSM infrastructure (idle, nt-opened, responder-r1, terminal) with per-module scope states (`stayman-scope`, `transfers-scope`, `smolen-scope`) that each own an interrupted target state for opponent interference. Merges surface groups, combined facts/explanations/relations. Handles `hookTransitions` (e.g., Smolen prepending transitions to Stayman states).
-- `config.ts` — `ConventionBundle` composed from all 4 modules. `memberIds: ["jacoby-transfers", "stayman", "smolen"]` (Jacoby first for tie-breaking priority).
-- `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles, each composed from a subset of modules.
+  - `stayman.ts` — Stayman convention: R1 surface (2C ask), opener response surfaces (show-hearts/spades/deny-major), R3 continuation surfaces, 4 FSM states with exportTags, 2 facts + posterior evaluators.
+  - `jacoby-transfers.ts` — Jacoby Transfers convention: R1 surfaces (2D/2H transfer), opener accept surfaces, R3 continuation surfaces, 8 FSM states with exportTags, 5 facts.
+  - `smolen.ts` — Smolen convention: R3 surfaces (3H/3S after 2D denial), opener placement surfaces, 2 FSM states + submachine (5 states) with exportTags, hooks into Stayman's R3-2D state via `hookTransitions`, 6 facts.
+  - `natural-nt.ts` — Natural NT responses: R1 surfaces (2NT invite, 3NT game), 1NT opening surface, R1 terminal transitions, shared explanation entries.
+- `skeleton.ts` — `BundleSkeleton` with NT opening pattern + scaffold states (nt-opened → responder-r1 → terminal + nt-contested). Module states are auto-composed by `composeModules()`.
+- `config.ts` — `ConventionBundle` via `bundleFromSystem(ntSystem)` — auto-composed when skeleton present.
+- `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles via `bundleFromSystem()`, auto-composing pedagogical content from module subsets.
 - `composed-surfaces.ts` — Cross-module composition re-exports. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
 - ~~`facts.ts`~~ — Removed. Facts (`staymanFacts`, `transferFacts`, `ntResponseFacts`, `smolenFacts`) are now re-exported directly from `modules/` via the barrel `index.ts`.
 - `machine.ts` — Re-export shim: `createNtConversationMachine()` delegates to `composeNtModules()`.
@@ -72,7 +72,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 Every convention bundle must satisfy all items before being considered complete:
 
-1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `modulePrecedence`, `intraModuleOrder`). **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
+1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `intraModuleOrder`). `modulePrecedence` is auto-assigned by `composeModules()` from module ordering — do NOT set it on surfaces. **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
 2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state.
 3. **`surfaceRouter` for round-aware filtering.** Maps FSM state → surface group via `RoutedSurfaceGroup[]`. Without this, all surfaces are evaluated every round (expensive and semantically incorrect).
 4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, and `terminal`. **Scoped interrupt pattern:** opponent interference is handled by abstract scope states (parent states with `opponent-action` transitions targeting local interrupted states) — not a single global contested sink. Design rule: external events are handled by the nearest enclosing interrupt scope. `call` and `any-bid` transitions are role-safe by default (self+partner only); use `opponent-action` with `callType: "bid"` to match opponent bids explicitly.
@@ -179,7 +179,7 @@ import { createSurface } from "../../core/surface-builder";
 import type { ModuleContext } from "../../core/surface-builder";
 import { {NAME}_SEMANTIC } from "./semantic-classes";
 
-const {NAME}_CTX: ModuleContext = { moduleId: "{name}", modulePrecedence: 0 };
+const {NAME}_CTX: ModuleContext = { moduleId: "{name}" };
 
 export const {NAME}_SURFACES: readonly MeaningSurface[] = [
   createSurface({
@@ -411,9 +411,12 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalogIR =
 
 ## Authoring Rules
 
-- **Use `createSurface()` for all new surfaces.** Import from `conventions/core/surface-builder.ts` with a `ModuleContext`. The builder derives `clauseId` and `description` automatically. Provide `description` only when it adds parenthetical rationale beyond the mechanical constraint (test: contains `(`). `moduleId` and `modulePrecedence` are injected from `ModuleContext` — override on individual surfaces only when the module has non-uniform precedence.
+- **Use `createSurface()` for all new surfaces.** Import from `conventions/core/surface-builder.ts` with a `ModuleContext`. The builder derives `clauseId` and `description` automatically. Provide `description` only when it adds parenthetical rationale beyond the mechanical constraint (test: contains `(`). `moduleId` is injected from `ModuleContext`. `modulePrecedence` is **not authored** — it's assigned positionally by `composeModules()` based on module ordering in the bundle.
 - **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs. Use `pedagogicalTags` with shared vocabulary scopes for cross-module relationships.
 - **Adding a module must not edit existing modules.** If your new module needs to relate to existing ones (same-family, near-miss, etc.), use shared scope strings in `pedagogicalTags`. The derivation function handles the wiring.
+- **`predicate` transitions are not supported in auto-composition.** Use declarative `TransitionMatch` kinds (`call`, `pass`, `opponent-action`, `any-bid`). If a future convention requires runtime predicate logic, it must be expressed as a `BoolExpr` guard on the `FrameStateSpec` level — which means authoring it in the skeleton, not the module.
+- **Cross-module groupIds must use shared constants** from `surface-group-vocabulary.ts`. Never use string literals for groupIds that another module also references.
+- **`entryTransitions` must be populated** on every module that is reachable from the bundle entry state. Empty `entryTransitions` means the module is only reachable via `hookTransitions` from another module.
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
 
 ## Common Pitfalls

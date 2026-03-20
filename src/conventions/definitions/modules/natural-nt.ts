@@ -27,7 +27,7 @@ import {
 
 // ─── Module context ──────────────────────────────────────────
 
-const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt", modulePrecedence: 0 };
+const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
@@ -55,7 +55,6 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
       },
     ],
     band: "may",
-    modulePrecedence: 2,
     intraModuleOrder: 0,
     sourceIntent: { type: "NTInvite", params: {} },
     teachingLabel: "NT invite",
@@ -89,7 +88,6 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
       },
     ],
     band: "may",
-    modulePrecedence: 2,
     intraModuleOrder: 1,
     sourceIntent: { type: "NTGame", params: {} },
     teachingLabel: "3NT game",

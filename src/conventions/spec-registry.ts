@@ -5,10 +5,12 @@
 // legacy registerConvention/registerBundle calls.
 
 import type { ConventionSpec } from "./core/protocol/types";
-import { ntConventionSpec } from "./definitions/nt-bundle/convention-spec";
+import { specFromSystem, ntSystem } from "./definitions/system-registry";
 import { bergenConventionSpec } from "./definitions/bergen-bundle/convention-spec";
 import { weakTwosConventionSpec } from "./definitions/weak-twos-bundle/convention-spec";
 import { dontConventionSpec } from "./definitions/dont-bundle/convention-spec";
+
+const ntConventionSpec = specFromSystem(ntSystem)!;
 
 const CONVENTION_SPECS: Map<string, ConventionSpec> = new Map([
   ["nt-bundle", ntConventionSpec],

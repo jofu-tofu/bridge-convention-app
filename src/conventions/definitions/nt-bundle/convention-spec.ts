@@ -1,21 +1,10 @@
 /**
- * ConventionSpec assembly for the 1NT bundle.
+ * ConventionSpec for the 1NT bundle.
  *
- * Composes the 1NT base track and its surface fragments into a
- * fully assembled ConventionSpec — the primary export for the
- * new protocol frame architecture.
+ * Delegates to specFromSystem() — the skeleton-based composition path.
+ * Retained for backward compatibility with existing imports.
  */
 
-import { assembleConventionSpec } from "../../core/protocol/spec-assembler";
-import { ntBaseTrack, NT_SURFACE_FRAGMENTS } from "./base-track";
+import { specFromSystem, ntSystem } from "../system-registry";
 
-export const ntConventionSpec = assembleConventionSpec({
-  id: "nt-bundle",
-  name: "1NT Opening",
-  modules: [
-    {
-      module: { ...ntBaseTrack, role: "base" as const },
-      surfaces: NT_SURFACE_FRAGMENTS,
-    },
-  ],
-});
+export const ntConventionSpec = specFromSystem(ntSystem)!;

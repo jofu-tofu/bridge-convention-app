@@ -31,7 +31,7 @@ import {
 
 // ─── Module context ──────────────────────────────────────────
 
-const STAYMAN_CTX: ModuleContext = { moduleId: "stayman", modulePrecedence: 1 };
+const STAYMAN_CTX: ModuleContext = { moduleId: "stayman" };
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -459,7 +459,6 @@ export function createInterferenceRedoubleSurface(sys: SystemConfig): MeaningSur
       },
     ],
     band: "must",
-    modulePrecedence: 0,
     intraModuleOrder: 0,
     sourceIntent: { type: "RedoubleStrength", params: {} },
     teachingLabel: `Redouble (showing ${minHcp}+ HCP)`,
@@ -511,6 +510,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
     stateId: "opener-stayman",
     parentId: "stayman-scope",
     allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.pending"],
     transitions: [
       {
         transitionId: "stayman-pass",
@@ -542,6 +542,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
     stateId: "responder-r3-stayman-2h",
     parentId: "stayman-scope",
     allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.pending"],
     transitions: [
       {
         transitionId: "r3-4h-game",
@@ -585,6 +586,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
     stateId: "responder-r3-stayman-2s",
     parentId: "stayman-scope",
     allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.pending"],
     transitions: [
       {
         transitionId: "r3-4s-game",
@@ -629,6 +631,7 @@ const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
     stateId: "responder-r3-stayman-2d",
     parentId: "stayman-scope",
     allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.pending"],
     transitions: [
       {
         transitionId: "r3-3nt-after-denial",

@@ -10,7 +10,7 @@ import {
   ALTERNATIVES,
 } from "../../pedagogical-vocabulary";
 
-const DONT_CTX: ModuleContext = { moduleId: "dont", modulePrecedence: 0 };
+const DONT_CTX: ModuleContext = { moduleId: "dont" };
 
 // ─── R1: Overcaller initial action (after opponent's 1NT) ───
 //

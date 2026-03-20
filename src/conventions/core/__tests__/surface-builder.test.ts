@@ -11,7 +11,7 @@ const bid = (level: number, strain: BidSuit): Call => ({
   strain,
 });
 
-const CTX: ModuleContext = { moduleId: "test-module", modulePrecedence: 1 };
+const CTX: ModuleContext = { moduleId: "test-module" };
 
 function baseInput(overrides?: Partial<SurfaceInput>): SurfaceInput {
   return {
@@ -38,7 +38,7 @@ describe("createSurface", () => {
     expect(surface.moduleId).toBe("test-module");
     expect(surface.encoding.defaultCall).toEqual(bid(2, BidSuit.Clubs));
     expect(surface.ranking.recommendationBand).toBe("must");
-    expect(surface.ranking.modulePrecedence).toBe(1);
+    expect(surface.ranking.modulePrecedence).toBe(0);
     expect(surface.ranking.intraModuleOrder).toBe(0);
     expect(surface.sourceIntent).toEqual({ type: "Test", params: {} });
     expect(surface.teachingLabel).toBe("Test surface");
@@ -49,9 +49,9 @@ describe("createSurface", () => {
     expect(surface.moduleId).toBe("test-module");
   });
 
-  it("injects modulePrecedence from ModuleContext", () => {
+  it("defaults modulePrecedence to 0 when no override provided", () => {
     const surface = createSurface(baseInput(), CTX);
-    expect(surface.ranking.modulePrecedence).toBe(1);
+    expect(surface.ranking.modulePrecedence).toBe(0);
   });
 
   it("input moduleId overrides ModuleContext", () => {
@@ -62,11 +62,8 @@ describe("createSurface", () => {
     expect(surface.moduleId).toBe("override");
   });
 
-  it("input modulePrecedence overrides ModuleContext", () => {
-    const surface = createSurface(
-      baseInput({ modulePrecedence: 5 }),
-      CTX,
-    );
+  it("precedenceOverride stamps modulePrecedence from composition layer", () => {
+    const surface = createSurface(baseInput(), CTX, 5);
     expect(surface.ranking.modulePrecedence).toBe(5);
   });
 

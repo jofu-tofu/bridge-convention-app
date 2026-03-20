@@ -13,6 +13,9 @@ export interface MachineState {
   readonly transitions: readonly MachineTransition[];
   readonly entryEffects?: MachineEffect; // applied on state entry
   readonly surfaceGroupId?: string; // which surface group to emit
+  /** Tags exported when this state is active (e.g., "agreement.pending").
+   *  Passed through 1:1 to FrameStateSpec.exportTags by the converter. */
+  readonly exportTags?: readonly string[];
   readonly transforms?: readonly CandidateTransform[];
   readonly submachineRef?: {
     readonly machineId: string; // Which submachine to invoke

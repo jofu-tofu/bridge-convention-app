@@ -10,7 +10,7 @@ describe("ConventionSpec assemblies", () => {
   describe("ntConventionSpec", () => {
     it("has correct id and name", () => {
       expect(ntConventionSpec.id).toBe("nt-bundle");
-      expect(ntConventionSpec.name).toBe("1NT Opening");
+      expect(ntConventionSpec.name).toBe("1NT Response Bundle");
     });
 
     it("has base modules", () => {

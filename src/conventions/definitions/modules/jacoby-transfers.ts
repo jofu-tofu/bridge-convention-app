@@ -31,7 +31,7 @@ import {
 
 // ─── Module context ──────────────────────────────────────────
 
-const TRANSFER_CTX: ModuleContext = { moduleId: "jacoby-transfers", modulePrecedence: 0 };
+const TRANSFER_CTX: ModuleContext = { moduleId: "jacoby-transfers" };
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -528,6 +528,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     stateId: "opener-transfer-hearts",
     parentId: "transfers-scope",
     allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.tentative"],
     transitions: [
       {
         transitionId: "transfer-h-pass",
@@ -554,6 +555,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     stateId: "opener-transfer-spades",
     parentId: "transfers-scope",
     allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.tentative"],
     transitions: [
       {
         transitionId: "transfer-s-pass",
@@ -660,6 +662,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     stateId: "opener-place-after-transfer-hearts",
     parentId: "transfers-scope",
     allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.final"],
     transitions: [
       {
         transitionId: "place-th-correct-4h",
@@ -680,6 +683,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     stateId: "opener-place-after-transfer-spades",
     parentId: "transfers-scope",
     allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.final"],
     transitions: [
       {
         transitionId: "place-ts-correct-4s",
@@ -702,6 +706,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     stateId: "opener-accept-invite-hearts",
     parentId: "transfers-scope",
     allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.final"],
     transitions: [
       {
         transitionId: "accept-invite-h-bid",
@@ -722,6 +727,7 @@ const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
     stateId: "opener-accept-invite-spades",
     parentId: "transfers-scope",
     allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
+    exportTags: ["agreement.final"],
     transitions: [
       {
         transitionId: "accept-invite-s-bid",

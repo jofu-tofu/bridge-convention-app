@@ -10,7 +10,7 @@ core/
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())
-  surface-builder.ts    createSurface() builder — simplified MeaningSurface construction with auto-derived clauseId/description/moduleId/modulePrecedence
+  surface-builder.ts    createSurface() builder — simplified MeaningSurface construction with auto-derived clauseId/description/moduleId. modulePrecedence defaults to 0; stamped positionally by composeModules() via precedenceOverride param
   profile-builder.ts    Profile building utilities
   bundle/               Bundle registry (ConventionBundle CRUD)
     bundle-types.ts       ConventionBundle interface
@@ -50,15 +50,9 @@ core/
     fact-compiler.ts      FactConstraintIR compilation from surface conditions
     coverage-spec-compiler.ts  Coverage spec compilation for CLI coverage runner
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
-  composition/          Module composition system (new: package-based composition)
-    module-package.ts     ModulePackage — separates exports from runtime
-    module-types.ts       ConventionModule type definition
-    machine-fragment.ts   MachineFragment, FrontierDeclaration — module-local FSM contribution
-    machine-assembler.ts  Machine assembly from fragments
-    compose.ts            Module composition orchestration
-    compile-from-packages.ts  Package → compiled module pipeline
-    handoff.ts            HandoffSpec, HandoffTrigger — cross-module coupling
-    interference-detector.ts  Interference pattern detection in composed machines
+  composition/          Generic module composition — auto-assembles BaseModuleSpec + SurfaceFragments from ConventionModule[] + BundleSkeleton
+    machine-to-frame.ts   MachineState → FrameStateSpec converter (hierarchy flattening, TransitionMatch → EventPattern, MachineEffect → EffectSpec)
+    compose-modules.ts    composeModules() — generic composition: positional precedence, surface merging, fact merging, entry transition injection, hook wiring
   modules/              Package-based module authoring (legacy adapter layer)
     module-package.ts     ModulePackage — separates exports (facts, surfaces, explanations) from runtime (activation, machine, handoffs)
     machine-fragment.ts   MachineFragment, FrontierDeclaration — module-local FSM contribution
@@ -96,7 +90,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 6. **Gate evaluation** — `evaluateGates()` 4-gate sequence per proposal
 7. **Arbitration** — `arbitrateMeanings()` selects best proposal (band ranking → specificity → deduplication)
 
-`clauseId`, `description`, `moduleId`, and `modulePrecedence` are optional on `MeaningSurface`. The `createSurface()` builder stamps them at definition time. The pipeline derives fallbacks for any surface not created via the builder (via `fillClauseDefaults()` and `?? 0` / `?? "unknown"` defaults).
+`clauseId`, `description`, and `moduleId` are optional on `MeaningSurface`. The `createSurface()` builder stamps them at definition time. `modulePrecedence` is no longer authored — it defaults to 0 and is stamped positionally by `composeModules()` based on module ordering in the bundle. The pipeline derives fallbacks for any surface not created via the builder (via `fillClauseDefaults()` and `?? 0` / `?? "unknown"` defaults).
 
 **All pipeline stages are convention-agnostic.** They operate on generic types (`MeaningSurface`, `EvaluatedFacts`, `MeaningProposal`). Convention-specific data comes from `definitions/` via `ConventionBundle`.
 

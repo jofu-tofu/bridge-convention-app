@@ -45,7 +45,6 @@ export interface SurfaceInput {
   readonly teachingLabel: string;
   // Optional overrides:
   readonly moduleId?: string;
-  readonly modulePrecedence?: number;
   readonly closurePolicy?: ChoiceClosurePolicy;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
   readonly pedagogicalTags?: readonly PedagogicalTagRef[];
@@ -53,27 +52,30 @@ export interface SurfaceInput {
 
 /**
  * Module-level defaults injected into surfaces created within that module.
- * `moduleId` and `modulePrecedence` are set on every surface unless
- * explicitly overridden on the SurfaceInput.
+ * `moduleId` is set on every surface unless explicitly overridden on SurfaceInput.
+ * `modulePrecedence` is NOT authored here — it's assigned positionally by the
+ * composition layer (composeModules) based on module ordering in the bundle.
  */
 export interface ModuleContext {
   readonly moduleId: string;
-  readonly modulePrecedence: number;
 }
 
 /**
  * Build a complete MeaningSurface from simplified input.
  *
  * - Normalizes `encoding` (wraps bare Call in `{ defaultCall }`)
- * - Fills `moduleId` and `modulePrecedence` from `ctx` when not on input
+ * - Fills `moduleId` from `ctx` when not on input
+ * - `modulePrecedence` defaults to 0; the composition layer stamps it
+ *   positionally via `precedenceOverride`
  * - Derives `clauseId` and `description` at build time via `deriveClauseId()`
  *   and `deriveClauseDescription()`. Explicit `description` on SimplifiedClause
  *   takes precedence over auto-derived values.
  * - Returns a complete MeaningSurface with all fields populated
  *
+ * @param precedenceOverride Used only by composeModules() to stamp positional precedence.
  * @throws Error if moduleId is absent from both input and context
  */
-export function createSurface(input: SurfaceInput, ctx?: ModuleContext): MeaningSurface {
+export function createSurface(input: SurfaceInput, ctx?: ModuleContext, precedenceOverride?: number): MeaningSurface {
   const moduleId = input.moduleId ?? ctx?.moduleId;
   if (moduleId === undefined) {
     throw new Error(
@@ -81,7 +83,7 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext): Meaning
     );
   }
 
-  const modulePrecedence = input.modulePrecedence ?? ctx?.modulePrecedence ?? 0;
+  const modulePrecedence = precedenceOverride ?? 0;
 
   // Normalize encoding: wrap bare Call in { defaultCall }
   const encoding: MeaningSurface["encoding"] =

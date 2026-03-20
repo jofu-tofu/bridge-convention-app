@@ -32,7 +32,7 @@ import {
 
 // ─── Module context ──────────────────────────────────────────
 
-const SMOLEN_CTX: ModuleContext = { moduleId: "smolen", modulePrecedence: 1 };
+const SMOLEN_CTX: ModuleContext = { moduleId: "smolen" };
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -77,7 +77,6 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
       },
     ],
     band: "must",
-    modulePrecedence: 2,
     intraModuleOrder: 0,
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
@@ -110,7 +109,6 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
       },
     ],
     band: "must",
-    modulePrecedence: 2,
     intraModuleOrder: 1,
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
@@ -330,6 +328,7 @@ const SMOLEN_MACHINE_STATES: readonly MachineState[] = [
     stateId: "smolen-invoke-hearts",
     parentId: "smolen-scope",
     allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt", "nt-opened-pass"],
+    exportTags: ["agreement.tentative"],
     transitions: [],
     submachineRef: {
       machineId: "smolen-continuation",
@@ -344,6 +343,7 @@ const SMOLEN_MACHINE_STATES: readonly MachineState[] = [
     stateId: "smolen-invoke-spades",
     parentId: "smolen-scope",
     allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt", "nt-opened-pass"],
+    exportTags: ["agreement.tentative"],
     transitions: [],
     submachineRef: {
       machineId: "smolen-continuation",
@@ -387,6 +387,7 @@ export function createSmolenSubmachine(): ConversationMachine {
       stateId: "opener-place-hearts",
       parentId: null,
       surfaceGroupId: "opener-smolen-hearts",
+      exportTags: ["agreement.final"],
       transitions: [
         {
           transitionId: "place-hearts-bid",
@@ -407,6 +408,7 @@ export function createSmolenSubmachine(): ConversationMachine {
       stateId: "opener-place-spades",
       parentId: null,
       surfaceGroupId: "opener-smolen-spades",
+      exportTags: ["agreement.final"],
       transitions: [
         {
           transitionId: "place-spades-bid",

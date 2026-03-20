@@ -5,12 +5,14 @@ import {
   aggregateModuleContent,
   bundleFromSystem,
   ntSystem,
+  ntStaymanSystem,
+  ntTransfersSystem,
   bergenSystem,
   dontSystem,
   weakTwosSystem,
 } from "../system-registry";
 
-const ALL_IDS = ["nt-bundle", "bergen-bundle", "dont-bundle", "weak-twos-bundle"] as const;
+const ALL_IDS = ["nt-bundle", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"] as const;
 
 describe("getSystem", () => {
   it.each(ALL_IDS)("returns a system for %s", (id) => {
@@ -27,8 +29,8 @@ describe("getSystem", () => {
 describe("listSystems", () => {
   const systems = listSystems();
 
-  it("returns exactly 4 systems", () => {
-    expect(systems).toHaveLength(4);
+  it("returns exactly 6 systems", () => {
+    expect(systems).toHaveLength(6);
   });
 
   it("contains all expected IDs", () => {
@@ -38,13 +40,15 @@ describe("listSystems", () => {
 
   it("has stable order", () => {
     const ids = systems.map((s) => s.id);
-    expect(ids).toEqual(["nt-bundle", "bergen-bundle", "dont-bundle", "weak-twos-bundle"]);
+    expect(ids).toEqual(["nt-bundle", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"]);
   });
 });
 
 describe("aggregateModuleContent", () => {
   it.each([
     ["ntSystem", ntSystem],
+    ["ntStaymanSystem", ntStaymanSystem],
+    ["ntTransfersSystem", ntTransfersSystem],
     ["bergenSystem", bergenSystem],
     ["dontSystem", dontSystem],
     ["weakTwosSystem", weakTwosSystem],
@@ -55,6 +59,8 @@ describe("aggregateModuleContent", () => {
 
   it.each([
     ["ntSystem", ntSystem],
+    ["ntStaymanSystem", ntStaymanSystem],
+    ["ntTransfersSystem", ntTransfersSystem],
     ["bergenSystem", bergenSystem],
     ["dontSystem", dontSystem],
     ["weakTwosSystem", weakTwosSystem],

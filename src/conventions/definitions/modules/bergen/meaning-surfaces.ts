@@ -14,7 +14,7 @@ import {
   ALTERNATIVES,
 } from "../../pedagogical-vocabulary";
 
-const BERGEN_CTX: ModuleContext = { moduleId: "bergen", modulePrecedence: 0 };
+const BERGEN_CTX: ModuleContext = { moduleId: "bergen" };
 
 /**
  * Create the 5 Bergen Raises R1 surfaces for a given major suit.
