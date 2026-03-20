@@ -40,6 +40,7 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | `shared-facts.ts` | `PRIMITIVE_FACTS`, `BRIDGE_DERIVED_FACTS` definitions — bridge-universal fact vocabulary. Module-specific facts belong in their module's `FactCatalogExtension` |
 | `teaching-grading.ts` | `BidGrade`, `AcceptableBid`, `TeachingResolution` — cross-boundary teaching grading types used by viewport, stores, teaching, and strategy |
 | `drill.ts` | `OpponentMode`, `VulnerabilityDistribution`, `DrillTuning`, `DEFAULT_DRILL_TUNING` — drill session tuning DTOs |
+| `pedagogical-tag.ts` | `PedagogicalTagDef`, `TagDerivation`, `PedagogicalTagRef` — shared vocabulary types for cross-module pedagogical tag derivation. Alternative groups use `meaningId` values exactly as defined on surfaces. Relations use `semanticClassId`. |
 
 ## Design Decisions
 

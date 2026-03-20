@@ -23,8 +23,6 @@ import {
 } from "./meaning-surfaces";
 import { bergenFacts } from "./facts";
 import { BERGEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
-import { BERGEN_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-import { BERGEN_ALTERNATIVE_GROUPS } from "./alternatives";
 
 export const bergenModule: ConventionModule = {
   moduleId: "bergen",
@@ -56,7 +54,4 @@ export const bergenModule: ConventionModule = {
   facts: bergenFacts,
 
   explanationEntries: BERGEN_EXPLANATION_ENTRIES,
-  pedagogicalRelations: BERGEN_PEDAGOGICAL_RELATIONS,
-  alternatives: BERGEN_ALTERNATIVE_GROUPS,
-  intentFamilies: [],
 };

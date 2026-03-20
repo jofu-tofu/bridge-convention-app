@@ -53,7 +53,7 @@
 {#if faceUp && clickable}
   <button
     type="button"
-    class="relative bg-card-face rounded-[--radius-md] shadow-md select-none
+    class="relative bg-card-face rounded-[--radius-md] shadow-md select-none ring-1 ring-black/8
       {hoverClass}
       border-none p-0"
     style={cardStyle}
@@ -66,7 +66,7 @@
   </button>
 {:else if faceUp}
   <div
-    class="relative bg-card-face rounded-[--radius-md] shadow-md select-none"
+    class="relative bg-card-face rounded-[--radius-md] shadow-md select-none ring-1 ring-black/8"
     style={cardStyle}
     aria-label={cardLabel}
     data-testid="card"
@@ -76,7 +76,7 @@
   </div>
 {:else}
   <div
-    class="rounded-[--radius-md] bg-card-back border border-card-back-border"
+    class="rounded-[--radius-md] bg-card-back border border-card-back-border shadow-sm"
     style={cardStyle}
     aria-label="Card back"
     data-testid="card-back"

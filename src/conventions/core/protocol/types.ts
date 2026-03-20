@@ -15,7 +15,7 @@ import type { ConstraintDimension } from "../../../core/contracts/meaning";
 import type { MeaningSurface, RankingMetadata } from "../../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+
 
 // ── Declarative Expression Types ────────────────────────────────────
 
@@ -240,8 +240,6 @@ interface ModuleSpecBase {
   readonly dealConstraints?: unknown;
   /** Explanation entries for teaching. */
   readonly explanationEntries?: readonly ExplanationEntry[];
-  /** Pedagogical relations. */
-  readonly pedagogicalRelations?: readonly PedagogicalRelation[];
 }
 
 /**

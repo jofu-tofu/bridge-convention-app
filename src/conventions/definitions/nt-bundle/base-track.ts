@@ -63,7 +63,6 @@ import {
   RESPONDER_SURFACES,
   STAYMAN_R3_AFTER_2D_SURFACES,
 } from "./composed-surfaces";
-import { NT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
 
 // ── Surface Fragments ────────────────────────────────────────────────
 
@@ -928,8 +927,6 @@ export const ntBaseTrack: BaseModuleSpec = {
   facts: mergedFacts,
 
   explanationEntries: mergedExplanationEntries,
-
-  pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
 };
 
 /** Factory: creates the 1NT base track parameterized by system config. */
@@ -967,7 +964,5 @@ export function createNtBaseTrack(sys: SystemConfig): BaseModuleSpec {
       ...configuredModules.jacobyTransfers.explanationEntries,
       ...configuredModules.smolen.explanationEntries,
     ],
-
-    pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
   };
 }

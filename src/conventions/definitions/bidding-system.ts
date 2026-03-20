@@ -12,8 +12,6 @@
 
 import type { DealConstraints, Deal, Seat, Auction } from "../../engine/types";
 import type { SystemProfileIR } from "../../core/contracts/agreement-module";
-import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
-import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
 import type { ConventionCategory } from "../../core/contracts/convention";
 
 export interface BiddingSystem {
@@ -43,16 +41,4 @@ export interface BiddingSystem {
   /** Capabilities injected into profile-based activation. */
   readonly declaredCapabilities?: Readonly<Record<string, string>>;
 
-  // ── Cross-module concerns (only for multi-module systems) ──────
-
-  /** Pedagogical relations between modules (e.g., Stayman same-family as Transfers).
-   *  Intra-module relations come from the modules themselves. */
-  readonly crossModuleRelations?: readonly PedagogicalRelation[];
-
-  /** Alternative groups spanning multiple modules (e.g., Transfer vs Stayman).
-   *  Intra-module alternatives come from the modules themselves. */
-  readonly crossModuleAlternatives?: readonly AlternativeGroup[];
-
-  /** Cross-module intent families. */
-  readonly crossModuleIntentFamilies?: readonly IntentFamily[];
 }

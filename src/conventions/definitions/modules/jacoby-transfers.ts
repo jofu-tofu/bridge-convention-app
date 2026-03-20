@@ -7,7 +7,7 @@ import type {
 } from "../../../core/contracts/fact-catalog";
 import { num, bool, fv } from "../../core/pipeline/fact-helpers";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
@@ -19,6 +19,13 @@ import {
 } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
+import {
+  SAME_FAMILY,
+  STRONGER_THAN,
+  CONTINUATION_OF,
+  NEAR_MISS_OF,
+  ALTERNATIVES,
+} from "../pedagogical-vocabulary";
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -70,6 +77,12 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "TransferToHearts", params: {} },
     teachingLabel: "Transfer to hearts",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "r1-major-fit" },
+      { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
+      { tag: NEAR_MISS_OF, scope: "r1-ask-vs-transfer", role: "b" },
+      { tag: CONTINUATION_OF, scope: "transfer:signoff-continues-r1-hearts", role: "b" },
+    ],
   },
 
   {
@@ -93,6 +106,10 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "TransferToSpades", params: {} },
     teachingLabel: "Transfer to spades",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "r1-major-fit" },
+      { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
+    ],
   },
 ];
 
@@ -156,6 +173,9 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "Signoff", params: { suit: "hearts" } },
     teachingLabel: "Pass (signoff in hearts)",
+    pedagogicalTags: [
+      { tag: CONTINUATION_OF, scope: "transfer:signoff-continues-r1-hearts", role: "a" },
+    ],
   },
 
   {
@@ -186,6 +206,10 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "GameInMajor", params: { suit: "hearts" } },
     teachingLabel: "4H game",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 0 },
+      { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "a" },
+    ],
   },
 
   {
@@ -216,6 +240,9 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "TransferNTGame", params: { suit: "hearts" } },
     teachingLabel: "3NT (5 hearts, let opener choose)",
+    pedagogicalTags: [
+      { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "b" },
+    ],
   },
 
   {
@@ -239,6 +266,9 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "Invite", params: { suit: "hearts" } },
     teachingLabel: "2NT invite",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 1 },
+    ],
   },
 ];
 
@@ -294,6 +324,9 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "GameInMajor", params: { suit: "spades" } },
     teachingLabel: "4S game",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 0 },
+    ],
   },
 
   {
@@ -347,6 +380,9 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     teachingLabel: "2NT invite",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 1 },
+    ],
   },
 ];
 
@@ -924,40 +960,6 @@ const TRANSFER_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Pedagogical relations ───────────────────────────────────
-
-const TRANSFER_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
-  // Same-family: both transfers serve the same purpose
-  {
-    kind: "same-family",
-    a: "transfer:to-hearts",
-    b: "transfer:to-spades",
-  },
-  // Stronger-than within R3
-  {
-    kind: "stronger-than",
-    a: "transfer:game-hearts",
-    b: "transfer:invite-hearts",
-  },
-  {
-    kind: "stronger-than",
-    a: "transfer:game-spades",
-    b: "transfer:invite-spades",
-  },
-  // Continuation-of: signoff continues the transfer dialogue
-  {
-    kind: "continuation-of",
-    a: "transfer:signoff-hearts",
-    b: "transfer:to-hearts",
-  },
-  // Near-miss: learners confuse 4H game with 3NT game
-  {
-    kind: "near-miss-of",
-    a: "transfer:game-hearts",
-    b: "transfer:nt-game-hearts",
-  },
-];
-
 // ─── Module assembly ─────────────────────────────────────────
 
 /** Factory: creates the jacoby-transfers module parameterized by system config. */
@@ -985,12 +987,6 @@ export function createJacobyTransfersModule(sys: SystemConfig) {
     facts: createTransferFacts(sys),
 
     explanationEntries: TRANSFER_EXPLANATION_ENTRIES,
-
-    pedagogicalRelations: TRANSFER_PEDAGOGICAL_RELATIONS,
-
-    alternatives: [],
-
-    intentFamilies: [],
   };
 }
 

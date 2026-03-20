@@ -1,7 +1,16 @@
 import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { PedagogicalTagRef } from "../../../../core/contracts/pedagogical-tag";
 import { BidSuit } from "../../../../engine/types";
 import { BERGEN_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit, otherMajorBidSuit } from "../../../core/surface-helpers";
+import {
+  SAME_FAMILY,
+  STRONGER_THAN,
+  CONTINUATION_OF,
+  NEAR_MISS_OF,
+  FALLBACK_OF,
+  ALTERNATIVES,
+} from "../../pedagogical-vocabulary";
 
 /**
  * Create the 5 Bergen Raises R1 surfaces for a given major suit.
@@ -63,6 +72,10 @@ export function createBergenR1Surfaces(
       sourceIntent: { type: "Splinter", params: { suit } },
       teachingLabel: `Splinter (3${suit === "hearts" ? "S" : "H"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r1-splinter-and-game-${suit}` },
+        { tag: NEAR_MISS_OF, scope: `bergen:r1-splinter-vs-game-${suit}`, role: "a" },
+      ],
     },
 
     // 2. Game raise -- 13+ HCP, 4+ support
@@ -95,6 +108,13 @@ export function createBergenR1Surfaces(
       sourceIntent: { type: "GameRaise", params: { suit } },
       teachingLabel: `Game raise (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r1-strength-raises-${suit}` },
+        { tag: SAME_FAMILY, scope: `bergen:r1-splinter-and-game-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r1-strength-chain-${suit}`, ordinal: 0 },
+        { tag: NEAR_MISS_OF, scope: `bergen:r1-splinter-vs-game-${suit}`, role: "b" },
+        { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
+      ],
     },
 
     // 3. Limit raise -- 10-12 HCP, 4+ support
@@ -127,6 +147,13 @@ export function createBergenR1Surfaces(
       sourceIntent: { type: "LimitRaise", params: { suit } },
       teachingLabel: "Limit raise (3D)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r1-strength-raises-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r1-strength-chain-${suit}`, ordinal: 1 },
+        { tag: NEAR_MISS_OF, scope: `bergen:r1-constructive-vs-limit-${suit}`, role: "b" },
+        { tag: CONTINUATION_OF, scope: `bergen:r2-after-limit-${suit}`, role: "b" },
+        { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
+      ],
     },
 
     // 4. Constructive raise -- 7-10 HCP, 4+ support
@@ -159,6 +186,14 @@ export function createBergenR1Surfaces(
       sourceIntent: { type: "ConstructiveRaise", params: { suit } },
       teachingLabel: "Constructive raise (3C)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r1-strength-raises-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r1-strength-chain-${suit}`, ordinal: 2 },
+        { tag: NEAR_MISS_OF, scope: `bergen:r1-constructive-vs-limit-${suit}`, role: "a" },
+        { tag: FALLBACK_OF, scope: `bergen:r1-preemptive-fallback-${suit}`, role: "b" },
+        { tag: CONTINUATION_OF, scope: `bergen:r2-after-constructive-${suit}`, role: "b" },
+        { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
+      ],
     },
 
     // 5. Preemptive raise -- 0-6 HCP, 4+ support
@@ -191,6 +226,13 @@ export function createBergenR1Surfaces(
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
       teachingLabel: `Preemptive raise (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r1-strength-raises-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r1-strength-chain-${suit}`, ordinal: 3 },
+        { tag: FALLBACK_OF, scope: `bergen:r1-preemptive-fallback-${suit}`, role: "a" },
+        { tag: CONTINUATION_OF, scope: `bergen:r2-after-preemptive-${suit}`, role: "b" },
+        { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
+      ],
     },
   ];
 }
@@ -238,6 +280,12 @@ export function createBergenR2AfterConstructiveSurfaces(
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept constructive → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r2-rebids-after-constructive-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r2-constructive-strength-${suit}`, ordinal: 0 },
+        { tag: CONTINUATION_OF, scope: `bergen:r2-after-constructive-${suit}`, role: "a" },
+        { tag: ALTERNATIVES, scope: `Opener rebid after constructive (${suit})` },
+      ],
     },
 
     // Opener signoff: ≤13 HCP → 3M (return to trump suit)
@@ -263,6 +311,11 @@ export function createBergenR2AfterConstructiveSurfaces(
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Decline constructive → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r2-rebids-after-constructive-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r2-constructive-strength-${suit}`, ordinal: 1 },
+        { tag: ALTERNATIVES, scope: `Opener rebid after constructive (${suit})` },
+      ],
     },
   ];
 }
@@ -304,6 +357,12 @@ export function createBergenR2AfterLimitSurfaces(
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept limit raise → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r2-rebids-after-limit-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r2-limit-strength-${suit}`, ordinal: 0 },
+        { tag: CONTINUATION_OF, scope: `bergen:r2-after-limit-${suit}`, role: "a" },
+        { tag: ALTERNATIVES, scope: `Opener rebid after limit (${suit})` },
+      ],
     },
 
     // Opener signoff: ≤14 HCP → 3M
@@ -329,6 +388,11 @@ export function createBergenR2AfterLimitSurfaces(
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Decline limit raise → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r2-rebids-after-limit-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r2-limit-strength-${suit}`, ordinal: 1 },
+        { tag: ALTERNATIVES, scope: `Opener rebid after limit (${suit})` },
+      ],
     },
   ];
 }
@@ -370,6 +434,11 @@ export function createBergenR2AfterPreemptiveSurfaces(
       sourceIntent: { type: "RaiseToGame", params: { suit } },
       teachingLabel: `Bid game over preemptive (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r2-rebids-after-preemptive-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r2-preemptive-strength-${suit}`, ordinal: 0 },
+        { tag: CONTINUATION_OF, scope: `bergen:r2-after-preemptive-${suit}`, role: "a" },
+      ],
     },
 
     // Opener pass: ≤17 HCP → Pass
@@ -395,6 +464,10 @@ export function createBergenR2AfterPreemptiveSurfaces(
       sourceIntent: { type: "AcceptPartnerDecision", params: { suit } },
       teachingLabel: "Pass over preemptive",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r2-rebids-after-preemptive-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r2-preemptive-strength-${suit}`, ordinal: 1 },
+      ],
     },
   ];
 }
@@ -438,6 +511,12 @@ export function createBergenR3AfterGameTrySurfaces(
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept game try → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r3-game-try-decisions-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r3-game-try-strength-${suit}`, ordinal: 0 },
+        { tag: CONTINUATION_OF, scope: "bergen:r4-after-try-decision", role: "b" },
+        { tag: ALTERNATIVES, scope: `Responder game try decision (${suit})` },
+      ],
     },
 
     // Reject game try: 7-8 HCP → 3M
@@ -463,6 +542,12 @@ export function createBergenR3AfterGameTrySurfaces(
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Reject game try → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `bergen:r3-game-try-decisions-${suit}` },
+        { tag: STRONGER_THAN, scope: `bergen:r3-game-try-strength-${suit}`, ordinal: 1 },
+        { tag: CONTINUATION_OF, scope: "bergen:r4-after-try-decision", role: "b" },
+        { tag: ALTERNATIVES, scope: `Responder game try decision (${suit})` },
+      ],
     },
   ];
 }
@@ -476,6 +561,7 @@ function createBergenPassSurface(
   meaningId: string,
   semanticClassId: string,
   teachingLabel: string,
+  pedagogicalTags?: readonly PedagogicalTagRef[],
 ): readonly MeaningSurface[] {
   return [
     {
@@ -491,6 +577,7 @@ function createBergenPassSurface(
       },
       sourceIntent: { type: "AcceptPartnerDecision", params: {} },
       teachingLabel,
+      ...(pedagogicalTags ? { pedagogicalTags } : {}),
     },
   ];
 }
@@ -531,6 +618,7 @@ export function createBergenR4Surfaces(): readonly MeaningSurface[] {
     "bergen:opener-accept-after-try",
     BERGEN_CLASSES.OPENER_ACCEPT_AFTER_TRY,
     "Accept partner's decision on game try → pass",
+    [{ tag: CONTINUATION_OF, scope: "bergen:r4-after-try-decision", role: "a" }],
   );
 }
 

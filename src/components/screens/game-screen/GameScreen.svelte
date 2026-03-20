@@ -336,7 +336,24 @@
     {/if}
   </main>
 {:else}
-  <div class="flex items-center justify-center h-64">
-    <p class="text-text-muted">Loading deal...</p>
+  <div class="flex items-center justify-center h-full">
+    <div class="flex flex-col items-center gap-4">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p class="text-text-secondary text-[--text-detail] font-medium tracking-wide">Dealing cards&hellip;</p>
+    </div>
   </div>
 {/if}
+
+<style>
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2.5px solid var(--color-border-subtle);
+    border-top-color: var(--color-accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>

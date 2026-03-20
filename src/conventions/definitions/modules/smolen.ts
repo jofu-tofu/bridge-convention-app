@@ -13,13 +13,20 @@ import type {
 import { num, fv } from "../../core/pipeline/fact-helpers";
 import { ForcingState } from "../../../core/contracts/bidding";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { SYSTEM_RESPONDER_GAME_VALUES } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
+import {
+  SAME_FAMILY,
+  STRONGER_THAN,
+  CONTINUATION_OF,
+  NEAR_MISS_OF,
+  ALTERNATIVES,
+} from "../pedagogical-vocabulary";
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -75,6 +82,9 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "smolen:entry-variants" },
+    ],
   },
 
   {
@@ -112,6 +122,9 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "smolen:entry-variants" },
+    ],
   },
 ];
 
@@ -153,6 +166,13 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
     teachingLabel: "Smolen 3♥ (4♥ + 5♠, game force)",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "smolen:r3-bids" },
+      { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "a" },
+      { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "a" },
+      { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "a" },
+      { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
+    ],
   },
 
   {
@@ -190,6 +210,13 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
     teachingLabel: "Smolen 3♠ (4♠ + 5♥, game force)",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "smolen:r3-bids" },
+      { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "a" },
+      { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "a" },
+      { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "a" },
+      { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
+    ],
   },
 ];
 
@@ -613,21 +640,6 @@ const SMOLEN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Pedagogical relations ───────────────────────────────────
-
-const SMOLEN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
-  {
-    kind: "same-family",
-    a: "smolen:bid-short-hearts",
-    b: "smolen:bid-short-spades",
-  },
-  {
-    kind: "same-family",
-    a: "smolen:stayman-entry-5h4s",
-    b: "smolen:stayman-entry-5s4h",
-  },
-];
-
 // ─── Module assembly ─────────────────────────────────────────
 
 const smolenSub = createSmolenSubmachine();
@@ -658,12 +670,6 @@ export function createSmolenModule(_sys: SystemConfig) {
     facts: smolenFacts,
 
     explanationEntries: SMOLEN_EXPLANATION_ENTRIES,
-
-    pedagogicalRelations: SMOLEN_PEDAGOGICAL_RELATIONS,
-
-    alternatives: [],
-
-    intentFamilies: [],
   };
 }
 

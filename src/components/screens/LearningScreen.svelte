@@ -3,6 +3,7 @@
   import { listConventions } from "../../conventions/core";
   import type { ConventionConfig, ConventionTeaching } from "../../core/contracts/convention";
   import { filterConventions } from "../../core/display/filter-conventions";
+  import { displayConventionName } from "../../core/display/format";
   import { DESKTOP_MIN } from "../../core/display/breakpoints.svelte";
 
   const appStore = getAppStore();
@@ -102,7 +103,7 @@
                 : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}"
             onclick={() => handleConventionClick(conv)}
           >
-            {conv.name}
+            {displayConventionName(conv.name)}
           </button>
         {/each}
       </nav>
@@ -115,7 +116,7 @@
         <!-- Convention toolbar — always visible -->
         <div class="shrink-0 px-4 sm:px-8 py-3 border-b border-border-subtle bg-bg-base flex flex-col gap-2">
           <div class="flex items-center gap-3 min-w-0">
-            <h1 class="text-xl font-semibold text-text-primary truncate min-w-0 flex-1">{config.name}</h1>
+            <h1 class="text-xl font-semibold text-text-primary truncate min-w-0 flex-1">{displayConventionName(config.name)}</h1>
             <span class="shrink-0 rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1">
               {config.category}
             </span>

@@ -4,6 +4,7 @@ import type {
   ChoiceClosurePolicy,
   FactConstraintIR,
 } from "./agreement-module";
+import type { PedagogicalTagRef } from "./pedagogical-tag";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;
@@ -214,6 +215,8 @@ export interface MeaningSurface {
    *  public constraints become entailed denials for partnership posterior. */
   readonly closurePolicy?: ChoiceClosurePolicy;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
+  /** Cross-module pedagogical tags for deriving relations and alternatives. */
+  readonly pedagogicalTags?: readonly PedagogicalTagRef[];
 }
 
 // ---------------------------------------------------------------------------

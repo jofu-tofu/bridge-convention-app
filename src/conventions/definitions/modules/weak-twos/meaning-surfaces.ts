@@ -3,6 +3,13 @@ import type { Call } from "../../../../engine/types";
 import { BidSuit } from "../../../../engine/types";
 import { WEAK_TWO_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit } from "../../../core/surface-helpers";
+import {
+  SAME_FAMILY,
+  STRONGER_THAN,
+  CONTINUATION_OF,
+  NEAR_MISS_OF,
+  ALTERNATIVES,
+} from "../../pedagogical-vocabulary";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
@@ -61,6 +68,9 @@ export function createWeakTwoR1Surfaces(): readonly MeaningSurface[] {
     sourceIntent: { type: "WeakTwoOpen", params: { suit } },
     teachingLabel: `Open 2${suitLabel(suit)}`,
     surfaceBindings: { suit },
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "weak-two:opener-bids" },
+    ],
   }));
 }
 
@@ -113,6 +123,12 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "GameRaise", params: { suit } },
       teachingLabel: `Game raise (${gameLevel}${sl})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
+        { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 0 },
+        { tag: NEAR_MISS_OF, scope: `weak-two:raise-boundary-${suit}`, role: "a" },
+        { tag: ALTERNATIVES, scope: `Weak Two responder action (${suit})` },
+      ],
     },
 
     // 2. Ogust ask: 16+ HCP → 2NT (lower specificity than game raise)
@@ -145,6 +161,11 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "OgustAsk", params: { suit } },
       teachingLabel: "Ogust ask (2NT)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
+        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "b" },
+        { tag: ALTERNATIVES, scope: `Weak Two responder action (${suit})` },
+      ],
     },
 
     // 3. Invite raise: 14-15 HCP, 3+ fit → 3 of opener's suit
@@ -177,6 +198,12 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "InviteRaise", params: { suit } },
       teachingLabel: `Invite raise (3${sl})`,
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
+        { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 1 },
+        { tag: NEAR_MISS_OF, scope: `weak-two:raise-boundary-${suit}`, role: "b" },
+        { tag: ALTERNATIVES, scope: `Weak Two responder action (${suit})` },
+      ],
     },
 
     // 4. Pass (fallback — no convention bid applies)
@@ -194,6 +221,9 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "WeakPass", params: { suit } },
       teachingLabel: "Pass (no action)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 2 },
+      ],
     },
   ];
 }
@@ -238,6 +268,12 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustSolid", params: { suit } },
       teachingLabel: "Ogust solid (3NT)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
+        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 0 },
+        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
+        { tag: ALTERNATIVES, scope: "Ogust responses" },
+      ],
     },
 
     // 2. Min bad: 5-8 NV / 6-8 vul HCP, 0-1 top honors → 3C
@@ -270,6 +306,12 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMinBad", params: { suit } },
       teachingLabel: "Ogust min/bad (3C)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
+        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 4 },
+        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
+        { tag: ALTERNATIVES, scope: "Ogust responses" },
+      ],
     },
 
     // 3. Min good: 5-8 NV / 6-8 vul HCP, 2+ top honors → 3D
@@ -302,6 +344,13 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMinGood", params: { suit } },
       teachingLabel: "Ogust min/good (3D)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
+        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 3 },
+        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
+        { tag: NEAR_MISS_OF, scope: `weak-two:ogust-strength-boundary-${suit}`, role: "a" },
+        { tag: ALTERNATIVES, scope: "Ogust responses" },
+      ],
     },
 
     // 4. Max bad: 9-11 HCP, 0-1 top honors → 3H
@@ -334,6 +383,13 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMaxBad", params: { suit } },
       teachingLabel: "Ogust max/bad (3H)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
+        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 2 },
+        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
+        { tag: NEAR_MISS_OF, scope: `weak-two:ogust-strength-boundary-${suit}`, role: "b" },
+        { tag: ALTERNATIVES, scope: "Ogust responses" },
+      ],
     },
 
     // 5. Max good: 9-11 HCP, 2+ top honors → 3S
@@ -366,6 +422,12 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMaxGood", params: { suit } },
       teachingLabel: "Ogust max/good (3S)",
       surfaceBindings: bindings,
+      pedagogicalTags: [
+        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
+        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 1 },
+        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
+        { tag: ALTERNATIVES, scope: "Ogust responses" },
+      ],
     },
   ];
 }
@@ -385,9 +447,7 @@ export function createPostOgustSurfaces(
   suit: WeakTwoSuit,
 ): readonly MeaningSurface[] {
   const bindings = { suit } as const;
-  const sl = suitLabel(suit);
   const gameCall = gameRaiseBid(suit);
-  const gameLevel = suit === "diamonds" ? 5 : 4;
 
   return [
     // 1. Bid game: 17+ HCP → game in agreed suit (highest priority)

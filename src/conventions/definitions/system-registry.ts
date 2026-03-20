@@ -8,13 +8,13 @@
  */
 
 import type { BiddingSystem } from "./bidding-system";
-import type { ConventionModule } from "../../core/contracts/convention-module";
 import type { ConventionBundle } from "../core/bundle/bundle-types";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
 import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import { getModules } from "./module-registry";
+import { derivePedagogicalContent } from "./derive-cross-module";
 
 // ── System definitions ──────────────────────────────────────────────
 
@@ -26,9 +26,6 @@ import { NT_SAYC_PROFILE } from "./nt-bundle/system-profile";
 import { BERGEN_PROFILE } from "./bergen-bundle/system-profile";
 import { DONT_PROFILE } from "./dont-bundle/system-profile";
 import { WEAK_TWO_PROFILE } from "./weak-twos-bundle/system-profile";
-import { NT_CROSS_MODULE_RELATIONS } from "./nt-bundle/pedagogical-relations";
-import { ntCrossConventionAlternatives } from "./nt-bundle/alternatives";
-
 const ntSystem: BiddingSystem = {
   id: "nt-bundle",
   name: "1NT Response Bundle",
@@ -55,8 +52,6 @@ const ntSystem: BiddingSystem = {
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  crossModuleRelations: NT_CROSS_MODULE_RELATIONS,
-  crossModuleAlternatives: ntCrossConventionAlternatives,
 };
 
 const bergenSystem: BiddingSystem = {
@@ -68,8 +63,8 @@ const bergenSystem: BiddingSystem = {
   moduleIds: ["bergen"],
   dealConstraints: {
     seats: [
-      { seat: Seat.North, minHcp: 12, maxHcp: 21, minLengthAny: { [Suit.Spades]: 5, [Suit.Hearts]: 5 } },
-      { seat: Seat.South, minHcp: 0, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
+      { seat: Seat.North, minHcp: 12, maxHcp: 21, minLength: { [Suit.Hearts]: 5 } },
+      { seat: Seat.South, minHcp: 0, minLength: { [Suit.Hearts]: 4 } },
     ],
     dealer: Seat.North,
   },
@@ -146,22 +141,14 @@ export function aggregateModuleContent(system: BiddingSystem): {
   intentFamilies: readonly IntentFamily[];
 } {
   const modules = getModules(system.moduleIds);
+  const derived = derivePedagogicalContent(modules);
   return {
     explanationCatalog: createExplanationCatalog(
       modules.flatMap((m) => m.explanationEntries),
     ),
-    pedagogicalRelations: [
-      ...modules.flatMap((m) => m.pedagogicalRelations),
-      ...(system.crossModuleRelations ?? []),
-    ],
-    acceptableAlternatives: [
-      ...modules.flatMap((m) => m.alternatives),
-      ...(system.crossModuleAlternatives ?? []),
-    ],
-    intentFamilies: [
-      ...modules.flatMap((m) => m.intentFamilies),
-      ...(system.crossModuleIntentFamilies ?? []),
-    ],
+    pedagogicalRelations: derived.relations,
+    acceptableAlternatives: derived.alternatives,
+    intentFamilies: derived.intentFamilies,
   };
 }
 

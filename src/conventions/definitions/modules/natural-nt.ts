@@ -2,12 +2,10 @@ import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { MachineTransition } from "../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
-  FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { num, fv } from "../../core/pipeline/fact-helpers";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+
 import { BidSuit } from "../../../engine/types";
 import { BRIDGE_SEMANTIC_CLASSES } from "../../../core/contracts/meaning";
 import type { SystemConfig } from "../../../core/contracts/system-config";
@@ -19,6 +17,11 @@ import {
 } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
+import {
+  SAME_FAMILY,
+  STRONGER_THAN,
+  FALLBACK_OF,
+} from "../pedagogical-vocabulary";
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
@@ -58,6 +61,11 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "NTInvite", params: {} },
     teachingLabel: "NT invite",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "natural-nt:r1" },
+      { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 1 },
+      { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
+    ],
   },
 
   {
@@ -95,6 +103,11 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "NTGame", params: {} },
     teachingLabel: "3NT game",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "natural-nt:r1" },
+      { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 0 },
+      { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
+    ],
   },
 ];
 
@@ -330,21 +343,6 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Pedagogical relations ───────────────────────────────────
-
-const NT_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
-  {
-    kind: "same-family",
-    a: "bridge:nt-invite",
-    b: "bridge:to-3nt",
-  },
-  {
-    kind: "stronger-than",
-    a: "bridge:to-3nt",
-    b: "bridge:nt-invite",
-  },
-];
-
 // ─── Terminal pass surface (auction settled — intentional pass) ───
 
 const TERMINAL_PASS_SURFACE: readonly MeaningSurface[] = [
@@ -385,12 +383,6 @@ export function createNaturalNtModule(sys: SystemConfig) {
     facts: createNtResponseFacts(sys),
 
     explanationEntries: NT_EXPLANATION_ENTRIES,
-
-    pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
-
-    alternatives: [],
-
-    intentFamilies: [],
   };
 }
 

@@ -20,8 +20,6 @@ import {
 } from "./meaning-surfaces";
 import { weakTwoFacts } from "./facts";
 import { WEAK_TWO_ENTRIES } from "./explanation-catalog";
-import { WEAK_TWO_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-import { WEAK_TWO_ALTERNATIVE_GROUPS } from "./alternatives";
 
 export const weakTwosModule: ConventionModule = {
   moduleId: "weak-twos",
@@ -47,7 +45,4 @@ export const weakTwosModule: ConventionModule = {
   facts: weakTwoFacts,
 
   explanationEntries: WEAK_TWO_ENTRIES,
-  pedagogicalRelations: WEAK_TWO_PEDAGOGICAL_RELATIONS,
-  alternatives: WEAK_TWO_ALTERNATIVE_GROUPS,
-  intentFamilies: [],
 };

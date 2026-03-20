@@ -142,7 +142,7 @@
 </script>
 
 <div
-  class="bridge-table bg-table-surface border border-table-border rounded-[--radius-xl]"
+  class="bridge-table bg-table-surface border border-table-border rounded-[--radius-xl] shadow-lg"
   style="width: var(--table-width); height: var(--table-height);"
   role="region"
   aria-label="Bridge table"
@@ -188,7 +188,7 @@
   <div class="area-center" data-testid="table-center">
     {#if showVulBadge}
       <span
-        class="inline-flex items-center gap-1 text-[0.7rem] font-semibold tracking-wide text-accent-danger bg-accent-danger/10 border border-accent-danger/20 px-2.5 py-0.5 rounded-[--radius-sm] mb-1"
+        class="inline-flex items-center gap-1 text-[--text-label] font-semibold tracking-wide text-accent-danger bg-accent-danger/10 border border-accent-danger/20 px-2.5 py-0.5 rounded-[--radius-sm] mb-1"
         data-testid="vul-badge"
         aria-label={vulBadgeLabel()}
       >{vulBadgeLabel()}</span>

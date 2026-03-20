@@ -74,17 +74,6 @@ describe.each(moduleEntries)("structural contract — %s", (_id, mod) => {
     expect(mod.explanationEntries.length).toBeGreaterThan(0);
   });
 
-  it("pedagogicalRelations is an array", () => {
-    expect(Array.isArray(mod.pedagogicalRelations)).toBe(true);
-  });
-
-  it("alternatives is an array", () => {
-    expect(Array.isArray(mod.alternatives)).toBe(true);
-  });
-
-  it("intentFamilies is an array", () => {
-    expect(Array.isArray(mod.intentFamilies)).toBe(true);
-  });
 });
 
 // ── 2. Surface integrity ─────────────────────────────────────────

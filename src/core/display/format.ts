@@ -92,3 +92,8 @@ export function formatCardLabel(rank: Rank, suit: Suit): string {
   return `${RANK_FULL_NAMES[rank]} of ${SUIT_FULL_NAMES[suit]}`;
 }
 
+/** Strip internal suffixes like "(Bundle)" from convention display names. */
+export function displayConventionName(name: string): string {
+  return name.replace(/\s*\(Bundle\)\s*$/i, "");
+}
+

@@ -2,6 +2,12 @@ import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { DONT_CLASSES } from "./semantic-classes";
 import { bid } from "../../../core/surface-helpers";
+import {
+  SAME_FAMILY,
+  CONTINUATION_OF,
+  NEAR_MISS_OF,
+  ALTERNATIVES,
+} from "../../pedagogical-vocabulary";
 
 // ─── R1: Overcaller initial action (after opponent's 1NT) ───
 //
@@ -37,6 +43,11 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTBothMajors", params: {} },
     teachingLabel: "2H — both majors",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
+      { tag: ALTERNATIVES, scope: "DONT overcaller two-suited actions" },
+      { tag: NEAR_MISS_OF, scope: "dont:2h-vs-2d", role: "a" },
+    ],
   },
 
   // 2. 2D — diamonds + a major
@@ -61,6 +72,13 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTDiamondsMajor", params: {} },
     teachingLabel: "2D — diamonds + a major",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
+      { tag: ALTERNATIVES, scope: "DONT overcaller two-suited actions" },
+      { tag: NEAR_MISS_OF, scope: "dont:2h-vs-2d", role: "b" },
+      { tag: NEAR_MISS_OF, scope: "dont:2c-vs-2d", role: "b" },
+      { tag: CONTINUATION_OF, scope: "dont:show-after-2d-relay", role: "b" },
+    ],
   },
 
   // 3. 2C — clubs + a higher suit
@@ -85,6 +103,12 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTClubsHigher", params: {} },
     teachingLabel: "2C — clubs + higher suit",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
+      { tag: ALTERNATIVES, scope: "DONT overcaller two-suited actions" },
+      { tag: NEAR_MISS_OF, scope: "dont:2c-vs-2d", role: "a" },
+      { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "b" },
+    ],
   },
 
   // 4. 2S — natural 6+ spades
@@ -109,6 +133,11 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTNaturalSpades", params: {} },
     teachingLabel: "2S — natural spades",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
+      { tag: ALTERNATIVES, scope: "DONT overcaller long-suit actions" },
+      { tag: NEAR_MISS_OF, scope: "dont:2s-vs-double", role: "a" },
+    ],
   },
 
   // 5. X (double) — single suited, one suit 6+, not spades
@@ -133,6 +162,12 @@ export const DONT_R1_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTSingleSuited", params: {} },
     teachingLabel: "X — single suited (not spades)",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
+      { tag: ALTERNATIVES, scope: "DONT overcaller long-suit actions" },
+      { tag: NEAR_MISS_OF, scope: "dont:2s-vs-double", role: "b" },
+      { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "b" },
+    ],
   },
 
   // 6. Pass — no DONT bid applies (fallback)
@@ -440,6 +475,10 @@ export const DONT_REVEAL_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTRevealClubs", params: {} },
     teachingLabel: "Pass — clubs",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-reveals" },
+      { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "a" },
+    ],
   },
 
   // 2. 2D — reveal diamonds
@@ -464,6 +503,10 @@ export const DONT_REVEAL_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTRevealDiamonds", params: {} },
     teachingLabel: "2D — diamonds",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-reveals" },
+      { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "a" },
+    ],
   },
 
   // 3. 2H — reveal hearts
@@ -488,6 +531,10 @@ export const DONT_REVEAL_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTRevealHearts", params: {} },
     teachingLabel: "2H — hearts",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "dont:overcaller-reveals" },
+      { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "a" },
+    ],
   },
 ];
 
@@ -520,6 +567,9 @@ export const DONT_2C_RELAY_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTShowDiamonds", params: {} },
     teachingLabel: "Pass — diamonds (from 2C+higher)",
+    pedagogicalTags: [
+      { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "a" },
+    ],
   },
 
   // 2. 2H — higher suit is hearts
@@ -544,6 +594,9 @@ export const DONT_2C_RELAY_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTShowHearts", params: {} },
     teachingLabel: "2H — hearts (from 2C+higher)",
+    pedagogicalTags: [
+      { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "a" },
+    ],
   },
 
   // 3. 2S — higher suit is spades
@@ -568,6 +621,9 @@ export const DONT_2C_RELAY_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTShowSpades", params: {} },
     teachingLabel: "2S — spades (from 2C+higher)",
+    pedagogicalTags: [
+      { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "a" },
+    ],
   },
 ];
 
@@ -599,6 +655,9 @@ export const DONT_2D_RELAY_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTShowHeartsFromDiamonds", params: {} },
     teachingLabel: "Pass — hearts (from 2D+major)",
+    pedagogicalTags: [
+      { tag: CONTINUATION_OF, scope: "dont:show-after-2d-relay", role: "a" },
+    ],
   },
 
   // 2. 2S — major is spades
@@ -623,5 +682,8 @@ export const DONT_2D_RELAY_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "DONTShowSpadesFromDiamonds", params: {} },
     teachingLabel: "2S — spades (from 2D+major)",
+    pedagogicalTags: [
+      { tag: CONTINUATION_OF, scope: "dont:show-after-2d-relay", role: "a" },
+    ],
   },
 ];

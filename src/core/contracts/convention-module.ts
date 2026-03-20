@@ -2,19 +2,21 @@
  * ConventionModule — the formal contract for a self-contained convention module.
  *
  * A module is an independent unit of bidding logic. It owns its surfaces, facts,
- * FSM states, teaching metadata, and grading metadata. Modules must NOT import
- * from other modules — this is the fundamental decoupling invariant.
+ * FSM states, and teaching metadata. Modules must NOT import from other modules —
+ * this is the fundamental decoupling invariant.
+ *
+ * Pedagogical relations, alternatives, and intent families are derived automatically
+ * from `pedagogicalTags` on surfaces by the derivation function. Modules do not
+ * declare these explicitly.
  *
  * Bundles (bidding systems) compose modules via system profiles. Cross-module
- * wiring (hook transitions, composed surfaces, cross-module pedagogical relations)
- * belongs exclusively at the system/bundle level.
+ * wiring (hook transitions, composed surfaces) belongs exclusively at the
+ * system/bundle level.
  */
 
 import type { MeaningSurface } from "./meaning";
 import type { FactCatalogExtension } from "./fact-catalog";
 import type { ExplanationEntry } from "./explanation-catalog";
-import type { PedagogicalRelation } from "./teaching-projection";
-import type { AlternativeGroup, IntentFamily } from "./tree-evaluation";
 import type {
   MachineState,
   MachineTransition,
@@ -49,17 +51,6 @@ export interface ConventionModule {
 
   /** Explanation entries for teaching projections. */
   readonly explanationEntries: readonly ExplanationEntry[];
-
-  /** Pedagogical relation graph (intra-module only). */
-  readonly pedagogicalRelations: readonly PedagogicalRelation[];
-
-  // ── Grading ──────────────────────────────────────────────────
-
-  /** Alternative groups for grading tolerance (intra-module only). */
-  readonly alternatives: readonly AlternativeGroup[];
-
-  /** Intent families for relationship-aware grading credit. */
-  readonly intentFamilies: readonly IntentFamily[];
 
   // ── Optional extensions ──────────────────────────────────────
 

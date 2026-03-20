@@ -56,9 +56,9 @@
   }
 </script>
 
-<div class="flex flex-col {compact ? 'gap-1' : 'gap-2'} min-w-0">
+<div class="flex flex-col {compact ? 'gap-1' : 'gap-1.5'} min-w-0">
   <div
-    class="grid grid-cols-5 gap-1"
+    class="grid grid-cols-5 gap-0.5"
     aria-label="Contract bids"
     data-testid="level-bids"
   >
@@ -68,10 +68,10 @@
         data-testid="bid-{callKey(call)}"
         class="{compact
           ? 'px-0.5 py-1 text-[--text-label]'
-          : 'px-1 py-2.5 text-[--text-detail]'} {compact ? '' : 'min-h-[--size-touch-target]'} rounded-[--radius-md] font-mono transition-colors bg-bg-elevated text-center
+          : 'px-1 py-2 text-[--text-detail]'} {compact ? '' : 'min-h-[--size-touch-target]'} rounded-[--radius-sm] font-mono transition-all text-center
           {legal
-          ? 'hover:bg-bg-hover cursor-pointer'
-          : 'opacity-30 cursor-default'} {getColorClass(call)}"
+          ? 'bg-bg-elevated hover:bg-bg-hover hover:shadow-sm cursor-pointer'
+          : 'bg-bg-elevated/50 opacity-25 cursor-default'} {getColorClass(call)}"
         disabled={!legal}
         onclick={() => onBid(call)}
       >
@@ -80,17 +80,17 @@
     {/each}
   </div>
 
-  <div class="flex gap-1" aria-label="Special bids" data-testid="special-bids">
+  <div class="flex gap-0.5" aria-label="Special bids" data-testid="special-bids">
     {#each ALL_SPECIALS as call (callKey(call))}
       {@const legal = isLegal(call) && !disabled}
       <button
         data-testid="bid-{callKey(call)}"
         class="flex-1 {compact
           ? 'px-1 py-1 text-[--text-label]'
-          : 'px-2 py-2.5 text-[--text-detail]'} {compact ? '' : 'min-h-[--size-touch-target]'} rounded-[--radius-md] font-mono transition-colors bg-bg-elevated text-text-primary text-center
+          : 'px-2 py-2 text-[--text-detail]'} {compact ? '' : 'min-h-[--size-touch-target]'} rounded-[--radius-sm] font-mono transition-all text-text-primary text-center
           {legal
-          ? 'hover:bg-bg-hover cursor-pointer'
-          : 'opacity-30 cursor-default'}"
+          ? 'bg-bg-elevated hover:bg-bg-hover hover:shadow-sm cursor-pointer'
+          : 'bg-bg-elevated/50 opacity-25 cursor-default'}"
         disabled={!legal}
         onclick={() => onBid(call)}
       >

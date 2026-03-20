@@ -4,6 +4,15 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 ## Folder Structure
 
+**Shared files** (at `definitions/` root):
+- `pedagogical-vocabulary.ts` — Shared tag vocabulary (8 typed `PedagogicalTagDef` constants). Modules import tags from here to annotate surfaces for cross-module relation/alternative derivation. Tag names describe abstract pedagogical concepts — no module names.
+- `derive-cross-module.ts` — `deriveCrossModuleContent(modules)` — derives cross-module relations, alternatives, and intent families from `pedagogicalTags` on surfaces. Called by `aggregateModuleContent()` in `system-registry.ts`.
+- `bidding-system.ts` — `BiddingSystem` interface for system-level composition.
+- `system-registry.ts` — System definitions and module aggregation.
+- `module-registry.ts` — Convention module registry.
+
+**Architectural rule:** Cross-module pedagogical content (relations, alternatives, intent families) is derived from `pedagogicalTags` on surfaces via the shared vocabulary in `pedagogical-vocabulary.ts`. Do not hand-author cross-module relation/alternative files. The tag vocabulary enforces that modules declare membership in shared concepts without referencing foreign surface IDs.
+
 4 convention bundles: `nt-bundle/`, `bergen-bundle/`, `weak-twos-bundle/`, `dont-bundle/`. Each folder has a parallel set of modules:
 
 | File | Purpose |
@@ -43,8 +52,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `machine.ts` — Re-export shim: `createNtConversationMachine()` delegates to `composeNtModules()`.
 - `semantic-classes.ts` — Re-export shim from modules.
 - `explanation-catalog.ts` — Composed from all modules' explanation entries.
-- `pedagogical-relations.ts` — `NT_CROSS_MODULE_RELATIONS` (cross-convention: Stayman↔Transfer, Smolen↔Stayman, Natural↔Stayman) + intra-module relations from each module.
-- `alternatives.ts` — 2 `AlternativeGroup`s: "NT response: transfer vs Stayman" + "After denial: Smolen vs 3NT".
+- ~~`pedagogical-relations.ts`~~ — Removed. Cross-module relations now derived from `pedagogicalTags` on surfaces via `derive-cross-module.ts`. Intra-module relations live in each module file.
+- ~~`alternatives.ts`~~ — Removed. Cross-module alternatives now derived from `pedagogicalTags` on surfaces via `derive-cross-module.ts`.
 - `surface-routing.ts` — `NT_ROUTED_SURFACES` and `createNtSurfaceRouter()` for backward compatibility.
 
 **`bergen-bundle/`** — Bergen Raises using the meaning pipeline with `$suit` binding parameterization for hearts and spades.

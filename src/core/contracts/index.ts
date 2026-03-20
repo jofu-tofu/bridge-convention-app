@@ -24,3 +24,4 @@ export * from "./system-config";
 export * from "./base-system-vocabulary";
 export * from "./teaching-grading";
 export * from "./drill";
+export * from "./pedagogical-tag";

@@ -8,7 +8,7 @@ import type {
 import { num, bool, fv } from "../../core/pipeline/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../inference/posterior";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
@@ -18,6 +18,14 @@ import {
 } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
+import {
+  SAME_FAMILY,
+  STRONGER_THAN,
+  CONTINUATION_OF,
+  NEAR_MISS_OF,
+  FALLBACK_OF,
+  ALTERNATIVES,
+} from "../pedagogical-vocabulary";
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -85,6 +93,14 @@ export function createStaymanR1Surface(sys: SystemConfig): MeaningSurface {
     },
     sourceIntent: { type: "StaymanAsk", params: {} },
     teachingLabel: "Stayman 2♣",
+    pedagogicalTags: [
+      { tag: SAME_FAMILY, scope: "r1-major-fit" },
+      { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
+      { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "b" },
+      { tag: NEAR_MISS_OF, scope: "r1-ask-vs-transfer", role: "a" },
+      { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "b" },
+      { tag: CONTINUATION_OF, scope: "stayman:raise-continues-ask", role: "b" },
+    ],
   };
 }
 
@@ -231,6 +247,10 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "RaiseGame", params: { suit: "hearts" } },
     teachingLabel: "Raise to game in hearts",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 0 },
+      { tag: CONTINUATION_OF, scope: "stayman:raise-continues-ask", role: "a" },
+    ],
   },
 
   {
@@ -261,6 +281,9 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "RaiseInvite", params: { suit: "hearts" } },
     teachingLabel: "Invite in hearts",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 1 },
+    ],
   },
 
   {
@@ -291,6 +314,9 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-heart-fit" } },
     teachingLabel: "3NT (no heart fit)",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 0 },
+    ],
   },
 
   {
@@ -321,6 +347,9 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-heart-fit" } },
     teachingLabel: "2NT invite (no heart fit)",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 1 },
+    ],
   },
 ];
 
@@ -353,6 +382,9 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "RaiseGame", params: { suit: "spades" } },
     teachingLabel: "Raise to game in spades",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 0 },
+    ],
   },
 
   {
@@ -383,6 +415,9 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "RaiseInvite", params: { suit: "spades" } },
     teachingLabel: "Invite in spades",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 1 },
+    ],
   },
 
   {
@@ -469,6 +504,11 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "StaymanNTGame", params: { reason: "denial" } },
     teachingLabel: "3NT after denial",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-denial-strength", ordinal: 0 },
+      { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "b" },
+      { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
+    ],
   },
 
   {
@@ -492,6 +532,10 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     },
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     teachingLabel: "2NT invite after denial",
+    pedagogicalTags: [
+      { tag: STRONGER_THAN, scope: "stayman:r3-denial-strength", ordinal: 1 },
+      { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "b" },
+    ],
   },
 ];
 
@@ -843,38 +887,6 @@ const STAYMAN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Pedagogical relations ───────────────────────────────────
-
-const STAYMAN_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
-  // Stronger-than within Stayman R3
-  {
-    kind: "stronger-than",
-    a: "stayman:raise-game-hearts",
-    b: "stayman:raise-invite-hearts",
-  },
-  {
-    kind: "stronger-than",
-    a: "stayman:raise-game-spades",
-    b: "stayman:raise-invite-spades",
-  },
-  {
-    kind: "stronger-than",
-    a: "stayman:nt-game-no-fit",
-    b: "stayman:nt-invite-no-fit",
-  },
-  {
-    kind: "stronger-than",
-    a: "stayman:nt-game-after-denial",
-    b: "stayman:nt-invite-after-denial",
-  },
-  // Continuation-of: raise game hearts → ask major
-  {
-    kind: "continuation-of",
-    a: "stayman:raise-game-hearts",
-    b: "stayman:ask-major",
-  },
-];
-
 // ─── Module assembly ─────────────────────────────────────────
 
 /** Factory: creates the stayman module parameterized by system config. */
@@ -903,12 +915,6 @@ export function createStaymanModule(sys: SystemConfig) {
     facts: createStaymanFacts(sys),
 
     explanationEntries: STAYMAN_EXPLANATION_ENTRIES,
-
-    pedagogicalRelations: STAYMAN_PEDAGOGICAL_RELATIONS,
-
-    alternatives: [],
-
-    intentFamilies: [],
   };
 }
 

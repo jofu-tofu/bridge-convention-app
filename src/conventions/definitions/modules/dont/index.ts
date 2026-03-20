@@ -19,8 +19,6 @@ import {
 } from "./meaning-surfaces";
 import { dontFacts } from "./facts";
 import { DONT_ENTRIES } from "./explanation-catalog";
-import { DONT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-import { DONT_ALTERNATIVE_GROUPS } from "./alternatives";
 
 export const dontModule: ConventionModule = {
   moduleId: "dont",
@@ -45,7 +43,4 @@ export const dontModule: ConventionModule = {
   facts: dontFacts,
 
   explanationEntries: DONT_ENTRIES,
-  pedagogicalRelations: DONT_PEDAGOGICAL_RELATIONS,
-  alternatives: DONT_ALTERNATIVE_GROUPS,
-  intentFamilies: [],
 };
