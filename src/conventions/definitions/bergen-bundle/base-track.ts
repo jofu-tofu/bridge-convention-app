@@ -26,7 +26,7 @@ import type {
 } from "../../core/protocol/types";
 import { BidSuit } from "../../../engine/types";
 import { bid } from "../../core/surface-helpers";
-import { bergenFacts } from "./facts";
+import { bergenFacts } from "../modules/bergen/facts";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
@@ -41,7 +41,7 @@ import {
   BERGEN_R3_AFTER_GAME_TRY_HEARTS_SURFACES,
   BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES,
   BERGEN_R4_SURFACES,
-} from "./meaning-surfaces";
+} from "../modules/bergen/meaning-surfaces";
 
 // ── Effect helpers ───────────────────────────────────────────
 

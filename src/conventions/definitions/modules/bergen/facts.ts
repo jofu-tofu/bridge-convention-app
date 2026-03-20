@@ -2,8 +2,8 @@ import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
-} from "../../../core/contracts/fact-catalog";
-import { num, fv } from "../../../core/contracts/fact-catalog";
+} from "../../../../core/contracts/fact-catalog";
+import { num, fv } from "../../../core/pipeline/fact-helpers";
 
 // ─── Bergen module facts ────────────────────────────────────
 

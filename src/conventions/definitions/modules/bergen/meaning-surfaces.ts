@@ -1,7 +1,7 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import { BidSuit } from "../../../engine/types";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import { BidSuit } from "../../../../engine/types";
 import { BERGEN_CLASSES } from "./semantic-classes";
-import { bid, suitToBidSuit, otherMajorBidSuit } from "../../core/surface-helpers";
+import { bid, suitToBidSuit, otherMajorBidSuit } from "../../../core/surface-helpers";
 
 /**
  * Create the 5 Bergen Raises R1 surfaces for a given major suit.

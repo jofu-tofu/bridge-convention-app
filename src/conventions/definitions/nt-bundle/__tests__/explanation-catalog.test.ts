@@ -45,6 +45,10 @@ const KNOWN_MODULE_FACT_IDS = new Set([
   "module.ntResponse.inviteValues",
   "module.ntResponse.gameValues",
   "module.ntResponse.slamValues",
+  // System-level fact IDs (from SystemConfig DI)
+  "system.responder.inviteValues",
+  "system.responder.gameValues",
+  "system.responder.slamValues",
   "module.smolen.hasFiveHearts",
   "module.smolen.hasFiveSpades",
   "module.smolen.hasFourSpades",
@@ -128,7 +132,10 @@ describe("NT_EXPLANATION_CATALOG", () => {
       (e) =>
         e.factId === "module.ntResponse.inviteValues" ||
         e.factId === "module.ntResponse.gameValues" ||
-        e.factId === "module.ntResponse.slamValues",
+        e.factId === "module.ntResponse.slamValues" ||
+        e.factId === "system.responder.inviteValues" ||
+        e.factId === "system.responder.gameValues" ||
+        e.factId === "system.responder.slamValues",
     );
     expect(hcpEntries.length).toBeGreaterThanOrEqual(3);
   });

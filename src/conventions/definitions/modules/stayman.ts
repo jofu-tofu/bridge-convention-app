@@ -5,13 +5,17 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { num, bool, fv } from "../../../core/contracts/fact-catalog";
+import { num, bool, fv } from "../../core/pipeline/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../inference/posterior";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import {
+  SYSTEM_RESPONDER_INVITE_VALUES,
+  SYSTEM_RESPONDER_GAME_VALUES,
+} from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
 
@@ -207,7 +211,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -237,7 +241,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -267,7 +271,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -297,7 +301,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -329,7 +333,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -359,7 +363,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -389,7 +393,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -419,7 +423,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -452,7 +456,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -475,7 +479,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -901,6 +905,10 @@ export function createStaymanModule(sys: SystemConfig) {
     explanationEntries: STAYMAN_EXPLANATION_ENTRIES,
 
     pedagogicalRelations: STAYMAN_PEDAGOGICAL_RELATIONS,
+
+    alternatives: [],
+
+    intentFamilies: [],
   };
 }
 

@@ -27,7 +27,7 @@ import type {
 } from "../../core/protocol/types";
 import { BidSuit } from "../../../engine/types";
 import { bid } from "../../core/surface-helpers";
-import { dontFacts } from "./facts";
+import { dontFacts } from "../modules/dont/facts";
 import {
   DONT_R1_SURFACES,
   DONT_ADVANCER_2H_SURFACES,
@@ -38,7 +38,7 @@ import {
   DONT_REVEAL_SURFACES,
   DONT_2C_RELAY_SURFACES,
   DONT_2D_RELAY_SURFACES,
-} from "./meaning-surfaces";
+} from "../modules/dont/meaning-surfaces";
 
 // ── Effect helpers ───────────────────────────────────────────
 

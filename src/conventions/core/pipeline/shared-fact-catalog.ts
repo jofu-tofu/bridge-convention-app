@@ -3,7 +3,8 @@ import type {
   FactEvaluatorFn,
   RelationalFactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { SHARED_FACTS, num, fv } from "../../../core/contracts/fact-catalog";
+import { SHARED_FACTS } from "../../../core/contracts/shared-facts";
+import { num, fv } from "./fact-helpers";
 import { isBalanced } from "../../../engine/hand-evaluator";
 import type { SuitName } from "../../../engine/types";
 

@@ -1,4 +1,4 @@
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+import type { PedagogicalRelation } from "../../../../core/contracts/teaching-projection";
 
 /**
  * Pedagogical relations for the Weak Two Bids bundle.

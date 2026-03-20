@@ -1,4 +1,4 @@
-import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalogIR } from "../../../core/contracts/explanation-catalog";
+import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalogIR } from "../../../../core/contracts/explanation-catalog";
 
 /**
  * Bergen Raises explanation catalog.

@@ -28,7 +28,7 @@ import type {
 } from "../../core/protocol/types";
 import { BidSuit } from "../../../engine/types";
 import { bid } from "../../core/surface-helpers";
-import { weakTwoFacts } from "./facts";
+import { weakTwoFacts } from "../modules/weak-twos/facts";
 import {
   WEAK_TWO_R1_SURFACES,
   WEAK_TWO_R2_HEARTS_SURFACES,
@@ -40,7 +40,7 @@ import {
   POST_OGUST_HEARTS_SURFACES,
   POST_OGUST_SPADES_SURFACES,
   POST_OGUST_DIAMONDS_SURFACES,
-} from "./meaning-surfaces";
+} from "../modules/weak-twos/meaning-surfaces";
 
 // ── Effect helpers ───────────────────────────────────────────
 

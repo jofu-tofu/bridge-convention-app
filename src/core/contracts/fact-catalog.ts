@@ -4,8 +4,8 @@ import type { PosteriorFactProvider, PosteriorFactRequest } from "./posterior";
 import type { ConstraintDimension } from "./meaning";
 
 // Re-export extracted modules for backward compatibility
-export { num, bool, fv } from "./fact-helpers";
-export type { HandFactResolverFn } from "./fact-helpers";
+export { num, bool, fv } from "../../conventions/core/pipeline/fact-helpers";
+export type { HandFactResolverFn } from "../../conventions/core/pipeline/fact-helpers";
 export { PRIMITIVE_FACTS, BRIDGE_DERIVED_FACTS, POSTERIOR_DERIVED_FACTS, SHARED_FACTS } from "./shared-facts";
 
 /** Stratification of fact definitions. */

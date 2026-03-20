@@ -5,12 +5,17 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { num, bool, fv } from "../../../core/contracts/fact-catalog";
+import { num, bool, fv } from "../../core/pipeline/fact-helpers";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import {
+  SYSTEM_RESPONDER_INVITE_VALUES,
+  SYSTEM_RESPONDER_GAME_VALUES,
+  SYSTEM_OPENER_NOT_MINIMUM,
+} from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
 
@@ -160,7 +165,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -190,7 +195,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -220,7 +225,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -268,7 +273,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -298,7 +303,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -328,7 +333,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -451,7 +456,7 @@ export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "not-minimum",
-        factId: "module.transfer.openerNotMinimum",
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
         description: "Opener has 16-17 HCP (not minimum)",
@@ -473,7 +478,7 @@ export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "minimum",
-        factId: "module.transfer.openerNotMinimum",
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
         description: "Opener has 15 HCP (minimum)",
@@ -498,7 +503,7 @@ export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "not-minimum",
-        factId: "module.transfer.openerNotMinimum",
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
         description: "Opener has 16-17 HCP (not minimum)",
@@ -520,7 +525,7 @@ export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "minimum",
-        factId: "module.transfer.openerNotMinimum",
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
         description: "Opener has 15 HCP (minimum)",
@@ -843,15 +848,6 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     derivesFrom: ["hand.suitLength.spades"],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
-  {
-    id: "module.transfer.openerNotMinimum",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Opener has 16+ HCP (not minimum for 1NT range)",
-    valueType: "boolean",
-    derivesFrom: ["hand.hcp"],
-    constrainsDimensions: ["pointRange"],
-  },
 ];
 
 /** Factory: creates transfer fact evaluators parameterized by system config. */
@@ -873,8 +869,6 @@ export function createTransferEvaluators(sys: SystemConfig): Map<string, FactEva
       fv("module.transfer.openerHasHeartFit", num(m, "hand.suitLength.hearts") >= 3)],
     ["module.transfer.openerHasSpadesFit", (_h, _ev, m) =>
       fv("module.transfer.openerHasSpadesFit", num(m, "hand.suitLength.spades") >= 3)],
-    ["module.transfer.openerNotMinimum", (_h, _ev, m) =>
-      fv("module.transfer.openerNotMinimum", num(m, "hand.hcp") >= sys.openerRebid.notMinimum)],
   ]);
 }
 
@@ -992,6 +986,10 @@ export function createJacobyTransfersModule(sys: SystemConfig) {
     explanationEntries: TRANSFER_EXPLANATION_ENTRIES,
 
     pedagogicalRelations: TRANSFER_PEDAGOGICAL_RELATIONS,
+
+    alternatives: [],
+
+    intentFamilies: [],
   };
 }
 

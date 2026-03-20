@@ -10,7 +10,7 @@ import {
   type BaseTrackPath,
   getBaseModules,
 } from "../conventions/core";
-import { getBundle, listBundles } from "../conventions/core";
+import { getSystem, listSystems } from "../conventions/definitions/system-registry";
 import { createBiddingContext } from "../conventions/core";
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
@@ -27,7 +27,8 @@ import type {
   DealConstraints,
   Card,
 } from "../engine/types";
-import type { ConventionSpec, ConventionBundle } from "../conventions/core";
+import type { ConventionSpec } from "../conventions/core";
+import type { BiddingSystem } from "../conventions/definitions/bidding-system";
 import type { BiddingContext, BidHistoryEntry } from "../core/contracts/bidding";
 import type { BiddingStrategy } from "../core/contracts/bidding";
 import type { OpponentMode } from "../core/contracts/drill";
@@ -39,7 +40,7 @@ import { buildBiddingViewport } from "../core/viewport/build-viewport";
 export { Seat, Vulnerability };
 export { callKey, parsePatternCall, getLegalCalls, evaluateHand };
 export { buildBiddingViewport };
-export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry };
+export type { Auction, Call, Hand, Deal, Card, ConventionSpec, BiddingSystem, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -191,13 +192,13 @@ function pickVulnUniform(roll: number): Vulnerability {
   return Vulnerability.Both;
 }
 
-// ── Resolve spec + bundle ───────────────────────────────────────────
+// ── Resolve spec + system ───────────────────────────────────────────
 
-/** Print available bundle IDs from the bundle registry (single source of truth). */
-export function printAvailableBundles(): void {
-  for (const b of listBundles()) {
-    if (b.internal) continue;
-    console.error(`  ${b.id} — ${b.name}`);
+/** Print available system IDs from the system registry (single source of truth). */
+export function printAvailableSystems(): void {
+  for (const s of listSystems()) {
+    if (s.internal) continue;
+    console.error(`  ${s.id} — ${s.name}`);
   }
 }
 
@@ -206,33 +207,33 @@ export function resolveSpec(bundleId: string): ConventionSpec {
   if (!spec) {
     console.error(`Unknown bundle: "${bundleId}"`);
     console.error("Available bundles:");
-    printAvailableBundles();
+    printAvailableSystems();
     process.exit(2);
   }
   return spec;
 }
 
-export function resolveBundle(bundleId: string): ConventionBundle {
-  const bundle = getBundle(bundleId);
-  if (!bundle) {
+export function resolveSystem(bundleId: string): BiddingSystem {
+  const system = getSystem(bundleId);
+  if (!system) {
     console.error(`Unknown bundle: "${bundleId}"`);
     console.error("Available bundles:");
-    printAvailableBundles();
+    printAvailableSystems();
     process.exit(2);
   }
-  return bundle;
+  return system;
 }
 
 // ── Deal generation ─────────────────────────────────────────────────
 
 export function generateSeededDeal(
-  bundle: ConventionBundle,
+  system: BiddingSystem,
   seed: number,
   vulnerability?: Vulnerability,
 ): Deal {
   const rng = mulberry32(seed);
   const constraints: DealConstraints = {
-    ...bundle.dealConstraints,
+    ...system.dealConstraints,
     ...(vulnerability !== undefined ? { vulnerability } : {}),
   };
   const result = generateDeal(constraints, rng);
@@ -241,11 +242,11 @@ export function generateSeededDeal(
 
 // ── Auction + context setup ─────────────────────────────────────────
 
-export function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
+export function resolveUserSeat(system: BiddingSystem, deal: Deal): Seat {
   const candidates: Seat[] = [Seat.South, Seat.East, Seat.North, Seat.West];
   for (const seat of candidates) {
-    if (bundle.defaultAuction) {
-      const auction = bundle.defaultAuction(seat, deal);
+    if (system.defaultAuction) {
+      const auction = system.defaultAuction(seat, deal);
       if (auction && auction.entries.length > 0) {
         return seat;
       }
@@ -255,12 +256,12 @@ export function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
 }
 
 export function buildInitialAuction(
-  bundle: ConventionBundle,
+  system: BiddingSystem,
   userSeat: Seat,
   deal: Deal,
 ): Auction {
-  if (bundle.defaultAuction) {
-    const auction = bundle.defaultAuction(userSeat, deal);
+  if (system.defaultAuction) {
+    const auction = system.defaultAuction(userSeat, deal);
     if (auction) return auction;
   }
   return { entries: [], isComplete: false };
@@ -368,13 +369,13 @@ export function buildTargetedAuction(
 }
 
 export function resolveAuction(
-  bundle: ConventionBundle,
+  system: BiddingSystem,
   spec: ConventionSpec,
   deal: Deal,
   targetStateId: string,
   userSeat: Seat,
 ): { auction: Auction; targeted: boolean } {
-  const defaultAuction = buildInitialAuction(bundle, userSeat, deal);
+  const defaultAuction = buildInitialAuction(system, userSeat, deal);
   const path = findPathToState(spec, targetStateId);
   if (!path) return { auction: defaultAuction, targeted: false };
 

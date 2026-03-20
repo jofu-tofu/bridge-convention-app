@@ -3,16 +3,16 @@
 import {
   generateProtocolCoverageManifest,
 } from "../../conventions/core";
-import { listBundles } from "../../conventions/core";
+import { listSystems } from "../../conventions/definitions/system-registry";
 import { getConventionSpec } from "../../conventions/spec-registry";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
-import type { Flags, ConventionSpec, ConventionBundle, Vulnerability } from "../shared";
+import type { Flags, ConventionSpec, BiddingSystem, Vulnerability } from "../shared";
 import {
   callKey,
   optionalNumericArg,
-  resolveSpec, resolveBundle, generateSeededDeal, resolveUserSeat,
+  resolveSpec, resolveSystem, generateSeededDeal, resolveUserSeat,
   resolveAuction, buildContext, nextSeatClockwise,
 } from "../shared";
 
@@ -26,20 +26,20 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
     process.exit(2);
   }
 
-  const specs: { id: string; spec: ConventionSpec; bundle: ConventionBundle }[] = [];
+  const specs: { id: string; spec: ConventionSpec; system: BiddingSystem }[] = [];
 
   if (all) {
-    for (const bundle of listBundles()) {
-      if (bundle.internal) continue;
-      const spec = getConventionSpec(bundle.id);
+    for (const system of listSystems()) {
+      if (system.internal) continue;
+      const spec = getConventionSpec(system.id);
       if (spec) {
-        specs.push({ id: bundle.id, spec, bundle });
+        specs.push({ id: system.id, spec, system });
       }
     }
   } else {
     const spec = resolveSpec(bundleId!);
-    const bundle = resolveBundle(bundleId!);
-    specs.push({ id: bundleId!, spec, bundle });
+    const system = resolveSystem(bundleId!);
+    specs.push({ id: bundleId!, spec, system });
   }
 
   let totalPass = 0;
@@ -55,7 +55,7 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
     details?: string;
   }[] = [];
 
-  for (const { id, spec, bundle } of specs) {
+  for (const { id, spec, system } of specs) {
     const manifest = generateProtocolCoverageManifest(spec);
     const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
     const strategy = createSpecStrategy(spec);
@@ -67,11 +67,11 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
 
       try {
         // Generate deal for this atom
-        const deal = generateSeededDeal(bundle, atomSeed, vuln);
-        const userSeat = resolveUserSeat(bundle, deal);
+        const deal = generateSeededDeal(system, atomSeed, vuln);
+        const userSeat = resolveUserSeat(system, deal);
 
         // Build targeted auction to reach the atom's state
-        const { auction, targeted } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
+        const { auction, targeted } = resolveAuction(system, spec, deal, atom.baseStateId, userSeat);
 
         // Determine active seat at the target state
         const activeSeat = auction.entries.length > 0

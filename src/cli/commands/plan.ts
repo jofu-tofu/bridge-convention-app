@@ -12,7 +12,7 @@ import type { Flags, OpponentMode, Vulnerability, ConventionSpec, Call, Scenario
 import {
   callKey,
   requireArg, optionalNumericArg,
-  resolveSpec, resolveBundle, generateSeededDeal, resolveUserSeat,
+  resolveSpec, resolveSystem, generateSeededDeal, resolveUserSeat,
   resolveAuction, buildContext, nextSeatClockwise, assignSeedScenario,
 } from "../shared";
 import { buildAtomCallMap, runSinglePlaythrough } from "../playthrough";
@@ -68,7 +68,7 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
   const maxSeedsPerAgent = optionalNumericArg(flags, "max-seeds-per-agent") ?? 5;
 
   const spec = resolveSpec(bundleId);
-  const bundle = resolveBundle(bundleId);
+  const system = resolveSystem(bundleId);
   const strategy = createSpecStrategy(spec);
 
   // All atoms from coverage manifest
@@ -135,9 +135,9 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
     for (let s = baseSeed; s < baseSeed + maxSeeds && seeds.length < targetCoverage; s++) {
       try {
         const scenario = assignSeedScenario(s, scenarioConfig);
-        const deal = generateSeededDeal(bundle, s, scenario.vulnerability);
-        const userSeat = resolveUserSeat(bundle, deal);
-        const { auction, targeted } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
+        const deal = generateSeededDeal(system, s, scenario.vulnerability);
+        const userSeat = resolveUserSeat(system, deal);
+        const { auction, targeted } = resolveAuction(system, spec, deal, atom.baseStateId, userSeat);
         if (!targeted) continue;
 
         const activeSeat = auction.entries.length > 0
@@ -321,7 +321,7 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
   const playthroughInfo: { seedInfo: SeedInfo; userSteps: number; atomsCovered: string[] }[] = [];
   for (const si of uniqueSeedInfos) {
     try {
-      const result = runSinglePlaythrough(bundle, spec, si.seed, atomCallMap, si.vulnerability, si.opponents);
+      const result = runSinglePlaythrough(system, spec, si.seed, atomCallMap, si.vulnerability, si.opponents);
       const userSteps = result.steps.filter((s) => s.isUserStep);
       playthroughInfo.push({
         seedInfo: si,

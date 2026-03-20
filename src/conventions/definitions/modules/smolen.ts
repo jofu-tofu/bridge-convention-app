@@ -10,13 +10,14 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { num, fv } from "../../../core/contracts/fact-catalog";
+import { num, fv } from "../../core/pipeline/fact-helpers";
 import { ForcingState } from "../../../core/contracts/bidding";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SYSTEM_RESPONDER_GAME_VALUES } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
 
@@ -47,7 +48,7 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -84,7 +85,7 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -125,7 +126,7 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -162,7 +163,7 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -659,6 +660,10 @@ export function createSmolenModule(_sys: SystemConfig) {
     explanationEntries: SMOLEN_EXPLANATION_ENTRIES,
 
     pedagogicalRelations: SMOLEN_PEDAGOGICAL_RELATIONS,
+
+    alternatives: [],
+
+    intentFamilies: [],
   };
 }
 

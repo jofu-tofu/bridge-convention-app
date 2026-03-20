@@ -1,8 +1,8 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import type { Call } from "../../../engine/types";
-import { BidSuit } from "../../../engine/types";
+import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { Call } from "../../../../engine/types";
+import { BidSuit } from "../../../../engine/types";
 import { WEAK_TWO_CLASSES } from "./semantic-classes";
-import { bid, suitToBidSuit } from "../../core/surface-helpers";
+import { bid, suitToBidSuit } from "../../../core/surface-helpers";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 

@@ -5,13 +5,18 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { num, fv } from "../../../core/contracts/fact-catalog";
+import { num, fv } from "../../core/pipeline/fact-helpers";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import { BidSuit } from "../../../engine/types";
 import { BRIDGE_SEMANTIC_CLASSES } from "../../../core/contracts/meaning";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import {
+  SYSTEM_RESPONDER_INVITE_VALUES,
+  SYSTEM_RESPONDER_GAME_VALUES,
+  SYSTEM_RESPONDER_SLAM_VALUES,
+} from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
 
@@ -26,7 +31,7 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "invite-values",
-        factId: "module.ntResponse.inviteValues",
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
@@ -63,7 +68,7 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     clauses: [
       {
         clauseId: "game-values",
-        factId: "module.ntResponse.gameValues",
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
@@ -163,70 +168,29 @@ const NT_R1_TRANSITIONS: readonly MachineTransition[] = [
 ];
 
 // ─── Facts ───────────────────────────────────────────────────
+// System-semantic facts (inviteValues, gameValues, slamValues) are now
+// provided by the system fact catalog — see system-fact-catalog.ts.
+// Convention modules no longer own these evaluators.
 
-const NT_RESPONSE_FACTS: readonly FactDefinition[] = [
-  {
-    id: "module.ntResponse.inviteValues",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Invite-range HCP opposite 1NT (8-9)",
-    valueType: "boolean",
-    derivesFrom: ["hand.hcp"],
-    constrainsDimensions: ["pointRange"],
-  },
-  {
-    id: "module.ntResponse.gameValues",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Game-range HCP opposite 1NT (10+)",
-    valueType: "boolean",
-    derivesFrom: ["hand.hcp"],
-    constrainsDimensions: ["pointRange"],
-  },
-  {
-    id: "module.ntResponse.slamValues",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Slam-range HCP opposite 1NT (15+)",
-    valueType: "boolean",
-    derivesFrom: ["hand.hcp"],
-    constrainsDimensions: ["pointRange"],
-  },
-];
-
-/** Factory: creates NT response fact evaluators parameterized by system config. */
-export function createNtResponseEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
-  return new Map<string, FactEvaluatorFn>([
-    ["module.ntResponse.inviteValues", (_h, _ev, m) => {
-      const hcp = num(m, "hand.hcp");
-      return fv("module.ntResponse.inviteValues",
-        hcp >= sys.responderThresholds.inviteMin && hcp <= sys.responderThresholds.inviteMax);
-    }],
-    ["module.ntResponse.gameValues", (_h, _ev, m) =>
-      fv("module.ntResponse.gameValues", num(m, "hand.hcp") >= sys.responderThresholds.gameMin)],
-    ["module.ntResponse.slamValues", (_h, _ev, m) =>
-      fv("module.ntResponse.slamValues", num(m, "hand.hcp") >= sys.responderThresholds.slamMin)],
-  ]);
+/** @deprecated Empty — system-semantic facts moved to createSystemFactCatalog(). */
+export function createNtResponseEvaluators(_sys: SystemConfig): Map<string, FactEvaluatorFn> {
+  return new Map();
 }
 
-/** Factory: creates NT response facts parameterized by system config. */
-export function createNtResponseFacts(sys: SystemConfig): FactCatalogExtension {
-  return {
-    definitions: NT_RESPONSE_FACTS,
-    evaluators: createNtResponseEvaluators(sys),
-  };
+/** @deprecated Empty — system-semantic facts moved to createSystemFactCatalog(). */
+export function createNtResponseFacts(_sys: SystemConfig): FactCatalogExtension {
+  return { definitions: [], evaluators: new Map() };
 }
 
-/** Legacy default — uses SAYC system config. */
-export const ntResponseFacts: FactCatalogExtension =
-  createNtResponseFacts(SAYC_SYSTEM_CONFIG);
+/** Legacy default — empty, system facts come from createSystemFactCatalog(). */
+export const ntResponseFacts: FactCatalogExtension = createNtResponseFacts(SAYC_SYSTEM_CONFIG);
 
 // ─── Explanation entries ─────────────────────────────────────
 
 const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   {
     explanationId: "nt.hcp.invite",
-    factId: "module.ntResponse.inviteValues",
+    factId: SYSTEM_RESPONDER_INVITE_VALUES,
     templateKey: "nt.hcp.invite.supporting",
     displayText: "Enough HCP to invite game",
     contrastiveTemplateKey: "nt.hcp.invite.whyNot",
@@ -236,7 +200,7 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
   {
     explanationId: "nt.hcp.game",
-    factId: "module.ntResponse.gameValues",
+    factId: SYSTEM_RESPONDER_GAME_VALUES,
     templateKey: "nt.hcp.game.supporting",
     displayText: "Enough HCP for game",
     contrastiveTemplateKey: "nt.hcp.game.whyNot",
@@ -246,7 +210,7 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
   {
     explanationId: "nt.hcp.slam",
-    factId: "module.ntResponse.slamValues",
+    factId: SYSTEM_RESPONDER_SLAM_VALUES,
     templateKey: "nt.hcp.slam.supporting",
     displayText: "Enough HCP for slam exploration",
     contrastiveTemplateKey: "nt.hcp.slam.whyNot",
@@ -423,6 +387,10 @@ export function createNaturalNtModule(sys: SystemConfig) {
     explanationEntries: NT_EXPLANATION_ENTRIES,
 
     pedagogicalRelations: NT_PEDAGOGICAL_RELATIONS,
+
+    alternatives: [],
+
+    intentFamilies: [],
   };
 }
 

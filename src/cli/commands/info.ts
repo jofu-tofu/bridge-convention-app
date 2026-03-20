@@ -5,14 +5,14 @@ import {
   enumerateBaseTrackStates,
   getBaseModules,
 } from "../../conventions/core";
-import { listBundles } from "../../conventions/core";
+import { listSystems } from "../../conventions/definitions/system-registry";
 import { getConventionSpec } from "../../conventions/spec-registry";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 
 import type { Flags, Vulnerability } from "../shared";
 import {
   requireArg,
-  resolveSpec, resolveBundle, generateSeededDeal, resolveUserSeat,
+  resolveSpec, resolveSystem, generateSeededDeal, resolveUserSeat,
   resolveAuction, buildContext, nextSeatClockwise,
 } from "../shared";
 
@@ -40,21 +40,21 @@ export function runList(flags: Flags): void {
 // ── bundles ──────────────────────────────────────────────────────
 
 export function runBundles(): void {
-  const bundles = listBundles().filter((b) => !b.internal);
-  const result = bundles.map((b) => {
-    const spec = getConventionSpec(b.id);
+  const systems = listSystems().filter((s) => !s.internal);
+  const result = systems.map((s) => {
+    const spec = getConventionSpec(s.id);
     let atomCount = 0;
     if (spec) {
       const manifest = generateProtocolCoverageManifest(spec);
       atomCount = manifest.baseAtoms.length + manifest.protocolAtoms.length;
     }
     return {
-      id: b.id,
-      name: b.name,
-      description: b.description ?? null,
-      category: b.category ?? null,
+      id: s.id,
+      name: s.name,
+      description: s.description ?? null,
+      category: s.category ?? null,
       atomCount,
-      memberIds: b.memberIds,
+      moduleIds: s.moduleIds,
     };
   });
   console.log(JSON.stringify(result, null, 2));
@@ -65,7 +65,7 @@ export function runBundles(): void {
 export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   const bundleId = requireArg(flags, "bundle");
   const spec = resolveSpec(bundleId);
-  const bundle = resolveBundle(bundleId);
+  const system = resolveSystem(bundleId);
 
   const manifest = generateProtocolCoverageManifest(spec);
   const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
@@ -99,9 +99,9 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
     const atom = allAtoms[i]!;
     const atomSeed = 42 + i;
     try {
-      const deal = generateSeededDeal(bundle, atomSeed, vuln);
-      const userSeat = resolveUserSeat(bundle, deal);
-      const { auction } = resolveAuction(bundle, spec, deal, atom.baseStateId, userSeat);
+      const deal = generateSeededDeal(system, atomSeed, vuln);
+      const userSeat = resolveUserSeat(system, deal);
+      const { auction } = resolveAuction(system, spec, deal, atom.baseStateId, userSeat);
       const activeSeat = auction.entries.length > 0
         ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
         : userSeat;
@@ -123,10 +123,10 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   states.sort((a, b) => a.depth - b.depth || a.stateId.localeCompare(b.stateId));
 
   console.log(JSON.stringify({
-    id: bundle.id,
-    name: bundle.name,
-    description: bundle.description ?? null,
-    category: bundle.category ?? null,
+    id: system.id,
+    name: system.name,
+    description: system.description ?? null,
+    category: system.category ?? null,
     totalAtoms: allAtoms.length,
     maxDepth,
     strategyCoverage: {

@@ -1,4 +1,4 @@
-import type { AlternativeGroup } from "../../../core/contracts";
+import type { AlternativeGroup } from "../../../../core/contracts";
 
 /**
  * DONT alternative groups for grading tolerance.

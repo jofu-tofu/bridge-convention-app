@@ -14,10 +14,10 @@ export const NT_CROSS_MODULE_RELATIONS: readonly PedagogicalRelation[] = [
   { kind: "near-miss-of", a: "smolen:bid-short-spades", b: "stayman:nt-game-after-denial" },
 ];
 
-import { staymanModule } from "./modules/stayman";
-import { jacobyTransfersModule } from "./modules/jacoby-transfers";
-import { smolenModule } from "./modules/smolen";
-import { naturalNtModule } from "./modules/natural-nt";
+import { staymanModule } from "../modules/stayman";
+import { jacobyTransfersModule } from "../modules/jacoby-transfers";
+import { smolenModule } from "../modules/smolen";
+import { naturalNtModule } from "../modules/natural-nt";
 
 export const NT_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
   ...naturalNtModule.pedagogicalRelations,

@@ -1,7 +1,7 @@
 export { dontBundle } from "./config";
 export { dontBundleConventionConfig } from "./convention-config";
-export { dontFacts } from "./facts";
-export { DONT_CLASSES } from "./semantic-classes";
+export { dontFacts } from "../modules/dont/facts";
+export { DONT_CLASSES } from "../modules/dont/semantic-classes";
 export {
   DONT_R1_SURFACES,
   DONT_ADVANCER_2H_SURFACES,
@@ -12,10 +12,8 @@ export {
   DONT_REVEAL_SURFACES,
   DONT_2C_RELAY_SURFACES,
   DONT_2D_RELAY_SURFACES,
-} from "./meaning-surfaces";
-// machine.ts removed — protocol frame architecture replaces ConversationMachine
+} from "../modules/dont/meaning-surfaces";
 export { DONT_PROFILE } from "./system-profile";
-export { DONT_EXPLANATION_CATALOG } from "./explanation-catalog";
-export { DONT_PEDAGOGICAL_RELATIONS } from "./pedagogical-relations";
-export { DONT_ALTERNATIVE_GROUPS } from "./alternatives";
-// packages/dont.ts removed — protocol frame architecture replaces package system
+export { DONT_EXPLANATION_CATALOG } from "../modules/dont/explanation-catalog";
+export { DONT_PEDAGOGICAL_RELATIONS } from "../modules/dont/pedagogical-relations";
+export { DONT_ALTERNATIVE_GROUPS } from "../modules/dont/alternatives";

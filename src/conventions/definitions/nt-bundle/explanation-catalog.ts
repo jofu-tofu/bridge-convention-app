@@ -3,10 +3,10 @@ import {
   createExplanationCatalog,
   type ExplanationCatalogIR,
 } from "../../../core/contracts/explanation-catalog";
-import { staymanModule } from "./modules/stayman";
-import { jacobyTransfersModule } from "./modules/jacoby-transfers";
-import { smolenModule } from "./modules/smolen";
-import { naturalNtModule } from "./modules/natural-nt";
+import { staymanModule } from "../modules/stayman";
+import { jacobyTransfersModule } from "../modules/jacoby-transfers";
+import { smolenModule } from "../modules/smolen";
+import { naturalNtModule } from "../modules/natural-nt";
 
 export const NT_EXPLANATION_CATALOG: ExplanationCatalogIR =
   createExplanationCatalog([

@@ -9,10 +9,13 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts, createSharedFactCatalog } from "../../core/pipeline/fact-evaluator";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { staymanFacts, transferFacts, ntResponseFacts } from "../../definitions/nt-bundle";
+import { createSystemFactCatalog } from "../../core/pipeline/system-fact-catalog";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 
-/** Create a full catalog with shared + module facts. */
+/** Create a full catalog with shared + system + module facts. */
 function fullCatalog() {
-  return createFactCatalog(createSharedFactCatalog(), staymanFacts, transferFacts, ntResponseFacts);
+  const systemFacts = createSystemFactCatalog(SAYC_SYSTEM_CONFIG);
+  return createFactCatalog(createSharedFactCatalog(), systemFacts, staymanFacts, transferFacts, ntResponseFacts);
 }
 
 function factsFor(...notations: string[]) {
@@ -26,7 +29,7 @@ function val(result: ReturnType<typeof factsFor>, id: string) {
 }
 
 describe("NT bundle fact evaluation", () => {
-  it("evaluates all 21 facts with full catalog (shared + module extensions)", () => {
+  it("evaluates all facts with full catalog (shared + system + module extensions)", () => {
     const result = factsFor(
       "SA", "SK", "S5", "S2",
       "HQ", "HJ", "H9", "H3",
@@ -117,9 +120,9 @@ describe("NT bundle fact evaluation", () => {
       "D6", "D4", "D3",
       "C8", "C3",
     );
-    expect(val(low, "module.ntResponse.inviteValues")).toBe(false);
-    expect(val(low, "module.ntResponse.gameValues")).toBe(false);
-    expect(val(low, "module.ntResponse.slamValues")).toBe(false);
+    expect(val(low, "system.responder.inviteValues")).toBe(false);
+    expect(val(low, "system.responder.gameValues")).toBe(false);
+    expect(val(low, "system.responder.slamValues")).toBe(false);
 
     // 9 HCP — invite
     const invite = factsFor(
@@ -128,8 +131,8 @@ describe("NT bundle fact evaluation", () => {
       "D6", "D4", "D3",
       "C8", "C3",
     );
-    expect(val(invite, "module.ntResponse.inviteValues")).toBe(true);
-    expect(val(invite, "module.ntResponse.gameValues")).toBe(false);
+    expect(val(invite, "system.responder.inviteValues")).toBe(true);
+    expect(val(invite, "system.responder.gameValues")).toBe(false);
 
     // 10 HCP — game
     const game = factsFor(
@@ -138,9 +141,9 @@ describe("NT bundle fact evaluation", () => {
       "D6", "D4", "D3",
       "C8", "C3",
     );
-    expect(val(game, "module.ntResponse.inviteValues")).toBe(false);
-    expect(val(game, "module.ntResponse.gameValues")).toBe(true);
-    expect(val(game, "module.ntResponse.slamValues")).toBe(false);
+    expect(val(game, "system.responder.inviteValues")).toBe(false);
+    expect(val(game, "system.responder.gameValues")).toBe(true);
+    expect(val(game, "system.responder.slamValues")).toBe(false);
 
     // 15 HCP — slam
     const slam = factsFor(
@@ -149,8 +152,8 @@ describe("NT bundle fact evaluation", () => {
       "D6", "D4", "D3",
       "C8", "C3",
     );
-    expect(val(slam, "module.ntResponse.slamValues")).toBe(true);
-    expect(val(slam, "module.ntResponse.gameValues")).toBe(true);
+    expect(val(slam, "system.responder.slamValues")).toBe(true);
+    expect(val(slam, "system.responder.gameValues")).toBe(true);
   });
 
   it("respects dependency order — module facts computed after bridge-derived", () => {

@@ -16,6 +16,8 @@ import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog"
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { createSystemFactCatalog } from "../../core/pipeline/system-fact-catalog";
 
 // ── Module surface and fact imports ──────────────────────────────────
 
@@ -152,14 +154,18 @@ export const NT_SURFACE_FRAGMENTS: Readonly<Record<string, SurfaceFragment>> = {
 
 // ── Merged Facts ─────────────────────────────────────────────────────
 
+const systemFacts = createSystemFactCatalog(SAYC_SYSTEM_CONFIG);
+
 const mergedFacts: FactCatalogExtension = {
   definitions: [
+    ...systemFacts.definitions,
     ...ntResponseFacts.definitions,
     ...staymanFacts.definitions,
     ...transferFacts.definitions,
     ...smolenFacts.definitions,
   ],
   evaluators: new Map([
+    ...systemFacts.evaluators,
     ...ntResponseFacts.evaluators,
     ...staymanFacts.evaluators,
     ...transferFacts.evaluators,
@@ -170,17 +176,20 @@ const mergedFacts: FactCatalogExtension = {
 
 /** Factory: creates merged facts parameterized by system config. */
 export function createMergedFacts(sys: SystemConfig): FactCatalogExtension {
+  const sysFacts = createSystemFactCatalog(sys);
   const ntFacts = createNtResponseFacts(sys);
   const stFacts = createStaymanFacts(sys);
   const trFacts = createTransferFacts(sys);
   return {
     definitions: [
+      ...sysFacts.definitions,
       ...ntFacts.definitions,
       ...stFacts.definitions,
       ...trFacts.definitions,
       ...smolenFacts.definitions,
     ],
     evaluators: new Map([
+      ...sysFacts.evaluators,
       ...ntFacts.evaluators,
       ...stFacts.evaluators,
       ...trFacts.evaluators,

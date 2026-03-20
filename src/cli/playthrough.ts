@@ -12,7 +12,7 @@ import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder
 import type { BidResult } from "../core/contracts/bidding";
 import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport/build-viewport";
 
-import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat, BiddingViewport, Deal } from "./shared";
+import type { ConventionSpec, BiddingSystem, Auction, Call, OpponentMode, Seat, BiddingViewport, Deal } from "./shared";
 import { Vulnerability,
   callKey,
   generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, nextSeatClockwise, partnerOf, buildCliViewport,
@@ -82,22 +82,22 @@ export function buildAtomCallMap(
  * the auction naturally, and record each decision point.
  */
 export function runSinglePlaythrough(
-  bundle: ConventionBundle,
+  system: BiddingSystem,
   spec: ConventionSpec,
   seed: number,
   atomCallMap: Map<string, { atomId: string; meaningLabel: string }>,
   vulnerability: Vulnerability = Vulnerability.None,
   opponents: OpponentMode = "natural",
 ): PlaythroughResult {
-  const deal = generateSeededDeal(bundle, seed, vulnerability);
-  const userSeat = resolveUserSeat(bundle, deal);
+  const deal = generateSeededDeal(system, seed, vulnerability);
+  const userSeat = resolveUserSeat(system, deal);
   const partner = partnerOf(userSeat);
   const strategy = createSpecStrategy(spec);
   const ewStrategy = opponents === "natural"
     ? createOpponentStrategy("natural")
     : null;
 
-  const initAuction = buildInitialAuction(bundle, userSeat, deal);
+  const initAuction = buildInitialAuction(system, userSeat, deal);
   const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
 
   const steps: PlaythroughStep[] = [];
@@ -170,7 +170,7 @@ export function runSinglePlaythrough(
     entries.push({ seat: activeSeat, call: result.call });
   }
 
-  return { seed, deal, userSeat, bundleName: bundle.name, steps, atomsCovered };
+  return { seed, deal, userSeat, bundleName: system.name, steps, atomsCovered };
 }
 
 // ── Step viewport ───────────────────────────────────────────────────
@@ -223,12 +223,12 @@ export function gradePlaythroughStep(
   s: PlaythroughStep,
   submittedCall: Call,
   spec: ConventionSpec,
-  bundle: ConventionBundle,
+  system: BiddingSystem,
   seed: number,
   vulnerability: Vulnerability = Vulnerability.None,
 ): { viewportFeedback: ReturnType<typeof buildViewportFeedback>; teachingDetail: ReturnType<typeof buildTeachingDetail>; isCorrect: boolean; isAcceptable: boolean } {
   // Rebuild context for this step to get full teaching feedback
-  const deal = generateSeededDeal(bundle, seed, vulnerability);
+  const deal = generateSeededDeal(system, seed, vulnerability);
   const activeSeat = s.seat;
   const hand = deal.hands[activeSeat];
   const auction: Auction = { entries: [...s.auctionEntries], isComplete: false };

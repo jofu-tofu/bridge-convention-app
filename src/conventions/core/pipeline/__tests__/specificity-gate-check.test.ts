@@ -20,7 +20,7 @@ import {
   BERGEN_R3_AFTER_GAME_TRY_HEARTS_SURFACES,
   BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES,
   BERGEN_R4_SURFACES,
-} from "../../../definitions/bergen-bundle/meaning-surfaces";
+} from "../../../definitions/modules/bergen/meaning-surfaces";
 
 // ─── DONT surfaces ──────────────────────────────────────────
 import {
@@ -33,7 +33,7 @@ import {
   DONT_REVEAL_SURFACES,
   DONT_2C_RELAY_SURFACES,
   DONT_2D_RELAY_SURFACES,
-} from "../../../definitions/dont-bundle/meaning-surfaces";
+} from "../../../definitions/modules/dont/meaning-surfaces";
 
 // ─── NT surfaces ────────────────────────────────────────────
 import {
@@ -64,16 +64,16 @@ import {
   POST_OGUST_HEARTS_SURFACES,
   POST_OGUST_SPADES_SURFACES,
   POST_OGUST_DIAMONDS_SURFACES,
-} from "../../../definitions/weak-twos-bundle/meaning-surfaces";
+} from "../../../definitions/modules/weak-twos/meaning-surfaces";
 
 // ─── Fact extensions ────────────────────────────────────────
-import { bergenFacts } from "../../../definitions/bergen-bundle/facts";
-import { dontFacts } from "../../../definitions/dont-bundle/facts";
-import { staymanFacts } from "../../../definitions/nt-bundle/modules/stayman";
-import { transferFacts } from "../../../definitions/nt-bundle/modules/jacoby-transfers";
-import { smolenFacts } from "../../../definitions/nt-bundle/modules/smolen";
-import { ntResponseFacts } from "../../../definitions/nt-bundle/modules/natural-nt";
-import { weakTwoFacts } from "../../../definitions/weak-twos-bundle/facts";
+import { bergenFacts } from "../../../definitions/modules/bergen/facts";
+import { dontFacts } from "../../../definitions/modules/dont/facts";
+import { staymanFacts } from "../../../definitions/modules/stayman";
+import { transferFacts } from "../../../definitions/modules/jacoby-transfers";
+import { smolenFacts } from "../../../definitions/modules/smolen";
+import { ntResponseFacts } from "../../../definitions/modules/natural-nt";
+import { weakTwoFacts } from "../../../definitions/modules/weak-twos/facts";
 
 // ─── Surface fragment imports (for inherited dimensions) ────
 import { BERGEN_SURFACE_FRAGMENTS } from "../../../definitions/bergen-bundle/base-track";

@@ -416,9 +416,7 @@ describe("ntBaseTrack", () => {
   describe("merged facts", () => {
     it("includes fact definitions from all modules", () => {
       const factIds = ntBaseTrack.facts.definitions.map((d) => d.id);
-      // From natural-nt
-      expect(factIds).toContain("module.ntResponse.inviteValues");
-      expect(factIds).toContain("module.ntResponse.gameValues");
+      // natural-nt facts are now system-level (system.responder.*), not module-level
       // From stayman
       expect(factIds).toContain("module.stayman.eligible");
       // From jacoby-transfers
@@ -428,9 +426,7 @@ describe("ntBaseTrack", () => {
     });
 
     it("includes evaluators from all modules", () => {
-      expect(
-        ntBaseTrack.facts.evaluators.has("module.ntResponse.inviteValues"),
-      ).toBe(true);
+      // natural-nt evaluators are now system-level, not module-level
       expect(
         ntBaseTrack.facts.evaluators.has("module.stayman.eligible"),
       ).toBe(true);
