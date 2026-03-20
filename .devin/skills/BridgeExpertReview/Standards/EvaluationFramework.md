@@ -206,7 +206,7 @@ Convention correctness is now evaluated by the CLI coverage-runner, not a browse
 
 ## Reference Sources
 
-When verifying correctness, agents fetch BridgeBum convention pages **once at the start** of their run, then use those references for all bid decisions. Findings must cite the URL. Preferred sources in priority order:
+When verifying correctness, agents use **bridgebum.com** as their authoritative reference. They look up convention rules there with `webfetch` when deciding bids, and cite the URL in any findings. Additional sources in priority order:
 
 | Source | URL | Use For |
 |--------|-----|---------|
@@ -249,7 +249,7 @@ The CLI `eval --bid` command returns structured JSON per target. The orchestrato
 
 Every CLI agent (Phase 1 and Phase 2) produces a report following the templates in `RunReview.md`. Key requirements:
 
-1. **Evidence for findings only** — Source code reads are only required when investigating a disagreement. BridgeBum references are fetched once at the start and used for all evaluations.
+1. **bridgebum.com is the reference** — Agents use it to verify convention rules when deciding bids. Findings must cite the URL.
 2. **CLI only** — Agents use `exec` to run CLI commands. **Never the browser skill or Playwright.**
 3. **Severity must be justified** — Explain why this severity level, not just assert it
 4. **Results table is mandatory** — List every atom (Phase 1) or seed (Phase 2) with pass/fail
