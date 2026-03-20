@@ -9,7 +9,8 @@ core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
-  surface-helpers.ts    Surface utility functions
+  surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())
+  surface-builder.ts    createSurface() builder — simplified MeaningSurface construction with auto-derived clauseId/description/moduleId/modulePrecedence
   profile-builder.ts    Profile building utilities
   bundle/               Bundle registry (ConventionBundle CRUD)
     bundle-types.ts       ConventionBundle interface
@@ -28,6 +29,7 @@ core/
     deal-constraint-evaluator.ts  evaluateDealConstraint() — fit-check, combined-hcp, custom constraints
     witness-generator.ts  resolveRole(), compileWitnessSpec(), generateWitnessSpec() — deal generation
     binding-resolver.ts   $suit binding resolution for parameterized surfaces
+    clause-derivation.ts  deriveClauseId(), deriveClauseDescription(), fillClauseDefaults() — auto-derive clause metadata from factId/operator/value
     hand-fact-resolver.ts Hand fact resolution utilities
     priority-mapping.ts   Priority class mapping logic
     fact-utils.ts         Fact evaluation utility functions
@@ -93,6 +95,8 @@ Every subsystem here exists because simpler designs failed the convention-univer
 5. **Encoding resolution** — `resolveEncoding()` per-proposal for non-direct encoders
 6. **Gate evaluation** — `evaluateGates()` 4-gate sequence per proposal
 7. **Arbitration** — `arbitrateMeanings()` selects best proposal (band ranking → specificity → deduplication)
+
+`clauseId`, `description`, `moduleId`, and `modulePrecedence` are optional on `MeaningSurface`. The `createSurface()` builder stamps them at definition time. The pipeline derives fallbacks for any surface not created via the builder (via `fillClauseDefaults()` and `?? 0` / `?? "unknown"` defaults).
 
 **All pipeline stages are convention-agnostic.** They operate on generic types (`MeaningSurface`, `EvaluatedFacts`, `MeaningProposal`). Convention-specific data comes from `definitions/` via `ConventionBundle`.
 

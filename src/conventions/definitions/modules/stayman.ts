@@ -18,6 +18,8 @@ import {
 } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
+import { createSurface } from "../../core/surface-builder";
+import type { ModuleContext } from "../../core/surface-builder";
 import {
   SAME_FAMILY,
   STRONGER_THAN,
@@ -26,6 +28,10 @@ import {
   FALLBACK_OF,
   ALTERNATIVES,
 } from "../pedagogical-vocabulary";
+
+// ─── Module context ──────────────────────────────────────────
+
+const STAYMAN_CTX: ModuleContext = { moduleId: "stayman", modulePrecedence: 1 };
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -52,45 +58,53 @@ export const INTERFERENCE_CLASSES = {
   REDOUBLE_STRENGTH: "interference:redouble-strength",
 } as const;
 
+// ─── Closure policy (shared across opener Stayman response surfaces) ───
+
+const OPENER_STAYMAN_CLOSURE_POLICY = {
+  exclusive: true,
+  exhaustive: true,
+  mandatory: true,
+  domain: {
+    kind: "semantic-class-set" as const,
+    ids: [
+      STAYMAN_CLASSES.SHOW_HEARTS,
+      STAYMAN_CLASSES.SHOW_SPADES,
+      STAYMAN_CLASSES.DENY_MAJOR,
+    ],
+  },
+};
+
 // ─── R1 surface ──────────────────────────────────────────────
 
 /** Factory: creates the Stayman R1 surface parameterized by system config. */
 export function createStaymanR1Surface(sys: SystemConfig): MeaningSurface {
   const minHcp = sys.responderThresholds.inviteMin;
-  return {
+  return createSurface({
     meaningId: "stayman:ask-major",
     semanticClassId: STAYMAN_CLASSES.ASK,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(2, BidSuit.Clubs) },
+    encoding: bid(2, BidSuit.Clubs),
     clauses: [
       {
-        clauseId: "hcp-stayman-min",
         factId: "hand.hcp",
         operator: "gte",
         value: minHcp,
         description: `${minHcp}+ HCP for Stayman`,
       },
       {
-        clauseId: "has-four-card-major",
         factId: "bridge.hasFourCardMajor",
         operator: "boolean",
         value: true,
-        description: "At least one 4-card major",
         isPublic: true,
       },
       {
-        clauseId: "no-five-card-major",
         factId: "bridge.hasFiveCardMajor",
         operator: "boolean",
         value: false,
         description: "No 5-card major (transfer instead)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 1,
-      intraModuleOrder: 0,
-    },
+    band: "should",
+    intraModuleOrder: 0,
     sourceIntent: { type: "StaymanAsk", params: {} },
     teachingLabel: "Stayman 2♣",
     pedagogicalTags: [
@@ -101,407 +115,300 @@ export function createStaymanR1Surface(sys: SystemConfig): MeaningSurface {
       { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "b" },
       { tag: CONTINUATION_OF, scope: "stayman:raise-continues-ask", role: "b" },
     ],
-  };
+  }, STAYMAN_CTX);
 }
 
 // ─── Opener Stayman response surfaces ────────────────────────
 
 export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "stayman:show-hearts",
     semanticClassId: STAYMAN_CLASSES.SHOW_HEARTS,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(2, BidSuit.Hearts) },
+    encoding: bid(2, BidSuit.Hearts),
     clauses: [
       {
-        clauseId: "hearts-4-plus",
         factId: "hand.suitLength.hearts",
         operator: "gte",
         value: 4,
-        description: "4+ hearts to show",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 1,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "hearts" } },
     teachingLabel: "Show hearts",
-    closurePolicy: {
-      exclusive: true,
-      exhaustive: true,
-      mandatory: true,
-      domain: {
-        kind: "semantic-class-set",
-        ids: [
-          STAYMAN_CLASSES.SHOW_HEARTS,
-          STAYMAN_CLASSES.SHOW_SPADES,
-          STAYMAN_CLASSES.DENY_MAJOR,
-        ],
-      },
-    },
-  },
+    closurePolicy: OPENER_STAYMAN_CLOSURE_POLICY,
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:show-spades",
     semanticClassId: STAYMAN_CLASSES.SHOW_SPADES,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(2, BidSuit.Spades) },
+    encoding: bid(2, BidSuit.Spades),
     clauses: [
       {
-        clauseId: "spades-4-plus",
         factId: "hand.suitLength.spades",
         operator: "gte",
         value: 4,
-        description: "4+ spades to show",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 1,
-      intraModuleOrder: 1,
-    },
+    band: "must",
+    intraModuleOrder: 1,
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "spades" } },
     teachingLabel: "Show spades",
-    closurePolicy: {
-      exclusive: true,
-      exhaustive: true,
-      mandatory: true,
-      domain: {
-        kind: "semantic-class-set",
-        ids: [
-          STAYMAN_CLASSES.SHOW_HEARTS,
-          STAYMAN_CLASSES.SHOW_SPADES,
-          STAYMAN_CLASSES.DENY_MAJOR,
-        ],
-      },
-    },
-  },
+    closurePolicy: OPENER_STAYMAN_CLOSURE_POLICY,
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:deny-major",
     semanticClassId: STAYMAN_CLASSES.DENY_MAJOR,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
+    encoding: bid(2, BidSuit.Diamonds),
     clauses: [
       {
-        clauseId: "no-four-card-major",
         factId: "bridge.hasFourCardMajor",
         operator: "boolean",
         value: false,
-        description: "No 4-card major to show",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 1,
-      intraModuleOrder: 2,
-    },
+    band: "must",
+    intraModuleOrder: 2,
     sourceIntent: { type: "DenyMajor", params: {} },
     teachingLabel: "Deny major (2♦)",
-    closurePolicy: {
-      exclusive: true,
-      exhaustive: true,
-      mandatory: true,
-      domain: {
-        kind: "semantic-class-set",
-        ids: [
-          STAYMAN_CLASSES.SHOW_HEARTS,
-          STAYMAN_CLASSES.SHOW_SPADES,
-          STAYMAN_CLASSES.DENY_MAJOR,
-        ],
-      },
-    },
-  },
+    closurePolicy: OPENER_STAYMAN_CLOSURE_POLICY,
+  }, STAYMAN_CTX),
 ];
 
 // ─── Stayman R3 surfaces ─────────────────────────────────────
 
 export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "stayman:raise-game-hearts",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(4, BidSuit.Hearts) },
+    encoding: bid(4, BidSuit.Hearts),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "hearts-4-plus",
         factId: "hand.suitLength.hearts",
         operator: "gte",
         value: 4,
         description: "4+ hearts (fit with opener)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 1,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "RaiseGame", params: { suit: "hearts" } },
     teachingLabel: "Raise to game in hearts",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 0 },
       { tag: CONTINUATION_OF, scope: "stayman:raise-continues-ask", role: "a" },
     ],
-  },
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:raise-invite-hearts",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_INVITE,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(3, BidSuit.Hearts) },
+    encoding: bid(3, BidSuit.Hearts),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
       {
-        clauseId: "hearts-4-plus",
         factId: "hand.suitLength.hearts",
         operator: "gte",
         value: 4,
         description: "4+ hearts (fit with opener)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 1,
-      intraModuleOrder: 1,
-    },
+    band: "should",
+    intraModuleOrder: 1,
     sourceIntent: { type: "RaiseInvite", params: { suit: "hearts" } },
     teachingLabel: "Invite in hearts",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 1 },
     ],
-  },
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:nt-game-no-fit",
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_NO_FIT,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "hearts-less-than-4",
         factId: "hand.suitLength.hearts",
         operator: "lte",
         value: 3,
         description: "Less than 4 hearts (no fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 1,
-      intraModuleOrder: 2,
-    },
+    band: "should",
+    intraModuleOrder: 2,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-heart-fit" } },
     teachingLabel: "3NT (no heart fit)",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 0 },
     ],
-  },
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:nt-invite-no-fit",
     semanticClassId: STAYMAN_R3_CLASSES.NT_INVITE_NO_FIT,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
+    encoding: bid(2, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
       {
-        clauseId: "hearts-less-than-4",
         factId: "hand.suitLength.hearts",
         operator: "lte",
         value: 3,
         description: "Less than 4 hearts (no fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "may",
-      modulePrecedence: 1,
-      intraModuleOrder: 3,
-    },
+    band: "may",
+    intraModuleOrder: 3,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-heart-fit" } },
     teachingLabel: "2NT invite (no heart fit)",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 1 },
     ],
-  },
+  }, STAYMAN_CTX),
 ];
 
 export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "stayman:raise-game-spades",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(4, BidSuit.Spades) },
+    encoding: bid(4, BidSuit.Spades),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "spades-4-plus",
         factId: "hand.suitLength.spades",
         operator: "gte",
         value: 4,
         description: "4+ spades (fit with opener)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 1,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "RaiseGame", params: { suit: "spades" } },
     teachingLabel: "Raise to game in spades",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 0 },
     ],
-  },
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:raise-invite-spades",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_INVITE,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(3, BidSuit.Spades) },
+    encoding: bid(3, BidSuit.Spades),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
       {
-        clauseId: "spades-4-plus",
         factId: "hand.suitLength.spades",
         operator: "gte",
         value: 4,
         description: "4+ spades (fit with opener)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 1,
-      intraModuleOrder: 1,
-    },
+    band: "should",
+    intraModuleOrder: 1,
     sourceIntent: { type: "RaiseInvite", params: { suit: "spades" } },
     teachingLabel: "Invite in spades",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 1 },
     ],
-  },
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:nt-game-no-fit-2s",
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_NO_FIT,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "spades-less-than-4",
         factId: "hand.suitLength.spades",
         operator: "lte",
         value: 3,
         description: "Less than 4 spades (no fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 1,
-      intraModuleOrder: 2,
-    },
+    band: "should",
+    intraModuleOrder: 2,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-spade-fit" } },
     teachingLabel: "3NT (no spade fit)",
-  },
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:nt-invite-no-fit-2s",
     semanticClassId: STAYMAN_R3_CLASSES.NT_INVITE_NO_FIT,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
+    encoding: bid(2, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
       {
-        clauseId: "spades-less-than-4",
         factId: "hand.suitLength.spades",
         operator: "lte",
         value: 3,
         description: "Less than 4 spades (no fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "may",
-      modulePrecedence: 1,
-      intraModuleOrder: 3,
-    },
+    band: "may",
+    intraModuleOrder: 3,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-spade-fit" } },
     teachingLabel: "2NT invite (no spade fit)",
-  },
+  }, STAYMAN_CTX),
 ];
 
 // Stayman R3 after 2D — ONLY the 2 Stayman surfaces (not Smolen)
 export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "stayman:nt-game-after-denial",
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_DENIAL,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 1,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "denial" } },
     teachingLabel: "3NT after denial",
     pedagogicalTags: [
@@ -509,34 +416,29 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
       { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "b" },
       { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
     ],
-  },
+  }, STAYMAN_CTX),
 
-  {
+  createSurface({
     meaningId: "stayman:nt-invite-after-denial",
     semanticClassId: STAYMAN_R3_CLASSES.NT_INVITE_DENIAL,
-    moduleId: "stayman",
-    encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
+    encoding: bid(2, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 1,
-      intraModuleOrder: 1,
-    },
+    band: "should",
+    intraModuleOrder: 1,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     teachingLabel: "2NT invite after denial",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-denial-strength", ordinal: 1 },
       { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "b" },
     ],
-  },
+  }, STAYMAN_CTX),
 ];
 
 // ─── Interference surface ────────────────────────────────────
@@ -544,28 +446,24 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
 /** Factory: creates the interference redouble surface parameterized by system config. */
 export function createInterferenceRedoubleSurface(sys: SystemConfig): MeaningSurface {
   const minHcp = sys.interference.redoubleMin;
-  return {
+  return createSurface({
     meaningId: "interference:redouble-strength",
     semanticClassId: INTERFERENCE_CLASSES.REDOUBLE_STRENGTH,
-    moduleId: "stayman",
-    encoding: { defaultCall: { type: "redouble" } },
+    encoding: { type: "redouble" },
     clauses: [
       {
-        clauseId: "hcp-redouble-min",
         factId: "hand.hcp",
         operator: "gte",
         value: minHcp,
         description: `${minHcp}+ HCP to redouble after opponent doubles 1NT`,
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    modulePrecedence: 0,
+    intraModuleOrder: 0,
     sourceIntent: { type: "RedoubleStrength", params: {} },
     teachingLabel: `Redouble (showing ${minHcp}+ HCP)`,
-  };
+  }, STAYMAN_CTX);
 }
 
 /** Legacy default — uses SAYC system config. */

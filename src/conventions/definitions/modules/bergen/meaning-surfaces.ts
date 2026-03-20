@@ -3,6 +3,8 @@ import type { PedagogicalTagRef } from "../../../../core/contracts/pedagogical-t
 import { BidSuit } from "../../../../engine/types";
 import { BERGEN_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit, otherMajorBidSuit } from "../../../core/surface-helpers";
+import { createSurface } from "../../../core/surface-builder";
+import type { ModuleContext } from "../../../core/surface-builder";
 import {
   SAME_FAMILY,
   STRONGER_THAN,
@@ -11,6 +13,8 @@ import {
   FALLBACK_OF,
   ALTERNATIVES,
 } from "../../pedagogical-vocabulary";
+
+const BERGEN_CTX: ModuleContext = { moduleId: "bergen", modulePrecedence: 0 };
 
 /**
  * Create the 5 Bergen Raises R1 surfaces for a given major suit.
@@ -36,39 +40,29 @@ export function createBergenR1Surfaces(
   return [
     // 1. Splinter -- 12+ HCP, 4+ support, shortage (singleton or void)
     // Highest priority: checked first (intraModuleOrder 0)
-    {
+    createSurface({
       meaningId: `bergen:splinter-${suit}`,
       semanticClassId: BERGEN_CLASSES.SPLINTER,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(3, otherMajor) },
       clauses: [
         {
-          clauseId: "hcp-12-plus",
           factId: "hand.hcp",
           operator: "gte",
           value: 12,
-          description: "12+ HCP for splinter",
         },
         {
-          clauseId: "support-4-plus",
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 4,
-          description: `4+ ${suit} support`,
         },
         {
-          clauseId: "has-shortage",
           factId: "bridge.hasShortage",
           operator: "boolean",
           value: true,
-          description: "Singleton or void in at least one suit",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
+      band: "must",
+      intraModuleOrder: 0,
       sourceIntent: { type: "Splinter", params: { suit } },
       teachingLabel: `Splinter (3${suit === "hearts" ? "S" : "H"})`,
       surfaceBindings: bindings,
@@ -76,35 +70,27 @@ export function createBergenR1Surfaces(
         { tag: SAME_FAMILY, scope: `bergen:r1-splinter-and-game-${suit}` },
         { tag: NEAR_MISS_OF, scope: `bergen:r1-splinter-vs-game-${suit}`, role: "a" },
       ],
-    },
+    }, BERGEN_CTX),
 
     // 2. Game raise -- 13+ HCP, 4+ support
-    {
+    createSurface({
       meaningId: `bergen:game-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.GAME_RAISE,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-13-plus",
           factId: "hand.hcp",
           operator: "gte",
           value: 13,
-          description: "13+ HCP for game raise",
         },
         {
-          clauseId: "support-4-plus",
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 4,
-          description: `4+ ${suit} support`,
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 1,
-      },
+      band: "must",
+      intraModuleOrder: 1,
       sourceIntent: { type: "GameRaise", params: { suit } },
       teachingLabel: `Game raise (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -115,35 +101,27 @@ export function createBergenR1Surfaces(
         { tag: NEAR_MISS_OF, scope: `bergen:r1-splinter-vs-game-${suit}`, role: "b" },
         { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
 
     // 3. Limit raise -- 10-12 HCP, 4+ support
-    {
+    createSurface({
       meaningId: `bergen:limit-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.LIMIT_RAISE,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(3, BidSuit.Diamonds) },
       clauses: [
         {
-          clauseId: "hcp-10-12",
           factId: "hand.hcp",
           operator: "range",
           value: { min: 10, max: 12 },
-          description: "10-12 HCP for limit raise",
         },
         {
-          clauseId: "support-4-plus",
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 4,
-          description: `4+ ${suit} support`,
         },
       ],
-      ranking: {
-        recommendationBand: "should",
-        modulePrecedence: 0,
-        intraModuleOrder: 2,
-      },
+      band: "should",
+      intraModuleOrder: 2,
       sourceIntent: { type: "LimitRaise", params: { suit } },
       teachingLabel: "Limit raise (3D)",
       surfaceBindings: bindings,
@@ -154,35 +132,27 @@ export function createBergenR1Surfaces(
         { tag: CONTINUATION_OF, scope: `bergen:r2-after-limit-${suit}`, role: "b" },
         { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
 
     // 4. Constructive raise -- 7-10 HCP, 4+ support
-    {
+    createSurface({
       meaningId: `bergen:constructive-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.CONSTRUCTIVE_RAISE,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(3, BidSuit.Clubs) },
       clauses: [
         {
-          clauseId: "hcp-7-10",
           factId: "hand.hcp",
           operator: "range",
           value: { min: 7, max: 10 },
-          description: "7-10 HCP for constructive raise",
         },
         {
-          clauseId: "support-4-plus",
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 4,
-          description: `4+ ${suit} support`,
         },
       ],
-      ranking: {
-        recommendationBand: "should",
-        modulePrecedence: 0,
-        intraModuleOrder: 3,
-      },
+      band: "should",
+      intraModuleOrder: 3,
       sourceIntent: { type: "ConstructiveRaise", params: { suit } },
       teachingLabel: "Constructive raise (3C)",
       surfaceBindings: bindings,
@@ -194,35 +164,27 @@ export function createBergenR1Surfaces(
         { tag: CONTINUATION_OF, scope: `bergen:r2-after-constructive-${suit}`, role: "b" },
         { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
 
     // 5. Preemptive raise -- 0-6 HCP, 4+ support
-    {
+    createSurface({
       meaningId: `bergen:preemptive-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.PREEMPTIVE_RAISE,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-0-6",
           factId: "hand.hcp",
           operator: "lte",
           value: 6,
-          description: "0-6 HCP for preemptive raise",
         },
         {
-          clauseId: "support-4-plus",
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 4,
-          description: `4+ ${suit} support`,
         },
       ],
-      ranking: {
-        recommendationBand: "may",
-        modulePrecedence: 0,
-        intraModuleOrder: 4,
-      },
+      band: "may",
+      intraModuleOrder: 4,
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
       teachingLabel: `Preemptive raise (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -233,7 +195,7 @@ export function createBergenR1Surfaces(
         { tag: CONTINUATION_OF, scope: `bergen:r2-after-preemptive-${suit}`, role: "b" },
         { tag: ALTERNATIVES, scope: `Bergen strength raises (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
   ];
 }
 
@@ -258,25 +220,19 @@ export function createBergenR2AfterConstructiveSurfaces(
 
   return [
     // Opener game: 17+ HCP → 4M
-    {
+    createSurface({
       meaningId: `bergen:opener-game-after-constructive-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_CONSTRUCTIVE,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-17-plus",
           factId: "hand.hcp",
           operator: "gte",
           value: 17,
-          description: "17+ HCP to accept constructive raise and bid game",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
+      band: "must",
+      intraModuleOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept constructive → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -286,28 +242,22 @@ export function createBergenR2AfterConstructiveSurfaces(
         { tag: CONTINUATION_OF, scope: `bergen:r2-after-constructive-${suit}`, role: "a" },
         { tag: ALTERNATIVES, scope: `Opener rebid after constructive (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
 
     // Opener signoff: ≤13 HCP → 3M (return to trump suit)
-    {
+    createSurface({
       meaningId: `bergen:opener-signoff-after-constructive-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-13-or-less",
           factId: "hand.hcp",
           operator: "lte",
           value: 13,
-          description: "≤13 HCP, decline constructive raise",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 1,
-      },
+      band: "must",
+      intraModuleOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Decline constructive → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -316,7 +266,7 @@ export function createBergenR2AfterConstructiveSurfaces(
         { tag: STRONGER_THAN, scope: `bergen:r2-constructive-strength-${suit}`, ordinal: 1 },
         { tag: ALTERNATIVES, scope: `Opener rebid after constructive (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
   ];
 }
 
@@ -335,25 +285,19 @@ export function createBergenR2AfterLimitSurfaces(
 
   return [
     // Opener game: 15+ HCP → 4M
-    {
+    createSurface({
       meaningId: `bergen:opener-game-after-limit-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_LIMIT,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-15-plus",
           factId: "hand.hcp",
           operator: "gte",
           value: 15,
-          description: "15+ HCP to accept limit raise and bid game",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
+      band: "must",
+      intraModuleOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept limit raise → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -363,28 +307,22 @@ export function createBergenR2AfterLimitSurfaces(
         { tag: CONTINUATION_OF, scope: `bergen:r2-after-limit-${suit}`, role: "a" },
         { tag: ALTERNATIVES, scope: `Opener rebid after limit (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
 
     // Opener signoff: ≤14 HCP → 3M
-    {
+    createSurface({
       meaningId: `bergen:opener-signoff-after-limit-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_SIGNOFF_AFTER_LIMIT,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-14-or-less",
           factId: "hand.hcp",
           operator: "lte",
           value: 14,
-          description: "≤14 HCP, decline limit raise and sign off",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 1,
-      },
+      band: "must",
+      intraModuleOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Decline limit raise → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -393,7 +331,7 @@ export function createBergenR2AfterLimitSurfaces(
         { tag: STRONGER_THAN, scope: `bergen:r2-limit-strength-${suit}`, ordinal: 1 },
         { tag: ALTERNATIVES, scope: `Opener rebid after limit (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
   ];
 }
 
@@ -412,25 +350,19 @@ export function createBergenR2AfterPreemptiveSurfaces(
 
   return [
     // Opener game: 18+ HCP → 4M
-    {
+    createSurface({
       meaningId: `bergen:opener-game-after-preemptive-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_PREEMPTIVE,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-18-plus",
           factId: "hand.hcp",
           operator: "gte",
           value: 18,
-          description: "18+ HCP to bid game over preemptive raise",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
+      band: "must",
+      intraModuleOrder: 0,
       sourceIntent: { type: "RaiseToGame", params: { suit } },
       teachingLabel: `Bid game over preemptive (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -439,28 +371,22 @@ export function createBergenR2AfterPreemptiveSurfaces(
         { tag: STRONGER_THAN, scope: `bergen:r2-preemptive-strength-${suit}`, ordinal: 0 },
         { tag: CONTINUATION_OF, scope: `bergen:r2-after-preemptive-${suit}`, role: "a" },
       ],
-    },
+    }, BERGEN_CTX),
 
     // Opener pass: ≤17 HCP → Pass
-    {
+    createSurface({
       meaningId: `bergen:opener-pass-after-preemptive-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_PASS_AFTER_PREEMPTIVE,
-      moduleId: "bergen",
-      encoding: { defaultCall: { type: "pass" } },
+      encoding: { type: "pass" },
       clauses: [
         {
-          clauseId: "hcp-17-or-less",
           factId: "hand.hcp",
           operator: "lte",
           value: 17,
-          description: "≤17 HCP, pass over preemptive raise",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 1,
-      },
+      band: "must",
+      intraModuleOrder: 1,
       sourceIntent: { type: "AcceptPartnerDecision", params: { suit } },
       teachingLabel: "Pass over preemptive",
       surfaceBindings: bindings,
@@ -468,7 +394,7 @@ export function createBergenR2AfterPreemptiveSurfaces(
         { tag: SAME_FAMILY, scope: `bergen:r2-rebids-after-preemptive-${suit}` },
         { tag: STRONGER_THAN, scope: `bergen:r2-preemptive-strength-${suit}`, ordinal: 1 },
       ],
-    },
+    }, BERGEN_CTX),
   ];
 }
 
@@ -489,25 +415,19 @@ export function createBergenR3AfterGameTrySurfaces(
 
   return [
     // Accept game try: 9-10 HCP → 4M
-    {
+    createSurface({
       meaningId: `bergen:responder-try-accept-${suit}`,
       semanticClassId: BERGEN_CLASSES.RESPONDER_TRY_ACCEPT,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-9-10",
           factId: "hand.hcp",
           operator: "range",
           value: { min: 9, max: 10 },
-          description: "9-10 HCP, accept game try",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
+      band: "must",
+      intraModuleOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept game try → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -517,28 +437,22 @@ export function createBergenR3AfterGameTrySurfaces(
         { tag: CONTINUATION_OF, scope: "bergen:r4-after-try-decision", role: "b" },
         { tag: ALTERNATIVES, scope: `Responder game try decision (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
 
     // Reject game try: 7-8 HCP → 3M
-    {
+    createSurface({
       meaningId: `bergen:responder-try-reject-${suit}`,
       semanticClassId: BERGEN_CLASSES.RESPONDER_TRY_REJECT,
-      moduleId: "bergen",
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          clauseId: "hcp-7-8",
           factId: "hand.hcp",
           operator: "range",
           value: { min: 7, max: 8 },
-          description: "7-8 HCP, reject game try",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 1,
-      },
+      band: "must",
+      intraModuleOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Reject game try → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -548,7 +462,7 @@ export function createBergenR3AfterGameTrySurfaces(
         { tag: CONTINUATION_OF, scope: "bergen:r4-after-try-decision", role: "b" },
         { tag: ALTERNATIVES, scope: `Responder game try decision (${suit})` },
       ],
-    },
+    }, BERGEN_CTX),
   ];
 }
 
@@ -564,21 +478,17 @@ function createBergenPassSurface(
   pedagogicalTags?: readonly PedagogicalTagRef[],
 ): readonly MeaningSurface[] {
   return [
-    {
+    createSurface({
       meaningId,
       semanticClassId,
-      moduleId: "bergen",
-      encoding: { defaultCall: { type: "pass" } },
+      encoding: { type: "pass" },
       clauses: [],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
+      band: "must",
+      intraModuleOrder: 0,
       sourceIntent: { type: "AcceptPartnerDecision", params: {} },
       teachingLabel,
       ...(pedagogicalTags ? { pedagogicalTags } : {}),
-    },
+    }, BERGEN_CTX),
   ];
 }
 

@@ -21,6 +21,7 @@ import { resolveFactId, resolveClause } from "./binding-resolver";
 import { priorityClassToBand } from "./priority-mapping";
 import type { ConstraintDimension } from "../../../core/contracts/meaning";
 import { deriveSpecificity } from "./specificity-deriver";
+import { fillClauseDefaults } from "./clause-derivation";
 
 function evaluateClause(
   clause: MeaningSurfaceClause,
@@ -37,7 +38,7 @@ function evaluateClause(
       operator: clause.operator === "in" ? "eq" : clause.operator,
       value: clause.operator === "in" ? false : (clause.value as MeaningClause["value"]),
       satisfied: false,
-      description: clause.description,
+      description: clause.description ?? clause.factId,
     };
   }
 
@@ -95,7 +96,7 @@ function evaluateClause(
     operator: outputOperator,
     value: outputValue,
     satisfied,
-    description: clause.description,
+    description: clause.description ?? clause.factId,
     observedValue: factValue,
   };
 }
@@ -107,29 +108,31 @@ export function evaluateMeaningSurface(
   inheritedDimensions?: readonly ConstraintDimension[],
 ): MeaningProposal {
   const bindings = surface.surfaceBindings;
-  const evaluatedClauses: MeaningClause[] = surface.clauses.map((clause) =>
+  // Fill in missing clauseId/description before evaluation (safety net for hand-authored surfaces)
+  const filledClauses = surface.clauses.map(fillClauseDefaults);
+  const evaluatedClauses: MeaningClause[] = filledClauses.map((clause) =>
     evaluateClause(clause, facts, bindings),
   );
 
   const factDependencies: string[] = [
     ...new Set(
-      surface.clauses.map((c) => resolveFactId(c.factId, bindings)),
+      filledClauses.map((c) => resolveFactId(c.factId, bindings)),
     ),
   ];
 
   const evidence: MeaningEvaluationEvidence = {
     factDependencies,
     evaluatedConditions: evaluatedClauses.map((clause, i) => {
-      const sourceClause = surface.clauses[i];
+      const sourceClause = filledClauses[i];
       return {
         conditionId: sourceClause?.clauseId ?? clause.factId,
         satisfied: clause.satisfied,
-        description: clause.description,
+        description: clause.description ?? clause.factId,
         conditionRole: "semantic" as const,
       };
     }),
     provenance: {
-      moduleId: surface.moduleId,
+      moduleId: surface.moduleId ?? "unknown",
       nodeName: surface.meaningId,
       origin: "meaning-pipeline" as const,
     },
@@ -146,7 +149,7 @@ export function evaluateMeaningSurface(
   const resolvedRanking: RankingMetadata = {
     recommendationBand: resolvedBand,
     specificity: derivation?.advisorySpecificity ?? 0,
-    modulePrecedence: surface.ranking.modulePrecedence,
+    modulePrecedence: surface.ranking.modulePrecedence ?? 0,
     intraModuleOrder: surface.ranking.intraModuleOrder,
     ...(derivation ? { specificityBasis: derivation.basis } : {}),
   };
@@ -164,7 +167,7 @@ export function evaluateMeaningSurface(
   return {
     meaningId: surface.meaningId,
     semanticClassId: surface.semanticClassId,
-    moduleId: surface.moduleId,
+    moduleId: surface.moduleId ?? "unknown",
     clauses: evaluatedClauses,
     ranking: resolvedRanking,
     evidence,

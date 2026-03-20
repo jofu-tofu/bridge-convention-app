@@ -17,48 +17,46 @@ import {
 } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
+import { createSurface } from "../../core/surface-builder";
+import type { ModuleContext } from "../../core/surface-builder";
 import {
   SAME_FAMILY,
   STRONGER_THAN,
   FALLBACK_OF,
 } from "../pedagogical-vocabulary";
 
+// ─── Module context ──────────────────────────────────────────
+
+const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt", modulePrecedence: 0 };
+
 // ─── R1 surfaces ─────────────────────────────────────────────
 
 const NT_R1_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "bridge:nt-invite",
     semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
-    moduleId: "natural-nt",
-    encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
+    encoding: bid(2, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
       {
-        clauseId: "no-four-card-major",
         factId: "bridge.hasFourCardMajor",
         operator: "boolean",
         value: false,
-        description: "No 4-card major",
       },
       {
-        clauseId: "no-five-card-major",
         factId: "bridge.hasFiveCardMajor",
         operator: "boolean",
         value: false,
-        description: "No 5-card major",
       },
     ],
-    ranking: {
-      recommendationBand: "may",
-      modulePrecedence: 2,
-      intraModuleOrder: 0,
-    },
+    band: "may",
+    modulePrecedence: 2,
+    intraModuleOrder: 0,
     sourceIntent: { type: "NTInvite", params: {} },
     teachingLabel: "NT invite",
     pedagogicalTags: [
@@ -66,41 +64,33 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
       { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 1 },
       { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
     ],
-  },
+  }, NATURAL_NT_CTX),
 
-  {
+  createSurface({
     meaningId: "bridge:to-3nt",
     semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_GAME,
-    moduleId: "natural-nt",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "no-four-card-major",
         factId: "bridge.hasFourCardMajor",
         operator: "boolean",
         value: false,
-        description: "No 4-card major",
       },
       {
-        clauseId: "no-five-card-major",
         factId: "bridge.hasFiveCardMajor",
         operator: "boolean",
         value: false,
-        description: "No 5-card major",
       },
     ],
-    ranking: {
-      recommendationBand: "may",
-      modulePrecedence: 2,
-      intraModuleOrder: 1,
-    },
+    band: "may",
+    modulePrecedence: 2,
+    intraModuleOrder: 1,
     sourceIntent: { type: "NTGame", params: {} },
     teachingLabel: "3NT game",
     pedagogicalTags: [
@@ -108,7 +98,7 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
       { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 0 },
       { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
     ],
-  },
+  }, NATURAL_NT_CTX),
 ];
 
 // ─── Opener 1NT surface (used as surface group for idle state) ───
@@ -117,42 +107,34 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
 
 export function createOpener1NtSurface(sys: SystemConfig): readonly MeaningSurface[] {
   return [
-    {
+    createSurface({
       meaningId: "bridge:1nt-opening",
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_OPENING,
-      moduleId: "natural-nt",
-      encoding: { defaultCall: bid(1, BidSuit.NoTrump) },
+      encoding: bid(1, BidSuit.NoTrump),
       clauses: [
         {
-          clauseId: "hcp-min",
           factId: "hand.hcp",
           operator: "gte",
           value: sys.ntOpening.minHcp,
           description: `${sys.ntOpening.minHcp}+ HCP for 1NT opening`,
         },
         {
-          clauseId: "hcp-max",
           factId: "hand.hcp",
           operator: "lte",
           value: sys.ntOpening.maxHcp,
           description: `At most ${sys.ntOpening.maxHcp} HCP for 1NT opening`,
         },
         {
-          clauseId: "balanced",
           factId: "hand.isBalanced",
           operator: "boolean",
           value: true,
-          description: "Balanced hand shape",
         },
       ],
-      ranking: {
-        recommendationBand: "must",
-        modulePrecedence: 0,
-        intraModuleOrder: 0,
-      },
+      band: "must",
+      intraModuleOrder: 0,
       sourceIntent: { type: "NTOpening", params: {} },
       teachingLabel: `${sys.ntOpening.minHcp} to ${sys.ntOpening.maxHcp}`,
-    },
+    }, NATURAL_NT_CTX),
   ];
 }
 
@@ -346,20 +328,16 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
 // ─── Terminal pass surface (auction settled — intentional pass) ───
 
 const TERMINAL_PASS_SURFACE: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "bridge:terminal-pass",
     semanticClassId: "bridge:terminal-pass",
-    moduleId: "natural-nt",
-    encoding: { defaultCall: { type: "pass" } },
+    encoding: { type: "pass" },
     clauses: [],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "TerminalPass", params: {} },
     teachingLabel: "Pass (auction complete)",
-  },
+  }, NATURAL_NT_CTX),
 ];
 
 // ─── Module assembly ─────────────────────────────────────────

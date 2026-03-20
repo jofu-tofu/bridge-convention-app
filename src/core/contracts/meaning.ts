@@ -40,8 +40,10 @@ export type MeaningClauseOperator = Exclude<FactOperator, "in">;
 export interface AuthoredRankingMetadata {
   /** Authored semantic priority. Replaces implicit orderKey-as-truth. */
   readonly recommendationBand: RecommendationBand;
-  /** Cross-module tiebreaker. Lower = higher priority. Never decides truth. */
-  readonly modulePrecedence: number;
+  /** Cross-module tiebreaker. Lower = higher priority. Never decides truth.
+   *  Optional — defaults to 0 when absent. Injected by `createSurface()` builder
+   *  from `ModuleContext.modulePrecedence`, or derived as 0 by the pipeline. */
+  readonly modulePrecedence?: number;
   /** Preserves DFS orderKey for backward compat. Deterministic last resort. */
   readonly intraModuleOrder: number;
 }
@@ -137,7 +139,7 @@ export function compareRanking(a: RankingMetadata, b: RankingMetadata): number {
   if (specDiff !== 0) return specDiff;
 
   // Module precedence (lower = higher priority)
-  const modDiff = a.modulePrecedence - b.modulePrecedence;
+  const modDiff = (a.modulePrecedence ?? 0) - (b.modulePrecedence ?? 0);
   if (modDiff !== 0) return modDiff;
 
   // Intra-module order (lower = earlier DFS = ranks higher)
@@ -184,8 +186,13 @@ export interface TransformTrace {
 // ---------------------------------------------------------------------------
 
 export interface MeaningSurfaceClause extends FactConstraintIR {
-  readonly clauseId: string;
-  readonly description: string;
+  /** Deterministic identifier. Optional — auto-derived from factId:operator:value
+   *  by the `createSurface()` builder or pipeline fallback. */
+  readonly clauseId?: string;
+  /** Human-readable description. Optional — auto-derived from factId/operator/value
+   *  by the `createSurface()` builder or pipeline fallback. Provide explicitly only
+   *  when adding convention-specific rationale (e.g., parenthetical context). */
+  readonly description?: string;
   /** When true, this clause is included in the alert's public constraints.
    *  Primitive hand facts (hand.*) are always public regardless of this flag.
    *  Use this for bridge-derived or module facts the bundle wants to disclose. */
@@ -195,7 +202,9 @@ export interface MeaningSurfaceClause extends FactConstraintIR {
 export interface MeaningSurface {
   readonly meaningId: MeaningId;
   readonly semanticClassId: SemanticClassId;
-  readonly moduleId: string;
+  /** Module that owns this surface. Optional — injected by `createSurface()` builder
+   *  from `ModuleContext.moduleId`, or falls back to `"unknown"` in the pipeline. */
+  readonly moduleId?: string;
   readonly encoding: {
     readonly defaultCall: Call;
     readonly alternateEncodings?: readonly {

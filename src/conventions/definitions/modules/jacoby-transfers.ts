@@ -19,6 +19,8 @@ import {
 } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
+import { createSurface } from "../../core/surface-builder";
+import type { ModuleContext } from "../../core/surface-builder";
 import {
   SAME_FAMILY,
   STRONGER_THAN,
@@ -26,6 +28,10 @@ import {
   NEAR_MISS_OF,
   ALTERNATIVES,
 } from "../pedagogical-vocabulary";
+
+// ─── Module context ──────────────────────────────────────────
+
+const TRANSFER_CTX: ModuleContext = { moduleId: "jacoby-transfers", modulePrecedence: 0 };
 
 // ─── Semantic classes ────────────────────────────────────────
 
@@ -56,25 +62,19 @@ export const OPENER_PLACE_CLASSES = {
 // ─── R1 surfaces ─────────────────────────────────────────────
 
 const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:to-hearts",
     semanticClassId: TRANSFER_CLASSES.TO_HEARTS,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
+    encoding: bid(2, BidSuit.Diamonds),
     clauses: [
       {
-        clauseId: "hearts-5-plus",
         factId: "hand.suitLength.hearts",
         operator: "gte",
         value: 5,
-        description: "5+ hearts for transfer",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 1,
-    },
+    band: "should",
+    intraModuleOrder: 1,
     sourceIntent: { type: "TransferToHearts", params: {} },
     teachingLabel: "Transfer to hearts",
     pedagogicalTags: [
@@ -83,499 +83,401 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
       { tag: NEAR_MISS_OF, scope: "r1-ask-vs-transfer", role: "b" },
       { tag: CONTINUATION_OF, scope: "transfer:signoff-continues-r1-hearts", role: "b" },
     ],
-  },
+  }, TRANSFER_CTX),
 
-  {
+  createSurface({
     meaningId: "transfer:to-spades",
     semanticClassId: TRANSFER_CLASSES.TO_SPADES,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(2, BidSuit.Hearts) },
+    encoding: bid(2, BidSuit.Hearts),
     clauses: [
       {
-        clauseId: "spades-5-plus",
         factId: "hand.suitLength.spades",
         operator: "gte",
         value: 5,
-        description: "5+ spades for transfer",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "should",
+    intraModuleOrder: 0,
     sourceIntent: { type: "TransferToSpades", params: {} },
     teachingLabel: "Transfer to spades",
     pedagogicalTags: [
       { tag: SAME_FAMILY, scope: "r1-major-fit" },
       { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
     ],
-  },
+  }, TRANSFER_CTX),
 ];
 
 // ─── Opener transfer accept surfaces ─────────────────────────
 
 export const OPENER_TRANSFER_HEARTS_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:accept",
     semanticClassId: TRANSFER_CLASSES.ACCEPT,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(2, BidSuit.Hearts) },
+    encoding: bid(2, BidSuit.Hearts),
     clauses: [],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "AcceptTransfer", params: { suit: "hearts" } },
     teachingLabel: "Accept transfer to hearts",
-  },
+  }, TRANSFER_CTX),
 ];
 
 export const OPENER_TRANSFER_SPADES_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:accept-spades",
     semanticClassId: TRANSFER_CLASSES.ACCEPT_SPADES,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(2, BidSuit.Spades) },
+    encoding: bid(2, BidSuit.Spades),
     clauses: [],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "AcceptTransfer", params: { suit: "spades" } },
     teachingLabel: "Accept transfer to spades",
-  },
+  }, TRANSFER_CTX),
 ];
 
 // ─── Transfer R3 surfaces ────────────────────────────────────
 
 export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:signoff-hearts",
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: { type: "pass" } },
+    encoding: { type: "pass" },
     clauses: [
       {
-        clauseId: "weak-hand",
         factId: SYSTEM_RESPONDER_WEAK_HAND,
         operator: "boolean",
         value: true,
         description: "Below invite threshold (weak hand, signoff)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "Signoff", params: { suit: "hearts" } },
     teachingLabel: "Pass (signoff in hearts)",
     pedagogicalTags: [
       { tag: CONTINUATION_OF, scope: "transfer:signoff-continues-r1-hearts", role: "a" },
     ],
-  },
+  }, TRANSFER_CTX),
 
-  {
+  createSurface({
     meaningId: "transfer:game-hearts",
     semanticClassId: TRANSFER_R3_CLASSES.GAME_IN_MAJOR,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(4, BidSuit.Hearts) },
+    encoding: bid(4, BidSuit.Hearts),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "hearts-6-plus",
         factId: "hand.suitLength.hearts",
         operator: "gte",
         value: 6,
         description: "6+ hearts (game in major with guaranteed fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 1,
-    },
+    band: "must",
+    intraModuleOrder: 1,
     sourceIntent: { type: "GameInMajor", params: { suit: "hearts" } },
     teachingLabel: "4H game",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 0 },
       { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "a" },
     ],
-  },
+  }, TRANSFER_CTX),
 
-  {
+  createSurface({
     meaningId: "transfer:nt-game-hearts",
     semanticClassId: TRANSFER_R3_CLASSES.NT_GAME,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "hearts-exactly-5",
         factId: "hand.suitLength.hearts",
         operator: "eq",
         value: 5,
         description: "Exactly 5 hearts (offer 3NT as alternative to 4H)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 2,
-    },
+    band: "should",
+    intraModuleOrder: 2,
     sourceIntent: { type: "TransferNTGame", params: { suit: "hearts" } },
     teachingLabel: "3NT (5 hearts, let opener choose)",
     pedagogicalTags: [
       { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "b" },
     ],
-  },
+  }, TRANSFER_CTX),
 
-  {
+  createSurface({
     meaningId: "transfer:invite-hearts",
     semanticClassId: TRANSFER_R3_CLASSES.INVITE,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
+    encoding: bid(2, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 3,
-    },
+    band: "should",
+    intraModuleOrder: 3,
     sourceIntent: { type: "Invite", params: { suit: "hearts" } },
     teachingLabel: "2NT invite",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 1 },
     ],
-  },
+  }, TRANSFER_CTX),
 ];
 
 export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:signoff-spades",
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: { type: "pass" } },
+    encoding: { type: "pass" },
     clauses: [
       {
-        clauseId: "weak-hand",
         factId: SYSTEM_RESPONDER_WEAK_HAND,
         operator: "boolean",
         value: true,
         description: "Below invite threshold (weak hand, signoff)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "Signoff", params: { suit: "spades" } },
     teachingLabel: "Pass (signoff in spades)",
-  },
+  }, TRANSFER_CTX),
 
-  {
+  createSurface({
     meaningId: "transfer:game-spades",
     semanticClassId: TRANSFER_R3_CLASSES.GAME_IN_MAJOR,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(4, BidSuit.Spades) },
+    encoding: bid(4, BidSuit.Spades),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "spades-6-plus",
         factId: "hand.suitLength.spades",
         operator: "gte",
         value: 6,
         description: "6+ spades (game in major with guaranteed fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 1,
-    },
+    band: "must",
+    intraModuleOrder: 1,
     sourceIntent: { type: "GameInMajor", params: { suit: "spades" } },
     teachingLabel: "4S game",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 0 },
     ],
-  },
+  }, TRANSFER_CTX),
 
-  {
+  createSurface({
     meaningId: "transfer:nt-game-spades",
     semanticClassId: TRANSFER_R3_CLASSES.NT_GAME,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "game-values",
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
         description: "Game values opposite 1NT (10+ HCP)",
       },
       {
-        clauseId: "spades-exactly-5",
         factId: "hand.suitLength.spades",
         operator: "eq",
         value: 5,
         description: "Exactly 5 spades (offer 3NT as alternative to 4S)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 2,
-    },
+    band: "should",
+    intraModuleOrder: 2,
     sourceIntent: { type: "TransferNTGame", params: { suit: "spades" } },
     teachingLabel: "3NT (5 spades, let opener choose)",
-  },
+  }, TRANSFER_CTX),
 
-  {
+  createSurface({
     meaningId: "transfer:invite-spades",
     semanticClassId: TRANSFER_R3_CLASSES.INVITE,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
+    encoding: bid(2, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "invite-values",
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
         description: "Invite values opposite 1NT (8-9 HCP)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 3,
-    },
+    band: "should",
+    intraModuleOrder: 3,
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     teachingLabel: "2NT invite",
     pedagogicalTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 1 },
     ],
-  },
+  }, TRANSFER_CTX),
 ];
 
 // ─── Opener placement surfaces (after responder's 3NT "let opener choose") ──
 
 export const OPENER_PLACE_HEARTS_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:correct-to-4h",
     semanticClassId: OPENER_PLACE_CLASSES.CORRECT_TO_MAJOR,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(4, BidSuit.Hearts) },
+    encoding: bid(4, BidSuit.Hearts),
     clauses: [
       {
-        clauseId: "heart-fit",
         factId: "module.transfer.openerHasHeartFit",
         operator: "boolean",
         value: true,
         description: "Opener has 3+ hearts (fit with responder's 5)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "PlacementCorrection", params: { suit: "hearts" } },
     teachingLabel: "4H (heart fit found)",
-  },
-  {
+  }, TRANSFER_CTX),
+  createSurface({
     meaningId: "transfer:pass-3nt-hearts",
     semanticClassId: OPENER_PLACE_CLASSES.PASS_3NT,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: { type: "pass" } },
+    encoding: { type: "pass" },
     clauses: [
       {
-        clauseId: "no-heart-fit",
         factId: "module.transfer.openerHasHeartFit",
         operator: "boolean",
         value: false,
         description: "Opener has fewer than 3 hearts (no fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 1,
-    },
+    band: "must",
+    intraModuleOrder: 1,
     sourceIntent: { type: "PlacementPass", params: { suit: "hearts" } },
     teachingLabel: "Pass (stay in 3NT, no heart fit)",
-  },
+  }, TRANSFER_CTX),
 ];
 
 export const OPENER_PLACE_SPADES_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:correct-to-4s",
     semanticClassId: OPENER_PLACE_CLASSES.CORRECT_TO_MAJOR,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(4, BidSuit.Spades) },
+    encoding: bid(4, BidSuit.Spades),
     clauses: [
       {
-        clauseId: "spade-fit",
         factId: "module.transfer.openerHasSpadesFit",
         operator: "boolean",
         value: true,
         description: "Opener has 3+ spades (fit with responder's 5)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "must",
+    intraModuleOrder: 0,
     sourceIntent: { type: "PlacementCorrection", params: { suit: "spades" } },
     teachingLabel: "4S (spade fit found)",
-  },
-  {
+  }, TRANSFER_CTX),
+  createSurface({
     meaningId: "transfer:pass-3nt-spades",
     semanticClassId: OPENER_PLACE_CLASSES.PASS_3NT,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: { type: "pass" } },
+    encoding: { type: "pass" },
     clauses: [
       {
-        clauseId: "no-spade-fit",
         factId: "module.transfer.openerHasSpadesFit",
         operator: "boolean",
         value: false,
         description: "Opener has fewer than 3 spades (no fit)",
       },
     ],
-    ranking: {
-      recommendationBand: "must",
-      modulePrecedence: 0,
-      intraModuleOrder: 1,
-    },
+    band: "must",
+    intraModuleOrder: 1,
     sourceIntent: { type: "PlacementPass", params: { suit: "spades" } },
     teachingLabel: "Pass (stay in 3NT, no spade fit)",
-  },
+  }, TRANSFER_CTX),
 ];
 
 // ─── Opener invite acceptance surfaces (after responder's 2NT invite) ──
 
 export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:accept-invite-hearts",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "not-minimum",
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
         description: "Opener has 16-17 HCP (not minimum)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "should",
+    intraModuleOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: {} },
     teachingLabel: "3NT (accept invite)",
-  },
-  {
+  }, TRANSFER_CTX),
+  createSurface({
     meaningId: "transfer:decline-invite-hearts",
     semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: { type: "pass" } },
+    encoding: { type: "pass" },
     clauses: [
       {
-        clauseId: "minimum",
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
         description: "Opener has 15 HCP (minimum)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 1,
-    },
+    band: "should",
+    intraModuleOrder: 1,
     sourceIntent: { type: "DeclineInvite", params: {} },
     teachingLabel: "Pass (decline invite, minimum)",
-  },
+  }, TRANSFER_CTX),
 ];
 
 export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "transfer:accept-invite-spades",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
+    encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        clauseId: "not-minimum",
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
         description: "Opener has 16-17 HCP (not minimum)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 0,
-    },
+    band: "should",
+    intraModuleOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: {} },
     teachingLabel: "3NT (accept invite)",
-  },
-  {
+  }, TRANSFER_CTX),
+  createSurface({
     meaningId: "transfer:decline-invite-spades",
     semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
-    moduleId: "jacoby-transfers",
-    encoding: { defaultCall: { type: "pass" } },
+    encoding: { type: "pass" },
     clauses: [
       {
-        clauseId: "minimum",
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
         description: "Opener has 15 HCP (minimum)",
       },
     ],
-    ranking: {
-      recommendationBand: "should",
-      modulePrecedence: 0,
-      intraModuleOrder: 1,
-    },
+    band: "should",
+    intraModuleOrder: 1,
     sourceIntent: { type: "DeclineInvite", params: {} },
     teachingLabel: "Pass (decline invite, minimum)",
-  },
+  }, TRANSFER_CTX),
 ];
 
 // ─── R1 transitions ──────────────────────────────────────────

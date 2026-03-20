@@ -160,7 +160,7 @@ function buildProvenance(
       rankingInputs: {
         recommendationBand: BAND_PRIORITY[e.proposal.ranking.recommendationBand],
         handFitScore: undefined,
-        modulePrecedence: e.proposal.ranking.modulePrecedence,
+        modulePrecedence: e.proposal.ranking.modulePrecedence ?? 0,
         specificity: e.proposal.ranking.specificity,
       },
     };

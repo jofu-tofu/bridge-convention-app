@@ -23,13 +23,13 @@ export function adaptMeaningSurface(surface: MeaningSurface): DecisionSurfaceIR 
 
   return {
     surfaceId: surface.meaningId,
-    moduleId: surface.moduleId,
+    moduleId: surface.moduleId ?? "unknown",
     decisionProgram: "clause-evaluator",
     encoderKind: "direct",
     surfaceBindings: surface.surfaceBindings,
     localRegisters: undefined,
     transforms: undefined,
-    modulePrecedence: surface.ranking.modulePrecedence,
+    modulePrecedence: surface.ranking.modulePrecedence ?? 0,
     exclusivityGroup: undefined,
     defaultSemanticClassId: surface.semanticClassId,
     defaultPriorityClass: bandToPriorityClass(surface.ranking.recommendationBand),

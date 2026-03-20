@@ -173,28 +173,30 @@ export const {name}Bundle: ConventionBundle = {
 ### meaning-surfaces.ts
 
 ```ts
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
+import { bid } from "../../core/surface-helpers";
+import { createSurface } from "../../core/surface-builder";
+import type { ModuleContext } from "../../core/surface-builder";
 import { {NAME}_SEMANTIC } from "./semantic-classes";
 
-const bid = (level: number, strain: BidSuit): Call => ({
-  type: "bid", level, strain,
-});
+const {NAME}_CTX: ModuleContext = { moduleId: "{name}", modulePrecedence: 0 };
 
 export const {NAME}_SURFACES: readonly MeaningSurface[] = [
-  {
+  createSurface({
     meaningId: "{name}:surface-name",
+    semanticClassId: {NAME}_SEMANTIC.MY_CLASS,
     encoding: bid(2, BidSuit.Clubs),
     clauses: [
       { factId: "hand.hcp", operator: "gte", value: 10 },
       { factId: "hand.suitLength.clubs", operator: "gte", value: 4 },
     ],
-    semanticClass: {NAME}_SEMANTIC.MY_CLASS,
-    ranking: { band: "should", modulePrecedence: 1, intraModuleOrder: 0 },
-    // specificity is pipeline-derived from clause dimensions — do NOT set it here
-    // Optional: bindings: { suit: "hearts" } for parameterized surfaces
-  },
+    band: "should",
+    intraModuleOrder: 0,
+    sourceIntent: { type: "MyBid", params: {} },
+    teachingLabel: "My bid",
+    // Optional: surfaceBindings: { suit: "hearts" } for parameterized surfaces
+    // Optional: description on clauses — only when adding parenthetical rationale
+  }, {NAME}_CTX),
   // Additional surfaces...
 ];
 ```
@@ -409,6 +411,7 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalogIR =
 
 ## Authoring Rules
 
+- **Use `createSurface()` for all new surfaces.** Import from `conventions/core/surface-builder.ts` with a `ModuleContext`. The builder derives `clauseId` and `description` automatically. Provide `description` only when it adds parenthetical rationale beyond the mechanical constraint (test: contains `(`). `moduleId` and `modulePrecedence` are injected from `ModuleContext` — override on individual surfaces only when the module has non-uniform precedence.
 - **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs. Use `pedagogicalTags` with shared vocabulary scopes for cross-module relationships.
 - **Adding a module must not edit existing modules.** If your new module needs to relate to existing ones (same-family, near-miss, etc.), use shared scope strings in `pedagogicalTags`. The derivation function handles the wiring.
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
@@ -431,7 +434,9 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalogIR =
 
 8. **`convention-config.ts` wrapper omitted.** The registry and UI picker use `ConventionConfig`, not `ConventionBundle`. Every bundle needs a thin `convention-config.ts` that maps bundle fields to the `ConventionConfig` interface.
 
-9. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
+9. **Hand-authoring clauseId/description in surfaces.** These are auto-derived by the builder and pipeline. Only provide `description` when adding convention-specific rationale in parentheses.
+
+10. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
 
 ## Test Organization
 
