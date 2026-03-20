@@ -1,5 +1,5 @@
 import type { PlayStrategy, PlayContext, PlayResult } from "../../core/contracts";
-import type { Card, Suit, Seat, PlayedCard } from "../../engine/types";
+import type { Card, Suit, Seat, PlayedCard, Trick } from "../../engine/types";
 import { Rank } from "../../engine/types";
 import { RANK_INDEX, partnerSeat } from "../../engine/constants";
 
@@ -118,6 +118,26 @@ function getSuitKeys(suitGroups: Record<string, Card[]>): Suit[] {
   return Object.keys(suitGroups) as Suit[];
 }
 
+/** Find the first non-trump suit that partner led in previous tricks. */
+function findPartnerLedSuit(
+  previousTricks: readonly Trick[],
+  seat: Seat,
+  trumpSuit: Suit | undefined,
+): Suit | null {
+  const partner = partnerSeat(seat);
+  for (const trick of previousTricks) {
+    if (trick.plays.length > 0 && trick.plays[0]!.seat === partner) {
+      const ledSuit = trick.plays[0]!.card.suit;
+      if (ledSuit !== trumpSuit) {
+        return ledSuit;
+      }
+    }
+  }
+  return null;
+}
+
+// ── Lead sub-helpers ───────────────────────────────────────────────
+
 /** Suit contracts: lead ace from AK combination in a side suit. */
 function leadFromAKCombination(
   suitGroups: Record<string, Card[]>,
@@ -154,7 +174,7 @@ function leadTouchingHonors(
   return null;
 }
 
-/** VS NT: 4th best from longest suit. */
+/** 4th best from longest suit in the given groups. */
 function leadFourthBest(
   suitGroups: Record<string, Card[]>,
   legalPlays: readonly Card[],
@@ -197,6 +217,8 @@ function leadShortSuit(
   return null;
 }
 
+// ── Heuristics ─────────────────────────────────────────────────────
+
 const openingLeadHeuristic: PlayHeuristic = {
   name: "opening-lead",
   apply(context: PlayContext): Card | null {
@@ -232,8 +254,92 @@ const openingLeadHeuristic: PlayHeuristic = {
       if (singleton) return singleton;
     }
 
+    // Suit contracts: 4th best from longest non-trump suit
+    if (!isNT && context.trumpSuit !== undefined) {
+      const nonTrumpGroups: Record<string, Card[]> = {};
+      for (const suit of getSuitKeys(suitGroups)) {
+        if (suit === context.trumpSuit) continue;
+        nonTrumpGroups[suit] = suitGroups[suit]!;
+      }
+      const fourth = leadFourthBest(nonTrumpGroups, legalPlays);
+      if (fourth) return fourth;
+    }
+
+    // General fallback: lead low from longest suit (excluding trump in suit contracts)
+    let longestSuit: Suit | null = null;
+    let longestLen = 0;
+    for (const suit of getSuitKeys(suitGroups)) {
+      if (!isNT && suit === context.trumpSuit) continue;
+      const len = suitGroups[suit]!.length;
+      if (len > longestLen) {
+        longestLen = len;
+        longestSuit = suit;
+      }
+    }
+    if (longestSuit) {
+      const sorted = sortByRankAsc(suitGroups[longestSuit]!);
+      if (sorted[0] && isLegalPlay(sorted[0], legalPlays)) {
+        return sorted[0];
+      }
+    }
+
     // Fallback: return null and let later heuristics / default handle it
     return null;
+  },
+};
+
+const midGameLeadHeuristic: PlayHeuristic = {
+  name: "mid-game-lead",
+  apply(context: PlayContext): Card | null {
+    const { currentTrick, previousTricks, seat, contract, legalPlays, trumpSuit } =
+      context;
+
+    // Only when on lead, but not the opening lead
+    if (currentTrick.length !== 0) return null;
+    if (previousTricks.length === 0) return null;
+
+    const suitGroups = groupBySuit(legalPlays);
+
+    // Defenders: return partner's suit
+    if (isDefender(seat, contract.declarer)) {
+      const partnerSuit = findPartnerLedSuit(previousTricks, seat, trumpSuit);
+      if (partnerSuit && suitGroups[partnerSuit]) {
+        const cards = suitGroups[partnerSuit]!;
+        // Remaining doubleton or less: lead top (high-low to show count)
+        if (cards.length <= 2) {
+          return sortByRankDesc(cards)[0] ?? null;
+        }
+        // Otherwise lead low
+        return sortByRankAsc(cards)[0] ?? null;
+      }
+    }
+
+    // Try touching honors from any non-trump suit
+    const nonTrumpGroups: Record<string, Card[]> = {};
+    for (const suit of getSuitKeys(suitGroups)) {
+      if (suit === trumpSuit) continue;
+      nonTrumpGroups[suit] = suitGroups[suit]!;
+    }
+    const touching = leadTouchingHonors(nonTrumpGroups, legalPlays);
+    if (touching) return touching;
+
+    // Lead from longest non-trump suit
+    let bestSuit: Suit | null = null;
+    let bestLen = 0;
+    for (const suit of getSuitKeys(suitGroups)) {
+      if (suit === trumpSuit) continue;
+      const len = suitGroups[suit]!.length;
+      if (len > bestLen) {
+        bestLen = len;
+        bestSuit = suit;
+      }
+    }
+    if (bestSuit && suitGroups[bestSuit]) {
+      return sortByRankAsc(suitGroups[bestSuit]!)[0] ?? null;
+    }
+
+    // Only trump left: lead lowest
+    return sortByRankAsc(legalPlays)[0] ?? null;
   },
 };
 
@@ -273,6 +379,14 @@ const thirdHandHighHeuristic: PlayHeuristic = {
   apply(context: PlayContext): Card | null {
     if (context.currentTrick.length !== 2) return null;
 
+    const ledSuit = context.currentTrick[0]!.card.suit;
+    const followingSuit = context.legalPlays.filter(
+      (c) => c.suit === ledSuit,
+    );
+
+    // Void in led suit — defer to trump/discard heuristics
+    if (followingSuit.length === 0) return null;
+
     const partner = partnerSeat(context.seat);
     const winnerSoFar = getTrickWinnerSoFar(
       context.currentTrick,
@@ -281,39 +395,76 @@ const thirdHandHighHeuristic: PlayHeuristic = {
 
     // If partner is already winning, play low
     if (winnerSoFar && winnerSoFar.seat === partner) {
-      const sorted = sortByRankAsc(context.legalPlays);
-      return sorted[0] ?? null;
+      return sortByRankAsc(followingSuit)[0] ?? null;
     }
 
     // Play just high enough to beat current winner
     if (winnerSoFar) {
-      const ledSuit = context.currentTrick[0]!.card.suit;
-      const followingSuit = context.legalPlays.filter(
-        (c) => c.suit === ledSuit,
-      );
+      const winnerIsTrump =
+        context.trumpSuit !== undefined &&
+        winnerSoFar.card.suit === context.trumpSuit;
 
-      if (followingSuit.length > 0) {
-        // Find lowest card that beats the current winner in the led suit
+      if (!winnerIsTrump) {
         const sorted = sortByRankAsc(followingSuit);
-        const winnerIsTrump =
-          context.trumpSuit !== undefined &&
-          winnerSoFar.card.suit === context.trumpSuit;
-
-        if (!winnerIsTrump) {
-          for (const c of sorted) {
-            if (rankBeats(c.rank, winnerSoFar.card.rank)) {
-              return c;
-            }
+        for (const c of sorted) {
+          if (rankBeats(c.rank, winnerSoFar.card.rank)) {
+            return c;
           }
         }
-        // Can't beat it, play lowest
-        return sorted[0] ?? null;
       }
+      // Can't beat it, play lowest in suit
+      return sortByRankAsc(followingSuit)[0] ?? null;
     }
 
-    // No specific logic matched, play highest legal
-    const sorted = sortByRankDesc(context.legalPlays);
-    return sorted[0] ?? null;
+    // No winner determined (shouldn't happen with 2 cards), play highest in suit
+    return sortByRankDesc(followingSuit)[0] ?? null;
+  },
+};
+
+const fourthHandPlayHeuristic: PlayHeuristic = {
+  name: "fourth-hand-play",
+  apply(context: PlayContext): Card | null {
+    if (context.currentTrick.length !== 3) return null;
+
+    const ledSuit = context.currentTrick[0]!.card.suit;
+    const followingSuit = context.legalPlays.filter(
+      (c) => c.suit === ledSuit,
+    );
+
+    // Void in led suit — defer to trump/discard heuristics
+    if (followingSuit.length === 0) return null;
+
+    const partner = partnerSeat(context.seat);
+    const winnerSoFar = getTrickWinnerSoFar(
+      context.currentTrick,
+      context.trumpSuit,
+    );
+
+    // Partner is winning — play low
+    if (winnerSoFar && winnerSoFar.seat === partner) {
+      return sortByRankAsc(followingSuit)[0] ?? null;
+    }
+
+    // Opponent winning — win as cheaply as possible
+    if (winnerSoFar) {
+      const winnerIsTrump =
+        context.trumpSuit !== undefined &&
+        winnerSoFar.card.suit === context.trumpSuit;
+
+      if (!winnerIsTrump) {
+        const sorted = sortByRankAsc(followingSuit);
+        for (const c of sorted) {
+          if (rankBeats(c.rank, winnerSoFar.card.rank)) {
+            return c;
+          }
+        }
+      }
+      // Can't beat — play lowest
+      return sortByRankAsc(followingSuit)[0] ?? null;
+    }
+
+    // No winner (shouldn't happen), play lowest
+    return sortByRankAsc(followingSuit)[0] ?? null;
   },
 };
 
@@ -358,17 +509,34 @@ const trumpManagementHeuristic: PlayHeuristic = {
     );
     if (trumpCards.length === 0) return null;
 
-    // Don't ruff partner's winning trick
     const partner = partnerSeat(context.seat);
     const winnerSoFar = getTrickWinnerSoFar(
       context.currentTrick,
       context.trumpSuit,
     );
-    if (winnerSoFar && winnerSoFar.seat === partner) {
-      return null; // Let discard heuristic handle it
+
+    if (winnerSoFar) {
+      const winnerIsTrump = winnerSoFar.card.suit === context.trumpSuit;
+
+      // Partner winning — don't ruff partner's trick
+      if (winnerSoFar.seat === partner) {
+        return null; // Let discard heuristic handle it
+      }
+
+      // Opponent winning with trump — overruff if possible
+      if (winnerIsTrump) {
+        const sorted = sortByRankAsc(trumpCards);
+        for (const c of sorted) {
+          if (rankBeats(c.rank, winnerSoFar.card.rank)) {
+            return c;
+          }
+        }
+        // Can't overruff — don't waste trump, discard instead
+        return null;
+      }
     }
 
-    // Ruff with lowest trump
+    // Opponent winning with non-trump (or no specific winner) — ruff with lowest trump
     const sorted = sortByRankAsc(trumpCards);
     return sorted[0] ?? null;
   },
@@ -388,7 +556,7 @@ const discardManagementHeuristic: PlayHeuristic = {
     // Already handled by trump management if we have trump
     // This handles: no trump suit, or choosing not to ruff
 
-    // Discard from shortest side suit (prefer keeping long suits)
+    // Collect non-trump suits available for discard
     const suitGroups: Partial<Record<Suit, Card[]>> = {};
     for (const c of context.legalPlays) {
       if (c.suit === context.trumpSuit) continue; // Don't discard trump
@@ -399,17 +567,31 @@ const discardManagementHeuristic: PlayHeuristic = {
     const suits = getSuitKeys(suitGroups);
     if (suits.length === 0) return null;
 
-    // Find shortest suit
-    suits.sort(
-      (a, b) => (suitGroups[a]?.length ?? 0) - (suitGroups[b]?.length ?? 0),
-    );
-    const shortestSuit = suits[0];
-    if (!shortestSuit) return null;
-    const cards = suitGroups[shortestSuit];
-    if (!cards || cards.length === 0) return null;
+    // Score each suit: prefer discarding from suits without honors,
+    // avoid baring an honor (e.g. Kx -> lone K), then prefer shorter suits
+    const scored = suits.map((suit) => {
+      const cards = suitGroups[suit]!;
+      const honorCount = cards.filter((c) => isHonor(c.rank)).length;
+      const wouldBareHonor = cards.length === 2 && honorCount > 0;
+      return { suit, cards, honorCount, wouldBareHonor, length: cards.length };
+    });
 
-    // Discard lowest from shortest suit
-    const sorted = sortByRankAsc(cards);
+    scored.sort((a, b) => {
+      // Never bare an honor if alternatives exist
+      if (a.wouldBareHonor && !b.wouldBareHonor) return 1;
+      if (!a.wouldBareHonor && b.wouldBareHonor) return -1;
+      // Prefer suits without honors
+      if (a.honorCount === 0 && b.honorCount > 0) return -1;
+      if (a.honorCount > 0 && b.honorCount === 0) return 1;
+      // Then shortest
+      return a.length - b.length;
+    });
+
+    const best = scored[0];
+    if (!best) return null;
+
+    // Discard lowest from chosen suit
+    const sorted = sortByRankAsc(best.cards);
     return sorted[0] ?? null;
   },
 };
@@ -417,8 +599,10 @@ const discardManagementHeuristic: PlayHeuristic = {
 export function createHeuristicPlayStrategy(): PlayStrategy {
   const heuristics: PlayHeuristic[] = [
     openingLeadHeuristic,
+    midGameLeadHeuristic,
     secondHandLowHeuristic,
     thirdHandHighHeuristic,
+    fourthHandPlayHeuristic,
     coverHonorHeuristic,
     trumpManagementHeuristic,
     discardManagementHeuristic,

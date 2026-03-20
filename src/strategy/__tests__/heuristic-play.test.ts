@@ -250,9 +250,8 @@ describe("createHeuristicPlayStrategy", () => {
     });
   });
 
-  describe("fallback", () => {
-    it("plays lowest legal card when no heuristic matches", () => {
-      // Opening lead as declarer (not a defender) with no touching honors etc.
+  describe("mid-game lead", () => {
+    it("leads low from longest non-trump suit when declarer leads mid-game", () => {
       const ctx = makeContext({
         currentTrick: [],
         previousTricks: [
@@ -274,7 +273,41 @@ describe("createHeuristicPlayStrategy", () => {
 
       const result = strategy.suggest(ctx);
       expect(result.card.rank).toBe(Rank.Three);
-      expect(result.reason).toBe("default-lowest");
+      expect(result.reason).toBe("mid-game-lead");
+    });
+
+    it("returns partner's suit on defense", () => {
+      const ctx = makeContext({
+        currentTrick: [],
+        previousTricks: [
+          {
+            plays: [
+              playedCard(Seat.North, Suit.Hearts, Rank.Four),
+              playedCard(Seat.East, Suit.Hearts, Rank.Queen),
+              playedCard(Seat.South, Suit.Hearts, Rank.Ace),
+              playedCard(Seat.West, Suit.Hearts, Rank.Three),
+            ],
+            trumpSuit: Suit.Spades,
+            winner: Seat.South,
+          },
+        ],
+        seat: Seat.West, // defender, partner is East
+        contract: makeContract(Seat.South, BidSuit.Spades),
+        trumpSuit: Suit.Spades,
+        hand: { cards: [] },
+        legalPlays: [
+          card(Suit.Hearts, Rank.Seven),
+          card(Suit.Hearts, Rank.Two),
+          card(Suit.Diamonds, Rank.King),
+          card(Suit.Diamonds, Rank.Five),
+          card(Suit.Clubs, Rank.Ten),
+        ],
+      });
+
+      const result = strategy.suggest(ctx);
+      // West's partner (East) never led — North led hearts in the only trick
+      // So no partner suit found, falls to longest non-trump: hearts (2) or diamonds (2)
+      expect(result.reason).toBe("mid-game-lead");
     });
   });
 
@@ -316,9 +349,8 @@ describe("createHeuristicPlayStrategy", () => {
       expect(result.reason).toBe("second-hand-low");
     });
 
-    it("covers an honor when in 4th seat", () => {
-      // In 4th seat (last to play), cover honor applies since no earlier heuristic matches position 3
-      // Actually 4th seat = currentTrick.length === 3, no specific heuristic fires before cover-honor
+    it("wins cheaply in 4th seat when opponent is winning", () => {
+      // In 4th seat, fourthHandPlayHeuristic fires before cover-honor
       const ctx = makeContext({
         currentTrick: [
           playedCard(Seat.West, Suit.Diamonds, Rank.Queen),
@@ -335,8 +367,9 @@ describe("createHeuristicPlayStrategy", () => {
       });
 
       const result = strategy.suggest(ctx);
+      // Wins with King (cheapest card that beats Queen)
       expect(result.card.rank).toBe(Rank.King);
-      expect(result.reason).toBe("cover-honor-with-honor");
+      expect(result.reason).toBe("fourth-hand-play");
     });
   });
 
@@ -506,6 +539,192 @@ describe("createHeuristicPlayStrategy", () => {
       expect(result.card.suit).toBe(Suit.Diamonds);
       expect(result.card.rank).toBe(Rank.Seven);
       expect(result.reason).toBe("opening-lead");
+    });
+
+    it("leads 4th best from longest non-trump suit in suit contract fallback", () => {
+      const handCards = [
+        // Clubs: 5 cards (longest non-trump), no touching honors, no AK, no singleton
+        card(Suit.Clubs, Rank.Jack),
+        card(Suit.Clubs, Rank.Nine),
+        card(Suit.Clubs, Rank.Seven),
+        card(Suit.Clubs, Rank.Five),
+        card(Suit.Clubs, Rank.Three),
+        // Spades (trump)
+        card(Suit.Spades, Rank.Six),
+        card(Suit.Spades, Rank.Four),
+        // Hearts: no touching honors, no AK
+        card(Suit.Hearts, Rank.Eight),
+        card(Suit.Hearts, Rank.Four),
+        card(Suit.Hearts, Rank.Two),
+        // Diamonds: 3 cards
+        card(Suit.Diamonds, Rank.Ten),
+        card(Suit.Diamonds, Rank.Six),
+        card(Suit.Diamonds, Rank.Two),
+      ];
+
+      const ctx = makeContext({
+        currentTrick: [],
+        previousTricks: [],
+        seat: Seat.West,
+        contract: makeContract(Seat.South, BidSuit.Spades),
+        trumpSuit: Suit.Spades,
+        hand: { cards: handCards },
+        legalPlays: handCards,
+      });
+
+      const result = strategy.suggest(ctx);
+      // Clubs sorted desc: J, 9, 7, 5, 3 → 4th best = 5
+      expect(result.card.suit).toBe(Suit.Clubs);
+      expect(result.card.rank).toBe(Rank.Five);
+      expect(result.reason).toBe("opening-lead");
+    });
+  });
+
+  describe("fourth hand play", () => {
+    it("plays low when partner is winning", () => {
+      const ctx = makeContext({
+        currentTrick: [
+          playedCard(Seat.South, Suit.Hearts, Rank.Five),
+          playedCard(Seat.West, Suit.Hearts, Rank.Ace),
+          playedCard(Seat.North, Suit.Hearts, Rank.Three),
+        ],
+        seat: Seat.East, // partner is West (winning with Ace)
+        contract: makeContract(Seat.South, BidSuit.NoTrump),
+        trumpSuit: undefined,
+        legalPlays: [
+          card(Suit.Hearts, Rank.King),
+          card(Suit.Hearts, Rank.Two),
+        ],
+      });
+
+      const result = strategy.suggest(ctx);
+      expect(result.card.rank).toBe(Rank.Two);
+      expect(result.reason).toBe("fourth-hand-play");
+    });
+
+    it("wins as cheaply as possible when opponent is winning", () => {
+      // West leads, North (dummy) plays low, East wins with Jack, South is 4th
+      const ctx = makeContext({
+        currentTrick: [
+          playedCard(Seat.West, Suit.Diamonds, Rank.Three),
+          playedCard(Seat.North, Suit.Diamonds, Rank.Five),
+          playedCard(Seat.East, Suit.Diamonds, Rank.Jack),
+        ],
+        seat: Seat.South, // declarer, partner is North
+        contract: makeContract(Seat.South, BidSuit.NoTrump),
+        trumpSuit: undefined,
+        legalPlays: [
+          card(Suit.Diamonds, Rank.Queen),
+          card(Suit.Diamonds, Rank.Ace),
+          card(Suit.Diamonds, Rank.Two),
+        ],
+      });
+
+      const result = strategy.suggest(ctx);
+      // East (opponent) winning with Jack — play Queen (cheapest that beats Jack)
+      expect(result.card.rank).toBe(Rank.Queen);
+      expect(result.reason).toBe("fourth-hand-play");
+    });
+  });
+
+  describe("overruff", () => {
+    it("overruffs opponent's trump with cheapest winning trump", () => {
+      const ctx = makeContext({
+        currentTrick: [
+          playedCard(Seat.North, Suit.Hearts, Rank.King),
+          playedCard(Seat.East, Suit.Spades, Rank.Five), // opponent ruffed
+        ],
+        seat: Seat.South,
+        contract: makeContract(Seat.East, BidSuit.Spades),
+        trumpSuit: Suit.Spades,
+        legalPlays: [
+          // Void in hearts
+          card(Suit.Spades, Rank.Three),
+          card(Suit.Spades, Rank.Seven),
+          card(Suit.Spades, Rank.Queen),
+          card(Suit.Clubs, Rank.Four),
+        ],
+      });
+
+      const result = strategy.suggest(ctx);
+      // Should overruff with 7 (cheapest trump that beats 5)
+      expect(result.card.suit).toBe(Suit.Spades);
+      expect(result.card.rank).toBe(Rank.Seven);
+      expect(result.reason).toBe("trump-management");
+    });
+
+    it("discards when cannot overruff", () => {
+      const ctx = makeContext({
+        currentTrick: [
+          playedCard(Seat.North, Suit.Hearts, Rank.King),
+          playedCard(Seat.East, Suit.Spades, Rank.Queen), // opponent ruffed high
+        ],
+        seat: Seat.South,
+        contract: makeContract(Seat.East, BidSuit.Spades),
+        trumpSuit: Suit.Spades,
+        legalPlays: [
+          // Void in hearts, only low trump
+          card(Suit.Spades, Rank.Three),
+          card(Suit.Spades, Rank.Five),
+          card(Suit.Clubs, Rank.Four),
+        ],
+      });
+
+      const result = strategy.suggest(ctx);
+      // Can't overruff Queen — should discard rather than waste trump
+      expect(result.card.suit).toBe(Suit.Clubs);
+      expect(result.reason).toBe("discard-management");
+    });
+  });
+
+  describe("discard honor protection", () => {
+    it("avoids baring an honor when discarding", () => {
+      const ctx = makeContext({
+        currentTrick: [playedCard(Seat.North, Suit.Hearts, Rank.Ace)],
+        seat: Seat.East,
+        contract: makeContract(Seat.South, BidSuit.Hearts),
+        trumpSuit: Suit.Hearts,
+        legalPlays: [
+          // Void in hearts, no trump
+          card(Suit.Diamonds, Rank.King),
+          card(Suit.Diamonds, Rank.Five), // discarding 5D would bare the King
+          card(Suit.Clubs, Rank.Eight),
+          card(Suit.Clubs, Rank.Six),
+          card(Suit.Clubs, Rank.Three),
+        ],
+      });
+
+      const result = strategy.suggest(ctx);
+      // Should discard from clubs (no honors) rather than diamonds (would bare King)
+      expect(result.card.suit).toBe(Suit.Clubs);
+      expect(result.card.rank).toBe(Rank.Three);
+      expect(result.reason).toBe("discard-management");
+    });
+  });
+
+  describe("third hand void", () => {
+    it("defers to trump management when void in 3rd seat", () => {
+      const ctx = makeContext({
+        currentTrick: [
+          playedCard(Seat.West, Suit.Hearts, Rank.Five),
+          playedCard(Seat.North, Suit.Hearts, Rank.King),
+        ],
+        seat: Seat.East,
+        contract: makeContract(Seat.South, BidSuit.Spades),
+        trumpSuit: Suit.Spades,
+        legalPlays: [
+          // Void in hearts — has trump
+          card(Suit.Spades, Rank.Three),
+          card(Suit.Spades, Rank.Seven),
+          card(Suit.Clubs, Rank.Four),
+        ],
+      });
+
+      const result = strategy.suggest(ctx);
+      // Should ruff (not "play highest legal" as old code did)
+      expect(result.card.suit).toBe(Suit.Spades);
+      expect(result.card.rank).toBe(Rank.Three);
+      expect(result.reason).toBe("trump-management");
     });
   });
 });
