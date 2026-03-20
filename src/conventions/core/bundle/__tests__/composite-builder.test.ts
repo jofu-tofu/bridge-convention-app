@@ -4,6 +4,7 @@ import type { ConventionBundle } from "../bundle-types";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationCatalogIR } from "../../../../core/contracts/explanation-catalog";
 import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
 
 function makeBundle(
   id: string,
@@ -213,7 +214,7 @@ describe("composeBundles", () => {
     const a = makeBundle("a", [], {
       systemProfile: {
         profileId: "prof-a",
-        baseSystem: "2/1",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [
           {
             moduleId: "mod-a",
@@ -227,7 +228,7 @@ describe("composeBundles", () => {
     const b = makeBundle("b", [], {
       systemProfile: {
         profileId: "prof-b",
-        baseSystem: "2/1",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [
           {
             moduleId: "mod-b",

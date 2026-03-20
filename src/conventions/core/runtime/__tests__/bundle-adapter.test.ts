@@ -6,6 +6,7 @@ import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
 
 /** Minimal profile that activates a module when opening.1nt capability is present. */
 const profileRequiringNtCapability: SystemProfileIR = {
@@ -21,7 +22,7 @@ const profileRequiringNtCapability: SystemProfileIR = {
       ],
     },
   ],
-  baseSystem: "test",
+  baseSystem: BASE_SYSTEM_SAYC,
   conflictPolicy: { activationDefault: "simultaneous" },
 };
 
@@ -35,7 +36,7 @@ const unconditionalProfile: SystemProfileIR = {
       attachments: [{}],
     },
   ],
-  baseSystem: "test",
+  baseSystem: BASE_SYSTEM_SAYC,
   conflictPolicy: { activationDefault: "simultaneous" },
 };
 

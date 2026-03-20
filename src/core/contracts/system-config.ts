@@ -12,6 +12,9 @@
  * are NOT part of SystemConfig; they belong to the convention module.
  */
 
+import type { BaseSystemId } from "./base-system-vocabulary";
+import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE } from "./base-system-vocabulary";
+
 // ─── 1NT system parameters ──────────────────────────────────
 
 export interface NtOpeningConfig {
@@ -45,8 +48,8 @@ export interface InterferenceThresholds {
 // ─── Top-level SystemConfig ─────────────────────────────────
 
 export interface SystemConfig {
-  /** System identifier (e.g. "sayc", "two-over-one", "acol"). */
-  readonly systemId: string;
+  /** System identifier — must be a value from base-system-vocabulary.ts. */
+  readonly systemId: BaseSystemId;
   /** Human-readable name (e.g. "Standard American Yellow Card"). */
   readonly displayName: string;
 
@@ -63,7 +66,7 @@ export interface SystemConfig {
 // ─── Concrete system configs ────────────────────────────────
 
 export const SAYC_SYSTEM_CONFIG: SystemConfig = {
-  systemId: "sayc",
+  systemId: BASE_SYSTEM_SAYC,
   displayName: "Standard American Yellow Card",
   ntOpening: { minHcp: 15, maxHcp: 17 },
   responderThresholds: {
@@ -75,3 +78,42 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
   openerRebid: { notMinimum: 16 },
   interference: { redoubleMin: 10 },
 };
+
+export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
+  systemId: BASE_SYSTEM_TWO_OVER_ONE,
+  displayName: "2/1 Game Forcing",
+  ntOpening: { minHcp: 15, maxHcp: 17 },
+  responderThresholds: {
+    inviteMin: 8,
+    inviteMax: 9,
+    gameMin: 10,
+    slamMin: 15,
+  },
+  openerRebid: { notMinimum: 16 },
+  interference: { redoubleMin: 10 },
+};
+
+// ─── System config registry ─────────────────────────────────
+
+/** UI-friendly metadata for each base system. */
+export interface BaseSystemMeta {
+  readonly id: BaseSystemId;
+  readonly label: string;
+  readonly shortLabel: string;
+}
+
+/** Available base systems for the UI selector (order = display order). */
+export const AVAILABLE_BASE_SYSTEMS: readonly BaseSystemMeta[] = [
+  { id: BASE_SYSTEM_SAYC, label: "Standard American Yellow Card", shortLabel: "SAYC" },
+  { id: BASE_SYSTEM_TWO_OVER_ONE, label: "2/1 Game Forcing", shortLabel: "2/1" },
+] as const;
+
+const SYSTEM_CONFIG_MAP: Readonly<Record<string, SystemConfig>> = {
+  [BASE_SYSTEM_SAYC]: SAYC_SYSTEM_CONFIG,
+  [BASE_SYSTEM_TWO_OVER_ONE]: TWO_OVER_ONE_SYSTEM_CONFIG,
+};
+
+/** Look up SystemConfig by base system id. Falls back to SAYC for unknown ids. */
+export function getSystemConfig(id: BaseSystemId): SystemConfig {
+  return SYSTEM_CONFIG_MAP[id] ?? SAYC_SYSTEM_CONFIG;
+}

@@ -5,6 +5,7 @@ import type { SystemProfileIR } from "../../../../core/contracts/agreement-modul
 import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
+import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
 
 // ─── Convention-agnostic Fixtures ────────────────────────────
 
@@ -28,7 +29,7 @@ function makeSurface(moduleId: string, meaningId: string): MeaningSurface {
 /** Profile with single module, single sequence attachment. */
 const singleSequenceProfile: SystemProfileIR = {
   profileId: "test-single-seq",
-  baseSystem: "test",
+  baseSystem: BASE_SYSTEM_SAYC,
   modules: [
     {
       moduleId: "mod-a",
@@ -42,7 +43,7 @@ const singleSequenceProfile: SystemProfileIR = {
 /** Profile with single module, multiple OR attachments (like Bergen: 1H OR 1S). */
 const multiAttachmentProfile: SystemProfileIR = {
   profileId: "test-multi-attach",
-  baseSystem: "test",
+  baseSystem: BASE_SYSTEM_SAYC,
   modules: [
     {
       moduleId: "mod-raises",
@@ -59,7 +60,7 @@ const multiAttachmentProfile: SystemProfileIR = {
 /** Profile with multiple modules (base + two add-ons with capability gates). */
 const multiModuleProfile: SystemProfileIR = {
   profileId: "test-multi-mod",
-  baseSystem: "test",
+  baseSystem: BASE_SYSTEM_SAYC,
   modules: [
     {
       moduleId: "base",
@@ -89,7 +90,7 @@ const multiModuleProfile: SystemProfileIR = {
 /** Unconditional profile — always active. */
 const unconditionalProfile: SystemProfileIR = {
   profileId: "test-unconditional",
-  baseSystem: "test",
+  baseSystem: BASE_SYSTEM_SAYC,
   modules: [
     { moduleId: "always-on", kind: "base-system", attachments: [{}] },
   ],

@@ -5,6 +5,7 @@ import type { PublicSnapshot } from "../../../../core/contracts/module-surface";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import { ForcingState } from "../../../../core/contracts/bidding";
+import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
 
 /** Minimal PublicSnapshot for testing — only publicRegisters and publicCommitments matter. */
 function makeSnapshot(overrides: Partial<PublicSnapshot> = {}): PublicSnapshot {
@@ -336,7 +337,7 @@ describe("resolveActiveModules", () => {
     it("activates when auction contains the specified call", () => {
       const profile: SystemProfileIR = {
         profileId: "test-contains",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -352,7 +353,7 @@ describe("resolveActiveModules", () => {
     it("does not activate when auction does not contain the specified call", () => {
       const profile: SystemProfileIR = {
         profileId: "test-contains-miss",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -367,7 +368,7 @@ describe("resolveActiveModules", () => {
     it("activates when byRole restricts to a specific role", () => {
       const profile: SystemProfileIR = {
         profileId: "test-contains-role",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -383,7 +384,7 @@ describe("resolveActiveModules", () => {
     it("does not activate when call exists but by wrong role", () => {
       const profile: SystemProfileIR = {
         profileId: "test-contains-wrong-role",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -399,7 +400,7 @@ describe("resolveActiveModules", () => {
     it("returns empty when byRole cannot be resolved (no bids)", () => {
       const profile: SystemProfileIR = {
         profileId: "test-contains-no-opener",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -417,7 +418,7 @@ describe("resolveActiveModules", () => {
     it("activates when last call by role matches", () => {
       const profile: SystemProfileIR = {
         profileId: "test-byrole",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -434,7 +435,7 @@ describe("resolveActiveModules", () => {
     it("does not activate when last call by role does not match", () => {
       const profile: SystemProfileIR = {
         profileId: "test-byrole-miss",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -450,7 +451,7 @@ describe("resolveActiveModules", () => {
     it("does not activate when role cannot be resolved", () => {
       const profile: SystemProfileIR = {
         profileId: "test-byrole-no-opener",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -466,7 +467,7 @@ describe("resolveActiveModules", () => {
     it("checks the LAST call by the role, not the first", () => {
       const profile: SystemProfileIR = {
         profileId: "test-byrole-last",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",
@@ -483,7 +484,7 @@ describe("resolveActiveModules", () => {
     it("does not activate when role seat never acted", () => {
       const profile: SystemProfileIR = {
         profileId: "test-byrole-never-acted",
-        baseSystem: "test",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
           moduleId: "mod-x",
           kind: "add-on",

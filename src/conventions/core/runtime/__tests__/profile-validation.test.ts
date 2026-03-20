@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { validateProfile } from "../profile-validation";
 import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
+import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
 
 describe("validateProfile", () => {
   it("emits diagnostic for conflicting semanticClassIds on same call", () => {
     const conflictingProfile: SystemProfileIR = {
       profileId: "test-conflict",
-      baseSystem: "test",
+      baseSystem: BASE_SYSTEM_SAYC,
       modules: [
         {
           moduleId: "module-a",
@@ -46,7 +47,7 @@ describe("validateProfile", () => {
   it("emits diagnostic when two modules share semanticClassId with different defaultCalls", () => {
     const profile: SystemProfileIR = {
       profileId: "test-semantic-collision",
-      baseSystem: "test",
+      baseSystem: BASE_SYSTEM_SAYC,
       modules: [
         {
           moduleId: "module-a",
@@ -88,7 +89,7 @@ describe("validateProfile", () => {
   it("no diagnostic when two modules share semanticClassId with same defaultCall", () => {
     const profile: SystemProfileIR = {
       profileId: "test-no-collision",
-      baseSystem: "test",
+      baseSystem: BASE_SYSTEM_SAYC,
       modules: [
         {
           moduleId: "module-a",

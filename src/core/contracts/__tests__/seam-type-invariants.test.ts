@@ -8,6 +8,7 @@ import type { SystemProfileIR } from "../agreement-module";
 import type { EvaluationResult, RuntimeModule } from "../../../conventions/core/runtime/types";
 import type { PublicSnapshot } from "../module-surface";
 import { ForcingState } from "../bidding";
+import { BASE_SYSTEM_SAYC } from "../base-system-vocabulary";
 
 // Helper: assert a value structurally satisfies the interface at compile time
 // and verify key fields exist at runtime via a factory.
@@ -17,7 +18,7 @@ describe("Seam type invariants", () => {
     it("has required fields", () => {
       const profile: SystemProfileIR = {
         profileId: "test-profile",
-        baseSystem: "standard",
+        baseSystem: BASE_SYSTEM_SAYC,
         modules: [
           {
             moduleId: "test-mod",
@@ -29,7 +30,7 @@ describe("Seam type invariants", () => {
       };
 
       expect(profile.profileId).toBe("test-profile");
-      expect(profile.baseSystem).toBe("standard");
+      expect(profile.baseSystem).toBe(BASE_SYSTEM_SAYC);
       expect(profile.modules).toHaveLength(1);
       expect(profile.conflictPolicy.activationDefault).toBe("simultaneous");
     });

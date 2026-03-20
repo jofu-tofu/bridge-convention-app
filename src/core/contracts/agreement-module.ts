@@ -107,11 +107,12 @@ type ClosureDomain =
   | { readonly kind: "module-frontier"; readonly id: string };
 
 import type { SystemConfig } from "./system-config";
+import type { BaseSystemId } from "./base-system-vocabulary";
 
 // ─── System Profile ─────────────────────────────────────────
 export interface SystemProfileIR {
   readonly profileId: string;
-  readonly baseSystem: string;
+  readonly baseSystem: BaseSystemId;
   /** System-level bidding configuration (HCP ranges, thresholds).
    *  When present, convention modules use these values instead of hardcoded defaults. */
   readonly systemConfig?: SystemConfig;
