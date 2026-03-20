@@ -5,13 +5,13 @@ Convention bundles that each implement a bridge bidding convention using the mea
 ## Folder Structure
 
 **Shared files** (at `definitions/` root):
-- `pedagogical-vocabulary.ts` — Shared tag vocabulary (8 typed `PedagogicalTagDef` constants). Modules import tags from here to annotate surfaces for cross-module relation/alternative derivation. Tag names describe abstract pedagogical concepts — no module names.
-- `derive-cross-module.ts` — `deriveCrossModuleContent(modules)` — derives cross-module relations, alternatives, and intent families from `pedagogicalTags` on surfaces. Called by `aggregateModuleContent()` in `system-registry.ts`.
+- `pedagogical-vocabulary.ts` — 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`). Modules annotate surfaces with these + a scope string to express any pedagogical relationship.
+- `derive-cross-module.ts` — `derivePedagogicalContent(modules)` — derives all pedagogical relations, alternatives, and intent families from `pedagogicalTags` on surfaces. Groups by `(tagId, scope)`. Supports ordinal chains for strength progressions. Called by `aggregateModuleContent()` in `system-registry.ts`.
 - `bidding-system.ts` — `BiddingSystem` interface for system-level composition.
 - `system-registry.ts` — System definitions and module aggregation.
 - `module-registry.ts` — Convention module registry.
 
-**Architectural rule:** Cross-module pedagogical content (relations, alternatives, intent families) is derived from `pedagogicalTags` on surfaces via the shared vocabulary in `pedagogical-vocabulary.ts`. Do not hand-author cross-module relation/alternative files. The tag vocabulary enforces that modules declare membership in shared concepts without referencing foreign surface IDs.
+**Architectural rule:** ALL pedagogical content (relations, alternatives, intent families) — both intra-module and cross-module — is derived from `pedagogicalTags` on surfaces. `ConventionModule` has no `pedagogicalRelations`, `alternatives`, or `intentFamilies` fields. Modules are portable building blocks: compose any set into a bundle and pedagogical content derives automatically. Do not create standalone `pedagogical-relations.ts` or `alternatives.ts` files.
 
 4 convention bundles: `nt-bundle/`, `bergen-bundle/`, `weak-twos-bundle/`, `dont-bundle/`. Each folder has a parallel set of modules:
 
@@ -27,8 +27,6 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `machine.ts` | `ConversationMachine` FSM for hierarchical state tracking |
 | `system-profile.ts` | `SystemProfileIR` for profile-based module activation |
 | `explanation-catalog.ts` | `ExplanationCatalogIR` entries for teaching projections |
-| `pedagogical-relations.ts` | `PedagogicalRelation[]` graph (same-family, stronger-than, fallback-of, etc.) |
-| `alternatives.ts` | `AlternativeGroup[]` for cross-convention or within-bundle alternatives |
 | `compose.ts` | Bundle composition from base-track table, convention spec, and module contributions |
 | `packages/` | ModulePackage definitions for profile-based compilation |
 | `module.ts` | *(dont-bundle, weak-twos-bundle only)* Single-module convention definition |
@@ -52,8 +50,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `machine.ts` — Re-export shim: `createNtConversationMachine()` delegates to `composeNtModules()`.
 - `semantic-classes.ts` — Re-export shim from modules.
 - `explanation-catalog.ts` — Composed from all modules' explanation entries.
-- ~~`pedagogical-relations.ts`~~ — Removed. Cross-module relations now derived from `pedagogicalTags` on surfaces via `derive-cross-module.ts`. Intra-module relations live in each module file.
-- ~~`alternatives.ts`~~ — Removed. Cross-module alternatives now derived from `pedagogicalTags` on surfaces via `derive-cross-module.ts`.
+- ~~`pedagogical-relations.ts`~~ — Removed. All relations derived from `pedagogicalTags` on surfaces.
+- ~~`alternatives.ts`~~ — Removed. All alternatives derived from `pedagogicalTags` on surfaces.
 - `surface-routing.ts` — `NT_ROUTED_SURFACES` and `createNtSurfaceRouter()` for backward compatibility.
 
 **`bergen-bundle/`** — Bergen Raises using the meaning pipeline with `$suit` binding parameterization for hearts and spades.
@@ -61,8 +59,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `meaning-surfaces.ts` — `createBergenR1Surfaces(suit)` factory producing 5 surfaces per suit (splinter, game, limit, constructive, preemptive) parameterized by `$suit` bindings. Also includes R2–R4 surfaces. 604 lines total.
 - `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4).
 - `machine.ts` — ~16-state hierarchical FSM using `bergen-active` abstract parent state that owns `opponent-action` interrupt transitions targeting local interrupted states. States: idle → major-opened-hearts/spades → responder-r1 → R2 (opener-after-constructive/limit/preemptive) → R3 (responder-after-opener-rebid) → R4 → terminal. Uses `surfaceGroupId` and `entryEffects` for `setCaptain`.
-- `alternatives.ts` — `BERGEN_ALTERNATIVE_GROUPS` (per-suit strength raise groups).
-- `pedagogical-relations.ts` — `BERGEN_PEDAGOGICAL_RELATIONS` graph.
+- ~~`alternatives.ts`~~ — Removed. Alternatives now derived from `pedagogicalTags` on surfaces.
+- ~~`pedagogical-relations.ts`~~ — Removed. Relations now derived from `pedagogicalTags` on surfaces.
 
 ## Convention Quick Reference
 
@@ -83,8 +81,7 @@ Every convention bundle must satisfy all items before being considered complete:
 7. **`convention-config.ts` wrapper.** Thin `ConventionConfig` that maps bundle fields to the registry interface. Required for UI picker compatibility.
 8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections. Each entry links a `factId` to display text and contrastive templates.
 9. **`systemProfile` IR.** Profile-based module activation metadata.
-10. **`pedagogicalRelations` graph.** Relationship edges between surfaces (same-family, stronger-than, fallback-of, continuation-of, near-miss-of). Exported from `pedagogical-relations.ts`.
-11. **`alternatives` groups.** `AlternativeGroup[]` for hands where multiple bids are reasonable. Exported from `alternatives.ts`.
+10. **`pedagogicalTags` on surfaces.** All surfaces participating in pedagogical relations or grading alternatives must have `pedagogicalTags` annotations using the 6 general tags from `pedagogical-vocabulary.ts`. No separate `pedagogical-relations.ts` or `alternatives.ts` files.
 12. **`semantic-classes.ts` constants.** Module-local semantic class strings. Do not add to central registry — keep them co-located with the surfaces that reference them.
 
 ## Type Reference
@@ -128,9 +125,9 @@ The full bundle interface — the primary authoring surface for new conventions.
 | `category` | No | `ConventionCategory` | Convention category for UI grouping. |
 | `description` | No | `string` | Human-readable description for UI display. |
 | `explanationCatalog` | Yes | `ExplanationCatalogIR` | Explanation catalog for enriching teaching projections. |
-| `pedagogicalRelations` | Yes | `readonly PedagogicalRelation[]` | Relationship edges between surfaces (same-family, stronger-than, fallback-of, continuation-of, near-miss-of). |
-| `acceptableAlternatives` | Yes | `readonly AlternativeGroup[]` | Groups of hands where multiple bids are reasonable, for grading. |
-| `intentFamilies` | Yes | `readonly IntentFamily[]` | Relationship-aware credit for near-miss grading. |
+| `pedagogicalRelations` | Yes | `readonly PedagogicalRelation[]` | Derived from `pedagogicalTags` on surfaces by `derivePedagogicalContent()`. |
+| `acceptableAlternatives` | Yes | `readonly AlternativeGroup[]` | Derived from `pedagogicalTags` on surfaces by `derivePedagogicalContent()`. |
+| `intentFamilies` | Yes | `readonly IntentFamily[]` | Derived from `pedagogicalTags` on surfaces (currently empty for all bundles). |
 
 *Required in practice for a meaning-pipeline convention, though TypeScript marks it optional.
 
@@ -389,34 +386,7 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalogIR =
   createExplanationCatalog("{name}", {NAME}_ENTRIES);
 ```
 
-### pedagogical-relations.ts
-
-```ts
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
-
-export const {NAME}_PEDAGOGICAL_RELATIONS: readonly PedagogicalRelation[] = [
-  {
-    source: "{name}:surface-a",
-    target: "{name}:surface-b",
-    relation: "stronger-than",  // same-family | stronger-than | fallback-of | continuation-of | near-miss-of
-  },
-  // Additional relations...
-];
-```
-
-### alternatives.ts
-
-```ts
-import type { AlternativeGroup } from "../../../core/contracts";
-
-export const {NAME}_ALTERNATIVE_GROUPS: readonly AlternativeGroup[] = [
-  {
-    label: "{Name} alternatives",
-    members: ["{name}:surface-a", "{name}:surface-b"],
-    tier: "alternative",  // "preferred" | "alternative"
-  },
-];
-```
+*(No separate `pedagogical-relations.ts` or `alternatives.ts` needed — use `pedagogicalTags` on surfaces instead.)*
 
 ## Adding a Convention Bundle
 
@@ -429,9 +399,8 @@ export const {NAME}_ALTERNATIVE_GROUPS: readonly AlternativeGroup[] = [
 7. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, and `terminal`. Use the **scoped interrupt pattern** for opponent interference: create abstract scope states (parents) with `opponent-action` transitions targeting local interrupted states. Do not use a single global contested sink. See DONT's `dont-active` as the reference pattern.
 8. Define `SystemProfileIR` in `system-profile.ts`.
 9. Populate `ExplanationCatalogIR` in `explanation-catalog.ts` with template-keyed explanations.
-10. Define `PedagogicalRelation[]` in `pedagogical-relations.ts`.
-11. Define `AlternativeGroup[]` in `alternatives.ts`.
-12. Assemble the bundle in `compose.ts` using the base-track table and convention spec.
+10. Add `pedagogicalTags` to surfaces using the 6 general tags from `pedagogical-vocabulary.ts`. Use scope strings to group related surfaces.
+11. Assemble the bundle in `compose.ts` using the base-track table and convention spec.
 13. Wire the `ConventionBundle` in `config.ts`.
 14. Create `convention-config.ts` — thin `ConventionConfig` wrapper for the registry.
 15. Create `index.ts` barrel with re-exports.
