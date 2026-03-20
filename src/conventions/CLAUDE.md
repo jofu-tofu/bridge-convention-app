@@ -4,12 +4,11 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 
 ## Architecture
 
+- **Designed for 100+ modules.** The module/bundle system scales to hundreds of convention modules composed into arbitrary bundles. Adding a module never requires editing existing modules or core infrastructure. Registries, derivation, and composition are all O(N).
 - **Registry pattern.** All conventions register via `registerConvention()` and bundles via `registerBundle()` in `core/`. Never hardcode convention logic in switch statements.
-- **Contract boundary.** Cross-module DTOs such as `BiddingContext` come from `src/core/contracts/`; convention internals must not leak `core/` types across that boundary.
-- **One folder per convention/bundle.** Each convention in `definitions/` is a folder. Bundles (nt-bundle/, bergen-bundle/) contain meaning surfaces, facts, machine, profile. See `definitions/nt-bundle/` as the reference implementation.
-- **Convention-universal infrastructure.** Every abstraction in `core/` must work for all conventions — current and future. Convention-specific logic belongs in `definitions/`, never in `core/`. See root `CLAUDE.md` § Design Philosophy.
-- **Core vs definitions split.** `core/` contains stable infrastructure (pipeline, runtime, registry, witness). `definitions/` contains convention folders.
-- **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`/`registerBundle()`. Importing `conventions/index` activates all conventions.
+- **Contract boundary.** Cross-module DTOs come from `src/core/contracts/`; convention internals must not leak across that boundary.
+- **Core vs definitions split.** `core/` contains stable infrastructure (pipeline, runtime, registry). `definitions/` contains convention modules and bundles. Convention-specific logic belongs in `definitions/`, never in `core/`.
+- **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`/`registerBundle()`.
 
 **Context tree:**
 - `core/CLAUDE.md` — meaning pipeline, FSM, runtime, witness, test architecture

@@ -409,7 +409,9 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalogIR =
 
 ## Authoring Rules
 
-- **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`. See root `CLAUDE.md` § Design Philosophy.
+- **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs. Use `pedagogicalTags` with shared vocabulary scopes for cross-module relationships.
+- **Adding a module must not edit existing modules.** If your new module needs to relate to existing ones (same-family, near-miss, etc.), use shared scope strings in `pedagogicalTags`. The derivation function handles the wiring.
+- **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
 
 ## Common Pitfalls
 
