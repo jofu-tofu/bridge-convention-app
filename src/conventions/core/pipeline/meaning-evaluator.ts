@@ -131,7 +131,7 @@ export function evaluateMeaningSurface(
     provenance: {
       moduleId: surface.moduleId,
       nodeName: surface.meaningId,
-      origin: "tree" as const,
+      origin: "meaning-pipeline" as const,
     },
   };
 
@@ -241,7 +241,7 @@ function evaluateDecisionSurface(
     provenance: {
       moduleId: surface.moduleId,
       nodeName: surface.surfaceId,
-      origin: "tree" as const,
+      origin: "meaning-pipeline" as const,
     },
   };
 

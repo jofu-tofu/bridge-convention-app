@@ -302,7 +302,7 @@ describe("evaluateMeaningSurface", () => {
     expect(proposal.evidence.provenance).toEqual({
       moduleId: "stayman",
       nodeName: "stayman:ask",
-      origin: "tree",
+      origin: "meaning-pipeline",
     });
   });
 

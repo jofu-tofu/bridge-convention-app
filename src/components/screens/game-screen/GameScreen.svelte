@@ -4,7 +4,7 @@
   import type { Call } from "../../../engine/types";
   import { getEngine, getGameStore, getAppStore, setLayoutConfig } from "../../../stores/context";
   import { startDrill } from "../../../bootstrap/start-drill";
-  import { startTargetedDrill } from "../../../bootstrap/targeted-drill";
+
   import { getBundle, resolveConventionForSystem } from "../../../conventions/core/bundle";
   import { getSystemConfig } from "../../../core/contracts/system-config";
   import { computeTableScale } from "../../../core/display/table-scale";
@@ -81,31 +81,11 @@
     const convBundle = getBundle(baseConvention.id);
     const convention = resolveConventionForSystem(baseConvention, convBundle, systemConfig);
 
-    // FSM-targeted drill: generate a deal that exercises a specific state
-    // When targeting a specific state, suppress opponent interference so the
-    // convention sequence plays out cleanly — both for the targeted path and
-    // the fallback-to-normal-drill path.
-    const target = appStore.targetState;
-    const effectiveOpponentMode = target ? "none" : appStore.opponentMode;
-    if (target) {
-      const bundle = startTargetedDrill(engine, convention, userSeat, target, {
-        opponentMode: "none",
-      });
-      if (bundle) {
-        await gameStore.startDrill(bundle);
-        gameStore.setConventionName(convention?.name ?? "Drill");
-        return;
-      }
-      // Fallback to normal drill if targeting fails
-      // eslint-disable-next-line no-console
-      console.warn(`[targetState] Failed to target state "${target}", falling back to normal drill`);
-    }
-
     const devSeed = getDevSeed();
     const devRng = devSeed !== undefined ? mulberry32(devSeed) : undefined;
     if (devSeed !== undefined) appStore.advanceDevDeal();
     const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, {
-      opponentMode: effectiveOpponentMode,
+      opponentMode: appStore.opponentMode,
       tuning: appStore.drillTuning,
     });
     await gameStore.startDrill(bundle);

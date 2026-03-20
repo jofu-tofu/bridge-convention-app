@@ -120,7 +120,7 @@ describe("MeaningProposal", () => {
           moduleId: "stayman",
           roundName: "response",
           nodeName: "stayman-ask",
-          origin: "tree",
+          origin: "meaning-pipeline",
         },
       },
       sourceIntent: {
@@ -135,7 +135,7 @@ describe("MeaningProposal", () => {
     expect(proposal.moduleId).toBe("stayman");
     expect(proposal.clauses).toHaveLength(1);
     expect(proposal.ranking.recommendationBand).toBe("must");
-    expect(proposal.evidence.provenance.origin).toBe("tree");
+    expect(proposal.evidence.provenance.origin).toBe("meaning-pipeline");
     expect(proposal.sourceIntent.type).toBe("stayman-ask");
     expect(proposal.modulePriority).toBe("preferred");
   });

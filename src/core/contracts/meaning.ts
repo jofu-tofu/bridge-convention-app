@@ -78,10 +78,7 @@ export interface MeaningEvaluationEvidence {
     readonly moduleId: string;
     readonly roundName?: string;
     readonly nodeName: string;
-    readonly origin:
-      | "tree"
-      | "overlay-override";
-    readonly overlayId?: string;
+    readonly origin: "meaning-pipeline";
   };
 }
 

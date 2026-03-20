@@ -196,7 +196,7 @@ describe("arbitrateMeanings", () => {
         evidence: {
           factDependencies: ["hand.hcp", "bridge.hasFourCardMajor"],
           evaluatedConditions: [],
-          provenance: { moduleId: "test", nodeName: "test-node", origin: "tree" },
+          provenance: { moduleId: "test", nodeName: "test-node", origin: "meaning-pipeline" },
         },
         sourceIntent: { type: "test", params: {} },
       },

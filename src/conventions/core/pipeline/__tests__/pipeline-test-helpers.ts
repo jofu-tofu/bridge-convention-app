@@ -40,7 +40,7 @@ export function makeMeaningProposal(
     evidence: {
       factDependencies: ["hand.hcp"],
       evaluatedConditions: [{ conditionId: "hcp", satisfied: allSatisfied, description: "8+ HCP" }],
-      provenance: { moduleId: "test", nodeName: "test-node", origin: "tree" },
+      provenance: { moduleId: "test", nodeName: "test-node", origin: "meaning-pipeline" },
     },
     sourceIntent: { type: "test-intent", params: {} },
     ...rest,

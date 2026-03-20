@@ -105,7 +105,7 @@ export function makeProposal(overrides: Partial<MeaningProposal> = {}): MeaningP
     evidence: {
       factDependencies: ["hand.hcp"],
       evaluatedConditions: [{ conditionId: "hand.hcp", satisfied: true, description: "HCP >= 15" }],
-      provenance: { moduleId: "stayman", nodeName: "ask-major", origin: "tree" },
+      provenance: { moduleId: "stayman", nodeName: "ask-major", origin: "meaning-pipeline" },
     },
     sourceIntent: { type: "AskForMajor", params: {} },
     ...overrides,
