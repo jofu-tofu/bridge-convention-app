@@ -55,7 +55,6 @@ test.describe("convention navigation", () => {
     page,
   }) => {
     await page.goto("/");
-    // Bergen is reliable — nt-bundle has a bug where many seeds leave buttons disabled
     await page.getByTestId("practice-bergen-bundle").click();
 
     const phase = page.getByTestId("game-phase");
@@ -237,18 +236,13 @@ test.describe("deterministic seeding", () => {
 });
 
 test.describe("nt-bundle button-disable regression", () => {
-  // BUG: nt-bundle with many seeds (1, 5, 42) leaves ALL bid buttons disabled.
-  // The meaning pipeline evaluates surfaces, eliminates all, and defaults to Pass,
-  // but the bid buttons never become enabled for user interaction.
-  // Seeds that work: 100. Seeds that fail: 1, 5, 42.
-  test.skip("nt-bundle seed=42 should enable bid buttons", async ({ page }) => {
+  test("nt-bundle seed=42 should enable bid buttons", async ({ page }) => {
     await page.goto("/?convention=nt-bundle&seed=42");
 
     await expect(page.getByTestId("game-phase")).toHaveText("Bidding", {
       timeout: 10000,
     });
 
-    // This SHOULD pass but currently fails — bid buttons stay disabled
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 10000 });
   });
 });

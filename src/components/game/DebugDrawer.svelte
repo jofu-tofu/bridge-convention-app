@@ -8,6 +8,7 @@
        2. Decision Pipeline (machine, facts, provenance, pipeline, posterior, suggested bid)
        3. Feedback & History (teaching, beliefs, bid log, play log) -->
 <script lang="ts">
+  import { untrack } from "svelte";
   import { Seat } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../stores/context";
   import type { DebugSnapshot } from "../../stores/bidding.svelte";
@@ -39,23 +40,22 @@
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
 
   // ─── Reactive debug data ─────────────────────────────────────
-  // Live snapshot: populated only when it's the user's turn during BIDDING
-  let liveSnap = $state.raw<DebugSnapshot | null>(null);
-
-  $effect(() => {
-    if (gameStore.phase === "BIDDING") {
-      liveSnap = gameStore.getDebugSnapshot();
-    } else {
-      liveSnap = null;
-    }
-  });
-
-  // The "active" snapshot: live data when available, otherwise the latest log entry's snapshot
+  // GOTCHA: getDebugSnapshot() reads $state variables (auction, activeDeal,
+  // currentTurn) from the bidding store. If called inside a tracked context
+  // ($effect or $derived without untrack), it subscribes to those signals.
+  // When auction changes during AI bid processing, the subscription re-fires,
+  // writing to $state — which interferes with Svelte's render effect scheduling
+  // and prevents legalCalls/isUserTurn updates from propagating to BidPanel.
+  // The old pattern ($effect → $state.raw liveSnap) caused seed-dependent
+  // button-disable bugs for NT-bundle conventions.
+  // Fix: use $derived + untrack() so getDebugSnapshot() reads don't subscribe.
   const debugSnap = $derived.by<DebugSnapshot | null>(() => {
-    if (liveSnap?.expectedBid) return liveSnap;
     const log = gameStore.debugLog;
     if (log.length > 0) return log[log.length - 1]!.snapshot;
-    return liveSnap;
+    if (gameStore.phase === "BIDDING") {
+      return untrack(() => gameStore.getDebugSnapshot());
+    }
+    return null;
   });
 
   // The "active" feedback: live feedback when available, otherwise from latest log entry
