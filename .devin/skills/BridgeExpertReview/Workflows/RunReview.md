@@ -38,7 +38,7 @@ cd "$REVIEW_DIR" && npm ci --ignore-scripts
 After setup, verify the worktree is healthy:
 
 ```bash
-npx tsx "$REVIEW_DIR/src/cli/coverage-runner.ts" bundles
+npx tsx "$REVIEW_DIR/src/cli/main.ts" bundles
 ```
 
 If this fails, fall back to the main repo path and warn the user that the worktree could not be created.
@@ -51,29 +51,29 @@ All subcommands use `--flag=value` syntax. Same seed = same deal across calls. E
 
 ```bash
 # Self-discovery — list all available bundles (JSON array)
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts bundles
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts bundles
 
 # Inspect a bundle — atoms, depth, strategy coverage (JSON)
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts describe --bundle=nt-bundle
 
 # List all coverage atoms for a bundle (JSON lines)
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts list --bundle=nt-bundle
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts list --bundle=nt-bundle
 
 # Per-atom evaluation — viewport only (no answer)
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42
 
 # Per-atom evaluation — submit bid, get full teaching feedback
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42 --bid=2C
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts eval --bundle=nt-bundle --atom=ATOM_ID --seed=42 --bid=2C
 
 # Playthrough — get step count + first viewport
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=42
 
 # Playthrough — step through with grading (returns next viewport too)
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts play --bundle=nt-bundle --seed=42 --step=0 --bid=2H
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=42 --step=0 --bid=2H
 
 # Self-test — strategy bids against itself across all atoms
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts selftest --bundle=nt-bundle --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts selftest --all --seed=42
 ```
 
 **Do not hardcode bundle IDs.** Use `bundles` to discover available bundles at runtime. Use `describe --bundle=<id>` to get atom IDs for `eval`.
@@ -118,7 +118,7 @@ cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
 **First, use the CLI to discover what's available — do not rely on hardcoded bundle lists:**
 
 ```bash
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts bundles
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts bundles
 ```
 
 This returns a JSON array of all registered bundles with `id`, `name`, `description`, `category`, and `atomCount`. Use this to determine scope.
@@ -130,7 +130,7 @@ This returns a JSON array of all registered bundles with `id`, `name`, `descript
 For a targeted review, use `describe` to inspect the bundle before proceeding:
 
 ```bash
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts describe --bundle=nt-bundle
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts describe --bundle=nt-bundle
 ```
 
 This shows atom count, max BFS depth, strategy coverage percentage, and the full atom list with IDs.
@@ -140,12 +140,12 @@ This shows atom count, max BFS depth, strategy coverage percentage, and the full
 Run the self-test first to get a quick pass/fail overview:
 
 ```bash
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --all --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts selftest --all --seed=42
 ```
 
 Or for a single bundle:
 ```bash
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts selftest --bundle=nt-bundle --seed=42
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts selftest --bundle=nt-bundle --seed=42
 ```
 
 Parse the JSON output to get pass/fail/skip counts. This gives the orchestrator a quick health check before launching the two-phase evaluation pipeline.
@@ -155,22 +155,31 @@ Parse the JSON output to get pass/fail/skip counts. This gives the orchestrator 
 Run the planner. The `--agents` flag sets a minimum — the plan **auto-scales upward** to keep per-agent work under the caps (`--max-atoms` for Phase 1, `--max-seeds-per-agent` for Phase 2):
 
 ```bash
-cd "$REVIEW_DIR" && npx tsx src/cli/coverage-runner.ts plan --bundle=nt-bundle --agents=3 --coverage=2
+cd "$REVIEW_DIR" && npx tsx src/cli/main.ts plan --bundle=nt-bundle --agents=3 --coverage=2 --vuln=mixed --opponents=mixed
 ```
+
+**Default opponent mode is `natural`** — opponents bid naturally (6+ HCP, 5+ suit) so interference is tested passively. Use `--opponents=none` only when you want controlled auctions with silent opponents.
+
+**Scenario mixing:** `--vuln=mixed` assigns each seed a random vulnerability (uniform across None/NS/EW/Both). `--opponents=mixed` gives each seed a 50/50 chance of natural vs silent opponents. Both assignments are deterministic from the seed number. This tests diverse conditions without multiplying agent counts.
 
 Optional tuning flags:
 - `--max-atoms=8` — max atoms per Phase 1 agent (default 8; lower = more agents)
 - `--max-seeds-per-agent=5` — max seeds per Phase 2 agent (default 5; lower = more agents)
+- `--vuln=<none|ns|ew|both>` — fixed vulnerability for all seeds (instead of mixed)
+- `--opponents=<natural|none>` — fixed opponent mode for all seeds (instead of mixed)
 
 The plan output contains **two sections**, both with pre-computed, auto-scaled agent assignments:
 
-- **`phase1`** — Per-atom list with BFS ordering, dependency graph, seeds, and expected bids. The full atom list is orchestrator-private. **`phase1.agents`** contains per-agent atom batches (atom IDs + seeds, **no expectedBid**) with subtree-preserving assignment and per-agent dependency subgraphs. Agents call `eval` themselves.
-- **`phase2`** — Playthrough seed assignments per agent, balanced by step count. Each agent receives only its seed list.
+- **`phase1`** — Per-atom list with BFS ordering, dependency graph, seeds, and expected bids. Each seed is an object: `{ seed, vulnerability, opponents }`. The full atom list is orchestrator-private. **`phase1.agents`** contains per-agent atom batches (atom IDs + seeds, **no expectedBid**) with subtree-preserving assignment and per-agent dependency subgraphs. Agents call `eval` themselves, passing the per-seed `--vuln` and `--opponents` flags.
+- **`phase2`** — Playthrough seed assignments per agent, balanced by step count. Each seed carries its own `{ seed, vulnerability, opponents }`. Agents pass the per-seed flags to `play`.
+
+When mixed mode is used, the output also includes `scenarioDistribution` showing how many seeds got each vulnerability/opponent combination.
 
 Check the plan output for:
 - **Coverage gaps** — atoms the planner couldn't cover (may need more seeds or indicate strategy gaps)
 - **Uncovered atoms** — atoms with no valid seeds
 - **Agent counts** — the plan may create more agents than `--agents` specified if needed to respect the per-agent caps
+- **Scenario distribution** — verify seeds are spread across vulnerability states and opponent modes
 
 ---
 
@@ -186,11 +195,11 @@ Using `phase1.agents` from the plan, spawn parallel subagents with `run_subagent
 
 Each agent receives:
 - Bundle ID
-- Their atom batch: array of `{ atomId, seeds }` — **stripped of `expectedBid` and `stateId`**
+- Their atom batch: array of `{ atomId, seeds }` — **stripped of `expectedBid` and `stateId`**. Each seed is `{ seed, vulnerability, opponents }`.
 - Their dependency subgraph (for stop-on-error)
 - The Phase 1 evaluation protocol (below)
 
-**Stripping orchestrator-private fields:** The plan's `phase1.agents[].atoms` includes `expectedBid` and `stateId`. Before building the agent prompt, strip these fields. Agents only need `atomId` and `seeds`. The dependency subgraph uses state IDs internally but agents treat it as an opaque stop-on-error mechanism — they extract the `stateId` from the atom ID format (`<stateId>/<surfaceId>/<meaningId>`) only when checking the dependency graph.
+**Stripping orchestrator-private fields:** The plan's `phase1.agents[].atoms` includes `expectedBid` and `stateId`. Before building the agent prompt, strip these fields. Agents only need `atomId` and `seeds` (each seed with its `vulnerability` and `opponents`). The dependency subgraph uses state IDs internally but agents treat it as an opaque stop-on-error mechanism — they extract the `stateId` from the atom ID format (`<stateId>/<surfaceId>/<meaningId>`) only when checking the dependency graph.
 
 #### How Many Agents to Spawn
 
@@ -222,7 +231,7 @@ Use **bridgebum.com** as your authoritative reference for bridge conventions. Wh
 {ATOM_LIST_JSON}
 ```
 
-Each entry has `atomId` and `seeds` (an array of seed numbers). For every atom, evaluate **each seed** independently.
+Each entry has `atomId` and `seeds` (an array of `{ seed, vulnerability, opponents }` objects). For every atom, evaluate **each seed** independently, using the seed's vulnerability and opponents values as CLI flags.
 
 ## Dependency Subgraph (Stop-on-Error)
 
@@ -238,8 +247,10 @@ For each atom in your list, process all its seeds:
 
 **1. Get the sanitized viewport:**
 ```bash
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N>
+cd {REVIEW_DIR} && npx tsx src/cli/main.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N> --vuln=<VULN> --opponents=<OPP>
 ```
+
+Use the `vulnerability` and `opponents` values from the seed object as `--vuln` and `--opponents` flags. Vulnerability values: `None`, `NS`, `EW`, `Both` (case-insensitive). Opponent values: `natural`, `none`.
 
 The output contains ONLY what a human player would see: hand, hand evaluation (HCP, shape), auction so far, legal calls. No correct answer is included.
 
@@ -247,7 +258,7 @@ The output contains ONLY what a human player would see: hand, hand evaluation (H
 
 **3. Submit your bid:**
 ```bash
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N> --bid=<CALL>
+cd {REVIEW_DIR} && npx tsx src/cli/main.ts eval --bundle={BUNDLE_ID} --atom=<ATOM_ID> --seed=<N> --vuln=<VULN> --opponents=<OPP> --bid=<CALL>
 ```
 
 Returns: `grade`, `correct`, `acceptable`, `yourBid`, `correctBid`, `feedback`, `teaching`.
@@ -339,12 +350,12 @@ Using `phase2.agents` from the plan, spawn parallel subagents with `run_subagent
 
 Each agent receives **ONLY**:
 - Bundle ID
-- Their assigned seed list
+- Their assigned seed list (each seed: `{ seed, vulnerability, opponents }`)
 - The playthrough protocol (below)
 
 **NO state IDs, atom IDs, expected bids, or dependency tree information.**
 
-The plan's `phase2.agents` section provides pre-balanced, auto-scaled seed assignments. Use them directly — spawn one subagent per entry.
+The plan's `phase2.agents` section provides pre-balanced, auto-scaled seed assignments. Use them directly — spawn one subagent per entry. Each seed carries its own vulnerability and opponents values that the agent passes as CLI flags.
 
 #### Playthrough Agent Prompt Template
 
@@ -367,7 +378,7 @@ Use **bridgebum.com** as your authoritative reference for bridge conventions. Wh
 - **Bundle:** {BUNDLE_ID}
 - **Seeds:** {SEED_LIST}
 
-For each seed, follow the playthrough protocol below. You are testing whether the app's bidding recommendations form a coherent, correct auction sequence.
+Each seed is an object: `{ seed, vulnerability, opponents }`. For each seed, pass the vulnerability and opponents as `--vuln` and `--opponents` flags to all CLI commands. Follow the playthrough protocol below. You are testing whether the app's bidding recommendations form a coherent, correct auction sequence.
 
 ## Playthrough Protocol
 
@@ -375,7 +386,7 @@ For each assigned seed:
 
 **1. Get the step count + first viewport:**
 ```bash
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N>
+cd {REVIEW_DIR} && npx tsx src/cli/main.ts play --bundle={BUNDLE_ID} --seed=<N> --vuln=<VULN> --opponents=<OPP>
 ```
 Returns `totalSteps` and the first step's viewport.
 
@@ -385,7 +396,7 @@ Study the viewport (hand, HCP, auction, legal calls). **Commit to your bid befor
 
 Submit your bid:
 ```bash
-cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --step=<i> --bid=<CALL>
+cd {REVIEW_DIR} && npx tsx src/cli/main.ts play --bundle={BUNDLE_ID} --seed=<N> --vuln=<VULN> --opponents=<OPP> --step=<i> --bid=<CALL>
 ```
 
 Returns: `grade`, `correct`, `correctBid`, `feedback`, `teaching`, `nextStep`, `complete`.
@@ -474,8 +485,8 @@ The `eval` command always returns sanitized output — there is no unsanitized m
 
 ### Orchestrator-Private Plan Data
 
-The plan's `phase1` section contains orchestrator-private data including `expectedBid` for every atom and the full dependency graph. The `phase1.agents` section provides pre-stripped agent assignments, but agents must still NOT receive the `expectedBid` or `stateId` fields from their atom lists. The orchestrator uses the full plan to:
-1. Build agent prompts with stripped atom lists (only `atomId` + `seeds`)
+The plan's `phase1` section contains orchestrator-private data including `expectedBid` for every atom and the full dependency graph. Seeds are objects: `{ seed, vulnerability, opponents }`. The `phase1.agents` section provides pre-stripped agent assignments, but agents must still NOT receive the `expectedBid` or `stateId` fields from their atom lists. The orchestrator uses the full plan to:
+1. Build agent prompts with stripped atom lists (only `atomId` + `seeds` with per-seed scenario)
 2. Include per-agent dependency subgraphs for stop-on-error
 3. Map agent findings back to specific atoms for the aggregated report
 

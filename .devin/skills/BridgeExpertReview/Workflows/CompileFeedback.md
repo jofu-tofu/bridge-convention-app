@@ -172,6 +172,6 @@ Output the final report in this format:
 
 Based on the compiled report, suggest:
 - Which issues to fix first (group by root cause when possible — a single convention spec fix may resolve multiple findings)
-- Whether a re-run of the CLI is needed after fixes (`npx tsx src/cli/coverage-runner.ts selftest --all --seed=42` to verify)
+- Whether a re-run of the CLI is needed after fixes (`npx tsx src/cli/main.ts selftest --all --seed=42` to verify)
 - Any areas that need deeper investigation
 - Whether selftest skips represent design gaps or expected constraints

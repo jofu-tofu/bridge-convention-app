@@ -36,7 +36,7 @@ User: "Run a bridge expert review of the app"
 -> Invokes RunReview workflow
 -> Step 0: Creates a disposable git worktree in /tmp, installs deps
 -> Tier 1: Discovers bundles via `bundles`, runs `selftest --all --seed=42` for baseline
--> Generates plan with `plan --agents=N --coverage=2` for Phase 1 atom batches and Phase 2 seed lists
+-> Generates plan with `plan --agents=N --coverage=2 --vuln=mixed --opponents=mixed` for Phase 1 atom batches and Phase 2 seed lists (each seed carries its own vulnerability and opponents)
 -> Phase 1: Spawns parallel agents, each evaluating their batch of atoms (each atom × 2 seeds) via `eval`
 -> Phase 2: Spawns parallel agents for playthrough evaluation via `play`
 -> Compiles all findings into prioritized feedback with severity, evidence, and references

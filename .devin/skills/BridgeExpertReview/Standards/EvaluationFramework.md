@@ -8,17 +8,19 @@
 
 ### Tier 1: CLI Coverage Runner (Primary)
 
-The CLI coverage-runner (`src/cli/coverage-runner.ts`) tests convention correctness headlessly using these subcommands:
+The CLI coverage-runner (`src/cli/main.ts`) tests convention correctness headlessly using these subcommands:
 
 - **`bundles`** — discover all available bundles (JSON array with id, name, atomCount)
 - **`describe --bundle=X`** — inspect a bundle (atoms, depth, strategy coverage)
 - **`list --bundle=X`** — enumerate all coverage atoms
-- **`eval --bundle=X --atom=ATOM_ID --seed=N`** — show hand, HCP, auction, legal calls (no correct answer)
-- **`eval --bundle=X --atom=ATOM_ID --seed=N --bid=CALL`** — submit a bid, get full teaching feedback (ViewportBidFeedback + TeachingDetail)
-- **`play --bundle=X --seed=N [--step=N] [--bid=CALL] [--reveal]`** — playthrough evaluation
+- **`eval --bundle=X --atom=ATOM_ID --seed=N [--vuln=V] [--opponents=O]`** — show hand, HCP, auction, legal calls (no correct answer)
+- **`eval --bundle=X --atom=ATOM_ID --seed=N [--vuln=V] [--opponents=O] --bid=CALL`** — submit a bid, get full teaching feedback (ViewportBidFeedback + TeachingDetail)
+- **`play --bundle=X --seed=N [--vuln=V] [--opponents=O] [--step=N] [--bid=CALL] [--reveal]`** — playthrough evaluation
 - **`selftest --bundle=X --seed=N`** or **`selftest --all --seed=N`** — strategy vs itself across all atoms
-- **`plan --bundle=X --agents=N [--coverage=2]`** — precompute two-phase evaluation plan
+- **`plan --bundle=X --agents=N [--coverage=2] [--vuln=mixed] [--opponents=mixed]`** — precompute two-phase evaluation plan with per-seed scenario mixing
 - **`help`** or **`<subcommand> --help`** — show global or per-subcommand help
+
+Global settings: `--vuln=<none|ns|ew|both|mixed>`, `--opponents=<natural|none|mixed>`. Default opponents is **`natural`** (interference tested passively). The `mixed` value is only supported by `plan`, where it assigns each seed a random scenario. Seeds in the plan output are objects: `{ seed, vulnerability, opponents }`.
 
 Same seed = same deal across `eval` and `eval --bid`. Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 
