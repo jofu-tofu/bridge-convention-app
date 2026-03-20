@@ -1,54 +1,19 @@
 // ── CLI eval command ────────────────────────────────────────────────
+//
+// Per-atom evaluation. Imports ONLY from the evaluation facade —
+// no direct strategy, teaching, or convention internals.
 
 import {
-  generateProtocolCoverageManifest,
-} from "../../conventions/core";
-import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
-import { resolveTeachingAnswer, gradeBid } from "../../teaching/teaching-resolution";
-import { BidGrade } from "../../core/contracts/teaching-grading";
-import type { ConventionBiddingStrategy } from "../../core/contracts/recommendation";
-import { buildViewportFeedback, buildTeachingDetail } from "../../core/viewport/build-viewport";
-
-import type { Flags, Vulnerability, ConventionSpec, Call } from "../shared";
+  buildAtomViewport,
+  gradeAtomBid,
+  validateAtomId,
+  parseAtomId,
+} from "../../evaluation";
+import type { Flags ,
+  Vulnerability} from "../shared";
 import {
-  callKey, parsePatternCall,
   requireArg, optionalNumericArg,
-  resolveSpec, resolveBundle, generateSeededDeal, resolveUserSeat,
-  resolveAuction, buildContext, buildCliViewport, nextSeatClockwise,
 } from "../shared";
-
-// ── Atom parsing ────────────────────────────────────────────────────
-
-function parseAtomId(atomId: string): { stateId: string; surfaceId: string; meaningId: string } {
-  const parts = atomId.split("/");
-  if (parts.length < 3) {
-    console.error(`Invalid atom ID: "${atomId}" (expected stateId/surfaceId/meaningId)`);
-    process.exit(2);
-  }
-  return {
-    stateId: parts[0]!,
-    surfaceId: parts[1]!,
-    meaningId: parts.slice(2).join("/"),
-  };
-}
-
-function validateAtomId(
-  atomId: string,
-  spec: ConventionSpec,
-): void {
-  const manifest = generateProtocolCoverageManifest(spec);
-  const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
-  const exists = allAtoms.some(
-    (a) => `${a.baseStateId}/${a.surfaceId}/${a.meaningId}` === atomId,
-  );
-  if (!exists) {
-    console.error(`Unknown atom: "${atomId}"`);
-    console.error("Use 'list --bundle=<id>' to see valid atom IDs.");
-    process.exit(2);
-  }
-}
-
-// ── Command ─────────────────────────────────────────────────────────
 
 export function runEval(flags: Flags, vuln: Vulnerability): void {
   const bundleId = requireArg(flags, "bundle");
@@ -56,48 +21,41 @@ export function runEval(flags: Flags, vuln: Vulnerability): void {
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const bidStr = flags["bid"] as string | undefined;
 
-  const { stateId } = parseAtomId(atomId);
-  const spec = resolveSpec(bundleId);
-  const bundle = resolveBundle(bundleId);
-  validateAtomId(atomId, spec);
+  // Validate inputs
+  try {
+    parseAtomId(atomId);
+  } catch {
+    console.error(`Invalid atom ID: "${atomId}" (expected stateId/surfaceId/meaningId)`);
+    process.exit(2);
+  }
 
-  const deal = generateSeededDeal(bundle, seed, vuln);
-  const userSeat = resolveUserSeat(bundle, deal);
-  const { auction } = resolveAuction(bundle, spec, deal, stateId, userSeat);
-  const strategy = protocolSpecToStrategy(spec);
-
-  const activeSeat = auction.entries.length > 0
-    ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
-    : userSeat;
-
-  // Viewport — uses the same buildBiddingViewport() as the UI
-  const viewport = buildCliViewport({
-    deal, auction, userSeat, activeSeat, strategy,
-    bundleName: bundle.name, vulnerability: vuln,
-  });
+  try {
+    validateAtomId(bundleId, atomId);
+  } catch {
+    console.error(`Unknown atom: "${atomId}"`);
+    console.error("Use 'list --bundle=<id>' to see valid atom IDs.");
+    process.exit(2);
+  }
 
   if (!bidStr || bidStr === "true") {
     // No bid: return viewport only
+    const viewport = buildAtomViewport(bundleId, atomId, seed, vuln);
     console.log(JSON.stringify(viewport, null, 2));
     return;
   }
 
   // Bid submitted: grade with full teaching feedback
-  let submittedCall: Call;
+  let result;
   try {
-    submittedCall = parsePatternCall(bidStr);
+    result = gradeAtomBid(bundleId, atomId, seed, bidStr, vuln);
   } catch {
     console.error(`Invalid bid: "${bidStr}"`);
     process.exit(2);
   }
 
-  const hand = deal.hands[activeSeat];
-  const context = buildContext(hand, auction, activeSeat, vuln);
-  const result = strategy.suggest(context);
-
-  if (!result) {
+  if (result.skip) {
     console.log(JSON.stringify({
-      viewport,
+      viewport: result.viewport,
       grade: "skip",
       correct: false,
       skip: true,
@@ -108,42 +66,16 @@ export function runEval(flags: Flags, vuln: Vulnerability): void {
     return;
   }
 
-  const strategyEval = (strategy as ConventionBiddingStrategy).getLastEvaluation?.() ?? null;
-  const teachingResolution = resolveTeachingAnswer(
-    result,
-    strategyEval?.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? undefined,
-  );
-  const grade = gradeBid(submittedCall, teachingResolution);
-  const bidFeedback = {
-    grade,
-    userCall: submittedCall,
-    expectedResult: result,
-    teachingResolution,
-    practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
-    teachingProjection: strategyEval?.teachingProjection ?? null,
-    practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive ?? false,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached ?? false,
-  };
-
-  const viewportFeedback = buildViewportFeedback(bidFeedback);
-  const teachingDetail = buildTeachingDetail(bidFeedback);
-  const isCorrect = grade === BidGrade.Correct || grade === BidGrade.CorrectNotPreferred;
-  const isAcceptable = grade === BidGrade.Acceptable;
-
   console.log(JSON.stringify({
-    viewport,
-    yourBid: callKey(submittedCall),
-    correctBid: callKey(result.call),
-    grade,
-    correct: isCorrect,
-    acceptable: isAcceptable,
+    viewport: result.viewport,
+    yourBid: result.yourBid,
+    correctBid: result.correctBid,
+    grade: result.grade,
+    correct: result.correct,
+    acceptable: result.acceptable,
     skip: false,
-    feedback: viewportFeedback,
-    teaching: teachingDetail,
+    feedback: result.feedback,
+    teaching: result.teaching,
   }, null, 2));
-  process.exit(isCorrect || isAcceptable ? 0 : 1);
+  process.exit(result.correct || result.acceptable ? 0 : 1);
 }

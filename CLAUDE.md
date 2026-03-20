@@ -54,6 +54,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
 - **PlayerViewport boundary.** Bidding phase never accesses raw `Deal`. Everything the player sees flows through `BiddingViewport` (`src/core/viewport/`). `EvaluationOracle` is the answer key — only grading code touches it.
+- **Evaluation facade enforces viewport boundary at type level.** `src/evaluation/` encapsulates strategy → viewport → grading pipeline. Its exports use ONLY viewport types (`BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`). Agent-facing CLI commands (`eval.ts`, `play.ts`) import from `evaluation/` only — ESLint blocks direct imports from `strategy/`, `teaching/`, `conventions/`, `core/viewport/`, `core/contracts/`, and `engine/` in those files.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
 ## Design Philosophy
@@ -82,6 +83,7 @@ src/
     bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
   bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
+  evaluation/      Type-enforced viewport boundary — facade for strategy→viewport→grading pipeline
   cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI, dev-params)
@@ -113,6 +115,7 @@ tests/
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline) |
 | Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
+| Evaluation | `src/evaluation/index.ts` | Type-enforced viewport boundary (facade for strategy/teaching/viewport pipeline) |
 | CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |

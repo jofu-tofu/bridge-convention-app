@@ -1,18 +1,19 @@
 // ── CLI play command ────────────────────────────────────────────────
+//
+// Playthrough evaluation. Imports ONLY from the evaluation facade —
+// no direct strategy, teaching, or convention internals.
 
-import type { Flags, OpponentMode, Vulnerability, Call } from "../shared";
 import {
-  callKey, parsePatternCall,
+  startPlaythrough,
+  getPlaythroughStepViewport,
+  gradePlaythroughBid,
+  getPlaythroughRevealSteps,
+} from "../../evaluation";
+import type { Flags, OpponentMode ,
+  Vulnerability} from "../shared";
+import {
   requireArg, optionalNumericArg,
-  resolveSpec, resolveBundle,
 } from "../shared";
-import {
-  buildAtomCallMap,
-  runSinglePlaythrough,
-  buildStepViewport,
-  buildRevealStep,
-  gradePlaythroughStep,
-} from "../playthrough";
 
 export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: OpponentMode): void {
   const bundleId = requireArg(flags, "bundle");
@@ -21,82 +22,57 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   const bidStr = flags["bid"] as string | undefined;
   const reveal = flags["reveal"] === true;
 
-  const spec = resolveSpec(bundleId);
-  const bundle = resolveBundle(bundleId);
-  const atomCallMap = buildAtomCallMap(spec);
-
-  const result = runSinglePlaythrough(bundle, spec, seed, atomCallMap, vuln, opponentMode);
-  const userSteps = result.steps.filter((s) => s.isUserStep);
-
   if (reveal) {
-    // Full trace with all recommendations and atom IDs
-    console.log(JSON.stringify({
-      seed,
-      totalSteps: userSteps.length,
-      steps: result.steps.map((s) => buildRevealStep(s)),
-      atomsCovered: result.atomsCovered,
-    }, null, 2));
+    const { totalSteps, steps, atomsCovered } = getPlaythroughRevealSteps(bundleId, seed, vuln, opponentMode);
+    console.log(JSON.stringify({ seed, totalSteps, steps, atomsCovered }, null, 2));
     return;
   }
 
   if (stepIdx === undefined) {
-    // No step: return totalSteps + first viewport
+    const { handle, firstStep } = startPlaythrough(bundleId, seed, vuln, opponentMode);
     console.log(JSON.stringify({
       seed,
-      totalSteps: userSteps.length,
-      step: userSteps.length > 0 ? buildStepViewport(userSteps[0]!, result, spec, vuln) : null,
+      totalSteps: handle.totalUserSteps,
+      step: firstStep,
     }, null, 2));
     return;
   }
 
-  if (stepIdx < 0 || stepIdx >= userSteps.length) {
-    console.error(`Step ${stepIdx} out of range (0-${userSteps.length - 1})`);
-    process.exit(2);
-  }
-
-  const s = userSteps[stepIdx]!;
-  const viewport = buildStepViewport(s, result, spec, vuln);
-
   if (!bidStr || bidStr === "true") {
-    // No bid: viewport only for this step
+    const viewport = getPlaythroughStepViewport(bundleId, seed, stepIdx, vuln, opponentMode);
+    const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode);
     console.log(JSON.stringify({
       seed,
-      totalSteps: userSteps.length,
+      totalSteps: handle.totalUserSteps,
       step: viewport,
     }, null, 2));
     return;
   }
 
   // Bid submitted: grade + next viewport
-  let submittedCall: Call;
+  let result;
   try {
-    submittedCall = parsePatternCall(bidStr);
+    result = gradePlaythroughBid(bundleId, seed, stepIdx, bidStr, vuln, opponentMode);
   } catch {
     console.error(`Invalid bid: "${bidStr}"`);
     process.exit(2);
   }
 
-  const { viewportFeedback, teachingDetail, isCorrect, isAcceptable } =
-    gradePlaythroughStep(s, submittedCall, spec, bundle, seed, vuln);
-
-  const nextStepIdx = stepIdx + 1;
-  const nextStep = nextStepIdx < userSteps.length
-    ? buildStepViewport(userSteps[nextStepIdx]!, result, spec, vuln)
-    : null;
+  const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode);
 
   console.log(JSON.stringify({
     seed,
-    totalSteps: userSteps.length,
-    step: viewport,
-    yourBid: callKey(submittedCall),
-    grade: viewportFeedback.grade,
-    correct: isCorrect,
-    acceptable: isAcceptable,
-    feedback: viewportFeedback,
-    teaching: teachingDetail,
-    nextStep,
-    complete: nextStep === null,
+    totalSteps: handle.totalUserSteps,
+    step: result.step,
+    yourBid: result.yourBid,
+    grade: result.grade,
+    correct: result.correct,
+    acceptable: result.acceptable,
+    feedback: result.feedback,
+    teaching: result.teaching,
+    nextStep: result.nextStep,
+    complete: result.complete,
   }, null, 2));
 
-  process.exit(isCorrect || isAcceptable ? 0 : 1);
+  process.exit(result.correct || result.acceptable ? 0 : 1);
 }
