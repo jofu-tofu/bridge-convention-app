@@ -32,6 +32,11 @@ export interface ConventionBundle {
    *  Used when the user enables off-convention practice in drill tuning.
    *  When absent, a generic inversion of dealConstraints is used. */
   readonly offConventionConstraints?: DealConstraints;
+  /** Factory to regenerate deal constraints for a different base system config.
+   *  When present, resolveConventionForSystem() uses this instead of the static dealConstraints. */
+  readonly dealConstraintFactory?: (sys: SystemConfig) => DealConstraints;
+  /** Factory to regenerate off-convention constraints for a different base system config. */
+  readonly offConventionConstraintFactory?: (sys: SystemConfig) => DealConstraints;
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   /** Meaning surfaces organized by group.
    *  When present, the meaning pipeline is used for this bundle. */
@@ -87,5 +92,32 @@ export function createConventionConfigFromBundle(
     offConventionConstraints: bundle.offConventionConstraints,
     defaultAuction: bundle.defaultAuction,
     internal: bundle.internal,
+  };
+}
+
+/**
+ * Re-derive a ConventionConfig's deal constraints for a different SystemConfig.
+ *
+ * Uses the bundle's constraint factories when available. When a bundle has no
+ * factories (its constraints don't depend on the base system), the original
+ * ConventionConfig is returned unchanged.
+ */
+export function resolveConventionForSystem(
+  config: ConventionConfig,
+  bundle: ConventionBundle | undefined,
+  sys: SystemConfig,
+): ConventionConfig {
+  if (!bundle) return config;
+
+  const hasDealFactory = !!bundle.dealConstraintFactory;
+  const hasOffFactory = !!bundle.offConventionConstraintFactory;
+
+  // Nothing to regenerate — constraints don't depend on system config
+  if (!hasDealFactory && !hasOffFactory) return config;
+
+  return {
+    ...config,
+    ...(hasDealFactory ? { dealConstraints: bundle.dealConstraintFactory!(sys) } : {}),
+    ...(hasOffFactory ? { offConventionConstraints: bundle.offConventionConstraintFactory!(sys) } : {}),
   };
 }

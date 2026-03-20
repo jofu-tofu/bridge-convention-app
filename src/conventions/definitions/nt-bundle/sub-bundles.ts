@@ -6,22 +6,31 @@ import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { createExplanationCatalog } from "../../../core/contracts/explanation-catalog";
 import { NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./system-profile";
+import type { SystemConfig } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 
-const staymanDealConstraints: DealConstraints = {
-  seats: [
-    { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-    { seat: Seat.South, minHcp: 8, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
-  ],
-  dealer: Seat.North,
-};
+function createStaymanDealConstraints(sys: SystemConfig): DealConstraints {
+  return {
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      { seat: Seat.South, minHcp: sys.responderThresholds.inviteMin, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
+    ],
+    dealer: Seat.North,
+  };
+}
 
-const transferDealConstraints: DealConstraints = {
-  seats: [
-    { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-    { seat: Seat.South, minHcp: 0, minLengthAny: { [Suit.Spades]: 5, [Suit.Hearts]: 5 } },
-  ],
-  dealer: Seat.North,
-};
+function createTransferDealConstraints(sys: SystemConfig): DealConstraints {
+  return {
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      { seat: Seat.South, minHcp: 0, minLengthAny: { [Suit.Spades]: 5, [Suit.Hearts]: 5 } },
+    ],
+    dealer: Seat.North,
+  };
+}
+
+const staymanDealConstraints = createStaymanDealConstraints(SAYC_SYSTEM_CONFIG);
+const transferDealConstraints = createTransferDealConstraints(SAYC_SYSTEM_CONFIG);
 
 const ntDefaultAuction = (seat: typeof Seat[keyof typeof Seat]) => {
   if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
@@ -41,6 +50,7 @@ export const ntStaymanBundle: ConventionBundle = {
   category: ConventionCategory.Asking,
   memberIds: ["stayman"],
   dealConstraints: staymanDealConstraints,
+  dealConstraintFactory: createStaymanDealConstraints,
   defaultAuction: ntDefaultAuction,
   declaredCapabilities: ntDeclaredCapabilities,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
@@ -57,6 +67,7 @@ export const ntTransfersBundle: ConventionBundle = {
   category: ConventionCategory.Constructive,
   memberIds: ["jacoby-transfers"],
   dealConstraints: transferDealConstraints,
+  dealConstraintFactory: createTransferDealConstraints,
   defaultAuction: ntDefaultAuction,
   declaredCapabilities: ntDeclaredCapabilities,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,

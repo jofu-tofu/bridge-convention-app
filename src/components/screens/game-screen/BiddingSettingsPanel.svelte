@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { OpponentMode, VulnerabilityDistribution } from "../../../core/contracts/drill";
   import { DEFAULT_DRILL_TUNING } from "../../../core/contracts/drill";
+  import type { BaseSystemId } from "../../../core/contracts/base-system-vocabulary";
+  import { AVAILABLE_BASE_SYSTEMS } from "../../../core/contracts/system-config";
   import { getAppStore } from "../../../stores/context";
 
   interface Props {
@@ -53,6 +55,28 @@
   </h2>
 
   <div class="flex-1 overflow-y-auto space-y-3 min-h-0">
+    <!-- Base System -->
+    <div>
+      <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">System</h3>
+      <div class="flex gap-1" role="group" aria-label="Base bidding system">
+        {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}
+          {@const active = appStore.baseSystemId === sys.id}
+          <button
+            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium cursor-pointer transition-colors
+              {active
+                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
+                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
+            onclick={() => appStore.setBaseSystemId(sys.id)}
+            aria-pressed={active}
+            title={sys.label}
+            data-testid="settings-system-{sys.id}"
+          >
+            {sys.shortLabel}
+          </button>
+        {/each}
+      </div>
+    </div>
+
     <!-- Vulnerability -->
     <div>
       <div class="flex items-center justify-between mb-1 px-1">

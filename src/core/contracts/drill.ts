@@ -38,19 +38,3 @@ export interface DrillTuning {
 export const DEFAULT_DRILL_TUNING: DrillTuning = {
   vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 },
 };
-
-// ─── Display settings ───────────────────────────────────────
-//
-// UI preferences that affect how information is shown during drills
-// but do NOT affect deal generation or scoring.
-
-/** UI display preferences for the drill session. */
-export interface DisplaySettings {
-  /** Show gray educational annotations under bids in the auction table.
-   *  When false, only ACBL-required alerts and announcements are shown. */
-  readonly showEducationalAnnotations: boolean;
-}
-
-export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
-  showEducationalAnnotations: true,
-};

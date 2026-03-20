@@ -5,6 +5,8 @@
   import { getEngine, getGameStore, getAppStore, setLayoutConfig } from "../../../stores/context";
   import { startDrill } from "../../../bootstrap/start-drill";
   import { startTargetedDrill } from "../../../bootstrap/targeted-drill";
+  import { getBundle, resolveConventionForSystem } from "../../../conventions/core/bundle";
+  import { getSystemConfig } from "../../../core/contracts/system-config";
   import { computeTableScale } from "../../../core/display/table-scale";
   import { DESKTOP_MIN } from "../../../core/display/breakpoints.svelte";
   import { mulberry32 } from "../../../core/util/seeded-rng";
@@ -68,9 +70,16 @@
   }
 
   async function startNewDrill() {
-    const convention = appStore.selectedConvention;
-    if (!convention) return;
+    const baseConvention = appStore.selectedConvention;
+    if (!baseConvention) return;
     dealNumber++;
+
+    // Resolve convention config for the selected base system.
+    // If the bundle has constraint factories, deal constraints are regenerated
+    // for the active SystemConfig; otherwise the convention is used as-is.
+    const systemConfig = getSystemConfig(appStore.baseSystemId);
+    const convBundle = getBundle(baseConvention.id);
+    const convention = resolveConventionForSystem(baseConvention, convBundle, systemConfig);
 
     // FSM-targeted drill: generate a deal that exercises a specific state
     // When targeting a specific state, suppress opponent interference so the
