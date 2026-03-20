@@ -204,13 +204,35 @@ Each agent receives this prompt, customized with their bundle, atom batch, and d
 
 You are evaluating the **convention correctness** of a bridge bidding practice app by testing individual bidding decisions using its CLI. For each atom (a specific bidding decision point), you will see a hand and auction, decide the correct bid using your bridge knowledge, then submit it to see if the app agrees. Each atom is tested with multiple seeds (different hands). **Do NOT invoke the browser skill or use Playwright.**
 
-**Efficiency is critical.** You have a small batch — evaluate every atom quickly. Do NOT read source code or fetch URLs unless you **disagree** with the app. Passing evaluations need no investigation.
+**Efficiency is critical.** You have a small batch — evaluate every atom quickly. Do NOT read source code unless you find a specific issue to investigate.
 
 ## Working Directory
 
 ```
 {REVIEW_DIR}
 ```
+
+## Convention Reference (do this FIRST)
+
+Before evaluating any atoms, fetch the BridgeBum reference pages for the conventions in your bundle. Use `webfetch` to load each relevant page and study the rules. This is your authoritative source for deciding correct bids throughout the evaluation.
+
+```
+# Example for nt-bundle (Stayman + Jacoby Transfers):
+webfetch https://www.bridgebum.com/stayman.php
+webfetch https://www.bridgebum.com/jacoby_transfer.php
+
+# For bergen-bundle:
+webfetch https://www.bridgebum.com/bergen_raises.php
+
+# For weak-twos-bundle:
+webfetch https://www.bridgebum.com/weak_two_bids.php
+webfetch https://www.bridgebum.com/ogust.php
+
+# For dont-bundle:
+webfetch https://www.bridgebum.com/dont.php
+```
+
+Determine which conventions apply by examining your atom IDs (the convention name appears in the meaning segment, e.g., `stayman:ask-major`). Fetch the relevant pages, then proceed to evaluation.
 
 ## Your Assignment
 
@@ -253,30 +275,20 @@ cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts eval --bundle={BUNDLE_ID} 
 Returns: `grade`, `correct`, `acceptable`, `yourBid`, `correctBid`, `feedback`, `teaching`.
 
 **4. Evaluate the result:**
-- **Agree with the app** (match or you accept you were wrong) → continue to next seed/atom. No further investigation.
-- **Disagree with the app** (you believe the app's bid is wrong) → **investigate and record a finding** (see [Investigating Findings](#investigating-findings) below). Apply stop-on-error: mark descendant states as polluted, skip remaining atoms in those states.
-- **`acceptable` or `correct-not-preferred`** → note it, continue. No investigation needed.
+- **Agree with the app** (match or you accept you were wrong) → continue to next seed/atom.
+- **Disagree with the app** (you believe the app's bid is wrong based on the BridgeBum reference) → record a finding with the reference URL you fetched earlier. Apply stop-on-error: mark descendant states as polluted, skip remaining atoms in those states.
+- **`acceptable` or `correct-not-preferred`** → note it, continue.
 
 **5. Repeat for each seed of this atom, then move to the next atom.**
 
 ## Rules
 
-1. **Speed first.** Evaluate every atom+seed as fast as possible. Only slow down to investigate when you disagree with the app.
+1. **Verify against BridgeBum first.** You fetched the convention references at the start. Use them to decide every bid. Cite the URL in any findings.
 2. **CLI only.** Use `exec` to run CLI commands. **Do NOT use the browser skill or Playwright.**
 3. **Stop-on-error propagation.** When the app's bid is wrong, skip all atoms in descendant states. Log which atoms were skipped and why.
 4. **Commit before peeking.** Decide your answer BEFORE submitting. Do not revise based on later information.
 5. **Test every seed.** Each atom has multiple seeds. Test all of them — different hands may expose different issues.
-
-## Investigating Findings
-
-**Only when you disagree with the app's bid**, do the following before recording the finding:
-
-1. **Verify with `webfetch`** — fetch at least one authoritative bridge source (bridgebum.com, larryco.com, bridgeguys.com) to confirm your bid is correct.
-2. **Optionally read source code** — if the convention logic is unclear, examine:
-   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
-   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
-
-**Do NOT webfetch or read source code for passing evaluations.**
+6. **Source code is optional.** Only read source code if you find a disagreement and want to understand why the app is wrong. Do not read source code for passing evaluations.
 
 ## Report Format
 
@@ -365,13 +377,35 @@ Each agent receives this prompt, customized with their bundle and seed list:
 
 You are evaluating the **convention correctness** of a bridge bidding practice app by playing through full auction sequences using its CLI. For each seed, you will step through a complete bidding sequence, deciding each bid using your bridge knowledge, then submitting it to see if the app agrees. **Do NOT invoke the browser skill or use Playwright.**
 
-**Efficiency is critical.** You have a small batch — evaluate every seed quickly. Do NOT read source code or fetch URLs unless you **disagree** with the app. Passing playthroughs need no investigation.
+**Efficiency is critical.** You have a small batch — evaluate every seed quickly. Do NOT read source code unless you find a specific issue to investigate.
 
 ## Working Directory
 
 ```
 {REVIEW_DIR}
 ```
+
+## Convention Reference (do this FIRST)
+
+Before evaluating any seeds, fetch the BridgeBum reference pages for the conventions in your bundle. Use `webfetch` to load each relevant page and study the rules. This is your authoritative source for deciding correct bids throughout the evaluation.
+
+```
+# Example for nt-bundle (Stayman + Jacoby Transfers):
+webfetch https://www.bridgebum.com/stayman.php
+webfetch https://www.bridgebum.com/jacoby_transfer.php
+
+# For bergen-bundle:
+webfetch https://www.bridgebum.com/bergen_raises.php
+
+# For weak-twos-bundle:
+webfetch https://www.bridgebum.com/weak_two_bids.php
+webfetch https://www.bridgebum.com/ogust.php
+
+# For dont-bundle:
+webfetch https://www.bridgebum.com/dont.php
+```
+
+Determine which conventions apply from your bundle ID and the auction context you encounter. Fetch the relevant pages, then proceed to evaluation.
 
 ## Your Assignment
 
@@ -402,34 +436,22 @@ cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} 
 Returns: `grade`, `correct`, `correctBid`, `feedback`, `teaching`, `nextStep`, `complete`.
 
 **3. Evaluate the result:**
-- **Agree with the app** → use `nextStep` viewport, continue. No further investigation.
-- **Disagree with the app** (you believe the app's bid is wrong) → **investigate and record a finding** (see [Investigating Findings](#investigating-findings-1) below). **Stop this playthrough** — subsequent steps are in a polluted auction context. Move to the next seed.
-- **You were wrong and accept the app is correct** → use `nextStep` viewport, continue. No investigation needed.
+- **Agree with the app** → use `nextStep` viewport, continue.
+- **Disagree with the app** (you believe the app's bid is wrong based on the BridgeBum reference) → record a finding with the reference URL you fetched earlier. **Stop this playthrough** — subsequent steps are in a polluted auction context. Move to the next seed.
+- **You were wrong and accept the app is correct** → use `nextStep` viewport, continue.
 
 **4. Repeat until `complete: true`, then move to the next seed.**
 
 ## Rules
 
-1. **Speed first.** Evaluate every seed as fast as possible. Only slow down to investigate when you disagree with the app.
+1. **Verify against BridgeBum first.** You fetched the convention references at the start. Use them to decide every bid. Cite the URL in any findings.
 2. **CLI only.** Use `exec` to run CLI commands. **Do NOT use the browser skill or Playwright.**
 3. **Stop on first real error per playthrough.** If the app's bid is wrong at step N, do not evaluate steps N+1, N+2, etc. Record the finding and move to the next seed.
 4. **Commit before peeking.** Decide your answer BEFORE submitting. Do not revise based on later information.
-
-## Investigating Findings
-
-**Only when you disagree with the app's bid**, do the following before recording the finding:
-
-1. **Verify with `webfetch`** — fetch at least one authoritative bridge source (bridgebum.com, larryco.com, bridgeguys.com) to confirm your bid is correct.
-2. **Optionally read source code** — if the convention logic is unclear, examine:
-   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/convention-spec.ts`
-   - `{REVIEW_DIR}/src/conventions/definitions/<bundle>/modules/`
-3. **Optionally get the full reveal** for the current seed:
+5. **Source code is optional.** Only read source code if you find a disagreement and want to understand why the app is wrong. Optionally use `--reveal` for the same purpose:
    ```bash
    cd {REVIEW_DIR} && npx tsx src/cli/coverage-runner.ts play --bundle={BUNDLE_ID} --seed=<N> --reveal
    ```
-   This shows all decision points with recommendations and atom IDs.
-
-**Do NOT webfetch, read source code, or run `--reveal` for passing playthroughs.**
 
 ## Phase 1 Findings
 
