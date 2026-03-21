@@ -9,7 +9,7 @@ import type { WitnessGeneratorResult } from "../witness-generator";
 import { Seat, Suit, Vulnerability } from "../../../../engine/types";
 import type { WitnessSpecIR, WitnessUnsatResult } from "../../../../core/contracts/witness-spec";
 import type { HandPredicateIR } from "../../../../core/contracts/predicate-surfaces";
-import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
+import { CAP_OPENING_1NT } from "../../../definitions/capability-vocabulary";
 
 // ─── Helpers ───────────────────────────────────────────────────────
 

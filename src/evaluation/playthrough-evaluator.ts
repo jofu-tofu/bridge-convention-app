@@ -5,9 +5,9 @@
 //
 // Internal strategy/teaching/convention access is encapsulated here.
 
-import { replay, getBaseModules } from "../conventions/core";
 import { getBundle } from "../conventions/core/bundle";
-import { getConventionSpec } from "../conventions/spec-registry";
+import { getSystem, specFromSystem } from "../conventions/definitions/system-registry";
+import { enumerateRuleAtoms } from "../conventions/core/pipeline/rule-enumeration";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
@@ -15,7 +15,7 @@ import { createStrategyChain } from "../strategy/bidding/strategy-chain";
 import { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
 import { BidGrade } from "../core/contracts/teaching-grading";
 import type { BidResult, BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
-import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport } from "../core/viewport/build-viewport";
+import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../core/viewport/build-viewport";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
@@ -25,8 +25,8 @@ import { parsePatternCall } from "../engine/auction-helpers";
 import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
 import type { Auction, Call, Deal, Hand, DealConstraints } from "../engine/types";
-import type { ConventionSpec } from "../conventions/core";
 import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
+import type { ConventionSpec } from "../conventions/core";
 import type { OpponentMode } from "../core/contracts/drill";
 import type { PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./types";
 
@@ -132,7 +132,6 @@ function makeViewport(
 interface InternalStep {
   readonly stepIndex: number;
   readonly seat: Seat;
-  readonly stateId: string | null;
   readonly atomId: string | null;
   readonly meaningLabel: string | null;
   readonly auctionEntries: readonly { seat: Seat; call: Call }[];
@@ -160,7 +159,8 @@ function runPlaythroughInternal(
   bundleId: string, seed: number,
   vulnerability: Vulnerability, opponents: OpponentMode,
 ): InternalPlaythroughResult {
-  const spec = getConventionSpec(bundleId)!;
+  const system = getSystem(bundleId)!;
+  const spec = specFromSystem(system)!;
   const bundle = getBundle(bundleId)!;
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
@@ -174,7 +174,7 @@ function runPlaythroughInternal(
   const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
   const steps: InternalStep[] = [];
   const atomsCovered: string[] = [];
-  const atomCallMap = buildAtomCallMap(spec);
+  const atomCallMap = buildAtomCallMap(bundleId);
   const maxIter = 30;
 
   for (let iter = 0; iter < maxIter; iter++) {
@@ -205,27 +205,20 @@ function runPlaythroughInternal(
     const result = strategy.suggest(context);
     if (!result) break;
 
-    const snapshot = replay(
-      entries.map((e) => ({ call: e.call, seat: e.seat })),
-      spec, userSeat,
-    );
-    const stateId = snapshot.base?.stateId ?? null;
-
+    // Match the recommended call to a rule atom
     let atomId: string | null = null;
     let meaningLabel: string | null = null;
-    if (stateId) {
-      const match = atomCallMap.get(`${stateId}|${callKey(result.call)}`);
-      if (match) {
-        atomId = match.atomId;
-        meaningLabel = match.meaningLabel;
-        atomsCovered.push(atomId);
-      }
+    const match = atomCallMap.get(callKey(result.call));
+    if (match) {
+      atomId = match.atomId;
+      meaningLabel = match.meaningLabel;
+      atomsCovered.push(atomId);
     }
 
     steps.push({
       stepIndex: steps.length,
       seat: activeSeat,
-      stateId, atomId, meaningLabel,
+      atomId, meaningLabel,
       auctionEntries: [...entries],
       recommendation: callKey(result.call),
       isUserStep: activeSeat === userSeat || activeSeat === partner,
@@ -240,24 +233,28 @@ function runPlaythroughInternal(
   return { handle, deal, userSeat, bundleName: bundle.name, spec, bundle, steps, userSteps };
 }
 
-function buildAtomCallMap(spec: ConventionSpec): Map<string, { atomId: string; meaningLabel: string }> {
+/**
+ * Build a call → atom mapping from rule modules.
+ * Key: callKey, Value: { atomId, meaningLabel }.
+ * When multiple atoms share the same encoding, the first one wins.
+ */
+function buildAtomCallMap(bundleId: string): Map<string, { atomId: string; meaningLabel: string }> {
+  const system = getSystem(bundleId);
+  if (!system?.ruleModules) return new Map();
+
+  const atoms = enumerateRuleAtoms(system.ruleModules);
   const map = new Map<string, { atomId: string; meaningLabel: string }>();
-  for (const track of getBaseModules(spec)) {
-    for (const [stateId, state] of Object.entries(track.states)) {
-      if (!state.surface) continue;
-      const fragment = spec.surfaces[state.surface];
-      if (!fragment) continue;
-      for (const surface of fragment.surfaces) {
-        const call = surface.encoding?.defaultCall;
-        if (call) {
-          map.set(`${stateId}|${callKey(call)}`, {
-            atomId: `${stateId}/${state.surface}/${surface.meaningId}`,
-            meaningLabel: surface.teachingLabel,
-          });
-        }
-      }
+
+  for (const atom of atoms) {
+    const key = callKey(atom.encoding);
+    if (!map.has(key)) {
+      map.set(key, {
+        atomId: `${atom.moduleId}/${atom.meaningId}`,
+        meaningLabel: atom.meaningLabel,
+      });
     }
   }
+
   return map;
 }
 
@@ -363,6 +360,7 @@ export function gradePlaythroughBid(
     evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive ?? false,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
     fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached ?? false,
+    observationHistory: projectObservationHistory(strategyEval?.auctionContext),
   };
 
   const isCorrect = grade === BidGrade.Correct || grade === BidGrade.CorrectNotPreferred;
@@ -402,7 +400,7 @@ export function getPlaythroughRevealSteps(
   const revealSteps: RevealStep[] = pt.steps.map((s) => ({
     stepIndex: s.stepIndex,
     seat: s.seat as string,
-    stateId: s.stateId,
+    stateId: null,
     atomId: s.atomId,
     meaningLabel: s.meaningLabel,
     auctionSoFar: s.auctionEntries.map((e) => ({ seat: e.seat as string, call: callKey(e.call) })),

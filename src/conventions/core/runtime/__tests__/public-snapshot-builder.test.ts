@@ -3,7 +3,7 @@ import { buildSnapshotFromAuction } from "../public-snapshot-builder";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import { ForcingState } from "../../../../core/contracts/bidding";
-import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
+import { CAP_OPENING_1NT } from "../../../definitions/capability-vocabulary";
 
 describe("buildSnapshotFromAuction", () => {
   it("returns snapshot with provided activeModuleIds", () => {

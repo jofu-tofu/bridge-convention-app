@@ -5,7 +5,7 @@ import type { SystemProfileIR } from "../../../../core/contracts/agreement-modul
 import type { MeaningSurface } from "../../../../core/contracts/meaning";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
-import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
+import { CAP_OPENING_1NT } from "../../../definitions/capability-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
 
 /** Minimal profile that activates a module when opening.1nt capability is present. */

@@ -19,6 +19,7 @@ strategy/
     pass-strategy.ts         Always-pass placeholder strategy
     practical-scorer.ts      scoreCandidatePractically(), buildPracticalRecommendation() — pure scoring functions. Accepts ScorableCandidate (normative or pragmatic) union type.
     practical-types.ts       PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate — local types (not contracts/)
+    protocol-adapter.ts      protocolSpecToStrategy() — ConventionSpec → ConventionBiddingStrategy. Rule-only path: buildObservationLogViaRules() with per-step kernel threading, no FSM replay. All bundles use ruleModules (Phase 5 complete). Phase 6: incremental local FSM phase caching in `buildObservationLogViaRules()` — O(N×M) instead of O(N²×M). Exports buildObservationLogViaRules(), findMatchingClaimForCall().
     pragmatic-generator.ts   generatePragmaticCandidates() — heuristic tactical bids (NT downgrade, competitive overcall, protective double). Import boundary: engine/ + inference/ types only (no conventions/core/ runtime imports).
     trace-collector.ts       TraceCollector — mutable builder for EvaluationTrace DTO
   play/

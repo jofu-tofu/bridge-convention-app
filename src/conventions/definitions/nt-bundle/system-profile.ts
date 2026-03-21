@@ -1,5 +1,5 @@
 import { createSaycProfile } from "../../core/profile-builder";
-import { CAP_OPENING_1NT } from "../../../core/contracts/capability-vocabulary";
+import { CAP_OPENING_1NT } from "../capability-vocabulary";
 
 export const NT_SAYC_PROFILE = createSaycProfile({
   profileId: "1nt-sayc",

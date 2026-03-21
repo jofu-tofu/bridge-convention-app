@@ -1,37 +1,38 @@
 // ── CLI info commands: list, bundles, describe ──────────────────────
 
 import {
-  generateProtocolCoverageManifest,
-  enumerateBaseTrackStates,
-  getBaseModules,
+  enumerateRuleAtoms,
+  generateRuleCoverageManifest,
 } from "../../conventions/core";
 import { listSystems } from "../../conventions/definitions/system-registry";
-import { getConventionSpec } from "../../conventions/spec-registry";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 
 import type { Flags, Vulnerability } from "../shared";
 import {
   requireArg,
-  resolveSpec, resolveSystem, generateSeededDeal, resolveUserSeat,
-  resolveAuction, buildContext, nextSeatClockwise,
+  resolveSpec, resolveSystemWithRules,
+  generateSeededDeal, resolveUserSeat,
+  buildInitialAuction, buildContext, nextSeatClockwise,
 } from "../shared";
 
 // ── list ─────────────────────────────────────────────────────────
 
 export function runList(flags: Flags): void {
   const bundleId = requireArg(flags, "bundle");
-  const spec = resolveSpec(bundleId);
-  const manifest = generateProtocolCoverageManifest(spec);
+  const system = resolveSystemWithRules(bundleId);
+  const ruleModules = system.ruleModules ?? [];
+  const atoms = enumerateRuleAtoms(ruleModules);
 
-  const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
-  for (const atom of allAtoms) {
+  for (const atom of atoms) {
     const line = {
-      baseStateId: atom.baseStateId,
-      surfaceId: atom.surfaceId,
+      atomId: `${atom.moduleId}/${atom.meaningId}`,
+      moduleId: atom.moduleId,
       meaningId: atom.meaningId,
       meaningLabel: atom.meaningLabel,
-      involvesProtocol: atom.involvesProtocol,
-      activeProtocols: atom.activeProtocols,
+      encoding: atom.encoding,
+      turnGuard: atom.turnGuard ?? null,
+      primaryPhaseGuard: atom.primaryPhaseGuard ?? null,
+      activationPaths: atom.allActivationPaths.length,
     };
     console.log(JSON.stringify(line));
   }
@@ -42,12 +43,10 @@ export function runList(flags: Flags): void {
 export function runBundles(): void {
   const systems = listSystems().filter((s) => !s.internal);
   const result = systems.map((s) => {
-    const spec = getConventionSpec(s.id);
-    let atomCount = 0;
-    if (spec) {
-      const manifest = generateProtocolCoverageManifest(spec);
-      atomCount = manifest.baseAtoms.length + manifest.protocolAtoms.length;
-    }
+    const ruleModules = s.ruleModules ?? [];
+    const atomCount = ruleModules.length > 0
+      ? enumerateRuleAtoms(ruleModules).length
+      : 0;
     return {
       id: s.id,
       name: s.name,
@@ -65,29 +64,18 @@ export function runBundles(): void {
 export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   const bundleId = requireArg(flags, "bundle");
   const spec = resolveSpec(bundleId);
-  const system = resolveSystem(bundleId);
+  const system = resolveSystemWithRules(bundleId);
+  const ruleModules = system.ruleModules ?? [];
 
-  const manifest = generateProtocolCoverageManifest(spec);
-  const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
+  const manifest = generateRuleCoverageManifest(system.id, ruleModules);
+  const allAtoms = manifest.atoms;
 
-  // Compute depth info
-  const stateDepths = new Map<string, number>();
-  for (const track of getBaseModules(spec)) {
-    const paths = enumerateBaseTrackStates(track);
-    for (const [stateId, path] of paths) {
-      stateDepths.set(stateId, Math.max(0, path.transitions.length - 1));
-    }
-  }
-  const maxDepth = stateDepths.size > 0
-    ? Math.max(...stateDepths.values())
-    : 0;
-
-  // Group atoms by state
-  const stateAtomCounts = new Map<string, number>();
+  // Group atoms by module
+  const moduleAtomCounts = new Map<string, number>();
   for (const atom of allAtoms) {
-    stateAtomCounts.set(
-      atom.baseStateId,
-      (stateAtomCounts.get(atom.baseStateId) ?? 0) + 1,
+    moduleAtomCounts.set(
+      atom.moduleId,
+      (moduleAtomCounts.get(atom.moduleId) ?? 0) + 1,
     );
   }
 
@@ -96,12 +84,11 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   let covered = 0;
   let skipped = 0;
   for (let i = 0; i < allAtoms.length; i++) {
-    const atom = allAtoms[i]!;
     const atomSeed = 42 + i;
     try {
       const deal = generateSeededDeal(system, atomSeed, vuln);
       const userSeat = resolveUserSeat(system, deal);
-      const { auction } = resolveAuction(system, spec, deal, atom.baseStateId, userSeat);
+      const auction = buildInitialAuction(system, userSeat, deal);
       const activeSeat = auction.entries.length > 0
         ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
         : userSeat;
@@ -115,12 +102,11 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
     }
   }
 
-  const states = [...stateAtomCounts.entries()].map(([stateId, count]) => ({
-    stateId,
-    depth: stateDepths.get(stateId) ?? 0,
+  const modules = [...moduleAtomCounts.entries()].map(([moduleId, count]) => ({
+    moduleId,
     atomCount: count,
   }));
-  states.sort((a, b) => a.depth - b.depth || a.stateId.localeCompare(b.stateId));
+  modules.sort((a, b) => a.moduleId.localeCompare(b.moduleId));
 
   console.log(JSON.stringify({
     id: system.id,
@@ -128,7 +114,7 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
     description: system.description ?? null,
     category: system.category ?? null,
     totalAtoms: allAtoms.length,
-    maxDepth,
+    totalModules: manifest.totalModules,
     strategyCoverage: {
       covered,
       skipped,
@@ -136,11 +122,13 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
         ? Math.round((covered / allAtoms.length) * 100)
         : 0,
     },
-    states,
+    modules,
     atoms: allAtoms.map((a) => ({
-      atomId: `${a.baseStateId}/${a.surfaceId}/${a.meaningId}`,
+      atomId: `${a.moduleId}/${a.meaningId}`,
       meaningLabel: a.meaningLabel,
-      depth: stateDepths.get(a.baseStateId) ?? 0,
+      moduleId: a.moduleId,
+      turnGuard: a.turnGuard ?? null,
+      primaryPhaseGuard: a.primaryPhaseGuard ?? null,
     })),
   }, null, 2));
 }

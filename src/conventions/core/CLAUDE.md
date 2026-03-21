@@ -7,6 +7,8 @@ Infrastructure for the meaning-centric convention system: registry, meaning pipe
 ```
 core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
+  convention-module.ts  ConventionModule interface — formal contract for self-contained convention modules (surfaces, facts, FSM states, explanations). Also exports ModuleProvider — minimal shared contract (moduleId, entrySurfaces, surfaceGroups, facts, explanationEntries) that both ConventionModule and rule-only modules conform to.
+  rule-module.ts        RuleModule interface — declarative convention module for rule-based surface selection (ObsPattern, RouteExpr, KernelExpr, PhaseTransition, Rule). Claims carry optional `kernelDelta?: KernelDelta` for kernel threading (Phase 4). NT uses rule-only path; Bergen/DONT/Weak Twos still use FSM until Phase 5.
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())
@@ -29,6 +31,15 @@ core/
     deal-constraint-evaluator.ts  evaluateDealConstraint() — fit-check, combined-hcp, custom constraints
     witness-generator.ts  resolveRole(), compileWitnessSpec(), generateWitnessSpec() — deal generation
     binding-resolver.ts   $suit binding resolution for parameterized surfaces
+    normalize-intent.ts   normalizeIntent() — sourceIntent → CanonicalObs[] translation (migration bridge for continuation composition)
+    kernel-extractor.ts   extractKernelState() — MachineRegisters → KernelState mapping; computeKernelDelta() — diff between kernel states
+    committed-step-builder.ts  buildCommittedStep() — constructs one CommittedStep from arbitration result + registers + normalizeIntent
+    observation-log-builder.ts  buildObservationLog() — single-pass O(n) construction of CommittedStep[] from per-step data, threading kernel state
+    route-matcher.ts      matchRoute() — evaluates RouteExpr patterns (subseq, last, contains, and/or/not) against CommittedStep log; matchObs() — single observation pattern matching
+    kernel-matcher.ts     matchKernel() — evaluates KernelExpr predicates (fit, forcing, captain, competition, combinators) against KernelState
+    local-fsm.ts          advanceLocalFsm() — advances a module's local phase based on CommittedStep observations
+    rule-interpreter.ts   collectMatchingClaims() — collects matching MeaningSurface[] from RuleModule[] against AuctionContext (replays local FSMs, checks turn/phase/kernel/route constraints). deriveTurnRole() maps nextSeat to opener/responder/opponent
+    rule-enumeration.ts   enumerateRuleAtoms(), generateRuleCoverageManifest() — enumerates coverage atoms from RuleModule[] for CLI commands. Atom ID format: moduleId/meaningId.
     clause-derivation.ts  deriveClauseId(), deriveClauseDescription(), fillClauseDefaults() — auto-derive clause metadata from factId/operator/value
     hand-fact-resolver.ts Hand fact resolution utilities
     priority-mapping.ts   Priority class mapping logic
@@ -76,6 +87,8 @@ core/
 ## Convention-Universality Validation
 
 Every subsystem here exists because simpler designs failed the convention-universality test. When modifying any abstraction in this directory, validate the change against all conventions using the meaning pipeline — not just the one motivating the change. If a change would require a convention-specific `if` branch in core infrastructure, the abstraction needs rethinking.
+
+**Route matching vs phase transitions:** Route matching (`matchRoute()`) supports `ObsPattern.actor` for actor-aware filtering. Phase transitions (`advanceLocalFsm()`) are actor-agnostic by design — they fire on observation shape regardless of who bid. Do not add actor matching to phase transitions.
 
 ## Meaning Pipeline
 
@@ -166,4 +179,4 @@ how an agent acts here, remove it.
 
 **Staleness anchor:** This file assumes `core/registry.ts` and `core/pipeline/meaning-evaluator.ts` exist. If they don't, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-18 | version=4 | dir-commits-at-audit=70 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-20 | version=5 | dir-commits-at-audit=70 -->

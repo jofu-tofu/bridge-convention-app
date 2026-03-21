@@ -10,7 +10,7 @@
  * - Alternative groups: scope string becomes the group label
  */
 
-import type { ConventionModule } from "../../core/contracts/convention-module";
+import type { ConventionModule } from "../core/convention-module";
 import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { PedagogicalTagDef } from "../../core/contracts/pedagogical-tag";
 import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";

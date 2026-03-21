@@ -6,7 +6,7 @@ import type { InferenceConfig } from "../inference/types";
 import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { getConventionSpec } from "../conventions/spec-registry";
+import { getSystem, specFromSystem } from "../conventions/definitions/system-registry";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
@@ -14,18 +14,24 @@ const NS_SEATS = new Set([Seat.North, Seat.South]);
 // ── Protocol frame architecture path ────────────────────────────────
 
 /**
- * Creates a DrillConfig from a ConventionSpec (protocol frame architecture).
- * Throws if no ConventionSpec is registered for the given ID.
+ * Creates a DrillConfig from a BiddingSystem.
+ * Throws if no system is registered for the given ID.
  */
 export function createProtocolDrillConfig(
   conventionId: string,
   userSeat: Seat,
   options?: { opponentMode?: OpponentMode },
 ): DrillConfig {
-  const spec = getConventionSpec(conventionId);
+  const system = getSystem(conventionId);
+  if (!system) {
+    throw new Error(
+      `No BiddingSystem registered for "${conventionId}".`,
+    );
+  }
+  const spec = specFromSystem(system);
   if (!spec) {
     throw new Error(
-      `No ConventionSpec registered for "${conventionId}".`,
+      `No ConventionSpec derivable for "${conventionId}".`,
     );
   }
 

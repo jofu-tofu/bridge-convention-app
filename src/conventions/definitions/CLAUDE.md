@@ -11,6 +11,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `bidding-system.ts` — `BiddingSystem` interface for system-level composition. Includes optional `skeleton: BundleSkeleton` for generic module composition.
 - `system-registry.ts` — System definitions (including NT sub-bundle systems), module aggregation, `bundleFromSystem()` (auto-composes when skeleton present), `specFromSystem()` (derives ConventionSpec from skeleton).
 - `module-registry.ts` — Convention module registry.
+- `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
 
 **Architectural rule:** ALL pedagogical content (relations, alternatives, intent families) — both intra-module and cross-module — is derived from `pedagogicalTags` on surfaces. `ConventionModule` has no `pedagogicalRelations`, `alternatives`, or `intentFamilies` fields. Modules are portable building blocks: compose any set into a bundle and pedagogical content derives automatically. Do not create standalone `pedagogical-relations.ts` or `alternatives.ts` files.
 
@@ -42,6 +43,10 @@ Convention bundles that each implement a bridge bidding convention using the mea
   - `jacoby-transfers.ts` — Jacoby Transfers convention: R1 surfaces (2D/2H transfer), opener accept surfaces, R3 continuation surfaces, 8 FSM states with exportTags, 5 facts.
   - `smolen.ts` — Smolen convention: R3 surfaces (3H/3S after 2D denial), opener placement surfaces, 2 FSM states + submachine (5 states) with exportTags, hooks into Stayman's R3-2D state via `hookTransitions`, 6 facts.
   - `natural-nt.ts` — Natural NT responses: R1 surfaces (2NT invite, 3NT game), 1NT opening surface, R1 terminal transitions, shared explanation entries.
+  - `natural-nt-rules.ts` — RuleModule for natural-nt (phases: idle/opened/responded). No kernelDelta needed (INITIAL_KERNEL correct for opening/R1).
+  - `stayman-rules.ts` — RuleModule for Stayman (phases: idle/asked/shown-hearts/shown-spades/denied/inactive). Claims carry `kernelDelta` for forcing/captain effects.
+  - `jacoby-transfers-rules.ts` — RuleModule for Jacoby Transfers (phases: idle/inactive/transferred-*/accepted-*/placing-*/invited-*). Claims carry `kernelDelta` for forcing/fitAgreed/captain effects.
+  - `smolen-rules.ts` — RuleModule for Smolen (phases: idle/post-r1/placing-hearts/placing-spades/done). Claims carry `kernelDelta` for game-forcing/fitAgreed/captain effects. Proof case: uses route pattern `subseq([inquire(majorSuit), deny(majorSuit)])` instead of hookTransitions.
 - `skeleton.ts` — `BundleSkeleton` with NT opening pattern + scaffold states (nt-opened → responder-r1 → terminal + nt-contested). Module states are auto-composed by `composeModules()`.
 - `config.ts` — `ConventionBundle` via `bundleFromSystem(ntSystem)` — auto-composed when skeleton present.
 - `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles via `bundleFromSystem()`, auto-composing pedagogical content from module subsets.
@@ -59,6 +64,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `meaning-surfaces.ts` — `createBergenR1Surfaces(suit)` factory producing 5 surfaces per suit (splinter, game, limit, constructive, preemptive) parameterized by `$suit` bindings. Also includes R2–R4 surfaces. 604 lines total.
 - `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4).
 - `machine.ts` — ~16-state hierarchical FSM using `bergen-active` abstract parent state that owns `opponent-action` interrupt transitions targeting local interrupted states. States: idle → major-opened-hearts/spades → responder-r1 → R2 (opener-after-constructive/limit/preemptive) → R3 (responder-after-opener-rebid) → R4 → terminal. Uses `surfaceGroupId` and `entryEffects` for `setCaptain`.
+- `modules/bergen/bergen-rules.ts` — RuleModule for Bergen (15 phases: idle/opened-H/S/after-constructive-H/S/after-limit-H/S/after-preemptive-H/S/after-game/after-signoff/after-game-try-H/S/r4/done). Includes stub 1H/1S opening surfaces with `MajorOpen` intent for phase transitions. Claims carry captain/fitAgreed kernel deltas.
 - ~~`alternatives.ts`~~ — Removed. Alternatives now derived from `pedagogicalTags` on surfaces.
 - ~~`pedagogical-relations.ts`~~ — Removed. Relations now derived from `pedagogicalTags` on surfaces.
 
@@ -66,7 +72,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 - **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades) + Smolen (3H/3S game-forcing after 2D denial with 5-4 majors). 35 meaning surfaces, 4 fact extensions, 15-state hierarchical FSM with per-module scope states (`stayman-scope`, `transfers-scope`, `smolen-scope`) for scoped opponent interrupts + 5-state Smolen submachine (first real convention to use submachine invocation with guard-based routing). Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
 - **Bergen Bundle (Bergen Raises):** Responder raises after 1M opening. Standard Bergen variant (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding factory for DRY heart/spade parameterization. Deal constraints: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
-- **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. Pattern 3 convention — first to use hierarchical parent/child states (21-state FSM with `dont-active` parent providing inherited interference transitions), predicate transitions (for matching doubles), and multi-stage relay (overcaller → advancer → overcaller reveal). 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
+- **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Ogust responses. `modules/weak-twos/weak-twos-rules.ts` — RuleModule (11 phases: idle/opened-H/S/D/ogust-asked-H/S/D/post-ogust-H/S/D/done). Ogust ask carries `forcing: "one-round"` kernel delta. Deal constraints: opener 5–10 HCP with 6+ in a suit, responder 12+ HCP.
+- **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. `modules/dont/dont-rules.ts` — RuleModule (11 phases: idle/r1/after-2h/2d/2c/2s/double/wait-reveal/wait-2d-relay/wait-2c-relay/done). **No `match.turn`** — uses phase + route scoping because `deriveTurnRole()` classifies the overcaller as "opponent". Includes stub 1NT opening surface for phase transitions. 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
 
 ## Convention Bundle Completeness Checklist
 

@@ -5,7 +5,7 @@
  * FSM states and transitions are handled by the protocol frame (base-track.ts).
  */
 
-import type { ConventionModule } from "../../../../core/contracts/convention-module";
+import type { ConventionModule } from "../../../core/convention-module";
 import {
   WEAK_TWO_R1_SURFACES,
   WEAK_TWO_R2_HEARTS_SURFACES,

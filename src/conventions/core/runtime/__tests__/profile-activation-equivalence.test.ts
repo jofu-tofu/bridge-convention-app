@@ -4,7 +4,7 @@ import { NT_SAYC_PROFILE } from "../../../definitions/nt-bundle/system-profile";
 import { BERGEN_PROFILE } from "../../../definitions/bergen-bundle/system-profile";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
-import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
+import { CAP_OPENING_1NT } from "../../../definitions/capability-vocabulary";
 
 describe("profile-driven activation", () => {
   describe("NT bundle: profile activates correct modules", () => {

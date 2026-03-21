@@ -4,7 +4,7 @@ import { NT_SAYC_PROFILE } from "../system-profile";
 import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
-import { CAP_OPENING_1NT } from "../../../../core/contracts/capability-vocabulary";
+import { CAP_OPENING_1NT } from "../../capability-vocabulary";
 
 // ---------------------------------------------------------------------------
 // Sub-profiles: prove that different profiles can select different subsets

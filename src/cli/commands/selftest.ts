@@ -1,20 +1,81 @@
 // ── CLI selftest command ────────────────────────────────────────────
 
 import {
-  generateProtocolCoverageManifest,
+  enumerateRuleAtoms,
 } from "../../conventions/core";
+import type { RuleAtom } from "../../conventions/core";
 import { listSystems } from "../../conventions/definitions/system-registry";
-import { getConventionSpec } from "../../conventions/spec-registry";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
-import type { Flags, ConventionSpec, BiddingSystem, Vulnerability } from "../shared";
+import type { Flags, ConventionSpec, BiddingSystem, Vulnerability, Auction, Call, Seat, Deal } from "../shared";
 import {
   callKey,
   optionalNumericArg,
-  resolveSpec, resolveSystem, generateSeededDeal, resolveUserSeat,
-  resolveAuction, buildContext, nextSeatClockwise,
+  resolveSpec, resolveSystemWithRules,
+  generateSeededDeal, resolveUserSeat,
+  buildInitialAuction, buildContext, nextSeatClockwise, partnerOf,
 } from "../shared";
+
+/**
+ * Strategy-driven forward auction construction.
+ *
+ * Starts from buildInitialAuction(), then runs the strategy in a loop
+ * to extend the auction until the strategy produces the atom's expected
+ * encoding or hits a safety limit. Opponents always pass.
+ */
+function buildForwardAuction(
+  system: BiddingSystem,
+  spec: ConventionSpec,
+  deal: Deal,
+  userSeat: Seat,
+  atom: RuleAtom,
+  vuln: Vulnerability,
+): { auction: Auction; reached: boolean } {
+  const strategy = createSpecStrategy(spec);
+  const partner = partnerOf(userSeat);
+  const initAuction = buildInitialAuction(system, userSeat, deal);
+  const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
+  const maxBids = 20;
+
+  for (let iter = 0; iter < maxBids; iter++) {
+    const activeSeat = entries.length > 0
+      ? nextSeatClockwise(entries[entries.length - 1]!.seat)
+      : userSeat;
+
+    // Opponents always pass
+    if (activeSeat !== userSeat && activeSeat !== partner) {
+      entries.push({ seat: activeSeat, call: { type: "pass" } });
+      // Check 3 consecutive passes after a bid → auction complete
+      if (entries.length >= 4) {
+        const tail = entries.slice(-3);
+        if (tail.every((e) => e.call.type === "pass") && entries.some((e) => e.call.type === "bid")) {
+          return { auction: { entries, isComplete: true }, reached: false };
+        }
+      }
+      continue;
+    }
+
+    // Convention player's turn
+    const hand = deal.hands[activeSeat];
+    const auction: Auction = { entries: [...entries], isComplete: false };
+    const context = buildContext(hand, auction, activeSeat, vuln);
+    const result = strategy.suggest(context);
+
+    if (!result) {
+      return { auction: { entries, isComplete: false }, reached: false };
+    }
+
+    // Check if this bid matches the atom's encoding
+    if (callsMatch(result.call, atom.encoding)) {
+      return { auction: { entries, isComplete: false }, reached: true };
+    }
+
+    entries.push({ seat: activeSeat, call: result.call });
+  }
+
+  return { auction: { entries, isComplete: false }, reached: false };
+}
 
 export function runSelftest(flags: Flags, vuln: Vulnerability): void {
   const bundleId = flags["bundle"] as string | undefined;
@@ -31,14 +92,13 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
   if (all) {
     for (const system of listSystems()) {
       if (system.internal) continue;
-      const spec = getConventionSpec(system.id);
-      if (spec) {
-        specs.push({ id: system.id, spec, system });
-      }
+      if (!system.ruleModules || system.ruleModules.length === 0) continue;
+      const spec = resolveSpec(system.id);
+      specs.push({ id: system.id, spec, system });
     }
   } else {
     const spec = resolveSpec(bundleId!);
-    const system = resolveSystem(bundleId!);
+    const system = resolveSystemWithRules(bundleId!);
     specs.push({ id: bundleId!, spec, system });
   }
 
@@ -49,40 +109,86 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
     bundle: string;
     atom: string;
     status: "pass" | "fail" | "skip";
-    targeted: boolean;
     activeSeat?: string;
     correctBid?: string;
     details?: string;
   }[] = [];
 
   for (const { id, spec, system } of specs) {
-    const manifest = generateProtocolCoverageManifest(spec);
-    const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
+    const ruleModules = system.ruleModules ?? [];
+    const allAtoms = enumerateRuleAtoms(ruleModules);
     const strategy = createSpecStrategy(spec);
 
     for (let i = 0; i < allAtoms.length; i++) {
       const atom = allAtoms[i]!;
       const atomSeed = seed + i;
-      const atomLabel = `${atom.baseStateId}/${atom.surfaceId}/${atom.meaningId}`;
+      const atomLabel = `${atom.moduleId}/${atom.meaningId}`;
 
       try {
         // Generate deal for this atom
         const deal = generateSeededDeal(system, atomSeed, vuln);
         const userSeat = resolveUserSeat(system, deal);
 
-        // Build targeted auction to reach the atom's state
-        const { auction, targeted } = resolveAuction(system, spec, deal, atom.baseStateId, userSeat);
+        // Build auction via strategy-driven forward approach
+        const { auction, reached } = buildForwardAuction(
+          system, spec, deal, userSeat, atom, vuln,
+        );
 
-        // Determine active seat at the target state
+        if (!reached) {
+          // Strategy didn't reach the atom's encoding — try at initial auction
+          const initAuction = buildInitialAuction(system, userSeat, deal);
+          const activeSeat = initAuction.entries.length > 0
+            ? nextSeatClockwise(initAuction.entries[initAuction.entries.length - 1]!.seat)
+            : userSeat;
+          const hand = deal.hands[activeSeat];
+          const context = buildContext(hand, initAuction, activeSeat, vuln);
+          const result = strategy.suggest(context);
+
+          if (!result) {
+            totalSkip++;
+            results.push({
+              bundle: id,
+              atom: atomLabel,
+              status: "skip",
+              activeSeat: activeSeat as string,
+              details: "Strategy returned null (no recommendation)",
+            });
+            continue;
+          }
+
+          // Verify determinism
+          const bidKey = callKey(result.call);
+          const verifyResult = strategy.suggest(context);
+          if (!verifyResult || !callsMatch(result.call, verifyResult.call)) {
+            totalFail++;
+            results.push({
+              bundle: id,
+              atom: atomLabel,
+              status: "fail",
+              activeSeat: activeSeat as string,
+              correctBid: bidKey,
+              details: "Strategy is non-deterministic",
+            });
+            continue;
+          }
+
+          totalPass++;
+          results.push({
+            bundle: id,
+            atom: atomLabel,
+            status: "pass",
+            activeSeat: activeSeat as string,
+            correctBid: bidKey,
+          });
+          continue;
+        }
+
+        // Strategy reached the atom — verify at the auction position
         const activeSeat = auction.entries.length > 0
           ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
           : userSeat;
         const hand = deal.hands[activeSeat];
-
-        // Build context from the active seat's perspective
         const context = buildContext(hand, auction, activeSeat, vuln);
-
-        // Run strategy
         const result = strategy.suggest(context);
 
         if (!result) {
@@ -91,15 +197,29 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
             bundle: id,
             atom: atomLabel,
             status: "skip",
-            targeted,
             activeSeat: activeSeat as string,
-            details: "Strategy returned null (no recommendation)",
+            details: "Strategy returned null at target position",
           });
           continue;
         }
 
-        // Self-test: strategy bid should be deterministic
+        // Assert bid matches atom encoding
         const bidKey = callKey(result.call);
+        const expectedKey = callKey(atom.encoding);
+        if (bidKey !== expectedKey) {
+          totalFail++;
+          results.push({
+            bundle: id,
+            atom: atomLabel,
+            status: "fail",
+            activeSeat: activeSeat as string,
+            correctBid: expectedKey,
+            details: `Expected ${expectedKey} but got ${bidKey}`,
+          });
+          continue;
+        }
+
+        // Self-test: verify determinism
         const verifyResult = strategy.suggest(context);
         if (!verifyResult || !callsMatch(result.call, verifyResult.call)) {
           totalFail++;
@@ -107,7 +227,6 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
             bundle: id,
             atom: atomLabel,
             status: "fail",
-            targeted,
             activeSeat: activeSeat as string,
             correctBid: bidKey,
             details: "Strategy is non-deterministic",
@@ -120,7 +239,6 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
           bundle: id,
           atom: atomLabel,
           status: "pass",
-          targeted,
           activeSeat: activeSeat as string,
           correctBid: bidKey,
         });
@@ -131,7 +249,6 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
           bundle: id,
           atom: atomLabel,
           status: "fail",
-          targeted: false,
           details: `Error: ${msg}`,
         });
       }

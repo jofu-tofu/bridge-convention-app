@@ -14,7 +14,7 @@
  * - Hook transition wiring
  */
 
-import type { ConventionModule } from "../../../core/contracts/convention-module";
+import type { ConventionModule } from "../convention-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type {
   BaseModuleSpec,

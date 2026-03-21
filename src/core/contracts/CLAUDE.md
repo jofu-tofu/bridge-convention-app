@@ -32,7 +32,6 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | `posterior-query.ts` | `InferenceHealth`, `PosteriorQueryResult<T>`, `FactorIntrospection`, `ConditioningContext`, `PosteriorQueryPort` — consumer-facing query interface for posterior inference |
 | `posterior-backend.ts` | `LatentWorld`, `WeightedParticle`, `PosteriorState`, `PosteriorQueryIR`, `PosteriorBackend` — backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
 | `agreement-module.ts` | `ActivationKind`, `ModuleKind`, `ObligationLevel`, `Conventionality`, `PrioritySpec` (closed union of 4 attested obligation×conventionality combinations), `FORCED_CONVENTIONAL`, `PREFERRED_CONVENTIONAL`, `ACCEPTABLE_NATURAL`, `RESIDUAL_NATURAL` (named constructors), `PriorityClass` (deprecated — use `PrioritySpec`), `DecisionSurfaceIR`, `AttachmentIR`, `FactConstraintIR`, `ChoiceClosurePolicy`, `ClosureDomain`, `SystemProfileIR` (with `obligationMapping` + deprecated `priorityClassMapping`), `ModuleEntryIR`, `ConflictPolicyIR`, `DeclaredEncoderKind`, `PublicEvent`, `PublicConstraint`, `defaultObligationMapping()`, `defaultPriorityClassMapping()` (deprecated), `prioritySpecToClass()` — agreement module IR types |
-| `capability-vocabulary.ts` | `CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT` — stable host-attachment capability vocabulary (`{scope}.{context}` naming). Additional capabilities (`CAP_OPENING_MINOR`, `CAP_OPENING_STRONG_2C`, etc.) will be added as conventions exercise them. |
 | `witness-spec.ts` | `SeatRole`, `SeatConstraint`, `JointConstraint`, `PublicGuardConstraint`, `ExclusionConstraint`, `ConstraintLayer`, `PedagogicalControls`, `GeneratorStrategy`, `WitnessTarget`, `WitnessSpecIR`, `WitnessUnsatResult` — witness spec IR types for deal generation |
 | `explanation-catalog.ts` | `ExplanationRole`, `ExplanationLevel`, `ExplanationEntry`, `ExplanationCatalogIR`, `createExplanationCatalog()` |
 | `convention.ts` | `ConventionCategory`, `ConventionTeaching`, `ConventionConfig`, `DealConstraints` — convention registry types and deal constraint shapes |
@@ -41,7 +40,8 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 | `teaching-grading.ts` | `BidGrade`, `AcceptableBid`, `TeachingResolution` — cross-boundary teaching grading types used by viewport, stores, teaching, and strategy |
 | `drill.ts` | `OpponentMode`, `VulnerabilityDistribution`, `DrillTuning`, `DEFAULT_DRILL_TUNING` — drill session tuning DTOs |
 | `pedagogical-tag.ts` | `PedagogicalTagDef`, `TagDerivation`, `PedagogicalTagRef` (with `scope`, optional `role`, optional `ordinal`) — general-purpose types for deriving all pedagogical content from surface-level tags. Relations use `semanticClassId`; alternative groups use `meaningId`. `MeaningSurface.pedagogicalTags` carries the annotations. |
-| `convention-module.ts` | `ConventionModule` — formal contract for a self-contained convention module. Owns surfaces, facts, FSM states, explanations. Pedagogical content is NOT declared on modules — it's derived from `pedagogicalTags` on surfaces. |
+| `canonical-observation.ts` | `CanonicalObs` (17-member discriminated union of bridge communicative acts), `ObsAct`, `OBS_ACTS`, `ObsSuit`, `ObsStrain`, `ObsFeature`, `ObsStrength`, `ObsQuality` — bridge-universal observation vocabulary for convention-erased pattern matching. Consumed by continuation composition, CommittedStep pipeline, strategy layer. Produced by `normalizeIntent()` in `conventions/core/pipeline/normalize-intent.ts`. |
+| `committed-step.ts` | `KernelState` (closed semantic negotiation state: `fitAgreed`, `forcing`, `captain`, `competition`), `INITIAL_KERNEL`, `KernelDelta`, `ClaimRef` (minimal winning arbitration reference), `CommittedStep` (one adjudicated auction action with `publicObs`, `kernelDelta`, `postKernel`, `status`), `AuctionContext` (composite wrapper: `PublicSnapshot` + observation log). Phase 4: `postKernel` now carries real threaded kernel state for NT (via `kernelDelta` on rule module claims), not just `INITIAL_KERNEL`. |
 
 ## Design Decisions
 
@@ -50,6 +50,14 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 - **`DecisionSurfaceIR` is consumed via dual-path adapter in the pipeline.** `evaluateAllSurfaces()` accepts both `MeaningSurface[]` and `DecisionSurfaceIR[]`. The adapter `adaptMeaningSurface()` / `adaptMeaningSurfaces()` in `conventions/core/pipeline/surface-adapter.ts` maps `MeaningSurface` to `DecisionSurfaceIR`. Existing `MeaningSurface[]` callers are unchanged.
 - **`DeclaredEncoderKind` (agreement-module.ts) is distinct from `EncoderKind` (provenance.ts).** `DeclaredEncoderKind` describes the authored encoder type on a surface (`"direct"`, `"choice-set"`, `"frontier-step"`, `"relay-map"`). `EncoderKind` describes how encoding was resolved at runtime (`"default-call"`, `"resolver"`, etc.).
 - **`ConditionEvidenceIR` is the sole evidence type.** Unified from the former `ConditionEvidence` (provenance.ts, removed) and `ConditionEvidenceIR` (evidence-bundle.ts). Fields: `conditionId`, `satisfied`, `factId?`, `observedValue?`, `threshold?`. Used by `EvidenceBundleIR`, `ApplicabilityEvidence.evaluatedConditions`, `EliminationTrace.evidence`, and `MeaningView.supportingEvidence`.
+
+## Canonical Observation Ontology
+
+`canonical-observation.ts` defines a 17-act bridge-universal vocabulary (`CanonicalObs`) for describing what a bid communicates in convention-erased terms. The acts are: `open`, `show`, `deny`, `inquire`, `transfer`, `accept`, `decline`, `raise`, `place`, `signoff`, `force`, `agree`, `relay`, `overcall`, `double`, `pass`, `redouble`.
+
+**Stability constraint:** New conventions should use existing acts with new parameterizations. Only add a new act when no existing act captures the communicative semantics. The normalization function (`conventions/core/pipeline/normalize-intent.ts`) translates all 77 existing `sourceIntent` types into canonical observations. An exhaustiveness coverage test guards against drift when new surfaces are added.
+
+**Normalization is a migration bridge.** Once modules emit observations directly (Phase 6 of the continuation composition redesign), the normalization layer becomes unnecessary.
 
 ## Specificity Derivation System
 
@@ -99,7 +107,7 @@ The five-registry shared vocabulary model (see root `CLAUDE.md` § Shared Vocabu
 | **Public-state vocabulary** | `contracts/bidding.ts` (`ForcingState`, `BidAlert`). `contracts/alert.ts` (`resolveAlert()`, `derivePublicConstraints()`). Machine registers in `conventions/core/runtime/machine-types.ts`. | Built-in registers (`force`, `obligation`, `agreement`, `competition`, `captaincy`) managed by conversation machine. |
 | **Meaning vocabulary** | `contracts/meaning.ts` for `MeaningId`, `SemanticClassId`, `MeaningProposal`, `MeaningClause`, `EvidenceBundle`, `RankingMetadata`, `RecommendationBand`, `BAND_PRIORITY`, `compareRanking()`. | Semantic class IDs (`bridge:nt-invite`, `stayman:ask-major`) are cross-module by definition. |
 | **Arbitration / transform vocabulary** | `contracts/meaning.ts` for `RankingMetadata` (`recommendationBand`, `specificity`, `modulePrecedence`, `intraModuleOrder`). `contracts/tree-evaluation.ts` for ranking DTOs (`ResolvedCandidateDTO`). | The selector reads these as scalars, never as raw fact names. |
-| **Capability / attachment vocabulary** | `contracts/capability-vocabulary.ts` for stable capability IDs. `AttachmentIR` in `contracts/agreement-module.ts`. | 4 capabilities defined; more added as conventions exercise host-attachment. |
+| **Capability / attachment vocabulary** | `conventions/definitions/capability-vocabulary.ts` for stable capability IDs. `AttachmentIR` in `contracts/agreement-module.ts`. | 4 capabilities defined; more added as conventions exercise host-attachment. |
 
 **The boundary rule for `contracts/`:** A type belongs here only if it is consumed by multiple subsystems AND is convention-universal. Convention-specific derived facts, module-local registers, and convention-internal meaning IDs stay in `conventions/definitions/`. The boundary test from the five-registry model applies: if a type only describes one convention's internal reasoning, it does not belong in `contracts/`.
 
@@ -124,4 +132,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `index.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-07 | last-audited=2026-03-18 | version=2 | dir-commits-at-audit=0 | tree-sig=dirs:1,files:28,exts:ts:26,md:1 -->
+<!-- context-layer: generated=2026-03-07 | last-audited=2026-03-20 | version=4 | dir-commits-at-audit=0 | tree-sig=dirs:1,files:27,exts:ts:25,md:1 -->

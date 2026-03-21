@@ -4,9 +4,9 @@
 // Used by the play, plan, and (future) integration-test commands.
 
 import {
-  replay,
-  getBaseModules,
+  enumerateRuleAtoms,
 } from "../conventions/core";
+import type { RuleModule } from "../conventions/core/rule-module";
 import { createSpecStrategy, createOpponentStrategy } from "../bootstrap/strategy-factory";
 import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder";
 import type { BidResult } from "../core/contracts/bidding";
@@ -22,11 +22,10 @@ import { Vulnerability,
 
 /** Internal tracking data for each convention-player decision point.
  *  Carries both player-visible data (via BiddingViewport) and internal
- *  metadata (stateId, atomId, recommendation) for plan/selftest use. */
+ *  metadata (atomId, recommendation) for plan/selftest use. */
 export interface PlaythroughStep {
   readonly stepIndex: number;
-  /** Convention state metadata (internal — not exposed to agents). */
-  readonly stateId: string | null;
+  /** Atom ID from rule enumeration (internal — not exposed to agents). */
   readonly atomId: string | null;
   readonly meaningLabel: string | null;
   readonly recommendation: string;
@@ -48,30 +47,29 @@ export interface PlaythroughResult {
 // ── Atom call map ───────────────────────────────────────────────────
 
 /**
- * Build a map from (stateId, callKey) → atom info.
+ * Build a map from callKey → atom info using rule module claims.
  * Used to identify which atom a strategy recommendation corresponds to.
+ *
+ * Key format: just callKey (e.g. "2C", "3NT") — atoms are identified
+ * by their encoding call, not by FSM state.
  */
 export function buildAtomCallMap(
-  spec: ConventionSpec,
+  ruleModules: readonly RuleModule[],
 ): Map<string, { atomId: string; meaningLabel: string }> {
   const map = new Map<string, { atomId: string; meaningLabel: string }>();
-  for (const track of getBaseModules(spec)) {
-    for (const [stateId, state] of Object.entries(track.states)) {
-      if (!state.surface) continue;
-      const fragment = spec.surfaces[state.surface];
-      if (!fragment) continue;
-      for (const surface of fragment.surfaces) {
-        const call = surface.encoding?.defaultCall;
-        if (call) {
-          const key = `${stateId}|${callKey(call)}`;
-          map.set(key, {
-            atomId: `${stateId}/${state.surface}/${surface.meaningId}`,
-            meaningLabel: surface.teachingLabel,
-          });
-        }
-      }
+  const atoms = enumerateRuleAtoms(ruleModules);
+
+  for (const atom of atoms) {
+    const key = callKey(atom.encoding);
+    // First atom for a given callKey wins (higher-precedence modules first)
+    if (!map.has(key)) {
+      map.set(key, {
+        atomId: `${atom.moduleId}/${atom.meaningId}`,
+        meaningLabel: atom.meaningLabel,
+      });
     }
   }
+
   return map;
 }
 
@@ -136,34 +134,22 @@ export function runSinglePlaythrough(
 
     if (!result) break; // Strategy done
 
-    // Replay to find current state
-    const snapshot = replay(
-      entries.map((e) => ({ call: e.call, seat: e.seat })),
-      spec,
-      userSeat,
-    );
-    const stateId = snapshot.base?.stateId ?? null;
-
-    // Map recommendation to atom
-    let atomId: string | null = null;
-    let meaningLabel: string | null = null;
-    if (stateId) {
-      const match = atomCallMap.get(`${stateId}|${callKey(result.call)}`);
-      if (match) {
-        atomId = match.atomId;
-        meaningLabel = match.meaningLabel;
-        atomsCovered.push(atomId);
-      }
+    // Map recommendation to atom via callKey
+    const bidCallKey = callKey(result.call);
+    const match = atomCallMap.get(bidCallKey);
+    const atomId = match?.atomId ?? null;
+    const meaningLabel = match?.meaningLabel ?? null;
+    if (atomId) {
+      atomsCovered.push(atomId);
     }
 
     steps.push({
       stepIndex: steps.length,
       seat: activeSeat,
-      stateId,
       atomId,
       meaningLabel,
       auctionEntries: [...entries],
-      recommendation: callKey(result.call),
+      recommendation: bidCallKey,
       isUserStep: activeSeat === userSeat || activeSeat === partner,
     });
 
@@ -208,7 +194,6 @@ export function buildRevealStep(
   return {
     stepIndex: s.stepIndex,
     seat: s.seat,
-    stateId: s.stateId,
     atomId: s.atomId,
     meaningLabel: s.meaningLabel,
     auctionSoFar: s.auctionEntries.map((e) => ({ seat: e.seat, call: callKey(e.call) })),

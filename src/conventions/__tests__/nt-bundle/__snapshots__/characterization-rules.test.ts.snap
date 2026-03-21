@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P (R1 — responder surfaces) > produces surfaces for responder with Stayman hand 1`] = `7`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P (R1 — responder surfaces) > produces surfaces for responder with Stayman hand 2`] = `"stayman:ask-major"`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P (R1 — responder surfaces) > produces surfaces for responder with transfer hand 1`] = `7`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P (R1 — responder surfaces) > produces surfaces for responder with transfer hand 2`] = `"transfer:to-hearts"`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P (Stayman — opener response) > produces opener response surfaces 1`] = `3`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P (Stayman — opener response) > produces opener response surfaces 2`] = `"stayman:deny-major"`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P (Stayman R3 — after denial) > produces R3 surfaces for Stayman responder after 2D denial 1`] = `4`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P (Stayman R3 — after denial) > produces R3 surfaces for Stayman responder after 2D denial 2`] = `null`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P-3H (Smolen — after Stayman denial) > produces Smolen surfaces for responder with 5-4 hand 1`] = `4`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P-3H (Smolen — after Stayman denial) > produces Smolen surfaces for responder with 5-4 hand 2`] = `null`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2H-P (Stayman R3 — after hearts shown) > produces R3 surfaces for Stayman responder after 2H 1`] = `4`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2H-P (Stayman R3 — after hearts shown) > produces R3 surfaces for Stayman responder after 2H 2`] = `null`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P (Transfer — opener accepts) > produces transfer accept surfaces for opener 1`] = `1`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P (Transfer — opener accepts) > produces transfer accept surfaces for opener 2`] = `"transfer:accept"`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P-2H-P (Transfer R3 — after accept) > produces R3 surfaces for transfer responder after accept 1`] = `4`;
+
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P-2H-P (Transfer R3 — after accept) > produces R3 surfaces for transfer responder after accept 2`] = `null`;

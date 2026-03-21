@@ -14,6 +14,7 @@ import type { DealConstraints, Deal, Seat, Auction } from "../../engine/types";
 import type { SystemProfileIR } from "../../core/contracts/agreement-module";
 import type { ConventionCategory } from "../../core/contracts/convention";
 import type { BundleSkeleton } from "../core/composition/compose-modules";
+import type { RuleModule } from "../core/rule-module";
 
 export interface BiddingSystem {
   /** Unique system identifier (kebab-case). */
@@ -46,4 +47,9 @@ export interface BiddingSystem {
    *  When present, `composeModules()` auto-generates the BaseModuleSpec,
    *  SurfaceFragments, and ConventionSpec from the skeleton + modules. */
   readonly skeleton?: BundleSkeleton;
+
+  /** Rule modules for rule-based surface selection (Phase 3+).
+   *  When present, the rule interpreter replaces FSM-based surface selection.
+   *  The old FSM still runs for register/kernel state tracking. */
+  readonly ruleModules?: readonly RuleModule[];
 }

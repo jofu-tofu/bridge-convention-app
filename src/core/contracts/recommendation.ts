@@ -7,6 +7,7 @@ import type { DecisionProvenance, HandoffTrace } from "./provenance";
 import type { PosteriorFactValue } from "./posterior";
 import type { TeachingProjection } from "./teaching-projection";
 import type { EvaluatedFacts } from "./fact-catalog";
+import type { AuctionContext } from "./committed-step";
 
 /** Summary of posterior engine results from the most recent suggest() call. */
 export interface PosteriorSummary {
@@ -71,6 +72,8 @@ export interface StrategyEvaluation {
   readonly facts: EvaluatedFacts | null;
   /** Machine/protocol state from the evaluation. Null when no machine is wired. */
   readonly machineSnapshot: MachineDebugSnapshot | null;
+  /** Observation log and snapshot for rule-based surface selection. Null when not produced. */
+  readonly auctionContext: AuctionContext | null;
 }
 
 /** Extended strategy interface for convention-based strategies that produce practical recommendations.

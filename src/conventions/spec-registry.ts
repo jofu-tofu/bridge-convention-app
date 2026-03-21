@@ -9,14 +9,17 @@ import { specFromSystem, ntSystem } from "./definitions/system-registry";
 import { bergenConventionSpec } from "./definitions/bergen-bundle/convention-spec";
 import { weakTwosConventionSpec } from "./definitions/weak-twos-bundle/convention-spec";
 import { dontConventionSpec } from "./definitions/dont-bundle/convention-spec";
+import { bergenRules } from "./definitions/modules/bergen/bergen-rules";
+import { weakTwosRules } from "./definitions/modules/weak-twos/weak-twos-rules";
+import { dontRules } from "./definitions/modules/dont/dont-rules";
 
 const ntConventionSpec = specFromSystem(ntSystem)!;
 
 const CONVENTION_SPECS: Map<string, ConventionSpec> = new Map([
   ["nt-bundle", ntConventionSpec],
-  ["bergen-bundle", bergenConventionSpec],
-  ["weak-twos-bundle", weakTwosConventionSpec],
-  ["dont-bundle", dontConventionSpec],
+  ["bergen-bundle", { ...bergenConventionSpec, ruleModules: [bergenRules] }],
+  ["weak-twos-bundle", { ...weakTwosConventionSpec, ruleModules: [weakTwosRules] }],
+  ["dont-bundle", { ...dontConventionSpec, ruleModules: [dontRules] }],
 
   // ── Aliases for sub-bundle IDs ──────────────────────────────────────
   // These share the full parent ConventionSpec. The base track includes all

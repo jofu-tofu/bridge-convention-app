@@ -25,8 +25,6 @@ import type { GameStoreOptions } from "./game.svelte";
 import type { BidFeedbackDTO } from "../service";
 
 export type { BidHistoryEntry } from "../core/contracts";
-// Re-export BidGrade for backward compat (debug components use the string values)
-export { BidGrade } from "../core/contracts/teaching-grading";
 export type { TeachingResolution } from "../core/contracts";
 
 /** Viewport-safe bid feedback for the current turn. */

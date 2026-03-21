@@ -8,7 +8,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
 - **Minimal engine imports.** Stores import `EnginePort` type, `nextSeat`/`partnerSeat` from constants, and `evaluateHand` from hand-evaluator (for bid correctness checking). Never import `auction`, `scoring`, etc.
-- **Minimal conventions/core imports.** `bidding.svelte.ts` imports `createBiddingContext`; `app.svelte.ts` imports type `ConventionConfig`. `game.svelte.ts` uses `noopExtractor` from `inference/noop-extractor`. The `toExtractorInput()` adapter builds a narrow DTO for annotation production.
+- **Minimal conventions/core imports.** `bidding.svelte.ts` imports `createBiddingContext`, `assembleBidFeedback`, `buildViewportFeedback`, `buildTeachingDetail` via the service barrel. `app.svelte.ts` imports type `ConventionConfig`. `game.svelte.ts` imports `createInferenceCoordinator` and viewport builders via the service barrel.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | `dds.svelte.ts`      | DDS sub-store — async DDS solve with timeout, stale-result guard, generation counter               |
 | `dev-params.ts`      | `applyDevParams()` — reads URL params (?convention, ?seed, ?debug, etc.) and configures the app store. Called from `App.svelte` at startup |
 
-**Game store key methods:** `startDrill`, `userBid`, `retryBid`, `runAiBids`, `completeAuction`, `getExpectedBid` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `isDefenderPrompt` (declarer prompt); `startPlay`, `userPlayCard`, `runAiPlays`, `completeTrick`, `completePlay`, `skipToReview`, `triggerDDSSolve`, `getLegalPlaysForSeat`, `getRemainingCards` (play). See `game.svelte.ts` for signatures.
+**Game store key methods:** `startDrill`, `userBid`, `retryBid`, `getExpectedBid`, `getDebugSnapshot` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `acceptPrompt()`, `declinePrompt()` (declarer prompt); `userPlayCard`, `skipToReview`, `playThisHand`, `getLegalPlaysForSeat`, `getRemainingCards`, `refreshLegalPlays` (play). See `game.svelte.ts` for signatures.
 
 **Key state:** `effectiveUserSeat` — defaults to South, set to North on declarer swap. Reset by `startDrill()`. `isProcessing` + `playAborted` flags guard AI play loop races.
 
@@ -29,7 +29,9 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Viewport getters:** `gameStore.biddingViewport` — `$derived` `BiddingViewport` computed from current state (see `src/core/viewport/`). `gameStore.viewportFeedback` — `$derived` `ViewportBidFeedback` computed after grading. `gameStore.declarerPromptViewport` — `$derived` `DeclarerPromptViewport` for DECLARER_PROMPT phase. `gameStore.playingViewport` — `$derived` `PlayingViewport` for PLAYING phase. `gameStore.explanationViewport` — `$derived` `ExplanationViewport` for EXPLANATION phase. All enforce the player information boundary: components consume these instead of raw deal/engine state.
 
-**Exported types:** `BidFeedback` (with `grade: BidGrade`, `teachingResolution: TeachingResolution | null`, `practicalRecommendation?: PracticalRecommendation` sourced from `ConventionBiddingStrategy.getLastEvaluation().practicalRecommendation`, `teachingProjection?: TeachingProjection` sourced from `ConventionBiddingStrategy.getLastEvaluation().teachingProjection`, not from `BidResult`, `encodingTrace?: EncodingTrace`). `resolveTeachingAnswer()` is called with `intentFamilies` from `conventionStrategy.getLastEvaluation()?.intentFamilies`, `BidGrade`, `TeachingResolution` (re-exported from `teaching/teaching-resolution`), `BidHistoryEntry` (re-exported from `contracts/`, now includes `teachingProjection?: TeachingProjection` for review phase), `GamePhase`, `PlayLogEntry`, `seatController()`.
+**Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `contracts/`), `TeachingResolution` (re-exported from `contracts/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
+
+**Service delegation:** When `BiddingStoreConfig.service` and `handle` are provided, `userBid` delegates to `service.submitBid()` for grading and auction advancement. The store then animates AI bids locally with delays. Legacy local path (no service) preserved for tests. `getExpectedBid()` and `getDebugSnapshot()` are async — they delegate to service when wired.
 
 **Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
 

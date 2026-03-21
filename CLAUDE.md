@@ -187,7 +187,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 2. **User Learning Enhancements** — dedicated learning screen needs rebuild for meaning pipeline. Blocked on learning screen design spec.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard). Blocked on posterior redesign.
 4. **Convention Migration** — Migrate remaining conventions (SAYC, Lebensohl Lite) to meaning pipeline bundles. Lebensohl blocked on relay encoding spec; SAYC is a full base system.
-5. **Continuation Composition Phase 6+** — deferred optimizations: old FSM infrastructure cleanup (`compose-modules.ts` still used by `bundleFromSystem()`). Completed: incremental local FSM advancement (Item 1), actor-aware observation matching (Item 2), CLI atom enumeration rebuild (Item 3b), evaluation subsystem migration (Item 3c).
+5. **Continuation Composition Phase 6 complete.** All Phase 6 items done: incremental local FSM advancement, actor-aware observation matching, CLI atom enumeration rebuild, evaluation subsystem migration, old FSM infrastructure cleanup. Old FSM infrastructure removed from barrel exports.
 
 ## Architecture Spec & Alignment
 
@@ -213,7 +213,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 | Area | Alignment | Key gaps |
 |------|-----------|----------|
 | Pipeline (selection, teaching, provenance) | ~97% | Evaluation runtime path live via `config-factory.ts` → `bundleToRuntimeModules()` → `evaluationRuntime` option. 5-grade taxonomy implemented. |
-| Upstream (modules, profiles, machine) | ~85% | All 4 bundles migrated to RuleModule (Phases 4-5 complete). Rule interpreter is self-sufficient — per-step replay with kernel threading, no FSM. Old FSM path removed from protocol-adapter. `ModuleProvider` interface introduced. Old FSM infrastructure (`replay.ts`, `compose-modules.ts`) retained for bundle construction until fully replaced. No host-attachment exercised. |
+| Upstream (modules, profiles, machine) | ~90% | All 4 bundles migrated to RuleModule (Phases 4-6 complete). Rule interpreter is self-sufficient — per-step replay with kernel threading, no FSM. Old FSM infrastructure removed from barrel exports. `ModuleProvider` interface introduced. No host-attachment exercised. |
 | Posterior engine | ~70% (boundary designed and implemented, consumer migration pending) | Contracts, factor compiler, backend, query port, CI boundary tests done. Old `PosteriorEngine` → `SeatPosterior` path still works. Consumer migration (Phase 4B) pending. |
 | Convention coverage | Patterns 1 + 3 + submachine | Stayman, Bergen, Weak Twos, DONT, Smolen — all with RuleModule. Patterns 2, 4-6 not yet exercised. |
 | WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |

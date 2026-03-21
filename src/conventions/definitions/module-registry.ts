@@ -5,7 +5,7 @@
  * to resolve module references from system profiles.
  */
 
-import type { ConventionModule } from "../../core/contracts/convention-module";
+import type { ConventionModule, ModuleProvider } from "../core/convention-module";
 
 // ── Module imports ──────────────────────────────────────────────────
 

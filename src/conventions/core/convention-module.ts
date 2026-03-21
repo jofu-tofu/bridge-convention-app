@@ -14,16 +14,34 @@
  * system/bundle level.
  */
 
-import type { MeaningSurface } from "./meaning";
-import type { FactCatalogExtension } from "./fact-catalog";
-import type { ExplanationEntry } from "./explanation-catalog";
+import type { MeaningSurface } from "../../core/contracts/meaning";
+import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
+import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
 import type {
   MachineState,
   MachineTransition,
   ConversationMachine,
-} from "../../conventions/core/runtime/machine-types";
+} from "./runtime/machine-types";
 
-export interface ConventionModule {
+/**
+ * ModuleProvider — minimal shared contract for convention module data.
+ *
+ * Both old `ConventionModule` (with FSM fields) and new rule-only modules
+ * conform naturally. Consumers that need only surfaces, facts, and explanations
+ * should use `ModuleProvider` instead of `ConventionModule`.
+ */
+export interface ModuleProvider {
+  readonly moduleId: string;
+  readonly entrySurfaces: readonly MeaningSurface[];
+  readonly surfaceGroups: readonly {
+    readonly groupId: string;
+    readonly surfaces: readonly MeaningSurface[];
+  }[];
+  readonly facts: FactCatalogExtension;
+  readonly explanationEntries: readonly ExplanationEntry[];
+}
+
+export interface ConventionModule extends ModuleProvider {
   /** Unique module identifier (kebab-case). */
   readonly moduleId: string;
 

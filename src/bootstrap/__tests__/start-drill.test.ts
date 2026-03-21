@@ -105,7 +105,7 @@ describe("startDrill", () => {
 
     await expect(
       startDrill(engine, unknownConvention, Seat.South),
-    ).rejects.toThrowError(/No ConventionSpec registered/);
+    ).rejects.toThrowError(/No BiddingSystem registered/);
   });
 
   it("rotates constraints when allowedDealers picks a different dealer", async () => {

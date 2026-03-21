@@ -481,7 +481,14 @@ export interface ConventionSpec {
   readonly modules: readonly ModuleSpec[];
   /** All surface fragments referenced by modules. */
   readonly surfaces: Readonly<Record<string, SurfaceFragment>>;
+  /** Rule modules for rule-based surface selection (Phase 3+).
+   *  When present, the protocol adapter uses the rule interpreter
+   *  for surface selection. The old FSM still runs for register tracking. */
+  readonly ruleModules?: readonly RuleModule[];
 }
+
+// Forward reference for RuleModule — avoid circular import
+import type { RuleModule } from "../rule-module";
 
 // ── ConventionSpec Helpers ──────────────────────────────────────────
 

@@ -125,7 +125,7 @@ export async function processPlayCard(
  * Run initial AI plays after play starts (if opening leader is AI).
  * Returns the list of AI plays for animation.
  */
-export async function runInitialAiPlays(
+async function _runInitialAiPlays(
   state: SessionState,
   engine: EnginePort,
 ): Promise<{ aiPlays: AiPlayEntry[]; legalPlays: Card[] | null }> {

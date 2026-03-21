@@ -133,6 +133,7 @@ export function meaningToStrategy(
     teachingProjection: null,
     facts: null,
     machineSnapshot: null,
+    auctionContext: null,
   };
 
   const catalog = options?.factCatalog ?? createSharedFactCatalog();
@@ -163,6 +164,7 @@ export function meaningToStrategy(
         teachingProjection,
         facts,
         machineSnapshot: null,
+    auctionContext: null,
       };
 
       if (!result.selected) return null;

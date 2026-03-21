@@ -57,7 +57,7 @@ npx tsx src/cli/main.ts eval --help
 ### Phase 1: Per-Atom Targeted (orchestrator-driven)
 
 Tests each coverage atom independently with a dedicated seed. The orchestrator
-reads the plan, walks atoms in BFS order, and calls `eval` for each.
+reads the plan, walks atoms grouped by module, and calls `eval` for each.
 
 ```bash
 # Viewport only — sanitized (seat, hand, HCP, auction, legal calls). No answer.
@@ -71,7 +71,7 @@ npx tsx src/cli/main.ts eval --bundle=nt-bundle \
 
 **Key properties:**
 - `eval` output is always sanitized — no internal state IDs, expected bids, or dependency tree
-- `--atom` takes an atomId from the plan output (format: `stateId/surfaceId/meaningId`). Invalid atom IDs are rejected with exit code 2
+- `--atom` takes an atomId from the plan output (format: `moduleId/meaningId`). Invalid atom IDs are rejected with exit code 2
 - With `--bid`: returns `ViewportBidFeedback` (conditions, alternatives, near-misses, conventions) + `TeachingDetail` (whyNot, meaningViews, callViews, ambiguityScore, partner hand space)
 - 5-level grading: correct, correct-not-preferred, acceptable, near-miss, incorrect
 - Both opener (N) and responder (S) atoms are testable — the active seat is determined by the BFS path
@@ -111,7 +111,7 @@ npx tsx src/cli/main.ts plan --bundle=nt-bundle --agents=3 --coverage=2
 ```
 
 Output has:
-- **`phase1`** — Orchestrator-private. Per-atom BFS-ordered list with `atomId`, `expectedBid`, `seeds`, `depth`, `parentStateId`. Plus `dependencyGraph` for stop-on-error propagation. **Never sent to agents.**
+- **`phase1`** — Orchestrator-private. Per-atom list grouped by module with `atomId`, `expectedBid`, `seeds`, `turnGuard`, `primaryPhaseGuard`. **Never sent to agents.**
 - **`phase2`** — Agent-facing. Seed assignments per agent, balanced by step count.
 
 ## Design Decisions
@@ -144,7 +144,6 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 |-----|-------------|
 | **Seed selection bias** | Phase 1 only tests hands where the convention *should* apply. No ambiguous/negative cases. |
 | **Multi-bundle interaction** | Bundles tested in isolation. No cross-bundle convention conflict testing. |
-| **Protocol atom approximation** | `wouldProtocolLikelyAttach()` is heuristic. Some protocol atoms may be missed. |
 | **Teaching feedback accuracy** | We grade bids, not feedback text. Feedback could be wrong even when the bid is right. |
 
 ## Key Source Files
@@ -152,7 +151,7 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 | File | Purpose |
 |------|---------|
 | `src/cli/main.ts` | CLI entry point — dispatch + settings |
-| `src/cli/shared.ts` | Shared utilities — arg parsing, spec/bundle resolution, deal generation, auction builder |
+| `src/cli/shared.ts` | Shared utilities — arg parsing, spec/bundle/system resolution, deal generation, context construction |
 | `src/cli/playthrough.ts` | Playthrough infrastructure — types, single-run, grading |
 | `src/cli/commands/info.ts` | `list`, `bundles`, `describe` subcommands |
 | `src/cli/commands/eval.ts` | `eval` subcommand — per-atom targeted evaluation |
@@ -165,7 +164,7 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 | `src/core/contracts/teaching-grading.ts` | `BidGrade`, `TeachingResolution`, `AcceptableBid` — grading contracts |
 | `src/teaching/teaching-resolution.ts` | `resolveTeachingAnswer()`, `gradeBid()` — 5-level grading implementation |
 | `src/strategy/bidding/protocol-adapter.ts` | `protocolSpecToStrategy()` — ConventionSpec to strategy |
-| `src/conventions/core/protocol/coverage-enumeration.ts` | BFS atom enumeration, coverage manifest |
+| `src/conventions/core/pipeline/rule-enumeration.ts` | Rule-based atom enumeration, coverage manifest |
 | `src/engine/deal-generator.ts` | Constraint-based deal generation with seeded PRNG |
 | `src/core/util/seeded-rng.ts` | `mulberry32()` — deterministic PRNG |
 

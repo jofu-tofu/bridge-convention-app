@@ -4,13 +4,7 @@
 // settings resolution, spec/bundle lookup, deal generation,
 // auction construction, hand formatting, and viewport construction.
 
-import { getConventionSpec } from "../conventions/spec-registry";
-import {
-  enumerateBaseTrackStates,
-  type BaseTrackPath,
-  getBaseModules,
-} from "../conventions/core";
-import { getSystem, listSystems } from "../conventions/definitions/system-registry";
+import { getSystem, listSystems, specFromSystem } from "../conventions/definitions/system-registry";
 import { createBiddingContext } from "../conventions/core";
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
@@ -231,11 +225,10 @@ export function printAvailableSystems(): void {
 }
 
 export function resolveSpec(bundleId: string): ConventionSpec {
-  const spec = getConventionSpec(bundleId);
+  const system = resolveSystem(bundleId);
+  const spec = specFromSystem(system);
   if (!spec) {
-    console.error(`Unknown bundle: "${bundleId}"`);
-    console.error("Available bundles:");
-    printAvailableSystems();
+    console.error(`No ConventionSpec derivable for "${bundleId}"`);
     process.exit(2);
   }
   return spec;
@@ -347,72 +340,19 @@ export function partnerOf(seat: Seat): Seat {
   }
 }
 
-export function findPathToState(
-  spec: ConventionSpec,
-  targetStateId: string,
-): BaseTrackPath | null {
-  for (const track of getBaseModules(spec)) {
-    const paths = enumerateBaseTrackStates(track);
-    const path = paths.get(targetStateId);
-    if (path) return path;
-  }
-  return null;
-}
-
-export function buildTargetedAuction(
-  defaultAuction: Auction,
-  path: BaseTrackPath,
-  userSeat: Seat,
-): Auction {
-  const entries = [...defaultAuction.entries];
-
-  const transitionsToAdd = path.transitions.slice(1);
-  if (transitionsToAdd.length === 0) return { entries, isComplete: false };
-
-  let currentSeat = nextSeatClockwise(entries[entries.length - 1]!.seat);
-  const partner = partnerOf(userSeat);
-
-  for (const transition of transitionsToAdd) {
-    if (!transition.call) continue;
-
-    const isPass = transition.call.type === "pass";
-
-    if (!isPass) {
-      while (currentSeat !== userSeat && currentSeat !== partner) {
-        entries.push({ seat: currentSeat, call: { type: "pass" } });
-        currentSeat = nextSeatClockwise(currentSeat);
-      }
+/** Resolve a BiddingSystem, falling back to spec derivation for sub-bundle IDs.
+ *  Returns the system and its ruleModules (required for rule enumeration). */
+export function resolveSystemWithRules(bundleId: string): BiddingSystem {
+  const system = resolveSystem(bundleId);
+  if (!system.ruleModules || system.ruleModules.length === 0) {
+    // Sub-bundle IDs (e.g. nt-stayman, nt-transfers) may not have ruleModules
+    // directly. Derive a spec which attaches parent ruleModules.
+    const spec = specFromSystem(system);
+    if (spec?.ruleModules && spec.ruleModules.length > 0) {
+      return { ...system, ruleModules: spec.ruleModules };
     }
-
-    entries.push({ seat: currentSeat, call: transition.call });
-    currentSeat = nextSeatClockwise(currentSeat);
   }
-
-  while (currentSeat !== userSeat && currentSeat !== partner) {
-    entries.push({ seat: currentSeat, call: { type: "pass" } });
-    currentSeat = nextSeatClockwise(currentSeat);
-  }
-
-  return { entries, isComplete: false };
-}
-
-export function resolveAuction(
-  system: BiddingSystem,
-  spec: ConventionSpec,
-  deal: Deal,
-  targetStateId: string,
-  userSeat: Seat,
-): { auction: Auction; targeted: boolean } {
-  const defaultAuction = buildInitialAuction(system, userSeat, deal);
-  const path = findPathToState(spec, targetStateId);
-  if (!path) return { auction: defaultAuction, targeted: false };
-
-  if (path.transitions.some((t) => t.call === null)) {
-    return { auction: defaultAuction, targeted: false };
-  }
-
-  const targeted = buildTargetedAuction(defaultAuction, path, userSeat);
-  return { auction: targeted, targeted: true };
+  return system;
 }
 
 // ── Viewport construction ───────────────────────────────────────────

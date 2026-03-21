@@ -10,6 +10,8 @@
 import type { BiddingSystem } from "./bidding-system";
 import type { ConventionBundle } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
+import type { RuleModule } from "../core/rule-module";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
 import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
@@ -23,13 +25,20 @@ import { assembleConventionSpec } from "../core/protocol/spec-assembler";
 
 import { Seat, Suit } from "../../engine/types";
 import { ConventionCategory } from "../../core/contracts/convention";
-import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPPONENT_1NT } from "../../core/contracts/capability-vocabulary";
+import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPPONENT_1NT } from "./capability-vocabulary";
 import { buildAuction } from "../../engine/auction-helpers";
 import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./nt-bundle/system-profile";
 import { NT_SKELETON } from "./nt-bundle/skeleton";
+import { naturalNtRules } from "./modules/natural-nt-rules";
+import { staymanRules } from "./modules/stayman-rules";
+import { jacobyTransfersRules } from "./modules/jacoby-transfers-rules";
+import { smolenRules } from "./modules/smolen-rules";
 import { BERGEN_PROFILE } from "./bergen-bundle/system-profile";
+import { bergenRules } from "./modules/bergen/bergen-rules";
 import { DONT_PROFILE } from "./dont-bundle/system-profile";
+import { dontRules } from "./modules/dont/dont-rules";
 import { WEAK_TWO_PROFILE } from "./weak-twos-bundle/system-profile";
+import { weakTwosRules } from "./modules/weak-twos/weak-twos-rules";
 const ntSystem: BiddingSystem = {
   id: "nt-bundle",
   name: "1NT Response Bundle",
@@ -57,6 +66,7 @@ const ntSystem: BiddingSystem = {
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   skeleton: NT_SKELETON,
+  ruleModules: [naturalNtRules, staymanRules, jacobyTransfersRules, smolenRules],
 };
 
 const ntStaymanSystem: BiddingSystem = {
@@ -122,6 +132,7 @@ const bergenSystem: BiddingSystem = {
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_MAJOR]: "active" },
+  ruleModules: [bergenRules],
 };
 
 const dontSystem: BiddingSystem = {
@@ -143,6 +154,7 @@ const dontSystem: BiddingSystem = {
     return undefined;
   },
   declaredCapabilities: { [CAP_OPPONENT_1NT]: "active" },
+  ruleModules: [dontRules],
 };
 
 const weakTwosSystem: BiddingSystem = {
@@ -163,6 +175,7 @@ const weakTwosSystem: BiddingSystem = {
     if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["2H", "P"]);
     return undefined;
   },
+  ruleModules: [weakTwosRules],
 };
 
 // ── Registry ────────────────────────────────────────────────────────
@@ -204,7 +217,7 @@ export function aggregateModuleContent(system: BiddingSystem): {
 // ── Bundle + Spec generation ──────────────────────────────────────────
 
 /** Derive a ConventionBundle from a BiddingSystem + module registry.
- *  When the system has a skeleton, composeModules() auto-generates surfaces/facts. */
+ *  Prefers ruleModules when available; falls back to skeleton+composeModules. */
 export function bundleFromSystem(system: BiddingSystem): ConventionBundle {
   const { explanationCatalog, pedagogicalRelations, acceptableAlternatives, intentFamilies } =
     aggregateModuleContent(system);
@@ -227,7 +240,12 @@ export function bundleFromSystem(system: BiddingSystem): ConventionBundle {
     intentFamilies,
   };
 
-  // When skeleton is available, compose modules to add surfaces/facts
+  // Prefer rule modules — collects surfaces/facts/explanations directly
+  if (system.ruleModules && system.ruleModules.length > 0) {
+    return { ...base, ...bundleFromRuleModules(system.ruleModules) };
+  }
+
+  // Fallback: skeleton + composeModules (legacy path)
   if (system.skeleton) {
     const modules = getModules(system.moduleIds);
     const composed = composeModules(
@@ -246,29 +264,89 @@ export function bundleFromSystem(system: BiddingSystem): ConventionBundle {
   return base;
 }
 
-/** Derive a ConventionSpec from a BiddingSystem with a skeleton.
- *  Returns undefined if the system has no skeleton (use hand-authored spec). */
+/**
+ * Collect surfaces, facts, and explanations directly from RuleModule[].
+ * No FSM or skeleton needed — rules are the sole source of convention logic.
+ */
+function bundleFromRuleModules(
+  ruleModules: readonly RuleModule[],
+): Pick<ConventionBundle, "meaningSurfaces" | "factExtensions"> {
+  // Collect all surfaces from rule claims, grouped by module
+  const surfaceGroups: { groupId: string; surfaces: MeaningSurface[] }[] = [];
+  const seenMeaningIds = new Set<string>();
+
+  for (const mod of ruleModules) {
+    const moduleSurfaces: MeaningSurface[] = [];
+    for (const rule of mod.rules) {
+      for (const claim of rule.claims) {
+        if (!seenMeaningIds.has(claim.surface.meaningId)) {
+          seenMeaningIds.add(claim.surface.meaningId);
+          moduleSurfaces.push(claim.surface);
+        }
+      }
+    }
+    if (moduleSurfaces.length > 0) {
+      surfaceGroups.push({ groupId: mod.id, surfaces: moduleSurfaces });
+    }
+  }
+
+  // Collect fact extensions from each module
+  const factExtensions = ruleModules
+    .map((m) => m.facts)
+    .filter((f) => f.definitions.length > 0 || f.evaluators.size > 0);
+
+  return {
+    meaningSurfaces: surfaceGroups,
+    factExtensions,
+  };
+}
+
+/** Derive a ConventionSpec from a BiddingSystem.
+ *  When the system has a skeleton, composes via FSM. When it has ruleModules
+ *  but no skeleton, creates a minimal spec with just ruleModules.
+ *  Returns undefined if neither skeleton nor ruleModules are present. */
 export function specFromSystem(system: BiddingSystem): ConventionSpec | undefined {
-  if (!system.skeleton) return undefined;
+  if (system.skeleton) {
+    const modules = getModules(system.moduleIds);
+    const composed = composeModules(
+      modules,
+      system.skeleton,
+      system.id,
+      system.name,
+    );
 
-  const modules = getModules(system.moduleIds);
-  const composed = composeModules(
-    modules,
-    system.skeleton,
-    system.id,
-    system.name,
-  );
+    const spec = assembleConventionSpec({
+      id: system.id,
+      name: system.name,
+      modules: [
+        {
+          module: composed.baseTrack,
+          surfaces: composed.surfaceFragments,
+        },
+      ],
+    });
 
-  return assembleConventionSpec({
-    id: system.id,
-    name: system.name,
-    modules: [
-      {
-        module: composed.baseTrack,
-        surfaces: composed.surfaceFragments,
-      },
-    ],
-  });
+    // Attach rule modules if the system defines them
+    if (system.ruleModules) {
+      return { ...spec, ruleModules: system.ruleModules };
+    }
+
+    return spec;
+  }
+
+  // No skeleton — create a minimal spec from ruleModules alone
+  if (system.ruleModules && system.ruleModules.length > 0) {
+    return {
+      id: system.id,
+      name: system.name,
+      schema: { registers: {}, capabilities: {} },
+      modules: [],
+      surfaces: {},
+      ruleModules: system.ruleModules,
+    };
+  }
+
+  return undefined;
 }
 
 // Re-export system definitions for direct access

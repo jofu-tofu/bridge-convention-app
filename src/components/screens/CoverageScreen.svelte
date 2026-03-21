@@ -1,60 +1,51 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listConventionSpecs, getConventionSpec } from "../../conventions/spec-registry";
-  import { generateProtocolCoverageManifest, getBaseModules } from "../../conventions/core";
-  import type { ProtocolCoverageManifest, ConventionSpec } from "../../conventions/core";
+  import { listSystems, getSystem } from "../../conventions/definitions/system-registry";
+  import { enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions/core/pipeline/rule-enumeration";
+  import type { RuleCoverageManifest, RuleAtom } from "../../conventions/core/pipeline/rule-enumeration";
+  import type { BiddingSystem } from "../../conventions/definitions/bidding-system";
 
   const appStore = getAppStore();
 
-  const specs: ConventionSpec[] = listConventionSpecs();
+  const systems: readonly BiddingSystem[] = listSystems();
 
-  let selectedSpecId = $state<string | null>(appStore.coverageBundle);
+  let selectedSystemId = $state<string | null>(appStore.coverageBundle);
 
-  let manifest = $derived.by<ProtocolCoverageManifest | null>(() => {
-    if (!selectedSpecId) return null;
-    const spec = getConventionSpec(selectedSpecId);
-    if (!spec) return null;
-    return generateProtocolCoverageManifest(spec);
+  let manifest = $derived.by<RuleCoverageManifest | null>(() => {
+    if (!selectedSystemId) return null;
+    const system = getSystem(selectedSystemId);
+    if (!system?.ruleModules) return null;
+    return generateRuleCoverageManifest(system.id, system.ruleModules);
   });
 
-  let showByTrack = $state(true);
+  let showByModule = $state(true);
 
-  function selectSpec(specId: string) {
-    selectedSpecId = specId;
-    appStore.setCoverageBundle(specId);
+  function selectSystem(systemId: string) {
+    selectedSystemId = systemId;
+    appStore.setCoverageBundle(systemId);
   }
 
-  function backToSpecs() {
-    selectedSpecId = null;
+  function backToSystems() {
+    selectedSystemId = null;
     appStore.setCoverageBundle(null);
   }
 
   function handleBack() {
-    if (selectedSpecId) {
-      backToSpecs();
+    if (selectedSystemId) {
+      backToSystems();
     } else {
       appStore.navigateToMenu();
     }
   }
 
-  function targetUrl(specId: string, stateId: string, surfaceId?: string): string {
+  function coverageUrl(systemId: string): string {
     const base = window.location.origin + window.location.pathname;
-    let url = `${base}?convention=${specId}&targetState=${encodeURIComponent(stateId)}`;
-    if (surfaceId) {
-      url += `&targetSurface=${encodeURIComponent(surfaceId)}`;
-    }
-    return url;
+    return `${base}?coverage=true&convention=${systemId}`;
   }
 
-  function coverageUrl(specId: string): string {
-    const base = window.location.origin + window.location.pathname;
-    return `${base}?coverage=true&convention=${specId}`;
-  }
-
-  function specStateCount(spec: ConventionSpec): number {
-    return getBaseModules(spec).reduce(
-      (sum, m) => sum + Object.keys(m.states).length, 0,
-    );
+  function atomCount(system: BiddingSystem): number {
+    if (!system.ruleModules) return 0;
+    return enumerateRuleAtoms(system.ruleModules).length;
   }
 </script>
 
@@ -65,45 +56,44 @@
       <button
         class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
         onclick={handleBack}
-        aria-label={selectedSpecId ? "Back to conventions" : "Back to menu"}
+        aria-label={selectedSystemId ? "Back to conventions" : "Back to menu"}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
           aria-hidden="true"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
       </button>
       <div>
-        {#if !selectedSpecId}
+        {#if !selectedSystemId}
           <h1 class="text-2xl font-bold">Coverage</h1>
           <p class="text-text-secondary text-sm mt-1">
-            {specs.length} conventions. Choose one to see coverage targets.
+            {systems.length} conventions. Choose one to see coverage targets.
           </p>
         {:else if manifest}
-          <h1 class="text-2xl font-bold">{manifest.specName}</h1>
+          <h1 class="text-2xl font-bold">{manifest.systemId}</h1>
           <p class="text-text-secondary text-sm mt-1">
             {manifest.totalAtoms} atoms &middot;
-            {manifest.totalBaseStates} base states &middot;
-            {manifest.totalProtocolStates} protocol states
+            {manifest.totalModules} modules
           </p>
         {/if}
       </div>
     </div>
 
-    {#if !selectedSpecId}
-      <!-- ── Spec Picker ─────────────────────────────────────────── -->
+    {#if !selectedSystemId}
+      <!-- ── System Picker ─────────────────────────────────────────── -->
       <div class="grid gap-3">
-        {#each specs as spec (spec.id)}
+        {#each systems as system (system.id)}
           <button
             class="block w-full text-left rounded-[--radius-lg] bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-card-hover transition-colors cursor-pointer group"
-            onclick={() => selectSpec(spec.id)}
+            onclick={() => selectSystem(system.id)}
           >
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-lg font-semibold text-text-primary group-hover:text-blue-300">
-                  {spec.name}
+                  {system.name}
                 </div>
                 <div class="text-sm text-text-secondary mt-1">
-                  {getBaseModules(spec).length} base modules &middot;
-                  {specStateCount(spec)} states
+                  {system.moduleIds.length} modules &middot;
+                  {atomCount(system)} atoms
                 </div>
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -116,8 +106,8 @@
         {/each}
       </div>
 
-      {#if specs.length === 0}
-        <p class="text-text-muted text-center py-16">No convention specs found.</p>
+      {#if systems.length === 0}
+        <p class="text-text-muted text-center py-16">No convention systems found.</p>
       {/if}
 
     {:else if manifest}
@@ -126,121 +116,74 @@
       <!-- View toggle -->
       <div class="mb-6 flex gap-2">
         <button
-          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {showByTrack ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
-          onclick={() => showByTrack = true}
+          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {showByModule ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
+          onclick={() => showByModule = true}
         >
-          By Track ({manifest.baseAtoms.length} base + {manifest.protocolAtoms.length} protocol)
+          By Module
         </button>
         <button
-          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {!showByTrack ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
-          onclick={() => showByTrack = false}
+          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {!showByModule ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
+          onclick={() => showByModule = false}
         >
           All Atoms ({manifest.totalAtoms})
         </button>
       </div>
 
-      {#if showByTrack}
-        <!-- Base Atoms -->
-        {#if manifest.baseAtoms.length > 0}
+      {#if showByModule}
+        {#each [...manifest.atomsByModule.entries()] as [moduleId, atoms] (moduleId)}
           <h3 class="text-sm font-medium text-green-400 uppercase tracking-wider mb-2">
-            Base Track ({manifest.baseAtoms.length} atoms)
+            {moduleId} ({atoms.length} atoms)
           </h3>
           <div class="grid gap-2 mb-6">
-            {#each manifest.baseAtoms as atom (atom.baseStateId + ':' + atom.meaningId)}
-              <a
-                href={targetUrl(manifest.specId, atom.baseStateId, atom.meaningId)}
-                class="block rounded-[--radius-lg] bg-bg-card border border-border-subtle p-3 hover:border-green-500 hover:bg-bg-card-hover transition-colors group"
+            {#each atoms as atom (atom.meaningId)}
+              <div
+                class="block rounded-[--radius-lg] bg-bg-card border border-border-subtle p-3 group"
               >
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
-                    <div class="font-mono text-sm font-medium text-green-400 group-hover:text-green-300 truncate">
-                      {atom.baseStateId}
+                    <div class="font-mono text-sm font-medium text-green-400 truncate">
+                      {atom.moduleId}/{atom.meaningId}
                     </div>
                     <div class="text-xs text-green-300/70 mt-0.5">
                       {atom.meaningLabel}
                     </div>
-                    <div class="text-xs text-text-secondary mt-1 truncate">
-                      {atom.surfaceId}
-                    </div>
-                  </div>
-                  <span class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 shrink-0">
-                    base
-                  </span>
-                </div>
-              </a>
-            {/each}
-          </div>
-        {/if}
-
-        <!-- Protocol Atoms -->
-        {#if manifest.protocolAtoms.length > 0}
-          <h3 class="text-sm font-medium text-amber-400 uppercase tracking-wider mb-2">
-            Protocol ({manifest.protocolAtoms.length} atoms)
-          </h3>
-          <div class="grid gap-2 mb-6">
-            {#each manifest.protocolAtoms as atom (atom.baseStateId + ':' + atom.meaningId + ':' + (atom.activeProtocols[0]?.protocolId ?? ''))}
-              <a
-                href={targetUrl(manifest.specId, atom.baseStateId, atom.meaningId)}
-                class="block rounded-[--radius-lg] bg-bg-card border border-border-subtle p-3 hover:border-amber-500 hover:bg-bg-card-hover transition-colors group"
-              >
-                <div class="flex items-start justify-between gap-4">
-                  <div class="min-w-0">
-                    <div class="font-mono text-sm font-medium text-amber-400 group-hover:text-amber-300 truncate">
-                      {atom.baseStateId}
-                    </div>
-                    <div class="text-xs text-amber-300/70 mt-0.5">
-                      {atom.meaningLabel}
-                    </div>
-                    {#if atom.activeProtocols[0]}
+                    {#if atom.primaryPhaseGuard}
                       <div class="text-xs text-text-secondary mt-1 truncate">
-                        Protocol: {atom.activeProtocols[0].protocolId} @ {atom.activeProtocols[0].stateId}
+                        phase: {typeof atom.primaryPhaseGuard === 'string' ? atom.primaryPhaseGuard : atom.primaryPhaseGuard.join(', ')}
+                        {#if atom.allActivationPaths.length > 1}
+                          (+{atom.allActivationPaths.length - 1} paths)
+                        {/if}
                       </div>
                     {/if}
                   </div>
-                  <span class="text-xs px-2 py-0.5 rounded-full bg-amber-900/50 text-amber-300 shrink-0">
-                    protocol
-                  </span>
+                  {#if atom.turnGuard}
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 shrink-0">
+                      {atom.turnGuard}
+                    </span>
+                  {/if}
                 </div>
-              </a>
+              </div>
             {/each}
           </div>
-        {/if}
-
-        <!-- Unreachable -->
-        {#if manifest.unreachable.length > 0}
-          <details class="mb-4">
-            <summary class="text-sm font-medium text-red-400 uppercase tracking-wider mb-2 cursor-pointer">
-              Unreachable ({manifest.unreachable.length})
-            </summary>
-            <div class="mt-2 text-sm text-text-muted">
-              {#each manifest.unreachable as entry (entry.stateId)}
-                <div class="font-mono">{entry.stateId}: {entry.reason}</div>
-              {/each}
-            </div>
-          </details>
-        {/if}
+        {/each}
 
         <!-- Shareable link -->
         <div class="text-xs text-text-muted mt-4">
-          Shareable: <a href={coverageUrl(manifest.specId)} class="text-blue-400 hover:underline">
-            ?coverage=true&convention={manifest.specId}
+          Shareable: <a href={coverageUrl(manifest.systemId)} class="text-blue-400 hover:underline">
+            ?coverage=true&convention={manifest.systemId}
           </a>
         </div>
 
       {:else}
         <!-- All atoms flat list -->
         <div class="grid gap-2">
-          {#each [...manifest.baseAtoms, ...manifest.protocolAtoms] as atom (atom.baseStateId + ':' + atom.meaningId + ':' + (atom.activeProtocols[0]?.protocolId ?? ''))}
-            <a
-              href={targetUrl(manifest.specId, atom.baseStateId, atom.meaningId)}
-              class="block rounded-[--radius-md] bg-bg-card/50 border border-border-subtle/50 px-3 py-2 hover:border-blue-500/50 transition-colors text-sm"
+          {#each manifest.atoms as atom (atom.moduleId + '/' + atom.meaningId)}
+            <div
+              class="block rounded-[--radius-md] bg-bg-card/50 border border-border-subtle/50 px-3 py-2 text-sm"
             >
-              <span class="font-mono text-text-secondary">{atom.baseStateId}</span>
-              <span class="{atom.involvesProtocol ? 'text-amber-400' : 'text-green-400'} ml-1">{atom.meaningLabel}</span>
-              {#if atom.involvesProtocol && atom.activeProtocols[0]}
-                <span class="text-text-muted ml-2">({atom.activeProtocols[0].protocolId})</span>
-              {/if}
-            </a>
+              <span class="font-mono text-text-secondary">{atom.moduleId}/{atom.meaningId}</span>
+              <span class="text-green-400 ml-1">{atom.meaningLabel}</span>
+            </div>
           {/each}
         </div>
       {/if}

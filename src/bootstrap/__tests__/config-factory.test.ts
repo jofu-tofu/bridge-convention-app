@@ -39,8 +39,8 @@ describe("createProtocolDrillConfig", () => {
     expect(config.seatStrategies[Seat.South]).toBe("user");
   });
 
-  it("throws when no ConventionSpec is registered", () => {
+  it("throws when no system is registered", () => {
     expect(() => createProtocolDrillConfig("missing-spec", Seat.South))
-      .toThrowError(/No ConventionSpec registered for "missing-spec"/);
+      .toThrowError(/No BiddingSystem registered for "missing-spec"/);
   });
 });

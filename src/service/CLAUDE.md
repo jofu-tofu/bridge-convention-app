@@ -8,14 +8,15 @@ Session-handle-oriented service module that owns all game state and exposes only
 
 | File | Role |
 |------|------|
-| `index.ts` | Barrel: ServicePort, DevServicePort, createLocalService(), boundary types |
-| `types.ts` | Boundary DTOs: SessionHandle, SessionConfig, BidSubmitResult, DrillStartResult, etc. |
+| `index.ts` | Barrel: ServicePort, DevServicePort, createLocalService(), boundary types, store-facing re-exports |
+| `request-types.ts` | Request DTOs: SessionHandle, SessionConfig |
+| `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, etc. |
 | `port.ts` | ServicePort + DevServicePort interfaces |
 | `local-service.ts` | In-process implementation (implements DevServicePort) |
 | `session-manager.ts` | Map<SessionHandle, SessionState>, createHandle() |
-| `session-state.ts` | Per-session state (deal, auction, strategy, inference, phase) |
+| `session-state.ts` | Per-session state (deal, auction, strategy, inference, phase, play state) |
 | `bidding-controller.ts` | Pure bidding logic: processBid(), runInitialAiBids(), initializeAuction() |
-| `play-controller.ts` | Pure play logic: processPlayCard(), runInitialAiPlays(), trick scoring |
+| `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
 
 ## Conventions

@@ -1,0 +1,213 @@
+import { describe, it, expect } from "vitest";
+import { buildObservationLog } from "../observation-log-builder";
+import type { ObservationLogStep } from "../observation-log-builder";
+import { INITIAL_KERNEL } from "../../../../core/contracts/committed-step";
+import type { MachineRegisters, ArbitrationResult, EncodedProposal } from "../../../../core/contracts/module-surface";
+import type { MeaningProposal } from "../../../../core/contracts/meaning";
+import { ForcingState } from "../../../../core/contracts/bidding";
+import { Seat, BidSuit } from "../../../../engine/types";
+import type { Call, ContractBid, SpecialCall } from "../../../../engine/types";
+
+function bid(level: ContractBid["level"], strain: BidSuit): ContractBid {
+  return { type: "bid", level, strain };
+}
+
+const pass: SpecialCall = { type: "pass" };
+
+function makeRegisters(
+  overrides: Partial<MachineRegisters> = {},
+): MachineRegisters {
+  return {
+    forcingState: ForcingState.Nonforcing,
+    obligation: { kind: "none", obligatedSide: "opener" },
+    agreedStrain: { type: "none" },
+    competitionMode: "Uncontested",
+    captain: "undecided",
+    systemCapabilities: {},
+    ...overrides,
+  };
+}
+
+function makeProposal(overrides: Partial<MeaningProposal> = {}): MeaningProposal {
+  return {
+    meaningId: "test-meaning",
+    semanticClassId: "test:class",
+    moduleId: "test-module",
+    clauses: [],
+    ranking: {
+      recommendationBand: "preferred",
+      specificity: 3,
+      modulePrecedence: 0,
+      intraModuleOrder: 0,
+    },
+    evidence: { satisfied: [], unsatisfied: [] },
+    sourceIntent: { type: "NTOpening", params: {} },
+    ...overrides,
+  } as MeaningProposal;
+}
+
+function makeArb(
+  proposal: MeaningProposal,
+  call: Call,
+): ArbitrationResult {
+  const encoded: EncodedProposal = {
+    proposal,
+    call,
+    isDefaultEncoding: true,
+    legal: true,
+    allEncodings: [{ call, legal: true }],
+    eligibility: {
+      hand: { satisfied: true, failedConditions: [] },
+      encoding: { legal: true },
+      pedagogical: { acceptable: true, reasons: [] },
+    },
+  };
+
+  return {
+    selected: encoded,
+    truthSet: [encoded],
+    acceptableSet: [],
+    recommended: [],
+    eliminations: [],
+  };
+}
+
+describe("buildObservationLog", () => {
+  it("returns empty log for empty auction", () => {
+    const log = buildObservationLog([]);
+    expect(log).toEqual([]);
+  });
+
+  it("builds one step for 1NT opening", () => {
+    const call = bid(1, BidSuit.NoTrump);
+    const proposal = makeProposal({
+      sourceIntent: { type: "NTOpening", params: {} },
+      moduleId: "natural-nt",
+      meaningId: "nt-opening",
+      semanticClassId: "bridge:nt-open",
+    });
+
+    const steps: ObservationLogStep[] = [
+      {
+        actor: Seat.North,
+        call,
+        registers: makeRegisters(),
+        arbitration: makeArb(proposal, call),
+      },
+    ];
+
+    const log = buildObservationLog(steps);
+    expect(log).toHaveLength(1);
+    expect(log[0]!.actor).toBe(Seat.North);
+    expect(log[0]!.status).toBe("resolved");
+    expect(log[0]!.publicObs).toEqual([
+      { act: "open", strain: "notrump" },
+    ]);
+    expect(log[0]!.postKernel).toEqual(INITIAL_KERNEL);
+    expect(log[0]!.kernelDelta).toEqual({});
+  });
+
+  it("builds three steps for 1NT-P-2C (Stayman) with kernel tracking", () => {
+    const ntCall = bid(1, BidSuit.NoTrump);
+    const staymanCall = bid(2, BidSuit.Clubs);
+
+    const ntProposal = makeProposal({
+      sourceIntent: { type: "NTOpening", params: {} },
+      moduleId: "natural-nt",
+      meaningId: "nt-opening",
+      semanticClassId: "bridge:nt-open",
+    });
+
+    const staymanProposal = makeProposal({
+      sourceIntent: { type: "StaymanAsk", params: {} },
+      moduleId: "stayman",
+      meaningId: "stayman-ask",
+      semanticClassId: "stayman:ask-major",
+    });
+
+    const steps: ObservationLogStep[] = [
+      {
+        actor: Seat.North,
+        call: ntCall,
+        registers: makeRegisters(),
+        arbitration: makeArb(ntProposal, ntCall),
+      },
+      {
+        actor: Seat.East,
+        call: pass,
+        registers: makeRegisters(),
+        arbitration: null,
+      },
+      {
+        actor: Seat.South,
+        call: staymanCall,
+        registers: makeRegisters({
+          forcingState: ForcingState.ForcingOneRound,
+        }),
+        arbitration: makeArb(staymanProposal, staymanCall),
+      },
+    ];
+
+    const log = buildObservationLog(steps);
+    expect(log).toHaveLength(3);
+
+    // Step 0: 1NT opening
+    expect(log[0]!.status).toBe("resolved");
+    expect(log[0]!.publicObs[0]).toEqual({ act: "open", strain: "notrump" });
+
+    // Step 1: opponent pass — off-system (null arbitration)
+    expect(log[1]!.status).toBe("off-system");
+    expect(log[1]!.publicObs).toEqual([]);
+    expect(log[1]!.resolvedClaim).toBeNull();
+
+    // Step 2: Stayman 2C
+    expect(log[2]!.status).toBe("resolved");
+    expect(log[2]!.publicObs[0]).toEqual({ act: "inquire", feature: "majorSuit" });
+    // Kernel delta: forcing changed from none to one-round
+    expect(log[2]!.kernelDelta).toEqual({ forcing: "one-round" });
+    expect(log[2]!.postKernel.forcing).toBe("one-round");
+  });
+
+  it("threads kernel state through steps", () => {
+    const call1 = bid(1, BidSuit.NoTrump);
+    const call2 = bid(2, BidSuit.Clubs);
+
+    const p1 = makeProposal({
+      sourceIntent: { type: "NTOpening", params: {} },
+    });
+    const p2 = makeProposal({
+      sourceIntent: { type: "StaymanAsk", params: {} },
+    });
+
+    const steps: ObservationLogStep[] = [
+      {
+        actor: Seat.North,
+        call: call1,
+        registers: makeRegisters({
+          captain: "undecided",
+        }),
+        arbitration: makeArb(p1, call1),
+      },
+      {
+        actor: Seat.South,
+        call: call2,
+        registers: makeRegisters({
+          captain: "responder",
+          forcingState: ForcingState.ForcingOneRound,
+        }),
+        arbitration: makeArb(p2, call2),
+      },
+    ];
+
+    const log = buildObservationLog(steps);
+
+    // Step 0: kernel is INITIAL (no delta)
+    expect(log[0]!.kernelDelta).toEqual({});
+
+    // Step 1: delta from step 0's postKernel
+    expect(log[1]!.kernelDelta).toEqual({
+      captain: "responder",
+      forcing: "one-round",
+    });
+  });
+});

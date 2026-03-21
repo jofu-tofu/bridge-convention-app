@@ -3,8 +3,8 @@
 // Converts a ConventionSpec (protocol frame architecture) into a
 // ConventionBiddingStrategy compatible with the existing drill system.
 //
-// The adapter bridges the new layered replay model to the existing
-// meaning pipeline: replay -> surface stack -> runMeaningPipeline.
+// Rule-only path: all bundles use ruleModules for surface selection
+// with per-step kernel threading (Phase 5 complete). Old FSM path removed.
 
 import type {
   BiddingContext,
@@ -12,19 +12,28 @@ import type {
   ConventionBiddingStrategy,
   StrategyEvaluation,
 } from "../../core/contracts";
+import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import type { ConventionSpec } from "../../conventions/core";
-import { replay, computeActiveSurfaces, createSharedFactCatalog } from "../../conventions/core";
+import { createSharedFactCatalog } from "../../conventions/core";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { runMeaningPipeline } from "./meaning-strategy";
 import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
+import type { CommittedStep, AuctionContext, KernelState, KernelDelta } from "../../core/contracts/committed-step";
+import { INITIAL_KERNEL } from "../../core/contracts/committed-step";
+import type { PublicSnapshot } from "../../core/contracts/module-surface";
+import { collectMatchingClaims, collectMatchingClaimsWithPhases } from "../../conventions/core/pipeline/rule-interpreter";
+import { normalizeIntent } from "../../conventions/core/pipeline/normalize-intent";
+import { advanceLocalFsm } from "../../conventions/core/pipeline/local-fsm";
+import type { RuleModule } from "../../conventions/core/rule-module";
+import type { Seat, Call, BidSuit } from "../../engine/types";
 
 /**
  * Convert a ConventionSpec into a ConventionBiddingStrategy.
  *
  * Each call to suggest():
  * 1. Replays the auction through the protocol frame system to get a RuntimeSnapshot
- * 2. Computes active surfaces from the snapshot via surface stack composition
+ * 2. Computes active surfaces from the snapshot (or from rule interpreter if ruleModules present)
  * 3. Runs the meaning pipeline on the visible surfaces
  * 4. Returns the arbitrated bid result
  */
@@ -51,6 +60,7 @@ export function protocolSpecToStrategy(
     teachingProjection: null,
     facts: null,
     machineSnapshot: null,
+    auctionContext: null,
   };
 
   return {
@@ -58,23 +68,33 @@ export function protocolSpecToStrategy(
     name: spec.name,
     getLastEvaluation() { return lastEvaluation; },
     suggest(context: BiddingContext): BidResult | null {
-      // Step 1: Replay the auction to get the runtime snapshot
       const history = context.auction.entries.map((e) => ({
         call: e.call,
         seat: e.seat,
       }));
-      const snapshot = replay(history, spec, context.seat);
 
-      // Step 2: Compute active surfaces from the snapshot
-      const composed = computeActiveSurfaces(snapshot, spec);
-      if (composed.visibleSurfaces.length === 0) return null;
+      // Rule-only path: per-step replay with real kernel threading.
+      // All bundles now have ruleModules (Phase 5 complete).
+      if (!spec.ruleModules || spec.ruleModules.length === 0) {
+        return null;
+      }
+
+      const log = buildObservationLogViaRules(history, context.seat, spec.ruleModules);
+      const auctionCtx: AuctionContext = { snapshot: {} as PublicSnapshot, log };
+      const results = collectMatchingClaims(
+        spec.ruleModules,
+        auctionCtx,
+        context.seat,
+      );
+      const visibleSurfaces = results.flatMap((r) => r.surfaces);
+
+      if (visibleSurfaces.length === 0) return null;
 
       // Step 3: Run the meaning pipeline on visible surfaces
       const { result, facts } = runMeaningPipeline({
-        surfaces: composed.visibleSurfaces,
+        surfaces: visibleSurfaces,
         context,
         catalog,
-        inheritedDimsLookup: composed.inheritedDimsLookup,
       });
 
       // Step 4: Build output
@@ -92,6 +112,7 @@ export function protocolSpecToStrategy(
         teachingProjection,
         facts,
         machineSnapshot: null,
+        auctionContext: auctionCtx,
       };
 
       if (!result.selected) return null;
@@ -99,4 +120,277 @@ export function protocolSpecToStrategy(
       return buildBidResult(result.selected, context, winningModuleId, result);
     },
   };
+}
+
+// ── Rule-based observation log ────────────────────────────────────────
+
+/** Enriched claim result with kernel delta from the rule module. */
+interface EnrichedClaimResult {
+  readonly moduleId: string;
+  readonly claims: readonly {
+    readonly surface: MeaningSurface;
+    readonly kernelDelta: KernelDelta | undefined;
+  }[];
+}
+
+/**
+ * Build a CommittedStep log by per-step rule replay with real kernel threading.
+ *
+ * **Replaces the Phase 3 dual-run model.** Instead of using a hardcoded NT
+ * observation heuristic (`inferObservationsFromCall()`), this function:
+ *   1. For each historical bid, runs claim collection to find candidate surfaces
+ *   2. Matches the actual call to a candidate surface via `findMatchingClaimForCall()`
+ *   3. Derives observations from `normalizeIntent(surface.sourceIntent)`
+ *   4. Threads kernel state via `kernelDelta` declared on the winning claim
+ *
+ * **Invariant:** `kernelDelta` values come from claim declarations, not FSM effects.
+ * The values were derived from old FSM `entryEffects` during Phase 4.2, verified
+ * via characterization tests.
+ *
+ * **Performance:** Phase 6 optimization — caches local FSM phases between steps
+ * and advances one step at a time instead of full replay. O(N × M) instead of O(N² × M).
+ */
+export function buildObservationLogViaRules(
+  history: readonly { call: Call; seat: Seat }[],
+  _observerSeat: Seat,
+  ruleModules: readonly RuleModule[],
+): readonly CommittedStep[] {
+  const log: CommittedStep[] = [];
+
+  // Initialize phase cache from each module's initial phase
+  const phaseCache = new Map<string, string>();
+  for (const mod of ruleModules) {
+    phaseCache.set(mod.id, mod.local.initial);
+  }
+
+  for (const entry of history) {
+    const prevKernel = log.length > 0 ? log[log.length - 1]!.postKernel : INITIAL_KERNEL;
+
+    // Passes, doubles, redoubles — raw-only step, kernel unchanged
+    if (entry.call.type !== "bid") {
+      const step: CommittedStep = {
+        actor: entry.seat,
+        call: entry.call,
+        resolvedClaim: null,
+        publicObs: [],
+        kernelDelta: {},
+        postKernel: prevKernel,
+        status: "raw-only",
+      };
+      log.push(step);
+      // Advance phases even for raw-only steps (transitions may fire on pass obs)
+      advancePhaseCache(phaseCache, step, ruleModules);
+      continue;
+    }
+
+    // Build context from committed steps so far
+    const ctx: AuctionContext = { snapshot: {} as PublicSnapshot, log: [...log] };
+
+    // Find candidate claims with kernel deltas using cached phases
+    const enriched = collectClaimsWithDeltasCached(ruleModules, ctx, entry.seat, phaseCache);
+
+    // Match the actual call to a candidate claim
+    const matched = findMatchingClaimForCall(enriched, entry.call);
+
+    let step: CommittedStep;
+    if (matched) {
+      const obs = normalizeIntent(matched.surface.sourceIntent);
+      const delta = matched.kernelDelta ?? {};
+      const postKernel = applyKernelDelta(prevKernel, delta);
+
+      step = {
+        actor: entry.seat,
+        call: entry.call,
+        resolvedClaim: {
+          moduleId: matched.moduleId,
+          meaningId: matched.surface.meaningId,
+          semanticClassId: matched.surface.semanticClassId,
+          sourceIntent: matched.surface.sourceIntent,
+        },
+        publicObs: obs,
+        kernelDelta: delta,
+        postKernel,
+        status: "resolved",
+      };
+    } else {
+      // Off-system or unrecognized bid — raw-only, kernel unchanged
+      step = {
+        actor: entry.seat,
+        call: entry.call,
+        resolvedClaim: null,
+        publicObs: [],
+        kernelDelta: {},
+        postKernel: prevKernel,
+        status: "off-system",
+      };
+    }
+
+    log.push(step);
+    // Advance phases for the new step
+    advancePhaseCache(phaseCache, step, ruleModules);
+  }
+
+  return log;
+}
+
+/**
+ * Find the claim whose encoding matches a given call.
+ *
+ * Matching logic:
+ * 1. Collect all surfaces whose `encoding.defaultCall` matches (level + strain).
+ *    For choice-set encoders, check all calls in the set.
+ * 2. If exactly one → return it.
+ * 3. If multiple → prefer higher band, then lower modulePrecedence, then lower
+ *    intraModuleOrder (same logic as the forward-path arbitration).
+ * 4. Return null for unmatched calls.
+ */
+export function findMatchingClaimForCall(
+  results: readonly EnrichedClaimResult[],
+  call: Call,
+): { surface: MeaningSurface; kernelDelta: KernelDelta | undefined; moduleId: string } | null {
+  if (call.type !== "bid") return null;
+
+  const candidates: {
+    surface: MeaningSurface;
+    kernelDelta: KernelDelta | undefined;
+    moduleId: string;
+  }[] = [];
+
+  for (const result of results) {
+    for (const claim of result.claims) {
+      if (callMatchesEncoding(call, claim.surface.encoding)) {
+        candidates.push({
+          surface: claim.surface,
+          kernelDelta: claim.kernelDelta,
+          moduleId: result.moduleId,
+        });
+      }
+    }
+  }
+
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0]!;
+
+  // Multiple matches — arbitrate using band → modulePrecedence → intraModuleOrder
+  return arbitrateMatchingClaims(candidates);
+}
+
+// ── Internal helpers ─────────────────────────────────────────────────
+
+/** Check if a call matches a surface's encoding (defaultCall or alternate encodings). */
+function callMatchesEncoding(
+  call: { type: "bid"; level: number; strain: BidSuit },
+  encoding: MeaningSurface["encoding"],
+): boolean {
+  const dc = encoding.defaultCall;
+  if (dc.type === "bid" && dc.level === call.level && dc.strain === call.strain) return true;
+
+  if (encoding.alternateEncodings) {
+    for (const alt of encoding.alternateEncodings) {
+      if (alt.call.type === "bid" && alt.call.level === call.level && alt.call.strain === call.strain) {
+        return true;
+      }
+    }
+  }
+
+  // Also match pass encoding for surfaces that encode as pass
+  if (dc.type === "pass" && call.type === "pass") return true;
+
+  return false;
+}
+
+/** Apply a KernelDelta to produce a new KernelState. */
+function applyKernelDelta(prev: KernelState, delta: KernelDelta): KernelState {
+  return {
+    fitAgreed: delta.fitAgreed !== undefined ? delta.fitAgreed : prev.fitAgreed,
+    forcing: delta.forcing !== undefined ? delta.forcing : prev.forcing,
+    captain: delta.captain !== undefined ? delta.captain : prev.captain,
+    competition: delta.competition !== undefined ? delta.competition : prev.competition,
+  };
+}
+
+/** Band priority for arbitration (higher = more preferred). */
+const BAND_ORDER: Record<string, number> = {
+  must: 3,
+  should: 2,
+  may: 1,
+};
+
+/** Arbitrate among multiple matching claims using the same logic as the forward path. */
+function arbitrateMatchingClaims(
+  candidates: readonly {
+    surface: MeaningSurface;
+    kernelDelta: KernelDelta | undefined;
+    moduleId: string;
+  }[],
+): { surface: MeaningSurface; kernelDelta: KernelDelta | undefined; moduleId: string } {
+  // Sort by: band (desc) → modulePrecedence (asc) → intraModuleOrder (asc)
+  const sorted = [...candidates].sort((a, b) => {
+    const bandA = BAND_ORDER[a.surface.ranking.recommendationBand] ?? 0;
+    const bandB = BAND_ORDER[b.surface.ranking.recommendationBand] ?? 0;
+    if (bandB !== bandA) return bandB - bandA;
+
+    const precA = a.surface.ranking.modulePrecedence ?? 0;
+    const precB = b.surface.ranking.modulePrecedence ?? 0;
+    if (precA !== precB) return precA - precB;
+
+    return (a.surface.ranking.intraModuleOrder ?? 0) - (b.surface.ranking.intraModuleOrder ?? 0);
+  });
+
+  return sorted[0]!;
+}
+
+/**
+ * Cached variant — uses pre-computed local phases instead of replaying the FSM.
+ * Used by `buildObservationLogViaRules()` for O(N×M) instead of O(N²×M).
+ */
+function collectClaimsWithDeltasCached(
+  modules: readonly RuleModule[],
+  context: AuctionContext,
+  nextSeat: Seat,
+  phaseCache: ReadonlyMap<string, string>,
+): readonly EnrichedClaimResult[] {
+  const results = collectMatchingClaimsWithPhases(modules, context, nextSeat, phaseCache);
+  return enrichResults(results, modules);
+}
+
+/** Enrich ModuleClaimResults with kernelDelta from rule module claims. */
+function enrichResults(
+  results: readonly { moduleId: string; surfaces: readonly MeaningSurface[] }[],
+  modules: readonly RuleModule[],
+): readonly EnrichedClaimResult[] {
+  return results.map((result) => {
+    const mod = modules.find((m) => m.id === result.moduleId);
+    if (!mod) return { moduleId: result.moduleId, claims: result.surfaces.map((s) => ({ surface: s, kernelDelta: undefined })) };
+
+    // Build a map from meaningId → kernelDelta by scanning the module's rules
+    const deltaMap = new Map<string, KernelDelta | undefined>();
+    for (const rule of mod.rules) {
+      for (const claim of rule.claims) {
+        if (result.surfaces.includes(claim.surface)) {
+          deltaMap.set(claim.surface.meaningId, claim.kernelDelta);
+        }
+      }
+    }
+
+    return {
+      moduleId: result.moduleId,
+      claims: result.surfaces.map((s) => ({
+        surface: s,
+        kernelDelta: deltaMap.get(s.meaningId),
+      })),
+    };
+  });
+}
+
+/** Advance the phase cache one step for all modules. */
+function advancePhaseCache(
+  phaseCache: Map<string, string>,
+  step: CommittedStep,
+  modules: readonly RuleModule[],
+): void {
+  for (const mod of modules) {
+    const current = phaseCache.get(mod.id) ?? mod.local.initial;
+    phaseCache.set(mod.id, advanceLocalFsm(current, step, mod.local.transitions));
+  }
 }

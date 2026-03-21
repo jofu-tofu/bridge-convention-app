@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getAllModules } from "../module-registry";
-import type { ConventionModule } from "../../../core/contracts/convention-module";
+import type { ConventionModule } from "../../core/convention-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import {
   PRIMITIVE_FACTS,

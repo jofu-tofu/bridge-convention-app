@@ -5,20 +5,19 @@
 //
 // All strategy, teaching, and convention internals are encapsulated
 // here — consumers never touch them directly.
+//
+// Phase 6: Uses rule enumeration (RuleAtom) instead of FSM BFS coverage.
+// Atom ID format: `moduleId/meaningId`.
 
-import { getConventionSpec } from "../conventions/spec-registry";
-import {
-  generateProtocolCoverageManifest,
-  getBaseModules,
-  enumerateBaseTrackStates,
-  type BaseTrackPath,
-} from "../conventions/core";
+import { getSystem } from "../conventions/definitions/system-registry";
+import { enumerateRuleAtoms, type RuleAtom } from "../conventions/core/pipeline/rule-enumeration";
 import { getBundle } from "../conventions/core/bundle";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
+import { specFromSystem } from "../conventions/definitions/system-registry";
 import { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
 import { BidGrade } from "../core/contracts/teaching-grading";
-import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport } from "../core/viewport/build-viewport";
+import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../core/viewport/build-viewport";
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
 import { evaluateHand } from "../engine/hand-evaluator";
@@ -28,7 +27,7 @@ import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
 import type { Auction, Deal, Hand, DealConstraints } from "../engine/types";
 import type { BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
-import type { ConventionSpec } from "../conventions/core";
+import type { ConventionBiddingStrategy } from "../core/contracts/recommendation";
 import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import type { AtomGradeResult } from "./types";
@@ -95,51 +94,6 @@ function buildContext(hand: Hand, auction: Auction, seat: Seat, vulnerability: V
   });
 }
 
-function findPathToState(spec: ConventionSpec, targetStateId: string): BaseTrackPath | null {
-  for (const track of getBaseModules(spec)) {
-    const paths = enumerateBaseTrackStates(track);
-    const path = paths.get(targetStateId);
-    if (path) return path;
-  }
-  return null;
-}
-
-function buildTargetedAuction(defaultAuction: Auction, path: BaseTrackPath, userSeat: Seat): Auction {
-  const entries = [...defaultAuction.entries];
-  const transitionsToAdd = path.transitions;
-  if (transitionsToAdd.length === 0) return { entries, isComplete: false };
-
-  let currentSeat = nextSeatClockwise(entries[entries.length - 1]!.seat);
-  const partner = partnerOf(userSeat);
-
-  for (const transition of transitionsToAdd) {
-    if (!transition.call) continue;
-    if (transition.call.type !== "pass") {
-      while (currentSeat !== userSeat && currentSeat !== partner) {
-        entries.push({ seat: currentSeat, call: { type: "pass" } });
-        currentSeat = nextSeatClockwise(currentSeat);
-      }
-    }
-    entries.push({ seat: currentSeat, call: transition.call });
-    currentSeat = nextSeatClockwise(currentSeat);
-  }
-
-  while (currentSeat !== userSeat && currentSeat !== partner) {
-    entries.push({ seat: currentSeat, call: { type: "pass" } });
-    currentSeat = nextSeatClockwise(currentSeat);
-  }
-  return { entries, isComplete: false };
-}
-
-function resolveAuction(bundle: ConventionBundle, spec: ConventionSpec, deal: Deal, targetStateId: string, userSeat: Seat) {
-  const defaultAuction = buildInitialAuction(bundle, userSeat, deal);
-  const path = findPathToState(spec, targetStateId);
-  if (!path || path.transitions.some((t) => t.call === null)) {
-    return { auction: defaultAuction, targeted: false };
-  }
-  return { auction: buildTargetedAuction(defaultAuction, path, userSeat), targeted: true };
-}
-
 function buildBidHistory(
   auction: Auction, deal: Deal, userSeat: Seat,
   strategy: BiddingStrategy, vulnerability: Vulnerability,
@@ -184,30 +138,44 @@ function makeViewport(
   });
 }
 
+/** Resolve the atom list for a bundle using rule enumeration. */
+function resolveAtoms(bundleId: string): readonly RuleAtom[] {
+  const system = getSystem(bundleId);
+  if (!system?.ruleModules) return [];
+  return enumerateRuleAtoms(system.ruleModules);
+}
+
+/** Create a strategy from a bundle ID. */
+function createStrategy(bundleId: string): BiddingStrategy {
+  const system = getSystem(bundleId);
+  if (!system) throw new Error(`Unknown bundle: "${bundleId}"`);
+  const spec = specFromSystem(system);
+  if (!spec) throw new Error(`No spec for bundle: "${bundleId}"`);
+  return protocolSpecToStrategy(spec);
+}
+
 // ── Public API ──────────────────────────────────────────────────────
 
-/** Validate that an atom ID exists in a bundle's coverage manifest. */
+/** Validate that an atom ID exists in a bundle's rule atoms. */
 export function validateAtomId(bundleId: string, atomId: string): void {
-  const spec = getConventionSpec(bundleId);
-  if (!spec) throw new Error(`Unknown bundle: "${bundleId}"`);
-  const manifest = generateProtocolCoverageManifest(spec);
-  const allAtoms = [...manifest.baseAtoms, ...manifest.protocolAtoms];
-  const exists = allAtoms.some(
-    (a) => `${a.baseStateId}/${a.surfaceId}/${a.meaningId}` === atomId,
-  );
+  const atoms = resolveAtoms(bundleId);
+  if (atoms.length === 0) throw new Error(`Unknown bundle or no rule modules: "${bundleId}"`);
+  const exists = atoms.some((a) => `${a.moduleId}/${a.meaningId}` === atomId);
   if (!exists) throw new Error(`Unknown atom: "${atomId}"`);
 }
 
-/** Parse an atom ID into components. */
-export function parseAtomId(atomId: string): { stateId: string; surfaceId: string; meaningId: string } {
-  const parts = atomId.split("/");
-  if (parts.length < 3) throw new Error(`Invalid atom ID: "${atomId}"`);
-  return { stateId: parts[0]!, surfaceId: parts[1]!, meaningId: parts.slice(2).join("/") };
+/** Parse an atom ID into components (new format: moduleId/meaningId). */
+export function parseAtomId(atomId: string): { moduleId: string; meaningId: string } {
+  const slashIdx = atomId.indexOf("/");
+  if (slashIdx < 0) throw new Error(`Invalid atom ID: "${atomId}"`);
+  return { moduleId: atomId.slice(0, slashIdx), meaningId: atomId.slice(slashIdx + 1) };
 }
 
 /**
  * Build a BiddingViewport for an atom — the pre-bid view the player sees.
  * Returns the SAME type the Svelte UI renders. No internals leak.
+ *
+ * Uses the initial auction from the bundle (strategy-driven forward).
  */
 export function buildAtomViewport(
   bundleId: string,
@@ -215,13 +183,12 @@ export function buildAtomViewport(
   seed: number,
   vuln: Vulnerability = Vulnerability.None,
 ): BiddingViewport {
-  const { stateId } = parseAtomId(atomId);
-  const spec = getConventionSpec(bundleId)!;
+  validateAtomId(bundleId, atomId);
   const bundle = getBundle(bundleId)!;
-  const strategy = protocolSpecToStrategy(spec);
+  const strategy = createStrategy(bundleId);
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
-  const { auction } = resolveAuction(bundle, spec, deal, stateId, userSeat);
+  const auction = buildInitialAuction(bundle, userSeat, deal);
   const activeSeat = auction.entries.length > 0
     ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;
@@ -240,13 +207,12 @@ export function gradeAtomBid(
   bidStr: string,
   vuln: Vulnerability = Vulnerability.None,
 ): AtomGradeResult {
-  const { stateId } = parseAtomId(atomId);
-  const spec = getConventionSpec(bundleId)!;
+  validateAtomId(bundleId, atomId);
   const bundle = getBundle(bundleId)!;
-  const strategy = protocolSpecToStrategy(spec);
+  const strategy = createStrategy(bundleId);
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
-  const { auction } = resolveAuction(bundle, spec, deal, stateId, userSeat);
+  const auction = buildInitialAuction(bundle, userSeat, deal);
   const activeSeat = auction.entries.length > 0
     ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;
@@ -264,7 +230,7 @@ export function gradeAtomBid(
     };
   }
 
-  const strategyEval = (strategy).getLastEvaluation?.() ?? null;
+  const strategyEval = (strategy as ConventionBiddingStrategy).getLastEvaluation?.() ?? null;
   const teachingResolution = resolveTeachingAnswer(
     result,
     strategyEval?.acceptableAlternatives ?? undefined,
@@ -280,6 +246,7 @@ export function gradeAtomBid(
     evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive ?? false,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
     fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached ?? false,
+    observationHistory: projectObservationHistory(strategyEval?.auctionContext),
   };
 
   return {

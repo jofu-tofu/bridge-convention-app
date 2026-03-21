@@ -4,7 +4,7 @@
 import { describe, it, expect } from "vitest";
 import { composeModules } from "../composition/compose-modules";
 import type { BundleSkeleton } from "../composition/compose-modules";
-import type { ConventionModule } from "../../../core/contracts/convention-module";
+import type { ConventionModule } from "../convention-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { FactEvaluatorFn, FactValue } from "../../../core/contracts/fact-catalog";
 import type { FrameStateSpec } from "../protocol/types";

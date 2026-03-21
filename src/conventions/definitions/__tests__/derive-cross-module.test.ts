@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { derivePedagogicalContent } from "../derive-cross-module";
 import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
 import type { AlternativeGroup } from "../../../core/contracts/tree-evaluation";
-import type { ConventionModule } from "../../../core/contracts/convention-module";
+import type { ConventionModule } from "../../core/convention-module";
 import type { MeaningSurface } from "../../../core/contracts/meaning";
 import type { PedagogicalTagDef } from "../../../core/contracts/pedagogical-tag";
 
