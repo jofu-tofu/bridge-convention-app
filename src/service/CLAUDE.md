@@ -15,6 +15,7 @@ Session-handle-oriented service module that owns all game state and exposes only
 | `session-manager.ts` | Map<SessionHandle, SessionState>, createHandle() |
 | `session-state.ts` | Per-session state (deal, auction, strategy, inference, phase) |
 | `bidding-controller.ts` | Pure bidding logic: processBid(), runInitialAiBids(), initializeAuction() |
+| `play-controller.ts` | Pure play logic: processPlayCard(), runInitialAiPlays(), trick scoring |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
 
 ## Conventions

@@ -4,15 +4,17 @@
  * No Svelte dependencies. No $state. No tick(). Plain mutable class.
  */
 
-import type { Deal, Auction, AuctionEntry, Contract, Call, Seat } from "../engine/types";
+import type { Deal, Auction, AuctionEntry, Contract, Call, Seat, Card, Trick, PlayedCard } from "../engine/types";
+import { BidSuit, Suit } from "../engine/types";
 import type { DrillSession, DrillBundle } from "../bootstrap/types";
-import type { ConventionBiddingStrategy, BidResult, BidHistoryEntry, StrategyEvaluation } from "../core/contracts";
+import type { ConventionBiddingStrategy, BidResult, BidHistoryEntry, StrategyEvaluation, PlayStrategy } from "../core/contracts";
 import type { PublicBeliefs } from "../core/contracts";
 import type { InferenceCoordinator } from "../inference/inference-coordinator";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
 import type { GamePhase } from "../stores/phase-machine";
 import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
 import type { DebugSnapshot, DebugLogEntry } from "../stores/bidding.svelte";
+import { nextSeat, partnerSeat } from "../engine/constants";
 
 /** Default empty evaluation — used when no strategy is wired. */
 const EMPTY_EVALUATION: StrategyEvaluation = {
@@ -26,6 +28,7 @@ const EMPTY_EVALUATION: StrategyEvaluation = {
   teachingProjection: null,
   facts: null,
   machineSnapshot: null,
+  auctionContext: null,
 };
 
 export class SessionState {
@@ -56,6 +59,17 @@ export class SessionState {
   // Feedback
   currentFeedback: BidFeedbackDTO | null;
 
+  // ── Play state ──────────────────────────────────────────────────
+  tricks: Trick[];
+  currentTrick: PlayedCard[];
+  currentPlayer: Seat | null;
+  declarerTricksWon: number;
+  defenderTricksWon: number;
+  dummySeat: Seat | null;
+  trumpSuit: Suit | undefined;
+  playScore: number | null;
+  playStrategy: PlayStrategy | null;
+
   constructor(
     bundle: DrillBundle,
     coordinator: InferenceCoordinator,
@@ -80,6 +94,17 @@ export class SessionState {
     this.debugLog = [];
     this.debugTurnCounter = 0;
     this.currentFeedback = null;
+
+    // Play state defaults
+    this.tricks = [];
+    this.currentTrick = [];
+    this.currentPlayer = null;
+    this.declarerTricksWon = 0;
+    this.defenderTricksWon = 0;
+    this.dummySeat = null;
+    this.trumpSuit = undefined;
+    this.playScore = null;
+    this.playStrategy = bundle.session.config.playStrategy ?? null;
 
     // Initialize inference coordinator with engines from bundle
     coordinator.initialize(bundle.nsInferenceEngine, bundle.ewInferenceEngine);
@@ -129,5 +154,64 @@ export class SessionState {
   /** EW inference timeline. */
   getEWTimeline(): readonly InferenceSnapshot[] {
     return this.inferenceCoordinator.getEWTimeline();
+  }
+
+  // ── Play initialization ───────────────────────────────────────────
+
+  /** Map BidSuit to Suit for trump. NoTrump returns undefined. */
+  private static bidSuitToSuit(strain: BidSuit): Suit | undefined {
+    switch (strain) {
+      case BidSuit.Clubs: return Suit.Clubs;
+      case BidSuit.Diamonds: return Suit.Diamonds;
+      case BidSuit.Hearts: return Suit.Hearts;
+      case BidSuit.Spades: return Suit.Spades;
+      case BidSuit.NoTrump: return undefined;
+      default: {
+        const _exhaustive: never = strain;
+        throw new Error(`Unknown BidSuit: ${String(_exhaustive)}`);
+      }
+    }
+  }
+
+  /** Initialize play state from the contract. Called when transitioning to PLAYING. */
+  initializePlay(contract: Contract): void {
+    this.tricks = [];
+    this.currentTrick = [];
+    this.declarerTricksWon = 0;
+    this.defenderTricksWon = 0;
+    this.dummySeat = partnerSeat(contract.declarer);
+    this.trumpSuit = SessionState.bidSuitToSuit(contract.strain);
+    this.playScore = null;
+    // Opening leader: left of declarer
+    this.currentPlayer = nextSeat(contract.declarer);
+  }
+
+  /** Check if a seat is user-controlled during play. */
+  isUserControlledPlay(seat: Seat): boolean {
+    if (!this.contract || !this.effectiveUserSeat) return false;
+    if (seat === this.effectiveUserSeat) return true;
+    if (seat === partnerSeat(this.contract.declarer) && this.contract.declarer === this.effectiveUserSeat) return true;
+    return false;
+  }
+
+  /** Get remaining cards for a seat (original hand minus played cards). */
+  getRemainingCards(seat: Seat): Card[] {
+    const played = new Set<string>();
+    for (const trick of this.tricks) {
+      for (const p of trick.plays) {
+        if (p.seat === seat) played.add(`${p.card.suit}${p.card.rank}`);
+      }
+    }
+    for (const p of this.currentTrick) {
+      if (p.seat === seat) played.add(`${p.card.suit}${p.card.rank}`);
+    }
+    return this.deal.hands[seat].cards.filter(
+      (c) => !played.has(`${c.suit}${c.rank}`),
+    );
+  }
+
+  /** Get lead suit of current trick (undefined if no cards played yet). */
+  getLeadSuit(): Suit | undefined {
+    return this.currentTrick.length > 0 ? this.currentTrick[0]!.card.suit : undefined;
   }
 }

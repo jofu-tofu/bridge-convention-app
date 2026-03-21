@@ -12,7 +12,7 @@
  *   MeaningSurface, InferenceEngine.
  */
 
-import type { Call, Seat, DDSolution } from "../engine/types";
+import type { Call, Card, Seat, DDSolution } from "../engine/types";
 import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
 import type { BidHistoryEntry } from "../core/contracts";
 import type { ViewportBidGrade } from "../core/viewport/player-viewport";
@@ -67,6 +67,19 @@ export interface PlayCardResult {
   readonly trickComplete: boolean;
   readonly playComplete: boolean;
   readonly score: number | null;
+  /** AI plays that followed the user's card (for animation). */
+  readonly aiPlays: readonly AiPlayEntry[];
+  /** Legal plays for the next user turn (null if play complete or AI's turn). */
+  readonly legalPlays: readonly Card[] | null;
+  /** Current player after all processing. */
+  readonly currentPlayer: Seat | null;
+}
+
+/** A single AI play entry for animation (analogous to AiBidEntry). */
+export interface AiPlayEntry {
+  readonly seat: Seat;
+  readonly card: Card;
+  readonly reason: string;
 }
 
 /** Current session viewport. */

@@ -52,6 +52,9 @@ import {
   runInitialAiBids,
   initializeAuction,
 } from "./bidding-controller";
+import {
+  processPlayCard,
+} from "./play-controller";
 import { partnerSeat } from "../engine/constants";
 
 import type { DrillBundle } from "../bootstrap/types";
@@ -175,7 +178,8 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     // ── Phase transitions ─────────────────────────────────────────
 
-    async acceptPrompt(handle: SessionHandle, mode?: "play" | "skip"): Promise<PromptAcceptResult> {      const state = manager.get(handle);
+    async acceptPrompt(handle: SessionHandle, mode?: "play" | "skip"): Promise<PromptAcceptResult> {
+      const state = manager.get(handle);
       const anc = getAncillary(handle);
 
       if (mode === "skip" || !mode) {
@@ -187,7 +191,8 @@ export function createLocalService(engine: EnginePort): DevServicePort {
           }
         }
       } else if (mode === "play") {
-        if (isValidTransition(state.phase, "PLAYING")) {
+        if (isValidTransition(state.phase, "PLAYING") && state.contract) {
+          state.initializePlay(state.contract);
           state.phase = "PLAYING";
         }
       }
@@ -197,8 +202,9 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     // ── Play ──────────────────────────────────────────────────────
 
-    async playCard(_handle: SessionHandle, _card: Card, _seat: Seat): Promise<PlayCardResult> {      // Play controller extraction deferred — placeholder for now
-      return { accepted: false, trickComplete: false, playComplete: false, score: null };
+    async playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult> {
+      const state = manager.get(handle);
+      return processPlayCard(state, card, seat, engine);
     },
 
     // ── Query ─────────────────────────────────────────────────────
