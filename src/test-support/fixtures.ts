@@ -10,6 +10,10 @@ import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../engine/types";
 import type { Card, Contract, Deal } from "../engine/types";
 import type { DrillSession } from "../bootstrap/types";
 import type { PlayStrategy } from "../core/contracts";
+import type { EnginePort } from "../engine/port";
+import type { DevServicePort, SessionHandle } from "../service";
+import { createLocalService } from "../service";
+import type { DrillBundle } from "../bootstrap/types";
 
 export function makeCard(suit: Suit, rank: Rank): Card {
   return { suit, rank };
@@ -104,4 +108,17 @@ export async function flushWithFakeTimers() {
 export async function flushWithRealTimers() {
   await new Promise((r) => setTimeout(r, 1500));
   await tick();
+}
+
+/**
+ * Create a service + session handle from a stub engine and pre-built DrillBundle.
+ * Used by store tests that don't go through the convention registry.
+ */
+export async function createTestServiceSession(
+  engine: EnginePort,
+  bundle: DrillBundle,
+): Promise<{ service: DevServicePort; handle: SessionHandle }> {
+  const service = createLocalService(engine);
+  const handle = await service.createSessionFromBundle(bundle);
+  return { service, handle };
 }

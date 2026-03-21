@@ -11,7 +11,8 @@ import { createGameStore } from "../game.svelte";
 import { BidGrade } from "../../teaching/teaching-resolution";
 import { createStubEngine } from "../../test-support/engine-stub";
 import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
-import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "../../test-support/fixtures";
+import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers, createTestServiceSession } from "../../test-support/fixtures";
+import type { DrillBundle } from "../../bootstrap/types";
 
 /** Strategy that always suggests 2C. */
 function make2CStrategy(): ConventionBiddingStrategy {
@@ -51,24 +52,32 @@ afterEach(() => {
 
 const flushActions = flushWithFakeTimers;
 
-describe("bidding characterization — lock existing behavior", () => {
-  function makeStore() {
-    const engine = createStubEngine({
-      async isAuctionComplete() { return false; },
-    });
-    return createGameStore(engine);
-  }
+function makeEngine() {
+  return createStubEngine({
+    async isAuctionComplete() { return false; },
+  });
+}
 
+/** Create store + service session, start drill with given bundle. */
+async function startWithBundle(bundle: DrillBundle) {
+  const engine = makeEngine();
+  const store = createGameStore(engine);
+  const { service, handle } = await createTestServiceSession(engine, bundle);
+  // Fire-and-forget: startDrill uses delayFn() internally which needs fake timer flush
+  void store.startDrill(bundle, service, handle);
+  await flushActions();
+  return store;
+}
+
+describe("bidding characterization — lock existing behavior", () => {
   it("correct bid is accepted and applied to auction", async () => {
-    const store = makeStore();
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: make2CStrategy(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
     });
-    await flushActions();
 
     const entriesBefore = store.auction.entries.length;
     const correctBid: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
@@ -82,15 +91,13 @@ describe("bidding characterization — lock existing behavior", () => {
   });
 
   it("wrong bid is blocked with feedback, auction unchanged", async () => {
-    const store = makeStore();
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: make2CStrategy(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
     });
-    await flushActions();
 
     const auctionBefore = store.auction;
     store.userBid({ type: "pass" }); // wrong — should be 2C
@@ -103,15 +110,13 @@ describe("bidding characterization — lock existing behavior", () => {
   });
 
   it("retryBid clears feedback without changing auction", async () => {
-    const store = makeStore();
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: make2CStrategy(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
     });
-    await flushActions();
 
     const auctionBefore = store.auction;
     store.userBid({ type: "pass" }); // wrong
@@ -126,15 +131,13 @@ describe("bidding characterization — lock existing behavior", () => {
   });
 
   it("AI bids run after user's correct bid", async () => {
-    const store = makeStore();
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: make2CStrategy(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
     });
-    await flushActions();
 
     const correctBid: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
     store.userBid(correctBid);
@@ -151,13 +154,15 @@ describe("bidding characterization — lock existing behavior", () => {
       async getContract() { return null; }, // passout → EXPLANATION
     });
     const store = createGameStore(engine);
-    store.startDrill({
+    const bundle: DrillBundle = {
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: make2CStrategy(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
-    });
+    };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    void store.startDrill(bundle, service, handle);
     await flushActions();
 
     // isAuctionComplete returns true immediately → first AI bid completes auction
@@ -165,15 +170,13 @@ describe("bidding characterization — lock existing behavior", () => {
   });
 
   it("convention-exhausted suggest(null) means Pass is correct", async () => {
-    const store = makeStore();
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: makeNoOpStrategy(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
     });
-    await flushActions();
 
     // Pass should be accepted
     store.userBid({ type: "pass" });
@@ -182,15 +185,13 @@ describe("bidding characterization — lock existing behavior", () => {
   });
 
   it("convention-exhausted suggest(null) rejects non-pass bids", async () => {
-    const store = makeStore();
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: makeNoOpStrategy(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
     });
-    await flushActions();
 
     // Non-pass should be rejected
     store.userBid({ type: "bid", level: 1, strain: BidSuit.Clubs });
@@ -200,15 +201,13 @@ describe("bidding characterization — lock existing behavior", () => {
   });
 
   it("no strategy = any bid accepted, no grading", async () => {
-    const store = makeStore();
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       nsInferenceEngine: null,
       ewInferenceEngine: null,
       // No strategy
     });
-    await flushActions();
 
     store.userBid({ type: "pass" });
     await flushActions();
@@ -217,14 +216,13 @@ describe("bidding characterization — lock existing behavior", () => {
   });
 
   it("initialAuction entries replay into bidHistory", async () => {
-    const store = makeStore();
     const initialAuction: Auction = {
       entries: [
         { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
       ],
       isComplete: false,
     };
-    store.startDrill({
+    const store = await startWithBundle({
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
       strategy: make2CStrategy(),
@@ -232,7 +230,6 @@ describe("bidding characterization — lock existing behavior", () => {
       nsInferenceEngine: null,
       ewInferenceEngine: null,
     });
-    await flushActions();
 
     // Initial auction entries should be in bidHistory
     expect(store.bidHistory.length).toBeGreaterThanOrEqual(1);

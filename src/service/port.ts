@@ -77,4 +77,7 @@ export interface DevServicePort extends ServicePort {
 
   /** Transitional: return the resolved convention name for a session. */
   getConventionName(handle: SessionHandle): Promise<string>;
+
+  /** Create a session from a pre-built DrillBundle (for tests using stub engines). */
+  createSessionFromBundle(bundle: DrillBundle): Promise<SessionHandle>;
 }

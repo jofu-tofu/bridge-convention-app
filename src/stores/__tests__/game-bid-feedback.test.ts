@@ -5,7 +5,8 @@ import { createGameStore } from "../game.svelte";
 import { BidGrade } from "../../teaching/teaching-resolution";
 import { createStubEngine } from "../../test-support/engine-stub";
 import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
-import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers } from "../../test-support/fixtures";
+import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers, createTestServiceSession } from "../../test-support/fixtures";
+import type { DrillBundle } from "../../bootstrap/types";
 
 /** Strategy that always suggests 2C (Stayman-like). */
 function make2CStrategy(): ConventionBiddingStrategy {
@@ -75,27 +76,33 @@ afterEach(() => {
 
 const flushActions = flushWithFakeTimers;
 
-describe("bid feedback — user-facing behavior", () => {
-  function makeStore() {
-    const engine = createStubEngine({
-      async isAuctionComplete() {
-        return false;
-      },
-    });
-    return createGameStore(engine);
-  }
+function makeEngine() {
+  return createStubEngine({
+    async isAuctionComplete() { return false; },
+  });
+}
 
+/** Create store + service session, start drill with given bundle. */
+async function startWithBundle(bundle: DrillBundle) {
+  const engine = makeEngine();
+  const store = createGameStore(engine);
+  const { service, handle } = await createTestServiceSession(engine, bundle);
+  // Fire-and-forget: startDrill uses delayFn() internally which needs fake timer flush
+  void store.startDrill(bundle, service, handle);
+  await flushActions();
+  return store;
+}
+
+describe("bid feedback — user-facing behavior", () => {
   describe("when user bids incorrectly", () => {
     it("auction pauses so user can review their mistake", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: make2CStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       // User is on turn
       expect(store.isUserTurn).toBe(true);
@@ -108,15 +115,13 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("tells user what the correct bid was", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: make2CStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
       store.userBid({ type: "pass" });
       await flushActions();
 
@@ -131,15 +136,13 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("user can retry after incorrect feedback (correct-path-only)", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: make2CStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       expect(store.bidFeedback).toBeNull();
 
@@ -158,15 +161,13 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("wrong bid is not applied to the auction (correct-path-only)", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: make2CStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       const auctionBefore = store.auction;
       store.userBid({ type: "pass" }); // wrong
@@ -179,15 +180,13 @@ describe("bid feedback — user-facing behavior", () => {
 
   describe("when user bids correctly", () => {
     it("auction continues without interruption", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: make2CStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       const correctBid: Call = { type: "bid", level: 2, strain: BidSuit.Clubs };
       store.userBid(correctBid);
@@ -201,15 +200,13 @@ describe("bid feedback — user-facing behavior", () => {
 
   describe("edge cases", () => {
     it("passing is correct when convention does not apply", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: makeNoOpStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       store.userBid({ type: "pass" });
       await flushActions();
@@ -219,9 +216,12 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("works without a convention strategy (no correctness checking)", async () => {
-      const store = makeStore();
-      store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
-      await flushActions();
+      const store = await startWithBundle({
+        deal: makeSimpleTestDeal(),
+        session: makeDrillSession(),
+        nsInferenceEngine: null,
+        ewInferenceEngine: null,
+      });
 
       store.userBid({ type: "pass" });
       await flushActions();
@@ -231,15 +231,13 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("non-pass bid gets Incorrect feedback when convention does not apply", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: makeNoOpStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       // Strategy returned null → pass is the right call → 7NT should be rejected
       store.userBid({ type: "bid", level: 7, strain: BidSuit.NoTrump });
@@ -252,15 +250,13 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("non-pass bid is not applied to auction when convention does not apply", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: makeNoOpStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       const auctionBefore = store.auction;
       store.userBid({ type: "bid", level: 7, strain: BidSuit.NoTrump });
@@ -273,15 +269,13 @@ describe("bid feedback — user-facing behavior", () => {
 
   describe("multi-grade feedback", () => {
     it("acceptable bid gets Acceptable grade but blocks (correct-path-only)", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: makePrimaryWithAcceptableAlternativeStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
       await flushActions();
@@ -297,15 +291,13 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("incorrect bid gets Incorrect grade with retry offered", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: makePrimaryWithAcceptableAlternativeStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       store.userBid({ type: "bid", level: 3, strain: BidSuit.Clubs });
       await flushActions();
@@ -320,15 +312,13 @@ describe("bid feedback — user-facing behavior", () => {
     });
 
     it("acceptable bid is not applied to auction (correct-path-only)", async () => {
-      const store = makeStore();
-      store.startDrill({
+      const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
         strategy: makePrimaryWithAcceptableAlternativeStrategy(),
         nsInferenceEngine: null,
         ewInferenceEngine: null,
       });
-      await flushActions();
 
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
       await flushActions();

@@ -3,7 +3,8 @@ import { Seat, BidSuit } from "../../engine/types";
 import type { DDSolution } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import { makeDrillSession, makeSimpleTestDeal } from "../../test-support/fixtures";
+import { makeDrillSession, makeSimpleTestDeal, createTestServiceSession } from "../../test-support/fixtures";
+import type { DrillBundle } from "../../bootstrap/types";
 
 const fakeDDSolution: DDSolution = {
   tricks: {
@@ -198,9 +199,10 @@ describe("game store DDS state", () => {
 
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
-    const startPromise = store.startDrill({ deal, session, strategy, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal, session, strategy, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    void store.startDrill(bundle, service, handle);
     await vi.advanceTimersByTimeAsync(1200);
-    await startPromise;
 
     // User makes a wrong bid (strategy says pass)
     expect(store.phase).toBe("BIDDING");

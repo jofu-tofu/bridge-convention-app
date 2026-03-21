@@ -549,6 +549,18 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       inference.initialize(bundle.nsInferenceEngine, bundle.ewInferenceEngine);
       publicBeliefState = inference.getPublicBeliefState();
 
+      // When service is wired, call startDrill to run initial AI bids in
+      // the service's session state. Pass results to bidding init.
+      let initialAiBids: readonly import("../service").AiBidEntry[] | undefined;
+      let initialLegalCalls: readonly import("../engine/types").Call[] | undefined;
+      let initialAuctionComplete = false;
+      if (service && handle) {
+        const startResult = await service.startDrill(handle);
+        initialAiBids = startResult.aiBids;
+        initialLegalCalls = startResult.viewport.legalCalls;
+        initialAuctionComplete = startResult.auctionComplete;
+      }
+
       // Initialize bidding sub-store with callbacks
       await bidding.init({
         deal: bundle.deal,
@@ -563,6 +575,9 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
         },
         service,
         handle,
+        initialAiBids,
+        initialLegalCalls,
+        initialAuctionComplete,
       });
     },
 

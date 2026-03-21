@@ -86,6 +86,12 @@ export interface BiddingStoreConfig {
   service?: DevServicePort;
   /** Session handle for the current drill. Required when service is provided. */
   handle?: SessionHandle;
+  /** Pre-computed initial AI bids from service.startDrill(). Animated on init instead of running local AI bid loop. */
+  initialAiBids?: readonly AiBidEntry[];
+  /** Legal calls for the user's first turn (from DrillStartResult.viewport.legalCalls). */
+  initialLegalCalls?: readonly Call[];
+  /** True when the auction completed during initial AI bids (service detected completion). */
+  initialAuctionComplete?: boolean;
 }
 
 export function createBiddingStore(engine: EnginePort, options?: GameStoreOptions) {
@@ -466,7 +472,21 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     }
 
     await tick();
-    await runAiBids();
+
+    // When service is wired, AI bids come pre-computed from service.startDrill().
+    // Animate them and set legal calls from the result.
+    if (activeService && config.initialAiBids) {
+      await animateAiBids(config.initialAiBids);
+      if (config.initialAuctionComplete) {
+        // Auction completed during initial AI bids — notify game store
+        await onAuctionComplete?.(auction);
+      } else if (config.initialLegalCalls) {
+        legalCalls = [...config.initialLegalCalls];
+      }
+    } else {
+      // Legacy local path (tests without service): run AI bids via engine
+      await runAiBids();
+    }
   }
 
   function reset() {

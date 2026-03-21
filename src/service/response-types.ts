@@ -27,6 +27,8 @@ export interface DrillStartResult {
   readonly viewport: BiddingViewport;
   readonly isOffConvention: boolean;
   readonly aiBids: readonly AiBidEntry[];
+  /** True when the auction completed during initial AI bids (e.g., all four seats passed). */
+  readonly auctionComplete: boolean;
 }
 
 /** A single AI bid entry for animation. */

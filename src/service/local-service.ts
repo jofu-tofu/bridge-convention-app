@@ -140,7 +140,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       const state = manager.get(handle);
 
       // Run initial AI bids (no delays — service is transport-neutral)
-      const { aiBids } = await runInitialAiBids(state, engine);
+      const { aiBids, auctionComplete } = await runInitialAiBids(state, engine);
 
       // Build viewport
       const viewport = buildBiddingViewportFromState(state);
@@ -149,6 +149,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         viewport: viewport!,
         isOffConvention: state.isOffConvention,
         aiBids,
+        auctionComplete,
       };
     },
 
@@ -308,6 +309,23 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async getConventionName(handle: SessionHandle): Promise<string> {
       const anc = getAncillary(handle);
       return anc.conventionName;
+    },
+
+    async createSessionFromBundle(bundle: DrillBundle): Promise<SessionHandle> {
+      const handle = createHandle();
+      const coordinator = createInferenceCoordinator();
+      const state = new SessionState(bundle, coordinator);
+      manager.set(handle, state);
+      ancillary.set(handle, {
+        dds: new DDSController(),
+        conventionConfig: { id: bundle.session.config.conventionId, name: bundle.session.config.conventionId, description: "", dealConstraints: { seats: [] } },
+        conventionName: bundle.session.config.conventionId,
+        bundle,
+      });
+      if (bundle.initialAuction) {
+        initializeAuction(state, bundle.initialAuction);
+      }
+      return handle;
     },
   };
 }
