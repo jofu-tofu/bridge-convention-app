@@ -23,8 +23,6 @@ import { createSystemFactCatalog } from "../../core/pipeline/system-fact-catalog
 
 import {
   OPENER_1NT_SURFACE,
-  ntResponseFacts,
-  createNtResponseFacts,
   naturalNtModule,
   createNaturalNtModule,
 } from "../modules/natural-nt";
@@ -158,14 +156,12 @@ const systemFacts = createSystemFactCatalog(SAYC_SYSTEM_CONFIG);
 const mergedFacts: FactCatalogExtension = {
   definitions: [
     ...systemFacts.definitions,
-    ...ntResponseFacts.definitions,
     ...staymanFacts.definitions,
     ...transferFacts.definitions,
     ...smolenFacts.definitions,
   ],
   evaluators: new Map([
     ...systemFacts.evaluators,
-    ...ntResponseFacts.evaluators,
     ...staymanFacts.evaluators,
     ...transferFacts.evaluators,
     ...smolenFacts.evaluators,
@@ -176,20 +172,17 @@ const mergedFacts: FactCatalogExtension = {
 /** Factory: creates merged facts parameterized by system config. */
 export function createMergedFacts(sys: SystemConfig): FactCatalogExtension {
   const sysFacts = createSystemFactCatalog(sys);
-  const ntFacts = createNtResponseFacts(sys);
   const stFacts = createStaymanFacts(sys);
   const trFacts = createTransferFacts(sys);
   return {
     definitions: [
       ...sysFacts.definitions,
-      ...ntFacts.definitions,
       ...stFacts.definitions,
       ...trFacts.definitions,
       ...smolenFacts.definitions,
     ],
     evaluators: new Map([
       ...sysFacts.evaluators,
-      ...ntFacts.evaluators,
       ...stFacts.evaluators,
       ...trFacts.evaluators,
       ...smolenFacts.evaluators,

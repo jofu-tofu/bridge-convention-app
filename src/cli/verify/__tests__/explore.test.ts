@@ -8,12 +8,12 @@ import { describe, it, expect } from "vitest";
 // Side-effect import: registers all bundles + conventions
 import "../../../conventions";
 
-import { getSystem } from "../../../conventions/definitions/system-registry";
+import { getSystemBundle } from "../../../conventions/definitions/system-registry";
 import { exploreBundle } from "../explore";
 
 describe("exploreBundle", () => {
   it("runs without crashes on nt-bundle with minimal trials", () => {
-    const system = getSystem("nt-bundle")!;
+    const system = getSystemBundle("nt-bundle")!;
     const modules = system.ruleModules ?? [];
     expect(modules.length).toBeGreaterThan(0);
 
@@ -32,7 +32,7 @@ describe("exploreBundle", () => {
   });
 
   it("tracks atom coverage across trials", () => {
-    const system = getSystem("nt-bundle")!;
+    const system = getSystemBundle("nt-bundle")!;
     const modules = system.ruleModules ?? [];
 
     const result = exploreBundle(system, modules, {
@@ -50,7 +50,7 @@ describe("exploreBundle", () => {
   });
 
   it("produces deterministic results with same seed", () => {
-    const system = getSystem("nt-bundle")!;
+    const system = getSystemBundle("nt-bundle")!;
     const modules = system.ruleModules ?? [];
 
     const result1 = exploreBundle(system, modules, { depth: 4, seed: 42, trials: 3 });
@@ -61,7 +61,7 @@ describe("exploreBundle", () => {
   });
 
   it("filters invariants when specified", () => {
-    const system = getSystem("nt-bundle")!;
+    const system = getSystemBundle("nt-bundle")!;
     const modules = system.ruleModules ?? [];
 
     const result = exploreBundle(system, modules, {

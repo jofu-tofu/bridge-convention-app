@@ -11,6 +11,10 @@ import {
   NEAR_MISS_OF,
   ALTERNATIVES,
 } from "../../teaching-vocabulary";
+import {
+  SCOPE_WEAK_TWO_OPENER_BIDS,
+  SCOPE_OGUST_RESPONSES,
+} from "../../pedagogical-scope-vocabulary";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
@@ -65,7 +69,7 @@ export function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
     teachingLabel: `Open 2${suitLabel(suit)}`,
     surfaceBindings: { suit },
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "weak-two:opener-bids" },
+      { tag: SAME_FAMILY, scope: SCOPE_WEAK_TWO_OPENER_BIDS },
     ],
   }, WEAK_TWOS_CTX));
 }
@@ -89,16 +93,17 @@ export function createWeakTwoR2Surfaces(
   const gameLevel = suit === "diamonds" ? 5 : 4;
 
   return [
-    // 1. Game raise: 16+ HCP, 3+ fit (highest priority)
+    // 1. Game raise: 16+ total points (HCP + shortage), 3+ fit (highest priority)
     createSurface({
       meaningId: `weak-two:game-raise-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.GAME_RAISE,
       encoding: { defaultCall: gameCall },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: "bridge.totalPointsForRaise",
           operator: "gte",
           value: 16,
+          description: "16+ total points (HCP + shortage) for game",
         },
         {
           factId: "hand.suitLength.$suit",
@@ -119,16 +124,17 @@ export function createWeakTwoR2Surfaces(
       ],
     }, WEAK_TWOS_CTX),
 
-    // 2. Ogust ask: 16+ HCP → 2NT (lower specificity than game raise)
+    // 2. Ogust ask: 16+ total points → 2NT (lower specificity than game raise)
     createSurface({
       meaningId: `weak-two:ogust-ask-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_ASK,
       encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: "bridge.totalPointsForRaise",
           operator: "gte",
           value: 16,
+          description: "16+ total points for Ogust inquiry",
         },
         {
           factId: `hand.suitLength.$suit`,
@@ -149,16 +155,17 @@ export function createWeakTwoR2Surfaces(
       ],
     }, WEAK_TWOS_CTX),
 
-    // 3. Invite raise: 14-15 HCP, 3+ fit → 3 of opener's suit
+    // 3. Invite raise: 14-15 total points, 3+ fit → 3 of opener's suit
     createSurface({
       meaningId: `weak-two:invite-raise-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.INVITE_RAISE,
       encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: "bridge.totalPointsForRaise",
           operator: "range",
           value: { min: 14, max: 15 },
+          description: "14-15 total points (HCP + shortage) for invite",
         },
         {
           factId: "hand.suitLength.$suit",
@@ -236,7 +243,7 @@ export function createWeakTwoOgustSurfaces(
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 0 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: "Ogust responses" },
+        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
       ],
     }, WEAK_TWOS_CTX),
 
@@ -268,7 +275,7 @@ export function createWeakTwoOgustSurfaces(
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 4 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: "Ogust responses" },
+        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
       ],
     }, WEAK_TWOS_CTX),
 
@@ -301,7 +308,7 @@ export function createWeakTwoOgustSurfaces(
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 3 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
         { tag: NEAR_MISS_OF, scope: `weak-two:ogust-strength-boundary-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: "Ogust responses" },
+        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
       ],
     }, WEAK_TWOS_CTX),
 
@@ -334,7 +341,7 @@ export function createWeakTwoOgustSurfaces(
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 2 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
         { tag: NEAR_MISS_OF, scope: `weak-two:ogust-strength-boundary-${suit}`, role: "b" },
-        { tag: ALTERNATIVES, scope: "Ogust responses" },
+        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
       ],
     }, WEAK_TWOS_CTX),
 
@@ -366,7 +373,7 @@ export function createWeakTwoOgustSurfaces(
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 1 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: "Ogust responses" },
+        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
       ],
     }, WEAK_TWOS_CTX),
   ];

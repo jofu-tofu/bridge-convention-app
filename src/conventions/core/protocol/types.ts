@@ -468,39 +468,18 @@ export interface ActionResolution {
  * A fully composed convention specification.
  * This is what gets compiled into a runnable convention system.
  *
- * All modules live in one list. The runtime separates them by role:
- * - role: "base" modules are mutually exclusive, selected by opening
- * - role: "protocol" modules are guard-activated, layered
+ * All convention behavior flows through ruleModules — declarative
+ * modules with local FSM, rules, facts, and surfaces.
  */
 export interface ConventionSpec {
   readonly id: string;
   readonly name: string;
-  /** The public semantic contract. */
-  readonly schema: PublicSemanticSchema;
-  /** All modules in this convention system. */
-  readonly modules: readonly ModuleSpec[];
-  /** All surface fragments referenced by modules. */
-  readonly surfaces: Readonly<Record<string, SurfaceFragment>>;
-  /** Rule modules for rule-based surface selection (Phase 3+).
-   *  When present, the protocol adapter uses the rule interpreter
-   *  for surface selection. The old FSM still runs for register tracking. */
-  readonly ruleModules?: readonly RuleModule[];
+  /** Rule modules for rule-based surface selection. */
+  readonly ruleModules: readonly RuleModule[];
 }
 
 // Forward reference for RuleModule — avoid circular import
 import type { RuleModule } from "../rule-module";
-
-// ── ConventionSpec Helpers ──────────────────────────────────────────
-
-/** Extract base-role modules from a ConventionSpec. */
-export function getBaseModules(spec: ConventionSpec): readonly BaseModuleSpec[] {
-  return spec.modules.filter((m): m is BaseModuleSpec => m.role === "base");
-}
-
-/** Extract protocol-role modules from a ConventionSpec. */
-export function getProtocolModules(spec: ConventionSpec): readonly ProtocolModuleSpec[] {
-  return spec.modules.filter((m): m is ProtocolModuleSpec => m.role === "protocol");
-}
 
 // ── Boot Router Types ───────────────────────────────────────────────
 

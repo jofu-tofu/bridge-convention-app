@@ -269,7 +269,3 @@ export function deriveTeachingContent(
   return { relations, alternatives, intentFamilies };
 }
 
-/** @deprecated Use deriveTeachingContent instead. */
-export const deriveCrossModuleContent = deriveTeachingContent;
-/** @deprecated Use DerivedPedagogicalContent instead. */
-export type DerivedCrossModuleContent = DerivedPedagogicalContent;

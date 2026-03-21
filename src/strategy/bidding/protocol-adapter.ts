@@ -36,13 +36,13 @@ import type { Seat, Call, BidSuit } from "../../engine/types";
 export function protocolSpecToStrategy(
   spec: ConventionSpec,
 ): ConventionStrategy {
-  // Build a fact catalog from all module fact extensions
-  const moduleFactExtensions = spec.modules
+  // Build a fact catalog from ruleModule fact extensions
+  const factExtensions = spec.ruleModules
     .map((m) => m.facts)
-    .filter((f) => f !== undefined && f !== null);
+    .filter((f) => f !== undefined && f !== null && (f.definitions.length > 0 || f.evaluators.size > 0));
 
-  const catalog: FactCatalog = moduleFactExtensions.length > 0
-    ? createFactCatalog(createSharedFactCatalog(), ...moduleFactExtensions)
+  const catalog: FactCatalog = factExtensions.length > 0
+    ? createFactCatalog(createSharedFactCatalog(), ...factExtensions)
     : createSharedFactCatalog();
 
   let lastEvaluation: StrategyEvaluation | null = {
@@ -70,8 +70,7 @@ export function protocolSpecToStrategy(
       }));
 
       // Rule-only path: per-step replay with real kernel threading.
-      // All bundles now have ruleModules (Phase 5 complete).
-      if (!spec.ruleModules || spec.ruleModules.length === 0) {
+      if (spec.ruleModules.length === 0) {
         return null;
       }
 

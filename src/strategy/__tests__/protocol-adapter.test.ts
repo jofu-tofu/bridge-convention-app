@@ -78,9 +78,6 @@ function makeSpec(ruleModules: readonly RuleModule[]): ConventionSpec {
   return {
     id: "test-spec",
     name: "Test Spec",
-    schema: { registers: {}, capabilities: {} },
-    modules: [],
-    surfaces: {},
     ruleModules,
   };
 }

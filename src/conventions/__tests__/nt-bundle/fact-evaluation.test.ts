@@ -10,14 +10,13 @@ import { evaluateFacts, createSharedFactCatalog } from "../../core/pipeline/fact
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { staymanFacts } from "../../definitions/modules/stayman";
 import { transferFacts } from "../../definitions/modules/jacoby-transfers";
-import { ntResponseFacts } from "../../definitions/modules/natural-nt";
 import { createSystemFactCatalog } from "../../core/pipeline/system-fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 
 /** Create a full catalog with shared + system + module facts. */
 function fullCatalog() {
   const systemFacts = createSystemFactCatalog(SAYC_SYSTEM_CONFIG);
-  return createFactCatalog(createSharedFactCatalog(), systemFacts, staymanFacts, transferFacts, ntResponseFacts);
+  return createFactCatalog(createSharedFactCatalog(), systemFacts, staymanFacts, transferFacts);
 }
 
 function factsFor(...notations: string[]) {

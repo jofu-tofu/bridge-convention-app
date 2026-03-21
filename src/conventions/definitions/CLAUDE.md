@@ -8,8 +8,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `teaching-vocabulary.ts` — 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`). Modules annotate surfaces with these + a scope string to express any pedagogical relationship.
 - `derive-cross-module.ts` — `deriveTeachingContent(modules)` — derives all pedagogical relations, alternatives, and intent families from `teachingTags` on surfaces. Groups by `(tagId, scope)`. Supports ordinal chains for strength progressions. Called by `aggregateModuleContent()` in `system-registry.ts`.
 - `surface-group-vocabulary.ts` — Shared constants for cross-module surface groupIds. Typos caught at compile time.
-- `bidding-system.ts` — `BiddingSystem` interface for system-level composition. Includes `ruleModules` for rule-based surface selection.
-- `system-registry.ts` — System definitions (including NT sub-bundle systems), module aggregation, `bundleFromSystem()` (collects surfaces/facts from ruleModules), `specFromSystem()` (derives minimal ConventionSpec from ruleModules).
+- `pedagogical-scope-vocabulary.ts` — Type-safe scope constants (branded `PedagogicalScope` type) for `teachingTags` scopes. Replaces free-form strings.
+- `system-registry.ts` — System definitions (including NT sub-bundle systems), module aggregation. Defines bundles directly via `buildBundle()` and exports them. `getSystemBundle()`, `listSystemBundles()`, `specFromBundle()`.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
 
@@ -19,8 +19,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 | File | Purpose |
 |------|---------|
-| `config.ts` | `ConventionBundle` object wiring all bundle modules together |
-| `convention-config.ts` | Thin `ConventionConfig` wrapper for registry/UI compatibility |
+| `config.ts` | Re-export from system-registry (thin shim) |
 | `base-track.ts` | `BaseTrackTable` defining the FSM state→surface mapping as a declarative table. Used by `compose.ts` to build the conversation machine and surface routing. |
 | `meaning-surfaces.ts` | `BidMeaning[]` definitions — the core bidding logic (single-module bundles). In multi-module bundles like nt-bundle, this is `composed-surfaces.ts` (cross-module composition re-exports). |
 | `facts.ts` | `FactCatalogExtension`s for module-derived facts |
@@ -47,10 +46,10 @@ Convention bundles that each implement a bridge bidding convention using the mea
   - `jacoby-transfers-rules.ts` — RuleModule for Jacoby Transfers (phases: idle/inactive/transferred-*/accepted-*/placing-*/invited-*). Claims carry `negotiationDelta` for forcing/fitAgreed/captain effects.
   - `smolen-rules.ts` — RuleModule for Smolen (phases: idle/post-r1/placing-hearts/placing-spades/done). Claims carry `negotiationDelta` for game-forcing/fitAgreed/captain effects. Proof case: uses route pattern `subseq([inquire(majorSuit), deny(majorSuit)])` instead of hookTransitions.
 - ~~`skeleton.ts`~~ — Removed. Skeleton-based composition replaced by `bundleFromRuleModules()` in Phase 6.
-- `config.ts` — `ConventionBundle` via `bundleFromSystem(ntSystem)` — assembled from ruleModules.
-- `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles via `bundleFromSystem()`, auto-composing pedagogical content from module subsets.
+- `config.ts` — Re-exports `ntBundle` from `system-registry.ts`.
+- `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles via `buildBundle()`, auto-composing pedagogical content from module subsets.
 - `composed-surfaces.ts` — Cross-module composition re-exports. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
-- ~~`facts.ts`~~ — Removed. Facts (`staymanFacts`, `transferFacts`, `ntResponseFacts`, `smolenFacts`) are now re-exported directly from `modules/` via the barrel `index.ts`.
+- ~~`facts.ts`~~ — Removed. Facts (`staymanFacts`, `transferFacts`, `smolenFacts`) are now re-exported directly from `modules/` via the barrel `index.ts`.
 - `machine.ts` — Re-export shim: `createNtConversationMachine()` delegates to `composeNtModules()`.
 - `semantic-classes.ts` — Re-export shim from modules.
 - `explanation-catalog.ts` — Composed from all modules' explanation entries.
@@ -84,7 +83,7 @@ Every convention bundle must satisfy all items before being considered complete:
 4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, and `terminal`. **Scoped interrupt pattern:** opponent interference is handled by abstract scope states (parent states with `opponent-action` transitions targeting local interrupted states) — not a single global contested sink. Design rule: external events are handled by the nearest enclosing interrupt scope. `call` and `any-bid` transitions are role-safe by default (self+partner only); use `opponent-action` with `callType: "bid"` to match opponent bids explicitly.
 5. **`systemProfile` for activation.** Profile-based module activation via `SystemProfile`. The legacy `activationFilter` field is optional and no longer needed when `systemProfile` is present.
 6. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate.
-7. **`convention-config.ts` wrapper.** Thin `ConventionConfig` that maps bundle fields to the registry interface. Required for UI picker compatibility.
+7. **`category` and `description` are required** on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` — no separate wrapper needed.
 8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections. Each entry links a `factId` to display text and contrastive templates.
 9. **`systemProfile` IR.** Profile-based module activation metadata.
 10. **`teachingTags` on surfaces.** All surfaces participating in pedagogical relations or grading alternatives must have `teachingTags` annotations using the 6 general tags from `teaching-vocabulary.ts`. No separate `pedagogical-relations.ts` or `alternatives.ts` files.
@@ -94,7 +93,7 @@ Every convention bundle must satisfy all items before being considered complete:
 
 ### ConventionConfig (`core/contracts/convention.ts`)
 
-The minimal registry interface. Bundles expose this via `convention-config.ts` wrappers.
+The minimal registry interface. Auto-derived by `registerBundle()` from `ConventionBundle` fields.
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
@@ -128,8 +127,11 @@ The full bundle interface — the primary authoring surface for new conventions.
 | `systemProfile` | No | `SystemProfile` | Profile-based module activation. |
 | `conversationMachine` | No | `ConversationMachine` | FSM for hierarchical state tracking and surface group selection. |
 | `declaredCapabilities` | No | `Readonly<Record<string, string>>` | Capabilities injected into profile-based activation. Bundles without this get none. |
-| `category` | No | `ConventionCategory` | Convention category for UI grouping. |
-| `description` | No | `string` | Human-readable description for UI display. |
+| `category` | Yes | `ConventionCategory` | Convention category for UI grouping. |
+| `description` | Yes | `string` | Human-readable description for UI display. |
+| `teaching` | No | `ConventionTeaching` | Convention-level teaching metadata (purpose, whenToUse, whenNotToUse, tradeoff, principle, roles). |
+| `allowedDealers` | No | `readonly Seat[]` | Random dealer selection; constraints rotate 180° when dealer differs from `dealConstraints.dealer`. |
+| `ruleModules` | No | `readonly RuleModule[]` | Rule-based convention modules for surface selection via `collectMatchingClaims()`. |
 | `explanationCatalog` | Yes | `ExplanationCatalog` | Explanation catalog for enriching teaching projections. |
 | `teachingRelations` | Yes | `readonly TeachingRelation[]` | Derived from `teachingTags` on surfaces by `deriveTeachingContent()`. |
 | `acceptableAlternatives` | Yes | `readonly AlternativeGroup[]` | Derived from `teachingTags` on surfaces by `deriveTeachingContent()`. |
@@ -143,37 +145,11 @@ Skeleton templates for a new convention bundle. Replace `{name}` with bundle ID 
 
 ### config.ts
 
-```ts
-import type { ConventionBundle } from "../../core/bundle/bundle-types";
-import { ConventionCategory } from "../../../core/contracts/convention";
-import { {NAME}_SURFACES } from "./meaning-surfaces";
-import { {name}Facts } from "./facts";
-import { create{Name}SurfaceRouter } from "./surface-routing";
-import { create{Name}ConversationMachine } from "./machine";
-import { {NAME}_PROFILE } from "./system-profile";
-import { {NAME}_EXPLANATION_CATALOG } from "./explanation-catalog";
+Thin re-export from `system-registry.ts`. The bundle is defined in the system registry; `config.ts` re-exports it for backward compatibility.
 
-export const {name}Bundle: ConventionBundle = {
-  id: "{name}-bundle",
-  name: "{Name} Bundle",
-  memberIds: ["{member-convention-id}"],
-  category: ConventionCategory.Constructive,
-  description: "One-line description",
-  dealConstraints: {
-    seats: [
-      { seat: "N" as any, minHcp: 12, maxHcp: 21 },
-      { seat: "S" as any, minHcp: 0 },
-    ],
-  },
-  meaningSurfaces: [
-    { groupId: "responder-r1", surfaces: {NAME}_SURFACES },
-  ],
-  factExtensions: [{name}Facts],
-  surfaceRouter: create{Name}SurfaceRouter(),
-  conversationMachine: create{Name}ConversationMachine(),
-  systemProfile: {NAME}_PROFILE,
-  explanationCatalog: {NAME}_EXPLANATION_CATALOG,
-};
+```ts
+// Re-export the bundle from system-registry
+export { {name}Bundle } from "../system-registry";
 ```
 
 ### meaning-surfaces.ts
@@ -292,23 +268,6 @@ export function create{Name}ConversationMachine(): ConversationMachine {
 }
 ```
 
-### convention-config.ts
-
-```ts
-import type { ConventionConfig } from "../../../core/contracts/convention";
-import { {name}Bundle } from "./config";
-
-export const {name}BundleConventionConfig: ConventionConfig = {
-  id: {name}Bundle.id,
-  name: "{Name}",
-  description: {name}Bundle.description ?? "",
-  category: {name}Bundle.category!,
-  dealConstraints: {name}Bundle.dealConstraints,
-  defaultAuction: {name}Bundle.defaultAuction,
-  internal: {name}Bundle.internal,
-};
-```
-
 ### surface-routing.ts
 
 ```ts
@@ -408,9 +367,8 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 9. Populate `ExplanationCatalog` in `explanation-catalog.ts` with template-keyed explanations.
 10. Add `teachingTags` to surfaces using the 6 general tags from `teaching-vocabulary.ts`. Use scope strings to group related surfaces.
 11. Assemble the bundle in `compose.ts` using the base-track table and convention spec.
-13. Wire the `ConventionBundle` in `config.ts`.
-14. Create `convention-config.ts` — thin `ConventionConfig` wrapper for the registry.
-15. Create `index.ts` barrel with re-exports.
+13. Wire `config.ts` as a thin re-export from `system-registry.ts`.
+14. Create `index.ts` barrel with re-exports.
 16. Create `__tests__/` with at minimum: base-track tests, surface evaluation tests, machine tests, and config/factory E2E tests.
 17. Run the completeness checklist above before considering the bundle complete.
 
@@ -421,6 +379,7 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - **Adding a module must not edit existing modules.** If your new module needs to relate to existing ones (same-family, near-miss, etc.), use shared scope strings in `teachingTags`. The derivation function handles the wiring.
 - **`predicate` transitions are not supported in auto-composition.** Use declarative `TransitionMatch` kinds (`call`, `pass`, `opponent-action`, `any-bid`). If a future convention requires runtime predicate logic, it must be expressed as a `BoolExpr` guard on the `FrameStateSpec` level — which means authoring it in the skeleton, not the module.
 - **Cross-module groupIds must use shared constants** from `surface-group-vocabulary.ts`. Never use string literals for groupIds that another module also references.
+- **Use scope constants from `pedagogical-scope-vocabulary.ts`** for `teachingTags` scopes. The branded `PedagogicalScope` type catches typos at compile time. Do not use free-form strings.
 - **`entryTransitions` must be populated** on every module that is reachable from the bundle entry state. Empty `entryTransitions` means the module is only reachable via `hookTransitions` from another module.
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
 
@@ -438,13 +397,11 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 
 6. **`$suit` binding errors in parameterized surfaces.** When using the factory pattern (like Bergen's `createBergenR1Surfaces(suit)`), clauses must reference the binding variable (e.g., `hand.suitLength.$suit`) and the surface must include a `bindings: { suit }` field. Missing bindings cause clause evaluation to fail.
 
-7. **Module-derived facts for NT-specific thresholds.** `module.ntResponse.inviteValues`, `module.ntResponse.gameValues`, `module.ntResponse.slamValues` are in `nt-bundle/facts.ts` as the `ntResponseFacts` extension (not in shared `BRIDGE_DERIVED_FACTS`). They fail the promotion rule (cannot be named without "1NT"). Any test or strategy that evaluates NT surfaces must include `ntResponseFacts` in its `createFactCatalog()` call, or these facts will be absent and clauses referencing them will fail closed.
+7. **Missing `category` or `description` on bundle.** Both are required on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` from these fields.
 
-8. **`convention-config.ts` wrapper omitted.** The registry and UI picker use `ConventionConfig`, not `ConventionBundle`. Every bundle needs a thin `convention-config.ts` that maps bundle fields to the `ConventionConfig` interface.
+8. **Hand-authoring clauseId/description in surfaces.** These are auto-derived by the builder and pipeline. Only provide `description` when adding convention-specific rationale in parentheses.
 
-9. **Hand-authoring clauseId/description in surfaces.** These are auto-derived by the builder and pipeline. Only provide `description` when adding convention-specific rationale in parentheses.
-
-10. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
+9. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
 
 ## Test Organization
 
@@ -508,12 +465,11 @@ Step-by-step for adding a new convention. All work stays inside `src/conventions
    - `base-track.ts` — `BaseTrackTable` (state-to-surface mapping)
    - `compose.ts` — bundle composition from base-track + module contributions
    - `system-profile.ts` — `SystemProfile` for activation
-   - `config.ts` — `ConventionBundle` (typically via `bundleFromSystem()`)
-   - `convention-config.ts` — thin `ConventionConfig` wrapper for registry/UI
+   - `config.ts` — thin re-export from `system-registry.ts`
    - `index.ts` — barrel re-export
    - `__tests__/` — base-track, machine, surface evaluation, and golden-master tests
 4. **Register the module** in `module-registry.ts`: import the `ConventionModule` and add it to `ALL_MODULES`.
-5. **Register the system** in `system-registry.ts`: import the profile and `RuleModule`, define a `BiddingSystem`, and add it to `ALL_SYSTEMS`.
+5. **Define the bundle** in `system-registry.ts`: import the profile and `RuleModule`, define the bundle via `buildBundle()`, and register it.
 6. **Verify:**
    - `npm run lint` — confirms no boundary violations (ESLint enforces module isolation)
    - `npm run test:run` — all existing + new tests pass
@@ -536,6 +492,13 @@ Adding a new convention is a **definitions-only** change. The following director
 
 If any of these need changes to support a new convention, the boundary has leaked and the core architecture should be fixed instead. ESLint import boundaries enforce this at build time -- a convention that compiles and passes lint has respected the contract.
 
+## Design Decisions
+
+- **Why ConventionConfig is kept as a separate DTO:** UI/stores should consume minimal types, not full pipeline bundles with 20+ fields. ConventionConfig is the stable UI contract — auto-derived by `registerBundle()`.
+- **Why explicit registration over auto-discovery:** Explicit `registerBundle()` calls are traceable and debuggable. Auto-discovery adds implicit ordering and makes registration non-obvious.
+- **Why two layers (Bundle → Config) not three:** BiddingSystem added no fields or behavior that ConventionBundle didn't already provide. The indirection created wiring fragility without architectural benefit.
+- **Why PedagogicalScope lives in definitions, not contracts:** Scope strings are convention-specific vocabulary. Contracts contains only convention-agnostic types. Enforcement via scope constants catches errors at authoring time without polluting the contracts tier.
+
 ---
 
 ## Context Maintenance
@@ -546,4 +509,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `nt-bundle/config.ts`, `bergen-bundle/config.ts`, `weak-twos-bundle/config.ts`, and `dont-bundle/config.ts` exist.
 If any is missing, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-18 | version=7 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:90+,exts:ts:88+,md:1 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-21 | version=8 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:90+,exts:ts:88+,md:1 -->

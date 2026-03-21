@@ -1,9 +1,5 @@
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { MachineTransition } from "../../core/runtime/machine-types";
-import type {
-  FactCatalogExtension,
-  FactEvaluatorFn,
-} from "../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 
 import { BidSuit } from "../../../engine/types";
@@ -24,6 +20,11 @@ import {
   STRONGER_THAN,
   FALLBACK_OF,
 } from "../teaching-vocabulary";
+import {
+  SCOPE_NATURAL_NT_R1,
+  SCOPE_NATURAL_NT_R1_STRENGTH,
+  SCOPE_R1_MAJOR_FIT_FALLBACK,
+} from "../pedagogical-scope-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -59,9 +60,9 @@ const NT_R1_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "NTInvite", params: {} },
     teachingLabel: "NT invite",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "natural-nt:r1" },
-      { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 1 },
-      { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
+      { tag: SAME_FAMILY, scope: SCOPE_NATURAL_NT_R1 },
+      { tag: STRONGER_THAN, scope: SCOPE_NATURAL_NT_R1_STRENGTH, ordinal: 1 },
+      { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "a" },
     ],
   }, NATURAL_NT_CTX),
 
@@ -92,9 +93,9 @@ const NT_R1_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "NTGame", params: {} },
     teachingLabel: "3NT game",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "natural-nt:r1" },
-      { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 0 },
-      { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
+      { tag: SAME_FAMILY, scope: SCOPE_NATURAL_NT_R1 },
+      { tag: STRONGER_THAN, scope: SCOPE_NATURAL_NT_R1_STRENGTH, ordinal: 0 },
+      { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "a" },
     ],
   }, NATURAL_NT_CTX),
 ];
@@ -159,24 +160,6 @@ const NT_R1_TRANSITIONS: readonly MachineTransition[] = [
     target: "terminal",
   },
 ];
-
-// ─── Facts ───────────────────────────────────────────────────
-// System-semantic facts (inviteValues, gameValues, slamValues) are now
-// provided by the system fact catalog — see system-fact-catalog.ts.
-// Convention modules no longer own these evaluators.
-
-/** @deprecated Empty — system-semantic facts moved to createSystemFactCatalog(). */
-export function createNtResponseEvaluators(_sys: SystemConfig): Map<string, FactEvaluatorFn> {
-  return new Map();
-}
-
-/** @deprecated Empty — system-semantic facts moved to createSystemFactCatalog(). */
-export function createNtResponseFacts(_sys: SystemConfig): FactCatalogExtension {
-  return { definitions: [], evaluators: new Map() };
-}
-
-/** Legacy default — empty, system facts come from createSystemFactCatalog(). */
-export const ntResponseFacts: FactCatalogExtension = createNtResponseFacts(SAYC_SYSTEM_CONFIG);
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -356,7 +339,7 @@ export function createNaturalNtModule(sys: SystemConfig) {
 
     machineStates: [],
 
-    facts: createNtResponseFacts(sys),
+    facts: { definitions: [], evaluators: new Map() },
 
     explanationEntries: NT_EXPLANATION_ENTRIES,
   };

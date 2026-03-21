@@ -20,7 +20,8 @@ import { createExplanationCatalog } from "../../core/contracts/explanation-catal
 import { getModules } from "./module-registry";
 import { deriveTeachingContent } from "./derive-cross-module";
 
-import { Seat, Suit } from "../../engine/types";
+import { Seat, Suit, type Hand } from "../../engine/types";
+import { suitLengthOf } from "../../engine/hand-evaluator";
 import { ConventionCategory } from "../../core/contracts/convention";
 import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPPONENT_1NT } from "./capability-vocabulary";
 import { buildAuction } from "../../engine/auction-helpers";
@@ -143,6 +144,27 @@ function collectRuleModuleContent(
     meaningSurfaces: surfaceGroups,
     factExtensions,
   };
+}
+
+// ── Deal constraint helpers ─────────────────────────────────────────
+
+/** Determine which major suit the opener (North) should open based on hand. */
+function longestMajor(hand: Hand): "H" | "S" {
+  const h = suitLengthOf(hand, Suit.Hearts);
+  const s = suitLengthOf(hand, Suit.Spades);
+  // Standard: open the longer major; prefer hearts if equal (up-the-line)
+  return s > h ? "S" : "H";
+}
+
+/** Determine which weak-two suit North should open based on hand. */
+function longestWeakTwoSuit(hand: Hand): "D" | "H" | "S" {
+  const d = suitLengthOf(hand, Suit.Diamonds);
+  const h = suitLengthOf(hand, Suit.Hearts);
+  const s = suitLengthOf(hand, Suit.Spades);
+  // Open the longest 6+ card suit; priority: H > S > D if tied
+  if (h >= s && h >= d) return "H";
+  if (s >= d) return "S";
+  return "D";
 }
 
 // ── Bundle definitions ──────────────────────────────────────────────
@@ -276,13 +298,20 @@ export const bergenBundle = buildBundle({
   memberIds: ["bergen"],
   dealConstraints: {
     seats: [
-      { seat: Seat.North, minHcp: 12, maxHcp: 21, minLength: { [Suit.Hearts]: 5 } },
-      { seat: Seat.South, minHcp: 0, minLength: { [Suit.Hearts]: 4 } },
+      { seat: Seat.North, minHcp: 12, maxHcp: 21, minLengthAny: { [Suit.Hearts]: 5, [Suit.Spades]: 5 } },
+      {
+        seat: Seat.South, minHcp: 0,
+        // South must have 4+ in at least one major (convention requires fit)
+        minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+      },
     ],
     dealer: Seat.North,
   },
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1H", "P"]);
+  defaultAuction: (seat, deal) => {
+    if (seat === Seat.South || seat === Seat.East) {
+      const openSuit = deal ? longestMajor(deal.hands[Seat.North]) : "H";
+      return buildAuction(Seat.North, [`1${openSuit}`, "P"]);
+    }
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_MAJOR]: "active" },
@@ -360,8 +389,11 @@ export const weakTwoBundle = buildBundle({
     ],
     dealer: Seat.North,
   },
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["2H", "P"]);
+  defaultAuction: (seat, deal) => {
+    if (seat === Seat.South || seat === Seat.East) {
+      const openSuit = deal ? longestWeakTwoSuit(deal.hands[Seat.North]) : "H";
+      return buildAuction(Seat.North, [`2${openSuit}`, "P"]);
+    }
     return undefined;
   },
   ruleModules: [weakTwosRules],
@@ -400,39 +432,18 @@ export function listSystemBundles(): readonly ConventionBundle[] {
   return ALL_BUNDLES;
 }
 
-// ── Backward-compatible aliases (used by consumers during migration) ──
-
-/** @deprecated Use getSystemBundle() */
-export function getSystem(id: string): ConventionBundle | undefined {
-  return getSystemBundle(id);
-}
-
-/** @deprecated Use listSystemBundles() */
-export function listSystems(): readonly ConventionBundle[] {
-  return ALL_BUNDLES;
-}
-
 // ── Spec generation ──────────────────────────────────────────────────
 
 /** Derive a ConventionSpec from a ConventionBundle.
- *  Creates a minimal spec with ruleModules for surface selection.
  *  Returns undefined if no ruleModules are present. */
 export function specFromBundle(bundle: ConventionBundle): ConventionSpec | undefined {
   if (bundle.ruleModules && bundle.ruleModules.length > 0) {
     return {
       id: bundle.id,
       name: bundle.name,
-      schema: { registers: {}, capabilities: {} },
-      modules: [],
-      surfaces: {},
       ruleModules: bundle.ruleModules,
     };
   }
 
   return undefined;
-}
-
-/** @deprecated Use specFromBundle() */
-export function specFromSystem(bundle: ConventionBundle): ConventionSpec | undefined {
-  return specFromBundle(bundle);
 }

@@ -6,7 +6,7 @@ Retained type definitions for `ConventionSpec` and related protocol frame types.
 
 | File | Role |
 |------|------|
-| `types.ts` | Core types: `ModuleSpec` (unified `BaseModuleSpec` / `ProtocolModuleSpec`), `FrameStateSpec`, `TransitionSpec`, `BoolExpr`, `EffectSpec`, `SurfaceFragment`, `RuntimeSnapshot`, `ConventionSpec`. Expression helpers (`and`, `or`, `not`, `exists`, `eq`, `reg`, `activeTag`, `cap`). Used by strategy and bootstrap layers. |
+| `types.ts` | Core types: `ModuleSpec` (unified `BaseModuleSpec` / `ProtocolModuleSpec`), `FrameStateSpec`, `TransitionSpec`, `BoolExpr`, `EffectSpec`, `SurfaceFragment`, `RuntimeSnapshot`, `ConventionSpec` (`{ id, name, ruleModules }`). Expression helpers (`and`, `or`, `not`, `exists`, `eq`, `reg`, `activeTag`, `cap`). Used by strategy and bootstrap layers. |
 
 ---
 

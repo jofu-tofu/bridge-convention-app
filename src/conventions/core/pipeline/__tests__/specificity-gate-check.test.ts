@@ -72,7 +72,6 @@ import { dontFacts } from "../../../definitions/modules/dont/facts";
 import { staymanFacts } from "../../../definitions/modules/stayman";
 import { transferFacts } from "../../../definitions/modules/jacoby-transfers";
 import { smolenFacts } from "../../../definitions/modules/smolen";
-import { ntResponseFacts } from "../../../definitions/modules/natural-nt";
 import { weakTwoFacts } from "../../../definitions/modules/weak-twos/facts";
 
 // ─── Surface fragment imports (for inherited dimensions) ────
@@ -161,7 +160,6 @@ const allFactExtensions: readonly FactCatalogExtension[] = [
   staymanFacts,
   transferFacts,
   smolenFacts,
-  ntResponseFacts,
   weakTwoFacts,
 ];
 

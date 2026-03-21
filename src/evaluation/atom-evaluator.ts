@@ -27,7 +27,7 @@ import { Seat, Vulnerability } from "../engine/types";
 import type { Auction, Deal, Hand, DealConstraints } from "../engine/types";
 import type { BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
 import type { ConventionStrategy } from "../core/contracts/recommendation";
-import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../conventions/core";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import type { AtomGradeResult } from "./types";
 
