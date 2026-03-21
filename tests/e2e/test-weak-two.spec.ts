@@ -8,7 +8,7 @@ import { test, expect, type Page } from "@playwright/test";
  *   2. Waits for the game to load and the bidding phase to begin
  *   3. Opens the debug panel and captures all 4 hands
  *   4. Captures the auction so far (North's opening, East's pass)
- *   5. Reads the correct bid recommendation from the DEV hint panel
+ *   5. Reads the correct bid recommendation from the debug panel
  *   6. Validates bids against Weak Two / Ogust rules
  *   7. Submits the correct bid and follows through Ogust path if applicable
  *   8. Logs detailed results and flags any incorrect recommendations
@@ -117,6 +117,16 @@ async function openDebugDrawer(page: Page): Promise<void> {
   await page.waitForTimeout(400);
 }
 
+/** Close the debug drawer (needed on mobile viewports where it covers bid buttons) */
+async function closeDebugDrawer(page: Page): Promise<void> {
+  try {
+    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
+    await page.waitForTimeout(300);
+  } catch {
+    // Already closed or not interactable — ignore
+  }
+}
+
 /** Extract all 4 hands using page.evaluate() for reliable DOM access */
 async function extractAllHands(page: Page): Promise<HandInfo[]> {
   const hands: HandInfo[] = [];
@@ -211,39 +221,24 @@ function parseHandText(handText: string): HandInfo[] {
   return hands;
 }
 
-/** Extract the correct bid text from the DEV hint panel */
+/** Extract the correct bid text from the debug panel */
 async function getCorrectBidFromDebugPanel(page: Page): Promise<{
   bidText: string;
   meaningText: string;
 }> {
-  // The inline DebugPanel (not the drawer) shows "DEV: Correct Bid"
-  const debugPanel = page.locator("text=DEV: Correct Bid").first();
-  const panelExists = (await debugPanel.count()) > 0;
-  if (panelExists) {
-    // Get the parent container text
-    const container = debugPanel.locator("..");
-    const panelText = await container.innerText().catch(() => "");
-    if (panelText.includes("No convention bid")) {
+  // Try the "expected:" line from the at-a-glance summary in body text
+  const body = await page.locator("body").innerText();
+  const lines = body.split("\n");
+  const idx = lines.findIndex((l) => l.trim().startsWith("expected:"));
+  if (idx >= 0) {
+    const line = lines[idx]!.trim().replace("expected:", "").trim();
+    if (line.includes("(no match)")) {
       return { bidText: "Pass", meaningText: "No convention bid" };
     }
-    const lines = panelText.split("\n").filter((l) => l.trim());
-    const bidLine = lines.find((l) => !l.includes("DEV:")) ?? "";
-    // Split on em-dash or regular dash
-    const dashIdx = bidLine.indexOf("\u2014");
-    if (dashIdx >= 0) {
-      return {
-        bidText: bidLine.substring(0, dashIdx).trim(),
-        meaningText: bidLine.substring(dashIdx + 1).trim(),
-      };
-    }
-    const dashIdx2 = bidLine.indexOf("—");
-    if (dashIdx2 >= 0) {
-      return {
-        bidText: bidLine.substring(0, dashIdx2).trim(),
-        meaningText: bidLine.substring(dashIdx2 + 1).trim(),
-      };
-    }
-    return { bidText: bidLine.trim(), meaningText: "" };
+    const parts = line.split(/\s+/);
+    const bidText = parts[0] ?? "unknown";
+    const meaningText = parts.slice(1).join(" ");
+    return { bidText, meaningText };
   }
 
   // Fallback: try the SuggestedBid section in debug drawer
@@ -253,16 +248,14 @@ async function getCorrectBidFromDebugPanel(page: Page): Promise<{
     .first();
   if ((await suggestedBid.count()) > 0) {
     const text = await suggestedBid.innerText().catch(() => "");
-    // Parse the suggested bid text
-    const callMatch = text.match(
-      /call:\s*([^\n]+)/,
-    );
-    const meaningMatch = text.match(
-      /meaning:\s*([^\n]+)/,
-    );
+    if (text.includes("No convention bid")) {
+      return { bidText: "Pass", meaningText: "No convention bid" };
+    }
+    const callMatch = text.match(/rule\n(\S+)/);
+    const meaningMatch = text.match(/Suggested Bid\n(\S+)\n([^\n]*)/);
     return {
-      bidText: callMatch ? callMatch[1]!.trim() : "unknown",
-      meaningText: meaningMatch ? meaningMatch[1]!.trim() : "",
+      bidText: meaningMatch ? meaningMatch[1]!.trim() : "unknown",
+      meaningText: meaningMatch ? meaningMatch[2]!.trim() : "",
     };
   }
 
@@ -305,11 +298,11 @@ function bidTextToTestId(bidText: string): string {
     .replace("NT", "NT")
     .replace(/\s+/g, "")
     .trim();
-  if (cleaned.toLowerCase() === "pass") return "bid-pass";
+  if (cleaned.toLowerCase() === "pass") return "bid-P";
   if (cleaned.toLowerCase() === "double" || cleaned === "X")
-    return "bid-double";
+    return "bid-X";
   if (cleaned.toLowerCase() === "redouble" || cleaned === "XX")
-    return "bid-redouble";
+    return "bid-XX";
   return `bid-${cleaned}`;
 }
 
@@ -578,7 +571,7 @@ function extractSouthR2Bid(bodyText: string): string | null {
 
 // ─── Main Test: Interactive bidding ─────────────────────────────
 
-test.describe("Weak Two / Ogust — Interactive Bidding (Seeds 1-15)", () => {
+test.describe("Weak Two / Ogust — Interactive Bidding (Seeds 1-5)", () => {
   for (let seed = 1; seed <= 15; seed++) {
     test(`Seed ${seed}: capture hand data and validate bidding`, async ({
       page,
@@ -594,14 +587,14 @@ test.describe("Weak Two / Ogust — Interactive Bidding (Seeds 1-15)", () => {
 
       // Navigate to game with seed + debug
       await page.goto(
-        `/?convention=weak-two-bundle&seed=${seed}&debug=true`,
+        `/?convention=weak-twos-bundle&seed=${seed}&debug=true`,
       );
 
       const phaseLabel = page.getByTestId("game-phase");
       await expect(phaseLabel).toHaveText("Bidding", { timeout: 15_000 });
 
       // Wait for bid buttons to be ready
-      const passBtn = page.getByTestId("bid-pass");
+      const passBtn = page.getByTestId("bid-P");
       await expect(passBtn).toBeEnabled({ timeout: 10_000 });
 
       // Open debug drawer and expand all details
@@ -683,6 +676,9 @@ test.describe("Weak Two / Ogust — Interactive Bidding (Seeds 1-15)", () => {
       }
 
       // ─── Submit R2 bid ─────────────────────────────────────
+      // Close debug drawer before clicking bid button (mobile viewports)
+      await closeDebugDrawer(page);
+
       const r2TestId = bidTextToTestId(r2Bid.bidText);
       console.log(`  Clicking: ${r2TestId}`);
       const r2Button = page.getByTestId(r2TestId);
@@ -800,7 +796,7 @@ test.describe("Weak Two / Ogust — Interactive Bidding (Seeds 1-15)", () => {
 
 // ─── Autoplay Test: Full auction validation ─────────────────────
 
-test.describe("Weak Two / Ogust — Autoplay Validation (Seeds 1-15)", () => {
+test.describe("Weak Two / Ogust — Autoplay Validation (Seeds 1-5)", () => {
   for (let seed = 1; seed <= 15; seed++) {
     test(`Seed ${seed}: autoplay full auction and validate`, async ({
       page,
@@ -808,7 +804,7 @@ test.describe("Weak Two / Ogust — Autoplay Validation (Seeds 1-15)", () => {
       test.setTimeout(45_000);
 
       await page.goto(
-        `/?convention=weak-two-bundle&seed=${seed}&autoplay=true&debug=true`,
+        `/?convention=weak-twos-bundle&seed=${seed}&autoplay=true&debug=true`,
       );
 
       const phaseLabel = page.getByTestId("game-phase");

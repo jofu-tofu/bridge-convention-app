@@ -19,11 +19,30 @@ export default defineConfig({
     },
     {
       name: "mobile",
-      use: { ...devices["iPhone 14"] },
+      use: {
+        ...devices["iPhone 14"],
+        launchOptions: {
+          env: {
+            // WPE WebKit needs Mesa EGL on systems with NVIDIA drivers
+            __EGL_VENDOR_LIBRARY_FILENAMES:
+              "/usr/share/glvnd/egl_vendor.d/50_mesa.json",
+            LIBGL_ALWAYS_SOFTWARE: "1",
+          },
+        },
+      },
     },
     {
       name: "tablet",
-      use: { ...devices["iPad Mini"] },
+      use: {
+        ...devices["iPad Mini"],
+        launchOptions: {
+          env: {
+            __EGL_VENDOR_LIBRARY_FILENAMES:
+              "/usr/share/glvnd/egl_vendor.d/50_mesa.json",
+            LIBGL_ALWAYS_SOFTWARE: "1",
+          },
+        },
+      },
     },
   ],
 });

@@ -25,9 +25,9 @@ import { test, expect, type Page } from "@playwright/test";
 
 /** Convert formatted bid (e.g. "3\u2663") to data-testid (e.g. "bid-3C") */
 function bidToTestId(formatted: string): string {
-  if (formatted === "Pass") return "bid-pass";
-  if (formatted === "X") return "bid-double";
-  if (formatted === "XX") return "bid-redouble";
+  if (formatted === "Pass") return "bid-P";
+  if (formatted === "X") return "bid-X";
+  if (formatted === "XX") return "bid-XX";
   return (
     "bid-" +
     formatted
@@ -105,22 +105,32 @@ function parseAllHands(text: string): ParsedHand[] {
   return hands;
 }
 
-/** Expand a closed <details> in the debug drawer, scrolling into view first. */
+/** Expand a closed <details> in the debug drawer via JS (bypasses viewport constraints on mobile). */
 async function expandDetailsInDrawer(page: Page, summaryText: string | RegExp) {
-  const drawer = page.locator('aside[aria-label="Debug drawer"]');
-  const summary = drawer.locator("summary").filter({ hasText: summaryText }).first();
+  const pattern = summaryText instanceof RegExp ? summaryText.source : summaryText;
+  const isRegex = summaryText instanceof RegExp;
+  await page.evaluate(({ pattern, isRegex }) => {
+    const summaries = document.querySelectorAll('aside[aria-label="Debug drawer"] summary');
+    for (const s of summaries) {
+      const text = s.textContent?.trim() ?? "";
+      const matches = isRegex ? new RegExp(pattern).test(text) : text.includes(pattern);
+      if (matches) {
+        const details = s.closest("details") as HTMLDetailsElement | null;
+        if (details) details.open = true;
+        break;
+      }
+    }
+  }, { pattern, isRegex });
+  await page.waitForTimeout(200);
+}
 
-  const isVisible = await summary.isVisible().catch(() => false);
-  if (!isVisible) return;
-
-  await summary.scrollIntoViewIfNeeded().catch(() => {});
-  await page.waitForTimeout(100);
-
-  const details = summary.locator("xpath=..");
-  const isOpen = await details.getAttribute("open");
-  if (isOpen === null) {
-    await summary.click();
+/** Close the debug drawer (needed on mobile viewports where it covers bid buttons) */
+async function closeDebugDrawer(page: Page): Promise<void> {
+  try {
+    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
     await page.waitForTimeout(300);
+  } catch {
+    // Already closed or not interactable — ignore
   }
 }
 
@@ -144,7 +154,7 @@ function fmtHand(h: ParsedHand): string {
 
 /* ---------- test suite ---------- */
 
-test.describe("Bergen Raises Convention - Seeds 1 to 15", () => {
+test.describe("Bergen Raises Convention - Seeds 1 to 5", () => {
   test.setTimeout(45_000);
 
   for (let seed = 1; seed <= 15; seed++) {
@@ -156,7 +166,7 @@ test.describe("Bergen Raises Convention - Seeds 1 to 15", () => {
 
       const phaseLabel = page.getByTestId("game-phase");
       await expect(phaseLabel).toHaveText("Bidding", { timeout: 12_000 });
-      await expect(page.getByTestId("bid-pass")).toBeEnabled({
+      await expect(page.getByTestId("bid-P")).toBeEnabled({
         timeout: 5_000,
       });
 
@@ -421,7 +431,10 @@ test.describe("Bergen Raises Convention - Seeds 1 to 15", () => {
         console.log(`  PASS: Bergen rules verified - seed ${seed} OK`);
       }
 
-      // -- 11. Make the correct bid & verify feedback --
+      // -- 11. Close debug drawer before bid interaction (mobile viewports) --
+      await closeDebugDrawer(page);
+
+      // -- 12. Make the correct bid & verify feedback --
       const testId = bidToTestId(correctBid);
       const bidButton = page.getByTestId(testId);
       await expect(bidButton).toBeVisible({ timeout: 3_000 });
@@ -462,7 +475,7 @@ test.describe("Bergen Raises Convention - Seeds 1 to 15", () => {
       console.log("=".repeat(76));
       console.log("");
 
-      // -- 12. Soft assertion: no Bergen rule violations --
+      // -- 13. Soft assertion: no Bergen rule violations --
       expect
         .soft(
           issues.length,

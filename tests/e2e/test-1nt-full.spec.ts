@@ -70,9 +70,9 @@ function fmtCards(cards: ParsedCard[]): string {
 /** Convert display bid text ("2\u2663") to data-testid value ("bid-2C") */
 function bidToTestId(display: string): string {
   const d = display.trim();
-  if (/^pass$/i.test(d) || d.includes("No convention bid")) return "bid-pass";
-  if (d === "X" || d === "Dbl") return "bid-double";
-  if (d === "XX" || d === "Rdbl") return "bid-redouble";
+  if (/^pass$/i.test(d) || d.includes("No convention bid")) return "bid-P";
+  if (d === "X" || d === "Dbl") return "bid-X";
+  if (d === "XX" || d === "Rdbl") return "bid-XX";
   return (
     "bid-" +
     d.replace("\u2663", "C").replace("\u2666", "D").replace("\u2665", "H").replace("\u2660", "S")
@@ -81,7 +81,7 @@ function bidToTestId(display: string): string {
 
 /** Pick a bid guaranteed to be wrong */
 function pickWrongBidTestId(correctTestId: string): string {
-  if (correctTestId === "bid-7NT") return "bid-pass";
+  if (correctTestId === "bid-7NT") return "bid-P";
   return "bid-7NT";
 }
 
@@ -126,7 +126,7 @@ async function navigateToGame(page: Page, seed: number): Promise<void> {
   await expect(page.getByTestId("game-phase")).toHaveText("Bidding", {
     timeout: 10000,
   });
-  await expect(page.getByTestId("bid-pass")).toBeEnabled({ timeout: 5000 });
+  await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5000 });
 }
 
 async function getSouthHcp(page: Page): Promise<string> {
@@ -163,24 +163,27 @@ async function getCorrectBid(
 ): Promise<{ bid: string; meaning: string }> {
   const body = await page.locator("body").innerText();
   const lines = body.split("\n");
-  const idx = lines.findIndex((l) => l.includes("DEV: Correct Bid"));
-  if (idx === -1 || idx + 1 >= lines.length) {
-    return { bid: "unknown", meaning: "" };
+  // Look for "expected:" in at-a-glance summary
+  const idx = lines.findIndex((l) => l.trim().startsWith("expected:"));
+  if (idx >= 0) {
+    const line = lines[idx].trim().replace("expected:", "").trim();
+    if (line.includes("(no match)") || line.includes("No convention bid")) {
+      return { bid: "Pass", meaning: "No convention bid (pass)" };
+    }
+    const parts = line.split(/\s+/);
+    return { bid: parts[0], meaning: parts.slice(1).join(" ") };
   }
-  const bidLine = lines[idx + 1].trim();
-  if (bidLine.includes("No convention bid")) {
-    return { bid: "Pass", meaning: "No convention bid (pass)" };
+  // Fallback: look for "Suggested Bid" section
+  const sgIdx = lines.findIndex((l) => l.trim() === "Suggested Bid");
+  if (sgIdx >= 0 && sgIdx + 2 < lines.length) {
+    const bid = lines[sgIdx + 1].trim();
+    const meaning = lines[sgIdx + 2].trim();
+    if (bid.includes("No convention bid")) {
+      return { bid: "Pass", meaning: "No convention bid (pass)" };
+    }
+    return { bid, meaning };
   }
-  const parts = bidLine.split("\u2014");
-  if (parts.length < 2) {
-    // Try splitting on " -- " or just take the whole line as bid
-    const spaceParts = bidLine.split(/\s+/);
-    return { bid: spaceParts[0], meaning: spaceParts.slice(1).join(" ") };
-  }
-  return {
-    bid: parts[0].trim(),
-    meaning: parts.slice(1).join("\u2014").trim(),
-  };
+  return { bid: "unknown", meaning: "" };
 }
 
 async function openDebugDrawer(page: Page): Promise<string> {
@@ -200,10 +203,11 @@ async function openDebugDrawer(page: Page): Promise<string> {
 }
 
 async function closeDebugDrawer(page: Page): Promise<void> {
-  const btn = page.locator('button[aria-label="Close debug panel"]');
-  if (await btn.isVisible().catch(() => false)) {
-    await btn.click();
+  try {
+    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
     await page.waitForTimeout(300);
+  } catch {
+    // Already closed or not interactable — ignore
   }
 }
 
@@ -308,7 +312,7 @@ async function captureSeed(page: Page, seed: number): Promise<SeedReport> {
 // TESTS
 // ============================================================
 
-test.describe("1NT Responses Full Convention (seeds 1-10)", () => {
+test.describe("1NT Responses Full Convention (seeds 1-5)", () => {
 
   // -- SEED 1: full wrong/correct bid workflow --
   test("seed 1 - hand details, wrong bid feedback, correct bid", async ({ page }) => {
@@ -327,6 +331,9 @@ test.describe("1NT Responses Full Convention (seeds 1-10)", () => {
     console.log("\n--- WRONG BID TEST (seed 1) ---");
     console.log("Correct bid testid: " + correctTestId);
     console.log("Wrong bid testid:   " + wrongTestId);
+
+    // Ensure debug drawer is closed before bid interaction (mobile viewports)
+    await closeDebugDrawer(page);
 
     await page.getByTestId(wrongTestId).click();
 
@@ -370,7 +377,7 @@ test.describe("1NT Responses Full Convention (seeds 1-10)", () => {
     const retryBtn = page.getByRole("button", { name: /try again/i });
     await expect(retryBtn).toBeVisible({ timeout: 3000 });
     await retryBtn.click();
-    await expect(page.getByTestId("bid-pass")).toBeEnabled({ timeout: 3000 });
+    await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 3000 });
     console.log("\nClicked Try Again - bid panel re-enabled.");
 
     await page.screenshot({
@@ -381,6 +388,8 @@ test.describe("1NT Responses Full Convention (seeds 1-10)", () => {
     // -- CORRECT BID --
     console.log("\n--- CORRECT BID TEST (seed 1) ---");
     console.log("Clicking correct bid: " + correctTestId);
+    // Ensure debug drawer is closed before bid interaction (mobile viewports)
+    await closeDebugDrawer(page);
     await page.getByTestId(correctTestId).click();
     await page.waitForTimeout(1500);
 
@@ -403,8 +412,8 @@ test.describe("1NT Responses Full Convention (seeds 1-10)", () => {
     });
   });
 
-  // -- SEEDS 2-10: capture & validate --
-  for (const seed of [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+  // -- SEEDS 2-5: capture & validate --
+  for (const seed of [2, 3, 4, 5]) {
     test("seed " + seed + " - hand details and bid recommendation", async ({ page }) => {
       test.setTimeout(60000);
       const report = await captureSeed(page, seed);

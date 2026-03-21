@@ -55,7 +55,7 @@ test.describe("responsive layout — game screen", () => {
     const phase = page.getByTestId("game-phase");
     await expect(phase).toHaveText("Bidding", { timeout: 10000 });
     
-    const passButton = page.getByTestId("bid-pass");
+    const passButton = page.getByTestId("bid-P");
     await expect(passButton).toBeVisible();
     await expect(passButton).toBeEnabled({ timeout: 5000 });
     
@@ -101,7 +101,7 @@ test.describe("responsive layout — settings screen", () => {
     await settingsBtn.click();
     
     const heading = page.locator("h1");
-    await expect(heading).toHaveText("Settings", { timeout: 5000 });
+    await expect(heading).toHaveText("Practice Settings", { timeout: 5000 });
     
     const backBtn = page.getByTestId("settings-back");
     await expect(backBtn).toBeVisible();

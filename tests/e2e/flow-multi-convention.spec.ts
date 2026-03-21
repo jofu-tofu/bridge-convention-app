@@ -8,7 +8,7 @@ import type { Page } from "@playwright/test";
  *  1. Navigates with a deterministic seed
  *  2. Clicks the practice button for the convention
  *  3. Waits for bidding phase, takes a screenshot
- *  4. Logs: full page text, auction sequence, South cards, HCP, DEV correct bid
+ *  4. Logs: full page text, auction sequence, South cards, HCP, expected bid
  *  5. Runs convention-specific assertions
  */
 
@@ -50,11 +50,15 @@ async function extractGameData(
   const southHCP =
     (await page.locator('[data-testid="south-hcp"]').textContent()) ?? "";
 
-  // DEV: Correct Bid recommendation (text block)
+  // Expected bid recommendation from debug at-a-glance
   const correctBidBlock = await page.evaluate(() => {
     const body = document.body.innerText;
-    const m = body.match(/DEV: Correct Bid[\s\S]*?(?=\n\n|\nDEV|$)/);
-    return m ? m[0].trim() : null;
+    // Try "expected:" from at-a-glance
+    const m = body.match(/expected:\s*(.+?)(?=\n|$)/);
+    if (m) return m[0].trim();
+    // Try "Suggested Bid" section
+    const sg = body.match(/Suggested Bid[\s\S]*?(?=\n\n|Pipeline|Hand Facts|$)/);
+    return sg ? sg[0].trim() : null;
   });
 
   // Bid buttons: enabled vs disabled
@@ -168,7 +172,7 @@ test.describe("Multi-convention flow tests", () => {
     // HCP should be displayed
     expect(data.southHCP).toMatch(/\d+\s*HCP/);
 
-    // DEV: Correct Bid should be present (dev mode is on during tests)
+    // expected bid should be present (dev mode is on during tests)
     expect(data.correctBidBlock).not.toBeNull();
 
     // For Jacoby Transfers the correct bid should typically be 2D, 2H, or
@@ -225,7 +229,7 @@ test.describe("Multi-convention flow tests", () => {
   // ---------------------------------------------------------------------------
   test("TEST 3: Weak Two Bids with seed=30", async ({ page }) => {
     await page.goto("/?seed=30");
-    await page.getByTestId("practice-weak-two-bundle").click();
+    await page.getByTestId("practice-weak-twos-bundle").click();
 
     const phaseLabel = page.getByTestId("game-phase");
     await expect(phaseLabel).toHaveText("Bidding", { timeout: 10000 });
