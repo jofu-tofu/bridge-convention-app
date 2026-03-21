@@ -10,22 +10,13 @@ import type {
   ConventionBiddingStrategy,
   StrategyEvaluation,
 } from "../core/contracts";
-import { BidGrade } from "../core/contracts/teaching-grading";
 import { nextSeat } from "../engine/constants";
-// Legacy: test-only path, will be removed when tests wire the service.
-// These imports support userBidLocal / getExpectedBid / getDebugSnapshot
-// for unit tests that use stub strategies instead of the full LocalService.
-import { evaluateHand } from "../engine/hand-evaluator";
-import { createBiddingContext } from "../service";
-import { assembleBidFeedback } from "../service";
-import { buildViewportFeedback, buildTeachingDetail } from "../service";
 
 import type { DevServicePort, SessionHandle, AiBidEntry } from "../service";
 import type { ViewportBidFeedback, TeachingDetail } from "../core/viewport";
 import type { ViewportBidGrade } from "../core/viewport/player-viewport";
 
 import type { GameStoreOptions } from "./game.svelte";
-import type { BidFeedbackDTO } from "../service";
 
 export type { BidHistoryEntry } from "../core/contracts";
 export type { TeachingResolution } from "../core/contracts";
@@ -42,6 +33,8 @@ export interface DebugSnapshot extends StrategyEvaluation {
   readonly expectedBid: BidResult | null;
 }
 
+import type { BidFeedbackDTO } from "../service";
+
 /** Internal feedback stored in debug log entries (richer than viewport BidFeedback). */
 export type DebugBidFeedback = BidFeedbackDTO;
 
@@ -54,7 +47,7 @@ export interface DebugLogEntry {
   /** Pipeline state at this moment (null for AI bids). */
   readonly snapshot: DebugSnapshot;
   /** Feedback from grading (only on user-bid entries). */
-  readonly feedback: DebugBidFeedback | null;
+  readonly feedback: BidFeedbackDTO | null;
 }
 
 const AI_BID_DELAY = 300;
@@ -103,11 +96,9 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let legalCalls = $state<Call[]>([]);
   let bidFeedback = $state.raw<BidFeedback | null>(null);
   let error = $state<string | null>(null);
-  let conventionStrategy: ConventionBiddingStrategy | null = null;
 
   // Persistent debug log — accumulates snapshots across the auction
   let debugLog = $state<DebugLogEntry[]>([]);
-  let debugTurnCounter = 0;
 
   // Config set at init time — needs to be $state for $derived to track
   let activeDeal = $state<Deal | null>(null);
@@ -282,136 +273,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     }
   }
 
-  /** Build a DebugSnapshot from the convention strategy's cached state. */
-  function captureSnapshot(): DebugSnapshot {
-    const evaluation = conventionStrategy?.getLastEvaluation() ?? EMPTY_EVALUATION;
-    return { expectedBid: null, ...evaluation };
-  }
-
-  /** Append a debug log entry. */
-  function pushDebugLog(entry: DebugLogEntry) {
-    debugLog = [...debugLog, entry];
-  }
-
-  /** Convert BidFeedbackDTO (internal) to viewport-safe BidFeedback.
-   *  Legacy: only used by userBidLocal (test-only path). */
-  function toViewportFeedback(dto: BidFeedbackDTO): BidFeedback {
-    return {
-      grade: `${dto.grade}`,
-      viewportFeedback: buildViewportFeedback(dto),
-      teaching: buildTeachingDetail(dto),
-    };
-  }
-
-  /**
-   * Legacy local bid submission — used when no service is wired.
-   *
-   * This path exists solely for unit tests that use stub strategies
-   * (make2CStrategy, makeNoOpStrategy, etc.) without wiring the full
-   * LocalService + convention registry. Production always takes the
-   * service path (userBidViaService).
-   *
-   * Will be removed when tests wire the service via createLocalService().
-   * @deprecated Test-only fallback — use service path in production.
-   */
-  async function userBidLocal(call: Call) {
-    if (!activeDeal || !activeSession) {
-      if (import.meta.env.DEV) {
-        throw new Error("userBid called but store not initialized (no active deal/session)");
-      }
-      return;
-    }
-    if (isProcessing) return;
-    if (!currentTurn || !activeSession.isUserSeat(currentTurn)) return;
-
-    // No convention strategy at all — no correctness checking, let any bid through.
-    if (!conventionStrategy) {
-      await applyBidAndContinue(currentTurn, call, null);
-      return;
-    }
-
-    const hand = activeDeal.hands[currentTurn];
-    const evaluation = evaluateHand(hand);
-    const expectedResult = conventionStrategy.suggest(
-      createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
-    );
-
-    // Convention exhausted (no surfaces match) → expected bid is Pass.
-    const effectiveResult: BidResult = expectedResult ?? {
-      call: { type: "pass" },
-      ruleName: null,
-      explanation: "No convention bid applies — pass",
-    };
-
-    const strategyEval = conventionStrategy.getLastEvaluation();
-    const dto = assembleBidFeedback(call, effectiveResult, strategyEval);
-    const isCorrect = dto.grade === BidGrade.Correct;
-
-    // Set viewport-safe feedback
-    bidFeedback = toViewportFeedback(dto);
-
-    // Capture persistent debug log entry — strategy caches are fresh right now
-    if (import.meta.env.DEV) {
-      const snap = captureSnapshot();
-      pushDebugLog({
-        kind: "user-bid",
-        turnIndex: debugTurnCounter++,
-        seat: currentTurn,
-        call,
-        snapshot: { ...snap, expectedBid: effectiveResult },
-        feedback: dto,
-      });
-    }
-
-    // Correct-path-only: wrong bids are never applied to the auction.
-    if (!isCorrect) {
-      await tick();
-      return;
-    }
-
-    await applyBidAndContinue(currentTurn, call, effectiveResult);
-  }
-
-  /** Apply a user bid to the auction and continue with AI bids. */
-  async function applyBidAndContinue(seat: Seat, call: Call, expectedResult: BidResult | null) {
-    const userBidEntry = { seat, call };
-    const auctionBeforeUser = auction;
-    let newAuction: Auction;
-    try {
-      newAuction = await engine.addCall(auction, userBidEntry);
-    } catch (e) {
-      bidFeedback = null;
-      throw e;
-    }
-    auction = newAuction;
-
-    onProcessBid?.(userBidEntry, auctionBeforeUser, expectedResult);
-
-    bidHistory = [
-      ...bidHistory,
-      {
-        seat,
-        call,
-        meaning: expectedResult?.meaning,
-        isUser: true,
-        isCorrect: expectedResult ? true : undefined,
-        alertLabel: expectedResult?.alert?.teachingLabel,
-        annotationType: expectedResult?.alert?.annotationType,
-      },
-    ];
-
-    currentTurn = nextSeat(seat);
-
-    const complete = await engine.isAuctionComplete(auction);
-    if (complete) {
-      await onAuctionComplete?.(auction);
-      bidFeedback = null; await tick();
-      return;
-    }
-    await runAiBids();
-    bidFeedback = null; await tick();
-  }
-
   /** Dismiss feedback and let the user try again.
    *  Correct-path-only: auction was never modified, so just clear feedback. */
   function retryBidImpl() {
@@ -419,10 +280,9 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   }
 
   async function init(config: BiddingStoreConfig) {
-    const { deal, session, strategy, initialAuction } = config;
+    const { deal, session, initialAuction } = config;
     activeDeal = deal;
     activeSession = session;
-    conventionStrategy = strategy;
     onAuctionComplete = config.onAuctionComplete;
     _onSkipToExplanation = config.onSkipToExplanation;
     onProcessBid = config.onProcessBid ?? null;
@@ -497,7 +357,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     legalCalls = [];
     bidFeedback = null;
     error = null;
-    conventionStrategy = null;
     activeDeal = null;
     activeSession = null;
     onAuctionComplete = null;
@@ -506,7 +365,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     activeService = null;
     activeHandle = null;
     debugLog = [];
-    debugTurnCounter = 0;
   }
 
   return {
@@ -523,51 +381,25 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     init,
     reset,
     userBid(call: Call): void {
-      // Service path is the production default; local path is test-only fallback
-      const impl = activeService ? userBidViaService : userBidLocal;
-      impl(call).catch((e: unknown) => {
+      userBidViaService(call).catch((e: unknown) => {
         error = e instanceof Error ? e.message : "Unknown error during bid";
       });
     },
     retryBid(): void {
       retryBidImpl();
     },
-    /** DEV: returns the expected bid result for the current user turn, or null.
-     *  When service is wired, delegates asynchronously. */
+    /** DEV: returns the expected bid for the current user turn, or null. */
     async getExpectedBid(): Promise<{ call: Call } | null> {
-      if (activeService && activeHandle) {
-        return activeService.getExpectedBid(activeHandle);
-      }
-      // Legacy: test-only path, will be removed when tests wire the service
-      if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) return null;
-      if (!activeSession.isUserSeat(currentTurn)) return null;
-      const hand = activeDeal.hands[currentTurn];
-      const evaluation = evaluateHand(hand);
-      const result = conventionStrategy.suggest(
-        createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
-      );
-      return result ? { call: result.call } : null;
+      if (!activeService || !activeHandle) return null;
+      return activeService.getExpectedBid(activeHandle);
     },
     /** DEV: returns all internal pipeline state from the most recent suggest() call. */
     async getDebugSnapshot(): Promise<DebugSnapshot> {
-      if (activeService && activeHandle) {
-        const snap = await activeService.getDebugSnapshot(activeHandle);
-        return { ...snap, expectedBid: null };
-      }
-      // Legacy: test-only path, will be removed when tests wire the service
-      if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) {
+      if (!activeService || !activeHandle) {
         return { expectedBid: null, ...EMPTY_EVALUATION };
       }
-      if (!activeSession.isUserSeat(currentTurn)) {
-        return { expectedBid: null, ...EMPTY_EVALUATION };
-      }
-      const hand = activeDeal.hands[currentTurn];
-      const evaluation = evaluateHand(hand);
-      const expectedBid = conventionStrategy.suggest(
-        createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
-      );
-      const strategyEval = conventionStrategy.getLastEvaluation() ?? EMPTY_EVALUATION;
-      return { expectedBid, ...strategyEval };
+      const snap = await activeService.getDebugSnapshot(activeHandle);
+      return { ...snap, expectedBid: null };
     },
   };
 }

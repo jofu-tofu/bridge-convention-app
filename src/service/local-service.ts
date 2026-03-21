@@ -318,7 +318,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       manager.set(handle, state);
       ancillary.set(handle, {
         dds: new DDSController(),
-        conventionConfig: { id: bundle.session.config.conventionId, name: bundle.session.config.conventionId, description: "", dealConstraints: { seats: [] } },
+        conventionConfig: { id: bundle.session.config.conventionId, name: bundle.session.config.conventionId, description: "", dealConstraints: { seats: [] } } as unknown as ConventionConfig,
         conventionName: bundle.session.config.conventionId,
         bundle,
       });
