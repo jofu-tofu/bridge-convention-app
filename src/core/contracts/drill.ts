@@ -38,3 +38,20 @@ export interface DrillTuning {
 export const DEFAULT_DRILL_TUNING: DrillTuning = {
   vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 },
 };
+
+// ─── Drill settings ─────────────────────────────────────────
+//
+// Clean domain type capturing everything needed to run a drill session.
+// Both the UI store and CLI converge on this type — it's the contract
+// that would be sent to a backend API to start a practice session.
+
+/** Complete drill execution parameters (opponent behavior + deal generation). */
+export interface DrillSettings {
+  readonly opponentMode: OpponentMode;
+  readonly tuning: DrillTuning;
+}
+
+export const DEFAULT_DRILL_SETTINGS: DrillSettings = {
+  opponentMode: "natural",
+  tuning: DEFAULT_DRILL_TUNING,
+};

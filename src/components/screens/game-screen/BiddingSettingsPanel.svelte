@@ -1,60 +1,12 @@
 <script lang="ts">
-  import type { OpponentMode, VulnerabilityDistribution } from "../../../core/contracts/drill";
-  import { DEFAULT_DRILL_TUNING } from "../../../core/contracts/drill";
-  import type { BaseSystemId } from "../../../core/contracts/base-system-vocabulary";
+  import type { OpponentMode } from "../../../core/contracts/drill";
   import { AVAILABLE_BASE_SYSTEMS } from "../../../core/contracts/system-config";
   import { getAppStore } from "../../../stores/context";
 
-  interface Props {
-    onNewDeal: () => void;
-  }
-
-  let { onNewDeal }: Props = $props();
-
   const appStore = getAppStore();
-
-  const VULN_KEYS = ["none", "ours", "theirs", "both"] as const;
-  const VULN_SHORT: Record<typeof VULN_KEYS[number], string> = {
-    none: "None",
-    ours: "NS",
-    theirs: "EW",
-    both: "Both",
-  };
-
-  function isVulnEnabled(key: typeof VULN_KEYS[number]): boolean {
-    return appStore.drillTuning.vulnerabilityDistribution[key] > 0;
-  }
-
-  const lastNonZero: Record<string, number> = {};
-
-  function toggleVuln(key: typeof VULN_KEYS[number]) {
-    const current = appStore.drillTuning.vulnerabilityDistribution;
-    const enabled = current[key] > 0;
-    if (enabled) {
-      const othersEnabled = VULN_KEYS.some((k) => k !== key && current[k] > 0);
-      if (!othersEnabled) return;
-      lastNonZero[key] = current[key];
-    }
-    const updated: VulnerabilityDistribution = {
-      ...current,
-      [key]: enabled ? 0 : (lastNonZero[key] ?? 1),
-    };
-    appStore.setVulnerabilityDistribution(updated);
-  }
-
-  const isDefaultVuln = $derived.by(() => {
-    const dist = appStore.drillTuning.vulnerabilityDistribution;
-    const def = DEFAULT_DRILL_TUNING.vulnerabilityDistribution;
-    return VULN_KEYS.every((k) => dist[k] === def[k]);
-  });
 </script>
 
-<section class="flex flex-col h-full min-h-0" aria-label="Practice settings">
-  <h2 class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wider shrink-0 px-1">
-    Settings
-  </h2>
-
-  <div class="flex-1 overflow-y-auto space-y-3 min-h-0">
+<div class="space-y-3">
     <!-- Base System -->
     <div>
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">System</h3>
@@ -72,47 +24,6 @@
             data-testid="settings-system-{sys.id}"
           >
             {sys.shortLabel}
-          </button>
-        {/each}
-      </div>
-    </div>
-
-    <!-- Vulnerability -->
-    <div>
-      <div class="flex items-center justify-between mb-1 px-1">
-        <h3 class="text-[--text-detail] font-medium text-text-secondary">Vulnerability</h3>
-        {#if !isDefaultVuln}
-          <button
-            class="text-[--text-annotation] text-accent-primary hover:text-accent-primary-hover cursor-pointer transition-colors"
-            onclick={() => appStore.setVulnerabilityDistribution(DEFAULT_DRILL_TUNING.vulnerabilityDistribution)}
-            data-testid="settings-vuln-reset"
-          >
-            Reset
-          </button>
-        {/if}
-      </div>
-      <div class="grid grid-cols-2 gap-1" role="group" aria-label="Vulnerability states">
-        {#each VULN_KEYS as key (key)}
-          {@const enabled = isVulnEnabled(key)}
-          <button
-            class="flex items-center gap-1.5 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium cursor-pointer transition-colors
-              {enabled
-                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
-                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
-            onclick={() => toggleVuln(key)}
-            aria-pressed={enabled}
-            data-testid="settings-vuln-{key}"
-          >
-            <span
-              class="w-3 h-3 rounded-[--radius-sm] border-2 flex items-center justify-center shrink-0 transition-colors
-                {enabled ? 'bg-accent-primary border-accent-primary' : 'border-border-default bg-bg-base'}"
-              aria-hidden="true"
-            >
-              {#if enabled}
-                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              {/if}
-            </span>
-            {VULN_SHORT[key]}
           </button>
         {/each}
       </div>
@@ -192,17 +103,4 @@
           : "Only alerts & announcements"}
       </p>
     </div>
-  </div>
-
-  <!-- New Deal button — anchored to bottom -->
-  <div class="shrink-0 pt-3 mt-auto border-t border-border-subtle">
-    <button
-      class="w-full px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent cursor-pointer"
-      onclick={onNewDeal}
-      data-testid="settings-new-deal"
-    >
-      New Deal
-    </button>
-
-  </div>
-</section>
+</div>

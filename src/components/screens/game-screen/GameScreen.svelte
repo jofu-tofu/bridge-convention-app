@@ -84,10 +84,7 @@
     const devSeed = getDevSeed();
     const devRng = devSeed !== undefined ? mulberry32(devSeed) : undefined;
     if (devSeed !== undefined) appStore.advanceDevDeal();
-    const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, {
-      opponentMode: appStore.opponentMode,
-      tuning: appStore.drillTuning,
-    });
+    const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, appStore.drillSettings);
     await gameStore.startDrill(bundle);
     gameStore.setConventionName(convention?.name ?? "Drill");
   }
@@ -147,8 +144,8 @@
   );
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
-  // BIDDING and PLAYING phases have a second panel on the left — account for both in scale
-  const hasTwoPanels = $derived(isDesktop && (gameStore.phase === "PLAYING" || gameStore.phase === "BIDDING"));
+  // PLAYING phase has a second panel on the left — account for both in scale
+  const hasTwoPanels = $derived(isDesktop && gameStore.phase === "PLAYING");
   const effectiveSidePanelW = $derived(hasTwoPanels ? sidePanelW * 2 : sidePanelW);
   // gap-3 = 0.75rem per gap; 2 gaps in 3-col layout, 1 gap in 2-col layout
   const gridGaps = $derived(isDesktop ? (hasTwoPanels ? 2 : 1) * 0.75 * rootFontSize : 0);

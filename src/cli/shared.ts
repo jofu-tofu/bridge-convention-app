@@ -32,6 +32,8 @@ import type { BiddingSystem } from "../conventions/definitions/bidding-system";
 import type { BiddingContext, BidHistoryEntry } from "../core/contracts/bidding";
 import type { BiddingStrategy } from "../core/contracts/bidding";
 import type { OpponentMode } from "../core/contracts/drill";
+import type { DrillSettings } from "../core/contracts/drill";
+import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import { buildBiddingViewport } from "../core/viewport/build-viewport";
 
@@ -40,7 +42,7 @@ import { buildBiddingViewport } from "../core/viewport/build-viewport";
 export { Seat, Vulnerability };
 export { callKey, parsePatternCall, getLegalCalls, evaluateHand };
 export { buildBiddingViewport };
-export type { Auction, Call, Hand, Deal, Card, ConventionSpec, BiddingSystem, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry };
+export type { Auction, Call, Hand, Deal, Card, ConventionSpec, BiddingSystem, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry, DrillSettings };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -109,6 +111,32 @@ export function parseOpponentMode(args: Flags): OpponentMode {
   if (val === "natural" || val === "none") return val;
   console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
   process.exit(2);
+}
+
+/** Build a DrillSettings from CLI flags.
+ *  Converts a fixed --vuln value into a single-value distribution
+ *  so the CLI can share the same domain type as the UI store. */
+export function buildDrillSettings(args: Flags): DrillSettings {
+  const vuln = parseVulnerability(args);
+  return {
+    opponentMode: parseOpponentMode(args),
+    tuning: {
+      ...DEFAULT_DRILL_TUNING,
+      vulnerabilityDistribution: vulnerabilityToDistribution(vuln),
+    },
+  };
+}
+
+/** Convert a fixed Vulnerability into a degenerate single-value distribution. */
+export function vulnerabilityToDistribution(
+  v: Vulnerability,
+): { none: number; ours: number; theirs: number; both: number } {
+  return {
+    none: v === Vulnerability.None ? 1 : 0,
+    ours: v === Vulnerability.NorthSouth ? 1 : 0,
+    theirs: v === Vulnerability.EastWest ? 1 : 0,
+    both: v === Vulnerability.Both ? 1 : 0,
+  };
 }
 
 // ── Per-seed scenario config (plan command) ─────────────────────────

@@ -41,6 +41,25 @@
   }
 
   const displayName = displayConventionName;
+
+  const settingsSummary = $derived.by(() => {
+    const parts: string[] = [];
+    const dist = appStore.drillTuning.vulnerabilityDistribution;
+    const vulnKeys = ["none", "ours", "theirs", "both"] as const;
+    const vulnLabels: Record<string, string> = { none: "None", ours: "NS", theirs: "EW", both: "Both" };
+    const active = vulnKeys.filter((k) => dist[k] > 0);
+    if (active.length === 4) {
+      parts.push("All vulnerabilities");
+    } else {
+      parts.push(active.map((k) => vulnLabels[k]).join(", ") + " vulnerable");
+    }
+    parts.push(appStore.opponentMode === "natural" ? "Natural opponents" : "Silent opponents");
+    if (appStore.drillTuning.includeOffConvention) {
+      const rate = Math.round((appStore.drillTuning.offConventionRate ?? 0.3) * 100);
+      parts.push(`${rate}% off-convention`);
+    }
+    return parts.join(" · ");
+  });
 </script>
 
 <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Convention selection">
@@ -58,6 +77,20 @@
       </button>
     </div>
     <p class="text-text-secondary mb-5">Select a convention to begin drilling.</p>
+
+    <!-- Settings summary -->
+    <button
+      class="w-full flex items-center gap-3 mb-5 p-3 rounded-[--radius-lg] bg-bg-card border border-border-subtle hover:border-border-default transition-colors cursor-pointer text-left group"
+      onclick={() => appStore.navigateToSettings()}
+      data-testid="settings-summary"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      <div class="flex-1 min-w-0">
+        <span class="text-sm font-medium text-text-primary">Settings</span>
+        <p class="text-xs text-text-muted truncate">{settingsSummary}</p>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
 
     <!-- Search -->
     <div class="mb-4">

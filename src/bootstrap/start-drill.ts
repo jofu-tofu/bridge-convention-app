@@ -8,7 +8,7 @@ import {
   type DealConstraints,
 } from "../engine/types";
 import type { DrillBundle } from "./types";
-import type { OpponentMode, DrillTuning, VulnerabilityDistribution } from "./types";
+import type { VulnerabilityDistribution, DrillSettings } from "./types";
 import { DEFAULT_DRILL_TUNING } from "./types";
 import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
@@ -77,10 +77,7 @@ export async function startDrill(
   userSeat: Seat,
   rng?: () => number,
   seed?: number,
-  options?: {
-    opponentMode?: OpponentMode;
-    tuning?: DrillTuning;
-  },
+  options?: Partial<DrillSettings>,
 ): Promise<DrillBundle> {
   const config = createProtocolDrillConfig(convention.id, userSeat, {
     opponentMode: options?.opponentMode,

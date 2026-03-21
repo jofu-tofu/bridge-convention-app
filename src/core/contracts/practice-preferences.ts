@@ -7,8 +7,8 @@
  */
 
 import type { BaseSystemId } from "./base-system-vocabulary";
-import type { OpponentMode, DrillTuning } from "./drill";
-import { DEFAULT_DRILL_TUNING } from "./drill";
+import type { DrillSettings } from "./drill";
+import { DEFAULT_DRILL_SETTINGS } from "./drill";
 import { BASE_SYSTEM_SAYC } from "./base-system-vocabulary";
 
 // ─── Display preferences ────────────────────────────────────
@@ -32,17 +32,14 @@ export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
 export interface PracticePreferences {
   /** Base bidding system (e.g. "sayc", "two-over-one"). */
   readonly baseSystemId: BaseSystemId;
-  /** Opponent bidding behavior. */
-  readonly opponentMode: OpponentMode;
-  /** Deal-generation tuning (vulnerability, off-convention rate). */
-  readonly drillTuning: DrillTuning;
+  /** Drill execution parameters (opponent behavior + deal generation). */
+  readonly drill: DrillSettings;
   /** UI display preferences. */
   readonly display: DisplayPreferences;
 }
 
 export const DEFAULT_PRACTICE_PREFERENCES: PracticePreferences = {
   baseSystemId: BASE_SYSTEM_SAYC,
-  opponentMode: "natural",
-  drillTuning: DEFAULT_DRILL_TUNING,
+  drill: DEFAULT_DRILL_SETTINGS,
   display: DEFAULT_DISPLAY_PREFERENCES,
 };

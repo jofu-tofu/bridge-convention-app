@@ -1,6 +1,6 @@
 import type { ConventionConfig } from "../conventions/core";
-import type { OpponentMode, DrillTuning, VulnerabilityDistribution } from "../core/contracts/drill";
-import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
+import type { OpponentMode, DrillTuning, VulnerabilityDistribution, DrillSettings } from "../core/contracts/drill";
+import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../core/contracts/drill";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import type { PracticePreferences, DisplayPreferences } from "../core/contracts/practice-preferences";
 import { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../core/contracts/practice-preferences";
@@ -26,13 +26,13 @@ function loadPreferences(): PracticePreferences {
     // Prefer the current key
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
-      return mergePreferences(JSON.parse(raw) as Partial<PracticePreferences>);
+      return mergePreferences(JSON.parse(raw) as Record<string, unknown>);
     }
 
     // Try previous unified key
     const prev = localStorage.getItem("bridge-app:settings");
     if (prev) {
-      const prefs = mergePreferences(remapLegacyBlob(JSON.parse(prev)));
+      const prefs = mergePreferences(remapLegacyBlob(JSON.parse(prev) as Record<string, unknown>));
       savePreferences(prefs);
       localStorage.removeItem("bridge-app:settings");
       return prefs;
@@ -50,21 +50,21 @@ function loadPreferences(): PracticePreferences {
 }
 
 /** Remap the previous UserSettings shape (displaySettings → display). */
-function remapLegacyBlob(blob: Record<string, unknown>): Partial<PracticePreferences> {
-  const result = { ...blob } as Record<string, unknown>;
+function remapLegacyBlob(blob: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...blob };
   if ("displaySettings" in result && !("display" in result)) {
     result.display = result.displaySettings;
     delete result.displaySettings;
   }
-  return result as Partial<PracticePreferences>;
+  return result;
 }
 
 function migrateLegacyKeys(): PracticePreferences | null {
   try {
     let found = false;
-    let opponentMode: OpponentMode = DEFAULT_PRACTICE_PREFERENCES.opponentMode;
+    let opponentMode: OpponentMode = DEFAULT_DRILL_SETTINGS.opponentMode;
     let baseSystemId: BaseSystemId = DEFAULT_PRACTICE_PREFERENCES.baseSystemId;
-    let drillTuning: DrillTuning = DEFAULT_PRACTICE_PREFERENCES.drillTuning;
+    let drillTuning: DrillTuning = DEFAULT_DRILL_SETTINGS.tuning;
     let display: DisplayPreferences = DEFAULT_PRACTICE_PREFERENCES.display;
 
     const opp = localStorage.getItem("bridge-app:opponent-mode");
@@ -94,34 +94,62 @@ function migrateLegacyKeys(): PracticePreferences | null {
       found = true;
     }
 
-    return found ? { baseSystemId, opponentMode, drillTuning, display } : null;
+    return found ? { baseSystemId, drill: { opponentMode, tuning: drillTuning }, display } : null;
   } catch { return null; }
 }
 
-/** Merge a partial persisted blob with defaults. */
-function mergePreferences(partial: Partial<PracticePreferences>): PracticePreferences {
-  const vd = partial.drillTuning?.vulnerabilityDistribution;
+/** Merge a partial persisted blob with defaults.
+ *  Handles both the old flat shape (baseSystemId, opponentMode, drillTuning at top level)
+ *  and the new nested shape (drill: { opponentMode, tuning }). */
+function mergePreferences(partial: Record<string, unknown>): PracticePreferences {
+  // Detect legacy flat shape: opponentMode/drillTuning at top level instead of under drill
+  const isLegacyFlat = !partial.drill && ("opponentMode" in partial || "drillTuning" in partial);
+
+  let opponentMode: OpponentMode;
+  let tuningRaw: Partial<DrillTuning> | undefined;
+  let baseSystemIdRaw: unknown;
+
+  if (isLegacyFlat) {
+    opponentMode = partial.opponentMode as OpponentMode ?? DEFAULT_DRILL_SETTINGS.opponentMode;
+    tuningRaw = partial.drillTuning as Partial<DrillTuning> | undefined;
+    baseSystemIdRaw = partial.baseSystemId;
+  } else {
+    const drill = partial.drill as Partial<DrillSettings> | undefined;
+    opponentMode = drill?.opponentMode ?? DEFAULT_DRILL_SETTINGS.opponentMode;
+    tuningRaw = drill?.tuning;
+    baseSystemIdRaw = partial.baseSystemId;
+  }
+
+  // Validate opponentMode
+  if (opponentMode !== "none" && opponentMode !== "natural") {
+    opponentMode = DEFAULT_DRILL_SETTINGS.opponentMode;
+  }
+
+  // Validate vulnerability distribution
+  const vd = tuningRaw?.vulnerabilityDistribution;
   const validVd = vd &&
     typeof vd.none === "number" && typeof vd.ours === "number" &&
     typeof vd.theirs === "number" && typeof vd.both === "number";
 
+  // Validate baseSystemId
+  const baseSystemId =
+    (baseSystemIdRaw && AVAILABLE_BASE_SYSTEMS.some((s) => s.id === baseSystemIdRaw))
+      ? baseSystemIdRaw as BaseSystemId
+      : DEFAULT_PRACTICE_PREFERENCES.baseSystemId;
+
   return {
-    baseSystemId:
-      (partial.baseSystemId && AVAILABLE_BASE_SYSTEMS.some((s) => s.id === partial.baseSystemId))
-        ? partial.baseSystemId as BaseSystemId
-        : DEFAULT_PRACTICE_PREFERENCES.baseSystemId,
-    opponentMode:
-      partial.opponentMode === "none" || partial.opponentMode === "natural"
-        ? partial.opponentMode
-        : DEFAULT_PRACTICE_PREFERENCES.opponentMode,
-    drillTuning: {
-      ...DEFAULT_DRILL_TUNING,
-      ...partial.drillTuning,
-      vulnerabilityDistribution: validVd ? vd! : DEFAULT_DRILL_TUNING.vulnerabilityDistribution,
+    baseSystemId,
+    drill: {
+      opponentMode,
+      tuning: {
+        ...DEFAULT_DRILL_TUNING,
+        ...tuningRaw,
+        vulnerabilityDistribution: validVd ? vd! : DEFAULT_DRILL_TUNING.vulnerabilityDistribution,
+      },
     },
     display: {
       ...DEFAULT_DISPLAY_PREFERENCES,
-      ...partial.display,
+      ...(partial.display as Partial<DisplayPreferences> | undefined),
     },
   };
 }
@@ -149,8 +177,13 @@ export function createAppStore() {
   // All persisted practice preferences — single blob
   let prefs = $state<PracticePreferences>(loadPreferences());
 
-  function updatePrefs(patch: Partial<PracticePreferences>) {
-    prefs = { ...prefs, ...patch };
+  function updateDrill(patch: Partial<DrillSettings>) {
+    prefs = { ...prefs, drill: { ...prefs.drill, ...patch } };
+    savePreferences(prefs);
+  }
+
+  function updateDisplay(patch: Partial<DisplayPreferences>) {
+    prefs = { ...prefs, display: { ...prefs.display, ...patch } };
     savePreferences(prefs);
   }
 
@@ -243,11 +276,11 @@ export function createAppStore() {
     },
 
     get opponentMode() {
-      return prefs.opponentMode;
+      return prefs.drill.opponentMode;
     },
 
     setOpponentMode(mode: OpponentMode) {
-      updatePrefs({ opponentMode: mode });
+      updateDrill({ opponentMode: mode });
     },
 
     get baseSystemId() {
@@ -255,23 +288,29 @@ export function createAppStore() {
     },
 
     setBaseSystemId(id: BaseSystemId) {
-      updatePrefs({ baseSystemId: id });
+      prefs = { ...prefs, baseSystemId: id };
+      savePreferences(prefs);
     },
 
     get drillTuning() {
-      return prefs.drillTuning;
+      return prefs.drill.tuning;
+    },
+
+    /** Clean extraction of all drill execution params — backend-ready. */
+    get drillSettings(): DrillSettings {
+      return prefs.drill;
     },
 
     setVulnerabilityDistribution(dist: VulnerabilityDistribution) {
-      updatePrefs({ drillTuning: { ...prefs.drillTuning, vulnerabilityDistribution: dist } });
+      updateDrill({ tuning: { ...prefs.drill.tuning, vulnerabilityDistribution: dist } });
     },
 
     setIncludeOffConvention(include: boolean) {
-      updatePrefs({ drillTuning: { ...prefs.drillTuning, includeOffConvention: include } });
+      updateDrill({ tuning: { ...prefs.drill.tuning, includeOffConvention: include } });
     },
 
     setOffConventionRate(rate: number) {
-      updatePrefs({ drillTuning: { ...prefs.drillTuning, offConventionRate: Math.max(0, Math.min(1, rate)) } });
+      updateDrill({ tuning: { ...prefs.drill.tuning, offConventionRate: Math.max(0, Math.min(1, rate)) } });
     },
 
     get displaySettings() {
@@ -279,7 +318,7 @@ export function createAppStore() {
     },
 
     setShowEducationalAnnotations(show: boolean) {
-      updatePrefs({ display: { ...prefs.display, showEducationalAnnotations: show } });
+      updateDisplay({ showEducationalAnnotations: show });
     },
 
     get targetState() {
