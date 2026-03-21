@@ -6,7 +6,7 @@
 import {
   enumerateRuleAtoms,
 } from "../conventions/core";
-import type { RuleModule } from "../conventions/core/rule-module";
+import type { RuleModule } from "../conventions/core";
 import { createSpecStrategy, createOpponentStrategy } from "../bootstrap/strategy-factory";
 import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder";
 import type { BidResult } from "../core/contracts/bidding";

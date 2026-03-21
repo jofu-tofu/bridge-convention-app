@@ -7,7 +7,7 @@
 
 import { getBundle } from "../conventions/core/bundle";
 import { getSystem, specFromSystem } from "../conventions/definitions/system-registry";
-import { enumerateRuleAtoms } from "../conventions/core/pipeline/rule-enumeration";
+import { enumerateRuleAtoms } from "../conventions/core";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";

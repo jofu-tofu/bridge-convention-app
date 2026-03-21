@@ -9,11 +9,30 @@ Cross-boundary DTOs and strategy interfaces shared across subsystem boundaries.
 - `contracts/` may import `engine/types` and other `contracts/` files only. Do not import from `conventions/`, `display/`, `bootstrap/`, `inference/`, `strategy/`, `stores/`, or `components/`.
 - **Convention-universal by definition.** Never add a type or field that only one convention would use. Every contract type must make sense across all 100+ future conventions. If a type is convention-specific, it belongs in `conventions/definitions/`, not here. Contract types must not grow linearly with module count — no per-module fields, no module-name enums.
 
+## Stability Tiers
+
+The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-exports all three for backwards compatibility. Prefer the narrowest tier import that covers your needs.
+
+| Sub-barrel | Stability | Contents |
+|---|---|---|
+| `engine-types.ts` | Tier 1 — rarely changes | Bridge primitives: meaning, fact-catalog, agreement-module, canonical-observation, committed-step |
+| `convention-types.ts` | Tier 2 — convention/strategy/teaching scope | Pipeline infrastructure: bidding, explanation-catalog, inference, play, recommendation, tree-evaluation, module-surface, provenance, predicate-surfaces, evidence-bundle, posterior, factor-graph, posterior-query, posterior-backend, alert, pedagogical-tag |
+| `session-types.ts` | Tier 3 — orchestration/presentation scope | Session lifecycle & UI: teaching-projection, witness-spec, convention, system-config, base-system-vocabulary, teaching-grading, drill, practice-preferences |
+
+**When to use each tier import:**
+- `engine-types` — you only need core bridge semantics (meanings, facts, observations, kernel state)
+- `convention-types` — you need pipeline evaluation, inference, or strategy types
+- `session-types` — you need session configuration, teaching UI, or drill settings
+- `index` (main barrel) — backwards-compatible catch-all; works everywhere existing imports work
+
 ## Architecture
 
 | File | Role |
 |------|------|
-| `index.ts` | Barrel re-export for all contract files |
+| `index.ts` | Barrel re-export for all contract files (delegates to the 3 tier sub-barrels) |
+| `engine-types.ts` | Tier 1 sub-barrel: engine-stable bridge primitives |
+| `convention-types.ts` | Tier 2 sub-barrel: convention pipeline infrastructure |
+| `session-types.ts` | Tier 3 sub-barrel: session lifecycle and UI preferences |
 | `bidding.ts` | `BiddingContext`, `ForcingState`, `BidAlert` (with `kind: "alert" \| "announce"`, `publicConstraints`, `teachingLabel`), `BiddingStrategy`, `BidResult` (with optional `alert`), `BidHistoryEntry` |
 | `inference.ts` | `SuitInference`, `HandInference`, `QualitativeConstraint`, `DerivedRanges`, `PublicBeliefs`, `InferenceProvider`, `BeliefData` (deprecated) |
 | `tree-evaluation.ts` | `SiblingConditionDetail`, `CandidateEligibility`, `ResolvedCandidateDTO` (with optional `allEncodings`), `AlternativeGroup`, `IntentFamily`, `IntentRelationship`, `EvaluationTrace`, `isDtoSelectable()`, `isDtoPedagogicallyAcceptable()` |
@@ -93,7 +112,7 @@ When adding a new `FactDefinition`, you MUST provide `constrainsDimensions`. The
 
 ## Gotchas
 
-- `index.ts` is the public entry point for most consumers; prefer importing from `../contracts` unless a narrower file import materially improves clarity.
+- `index.ts` is the public entry point for most consumers; prefer importing from a tier sub-barrel (`engine-types`, `convention-types`, `session-types`) when your dependency is clearly within one tier, or from `../contracts` for backwards compatibility.
 - `hand-summary.ts` is intentionally not here; it moved to `src/core/display/hand-summary.ts` because it is formatting logic, not a contract.
 - `ResolvedCandidateDTO.allEncodings` carries the full set of resolver encodings with per-encoding legality. `resolvedCall` is always the first legal encoding (or the first encoding if none are legal). Consumers needing the full encoding set (e.g., obligation affinity checking for major suit bids) should use `allEncodings`; consumers needing just the winning call should use `resolvedCall`.
 

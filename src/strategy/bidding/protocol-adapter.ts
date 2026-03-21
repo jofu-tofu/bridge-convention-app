@@ -14,18 +14,14 @@ import type {
 } from "../../core/contracts";
 import type { MeaningSurface } from "../../core/contracts/meaning";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
-import type { ConventionSpec } from "../../conventions/core";
-import { createSharedFactCatalog } from "../../conventions/core";
+import type { ConventionSpec, RuleModule } from "../../conventions/core";
+import { createSharedFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, normalizeIntent, advanceLocalFsm } from "../../conventions/core";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { runMeaningPipeline } from "./meaning-strategy";
 import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
 import type { CommittedStep, AuctionContext, KernelState, KernelDelta } from "../../core/contracts/committed-step";
 import { INITIAL_KERNEL } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import { collectMatchingClaims, collectMatchingClaimsWithPhases } from "../../conventions/core/pipeline/rule-interpreter";
-import { normalizeIntent } from "../../conventions/core/pipeline/normalize-intent";
-import { advanceLocalFsm } from "../../conventions/core/pipeline/local-fsm";
-import type { RuleModule } from "../../conventions/core/rule-module";
 import type { Seat, Call, BidSuit } from "../../engine/types";
 
 /**

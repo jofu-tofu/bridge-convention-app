@@ -1,28 +1,8 @@
-export * from "./bidding";
-export * from "./explanation-catalog";
-export * from "./inference";
-export * from "./play";
-export * from "./recommendation";
-export * from "./tree-evaluation";
-export * from "./module-surface";
-export * from "./meaning";
-export * from "./fact-catalog";
-export * from "./provenance";
-export * from "./teaching-projection";
-export * from "./predicate-surfaces";
-export * from "./evidence-bundle";
-export * from "./posterior";
-export * from "./agreement-module";
-export * from "./witness-spec";
-export * from "./factor-graph";
-export * from "./posterior-query";
-export * from "./posterior-backend";
-export * from "./alert";
-export * from "./convention";
-export * from "./system-config";
-export * from "./base-system-vocabulary";
-export * from "./teaching-grading";
-export * from "./drill";
-export * from "./pedagogical-tag";
-export * from "./canonical-observation";
-export * from "./committed-step";
+// Main barrel — re-exports all tiers for backwards compatibility.
+// Prefer importing from a specific tier when possible:
+//   engine-types    — bridge primitives (rarely change)
+//   convention-types — pipeline infrastructure (convention/strategy/teaching scope)
+//   session-types   — session lifecycle & UI (orchestration/presentation scope)
+export * from "./engine-types";
+export * from "./convention-types";
+export * from "./session-types";

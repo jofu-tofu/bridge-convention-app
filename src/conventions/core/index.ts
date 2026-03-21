@@ -74,5 +74,13 @@ export type { ConventionSpec } from "./protocol/types";
 export { enumerateRuleAtoms, generateRuleCoverageManifest } from "./pipeline/rule-enumeration";
 export type { RuleAtom, RuleCoverageManifest } from "./pipeline/rule-enumeration";
 
+// ── Rule interpretation workflow — used by strategy/bidding/protocol-adapter ──
+export { collectMatchingClaims, collectMatchingClaimsWithPhases } from "./pipeline/rule-interpreter";
+export { normalizeIntent } from "./pipeline/normalize-intent";
+export { advanceLocalFsm } from "./pipeline/local-fsm";
+
+// ── Rule Module ─────────────────────────────────────────────────────────
+export type { RuleModule } from "./rule-module";
+
 // ── Convention Module ────────────────────────────────────────────────────
 export type { ConventionModule, ModuleProvider } from "./convention-module";

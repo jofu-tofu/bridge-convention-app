@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
   import { listSystems, getSystem } from "../../conventions/definitions/system-registry";
-  import { enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions/core/pipeline/rule-enumeration";
-  import type { RuleCoverageManifest, RuleAtom } from "../../conventions/core/pipeline/rule-enumeration";
+  import { enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions/core";
+  import type { RuleCoverageManifest } from "../../conventions/core";
   import type { BiddingSystem } from "../../conventions/definitions/bidding-system";
 
   const appStore = getAppStore();

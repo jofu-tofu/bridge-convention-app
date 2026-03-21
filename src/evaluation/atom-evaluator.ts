@@ -10,7 +10,7 @@
 // Atom ID format: `moduleId/meaningId`.
 
 import { getSystem } from "../conventions/definitions/system-registry";
-import { enumerateRuleAtoms, type RuleAtom } from "../conventions/core/pipeline/rule-enumeration";
+import { enumerateRuleAtoms, type RuleAtom } from "../conventions/core";
 import { getBundle } from "../conventions/core/bundle";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
