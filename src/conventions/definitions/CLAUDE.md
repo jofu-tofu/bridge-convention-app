@@ -490,6 +490,49 @@ __tests__/                          (at src/conventions/__tests__/)
 
 Bundle-local tests (`definitions/{name}-bundle/__tests__/`) test individual modules in isolation. Cross-cutting integration tests (`src/conventions/__tests__/nt-bundle/`) test the full pipeline end-to-end.
 
+## New Convention Checklist
+
+Step-by-step for adding a new convention. All work stays inside `src/conventions/definitions/`.
+
+1. **Create the module** in `modules/<name>/index.ts`. Export a `ConventionModule` with `moduleId`, `entrySurfaces`, `surfaceGroups`, `facts`, and `explanationEntries`. Supporting files go alongside it:
+   - `meaning-surfaces.ts` — `MeaningSurface[]` definitions
+   - `facts.ts` — `FactCatalogExtension` for module-derived facts
+   - `explanation-catalog.ts` — `ExplanationCatalogIR` entries
+   - `semantic-classes.ts` — module-local semantic class constants
+2. **Create the RuleModule** in `modules/<name>/<name>-rules.ts`. Define phases, claims with `ObsPattern`/`RouteExpr`/`KernelExpr`, and `kernelDelta` where needed.
+3. **Create the bundle** in `<name>-bundle/`. Minimum files:
+   - `convention-spec.ts` — `ConventionSpec` (single source of truth for metadata + deal constraints)
+   - `base-track.ts` — `BaseTrackTable` (state-to-surface mapping)
+   - `compose.ts` — bundle composition from base-track + convention spec
+   - `system-profile.ts` — `SystemProfileIR` for activation
+   - `config.ts` — `ConventionBundle` (typically via `bundleFromSystem()`)
+   - `convention-config.ts` — thin `ConventionConfig` wrapper for registry/UI
+   - `index.ts` — barrel re-export
+   - `__tests__/` — base-track, machine, surface evaluation, and golden-master tests
+4. **Register the module** in `module-registry.ts`: import the `ConventionModule` and add it to `ALL_MODULES`.
+5. **Register the system** in `system-registry.ts`: import the profile and `RuleModule`, define a `BiddingSystem`, and add it to `ALL_SYSTEMS`.
+6. **Verify:**
+   - `npm run lint` — confirms no boundary violations (ESLint enforces module isolation)
+   - `npm run test:run` — all existing + new tests pass
+   - `npx tsx src/cli/main.ts selftest` — end-to-end pipeline selftest passes
+
+## Boundary Contract
+
+Adding a new convention is a **definitions-only** change. The following directories must NOT be modified:
+
+| Directory | Reason |
+|-----------|--------|
+| `src/engine/` | Bridge engine types/logic are convention-agnostic |
+| `src/strategy/` | Strategy layer consumes bundles generically via `meaningBundleToStrategy()` |
+| `src/teaching/` | Teaching system reads `ExplanationCatalogIR` and `PedagogicalRelation[]` from bundles |
+| `src/service/` | Service layer is convention-agnostic orchestration |
+| `src/stores/` | Stores bind to the convention registry, not individual conventions |
+| `src/components/` | UI renders from generic `ConventionConfig` and `DecisionSurfaceEntry[]` |
+| `src/conventions/core/` | Pipeline infrastructure is convention-universal (see `core/CLAUDE.md`) |
+| `src/core/contracts/` | Shared contracts are stable; adding a new fact type is a separate task |
+
+If any of these need changes to support a new convention, the boundary has leaked and the core architecture should be fixed instead. ESLint import boundaries enforce this at build time -- a convention that compiles and passes lint has respected the contract.
+
 ---
 
 ## Context Maintenance

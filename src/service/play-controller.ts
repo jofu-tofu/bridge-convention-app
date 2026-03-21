@@ -13,7 +13,7 @@ import { nextSeat, partnerSeat } from "../engine/constants";
 import { randomPlayStrategy } from "../strategy/play/random-play";
 import type { SessionState } from "./session-state";
 import type { AiPlayEntry, PlayCardResult } from "./response-types";
-import { isValidTransition } from "../stores/phase-machine";
+import { isValidTransition } from "../core/phase-machine";
 
 // ── Public API ──────────────────────────────────────────────────────
 

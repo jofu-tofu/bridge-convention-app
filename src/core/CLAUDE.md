@@ -6,7 +6,9 @@ Shared infrastructure modules consumed across the codebase. Contains three subdi
 - **`contracts/`** — Cross-boundary DTOs and strategy interfaces
 - **`util/`** — Zero-dependency pure utilities (delay, seeded-rng)
 
-These modules have no domain-specific logic and are imported by multiple domain modules.
+Top-level files:
+
+- **`phase-machine.ts`** — Pure phase state machine (`GamePhase`, `VALID_TRANSITIONS`, `isValidTransition()`). No Svelte deps.
 
 ---
 

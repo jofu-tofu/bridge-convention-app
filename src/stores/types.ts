@@ -30,7 +30,7 @@ import type {
 } from "./bidding.svelte";
 import type { PlayLogEntry } from "./play.svelte";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
-import type { GamePhase } from "./phase-machine";
+import type { GamePhase } from "../core/phase-machine";
 
 // ── Bidding Store ───────────────────────────────────────────────────
 

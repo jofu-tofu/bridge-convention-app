@@ -16,7 +16,7 @@ import type { Call, Card, Seat, DDSolution } from "../engine/types";
 import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
 import type { BidHistoryEntry } from "../core/contracts";
 import type { ViewportBidGrade } from "../core/viewport/player-viewport";
-import type { GamePhase } from "../stores/phase-machine";
+import type { GamePhase } from "../core/phase-machine";
 import type { DebugSnapshot, DebugLogEntry } from "../stores/bidding.svelte";
 import type { InferenceSnapshot } from "../inference/types";
 

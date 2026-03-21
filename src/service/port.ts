@@ -8,7 +8,7 @@
 
 import type { Call, Card, Seat } from "../engine/types";
 import type { BiddingViewport } from "../core/viewport";
-import type { GamePhase } from "../stores/phase-machine";
+import type { GamePhase } from "../core/phase-machine";
 import type { DrillBundle } from "../bootstrap/types";
 import type {
   SessionHandle,

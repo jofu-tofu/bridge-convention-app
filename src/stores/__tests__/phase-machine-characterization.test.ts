@@ -4,8 +4,8 @@
  * Tests the pure isValidTransition() function directly.
  */
 import { describe, it, expect } from "vitest";
-import { isValidTransition, VALID_TRANSITIONS } from "../phase-machine";
-import type { GamePhase } from "../phase-machine";
+import { isValidTransition, VALID_TRANSITIONS } from "../../core/phase-machine";
+import type { GamePhase } from "../../core/phase-machine";
 
 describe("phase machine — pure logic", () => {
   describe("valid transitions", () => {
