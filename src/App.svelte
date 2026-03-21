@@ -21,7 +21,7 @@
       .then((eng) => {
         resolvedEngine = eng;
         resolvedService = createLocalService(eng);
-        resolvedGameStore = createGameStore(eng);
+        resolvedGameStore = createGameStore(eng, resolvedService!);
         const store = createAppStore();
         appStore = store;
         applyDevParams(store);

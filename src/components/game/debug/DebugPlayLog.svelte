@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PlayLogEntry } from "../../../stores/play.svelte";
+  import type { PlayLogEntry } from "../../../stores/game.svelte";
   import { SUIT_SYMBOLS } from "../../../core/display/format";
   import DebugSection from "./DebugSection.svelte";
 

@@ -20,75 +20,15 @@ import type { DrillBundle } from "../bootstrap/types";
 import type { DevServicePort, SessionHandle } from "../service";
 import type { PublicBeliefs } from "../core/contracts";
 import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
-import type { BiddingStoreConfig } from "./bidding.svelte";
-import type { PlayStoreConfig } from "./play.svelte";
 import type {
   BidFeedback,
   BidHistoryEntry,
   DebugSnapshot,
   DebugLogEntry,
-} from "./bidding.svelte";
-import type { PlayLogEntry } from "./play.svelte";
+  PlayLogEntry,
+} from "./game.svelte";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
 import type { GamePhase } from "../core/phase-machine";
-
-// ── Bidding Store ───────────────────────────────────────────────────
-
-export interface BiddingStore {
-  readonly auction: Auction;
-  readonly currentTurn: Seat | null;
-  readonly bidHistory: BidHistoryEntry[];
-  readonly isProcessing: boolean;
-  readonly isUserTurn: boolean;
-  readonly isFeedbackBlocking: boolean;
-  readonly legalCalls: Call[];
-  readonly bidFeedback: BidFeedback | null;
-  readonly error: string | null;
-  readonly debugLog: DebugLogEntry[];
-  init(config: BiddingStoreConfig): Promise<void>;
-  reset(): void;
-  userBid(call: Call): void;
-  retryBid(): void;
-  getExpectedBid(): Promise<{ call: Call } | null>;
-  getDebugSnapshot(): Promise<DebugSnapshot>;
-}
-
-// ── Play Store ──────────────────────────────────────────────────────
-
-export interface PlayStore {
-  readonly tricks: Trick[];
-  readonly currentTrick: PlayedCard[];
-  readonly currentPlayer: Seat | null;
-  readonly declarerTricksWon: number;
-  readonly defenderTricksWon: number;
-  readonly dummySeat: Seat | null;
-  readonly score: number | null;
-  readonly trumpSuit: Suit | undefined;
-  readonly isShowingTrickResult: boolean;
-  readonly isProcessing: boolean;
-  readonly playLog: PlayLogEntry[];
-  readonly playAborted: boolean;
-  readonly legalPlaysForCurrentPlayer: Card[];
-  readonly userControlledSeats: readonly Seat[];
-  readonly remainingCardsPerSeat: Partial<Record<Seat, readonly Card[]>>;
-  getRemainingCards(seat: Seat): Card[];
-  refreshLegalPlays(): Promise<void>;
-  getLegalPlaysForSeat(seat: Seat): Promise<Card[]>;
-  startPlay(config: PlayStoreConfig): void;
-  userPlayCard(card: Card, seat: Seat): void;
-  skipToReview(): void;
-  reset(): void;
-}
-
-// ── DDS Store ───────────────────────────────────────────────────────
-
-export interface DDSStore {
-  readonly ddsSolution: DDSolution | null;
-  readonly ddsSolving: boolean;
-  readonly ddsError: string | null;
-  triggerSolve(deal: Deal, contract: Contract): Promise<void>;
-  reset(): void;
-}
 
 // ── Game Store ──────────────────────────────────────────────────────
 
@@ -103,7 +43,7 @@ export interface GameStore {
   readonly playUserSeat: Seat;
   readonly rotated: boolean;
 
-  // Bidding state (delegated)
+  // Bidding state
   readonly auction: Auction;
   readonly currentTurn: Seat | null;
   readonly bidHistory: BidHistoryEntry[];
@@ -113,7 +53,7 @@ export interface GameStore {
   readonly bidFeedback: BidFeedback | null;
   readonly isFeedbackBlocking: boolean;
 
-  // Play state (delegated)
+  // Play state
   readonly tricks: Trick[];
   readonly currentTrick: PlayedCard[];
   readonly currentPlayer: Seat | null;
@@ -126,7 +66,7 @@ export interface GameStore {
   readonly userControlledSeats: readonly Seat[];
   readonly remainingCardsPerSeat: Partial<Record<Seat, readonly Card[]>>;
 
-  // DDS state (delegated)
+  // DDS state
   readonly ddsSolution: DDSolution | null;
   readonly ddsSolving: boolean;
   readonly ddsError: string | null;
@@ -152,7 +92,7 @@ export interface GameStore {
   readonly inferenceTimeline: readonly InferenceSnapshot[];
   readonly ewInferenceTimeline: readonly InferenceSnapshot[];
 
-  // Namespaced sub-store accessors
+  // Namespaced sub-store accessors (backward compat)
   readonly bidding: {
     readonly auction: Auction;
     readonly bidHistory: BidHistoryEntry[];

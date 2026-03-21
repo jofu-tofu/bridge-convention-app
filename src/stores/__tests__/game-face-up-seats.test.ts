@@ -17,6 +17,7 @@ import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeSimpleTestDeal, makeDrillSession, makeContract } from "../../test-support/fixtures";
 import type { EnginePort } from "../../engine/port";
+import { createLocalService } from "../../service";
 
 describe("faceUpSeats", () => {
   let engine: EnginePort;
@@ -50,7 +51,7 @@ describe("faceUpSeats", () => {
         return 90;
       },
     });
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
@@ -197,7 +198,7 @@ describe("promptMode", () => {
         return 90;
       },
     });
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
@@ -208,7 +209,7 @@ describe("promptMode", () => {
 
   it("is null when not in DECLARER_PROMPT phase", () => {
     const eng = createStubEngine();
-    const s = createGameStore(eng);
+    const s = createGameStore(eng, createLocalService(eng));
     expect(s.promptMode).toBeNull();
   });
 
@@ -269,7 +270,7 @@ describe("acceptPrompt / declinePrompt", () => {
         return 90;
       },
     });
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
@@ -311,7 +312,7 @@ describe("acceptPrompt / declinePrompt", () => {
 
   it("acceptPrompt is no-op when not in DECLARER_PROMPT", () => {
     const eng = createStubEngine();
-    const s = createGameStore(eng);
+    const s = createGameStore(eng, createLocalService(eng));
     s.acceptPrompt();
     expect(s.phase).toBe("BIDDING");
   });

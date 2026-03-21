@@ -10,7 +10,7 @@
 <script lang="ts">
   import { Seat } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../stores/context";
-  import type { DebugSnapshot, DebugBidFeedback } from "../../stores/bidding.svelte";
+  import type { DebugSnapshot, DebugBidFeedback } from "../../stores/game.svelte";
 
   import DebugAtAGlance from "./debug/DebugAtAGlance.svelte";
   import DebugDealInfo from "./debug/DebugDealInfo.svelte";

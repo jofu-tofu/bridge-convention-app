@@ -5,6 +5,7 @@ import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeDrillSession, makeSimpleTestDeal, createTestServiceSession } from "../../test-support/fixtures";
 import type { DrillBundle } from "../../bootstrap/types";
+import { createLocalService } from "../../service";
 
 const fakeDDSolution: DDSolution = {
   tricks: {
@@ -85,7 +86,7 @@ describe("game store DDS state", () => {
 
   it("exposes DDS getters with null initial state", () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     expect(store.ddsSolution).toBeNull();
     expect(store.ddsSolving).toBe(false);
@@ -109,7 +110,7 @@ describe("game store DDS state", () => {
         };
       },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     const deal = makeSimpleTestDeal();
     await startDrillWithTimers(store, deal);
@@ -141,7 +142,7 @@ describe("game store DDS state", () => {
         };
       },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     await startDrillWithTimers(store);
     // Flush for rejection to propagate
@@ -168,7 +169,7 @@ describe("game store DDS state", () => {
         };
       },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     await startDrillWithTimers(store);
     await vi.advanceTimersByTimeAsync(0);
@@ -188,7 +189,7 @@ describe("game store DDS state", () => {
         return auction.entries.length >= 4;
       },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     // Strategy that always suggests pass — any non-pass bid is wrong
     const strategy = {
@@ -242,7 +243,7 @@ describe("game store DDS state", () => {
         };
       },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     await startDrillWithTimers(store);
     expect(store.ddsSolving).toBe(true);

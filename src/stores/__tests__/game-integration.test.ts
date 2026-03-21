@@ -12,11 +12,12 @@ import type { Auction, AuctionEntry } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeSimpleTestDeal, makeDrillSession } from "../../test-support/fixtures";
+import { createLocalService } from "../../service";
 
 describe("Task 1: DEV-mode assertion on uninitialized store", () => {
   it("userBid() is no-op when store not initialized", () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     // Do NOT call startDrill — store is uninitialized
     // userBid returns void (sync wrapper) — errors silently swallowed
@@ -27,7 +28,7 @@ describe("Task 1: DEV-mode assertion on uninitialized store", () => {
 
   it("runAiBids via startDrill works after proper init", async () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     // Calling startDrill initializes the store — should not throw
     await store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
@@ -47,7 +48,7 @@ describe("Task 2: runAiBids() error recovery keeps state consistent", () => {
         return { entries: [...auction.entries, entry], isComplete: false };
       },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     // Use a deal where North is dealer, so AI bids N, E, then user is S
     // The 2nd addCall (East's bid) will fail
@@ -61,7 +62,7 @@ describe("Task 2: runAiBids() error recovery keeps state consistent", () => {
 describe("Task 3: init() replays initialAuction entries into bidHistory", () => {
   it("maps double and redouble calls into bidHistory", async () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     const initialAuction: Auction = {
       entries: [
@@ -90,7 +91,7 @@ describe("Task 4: injectable AI_BID_DELAY via delayFn", () => {
   it("AI bids complete without timer advancement when using no-op delay", async () => {
     const engine = createStubEngine();
     // Use a microtask delay (Promise.resolve()) instead of setTimeout to keep Svelte reactive context happy
-    const store = createGameStore(engine, { delayFn: async () => { await Promise.resolve(); } });
+    const store = createGameStore(engine, createLocalService(engine), { delayFn: async () => { await Promise.resolve(); } });
 
     // With no-op delay, startDrill should complete AI bids instantly (no fake timers needed)
     await store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });

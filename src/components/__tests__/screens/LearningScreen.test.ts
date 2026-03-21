@@ -4,6 +4,7 @@ import LearningScreenTestWrapper from "./LearningScreenTestWrapper.svelte";
 import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
 import { createStubEngine } from "../../../test-support/engine-stub";
+import { createLocalService } from "../../../service";
 import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
 import { bergenBundleConventionConfig } from "../../../conventions/definitions/bergen-bundle/convention-config";
 import {
@@ -20,7 +21,7 @@ describe("LearningScreen", () => {
 
   function renderLearningScreen() {
     const engine = createStubEngine();
-    const gameStore = createGameStore(engine);
+    const gameStore = createGameStore(engine, createLocalService(engine));
     const appStore = createAppStore();
     appStore.navigateToLearning(ntBundleConventionConfig);
 

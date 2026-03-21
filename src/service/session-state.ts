@@ -13,7 +13,7 @@ import type { InferenceCoordinator } from "../inference/inference-coordinator";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
 import type { GamePhase } from "../core/phase-machine";
 import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
-import type { DebugSnapshot, DebugLogEntry } from "../stores/bidding.svelte";
+import type { DebugSnapshot, DebugLogEntry } from "../stores/game.svelte";
 import { nextSeat, partnerSeat } from "../engine/constants";
 
 /** Default empty evaluation — used when no strategy is wired. */

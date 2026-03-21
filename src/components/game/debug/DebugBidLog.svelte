@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DebugLogEntry } from "../../../stores/bidding.svelte";
+  import type { DebugLogEntry } from "../../../stores/game.svelte";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 

@@ -13,6 +13,7 @@ import { createStubEngine } from "../../test-support/engine-stub";
 import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers, createTestServiceSession } from "../../test-support/fixtures";
 import type { DrillBundle } from "../../bootstrap/types";
+import { createLocalService } from "../../service";
 
 /** Strategy that always suggests 2C. */
 function make2CStrategy(): ConventionBiddingStrategy {
@@ -61,7 +62,7 @@ function makeEngine() {
 /** Create store + service session, start drill with given bundle. */
 async function startWithBundle(bundle: DrillBundle) {
   const engine = makeEngine();
-  const store = createGameStore(engine);
+  const store = createGameStore(engine, createLocalService(engine));
   const { service, handle } = await createTestServiceSession(engine, bundle);
   // Fire-and-forget: startDrill uses delayFn() internally which needs fake timer flush
   void store.startDrill(bundle, service, handle);
@@ -153,7 +154,7 @@ describe("bidding characterization — lock existing behavior", () => {
       async isAuctionComplete() { return true; },
       async getContract() { return null; }, // passout → EXPLANATION
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
     const bundle: DrillBundle = {
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),

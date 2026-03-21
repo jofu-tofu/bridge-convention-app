@@ -5,6 +5,7 @@ import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import type { EnginePort } from "../../engine/port";
 import { makeDrillSession, makeSimpleTestDeal, makeContract } from "../../test-support/fixtures";
+import { createLocalService } from "../../service";
 
 describe("DECLARER_PROMPT phase", () => {
   let engine: EnginePort;
@@ -38,7 +39,7 @@ describe("DECLARER_PROMPT phase", () => {
         return 90;
       },
     });
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
   }
 
   /** Start drill and advance timers past AI bid delays only. */

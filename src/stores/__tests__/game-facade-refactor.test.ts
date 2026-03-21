@@ -14,6 +14,7 @@ import { makeSimpleTestDeal, makeDrillSession, makeContract } from "../../test-s
 import type { DrillSession } from "../../bootstrap/types";
 import type { EnginePort } from "../../engine/port";
 import type { InferenceConfig } from "../../inference/types";
+import { createLocalService } from "../../service";
 
 describe("unified acceptPlay / declinePlay API", () => {
   let engine: EnginePort;
@@ -47,7 +48,7 @@ describe("unified acceptPlay / declinePlay API", () => {
         return 90;
       },
     });
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
@@ -132,7 +133,7 @@ describe("unified acceptPlay / declinePlay API", () => {
 
   it("acceptPlay is no-op without contract", () => {
     const eng = createStubEngine();
-    const s = createGameStore(eng);
+    const s = createGameStore(eng, createLocalService(eng));
     // No drill started, no contract
     s.acceptPlay();
     expect(s.phase).toBe("BIDDING");
@@ -171,7 +172,7 @@ describe("playThisHand mutation ordering", () => {
         return 90;
       },
     });
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
 
     const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
     await vi.advanceTimersByTimeAsync(600);
@@ -189,7 +190,7 @@ describe("playThisHand mutation ordering", () => {
 
   it("playThisHand is no-op from BIDDING phase", async () => {
     engine = createStubEngine();
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
 
     // Still in BIDDING phase
     store.playThisHand();
@@ -220,7 +221,7 @@ describe("namespaced sub-store accessors (finding #1)", () => {
         return 90;
       },
     });
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
   });
 
   afterEach(() => {
@@ -355,7 +356,7 @@ describe("E/W inference engine wiring (finding #5)", () => {
         return true;
       },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     vi.useRealTimers();
     const nsInferenceEngine = createInferenceEngine(nsConfig, Seat.North);
@@ -373,7 +374,7 @@ describe("E/W inference engine wiring (finding #5)", () => {
 
   it("ewInferenceTimeline is empty when no ewInferenceConfig", () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
     expect(store.ewInferenceTimeline).toEqual([]);
   });
 });

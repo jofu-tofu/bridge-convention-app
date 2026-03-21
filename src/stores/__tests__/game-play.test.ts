@@ -6,6 +6,7 @@ import { createStubEngine } from "../../test-support/engine-stub";
 import { makeCard, makeSimpleTestDeal, makeDrillSession } from "../../test-support/fixtures";
 import type { DrillSession } from "../../bootstrap/types";
 import type { EnginePort } from "../../engine/port";
+import { createLocalService } from "../../service";
 
 // North declares so user (South) is dummy — play phase reachable via acceptDeclarerSwap
 const CONTRACT_1NT: Contract = {
@@ -66,7 +67,7 @@ describe("createGameStore play phase", () => {
       },
     });
 
-    store = createGameStore(engine);
+    store = createGameStore(engine, createLocalService(engine));
   });
 
   afterEach(() => {
@@ -202,7 +203,7 @@ describe("play concurrency fixes", () => {
       async getTrickWinner() { return Seat.South; },
       async calculateScore() { return 90; },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     await startDrillPlaying(store);
     // East is AI opening leader → isProcessing must be true synchronously
@@ -222,7 +223,7 @@ describe("play concurrency fixes", () => {
       async getTrickWinner() { return Seat.South; },
       async calculateScore() { return 90; },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     await startDrillPlaying(store);
     store.skipToReview();
@@ -240,7 +241,7 @@ describe("play concurrency fixes", () => {
       async getTrickWinner() { return Seat.South; },
       async calculateScore() { return 90; },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
 
     await startDrillPlaying(store);
     // skipToReview should not throw even if currentPlayer becomes null during processing

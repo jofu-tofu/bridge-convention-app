@@ -10,6 +10,7 @@ import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeDrillSession, makeSimpleTestDeal, makeContract } from "../../test-support/fixtures";
+import { createLocalService } from "../../service";
 
 describe("phase state machine", () => {
   beforeEach(() => {
@@ -29,7 +30,7 @@ describe("phase state machine", () => {
       async getTrickWinner() { return Seat.South; },
       async calculateScore() { return 90; },
     });
-    const store = createGameStore(engine);
+    const store = createGameStore(engine, createLocalService(engine));
     const session = makeDrillSession();
     const deal = makeSimpleTestDeal();
     const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
@@ -66,7 +67,7 @@ describe("phase state machine", () => {
         async isAuctionComplete() { return true; },
         async getContract() { return null; }, // passout
       });
-      const store = createGameStore(engine);
+      const store = createGameStore(engine, createLocalService(engine));
       const promise = store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
       await vi.advanceTimersByTimeAsync(1200);
       await promise;

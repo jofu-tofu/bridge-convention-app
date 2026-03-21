@@ -4,6 +4,7 @@ import AppShell from "../../../AppShell.svelte";
 import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
 import { createStubEngine } from "../../../test-support/engine-stub";
+import { createLocalService } from "../../../service";
 import {
   clearRegistry,
   registerConvention,
@@ -18,9 +19,10 @@ describe("AppShell", () => {
 
   function renderShell() {
     const engine = createStubEngine();
-    const gameStore = createGameStore(engine);
+    const service = createLocalService(engine);
+    const gameStore = createGameStore(engine, service);
     const appStore = createAppStore();
-    render(AppShell, { props: { engine, gameStore, appStore } });
+    render(AppShell, { props: { engine, service, gameStore, appStore } });
     return { appStore, gameStore };
   }
 
