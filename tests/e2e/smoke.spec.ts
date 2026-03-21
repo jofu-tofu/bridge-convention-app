@@ -221,14 +221,14 @@ test.describe("deterministic seeding", () => {
     });
 
     const southHand = page.getByTestId("hand-fan").first();
-    await expect(southHand).toBeVisible({ timeout: 5000 });
+    await southHand.waitFor({ state: "attached", timeout: 5000 });
     const hand1 = await southHand.textContent();
 
     await page.goto("/?convention=bergen-bundle&seed=99");
     await expect(page.getByTestId("game-phase")).toHaveText("Bidding", {
       timeout: 10000,
     });
-    await expect(southHand).toBeVisible({ timeout: 5000 });
+    await southHand.waitFor({ state: "attached", timeout: 5000 });
 
     const hand2 = await southHand.textContent();
     expect(hand1).toBe(hand2);

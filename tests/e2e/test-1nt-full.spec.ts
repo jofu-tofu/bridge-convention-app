@@ -158,26 +158,25 @@ async function getAuction(page: Page): Promise<string> {
   ).trim();
 }
 
-async function getCorrectBid(
-  page: Page
-): Promise<{ bid: string; meaning: string }> {
-  const body = await page.locator("body").innerText();
-  const lines = body.split("\n");
-  // Look for "expected:" in at-a-glance summary
-  const idx = lines.findIndex((l) => l.trim().startsWith("expected:"));
-  if (idx >= 0) {
-    const line = lines[idx].trim().replace("expected:", "").trim();
-    if (line.includes("(no match)") || line.includes("No convention bid")) {
+/** Parse correct bid from already-extracted body text */
+function getCorrectBidFromText(body: string): { bid: string; meaning: string } {
+  // Try regex match for "expected: <bid> <meaning>" (works across line boundaries)
+  const expectedMatch = body.match(/expected:\s*(\S+)/);
+  if (expectedMatch) {
+    const bid = expectedMatch[1];
+    if (bid.includes("(no") || bid.includes("No")) {
       return { bid: "Pass", meaning: "No convention bid (pass)" };
     }
-    const parts = line.split(/\s+/);
-    return { bid: parts[0], meaning: parts.slice(1).join(" ") };
+    // Try to capture meaning after the bid
+    const fullMatch = body.match(/expected:\s*\S+\s+(.+?)(?=\n\n|expected:|$)/s);
+    const meaning = fullMatch ? fullMatch[1].trim() : "";
+    return { bid, meaning };
   }
-  // Fallback: look for "Suggested Bid" section
-  const sgIdx = lines.findIndex((l) => l.trim() === "Suggested Bid");
-  if (sgIdx >= 0 && sgIdx + 2 < lines.length) {
-    const bid = lines[sgIdx + 1].trim();
-    const meaning = lines[sgIdx + 2].trim();
+  // Fallback: look for "Suggested Bid" section (regex across lines)
+  const sgMatch = body.match(/Suggested Bid\s*\n\s*(.+)\s*\n\s*(.+)/);
+  if (sgMatch) {
+    const bid = sgMatch[1].trim();
+    const meaning = sgMatch[2].trim();
     if (bid.includes("No convention bid")) {
       return { bid: "Pass", meaning: "No convention bid (pass)" };
     }
@@ -186,20 +185,47 @@ async function getCorrectBid(
   return { bid: "unknown", meaning: "" };
 }
 
-async function openDebugDrawer(page: Page): Promise<string> {
-  const toggle = page.getByTestId("debug-toggle");
-  if (!(await toggle.isVisible().catch(() => false))) return "(no debug toggle)";
-  await toggle.click();
-  const drawer = page.locator('aside[aria-label="Debug drawer"]');
-  await expect(drawer).toBeVisible({ timeout: 3000 });
-  // Expand every <details> inside the drawer
+/** Probe bid (7NT) to populate debug data, read via JS, then retry.
+ *  Returns the combined drawer + main text for parsing. */
+async function probeAndReadAllDebug(page: Page): Promise<string> {
+  // Close debug drawer before bid interactions (mobile viewports)
+  await closeDebugDrawer(page);
+
+  // Make probe bid to trigger pipeline evaluation
+  await page.getByTestId("bid-7NT").click();
+  const alert = page.locator("[role='alert']");
+  const phaseChanged = page.getByTestId("game-phase").filter({ hasNotText: "Bidding" });
+  await expect(alert.or(phaseChanged)).toBeVisible({ timeout: 5_000 });
+  await page.waitForTimeout(500);
+
+  // Open debug drawer via JS (bypasses overlay issues on mobile)
   await page.evaluate(() => {
-    document
-      .querySelectorAll('aside[aria-label="Debug drawer"] details')
-      .forEach((d) => ((d as HTMLDetailsElement).open = true));
+    const toggleBtn = document.querySelector('[data-testid="debug-toggle"]') as HTMLElement | null;
+    if (toggleBtn) toggleBtn.click();
   });
   await page.waitForTimeout(500);
-  return (await drawer.innerText()).trim();
+
+  // Read debug data via page.evaluate with inert check
+  const body = await page.evaluate(() => {
+    const drawer = document.querySelector('aside[aria-label="Debug drawer"]') as HTMLElement | null;
+    if (drawer && !drawer.hasAttribute("inert")) {
+      drawer.querySelectorAll("details").forEach((d) => {
+        (d as HTMLDetailsElement).open = true;
+      });
+      return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
+    }
+    return document.body.innerText;
+  });
+
+  // Close drawer and retry to restore bid panel
+  await closeDebugDrawer(page);
+  const retryBtn = page.getByRole("button", { name: /try again/i });
+  if (await retryBtn.isVisible().catch(() => false)) {
+    await retryBtn.click();
+    await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
+  }
+
+  return body;
 }
 
 async function closeDebugDrawer(page: Page): Promise<void> {
@@ -247,11 +273,12 @@ async function captureSeed(page: Page, seed: number): Promise<SeedReport> {
   const sl = computeSuitLengths(cards);
   const hcp = computeHcp(cards);
   const auction = await getAuction(page);
-  const { bid: appBid, meaning: appMeaning } = await getCorrectBid(page);
+
+  // Probe bid to populate debug data, then read via JS (mobile-safe)
+  const debugText = await probeAndReadAllDebug(page);
+  const { bid: appBid, meaning: appMeaning } = getCorrectBidFromText(debugText);
   const exp = analyzeExpected(sl, hcp);
 
-  // Debug drawer
-  const debugText = await openDebugDrawer(page);
   const allHands = extractSection(debugText, "All Hands");
   const pipeline = extractSection(debugText, "Pipeline");
   const suggested = extractSection(debugText, "Suggested Bid");
@@ -260,7 +287,6 @@ async function captureSeed(page: Page, seed: number): Promise<SeedReport> {
     path: "/tmp/1nt-seed" + seed + "-debug.png",
     fullPage: true,
   });
-  await closeDebugDrawer(page);
 
   const report: SeedReport = {
     seed,

@@ -29,12 +29,19 @@ interface GameData {
   vulnerabilityIndicator: string;
 }
 
+/** Close the debug drawer (needed on mobile viewports where it covers bid buttons) */
+async function closeDebugDrawer(page: Page): Promise<void> {
+  try {
+    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
+    await page.waitForTimeout(300);
+  } catch {
+    // Already closed or not interactable — ignore
+  }
+}
+
 async function extractGameData(
   page: Page,
 ): Promise<GameData> {
-  // Full page text
-  const fullText = (await page.locator("body").innerText()) ?? "";
-
   // Auction
   const auctionText =
     (await page.locator('[data-testid="table-center"]').textContent()) ?? "";
@@ -50,18 +57,7 @@ async function extractGameData(
   const southHCP =
     (await page.locator('[data-testid="south-hcp"]').textContent()) ?? "";
 
-  // Expected bid recommendation from debug at-a-glance
-  const correctBidBlock = await page.evaluate(() => {
-    const body = document.body.innerText;
-    // Try "expected:" from at-a-glance
-    const m = body.match(/expected:\s*(.+?)(?=\n|$)/);
-    if (m) return m[0].trim();
-    // Try "Suggested Bid" section
-    const sg = body.match(/Suggested Bid[\s\S]*?(?=\n\n|Pipeline|Hand Facts|$)/);
-    return sg ? sg[0].trim() : null;
-  });
-
-  // Bid buttons: enabled vs disabled
+  // Bid buttons: enabled vs disabled (read before probe bid)
   const enabledBids = await page.$$eval(
     '[data-testid^="bid-"]:not([disabled])',
     (els) =>
@@ -101,6 +97,53 @@ async function extractGameData(
     const m = body.match(/Vul(?:nerable)?[:\s]+([^\n]+)/i);
     return m ? m[1].trim() : "not displayed";
   });
+
+  // --- Probe bid to populate debug data (null pre-bid on mobile/tablet) ---
+  await closeDebugDrawer(page);
+  await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
+
+  await page.getByTestId("bid-7NT").click();
+  const alert = page.locator("[role='alert']");
+  const phaseChanged = page.getByTestId("game-phase").filter({ hasNotText: "Bidding" });
+  await expect(alert.or(phaseChanged)).toBeVisible({ timeout: 5_000 });
+  await page.waitForTimeout(500);
+
+  // Open debug drawer via JS (bypasses overlay issues on mobile)
+  await page.evaluate(() => {
+    const toggleBtn = document.querySelector('[data-testid="debug-toggle"]') as HTMLElement | null;
+    if (toggleBtn) toggleBtn.click();
+  });
+  await page.waitForTimeout(500);
+
+  // Read full text via page.evaluate with inert check
+  const fullText = await page.evaluate(() => {
+    const drawer = document.querySelector('aside[aria-label="Debug drawer"]') as HTMLElement | null;
+    if (drawer && !drawer.hasAttribute("inert")) {
+      drawer.querySelectorAll("details").forEach((d) => {
+        (d as HTMLDetailsElement).open = true;
+      });
+      return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
+    }
+    return document.body.innerText;
+  });
+
+  // Extract correctBidBlock from the populated text
+  const correctBidBlock = (() => {
+    // Try "expected:" from at-a-glance
+    const m = fullText.match(/expected:\s*(.+?)(?=\n|$)/);
+    if (m) return m[0].trim();
+    // Try "Suggested Bid" section
+    const sg = fullText.match(/Suggested Bid[\s\S]*?(?=\n\n|Pipeline|Hand Facts|$)/);
+    return sg ? sg[0].trim() : null;
+  })();
+
+  // Close drawer and retry to restore bid panel
+  await closeDebugDrawer(page);
+  const retryBtn = page.getByRole("button", { name: /try again/i });
+  if (await retryBtn.isVisible().catch(() => false)) {
+    await retryBtn.click();
+    await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
+  }
 
   return {
     fullText,

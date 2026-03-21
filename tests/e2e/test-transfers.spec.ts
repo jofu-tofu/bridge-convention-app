@@ -293,7 +293,26 @@ test.describe("Jacoby Transfers — Incorrect bid feedback", () => {
     });
 
     // Read the correct bid from debug data (now populated after the bid)
-    const body = await page.locator("body").innerText();
+    // Open debug drawer via JS (bypasses overlay issues on mobile)
+    await page.evaluate(() => {
+      const toggleBtn = document.querySelector('[data-testid="debug-toggle"]') as HTMLElement | null;
+      if (toggleBtn) toggleBtn.click();
+    });
+    await page.waitForTimeout(500);
+
+    // Read debug data via page.evaluate with inert check (mobile-safe)
+    const body = await page.evaluate(() => {
+      const drawer = document.querySelector('aside[aria-label="Debug drawer"]') as HTMLElement | null;
+      if (drawer && !drawer.hasAttribute("inert")) {
+        drawer.querySelectorAll("details").forEach((d) => {
+          (d as HTMLDetailsElement).open = true;
+        });
+        return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
+      }
+      return document.body.innerText;
+    });
+    await closeDebugDrawer(page);
+
     const correctBid = getCorrectBid(body);
     expect(correctBid).not.toBeNull();
 
