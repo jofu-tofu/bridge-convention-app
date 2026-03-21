@@ -12,6 +12,8 @@ import type { GamePhase } from "../stores/phase-machine";
 import type {
   SessionHandle,
   SessionConfig,
+} from "./request-types";
+import type {
   DrillStartResult,
   BidSubmitResult,
   PromptAcceptResult,
@@ -23,7 +25,7 @@ import type {
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
-} from "./types";
+} from "./response-types";
 
 /** Production service interface — all methods return Promise<T>. */
 export interface ServicePort {

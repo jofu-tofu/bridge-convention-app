@@ -17,7 +17,7 @@ import { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
 import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
 import type { EnginePort } from "../engine/port";
 import type { SessionState } from "./session-state";
-import type { AiBidEntry } from "./types";
+import type { AiBidEntry } from "./response-types";
 import type { GamePhase } from "../stores/phase-machine";
 import { isValidTransition } from "../stores/phase-machine";
 import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport";

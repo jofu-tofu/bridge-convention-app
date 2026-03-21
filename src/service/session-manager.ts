@@ -2,7 +2,7 @@
  * Session manager — maps opaque session handles to session state.
  */
 
-import type { SessionHandle } from "./types";
+import type { SessionHandle } from "./request-types";
 import type { SessionState } from "./session-state";
 
 let handleCounter = 0;

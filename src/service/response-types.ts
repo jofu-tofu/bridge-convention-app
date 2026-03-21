@@ -1,5 +1,7 @@
 /**
- * Service boundary types — only viewport-safe types cross this boundary.
+ * Service response types — shapes the service returns to the client.
+ *
+ * Only viewport-safe types cross this boundary.
  *
  * ALLOWED to cross: BiddingViewport, ViewportBidFeedback, TeachingDetail,
  *   Call, Card, Seat, Vulnerability, BidGrade, BidHistoryEntry, GamePhase,
@@ -15,25 +17,8 @@ import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../co
 import type { BidHistoryEntry } from "../core/contracts";
 import type { ViewportBidGrade } from "../core/viewport/player-viewport";
 import type { GamePhase } from "../stores/phase-machine";
-import type { OpponentMode, DrillTuning } from "../bootstrap/types";
 import type { DebugSnapshot, DebugLogEntry } from "../stores/bidding.svelte";
 import type { InferenceSnapshot } from "../inference/types";
-
-// ── Session Handle ──────────────────────────────────────────────────
-
-/** Opaque session identifier. */
-export type SessionHandle = string;
-
-// ── Session Config ──────────────────────────────────────────────────
-
-/** Configuration for creating a new drill session. */
-export interface SessionConfig {
-  readonly conventionId: string;
-  readonly userSeat?: Seat;
-  readonly seed?: number;
-  readonly opponentMode?: OpponentMode;
-  readonly tuning?: DrillTuning;
-}
 
 // ── Result DTOs ─────────────────────────────────────────────────────
 

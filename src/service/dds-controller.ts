@@ -7,7 +7,7 @@
 
 import type { Deal, Contract, DDSolution } from "../engine/types";
 import type { EnginePort } from "../engine/port";
-import type { DDSolutionResult } from "./types";
+import type { DDSolutionResult } from "./response-types";
 
 const DDS_TIMEOUT_MS = 10_000;
 

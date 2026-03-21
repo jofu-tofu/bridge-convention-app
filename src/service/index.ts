@@ -3,10 +3,14 @@
 // Port interfaces
 export type { ServicePort, DevServicePort } from "./port";
 
-// Boundary types
+// Boundary types — requests
 export type {
   SessionHandle,
   SessionConfig,
+} from "./request-types";
+
+// Boundary types — responses
+export type {
   DrillStartResult,
   BidSubmitResult,
   AiBidEntry,
@@ -20,7 +24,7 @@ export type {
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
-} from "./types";
+} from "./response-types";
 
 // Implementation
 export { createLocalService } from "./local-service";

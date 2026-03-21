@@ -27,6 +27,8 @@ import type { DevServicePort } from "./port";
 import type {
   SessionHandle,
   SessionConfig,
+} from "./request-types";
+import type {
   DrillStartResult,
   BidSubmitResult,
   PromptAcceptResult,
@@ -38,7 +40,7 @@ import type {
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
-} from "./types";
+} from "./response-types";
 import { SessionManager, createHandle } from "./session-manager";
 import { SessionState } from "./session-state";
 import { DDSController } from "./dds-controller";
@@ -85,10 +87,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         userSeat,
         undefined,
         config.seed,
-        {
-          opponentMode: config.opponentMode,
-          tuning: config.tuning,
-        },
+        config.drill,
       );
 
       const coordinator = createInferenceCoordinator();
