@@ -280,51 +280,24 @@
         teachingDetail={gameStore.teachingDetail}
         onNewDeal={handleNextDeal}
       />
-    {:else if gameStore.phase === "DECLARER_PROMPT" && gameStore.contract}
+    {:else if gameStore.phase === "DECLARER_PROMPT" && gameStore.declarerPromptViewport}
       <DeclarerPromptPhase
-        deal={gameStore.deal}
-        {userSeat}
-        faceUpSeats={gameStore.faceUpSeats}
-        auction={gameStore.auction}
-        contract={gameStore.contract}
-        promptMode={gameStore.promptMode ?? "defender"}
+        viewport={gameStore.declarerPromptViewport}
         onAccept={() => gameStore.acceptPrompt()}
         onSkip={() => gameStore.declinePrompt()}
       />
-    {:else if gameStore.phase === "PLAYING" && gameStore.deal}
+    {:else if gameStore.phase === "PLAYING" && gameStore.playingViewport}
       <PlayingPhase
-        rotated={gameStore.rotated}
-        faceUpSeats={gameStore.faceUpSeats}
-        deal={gameStore.deal}
-        contract={gameStore.contract}
-        currentPlayer={gameStore.currentPlayer}
-        currentTrick={gameStore.currentTrick}
-        trumpSuit={gameStore.trumpSuit}
-        declarerTricksWon={gameStore.declarerTricksWon}
-        defenderTricksWon={gameStore.defenderTricksWon}
-        legalPlays={gameStore.legalPlaysForCurrentPlayer}
-        userControlledSeats={gameStore.userControlledSeats}
-        remainingCards={gameStore.remainingCardsPerSeat}
-        tricks={gameStore.tricks}
-        auction={gameStore.auction}
-        bidHistory={gameStore.bidHistory}
+        viewport={gameStore.playingViewport}
         onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
         onSkipToReview={() => gameStore.skipToReview()}
       />
-    {:else if gameStore.phase === "EXPLANATION"}
+    {:else if gameStore.phase === "EXPLANATION" && gameStore.explanationViewport}
       <ExplanationPhase
-        deal={gameStore.deal}
-        {userSeat}
-        faceUpSeats={gameStore.faceUpSeats}
-        auction={gameStore.auction}
-        contract={gameStore.contract}
-        score={gameStore.score}
-        declarerTricksWon={gameStore.declarerTricksWon}
-        bidHistory={gameStore.bidHistory}
+        viewport={gameStore.explanationViewport}
         ddsSolution={gameStore.ddsSolution}
         ddsSolving={gameStore.ddsSolving}
         ddsError={gameStore.ddsError}
-        vulnerability={gameStore.deal.vulnerability}
         {dealNumber}
         onNextDeal={handleNextDeal}
         onBackToMenu={handleBackToMenu}

@@ -19,7 +19,6 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | `bidding.svelte.ts`  | Bidding sub-store — auction state, bid history, feedback, AI bid loop, convention strategy          |
 | `play.svelte.ts`     | Play sub-store — trick state, AI play loop, score calculation, legal plays                         |
 | `dds.svelte.ts`      | DDS sub-store — async DDS solve with timeout, stale-result guard, generation counter               |
-| `phase-machine.ts`   | Pure phase machine logic — `GamePhase`, `VALID_TRANSITIONS`, `isValidTransition()`. Extracted from game.svelte.ts, no Svelte deps |
 | `dev-params.ts`      | `applyDevParams()` — reads URL params (?convention, ?seed, ?debug, etc.) and configures the app store. Called from `App.svelte` at startup |
 
 **Game store key methods:** `startDrill`, `userBid`, `retryBid`, `runAiBids`, `completeAuction`, `getExpectedBid` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `isDefenderPrompt` (declarer prompt); `startPlay`, `userPlayCard`, `runAiPlays`, `completeTrick`, `completePlay`, `skipToReview`, `triggerDDSSolve`, `getLegalPlaysForSeat`, `getRemainingCards` (play). See `game.svelte.ts` for signatures.
@@ -28,7 +27,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 
-**Viewport getters:** `gameStore.biddingViewport` — `$derived` `BiddingViewport` computed from current state (see `src/core/viewport/`). `gameStore.viewportFeedback` — `$derived` `ViewportBidFeedback` computed after grading. Both enforce the player information boundary: components consume these instead of raw deal/engine state.
+**Viewport getters:** `gameStore.biddingViewport` — `$derived` `BiddingViewport` computed from current state (see `src/core/viewport/`). `gameStore.viewportFeedback` — `$derived` `ViewportBidFeedback` computed after grading. `gameStore.declarerPromptViewport` — `$derived` `DeclarerPromptViewport` for DECLARER_PROMPT phase. `gameStore.playingViewport` — `$derived` `PlayingViewport` for PLAYING phase. `gameStore.explanationViewport` — `$derived` `ExplanationViewport` for EXPLANATION phase. All enforce the player information boundary: components consume these instead of raw deal/engine state.
 
 **Exported types:** `BidFeedback` (with `grade: BidGrade`, `teachingResolution: TeachingResolution | null`, `practicalRecommendation?: PracticalRecommendation` sourced from `ConventionBiddingStrategy.getLastEvaluation().practicalRecommendation`, `teachingProjection?: TeachingProjection` sourced from `ConventionBiddingStrategy.getLastEvaluation().teachingProjection`, not from `BidResult`, `encodingTrace?: EncodingTrace`). `resolveTeachingAnswer()` is called with `intentFamilies` from `conventionStrategy.getLastEvaluation()?.intentFamilies`, `BidGrade`, `TeachingResolution` (re-exported from `teaching/teaching-resolution`), `BidHistoryEntry` (re-exported from `contracts/`, now includes `teachingProjection?: TeachingProjection` for review phase), `GamePhase`, `PlayLogEntry`, `seatController()`.
 

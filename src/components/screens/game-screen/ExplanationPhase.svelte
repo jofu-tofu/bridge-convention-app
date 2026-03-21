@@ -1,13 +1,7 @@
 <script lang="ts">
   import { Seat } from "../../../engine/types";
-  import type {
-    Contract,
-    Vulnerability,
-    Deal,
-  } from "../../../engine/types";
-  import type { Auction } from "../../../engine/types";
+  import type { ExplanationViewport } from "../../../core/viewport";
   import type { ConventionConfig } from "../../../core/contracts/convention";
-  import type { BidHistoryEntry } from "../../../core/contracts";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
   import type { DDSAnalysisProps } from "./shared-props";
@@ -18,15 +12,7 @@
   import ReviewSidePanel from "./ReviewSidePanel.svelte";
 
   interface Props extends DDSAnalysisProps {
-    deal: Deal;
-    userSeat: Seat;
-    faceUpSeats: ReadonlySet<Seat>;
-    auction: Auction;
-    contract: Contract | null;
-    score: number | null;
-    declarerTricksWon: number;
-    bidHistory: BidHistoryEntry[];
-    vulnerability: Vulnerability;
+    viewport: ExplanationViewport;
     dealNumber: number;
     onNextDeal: () => void;
     onBackToMenu: () => void;
@@ -35,18 +21,10 @@
   }
 
   const {
-    deal,
-    userSeat,
-    faceUpSeats,
-    auction,
-    contract,
-    score,
-    declarerTricksWon,
-    bidHistory,
+    viewport,
     ddsSolution,
     ddsSolving,
     ddsError,
-    vulnerability,
     dealNumber,
     onNextDeal,
     onBackToMenu,
@@ -58,8 +36,6 @@
   const appStore = getAppStore();
 
   let showAllCards = $state(false);
-
-  const _allFaceUp: ReadonlySet<Seat> = new Set([Seat.North, Seat.East, Seat.South, Seat.West]);
 </script>
 
 <div class={layout.phaseContainerClass}>
@@ -70,9 +46,9 @@
           class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-2 shadow-md"
         >
           <AuctionTable
-            entries={auction.entries}
-            dealer={deal.dealer}
-            {bidHistory}
+            entries={viewport.auctionEntries}
+            dealer={viewport.dealer}
+            bidHistory={viewport.bidHistory}
             showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
             compact
           />
@@ -96,14 +72,14 @@
             <div class="mb-2 flex items-center gap-2">
               <span
                 class="rounded px-2 py-0.5 text-[--text-detail] font-bold tracking-wide {seat ===
-                userSeat
+                viewport.userSeat
                   ? 'bg-accent-primary-subtle text-accent-primary'
                   : 'bg-bg-elevated text-text-primary'}"
               >
                 {seat}
               </span>
             </div>
-            <HandFan cards={deal.hands[seat].cards} faceUp />
+            <HandFan cards={viewport.allHands[seat].cards} faceUp />
           </section>
         {/each}
       </div>
@@ -115,15 +91,15 @@
       tableWidth={layout.tableBaseW}
       tableHeight={layout.tableBaseH}
     >
-      <BridgeTable hands={deal.hands} {faceUpSeats} vulnerability={deal.vulnerability} dealer={deal.dealer}>
+      <BridgeTable visibleHands={viewport.allHands} vulnerability={viewport.vulnerability} dealer={viewport.dealer}>
         <div class="flex flex-col items-center gap-2">
           <div
             class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
           >
             <AuctionTable
-              entries={auction.entries}
-              dealer={deal.dealer}
-              {bidHistory}
+              entries={viewport.auctionEntries}
+              dealer={viewport.dealer}
+              bidHistory={viewport.bidHistory}
               showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
               compact
             />
@@ -144,20 +120,19 @@
 
   <aside class={layout.sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
     <ReviewSidePanel
-      {contract}
-      {score}
-      {declarerTricksWon}
-      {bidHistory}
+      contract={viewport.contract}
+      score={viewport.score}
+      declarerTricksWon={viewport.declarerTricksWon}
+      bidHistory={viewport.bidHistory}
       {ddsSolution}
       {ddsSolving}
       {ddsError}
-      {vulnerability}
+      vulnerability={viewport.vulnerability}
       {dealNumber}
       {onNextDeal}
       {onBackToMenu}
       {onPlayHand}
       {convention}
-      {deal}
     />
   </aside>
 </div>

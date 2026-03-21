@@ -16,12 +16,12 @@ import { partnerSeat, areSamePartnership } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
 import { createPlayStore } from "./play.svelte";
 import { createBiddingStore } from "./bidding.svelte";
-import { buildBiddingViewport } from "../service";
-import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../service";
-import { isValidTransition } from "./phase-machine";
-import type { GamePhase } from "./phase-machine";
+import { buildBiddingViewport, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../service";
+import type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport } from "../service";
+import { isValidTransition } from "../core/phase-machine";
+import type { GamePhase } from "../core/phase-machine";
 
-export type { GamePhase } from "./phase-machine";
+export type { GamePhase } from "../core/phase-machine";
 
 export interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
@@ -373,6 +373,60 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       const fb = bidding.bidFeedback;
       if (!fb) return null;
       return fb.teaching;
+    },
+
+    /** Player-safe viewport for the declarer prompt phase. Null when not in DECLARER_PROMPT or missing contract. */
+    get declarerPromptViewport(): DeclarerPromptViewport | null {
+      if (!deal || !contract || phase !== "DECLARER_PROMPT") return null;
+      const seat = userSeat ?? Seat.South;
+      const mode = getPromptMode();
+      if (!mode) return null;
+      return buildDeclarerPromptViewport({
+        deal,
+        userSeat: seat,
+        faceUpSeats: getFaceUpSeats(),
+        auction: bidding.auction,
+        bidHistory: bidding.bidHistory,
+        contract,
+        promptMode: mode,
+      });
+    },
+
+    /** Player-safe viewport for the play phase. Null when not in PLAYING or missing deal. */
+    get playingViewport(): PlayingViewport | null {
+      if (!deal || phase !== "PLAYING") return null;
+      return buildPlayingViewport({
+        deal,
+        faceUpSeats: getFaceUpSeats(),
+        auction: bidding.auction,
+        bidHistory: bidding.bidHistory,
+        rotated: effectiveUserSeat === Seat.North,
+        contract,
+        currentPlayer: play.currentPlayer,
+        currentTrick: play.currentTrick,
+        trumpSuit: play.trumpSuit,
+        legalPlays: play.legalPlaysForCurrentPlayer,
+        userControlledSeats: play.userControlledSeats,
+        remainingCards: play.remainingCardsPerSeat ?? {},
+        tricks: play.tricks,
+        declarerTricksWon: play.declarerTricksWon,
+        defenderTricksWon: play.defenderTricksWon,
+      });
+    },
+
+    /** Player-safe viewport for the explanation/review phase. Null when not in EXPLANATION or missing deal. */
+    get explanationViewport(): ExplanationViewport | null {
+      if (!deal || phase !== "EXPLANATION") return null;
+      const seat = userSeat ?? Seat.South;
+      return buildExplanationViewport({
+        deal,
+        userSeat: seat,
+        auction: bidding.auction,
+        bidHistory: bidding.bidHistory,
+        contract,
+        score: play.score,
+        declarerTricksWon: play.declarerTricksWon,
+      });
     },
 
     /** Set the convention display name (called by UI layer with app store data). */

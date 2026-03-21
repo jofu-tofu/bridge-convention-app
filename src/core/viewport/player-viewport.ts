@@ -10,8 +10,9 @@
 //   1. Svelte UI — renders the viewport as pixels
 //   2. CLI harness — serializes the viewport as JSON for agent evaluation
 
-import type { Call, Hand, Seat, Vulnerability, SuitLength, DistributionPoints } from "../../engine/types";
+import type { Call, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Card, Suit } from "../../engine/types";
 import type { BidGrade } from "../contracts/teaching-grading";
+import type { BidHistoryEntry } from "../contracts/bidding";
 
 // ── Bidding Viewport ────────────────────────────────────────────────
 
@@ -253,4 +254,93 @@ export interface TeachingDetail {
    *  which conventions were considered, why each was accepted/rejected,
    *  and the path to the correct bid. */
   readonly parseTree?: ParseTreeView;
+
+  // ── Observation history ────────────────────────────────────
+  /** Viewport-safe projection of the observation log from the rule interpreter.
+   *  Shows what each bid communicated in convention-erased terms (observations)
+   *  and the resulting kernel state. No internal claim references leak through. */
+  readonly observationHistory?: readonly ObservationStepView[];
+}
+
+// ── Observation Step View ───────────────────────────────────────────
+
+/** Viewport-safe projection of a CommittedStep — what a bid communicated.
+ *  Strips resolvedClaim (moduleId, meaningId, sourceIntent) which are
+ *  implementation details the player shouldn't see. */
+export interface ObservationStepView {
+  /** Who made this bid. */
+  readonly actor: Seat;
+  /** The bid/pass/double/redouble. */
+  readonly call: Call;
+  /** Bridge-universal observations describing what the bid communicated.
+   *  Each observation is a plain object with act + optional typed fields. */
+  readonly observations: readonly ObservationView[];
+  /** Kernel state after this step (negotiation state visible to both sides). */
+  readonly kernel: KernelView;
+  /** Whether this step was resolved to a convention surface. */
+  readonly status: "resolved" | "raw-only" | "off-system";
+}
+
+/** Viewport-safe single canonical observation. */
+export interface ObservationView {
+  readonly act: string;
+  readonly detail?: string; // Human-readable summary, e.g., "show hearts"
+}
+
+/** Viewport-safe kernel state — purely semantic negotiation state. */
+export interface KernelView {
+  readonly fitAgreed: { readonly strain: string; readonly confidence: string } | null;
+  readonly forcing: string;
+  readonly captain: string;
+  readonly competition: string | { readonly kind: string; readonly strain: string; readonly level: number };
+}
+
+// ── Non-Bidding Phase Viewports ─────────────────────────────────────
+//
+// Seal the Deal leak for the remaining three game phases.
+// Each viewport filters hands through visibility rules so components
+// never receive raw Deal.
+
+/** Viewport for the declarer prompt phase. */
+export interface DeclarerPromptViewport {
+  readonly userSeat: Seat;
+  readonly visibleHands: Partial<Record<Seat, Hand>>;
+  readonly dealer: Seat;
+  readonly vulnerability: Vulnerability;
+  readonly auctionEntries: readonly AuctionEntryView[];
+  readonly contract: Contract;
+  readonly promptMode: "defender" | "south-declarer" | "declarer-swap";
+}
+
+/** Viewport for the play phase. */
+export interface PlayingViewport {
+  readonly rotated: boolean;
+  readonly visibleHands: Partial<Record<Seat, Hand>>;
+  readonly dealer: Seat;
+  readonly vulnerability: Vulnerability;
+  readonly contract: Contract | null;
+  readonly currentPlayer: Seat | null;
+  readonly currentTrick: readonly PlayedCard[];
+  readonly trumpSuit: Suit | undefined;
+  readonly legalPlays: readonly Card[];
+  readonly userControlledSeats: readonly Seat[];
+  readonly remainingCards: Partial<Record<Seat, readonly Card[]>>;
+  readonly tricks: readonly Trick[];
+  readonly declarerTricksWon: number;
+  readonly defenderTricksWon: number;
+  readonly auctionEntries?: readonly AuctionEntryView[];
+  readonly bidHistory?: readonly BidHistoryEntry[];
+}
+
+/** Viewport for the explanation/review phase. All hands are visible. */
+export interface ExplanationViewport {
+  readonly userSeat: Seat;
+  readonly allHands: Record<Seat, Hand>;
+  readonly dealer: Seat;
+  readonly vulnerability: Vulnerability;
+  readonly auctionEntries: readonly AuctionEntryView[];
+  readonly contract: Contract | null;
+  readonly score: number | null;
+  readonly declarerTricksWon: number;
+  readonly bidHistory: readonly BidHistoryEntry[];
 }

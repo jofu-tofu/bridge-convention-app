@@ -4,7 +4,9 @@
 // This is the SINGLE function that enforces the information boundary.
 // Both the Svelte UI and the CLI harness call this same function.
 
-import { type Seat, type Call, type Hand, type Deal, type Auction } from "../../engine/types";
+import { type Seat, type Call, type Hand, type Deal, type Auction, type Contract, type PlayedCard, type Trick, type Card, type Suit } from "../../engine/types";
+import type { AuctionContext } from "../contracts/committed-step";
+import type { CanonicalObs } from "../contracts/canonical-observation";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { formatCall } from "../display/format";
 import { formatHandSummary } from "../display/hand-summary";
@@ -32,6 +34,8 @@ interface BidFeedbackLike {
   readonly evaluationExhaustive: boolean;
   /** Whether the evidence bundle reported fallback was reached (no surface matched). */
   readonly fallbackReached: boolean;
+  /** Viewport-safe observation history (projected from AuctionContext). */
+  readonly observationHistory?: readonly ObservationStepView[];
 }
 
 import type {
@@ -46,6 +50,11 @@ import type {
   NearMissView,
   ConventionView,
   TeachingDetail,
+  ObservationStepView,
+  ObservationView,
+  DeclarerPromptViewport,
+  PlayingViewport,
+  ExplanationViewport,
 } from "./player-viewport";
 
 // ── Build Bidding Viewport ──────────────────────────────────────────
@@ -294,5 +303,208 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
 
     // Parse tree (from teaching projection)
     parseTree: projection?.parseTree,
+
+    // Observation history (from AuctionContext, viewport-safe projection)
+    observationHistory: feedback.observationHistory,
+  };
+}
+
+// ── Observation log projection ──────────────────────────────────────
+
+/**
+ * Project an AuctionContext into a viewport-safe observation history.
+ *
+ * Strips `resolvedClaim` (moduleId, meaningId, sourceIntent) which are
+ * implementation details. Keeps only `publicObs`, `postKernel`, `actor`,
+ * `call`, and `status` — the bridge-observable information.
+ */
+export function projectObservationHistory(
+  ctx: AuctionContext | null | undefined,
+): ObservationStepView[] | undefined {
+  if (!ctx || ctx.log.length === 0) return undefined;
+
+  return ctx.log.map((step) => ({
+    actor: step.actor,
+    call: step.call,
+    observations: step.publicObs.map(formatObservation),
+    kernel: {
+      fitAgreed: step.postKernel.fitAgreed,
+      forcing: step.postKernel.forcing,
+      captain: step.postKernel.captain,
+      competition: step.postKernel.competition,
+    },
+    status: step.status === "ambiguous" ? "off-system" as const : step.status,
+  }));
+}
+
+/** Format a CanonicalObs into a human-readable ObservationView. */
+function formatObservation(obs: CanonicalObs): ObservationView {
+  const parts: string[] = [obs.act];
+  if ("feature" in obs && obs.feature) parts.push(obs.feature);
+  if ("suit" in obs && obs.suit) parts.push(obs.suit);
+  if ("strain" in obs && obs.strain) parts.push(obs.strain);
+  if ("targetSuit" in obs && obs.targetSuit) parts.push(obs.targetSuit);
+  if ("strength" in obs && obs.strength) parts.push(obs.strength);
+  if ("quality" in obs && obs.quality) parts.push(String(obs.quality));
+  return { act: obs.act, detail: parts.join("(") + (parts.length > 1 ? ")" : "") };
+}
+
+// ── Shared helpers ──────────────────────────────────────────────────
+
+/** Build viewport-safe auction entries from raw auction + bid history. */
+function buildAuctionEntries(
+  auction: Auction,
+  bidHistory: readonly BidHistoryEntry[],
+): AuctionEntryView[] {
+  const entries: AuctionEntryView[] = [];
+  for (let i = 0; i < auction.entries.length; i++) {
+    const entry = auction.entries[i]!;
+    const historyEntry = bidHistory[i];
+    entries.push({
+      seat: entry.seat,
+      call: entry.call,
+      callDisplay: formatCall(entry.call),
+      alertLabel: historyEntry?.alertLabel,
+      annotationType: historyEntry?.annotationType,
+    });
+  }
+  return entries;
+}
+
+/** Filter hands through faceUpSeats, returning only visible ones. */
+function filterVisibleHands(
+  deal: Deal,
+  faceUpSeats: ReadonlySet<Seat>,
+): Partial<Record<Seat, Hand>> {
+  const visible: Partial<Record<Seat, Hand>> = {};
+  for (const seat of faceUpSeats) {
+    visible[seat] = deal.hands[seat];
+  }
+  return visible;
+}
+
+// ── Build Declarer Prompt Viewport ──────────────────────────────────
+
+export interface BuildDeclarerPromptViewportInput {
+  readonly deal: Deal;
+  readonly userSeat: Seat;
+  readonly faceUpSeats: ReadonlySet<Seat>;
+  readonly auction: Auction;
+  readonly bidHistory: readonly BidHistoryEntry[];
+  readonly contract: Contract;
+  readonly promptMode: "defender" | "south-declarer" | "declarer-swap";
+}
+
+/**
+ * Build a DeclarerPromptViewport from engine state.
+ *
+ * Filters hands through faceUpSeats so the component never sees
+ * cards the player shouldn't know about.
+ */
+export function buildDeclarerPromptViewport(
+  input: BuildDeclarerPromptViewportInput,
+): DeclarerPromptViewport {
+  const { deal, userSeat, faceUpSeats, auction, bidHistory, contract, promptMode } = input;
+
+  return {
+    userSeat,
+    visibleHands: filterVisibleHands(deal, faceUpSeats),
+    dealer: deal.dealer,
+    vulnerability: deal.vulnerability,
+    auctionEntries: buildAuctionEntries(auction, bidHistory),
+    contract,
+    promptMode,
+  };
+}
+
+// ── Build Playing Viewport ──────────────────────────────────────────
+
+export interface BuildPlayingViewportInput {
+  readonly deal: Deal;
+  readonly faceUpSeats: ReadonlySet<Seat>;
+  readonly auction?: Auction;
+  readonly bidHistory?: readonly BidHistoryEntry[];
+  readonly rotated: boolean;
+  readonly contract: Contract | null;
+  readonly currentPlayer: Seat | null;
+  readonly currentTrick: readonly PlayedCard[];
+  readonly trumpSuit: Suit | undefined;
+  readonly legalPlays: readonly Card[];
+  readonly userControlledSeats: readonly Seat[];
+  readonly remainingCards: Partial<Record<Seat, readonly Card[]>>;
+  readonly tricks: readonly Trick[];
+  readonly declarerTricksWon: number;
+  readonly defenderTricksWon: number;
+}
+
+/**
+ * Build a PlayingViewport from engine state.
+ *
+ * Filters hands through faceUpSeats.  During play, typically the
+ * user's hand + dummy are visible.
+ */
+export function buildPlayingViewport(
+  input: BuildPlayingViewportInput,
+): PlayingViewport {
+  const {
+    deal, faceUpSeats, auction, bidHistory, rotated, contract,
+    currentPlayer, currentTrick, trumpSuit, legalPlays,
+    userControlledSeats, remainingCards, tricks,
+    declarerTricksWon, defenderTricksWon,
+  } = input;
+
+  return {
+    rotated,
+    visibleHands: filterVisibleHands(deal, faceUpSeats),
+    dealer: deal.dealer,
+    vulnerability: deal.vulnerability,
+    contract,
+    currentPlayer,
+    currentTrick,
+    trumpSuit,
+    legalPlays,
+    userControlledSeats,
+    remainingCards,
+    tricks,
+    declarerTricksWon,
+    defenderTricksWon,
+    auctionEntries: auction ? buildAuctionEntries(auction, bidHistory ?? []) : undefined,
+    bidHistory,
+  };
+}
+
+// ── Build Explanation Viewport ──────────────────────────────────────
+
+export interface BuildExplanationViewportInput {
+  readonly deal: Deal;
+  readonly userSeat: Seat;
+  readonly auction: Auction;
+  readonly bidHistory: readonly BidHistoryEntry[];
+  readonly contract: Contract | null;
+  readonly score: number | null;
+  readonly declarerTricksWon: number;
+}
+
+/**
+ * Build an ExplanationViewport from engine state.
+ *
+ * All four hands are exposed — this is the review phase where
+ * everything is visible.
+ */
+export function buildExplanationViewport(
+  input: BuildExplanationViewportInput,
+): ExplanationViewport {
+  const { deal, userSeat, auction, bidHistory, contract, score, declarerTricksWon } = input;
+
+  return {
+    userSeat,
+    allHands: deal.hands,
+    dealer: deal.dealer,
+    vulnerability: deal.vulnerability,
+    auctionEntries: buildAuctionEntries(auction, bidHistory),
+    contract,
+    score,
+    declarerTricksWon,
+    bidHistory,
   };
 }

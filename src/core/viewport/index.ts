@@ -13,6 +13,9 @@ export type {
   NearMissView,
   ConventionView,
   TeachingDetail,
+  DeclarerPromptViewport,
+  PlayingViewport,
+  ExplanationViewport,
 } from "./player-viewport";
 
 export type {
@@ -25,8 +28,14 @@ export {
   buildBiddingViewport,
   buildViewportFeedback,
   buildTeachingDetail,
+  buildDeclarerPromptViewport,
+  buildPlayingViewport,
+  buildExplanationViewport,
 } from "./build-viewport";
 
 export type {
   BuildBiddingViewportInput,
+  BuildDeclarerPromptViewportInput,
+  BuildPlayingViewportInput,
+  BuildExplanationViewportInput,
 } from "./build-viewport";

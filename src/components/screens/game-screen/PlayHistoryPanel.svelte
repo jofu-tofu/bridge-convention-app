@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Trick, Seat, Card as CardType } from "../../../engine/types";
-  import type { Auction } from "../../../engine/types";
+  import type { AuctionEntry, Auction } from "../../../engine/types";
+  import type { AuctionEntryView } from "../../../core/viewport";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import { Suit } from "../../../engine/types";
   import { SUIT_ORDER, SEAT_INDEX } from "../../../engine/constants";
@@ -11,12 +12,15 @@
   interface Props {
     tricks: readonly Trick[];
     declarerSeat: Seat | null;
+    /** Viewport-safe auction entries (preferred). */
+    auctionEntries?: readonly AuctionEntryView[];
+    /** Raw auction (legacy — used when auctionEntries not provided). */
     auction?: Auction;
     dealer?: Seat;
     bidHistory?: readonly BidHistoryEntry[];
   }
 
-  let { tricks, declarerSeat, auction, dealer, bidHistory }: Props = $props();
+  let { tricks, declarerSeat, auctionEntries, auction, dealer, bidHistory }: Props = $props();
 
   let scrollContainer: HTMLDivElement | undefined = $state();
 
@@ -47,6 +51,11 @@
     return groups;
   });
 
+  /** Resolve the effective entries: prefer viewport entries, fall back to raw auction. */
+  const effectiveEntries = $derived<readonly (AuctionEntryView | AuctionEntry)[]>(
+    auctionEntries ?? auction?.entries ?? [],
+  );
+
   /** Build compact auction rows (same logic as AuctionTable). */
   interface AuctionCell {
     text: string;
@@ -55,22 +64,26 @@
   }
 
   const auctionRows = $derived.by(() => {
-    if (!auction || !dealer) return [];
-    const dealerIdx = SEAT_INDEX[dealer];
+    // Determine dealer: explicit prop or inferred from first auctionEntry
+    const d = dealer ?? (auctionEntries && auctionEntries.length > 0 ? auctionEntries[0]!.seat : undefined);
+    if (!d || effectiveEntries.length === 0) return [];
+    const dealerIdx = SEAT_INDEX[d];
     const cells: AuctionCell[] = [];
     for (let i = 0; i < dealerIdx; i++) {
       cells.push({ text: "\u2014", colorClass: "text-text-muted" });
     }
-    for (let i = 0; i < auction.entries.length; i++) {
-      const entry = auction.entries[i]!;
+    for (let i = 0; i < effectiveEntries.length; i++) {
+      const entry = effectiveEntries[i]!;
       let colorClass = "";
       if (entry.call.type === "bid") {
         colorClass = BID_SUIT_COLOR_CLASS[entry.call.strain] ?? "";
       }
+      // Viewport entries carry alertLabel directly; raw mode uses bidHistory
+      const alertLabel = "alertLabel" in entry ? entry.alertLabel : bidHistory?.[i]?.alertLabel;
       cells.push({
-        text: formatCall(entry.call),
+        text: "callDisplay" in entry ? entry.callDisplay : formatCall(entry.call),
         colorClass: colorClass || "text-text-primary",
-        alertLabel: bidHistory?.[i]?.alertLabel,
+        alertLabel,
       });
     }
     const rows: AuctionCell[][] = [];
@@ -145,7 +158,7 @@
     {/if}
 
     <!-- Compact auction table (always shown) -->
-    {#if auction && dealer}
+    {#if auctionRows.length > 0}
       <div>
         <h3 class="text-[--text-label] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Auction</h3>
         <table class="w-full text-center text-[--text-label] font-mono" aria-label="Auction summary">

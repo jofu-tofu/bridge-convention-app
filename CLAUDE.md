@@ -53,7 +53,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **No `const enum`** — breaks Vite/isolatedModules; use regular `enum`
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
-- **PlayerViewport boundary.** Bidding phase never accesses raw `Deal`. Everything the player sees flows through `BiddingViewport` (`src/core/viewport/`). `EvaluationOracle` is the answer key — only grading code touches it.
+- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Builders in `src/core/viewport/` filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
 - **Evaluation facade enforces viewport boundary at type level.** `src/evaluation/` encapsulates strategy → viewport → grading pipeline. Its exports use ONLY viewport types (`BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`). Agent-facing CLI commands (`eval.ts`, `play.ts`) import from `evaluation/` only — ESLint blocks direct imports from `strategy/`, `teaching/`, `conventions/`, `core/viewport/`, `core/contracts/`, and `engine/` in those files.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
@@ -74,7 +74,7 @@ src/
   core/            Shared infrastructure
     contracts/       Cross-boundary DTOs and strategy interfaces (bidding, meaning, facts, provenance, posterior)
     display/         UI display utilities (format, hand-summary, tokens, sort-cards, seat-mapping, hcp)
-    viewport/        Player information boundary (BiddingViewport, EvaluationOracle)
+    viewport/        Player information boundary (BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, EvaluationOracle)
     util/            Zero-dep pure utilities (delay, seeded-rng)
   conventions/     Convention system
     core/            Registry, context factory, bundle registry, meaning pipeline (pipeline/), runtime (runtime/) — public API via index.ts barrel
@@ -112,7 +112,7 @@ tests/
 | Contracts | `src/core/contracts/index.ts` | Cross-boundary DTOs and strategy interfaces |
 | Display | `src/core/display/format.ts` | UI display utilities |
 | Util | `src/core/util/delay.ts` | Zero-dep pure utilities |
-| Viewport | `src/core/viewport/player-viewport.ts` | Player information boundary (BiddingViewport, EvaluationOracle) |
+| Viewport | `src/core/viewport/player-viewport.ts` | Player information boundary (BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, EvaluationOracle) |
 | Conventions | `src/conventions/core/index.ts` | Convention system (core/ + definitions/) |
 | Teaching | `src/teaching/teaching-resolution.ts` | Teaching resolution and projection |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
@@ -179,7 +179,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 ## Roadmap
 
-**Completed:** See `docs/roadmap-history.md`. Phases 4-10 (Decision Model Architecture, Competitive Auction Hardening, Boundary Hardening, Architectural Gap Resolution, Teaching Resolution Layer, Practical Bidder Layer, Meaning-Centric Bundles) are complete. Old tree/protocol/overlay pipeline fully removed.
+**Completed:** See `docs/roadmap-history.md`. Phases 4-10 (Decision Model Architecture, Competitive Auction Hardening, Boundary Hardening, Architectural Gap Resolution, Teaching Resolution Layer, Practical Bidder Layer, Meaning-Centric Bundles) are complete. Old tree/protocol/overlay pipeline fully removed. **Continuation Composition Phases 4-5 complete** — all 4 bundles (NT, Bergen, Weak Twos, DONT) migrated to RuleModule with per-step kernel threading. Old FSM path removed from protocol-adapter. `AuctionContext` observation history projected through viewport boundary.
 
 **Active/upcoming:**
 
@@ -187,6 +187,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 2. **User Learning Enhancements** — dedicated learning screen needs rebuild for meaning pipeline. Blocked on learning screen design spec.
 3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard). Blocked on posterior redesign.
 4. **Convention Migration** — Migrate remaining conventions (SAYC, Lebensohl Lite) to meaning pipeline bundles. Lebensohl blocked on relay encoding spec; SAYC is a full base system.
+5. **Continuation Composition Phase 6+** — deferred optimizations: old FSM infrastructure cleanup (`compose-modules.ts` still used by `bundleFromSystem()`). Completed: incremental local FSM advancement (Item 1), actor-aware observation matching (Item 2), CLI atom enumeration rebuild (Item 3b), evaluation subsystem migration (Item 3c).
 
 ## Architecture Spec & Alignment
 
@@ -205,16 +206,16 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 | Posterior engine boundary redesign | **Phases 0-5 complete** — contracts, factor compiler, backend, query port, CI tests done. Consumer migration (Phase 4B) pending. | Inference spectrum / difficulty config |
 | Fact catalog posterior compilers | **Subsumed** by posterior plan Phase 3 (factor compiler replaces `compilePublicHandSpace()`) | WitnessSpecIR wiring |
 | Evidence group correlation model | **Design complete** — typed groups (Independent, ExclusiveAlternative, SharedSourceJoint, TemporalChain). Reserved in schema as Phase 7 (soft evidence). | Posterior combiner accuracy |
-| Host-attachment activation | Spec designed, vocabulary resolved (`core/contracts/capability-vocabulary.ts`), not exercised by a convention yet | Negative Doubles, Fourth Suit Forcing |
+| Host-attachment activation | Spec designed, vocabulary resolved (`conventions/definitions/capability-vocabulary.ts`), not exercised by a convention yet | Negative Doubles, Fourth Suit Forcing |
 
-**Alignment summary (as of 2026-03-15):**
+**Alignment summary (as of 2026-03-21):**
 
 | Area | Alignment | Key gaps |
 |------|-----------|----------|
 | Pipeline (selection, teaching, provenance) | ~97% | Evaluation runtime path live via `config-factory.ts` → `bundleToRuntimeModules()` → `evaluationRuntime` option. 5-grade taxonomy implemented. |
-| Upstream (modules, profiles, machine) | ~80% | Profile-driven activation, submachines, two-phase evaluation all implemented. No host-attachment exercised. ActivationTrace always empty. |
+| Upstream (modules, profiles, machine) | ~85% | All 4 bundles migrated to RuleModule (Phases 4-5 complete). Rule interpreter is self-sufficient — per-step replay with kernel threading, no FSM. Old FSM path removed from protocol-adapter. `ModuleProvider` interface introduced. Old FSM infrastructure (`replay.ts`, `compose-modules.ts`) retained for bundle construction until fully replaced. No host-attachment exercised. |
 | Posterior engine | ~70% (boundary designed and implemented, consumer migration pending) | Contracts, factor compiler, backend, query port, CI boundary tests done. Old `PosteriorEngine` → `SeatPosterior` path still works. Consumer migration (Phase 4B) pending. |
-| Convention coverage | Patterns 1 + 3 + submachine | Stayman, Bergen, Weak Twos, DONT, Smolen. Patterns 2, 4-6 not yet exercised. |
+| Convention coverage | Patterns 1 + 3 + submachine | Stayman, Bergen, Weak Twos, DONT, Smolen — all with RuleModule. Patterns 2, 4-6 not yet exercised. |
 | WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
 | DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
 
@@ -266,6 +267,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
 - All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. All pedagogical content (relations, alternatives, intent families) is derived from `pedagogicalTags` on surfaces — modules are portable building blocks that compose into any bundle. 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`) with scope-based grouping; derivation in `conventions/definitions/derive-cross-module.ts`
+- **CLI commands use rule enumeration.** All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/core/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration (`findPathToState`, `buildTargetedAuction`, `resolveAuction`) has been removed from `cli/shared.ts`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
 - `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports

@@ -44,5 +44,5 @@ export type { DrillSession, DrillBundle } from "../bootstrap/types";
 export type { PublicBeliefs } from "../core/contracts";
 
 // Phase machine (re-export for convenience)
-export type { GamePhase } from "../stores/phase-machine";
-export { isValidTransition, VALID_TRANSITIONS } from "../stores/phase-machine";
+export type { GamePhase } from "../core/phase-machine";
+export { isValidTransition, VALID_TRANSITIONS } from "../core/phase-machine";

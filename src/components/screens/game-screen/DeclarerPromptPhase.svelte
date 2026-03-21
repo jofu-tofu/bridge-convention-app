@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { Seat } from "../../../engine/types";
-  import type { Contract, Deal } from "../../../engine/types";
-  import type { Auction } from "../../../engine/types";
+  import type { DeclarerPromptViewport } from "../../../core/viewport";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
   import BridgeTable from "../../game/BridgeTable.svelte";
@@ -10,23 +8,13 @@
   import ScaledTableArea from "./ScaledTableArea.svelte";
 
   interface Props {
-    deal: Deal;
-    userSeat: Seat;
-    faceUpSeats: ReadonlySet<Seat>;
-    auction: Auction;
-    contract: Contract;
-    promptMode: "defender" | "south-declarer" | "declarer-swap";
+    viewport: DeclarerPromptViewport;
     onAccept: () => void;
     onSkip: () => void;
   }
 
   const {
-    deal,
-    userSeat,
-    faceUpSeats,
-    auction,
-    contract,
-    promptMode,
+    viewport,
     onAccept,
     onSkip,
   }: Props = $props();
@@ -38,15 +26,14 @@
 <div class={layout.phaseContainerClass}>
   <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
     <BridgeTable
-      hands={deal.hands}
-      {faceUpSeats}
-      vulnerability={deal.vulnerability}
-      dealer={deal.dealer}
+      visibleHands={viewport.visibleHands}
+      vulnerability={viewport.vulnerability}
+      dealer={viewport.dealer}
     >
       <DeclarerPrompt
-        {contract}
-        {userSeat}
-        mode={promptMode}
+        contract={viewport.contract}
+        userSeat={viewport.userSeat}
+        mode={viewport.promptMode}
         {onAccept}
         {onSkip}
       />
@@ -58,8 +45,8 @@
       class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
     >
       <AuctionTable
-        entries={auction.entries}
-        dealer={deal.dealer}
+        entries={viewport.auctionEntries}
+        dealer={viewport.dealer}
         showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
         compact
       />
