@@ -12,6 +12,9 @@ import type {
 } from "../core/contracts";
 import { BidGrade } from "../core/contracts/teaching-grading";
 import { nextSeat } from "../engine/constants";
+// Legacy: test-only path, will be removed when tests wire the service.
+// These imports support userBidLocal / getExpectedBid / getDebugSnapshot
+// for unit tests that use stub strategies instead of the full LocalService.
 import { evaluateHand } from "../engine/hand-evaluator";
 import { createBiddingContext } from "../service";
 import { assembleBidFeedback } from "../service";
@@ -284,7 +287,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     debugLog = [...debugLog, entry];
   }
 
-  /** Convert BidFeedbackDTO (internal) to viewport-safe BidFeedback. */
+  /** Convert BidFeedbackDTO (internal) to viewport-safe BidFeedback.
+   *  Legacy: only used by userBidLocal (test-only path). */
   function toViewportFeedback(dto: BidFeedbackDTO): BidFeedback {
     return {
       grade: `${dto.grade}`,
@@ -293,7 +297,17 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     };
   }
 
-  /** Legacy local bid submission (used when no service is wired — tests, pre-migration). */
+  /**
+   * Legacy local bid submission — used when no service is wired.
+   *
+   * This path exists solely for unit tests that use stub strategies
+   * (make2CStrategy, makeNoOpStrategy, etc.) without wiring the full
+   * LocalService + convention registry. Production always takes the
+   * service path (userBidViaService).
+   *
+   * Will be removed when tests wire the service via createLocalService().
+   * @deprecated Test-only fallback — use service path in production.
+   */
   async function userBidLocal(call: Call) {
     if (!activeDeal || !activeSession) {
       if (import.meta.env.DEV) {
@@ -489,6 +503,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     init,
     reset,
     userBid(call: Call): void {
+      // Service path is the production default; local path is test-only fallback
       const impl = activeService ? userBidViaService : userBidLocal;
       impl(call).catch((e: unknown) => {
         error = e instanceof Error ? e.message : "Unknown error during bid";
@@ -503,7 +518,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       if (activeService && activeHandle) {
         return activeService.getExpectedBid(activeHandle);
       }
-      // Legacy local path (tests, pre-migration)
+      // Legacy: test-only path, will be removed when tests wire the service
       if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) return null;
       if (!activeSession.isUserSeat(currentTurn)) return null;
       const hand = activeDeal.hands[currentTurn];
@@ -519,7 +534,7 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         const snap = await activeService.getDebugSnapshot(activeHandle);
         return { ...snap, expectedBid: null };
       }
-      // Legacy local path (tests, pre-migration)
+      // Legacy: test-only path, will be removed when tests wire the service
       if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) {
         return { expectedBid: null, ...EMPTY_EVALUATION };
       }
