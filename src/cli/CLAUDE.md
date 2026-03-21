@@ -41,8 +41,6 @@ Bundle IDs are discovered at runtime via `bundles` subcommand. Do not hardcode b
 
 ```
 ── Compositional verification ──────────────────────────────────
-  verify lint      --bundle=<id> [--module=<id>] [--severity=<error|warn|all>]
-  verify interfere --bundle=<id> [--pair=A,B] [--kind=<activation|encoding|kernel|observation|all>]
   verify explore   --bundle=<id> [--depth=6] [--seed=42] [--trials=50]
   verify motif     --bundle=<id> --pair=A,B [--depth=8] [--seed=42] [--trials=100]
   verify fuzz      --bundle=<id> [--trials=200] [--seed=0] [--vuln=mixed]
@@ -51,11 +49,7 @@ Bundle IDs are discovered at runtime via `bundles` subcommand. Do not hardcode b
 
 All verify commands output JSON to stdout. Exit codes: 0=pass, 1=fail, 2=arg error.
 
-### verify lint
-Per-module static analysis. Checks: unreachable phases, dead rules, broad patterns, orphan transitions, undeclared kernel writes, duplicate encodings. Advisory only — warnings are informational, errors indicate module declaration defects.
-
-### verify interfere
-Pairwise interference analysis. Detects: activation overlap, encoding collision, observation crosstalk, kernel conflict. Static analysis only — no deals generated.
+Static analysis (lint, interference) runs as regular vitest tests (see `src/conventions/__tests__/infrastructure/structural-health.test.ts`) and also as part of `verify preflight` internally. There are no standalone `verify lint` or `verify interfere` CLI subcommands.
 
 ### verify explore
 Bounded state exploration with invariant checks. Generates deals, runs strategy-driven auctions, checks invariants at each step. Tracks coverage: modules activated, phases reached, rules fired, atoms exercised.
@@ -223,8 +217,8 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 | `src/cli/verify/fuzz.ts` | Property-based fuzz testing |
 | `src/cli/verify/preflight.ts` | Bundle certification orchestrator |
 
-### Verification is CLI-only
-The verify framework lives entirely in `src/cli/verify/` — not in `src/conventions/core/analysis/`. This is intentional simplicity. If the UI later needs preflight at bundle-creation time, extract then — don't pre-optimize.
+### Static checks are tests, runtime exploration is CLI
+Static analysis (lint, interference) runs as vitest tests for fast CI feedback. Runtime verification (explore, motif, fuzz, preflight) lives in `src/cli/verify/` as CLI subcommands — these generate deals and run strategy-driven auctions, which requires the full pipeline. Preflight orchestrates both static and runtime stages internally.
 
 ## Module Boundary
 

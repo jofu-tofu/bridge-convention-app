@@ -21,24 +21,6 @@ export interface LintDiagnostic {
   readonly suggestion: string;
 }
 
-export interface ModuleLintResult {
-  readonly moduleId: string;
-  readonly diagnostics: readonly LintDiagnostic[];
-  readonly summary: { readonly errors: number; readonly warnings: number };
-}
-
-export interface LintOutput {
-  readonly command: "verify lint";
-  readonly bundle: string;
-  readonly modules: readonly ModuleLintResult[];
-  readonly summary: {
-    readonly totalModules: number;
-    readonly totalErrors: number;
-    readonly totalWarnings: number;
-    readonly clean: boolean;
-  };
-}
-
 // ── Interference ────────────────────────────────────────────────────
 
 export interface InterferenceEdge {
@@ -56,19 +38,6 @@ export interface PairInteraction {
   readonly moduleB: string;
   readonly edges: readonly InterferenceEdge[];
   readonly riskLevel: "high" | "medium" | "low" | "none";
-}
-
-export interface InterfereOutput {
-  readonly command: "verify interfere";
-  readonly bundle: string;
-  readonly interactions: readonly PairInteraction[];
-  readonly summary: {
-    readonly highRisk: number;
-    readonly mediumRisk: number;
-    readonly lowRisk: number;
-    readonly none: number;
-    readonly flaggedPairs: readonly string[];
-  };
 }
 
 // ── Invariants + Exploration ────────────────────────────────────────

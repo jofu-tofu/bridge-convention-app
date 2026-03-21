@@ -164,12 +164,6 @@ export function printSubcommandHelp(cmd: string): void {
       console.error("verify — Compositional verification framework.");
       console.error("");
       console.error("Subcommands:");
-      console.error("  verify lint      --bundle=<id> [--module=<id>] [--severity=<error|warn|all>]");
-      console.error("                   Per-module static analysis (unreachable phases, dead rules)");
-      console.error("");
-      console.error("  verify interfere --bundle=<id> [--pair=A,B] [--kind=<activation|encoding|kernel|observation|all>]");
-      console.error("                   Pairwise interference analysis (bid collisions, crosstalk)");
-      console.error("");
       console.error("  verify explore   --bundle=<id> [--depth=6] [--seed=42] [--trials=50] [--invariant=<name>]");
       console.error("                   Bounded state exploration with invariant checks");
       console.error("");
@@ -181,6 +175,9 @@ export function printSubcommandHelp(cmd: string): void {
       console.error("");
       console.error("  verify preflight --bundle=<id> [--budget=fast|full]");
       console.error("                   Bundle certification (runs all stages)");
+      console.error("");
+      console.error("Static checks (lint, interference) run automatically as part of preflight");
+      console.error("and are also covered by unit tests.");
       console.error("");
       console.error("All commands output JSON to stdout. Exit codes: 0=pass, 1=fail, 2=arg error.");
       break;
