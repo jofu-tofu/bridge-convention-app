@@ -5,7 +5,7 @@ import type {
   Contract,
 } from "../engine/types";
 import { Seat } from "../engine/types";
-import type { DrillSession, DrillBundle } from "../service";
+import type { DrillSession, DrillBundle, DevServicePort, SessionHandle } from "../service";
 import type { PublicBeliefs } from "../core/contracts";
 import type {
   InferenceSnapshot,
@@ -16,7 +16,7 @@ import { partnerSeat, areSamePartnership } from "../engine/constants";
 import { createDDSStore } from "./dds.svelte";
 import { createPlayStore } from "./play.svelte";
 import { createBiddingStore } from "./bidding.svelte";
-import { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail } from "../service";
+import { buildBiddingViewport } from "../service";
 import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import { isValidTransition } from "./phase-machine";
 import type { GamePhase } from "./phase-machine";
@@ -365,14 +365,14 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     get viewportFeedback(): ViewportBidFeedback | null {
       const fb = bidding.bidFeedback;
       if (!fb) return null;
-      return buildViewportFeedback(fb);
+      return fb.viewportFeedback;
     },
 
     /** Teaching detail from the evaluation oracle. Null when no feedback is active. */
     get teachingDetail(): TeachingDetail | null {
       const fb = bidding.bidFeedback;
       if (!fb) return null;
-      return buildTeachingDetail(fb);
+      return fb.teaching;
     },
 
     /** Set the convention display name (called by UI layer with app store data). */
@@ -466,7 +466,7 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       transitionTo("DECLARER_PROMPT");
     },
 
-    async startDrill(bundle: DrillBundle) {
+    async startDrill(bundle: DrillBundle, service?: DevServicePort, handle?: SessionHandle) {
       deal = bundle.deal;
       drillSession = bundle.session;
       conventionName = bundle.session.config.conventionId;
@@ -495,6 +495,8 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
           const conventionId = bundle.session.config.conventionId ?? null;
           publicBeliefState = inference.processBid(bid, auctionBefore, bidResult, conventionId);
         },
+        service,
+        handle,
       });
     },
 

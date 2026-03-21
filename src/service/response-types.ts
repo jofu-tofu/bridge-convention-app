@@ -46,6 +46,8 @@ export interface BidSubmitResult {
   readonly aiBids: readonly AiBidEntry[];
   readonly nextViewport: BiddingViewport | null;
   readonly phaseTransition: PhaseTransition | null;
+  /** History entry for the user's accepted bid (null when rejected). */
+  readonly userHistoryEntry: BidHistoryEntry | null;
 }
 
 /** Phase transition notification. */

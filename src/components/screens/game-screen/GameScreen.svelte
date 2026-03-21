@@ -43,16 +43,20 @@
     let raf: number | undefined;
 
     if (phase === "BIDDING" && isUserTurn && !feedback) {
-      const result = gameStore.getExpectedBid();
-      const call = result?.call ?? { type: "pass" as const };
-      raf = requestAnimationFrame(() => gameStore.userBid(call));
+      raf = requestAnimationFrame(() => {
+        void gameStore.getExpectedBid().then((result: { call: Call } | null) => {
+          const call = result?.call ?? { type: "pass" as const };
+          gameStore.userBid(call);
+        });
+      });
     } else if (phase === "BIDDING" && feedback) {
       // Correct-path-only: auto-retry then re-bid the correct answer
       raf = requestAnimationFrame(() => {
         gameStore.retryBid();
-        const result = gameStore.getExpectedBid();
-        const call = result?.call ?? { type: "pass" as const };
-        gameStore.userBid(call);
+        void gameStore.getExpectedBid().then((result: { call: Call } | null) => {
+          const call = result?.call ?? { type: "pass" as const };
+          gameStore.userBid(call);
+        });
       });
     } else if (phase === "DECLARER_PROMPT") {
       raf = requestAnimationFrame(() => gameStore.declinePrompt());
@@ -88,7 +92,7 @@
     const bundle = await service.getSessionBundle(handle);
     const conventionName = await service.getConventionName(handle);
 
-    await gameStore.startDrill(bundle);
+    await gameStore.startDrill(bundle, service, handle);
     gameStore.setConventionName(conventionName);
   }
 

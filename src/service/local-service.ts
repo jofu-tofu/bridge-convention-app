@@ -169,6 +169,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         aiBids: result.aiBids,
         nextViewport,
         phaseTransition: result.phaseTransition,
+        userHistoryEntry: result.userHistoryEntry,
       };
     },
 

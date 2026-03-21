@@ -17,7 +17,7 @@ import type {
 } from "../engine/types";
 import type { Suit } from "../engine/types";
 import type { DrillBundle } from "../bootstrap/types";
-import type { BidResult } from "../core/contracts";
+import type { DevServicePort, SessionHandle } from "../service";
 import type { PublicBeliefs } from "../core/contracts";
 import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
 import type { BiddingStoreConfig } from "./bidding.svelte";
@@ -49,8 +49,8 @@ export interface BiddingStore {
   reset(): void;
   userBid(call: Call): void;
   retryBid(): void;
-  getExpectedBid(): BidResult | null;
-  getDebugSnapshot(): DebugSnapshot;
+  getExpectedBid(): Promise<{ call: Call } | null>;
+  getDebugSnapshot(): Promise<DebugSnapshot>;
 }
 
 // ── Play Store ──────────────────────────────────────────────────────
@@ -195,10 +195,10 @@ export interface GameStore {
   acceptSouthPlay(): void;
   declineSouthPlay(): void;
   playThisHand(): void;
-  startDrill(bundle: DrillBundle): Promise<void>;
+  startDrill(bundle: DrillBundle, service?: DevServicePort, handle?: SessionHandle): Promise<void>;
   userBid(call: Call): void;
   retryBid(): void;
-  getExpectedBid(): BidResult | null;
-  getDebugSnapshot(): DebugSnapshot;
+  getExpectedBid(): Promise<{ call: Call } | null>;
+  getDebugSnapshot(): Promise<DebugSnapshot>;
   reset(): void;
 }

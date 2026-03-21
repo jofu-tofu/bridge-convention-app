@@ -8,11 +8,9 @@
        2. Decision Pipeline (machine, facts, provenance, pipeline, posterior, suggested bid)
        3. Feedback & History (teaching, beliefs, bid log, play log) -->
 <script lang="ts">
-  import { untrack } from "svelte";
   import { Seat } from "../../engine/types";
   import { getGameStore, getAppStore } from "../../stores/context";
-  import type { DebugSnapshot } from "../../stores/bidding.svelte";
-  import type { BidFeedback } from "../../stores/game.svelte";
+  import type { DebugSnapshot, DebugBidFeedback } from "../../stores/bidding.svelte";
 
   import DebugAtAGlance from "./debug/DebugAtAGlance.svelte";
   import DebugDealInfo from "./debug/DebugDealInfo.svelte";
@@ -40,28 +38,18 @@
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
 
   // ─── Reactive debug data ─────────────────────────────────────
-  // GOTCHA: getDebugSnapshot() reads $state variables (auction, activeDeal,
-  // currentTurn) from the bidding store. If called inside a tracked context
-  // ($effect or $derived without untrack), it subscribes to those signals.
-  // When auction changes during AI bid processing, the subscription re-fires,
-  // writing to $state — which interferes with Svelte's render effect scheduling
-  // and prevents legalCalls/isUserTurn updates from propagating to BidPanel.
-  // The old pattern ($effect → $state.raw liveSnap) caused seed-dependent
-  // button-disable bugs for NT-bundle conventions.
-  // Fix: use $derived + untrack() so getDebugSnapshot() reads don't subscribe.
+  // GOTCHA: getDebugSnapshot() is now async (service-delegated). The debug
+  // log is the primary data source. The initial pre-bid state shows null
+  // until the first bid populates the log.
   const debugSnap = $derived.by<DebugSnapshot | null>(() => {
     const log = gameStore.debugLog;
     if (log.length > 0) return log[log.length - 1]!.snapshot;
-    if (gameStore.phase === "BIDDING") {
-      return untrack(() => gameStore.getDebugSnapshot());
-    }
     return null;
   });
 
-  // The "active" feedback: live feedback when available, otherwise from latest log entry
-  const feedback = $derived.by<BidFeedback | null>(() => {
-    const live = gameStore.bidFeedback;
-    if (live) return live;
+  // The "active" feedback: from latest debug log entry (internal type for debug panels).
+  // Live viewport feedback is too narrow for debug display.
+  const feedback = $derived.by<DebugBidFeedback | null>(() => {
     const log = gameStore.debugLog;
     if (log.length > 0) return log[log.length - 1]!.feedback;
     return null;

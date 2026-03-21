@@ -13,22 +13,36 @@ import type {
 import { BidGrade } from "../core/contracts/teaching-grading";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
-
 import { createBiddingContext } from "../service";
-import type { GameStoreOptions } from "./game.svelte";
 import { assembleBidFeedback } from "../service";
+import { buildViewportFeedback, buildTeachingDetail } from "../service";
+
+import type { DevServicePort, SessionHandle, AiBidEntry } from "../service";
+import type { ViewportBidFeedback, TeachingDetail } from "../core/viewport";
+import type { ViewportBidGrade } from "../core/viewport/player-viewport";
+
+import type { GameStoreOptions } from "./game.svelte";
+import type { BidFeedbackDTO } from "../service";
 
 export type { BidHistoryEntry } from "../core/contracts";
+// Re-export BidGrade for backward compat (debug components use the string values)
 export { BidGrade } from "../core/contracts/teaching-grading";
 export type { TeachingResolution } from "../core/contracts";
 
-import type { BidFeedbackDTO } from "../service";
-export type BidFeedback = BidFeedbackDTO;
+/** Viewport-safe bid feedback for the current turn. */
+export interface BidFeedback {
+  readonly grade: ViewportBidGrade;
+  readonly viewportFeedback: ViewportBidFeedback;
+  readonly teaching: TeachingDetail | null;
+}
 
 /** Aggregated debug snapshot — strategy evaluation plus the expected bid. */
 export interface DebugSnapshot extends StrategyEvaluation {
   readonly expectedBid: BidResult | null;
 }
+
+/** Internal feedback stored in debug log entries (richer than viewport BidFeedback). */
+export type DebugBidFeedback = BidFeedbackDTO;
 
 /** A single entry in the persistent debug log — captures a snapshot at a specific moment. */
 export interface DebugLogEntry {
@@ -39,7 +53,7 @@ export interface DebugLogEntry {
   /** Pipeline state at this moment (null for AI bids). */
   readonly snapshot: DebugSnapshot;
   /** Feedback from grading (only on user-bid entries). */
-  readonly feedback: BidFeedback | null;
+  readonly feedback: DebugBidFeedback | null;
 }
 
 const AI_BID_DELAY = 300;
@@ -56,6 +70,7 @@ const EMPTY_EVALUATION: StrategyEvaluation = {
   teachingProjection: null,
   facts: null,
   machineSnapshot: null,
+  auctionContext: null,
 };
 
 export interface BiddingStoreConfig {
@@ -66,6 +81,10 @@ export interface BiddingStoreConfig {
   onAuctionComplete: (auction: Auction) => Promise<void>;
   onSkipToExplanation: (auction: Auction) => Promise<void>;
   onProcessBid?: (bid: AuctionEntry, auctionBefore: Auction, bidResult: BidResult | null) => void;
+  /** Service for bid delegation. When provided, userBid delegates to service.submitBid(). */
+  service?: DevServicePort;
+  /** Session handle for the current drill. Required when service is provided. */
+  handle?: SessionHandle;
 }
 
 export function createBiddingStore(engine: EnginePort, options?: GameStoreOptions) {
@@ -90,6 +109,10 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
   let _onSkipToExplanation: ((auction: Auction) => Promise<void>) | null = null;
   let onProcessBid: ((bid: AuctionEntry, auctionBefore: Auction, bidResult: BidResult | null) => void) | null = null;
 
+  // Service delegation (set at init when available)
+  let activeService: DevServicePort | null = null;
+  let activeHandle: SessionHandle | null = null;
+
   const isUserTurn = $derived(
     currentTurn !== null &&
       activeSession !== null &&
@@ -97,23 +120,11 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
       !isProcessing,
   );
 
-  /** True when bid feedback is showing and should block further input.
-   *  Correct-path-only: any non-correct feedback blocks until retry. */
+  /** True when bid feedback is showing and should block further input. */
   const isFeedbackBlocking = $derived(
     bidFeedback !== null &&
-      bidFeedback.grade !== BidGrade.Correct,
+      bidFeedback.grade !== "correct",
   );
-
-  /** Build a DebugSnapshot from the convention strategy's cached state. */
-  function captureSnapshot(): DebugSnapshot {
-    const evaluation = conventionStrategy?.getLastEvaluation() ?? EMPTY_EVALUATION;
-    return { expectedBid: null, ...evaluation };
-  }
-
-  /** Append a debug log entry. */
-  function pushDebugLog(entry: DebugLogEntry) {
-    debugLog = [...debugLog, entry];
-  }
 
   async function runAiBids() {
     if (!activeSession || !activeDeal) return;
@@ -168,7 +179,124 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     }
   }
 
-  async function userBidImpl(call: Call) {
+  /** Animate AI bids from a service response one at a time with delays. */
+  async function animateAiBids(aiBids: readonly AiBidEntry[]) {
+    for (const aiBid of aiBids) {
+      await delayFn(AI_BID_DELAY);
+
+      // Update local state from service response
+      auction = {
+        entries: [...auction.entries, { seat: aiBid.seat, call: aiBid.call }],
+        isComplete: false,
+      };
+      bidHistory = [...bidHistory, aiBid.historyEntry];
+      currentTurn = nextSeat(aiBid.seat);
+    }
+  }
+
+  /** Service-delegated bid submission. */
+  async function userBidViaService(call: Call) {
+    if (!activeService || !activeHandle || !activeSession) return;
+    if (isProcessing) return;
+    if (!currentTurn || !activeSession.isUserSeat(currentTurn)) return;
+
+    isProcessing = true;
+    try {
+      const result = await activeService.submitBid(activeHandle, call);
+
+      if (!result.accepted) {
+        // Wrong bid — show viewport-safe feedback, don't modify auction
+        if (result.feedback && result.grade) {
+          bidFeedback = {
+            grade: result.grade,
+            viewportFeedback: result.feedback,
+            teaching: result.teaching,
+          };
+        }
+        // Update debug log from service
+        if (import.meta.env.DEV) {
+          const log = await activeService.getDebugLog(activeHandle);
+          debugLog = [...log] as DebugLogEntry[];
+        }
+        await tick();
+        return;
+      }
+
+      // Correct bid — update local state
+      bidFeedback = null;
+
+      // Add user's bid to local auction/history
+      if (result.userHistoryEntry) {
+        auction = {
+          entries: [...auction.entries, { seat: result.userHistoryEntry.seat, call: result.userHistoryEntry.call }],
+          isComplete: false,
+        };
+        bidHistory = [...bidHistory, result.userHistoryEntry];
+        currentTurn = nextSeat(result.userHistoryEntry.seat);
+      }
+
+      // Update debug log from service
+      if (import.meta.env.DEV) {
+        const log = await activeService.getDebugLog(activeHandle);
+        debugLog = [...log] as DebugLogEntry[];
+      }
+
+      // Check for phase transition (auction complete)
+      if (result.phaseTransition) {
+        auction = { ...auction, isComplete: true };
+        await onAuctionComplete?.(auction);
+        await tick();
+        return;
+      }
+
+      // Animate AI bids with delays
+      await animateAiBids(result.aiBids);
+
+      // After AI bids, check for phase transition from AI completing auction
+      if (result.aiBids.length > 0) {
+        // Re-check: the service may have detected auction completion during AI bids
+        const phase = await activeService.getPhase(activeHandle);
+        if (phase !== "BIDDING") {
+          auction = { ...auction, isComplete: true };
+          await onAuctionComplete?.(auction);
+          await tick();
+          return;
+        }
+      }
+
+      // Update legal calls from next viewport
+      if (result.nextViewport) {
+        legalCalls = [...result.nextViewport.legalCalls];
+      }
+    } catch (e) {
+      error = e instanceof Error ? e.message : "Unknown error during bid";
+    } finally {
+      isProcessing = false; await tick();
+    }
+  }
+
+  /** Build a DebugSnapshot from the convention strategy's cached state. */
+  function captureSnapshot(): DebugSnapshot {
+    const evaluation = conventionStrategy?.getLastEvaluation() ?? EMPTY_EVALUATION;
+    return { expectedBid: null, ...evaluation };
+  }
+
+  /** Append a debug log entry. */
+  function pushDebugLog(entry: DebugLogEntry) {
+    debugLog = [...debugLog, entry];
+  }
+
+  /** Convert BidFeedbackDTO (internal) to viewport-safe BidFeedback. */
+  function toViewportFeedback(dto: BidFeedbackDTO): BidFeedback {
+    return {
+      grade: `${dto.grade}`,
+      viewportFeedback: buildViewportFeedback(dto),
+      teaching: buildTeachingDetail(dto),
+    };
+  }
+
+  /** Legacy local bid submission (used when no service is wired — tests, pre-migration). */
+  async function userBidLocal(call: Call) {
     if (!activeDeal || !activeSession) {
       if (import.meta.env.DEV) {
         throw new Error("userBid called but store not initialized (no active deal/session)");
@@ -191,7 +319,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     );
 
     // Convention exhausted (no surfaces match) → expected bid is Pass.
-    // Still grade so the user gets feedback instead of silently accepting any bid.
     const effectiveResult: BidResult = expectedResult ?? {
       call: { type: "pass" },
       ruleName: null,
@@ -199,8 +326,11 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     };
 
     const strategyEval = conventionStrategy.getLastEvaluation();
-    bidFeedback = assembleBidFeedback(call, effectiveResult, strategyEval);
-    const isCorrect = bidFeedback.grade === BidGrade.Correct;
+    const dto = assembleBidFeedback(call, effectiveResult, strategyEval);
+    const isCorrect = dto.grade === BidGrade.Correct;
+
+    // Set viewport-safe feedback
+    bidFeedback = toViewportFeedback(dto);
 
     // Capture persistent debug log entry — strategy caches are fresh right now
     if (import.meta.env.DEV) {
@@ -211,12 +341,11 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         seat: currentTurn,
         call,
         snapshot: { ...snap, expectedBid: effectiveResult },
-        feedback: bidFeedback,
+        feedback: dto,
       });
     }
 
     // Correct-path-only: wrong bids are never applied to the auction.
-    // The user sees feedback and must retry until they get the correct bid.
     if (!isCorrect) {
       await tick();
       return;
@@ -250,7 +379,6 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
         isCorrect: expectedResult ? true : undefined,
         alertLabel: expectedResult?.alert?.teachingLabel,
         annotationType: expectedResult?.alert?.annotationType,
-        teachingProjection: conventionStrategy?.getLastEvaluation()?.teachingProjection ?? undefined,
       },
     ];
 
@@ -281,8 +409,13 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     _onSkipToExplanation = config.onSkipToExplanation;
     onProcessBid = config.onProcessBid ?? null;
 
+    // Service delegation
+    activeService = config.service ?? null;
+    activeHandle = config.handle ?? null;
+
     bidFeedback = null;
     error = null;
+    debugLog = [];
 
     if (initialAuction) {
       auction = initialAuction;
@@ -338,6 +471,8 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     onAuctionComplete = null;
     _onSkipToExplanation = null;
     onProcessBid = null;
+    activeService = null;
+    activeHandle = null;
     debugLog = [];
     debugTurnCounter = 0;
   }
@@ -356,26 +491,37 @@ export function createBiddingStore(engine: EnginePort, options?: GameStoreOption
     init,
     reset,
     userBid(call: Call): void {
-      userBidImpl(call).catch((e: unknown) => {
+      const impl = activeService ? userBidViaService : userBidLocal;
+      impl(call).catch((e: unknown) => {
         error = e instanceof Error ? e.message : "Unknown error during bid";
       });
     },
     retryBid(): void {
       retryBidImpl();
     },
-    /** DEV: returns the expected bid result for the current user turn, or null */
-    getExpectedBid(): BidResult | null {
+    /** DEV: returns the expected bid result for the current user turn, or null.
+     *  When service is wired, delegates asynchronously. */
+    async getExpectedBid(): Promise<{ call: Call } | null> {
+      if (activeService && activeHandle) {
+        return activeService.getExpectedBid(activeHandle);
+      }
+      // Legacy local path (tests, pre-migration)
       if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) return null;
       if (!activeSession.isUserSeat(currentTurn)) return null;
       const hand = activeDeal.hands[currentTurn];
       const evaluation = evaluateHand(hand);
-      return conventionStrategy.suggest(
+      const result = conventionStrategy.suggest(
         createBiddingContext({ hand, auction, seat: currentTurn, evaluation }),
       );
+      return result ? { call: result.call } : null;
     },
-    /** DEV: returns all internal pipeline state from the most recent suggest() call.
-     *  Calls suggest() first to ensure caches are populated, then reads all debug data. */
-    getDebugSnapshot(): DebugSnapshot {
+    /** DEV: returns all internal pipeline state from the most recent suggest() call. */
+    async getDebugSnapshot(): Promise<DebugSnapshot> {
+      if (activeService && activeHandle) {
+        const snap = await activeService.getDebugSnapshot(activeHandle);
+        return { ...snap, expectedBid: null };
+      }
+      // Legacy local path (tests, pre-migration)
       if (!activeDeal || !activeSession || !conventionStrategy || !currentTurn) {
         return { expectedBid: null, ...EMPTY_EVALUATION };
       }

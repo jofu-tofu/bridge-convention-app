@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { BidFeedback } from "../../../stores/bidding.svelte";
+  import type { DebugBidFeedback } from "../../../stores/bidding.svelte";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
-    feedback: BidFeedback | null;
+    feedback: DebugBidFeedback | null;
   }
 
   let { feedback }: Props = $props();

@@ -34,6 +34,8 @@ export interface BidProcessResult {
   readonly aiBids: readonly AiBidEntry[];
   readonly auctionComplete: boolean;
   readonly phaseTransition: { from: GamePhase; to: GamePhase } | null;
+  /** History entry for the user's accepted bid (null when rejected). */
+  readonly userHistoryEntry: BidHistoryEntry | null;
 }
 
 /**
@@ -102,6 +104,7 @@ export async function processBid(
       aiBids: [],
       auctionComplete: false,
       phaseTransition: null,
+      userHistoryEntry: null,
     };
   }
 
@@ -190,24 +193,22 @@ async function applyBidAndRunAi(
   state.processBid(userBidEntry, auctionBefore, expectedResult);
 
   // Add to bid history
-  state.bidHistory = [
-    ...state.bidHistory,
-    {
-      seat,
-      call,
-      meaning: expectedResult?.meaning,
-      isUser: true,
-      isCorrect: expectedResult ? true : undefined,
-      alertLabel: expectedResult?.alert?.teachingLabel,
-      annotationType: expectedResult?.alert?.annotationType,
-      teachingProjection: state.strategy?.getLastEvaluation()?.teachingProjection ?? undefined,
-    },
-  ];
+  const userHistoryEntry: BidHistoryEntry = {
+    seat,
+    call,
+    meaning: expectedResult?.meaning,
+    isUser: true,
+    isCorrect: expectedResult ? true : undefined,
+    alertLabel: expectedResult?.alert?.teachingLabel,
+    annotationType: expectedResult?.alert?.annotationType,
+    teachingProjection: state.strategy?.getLastEvaluation()?.teachingProjection ?? undefined,
+  };
+  state.bidHistory = [...state.bidHistory, userHistoryEntry];
 
   // Check if auction is complete
   const complete = await engine.isAuctionComplete(newAuction);
   if (complete) {
-    return handleAuctionComplete(state, engine);
+    return handleAuctionComplete(state, engine, userHistoryEntry);
   }
 
   // Run AI bids
@@ -240,6 +241,7 @@ async function applyBidAndRunAi(
     phaseTransition: aiResult.auctionComplete
       ? { from: "BIDDING" as GamePhase, to: state.phase }
       : null,
+    userHistoryEntry,
   };
 }
 
@@ -247,6 +249,7 @@ async function applyBidAndRunAi(
 async function handleAuctionComplete(
   state: SessionState,
   engine: EnginePort,
+  userHistoryEntry: BidHistoryEntry,
 ): Promise<BidProcessResult> {
   state.capturePlayInferences();
   const contract = await engine.getContract(state.auction);
@@ -273,6 +276,7 @@ async function handleAuctionComplete(
     aiBids: [],
     auctionComplete: true,
     phaseTransition: { from: "BIDDING", to: state.phase },
+    userHistoryEntry,
   };
 }
 
@@ -354,5 +358,6 @@ function emptyResult(): BidProcessResult {
     aiBids: [],
     auctionComplete: false,
     phaseTransition: null,
+    userHistoryEntry: null,
   };
 }

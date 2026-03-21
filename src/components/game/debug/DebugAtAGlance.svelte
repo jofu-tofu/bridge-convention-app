@@ -3,12 +3,12 @@
      requiring any expansion. Designed for quick "what happened?" scanning. -->
 <script lang="ts">
   import type { DebugSnapshot } from "../../../stores/bidding.svelte";
-  import type { BidFeedback } from "../../../stores/bidding.svelte";
+  import type { DebugBidFeedback } from "../../../stores/bidding.svelte";
   import { fmtCall } from "./debug-helpers";
 
   interface Props {
     snapshot: DebugSnapshot | null;
-    feedback: BidFeedback | null;
+    feedback: DebugBidFeedback | null;
     phase: string;
   }
 
