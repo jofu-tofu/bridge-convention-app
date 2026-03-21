@@ -17,6 +17,7 @@ import type {
 } from "../core/contracts";
 import { randomPlayStrategy } from "../service";
 import { delay } from "../core/util/delay";
+import type { DevServicePort, SessionHandle } from "../service";
 
 const AI_PLAY_DELAY = 500;
 const TRICK_PAUSE = 1000;
@@ -61,6 +62,10 @@ export interface PlayStoreConfig {
   playStrategy: PlayStrategy | null;
   inferences: Record<Seat, PublicBeliefs> | null;
   onPlayComplete: (score: number | null) => void;
+  /** Service for play delegation. When provided, userPlayCard delegates to service.playCard(). */
+  service?: DevServicePort;
+  /** Session handle for the current drill. Required when service is provided. */
+  handle?: SessionHandle;
 }
 
 export function createPlayStore(engine: EnginePort) {
@@ -86,6 +91,10 @@ export function createPlayStore(engine: EnginePort) {
   let activeUserSeat: Seat | null = null;
   let activeInferences: Record<Seat, PublicBeliefs> | null = null;
   let onPlayComplete: ((score: number | null) => void) | null = null;
+
+  // Service delegation (set at startPlay when available)
+  let activeService: DevServicePort | null = null;
+  let activeHandle: SessionHandle | null = null;
 
   /** Check if a seat is user-controlled during play. */
   function isUserControlled(seat: Seat): boolean {
@@ -270,6 +279,79 @@ export function createPlayStore(engine: EnginePort) {
     }
   }
 
+  /** Service-delegated play: call service.playCard() and animate AI plays locally. */
+  async function userPlayCardViaService(card: Card, seat: Seat) {
+    if (!activeService || !activeHandle || !activeContract) return;
+    if (isProcessing || !currentPlayer || !activeDeal) return;
+    if (seat !== currentPlayer) return;
+    if (!isUserControlled(seat)) return;
+
+    isProcessing = true;
+    try {
+      const result = await activeService.playCard(activeHandle, card, seat);
+
+      if (!result.accepted) return;
+
+      // Add the user's card to the current trick
+      addCardToTrick(card, seat);
+      await tick();
+
+      // If user's card completes a trick (4th card)
+      if (currentTrick.length === 4) {
+        isShowingTrickResult = true;
+        await delay(TRICK_PAUSE);
+        isShowingTrickResult = false;
+        if (playAborted) return;
+        await scoreTrick();
+      } else {
+        currentPlayer = nextSeat(seat);
+      }
+
+      // Animate AI plays one at a time with delays
+      for (const aiPlay of result.aiPlays) {
+        if (playAborted) break;
+        await delay(AI_PLAY_DELAY);
+        if (playAborted) break;
+
+        addCardToTrick(aiPlay.card, aiPlay.seat);
+        playLog = [...playLog, { seat: aiPlay.seat, card: aiPlay.card, reason: aiPlay.reason, trickIndex: tricks.length }];
+        await tick();
+
+        if (currentTrick.length === 4) {
+          // Show completed trick, then score it
+          isShowingTrickResult = true;
+          await delay(TRICK_PAUSE);
+          isShowingTrickResult = false;
+          if (playAborted) break;
+          await scoreTrick();
+          // After scoreTrick, currentPlayer is set to the trick winner
+        } else {
+          currentPlayer = nextSeat(aiPlay.seat);
+        }
+      }
+
+      // Update legal plays from result
+      if (result.legalPlays) {
+        legalPlaysForCurrentPlayer = [...result.legalPlays];
+      }
+
+      // Update current player from result
+      if (result.currentPlayer !== undefined) {
+        currentPlayer = result.currentPlayer;
+      }
+
+      // If play is complete, update score and notify
+      if (result.playComplete) {
+        score = result.score;
+        currentPlayer = null;
+        onPlayComplete?.(result.score);
+      }
+    } finally {
+      isProcessing = false;
+      await tick();
+    }
+  }
+
   async function skipToReviewImpl() {
     playAborted = true;
     if (!activeContract || !activeDeal) return;
@@ -316,6 +398,10 @@ export function createPlayStore(engine: EnginePort) {
     activeInferences = inferences;
     onPlayComplete = config.onPlayComplete;
 
+    // Service delegation
+    activeService = config.service ?? null;
+    activeHandle = config.handle ?? null;
+
     playAborted = false;
     tricks = [];
     currentTrick = [];
@@ -330,14 +416,18 @@ export function createPlayStore(engine: EnginePort) {
     // Opening leader: left of declarer
     currentPlayer = nextSeat(contract.declarer);
 
-    // If opening leader is AI, start AI plays
-    if (!isUserControlled(currentPlayer)) {
+    // If opening leader is AI, start AI plays (only in legacy local path)
+    if (!activeService && !isUserControlled(currentPlayer)) {
       isProcessing = true;
       runAiPlays().catch(() => {
         // Error in AI play loop — ensure isProcessing is cleared
         isProcessing = false;
       });
     }
+
+    // Service path: if opening leader is AI, delegate to service via a
+    // "kick-start" — the first user play will return AI plays that precede it.
+    // No local AI loop needed; the service returns AI plays in playCard response.
   }
 
   function reset() {
@@ -360,6 +450,8 @@ export function createPlayStore(engine: EnginePort) {
     activeUserSeat = null;
     activeInferences = null;
     onPlayComplete = null;
+    activeService = null;
+    activeHandle = null;
   }
 
   /** Refresh legal plays for the current player. Called by the game store's $effect. */
@@ -424,10 +516,17 @@ export function createPlayStore(engine: EnginePort) {
     },
     startPlay,
     userPlayCard(card: Card, seat: Seat): void {
-      userPlayCardImpl(card, seat).catch(() => {});
+      const impl = activeService ? userPlayCardViaService : userPlayCardImpl;
+      impl(card, seat).catch(() => {});
     },
     skipToReview(): void {
-      skipToReviewImpl().catch(() => {});
+      if (activeService) {
+        // Service path: abort locally and notify completion with null score
+        playAborted = true;
+        onPlayComplete?.(null);
+      } else {
+        skipToReviewImpl().catch(() => {});
+      }
     },
     reset,
   };

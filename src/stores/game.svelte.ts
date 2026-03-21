@@ -50,6 +50,10 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
   let playInferences = $state<Record<Seat, PublicBeliefs> | null>(null);
   let publicBeliefState = $state<PublicBeliefState>(inference.getPublicBeliefState());
 
+  // Service delegation — saved at startDrill for passing to sub-stores
+  let activeService: DevServicePort | undefined;
+  let activeHandle: SessionHandle | undefined;
+
   // Sub-stores
   const dds = createDDSStore(engine);
   const play = createPlayStore(engine);
@@ -114,6 +118,8 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       onPlayComplete: (_score) => {
         transitionToExplanation();
       },
+      service: activeService,
+      handle: activeHandle,
     });
   }
 
@@ -221,6 +227,8 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
     effectiveUserSeat = null;
     drillSession = null;
     conventionName = "";
+    activeService = undefined;
+    activeHandle = undefined;
     inference.reset();
     playInferences = null;
     publicBeliefState = inference.getPublicBeliefState();
@@ -527,6 +535,10 @@ export function createGameStore(engine: EnginePort, options?: GameStoreOptions) 
       contract = null;
       phase = "BIDDING";
       effectiveUserSeat = null;
+
+      // Save service + handle for passing to sub-stores (bidding + play)
+      activeService = service;
+      activeHandle = handle;
 
       // Reset sub-stores
       play.reset();
