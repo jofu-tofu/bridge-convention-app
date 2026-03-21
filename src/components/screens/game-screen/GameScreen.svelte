@@ -2,14 +2,11 @@
   import { onMount } from "svelte";
   import { Seat } from "../../../engine/types";
   import type { Call } from "../../../engine/types";
-  import { getEngine, getGameStore, getAppStore, setLayoutConfig } from "../../../stores/context";
-  import { startDrill } from "../../../bootstrap/start-drill";
+  import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
+  import type { SessionConfig } from "../../../service";
 
-  import { getBundle, resolveConventionForSystem } from "../../../conventions/core/bundle";
-  import { getSystemConfig } from "../../../core/contracts/system-config";
   import { computeTableScale } from "../../../core/display/table-scale";
   import { DESKTOP_MIN } from "../../../core/display/breakpoints.svelte";
-  import { mulberry32 } from "../../../core/util/seeded-rng";
 
   import BiddingPhase from "./BiddingPhase.svelte";
   import DeclarerPromptPhase from "./DeclarerPromptPhase.svelte";
@@ -19,7 +16,7 @@
 
   const DEV = import.meta.env.DEV;
 
-  const engine = getEngine();
+  const service = getService();
   const gameStore = getGameStore();
   const appStore = getAppStore();
 
@@ -74,19 +71,25 @@
     if (!baseConvention) return;
     dealNumber++;
 
-    // Resolve convention config for the selected base system.
-    // If the bundle has constraint factories, deal constraints are regenerated
-    // for the active SystemConfig; otherwise the convention is used as-is.
-    const systemConfig = getSystemConfig(appStore.baseSystemId);
-    const convBundle = getBundle(baseConvention.id);
-    const convention = resolveConventionForSystem(baseConvention, convBundle, systemConfig);
-
     const devSeed = getDevSeed();
-    const devRng = devSeed !== undefined ? mulberry32(devSeed) : undefined;
     if (devSeed !== undefined) appStore.advanceDevDeal();
-    const bundle = await startDrill(engine, convention, userSeat, devRng, devSeed, appStore.drillSettings);
+
+    // Build session config — service handles convention resolution,
+    // RNG creation, deal generation, and strategy assembly internally.
+    const config: SessionConfig = {
+      conventionId: baseConvention.id,
+      userSeat,
+      seed: devSeed,
+      baseSystemId: appStore.baseSystemId,
+      drill: appStore.drillSettings,
+    };
+
+    const handle = await service.createSession(config);
+    const bundle = await service.getSessionBundle(handle);
+    const conventionName = await service.getConventionName(handle);
+
     await gameStore.startDrill(bundle);
-    gameStore.setConventionName(convention?.name ?? "Drill");
+    gameStore.setConventionName(conventionName);
   }
 
   onMount(() => {

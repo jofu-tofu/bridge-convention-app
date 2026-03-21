@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { EnginePort } from "./engine/port";
+  import type { DevServicePort } from "./service";
   import { createEngine } from "./engine/create-engine";
+  import { createLocalService } from "./service";
   import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -9,6 +11,7 @@
   let engineReady = $state(false);
   let initError = $state<string | null>(null);
   let resolvedEngine = $state<EnginePort | null>(null);
+  let resolvedService = $state<DevServicePort | null>(null);
   let resolvedGameStore = $state<ReturnType<typeof createGameStore> | null>(null);
   let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
 
@@ -17,6 +20,7 @@
     createEngine()
       .then((eng) => {
         resolvedEngine = eng;
+        resolvedService = createLocalService(eng);
         resolvedGameStore = createGameStore(eng);
         const store = createAppStore();
         appStore = store;
@@ -39,10 +43,10 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedEngine || !resolvedGameStore || !appStore}
+{:else if !engineReady || !resolvedEngine || !resolvedService || !resolvedGameStore || !appStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
 {:else}
-  <AppShell engine={resolvedEngine} gameStore={resolvedGameStore} {appStore} />
+  <AppShell engine={resolvedEngine} service={resolvedService} gameStore={resolvedGameStore} {appStore} />
 {/if}

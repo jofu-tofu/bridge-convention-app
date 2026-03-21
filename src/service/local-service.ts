@@ -22,6 +22,9 @@ import { evaluateHand } from "../engine/hand-evaluator";
 import { createBiddingContext } from "../conventions/core";
 import { startDrill as bootstrapStartDrill } from "../bootstrap/start-drill";
 import { getConvention, listConventions as listConventionConfigs } from "../conventions/core";
+import { getBundle, resolveConventionForSystem } from "../conventions/core/bundle";
+import { getSystemConfig } from "../core/contracts/system-config";
+import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import type { ConventionConfig } from "../conventions/core";
 import type { DevServicePort } from "./port";
 import type {
@@ -51,10 +54,16 @@ import {
 } from "./bidding-controller";
 import { partnerSeat } from "../engine/constants";
 
+import type { DrillBundle } from "../bootstrap/types";
+
 /** Per-session ancillary state not on SessionState. */
 interface SessionAncillary {
   dds: DDSController;
   conventionConfig: ConventionConfig;
+  conventionName: string;
+  /** Original bundle — transitional escape hatch for stores that still need raw state.
+   *  Will be removed once stores fully delegate to the service (Phases 2-4). */
+  bundle: DrillBundle;
 }
 
 /**
@@ -78,8 +87,18 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async createSession(config: SessionConfig): Promise<SessionHandle> {
       const handle = createHandle();
       const conventionId = config.conventionId;
-      const convention = getConvention(conventionId);
+      const baseConvention = getConvention(conventionId);
       const userSeat = config.userSeat ?? ("S" as Seat);
+
+      // Resolve convention constraints for the base system.
+      // If the bundle has constraint factories, deal constraints are
+      // regenerated for the active SystemConfig; otherwise used as-is.
+      let convention: ConventionConfig = baseConvention;
+      if (config.baseSystemId) {
+        const systemConfig = getSystemConfig(config.baseSystemId as BaseSystemId);
+        const convBundle = getBundle(conventionId);
+        convention = resolveConventionForSystem(baseConvention, convBundle, systemConfig);
+      }
 
       const bundle = await bootstrapStartDrill(
         engine,
@@ -96,6 +115,8 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       ancillary.set(handle, {
         dds: new DDSController(),
         conventionConfig: convention,
+        conventionName: convention.name,
+        bundle,
       });
 
       // Initialize with initial auction if provided by bundle
@@ -268,6 +289,18 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]> {
       const state = manager.get(handle);
       return state.getNSTimeline();
+    },
+
+    // ── Transitional methods (removed after Phases 2-4) ───────────
+
+    async getSessionBundle(handle: SessionHandle): Promise<DrillBundle> {
+      const anc = getAncillary(handle);
+      return anc.bundle;
+    },
+
+    async getConventionName(handle: SessionHandle): Promise<string> {
+      const anc = getAncillary(handle);
+      return anc.conventionName;
     },
   };
 }

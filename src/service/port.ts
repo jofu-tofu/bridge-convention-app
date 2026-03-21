@@ -9,6 +9,7 @@
 import type { Call, Card, Seat } from "../engine/types";
 import type { BiddingViewport } from "../core/viewport";
 import type { GamePhase } from "../stores/phase-machine";
+import type { DrillBundle } from "../bootstrap/types";
 import type {
   SessionHandle,
   SessionConfig,
@@ -69,4 +70,11 @@ export interface DevServicePort extends ServicePort {
   getDebugSnapshot(handle: SessionHandle): Promise<ServiceDebugSnapshot>;
   getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]>;
   getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]>;
+
+  /** Transitional: return the DrillBundle so stores can initialize from raw state.
+   *  Will be removed once stores fully delegate to the service (Phases 2-4). */
+  getSessionBundle(handle: SessionHandle): Promise<DrillBundle>;
+
+  /** Transitional: return the resolved convention name for a session. */
+  getConventionName(handle: SessionHandle): Promise<string>;
 }

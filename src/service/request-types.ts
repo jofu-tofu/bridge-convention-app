@@ -21,6 +21,8 @@ export interface SessionConfig {
   readonly conventionId: string;
   readonly userSeat?: Seat;
   readonly seed?: number;
+  /** Base system for convention resolution (e.g. "sayc", "two-over-one"). */
+  readonly baseSystemId?: string;
   /** Drill execution parameters (opponent behavior + deal generation). */
   readonly drill?: DrillSettings;
 }

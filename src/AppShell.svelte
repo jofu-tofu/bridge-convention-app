@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { EnginePort } from "./engine/port";
+  import type { DevServicePort } from "./service";
   import type { createGameStore } from "./stores/game.svelte";
   import type { createAppStore } from "./stores/app.svelte";
-  import { setEngine, setGameStore, setAppStore } from "./stores/context";
+  import { setEngine, setGameStore, setAppStore, setService } from "./stores/context";
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
   import LearningScreen from "./components/screens/LearningScreen.svelte";
@@ -11,6 +12,7 @@
 
   interface Props {
     engine: EnginePort;
+    service: DevServicePort;
     gameStore: ReturnType<typeof createGameStore>;
     appStore: ReturnType<typeof createAppStore>;
   }
@@ -18,6 +20,7 @@
   const props: Props = $props();
 
   setEngine(props.engine);
+  setService(props.service);
   setGameStore(props.gameStore);
   setAppStore(props.appStore);
 </script>
