@@ -238,7 +238,10 @@ export default tseslint.config(
           patterns: [{
             group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
                       "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
-                      "*/conventions/core/context-factory"],
+                      "*/conventions/core/context-factory",
+                      "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
+                      "**/conventions/core/bundle/**", "**/conventions/core/witness/**",
+                      "**/conventions/core/context-factory"],
             message: "Import from 'conventions/core' barrel instead of deep paths",
           }],
         },
@@ -266,7 +269,10 @@ export default tseslint.config(
           patterns: [{
             group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
                       "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
-                      "*/conventions/core/context-factory"],
+                      "*/conventions/core/context-factory",
+                      "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
+                      "**/conventions/core/bundle/**", "**/conventions/core/witness/**",
+                      "**/conventions/core/context-factory"],
             message: "Import from 'conventions/core' barrel instead of deep paths",
           }],
         },
@@ -320,6 +326,18 @@ export default tseslint.config(
   },
 
   // ── Module boundary: stores/ ──
+  //
+  // Service boundary — "never crosses" types (see service/response-types.ts):
+  //   BLOCKED (error): ArbitrationResult, MeaningSurface, InferenceEngine
+  //     — these have no store usage and must never leak across the boundary.
+  //     InferenceEngine is also blocked by the inference/ directory restriction below.
+  //
+  //   TRANSITIONAL (not yet blocked — stores still reference these):
+  //     Deal, DrillBundle — used by game/play stores (migrate to viewport types)
+  //     BidResult, ConventionBiddingStrategy, StrategyEvaluation — used by
+  //       bidding store's legacy evaluation path
+  //     DrillSession — used by game store for session lifecycle
+  //
   {
     files: ["src/stores/**/*.ts", "src/stores/**/*.svelte.ts"],
     ignores: ["src/stores/__tests__/**", "src/stores/**/*.test.ts"],
@@ -328,6 +346,27 @@ export default tseslint.config(
         "error",
         {
           paths: [
+            // ── "Never crosses" type restrictions ──
+            {
+              name: "../core/contracts",
+              importNames: ["ArbitrationResult", "MeaningSurface"],
+              message: "Service boundary: this type should never cross into stores. See service/response-types.ts.",
+            },
+            {
+              name: "../core/contracts/module-surface",
+              importNames: ["ArbitrationResult"],
+              message: "Service boundary: ArbitrationResult should never cross into stores. See service/response-types.ts.",
+            },
+            {
+              name: "../core/contracts/convention-types",
+              importNames: ["ArbitrationResult"],
+              message: "Service boundary: ArbitrationResult should never cross into stores. See service/response-types.ts.",
+            },
+            {
+              name: "../core/contracts/meaning",
+              importNames: ["MeaningSurface"],
+              message: "Service boundary: MeaningSurface should never cross into stores. See service/response-types.ts.",
+            },
             ...componentImports,
             {
               name: "../cli/*",
@@ -388,7 +427,9 @@ export default tseslint.config(
           ],
           patterns: [{
             group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
+                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
+                      "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
+                      "**/conventions/core/bundle/**", "**/conventions/core/witness/**"],
             message: "Import from 'conventions/core' barrel instead of deep paths",
           }],
         },
@@ -737,7 +778,9 @@ export default tseslint.config(
           ],
           patterns: [{
             group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
+                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
+                    "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
+                    "**/conventions/core/bundle/**", "**/conventions/core/witness/**"],
             message: "Import from 'conventions/core' barrel instead of deep paths",
           }],
         },
@@ -855,7 +898,9 @@ export default tseslint.config(
       "no-restricted-imports": ["error", {
         patterns: [{
           group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**"],
+                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
+                    "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
+                    "**/conventions/core/bundle/**", "**/conventions/core/witness/**"],
           message: "Import from 'conventions/core' barrel instead of deep paths",
         }],
       }],
