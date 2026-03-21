@@ -3,10 +3,10 @@ import type { CandidateEligibility } from "./tree-evaluation";
 import type { ForcingState } from "./bidding";
 import type { MeaningProposal, TransformTrace } from "./meaning";
 import type { DecisionProvenance, TransformTraceEntry } from "./provenance";
-import type { MeaningSurface } from "./meaning";
+import type { BidMeaning } from "./meaning";
 import type { PublicEvent, PublicConstraint } from "./agreement-module";
 import type { LatentBranchSet } from "./posterior";
-import type { EvidenceBundleIR } from "./evidence-bundle";
+import type { EvidenceBundle } from "./evidence-bundle";
 
 /** Conversation machine register state — shared by PublicSnapshot and debug views. */
 export interface MachineRegisters {
@@ -66,23 +66,23 @@ export interface ArbitrationResult {
   readonly eliminations: readonly EliminationRecord[];
   readonly transformTraces?: readonly TransformTrace[];
   readonly provenance?: DecisionProvenance;
-  readonly evidenceBundle?: EvidenceBundleIR;
+  readonly evidenceBundle?: EvidenceBundle;
 }
 
 /** Build a PublicSnapshot from machine state fields.
  *  Takes plain fields to avoid importing from conventions/. */
 /** Result of upstream surface composition (transform application before pipeline). */
-export interface SurfaceEvaluationResult {
-  readonly composedSurfaces: readonly MeaningSurface[];
+export interface CompositionResult {
+  readonly composedMeanings: readonly BidMeaning[];
   readonly appliedTransforms: readonly TransformApplication[];
-  readonly diagnostics: readonly SurfaceCompositionDiagnostic[];
+  readonly diagnostics: readonly CompositionDiagnostic[];
 }
 
 /** Record of a single transform applied during surface composition. */
 export type TransformApplication = TransformTraceEntry;
 
 /** Diagnostic emitted during surface composition. */
-export interface SurfaceCompositionDiagnostic {
+export interface CompositionDiagnostic {
   readonly level: "info" | "warn";
   readonly message: string;
 }

@@ -8,9 +8,9 @@ import type { PrivateBeliefState } from "../private-belief";
 import type { BeliefData } from "../../core/contracts";
 import { toBeliefData } from "../belief-converter";
 
-import type { FactConstraintIR } from "../../core/contracts/agreement-module";
+import type { FactConstraint } from "../../core/contracts/agreement-module";
 
-function makeAnnotation(seat: Seat, constraints: readonly FactConstraintIR[]): BidAnnotation {
+function makeAnnotation(seat: Seat, constraints: readonly FactConstraint[]): BidAnnotation {
   return { call: { type: "pass" }, seat, conventionId: null, meaning: "test", constraints };
 }
 
@@ -23,7 +23,7 @@ function makePublicBelief(overrides?: Partial<Record<Seat, {
 
   for (const [seatStr, data] of Object.entries(overrides)) {
     const seat = seatStr as Seat;
-    const constraints: FactConstraintIR[] = [];
+    const constraints: FactConstraint[] = [];
     if (data.hcpRange.min > 0) constraints.push({ factId: "hand.hcp", operator: "gte", value: data.hcpRange.min });
     if (data.hcpRange.max < 40) constraints.push({ factId: "hand.hcp", operator: "lte", value: data.hcpRange.max });
     for (const [suit, range] of Object.entries(data.suitLengths)) {

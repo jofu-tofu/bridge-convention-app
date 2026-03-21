@@ -1,4 +1,2 @@
-import { bundleFromSystem, ntStaymanSystem, ntTransfersSystem } from "../system-registry";
-
-export const ntStaymanBundle = bundleFromSystem(ntStaymanSystem);
-export const ntTransfersBundle = bundleFromSystem(ntTransfersSystem);
+// Re-export sub-bundles from system-registry (single source of truth)
+export { ntStaymanBundle, ntTransfersBundle } from "../system-registry";

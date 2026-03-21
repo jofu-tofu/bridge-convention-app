@@ -12,7 +12,7 @@ import type { VulnerabilityDistribution, DrillSettings } from "./types";
 import { DEFAULT_DRILL_TUNING } from "./types";
 import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
-import { getSystem, specFromSystem } from "../conventions/definitions/system-registry";
+import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
@@ -84,12 +84,12 @@ export async function startDrill(
   });
   const session = createDrillSession(config);
 
-  // Build strategy from the system's spec
-  const system = getSystem(convention.id);
-  if (!system) {
-    throw new Error(`No BiddingSystem registered for "${convention.id}".`);
+  // Build strategy from the bundle's spec
+  const bundle = getSystemBundle(convention.id);
+  if (!bundle) {
+    throw new Error(`No bundle registered for "${convention.id}".`);
   }
-  const spec = specFromSystem(system);
+  const spec = specFromBundle(bundle);
   if (!spec) {
     throw new Error(`No ConventionSpec derivable for "${convention.id}".`);
   }

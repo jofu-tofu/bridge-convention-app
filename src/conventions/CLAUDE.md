@@ -16,13 +16,13 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 ## Convention Authoring (Meaning Pipeline)
 
 A convention bundle provides:
-1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, optional `closurePolicy`, and optional `pedagogicalTags`
+1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, optional `closurePolicy`, and optional `teachingTags`
 2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions
 3. **`conversationMachine`** — FSM tracking auction progression, producing `surfaceGroupId` per state and `MachineEffect` per transition
-4. **`systemProfile`** — `SystemProfileIR` declaring modules, attachments, exclusivity groups
+4. **`systemProfile`** — `SystemProfile` declaring modules, attachments, exclusivity groups
 5. **`surfaceRouter`** — function mapping (auction, seat) → active surfaces (legacy; machine-based routing preferred)
 
-**Pedagogical content is tag-derived.** Modules do NOT declare `pedagogicalRelations`, `alternatives`, or `intentFamilies` fields. Instead, surfaces carry `pedagogicalTags` using 6 general tags from `definitions/pedagogical-vocabulary.ts`. When modules are composed into a bundle, `derivePedagogicalContent()` scans all surfaces and produces the appropriate relations/alternatives automatically. This makes modules portable — compose any set into a bundle and it works.
+**Pedagogical content is tag-derived.** Modules do NOT declare `teachingRelations`, `alternatives`, or `intentFamilies` fields. Instead, surfaces carry `teachingTags` using 6 general tags from `definitions/teaching-vocabulary.ts`. When modules are composed into a bundle, `deriveTeachingContent()` scans all surfaces and produces the appropriate relations/alternatives automatically. This makes modules portable — compose any set into a bundle and it works.
 
 ## Test Organization
 

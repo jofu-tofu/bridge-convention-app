@@ -70,7 +70,7 @@ describe("evaluateFacts with posterior provider", () => {
     };
 
     const provider = makeProvider({ "bridge.partnerHas4HeartsLikely": 0.73 });
-    const result = evaluateFacts(testHand, testEvaluation, catalog, undefined, provider);
+    const result = evaluateFacts(testHand, testEvaluation, catalog, { posterior: provider });
 
     // Standard fact still works
     expect(result.facts.get("hand.hcp")!.value).toBe(10);
@@ -93,7 +93,7 @@ describe("evaluateFacts with posterior provider", () => {
 
     // Provider returns null for all queries
     const provider = makeProvider({});
-    const result = evaluateFacts(testHand, testEvaluation, catalog, undefined, provider);
+    const result = evaluateFacts(testHand, testEvaluation, catalog, { posterior: provider });
 
     expect(result.facts.get("bridge.partnerHas4HeartsLikely")!.value).toBe(0);
   });

@@ -1,5 +1,5 @@
 /**
- * Tests for normalizeIntent() — sourceIntent → CanonicalObs[] mapping.
+ * Tests for normalizeIntent() — sourceIntent → BidAction[] mapping.
  *
  * Covers all 77 intent types across 7 modules. Each test verifies the
  * canonical observation output for a given sourceIntent shape.
@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from "vitest";
 import { normalizeIntent } from "../normalize-intent";
-import type { CanonicalObs } from "../../../../core/contracts/canonical-observation";
+import type { BidAction } from "../../../../core/contracts/bid-action";
 import { getAllModules } from "../../../../conventions/definitions/module-registry";
 
 // ── Helper ─────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ import { getAllModules } from "../../../../conventions/definitions/module-regist
 function normalize(
   type: string,
   params: Record<string, string | number | boolean> = {},
-): readonly CanonicalObs[] {
+): readonly BidAction[] {
   return normalizeIntent({ type, params });
 }
 

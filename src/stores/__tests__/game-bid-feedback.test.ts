@@ -4,13 +4,13 @@ import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { BidGrade } from "../../teaching/teaching-resolution";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
+import type { ConventionStrategy, BidResult } from "../../core/contracts";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers, createTestServiceSession } from "../../test-support/fixtures";
 import type { DrillBundle } from "../../bootstrap/types";
 import { createLocalService } from "../../service";
 
 /** Strategy that always suggests 2C (Stayman-like). */
-function make2CStrategy(): ConventionBiddingStrategy {
+function make2CStrategy(): ConventionStrategy {
   return {
     id: "test-strategy",
     name: "Test Convention",
@@ -26,7 +26,7 @@ function make2CStrategy(): ConventionBiddingStrategy {
 }
 
 /** Strategy that never applies (returns null → correct bid is pass). */
-function makeNoOpStrategy(): ConventionBiddingStrategy {
+function makeNoOpStrategy(): ConventionStrategy {
   return {
     id: "noop",
     name: "No-Op",
@@ -38,7 +38,7 @@ function makeNoOpStrategy(): ConventionBiddingStrategy {
 }
 
 /** Strategy with a primary bid plus a preferred acceptable alternative. */
-function makePrimaryWithAcceptableAlternativeStrategy(): ConventionBiddingStrategy {
+function makePrimaryWithAcceptableAlternativeStrategy(): ConventionStrategy {
   return {
     id: "test-with-alternative",
     name: "Test With Alternative",

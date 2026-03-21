@@ -3,7 +3,7 @@
  *
  * Compiles surface clauses (factId + operator + value) into engine-level
  * SeatConstraint fields. Used by both the coverage-spec-compiler (FSM
- * targeting) and the witness-compiler (deal generation specs).
+ * targeting) and the deal-spec-compiler (deal generation specs).
  *
  * Adding a new compilable fact type here automatically enables it in
  * both systems — no need to update two files.

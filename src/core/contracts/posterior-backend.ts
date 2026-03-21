@@ -24,7 +24,7 @@ export interface PosteriorState {
 
 // ─── Query IR ───────────────────────────────────────────────
 /** Query sent to the backend — discriminated union of query types. */
-export type PosteriorQueryIR =
+export type PosteriorQuery =
   | { readonly kind: "marginal-hcp"; readonly seat: string }
   | { readonly kind: "suit-length"; readonly seat: string; readonly suit: SuitName }
   | { readonly kind: "fit-probability"; readonly seats: readonly string[]; readonly suit: SuitName; readonly threshold: number }
@@ -37,7 +37,7 @@ export type PosteriorQueryIR =
  *  Consumers never call this directly; they use PosteriorQueryPort. */
 export interface PosteriorBackend {
   readonly initialize: (context: ConditioningContext) => PosteriorState;
-  readonly query: (state: PosteriorState, query: PosteriorQueryIR) => PosteriorQueryResult;
+  readonly query: (state: PosteriorState, query: PosteriorQuery) => PosteriorQueryResult;
   readonly conditionOnHand: (state: PosteriorState, seat: string, hand: Hand) => PosteriorState;
   readonly introspect: (state: PosteriorState) => readonly FactorIntrospection[];
 }

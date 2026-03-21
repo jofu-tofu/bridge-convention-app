@@ -2,10 +2,10 @@ import { describe, expect, test } from "vitest";
 import {
   createExplanationCatalog,
   type ExplanationEntry,
-  type ExplanationCatalogIR,
+  type ExplanationCatalog,
 } from "../explanation-catalog";
 
-describe("ExplanationCatalogIR", () => {
+describe("ExplanationCatalog", () => {
   const entry1: ExplanationEntry = {
     explanationId: "explain.hand.hcp",
     factId: "hand.hcp",
@@ -110,10 +110,10 @@ describe("ExplanationCatalogIR", () => {
 
   describe("type safety", () => {
     test("preferredLevel is constrained to semantic or mechanical", () => {
-      const semantic: ExplanationCatalogIR = createExplanationCatalog([
+      const semantic: ExplanationCatalog = createExplanationCatalog([
         { ...entry1, preferredLevel: "semantic" },
       ]);
-      const mechanical: ExplanationCatalogIR = createExplanationCatalog([
+      const mechanical: ExplanationCatalog = createExplanationCatalog([
         { ...entry1, explanationId: "other", preferredLevel: "mechanical" },
       ]);
 

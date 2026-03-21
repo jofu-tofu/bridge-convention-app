@@ -4,13 +4,13 @@ import { buildSnapshotFromAuction } from "../public-snapshot-builder";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import type { RuntimeModule } from "../types";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { makeSurface } from "./runtime-test-helpers";
 
 function makeModule(
   id: string,
   active: boolean,
-  surfaces: MeaningSurface[] = [],
+  surfaces: BidMeaning[] = [],
 ): RuntimeModule {
   return {
     id,

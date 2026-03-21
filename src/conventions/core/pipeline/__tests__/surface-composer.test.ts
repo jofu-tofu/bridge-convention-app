@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { composeSurfaces, mergeUpstreamProvenance } from "../surface-composer";
 import type { CandidateTransform } from "../../../../core/contracts/meaning";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
-import type { ArbitrationResult, SurfaceCompositionDiagnostic } from "../../../../core/contracts/module-surface";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { ArbitrationResult, CompositionDiagnostic } from "../../../../core/contracts/module-surface";
 import { BidSuit } from "../../../../engine/types";
 
 // ─── Helpers ───────────────────────────────────────────────
 
-function makeSurface(overrides?: Partial<MeaningSurface>): MeaningSurface {
+function makeSurface(overrides?: Partial<BidMeaning>): BidMeaning {
   return {
     meaningId: "test:meaning",
     semanticClassId: "test:class",
@@ -18,7 +18,7 @@ function makeSurface(overrides?: Partial<MeaningSurface>): MeaningSurface {
     sourceIntent: { type: "test-intent", params: {} },
     teachingLabel: "Test meaning",
     ...overrides,
-  } as MeaningSurface;
+  } as BidMeaning;
 }
 
 function makeSuppress(targetId: string, id = "t1"): CandidateTransform {
@@ -38,7 +38,7 @@ describe("composeSurfaces", () => {
     const surfaces = [makeSurface({ meaningId: "a" }), makeSurface({ meaningId: "b" })];
     const result = composeSurfaces(surfaces);
 
-    expect(result.composedSurfaces).toEqual(surfaces);
+    expect(result.composedMeanings).toEqual(surfaces);
     expect(result.appliedTransforms).toHaveLength(0);
     expect(result.diagnostics).toHaveLength(0);
   });
@@ -47,7 +47,7 @@ describe("composeSurfaces", () => {
     const surfaces = [makeSurface({ meaningId: "a" })];
     const result = composeSurfaces(surfaces, []);
 
-    expect(result.composedSurfaces).toEqual(surfaces);
+    expect(result.composedMeanings).toEqual(surfaces);
     expect(result.appliedTransforms).toHaveLength(0);
     expect(result.diagnostics).toHaveLength(0);
   });
@@ -59,8 +59,8 @@ describe("composeSurfaces", () => {
     ];
     const result = composeSurfaces(surfaces, [makeSuppress("remove")]);
 
-    expect(result.composedSurfaces).toHaveLength(1);
-    expect(result.composedSurfaces[0]!.meaningId).toBe("keep");
+    expect(result.composedMeanings).toHaveLength(1);
+    expect(result.composedMeanings[0]!.meaningId).toBe("keep");
   });
 
   it("suppress by semanticClassId removes matching surface", () => {
@@ -70,15 +70,15 @@ describe("composeSurfaces", () => {
     ];
     const result = composeSurfaces(surfaces, [makeSuppress("bridge:class")]);
 
-    expect(result.composedSurfaces).toHaveLength(1);
-    expect(result.composedSurfaces[0]!.meaningId).toBe("b");
+    expect(result.composedMeanings).toHaveLength(1);
+    expect(result.composedMeanings[0]!.meaningId).toBe("b");
   });
 
   it("suppress targeting non-existent ID is a no-op with diagnostic", () => {
     const surfaces = [makeSurface({ meaningId: "a" })];
     const result = composeSurfaces(surfaces, [makeSuppress("nonexistent")]);
 
-    expect(result.composedSurfaces).toHaveLength(1);
+    expect(result.composedMeanings).toHaveLength(1);
     expect(result.diagnostics).toHaveLength(1);
     expect(result.diagnostics[0]!.level).toBe("warn");
     expect(result.diagnostics[0]!.message).toContain("nonexistent");
@@ -95,8 +95,8 @@ describe("composeSurfaces", () => {
       makeSuppress("c", "t2"),
     ]);
 
-    expect(result.composedSurfaces).toHaveLength(1);
-    expect(result.composedSurfaces[0]!.meaningId).toBe("b");
+    expect(result.composedMeanings).toHaveLength(1);
+    expect(result.composedMeanings[0]!.meaningId).toBe("b");
   });
 
   it("records appliedTransforms with affectedIds", () => {
@@ -120,7 +120,7 @@ describe("composeSurfaces", () => {
     ];
     const result = composeSurfaces(surfaces, [makeSuppress("bridge:class")]);
 
-    expect(result.composedSurfaces).toHaveLength(1);
+    expect(result.composedMeanings).toHaveLength(1);
     expect(result.appliedTransforms).toHaveLength(1);
     expect(result.appliedTransforms[0]!.affectedIds).toEqual(["a", "b"]);
   });
@@ -137,7 +137,7 @@ describe("composeSurfaces", () => {
     } satisfies CandidateTransform;
     const result = composeSurfaces(surfaces, [unknownTransform]);
 
-    expect(result.composedSurfaces).toEqual(surfaces);
+    expect(result.composedMeanings).toEqual(surfaces);
     expect(result.diagnostics).toHaveLength(1);
     expect(result.diagnostics[0]!.level).toBe("info");
     expect(result.diagnostics[0]!.message).toContain("frobnicate");
@@ -154,7 +154,7 @@ describe("composeSurfaces", () => {
       makeSuppress("bridge:class", "t2"),
     ]);
 
-    expect(result.composedSurfaces).toHaveLength(1);
+    expect(result.composedMeanings).toHaveLength(1);
 
     const suppressDiags = result.diagnostics.filter(
       (d) => d.message.includes("Suppressed"),
@@ -180,8 +180,8 @@ describe("composeSurfaces", () => {
     const result = composeSurfaces(surfaces, [remapTransform]);
 
     // Remap is now handled — surface encoding should change
-    expect(result.composedSurfaces).toHaveLength(1);
-    expect(result.composedSurfaces[0]!.encoding.defaultCall).toEqual({
+    expect(result.composedMeanings).toHaveLength(1);
+    expect(result.composedMeanings[0]!.encoding.defaultCall).toEqual({
       type: "bid",
       level: 3,
       strain: BidSuit.Clubs,
@@ -217,9 +217,9 @@ describe("composeSurfaces", () => {
 
     const result = composeSurfaces(existing, [injectTransform]);
 
-    expect(result.composedSurfaces).toHaveLength(2);
-    expect(result.composedSurfaces[0]!.meaningId).toBe("existing");
-    expect(result.composedSurfaces[1]!.meaningId).toBe("injected:new");
+    expect(result.composedMeanings).toHaveLength(2);
+    expect(result.composedMeanings[0]!.meaningId).toBe("existing");
+    expect(result.composedMeanings[1]!.meaningId).toBe("injected:new");
     expect(result.appliedTransforms).toHaveLength(1);
     expect(result.appliedTransforms[0]!.kind).toBe("inject");
     expect(result.appliedTransforms[0]!.targetId).toBe("injected:new");
@@ -240,8 +240,8 @@ describe("composeSurfaces", () => {
     const result = composeSurfaces(existing, [badInject]);
 
     // Should not add anything
-    expect(result.composedSurfaces).toHaveLength(1);
-    expect(result.composedSurfaces[0]!.meaningId).toBe("existing");
+    expect(result.composedMeanings).toHaveLength(1);
+    expect(result.composedMeanings[0]!.meaningId).toBe("existing");
     expect(result.appliedTransforms).toHaveLength(0);
 
     // Should emit a warning
@@ -272,15 +272,15 @@ describe("composeSurfaces", () => {
 
     const result = composeSurfaces(surfaces, [remapTransform]);
 
-    expect(result.composedSurfaces).toHaveLength(2);
-    const remapped = result.composedSurfaces.find((s) => s.meaningId === "remap:target")!;
+    expect(result.composedMeanings).toHaveLength(2);
+    const remapped = result.composedMeanings.find((s) => s.meaningId === "remap:target")!;
     expect(remapped.encoding.defaultCall).toEqual({
       type: "bid",
       level: 2,
       strain: BidSuit.Diamonds,
     });
     // Untouched surface unchanged
-    const kept = result.composedSurfaces.find((s) => s.meaningId === "untouched")!;
+    const kept = result.composedMeanings.find((s) => s.meaningId === "untouched")!;
     expect(kept.encoding.defaultCall).toEqual({ type: "bid", level: 2, strain: BidSuit.Clubs });
     expect(result.appliedTransforms).toHaveLength(1);
     expect(result.appliedTransforms[0]!.kind).toBe("remap");
@@ -314,9 +314,9 @@ describe("composeSurfaces", () => {
 
     const result = composeSurfaces(surfaces, [remapTransform]);
 
-    expect(result.composedSurfaces).toHaveLength(3);
-    const remappedA = result.composedSurfaces.find((s) => s.meaningId === "a")!;
-    const remappedB = result.composedSurfaces.find((s) => s.meaningId === "b")!;
+    expect(result.composedMeanings).toHaveLength(3);
+    const remappedA = result.composedMeanings.find((s) => s.meaningId === "a")!;
+    const remappedB = result.composedMeanings.find((s) => s.meaningId === "b")!;
     expect(remappedA.encoding.defaultCall).toEqual({ type: "bid", level: 3, strain: BidSuit.NoTrump });
     expect(remappedB.encoding.defaultCall).toEqual({ type: "bid", level: 3, strain: BidSuit.NoTrump });
     expect(result.appliedTransforms).toHaveLength(1);
@@ -336,8 +336,8 @@ describe("composeSurfaces", () => {
 
     const result = composeSurfaces(surfaces, [remapTransform]);
 
-    expect(result.composedSurfaces).toHaveLength(1);
-    expect(result.composedSurfaces[0]!.meaningId).toBe("a");
+    expect(result.composedMeanings).toHaveLength(1);
+    expect(result.composedMeanings[0]!.meaningId).toBe("a");
     expect(result.appliedTransforms).toHaveLength(0);
 
     const warnDiags = result.diagnostics.filter((d) => d.level === "warn");
@@ -389,16 +389,16 @@ describe("composeSurfaces", () => {
     const result = composeSurfaces(surfaces, transforms);
 
     // "remove" suppressed, "remap-me" remapped, "fresh:inject" injected
-    expect(result.composedSurfaces).toHaveLength(3);
+    expect(result.composedMeanings).toHaveLength(3);
 
-    const ids = result.composedSurfaces.map((s) => s.meaningId);
+    const ids = result.composedMeanings.map((s) => s.meaningId);
     expect(ids).toContain("keep");
     expect(ids).toContain("remap-me");
     expect(ids).toContain("fresh:inject");
     expect(ids).not.toContain("remove");
 
     // Verify remap applied
-    const remapped = result.composedSurfaces.find((s) => s.meaningId === "remap-me")!;
+    const remapped = result.composedMeanings.find((s) => s.meaningId === "remap-me")!;
     expect(remapped.encoding.defaultCall).toEqual({
       type: "bid",
       level: 3,
@@ -406,7 +406,7 @@ describe("composeSurfaces", () => {
     });
 
     // Verify injected surface is intact
-    const injected = result.composedSurfaces.find((s) => s.meaningId === "fresh:inject")!;
+    const injected = result.composedMeanings.find((s) => s.meaningId === "fresh:inject")!;
     expect(injected.encoding.defaultCall).toEqual({
       type: "bid",
       level: 4,
@@ -511,7 +511,7 @@ describe("mergeUpstreamProvenance", () => {
   });
 
   it("threads surface diagnostics into provenance.surfaceDiagnostics", () => {
-    const diagnostics: SurfaceCompositionDiagnostic[] = [
+    const diagnostics: CompositionDiagnostic[] = [
       { level: "info", message: "Suppressed surface \"target\" via transform \"t1\"" },
       { level: "warn", message: "Suppress transform \"t2\" targets \"missing\" but no matching surface found" },
     ];

@@ -1,6 +1,6 @@
 import type { Seat, AuctionEntry, Call } from "../engine/types";
 import type { PublicBeliefs, BidAlert, InferenceProvider } from "../core/contracts";
-import type { FactConstraintIR } from "../core/contracts/agreement-module";
+import type { FactConstraint } from "../core/contracts/agreement-module";
 
 // ConditionInference — structured inference metadata for condition → HandInference mapping.
 // Previously lived in conventions/core/types; now owned by inference layer.
@@ -30,7 +30,7 @@ export type {
 /** Snapshot of inference state after a single bid is processed. */
 export interface InferenceSnapshot {
   readonly entry: AuctionEntry;
-  readonly newConstraints: readonly FactConstraintIR[];
+  readonly newConstraints: readonly FactConstraint[];
   readonly cumulativeBeliefs: Record<Seat, PublicBeliefs>;
 }
 
@@ -42,7 +42,7 @@ export interface BidAnnotation {
   readonly seat: Seat;
   readonly conventionId: string | null;
   readonly meaning: string;
-  readonly constraints: readonly FactConstraintIR[];
+  readonly constraints: readonly FactConstraint[];
 }
 
 /** Public belief state — what a kibitzer can deduce from the auction. */
@@ -62,12 +62,12 @@ export interface InferenceExtractorInput {
 }
 
 /**
- * Stable adapter for extracting FactConstraintIR[] from convention evaluation results.
+ * Stable adapter for extracting FactConstraint[] from convention evaluation results.
  * Decouples public belief layer from evaluator internals.
  * Current implementation: noop-extractor (placeholder) or posterior engine.
  */
 export interface InferenceExtractor {
-  extractConstraints(result: InferenceExtractorInput, seat: Seat): readonly FactConstraintIR[];
+  extractConstraints(result: InferenceExtractorInput, seat: Seat): readonly FactConstraint[];
 }
 
 /** Per-observer configuration: how does THIS observer interpret bids? */

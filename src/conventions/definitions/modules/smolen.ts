@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
   MachineState,
   MachineTransition,
@@ -28,7 +28,7 @@ import {
   CONTINUATION_OF,
   NEAR_MISS_OF,
   ALTERNATIVES,
-} from "../pedagogical-vocabulary";
+} from "../teaching-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -52,7 +52,7 @@ export const SMOLEN_CLASSES = {
  * These override the Jacoby Transfer entry for Smolen-eligible hands.
  * After opener's 2D denial, responder follows up with 3H/3S (Smolen).
  */
-const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
+const SMOLEN_ENTRY_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "smolen:stayman-entry-5h4s",
     semanticClassId: "smolen:stayman-entry",
@@ -80,7 +80,7 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "smolen:entry-variants" },
     ],
   }, SMOLEN_CTX),
@@ -112,7 +112,7 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "smolen:entry-variants" },
     ],
   }, SMOLEN_CTX),
@@ -120,7 +120,7 @@ const SMOLEN_ENTRY_SURFACES: readonly MeaningSurface[] = [
 
 // ─── R3 Smolen surfaces (contributed to responder-r3-after-stayman-2d) ───
 
-const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
+const SMOLEN_R3_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "smolen:bid-short-hearts",
     semanticClassId: SMOLEN_CLASSES.BID_SHORT_HEARTS,
@@ -149,7 +149,7 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
     teachingLabel: "Smolen 3♥ (4♥ + 5♠, game force)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "smolen:r3-bids" },
       { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "a" },
       { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "a" },
@@ -186,7 +186,7 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
     teachingLabel: "Smolen 3♠ (4♠ + 5♥, game force)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "smolen:r3-bids" },
       { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "a" },
       { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "a" },
@@ -198,7 +198,7 @@ const SMOLEN_R3_SURFACES: readonly MeaningSurface[] = [
 
 // ─── Opener Smolen placement surfaces ────────────────────────
 
-export const OPENER_SMOLEN_HEARTS_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "smolen:place-four-hearts",
     semanticClassId: SMOLEN_CLASSES.PLACE_FOUR_HEARTS,
@@ -235,7 +235,7 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly MeaningSurface[] = [
   }, SMOLEN_CTX),
 ];
 
-export const OPENER_SMOLEN_SPADES_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "smolen:place-four-spades",
     semanticClassId: SMOLEN_CLASSES.PLACE_FOUR_SPADES,

@@ -1,18 +1,20 @@
-import type { DealConstraints, Seat, Deal, Auction } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { DealConstraints, Deal, Auction } from "../../../engine/types";
+import type { Seat } from "../../../engine/types";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
-import type { ExplanationCatalogIR } from "../../../core/contracts/explanation-catalog";
+import type { ExplanationCatalog } from "../../../core/contracts/explanation-catalog";
 import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/tree-evaluation";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
-import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
-import type { ConventionConfig } from "../../../core/contracts/convention";
+import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
+import type { SystemProfile } from "../../../core/contracts/agreement-module";
+import type { ConventionConfig, ConventionTeaching } from "../../../core/contracts/convention";
 import { ConventionCategory } from "../../../core/contracts/convention";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import type { ConversationMachine } from "../runtime/machine-types";
+import type { RuleModule } from "../rule-module";
 
 export interface RoutedSurfaceGroup {
   readonly groupId: string;
-  readonly surfaces: readonly MeaningSurface[];
+  readonly surfaces: readonly BidMeaning[];
   /** Legacy predicate-based routing. New bundles use FSM-based routing via composeModules(). */
   readonly isActive?: (auction: Auction, seat: Seat) => boolean;
 }
@@ -42,14 +44,14 @@ export interface ConventionBundle {
    *  When present, the meaning pipeline is used for this bundle. */
   readonly meaningSurfaces?: readonly {
     readonly groupId: string;
-    readonly surfaces: readonly MeaningSurface[];
+    readonly surfaces: readonly BidMeaning[];
   }[];
   /** Fact catalog extensions from module definitions. */
   readonly factExtensions?: readonly FactCatalogExtension[];
   /** Optional surface router for round-aware filtering. When absent, all surfaces are evaluated. */
-  readonly surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
+  readonly surfaceRouter?: (auction: Auction, seat: Seat) => readonly BidMeaning[];
   /** Optional system profile for profile-based module activation. */
-  readonly systemProfile?: SystemProfileIR;
+  readonly systemProfile?: SystemProfile;
   /** Optional conversation machine for hierarchical FSM-driven surface selection. */
   readonly conversationMachine?: ConversationMachine;
   /** Optional submachines referenced by states with submachineRef. */
@@ -58,13 +60,19 @@ export interface ConventionBundle {
    *  declared here are provided — bundles without this field get no capabilities. */
   readonly declaredCapabilities?: Readonly<Record<string, string>>;
   /** Convention category for UI grouping. */
-  readonly category?: ConventionCategory;
+  readonly category: ConventionCategory;
   /** Human-readable description for UI display. */
-  readonly description?: string;
+  readonly description: string;
+  /** Convention-level teaching metadata for learning UI. */
+  readonly teaching?: ConventionTeaching;
+  /** If set, drill infrastructure picks a random dealer from this list. */
+  readonly allowedDealers?: readonly Seat[];
+  /** Rule modules for rule-based surface selection. */
+  readonly ruleModules?: readonly RuleModule[];
   /** Explanation catalog for enriching teaching projections with template keys. */
-  readonly explanationCatalog: ExplanationCatalogIR;
+  readonly explanationCatalog: ExplanationCatalog;
   /** Pedagogical relations for enriching WhyNot entries with family/strength relationships. */
-  readonly pedagogicalRelations: readonly PedagogicalRelation[];
+  readonly teachingRelations: readonly TeachingRelation[];
   /** Alternative groups for grading acceptable alternatives in teaching resolution. */
   readonly acceptableAlternatives: readonly AlternativeGroup[];
   /** Intent families for relationship-aware credit in teaching resolution. */
@@ -72,26 +80,23 @@ export interface ConventionBundle {
 }
 
 /**
- * Creates a ConventionConfig from a ConventionBundle with optional overrides.
- * Eliminates boilerplate convention-config.ts files in each bundle definition.
+ * Creates a ConventionConfig from a ConventionBundle.
+ * All metadata is derived from the bundle — no overrides needed.
  */
 export function createConventionConfigFromBundle(
   bundle: ConventionBundle,
-  overrides: {
-    name: string;
-    description?: string;
-    categoryFallback?: ConventionCategory;
-  },
 ): ConventionConfig {
   return {
     id: bundle.id,
-    name: overrides.name,
-    description: overrides.description ?? bundle.description ?? "",
-    category: bundle.category ?? overrides.categoryFallback ?? ConventionCategory.Constructive,
+    name: bundle.name,
+    description: bundle.description,
+    category: bundle.category,
     dealConstraints: bundle.dealConstraints,
     offConventionConstraints: bundle.offConventionConstraints,
     defaultAuction: bundle.defaultAuction,
     internal: bundle.internal,
+    teaching: bundle.teaching,
+    allowedDealers: bundle.allowedDealers,
   };
 }
 

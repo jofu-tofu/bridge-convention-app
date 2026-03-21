@@ -1,8 +1,8 @@
 /**
  * Kernel threading acceptance tests — Phase 4 of continuation composition redesign.
  *
- * Verifies that buildObservationLogViaRules() produces correct postKernel and
- * publicObs at each auction step for key NT sequences.
+ * Verifies that buildObservationLogViaRules() produces correct stateAfter and
+ * publicActions at each auction step for key NT sequences.
  *
  * These tests exercise the per-step rule-based replay that replaces the old
  * inferObservationsFromCall() heuristic and the dual-run FSM model.
@@ -11,7 +11,7 @@
 import { describe, it, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { INITIAL_KERNEL } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { RuleModule } from "../../core/rule-module";
 
@@ -61,8 +61,8 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
 
       expect(log).toHaveLength(1);
       const step = log[0]!;
-      expect(step.publicObs).toEqual([{ act: "open", strain: "notrump" }]);
-      expect(step.postKernel).toEqual(INITIAL_KERNEL);
+      expect(step.publicActions).toEqual([{ act: "open", strain: "notrump" }]);
+      expect(step.stateAfter).toEqual(INITIAL_NEGOTIATION);
       expect(step.status).toBe("resolved");
     });
   });
@@ -79,18 +79,18 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       expect(log).toHaveLength(3);
 
       // 1NT step
-      expect(log[0]!.postKernel).toEqual(INITIAL_KERNEL);
+      expect(log[0]!.stateAfter).toEqual(INITIAL_NEGOTIATION);
 
       // Pass step — kernel unchanged
-      expect(log[1]!.postKernel).toEqual(INITIAL_KERNEL);
-      expect(log[1]!.publicObs).toEqual([]);
+      expect(log[1]!.stateAfter).toEqual(INITIAL_NEGOTIATION);
+      expect(log[1]!.publicActions).toEqual([]);
       expect(log[1]!.status).toBe("raw-only");
 
       // 2C step
       const staymanStep = log[2]!;
-      expect(staymanStep.publicObs).toEqual([{ act: "inquire", feature: "majorSuit" }]);
-      expect(staymanStep.postKernel).toEqual({
-        ...INITIAL_KERNEL,
+      expect(staymanStep.publicActions).toEqual([{ act: "inquire", feature: "majorSuit" }]);
+      expect(staymanStep.stateAfter).toEqual({
+        ...INITIAL_NEGOTIATION,
         forcing: "one-round",
         captain: "responder",
       });
@@ -112,9 +112,9 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
 
       // 2D denial step
       const denialStep = log[4]!;
-      expect(denialStep.publicObs).toEqual([{ act: "deny", feature: "majorSuit" }]);
-      expect(denialStep.postKernel).toEqual({
-        ...INITIAL_KERNEL,
+      expect(denialStep.publicActions).toEqual([{ act: "deny", feature: "majorSuit" }]);
+      expect(denialStep.stateAfter).toEqual({
+        ...INITIAL_NEGOTIATION,
         forcing: "none",
         captain: "responder",
       });
@@ -133,9 +133,9 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const showStep = log[4]!;
-      expect(showStep.publicObs).toEqual([{ act: "show", feature: "heldSuit", suit: "hearts" }]);
-      expect(showStep.postKernel).toEqual({
-        ...INITIAL_KERNEL,
+      expect(showStep.publicActions).toEqual([{ act: "show", feature: "heldSuit", suit: "hearts" }]);
+      expect(showStep.stateAfter).toEqual({
+        ...INITIAL_NEGOTIATION,
         forcing: "none",
         captain: "responder",
         fitAgreed: null,
@@ -153,9 +153,9 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const transferStep = log[2]!;
-      expect(transferStep.publicObs).toEqual([{ act: "transfer", targetSuit: "hearts" }]);
-      expect(transferStep.postKernel).toEqual({
-        ...INITIAL_KERNEL,
+      expect(transferStep.publicActions).toEqual([{ act: "transfer", targetSuit: "hearts" }]);
+      expect(transferStep.stateAfter).toEqual({
+        ...INITIAL_NEGOTIATION,
         forcing: "one-round",
         captain: "responder",
       });
@@ -174,9 +174,9 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const acceptStep = log[4]!;
-      expect(acceptStep.publicObs).toEqual([{ act: "accept", feature: "heldSuit", suit: "hearts" }]);
-      expect(acceptStep.postKernel).toEqual({
-        ...INITIAL_KERNEL,
+      expect(acceptStep.publicActions).toEqual([{ act: "accept", feature: "heldSuit", suit: "hearts" }]);
+      expect(acceptStep.stateAfter).toEqual({
+        ...INITIAL_NEGOTIATION,
         forcing: "none",
         captain: "responder",
         fitAgreed: { strain: "hearts", confidence: "tentative" },
@@ -198,8 +198,8 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const smolenStep = log[6]!;
-      expect(smolenStep.publicObs).toContainEqual({ act: "show", feature: "shortMajor", suit: "hearts" });
-      expect(smolenStep.postKernel).toEqual({
+      expect(smolenStep.publicActions).toContainEqual({ act: "show", feature: "shortMajor", suit: "hearts" });
+      expect(smolenStep.stateAfter).toEqual({
         forcing: "game",
         captain: "opener",
         fitAgreed: { strain: "spades", confidence: "tentative" },
@@ -220,8 +220,8 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
 
       // West's pass after 2C
       const passAfter2C = log[3]!;
-      expect(passAfter2C.kernelDelta).toEqual({});
-      expect(passAfter2C.postKernel).toEqual(log[2]!.postKernel);
+      expect(passAfter2C.negotiationDelta).toEqual({});
+      expect(passAfter2C.stateAfter).toEqual(log[2]!.stateAfter);
     });
   });
 
@@ -244,11 +244,11 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
         // Build log with real kernel threading
         const realLog = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
-        // Build log with all-INITIAL_KERNEL (simulating no threading)
+        // Build log with all-INITIAL_NEGOTIATION (simulating no threading)
         const flatLog = realLog.map((step) => ({
           ...step,
-          postKernel: INITIAL_KERNEL,
-          kernelDelta: {},
+          stateAfter: INITIAL_NEGOTIATION,
+          negotiationDelta: {},
         }));
 
         const nextSeat = [Seat.North, Seat.East, Seat.South, Seat.West][history.length % 4]!;

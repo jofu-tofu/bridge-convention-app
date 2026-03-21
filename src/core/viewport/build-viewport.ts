@@ -6,12 +6,12 @@
 
 import { type Seat, type Call, type Hand, type Deal, type Auction, type Contract, type PlayedCard, type Trick, type Card, type Suit } from "../../engine/types";
 import type { AuctionContext } from "../contracts/committed-step";
-import type { CanonicalObs } from "../contracts/canonical-observation";
+import type { BidAction } from "../contracts/bid-action";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { formatCall } from "../display/format";
 import { formatHandSummary } from "../display/hand-summary";
 import type { BidHistoryEntry, BidResult } from "../contracts/bidding";
-import type { MeaningSurface } from "../contracts/meaning";
+import type { BidMeaning } from "../contracts/meaning";
 import { isAlertable as isAlertableFromIntent } from "../contracts/alert";
 import type { TeachingProjection } from "../contracts/teaching-projection";
 import type { TeachingResolution } from "../contracts/teaching-grading";
@@ -70,7 +70,7 @@ export interface BuildBiddingViewportInput {
   readonly isUserTurn: boolean;
   readonly currentBidder: Seat;
   /** Active meaning surfaces at the current state (system-card knowledge). */
-  readonly activeSurfaces?: readonly MeaningSurface[];
+  readonly activeSurfaces?: readonly BidMeaning[];
 }
 
 /**
@@ -315,7 +315,7 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
  * Project an AuctionContext into a viewport-safe observation history.
  *
  * Strips `resolvedClaim` (moduleId, meaningId, sourceIntent) which are
- * implementation details. Keeps only `publicObs`, `postKernel`, `actor`,
+ * implementation details. Keeps only `publicActions`, `stateAfter`, `actor`,
  * `call`, and `status` — the bridge-observable information.
  */
 export function projectObservationHistory(
@@ -326,19 +326,19 @@ export function projectObservationHistory(
   return ctx.log.map((step) => ({
     actor: step.actor,
     call: step.call,
-    observations: step.publicObs.map(formatObservation),
+    observations: step.publicActions.map(formatObservation),
     kernel: {
-      fitAgreed: step.postKernel.fitAgreed,
-      forcing: step.postKernel.forcing,
-      captain: step.postKernel.captain,
-      competition: step.postKernel.competition,
+      fitAgreed: step.stateAfter.fitAgreed,
+      forcing: step.stateAfter.forcing,
+      captain: step.stateAfter.captain,
+      competition: step.stateAfter.competition,
     },
     status: step.status === "ambiguous" ? "off-system" as const : step.status,
   }));
 }
 
-/** Format a CanonicalObs into a human-readable ObservationView. */
-function formatObservation(obs: CanonicalObs): ObservationView {
+/** Format a BidAction into a human-readable ObservationView. */
+function formatObservation(obs: BidAction): ObservationView {
   const parts: string[] = [obs.act];
   if ("feature" in obs && obs.feature) parts.push(obs.feature);
   if ("suit" in obs && obs.suit) parts.push(obs.suit);

@@ -4,7 +4,7 @@
 // lint → interfere → explore → motif (if needed) → fuzz
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { BiddingSystem } from "../../conventions/definitions/bidding-system";
+import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
 
 import { lintModule } from "./lint";
 import { analyzeBundle } from "./interfere";
@@ -32,7 +32,7 @@ const BUDGET_PARAMS = {
  * Returns structured output with per-stage results and overall verdict.
  */
 export function runPreflight(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   modules: readonly RuleModule[],
   config: PreflightConfig,
 ): PreflightOutput {
@@ -57,7 +57,7 @@ export function runPreflight(
     .map((p) => `${p.moduleA}:${p.moduleB}`);
 
   // Stage 3: Explore
-  const exploreResult = exploreBundle(system, modules, {
+  const exploreResult = exploreBundle(bundle, modules, {
     depth: 6,
     seed: 42,
     trials: params.exploreTrials,
@@ -70,7 +70,7 @@ export function runPreflight(
     for (const pair of flaggedPairs) {
       const [a, b] = pair.split(":");
       if (a && b) {
-        const motifResult = motifTest(system, modules, {
+        const motifResult = motifTest(bundle, modules, {
           depth: 8,
           seed: 42,
           trials: params.motifTrials,
@@ -83,7 +83,7 @@ export function runPreflight(
   }
 
   // Stage 5: Fuzz
-  const fuzzResult = fuzzBundle(system, modules, {
+  const fuzzResult = fuzzBundle(bundle, modules, {
     trials: params.fuzzTrials,
     seed: 0,
     vulnMixed: true,
@@ -103,7 +103,7 @@ export function runPreflight(
 
   return {
     command: "verify preflight",
-    bundle: system.id,
+    bundle: bundle.id,
     budget: config.budget,
     stages: {
       lint: { clean: lintErrors === 0, errors: lintErrors, warnings: lintWarnings },

@@ -1,3 +1,2 @@
-import { bundleFromSystem, ntSystem } from "../system-registry";
-
-export const ntBundle = bundleFromSystem(ntSystem);
+// Re-export bundle from system-registry (single source of truth)
+export { ntBundle } from "../system-registry";

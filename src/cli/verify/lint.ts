@@ -5,7 +5,7 @@
  * orphan transitions, undeclared kernel writes, and duplicate encodings.
  */
 
-import type { RuleModule, KernelExpr } from "../../conventions/core/rule-module";
+import type { RuleModule, NegotiationExpr } from "../../conventions/core/rule-module";
 import type { LintDiagnostic } from "./types";
 import { callKey } from "../../engine/call-helpers";
 
@@ -85,8 +85,8 @@ function collectGuardPhases(mod: RuleModule): Set<string> {
   return phases;
 }
 
-/** Recursively collect kernel field names read by a KernelExpr. */
-function collectKernelReads(expr: KernelExpr, fields: Set<string>): void {
+/** Recursively collect kernel field names read by a NegotiationExpr. */
+function collectKernelReads(expr: NegotiationExpr, fields: Set<string>): void {
   switch (expr.kind) {
     case "fit":
     case "no-fit":
@@ -225,7 +225,7 @@ export function detectOrphanTransitions(
 }
 
 /**
- * `kernelDelta` fields not read by any `KernelExpr` in same module.
+ * `negotiationDelta` fields not read by any `NegotiationExpr` in same module.
  */
 export function detectUndeclaredWrites(mod: RuleModule): LintDiagnostic[] {
   // Collect all kernel fields read by any rule's match.kernel
@@ -241,13 +241,13 @@ export function detectUndeclaredWrites(mod: RuleModule): LintDiagnostic[] {
   for (let i = 0; i < mod.rules.length; i++) {
     const rule = mod.rules[i]!;
     for (const claim of rule.claims) {
-      if (!claim.kernelDelta) continue;
-      for (const field of Object.keys(claim.kernelDelta)) {
+      if (!claim.negotiationDelta) continue;
+      for (const field of Object.keys(claim.negotiationDelta)) {
         if (!readFields.has(field)) {
           diags.push({
             ruleId: "undeclared-write",
             severity: "warn",
-            message: `Rule ${i} writes kernelDelta.${field} but no KernelExpr in this module reads it`,
+            message: `Rule ${i} writes negotiationDelta.${field} but no NegotiationExpr in this module reads it`,
             location: { ruleIndex: i },
             suggestion: `Add a kernel guard that reads "${field}", or remove the write if it's only for downstream modules`,
           });

@@ -23,7 +23,7 @@
  */
 
 import type { RuleModule } from "../../../core/rule-module";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
@@ -46,7 +46,7 @@ import { DONT_ENTRIES } from "./explanation-catalog";
 
 const DONT_CTX: ModuleContext = { moduleId: "dont" };
 
-const OPPONENT_1NT_SURFACE: MeaningSurface = createSurface({
+const OPPONENT_1NT_SURFACE: BidMeaning = createSurface({
   meaningId: "dont:opponent-1nt",
   semanticClassId: "dont:opponent-open",
   encoding: bid(1, BidSuit.NoTrump),

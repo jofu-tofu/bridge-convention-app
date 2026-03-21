@@ -153,7 +153,7 @@ describe("compileFactorGraph", () => {
     expect(graph.evidencePins).toHaveLength(0);
   });
 
-  it("maps latentBranches to AmbiguityFamilyIR", () => {
+  it("maps latentBranches to AmbiguityFamily", () => {
     const snapshot = makeSnapshot(
       [
         {

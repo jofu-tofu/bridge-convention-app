@@ -2,15 +2,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { startDrill } from "../start-drill";
 import { createStubEngine, makeDeal } from "../../test-support/engine-stub";
 import { Seat } from "../../engine/types";
-import { clearRegistry, registerConvention } from "../../conventions/core/registry";
-import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
+import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../conventions/core/bundle";
+import { ntBundle } from "../../conventions/definitions/nt-bundle";
+
+const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 import { mulberry32 } from "../../core/util/seeded-rng";
 import { generateDeal } from "../../engine/deal-generator";
 
 describe("seed determinism", () => {
   beforeEach(() => {
-    clearRegistry();
-    registerConvention(ntBundleConventionConfig);
+    clearBundleRegistry();
+    registerBundle(ntBundle);
   });
 
   it("same seed produces identical deals through startDrill", async () => {

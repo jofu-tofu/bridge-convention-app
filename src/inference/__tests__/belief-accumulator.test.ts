@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit } from "../../engine/types";
-import type { FactConstraintIR } from "../../core/contracts/agreement-module";
+import type { FactConstraint } from "../../core/contracts/agreement-module";
 import type { BidAnnotation } from "../types";
 import {
   createInitialBeliefState,
@@ -9,7 +9,7 @@ import {
 
 function makeAnnotation(
   seat: Seat,
-  constraints: readonly FactConstraintIR[],
+  constraints: readonly FactConstraint[],
 ): BidAnnotation {
   return {
     call: { type: "pass" },
@@ -20,15 +20,15 @@ function makeAnnotation(
   };
 }
 
-function hcpConstraints(min?: number, max?: number): FactConstraintIR[] {
-  const result: FactConstraintIR[] = [];
+function hcpConstraints(min?: number, max?: number): FactConstraint[] {
+  const result: FactConstraint[] = [];
   if (min !== undefined) result.push({ factId: "hand.hcp", operator: "gte", value: min });
   if (max !== undefined) result.push({ factId: "hand.hcp", operator: "lte", value: max });
   return result;
 }
 
-function suitConstraint(suit: string, min?: number, max?: number): FactConstraintIR[] {
-  const result: FactConstraintIR[] = [];
+function suitConstraint(suit: string, min?: number, max?: number): FactConstraint[] {
+  const result: FactConstraint[] = [];
   if (min !== undefined) result.push({ factId: `hand.suitLength.${suit}`, operator: "gte", value: min });
   if (max !== undefined) result.push({ factId: `hand.suitLength.${suit}`, operator: "lte", value: max });
   return result;

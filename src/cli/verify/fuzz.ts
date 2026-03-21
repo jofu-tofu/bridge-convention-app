@@ -4,13 +4,13 @@
 // and catching crashes. Seeds from mulberry32 for reproducibility.
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { BiddingSystem } from "../../conventions/definitions/bidding-system";
+import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
 import type { AuctionContext } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import { INITIAL_KERNEL } from "../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import { collectMatchingClaims } from "../../conventions/core";
 import { buildObservationLogViaRules, protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
-import { specFromSystem } from "../../conventions/definitions/system-registry";
+import { specFromBundle } from "../../conventions/definitions/system-registry";
 import { callKey } from "../../engine/call-helpers";
 import { mulberry32 } from "../../core/util/seeded-rng";
 import type { Seat } from "../../engine/types";
@@ -54,15 +54,15 @@ const VULN_CYCLE: Vulnerability[] = [
  * check invariants at each step, catch crashes.
  */
 export function fuzzBundle(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   modules: readonly RuleModule[],
   config: FuzzConfig,
 ): FuzzResult {
-  const spec = specFromSystem(system);
+  const spec = specFromBundle(bundle);
   if (!spec) {
     return {
       command: "verify fuzz",
-      bundle: system.id,
+      bundle: bundle.id,
       config: { trials: config.trials, seed: config.seed },
       crashes: [],
       violations: [],
@@ -86,10 +86,10 @@ export function fuzzBundle(
     trialsRun++;
 
     try {
-      const deal = generateSeededDeal(system, trialSeed, vuln);
-      const userSeat = resolveUserSeat(system, deal);
+      const deal = generateSeededDeal(bundle, trialSeed, vuln);
+      const userSeat = resolveUserSeat(bundle, deal);
       const partner = partnerOf(userSeat);
-      const initAuction = buildInitialAuction(system, userSeat, deal);
+      const initAuction = buildInitialAuction(bundle, userSeat, deal);
       const strategy = protocolSpecToStrategy(spec);
 
       const auctionHistory: { call: Call; seat: Seat }[] = [...initAuction.entries];
@@ -108,7 +108,7 @@ export function fuzzBundle(
         const auctionCtx: AuctionContext = { snapshot: {} as PublicSnapshot, log };
         const claims = collectMatchingClaims(modules, auctionCtx, nextSeat);
 
-        const currentKernel = log.length > 0 ? log[log.length - 1]!.postKernel : INITIAL_KERNEL;
+        const currentKernel = log.length > 0 ? log[log.length - 1]!.stateAfter : INITIAL_NEGOTIATION;
         const auctionStrings = auctionHistory.map((e) => callKey(e.call));
 
         const snapshot: VerificationSnapshot = {
@@ -176,7 +176,7 @@ export function fuzzBundle(
 
   return {
     command: "verify fuzz",
-    bundle: system.id,
+    bundle: bundle.id,
     config: { trials: config.trials, seed: config.seed },
     crashes,
     violations,

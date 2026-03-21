@@ -8,9 +8,9 @@ import type {
   EliminationRecord,
 } from "../../core/contracts/module-surface";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
-import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
+import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 
 import {
   makeCall,
@@ -458,7 +458,7 @@ describe("projectTeaching", () => {
   });
 
   test("with catalog: primary explanation nodes get explanationId and templateKey enrichment", () => {
-    const catalog: ExplanationCatalogIR = createExplanationCatalog([
+    const catalog: ExplanationCatalog = createExplanationCatalog([
       {
         explanationId: "nt.hcp.base",
         factId: "hand.hcp",
@@ -510,7 +510,7 @@ describe("projectTeaching", () => {
   });
 
   test("with catalog: whyNot explanation nodes use contrastiveTemplateKey when available", () => {
-    const catalog: ExplanationCatalogIR = createExplanationCatalog([
+    const catalog: ExplanationCatalog = createExplanationCatalog([
       {
         explanationId: "nt.hcp.invite",
         factId: "hand.hcp",
@@ -593,7 +593,7 @@ describe("projectTeaching", () => {
     expect(conditionNodes[0]!.templateKey).toBeUndefined();
   });
 
-  test("with pedagogicalRelations: near-miss WhyNotEntry gets familyRelation populated", () => {
+  test("with teachingRelations: near-miss WhyNotEntry gets familyRelation populated", () => {
     const winnerProposal = makeProposal({
       meaningId: "stayman:ask-major",
       moduleId: "stayman",
@@ -631,12 +631,12 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const relations: PedagogicalRelation[] = [
+    const relations: TeachingRelation[] = [
       { kind: "near-miss-of", a: "stayman:ask-major", b: "transfer:to-hearts" },
     ];
 
     const projection = projectTeaching(arbitration, provenance, {
-      pedagogicalRelations: relations,
+      teachingRelations: relations,
     });
 
     expect(projection.whyNot).toHaveLength(1);
@@ -648,7 +648,7 @@ describe("projectTeaching", () => {
     expect(whyNot.familyRelation!.b).toBe("transfer:to-hearts");
   });
 
-  test("without pedagogicalRelations: WhyNotEntry has no familyRelation (backward compat)", () => {
+  test("without teachingRelations: WhyNotEntry has no familyRelation (backward compat)", () => {
     const winnerProposal = makeProposal({
       meaningId: "stayman:ask-major",
       moduleId: "stayman",
@@ -682,7 +682,7 @@ describe("projectTeaching", () => {
     expect(projection.whyNot[0]!.familyRelation).toBeUndefined();
   });
 
-  test("with pedagogicalRelations: eliminated meaningView gets eliminationReason enriched", () => {
+  test("with teachingRelations: eliminated meaningView gets eliminationReason enriched", () => {
     const winnerProposal = makeProposal({
       meaningId: "bridge:to-3nt",
       moduleId: "natural-nt",
@@ -719,12 +719,12 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const relations: PedagogicalRelation[] = [
+    const relations: TeachingRelation[] = [
       { kind: "stronger-than", a: "bridge:to-3nt", b: "bridge:nt-invite" },
     ];
 
     const projection = projectTeaching(arbitration, provenance, {
-      pedagogicalRelations: relations,
+      teachingRelations: relations,
     });
 
     const eliminatedMeaning = projection.meaningViews.find(mv => mv.meaningId === "bridge:nt-invite");
@@ -735,7 +735,7 @@ describe("projectTeaching", () => {
   });
 
   test("with catalog: meaning-level entries produce convention-reference nodes", () => {
-    const catalog: ExplanationCatalogIR = createExplanationCatalog([
+    const catalog: ExplanationCatalog = createExplanationCatalog([
       {
         explanationId: "nt.stayman.eligible",
         factId: "module.stayman.eligible",

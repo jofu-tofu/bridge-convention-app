@@ -1,5 +1,5 @@
 import type { Auction, AuctionEntry, NumberRange, Seat, Suit } from "../../engine/types";
-import type { FactConstraintIR } from "./agreement-module";
+import type { FactConstraint } from "./agreement-module";
 
 export interface SuitInference {
   readonly minLength?: number;
@@ -8,7 +8,7 @@ export interface SuitInference {
 
 /** What a single bid reveals about the bidder's hand.
  *  Used internally by InferenceProvider (e.g. natural-inference) and partner-interpretation.
- *  For public beliefs, prefer FactConstraintIR[] — see PublicBeliefs. */
+ *  For public beliefs, prefer FactConstraint[] — see PublicBeliefs. */
 export interface HandInference {
   readonly seat: Seat;
   readonly minHcp?: number;
@@ -37,12 +37,12 @@ export interface DerivedRanges {
 }
 
 /** Accumulated public knowledge about a seat's hand.
- *  Source of truth is `constraints` (lossless FactConstraintIR[]).
+ *  Source of truth is `constraints` (lossless FactConstraint[]).
  *  `ranges` and `qualitative` are derived for display/querying. */
 export interface PublicBeliefs {
   readonly seat: Seat;
   /** Raw constraints accumulated from all bids — canonical, lossless. */
-  readonly constraints: readonly FactConstraintIR[];
+  readonly constraints: readonly FactConstraint[];
   /** Derived display-friendly ranges (computed from constraints). */
   readonly ranges: DerivedRanges;
   /** Constraints that don't reduce to flat ranges — displayed as-is. */

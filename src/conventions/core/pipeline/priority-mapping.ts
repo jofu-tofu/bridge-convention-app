@@ -4,8 +4,8 @@ import type { RecommendationBand } from "../../../core/contracts/meaning";
 /**
  * Map RecommendationBand to PriorityClass.
  *
- * RecommendationBand is the authored semantic priority on MeaningSurface (via RankingMetadata).
- * PriorityClass is the richer IR equivalent on DecisionSurfaceIR.
+ * RecommendationBand is the authored semantic priority on BidMeaning (via RankingMetadata).
+ * PriorityClass is the richer IR equivalent on DecisionSurface.
  */
 export function bandToPriorityClass(band: RecommendationBand): PriorityClass {
   switch (band) {
@@ -22,7 +22,7 @@ export function bandToPriorityClass(band: RecommendationBand): PriorityClass {
 
 /**
  * Map PriorityClass back to RecommendationBand for building RankingMetadata
- * from a DecisionSurfaceIR.
+ * from a DecisionSurface.
  */
 export function priorityClassToBand(pc: PriorityClass | undefined): RecommendationBand {
   switch (pc) {

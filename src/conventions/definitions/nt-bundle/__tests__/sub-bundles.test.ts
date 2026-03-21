@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveActiveModules } from "../../../core/runtime/profile-activation";
 import { NT_SAYC_PROFILE } from "../system-profile";
-import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
+import type { SystemProfile } from "../../../../core/contracts/agreement-module";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import { CAP_OPENING_1NT } from "../../capability-vocabulary";
@@ -11,7 +11,7 @@ import { CAP_OPENING_1NT } from "../../capability-vocabulary";
 // of the same NT surfaces, enabling Stayman-only and Transfer-only drill modes.
 // ---------------------------------------------------------------------------
 
-const STAYMAN_ONLY_PROFILE: SystemProfileIR = {
+const STAYMAN_ONLY_PROFILE: SystemProfile = {
   profileId: "1nt-stayman-only",
   baseSystem: "sayc",
   modules: [
@@ -34,7 +34,7 @@ const STAYMAN_ONLY_PROFILE: SystemProfileIR = {
   conflictPolicy: { activationDefault: "simultaneous" },
 };
 
-const TRANSFER_ONLY_PROFILE: SystemProfileIR = {
+const TRANSFER_ONLY_PROFILE: SystemProfile = {
   profileId: "1nt-transfers-only",
   baseSystem: "sayc",
   modules: [

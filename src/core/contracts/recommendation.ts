@@ -1,7 +1,7 @@
 import type { Call } from "../../engine/types";
 import type { BiddingStrategy } from "./bidding";
 import type { AlternativeGroup, IntentFamily } from "./tree-evaluation";
-import type { ExplanationCatalogIR } from "./explanation-catalog";
+import type { ExplanationCatalog } from "./explanation-catalog";
 import type { ArbitrationResult, MachineRegisters } from "./module-surface";
 import type { DecisionProvenance, HandoffTrace } from "./provenance";
 import type { PosteriorFactValue } from "./posterior";
@@ -65,7 +65,7 @@ export interface StrategyEvaluation {
   /** Posterior summary. Null when posterior engine not wired. */
   readonly posteriorSummary: PosteriorSummary | null;
   /** Explanation catalog for enriching teaching projections. Null when not available. */
-  readonly explanationCatalog: ExplanationCatalogIR | null;
+  readonly explanationCatalog: ExplanationCatalog | null;
   /** Teaching projection from the meaning-pipeline evaluation. Null when not produced. */
   readonly teachingProjection: TeachingProjection | null;
   /** Evaluated facts from the pipeline evaluation. Null before first evaluation. */
@@ -78,6 +78,6 @@ export interface StrategyEvaluation {
 
 /** Extended strategy interface for convention-based strategies that produce practical recommendations.
  *  Returns the full evaluation snapshot from the most recent suggest() call (null before first suggest()). */
-export interface ConventionBiddingStrategy extends BiddingStrategy {
+export interface ConventionStrategy extends BiddingStrategy {
   getLastEvaluation(): StrategyEvaluation | null;
 }

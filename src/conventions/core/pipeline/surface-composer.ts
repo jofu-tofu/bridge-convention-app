@@ -1,11 +1,11 @@
 import type { CandidateTransform } from "../../../core/contracts/meaning";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { Call } from "../../../engine/types";
 import type {
   ArbitrationResult,
-  SurfaceEvaluationResult,
+  CompositionResult,
   TransformApplication,
-  SurfaceCompositionDiagnostic,
+  CompositionDiagnostic,
 } from "../../../core/contracts/module-surface";
 import type { TransformTraceEntry, DecisionProvenance } from "../../../core/contracts/provenance";
 
@@ -15,15 +15,15 @@ import type { TransformTraceEntry, DecisionProvenance } from "../../../core/cont
  * Unrecognized transform kinds emit a diagnostic.
  */
 export function composeSurfaces(
-  surfaces: readonly MeaningSurface[],
+  surfaces: readonly BidMeaning[],
   transforms?: readonly CandidateTransform[],
-): SurfaceEvaluationResult {
+): CompositionResult {
   if (!transforms || transforms.length === 0) {
-    return { composedSurfaces: surfaces, appliedTransforms: [], diagnostics: [] };
+    return { composedMeanings: surfaces, appliedTransforms: [], diagnostics: [] };
   }
 
   const appliedTransforms: TransformApplication[] = [];
-  const diagnostics: SurfaceCompositionDiagnostic[] = [];
+  const diagnostics: CompositionDiagnostic[] = [];
 
   // Partition transforms by kind
   const suppressTransforms: CandidateTransform[] = [];
@@ -52,7 +52,7 @@ export function composeSurfaces(
   // ── Phase 1: Suppress ───────────────────────────────────────
   const suppressIds = new Set<string>(suppressTransforms.map((t) => t.targetId));
 
-  const afterSuppress: MeaningSurface[] = [];
+  const afterSuppress: BidMeaning[] = [];
   const affectedByTarget = new Map<string, string[]>(); // targetId → meaningId[]
 
   for (const surface of surfaces) {
@@ -91,14 +91,14 @@ export function composeSurfaces(
   }
 
   // ── Phase 2: Remap ─────────────────────────────────────────
-  let composedSurfaces = afterSuppress;
+  let composedMeanings = afterSuppress;
 
   for (const t of remapTransforms) {
     const remapCall = resolveRemapCall(t);
     const remapTargetIds = new Set<string>([t.targetId]);
     const affectedIds: string[] = [];
 
-    composedSurfaces = composedSurfaces.map((surface) => {
+    composedMeanings = composedMeanings.map((surface) => {
       const matched = findMatchingTarget(surface, remapTargetIds);
       if (matched === null) return surface;
       affectedIds.push(surface.meaningId);
@@ -108,7 +108,7 @@ export function composeSurfaces(
         ? { ...surface.encoding, defaultCall: remapCall }
         : surface.encoding;
 
-      return { ...surface, encoding: newEncoding } as MeaningSurface;
+      return { ...surface, encoding: newEncoding } as BidMeaning;
     });
 
     if (affectedIds.length > 0) {
@@ -142,7 +142,7 @@ export function composeSurfaces(
       continue;
     }
 
-    composedSurfaces = [...composedSurfaces, t.surface];
+    composedMeanings = [...composedMeanings, t.surface];
     appliedTransforms.push({
       transformId: t.transformId,
       kind: "inject",
@@ -157,12 +157,12 @@ export function composeSurfaces(
     });
   }
 
-  return { composedSurfaces, appliedTransforms, diagnostics };
+  return { composedMeanings, appliedTransforms, diagnostics };
 }
 
 /** Check if a surface matches a target (by meaningId or semanticClassId). */
 function findMatchingTarget(
-  surface: MeaningSurface,
+  surface: BidMeaning,
   targetIds: Set<string>,
 ): string | null {
   if (targetIds.has(surface.meaningId)) return surface.meaningId;
@@ -184,7 +184,7 @@ function resolveRemapCall(t: CandidateTransform): Call | undefined {
 export function mergeUpstreamProvenance(
   result: ArbitrationResult,
   appliedTransforms: readonly TransformApplication[],
-  diagnostics?: readonly SurfaceCompositionDiagnostic[],
+  diagnostics?: readonly CompositionDiagnostic[],
 ): ArbitrationResult {
   if (appliedTransforms.length === 0 && !diagnostics?.length && result.provenance?.surfaceDiagnostics) return result;
 

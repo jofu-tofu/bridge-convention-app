@@ -14,8 +14,8 @@
  */
 
 import type { RuleModule } from "../../core/rule-module";
-import type { KernelDelta } from "../../../core/contracts/committed-step";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { NegotiationDelta } from "../../../core/contracts/committed-step";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import {
   jacobyTransfersModule,
   OPENER_TRANSFER_HEARTS_SURFACES,
@@ -46,31 +46,31 @@ const transferR1Surfaces = jacobyTransfersModule.entrySurfaces;
 // ── Kernel deltas (derived from old FSM entryEffects) ───────────────
 
 /** Transfer bid: forcing one round (opener must accept), responder is captain. */
-const TRANSFER_BID_DELTA: KernelDelta = { forcing: "one-round", captain: "responder" };
+const TRANSFER_BID_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
 
 /** Opener accepts hearts: forcing resolved, tentative fit agreed. */
-const ACCEPT_HEARTS_DELTA: KernelDelta = {
+const ACCEPT_HEARTS_DELTA: NegotiationDelta = {
   forcing: "none",
   fitAgreed: { strain: "hearts", confidence: "tentative" },
 };
 
 /** Opener accepts spades: forcing resolved, tentative fit agreed. */
-const ACCEPT_SPADES_DELTA: KernelDelta = {
+const ACCEPT_SPADES_DELTA: NegotiationDelta = {
   forcing: "none",
   fitAgreed: { strain: "spades", confidence: "tentative" },
 };
 
 /** Captain transfers to opener (3NT placement, 2NT invite). */
-const CAPTAIN_TO_OPENER_DELTA: KernelDelta = { captain: "opener" };
+const CAPTAIN_TO_OPENER_DELTA: NegotiationDelta = { captain: "opener" };
 
 /** Map R3 transfer surfaces to claims with per-surface kernel deltas.
  *  3NT and 2NT bids transfer captaincy to opener; others are terminal. */
 function withR3TransferDeltas(
-  surfaces: readonly MeaningSurface[],
-): readonly { readonly surface: MeaningSurface; readonly kernelDelta?: KernelDelta }[] {
+  surfaces: readonly BidMeaning[],
+): readonly { readonly surface: BidMeaning; readonly negotiationDelta?: NegotiationDelta }[] {
   return surfaces.map((s) => {
     if (s.sourceIntent.type === "TransferNTGame" || s.sourceIntent.type === "Invite") {
-      return { surface: s, kernelDelta: CAPTAIN_TO_OPENER_DELTA };
+      return { surface: s, negotiationDelta: CAPTAIN_TO_OPENER_DELTA };
     }
     return { surface: s };
   });
@@ -106,7 +106,7 @@ export const jacobyTransfersRules: RuleModule<Phase> = {
       match: { local: "idle", turn: "responder" },
       claims: transferR1Surfaces.map((s) => ({
         surface: s,
-        kernelDelta: TRANSFER_BID_DELTA,
+        negotiationDelta: TRANSFER_BID_DELTA,
       })),
     },
     // Opener accepts hearts transfer — tentative fit agreed
@@ -114,7 +114,7 @@ export const jacobyTransfersRules: RuleModule<Phase> = {
       match: { local: "transferred-hearts", turn: "opener" },
       claims: OPENER_TRANSFER_HEARTS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: ACCEPT_HEARTS_DELTA,
+        negotiationDelta: ACCEPT_HEARTS_DELTA,
       })),
     },
     // Opener accepts spades transfer — tentative fit agreed
@@ -122,7 +122,7 @@ export const jacobyTransfersRules: RuleModule<Phase> = {
       match: { local: "transferred-spades", turn: "opener" },
       claims: OPENER_TRANSFER_SPADES_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: ACCEPT_SPADES_DELTA,
+        negotiationDelta: ACCEPT_SPADES_DELTA,
       })),
     },
     // R3 after hearts accept — per-surface deltas (3NT/2NT → captain to opener)

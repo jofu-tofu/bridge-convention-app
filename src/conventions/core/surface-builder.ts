@@ -1,11 +1,11 @@
 import type {
-  MeaningSurface,
-  MeaningSurfaceClause,
+  BidMeaning,
+  BidMeaningClause,
   RecommendationBand,
 } from "../../core/contracts/meaning";
 import type { Call } from "../../engine/types";
 import type { ChoiceClosurePolicy } from "../../core/contracts/agreement-module";
-import type { PedagogicalTagRef } from "../../core/contracts/pedagogical-tag";
+import type { TeachingTagRef } from "../../core/contracts/teaching-tag";
 import { deriveClauseId, deriveClauseDescription } from "./pipeline/clause-derivation";
 
 /**
@@ -16,7 +16,7 @@ import { deriveClauseId, deriveClauseDescription } from "./pipeline/clause-deriv
  */
 export interface SimplifiedClause {
   readonly factId: string;
-  readonly operator: MeaningSurfaceClause["operator"];
+  readonly operator: BidMeaningClause["operator"];
   readonly value: number | boolean | { min: number; max: number };
   readonly isPublic?: boolean;
   /** Override auto-derived description. Use only when adding parenthetical
@@ -25,7 +25,7 @@ export interface SimplifiedClause {
 }
 
 /**
- * Input for `createSurface()`. All required fields for a MeaningSurface
+ * Input for `createSurface()`. All required fields for a BidMeaning
  * except those derivable from ModuleContext or clause data.
  */
 export interface SurfaceInput {
@@ -47,7 +47,7 @@ export interface SurfaceInput {
   readonly moduleId?: string;
   readonly closurePolicy?: ChoiceClosurePolicy;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
-  readonly pedagogicalTags?: readonly PedagogicalTagRef[];
+  readonly teachingTags?: readonly TeachingTagRef[];
 }
 
 /**
@@ -61,7 +61,7 @@ export interface ModuleContext {
 }
 
 /**
- * Build a complete MeaningSurface from simplified input.
+ * Build a complete BidMeaning from simplified input.
  *
  * - Normalizes `encoding` (wraps bare Call in `{ defaultCall }`)
  * - Fills `moduleId` from `ctx` when not on input
@@ -70,12 +70,12 @@ export interface ModuleContext {
  * - Derives `clauseId` and `description` at build time via `deriveClauseId()`
  *   and `deriveClauseDescription()`. Explicit `description` on SimplifiedClause
  *   takes precedence over auto-derived values.
- * - Returns a complete MeaningSurface with all fields populated
+ * - Returns a complete BidMeaning with all fields populated
  *
  * @param precedenceOverride Used only by composeModules() to stamp positional precedence.
  * @throws Error if moduleId is absent from both input and context
  */
-export function createSurface(input: SurfaceInput, ctx?: ModuleContext, precedenceOverride?: number): MeaningSurface {
+export function createSurface(input: SurfaceInput, ctx?: ModuleContext, precedenceOverride?: number): BidMeaning {
   const moduleId = input.moduleId ?? ctx?.moduleId;
   if (moduleId === undefined) {
     throw new Error(
@@ -86,13 +86,13 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
   const modulePrecedence = precedenceOverride ?? 0;
 
   // Normalize encoding: wrap bare Call in { defaultCall }
-  const encoding: MeaningSurface["encoding"] =
+  const encoding: BidMeaning["encoding"] =
     "defaultCall" in input.encoding
       ? input.encoding
       : { defaultCall: input.encoding };
 
   // Build clauses with derived clauseId and description
-  const clauses: readonly MeaningSurfaceClause[] = input.clauses.map((c) => ({
+  const clauses: readonly BidMeaningClause[] = input.clauses.map((c) => ({
     factId: c.factId,
     operator: c.operator,
     value: c.value,
@@ -101,7 +101,7 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
     ...(c.isPublic !== undefined ? { isPublic: c.isPublic } : {}),
   }));
 
-  const surface: MeaningSurface = {
+  const surface: BidMeaning = {
     meaningId: input.meaningId,
     semanticClassId: input.semanticClassId,
     moduleId,
@@ -116,7 +116,7 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
     teachingLabel: input.teachingLabel,
     ...(input.closurePolicy ? { closurePolicy: input.closurePolicy } : {}),
     ...(input.surfaceBindings ? { surfaceBindings: input.surfaceBindings } : {}),
-    ...(input.pedagogicalTags ? { pedagogicalTags: input.pedagogicalTags } : {}),
+    ...(input.teachingTags ? { teachingTags: input.teachingTags } : {}),
   };
 
   return surface;

@@ -4,7 +4,7 @@ import {
   generateRuleCoverageManifest,
 } from "../rule-enumeration";
 import type { RuleModule } from "../../rule-module";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BidSuit, Seat } from "../../../../engine/types";
 
 // ── Real bundle imports for equivalence checks ──────────────────────
@@ -16,7 +16,7 @@ import { bergenRules } from "../../../definitions/modules/bergen/bergen-rules";
 import { dontRules } from "../../../definitions/modules/dont/dont-rules";
 import { weakTwosRules } from "../../../definitions/modules/weak-twos/weak-twos-rules";
 
-function makeSurface(id: string, level: number = 1, strain: BidSuit = BidSuit.Clubs): MeaningSurface {
+function makeSurface(id: string, level: number = 1, strain: BidSuit = BidSuit.Clubs): BidMeaning {
   return {
     meaningId: id,
     semanticClassId: `test:${id}`,
@@ -28,7 +28,7 @@ function makeSurface(id: string, level: number = 1, strain: BidSuit = BidSuit.Cl
       recommendationBand: "preferred",
       intraModuleOrder: 0,
     },
-  } as unknown as MeaningSurface;
+  } as unknown as BidMeaning;
 }
 
 // ── Synthetic tests ─────────────────────────────────────────────────

@@ -1,7 +1,8 @@
 import type { ConventionBundle } from "./bundle-types";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import type { SystemProfileIR, ModuleEntryIR } from "../../../core/contracts/agreement-module";
-import type { ExplanationCatalogIR, ExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import { ConventionCategory } from "../../../core/contracts/convention";
+import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { SystemProfile, ModuleEntry } from "../../../core/contracts/agreement-module";
+import type { ExplanationCatalog, ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { DealConstraints, SeatConstraint, Auction, Seat } from "../../../engine/types";
 
 /**
@@ -40,7 +41,7 @@ export function composeBundles(
     : undefined;
 
   // ── Pedagogical relations (concatenate) ─────────────────────
-  const pedagogicalRelations = bundles.flatMap((b) => b.pedagogicalRelations);
+  const teachingRelations = bundles.flatMap((b) => b.teachingRelations);
 
   // ── Acceptable alternatives (concatenate) ───────────────────
   const acceptableAlternatives = bundles.flatMap((b) => b.acceptableAlternatives);
@@ -84,6 +85,8 @@ export function composeBundles(
   return {
     id: compositeId,
     name,
+    description: bundles.map((b) => b.description).filter(Boolean).join("; ") || "",
+    category: bundles[0]!.category ?? ConventionCategory.Constructive,
     memberIds,
     dealConstraints,
     meaningSurfaces,
@@ -93,7 +96,7 @@ export function composeBundles(
     conversationMachine,
     declaredCapabilities,
     explanationCatalog,
-    pedagogicalRelations,
+    teachingRelations,
     acceptableAlternatives,
     intentFamilies,
   };
@@ -103,7 +106,7 @@ export function composeBundles(
 
 function mergeExplanationCatalogs(
   bundles: readonly ConventionBundle[],
-): ExplanationCatalogIR {
+): ExplanationCatalog {
   const seen = new Set<string>();
   const merged: ExplanationEntry[] = [];
 
@@ -124,18 +127,18 @@ function mergeExplanationCatalogs(
 
 function mergeSystemProfiles(
   bundles: readonly ConventionBundle[],
-): SystemProfileIR | undefined {
+): SystemProfile | undefined {
   const withProfiles = bundles.filter((b) => b.systemProfile);
   if (withProfiles.length === 0) return undefined;
 
   const base = withProfiles[0]!.systemProfile!;
-  const allModules: ModuleEntryIR[] = withProfiles.flatMap(
+  const allModules: ModuleEntry[] = withProfiles.flatMap(
     (b) => b.systemProfile!.modules,
   );
 
   // Deduplicate modules by moduleId (first occurrence wins)
   const seen = new Set<string>();
-  const dedupedModules: ModuleEntryIR[] = [];
+  const dedupedModules: ModuleEntry[] = [];
   for (const mod of allModules) {
     if (!seen.has(mod.moduleId)) {
       seen.add(mod.moduleId);
@@ -219,7 +222,7 @@ function mergeSeatConstraints(constraints: SeatConstraint[]): SeatConstraint {
 
 function composeSurfaceRouters(
   bundles: readonly ConventionBundle[],
-): ((auction: Auction, seat: Seat) => readonly MeaningSurface[]) | undefined {
+): ((auction: Auction, seat: Seat) => readonly BidMeaning[]) | undefined {
   const routers = bundles
     .filter((b) => b.surfaceRouter)
     .map((b) => b.surfaceRouter!);
@@ -228,6 +231,6 @@ function composeSurfaceRouters(
   if (routers.length === 1) return routers[0];
 
   // Compose: try each router in order, concatenate results
-  return (auction: Auction, seat: Seat): readonly MeaningSurface[] =>
+  return (auction: Auction, seat: Seat): readonly BidMeaning[] =>
     routers.flatMap((router) => router(auction, seat));
 }

@@ -1,7 +1,7 @@
 import type { InferenceConfig, PublicBeliefs } from "./types";
 import type { Auction, AuctionEntry, Seat } from "../engine/types";
 import type { InferenceSnapshot } from "./types";
-import type { FactConstraintIR } from "../core/contracts/agreement-module";
+import type { FactConstraint } from "../core/contracts/agreement-module";
 import { Seat as SeatEnum } from "../engine/types";
 import { partnerSeat } from "../engine/constants";
 import { derivePublicBeliefs, handInferenceToConstraints } from "./derive-beliefs";
@@ -40,7 +40,7 @@ export function createInferenceEngine(
   config: InferenceConfig,
   observerSeat: Seat,
 ): InferenceEngine {
-  const rawConstraints: Record<Seat, FactConstraintIR[]> = {
+  const rawConstraints: Record<Seat, FactConstraint[]> = {
     [SeatEnum.North]: [],
     [SeatEnum.East]: [],
     [SeatEnum.South]: [],
@@ -67,7 +67,7 @@ export function createInferenceEngine(
         ? config.ownPartnership
         : config.opponentPartnership;
 
-      let newConstraints: readonly FactConstraintIR[] = [];
+      let newConstraints: readonly FactConstraint[] = [];
       try {
         const inference = provider.inferFromBid(entry, auctionBefore, bidderSeat) ?? null;
         if (inference) {

@@ -1,7 +1,7 @@
 import type { Call } from "../../engine/types";
-import type { ConditionEvidenceIR } from "./evidence-bundle";
+import type { ConditionEvidence } from "./evidence-bundle";
 import type { TransformTrace } from "./meaning";
-import type { SurfaceCompositionDiagnostic } from "./module-surface";
+import type { CompositionDiagnostic } from "./module-surface";
 
 /** @deprecated Use TransformTrace directly — affectedIds is now on TransformTrace. */
 export type TransformTraceEntry = TransformTrace;
@@ -28,13 +28,13 @@ export interface DecisionProvenance {
   /** Handoff traces (module-to-module delegation). */
   readonly handoffs: readonly HandoffTrace[];
   /** Surface composition diagnostics (suppress/inject/remap application notes). */
-  readonly surfaceDiagnostics?: readonly SurfaceCompositionDiagnostic[];
+  readonly surfaceDiagnostics?: readonly CompositionDiagnostic[];
 }
 
 /** Evidence for why a candidate's conditions were or weren't satisfied. */
 export interface ApplicabilityEvidence {
   readonly factDependencies: readonly string[];
-  readonly evaluatedConditions: readonly ConditionEvidenceIR[];
+  readonly evaluatedConditions: readonly ConditionEvidence[];
 }
 
 /** Trace of a candidate eliminated during the pipeline. */
@@ -46,7 +46,7 @@ export interface EliminationTrace {
   /** Human-readable reason for elimination. */
   readonly reason: string;
   /** Supporting evidence (evaluated conditions). */
-  readonly evidence: readonly ConditionEvidenceIR[];
+  readonly evidence: readonly ConditionEvidence[];
   /** How definitive is this elimination? */
   readonly strength: "hard" | "entailed" | "preference";
 }

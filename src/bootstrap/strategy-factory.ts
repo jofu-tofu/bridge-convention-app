@@ -6,7 +6,7 @@
 
 import type { ConventionSpec } from "../conventions/core";
 import type { BiddingStrategy } from "../core/contracts";
-import type { ConventionBiddingStrategy } from "../core/contracts/recommendation";
+import type { ConventionStrategy } from "../core/contracts/recommendation";
 import type { OpponentMode } from "../core/contracts/drill";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
@@ -14,7 +14,7 @@ import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { passStrategy } from "../strategy/bidding/pass-strategy";
 
 /** Create a convention bidding strategy from a protocol spec. */
-export function createSpecStrategy(spec: ConventionSpec): ConventionBiddingStrategy {
+export function createSpecStrategy(spec: ConventionSpec): ConventionStrategy {
   return protocolSpecToStrategy(spec);
 }
 

@@ -66,15 +66,15 @@ export interface FitFactor extends BaseFactor {
 }
 
 // ─── Ambiguity schema ───────────────────────────────────────
-export interface AmbiguityAlternativeIR {
+export interface AmbiguityAlternative {
   readonly branchId: string;
   readonly meaningId: string;
   readonly description: string;
 }
 
-export interface AmbiguityFamilyIR {
+export interface AmbiguityFamily {
   readonly familyId: string;
-  readonly alternatives: readonly AmbiguityAlternativeIR[];
+  readonly alternatives: readonly AmbiguityAlternative[];
   readonly exclusivity: "xor" | "or";
 }
 
@@ -100,8 +100,8 @@ export interface AlertPin {
 
 // ─── Factor Graph IR ────────────────────────────────────────
 /** The compiled, convention-erased IR passed to the posterior backend. */
-export interface FactorGraphIR {
+export interface FactorGraph {
   readonly factors: readonly FactorSpec[];
-  readonly ambiguitySchema: readonly AmbiguityFamilyIR[];
+  readonly ambiguitySchema: readonly AmbiguityFamily[];
   readonly evidencePins: readonly EvidencePin[];
 }

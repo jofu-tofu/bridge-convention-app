@@ -1,4 +1,4 @@
-import type { SystemProfileIR } from "../../../core/contracts/agreement-module";
+import type { SystemProfile } from "../../../core/contracts/agreement-module";
 import type { RuntimeDiagnostic } from "./types";
 
 interface ProfileDiagnostic extends RuntimeDiagnostic {
@@ -17,7 +17,7 @@ interface ProfileDiagnostic extends RuntimeDiagnostic {
  * @returns Array of diagnostics (empty = valid)
  */
 export function validateProfile(
-  profile: SystemProfileIR,
+  profile: SystemProfile,
   surfaceLookup?: (moduleId: string) => readonly { defaultCall: string; semanticClassId?: string }[],
 ): readonly ProfileDiagnostic[] {
   const diagnostics: ProfileDiagnostic[] = [];

@@ -1,3 +1,2 @@
-import { bundleFromSystem, dontSystem } from "../system-registry";
-
-export const dontBundle = bundleFromSystem(dontSystem);
+// Re-export bundle from system-registry (single source of truth)
+export { dontBundle } from "../system-registry";

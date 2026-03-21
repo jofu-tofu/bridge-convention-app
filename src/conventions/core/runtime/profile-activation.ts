@@ -1,5 +1,5 @@
-import type { SystemProfileIR, AttachmentIR } from "../../../core/contracts/agreement-module";
-import type { AuctionPatternIR, PublicGuardIR } from "../../../core/contracts/predicate-surfaces";
+import type { SystemProfile, Attachment } from "../../../core/contracts/agreement-module";
+import type { AuctionPattern, PublicGuard } from "../../../core/contracts/predicates";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { Auction, Seat } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
@@ -31,13 +31,13 @@ function resolveAuctionRole(role: string, auction: Auction): Seat | undefined {
 }
 
 /**
- * Evaluate an AuctionPatternIR against the current auction.
+ * Evaluate an AuctionPattern against the current auction.
  * - sequence: check if auction starts with these calls
  * - contains: check if auction contains the specified call (optionally by role)
  * - by-role: check if the last call by the specified role matches
  */
 function matchesAuctionPattern(
-  pattern: AuctionPatternIR,
+  pattern: AuctionPattern,
   auction: Auction,
 ): boolean {
   switch (pattern.kind) {
@@ -74,11 +74,11 @@ function matchesAuctionPattern(
 }
 
 /**
- * Evaluate a PublicGuardIR against a public snapshot's registers.
+ * Evaluate a PublicGuard against a public snapshot's registers.
  * Returns true if the guard condition is satisfied.
  */
 function evaluatePublicGuard(
-  guard: PublicGuardIR,
+  guard: PublicGuard,
   publicRegisters: Readonly<Record<string, unknown>>,
 ): boolean {
   switch (guard.operator) {
@@ -120,7 +120,7 @@ function hasVisibleMeanings(
  * Check whether a single attachment's conditions are all met.
  */
 function attachmentMatches(
-  attachment: AttachmentIR,
+  attachment: Attachment,
   auction: Auction,
   capabilities: Readonly<Record<string, string>>,
   publicSnapshot?: PublicSnapshot,
@@ -177,7 +177,7 @@ function attachmentMatches(
  * @returns Module IDs where at least one attachment matches
  */
 export function resolveActiveModules(
-  profile: SystemProfileIR,
+  profile: SystemProfile,
   auction: Auction,
   _seat: unknown,
   capabilities: Readonly<Record<string, string>> = {},
@@ -227,7 +227,7 @@ export function resolveActiveModules(
  * @internal
  */
 export function resolveModulePrecedence(
-  profile: SystemProfileIR,
+  profile: SystemProfile,
 ): ReadonlyMap<string, number> {
   const precedence = new Map<string, number>();
   for (let i = 0; i < profile.modules.length; i++) {

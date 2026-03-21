@@ -8,11 +8,11 @@ Infrastructure for the meaning-centric convention system: registry, meaning pipe
 core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
   convention-module.ts  ConventionModule interface — formal contract for self-contained convention modules (surfaces, facts, FSM states, explanations). Also exports ModuleProvider — minimal shared contract (moduleId, entrySurfaces, surfaceGroups, facts, explanationEntries) that both ConventionModule and rule-only modules conform to.
-  rule-module.ts        RuleModule interface — declarative convention module for rule-based surface selection (ObsPattern, RouteExpr, KernelExpr, PhaseTransition, Rule). Claims carry optional `kernelDelta?: KernelDelta` for kernel threading (Phase 4). NT uses rule-only path; Bergen/DONT/Weak Twos still use FSM until Phase 5.
+  rule-module.ts        RuleModule interface — declarative convention module for rule-based surface selection (ObsPattern, RouteExpr, NegotiationExpr, PhaseTransition, Rule). Claims carry optional `negotiationDelta?: NegotiationDelta` for kernel threading. All bundles use rule-only path.
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())
-  surface-builder.ts    createSurface() builder — simplified MeaningSurface construction with auto-derived clauseId/description/moduleId. modulePrecedence defaults to 0; stamped positionally by composeModules() via precedenceOverride param
+  surface-builder.ts    createSurface() builder — simplified BidMeaning construction with auto-derived clauseId/description/moduleId. modulePrecedence defaults to 0.
   profile-builder.ts    Profile building utilities
   bundle/               Bundle registry (ConventionBundle CRUD)
     bundle-types.ts       ConventionBundle interface
@@ -21,24 +21,24 @@ core/
     create-bundle.ts      Bundle factory from convention spec + base-track
   pipeline/             Meaning pipeline (surfaces → facts → evaluation → arbitration)
     fact-evaluator.ts     evaluateFacts() — 3-tier fact evaluation (primitive → bridge-derived → module-derived) + optional relational + posterior
-    meaning-evaluator.ts  evaluateMeaningSurface(), evaluateAllSurfaces() — clause evaluation against facts
+    meaning-evaluator.ts  evaluateBidMeaning(), evaluateAllBidMeanings() — clause evaluation against facts
     meaning-arbitrator.ts arbitrateMeanings() — tiered selection (band → specificity → precedence), zipProposalsWithSurfaces()
     arbitration-helpers.ts evaluateProposal(), classifyIntoSets() — gate logic and truth/acceptable bucketing
     surface-composer.ts   composeSurfaces() — suppress/inject/remap transforms, mergeUpstreamProvenance()
-    surface-adapter.ts    adaptMeaningSurface() — MeaningSurface ↔ DecisionSurfaceIR mapping
+    surface-adapter.ts    adaptMeaningSurface() — BidMeaning ↔ DecisionSurface mapping
     encoder-resolver.ts   resolveEncoding() — direct/choice-set/frontier-step/relay-map encoders
     gate-order.ts         evaluateGates() — 4-gate sequence (semantic, obligation, encoder, legality)
     deal-constraint-evaluator.ts  evaluateDealConstraint() — fit-check, combined-hcp, custom constraints
-    witness-generator.ts  resolveRole(), compileWitnessSpec(), generateWitnessSpec() — deal generation
+    deal-spec-generator.ts  resolveRole(), compileDealSpec(), generateDealSpec() — deal generation
     binding-resolver.ts   $suit binding resolution for parameterized surfaces
-    normalize-intent.ts   normalizeIntent() — sourceIntent → CanonicalObs[] translation (migration bridge for continuation composition)
-    kernel-extractor.ts   extractKernelState() — MachineRegisters → KernelState mapping; computeKernelDelta() — diff between kernel states
+    normalize-intent.ts   normalizeIntent() — sourceIntent → BidAction[] translation (migration bridge for continuation composition)
+    negotiation-extractor.ts   extractKernelState() — MachineRegisters → NegotiationState mapping; computeKernelDelta() — diff between kernel states
     committed-step-builder.ts  buildCommittedStep() — constructs one CommittedStep from arbitration result + registers + normalizeIntent
     observation-log-builder.ts  buildObservationLog() — single-pass O(n) construction of CommittedStep[] from per-step data, threading kernel state
     route-matcher.ts      matchRoute() — evaluates RouteExpr patterns (subseq, last, contains, and/or/not) against CommittedStep log; matchObs() — single observation pattern matching
-    kernel-matcher.ts     matchKernel() — evaluates KernelExpr predicates (fit, forcing, captain, competition, combinators) against KernelState
+    negotiation-matcher.ts     matchKernel() — evaluates NegotiationExpr predicates (fit, forcing, captain, competition, combinators) against NegotiationState
     local-fsm.ts          advanceLocalFsm() — advances a module's local phase based on CommittedStep observations
-    rule-interpreter.ts   collectMatchingClaims() — collects matching MeaningSurface[] from RuleModule[] against AuctionContext (replays local FSMs, checks turn/phase/kernel/route constraints). deriveTurnRole() maps nextSeat to opener/responder/opponent
+    rule-interpreter.ts   collectMatchingClaims() — collects matching BidMeaning[] from RuleModule[] against AuctionContext (replays local FSMs, checks turn/phase/kernel/route constraints). deriveTurnRole() maps nextSeat to opener/responder/opponent
     rule-enumeration.ts   enumerateRuleAtoms(), generateRuleCoverageManifest() — enumerates coverage atoms from RuleModule[] for CLI commands. Atom ID format: moduleId/meaningId.
     clause-derivation.ts  deriveClauseId(), deriveClauseDescription(), fillClauseDefaults() — auto-derive clause metadata from factId/operator/value
     hand-fact-resolver.ts Hand fact resolution utilities
@@ -56,14 +56,11 @@ core/
     decision-surface-emitter.ts emitDecisionSurfaces() — Phase 2 output
     bundle-adapter.ts     bundleToRuntimeModules() — ConventionBundle → RuntimeModule[]
     commitment-extractor.ts extractCommitments() — auto-derives PublicConstraint[] (promises + entailed denials from closure policy)
-    profile-activation.ts resolveActiveModules() — SystemProfileIR activation
+    profile-activation.ts resolveActiveModules() — SystemProfile activation
     profile-validation.ts validateProfile() — semantic collision detection
-    fact-compiler.ts      FactConstraintIR compilation from surface conditions
+    fact-compiler.ts      FactConstraint compilation from surface conditions
     coverage-spec-compiler.ts  Coverage spec compilation for CLI coverage runner
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
-  composition/          Generic module composition — auto-assembles BaseModuleSpec + SurfaceFragments from ConventionModule[] + BundleSkeleton
-    machine-to-frame.ts   MachineState → FrameStateSpec converter (hierarchy flattening, TransitionMatch → EventPattern, MachineEffect → EffectSpec)
-    compose-modules.ts    composeModules() — generic composition: positional precedence, surface merging, fact merging, entry transition injection, hook wiring
   modules/              Package-based module authoring (legacy adapter layer)
     module-package.ts     ModulePackage — separates exports (facts, surfaces, explanations) from runtime (activation, machine, handoffs)
     machine-fragment.ts   MachineFragment, FrontierDeclaration — module-local FSM contribution
@@ -76,12 +73,11 @@ core/
     compile-from-packages.ts  Package-based profile compilation
     machine-assembler.ts  Machine assembly from profile modules
     registry-merger.ts    Registry merging for multi-bundle profiles
-  protocol/             Convention protocol system (see protocol/CLAUDE.md for details)
-    boot-router.ts, bridge-schema.ts, coverage-enumeration.ts, protocol-lifecycle.ts,
-    replay.ts, spec-assembler.ts, surface-stack.ts, types.ts
+  protocol/             Convention protocol types (retained for ConventionSpec)
+    types.ts              ConventionSpec, ModuleSpec, FrameStateSpec, etc. — used by strategy and bootstrap layers
   witness/              Deal witness system
-    witness-compiler.ts   compileWitnessSpec() — WitnessSpecIR → deal generation constraints
-    witness-unsat.ts      detectUnsat() — satisfiability checking
+    deal-spec-compiler.ts   compileDealSpec() — DealSpec → deal generation constraints
+    deal-spec-unsat.ts      detectUnsat() — satisfiability checking
 ```
 
 ## Convention-Universality Validation
@@ -98,14 +94,14 @@ Every subsystem here exists because simpler designs failed the convention-univer
 1. **Surface selection** — ConversationMachine produces `activeSurfaceGroupIds`, or `surfaceRouter` filters, or all surfaces used
 2. **Surface composition** — `composeSurfaces()` applies suppress/inject/remap transforms
 3. **Fact evaluation** — `evaluateFacts()` runs 3-tier evaluation: primitive (hand → fact), bridge-derived (fact → fact), module-derived (convention-specific)
-4. **Surface evaluation** — `evaluateAllSurfaces()` checks each surface's clauses against facts → `MeaningProposal[]`
+4. **Surface evaluation** — `evaluateAllBidMeanings()` checks each surface's clauses against facts → `MeaningProposal[]`
 5. **Encoding resolution** — `resolveEncoding()` per-proposal for non-direct encoders
 6. **Gate evaluation** — `evaluateGates()` 4-gate sequence per proposal
 7. **Arbitration** — `arbitrateMeanings()` selects best proposal (band ranking → specificity → deduplication)
 
-`clauseId`, `description`, and `moduleId` are optional on `MeaningSurface`. The `createSurface()` builder stamps them at definition time. `modulePrecedence` is no longer authored — it defaults to 0 and is stamped positionally by `composeModules()` based on module ordering in the bundle. The pipeline derives fallbacks for any surface not created via the builder (via `fillClauseDefaults()` and `?? 0` / `?? "unknown"` defaults).
+`clauseId`, `description`, and `moduleId` are optional on `BidMeaning`. The `createSurface()` builder stamps them at definition time. `modulePrecedence` defaults to 0. The pipeline derives fallbacks for any surface not created via the builder (via `fillClauseDefaults()` and `?? 0` / `?? "unknown"` defaults).
 
-**All pipeline stages are convention-agnostic.** They operate on generic types (`MeaningSurface`, `EvaluatedFacts`, `MeaningProposal`). Convention-specific data comes from `definitions/` via `ConventionBundle`.
+**All pipeline stages are convention-agnostic.** They operate on generic types (`BidMeaning`, `EvaluatedFacts`, `MeaningProposal`). Convention-specific data comes from `definitions/` via `ConventionBundle`.
 
 ## Conversation Machine (FSM)
 
@@ -127,7 +123,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 1. Phase 1: Build `PublicSnapshot` from auction (with optional machine registers, commitments, beliefs)
 2. Phase 2: Emit `DecisionSurfaceEntry[]` from active `RuntimeModule[]`
 
-**Profile activation:** `resolveActiveModules()` evaluates `SystemProfileIR` attachments against auction patterns, capabilities, and public guards. Exclusivity groups enforce one-winner-per-group.
+**Profile activation:** `resolveActiveModules()` evaluates `SystemProfile` attachments against auction patterns, capabilities, and public guards. Exclusivity groups enforce one-winner-per-group.
 
 **Commitment extraction:** `extractCommitments()` matches auction calls against surfaces with `publicConsequences` to produce `PublicConstraint[]` (promises, entailed denials from closure policy).
 
@@ -146,7 +142,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 - `snapshot-integration.test.ts` — NT snapshot building
 
 **Synthetic fixtures** (`_synthetic-fixtures.ts`) provide:
-- `makeSurface()`, `makeHcpSurface()`, `makeBooleanSurface()` — MeaningSurface factories
+- `makeSurface()`, `makeHcpSurface()`, `makeBooleanSurface()` — BidMeaning factories
 - `buildFacts()`, `makeSyntheticFactCatalog()` — fact factories
 - `buildMachine()`, `makeSyntheticMachine()` — ConversationMachine factories
 - `makeSyntheticProfile()`, `makeSnapshot()` — profile/snapshot factories
@@ -160,7 +156,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 | Gap | Impact | Blocks |
 |-----|--------|--------|
 | `mergeRegisters` is a no-op in `machine-evaluator.ts` | Can't track custom per-machine state (relay step count, controls shown) | Pattern 2, 5, 6 |
-| No `AttachmentIR` for host-state attachment | Add-on modules can't attach to host states | Pattern 4 (Negative Doubles, Drury) |
+| No `Attachment` for host-state attachment | Add-on modules can't attach to host states | Pattern 4 (Negative Doubles, Drury) |
 | `ActivationTrace` always `[]` in meaning arbitrator | Provenance can't answer "which modules were live and why?" | Diagnostics |
 | `evaluateFacts()` only evaluates `acting-hand` world | No `public` or `full-deal` world facts can be evaluated | Future scope |
 
@@ -179,4 +175,4 @@ how an agent acts here, remove it.
 
 **Staleness anchor:** This file assumes `core/registry.ts` and `core/pipeline/meaning-evaluator.ts` exist. If they don't, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-20 | version=5 | dir-commits-at-audit=70 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-21 | version=6 | dir-commits-at-audit=70 -->

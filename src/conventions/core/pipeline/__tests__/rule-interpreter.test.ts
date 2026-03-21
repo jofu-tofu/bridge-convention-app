@@ -2,13 +2,13 @@ import { describe, it, expect } from "vitest";
 import { collectMatchingClaims } from "../rule-interpreter";
 import type { RuleModule } from "../../rule-module";
 import type { AuctionContext, CommittedStep } from "../../../../core/contracts/committed-step";
-import { INITIAL_KERNEL } from "../../../../core/contracts/committed-step";
-import type { KernelState } from "../../../../core/contracts/committed-step";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import { INITIAL_NEGOTIATION } from "../../../../core/contracts/committed-step";
+import type { NegotiationState } from "../../../../core/contracts/committed-step";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import type { PublicSnapshot } from "../../../../core/contracts/module-surface";
 import { Seat } from "../../../../engine/types";
 
-function makeSurface(id: string): MeaningSurface {
+function makeSurface(id: string): BidMeaning {
   return {
     meaningId: id,
     semanticClassId: `test:${id}`,
@@ -20,20 +20,20 @@ function makeSurface(id: string): MeaningSurface {
       recommendationBand: "preferred",
       intraModuleOrder: 0,
     },
-  } as unknown as MeaningSurface;
+  } as unknown as BidMeaning;
 }
 
 function makeStep(
-  obs: CommittedStep["publicObs"],
+  obs: CommittedStep["publicActions"],
   overrides: Partial<CommittedStep> = {},
 ): CommittedStep {
   return {
     actor: Seat.South,
     call: { type: "pass" },
     resolvedClaim: null,
-    publicObs: obs,
-    kernelDelta: {},
-    postKernel: INITIAL_KERNEL,
+    publicActions: obs,
+    negotiationDelta: {},
+    stateAfter: INITIAL_NEGOTIATION,
     status: "resolved",
     ...overrides,
   };
@@ -41,9 +41,9 @@ function makeStep(
 
 function makeContext(
   log: readonly CommittedStep[] = [],
-  kernel?: KernelState,
+  kernel?: NegotiationState,
 ): AuctionContext {
-  // The last step's postKernel is the current kernel
+  // The last step's stateAfter is the current kernel
   const snapshot = {} as PublicSnapshot;
   return { snapshot, log };
 }
@@ -134,7 +134,7 @@ describe("collectMatchingClaims", () => {
 
     // With game-forcing kernel
     const step = makeStep([], {
-      postKernel: { ...INITIAL_KERNEL, forcing: "game" },
+      stateAfter: { ...INITIAL_NEGOTIATION, forcing: "game" },
     });
     const result2 = collectMatchingClaims([mod], makeContext([step]));
     expect(result2).toHaveLength(1);

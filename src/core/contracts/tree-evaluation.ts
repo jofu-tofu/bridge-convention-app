@@ -60,7 +60,7 @@ export function isDtoSelectable(c: ResolvedCandidateDTO): boolean {
 }
 
 /** Check pedagogical acceptability on DTO — post-selection annotation for teaching consumers. */
-export function isDtoPedagogicallyAcceptable(c: ResolvedCandidateDTO): boolean {
+export function isDtoTeachingAcceptable(c: ResolvedCandidateDTO): boolean {
   if (!c.eligibility) return true;
   return c.eligibility.pedagogical.acceptable;
 }

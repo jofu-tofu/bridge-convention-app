@@ -175,7 +175,7 @@ describe("buildMeaningViews", () => {
     expect(views[0]!.displayLabel).toBe("Stayman — Ask for a 4-card major");
   });
 
-  it("clauseToEvidence correctly maps clause fields to ConditionEvidenceIR", () => {
+  it("clauseToEvidence correctly maps clause fields to ConditionEvidence", () => {
     const encoded = makeEncoded({
       proposal: makeProposal({
         clauses: [

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildCommittedStep } from "../committed-step-builder";
-import { INITIAL_KERNEL } from "../../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../../core/contracts/committed-step";
 import type { MachineRegisters } from "../../../../core/contracts/module-surface";
 import type { ArbitrationResult, EncodedProposal } from "../../../../core/contracts/module-surface";
 import type { MeaningProposal } from "../../../../core/contracts/meaning";
@@ -90,7 +90,7 @@ describe("buildCommittedStep", () => {
       Seat.South,
       call,
       arb,
-      INITIAL_KERNEL,
+      INITIAL_NEGOTIATION,
       makeRegisters(),
     );
 
@@ -103,11 +103,11 @@ describe("buildCommittedStep", () => {
       semanticClassId: "stayman:ask-major",
       sourceIntent: { type: "StaymanAsk", params: {} },
     });
-    expect(step.publicObs).toEqual([
+    expect(step.publicActions).toEqual([
       { act: "inquire", feature: "majorSuit" },
     ]);
-    expect(step.postKernel).toEqual(INITIAL_KERNEL);
-    expect(step.kernelDelta).toEqual({});
+    expect(step.stateAfter).toEqual(INITIAL_NEGOTIATION);
+    expect(step.negotiationDelta).toEqual({});
   });
 
   it("builds an off-system step when arbitration is null", () => {
@@ -117,13 +117,13 @@ describe("buildCommittedStep", () => {
       Seat.West,
       call,
       null,
-      INITIAL_KERNEL,
+      INITIAL_NEGOTIATION,
       makeRegisters(),
     );
 
     expect(step.status).toBe("off-system");
     expect(step.resolvedClaim).toBeNull();
-    expect(step.publicObs).toEqual([]);
+    expect(step.publicActions).toEqual([]);
   });
 
   it("builds an ambiguous step when truthSet exists but no selected", () => {
@@ -135,7 +135,7 @@ describe("buildCommittedStep", () => {
       Seat.South,
       bid(2, BidSuit.Clubs),
       arb,
-      INITIAL_KERNEL,
+      INITIAL_NEGOTIATION,
       makeRegisters(),
     );
 
@@ -151,12 +151,12 @@ describe("buildCommittedStep", () => {
       Seat.South,
       bid(2, BidSuit.Clubs),
       arb,
-      INITIAL_KERNEL,
+      INITIAL_NEGOTIATION,
       makeRegisters({ forcingState: ForcingState.ForcingOneRound }),
     );
 
-    expect(step.kernelDelta).toEqual({ forcing: "one-round" });
-    expect(step.postKernel.forcing).toBe("one-round");
+    expect(step.negotiationDelta).toEqual({ forcing: "one-round" });
+    expect(step.stateAfter.forcing).toBe("one-round");
   });
 
   it("builds off-system step for pass with empty arbitration", () => {
@@ -166,7 +166,7 @@ describe("buildCommittedStep", () => {
       Seat.East,
       pass,
       arb,
-      INITIAL_KERNEL,
+      INITIAL_NEGOTIATION,
       makeRegisters(),
     );
 

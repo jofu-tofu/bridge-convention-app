@@ -1,4 +1,6 @@
 import type { ConventionBundle } from "./bundle-types";
+import { createConventionConfigFromBundle } from "./bundle-types";
+import { registerConvention, clearRegistry } from "../registry";
 
 const bundles = new Map<string, ConventionBundle>();
 
@@ -7,6 +9,8 @@ export function registerBundle(bundle: ConventionBundle): void {
     throw new Error(`Bundle "${bundle.id}" is already registered.`);
   }
   bundles.set(bundle.id, bundle);
+  // Auto-derive and register the ConventionConfig for UI/stores consumption
+  registerConvention(createConventionConfigFromBundle(bundle));
 }
 
 export function getBundle(id: string): ConventionBundle | undefined {
@@ -26,4 +30,5 @@ export function findBundleForConvention(conventionId: string): ConventionBundle 
 
 export function clearBundleRegistry(): void {
   bundles.clear();
+  clearRegistry();
 }

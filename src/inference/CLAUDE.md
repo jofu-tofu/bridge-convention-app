@@ -17,7 +17,7 @@ Auction inference system — extracts hand information from bids with per-partne
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
 | `condition-mapper.ts` | `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` — maps `ConditionInference` → `HandInference` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
-| `derive-beliefs.ts` | `derivePublicBeliefs()` — derives `PublicBeliefs` from accumulated `FactConstraintIR[]`. Replaces old `mergeInferences()` with lossless constraint-first model. Source of truth is always the raw constraints array; ranges and qualitative labels are computed from it. |
+| `derive-beliefs.ts` | `derivePublicBeliefs()` — derives `PublicBeliefs` from accumulated `FactConstraint[]`. Replaces old `mergeInferences()` with lossless constraint-first model. Source of truth is always the raw constraints array; ranges and qualitative labels are computed from it. |
 | `inference-coordinator.ts` | `InferenceCoordinator` — coordinates NS and EW inference engines for a drill. Adapts `BidResult` → `InferenceExtractorInput`, manages belief state accumulation per deal. |
 | `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
@@ -26,18 +26,18 @@ Auction inference system — extracts hand information from bids with per-partne
 | `partner-interpretation.ts` | `PartnerInterpretationDTO`, `computePartnerInterpretation()` — models what partner would infer from a candidate bid, computes `misunderstandingRisk` and `continuationAwkwardness` |
 | `belief-converter.ts` | `toBeliefData()` — converts `PublicBeliefState` → `BeliefData` structural type |
 | `posterior/` | Posterior inference engine — sampling, compilation, and fact evaluation for probabilistic hand inference. See `posterior/CLAUDE.md` for details. |
-| `posterior/factor-compiler.ts` | `compileFactorGraph()`, `validateFactorGraph()` — compiles `PublicSnapshot` → `FactorGraphIR`. Convention-erased. |
-| `posterior/ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation wrapping existing sampler. Answers `PosteriorQueryIR` queries. |
+| `posterior/factor-compiler.ts` | `compileFactorGraph()`, `validateFactorGraph()` — compiles `PublicSnapshot` → `FactorGraph`. Convention-erased. |
+| `posterior/ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation wrapping existing sampler. Answers `PosteriorQuery` queries. |
 | `posterior/query-port.ts` | `createQueryPort()` — creates `PosteriorQueryPort` from backend + state. Consumer-facing query interface. |
 
 ## Contracts Boundary
 
-- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `EvidenceBundleIR`, and `BidAlert`, live in `src/core/contracts/`.
+- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `EvidenceBundle`, and `BidAlert`, live in `src/core/contracts/`.
 - `inference/types.ts` is the subsystem-local interface layer including the locally-owned `ConditionInference` type.
 
 ## Belief Derivation
 
-Constraint-first model via `derive-beliefs.ts`: accumulated `FactConstraintIR[]` per seat are the source of truth. `derivePublicBeliefs()` computes `DerivedRanges` (HCP min/max, per-suit length min/max) and qualitative constraints from the raw constraint array. This replaced the old `mergeInferences()` range-intersection approach with a lossless model — no information is discarded during accumulation.
+Constraint-first model via `derive-beliefs.ts`: accumulated `FactConstraint[]` per seat are the source of truth. `derivePublicBeliefs()` computes `DerivedRanges` (HCP min/max, per-suit length min/max) and qualitative constraints from the raw constraint array. This replaced the old `mergeInferences()` range-intersection approach with a lossless model — no information is discarded during accumulation.
 
 ## Negative Inference
 
@@ -61,7 +61,7 @@ Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` 
 
 The redesigned posterior boundary (Phases 0-5 complete) separates concerns into three layers:
 
-1. **Factor Compiler** (`posterior/factor-compiler.ts`): `PublicSnapshot` → `FactorGraphIR` — convention-erased compilation. No convention imports cross the boundary.
+1. **Factor Compiler** (`posterior/factor-compiler.ts`): `PublicSnapshot` → `FactorGraph` — convention-erased compilation. No convention imports cross the boundary.
 2. **Backend** (`posterior/ts-posterior-backend.ts`): `ConditioningContext` → `PosteriorState` — weighted particle generation via Monte Carlo sampling. The backend is replaceable (future Rust/WASM swap).
 3. **Query Port** (`posterior/query-port.ts`): `PosteriorState` → typed queries via `PosteriorQueryPort` — consumer-facing interface (`marginalHcp()`, `fitProbability()`, etc.).
 

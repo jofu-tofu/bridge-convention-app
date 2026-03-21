@@ -152,3 +152,156 @@ exports[`derivePedagogicalContent > produces expected relations from NT modules 
   },
 ]
 `;
+
+exports[`deriveTeachingContent > produces expected alternative groups from NT modules (snapshot) 1`] = `
+[
+  {
+    "label": "After denial: Smolen vs 3NT",
+    "members": [
+      "smolen:bid-short-hearts",
+      "smolen:bid-short-spades",
+      "stayman:nt-game-after-denial",
+    ],
+    "tier": "alternative",
+  },
+  {
+    "label": "NT response: transfer vs Stayman",
+    "members": [
+      "stayman:ask-major",
+      "transfer:to-hearts",
+      "transfer:to-spades",
+    ],
+    "tier": "alternative",
+  },
+]
+`;
+
+exports[`deriveTeachingContent > produces expected relations from NT modules (snapshot) 1`] = `
+[
+  {
+    "a": "smolen:bid-short-hearts",
+    "b": "stayman:ask-major",
+    "kind": "continuation-of",
+  },
+  {
+    "a": "smolen:bid-short-spades",
+    "b": "stayman:ask-major",
+    "kind": "continuation-of",
+  },
+  {
+    "a": "stayman:raise-game",
+    "b": "stayman:ask-major",
+    "kind": "continuation-of",
+  },
+  {
+    "a": "transfer:signoff",
+    "b": "transfer:to-hearts",
+    "kind": "continuation-of",
+  },
+  {
+    "a": "bridge:nt-invite",
+    "b": "stayman:ask-major",
+    "kind": "fallback-of",
+  },
+  {
+    "a": "bridge:to-3nt",
+    "b": "stayman:ask-major",
+    "kind": "fallback-of",
+  },
+  {
+    "a": "smolen:bid-short-hearts",
+    "b": "stayman:nt-game-denial",
+    "kind": "near-miss-of",
+  },
+  {
+    "a": "smolen:bid-short-spades",
+    "b": "stayman:nt-game-denial",
+    "kind": "near-miss-of",
+  },
+  {
+    "a": "stayman:ask-major",
+    "b": "transfer:to-hearts",
+    "kind": "near-miss-of",
+  },
+  {
+    "a": "transfer:game-in-major",
+    "b": "transfer:nt-game",
+    "kind": "near-miss-of",
+  },
+  {
+    "a": "bridge:nt-invite",
+    "b": "bridge:to-3nt",
+    "kind": "same-family",
+  },
+  {
+    "a": "smolen:bid-short-hearts",
+    "b": "smolen:bid-short-spades",
+    "kind": "same-family",
+  },
+  {
+    "a": "smolen:stayman-entry",
+    "b": "smolen:stayman-entry",
+    "kind": "same-family",
+  },
+  {
+    "a": "stayman:ask-major",
+    "b": "transfer:to-hearts",
+    "kind": "same-family",
+  },
+  {
+    "a": "stayman:ask-major",
+    "b": "transfer:to-spades",
+    "kind": "same-family",
+  },
+  {
+    "a": "transfer:to-hearts",
+    "b": "transfer:to-spades",
+    "kind": "same-family",
+  },
+  {
+    "a": "bridge:to-3nt",
+    "b": "bridge:nt-invite",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "smolen:bid-short-hearts",
+    "b": "stayman:nt-invite-denial",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "smolen:bid-short-spades",
+    "b": "stayman:nt-invite-denial",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "stayman:nt-game-denial",
+    "b": "stayman:nt-invite-denial",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "stayman:nt-game-no-fit",
+    "b": "stayman:nt-invite-no-fit",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "stayman:raise-game",
+    "b": "stayman:raise-invite",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "stayman:raise-game",
+    "b": "stayman:raise-invite",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "transfer:game-in-major",
+    "b": "transfer:invite",
+    "kind": "stronger-than",
+  },
+  {
+    "a": "transfer:game-in-major",
+    "b": "transfer:invite",
+    "kind": "stronger-than",
+  },
+]
+`;

@@ -5,16 +5,15 @@ import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
 import { createStubEngine } from "../../../test-support/engine-stub";
 import { createLocalService } from "../../../service";
-import {
-  clearRegistry,
-  registerConvention,
-} from "../../../conventions/core/registry";
-import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
+import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../../conventions/core/bundle";
+import { ntBundle } from "../../../conventions/definitions/nt-bundle";
+
+const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 
 describe("AppShell", () => {
   beforeEach(() => {
-    clearRegistry();
-    registerConvention(ntBundleConventionConfig);
+    clearBundleRegistry();
+    registerBundle(ntBundle);
   });
 
   function renderShell() {

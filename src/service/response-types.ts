@@ -8,8 +8,8 @@
  *   SessionHandle, session config DTOs.
  *
  * NEVER crosses: Deal, BidResult, DrillSession, DrillBundle,
- *   ConventionBiddingStrategy, StrategyEvaluation, ArbitrationResult,
- *   MeaningSurface, InferenceEngine.
+ *   ConventionStrategy, StrategyEvaluation, ArbitrationResult,
+ *   BidMeaning, InferenceEngine.
  */
 
 import type { Call, Card, Seat, DDSolution } from "../engine/types";

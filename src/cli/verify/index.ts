@@ -4,7 +4,7 @@
 // Usage: main.ts verify <subcommand> [options]
 
 import type { Flags } from "../shared";
-import { requireArg, optionalNumericArg, resolveSystemWithRules } from "../shared";
+import { requireArg, optionalNumericArg, resolveBundleWithRules } from "../shared";
 import { exploreBundle } from "./explore";
 import { motifTest } from "./motif";
 import { fuzzBundle } from "./fuzz";
@@ -29,8 +29,8 @@ export function runVerify(subcommand: string, flags: Flags): void {
 
 function runVerifyExplore(flags: Flags): void {
   const bundleId = requireArg(flags, "bundle");
-  const system = resolveSystemWithRules(bundleId);
-  const modules = system.ruleModules ?? [];
+  const bundle = resolveBundleWithRules(bundleId);
+  const modules = bundle.ruleModules ?? [];
   const depth = optionalNumericArg(flags, "depth") ?? 6;
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const trials = optionalNumericArg(flags, "trials") ?? 50;
@@ -41,7 +41,7 @@ function runVerifyExplore(flags: Flags): void {
     process.exit(2);
   }
 
-  const result = exploreBundle(system, modules, {
+  const result = exploreBundle(bundle, modules, {
     depth,
     seed,
     trials,
@@ -55,8 +55,8 @@ function runVerifyExplore(flags: Flags): void {
 function runVerifyMotif(flags: Flags): void {
   const bundleId = requireArg(flags, "bundle");
   const pairStr = requireArg(flags, "pair");
-  const system = resolveSystemWithRules(bundleId);
-  const modules = system.ruleModules ?? [];
+  const bundle = resolveBundleWithRules(bundleId);
+  const modules = bundle.ruleModules ?? [];
   const depth = optionalNumericArg(flags, "depth") ?? 8;
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const trials = optionalNumericArg(flags, "trials") ?? 100;
@@ -72,7 +72,7 @@ function runVerifyMotif(flags: Flags): void {
     process.exit(2);
   }
 
-  const result = motifTest(system, modules, { depth, seed, trials, pair: [a, b] });
+  const result = motifTest(bundle, modules, { depth, seed, trials, pair: [a, b] });
 
   console.log(JSON.stringify(result, null, 2));
   process.exit(result.verdict === "failing" ? 1 : 0);
@@ -80,8 +80,8 @@ function runVerifyMotif(flags: Flags): void {
 
 function runVerifyFuzz(flags: Flags): void {
   const bundleId = requireArg(flags, "bundle");
-  const system = resolveSystemWithRules(bundleId);
-  const modules = system.ruleModules ?? [];
+  const bundle = resolveBundleWithRules(bundleId);
+  const modules = bundle.ruleModules ?? [];
   const trials = optionalNumericArg(flags, "trials") ?? 200;
   const seed = optionalNumericArg(flags, "seed") ?? 0;
   const vulnMixed = flags["vuln"] === "mixed";
@@ -91,7 +91,7 @@ function runVerifyFuzz(flags: Flags): void {
     process.exit(2);
   }
 
-  const result = fuzzBundle(system, modules, { trials, seed, vulnMixed });
+  const result = fuzzBundle(bundle, modules, { trials, seed, vulnMixed });
 
   console.log(JSON.stringify(result, null, 2));
   process.exit(result.summary.clean ? 0 : 1);
@@ -99,8 +99,8 @@ function runVerifyFuzz(flags: Flags): void {
 
 function runVerifyPreflight(flags: Flags): void {
   const bundleId = requireArg(flags, "bundle");
-  const system = resolveSystemWithRules(bundleId);
-  const modules = system.ruleModules ?? [];
+  const bundle = resolveBundleWithRules(bundleId);
+  const modules = bundle.ruleModules ?? [];
   const budgetStr = (flags["budget"] as string) ?? "fast";
 
   if (modules.length === 0) {
@@ -113,7 +113,7 @@ function runVerifyPreflight(flags: Flags): void {
     process.exit(2);
   }
 
-  const result = runPreflight(system, modules, { budget: budgetStr });
+  const result = runPreflight(bundle, modules, { budget: budgetStr });
 
   console.log(JSON.stringify(result, null, 2));
   process.exit(result.verdict === "pass" ? 0 : 1);

@@ -7,7 +7,7 @@
 import type { Deal, Auction, AuctionEntry, Contract, Call, Seat, Card, Trick, PlayedCard } from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
 import type { DrillSession, DrillBundle } from "../bootstrap/types";
-import type { ConventionBiddingStrategy, BidResult, BidHistoryEntry, StrategyEvaluation, PlayStrategy } from "../core/contracts";
+import type { ConventionStrategy, BidResult, BidHistoryEntry, StrategyEvaluation, PlayStrategy } from "../core/contracts";
 import type { PublicBeliefs } from "../core/contracts";
 import type { InferenceCoordinator } from "../inference/inference-coordinator";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
@@ -43,7 +43,7 @@ export class SessionState {
 
   // Session objects
   readonly session: DrillSession;
-  readonly strategy: ConventionBiddingStrategy | null;
+  readonly strategy: ConventionStrategy | null;
   readonly inferenceCoordinator: InferenceCoordinator;
   readonly conventionId: string;
   readonly isOffConvention: boolean;

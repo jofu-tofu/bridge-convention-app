@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { advanceLocalFsm } from "../local-fsm";
 import type { PhaseTransition } from "../../rule-module";
 import type { CommittedStep } from "../../../../core/contracts/committed-step";
-import { INITIAL_KERNEL } from "../../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../../core/contracts/committed-step";
 import { Seat } from "../../../../engine/types";
 
 type Phase = "idle" | "asked" | "shown" | "denied";
@@ -26,15 +26,15 @@ const transitions: readonly PhaseTransition<Phase>[] = [
 ];
 
 function makeStep(
-  obs: CommittedStep["publicObs"],
+  obs: CommittedStep["publicActions"],
 ): CommittedStep {
   return {
     actor: Seat.South,
     call: { type: "pass" },
     resolvedClaim: null,
-    publicObs: obs,
-    kernelDelta: {},
-    postKernel: INITIAL_KERNEL,
+    publicActions: obs,
+    negotiationDelta: {},
+    stateAfter: INITIAL_NEGOTIATION,
     status: "resolved",
   };
 }
@@ -77,7 +77,7 @@ describe("advanceLocalFsm", () => {
     expect(advanceLocalFsm("denied", step, transitions)).toBe("denied");
   });
 
-  it("matches ANY observation in the step's publicObs", () => {
+  it("matches ANY observation in the step's publicActions", () => {
     // Step has multiple observations; transition should fire if any matches
     const step = makeStep([
       { act: "show", feature: "shortMajor", suit: "hearts" },

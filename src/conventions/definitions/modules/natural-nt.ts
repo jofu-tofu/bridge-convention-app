@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { MachineTransition } from "../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
@@ -23,7 +23,7 @@ import {
   SAME_FAMILY,
   STRONGER_THAN,
   FALLBACK_OF,
-} from "../pedagogical-vocabulary";
+} from "../teaching-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -31,7 +31,7 @@ const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
-const NT_R1_SURFACES: readonly MeaningSurface[] = [
+const NT_R1_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "bridge:nt-invite",
     semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
@@ -58,7 +58,7 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "NTInvite", params: {} },
     teachingLabel: "NT invite",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "natural-nt:r1" },
       { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 1 },
       { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
@@ -91,7 +91,7 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "NTGame", params: {} },
     teachingLabel: "3NT game",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "natural-nt:r1" },
       { tag: STRONGER_THAN, scope: "natural-nt:r1-strength", ordinal: 0 },
       { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "a" },
@@ -103,7 +103,7 @@ const NT_R1_SURFACES: readonly MeaningSurface[] = [
 // Declares the 1NT opening promise (HCP range, balanced) so that the
 // commitment extractor produces public constraints for the posterior sampler.
 
-export function createOpener1NtSurface(sys: SystemConfig): readonly MeaningSurface[] {
+export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
       meaningId: "bridge:1nt-opening",
@@ -137,7 +137,7 @@ export function createOpener1NtSurface(sys: SystemConfig): readonly MeaningSurfa
 }
 
 /** Legacy default — uses SAYC system config. */
-export const OPENER_1NT_SURFACE: readonly MeaningSurface[] =
+export const OPENER_1NT_SURFACE: readonly BidMeaning[] =
   createOpener1NtSurface(SAYC_SYSTEM_CONFIG);
 
 // ─── R1 transitions ──────────────────────────────────────────
@@ -325,7 +325,7 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
 
 // ─── Terminal pass surface (auction settled — intentional pass) ───
 
-const TERMINAL_PASS_SURFACE: readonly MeaningSurface[] = [
+const TERMINAL_PASS_SURFACE: readonly BidMeaning[] = [
   createSurface({
     meaningId: "bridge:terminal-pass",
     semanticClassId: "bridge:terminal-pass",

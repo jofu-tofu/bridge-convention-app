@@ -1,11 +1,11 @@
 import type {
-  MeaningSurface,
-  MeaningSurfaceClause,
+  BidMeaning,
+  BidMeaningClause,
 } from "../../../core/contracts/meaning";
 import type {
   MeaningProposal,
   MeaningClause,
-  MeaningEvaluationEvidence,
+  EvaluationEvidence,
   RankingMetadata,
   RecommendationBand,
 } from "../../../core/contracts/meaning";
@@ -15,7 +15,7 @@ import type {
   FactCatalogExtension,
 } from "../../../core/contracts/fact-catalog";
 import { getFactValue } from "../../../core/contracts/fact-catalog";
-import type { DecisionSurfaceIR, PriorityClass } from "../../../core/contracts/agreement-module";
+import type { DecisionSurface, PriorityClass } from "../../../core/contracts/agreement-module";
 import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
 import { resolveFactId, resolveClause } from "./binding-resolver";
 import { priorityClassToBand } from "./priority-mapping";
@@ -24,7 +24,7 @@ import { deriveSpecificity } from "./specificity-deriver";
 import { fillClauseDefaults } from "./clause-derivation";
 
 function evaluateClause(
-  clause: MeaningSurfaceClause,
+  clause: BidMeaningClause,
   facts: EvaluatedFacts,
   bindings?: Readonly<Record<string, string>>,
 ): MeaningClause {
@@ -101,8 +101,8 @@ function evaluateClause(
   };
 }
 
-export function evaluateMeaningSurface(
-  surface: MeaningSurface,
+export function evaluateBidMeaning(
+  surface: BidMeaning,
   facts: EvaluatedFacts,
   factExtensions?: readonly FactCatalogExtension[],
   inheritedDimensions?: readonly ConstraintDimension[],
@@ -120,7 +120,7 @@ export function evaluateMeaningSurface(
     ),
   ];
 
-  const evidence: MeaningEvaluationEvidence = {
+  const evidence: EvaluationEvidence = {
     factDependencies,
     evaluatedConditions: evaluatedClauses.map((clause, i) => {
       const sourceClause = filledClauses[i];
@@ -178,29 +178,29 @@ export function evaluateMeaningSurface(
   };
 }
 
-/** Input type for evaluateAllSurfaces: either MeaningSurface[] or DecisionSurfaceIR[]. */
-type EvaluableSurface = MeaningSurface | DecisionSurfaceIR;
+/** Input type for evaluateAllBidMeanings: either BidMeaning[] or DecisionSurface[]. */
+type EvaluableSurface = BidMeaning | DecisionSurface;
 
 /**
- * Type guard: distinguishes MeaningSurface from DecisionSurfaceIR.
- * MeaningSurface has `meaningId`; DecisionSurfaceIR has `surfaceId` + `decisionProgram`.
+ * Type guard: distinguishes BidMeaning from DecisionSurface.
+ * BidMeaning has `meaningId`; DecisionSurface has `surfaceId` + `decisionProgram`.
  */
 function isMeaningSurface(
   surface: EvaluableSurface,
-): surface is MeaningSurface {
+): surface is BidMeaning {
   return "meaningId" in surface && !("decisionProgram" in surface);
 }
 
 /**
- * Evaluate a DecisionSurfaceIR against facts.
+ * Evaluate a DecisionSurface against facts.
  *
  * When the surface has `inlineClauses` and `decisionProgram === "clause-evaluator"`,
- * evaluates them against facts using the same clause evaluation logic as MeaningSurface.
+ * evaluates them against facts using the same clause evaluation logic as BidMeaning.
  * For other decision programs or when no inlineClauses are present, produces
  * empty clauses (all-pass) as a fallback.
  */
 function evaluateDecisionSurface(
-  surface: DecisionSurfaceIR,
+  surface: DecisionSurface,
   facts: EvaluatedFacts,
 ): MeaningProposal {
   const ranking: RankingMetadata = {
@@ -222,8 +222,8 @@ function evaluateDecisionSurface(
   let clauses: MeaningClause[] = [];
   if (surface.decisionProgram === "clause-evaluator" && surface.inlineClauses && surface.inlineClauses.length > 0) {
     clauses = surface.inlineClauses.map((ic) => {
-      // Convert FactConstraintIR to MeaningSurfaceClause for reuse of evaluateClause
-      const asSurfaceClause: MeaningSurfaceClause = {
+      // Convert FactConstraint to BidMeaningClause for reuse of evaluateClause
+      const asSurfaceClause: BidMeaningClause = {
         clauseId: ic.factId,
         factId: ic.factId,
         operator: ic.operator,
@@ -234,7 +234,7 @@ function evaluateDecisionSurface(
     });
   }
 
-  const evidence: MeaningEvaluationEvidence = {
+  const evidence: EvaluationEvidence = {
     factDependencies: clauses.map((c) => c.factId),
     evaluatedConditions: clauses.map((c) => ({
       conditionId: c.factId,
@@ -261,13 +261,13 @@ function evaluateDecisionSurface(
 }
 
 /**
- * Evaluate all surfaces against facts. Accepts both MeaningSurface[] and
- * DecisionSurfaceIR[] (dual-path). Detects which type is passed by inspecting
+ * Evaluate all surfaces against facts. Accepts both BidMeaning[] and
+ * DecisionSurface[] (dual-path). Detects which type is passed by inspecting
  * the first element: if all elements are the same type, uses the appropriate
  * evaluation path.
  */
-export function evaluateAllSurfaces(
-  surfaces: readonly MeaningSurface[] | readonly DecisionSurfaceIR[],
+export function evaluateAllBidMeanings(
+  surfaces: readonly BidMeaning[] | readonly DecisionSurface[],
   facts: EvaluatedFacts,
   profileMapping?: Readonly<Record<PriorityClass, RecommendationBand>>,
   factExtensions?: readonly FactCatalogExtension[],
@@ -277,17 +277,17 @@ export function evaluateAllSurfaces(
 
   const first = surfaces[0]!;
   if (isMeaningSurface(first)) {
-    // MeaningSurface path: recommendationBand comes from authored ranking directly
-    return (surfaces as readonly MeaningSurface[]).map((surface) =>
-      evaluateMeaningSurface(
+    // BidMeaning path: recommendationBand comes from authored ranking directly
+    return (surfaces as readonly BidMeaning[]).map((surface) =>
+      evaluateBidMeaning(
         surface, facts, factExtensions,
         inheritedDimsLookup?.get(surface.meaningId),
       ),
     );
   }
 
-  // DecisionSurfaceIR path
-  return (surfaces as readonly DecisionSurfaceIR[]).map((surface) =>
+  // DecisionSurface path
+  return (surfaces as readonly DecisionSurface[]).map((surface) =>
     evaluateDecisionSurface(surface, facts),
   );
 }

@@ -4,8 +4,8 @@ import type {
   PosteriorQueryResult,
   ConditioningContext,
 } from "../posterior-query";
-import type { PosteriorQueryIR } from "../posterior-backend";
-import type { FactorGraphIR, FactorOrigin } from "../factor-graph";
+import type { PosteriorQuery } from "../posterior-backend";
+import type { FactorGraph, FactorOrigin } from "../factor-graph";
 import type { PublicSnapshot } from "../module-surface";
 import { ForcingState } from "../bidding";
 import { Suit, Rank } from "../../../engine/types";
@@ -25,7 +25,7 @@ const hand: Hand = {
   ],
 };
 
-const emptyFactorGraph: FactorGraphIR = {
+const emptyFactorGraph: FactorGraph = {
   factors: [],
   ambiguitySchema: [],
   evidencePins: [],
@@ -133,20 +133,20 @@ describe("ConditioningContext", () => {
   });
 });
 
-// ─── PosteriorQueryIR ───────────────────────────────────────
-describe("PosteriorQueryIR discriminated union", () => {
+// ─── PosteriorQuery ───────────────────────────────────────
+describe("PosteriorQuery discriminated union", () => {
   it("can construct marginal-hcp query", () => {
-    const q: PosteriorQueryIR = { kind: "marginal-hcp", seat: "N" };
+    const q: PosteriorQuery = { kind: "marginal-hcp", seat: "N" };
     expect(q.kind).toBe("marginal-hcp");
   });
 
   it("can construct suit-length query", () => {
-    const q: PosteriorQueryIR = { kind: "suit-length", seat: "E", suit: "hearts" };
+    const q: PosteriorQuery = { kind: "suit-length", seat: "E", suit: "hearts" };
     expect(q.kind).toBe("suit-length");
   });
 
   it("can construct fit-probability query", () => {
-    const q: PosteriorQueryIR = {
+    const q: PosteriorQuery = {
       kind: "fit-probability",
       seats: ["N", "S"],
       suit: "spades",
@@ -156,12 +156,12 @@ describe("PosteriorQueryIR discriminated union", () => {
   });
 
   it("can construct is-balanced query", () => {
-    const q: PosteriorQueryIR = { kind: "is-balanced", seat: "W" };
+    const q: PosteriorQuery = { kind: "is-balanced", seat: "W" };
     expect(q.kind).toBe("is-balanced");
   });
 
   it("can construct joint-hcp query", () => {
-    const q: PosteriorQueryIR = {
+    const q: PosteriorQuery = {
       kind: "joint-hcp",
       seats: ["N", "S"],
       min: 25,
@@ -171,7 +171,7 @@ describe("PosteriorQueryIR discriminated union", () => {
   });
 
   it("can construct branch-probability query", () => {
-    const q: PosteriorQueryIR = {
+    const q: PosteriorQuery = {
       kind: "branch-probability",
       familyId: "1NT-response",
       branchId: "stayman",
@@ -180,7 +180,7 @@ describe("PosteriorQueryIR discriminated union", () => {
   });
 
   it("supports exhaustive switch on kind discriminant", () => {
-    const queries: PosteriorQueryIR[] = [
+    const queries: PosteriorQuery[] = [
       { kind: "marginal-hcp", seat: "N" },
       { kind: "suit-length", seat: "N", suit: "spades" },
       { kind: "fit-probability", seats: ["N", "S"], suit: "hearts", threshold: 8 },

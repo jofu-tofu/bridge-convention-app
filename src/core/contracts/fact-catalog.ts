@@ -4,8 +4,8 @@ import type { PosteriorFactProvider, PosteriorFactRequest } from "./posterior";
 import type { ConstraintDimension } from "./meaning";
 
 // Re-export extracted modules for backward compatibility
-export { num, bool, fv } from "../../conventions/core/pipeline/fact-helpers";
-export type { HandFactResolverFn } from "../../conventions/core/pipeline/fact-helpers";
+export { num, bool, fv } from "./fact-helpers";
+export type { HandFactResolverFn } from "./fact-helpers";
 export { PRIMITIVE_FACTS, BRIDGE_DERIVED_FACTS, POSTERIOR_DERIVED_FACTS, SHARED_FACTS } from "./shared-facts";
 
 /** Stratification of fact definitions. */
@@ -109,7 +109,7 @@ export interface FactCatalogExtension {
 }
 
 /** A composed fact catalog: definitions + evaluators. Structurally identical to an extension. */
-export interface FactCatalog extends FactCatalogExtension {}
+export type FactCatalog = FactCatalogExtension;
 
 /** Merge a base catalog with one or more extensions. Extensions override base on evaluator conflict. */
 export function createFactCatalog(

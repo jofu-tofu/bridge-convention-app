@@ -7,15 +7,15 @@
 
 import { BidSuit, Seat } from "../engine/types";
 import type { Call } from "../engine/types";
-import type { MeaningSurface, AuthoredRankingMetadata, RankingMetadata, MeaningClause, MeaningProposal } from "../core/contracts/meaning";
+import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClause, MeaningProposal } from "../core/contracts/meaning";
 import type { ArbitrationResult, EncodedProposal } from "../core/contracts/module-surface";
 import type { CandidateEligibility } from "../core/contracts/tree-evaluation";
 import type { DecisionProvenance } from "../core/contracts/provenance";
 import type { ExplanationEntry } from "../core/contracts/explanation-catalog";
 import type { ConversationMachine, MachineState } from "../conventions/core/runtime/machine-types";
 
-/** Create a minimal MeaningSurface with override support. */
-export function makeSurface(overrides: Partial<MeaningSurface> & { meaningId?: string; moduleId?: string } = {}): MeaningSurface {
+/** Create a minimal BidMeaning with override support. */
+export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {
   return {
     meaningId: "test:meaning",
     semanticClassId: "test:class",
@@ -26,7 +26,7 @@ export function makeSurface(overrides: Partial<MeaningSurface> & { meaningId?: s
     sourceIntent: { type: "TestIntent", params: {} },
     teachingLabel: "Test meaning",
     ...overrides,
-  } as MeaningSurface;
+  } as BidMeaning;
 }
 
 /** Create a default AuthoredRankingMetadata with override support. */

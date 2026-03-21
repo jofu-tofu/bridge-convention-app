@@ -1,7 +1,7 @@
-import type { HandPredicateIR } from "./predicate-surfaces";
+import type { HandPredicate } from "./predicates";
 import type { PublicSnapshot } from "./module-surface";
 import type { Hand, Seat } from "../../engine/types";
-import type { FactConstraintIR } from "./agreement-module";
+import type { FactConstraint } from "./agreement-module";
 
 // ─── Posterior factor types ─────────────────────────────────
 export interface PosteriorFactor {
@@ -19,7 +19,7 @@ export interface LikelihoodModel {
 // ─── Hand space types ───────────────────────────────────────
 export interface PublicHandSpace {
   readonly seatId: string;
-  readonly constraints: readonly HandPredicateIR[];
+  readonly constraints: readonly HandPredicate[];
   readonly estimatedSize?: number;
   readonly latentBranches?: readonly LatentBranchSet[];
 }
@@ -82,7 +82,7 @@ export interface BeliefView {
   /** The subject (seat) this belief is about. */
   readonly subject?: SubjectRef;
   /** Constraint derived from fact values (uses first fact with boolean/numeric value). */
-  readonly constraint?: FactConstraintIR;
+  readonly constraint?: FactConstraint;
   /** Provenance references to the posterior sources. */
   readonly provenance?: readonly PosteriorSourceRef[];
   /** Human-readable explanation key for UI. */

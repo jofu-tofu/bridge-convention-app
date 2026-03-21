@@ -1,17 +1,17 @@
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import type { PublicConstraint, FactConstraintIR } from "../../core/contracts/agreement-module";
+import type { PublicConstraint, FactConstraint } from "../../core/contracts/agreement-module";
 import type { PublicHandSpace } from "../../core/contracts/posterior";
-import type { HandPredicateIR } from "../../core/contracts/predicate-surfaces";
+import type { HandPredicate } from "../../core/contracts/predicates";
 
 /**
- * Negate a FactConstraintIR for denial processing.
+ * Negate a FactConstraint for denial processing.
  * - denial of "gte X" → "lte X-1"
  * - denial of "lte X" → "gte X+1"
  * - denial of "boolean true" → "boolean false" and vice versa
  * - other operators: returned as-is (cannot be trivially negated)
  */
 function negateConstraint(
-  c: FactConstraintIR,
+  c: FactConstraint,
 ): { factId: string; operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in"; value: number | boolean | string | { min: number; max: number } | readonly string[] } {
   if (c.operator === "gte" && typeof c.value === "number") {
     return { factId: c.factId, operator: "lte", value: c.value - 1 };
@@ -102,7 +102,7 @@ export function compilePublicHandSpace(snapshot: PublicSnapshot): PublicHandSpac
       }
     }
 
-    const predicate: HandPredicateIR = {
+    const predicate: HandPredicate = {
       conjunction: "all",
       clauses,
     };

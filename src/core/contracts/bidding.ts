@@ -11,7 +11,7 @@ import type {
   ResolvedCandidateDTO,
 } from "./tree-evaluation";
 import type { TeachingProjection } from "./teaching-projection";
-import type { FactConstraintIR } from "./agreement-module";
+import type { FactConstraint } from "./agreement-module";
 
 export interface BiddingContext {
   readonly hand: Hand;
@@ -37,12 +37,12 @@ export enum ForcingState {
 
 /** Alert at the bridge table — this bid is conventional and its meaning
  *  should be disclosed to opponents. The formal explanation comes from
- *  publicConstraints — same FactConstraintIR vocabulary used by the factor
+ *  publicConstraints — same FactConstraint vocabulary used by the factor
  *  graph, making this directly translatable to public beliefs. */
 export interface BidAlert {
   /** Structured constraints that become public knowledge when this bid is explained.
-   *  Auto-derived from primitive/bridge-observable clauses on the MeaningSurface. */
-  readonly publicConstraints: readonly FactConstraintIR[];
+   *  Auto-derived from primitive/bridge-observable clauses on the BidMeaning. */
+  readonly publicConstraints: readonly FactConstraint[];
   /** Human-readable label for UI display (from surface.teachingLabel). */
   readonly teachingLabel: string;
   /** ACBL annotation type: alert (conventional bid), announce (announced range/transfer),

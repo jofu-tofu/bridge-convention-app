@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { evaluateDealConstraint } from "../deal-constraint-evaluator";
 import { Seat, Suit, Rank, Vulnerability } from "../../../../engine/types";
 import type { Deal, Hand, Card } from "../../../../engine/types";
-import type { DealConstraintIR } from "../../../../core/contracts/predicate-surfaces";
+import type { DealConstraint } from "../../../../core/contracts/predicates";
 
 // ─── Test helpers ──────────────────────────────────────────
 
@@ -72,7 +72,7 @@ const testDeal = makeDeal({
 describe("evaluateDealConstraint", () => {
   describe("fit-check", () => {
     it("returns true when combined suit length meets threshold", () => {
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "fit-check",
         params: { suit: "S", seats: ["N", "S"], minLength: 8 },
       };
@@ -80,7 +80,7 @@ describe("evaluateDealConstraint", () => {
     });
 
     it("returns false when combined suit length is below threshold", () => {
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "fit-check",
         params: { suit: "S", seats: ["N", "S"], minLength: 9 },
       };
@@ -88,7 +88,7 @@ describe("evaluateDealConstraint", () => {
     });
 
     it("works with a single seat", () => {
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "fit-check",
         params: { suit: "S", seats: ["N"], minLength: 4 },
       };
@@ -96,7 +96,7 @@ describe("evaluateDealConstraint", () => {
     });
 
     it("returns false for single seat below threshold", () => {
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "fit-check",
         params: { suit: "S", seats: ["N"], minLength: 5 },
       };
@@ -105,7 +105,7 @@ describe("evaluateDealConstraint", () => {
 
     it("checks hearts across E-W", () => {
       // East has 4 hearts, West has 3 hearts = 7 total
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "fit-check",
         params: { suit: "H", seats: ["E", "W"], minLength: 7 },
       };
@@ -122,7 +122,7 @@ describe("evaluateDealConstraint", () => {
       // Actually: A=4,K=3,Q=2 → per suit with AKQ = 9. 4 suits × 9 = 36. Plus the 2 is 0. = 36 HCP
       // South: J=1,T=0 per suit → 4 suits × 1 = 4 HCP
       // Combined N+S = 40 HCP
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "combined-hcp",
         params: { seats: ["N", "S"], min: 30, max: 40 },
       };
@@ -130,7 +130,7 @@ describe("evaluateDealConstraint", () => {
     });
 
     it("returns false when combined HCP is below minimum", () => {
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "combined-hcp",
         params: { seats: ["E", "W"], min: 10, max: 40 },
       };
@@ -140,7 +140,7 @@ describe("evaluateDealConstraint", () => {
     });
 
     it("returns false when combined HCP exceeds maximum", () => {
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "combined-hcp",
         params: { seats: ["N", "S"], min: 0, max: 35 },
       };
@@ -149,7 +149,7 @@ describe("evaluateDealConstraint", () => {
     });
 
     it("works with a single seat", () => {
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "combined-hcp",
         params: { seats: ["N"], min: 36, max: 36 },
       };
@@ -162,7 +162,7 @@ describe("evaluateDealConstraint", () => {
   describe("custom", () => {
     it("returns true with a warning for custom constraints", () => {
       const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const constraint: DealConstraintIR = {
+      const constraint: DealConstraint = {
         kind: "custom",
         params: { label: "some-exotic-check" },
       };
@@ -179,7 +179,7 @@ describe("evaluateDealConstraint", () => {
   describe("unknown kind", () => {
     it("throws for an unrecognized constraint kind", () => {
       const constraint = {
-        kind: "unknown-kind" as DealConstraintIR["kind"],
+        kind: "unknown-kind" as DealConstraint["kind"],
         params: {},
       };
       expect(() => evaluateDealConstraint(constraint, testDeal)).toThrow();

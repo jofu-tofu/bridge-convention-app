@@ -7,14 +7,14 @@
 
 import type { Seat, Call } from "../../../engine/types";
 import type {
-  KernelState,
+  NegotiationState,
   ClaimRef,
   CommittedStep,
 } from "../../../core/contracts/committed-step";
 import type { ArbitrationResult } from "../../../core/contracts/module-surface";
 import type { MachineRegisters } from "../../../core/contracts/module-surface";
-import type { CanonicalObs } from "../../../core/contracts/canonical-observation";
-import { extractKernelState, computeKernelDelta } from "./kernel-extractor";
+import type { BidAction } from "../../../core/contracts/bid-action";
+import { extractKernelState, computeKernelDelta } from "./negotiation-extractor";
 import { normalizeIntent } from "./normalize-intent";
 
 /**
@@ -30,22 +30,22 @@ export function buildCommittedStep(
   actor: Seat,
   call: Call,
   arbitrationResult: ArbitrationResult | null,
-  prevKernel: KernelState,
+  prevKernel: NegotiationState,
   currentRegisters: MachineRegisters,
 ): CommittedStep {
   const resolvedClaim = extractClaimRef(arbitrationResult);
-  const publicObs = extractPublicObs(arbitrationResult);
-  const postKernel = extractKernelState(currentRegisters);
-  const kernelDelta = computeKernelDelta(prevKernel, postKernel);
+  const publicActions = extractPublicObs(arbitrationResult);
+  const stateAfter = extractKernelState(currentRegisters);
+  const negotiationDelta = computeKernelDelta(prevKernel, stateAfter);
   const status = deriveStatus(arbitrationResult);
 
   return {
     actor,
     call,
     resolvedClaim,
-    publicObs,
-    kernelDelta,
-    postKernel,
+    publicActions,
+    negotiationDelta,
+    stateAfter,
     status,
   };
 }
@@ -68,7 +68,7 @@ function extractClaimRef(
 
 function extractPublicObs(
   arb: ArbitrationResult | null,
-): readonly CanonicalObs[] {
+): readonly BidAction[] {
   if (!arb?.selected) return [];
 
   const { sourceIntent } = arb.selected.proposal;

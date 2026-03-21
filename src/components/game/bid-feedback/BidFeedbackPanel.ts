@@ -6,7 +6,7 @@
  * not by convention-specific checks.
  */
 
-import type { PedagogicalRelationKind } from "../../../core/contracts/teaching-projection";
+import type { TeachingRelationKind } from "../../../core/contracts/teaching-projection";
 import type { EncoderKind } from "../../../core/contracts/provenance";
 
 /** Human-readable ambiguity description. Returns null when score is 0 (clear-cut). */
@@ -18,7 +18,7 @@ export function formatAmbiguity(score: number): string | null {
 }
 
 /** Map pedagogical relation kinds to short display labels. */
-export function formatRelationKind(kind: PedagogicalRelationKind): string {
+export function formatRelationKind(kind: TeachingRelationKind): string {
   switch (kind) {
     case "same-family":
       return "Same family";

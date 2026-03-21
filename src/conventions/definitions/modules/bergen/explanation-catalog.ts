@@ -1,4 +1,4 @@
-import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalogIR } from "../../../../core/contracts/explanation-catalog";
+import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
 
 /**
  * Bergen Raises explanation catalog.
@@ -321,4 +321,4 @@ export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
   },
 ];
 
-export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalogIR = createExplanationCatalog(BERGEN_EXPLANATION_ENTRIES);
+export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(BERGEN_EXPLANATION_ENTRIES);

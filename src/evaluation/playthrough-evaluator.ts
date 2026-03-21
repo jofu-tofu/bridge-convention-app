@@ -5,8 +5,7 @@
 //
 // Internal strategy/teaching/convention access is encapsulated here.
 
-import { getBundle } from "../conventions/core/bundle";
-import { getSystem, specFromSystem } from "../conventions/definitions/system-registry";
+import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
 import { enumerateRuleAtoms } from "../conventions/core";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
@@ -159,9 +158,8 @@ function runPlaythroughInternal(
   bundleId: string, seed: number,
   vulnerability: Vulnerability, opponents: OpponentMode,
 ): InternalPlaythroughResult {
-  const system = getSystem(bundleId)!;
-  const spec = specFromSystem(system)!;
-  const bundle = getBundle(bundleId)!;
+  const bundle = getSystemBundle(bundleId)!;
+  const spec = specFromBundle(bundle)!;
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
   const partner = partnerOf(userSeat);
@@ -239,10 +237,10 @@ function runPlaythroughInternal(
  * When multiple atoms share the same encoding, the first one wins.
  */
 function buildAtomCallMap(bundleId: string): Map<string, { atomId: string; meaningLabel: string }> {
-  const system = getSystem(bundleId);
-  if (!system?.ruleModules) return new Map();
+  const bundle = getSystemBundle(bundleId);
+  if (!bundle?.ruleModules) return new Map();
 
-  const atoms = enumerateRuleAtoms(system.ruleModules);
+  const atoms = enumerateRuleAtoms(bundle.ruleModules);
   const map = new Map<string, { atomId: string; meaningLabel: string }>();
 
   for (const atom of atoms) {
@@ -262,7 +260,7 @@ function getOrRunPlaythrough(
   bundleId: string, seed: number,
   vulnerability: Vulnerability, opponents: OpponentMode,
 ): InternalPlaythroughResult {
-  if (lastPlaythrough && lastPlaythrough.handle.seed === seed && lastPlaythrough.bundleName === getBundle(bundleId)?.name) {
+  if (lastPlaythrough && lastPlaythrough.handle.seed === seed && lastPlaythrough.bundleName === getSystemBundle(bundleId)?.name) {
     return lastPlaythrough;
   }
   lastPlaythrough = runPlaythroughInternal(bundleId, seed, vulnerability, opponents);

@@ -15,8 +15,8 @@
  */
 
 import type { RuleModule } from "../../../core/rule-module";
-import type { KernelDelta } from "../../../../core/contracts/committed-step";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
@@ -47,7 +47,7 @@ import { BERGEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
 const BERGEN_CTX: ModuleContext = { moduleId: "bergen" };
 
-const OPENER_1H_SURFACE: MeaningSurface = createSurface({
+const OPENER_1H_SURFACE: BidMeaning = createSurface({
   meaningId: "bergen:opener-1h",
   semanticClassId: "bergen:major-open",
   encoding: bid(1, BidSuit.Hearts),
@@ -58,7 +58,7 @@ const OPENER_1H_SURFACE: MeaningSurface = createSurface({
   teachingLabel: "1♥ opening",
 }, BERGEN_CTX);
 
-const OPENER_1S_SURFACE: MeaningSurface = createSurface({
+const OPENER_1S_SURFACE: BidMeaning = createSurface({
   meaningId: "bergen:opener-1s",
   semanticClassId: "bergen:major-open",
   encoding: bid(1, BidSuit.Spades),
@@ -91,23 +91,23 @@ type Phase =
 // ── Kernel deltas ─────────────────────────────────────────────────
 
 /** R1 responder: captain is responder, fit tentatively agreed. */
-const R1_HEARTS_DELTA: KernelDelta = {
+const R1_HEARTS_DELTA: NegotiationDelta = {
   captain: "responder",
   fitAgreed: { strain: "hearts", confidence: "tentative" },
 };
-const R1_SPADES_DELTA: KernelDelta = {
+const R1_SPADES_DELTA: NegotiationDelta = {
   captain: "responder",
   fitAgreed: { strain: "spades", confidence: "tentative" },
 };
 
 /** R2 opener: captain transfers to opener. */
-const R2_OPENER_DELTA: KernelDelta = { captain: "opener" };
+const R2_OPENER_DELTA: NegotiationDelta = { captain: "opener" };
 
 /** R3 responder: captain back to responder. */
-const R3_RESPONDER_DELTA: KernelDelta = { captain: "responder" };
+const R3_RESPONDER_DELTA: NegotiationDelta = { captain: "responder" };
 
 /** R4 opener: captain back to opener. */
-const R4_OPENER_DELTA: KernelDelta = { captain: "opener" };
+const R4_OPENER_DELTA: NegotiationDelta = { captain: "opener" };
 
 // ── Rule module ───────────────────────────────────────────────────
 
@@ -182,7 +182,7 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "opened-hearts", turn: "responder" },
       claims: BERGEN_R1_HEARTS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R1_HEARTS_DELTA,
+        negotiationDelta: R1_HEARTS_DELTA,
       })),
     },
     // R1: responder raises (spades)
@@ -190,7 +190,7 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "opened-spades", turn: "responder" },
       claims: BERGEN_R1_SPADES_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R1_SPADES_DELTA,
+        negotiationDelta: R1_SPADES_DELTA,
       })),
     },
 
@@ -199,14 +199,14 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "after-constructive-hearts", turn: "opener" },
       claims: BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R2_OPENER_DELTA,
+        negotiationDelta: R2_OPENER_DELTA,
       })),
     },
     {
       match: { local: "after-constructive-spades", turn: "opener" },
       claims: BERGEN_R2_AFTER_CONSTRUCTIVE_SPADES_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R2_OPENER_DELTA,
+        negotiationDelta: R2_OPENER_DELTA,
       })),
     },
 
@@ -215,14 +215,14 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "after-limit-hearts", turn: "opener" },
       claims: BERGEN_R2_AFTER_LIMIT_HEARTS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R2_OPENER_DELTA,
+        negotiationDelta: R2_OPENER_DELTA,
       })),
     },
     {
       match: { local: "after-limit-spades", turn: "opener" },
       claims: BERGEN_R2_AFTER_LIMIT_SPADES_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R2_OPENER_DELTA,
+        negotiationDelta: R2_OPENER_DELTA,
       })),
     },
 
@@ -231,14 +231,14 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "after-preemptive-hearts", turn: "opener" },
       claims: BERGEN_R2_AFTER_PREEMPTIVE_HEARTS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R2_OPENER_DELTA,
+        negotiationDelta: R2_OPENER_DELTA,
       })),
     },
     {
       match: { local: "after-preemptive-spades", turn: "opener" },
       claims: BERGEN_R2_AFTER_PREEMPTIVE_SPADES_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R2_OPENER_DELTA,
+        negotiationDelta: R2_OPENER_DELTA,
       })),
     },
 
@@ -247,7 +247,7 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "after-game", turn: "responder" },
       claims: BERGEN_R3_AFTER_GAME_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R3_RESPONDER_DELTA,
+        negotiationDelta: R3_RESPONDER_DELTA,
       })),
     },
 
@@ -256,7 +256,7 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "after-signoff", turn: "responder" },
       claims: BERGEN_R3_AFTER_SIGNOFF_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R3_RESPONDER_DELTA,
+        negotiationDelta: R3_RESPONDER_DELTA,
       })),
     },
 
@@ -265,7 +265,7 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "after-game-try-hearts", turn: "responder" },
       claims: BERGEN_R3_AFTER_GAME_TRY_HEARTS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R3_RESPONDER_DELTA,
+        negotiationDelta: R3_RESPONDER_DELTA,
       })),
     },
 
@@ -274,7 +274,7 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "after-game-try-spades", turn: "responder" },
       claims: BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R3_RESPONDER_DELTA,
+        negotiationDelta: R3_RESPONDER_DELTA,
       })),
     },
 
@@ -283,7 +283,7 @@ export const bergenRules: RuleModule<Phase> = {
       match: { local: "r4", turn: "opener" },
       claims: BERGEN_R4_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: R4_OPENER_DELTA,
+        negotiationDelta: R4_OPENER_DELTA,
       })),
     },
   ],

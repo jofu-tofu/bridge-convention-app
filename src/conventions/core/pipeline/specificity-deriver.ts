@@ -1,7 +1,7 @@
 /**
  * Specificity derivation — the source of truth for surface specificity values.
  *
- * Authored specificity values on MeaningSurface.ranking are set to match
+ * Authored specificity values on BidMeaning.ranking are set to match
  * the output of this deriver. Do not hand-pick specificity numbers.
  *
  * The deriver counts unique communicative constraint dimensions:
@@ -16,8 +16,8 @@
  * No manual tuning. No overrides. The dimension count IS the specificity.
  */
 
-import type { MeaningSurface, ConstraintDimension, SpecificityBasis } from "../../../core/contracts/meaning";
-import type { MeaningSurfaceClause } from "../../../core/contracts/meaning";
+import type { BidMeaning, ConstraintDimension, SpecificityBasis } from "../../../core/contracts/meaning";
+import type { BidMeaningClause } from "../../../core/contracts/meaning";
 import type { FactCatalogExtension, FactDefinition } from "../../../core/contracts/fact-catalog";
 import { classifySpecificityBasis } from "./specificity-classifier";
 
@@ -54,11 +54,11 @@ const MEANINGFUL_SUIT_LENGTH_THRESHOLD = 3;
  * - Boolean(false) as the bid's sole meaning → contributes shapeClass
  * - lte on suit length → always contributes shapeClass ("no fit" is shape info)
  */
-function isNegativeBooleanClause(clause: MeaningSurfaceClause): boolean {
+function isNegativeBooleanClause(clause: BidMeaningClause): boolean {
   return clause.operator === "boolean" && clause.value === false;
 }
 
-function isSuitLengthUpperBound(clause: MeaningSurfaceClause): boolean {
+function isSuitLengthUpperBound(clause: BidMeaningClause): boolean {
   return clause.operator === "lte" && clause.factId.startsWith("hand.suitLength.");
 }
 
@@ -67,7 +67,7 @@ function isSuitLengthUpperBound(clause: MeaningSurfaceClause): boolean {
  * "2+ in a suit" or "3+ in a suit" are so common that they don't meaningfully
  * communicate suit length information to partner.
  */
-function isVacuousSuitLength(clause: MeaningSurfaceClause): boolean {
+function isVacuousSuitLength(clause: BidMeaningClause): boolean {
   if (!clause.factId.startsWith("hand.suitLength.")) return false;
   if (clause.operator === "gte" && typeof clause.value === "number") {
     return clause.value < MEANINGFUL_SUIT_LENGTH_THRESHOLD;
@@ -91,7 +91,7 @@ function isVacuousSuitLength(clause: MeaningSurfaceClause): boolean {
  * 4. $suit bindings that resolve to a specific suit contribute suitIdentity.
  */
 export function deriveSpecificity(
-  surface: MeaningSurface,
+  surface: BidMeaning,
   factExtensions: readonly FactCatalogExtension[],
   inheritedDimensions?: readonly ConstraintDimension[],
 ): SpecificityDerivationResult {

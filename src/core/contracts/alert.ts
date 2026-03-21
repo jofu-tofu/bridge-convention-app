@@ -1,6 +1,6 @@
 import type { BidAlert } from "./bidding";
-import type { FactConstraintIR } from "./agreement-module";
-import type { MeaningSurfaceClause } from "./meaning";
+import type { FactConstraint } from "./agreement-module";
+import type { BidMeaningClause } from "./meaning";
 
 // ─── Intent-based conventionality derivation ─────────────────────
 //
@@ -54,13 +54,13 @@ const ARTIFICIAL_INTENTS = new Set([
  *  1. Primitive hand facts (hand.*) — universally disclosed when explaining any bid.
  *  2. Clause explicitly marked isPublic by the convention author — the bundle decides
  *     what bridge-derived or module facts are worth disclosing. */
-function isPublicClause(clause: MeaningSurfaceClause): boolean {
+function isPublicClause(clause: BidMeaningClause): boolean {
   if (clause.isPublic) return true;
   return clause.factId.startsWith("hand.");
 }
 
-/** Convert a clause to a FactConstraintIR (strips clauseId, description, isPublic). */
-function clauseToConstraint(clause: MeaningSurfaceClause): FactConstraintIR {
+/** Convert a clause to a FactConstraint (strips clauseId, description, isPublic). */
+function clauseToConstraint(clause: BidMeaningClause): FactConstraint {
   return {
     factId: clause.factId,
     operator: clause.operator,
@@ -74,8 +74,8 @@ function clauseToConstraint(clause: MeaningSurfaceClause): FactConstraintIR {
  *  Anything else is public only if the convention author marks it (isPublic: true).
  *  This keeps the framework convention-universal: bundles control disclosure. */
 export function derivePublicConstraints(
-  clauses: readonly MeaningSurfaceClause[],
-): readonly FactConstraintIR[] {
+  clauses: readonly BidMeaningClause[],
+): readonly FactConstraint[] {
   return clauses.filter(isPublicClause).map(clauseToConstraint);
 }
 
@@ -83,7 +83,7 @@ export function derivePublicConstraints(
  *  Alertability is derived from sourceIntent.type membership in NATURAL_INTENTS. */
 export interface AlertResolvable {
   readonly sourceIntent: { readonly type: string };
-  readonly clauses: readonly MeaningSurfaceClause[];
+  readonly clauses: readonly BidMeaningClause[];
   readonly teachingLabel: string;
 }
 

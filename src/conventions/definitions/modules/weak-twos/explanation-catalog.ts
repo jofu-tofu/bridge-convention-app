@@ -1,4 +1,4 @@
-import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalogIR } from "../../../../core/contracts/explanation-catalog";
+import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
 
 /**
  * Weak Two Bids explanation catalog.
@@ -198,4 +198,4 @@ export const WEAK_TWO_ENTRIES: ExplanationEntry[] = [
   },
 ];
 
-export const WEAK_TWO_EXPLANATION_CATALOG: ExplanationCatalogIR = createExplanationCatalog(WEAK_TWO_ENTRIES);
+export const WEAK_TWO_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(WEAK_TWO_ENTRIES);

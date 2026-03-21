@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { MachineState, MachineTransition } from "../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
@@ -27,7 +27,7 @@ import {
   NEAR_MISS_OF,
   FALLBACK_OF,
   ALTERNATIVES,
-} from "../pedagogical-vocabulary";
+} from "../teaching-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -77,7 +77,7 @@ const OPENER_STAYMAN_CLOSURE_POLICY = {
 // ─── R1 surface ──────────────────────────────────────────────
 
 /** Factory: creates the Stayman R1 surface parameterized by system config. */
-export function createStaymanR1Surface(sys: SystemConfig): MeaningSurface {
+export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
   const minHcp = sys.responderThresholds.inviteMin;
   return createSurface({
     meaningId: "stayman:ask-major",
@@ -107,7 +107,7 @@ export function createStaymanR1Surface(sys: SystemConfig): MeaningSurface {
     intraModuleOrder: 0,
     sourceIntent: { type: "StaymanAsk", params: {} },
     teachingLabel: "Stayman 2♣",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "r1-major-fit" },
       { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
       { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "b" },
@@ -120,7 +120,7 @@ export function createStaymanR1Surface(sys: SystemConfig): MeaningSurface {
 
 // ─── Opener Stayman response surfaces ────────────────────────
 
-export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "stayman:show-hearts",
     semanticClassId: STAYMAN_CLASSES.SHOW_HEARTS,
@@ -178,7 +178,7 @@ export const OPENER_STAYMAN_SURFACES: readonly MeaningSurface[] = [
 
 // ─── Stayman R3 surfaces ─────────────────────────────────────
 
-export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
+export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "stayman:raise-game-hearts",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
@@ -201,7 +201,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "RaiseGame", params: { suit: "hearts" } },
     teachingLabel: "Raise to game in hearts",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 0 },
       { tag: CONTINUATION_OF, scope: "stayman:raise-continues-ask", role: "a" },
     ],
@@ -229,7 +229,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "RaiseInvite", params: { suit: "hearts" } },
     teachingLabel: "Invite in hearts",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 1 },
     ],
   }, STAYMAN_CTX),
@@ -256,7 +256,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 2,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-heart-fit" } },
     teachingLabel: "3NT (no heart fit)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 0 },
     ],
   }, STAYMAN_CTX),
@@ -283,13 +283,13 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 3,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-heart-fit" } },
     teachingLabel: "2NT invite (no heart fit)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 1 },
     ],
   }, STAYMAN_CTX),
 ];
 
-export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
+export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "stayman:raise-game-spades",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
@@ -312,7 +312,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "RaiseGame", params: { suit: "spades" } },
     teachingLabel: "Raise to game in spades",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 0 },
     ],
   }, STAYMAN_CTX),
@@ -339,7 +339,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "RaiseInvite", params: { suit: "spades" } },
     teachingLabel: "Invite in spades",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 1 },
     ],
   }, STAYMAN_CTX),
@@ -394,7 +394,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly MeaningSurface[] = [
 ];
 
 // Stayman R3 after 2D — ONLY the 2 Stayman surfaces (not Smolen)
-export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
+export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "stayman:nt-game-after-denial",
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_DENIAL,
@@ -411,7 +411,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "denial" } },
     teachingLabel: "3NT after denial",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-denial-strength", ordinal: 0 },
       { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "b" },
       { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
@@ -434,7 +434,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     teachingLabel: "2NT invite after denial",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "stayman:r3-denial-strength", ordinal: 1 },
       { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "b" },
     ],
@@ -444,7 +444,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
 // ─── Interference surface ────────────────────────────────────
 
 /** Factory: creates the interference redouble surface parameterized by system config. */
-export function createInterferenceRedoubleSurface(sys: SystemConfig): MeaningSurface {
+export function createInterferenceRedoubleSurface(sys: SystemConfig): BidMeaning {
   const minHcp = sys.interference.redoubleMin;
   return createSurface({
     meaningId: "interference:redouble-strength",
@@ -466,7 +466,7 @@ export function createInterferenceRedoubleSurface(sys: SystemConfig): MeaningSur
 }
 
 /** Legacy default — uses SAYC system config. */
-export const INTERFERENCE_REDOUBLE_SURFACE: MeaningSurface =
+export const INTERFERENCE_REDOUBLE_SURFACE: BidMeaning =
   createInterferenceRedoubleSurface(SAYC_SYSTEM_CONFIG);
 
 // ─── R1 transition ───────────────────────────────────────────

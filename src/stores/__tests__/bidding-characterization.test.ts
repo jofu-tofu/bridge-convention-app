@@ -10,13 +10,13 @@ import type { Call, Auction } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { BidGrade } from "../../teaching/teaching-resolution";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
+import type { ConventionStrategy, BidResult } from "../../core/contracts";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers, createTestServiceSession } from "../../test-support/fixtures";
 import type { DrillBundle } from "../../bootstrap/types";
 import { createLocalService } from "../../service";
 
 /** Strategy that always suggests 2C. */
-function make2CStrategy(): ConventionBiddingStrategy {
+function make2CStrategy(): ConventionStrategy {
   return {
     id: "test-strategy",
     name: "Test Convention",
@@ -32,7 +32,7 @@ function make2CStrategy(): ConventionBiddingStrategy {
 }
 
 /** Strategy that never applies (returns null → correct bid is pass). */
-function makeNoOpStrategy(): ConventionBiddingStrategy {
+function makeNoOpStrategy(): ConventionStrategy {
   return {
     id: "noop",
     name: "No-Op",

@@ -7,11 +7,11 @@ import type { RuleAtom } from "../../conventions/core";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
-import type { Flags, OpponentMode, Vulnerability, Call, ScenarioConfig, Auction, Seat, Deal, BiddingSystem, ConventionSpec } from "../shared";
+import type { Flags, OpponentMode, Vulnerability, Call, ScenarioConfig, Auction, Seat, Deal, ConventionBundle, ConventionSpec } from "../shared";
 import {
   callKey,
   requireArg, optionalNumericArg,
-  resolveSpec, resolveSystemWithRules,
+  resolveSpec, resolveBundleWithRules,
   generateSeededDeal, resolveUserSeat,
   buildInitialAuction, buildContext, nextSeatClockwise, partnerOf,
   assignSeedScenario,
@@ -49,9 +49,9 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
   const maxSeedsPerAgent = optionalNumericArg(flags, "max-seeds-per-agent") ?? 5;
 
   const spec = resolveSpec(bundleId);
-  const system = resolveSystemWithRules(bundleId);
+  const bundle = resolveBundleWithRules(bundleId);
   const strategy = createSpecStrategy(spec);
-  const ruleModules = system.ruleModules ?? [];
+  const ruleModules = bundle.ruleModules ?? [];
 
   // All atoms from rule enumeration
   const allAtoms = enumerateRuleAtoms(ruleModules);
@@ -65,12 +65,12 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
     for (let s = baseSeed; s < baseSeed + maxSeeds && seeds.length < targetCoverage; s++) {
       try {
         const scenario = assignSeedScenario(s, scenarioConfig);
-        const deal = generateSeededDeal(system, s, scenario.vulnerability);
-        const userSeat = resolveUserSeat(system, deal);
+        const deal = generateSeededDeal(bundle, s, scenario.vulnerability);
+        const userSeat = resolveUserSeat(bundle, deal);
 
         // Strategy-driven forward auction to find atom
         const { reached, auction } = buildForwardAuctionForAtom(
-          system, spec, deal, userSeat, atom, scenario.vulnerability,
+          bundle, spec, deal, userSeat, atom, scenario.vulnerability,
         );
         if (!reached) continue;
 
@@ -148,7 +148,7 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
   const playthroughInfo: { seedInfo: SeedInfo; userSteps: number; atomsCovered: string[] }[] = [];
   for (const si of uniqueSeedInfos) {
     try {
-      const result = runSinglePlaythrough(system, spec, si.seed, atomCallMap, si.vulnerability, si.opponents);
+      const result = runSinglePlaythrough(bundle, spec, si.seed, atomCallMap, si.vulnerability, si.opponents);
       const userSteps = result.steps.filter((s) => s.isUserStep);
       playthroughInfo.push({
         seedInfo: si,
@@ -267,7 +267,7 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
 
 /** Strategy-driven forward auction — extends auction until atom's encoding is reached. */
 function buildForwardAuctionForAtom(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   spec: ConventionSpec,
   deal: Deal,
   userSeat: Seat,
@@ -276,7 +276,7 @@ function buildForwardAuctionForAtom(
 ): { auction: Auction; reached: boolean } {
   const strategy = createSpecStrategy(spec);
   const partner = partnerOf(userSeat);
-  const initAuction = buildInitialAuction(system, userSeat, deal);
+  const initAuction = buildInitialAuction(bundle, userSeat, deal);
   const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
   const maxBids = 20;
 

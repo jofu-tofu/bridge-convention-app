@@ -2,7 +2,7 @@ import type { Auction, Seat } from "../../../engine/types";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import { buildPublicSnapshot } from "../../../core/contracts/module-surface";
 import type { PublicEvent } from "../../../core/contracts/agreement-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { MachineRegisters } from "./machine-types";
 import { ForcingState } from "../../../core/contracts/bidding";
 import { callKey } from "../../../engine/call-helpers";
@@ -14,7 +14,7 @@ export function buildSnapshotFromAuction(
   activeModuleIds: readonly string[],
   options?: {
     machineRegisters?: MachineRegisters;
-    surfaceRouter?: (auction: Auction, seat: Seat) => readonly MeaningSurface[];
+    surfaceRouter?: (auction: Auction, seat: Seat) => readonly BidMeaning[];
   },
 ): PublicSnapshot {
   const registers = options?.machineRegisters;

@@ -2,13 +2,13 @@ import { describe, it, expect } from "vitest";
 import { matchRoute, matchObs } from "../route-matcher";
 import type { ObsPattern, RouteExpr } from "../../rule-module";
 import type { CommittedStep } from "../../../../core/contracts/committed-step";
-import { INITIAL_KERNEL } from "../../../../core/contracts/committed-step";
-import type { CanonicalObs } from "../../../../core/contracts/canonical-observation";
+import { INITIAL_NEGOTIATION } from "../../../../core/contracts/committed-step";
+import type { BidAction } from "../../../../core/contracts/bid-action";
 import { Seat, BidSuit } from "../../../../engine/types";
 import type { ContractBid, SpecialCall } from "../../../../engine/types";
 
 function makeStep(
-  publicObs: readonly CanonicalObs[],
+  publicActions: readonly BidAction[],
   status: CommittedStep["status"] = "resolved",
   actor: Seat = Seat.South,
 ): CommittedStep {
@@ -16,51 +16,51 @@ function makeStep(
     actor,
     call: { type: "pass" } as SpecialCall,
     resolvedClaim: null,
-    publicObs,
-    kernelDelta: {},
-    postKernel: INITIAL_KERNEL,
+    publicActions,
+    negotiationDelta: {},
+    stateAfter: INITIAL_NEGOTIATION,
     status,
   };
 }
 
 describe("matchObs", () => {
   it("matches exact act", () => {
-    const obs: CanonicalObs = { act: "inquire", feature: "majorSuit" };
+    const obs: BidAction = { act: "inquire", feature: "majorSuit" };
     expect(matchObs({ act: "inquire" }, obs)).toBe(true);
     expect(matchObs({ act: "deny" }, obs)).toBe(false);
   });
 
   it("matches 'any' act", () => {
-    const obs: CanonicalObs = { act: "open", strain: "notrump" };
+    const obs: BidAction = { act: "open", strain: "notrump" };
     expect(matchObs({ act: "any" }, obs)).toBe(true);
   });
 
   it("matches with feature constraint", () => {
-    const obs: CanonicalObs = { act: "inquire", feature: "majorSuit" };
+    const obs: BidAction = { act: "inquire", feature: "majorSuit" };
     expect(matchObs({ act: "inquire", feature: "majorSuit" }, obs)).toBe(true);
     expect(matchObs({ act: "inquire", feature: "heldSuit" }, obs)).toBe(false);
   });
 
   it("matches with suit constraint", () => {
-    const obs: CanonicalObs = { act: "show", feature: "heldSuit", suit: "hearts" };
+    const obs: BidAction = { act: "show", feature: "heldSuit", suit: "hearts" };
     expect(matchObs({ act: "show", suit: "hearts" }, obs)).toBe(true);
     expect(matchObs({ act: "show", suit: "spades" }, obs)).toBe(false);
   });
 
   it("matches with strain constraint", () => {
-    const obs: CanonicalObs = { act: "open", strain: "notrump" };
+    const obs: BidAction = { act: "open", strain: "notrump" };
     expect(matchObs({ act: "open", strain: "notrump" }, obs)).toBe(true);
     expect(matchObs({ act: "open", strain: "hearts" }, obs)).toBe(false);
   });
 
   it("matches with strength constraint", () => {
-    const obs: CanonicalObs = { act: "raise", strain: "hearts", strength: "invitational" };
+    const obs: BidAction = { act: "raise", strain: "hearts", strength: "invitational" };
     expect(matchObs({ act: "raise", strength: "invitational" }, obs)).toBe(true);
     expect(matchObs({ act: "raise", strength: "game" }, obs)).toBe(false);
   });
 
   it("unspecified fields are wildcards", () => {
-    const obs: CanonicalObs = { act: "show", feature: "heldSuit", suit: "hearts", strength: "minimum" };
+    const obs: BidAction = { act: "show", feature: "heldSuit", suit: "hearts", strength: "minimum" };
     // Pattern only specifies act — other fields are wildcards
     expect(matchObs({ act: "show" }, obs)).toBe(true);
   });
@@ -221,18 +221,18 @@ describe("matchRoute", () => {
     const openerSeat = Seat.South;
 
     it("matchObs with actor matches correctly", () => {
-      const obs: CanonicalObs = { act: "open", strain: "notrump" };
+      const obs: BidAction = { act: "open", strain: "notrump" };
       expect(matchObs({ act: "open", actor: "opener" }, obs, "opener")).toBe(true);
       expect(matchObs({ act: "open", actor: "responder" }, obs, "opener")).toBe(false);
     });
 
     it("matchObs with actor mismatch rejects", () => {
-      const obs: CanonicalObs = { act: "overcall", feature: "heldSuit", suit: "hearts" };
+      const obs: BidAction = { act: "overcall", feature: "heldSuit", suit: "hearts" };
       expect(matchObs({ act: "overcall", actor: "opener" }, obs, "opponent")).toBe(false);
     });
 
     it("matchObs without actor (backward compat) matches any actor", () => {
-      const obs: CanonicalObs = { act: "open", strain: "notrump" };
+      const obs: BidAction = { act: "open", strain: "notrump" };
       // No actor on pattern — should match regardless of actorRole
       expect(matchObs({ act: "open" }, obs, "opener")).toBe(true);
       expect(matchObs({ act: "open" }, obs, "opponent")).toBe(true);

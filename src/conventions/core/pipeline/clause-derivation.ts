@@ -1,4 +1,4 @@
-import type { MeaningSurfaceClause } from "../../../core/contracts/meaning";
+import type { BidMeaningClause } from "../../../core/contracts/meaning";
 import type { FactOperator } from "../../../core/contracts/meaning";
 
 /**
@@ -109,10 +109,10 @@ export function deriveClauseDescription(
 }
 
 /**
- * Fill in missing `clauseId` and `description` on a MeaningSurfaceClause.
+ * Fill in missing `clauseId` and `description` on a BidMeaningClause.
  * Returns the clause unchanged if both fields are already present.
  */
-export function fillClauseDefaults(clause: MeaningSurfaceClause): MeaningSurfaceClause {
+export function fillClauseDefaults(clause: BidMeaningClause): BidMeaningClause {
   const needsId = clause.clauseId === undefined;
   const needsDesc = clause.description === undefined;
 

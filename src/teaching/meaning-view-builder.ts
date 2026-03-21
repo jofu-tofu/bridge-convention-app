@@ -19,12 +19,12 @@ import type {
 
 import type { MeaningClause } from "../core/contracts/meaning";
 
-import type { ConditionEvidenceIR } from "../core/contracts/evidence-bundle";
+import type { ConditionEvidence } from "../core/contracts/evidence-bundle";
 
 // -- Meaning Views --
 
-/** Convert a MeaningClause to ConditionEvidenceIR for supporting evidence. */
-function clauseToEvidence(clause: MeaningClause): ConditionEvidenceIR {
+/** Convert a MeaningClause to ConditionEvidence for supporting evidence. */
+function clauseToEvidence(clause: MeaningClause): ConditionEvidence {
   return {
     conditionId: clause.factId,
     satisfied: clause.satisfied,
@@ -62,7 +62,7 @@ export function buildMeaningViews(
       e => e.candidateId === elimination.candidateBidName,
     );
 
-    const evidence: ConditionEvidenceIR[] = eliminationTrace?.evidence
+    const evidence: ConditionEvidence[] = eliminationTrace?.evidence
       ? [...eliminationTrace.evidence]
       : [];
 

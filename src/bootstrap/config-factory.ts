@@ -6,7 +6,7 @@ import type { InferenceConfig } from "../inference/types";
 import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { getSystem, specFromSystem } from "../conventions/definitions/system-registry";
+import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
@@ -14,21 +14,21 @@ const NS_SEATS = new Set([Seat.North, Seat.South]);
 // ── Protocol frame architecture path ────────────────────────────────
 
 /**
- * Creates a DrillConfig from a BiddingSystem.
- * Throws if no system is registered for the given ID.
+ * Creates a DrillConfig from a ConventionBundle.
+ * Throws if no bundle is registered for the given ID.
  */
 export function createProtocolDrillConfig(
   conventionId: string,
   userSeat: Seat,
   options?: { opponentMode?: OpponentMode },
 ): DrillConfig {
-  const system = getSystem(conventionId);
-  if (!system) {
+  const bundle = getSystemBundle(conventionId);
+  if (!bundle) {
     throw new Error(
-      `No BiddingSystem registered for "${conventionId}".`,
+      `No bundle registered for "${conventionId}".`,
     );
   }
-  const spec = specFromSystem(system);
+  const spec = specFromBundle(bundle);
   if (!spec) {
     throw new Error(
       `No ConventionSpec derivable for "${conventionId}".`,

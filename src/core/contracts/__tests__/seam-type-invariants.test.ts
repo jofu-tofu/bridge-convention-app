@@ -4,7 +4,7 @@
  * changes to these types are detected early.
  */
 import { describe, it, expect } from "vitest";
-import type { SystemProfileIR } from "../agreement-module";
+import type { SystemProfile } from "../agreement-module";
 import type { EvaluationResult, RuntimeModule } from "../../../conventions/core/runtime/types";
 import type { PublicSnapshot } from "../module-surface";
 import { ForcingState } from "../bidding";
@@ -14,9 +14,9 @@ import { BASE_SYSTEM_SAYC } from "../base-system-vocabulary";
 // and verify key fields exist at runtime via a factory.
 
 describe("Seam type invariants", () => {
-  describe("SystemProfileIR", () => {
+  describe("SystemProfile", () => {
     it("has required fields", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-profile",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [

@@ -1,7 +1,7 @@
 /**
  * Base bidding system identifiers.
  *
- * Shared vocabulary for the `baseSystem` field on `SystemProfileIR` and the
+ * Shared vocabulary for the `baseSystem` field on `SystemProfile` and the
  * `systemId` field on `SystemConfig`. Every string that names a bidding
  * system must come from this file so grep finds all references.
  *

@@ -7,15 +7,18 @@ import {
   clearBundleRegistry,
 } from "../bundle-registry";
 import type { ConventionBundle } from "../bundle-types";
+import { ConventionCategory } from "../../../../core/contracts/convention";
 
 function makeBundle(id: string, memberIds: string[] = []): ConventionBundle {
   return {
     id,
     name: `Bundle ${id}`,
+    category: ConventionCategory.Constructive,
+    description: "test",
     memberIds,
     dealConstraints: { seats: [] },
     explanationCatalog: { version: "1.0.0", entries: [] },
-    pedagogicalRelations: [],
+    teachingRelations: [],
     acceptableAlternatives: [],
     intentFamilies: [],
   };

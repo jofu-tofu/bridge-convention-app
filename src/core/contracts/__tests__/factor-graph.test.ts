@@ -6,7 +6,7 @@ import type {
   ShapeFactor,
   ExclusionFactor,
   FitFactor,
-  FactorGraphIR,
+  FactorGraph,
   FactorOrigin,
   EvidencePin,
   OwnHandPin,
@@ -197,10 +197,10 @@ describe("EvidencePin discriminated union", () => {
   });
 });
 
-// ─── FactorGraphIR ──────────────────────────────────────────
-describe("FactorGraphIR", () => {
+// ─── FactorGraph ──────────────────────────────────────────
+describe("FactorGraph", () => {
   it("can be constructed with all fields", () => {
-    const fg: FactorGraphIR = {
+    const fg: FactorGraph = {
       factors: [
         { kind: "hcp-range", seat: "N", min: 15, max: 17, strength: "hard", origin },
       ],
@@ -225,7 +225,7 @@ describe("FactorGraphIR", () => {
   });
 
   it("empty factor graph is valid", () => {
-    const fg: FactorGraphIR = {
+    const fg: FactorGraph = {
       factors: [],
       ambiguitySchema: [],
       evidencePins: [],
@@ -237,7 +237,7 @@ describe("FactorGraphIR", () => {
   });
 
   it("round-trips through JSON serialization without loss", () => {
-    const fg: FactorGraphIR = {
+    const fg: FactorGraph = {
       factors: [
         { kind: "hcp-range", seat: "N", min: 15, max: 17, strength: "hard", origin },
         { kind: "suit-length", seat: "S", suit: "hearts", min: 5, max: 7, strength: "soft", origin },
@@ -263,7 +263,7 @@ describe("FactorGraphIR", () => {
     };
 
     const serialized = JSON.stringify(fg);
-    const deserialized = JSON.parse(serialized) as FactorGraphIR;
+    const deserialized = JSON.parse(serialized) as FactorGraph;
 
     expect(deserialized).toEqual(fg);
     expect(deserialized.factors).toHaveLength(5);

@@ -1,18 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Seat } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import {
-  clearRegistry,
-  registerConvention,
-} from "../../../conventions/core/registry";
-import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
+import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../../conventions/core/bundle";
+import { ntBundle } from "../../../conventions/definitions/nt-bundle";
+
+const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 import { createStubEngine, makeDeal } from "../../../test-support/engine-stub";
 
 // GameScreen uses Svelte context heavily — test the extracted logic
 describe("GameScreen", () => {
   beforeEach(() => {
-    clearRegistry();
-    registerConvention(ntBundleConventionConfig);
+    clearBundleRegistry();
+    registerBundle(ntBundle);
   });
 
   it("startDrill calls engine.generateDeal", async () => {

@@ -11,30 +11,30 @@ import { describe, it, expect } from "vitest";
 // Side-effect import: registers all bundles + conventions
 import "../../../conventions";
 
-import { listSystems } from "../../../conventions/definitions/system-registry";
+import { listSystemBundles } from "../../../conventions/definitions/system-registry";
 import { lintModule } from "../../../cli/verify/lint";
 import { analyzeBundle } from "../../../cli/verify/interfere";
-import type { BiddingSystem } from "../../../conventions/definitions/bidding-system";
+import type { ConventionBundle } from "../../../conventions/core/bundle/bundle-types";
 import type { LintDiagnostic } from "../../../cli/verify/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function getNonInternalSystems(): BiddingSystem[] {
-  return listSystems().filter(
-    (s) => !s.internal && s.ruleModules && s.ruleModules.length > 0,
-  );
+function getNonInternalBundles(): ConventionBundle[] {
+  return listSystemBundles().filter(
+    (b) => !b.internal && b.ruleModules && b.ruleModules.length > 0,
+  ) as ConventionBundle[];
 }
 
 // ── Per-bundle lint ──────────────────────────────────────────────────
 
 describe("per-bundle lint", () => {
-  const systems = getNonInternalSystems();
+  const bundles = getNonInternalBundles();
 
-  describe.each(systems.map((s) => [s.id, s] as const))("%s", (_id, system) => {
+  describe.each(bundles.map((b) => [b.id, b] as const))("%s", (_id, bundle) => {
     it("has no lint errors", () => {
       const allDiags: LintDiagnostic[] = [];
 
-      for (const mod of system.ruleModules!) {
+      for (const mod of bundle.ruleModules!) {
         const diags = lintModule(mod);
         const errors = diags.filter((d) => d.severity === "error");
         allDiags.push(...errors);
@@ -48,11 +48,11 @@ describe("per-bundle lint", () => {
 // ── Per-bundle interference ──────────────────────────────────────────
 
 describe("per-bundle interference", () => {
-  const systems = getNonInternalSystems();
+  const bundles = getNonInternalBundles();
 
-  describe.each(systems.map((s) => [s.id, s] as const))("%s", (_id, system) => {
+  describe.each(bundles.map((b) => [b.id, b] as const))("%s", (_id, bundle) => {
     it("high-risk encoding collision count is stable", () => {
-      const interactions = analyzeBundle(system.ruleModules!);
+      const interactions = analyzeBundle(bundle.ruleModules!);
 
       // Cross-module encoding collisions at the same band are expected in
       // multi-module bundles (e.g., Stayman 2H vs Jacoby Transfer accept 2H).
@@ -68,7 +68,7 @@ describe("per-bundle interference", () => {
     });
 
     it("interference risk summary is stable", () => {
-      const interactions = analyzeBundle(system.ruleModules!);
+      const interactions = analyzeBundle(bundle.ruleModules!);
 
       const summary = {
         high: interactions.filter((p) => p.riskLevel === "high").length,
@@ -85,14 +85,14 @@ describe("per-bundle interference", () => {
 // ── Lint warning stability ───────────────────────────────────────────
 
 describe("lint warning stability", () => {
-  const systems = getNonInternalSystems();
+  const bundles = getNonInternalBundles();
 
-  it.each(systems.map((s) => [s.id, s] as const))(
+  it.each(bundles.map((b) => [b.id, b] as const))(
     "%s warning count is stable",
-    (_id, system) => {
+    (_id, bundle) => {
       let warningCount = 0;
 
-      for (const mod of system.ruleModules!) {
+      for (const mod of bundle.ruleModules!) {
         const diags = lintModule(mod);
         warningCount += diags.filter((d) => d.severity === "warn").length;
       }

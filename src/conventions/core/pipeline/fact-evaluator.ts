@@ -37,20 +37,30 @@ export interface RelationalFactContext {
   readonly publicCommitments?: readonly PublicConstraint[];
 }
 
+/** Optional parameters for evaluateFacts(), grouped to reduce positional parameter count. */
+export interface EvaluateFactsOptions {
+  readonly relationalContext?: RelationalFactContext;
+  readonly posterior?: PosteriorFactProvider;
+  /** Seat ID to query posterior facts about (e.g. partner seat). Required when posterior is provided. */
+  readonly posteriorSeatId?: string;
+  /** Pre-computed vulnerability flag for the acting player's side.
+   *  When provided, seeds bridge.isVulnerable before evaluators run. */
+  readonly isVulnerable?: boolean;
+}
+
 // ─── Public API ─────────────────────────────────────────────
 
 export function evaluateFacts(
   hand: Hand,
   evaluation: HandEvaluation,
   catalog?: FactCatalog | readonly FactDefinition[],
-  relationalContext?: RelationalFactContext,
-  posterior?: PosteriorFactProvider,
-  /** Seat ID to query posterior facts about (e.g. partner seat). Required when posterior is provided. */
-  posteriorSeatId?: string,
-  /** Pre-computed vulnerability flag for the acting player's side.
-   *  When provided, seeds bridge.isVulnerable before evaluators run. */
-  isVulnerable?: boolean,
+  options?: EvaluateFactsOptions,
 ): EvaluatedFacts {
+  const relationalContext = options?.relationalContext;
+  const posterior = options?.posterior;
+  const posteriorSeatId = options?.posteriorSeatId;
+  const isVulnerable = options?.isVulnerable;
+
   let effectiveDefinitions: readonly FactDefinition[];
   let effectiveEvaluators: ReadonlyMap<string, FactEvaluatorFn>;
   let effectiveRelationalEvaluators: ReadonlyMap<string, RelationalFactEvaluatorFn> | undefined;

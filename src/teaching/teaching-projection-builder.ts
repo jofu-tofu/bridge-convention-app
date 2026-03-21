@@ -17,21 +17,21 @@ import type {
 import type {
   TeachingProjection,
   ConventionContribution,
-  SeatRelativeHandSpaceSummary,
+  HandSpaceSummary,
 } from "../core/contracts/teaching-projection";
 
 import type {
-  ExplanationCatalogIR,
+  ExplanationCatalog,
   ExplanationEntry,
 } from "../core/contracts/explanation-catalog";
 
-import type { PedagogicalRelation } from "../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../core/contracts/teaching-projection";
 
 import type { PosteriorSummary } from "../core/contracts/recommendation";
 
 import {
-  buildPedagogicalGraph,
-} from "./pedagogical-graph";
+  buildTeachingGraph,
+} from "./teaching-graph";
 
 import { buildCallViews } from "./call-view-builder";
 import { buildMeaningViews } from "./meaning-view-builder";
@@ -50,9 +50,9 @@ export interface TeachingProjectionOptions {
   /** Shape description override for hand space summary. */
   readonly shapeDescription?: string;
   /** Explanation catalog for enriching nodes with explanationId/templateKey. */
-  readonly explanationCatalog?: ExplanationCatalogIR;
+  readonly explanationCatalog?: ExplanationCatalog;
   /** Pedagogical relations for enriching WhyNot entries with family context. */
-  readonly pedagogicalRelations?: readonly PedagogicalRelation[];
+  readonly teachingRelations?: readonly TeachingRelation[];
   /** Posterior summary for enriching the hand space with probabilistic partner info.
    *  Convention-agnostic: renders whatever posterior-derived facts are present. */
   readonly posteriorSummary?: PosteriorSummary;
@@ -66,8 +66,8 @@ export interface CatalogIndex {
   readonly byMeaningId: ReadonlyMap<string, ExplanationEntry>;
 }
 
-/** Build a CatalogIndex from an ExplanationCatalogIR. */
-function buildCatalogIndex(catalog: ExplanationCatalogIR): CatalogIndex {
+/** Build a CatalogIndex from an ExplanationCatalog. */
+function buildCatalogIndex(catalog: ExplanationCatalog): CatalogIndex {
   const byFactId = new Map<string, ExplanationEntry>();
   const byMeaningId = new Map<string, ExplanationEntry>();
 
@@ -115,8 +115,8 @@ export function projectTeaching(
     ? buildCatalogIndex(options.explanationCatalog)
     : undefined;
 
-  const pedGraph = options?.pedagogicalRelations
-    ? buildPedagogicalGraph(options.pedagogicalRelations)
+  const teachingGraph = options?.teachingRelations
+    ? buildTeachingGraph(options.teachingRelations)
     : undefined;
 
   const truthMeaningIds = new Set(arbitration.truthSet.map(e => e.proposal.meaningId));
@@ -127,7 +127,7 @@ export function projectTeaching(
   const meaningViews = buildMeaningViews(arbitration, provenance);
   const callViews = buildCallViews(arbitration);
   const primaryExplanation = buildPrimaryExplanation(provenance, catalogIndex, clauseDescriptions);
-  const whyNot = buildWhyNot(arbitration, provenance, catalogIndex, pedGraph, truthMeaningIds);
+  const whyNot = buildWhyNot(arbitration, provenance, catalogIndex, teachingGraph, truthMeaningIds);
   const conventionsApplied = buildConventionContributions(arbitration, provenance);
   const handSpace = buildHandSpace(options, catalogIndex);
   const parseTree = buildParseTree(arbitration, provenance, catalogIndex);
@@ -242,8 +242,8 @@ function buildPartnerSummary(
 function buildHandSpace(
   options?: TeachingProjectionOptions,
   catalogIndex?: CatalogIndex,
-): SeatRelativeHandSpaceSummary {
-  const base: SeatRelativeHandSpaceSummary = {
+): HandSpaceSummary {
+  const base: HandSpaceSummary = {
     seatLabel: options?.seatLabel ?? "South",
     hcpRange: options?.hcpRange ?? { min: 0, max: 40 },
     shapeDescription: options?.shapeDescription ?? "Unknown shape",

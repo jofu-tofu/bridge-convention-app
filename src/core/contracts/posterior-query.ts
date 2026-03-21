@@ -1,6 +1,6 @@
 import type { Hand, SuitName } from "../../engine/types";
 import type { PublicSnapshot } from "./module-surface";
-import type { FactorGraphIR, FactorSpec } from "./factor-graph";
+import type { FactorGraph, FactorSpec } from "./factor-graph";
 
 // ─── Inference health ───────────────────────────────────────
 /** Quality metrics for posterior inference results. */
@@ -30,7 +30,7 @@ export interface FactorIntrospection {
 /** Branded input for posterior initialization — all data needed to condition. */
 export interface ConditioningContext {
   readonly snapshot: PublicSnapshot;
-  readonly factorGraph: FactorGraphIR;
+  readonly factorGraph: FactorGraph;
   readonly observerSeat: string;
   readonly ownHand?: Hand;
 }

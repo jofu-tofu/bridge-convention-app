@@ -614,25 +614,42 @@ export default tseslint.config(
     },
   },
 
-  // ── System config boundary: convention module files ──
-  // Convention modules should receive SystemConfig via factory parameters (DI),
-  // not import concrete system config values directly. The SAYC_SYSTEM_CONFIG
-  // import in module files is a legacy compat layer for backward-compatible
-  // default exports — new modules should avoid it.
+  // ── Module isolation: convention modules must not import sibling modules ──
+  // Enforces the "modules are portable building blocks" principle (CLAUDE.md).
+  // Modules never import from other modules. Cross-module relationships emerge
+  // from shared vocabulary tags, not explicit references to foreign IDs.
+  // Allowed: conventions/core/, core/contracts/, engine/, pedagogical-vocabulary.
+  // Blocked: sibling module directories and files within modules/.
+  //
+  // Note: SAYC_SYSTEM_CONFIG imports are a legacy compat layer (see git history).
+  // New modules should receive SystemConfig via DI, not import the concrete value.
   {
     files: ["src/conventions/definitions/modules/**/*.ts"],
     ignores: ["**/__tests__/**", "**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
-          paths: [
+          patterns: [
             {
-              name: "../../../core/contracts/system-config",
-              importNames: ["SAYC_SYSTEM_CONFIG"],
-              message: "Convention modules should receive SystemConfig via factory parameters (DI). " +
-                "Import the type `SystemConfig` instead and accept it as a parameter. " +
-                "SAYC_SYSTEM_CONFIG is only allowed for legacy backward-compatible default exports.",
+              // Block subdirectory modules importing sibling subdirectories
+              // e.g., bergen/ importing from ../dont/ or ../weak-twos/
+              group: ["../bergen", "../bergen/*", "../dont", "../dont/*",
+                      "../weak-twos", "../weak-twos/*",
+                      "../stayman", "../stayman-rules",
+                      "../jacoby-transfers", "../jacoby-transfers-rules",
+                      "../smolen", "../smolen-rules",
+                      "../natural-nt", "../natural-nt-rules"],
+              message: "Module isolation: convention modules must not import from sibling modules. " +
+                "Cross-module relationships use shared vocabulary tags, not direct imports.",
+            },
+            {
+              // Block top-level modules importing subdirectory modules
+              // e.g., stayman.ts importing from ./bergen/ or ./dont/
+              group: ["./bergen", "./bergen/*", "./dont", "./dont/*",
+                      "./weak-twos", "./weak-twos/*"],
+              message: "Module isolation: convention modules must not import from sibling modules. " +
+                "Cross-module relationships use shared vocabulary tags, not direct imports.",
             },
           ],
         },

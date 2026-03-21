@@ -1,4 +1,4 @@
-import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalogIR } from "../../../../core/contracts/explanation-catalog";
+import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
 
 /**
  * DONT explanation catalog.
@@ -175,4 +175,4 @@ export const DONT_ENTRIES: ExplanationEntry[] = [
   },
 ];
 
-export const DONT_EXPLANATION_CATALOG: ExplanationCatalogIR = createExplanationCatalog(DONT_ENTRIES);
+export const DONT_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(DONT_ENTRIES);

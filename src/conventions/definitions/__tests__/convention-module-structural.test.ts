@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getAllModules } from "../module-registry";
 import type { ConventionModule } from "../../core/convention-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import {
   PRIMITIVE_FACTS,
   BRIDGE_DERIVED_FACTS,
@@ -24,9 +24,9 @@ const sharedFactIds = new Set(
 );
 
 /** Collect all distinct surfaces from a module (deduped by meaningId). */
-function allUniqueSurfaces(mod: ConventionModule): MeaningSurface[] {
+function allUniqueSurfaces(mod: ConventionModule): BidMeaning[] {
   const seen = new Set<string>();
-  const result: MeaningSurface[] = [];
+  const result: BidMeaning[] = [];
   for (const s of [
     ...mod.entrySurfaces,
     ...mod.surfaceGroups.flatMap((g) => g.surfaces),

@@ -81,7 +81,7 @@ src/
   conventions/     Convention system
     core/            Registry, context factory, bundle registry, meaning pipeline (pipeline/), runtime (runtime/) — public API via index.ts barrel
     definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises), weak-twos-bundle/ (Weak Two Bids + Ogust), dont-bundle/ (DONT competitive overcalls) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
-  teaching/        Teaching resolution (teaching-resolution.ts), projection builder, pedagogical graph
+  teaching/        Teaching resolution (teaching-resolution.ts), projection builder, teaching graph
   inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
   strategy/        AI strategies
     bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
@@ -166,14 +166,14 @@ The game screen uses a **single-source typography system** so that card text, pa
 - **ESLint rule:** `eslint-rules/no-hardcoded-style-classes.js` — bans hardcoded Tailwind text-size, raw color-palette, z-index (`z-10` etc.), and border-radius (`rounded-lg` etc.) classes. Scoped to `game-screen/` and `game/` (excluding debug components). All checks = error. Use `--text-*`, `--color-*`, `--z-*`, `--radius-*` tokens instead.
 - **Border-radius:** Use `rounded-[--radius-sm]` / `rounded-[--radius-md]` / `rounded-[--radius-lg]` / `rounded-[--radius-xl]` instead of raw Tailwind `rounded-sm/md/lg/xl`. `rounded-full` is allowed (it's a shape, not a configurable radius).
 
-## Pedagogical Architecture
+## Teaching Architecture
 
 The app separates two concerns: **deterministic convention teaching** and **probabilistic realism**.
 
-- **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `MeaningSurface` describes a bidding meaning with clauses evaluated against facts. `semanticClassId` and `teachingLabel` are required on every surface.
-- **Alert system.** `resolveAlert()` derives alertability from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). `MeaningSurface` does not carry `prioritySpec` or `priorityClass`; the pipeline derives alertability in `resolveAlert()`. Public constraints are auto-derived from primitive/bridge-observable clauses via `derivePublicConstraints()`. `annotation-producer.ts` converts `publicConstraints` to `HandInference` for Layer 1 belief updates. Inference model: only hard constraints from chosen bid's clauses + entailed denials from within-module exhaustive closure policy. No cross-module soft inference.
+- **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `BidMeaning` describes a bidding meaning with clauses evaluated against facts. `semanticClassId` and `teachingLabel` are required on every surface.
+- **Alert system.** `resolveAlert()` derives alertability from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). `BidMeaning` does not carry `prioritySpec` or `priorityClass`; the pipeline derives alertability in `resolveAlert()`. Public constraints are auto-derived from primitive/bridge-observable clauses via `derivePublicConstraints()`. `annotation-producer.ts` converts `publicConstraints` to `HandInference` for Layer 1 belief updates. Inference model: only hard constraints from chosen bid's clauses + entailed denials from within-module exhaustive closure policy. No cross-module soft inference.
 - **`TeachingResolution`** (`src/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), CorrectNotPreferred (truth set but not recommended), Acceptable (preferred/alternative tier candidates), NearMiss (same family, fails constraint), Incorrect. `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)` extracts acceptable alternatives and near-miss candidates. `gradeBid()` grades user input with 5-grade cascade.
-- **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects arbitration results + provenance into teaching-optimized views for "why not X?" UI. Pedagogical relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
+- **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects arbitration results + provenance into teaching-optimized views for "why not X?" UI. Teaching relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
 - **Parse-tree feedback.** After a bid, `buildParseTree()` (`src/teaching/parse-tree-builder.ts`) shows the full decision chain — which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Data flows: `ArbitrationResult` + `DecisionProvenance` → `ParseTreeView` → `ParseTreePanel.svelte` (integrated into Incorrect and NearMiss feedback panels). Verdict per module: `selected` / `applicable` / `eliminated`.
 - **Off-convention drills.** Generate hands where the convention doesn't apply, training recognition ("does this convention apply?") not just execution. `ConventionBundle.offConventionConstraints` defines the anti-constraints (e.g., South 0–7 HCP for NT). `DrillTuning.includeOffConvention` + `offConventionRate` control frequency (default 30%). `DrillBundle.isOffConvention` flag tells the UI/teaching layer the deal is off-convention.
 - **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
@@ -195,8 +195,8 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 **Design specs** (the authoritative vision for the full architecture):
 
-- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-convention-protocol.md` — Agreement Module IR: composable convention modules, system profiles, conversation machines, two-phase evaluation, public state layers, WitnessSpecIR, FactCatalogIR
-- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-candidate-pipeline.md` — Meaning-centric pipeline: MeaningSurface as canonical unit, semantic arbitration, TeachingProjection, DecisionProvenance, PedagogicalRelation graph, ExplanationCatalog
+- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-convention-protocol.md` — Agreement Module IR: composable convention modules, system profiles, conversation machines, two-phase evaluation, public state layers, DealSpec, FactCatalog
+- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-candidate-pipeline.md` — Meaning-centric pipeline: BidMeaning as canonical unit, semantic arbitration, TeachingProjection, DecisionProvenance, PedagogicalRelation graph, ExplanationCatalog
 - `docs/posterior-implementation-plan.md` — Posterior engine boundary redesign: 8-phase plan covering FactorGraphIR, PosteriorQueryPort, PosteriorBackend, factor compiler, CI invariant tests, and Rust/WASM upgrade path
 
 **Spec status:** Both specs are `status: active`, `confidence: medium-high`. Most contracts are frozen. The posterior engine boundary has a detailed implementation plan. Do not implement against unresolved areas — resolve the spec first.
@@ -206,7 +206,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 | Open Question | Status | Blocks |
 |---|---|---|
 | Posterior engine boundary redesign | **Phases 0-5 complete** — contracts, factor compiler, backend, query port, CI tests done. Consumer migration (Phase 4B) pending. | Inference spectrum / difficulty config |
-| Fact catalog posterior compilers | **Subsumed** by posterior plan Phase 3 (factor compiler replaces `compilePublicHandSpace()`) | WitnessSpecIR wiring |
+| Fact catalog posterior compilers | **Subsumed** by posterior plan Phase 3 (factor compiler replaces `compilePublicHandSpace()`) | DealSpec wiring |
 | Evidence group correlation model | **Design complete** — typed groups (Independent, ExclusiveAlternative, SharedSourceJoint, TemporalChain). Reserved in schema as Phase 7 (soft evidence). | Posterior combiner accuracy |
 | Host-attachment activation | Spec designed, vocabulary resolved (`conventions/definitions/capability-vocabulary.ts`), not exercised by a convention yet | Negative Doubles, Fourth Suit Forcing |
 
@@ -218,16 +218,16 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 | Upstream (modules, profiles, machine) | ~90% | All 4 bundles migrated to RuleModule (Phases 4-6 complete). Rule interpreter is self-sufficient — per-step replay with kernel threading, no FSM. Old FSM infrastructure removed from barrel exports. `ModuleProvider` interface introduced. No host-attachment exercised. |
 | Posterior engine | ~70% (boundary designed and implemented, consumer migration pending) | Contracts, factor compiler, backend, query port, CI boundary tests done. Old `PosteriorEngine` → `SeatPosterior` path still works. Consumer migration (Phase 4B) pending. |
 | Convention coverage | Patterns 1 + 3 + submachine | Stayman, Bergen, Weak Twos, DONT, Smolen — all with RuleModule. Patterns 2, 4-6 not yet exercised. |
-| WitnessSpecIR | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
-| DecisionSurfaceIR migration | Adapter exists (test-only) | Pipeline still consumes MeaningSurface[], not DecisionSurfaceIR[]. |
+| DealSpec | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
+| DecisionSurface migration | Adapter exists (test-only) | Pipeline still consumes BidMeaning[], not DecisionSurface[]. |
 
 **Next steps:**
 
 1. **Posterior engine consumer migration (Phase 4B)** — Phases 0-5 complete (contracts, factor compiler, backend, query port, CI boundary tests, documentation). Next: migrate consumers (`meaning-strategy.ts`, `config-factory.ts`) from old `PosteriorEngine` → `SeatPosterior` to `createTsBackend()` → `createQueryPort()`. See `docs/posterior-implementation-plan.md`.
 2. **Host-attachment** — exercise with Negative Doubles convention (vocabulary resolved, ready to implement)
 3. **Convention content** — Lebensohl (relay encoding), Negative Doubles (host-attachment)
-4. **Wire WitnessSpecIR to deal generation** (unblocked after posterior Phase 3)
-5. **Migrate pipeline to DecisionSurfaceIR** (adapter exists — migrate consumption)
+4. **Wire DealSpec to deal generation** (unblocked after posterior Phase 3)
+5. **Migrate pipeline to DecisionSurface** (adapter exists — migrate consumption)
 6. **Build the learning screen** (needs its own design spec — `docs/learning/research-summary.md` is research, not a spec)
 
 ## Test-Driven Development
@@ -268,7 +268,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
-- All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. All pedagogical content (relations, alternatives, intent families) is derived from `pedagogicalTags` on surfaces — modules are portable building blocks that compose into any bundle. 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`) with scope-based grouping; derivation in `conventions/definitions/derive-cross-module.ts`
+- All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. All teaching content (relations, alternatives, intent families) is derived from `pedagogicalTags` on surfaces — modules are portable building blocks that compose into any bundle. 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`) with scope-based grouping; derivation in `conventions/definitions/derive-cross-module.ts`
 - **CLI commands use rule enumeration.** All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/core/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration (`findPathToState`, `buildTargetedAuction`, `resolveAuction`) has been removed from `cli/shared.ts`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`

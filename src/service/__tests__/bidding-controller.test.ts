@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
 import { BidSuit, Seat } from "../../engine/types";
 import type { Call } from "../../engine/types";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { ConventionBiddingStrategy, BidResult } from "../../core/contracts";
+import type { ConventionStrategy, BidResult } from "../../core/contracts";
 import { makeDrillSession, makeSimpleTestDeal } from "../../test-support/fixtures";
 import { createInferenceCoordinator } from "../../inference/inference-coordinator";
 import { SessionState } from "../session-state";
@@ -13,7 +13,7 @@ import { processBid, runInitialAiBids, initializeAuction } from "../bidding-cont
 import type { DrillBundle } from "../../bootstrap/types";
 
 /** Strategy that always suggests 2C. */
-function make2CStrategy(): ConventionBiddingStrategy {
+function make2CStrategy(): ConventionStrategy {
   return {
     id: "test-strategy",
     name: "Test Convention",
@@ -29,7 +29,7 @@ function make2CStrategy(): ConventionBiddingStrategy {
 }
 
 /** Strategy that never applies (returns null → correct bid is pass). */
-function makeNoOpStrategy(): ConventionBiddingStrategy {
+function makeNoOpStrategy(): ConventionStrategy {
   return {
     id: "noop",
     name: "No-Op",

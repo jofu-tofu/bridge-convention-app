@@ -2,17 +2,17 @@ import { describe, it, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { ContractBid, SpecialCall } from "../../../engine/types";
 import type {
-  KernelState,
-  KernelDelta,
+  NegotiationState,
+  NegotiationDelta,
   ClaimRef,
   CommittedStep,
   AuctionContext,
 } from "../committed-step";
-import { INITIAL_KERNEL } from "../committed-step";
+import { INITIAL_NEGOTIATION } from "../committed-step";
 
-describe("INITIAL_KERNEL", () => {
+describe("INITIAL_NEGOTIATION", () => {
   it("has expected defaults", () => {
-    expect(INITIAL_KERNEL).toEqual({
+    expect(INITIAL_NEGOTIATION).toEqual({
       fitAgreed: null,
       forcing: "none",
       captain: "undecided",
@@ -21,13 +21,13 @@ describe("INITIAL_KERNEL", () => {
   });
 
   it("is frozen (immutable)", () => {
-    expect(Object.isFrozen(INITIAL_KERNEL)).toBe(true);
+    expect(Object.isFrozen(INITIAL_NEGOTIATION)).toBe(true);
   });
 });
 
 describe("type-level construction", () => {
-  it("constructs a valid KernelState", () => {
-    const kernel: KernelState = {
+  it("constructs a valid NegotiationState", () => {
+    const kernel: NegotiationState = {
       fitAgreed: { strain: "hearts", confidence: "tentative" },
       forcing: "game",
       captain: "responder",
@@ -36,8 +36,8 @@ describe("type-level construction", () => {
     expect(kernel.fitAgreed?.strain).toBe("hearts");
   });
 
-  it("constructs KernelState with overcalled competition", () => {
-    const kernel: KernelState = {
+  it("constructs NegotiationState with overcalled competition", () => {
+    const kernel: NegotiationState = {
       fitAgreed: null,
       forcing: "none",
       captain: "undecided",
@@ -50,8 +50,8 @@ describe("type-level construction", () => {
     });
   });
 
-  it("constructs a valid KernelDelta (partial)", () => {
-    const delta: KernelDelta = { forcing: "game" };
+  it("constructs a valid NegotiationDelta (partial)", () => {
+    const delta: NegotiationDelta = { forcing: "game" };
     expect(delta.forcing).toBe("game");
     expect(delta.fitAgreed).toBeUndefined();
   });
@@ -76,13 +76,13 @@ describe("type-level construction", () => {
         semanticClassId: "stayman:ask-major",
         sourceIntent: { type: "StaymanAsk", params: {} },
       },
-      publicObs: [{ act: "inquire", feature: "majorSuit" }],
-      kernelDelta: {},
-      postKernel: INITIAL_KERNEL,
+      publicActions: [{ act: "inquire", feature: "majorSuit" }],
+      negotiationDelta: {},
+      stateAfter: INITIAL_NEGOTIATION,
       status: "resolved",
     };
     expect(step.status).toBe("resolved");
-    expect(step.publicObs).toHaveLength(1);
+    expect(step.publicActions).toHaveLength(1);
   });
 
   it("constructs a CommittedStep with null claim (off-system)", () => {
@@ -90,9 +90,9 @@ describe("type-level construction", () => {
       actor: Seat.East,
       call: { type: "pass" } as SpecialCall,
       resolvedClaim: null,
-      publicObs: [{ act: "pass" }],
-      kernelDelta: {},
-      postKernel: INITIAL_KERNEL,
+      publicActions: [{ act: "pass" }],
+      negotiationDelta: {},
+      stateAfter: INITIAL_NEGOTIATION,
       status: "off-system",
     };
     expect(step.resolvedClaim).toBeNull();

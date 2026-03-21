@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import type {
   RuleModule,
   RouteExpr,
-  KernelExpr,
+  NegotiationExpr,
   Rule,
   PhaseTransition,
 } from "../rule-module";
@@ -74,23 +74,23 @@ describe("RuleModule type construction", () => {
     expect(combined.kind).toBe("and");
   });
 
-  it("constructs KernelExpr variants", () => {
-    const fit: KernelExpr = { kind: "fit", strain: "hearts" };
+  it("constructs NegotiationExpr variants", () => {
+    const fit: NegotiationExpr = { kind: "fit", strain: "hearts" };
     expect(fit.kind).toBe("fit");
 
-    const noFit: KernelExpr = { kind: "no-fit" };
+    const noFit: NegotiationExpr = { kind: "no-fit" };
     expect(noFit.kind).toBe("no-fit");
 
-    const forcing: KernelExpr = { kind: "forcing", level: "game" };
+    const forcing: NegotiationExpr = { kind: "forcing", level: "game" };
     expect(forcing.kind).toBe("forcing");
 
-    const overcalled: KernelExpr = {
+    const overcalled: NegotiationExpr = {
       kind: "overcalled",
       below: { level: 2, strain: "hearts" },
     };
     expect(overcalled.kind).toBe("overcalled");
 
-    const combined: KernelExpr = {
+    const combined: NegotiationExpr = {
       kind: "and",
       exprs: [
         { kind: "uncontested" },
@@ -117,7 +117,7 @@ describe("RuleModule type construction", () => {
             meaningId: "test",
             semanticClassId: "test:class",
             teachingLabel: "Test surface",
-          // any: MeaningSurface has many fields; test only exercises type compatibility
+          // any: BidMeaning has many fields; test only exercises type compatibility
           } as never,
         },
       ],
@@ -126,29 +126,29 @@ describe("RuleModule type construction", () => {
     expect(rule.claims).toHaveLength(1);
   });
 
-  it("constructs claims with optional kernelDelta", () => {
+  it("constructs claims with optional negotiationDelta", () => {
     const rule: Rule<"idle" | "active"> = {
       match: { local: "active", turn: "opener" },
       claims: [
         {
           surface: { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never,
-          kernelDelta: { forcing: "one-round", captain: "responder" },
+          negotiationDelta: { forcing: "one-round", captain: "responder" },
         },
       ],
     };
-    expect(rule.claims[0]!.kernelDelta).toEqual({
+    expect(rule.claims[0]!.negotiationDelta).toEqual({
       forcing: "one-round",
       captain: "responder",
     });
   });
 
-  it("allows claims without kernelDelta (backward compatible)", () => {
+  it("allows claims without negotiationDelta (backward compatible)", () => {
     const rule: Rule<"idle"> = {
       match: { local: "idle" },
       claims: [
         { surface: { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never },
       ],
     };
-    expect(rule.claims[0]!.kernelDelta).toBeUndefined();
+    expect(rule.claims[0]!.negotiationDelta).toBeUndefined();
   });
 });

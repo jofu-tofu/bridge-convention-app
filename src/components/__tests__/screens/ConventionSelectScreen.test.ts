@@ -1,18 +1,15 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  clearRegistry,
-  registerConvention,
-  listConventions,
-} from "../../../conventions/core/registry";
-import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
-import { bergenBundleConventionConfig } from "../../../conventions/definitions/bergen-bundle/convention-config";
+import { listConventions } from "../../../conventions/core/registry";
+import { clearBundleRegistry, registerBundle } from "../../../conventions/core/bundle";
+import { ntBundle } from "../../../conventions/definitions/nt-bundle";
+import { bergenBundle } from "../../../conventions/definitions/bergen-bundle";
 
 // ConventionSelectScreen uses getContext so we test via registry + filter logic
 describe("ConventionSelectScreen", () => {
   beforeEach(() => {
-    clearRegistry();
-    registerConvention(ntBundleConventionConfig);
-    registerConvention(bergenBundleConventionConfig);
+    clearBundleRegistry();
+    registerBundle(ntBundle);
+    registerBundle(bergenBundle);
   });
 
   it("lists all registered conventions from registry", () => {

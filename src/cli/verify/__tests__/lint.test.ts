@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { RuleModule, Rule, KernelExpr } from "../../../conventions/core/rule-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { RuleModule, Rule, NegotiationExpr } from "../../../conventions/core/rule-module";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import {
   lintModule,
   computePhaseReachability,
@@ -28,7 +28,7 @@ function makeModule(overrides: Partial<RuleModule> = {}): RuleModule {
 function makeSurface(
   meaningId: string,
   callOverride?: { type: "bid"; level: number; strain: string },
-): MeaningSurface {
+): BidMeaning {
   return {
     meaningId,
     semanticClassId: `test:${meaningId}`,
@@ -40,7 +40,7 @@ function makeSurface(
       defaultCall: callOverride ?? { type: "bid", level: 1, strain: "NT" },
     },
     ranking: { recommendationBand: "should", intraModuleOrder: 0 },
-  } as unknown as MeaningSurface;
+  } as unknown as BidMeaning;
 }
 
 function makeRule(overrides: Partial<Rule<string>> = {}): Rule<string> {
@@ -240,7 +240,7 @@ describe("detectOrphanTransitions", () => {
 // ── detectUndeclaredWrites ──────────────────────────────────────────
 
 describe("detectUndeclaredWrites", () => {
-  it("warns when kernelDelta writes a field not read by any kernel expr", () => {
+  it("warns when negotiationDelta writes a field not read by any kernel expr", () => {
     const mod = makeModule({
       rules: [
         makeRule({
@@ -248,7 +248,7 @@ describe("detectUndeclaredWrites", () => {
           claims: [
             {
               surface: makeSurface("s1"),
-              kernelDelta: { forcing: "game" },
+              negotiationDelta: { forcing: "game" },
             },
           ],
         }),
@@ -260,8 +260,8 @@ describe("detectUndeclaredWrites", () => {
     expect(diags[0]!.severity).toBe("warn");
   });
 
-  it("no diagnostic when kernelDelta field is read by a kernel expr", () => {
-    const kernelExpr: KernelExpr = { kind: "forcing", level: "game" };
+  it("no diagnostic when negotiationDelta field is read by a kernel expr", () => {
+    const kernelExpr: NegotiationExpr = { kind: "forcing", level: "game" };
     const mod = makeModule({
       rules: [
         makeRule({
@@ -269,7 +269,7 @@ describe("detectUndeclaredWrites", () => {
           claims: [
             {
               surface: makeSurface("s1"),
-              kernelDelta: { forcing: "game" },
+              negotiationDelta: { forcing: "game" },
             },
           ],
         }),

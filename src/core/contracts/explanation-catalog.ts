@@ -39,18 +39,18 @@ export interface ExplanationEntry {
 }
 
 /** Versioned explanation catalog. */
-export interface ExplanationCatalogIR {
+export interface ExplanationCatalog {
   readonly version: string;
   readonly entries: readonly ExplanationEntry[];
 }
 
 /**
- * Create a frozen ExplanationCatalogIR from a list of entries.
+ * Create a frozen ExplanationCatalog from a list of entries.
  * Throws if any explanationId appears more than once.
  */
 export function createExplanationCatalog(
   entries: ExplanationEntry[],
-): ExplanationCatalogIR {
+): ExplanationCatalog {
   const seen = new Set<string>();
   for (const entry of entries) {
     if (seen.has(entry.explanationId)) {
@@ -59,7 +59,7 @@ export function createExplanationCatalog(
     seen.add(entry.explanationId);
   }
 
-  const catalog: ExplanationCatalogIR = {
+  const catalog: ExplanationCatalog = {
     version: "1.0.0",
     entries: Object.freeze([...entries]),
   };

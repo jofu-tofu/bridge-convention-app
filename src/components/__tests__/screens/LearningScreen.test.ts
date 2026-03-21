@@ -5,18 +5,17 @@ import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
 import { createStubEngine } from "../../../test-support/engine-stub";
 import { createLocalService } from "../../../service";
-import { ntBundleConventionConfig } from "../../../conventions/definitions/nt-bundle/convention-config";
-import { bergenBundleConventionConfig } from "../../../conventions/definitions/bergen-bundle/convention-config";
-import {
-  clearRegistry,
-  registerConvention,
-} from "../../../conventions/core/registry";
+import { ntBundle } from "../../../conventions/definitions/nt-bundle";
+import { bergenBundle } from "../../../conventions/definitions/bergen-bundle";
+import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../../conventions/core/bundle";
+
+const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 
 describe("LearningScreen", () => {
   beforeEach(() => {
-    clearRegistry();
-    registerConvention(ntBundleConventionConfig);
-    registerConvention(bergenBundleConventionConfig);
+    clearBundleRegistry();
+    registerBundle(ntBundle);
+    registerBundle(bergenBundle);
   });
 
   function renderLearningScreen() {

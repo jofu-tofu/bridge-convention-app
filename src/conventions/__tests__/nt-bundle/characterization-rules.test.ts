@@ -2,8 +2,7 @@
  * Characterization tests — golden masters for current NT bundle behavior.
  *
  * These tests capture the current surface selection, eligible bids, and
- * arbitration results for key auction sequences. They MUST pass unchanged
- * after migration to the rule interpreter (Phase 3b).
+ * arbitration results for key auction sequences using the rule interpreter.
  *
  * Tested auction sequences:
  * - 1NT-P (R1 surfaces — responder's first bid)
@@ -20,25 +19,29 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, Vulnerability } from "../../../engine/types";
-import { specFromSystem, ntSystem } from "../../definitions/system-registry";
-import { replay, computeActiveSurfaces } from "../../core/protocol/replay";
-import { createSharedFactCatalog } from "../../core";
+import { ntSystem } from "../../definitions/system-registry";
+import { createSharedFactCatalog, collectMatchingClaims } from "../../core";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { createBiddingContext } from "../../core/context-factory";
 import { runMeaningPipeline } from "../../../strategy/bidding/meaning-strategy";
+import { buildObservationLogViaRules } from "../../../strategy/bidding/protocol-adapter";
+import type { AuctionContext } from "../../../core/contracts/committed-step";
+import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { RuleModule } from "../../core/rule-module";
 
-const ntSpec = specFromSystem(ntSystem)!;
+const ruleModules: readonly RuleModule[] = ntSystem.ruleModules!;
 
-const moduleFactExtensions = ntSpec.modules
+// Build fact catalog from rule module fact extensions
+const moduleFactExtensions = ruleModules
   .map((m) => m.facts)
-  .filter((f) => f !== undefined && f !== null);
+  .filter((f) => f.definitions.length > 0 || f.evaluators.size > 0);
 
 const catalog = moduleFactExtensions.length > 0
   ? createFactCatalog(createSharedFactCatalog(), ...moduleFactExtensions)
   : createSharedFactCatalog();
 
 /**
- * Evaluate an auction position: replay + compute surfaces + run pipeline.
+ * Evaluate an auction position: rule interpreter surfaces + run pipeline.
  * Returns active surfaces and arbitration result.
  */
 function evaluatePosition(
@@ -52,8 +55,12 @@ function evaluatePosition(
     call: e.call,
     seat: e.seat,
   }));
-  const snapshot = replay(history, ntSpec, seat);
-  const composed = computeActiveSurfaces(snapshot, ntSpec);
+
+  // Use rule interpreter for surface selection
+  const log = buildObservationLogViaRules(history, seat, ruleModules);
+  const auctionCtx: AuctionContext = { snapshot: {} as PublicSnapshot, log };
+  const results = collectMatchingClaims(ruleModules, auctionCtx, seat);
+  const visibleSurfaces = results.flatMap((r) => r.surfaces);
 
   const ev = evaluateHand(testHand);
   const context = createBiddingContext({
@@ -65,7 +72,7 @@ function evaluatePosition(
     dealer,
   });
 
-  if (composed.visibleSurfaces.length === 0) {
+  if (visibleSurfaces.length === 0) {
     return {
       surfaceIds: [] as string[],
       arbitration: null,
@@ -74,14 +81,13 @@ function evaluatePosition(
   }
 
   const { result } = runMeaningPipeline({
-    surfaces: composed.visibleSurfaces,
+    surfaces: visibleSurfaces,
     context,
     catalog,
-    inheritedDimsLookup: composed.inheritedDimsLookup,
   });
 
   return {
-    surfaceIds: composed.visibleSurfaces.map((s) => s.meaningId),
+    surfaceIds: visibleSurfaces.map((s) => s.meaningId),
     arbitration: result,
     selectedMeaningId: result.selected?.proposal.meaningId ?? null,
   };

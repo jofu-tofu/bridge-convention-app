@@ -1,7 +1,7 @@
 import type { Deal } from "../../../engine/types";
 import { Suit } from "../../../engine/types";
 import { calculateHcp } from "../../../engine/hand-evaluator";
-import type { DealConstraintIR } from "../../../core/contracts/predicate-surfaces";
+import type { DealConstraint } from "../../../core/contracts/predicates";
 
 const SUIT_MAP: Record<string, Suit> = {
   S: Suit.Spades,
@@ -54,14 +54,14 @@ function evaluateCombinedHcp(params: Readonly<Record<string, unknown>>, deal: De
 }
 
 /**
- * Evaluate a DealConstraintIR against a concrete deal.
+ * Evaluate a DealConstraint against a concrete deal.
  *
  * Handles three constraint kinds:
  * - "fit-check": combined suit length across seats meets threshold
  * - "combined-hcp": sum of HCP across seats within range
  * - "custom": stub — logs a warning and returns true
  */
-export function evaluateDealConstraint(constraint: DealConstraintIR, deal: Deal): boolean {
+export function evaluateDealConstraint(constraint: DealConstraint, deal: Deal): boolean {
   switch (constraint.kind) {
     case "fit-check":
       return evaluateFitCheck(constraint.params, deal);
@@ -75,7 +75,7 @@ export function evaluateDealConstraint(constraint: DealConstraintIR, deal: Deal)
       return true;
     default: {
       const exhaustive: never = constraint.kind;
-      throw new Error(`Unknown DealConstraintIR kind: ${String(exhaustive)}`);
+      throw new Error(`Unknown DealConstraint kind: ${String(exhaustive)}`);
     }
   }
 }

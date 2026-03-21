@@ -13,18 +13,18 @@
 
 import type { Seat } from "../../../engine/types";
 import { partnerSeat } from "../../../engine/constants";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import type { AuctionContext, CommittedStep, KernelState } from "../../../core/contracts/committed-step";
-import { INITIAL_KERNEL } from "../../../core/contracts/committed-step";
+import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { AuctionContext, CommittedStep, NegotiationState } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { RuleModule, Rule, TurnRole } from "../rule-module";
 import { advanceLocalFsm } from "./local-fsm";
-import { matchKernel } from "./kernel-matcher";
+import { matchKernel } from "./negotiation-matcher";
 import { matchRoute } from "./route-matcher";
 
 /** Result for one module. */
 export interface ModuleClaimResult {
   readonly moduleId: string;
-  readonly surfaces: readonly MeaningSurface[];
+  readonly surfaces: readonly BidMeaning[];
 }
 
 // Re-export TurnRole from its canonical home in rule-module.ts
@@ -42,10 +42,10 @@ export function deriveTurnRole(
   log: readonly CommittedStep[],
 ): TurnRole {
   // Find the opener: first actor who communicated something meaningful
-  // (non-empty publicObs indicates a resolved bid, not a pass/raw step)
+  // (non-empty publicActions indicates a resolved bid, not a pass/raw step)
   let openerSeat: Seat | null = null;
   for (const step of log) {
-    if (step.publicObs.length > 0 && step.status !== "raw-only") {
+    if (step.publicActions.length > 0 && step.status !== "raw-only") {
       openerSeat = step.actor;
       break;
     }
@@ -129,16 +129,16 @@ export function collectMatchingClaimsWithPhases(
 
 // ── Internal helpers ─────────────────────────────────────────────────
 
-/** Get the current kernel state from the context (last step's postKernel, or INITIAL). */
-function getCurrentKernel(context: AuctionContext): KernelState {
-  if (context.log.length === 0) return INITIAL_KERNEL;
-  return context.log[context.log.length - 1]!.postKernel;
+/** Get the current kernel state from the context (last step's stateAfter, or INITIAL). */
+function getCurrentKernel(context: AuctionContext): NegotiationState {
+  if (context.log.length === 0) return INITIAL_NEGOTIATION;
+  return context.log[context.log.length - 1]!.stateAfter;
 }
 
 /** Find the opener seat from the log (first actor with resolved observations). */
 function findOpenerSeat(log: readonly CommittedStep[]): Seat | undefined {
   for (const step of log) {
-    if (step.publicObs.length > 0 && step.status !== "raw-only") {
+    if (step.publicActions.length > 0 && step.status !== "raw-only") {
       return step.actor;
     }
   }
@@ -161,12 +161,12 @@ function replayLocalFsm(
 function collectModuleSurfaces(
   mod: RuleModule,
   currentPhase: string,
-  currentKernel: KernelState,
+  currentKernel: NegotiationState,
   context: AuctionContext,
   turnRole: TurnRole | undefined,
   openerSeat: Seat | undefined,
-): MeaningSurface[] {
-  const surfaces: MeaningSurface[] = [];
+): BidMeaning[] {
+  const surfaces: BidMeaning[] = [];
 
   for (const rule of mod.rules) {
     if (ruleMatches(rule, currentPhase, currentKernel, context, turnRole, openerSeat)) {
@@ -183,7 +183,7 @@ function collectModuleSurfaces(
 function ruleMatches(
   rule: Rule<string>,
   currentPhase: string,
-  currentKernel: KernelState,
+  currentKernel: NegotiationState,
   context: AuctionContext,
   turnRole: TurnRole | undefined,
   openerSeat: Seat | undefined,

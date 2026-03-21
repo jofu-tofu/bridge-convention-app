@@ -1,10 +1,10 @@
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
 import type { PublicConstraint } from "../../core/contracts/agreement-module";
 import type {
-  FactorGraphIR,
+  FactorGraph,
   FactorSpec,
   FactorOrigin,
-  AmbiguityFamilyIR,
+  AmbiguityFamily,
   FactorStrength,
 } from "../../core/contracts/factor-graph";
 import type { SuitName } from "../../engine/types";
@@ -158,7 +158,7 @@ function compileSingleConstraint(pc: PublicConstraint): FactorSpec {
 
 function compileAmbiguitySchema(
   snapshot: PublicSnapshot,
-): readonly AmbiguityFamilyIR[] {
+): readonly AmbiguityFamily[] {
   const latentBranches = snapshot.latentBranches;
   if (!latentBranches || latentBranches.length === 0) return [];
 
@@ -176,13 +176,13 @@ function compileAmbiguitySchema(
 // ─── Main compilation function ──────────────────────────────
 
 /**
- * Compile a PublicSnapshot into a FactorGraphIR.
+ * Compile a PublicSnapshot into a FactorGraph.
  *
  * Produces a convention-erased set of typed FactorSpec entries that reference
  * seats via fields rather than being grouped per-seat. This is the Phase 3
  * replacement for compilePublicHandSpace.
  */
-export function compileFactorGraph(snapshot: PublicSnapshot): FactorGraphIR {
+export function compileFactorGraph(snapshot: PublicSnapshot): FactorGraph {
   const commitments = snapshot.publicCommitments ?? [];
 
   const factors: FactorSpec[] = [];
@@ -202,12 +202,12 @@ export function compileFactorGraph(snapshot: PublicSnapshot): FactorGraphIR {
 // ─── Validation ─────────────────────────────────────────────
 
 /**
- * Validate a FactorGraphIR for contradictions.
+ * Validate a FactorGraph for contradictions.
  *
  * Checks HcpRangeFactor and SuitLengthFactor entries on the same seat (and suit)
  * for incompatible bounds (combined min > combined max).
  */
-export function validateFactorGraph(graph: FactorGraphIR): FactorGraphValidation {
+export function validateFactorGraph(graph: FactorGraph): FactorGraphValidation {
   const contradictions: FactorContradiction[] = [];
 
   // Group HCP range factors by seat

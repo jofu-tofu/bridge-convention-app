@@ -12,7 +12,7 @@ export type ScorableCandidate =
   | { readonly kind: "normative"; readonly candidate: ResolvedCandidateDTO }
   | { readonly kind: "pragmatic"; readonly candidate: PragmaticCandidate };
 
-export type PracticalScoredCandidate =
+export type ScoredCandidate =
   | {
       readonly candidate: ResolvedCandidateDTO;
       readonly practicalScore: number;

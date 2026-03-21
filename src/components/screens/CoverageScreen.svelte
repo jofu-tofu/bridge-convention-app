@@ -1,51 +1,51 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listSystems, getSystem } from "../../conventions/definitions/system-registry";
+  import { listSystemBundles, getSystemBundle } from "../../conventions/definitions/system-registry";
   import { enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions/core";
   import type { RuleCoverageManifest } from "../../conventions/core";
-  import type { BiddingSystem } from "../../conventions/definitions/bidding-system";
+  import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
 
   const appStore = getAppStore();
 
-  const systems: readonly BiddingSystem[] = listSystems();
+  const bundles: readonly ConventionBundle[] = listSystemBundles();
 
-  let selectedSystemId = $state<string | null>(appStore.coverageBundle);
+  let selectedBundleId = $state<string | null>(appStore.coverageBundle);
 
   let manifest = $derived.by<RuleCoverageManifest | null>(() => {
-    if (!selectedSystemId) return null;
-    const system = getSystem(selectedSystemId);
-    if (!system?.ruleModules) return null;
-    return generateRuleCoverageManifest(system.id, system.ruleModules);
+    if (!selectedBundleId) return null;
+    const bundle = getSystemBundle(selectedBundleId);
+    if (!bundle?.ruleModules) return null;
+    return generateRuleCoverageManifest(bundle.id, bundle.ruleModules);
   });
 
   let showByModule = $state(true);
 
-  function selectSystem(systemId: string) {
-    selectedSystemId = systemId;
-    appStore.setCoverageBundle(systemId);
+  function selectBundle(bundleId: string) {
+    selectedBundleId = bundleId;
+    appStore.setCoverageBundle(bundleId);
   }
 
-  function backToSystems() {
-    selectedSystemId = null;
+  function backToBundles() {
+    selectedBundleId = null;
     appStore.setCoverageBundle(null);
   }
 
   function handleBack() {
-    if (selectedSystemId) {
-      backToSystems();
+    if (selectedBundleId) {
+      backToBundles();
     } else {
       appStore.navigateToMenu();
     }
   }
 
-  function coverageUrl(systemId: string): string {
+  function coverageUrl(bundleId: string): string {
     const base = window.location.origin + window.location.pathname;
-    return `${base}?coverage=true&convention=${systemId}`;
+    return `${base}?coverage=true&convention=${bundleId}`;
   }
 
-  function atomCount(system: BiddingSystem): number {
-    if (!system.ruleModules) return 0;
-    return enumerateRuleAtoms(system.ruleModules).length;
+  function atomCount(bundle: ConventionBundle): number {
+    if (!bundle.ruleModules) return 0;
+    return enumerateRuleAtoms(bundle.ruleModules).length;
   }
 </script>
 
@@ -56,17 +56,17 @@
       <button
         class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
         onclick={handleBack}
-        aria-label={selectedSystemId ? "Back to conventions" : "Back to menu"}
+        aria-label={selectedBundleId ? "Back to conventions" : "Back to menu"}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
           aria-hidden="true"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
       </button>
       <div>
-        {#if !selectedSystemId}
+        {#if !selectedBundleId}
           <h1 class="text-2xl font-bold">Coverage</h1>
           <p class="text-text-secondary text-sm mt-1">
-            {systems.length} conventions. Choose one to see coverage targets.
+            {bundles.length} conventions. Choose one to see coverage targets.
           </p>
         {:else if manifest}
           <h1 class="text-2xl font-bold">{manifest.systemId}</h1>
@@ -78,22 +78,22 @@
       </div>
     </div>
 
-    {#if !selectedSystemId}
-      <!-- ── System Picker ─────────────────────────────────────────── -->
+    {#if !selectedBundleId}
+      <!-- ── Bundle Picker ─────────────────────────────────────────── -->
       <div class="grid gap-3">
-        {#each systems as system (system.id)}
+        {#each bundles as bundle (bundle.id)}
           <button
             class="block w-full text-left rounded-[--radius-lg] bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-card-hover transition-colors cursor-pointer group"
-            onclick={() => selectSystem(system.id)}
+            onclick={() => selectBundle(bundle.id)}
           >
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-lg font-semibold text-text-primary group-hover:text-blue-300">
-                  {system.name}
+                  {bundle.name}
                 </div>
                 <div class="text-sm text-text-secondary mt-1">
-                  {system.moduleIds.length} modules &middot;
-                  {atomCount(system)} atoms
+                  {bundle.memberIds.length} modules &middot;
+                  {atomCount(bundle)} atoms
                 </div>
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -106,8 +106,8 @@
         {/each}
       </div>
 
-      {#if systems.length === 0}
-        <p class="text-text-muted text-center py-16">No convention systems found.</p>
+      {#if bundles.length === 0}
+        <p class="text-text-muted text-center py-16">No convention bundles found.</p>
       {/if}
 
     {:else if manifest}

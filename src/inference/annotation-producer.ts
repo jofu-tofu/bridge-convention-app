@@ -1,6 +1,6 @@
 import type { AuctionEntry, Auction } from "../engine/types";
 import type { BidAnnotation, InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "./types";
-import type { FactConstraintIR } from "../core/contracts/agreement-module";
+import type { FactConstraint } from "../core/contracts/agreement-module";
 import { handInferenceToConstraints } from "./derive-beliefs";
 
 /**
@@ -23,7 +23,7 @@ export function produceAnnotation(
     const extracted = extractor.extractConstraints(ruleResult, entry.seat);
     // When the convention extractor produces constraints, use them.
     // When it returns empty (e.g. noopExtractor), try to use the
-    // alert's publicConstraints directly (already FactConstraintIR[]).
+    // alert's publicConstraints directly (already FactConstraint[]).
     // Only fall back to the natural provider when no alert constraints exist.
     if (extracted.length > 0) {
       return {
@@ -36,7 +36,7 @@ export function produceAnnotation(
     }
 
     // Use alert's publicConstraints directly — no lossy conversion
-    const alertConstraints: readonly FactConstraintIR[] = ruleResult.alert?.publicConstraints ?? [];
+    const alertConstraints: readonly FactConstraint[] = ruleResult.alert?.publicConstraints ?? [];
     if (alertConstraints.length > 0) {
       return {
         call: entry.call,
@@ -100,7 +100,7 @@ function inferNaturalConstraints(
   provider: InferenceProvider,
   entry: AuctionEntry,
   auctionBefore: Auction,
-): readonly FactConstraintIR[] {
+): readonly FactConstraint[] {
   const inference = provider.inferFromBid(entry, auctionBefore, entry.seat);
   return inference ? handInferenceToConstraints(inference) : [];
 }

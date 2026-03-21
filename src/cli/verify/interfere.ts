@@ -153,7 +153,7 @@ export function detectEncodingCollision(a: RuleModule, b: RuleModule): Interfere
  * Detect when a claim's canonical observations could trigger another module's
  * phase transitions.
  *
- * For each claim in A, normalizes sourceIntent → CanonicalObs[], then checks
+ * For each claim in A, normalizes sourceIntent → BidAction[], then checks
  * against B's transitions. Also checks reverse (B→A).
  */
 export function detectObservationCrosstalk(a: RuleModule, b: RuleModule): InterferenceEdge[] {
@@ -249,8 +249,8 @@ function collectKernelDeltas(mod: RuleModule): KernelDeltaEntry[] {
   for (let ri = 0; ri < mod.rules.length; ri++) {
     const rule = mod.rules[ri]!;
     for (const claim of rule.claims) {
-      if (!claim.kernelDelta) continue;
-      for (const [field, value] of Object.entries(claim.kernelDelta)) {
+      if (!claim.negotiationDelta) continue;
+      for (const [field, value] of Object.entries(claim.negotiationDelta)) {
         if (value !== undefined) {
           entries.push({
             ruleIndex: ri,

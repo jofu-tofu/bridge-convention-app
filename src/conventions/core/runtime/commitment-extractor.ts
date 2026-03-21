@@ -3,7 +3,7 @@ import type {
   PublicConstraint,
   ChoiceClosurePolicy,
 } from "../../../core/contracts/agreement-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import { callsMatch, callKey } from "../../../engine/call-helpers";
 import { derivePublicConstraints } from "../../../core/contracts/alert";
 import { resolveClause } from "../pipeline/binding-resolver";
@@ -25,10 +25,10 @@ export { callKey as formatCallString } from "../../../engine/call-helpers";
  * @internal
  */
 export function deriveEntailedDenials(
-  matchingSurface: MeaningSurface,
+  matchingSurface: BidMeaning,
   closurePolicy: ChoiceClosurePolicy,
   entry: { seat: Seat; call: Call },
-  surfaceRouter: (auction: Auction, seat: Seat) => readonly MeaningSurface[],
+  surfaceRouter: (auction: Auction, seat: Seat) => readonly BidMeaning[],
   subAuction: Auction,
 ): readonly PublicConstraint[] {
   // Only derive denials when all three conditions hold
@@ -95,7 +95,7 @@ export function deriveEntailedDenials(
 export function extractCommitments(
   auction: Auction,
   _seat: Seat,
-  surfaceRouter: (auction: Auction, seat: Seat) => readonly MeaningSurface[],
+  surfaceRouter: (auction: Auction, seat: Seat) => readonly BidMeaning[],
 ): readonly PublicConstraint[] {
   const commitments: PublicConstraint[] = [];
 

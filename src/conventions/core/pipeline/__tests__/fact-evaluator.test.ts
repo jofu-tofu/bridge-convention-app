@@ -155,12 +155,12 @@ describe("evaluateFacts", () => {
   it("pre-seeds bridge.isVulnerable when isVulnerable param is provided", () => {
     const h = hand("SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H3", "D6", "D4", "D3", "C8", "C3");
     const ev = evaluateHand(h);
-    const vulResult = evaluateFacts(h, ev, undefined, undefined, undefined, undefined, true);
+    const vulResult = evaluateFacts(h, ev, undefined, { isVulnerable: true });
     expect(vulResult.facts.get("bridge.isVulnerable")?.value).toBe(true);
     // 10 standard + 1 pre-seeded = 11
     expect(vulResult.facts.size).toBe(11);
 
-    const nvResult = evaluateFacts(h, ev, undefined, undefined, undefined, undefined, false);
+    const nvResult = evaluateFacts(h, ev, undefined, { isVulnerable: false });
     expect(nvResult.facts.get("bridge.isVulnerable")?.value).toBe(false);
     expect(nvResult.facts.size).toBe(11);
   });
@@ -181,7 +181,7 @@ describe("relational facts", () => {
   ) {
     const h = hand(...cards);
     const ev = evaluateHand(h);
-    return evaluateFacts(h, ev, undefined, relationalContext);
+    return evaluateFacts(h, ev, undefined, { relationalContext });
   }
 
   it("bridge.supportForBoundSuit returns heart length when suit=hearts", () => {
@@ -256,7 +256,7 @@ describe("relational facts", () => {
     const ev = evaluateHand(h);
 
     const withoutRelational = evaluateFacts(h, ev);
-    const withRelational = evaluateFacts(h, ev, undefined, { bindings: { suit: "hearts" } });
+    const withRelational = evaluateFacts(h, ev, undefined, { relationalContext: { bindings: { suit: "hearts" } } });
 
     // Standard facts should be identical
     expect(withoutRelational.facts.get("hand.hcp")?.value).toBe(

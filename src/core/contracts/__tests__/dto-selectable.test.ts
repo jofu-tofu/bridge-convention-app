@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { isDtoSelectable, isDtoPedagogicallyAcceptable } from "../tree-evaluation";
+import { isDtoSelectable, isDtoTeachingAcceptable } from "../tree-evaluation";
 import type { ResolvedCandidateDTO, CandidateEligibility } from "../tree-evaluation";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
@@ -88,10 +88,10 @@ describe("isDtoSelectable", () => {
   });
 });
 
-describe("isDtoPedagogicallyAcceptable", () => {
+describe("isDtoTeachingAcceptable", () => {
   test("acceptable → true", () => {
     const dto = makeDto({ eligibility: makeEligibility() });
-    expect(isDtoPedagogicallyAcceptable(dto)).toBe(true);
+    expect(isDtoTeachingAcceptable(dto)).toBe(true);
   });
 
   test("unacceptable → false", () => {
@@ -100,11 +100,11 @@ describe("isDtoPedagogicallyAcceptable", () => {
         pedagogical: { acceptable: false, reasons: ["not teachable"] },
       }),
     });
-    expect(isDtoPedagogicallyAcceptable(dto)).toBe(false);
+    expect(isDtoTeachingAcceptable(dto)).toBe(false);
   });
 
   test("no eligibility → true (default)", () => {
     const dto = makeDto();
-    expect(isDtoPedagogicallyAcceptable(dto)).toBe(true);
+    expect(isDtoTeachingAcceptable(dto)).toBe(true);
   });
 });

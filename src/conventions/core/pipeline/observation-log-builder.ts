@@ -11,8 +11,8 @@
  */
 
 import type { Seat, Call } from "../../../engine/types";
-import type { CommittedStep, KernelState } from "../../../core/contracts/committed-step";
-import { INITIAL_KERNEL } from "../../../core/contracts/committed-step";
+import type { CommittedStep, NegotiationState } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { ArbitrationResult, MachineRegisters } from "../../../core/contracts/module-surface";
 import { buildCommittedStep } from "./committed-step-builder";
 
@@ -28,13 +28,13 @@ export interface ObservationLogStep {
  * Build a CommittedStep[] from per-step auction data.
  *
  * Threads kernel state through the loop: step N's prevKernel is
- * step N-1's postKernel (or INITIAL_KERNEL for step 0).
+ * step N-1's stateAfter (or INITIAL_NEGOTIATION for step 0).
  */
 export function buildObservationLog(
   steps: readonly ObservationLogStep[],
 ): readonly CommittedStep[] {
   const log: CommittedStep[] = [];
-  let prevKernel: KernelState = INITIAL_KERNEL;
+  let prevKernel: NegotiationState = INITIAL_NEGOTIATION;
 
   for (const step of steps) {
     const committed = buildCommittedStep(
@@ -45,7 +45,7 @@ export function buildObservationLog(
       step.registers,
     );
     log.push(committed);
-    prevKernel = committed.postKernel;
+    prevKernel = committed.stateAfter;
   }
 
   return log;

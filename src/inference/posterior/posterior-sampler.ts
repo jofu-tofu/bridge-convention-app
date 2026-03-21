@@ -1,5 +1,5 @@
 import type { PublicHandSpace } from "../../core/contracts/posterior";
-import type { HandPredicateIR } from "../../core/contracts/predicate-surfaces";
+import type { HandPredicate } from "../../core/contracts/predicates";
 import type { Hand, Card, Seat } from "../../engine/types";
 import type { HandFactResolverFn } from "../../core/contracts/fact-catalog";
 import { createDeck, SUIT_NAME_MAP } from "../../engine/constants";
@@ -60,7 +60,7 @@ function resolveFactValueWithFallback(
   return resolveFactValueBuiltin(hand, factId);
 }
 
-/** Check one clause of a HandPredicateIR against a hand. */
+/** Check one clause of a HandPredicate against a hand. */
 function checkClause(
   hand: Hand,
   clause: {
@@ -97,8 +97,8 @@ function checkClause(
   }
 }
 
-/** Check all constraints of a HandPredicateIR against a hand. */
-function checkPredicate(hand: Hand, predicate: HandPredicateIR, resolver?: HandFactResolverFn): boolean {
+/** Check all constraints of a HandPredicate against a hand. */
+function checkPredicate(hand: Hand, predicate: HandPredicate, resolver?: HandFactResolverFn): boolean {
   if (predicate.conjunction === "all") {
     return predicate.clauses.every((c) => checkClause(hand, c, resolver));
   }

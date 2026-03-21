@@ -4,13 +4,13 @@
 // at each step. Reports coverage and violations.
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { BiddingSystem } from "../../conventions/definitions/bidding-system";
+import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
 import type { AuctionContext } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import { INITIAL_KERNEL } from "../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import { collectMatchingClaims, advanceLocalFsm } from "../../conventions/core";
 import { buildObservationLogViaRules, protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
-import { specFromSystem } from "../../conventions/definitions/system-registry";
+import { specFromBundle } from "../../conventions/definitions/system-registry";
 import { callKey } from "../../engine/call-helpers";
 import type { Call, Seat } from "../../engine/types";
 
@@ -39,9 +39,9 @@ export interface ExploreConfig {
   readonly invariants?: readonly string[];
 }
 
-const EMPTY_RESULT = (system: BiddingSystem, config: ExploreConfig): ExplorationResult => ({
+const EMPTY_RESULT = (bundle: ConventionBundle, config: ExploreConfig): ExplorationResult => ({
   command: "verify explore",
-  bundle: system.id,
+  bundle: bundle.id,
   config: { depth: config.depth, seed: config.seed, trials: config.trials },
   coverage: { modulesActivated: [], phasesReached: {}, rulesFired: {}, atomsExercised: [] },
   violations: [],
@@ -55,12 +55,12 @@ const EMPTY_RESULT = (system: BiddingSystem, config: ExploreConfig): Exploration
  * check invariants at each step. Track module/phase/rule/atom coverage.
  */
 export function exploreBundle(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   modules: readonly RuleModule[],
   config: ExploreConfig,
 ): ExplorationResult {
-  const spec = specFromSystem(system);
-  if (!spec) return EMPTY_RESULT(system, config);
+  const spec = specFromBundle(bundle);
+  if (!spec) return EMPTY_RESULT(bundle, config);
 
   // Filter invariants if specified
   const activeInvariants: readonly ExplorationInvariant[] = config.invariants
@@ -80,10 +80,10 @@ export function exploreBundle(
     const trialSeed = config.seed + trial;
 
     try {
-      const deal = generateSeededDeal(system, trialSeed);
-      const userSeat = resolveUserSeat(system, deal);
+      const deal = generateSeededDeal(bundle, trialSeed);
+      const userSeat = resolveUserSeat(bundle, deal);
       const partner = partnerOf(userSeat);
-      const initAuction = buildInitialAuction(system, userSeat, deal);
+      const initAuction = buildInitialAuction(bundle, userSeat, deal);
       const strategy = protocolSpecToStrategy(spec);
 
       const auctionHistory: { call: Call; seat: Seat }[] = [...initAuction.entries];
@@ -123,7 +123,7 @@ export function exploreBundle(
 
         // Build snapshot
         const auctionStrings = auctionHistory.map((e) => callKey(e.call));
-        const currentKernel = log.length > 0 ? log[log.length - 1]!.postKernel : INITIAL_KERNEL;
+        const currentKernel = log.length > 0 ? log[log.length - 1]!.stateAfter : INITIAL_NEGOTIATION;
 
         const snapshot: VerificationSnapshot = {
           seed: trialSeed,
@@ -210,7 +210,7 @@ export function exploreBundle(
 
   return {
     command: "verify explore",
-    bundle: system.id,
+    bundle: bundle.id,
     config: { depth: config.depth, seed: config.seed, trials: config.trials },
     coverage,
     violations,

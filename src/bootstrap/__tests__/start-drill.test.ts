@@ -12,16 +12,19 @@ import {
 } from "../../test-support/engine-stub";
 import { Seat, Vulnerability } from "../../engine/types";
 import type { DealConstraints, SeatConstraint } from "../../engine/types";
-import { clearRegistry, registerConvention } from "../../conventions/core/registry";
-import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
+import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
+import { createConventionConfigFromBundle } from "../../conventions/core/bundle";
+import { ntBundle } from "../../conventions/definitions/nt-bundle";
 import { buildAuction } from "../../engine/auction-helpers";
 import { ConventionCategory } from "../../conventions/core";
 import type { ConventionConfig } from "../../conventions/core";
 
+const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
+
 describe("startDrill", () => {
   beforeEach(() => {
-    clearRegistry();
-    registerConvention(ntBundleConventionConfig);
+    clearBundleRegistry();
+    registerBundle(ntBundle);
   });
 
   it("returns bundle with generated deal and session", async () => {
@@ -318,8 +321,8 @@ describe("pickVulnerability", () => {
 
 describe("startDrill vulnerability", () => {
   beforeEach(() => {
-    clearRegistry();
-    registerConvention(ntBundleConventionConfig);
+    clearBundleRegistry();
+    registerBundle(ntBundle);
   });
 
   it("assigns vulnerability from tuning distribution to generated deal", async () => {

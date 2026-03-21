@@ -1,7 +1,7 @@
 // ── Protocol Adapter ─────────────────────────────────────────────────
 //
 // Converts a ConventionSpec (protocol frame architecture) into a
-// ConventionBiddingStrategy compatible with the existing drill system.
+// ConventionStrategy compatible with the existing drill system.
 //
 // Rule-only path: all bundles use ruleModules for surface selection
 // with per-step kernel threading (Phase 5 complete). Old FSM path removed.
@@ -9,23 +9,23 @@
 import type {
   BiddingContext,
   BidResult,
-  ConventionBiddingStrategy,
+  ConventionStrategy,
   StrategyEvaluation,
 } from "../../core/contracts";
-import type { MeaningSurface } from "../../core/contracts/meaning";
+import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import type { ConventionSpec, RuleModule } from "../../conventions/core";
 import { createSharedFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, normalizeIntent, advanceLocalFsm } from "../../conventions/core";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { runMeaningPipeline } from "./meaning-strategy";
 import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
-import type { CommittedStep, AuctionContext, KernelState, KernelDelta } from "../../core/contracts/committed-step";
-import { INITIAL_KERNEL } from "../../core/contracts/committed-step";
+import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
 import type { Seat, Call, BidSuit } from "../../engine/types";
 
 /**
- * Convert a ConventionSpec into a ConventionBiddingStrategy.
+ * Convert a ConventionSpec into a ConventionStrategy.
  *
  * Each call to suggest():
  * 1. Replays the auction through the protocol frame system to get a RuntimeSnapshot
@@ -35,7 +35,7 @@ import type { Seat, Call, BidSuit } from "../../engine/types";
  */
 export function protocolSpecToStrategy(
   spec: ConventionSpec,
-): ConventionBiddingStrategy {
+): ConventionStrategy {
   // Build a fact catalog from all module fact extensions
   const moduleFactExtensions = spec.modules
     .map((m) => m.facts)
@@ -124,8 +124,8 @@ export function protocolSpecToStrategy(
 interface EnrichedClaimResult {
   readonly moduleId: string;
   readonly claims: readonly {
-    readonly surface: MeaningSurface;
-    readonly kernelDelta: KernelDelta | undefined;
+    readonly surface: BidMeaning;
+    readonly negotiationDelta: NegotiationDelta | undefined;
   }[];
 }
 
@@ -137,9 +137,9 @@ interface EnrichedClaimResult {
  *   1. For each historical bid, runs claim collection to find candidate surfaces
  *   2. Matches the actual call to a candidate surface via `findMatchingClaimForCall()`
  *   3. Derives observations from `normalizeIntent(surface.sourceIntent)`
- *   4. Threads kernel state via `kernelDelta` declared on the winning claim
+ *   4. Threads kernel state via `negotiationDelta` declared on the winning claim
  *
- * **Invariant:** `kernelDelta` values come from claim declarations, not FSM effects.
+ * **Invariant:** `negotiationDelta` values come from claim declarations, not FSM effects.
  * The values were derived from old FSM `entryEffects` during Phase 4.2, verified
  * via characterization tests.
  *
@@ -160,7 +160,7 @@ export function buildObservationLogViaRules(
   }
 
   for (const entry of history) {
-    const prevKernel = log.length > 0 ? log[log.length - 1]!.postKernel : INITIAL_KERNEL;
+    const prevKernel = log.length > 0 ? log[log.length - 1]!.stateAfter : INITIAL_NEGOTIATION;
 
     // Passes, doubles, redoubles — raw-only step, kernel unchanged
     if (entry.call.type !== "bid") {
@@ -168,9 +168,9 @@ export function buildObservationLogViaRules(
         actor: entry.seat,
         call: entry.call,
         resolvedClaim: null,
-        publicObs: [],
-        kernelDelta: {},
-        postKernel: prevKernel,
+        publicActions: [],
+        negotiationDelta: {},
+        stateAfter: prevKernel,
         status: "raw-only",
       };
       log.push(step);
@@ -191,8 +191,8 @@ export function buildObservationLogViaRules(
     let step: CommittedStep;
     if (matched) {
       const obs = normalizeIntent(matched.surface.sourceIntent);
-      const delta = matched.kernelDelta ?? {};
-      const postKernel = applyKernelDelta(prevKernel, delta);
+      const delta = matched.negotiationDelta ?? {};
+      const stateAfter = applyKernelDelta(prevKernel, delta);
 
       step = {
         actor: entry.seat,
@@ -203,9 +203,9 @@ export function buildObservationLogViaRules(
           semanticClassId: matched.surface.semanticClassId,
           sourceIntent: matched.surface.sourceIntent,
         },
-        publicObs: obs,
-        kernelDelta: delta,
-        postKernel,
+        publicActions: obs,
+        negotiationDelta: delta,
+        stateAfter,
         status: "resolved",
       };
     } else {
@@ -214,9 +214,9 @@ export function buildObservationLogViaRules(
         actor: entry.seat,
         call: entry.call,
         resolvedClaim: null,
-        publicObs: [],
-        kernelDelta: {},
-        postKernel: prevKernel,
+        publicActions: [],
+        negotiationDelta: {},
+        stateAfter: prevKernel,
         status: "off-system",
       };
     }
@@ -243,12 +243,12 @@ export function buildObservationLogViaRules(
 export function findMatchingClaimForCall(
   results: readonly EnrichedClaimResult[],
   call: Call,
-): { surface: MeaningSurface; kernelDelta: KernelDelta | undefined; moduleId: string } | null {
+): { surface: BidMeaning; negotiationDelta: NegotiationDelta | undefined; moduleId: string } | null {
   if (call.type !== "bid") return null;
 
   const candidates: {
-    surface: MeaningSurface;
-    kernelDelta: KernelDelta | undefined;
+    surface: BidMeaning;
+    negotiationDelta: NegotiationDelta | undefined;
     moduleId: string;
   }[] = [];
 
@@ -257,7 +257,7 @@ export function findMatchingClaimForCall(
       if (callMatchesEncoding(call, claim.surface.encoding)) {
         candidates.push({
           surface: claim.surface,
-          kernelDelta: claim.kernelDelta,
+          negotiationDelta: claim.negotiationDelta,
           moduleId: result.moduleId,
         });
       }
@@ -276,7 +276,7 @@ export function findMatchingClaimForCall(
 /** Check if a call matches a surface's encoding (defaultCall or alternate encodings). */
 function callMatchesEncoding(
   call: { type: "bid"; level: number; strain: BidSuit },
-  encoding: MeaningSurface["encoding"],
+  encoding: BidMeaning["encoding"],
 ): boolean {
   const dc = encoding.defaultCall;
   if (dc.type === "bid" && dc.level === call.level && dc.strain === call.strain) return true;
@@ -295,8 +295,8 @@ function callMatchesEncoding(
   return false;
 }
 
-/** Apply a KernelDelta to produce a new KernelState. */
-function applyKernelDelta(prev: KernelState, delta: KernelDelta): KernelState {
+/** Apply a NegotiationDelta to produce a new NegotiationState. */
+function applyKernelDelta(prev: NegotiationState, delta: NegotiationDelta): NegotiationState {
   return {
     fitAgreed: delta.fitAgreed !== undefined ? delta.fitAgreed : prev.fitAgreed,
     forcing: delta.forcing !== undefined ? delta.forcing : prev.forcing,
@@ -315,11 +315,11 @@ const BAND_ORDER: Record<string, number> = {
 /** Arbitrate among multiple matching claims using the same logic as the forward path. */
 function arbitrateMatchingClaims(
   candidates: readonly {
-    surface: MeaningSurface;
-    kernelDelta: KernelDelta | undefined;
+    surface: BidMeaning;
+    negotiationDelta: NegotiationDelta | undefined;
     moduleId: string;
   }[],
-): { surface: MeaningSurface; kernelDelta: KernelDelta | undefined; moduleId: string } {
+): { surface: BidMeaning; negotiationDelta: NegotiationDelta | undefined; moduleId: string } {
   // Sort by: band (desc) → modulePrecedence (asc) → intraModuleOrder (asc)
   const sorted = [...candidates].sort((a, b) => {
     const bandA = BAND_ORDER[a.surface.ranking.recommendationBand] ?? 0;
@@ -350,21 +350,21 @@ function collectClaimsWithDeltasCached(
   return enrichResults(results, modules);
 }
 
-/** Enrich ModuleClaimResults with kernelDelta from rule module claims. */
+/** Enrich ModuleClaimResults with negotiationDelta from rule module claims. */
 function enrichResults(
-  results: readonly { moduleId: string; surfaces: readonly MeaningSurface[] }[],
+  results: readonly { moduleId: string; surfaces: readonly BidMeaning[] }[],
   modules: readonly RuleModule[],
 ): readonly EnrichedClaimResult[] {
   return results.map((result) => {
     const mod = modules.find((m) => m.id === result.moduleId);
-    if (!mod) return { moduleId: result.moduleId, claims: result.surfaces.map((s) => ({ surface: s, kernelDelta: undefined })) };
+    if (!mod) return { moduleId: result.moduleId, claims: result.surfaces.map((s) => ({ surface: s, negotiationDelta: undefined })) };
 
-    // Build a map from meaningId → kernelDelta by scanning the module's rules
-    const deltaMap = new Map<string, KernelDelta | undefined>();
+    // Build a map from meaningId → negotiationDelta by scanning the module's rules
+    const deltaMap = new Map<string, NegotiationDelta | undefined>();
     for (const rule of mod.rules) {
       for (const claim of rule.claims) {
         if (result.surfaces.includes(claim.surface)) {
-          deltaMap.set(claim.surface.meaningId, claim.kernelDelta);
+          deltaMap.set(claim.surface.meaningId, claim.negotiationDelta);
         }
       }
     }
@@ -373,7 +373,7 @@ function enrichResults(
       moduleId: result.moduleId,
       claims: result.surfaces.map((s) => ({
         surface: s,
-        kernelDelta: deltaMap.get(s.meaningId),
+        negotiationDelta: deltaMap.get(s.meaningId),
       })),
     };
   });

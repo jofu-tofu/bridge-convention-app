@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat } from "../../engine/types";
 import type { AuctionEntry, Auction } from "../../engine/types";
 import type { HandInference, BidAlert } from "../../core/contracts";
-import type { FactConstraintIR } from "../../core/contracts/agreement-module";
+import type { FactConstraint } from "../../core/contracts/agreement-module";
 import type { InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "../types";
 import { produceAnnotation } from "../annotation-producer";
 
@@ -17,7 +17,7 @@ function makeRuleResult(overrides: Partial<InferenceExtractorInput> = {}): Infer
   };
 }
 
-function makeStubExtractor(constraints: readonly FactConstraintIR[] = []): InferenceExtractor {
+function makeStubExtractor(constraints: readonly FactConstraint[] = []): InferenceExtractor {
   return {
     extractConstraints: (_result, _seat) => constraints,
   };
@@ -54,7 +54,7 @@ describe("produceAnnotation", () => {
   });
 
   it("convention bid: constraints from extractor.extractConstraints()", () => {
-    const testConstraints: FactConstraintIR[] = [
+    const testConstraints: FactConstraint[] = [
       { factId: "hand.hcp", operator: "gte", value: 8 },
     ];
     const ruleResult = makeRuleResult();

@@ -1,4 +1,4 @@
-import type { MeaningSurface, SpecificityBasis } from "../../../core/contracts/meaning";
+import type { BidMeaning, SpecificityBasis } from "../../../core/contracts/meaning";
 import type { FactCatalogExtension, FactDefinition } from "../../../core/contracts/fact-catalog";
 
 /**
@@ -13,7 +13,7 @@ import type { FactCatalogExtension, FactDefinition } from "../../../core/contrac
  * A surface with no clauses is classified as "derived" (trivially — nothing to assert).
  */
 export function classifySpecificityBasis(
-  surface: MeaningSurface,
+  surface: BidMeaning,
   factExtensions: readonly FactCatalogExtension[],
 ): SpecificityBasis {
   const { clauses } = surface;

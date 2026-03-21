@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { BidSuit, Seat } from "../../../engine/types";
-import { INITIAL_KERNEL } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { VerificationSnapshot } from "../types";
-import type { KernelState, CommittedStep } from "../../../core/contracts/committed-step";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import type { CanonicalObs } from "../../../core/contracts/canonical-observation";
+import type { NegotiationState, CommittedStep } from "../../../core/contracts/committed-step";
+import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { BidAction } from "../../../core/contracts/bid-action";
 import {
   checkArbitrationTotality,
   checkKernelConsistency,
@@ -21,14 +21,14 @@ function makeSnapshot(overrides: Partial<VerificationSnapshot> = {}): Verificati
     auction: [],
     nextSeat: Seat.South,
     localPhases: new Map([["test-mod", "idle"]]),
-    kernel: INITIAL_KERNEL,
+    kernel: INITIAL_NEGOTIATION,
     claims: [],
     log: [],
     ...overrides,
   };
 }
 
-const openerObs: CanonicalObs = { act: "open", strain: "notrump", strength: "strong" };
+const openerObs: BidAction = { act: "open", strain: "notrump", strength: "strong" };
 
 const openerLog: readonly CommittedStep[] = [
   {
@@ -40,14 +40,14 @@ const openerLog: readonly CommittedStep[] = [
       semanticClassId: "test:open",
       sourceIntent: { type: "NTOpening", params: {} },
     },
-    publicObs: [openerObs],
-    kernelDelta: {},
-    postKernel: INITIAL_KERNEL,
+    publicActions: [openerObs],
+    negotiationDelta: {},
+    stateAfter: INITIAL_NEGOTIATION,
     status: "resolved" as const,
   },
 ];
 
-function makeSurface(overrides: Partial<MeaningSurface> = {}): MeaningSurface {
+function makeSurface(overrides: Partial<BidMeaning> = {}): BidMeaning {
   return {
     meaningId: "test-meaning",
     semanticClassId: "test:meaning",
@@ -60,7 +60,7 @@ function makeSurface(overrides: Partial<MeaningSurface> = {}): MeaningSurface {
     sourceIntent: { type: "TestIntent", params: {} },
     teachingLabel: "Test meaning",
     ...overrides,
-  } as MeaningSurface;
+  } as BidMeaning;
 }
 
 describe("arbitration-totality", () => {
@@ -103,15 +103,15 @@ describe("arbitration-totality", () => {
 
 describe("kernel-consistency", () => {
   it("passes with valid kernel", () => {
-    const snapshot = makeSnapshot({ kernel: INITIAL_KERNEL });
+    const snapshot = makeSnapshot({ kernel: INITIAL_NEGOTIATION });
     const result = checkKernelConsistency(snapshot);
     expect(result).toBeNull();
   });
 
   it("flags invalid forcing value", () => {
     const badKernel = {
-      ...INITIAL_KERNEL,
-      forcing: "invalid" as KernelState["forcing"],
+      ...INITIAL_NEGOTIATION,
+      forcing: "invalid" as NegotiationState["forcing"],
     };
     const snapshot = makeSnapshot({ kernel: badKernel });
     const result = checkKernelConsistency(snapshot);
@@ -122,8 +122,8 @@ describe("kernel-consistency", () => {
 
   it("flags invalid captain value", () => {
     const badKernel = {
-      ...INITIAL_KERNEL,
-      captain: "nobody" as KernelState["captain"],
+      ...INITIAL_NEGOTIATION,
+      captain: "nobody" as NegotiationState["captain"],
     };
     const snapshot = makeSnapshot({ kernel: badKernel });
     const result = checkKernelConsistency(snapshot);
@@ -134,8 +134,8 @@ describe("kernel-consistency", () => {
 
   it("flags invalid competition value", () => {
     const badKernel = {
-      ...INITIAL_KERNEL,
-      competition: "something-else" as KernelState["competition"],
+      ...INITIAL_NEGOTIATION,
+      competition: "something-else" as NegotiationState["competition"],
     };
     const snapshot = makeSnapshot({ kernel: badKernel });
     const result = checkKernelConsistency(snapshot);
@@ -145,8 +145,8 @@ describe("kernel-consistency", () => {
   });
 
   it("accepts valid overcalled competition", () => {
-    const kernel: KernelState = {
-      ...INITIAL_KERNEL,
+    const kernel: NegotiationState = {
+      ...INITIAL_NEGOTIATION,
       competition: { kind: "overcalled", level: 2, strain: "hearts" },
     };
     const snapshot = makeSnapshot({ kernel });
@@ -156,7 +156,7 @@ describe("kernel-consistency", () => {
 
   it("flags invalid fitAgreed confidence", () => {
     const badKernel = {
-      ...INITIAL_KERNEL,
+      ...INITIAL_NEGOTIATION,
       fitAgreed: { strain: "hearts" as const, confidence: "maybe" as "tentative" | "final" },
     };
     const snapshot = makeSnapshot({ kernel: badKernel });

@@ -13,7 +13,7 @@ import type {
   SurfaceFragment,
 } from "../../core/protocol/types";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
@@ -70,7 +70,7 @@ const BASE_LAYER_PRIORITY = 100;
 
 function fragment(
   id: string,
-  surfaces: readonly MeaningSurface[],
+  surfaces: readonly BidMeaning[],
 ): SurfaceFragment {
   return {
     id,
@@ -81,7 +81,7 @@ function fragment(
   };
 }
 
-const terminalPassSurfaces: readonly MeaningSurface[] =
+const terminalPassSurfaces: readonly BidMeaning[] =
   naturalNtModule.surfaceGroups.find((g) => g.groupId === "terminal-pass")
     ?.surfaces ?? [];
 

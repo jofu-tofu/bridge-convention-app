@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How the Backend Pipeline Works</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#1e293b',
+            muted: '#64748b',
+            accent: '#2563eb',
+            surface: '#f8fafc',
+            border: '#e2e8f0',
+            highlight: '#dbeafe',
+            green: { light: '#dcfce7', dark: '#166534' },
+            amber: { light: '#fef3c7', dark: '#92400e' },
+            rose: { light: '#ffe4e6', dark: '#9f1239' },
+            violet: { light: '#ede9fe', dark: '#5b21b6' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1e293b;
+      line-height: 1.7;
+      font-size: 17px;
+    }
+    .prose { max-width: 75ch; }
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
+    h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+    .layer-card {
+      border-left: 4px solid;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .analogy-box {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 0.95rem;
+    }
+    .vocab-table td, .vocab-table th {
+      padding: 0.5rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .vocab-table th { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+    .vocab-table code { font-size: 0.82em; }
+    details summary { cursor: pointer; font-weight: 600; }
+    details summary:hover { color: #2563eb; }
+    nav a { transition: color 0.15s; }
+    nav a:hover { color: #2563eb; }
+    .toc-active { color: #2563eb; font-weight: 600; }
+    pre.mermaid { background: transparent; text-align: center; }
+    @media (max-width: 768px) {
+      body { font-size: 16px; }
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.25rem; }
+      .hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body class="bg-surface">
+
+<!-- Sticky Table of Contents -->
+<nav id="toc" class="hide-mobile fixed top-0 left-0 w-56 h-screen overflow-y-auto bg-white border-r border-border p-5 text-sm z-50">
+  <p class="font-bold text-ink mb-4 text-base">Contents</p>
+  <ul class="space-y-2 text-muted">
+    <li><a href="#big-picture" class="block hover:text-accent">The Big Picture</a></li>
+    <li><a href="#layer-1" class="block hover:text-accent">Layer 1: Config & Bundle</a></li>
+    <li><a href="#layer-2" class="block hover:text-accent">Layer 2: Meaning Surfaces</a></li>
+    <li><a href="#layer-3" class="block hover:text-accent">Layer 3: The Pipeline</a></li>
+    <li><a href="#layer-4" class="block hover:text-accent">Layer 4: Convention Protocol</a></li>
+    <li><a href="#end-to-end" class="block hover:text-accent">End-to-End Walk-through</a></li>
+    <li><a href="#glossary" class="block hover:text-accent">Jargon Glossary</a></li>
+  </ul>
+</nav>
+
+<!-- Main Content -->
+<main class="ml-0 md:ml-56 px-6 md:px-12 py-12">
+  <div class="prose mx-auto">
+
+    <!-- Title -->
+    <h1 id="title" class="mb-2">How the Backend Pipeline Works</h1>
+    <p class="text-muted text-lg mb-10">A plain-English guide to the four layers that turn convention rules into bid recommendations.</p>
+
+    <!-- ================================================================ -->
+    <!-- BIG PICTURE -->
+    <!-- ================================================================ -->
+    <section id="big-picture" class="mb-16">
+      <h2 class="text-accent mb-4">The Big Picture</h2>
+
+      <p><strong>The backend's job is one thing:</strong> given a player's hand and the auction so far, recommend the best bid according to the active convention.</p>
+
+      <p>It does this through four layers, each with a distinct responsibility:</p>
+
+      <div class="grid gap-4 my-6">
+        <div class="layer-card border-blue-500 p-4">
+          <p class="font-bold text-blue-700">Layer 1 &mdash; Config & Bundle</p>
+          <p class="text-sm text-muted mt-1">Defines <em>what</em> conventions exist and packages them into usable units.</p>
+        </div>
+        <div class="layer-card border-emerald-500 p-4">
+          <p class="font-bold text-emerald-700">Layer 2 &mdash; Meaning Surfaces</p>
+          <p class="text-sm text-muted mt-1">Each possible bid meaning is described as a set of hand requirements.</p>
+        </div>
+        <div class="layer-card border-amber-600 p-4">
+          <p class="font-bold text-amber-700">Layer 3 &mdash; The Pipeline</p>
+          <p class="text-sm text-muted mt-1">Evaluates every candidate meaning against the actual hand and picks a winner.</p>
+        </div>
+        <div class="layer-card border-violet-500 p-4">
+          <p class="font-bold text-violet-700">Layer 4 &mdash; Convention Protocol</p>
+          <p class="text-sm text-muted mt-1">The formal architecture for state machines, registers, and layered modules.</p>
+        </div>
+      </div>
+
+      <pre class="mermaid">
+flowchart LR
+  A["Convention Modules\n(LEGO bricks)"] --> B["Bundle\n(kit box)"]
+  B --> C["Active Surfaces\n(candidate bids)"]
+  C --> D["Pipeline\n(screening + judging)"]
+  D --> E["Recommended Bid"]
+      </pre>
+
+      <div class="analogy-box bg-highlight mt-6">
+        <p><strong>Analogy:</strong> Think of it like building with LEGO. Individual convention modules are <strong>bricks</strong>. A bundle snaps them into a <strong>kit</strong>. The pipeline is the <strong>instruction manual</strong> that decides which brick to place next, given the current state of the build.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- LAYER 1: CONFIG & BUNDLE -->
+    <!-- ================================================================ -->
+    <section id="layer-1" class="mb-16">
+      <h2 class="text-accent mb-4">Layer 1: Convention Config & Bundle</h2>
+
+      <p><strong>Problem this solves:</strong> How do you define a convention like Stayman, package it with related conventions (Jacoby Transfers, Smolen), and make it selectable in the UI?</p>
+
+      <h3 id="modules" class="mt-8 mb-3">Convention Modules: The LEGO Bricks</h3>
+
+      <p>A <strong>module</strong> (<code>ConventionModule</code>) is a self-contained unit of bidding logic. Each module owns:</p>
+
+      <ul class="list-disc pl-6 space-y-1">
+        <li><strong>Meaning surfaces</strong> &mdash; the possible bids it contributes (covered in Layer 2)</li>
+        <li><strong>Facts</strong> &mdash; hand properties it cares about (e.g., "has a 4-card major")</li>
+        <li><strong>FSM states</strong> &mdash; where the conversation is in this module's flow</li>
+        <li><strong>Teaching metadata</strong> &mdash; explanations for the UI</li>
+      </ul>
+
+      <p class="mt-3"><strong>Hard rule:</strong> modules never import from each other. Stayman doesn't know Jacoby Transfers exist. All cross-module wiring happens one level up, in the bundle.</p>
+
+      <table class="vocab-table w-full mt-4 mb-6 bg-white rounded-lg overflow-hidden shadow-sm">
+        <thead class="bg-gray-50">
+          <tr><th>Code Name</th><th>Plain English</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>moduleId</code></td><td>Unique name for a module</td><td><code>"stayman"</code></td></tr>
+          <tr><td><code>entrySurfaces</code></td><td>Bid options available on the first round</td><td>Stayman 2C surface</td></tr>
+          <tr><td><code>surfaceGroups</code></td><td>Bid options for later rounds, grouped by phase</td><td>"opener-stayman-response" group</td></tr>
+          <tr><td><code>facts</code></td><td>Custom hand-analysis formulas this module needs</td><td>"does the hand have a 4-card major?"</td></tr>
+          <tr><td><code>hookTransitions</code></td><td>Wiring points where the bundle can plug modules together</td><td>Stayman hooks into the NT module's state</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="bundles" class="mt-8 mb-3">Bundles: The Kit Box</h3>
+
+      <p>A <strong>bundle</strong> (<code>ConventionBundle</code>) groups modules into a practicable bidding system. It's the unit the UI presents as "1NT Responses" or "Bergen Raises."</p>
+
+      <p>A bundle adds things a single module can't provide alone:</p>
+
+      <ul class="list-disc pl-6 space-y-1">
+        <li><strong>System config</strong> &mdash; shared parameters like "1NT = 15&ndash;17 HCP"</li>
+        <li><strong>Deal constraints</strong> &mdash; rules for generating practice hands</li>
+        <li><strong>Surface router</strong> &mdash; decides which surfaces are active given the auction</li>
+        <li><strong>Teaching content</strong> &mdash; cross-module relationships ("Stayman is an alternative to Transfers")</li>
+      </ul>
+
+      <pre class="mermaid">
+flowchart TD
+  subgraph Bundle["NT Bundle (nt-bundle)"]
+    M1["natural-nt\nmodule"]
+    M2["stayman\nmodule"]
+    M3["jacoby-transfers\nmodule"]
+    M4["smolen\nmodule"]
+  end
+  SC["System Config\n15-17 HCP NT"] --> Bundle
+  DC["Deal Constraints\nNorth: 15-17 balanced"] --> Bundle
+  Bundle --> REG["Bundle Registry"]
+      </pre>
+
+      <table class="vocab-table w-full mt-4 mb-6 bg-white rounded-lg overflow-hidden shadow-sm">
+        <thead class="bg-gray-50">
+          <tr><th>Code Name</th><th>Plain English</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>memberIds</code></td><td>List of module IDs this bundle includes</td></tr>
+          <tr><td><code>systemConfig</code></td><td>Shared numeric settings (HCP ranges, thresholds)</td></tr>
+          <tr><td><code>dealConstraints</code></td><td>Rules for generating practice hands that exercise this convention</td></tr>
+          <tr><td><code>surfaceRouter</code></td><td>Function that filters surfaces based on the current auction</td></tr>
+          <tr><td><code>conversationMachine</code></td><td>A state machine that tracks the conversation flow across modules</td></tr>
+          <tr><td><code>explanationCatalog</code></td><td>Library of teaching explanations for the UI</td></tr>
+          <tr><td><code>pedagogicalRelations</code></td><td>Cross-module teaching links (e.g., "this bid is stronger than that bid")</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="config" class="mt-8 mb-3">Convention Config: The Album Cover</h3>
+
+      <p><code>ConventionConfig</code> is the lightweight, UI-facing metadata extracted from a bundle. It's what the convention picker screen displays: name, description, category.</p>
+
+      <p>The flow is always: <strong>Modules</strong> &rarr; <code>bundleFromSystem()</code> &rarr; <strong>Bundle</strong> &rarr; <code>createConventionConfigFromBundle()</code> &rarr; <strong>Config</strong> &rarr; registered globally.</p>
+
+      <details class="mt-4 bg-white p-4 rounded-lg shadow-sm border border-border">
+        <summary>composeBundles() &mdash; merging multiple kits</summary>
+        <p class="mt-2 text-sm">When the app needs to combine separate bundles (e.g., NT + Bergen), <code>composeBundles()</code> merges them. Surfaces are concatenated. Deal constraints take the most restrictive values. Explanation catalogs are deduplicated. If both bundles have a conversation machine, the first one wins.</p>
+      </details>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- LAYER 2: MEANING SURFACES -->
+    <!-- ================================================================ -->
+    <section id="layer-2" class="mb-16">
+      <h2 class="text-accent mb-4">Layer 2: Meaning Surfaces</h2>
+
+      <p><strong>Problem this solves:</strong> How do you formally describe what a bid <em>means</em> so the system can evaluate whether it applies to a given hand?</p>
+
+      <div class="analogy-box bg-green-light mt-4 mb-6">
+        <p><strong>Analogy:</strong> A <code>MeaningSurface</code> is like a <strong>job posting</strong>. It says: "I am the bid 2C, and I'm the right choice IF you have 8+ HCP AND a 4-card major AND no 5-card major." The hand is the applicant; the clauses are the job requirements.</p>
+      </div>
+
+      <h3 class="mt-6 mb-3">Anatomy of a MeaningSurface</h3>
+
+      <p>Every surface has five key parts:</p>
+
+      <div class="grid gap-3 my-4">
+        <div class="bg-white p-3 rounded-lg border border-border">
+          <p><strong>1. Identity</strong> &mdash; <code>meaningId</code> (unique name like <code>"stayman:ask-major"</code>) and <code>semanticClassId</code> (equivalence group for deduplication).</p>
+        </div>
+        <div class="bg-white p-3 rounded-lg border border-border">
+          <p><strong>2. Encoding</strong> &mdash; the actual bid. <code>encoding.defaultCall</code> is the call (e.g., 2C). Some surfaces have alternate encodings for relay systems.</p>
+        </div>
+        <div class="bg-white p-3 rounded-lg border border-border">
+          <p><strong>3. Clauses</strong> &mdash; the hand requirements. Each clause checks one fact (HCP, suit length, shape) against a threshold using an operator (<code>gte</code>, <code>lte</code>, <code>range</code>, <code>boolean</code>).</p>
+        </div>
+        <div class="bg-white p-3 rounded-lg border border-border">
+          <p><strong>4. Ranking</strong> &mdash; how important this bid is. The <code>recommendationBand</code> is <code>"must"</code>, <code>"should"</code>, <code>"may"</code>, or <code>"avoid"</code>. Specificity (how narrow the requirements are) is calculated automatically by the pipeline.</p>
+        </div>
+        <div class="bg-white p-3 rounded-lg border border-border">
+          <p><strong>5. Teaching</strong> &mdash; <code>teachingLabel</code> (human name like "Stayman 2C"), <code>sourceIntent</code> (bridge semantics like "StaymanAsk"), and <code>pedagogicalTags</code> (links to related surfaces).</p>
+        </div>
+      </div>
+
+      <table class="vocab-table w-full mt-6 mb-4 bg-white rounded-lg overflow-hidden shadow-sm">
+        <thead class="bg-gray-50">
+          <tr><th>Code Name</th><th>Plain English</th><th>Example Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>meaningId</code></td><td>Unique name for this bid-meaning</td><td><code>"stayman:ask-major"</code></td></tr>
+          <tr><td><code>semanticClassId</code></td><td>Group of equivalent meanings (for dedup)</td><td><code>"bridge:major-ask"</code></td></tr>
+          <tr><td><code>encoding.defaultCall</code></td><td>The actual bid</td><td><code>{ type: "bid", level: 2, suit: "C" }</code></td></tr>
+          <tr><td><code>clauses</code></td><td>List of hand requirements</td><td>"HCP >= 8" AND "has 4-card major"</td></tr>
+          <tr><td><code>recommendationBand</code></td><td>Priority tier</td><td><code>"should"</code></td></tr>
+          <tr><td><code>sourceIntent.type</code></td><td>What this bid does in bridge terms</td><td><code>"StaymanAsk"</code></td></tr>
+          <tr><td><code>teachingLabel</code></td><td>Human-readable name</td><td><code>"Stayman 2C"</code></td></tr>
+          <tr><td><code>surfaceBindings</code></td><td>Variable substitutions (for parameterized surfaces)</td><td><code>{ suit: "hearts" }</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="mt-8 mb-3">How Surfaces Are Created</h3>
+
+      <p>Convention authors use the <code>createSurface()</code> builder. It takes simplified inputs and fills in derived fields automatically:</p>
+
+      <ul class="list-disc pl-6 space-y-1">
+        <li><code>clauseId</code> &mdash; auto-derived from <code>factId + operator + value</code></li>
+        <li><code>description</code> &mdash; auto-generated human text (e.g., "HCP at least 12")</li>
+        <li><code>modulePrecedence</code> &mdash; stamped by the bundle's composition layer, not the author</li>
+        <li><code>specificity</code> &mdash; derived by the pipeline from clause dimensions, never hand-authored</li>
+      </ul>
+
+      <h3 class="mt-8 mb-3">Clauses: The Requirements Checklist</h3>
+
+      <p>Each clause references a <strong>fact</strong> &mdash; a measurable property of the hand. Facts are organized in a catalog:</p>
+
+      <table class="vocab-table w-full mt-4 mb-4 bg-white rounded-lg overflow-hidden shadow-sm">
+        <thead class="bg-gray-50">
+          <tr><th>Fact Category</th><th>Example Facts</th><th>What They Measure</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Primitive</strong></td><td><code>hand.hcp</code>, <code>hand.suitLength.hearts</code></td><td>Direct hand analysis (point count, suit lengths)</td></tr>
+          <tr><td><strong>Bridge-derived</strong></td><td><code>bridge.hasFourCardMajor</code>, <code>bridge.isBalanced</code></td><td>Derived from primitives (has 4+ hearts or spades?)</td></tr>
+          <tr><td><strong>Module-derived</strong></td><td><code>stayman.hasStaymanPoints</code></td><td>Convention-specific calculations</td></tr>
+          <tr><td><strong>Relational</strong></td><td><code>bridge.supportCount.$suit</code></td><td>Depends on auction context (support for partner's suit)</td></tr>
+        </tbody>
+      </table>
+
+      <p>Clause operators work like you'd expect:</p>
+      <ul class="list-disc pl-6 space-y-1 text-sm">
+        <li><code>gte</code> &mdash; greater than or equal ("at least 12 HCP")</li>
+        <li><code>lte</code> &mdash; less than or equal ("at most 17 HCP")</li>
+        <li><code>range</code> &mdash; between two values ("12&ndash;14 HCP")</li>
+        <li><code>boolean</code> &mdash; true/false ("is balanced? true")</li>
+        <li><code>in</code> &mdash; one of a set ("suit is hearts or spades")</li>
+      </ul>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- LAYER 3: THE PIPELINE -->
+    <!-- ================================================================ -->
+    <section id="layer-3" class="mb-16">
+      <h2 class="text-accent mb-4">Layer 3: The Meaning Pipeline & Arbitration</h2>
+
+      <p><strong>Problem this solves:</strong> Given a hand, many surfaces could apply. The pipeline screens them, evaluates them, and picks the single best bid.</p>
+
+      <div class="analogy-box bg-amber-light mt-4 mb-6">
+        <p><strong>Analogy:</strong> The pipeline is a <strong>hiring process</strong>. Multiple candidates (surfaces) apply for the "recommended bid" position. They go through a screening funnel &mdash; are they qualified? Is the position open? &mdash; then a ranking panel picks the best one.</p>
+      </div>
+
+      <h3 class="mt-6 mb-3">The Five Pipeline Stages</h3>
+
+      <pre class="mermaid">
+flowchart LR
+  S1["1. Select\nSurfaces"] --> S2["2. Compose\n(Transforms)"]
+  S2 --> S3["3. Evaluate\nFacts"]
+  S3 --> S4["4. Evaluate\nMeanings"]
+  S4 --> S5["5. Arbitrate\n(Pick Winner)"]
+      </pre>
+
+      <!-- Stage 1 -->
+      <div class="layer-card border-blue-400 p-5 my-6">
+        <h3 class="text-blue-700 mb-2">Stage 1: Select Surfaces</h3>
+        <p><strong>What happens:</strong> The rule interpreter (<code>collectMatchingClaims()</code>) looks at the auction history and asks each module: "Given where we are in the conversation, which of your surfaces are candidates right now?"</p>
+        <p class="mt-2"><strong>How it decides:</strong> Each module has a local state machine (phases like <code>"idle"</code> &rarr; <code>"asked"</code> &rarr; <code>"shown-hearts"</code>). The interpreter replays the auction through each module's phases, then collects surfaces whose rules match the current <strong>turn</strong> (opener/responder/opponent), <strong>phase</strong>, and <strong>kernel state</strong> (fit agreed? forcing? who's captain?).</p>
+        <table class="vocab-table w-full mt-3 bg-white rounded overflow-hidden text-sm">
+          <thead class="bg-gray-50"><tr><th>Code Name</th><th>Plain English</th></tr></thead>
+          <tbody>
+            <tr><td><code>collectMatchingClaims()</code></td><td>Ask each module: "What bids do you offer right now?"</td></tr>
+            <tr><td><code>deriveTurnRole()</code></td><td>Figure out if the next bidder is opener, responder, or an opponent</td></tr>
+            <tr><td><code>Phase</code></td><td>Where a module is in its local conversation flow (e.g., "asked", "denied")</td></tr>
+            <tr><td><code>KernelState</code></td><td>The shared negotiation state: has a fit been agreed? Is the auction forcing?</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Stage 2 -->
+      <div class="layer-card border-cyan-400 p-5 my-6">
+        <h3 class="text-cyan-700 mb-2">Stage 2: Compose Surfaces (Transforms)</h3>
+        <p><strong>What happens:</strong> <code>composeSurfaces()</code> applies structural transforms to the candidate pool <em>before</em> evaluation. Three kinds:</p>
+        <ul class="list-disc pl-6 space-y-1 mt-2">
+          <li><strong>Suppress</strong> &mdash; Remove a surface from consideration ("When Smolen is active, suppress the natural 3H bid")</li>
+          <li><strong>Inject</strong> &mdash; Add a new surface that wasn't in any module ("Insert an emergency 3NT surface")</li>
+          <li><strong>Remap</strong> &mdash; Change a surface's encoding ("In this context, the bid that normally uses 2D should use 3D instead")</li>
+        </ul>
+      </div>
+
+      <!-- Stage 3 -->
+      <div class="layer-card border-emerald-400 p-5 my-6">
+        <h3 class="text-emerald-700 mb-2">Stage 3: Evaluate Facts</h3>
+        <p><strong>What happens:</strong> <code>evaluateFacts()</code> analyzes the player's actual hand and produces a dictionary of fact values.</p>
+        <p class="mt-2">Facts are evaluated in dependency order (topologically sorted). Three tiers run sequentially:</p>
+        <ol class="list-decimal pl-6 space-y-1 mt-2">
+          <li><strong>Standard facts</strong> &mdash; HCP, suit lengths, honor counts</li>
+          <li><strong>Relational facts</strong> &mdash; facts that depend on auction context (e.g., "support count for partner's declared suit")</li>
+          <li><strong>Posterior facts</strong> &mdash; facts inferred from partner's previous bids</li>
+        </ol>
+        <p class="mt-2"><strong>Output:</strong> a map of <code>factId &rarr; value</code> (e.g., <code>"hand.hcp" &rarr; 14</code>).</p>
+      </div>
+
+      <!-- Stage 4 -->
+      <div class="layer-card border-amber-400 p-5 my-6">
+        <h3 class="text-amber-700 mb-2">Stage 4: Evaluate Meanings</h3>
+        <p><strong>What happens:</strong> <code>evaluateAllSurfaces()</code> takes each surface and checks every clause against the actual facts. A surface becomes a <code>MeaningProposal</code> &mdash; the same structure, but now each clause is marked <code>satisfied: true/false</code> with the <code>observedValue</code>.</p>
+        <p class="mt-2">This stage also derives <strong>specificity</strong> &mdash; how narrow the surface's requirements are. More dimensions constrained (suit identity + point range + shape) = higher specificity. This is never hand-authored; it's computed from the clause structure.</p>
+        <table class="vocab-table w-full mt-3 bg-white rounded overflow-hidden text-sm">
+          <thead class="bg-gray-50"><tr><th>Code Name</th><th>Plain English</th></tr></thead>
+          <tbody>
+            <tr><td><code>MeaningProposal</code></td><td>A surface after evaluation &mdash; each clause now has a pass/fail verdict</td></tr>
+            <tr><td><code>satisfied</code></td><td>Did this hand requirement pass?</td></tr>
+            <tr><td><code>observedValue</code></td><td>What the hand's actual value was (e.g., HCP = 14)</td></tr>
+            <tr><td><code>specificity</code></td><td>How narrow the requirements are (more constraints = more specific)</td></tr>
+            <tr><td><code>ConstraintDimension</code></td><td>What type of info a clause communicates: suit identity, point range, shape, etc.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Stage 5: Arbitration -->
+      <div class="layer-card border-rose-400 p-5 my-6">
+        <h3 class="text-rose-700 mb-2">Stage 5: Arbitration (Pick the Winner)</h3>
+
+        <p><strong>What happens:</strong> <code>arbitrateMeanings()</code> takes all proposals and selects the single best bid through a 5-step process:</p>
+
+        <pre class="mermaid">
+flowchart TD
+  G["All Proposals"] --> G1["Gate 1: Semantic\nAll clauses satisfied?"]
+  G1 -->|pass| G2["Gate 2: Encoding\nCan this be bid?"]
+  G2 -->|pass| G3["Gate 3: Legality\nIs the call legal here?"]
+  G3 -->|pass| TS["Truth Set\n(qualified candidates)"]
+  G1 -->|fail| EL["Eliminated\n(with reason)"]
+  G2 -->|fail| EL
+  G3 -->|fail| EL
+  TS --> RK["Rank by:\n1. Band\n2. Specificity\n3. Module Precedence\n4. Intra-Module Order"]
+  RK --> DD["Deduplicate by\nSemantic Class"]
+  DD --> W["Winner\n(first in ranked list)"]
+        </pre>
+
+        <h3 class="mt-6 mb-2">The Four Gates</h3>
+        <p>Every proposal must pass through these gates in order. Fail one, and you're eliminated:</p>
+
+        <table class="vocab-table w-full mt-3 mb-4 bg-white rounded overflow-hidden text-sm">
+          <thead class="bg-gray-50"><tr><th>Gate</th><th>Code Name</th><th>Question It Asks</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>semantic-applicability</code></td><td>Are all clauses satisfied by this hand?</td></tr>
+            <tr><td>2</td><td><code>obligation-satisfaction</code></td><td>(Reserved for future use &mdash; always passes)</td></tr>
+            <tr><td>3</td><td><code>encoder-availability</code></td><td>Can the system encode this meaning as a concrete bid?</td></tr>
+            <tr><td>4</td><td><code>concrete-legality</code></td><td>Is this call legal in the current auction state?</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="mt-6 mb-2">The Ranking Order</h3>
+        <p>Among proposals that pass all gates (the <strong>truth set</strong>), the winner is chosen by this tiebreaker chain:</p>
+
+        <ol class="list-decimal pl-6 space-y-2 mt-2">
+          <li><strong><code>recommendationBand</code></strong> &mdash; <code>must</code> beats <code>should</code> beats <code>may</code> beats <code>avoid</code>. A "must" bid always wins over a "should" bid, regardless of other factors.</li>
+          <li><strong><code>specificity</code></strong> &mdash; higher wins. A surface requiring 5 constraints beats one requiring 2, because it's a more precise match.</li>
+          <li><strong><code>modulePrecedence</code></strong> &mdash; lower number wins. Controls cross-module priority (e.g., Stayman before natural bids).</li>
+          <li><strong><code>intraModuleOrder</code></strong> &mdash; lower number wins. Last-resort deterministic tiebreaker within a single module.</li>
+        </ol>
+
+        <h3 class="mt-6 mb-2">Semantic Class Deduplication</h3>
+        <p>After ranking, if two surfaces resolve to the same <code>semanticClassId</code> (meaning they're fundamentally the same bid from different modules), only the higher-ranked one survives.</p>
+
+        <table class="vocab-table w-full mt-4 bg-white rounded overflow-hidden text-sm">
+          <thead class="bg-gray-50"><tr><th>Code Name</th><th>Plain English</th></tr></thead>
+          <tbody>
+            <tr><td><code>truthSet</code></td><td>All proposals that passed every gate (hand fits + legal)</td></tr>
+            <tr><td><code>acceptableSet</code></td><td>Proposals that are legal but don't fully fit the hand</td></tr>
+            <tr><td><code>recommended</code></td><td>The truth set after deduplication and ranking</td></tr>
+            <tr><td><code>selected</code></td><td>The single winning proposal (first in recommended list)</td></tr>
+            <tr><td><code>eliminations</code></td><td>Log of why each rejected proposal was eliminated</td></tr>
+            <tr><td><code>provenance</code></td><td>Complete audit trail of every decision the pipeline made</td></tr>
+            <tr><td><code>evidenceBundle</code></td><td>Structured evidence package for the teaching UI</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- LAYER 4: CONVENTION PROTOCOL -->
+    <!-- ================================================================ -->
+    <section id="layer-4" class="mb-16">
+      <h2 class="text-accent mb-4">Layer 4: Convention Protocol</h2>
+
+      <p><strong>Problem this solves:</strong> How do you model complex, multi-round, overlapping conventions with state that evolves through the auction?</p>
+
+      <div class="analogy-box bg-violet-light mt-4 mb-6">
+        <p><strong>Analogy:</strong> The protocol layer is a <strong>franchise operating manual</strong>. It defines the formal contract every convention module must follow: what states it can be in, what triggers transitions, what data it can read and write, and how multiple active conventions coexist without conflicts.</p>
+      </div>
+
+      <h3 class="mt-6 mb-3">Two Module Roles</h3>
+      <p>The protocol architecture distinguishes two kinds of modules:</p>
+
+      <div class="grid md:grid-cols-2 gap-4 my-4">
+        <div class="bg-white p-4 rounded-lg border-2 border-blue-300">
+          <p class="font-bold text-blue-700">Base Module</p>
+          <p class="text-sm mt-1">The primary conversation flow (e.g., "we opened 1NT"). Exactly <strong>one</strong> base module is active per conversation. Selected by the opening bid pattern.</p>
+          <p class="text-sm mt-2 text-muted">Code: <code>role: "base"</code></p>
+        </div>
+        <div class="bg-white p-4 rounded-lg border-2 border-violet-300">
+          <p class="font-bold text-violet-700">Protocol Module</p>
+          <p class="text-sm mt-1">A convention layered on top of the base (e.g., Stayman activates on top of the NT base). Multiple protocols can be active simultaneously. Activated by guard conditions.</p>
+          <p class="text-sm mt-2 text-muted">Code: <code>role: "protocol"</code></p>
+        </div>
+      </div>
+
+      <h3 class="mt-8 mb-3">Key Protocol Concepts</h3>
+
+      <table class="vocab-table w-full mt-3 mb-4 bg-white rounded-lg overflow-hidden shadow-sm">
+        <thead class="bg-gray-50"><tr><th>Code Name</th><th>Plain English</th></tr></thead>
+        <tbody>
+          <tr><td><code>PublicSemanticSchema</code></td><td>The shared vocabulary all modules agree on &mdash; which registers exist and what they mean</td></tr>
+          <tr><td><code>registers</code></td><td>Named slots for shared data (like global variables). Any module can read them; write policies control who can set them.</td></tr>
+          <tr><td><code>capabilities</code></td><td>Derived boolean flags computed from registers and tags (e.g., <code>"cap:opening-1nt"</code>)</td></tr>
+          <tr><td><code>BoolExpr</code></td><td>A condition tree (AND/OR/NOT over register values, tags, capabilities). Used for guards and activation.</td></tr>
+          <tr><td><code>EffectSpec</code></td><td>A write operation: set a register, export a tag, clear a value</td></tr>
+          <tr><td><code>FrameStateSpec</code></td><td>A state in a module's state machine &mdash; has transitions, reactions, and an optional surface fragment</td></tr>
+          <tr><td><code>SurfaceFragment</code></td><td>A set of meaning surfaces contributed by one module at one state</td></tr>
+          <tr><td><code>attachWhen</code></td><td>The condition that causes a protocol module to activate (e.g., "when opening-1nt tag is active")</td></tr>
+          <tr><td><code>surfaceWhen</code></td><td>The condition that controls whether an active protocol's surfaces are visible (separate from lifecycle)</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="mt-8 mb-3">The Runtime Snapshot</h3>
+      <p>At any point in the auction, the system's state is a <code>RuntimeSnapshot</code> &mdash; a sparse vector containing:</p>
+
+      <ul class="list-disc pl-6 space-y-1">
+        <li><strong>Boot node</strong> &mdash; where we are in the opening-pattern trie</li>
+        <li><strong>Active base track</strong> &mdash; which base module is selected (e.g., "1NT system")</li>
+        <li><strong>Active protocols</strong> &mdash; which protocol modules are attached, in stack order</li>
+        <li><strong>Registers</strong> &mdash; shared data with provenance (who wrote it, when)</li>
+        <li><strong>Active tags</strong> &mdash; boolean flags exported by states and effects</li>
+        <li><strong>Done latches</strong> &mdash; protocols that finished and can't re-attach</li>
+      </ul>
+
+      <h3 class="mt-8 mb-3">How Surfaces Compose Across Layers</h3>
+      <p>Each active module contributes a <code>SurfaceFragment</code>. Fragments specify how they interact with layers below them:</p>
+
+      <table class="vocab-table w-full mt-3 bg-white rounded overflow-hidden text-sm">
+        <thead class="bg-gray-50"><tr><th>Relation</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>"augment"</code></td><td>Add rules; lower layers still visible</td><td>Stayman adds 2C option alongside natural bids</td></tr>
+          <tr><td><code>"compete"</code></td><td>Both layers visible; ranking decides which wins</td><td>Two modules offer different meanings for 2D</td></tr>
+          <tr><td><code>"shadow"</code></td><td>Covered actions from lower layers are hidden</td><td>Transfer protocol shadows the natural 2D meaning</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- END TO END -->
+    <!-- ================================================================ -->
+    <section id="end-to-end" class="mb-16">
+      <h2 class="text-accent mb-4">End-to-End: From Hand to Recommended Bid</h2>
+
+      <p>Here's what happens when you're dealt a hand with 11 HCP, 4 hearts, 3 spades, 3 diamonds, 3 clubs, and partner opened 1NT:</p>
+
+      <pre class="mermaid">
+sequenceDiagram
+    participant U as Your Hand
+    participant RI as Rule Interpreter
+    participant FC as Fact Evaluator
+    participant ME as Meaning Evaluator
+    participant AR as Arbitrator
+    participant UI as UI
+
+    U->>RI: Hand + Auction (1NT - Pass)
+    RI->>RI: Replay auction through each module's phases
+    RI->>RI: Stayman: phase=idle, turn=responder -> match
+    RI->>RI: Transfers: phase=idle, turn=responder -> match
+    RI->>RI: Natural NT: phase=idle, turn=responder -> match
+    RI-->>FC: 12 candidate surfaces
+
+    FC->>FC: Evaluate hand facts
+    Note over FC: hand.hcp = 11, hand.suitLength.hearts = 4,<br/>bridge.hasFourCardMajor = true,<br/>bridge.hasFiveCardMajor = false
+
+    FC-->>ME: Facts dictionary
+    ME->>ME: Check each surface's clauses against facts
+    Note over ME: Stayman 2C: all clauses pass<br/>Transfer 2D: FAIL (no 5-card heart suit)<br/>2NT invite: all clauses pass<br/>3NT game: FAIL (need 10+ HCP? has 11, but needs 15 total)
+
+    ME-->>AR: Proposals with pass/fail verdicts
+    AR->>AR: Gate check (semantic + legality)
+    AR->>AR: Truth set: Stayman 2C, 2NT invite
+    AR->>AR: Rank: Stayman (should, specificity=3) beats 2NT (may, specificity=2)
+    AR-->>UI: Recommend Stayman 2C
+      </pre>
+
+      <div class="bg-white p-5 rounded-lg border border-border mt-6">
+        <p class="font-bold mb-2">Why Stayman wins over 2NT:</p>
+        <ul class="list-disc pl-6 space-y-1 text-sm">
+          <li><code>recommendationBand</code>: Stayman is <code>"should"</code>; 2NT is <code>"may"</code>. "Should" ranks higher.</li>
+          <li>Even if both were "should", Stayman has higher <code>specificity</code> (constrains suit identity + point range + shape vs. just point range).</li>
+          <li>Transfer to hearts was eliminated at the semantic gate: the hand only has 4 hearts, but the surface requires 5.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- GLOSSARY -->
+    <!-- ================================================================ -->
+    <section id="glossary" class="mb-16">
+      <h2 class="text-accent mb-4">Jargon Glossary</h2>
+      <p>Quick reference for the most common code names and what they mean in plain language.</p>
+
+      <table class="vocab-table w-full mt-4 bg-white rounded-lg overflow-hidden shadow-sm">
+        <thead class="bg-gray-50"><tr><th>Term</th><th>Translation</th></tr></thead>
+        <tbody>
+          <tr><td><code>MeaningSurface</code></td><td>A candidate bid with its hand requirements ("job posting")</td></tr>
+          <tr><td><code>MeaningProposal</code></td><td>A surface after evaluation &mdash; requirements are now marked pass/fail</td></tr>
+          <tr><td><code>EncodedProposal</code></td><td>A proposal with a concrete call assigned and legality checked</td></tr>
+          <tr><td><code>ArbitrationResult</code></td><td>The final output: winning bid + full audit trail</td></tr>
+          <tr><td><code>truthSet</code></td><td>All proposals whose requirements are fully satisfied and whose call is legal</td></tr>
+          <tr><td><code>recommendationBand</code></td><td>Priority tier: must &gt; should &gt; may &gt; avoid</td></tr>
+          <tr><td><code>specificity</code></td><td>How narrow/precise the requirements are (auto-computed)</td></tr>
+          <tr><td><code>modulePrecedence</code></td><td>Cross-module tiebreaker (lower = higher priority)</td></tr>
+          <tr><td><code>factId</code></td><td>Name of a measurable hand property (e.g., <code>"hand.hcp"</code>)</td></tr>
+          <tr><td><code>clause</code></td><td>A single requirement in a surface (fact + operator + threshold)</td></tr>
+          <tr><td><code>KernelState</code></td><td>Shared negotiation state: fit agreed, forcing status, who's captain</td></tr>
+          <tr><td><code>Phase</code></td><td>Where a module is in its local conversation flow</td></tr>
+          <tr><td><code>ConventionBundle</code></td><td>A complete bidding system package (multiple modules + config)</td></tr>
+          <tr><td><code>ConventionConfig</code></td><td>Lightweight metadata for the UI (name, description, category)</td></tr>
+          <tr><td><code>ConventionSpec</code></td><td>Full protocol specification (state machines + registers + surfaces)</td></tr>
+          <tr><td><code>SurfaceFragment</code></td><td>Surfaces contributed by one module at one state (protocol layer)</td></tr>
+          <tr><td><code>BoolExpr</code></td><td>A condition tree (AND/OR/NOT) over registers and tags</td></tr>
+          <tr><td><code>provenance</code></td><td>Audit trail: why each decision was made at every pipeline step</td></tr>
+          <tr><td><code>pedagogicalTags</code></td><td>Annotations linking related surfaces for teaching</td></tr>
+          <tr><td><code>sourceIntent</code></td><td>What a bid does in bridge terms (e.g., "StaymanAsk", "Transfer")</td></tr>
+          <tr><td><code>surfaceBindings</code></td><td>Variable substitutions (e.g., replacing <code>$suit</code> with <code>"hearts"</code>)</td></tr>
+          <tr><td><code>composeSurfaces()</code></td><td>Apply suppress/inject/remap transforms before evaluation</td></tr>
+          <tr><td><code>evaluateFacts()</code></td><td>Analyze the hand and produce a dictionary of fact values</td></tr>
+          <tr><td><code>evaluateAllSurfaces()</code></td><td>Check each surface's clauses against the facts</td></tr>
+          <tr><td><code>arbitrateMeanings()</code></td><td>Pick the winner from all evaluated proposals</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Back to top -->
+    <div class="text-center mt-12">
+      <a href="#title" class="text-accent text-sm hover:underline">&uarr; Back to top</a>
+    </div>
+
+  </div>
+</main>
+
+<!-- ToC active-section highlighting -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+
+    const sections = document.querySelectorAll('section[id]');
+    const tocLinks = document.querySelectorAll('#toc a');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach(a => a.classList.remove('toc-active'));
+          const active = document.querySelector(`#toc a[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('toc-active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(s => observer.observe(s));
+  });
+</script>
+
+</body>
+</html>

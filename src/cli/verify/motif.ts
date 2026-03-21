@@ -4,7 +4,7 @@
 // tracking co-activation and pair-specific conflicts.
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { BiddingSystem } from "../../conventions/definitions/bidding-system";
+import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
 
 import { exploreBundle } from "./explore";
 import type { MotifResult, InvariantViolation } from "./types";
@@ -23,14 +23,14 @@ export interface MotifConfig {
  * Co-activation = both modules had active claims at the same snapshot.
  */
 export function motifTest(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   modules: readonly RuleModule[],
   config: MotifConfig,
 ): MotifResult {
   const [modA, modB] = config.pair;
 
   // Run full exploration
-  const result = exploreBundle(system, modules, {
+  const result = exploreBundle(bundle, modules, {
     depth: config.depth,
     seed: config.seed,
     trials: config.trials,
@@ -66,7 +66,7 @@ export function motifTest(
 
   return {
     command: "verify motif",
-    bundle: system.id,
+    bundle: bundle.id,
     pair: config.pair,
     coActivations,
     conflicts,

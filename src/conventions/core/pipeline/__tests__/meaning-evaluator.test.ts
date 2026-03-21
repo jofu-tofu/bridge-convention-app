@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
-  evaluateMeaningSurface,
-  evaluateAllSurfaces,
+  evaluateBidMeaning,
+  evaluateAllBidMeanings,
 } from "../meaning-evaluator";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import type { EvaluatedFacts, FactValue } from "../../../../core/contracts/fact-catalog";
 import { BidSuit } from "../../../../engine/types";
 
@@ -18,8 +18,8 @@ function buildFacts(
 }
 
 function makeSurface(
-  overrides: Partial<MeaningSurface> = {},
-): MeaningSurface {
+  overrides: Partial<BidMeaning> = {},
+): BidMeaning {
   return {
     meaningId: "test:meaning",
     semanticClassId: "test:class",
@@ -36,10 +36,10 @@ function makeSurface(
     sourceIntent: { type: "test-intent", params: {} },
     teachingLabel: "Test meaning",
     ...overrides,
-  } as MeaningSurface;
+  } as BidMeaning;
 }
 
-describe("evaluateMeaningSurface", () => {
+describe("evaluateBidMeaning", () => {
   it("boolean operator: satisfied when fact is true", () => {
     const surface = makeSurface({
       clauses: [
@@ -53,7 +53,7 @@ describe("evaluateMeaningSurface", () => {
       ],
     });
     const facts = buildFacts({ "bridge.hasFourCardMajor": true });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.satisfied).toBe(true);
   });
@@ -71,7 +71,7 @@ describe("evaluateMeaningSurface", () => {
       ],
     });
     const facts = buildFacts({ "bridge.hasFourCardMajor": false });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.satisfied).toBe(false);
   });
@@ -91,12 +91,12 @@ describe("evaluateMeaningSurface", () => {
 
     const satisfiedFacts = buildFacts({ "hand.hcp": 10 });
     expect(
-      evaluateMeaningSurface(surface, satisfiedFacts).clauses[0]!.satisfied,
+      evaluateBidMeaning(surface, satisfiedFacts).clauses[0]!.satisfied,
     ).toBe(true);
 
     const notSatisfiedFacts = buildFacts({ "hand.hcp": 6 });
     expect(
-      evaluateMeaningSurface(surface, notSatisfiedFacts).clauses[0]!.satisfied,
+      evaluateBidMeaning(surface, notSatisfiedFacts).clauses[0]!.satisfied,
     ).toBe(false);
   });
 
@@ -114,12 +114,12 @@ describe("evaluateMeaningSurface", () => {
     });
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "hand.hcp": 8 })).clauses[0]!
+      evaluateBidMeaning(surface, buildFacts({ "hand.hcp": 8 })).clauses[0]!
         .satisfied,
     ).toBe(true);
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "hand.hcp": 10 })).clauses[0]!
+      evaluateBidMeaning(surface, buildFacts({ "hand.hcp": 10 })).clauses[0]!
         .satisfied,
     ).toBe(false);
   });
@@ -138,12 +138,12 @@ describe("evaluateMeaningSurface", () => {
     });
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "bridge.trumpSuit": "spades" }))
+      evaluateBidMeaning(surface, buildFacts({ "bridge.trumpSuit": "spades" }))
         .clauses[0]!.satisfied,
     ).toBe(true);
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "bridge.trumpSuit": "hearts" }))
+      evaluateBidMeaning(surface, buildFacts({ "bridge.trumpSuit": "hearts" }))
         .clauses[0]!.satisfied,
     ).toBe(false);
   });
@@ -162,22 +162,22 @@ describe("evaluateMeaningSurface", () => {
     });
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "hand.hcp": 8 })).clauses[0]!
+      evaluateBidMeaning(surface, buildFacts({ "hand.hcp": 8 })).clauses[0]!
         .satisfied,
     ).toBe(true);
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "hand.hcp": 9 })).clauses[0]!
+      evaluateBidMeaning(surface, buildFacts({ "hand.hcp": 9 })).clauses[0]!
         .satisfied,
     ).toBe(true);
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "hand.hcp": 7 })).clauses[0]!
+      evaluateBidMeaning(surface, buildFacts({ "hand.hcp": 7 })).clauses[0]!
         .satisfied,
     ).toBe(false);
 
     expect(
-      evaluateMeaningSurface(surface, buildFacts({ "hand.hcp": 10 })).clauses[0]!
+      evaluateBidMeaning(surface, buildFacts({ "hand.hcp": 10 })).clauses[0]!
         .satisfied,
     ).toBe(false);
   });
@@ -196,14 +196,14 @@ describe("evaluateMeaningSurface", () => {
     });
 
     expect(
-      evaluateMeaningSurface(
+      evaluateBidMeaning(
         surface,
         buildFacts({ "bridge.majorPattern": "one-four" }),
       ).clauses[0]!.satisfied,
     ).toBe(true);
 
     expect(
-      evaluateMeaningSurface(
+      evaluateBidMeaning(
         surface,
         buildFacts({ "bridge.majorPattern": "none" }),
       ).clauses[0]!.satisfied,
@@ -223,7 +223,7 @@ describe("evaluateMeaningSurface", () => {
       ],
     });
 
-    const proposal = evaluateMeaningSurface(
+    const proposal = evaluateBidMeaning(
       surface,
       buildFacts({ "bridge.majorPattern": "one-four" }),
     );
@@ -246,7 +246,7 @@ describe("evaluateMeaningSurface", () => {
     });
 
     const emptyFacts = buildFacts({});
-    const proposal = evaluateMeaningSurface(surface, emptyFacts);
+    const proposal = evaluateBidMeaning(surface, emptyFacts);
 
     expect(proposal.clauses[0]!.satisfied).toBe(false);
   });
@@ -278,7 +278,7 @@ describe("evaluateMeaningSurface", () => {
       "bridge.hasFourCardMajor": true,
     });
 
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.evidence.factDependencies).toEqual(
       expect.arrayContaining(["hand.hcp", "bridge.hasFourCardMajor"]),
@@ -314,7 +314,7 @@ describe("evaluateMeaningSurface", () => {
       sourceIntent: { type: "test-type", params: { key: "val" } },
     });
 
-    const proposal = evaluateMeaningSurface(surface, buildFacts({}));
+    const proposal = evaluateBidMeaning(surface, buildFacts({}));
 
     expect(proposal.meaningId).toBe("test:full");
     expect(proposal.semanticClassId).toBe("bridge:test-class");
@@ -363,7 +363,7 @@ describe("evaluateMeaningSurface", () => {
       "bridge.hasFourCardMajor": true,
       "hand.isBalanced": false,
     });
-    const allPass = evaluateMeaningSurface(surface, allPassFacts);
+    const allPass = evaluateBidMeaning(surface, allPassFacts);
     expect(allPass.clauses.every((c) => c.satisfied)).toBe(true);
 
     // One fails
@@ -372,14 +372,14 @@ describe("evaluateMeaningSurface", () => {
       "bridge.hasFourCardMajor": true,
       "hand.isBalanced": false,
     });
-    const oneFail = evaluateMeaningSurface(surface, oneFailFacts);
+    const oneFail = evaluateBidMeaning(surface, oneFailFacts);
     expect(oneFail.clauses[0]!.satisfied).toBe(false);
     expect(oneFail.clauses[1]!.satisfied).toBe(true);
     expect(oneFail.clauses[2]!.satisfied).toBe(true);
   });
 });
 
-describe("evaluateAllSurfaces", () => {
+describe("evaluateAllBidMeanings", () => {
   it("processes multiple surfaces correctly", () => {
     const surface1 = makeSurface({
       meaningId: "test:one",
@@ -407,7 +407,7 @@ describe("evaluateAllSurfaces", () => {
     });
 
     const facts = buildFacts({ "hand.hcp": 12, "hand.isBalanced": true });
-    const proposals = evaluateAllSurfaces([surface1, surface2], facts);
+    const proposals = evaluateAllBidMeanings([surface1, surface2], facts);
 
     expect(proposals).toHaveLength(2);
     expect(proposals[0]!.meaningId).toBe("test:one");
@@ -433,7 +433,7 @@ describe("surface bindings", () => {
     });
 
     const facts = buildFacts({ "hand.suitLength.hearts": 6 });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.satisfied).toBe(true);
     // The resolved factId should appear in the output clause
@@ -460,7 +460,7 @@ describe("surface bindings", () => {
     });
 
     const facts = buildFacts({ "hand.suitLength.hearts": 6 });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     // $suit stays unresolved, no fact matches → fail-closed
     expect(proposal.clauses[0]!.satisfied).toBe(false);
@@ -493,7 +493,7 @@ describe("surface bindings", () => {
       "bridge.game.values": true,
     });
 
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.satisfied).toBe(true);
     expect(proposal.clauses[0]!.factId).toBe("hand.suitLength.spades");
@@ -516,7 +516,7 @@ describe("surface bindings", () => {
     });
 
     const facts = buildFacts({ "hand.hcp": 10 });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.satisfied).toBe(true);
     expect(proposal.clauses[0]!.factId).toBe("hand.hcp");
@@ -538,7 +538,7 @@ describe("observedValue on MeaningClause", () => {
     });
 
     const facts = buildFacts({ "hand.hcp": 12 });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.observedValue).toBe(12);
   });
@@ -557,7 +557,7 @@ describe("observedValue on MeaningClause", () => {
     });
 
     const emptyFacts = buildFacts({});
-    const proposal = evaluateMeaningSurface(surface, emptyFacts);
+    const proposal = evaluateBidMeaning(surface, emptyFacts);
 
     expect(proposal.clauses[0]!.observedValue).toBeUndefined();
   });
@@ -576,7 +576,7 @@ describe("observedValue on MeaningClause", () => {
     });
 
     const facts = buildFacts({ "hand.isBalanced": false });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.observedValue).toBe(false);
   });
@@ -595,7 +595,7 @@ describe("observedValue on MeaningClause", () => {
     });
 
     const facts = buildFacts({ "bridge.majorPattern": "one-four" });
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.clauses[0]!.observedValue).toBe("one-four");
   });
@@ -605,7 +605,7 @@ describe("observedValue on MeaningClause", () => {
 // Authored recommendationBand passthrough
 // ═══════════════════════════════════════════════════════════════
 
-describe("evaluateMeaningSurface preserves authored recommendationBand", () => {
+describe("evaluateBidMeaning preserves authored recommendationBand", () => {
   it("preserves the authored recommendationBand on the output proposal", () => {
     const surface = makeSurface({
       ranking: {
@@ -615,7 +615,7 @@ describe("evaluateMeaningSurface preserves authored recommendationBand", () => {
       },
     });
     const facts = buildFacts({});
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.ranking.recommendationBand).toBe("should");
   });
@@ -632,7 +632,7 @@ describe("evaluateMeaningSurface preserves authored recommendationBand", () => {
         },
       });
       const facts = buildFacts({});
-      const proposal = evaluateMeaningSurface(surface, facts);
+      const proposal = evaluateBidMeaning(surface, facts);
 
       expect(proposal.ranking.recommendationBand).toBe(band);
     }
@@ -647,7 +647,7 @@ describe("evaluateMeaningSurface preserves authored recommendationBand", () => {
       },
     });
     const facts = buildFacts({});
-    const proposal = evaluateMeaningSurface(surface, facts);
+    const proposal = evaluateBidMeaning(surface, facts);
 
     expect(proposal.ranking.recommendationBand).toBe("avoid");
     expect(proposal.ranking.specificity).toBe(0); // no fact extensions → 0
@@ -656,7 +656,7 @@ describe("evaluateMeaningSurface preserves authored recommendationBand", () => {
   });
 });
 
-describe("evaluateAllSurfaces preserves authored recommendationBand", () => {
+describe("evaluateAllBidMeanings preserves authored recommendationBand", () => {
   it("each surface retains its own authored band", () => {
     const surface1 = makeSurface({
       meaningId: "test:must-band",
@@ -676,7 +676,7 @@ describe("evaluateAllSurfaces preserves authored recommendationBand", () => {
     });
 
     const facts = buildFacts({});
-    const proposals = evaluateAllSurfaces([surface1, surface2], facts);
+    const proposals = evaluateAllBidMeanings([surface1, surface2], facts);
 
     expect(proposals[0]!.ranking.recommendationBand).toBe("must");
     expect(proposals[1]!.ranking.recommendationBand).toBe("may");

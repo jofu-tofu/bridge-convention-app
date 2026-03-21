@@ -66,7 +66,7 @@ describe("aggregateModuleContent", () => {
     ["weakTwosSystem", weakTwosSystem],
   ] as const)("%s returns arrays for all fields", (_label, system) => {
     const content = aggregateModuleContent(system);
-    expect(Array.isArray(content.pedagogicalRelations)).toBe(true);
+    expect(Array.isArray(content.teachingRelations)).toBe(true);
     expect(Array.isArray(content.acceptableAlternatives)).toBe(true);
     expect(Array.isArray(content.intentFamilies)).toBe(true);
     expect(content.explanationCatalog).toBeDefined();
@@ -74,7 +74,7 @@ describe("aggregateModuleContent", () => {
 
   it("ntSystem includes cross-module pedagogical relations", () => {
     const content = aggregateModuleContent(ntSystem);
-    expect(content.pedagogicalRelations.length).toBeGreaterThan(0);
+    expect(content.teachingRelations.length).toBeGreaterThan(0);
   });
 
   it("bergenSystem produces alternatives from derivation", () => {
@@ -107,7 +107,7 @@ describe("bundleFromSystem", () => {
   it("bundle includes aggregated content fields", () => {
     const bundle = bundleFromSystem(weakTwosSystem);
     expect(bundle.explanationCatalog).toBeDefined();
-    expect(Array.isArray(bundle.pedagogicalRelations)).toBe(true);
+    expect(Array.isArray(bundle.teachingRelations)).toBe(true);
     expect(Array.isArray(bundle.acceptableAlternatives)).toBe(true);
     expect(Array.isArray(bundle.intentFamilies)).toBe(true);
   });

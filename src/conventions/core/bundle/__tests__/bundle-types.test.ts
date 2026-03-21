@@ -11,10 +11,12 @@ function stubBundle(overrides: Partial<ConventionBundle> = {}): ConventionBundle
   return {
     id: "test-bundle",
     name: "Test Bundle",
+    description: "Test description",
+    category: ConventionCategory.Constructive,
     memberIds: [],
     dealConstraints: { seats: [{ seat: Seat.North, minHcp: 15 }], dealer: Seat.North },
     explanationCatalog: { entries: new Map() } as any,
-    pedagogicalRelations: [],
+    teachingRelations: [],
     acceptableAlternatives: [],
     intentFamilies: [],
     ...overrides,
@@ -34,75 +36,47 @@ function stubConfig(overrides: Partial<ConventionConfig> = {}): ConventionConfig
 
 describe("createConventionConfigFromBundle", () => {
   it("uses bundle.id as config.id", () => {
-    const result = createConventionConfigFromBundle(stubBundle({ id: "my-id" }), { name: "N" });
+    const result = createConventionConfigFromBundle(stubBundle({ id: "my-id" }));
     expect(result.id).toBe("my-id");
   });
 
-  it("uses override name, not bundle name", () => {
-    const result = createConventionConfigFromBundle(
-      stubBundle({ name: "Bundle Name" }),
-      { name: "Override Name" },
-    );
-    expect(result.name).toBe("Override Name");
+  it("uses bundle.name as config.name", () => {
+    const result = createConventionConfigFromBundle(stubBundle({ name: "Bundle Name" }));
+    expect(result.name).toBe("Bundle Name");
   });
 
-  it("uses override description when provided", () => {
-    const result = createConventionConfigFromBundle(
-      stubBundle({ description: "bundle desc" }),
-      { name: "N", description: "override desc" },
-    );
-    expect(result.description).toBe("override desc");
-  });
-
-  it("falls back to bundle.description when override description is undefined", () => {
-    const result = createConventionConfigFromBundle(
-      stubBundle({ description: "bundle desc" }),
-      { name: "N" },
-    );
+  it("uses bundle.description as config.description", () => {
+    const result = createConventionConfigFromBundle(stubBundle({ description: "bundle desc" }));
     expect(result.description).toBe("bundle desc");
   });
 
-  it('falls back to "" when both descriptions are undefined', () => {
-    const result = createConventionConfigFromBundle(stubBundle(), { name: "N" });
-    expect(result.description).toBe("");
-  });
-
-  it("uses bundle.category when present", () => {
+  it("uses bundle.category as config.category", () => {
     const result = createConventionConfigFromBundle(
       stubBundle({ category: ConventionCategory.Competitive }),
-      { name: "N", categoryFallback: ConventionCategory.Defensive },
     );
     expect(result.category).toBe(ConventionCategory.Competitive);
   });
 
-  it("uses categoryFallback when bundle has no category", () => {
-    const result = createConventionConfigFromBundle(
-      stubBundle(),
-      { name: "N", categoryFallback: ConventionCategory.Defensive },
-    );
-    expect(result.category).toBe(ConventionCategory.Defensive);
-  });
-
-  it("defaults to Constructive when neither category is present", () => {
-    const result = createConventionConfigFromBundle(stubBundle(), { name: "N" });
-    expect(result.category).toBe(ConventionCategory.Constructive);
-  });
-
-  it("copies dealConstraints, offConventionConstraints, defaultAuction, internal", () => {
+  it("copies dealConstraints, offConventionConstraints, defaultAuction, internal, teaching, allowedDealers", () => {
     const offConstraints = { seats: [{ seat: Seat.East, minHcp: 10 }], dealer: Seat.East };
     const defaultAuction = () => undefined;
+    const teaching = { purpose: "test purpose" };
     const bundle = stubBundle({
       offConventionConstraints: offConstraints,
       defaultAuction,
       internal: true,
+      teaching,
+      allowedDealers: [Seat.North, Seat.South],
     });
 
-    const result = createConventionConfigFromBundle(bundle, { name: "N" });
+    const result = createConventionConfigFromBundle(bundle);
 
     expect(result.dealConstraints).toBe(bundle.dealConstraints);
     expect(result.offConventionConstraints).toBe(offConstraints);
     expect(result.defaultAuction).toBe(defaultAuction);
     expect(result.internal).toBe(true);
+    expect(result.teaching).toBe(teaching);
+    expect(result.allowedDealers).toEqual([Seat.North, Seat.South]);
   });
 });
 

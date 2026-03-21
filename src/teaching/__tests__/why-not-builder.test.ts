@@ -2,14 +2,14 @@ import { describe, it, expect } from "vitest";
 import { BidSuit } from "../../engine/types";
 import type { Call } from "../../engine/types";
 import { buildWhyNot } from "../why-not-builder";
-import { buildPedagogicalGraph } from "../pedagogical-graph";
+import { buildTeachingGraph } from "../teaching-graph";
 import type {
   ArbitrationResult,
   EncodedProposal,
 } from "../../core/contracts/module-surface";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import type { CatalogIndex } from "../teaching-projection-builder";
 
 import {
@@ -182,13 +182,13 @@ describe("buildWhyNot", () => {
       acceptableSet: [nearMissEncoded],
     });
     const provenance = makeProvenance();
-    const relations: PedagogicalRelation[] = [
+    const relations: TeachingRelation[] = [
       { kind: "near-miss-of", a: "stayman:ask-major", b: "transfer:to-hearts" },
     ];
-    const pedGraph = buildPedagogicalGraph(relations);
+    const teachingGraph = buildTeachingGraph(relations);
     const truthMeaningIds = new Set(["stayman:ask-major"]);
 
-    const entries = buildWhyNot(arbitration, provenance, undefined, pedGraph, truthMeaningIds);
+    const entries = buildWhyNot(arbitration, provenance, undefined, teachingGraph, truthMeaningIds);
 
     expect(entries).toHaveLength(1);
     expect(entries[0]!.familyRelation).toBeDefined();
@@ -211,16 +211,16 @@ describe("buildWhyNot", () => {
       acceptableSet: [nearMissEncoded],
     });
     const provenance = makeProvenance();
-    const relations: PedagogicalRelation[] = [
+    const relations: TeachingRelation[] = [
       // same-family appears first
       { kind: "same-family", a: "stayman:ask-major", b: "transfer:to-hearts" },
       // near-miss-of appears second but should be preferred
       { kind: "near-miss-of", a: "stayman:ask-major", b: "transfer:to-hearts" },
     ];
-    const pedGraph = buildPedagogicalGraph(relations);
+    const teachingGraph = buildTeachingGraph(relations);
     const truthMeaningIds = new Set(["stayman:ask-major"]);
 
-    const entries = buildWhyNot(arbitration, provenance, undefined, pedGraph, truthMeaningIds);
+    const entries = buildWhyNot(arbitration, provenance, undefined, teachingGraph, truthMeaningIds);
 
     expect(entries).toHaveLength(1);
     expect(entries[0]!.familyRelation!.kind).toBe("near-miss-of");

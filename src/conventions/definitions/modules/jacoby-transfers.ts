@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { MachineState, MachineTransition } from "../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
@@ -27,7 +27,7 @@ import {
   CONTINUATION_OF,
   NEAR_MISS_OF,
   ALTERNATIVES,
-} from "../pedagogical-vocabulary";
+} from "../teaching-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -61,7 +61,7 @@ export const OPENER_PLACE_CLASSES = {
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
-const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
+const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:to-hearts",
     semanticClassId: TRANSFER_CLASSES.TO_HEARTS,
@@ -77,7 +77,7 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "TransferToHearts", params: {} },
     teachingLabel: "Transfer to hearts",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "r1-major-fit" },
       { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
       { tag: NEAR_MISS_OF, scope: "r1-ask-vs-transfer", role: "b" },
@@ -100,7 +100,7 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "TransferToSpades", params: {} },
     teachingLabel: "Transfer to spades",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "r1-major-fit" },
       { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
     ],
@@ -109,7 +109,7 @@ const TRANSFER_R1_SURFACES: readonly MeaningSurface[] = [
 
 // ─── Opener transfer accept surfaces ─────────────────────────
 
-export const OPENER_TRANSFER_HEARTS_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_TRANSFER_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:accept",
     semanticClassId: TRANSFER_CLASSES.ACCEPT,
@@ -122,7 +122,7 @@ export const OPENER_TRANSFER_HEARTS_SURFACES: readonly MeaningSurface[] = [
   }, TRANSFER_CTX),
 ];
 
-export const OPENER_TRANSFER_SPADES_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_TRANSFER_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:accept-spades",
     semanticClassId: TRANSFER_CLASSES.ACCEPT_SPADES,
@@ -137,7 +137,7 @@ export const OPENER_TRANSFER_SPADES_SURFACES: readonly MeaningSurface[] = [
 
 // ─── Transfer R3 surfaces ────────────────────────────────────
 
-export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
+export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:signoff-hearts",
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
@@ -154,7 +154,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 0,
     sourceIntent: { type: "Signoff", params: { suit: "hearts" } },
     teachingLabel: "Pass (signoff in hearts)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: CONTINUATION_OF, scope: "transfer:signoff-continues-r1-hearts", role: "a" },
     ],
   }, TRANSFER_CTX),
@@ -181,7 +181,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "GameInMajor", params: { suit: "hearts" } },
     teachingLabel: "4H game",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 0 },
       { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "a" },
     ],
@@ -209,7 +209,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 2,
     sourceIntent: { type: "TransferNTGame", params: { suit: "hearts" } },
     teachingLabel: "3NT (5 hearts, let opener choose)",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "b" },
     ],
   }, TRANSFER_CTX),
@@ -230,13 +230,13 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 3,
     sourceIntent: { type: "Invite", params: { suit: "hearts" } },
     teachingLabel: "2NT invite",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 1 },
     ],
   }, TRANSFER_CTX),
 ];
 
-export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
+export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:signoff-spades",
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
@@ -277,7 +277,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 1,
     sourceIntent: { type: "GameInMajor", params: { suit: "spades" } },
     teachingLabel: "4S game",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 0 },
     ],
   }, TRANSFER_CTX),
@@ -322,7 +322,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
     intraModuleOrder: 3,
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     teachingLabel: "2NT invite",
-    pedagogicalTags: [
+    teachingTags: [
       { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 1 },
     ],
   }, TRANSFER_CTX),
@@ -330,7 +330,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly MeaningSurface[] = [
 
 // ─── Opener placement surfaces (after responder's 3NT "let opener choose") ──
 
-export const OPENER_PLACE_HEARTS_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:correct-to-4h",
     semanticClassId: OPENER_PLACE_CLASSES.CORRECT_TO_MAJOR,
@@ -367,7 +367,7 @@ export const OPENER_PLACE_HEARTS_SURFACES: readonly MeaningSurface[] = [
   }, TRANSFER_CTX),
 ];
 
-export const OPENER_PLACE_SPADES_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:correct-to-4s",
     semanticClassId: OPENER_PLACE_CLASSES.CORRECT_TO_MAJOR,
@@ -406,7 +406,7 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly MeaningSurface[] = [
 
 // ─── Opener invite acceptance surfaces (after responder's 2NT invite) ──
 
-export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:accept-invite-hearts",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
@@ -443,7 +443,7 @@ export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly MeaningSurface[] = [
   }, TRANSFER_CTX),
 ];
 
-export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly MeaningSurface[] = [
+export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:accept-invite-spades",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,

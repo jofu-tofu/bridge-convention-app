@@ -33,7 +33,7 @@ export {
 } from "./pipeline/fact-evaluator";
 export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/fact-evaluator";
 
-export { evaluateAllSurfaces } from "./pipeline/meaning-evaluator";
+export { evaluateAllBidMeanings } from "./pipeline/meaning-evaluator";
 
 export {
   arbitrateMeanings,

@@ -1,21 +1,21 @@
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
-  DecisionSurfaceIR,
-  FactConstraintIR,
+  DecisionSurface,
+  FactConstraint,
 } from "../../../core/contracts/agreement-module";
 import { bandToPriorityClass } from "./priority-mapping";
 
 /**
- * Adapt a MeaningSurface to a DecisionSurfaceIR.
+ * Adapt a BidMeaning to a DecisionSurface.
  *
  * This enables the pipeline to consume both types via a dual-path adapter.
- * Fields present on MeaningSurface are mapped directly; fields only on
- * DecisionSurfaceIR (encoderScope, localRegisters, decisionProgram) get
+ * Fields present on BidMeaning are mapped directly; fields only on
+ * DecisionSurface (encoderScope, localRegisters, decisionProgram) get
  * appropriate defaults.
  */
-export function adaptMeaningSurface(surface: MeaningSurface): DecisionSurfaceIR {
-  // Convert MeaningSurfaceClause[] to FactConstraintIR[] for inline evaluation
-  const inlineClauses: FactConstraintIR[] = surface.clauses.map((c) => ({
+export function adaptMeaningSurface(surface: BidMeaning): DecisionSurface {
+  // Convert BidMeaningClause[] to FactConstraint[] for inline evaluation
+  const inlineClauses: FactConstraint[] = surface.clauses.map((c) => ({
     factId: c.factId,
     operator: c.operator,
     value: c.value,
@@ -43,10 +43,10 @@ export function adaptMeaningSurface(surface: MeaningSurface): DecisionSurfaceIR 
 }
 
 /**
- * Batch adapter: maps an array of MeaningSurfaces to DecisionSurfaceIR[].
+ * Batch adapter: maps an array of MeaningSurfaces to DecisionSurface[].
  */
 export function adaptMeaningSurfaces(
-  surfaces: readonly MeaningSurface[],
-): DecisionSurfaceIR[] {
+  surfaces: readonly BidMeaning[],
+): DecisionSurface[] {
   return surfaces.map(adaptMeaningSurface);
 }

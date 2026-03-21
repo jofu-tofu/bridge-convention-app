@@ -1,5 +1,5 @@
 import type { Auction, Seat } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 
@@ -12,7 +12,7 @@ export interface RuntimeModule {
     snapshot: PublicSnapshot,
     auction: Auction,
     seat: Seat,
-  ) => readonly MeaningSurface[];
+  ) => readonly BidMeaning[];
   readonly updatePublicState?: (
     snapshot: PublicSnapshot,
     auction: Auction,
@@ -22,7 +22,7 @@ export interface RuntimeModule {
 /** One module's emitted surfaces, grouped by module ID. */
 export interface DecisionSurfaceEntry {
   readonly moduleId: string;
-  readonly surfaces: readonly MeaningSurface[];
+  readonly surfaces: readonly BidMeaning[];
 }
 
 /** Diagnostic emitted during runtime evaluation. */

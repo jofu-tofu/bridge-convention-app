@@ -12,7 +12,7 @@
 
 import type { Call, Seat, Auction } from "../../../engine/types";
 import type { ConstraintDimension } from "../../../core/contracts/meaning";
-import type { MeaningSurface, RankingMetadata } from "../../../core/contracts/meaning";
+import type { BidMeaning, RankingMetadata } from "../../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 
@@ -321,8 +321,8 @@ export interface SurfaceFragment {
   readonly legalMask?: Readonly<Record<string, "allow" | "ban">>;
   /** Optional meaning overrides for explainability. */
   readonly actionMeanings?: Readonly<Record<string, string>>;
-  /** MeaningSurface rules in this fragment. */
-  readonly surfaces: readonly MeaningSurface[];
+  /** BidMeaning rules in this fragment. */
+  readonly surfaces: readonly BidMeaning[];
   /** Fact evaluator IDs needed by these surfaces. */
   readonly factEvaluatorIds?: readonly string[];
   /** Constraint dimensions accumulated from prior-round surface groups.

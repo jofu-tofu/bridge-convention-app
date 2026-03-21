@@ -1,6 +1,6 @@
 /**
  * Derives ALL pedagogical content (relations, alternatives, intent families)
- * from `pedagogicalTags` on MeaningSurfaces.
+ * from `teachingTags` on MeaningSurfaces.
  *
  * Scans all surfaces across all modules, groups by (tagId, scope),
  * validates, and produces the output. Supports:
@@ -11,15 +11,15 @@
  */
 
 import type { ConventionModule } from "../core/convention-module";
-import type { MeaningSurface } from "../../core/contracts/meaning";
-import type { PedagogicalTagDef } from "../../core/contracts/pedagogical-tag";
-import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
+import type { BidMeaning } from "../../core/contracts/meaning";
+import type { TeachingTagDef } from "../../core/contracts/teaching-tag";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily, IntentRelationship } from "../../core/contracts/tree-evaluation";
 
 // ── Internal types ──────────────────────────────────────────────────
 
 interface TagMember {
-  readonly tagDef: PedagogicalTagDef;
+  readonly tagDef: TeachingTagDef;
   readonly meaningId: string;
   readonly semanticClassId: string;
   readonly scope: string;
@@ -32,9 +32,9 @@ interface TagMember {
 function collectTagMembers(modules: readonly ConventionModule[]): TagMember[] {
   const members: TagMember[] = [];
 
-  function processSurface(surface: MeaningSurface): void {
-    if (!surface.pedagogicalTags) return;
-    for (const ref of surface.pedagogicalTags) {
+  function processSurface(surface: BidMeaning): void {
+    if (!surface.teachingTags) return;
+    for (const ref of surface.teachingTags) {
       members.push({
         tagDef: ref.tag,
         meaningId: surface.meaningId,
@@ -143,9 +143,9 @@ function validateTagGroup(groupKey: string, members: readonly TagMember[]): bool
 
 function deriveRelations(
   members: readonly TagMember[],
-  derives: { readonly type: "relation"; readonly kind: PedagogicalRelation["kind"]; readonly symmetric?: boolean },
-): PedagogicalRelation[] {
-  const relations: PedagogicalRelation[] = [];
+  derives: { readonly type: "relation"; readonly kind: TeachingRelation["kind"]; readonly symmetric?: boolean },
+): TeachingRelation[] {
+  const relations: TeachingRelation[] = [];
 
   if (derives.symmetric) {
     // All-pairs: a[i] × a[j] where i < j
@@ -155,7 +155,7 @@ function deriveRelations(
           kind: derives.kind,
           a: members[i]!.semanticClassId,
           b: members[j]!.semanticClassId,
-        } as PedagogicalRelation);
+        } as TeachingRelation);
       }
     }
   } else if (members.some((m) => m.ordinal !== undefined)) {
@@ -166,7 +166,7 @@ function deriveRelations(
         kind: derives.kind,
         a: sorted[i]!.semanticClassId,
         b: sorted[i + 1]!.semanticClassId,
-      } as PedagogicalRelation);
+      } as TeachingRelation);
     }
   } else {
     // Directed with roles: cartesian product of role "a" × role "b"
@@ -178,7 +178,7 @@ function deriveRelations(
           kind: derives.kind,
           a: a.semanticClassId,
           b: b.semanticClassId,
-        } as PedagogicalRelation);
+        } as TeachingRelation);
       }
     }
   }
@@ -216,17 +216,17 @@ function deriveIntentFamily(
 // ── Public API ──────────────────────────────────────────────────────
 
 export interface DerivedPedagogicalContent {
-  readonly relations: readonly PedagogicalRelation[];
+  readonly relations: readonly TeachingRelation[];
   readonly alternatives: readonly AlternativeGroup[];
   readonly intentFamilies: readonly IntentFamily[];
 }
 
 /**
- * Derive all pedagogical content from `pedagogicalTags` on surfaces.
+ * Derive all pedagogical content from `teachingTags` on surfaces.
  * Scans all surfaces across all modules, groups by (tagId, scope),
  * validates, and produces relations, alternative groups, and intent families.
  */
-export function derivePedagogicalContent(
+export function deriveTeachingContent(
   modules: readonly ConventionModule[],
 ): DerivedPedagogicalContent {
   const allMembers = collectTagMembers(modules);
@@ -243,7 +243,7 @@ export function derivePedagogicalContent(
     }
   }
 
-  const relations: PedagogicalRelation[] = [];
+  const relations: TeachingRelation[] = [];
   const alternatives: AlternativeGroup[] = [];
   const intentFamilies: IntentFamily[] = [];
 
@@ -269,7 +269,7 @@ export function derivePedagogicalContent(
   return { relations, alternatives, intentFamilies };
 }
 
-/** @deprecated Use derivePedagogicalContent instead. */
-export const deriveCrossModuleContent = derivePedagogicalContent;
+/** @deprecated Use deriveTeachingContent instead. */
+export const deriveCrossModuleContent = deriveTeachingContent;
 /** @deprecated Use DerivedPedagogicalContent instead. */
 export type DerivedCrossModuleContent = DerivedPedagogicalContent;

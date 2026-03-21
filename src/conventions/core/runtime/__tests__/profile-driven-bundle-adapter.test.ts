@@ -1,15 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { bundleToRuntimeModules } from "../bundle-adapter";
 import type { ConventionBundle } from "../../bundle/bundle-types";
-import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { SystemProfile } from "../../../../core/contracts/agreement-module";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
+import { ConventionCategory } from "../../../../core/contracts/convention";
 
 // ─── Convention-agnostic Fixtures ────────────────────────────
 
-function makeSurface(moduleId: string, meaningId: string): MeaningSurface {
+function makeSurface(moduleId: string, meaningId: string): BidMeaning {
   return {
     meaningId,
     semanticClassId: `${moduleId}:class`,
@@ -27,7 +28,7 @@ function makeSurface(moduleId: string, meaningId: string): MeaningSurface {
 }
 
 /** Profile with single module, single sequence attachment. */
-const singleSequenceProfile: SystemProfileIR = {
+const singleSequenceProfile: SystemProfile = {
   profileId: "test-single-seq",
   baseSystem: BASE_SYSTEM_SAYC,
   modules: [
@@ -41,7 +42,7 @@ const singleSequenceProfile: SystemProfileIR = {
 };
 
 /** Profile with single module, multiple OR attachments (like Bergen: 1H OR 1S). */
-const multiAttachmentProfile: SystemProfileIR = {
+const multiAttachmentProfile: SystemProfile = {
   profileId: "test-multi-attach",
   baseSystem: BASE_SYSTEM_SAYC,
   modules: [
@@ -58,7 +59,7 @@ const multiAttachmentProfile: SystemProfileIR = {
 };
 
 /** Profile with multiple modules (base + two add-ons with capability gates). */
-const multiModuleProfile: SystemProfileIR = {
+const multiModuleProfile: SystemProfile = {
   profileId: "test-multi-mod",
   baseSystem: BASE_SYSTEM_SAYC,
   modules: [
@@ -88,7 +89,7 @@ const multiModuleProfile: SystemProfileIR = {
 };
 
 /** Unconditional profile — always active. */
-const unconditionalProfile: SystemProfileIR = {
+const unconditionalProfile: SystemProfile = {
   profileId: "test-unconditional",
   baseSystem: BASE_SYSTEM_SAYC,
   modules: [
@@ -103,13 +104,15 @@ function makeBundleWithSurfaces(
   return {
     id: "test-bundle",
     name: "Test Bundle",
+    category: ConventionCategory.Constructive,
+    description: "test",
     memberIds: ["test-conv"],
     dealConstraints: { seats: [], dealer: Seat.North },
     meaningSurfaces: [
       { groupId: "group-a", surfaces: [makeSurface("mod-a", "mod-a:meaning")] },
     ],
     explanationCatalog: { version: "1.0.0", entries: [] },
-    pedagogicalRelations: [],
+    teachingRelations: [],
     acceptableAlternatives: [],
     intentFamilies: [],
     ...overrides,

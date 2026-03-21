@@ -17,8 +17,8 @@ describe("local service", () => {
 
     const handle = await service.createSession({ conventionId: "nt-bundle" });
 
-    expect(handle).toBeTruthy();
     expect(typeof handle).toBe("string");
+    expect(handle).toMatch(/[\w-]+/);
   });
 
   it("startDrill returns viewport with user's hand", async () => {
@@ -56,18 +56,14 @@ describe("local service", () => {
     const handle = await service.createSession({ conventionId: "nt-bundle" });
     await service.startDrill(handle);
 
-    // Get the expected bid first
+    // Stub engine gives South 12 HCP balanced → strategy always produces a bid
     const expected = await service.getExpectedBid(handle);
-    if (!expected) {
-      // If no strategy or not user's turn, skip this test
-      return;
-    }
+    expect(expected).not.toBeNull();
 
-    const result = await service.submitBid(handle, expected.call);
+    const result = await service.submitBid(handle, expected!.call);
 
     expect(result.accepted).toBe(true);
-    // AI bids should have run
-    expect(result.aiBids.length).toBeGreaterThanOrEqual(0);
+    expect(result.aiBids).toBeDefined();
   });
 
   it("submitBid wrong → not accepted, feedback with grade", async () => {
@@ -83,11 +79,11 @@ describe("local service", () => {
     const wrongBid: Call = { type: "bid", level: 7, strain: BidSuit.NoTrump };
     const result = await service.submitBid(handle, wrongBid);
 
-    // Should be rejected (unless 7NT happens to be correct, which is vanishingly unlikely)
-    if (!result.accepted) {
-      expect(result.feedback).not.toBeNull();
-      expect(result.grade).toBeTruthy();
-    }
+    // 7NT is never the correct bid for a 12 HCP balanced hand
+    expect(result.accepted).toBe(false);
+    expect(result.feedback).not.toBeNull();
+    expect(result.grade).toBeDefined();
+    expect(result.grade).not.toBeNull();
   });
 
   it("submitBid wrong → session state unchanged (idempotent)", async () => {
@@ -104,11 +100,11 @@ describe("local service", () => {
     const wrongBid: Call = { type: "bid", level: 7, strain: BidSuit.NoTrump };
     const result = await service.submitBid(handle, wrongBid);
 
-    if (!result.accepted) {
-      const viewportAfter = await service.getViewport(handle);
-      // Viewport should be the same after a wrong bid
-      expect(viewportAfter.phase).toBe(viewportBefore.phase);
-    }
+    // 7NT is never correct for 12 HCP balanced — always rejected
+    expect(result.accepted).toBe(false);
+    const viewportAfter = await service.getViewport(handle);
+    // Viewport should be the same after a wrong bid
+    expect(viewportAfter.phase).toBe(viewportBefore.phase);
   });
 
   it("getPhase returns BIDDING after startDrill", async () => {
@@ -154,8 +150,10 @@ describe("local service", () => {
 
     const conventions = await service.listConventions();
     expect(conventions.length).toBeGreaterThan(0);
-    expect(conventions[0]!.id).toBeTruthy();
-    expect(conventions[0]!.name).toBeTruthy();
+    expect(typeof conventions[0]!.id).toBe("string");
+    expect(conventions[0]!.id.length).toBeGreaterThan(0);
+    expect(typeof conventions[0]!.name).toBe("string");
+    expect(conventions[0]!.name.length).toBeGreaterThan(0);
   });
 });
 
@@ -169,11 +167,10 @@ describe("DevServicePort methods", () => {
     const handle = await service.createSession({ conventionId: "nt-bundle" });
     await service.startDrill(handle);
 
+    // Stub engine gives South 12 HCP balanced → strategy always produces a bid
     const expected = await service.getExpectedBid(handle);
-    // May be null if not user's turn or no strategy — that's OK
-    if (expected) {
-      expect(expected.call).toBeDefined();
-    }
+    expect(expected).not.toBeNull();
+    expect(expected!.call).toBeDefined();
   });
 
   it("getDebugLog accumulates entries across bids", async () => {
@@ -185,14 +182,13 @@ describe("DevServicePort methods", () => {
     const handle = await service.createSession({ conventionId: "nt-bundle" });
     await service.startDrill(handle);
 
-    // Submit a bid (right or wrong doesn't matter for debug log)
+    // Submit a bid to populate the debug log
     const expected = await service.getExpectedBid(handle);
-    if (expected) {
-      await service.submitBid(handle, expected.call);
-    }
+    expect(expected).not.toBeNull();
+    await service.submitBid(handle, expected!.call);
 
     const log = await service.getDebugLog(handle);
-    // Log should have at least one entry if we submitted a bid with a strategy
     expect(log).toBeDefined();
+    expect(log.length).toBeGreaterThan(0);
   });
 });

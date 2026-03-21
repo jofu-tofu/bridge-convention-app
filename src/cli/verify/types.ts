@@ -4,7 +4,7 @@
 // All verify subcommands produce JSON output using these types.
 
 import type { Seat } from "../../engine/types";
-import type { KernelState, CommittedStep } from "../../core/contracts/committed-step";
+import type { NegotiationState, CommittedStep } from "../../core/contracts/committed-step";
 import type { ModuleClaimResult } from "../../conventions/core";
 
 // ── Lint ─────────────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ export interface InvariantViolation {
     readonly activeSeat: string;
     /** JSON-serializable Record (converted from Map via Object.fromEntries). */
     readonly localPhases: Record<string, string>;
-    readonly kernel: KernelState;
+    readonly kernel: NegotiationState;
   };
 }
 
@@ -69,7 +69,7 @@ export interface VerificationSnapshot {
   readonly nextSeat: Seat;
   /** Runtime Map — use Object.fromEntries() for JSON output. */
   readonly localPhases: Map<string, string>;
-  readonly kernel: KernelState;
+  readonly kernel: NegotiationState;
   readonly claims: readonly ModuleClaimResult[];
   readonly log: readonly CommittedStep[];
 }

@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { adaptMeaningSurface, adaptMeaningSurfaces } from "../surface-adapter";
-import { evaluateAllSurfaces } from "../meaning-evaluator";
+import { evaluateAllBidMeanings } from "../meaning-evaluator";
 import {
   arbitrateMeanings,
   zipProposalsWithSurfaces,
 } from "../meaning-arbitrator";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
-import type { DecisionSurfaceIR } from "../../../../core/contracts/agreement-module";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { DecisionSurface } from "../../../../core/contracts/agreement-module";
 import type { EvaluatedFacts, FactValue } from "../../../../core/contracts/fact-catalog";
 import { BidSuit } from "../../../../engine/types";
 
@@ -21,8 +21,8 @@ function buildFacts(
 }
 
 function makeSurface(
-  overrides: Partial<MeaningSurface> = {},
-): MeaningSurface {
+  overrides: Partial<BidMeaning> = {},
+): BidMeaning {
   return {
     meaningId: "test:meaning",
     semanticClassId: "test:class",
@@ -39,11 +39,11 @@ function makeSurface(
     sourceIntent: { type: "test-intent", params: {} },
     teachingLabel: "Test meaning",
     ...overrides,
-  } as MeaningSurface;
+  } as BidMeaning;
 }
 
 describe("adaptMeaningSurface", () => {
-  it("maps moduleId from MeaningSurface to DecisionSurfaceIR", () => {
+  it("maps moduleId from BidMeaning to DecisionSurface", () => {
     const surface = makeSurface({ moduleId: "stayman" });
     const adapted = adaptMeaningSurface(surface);
 
@@ -81,14 +81,14 @@ describe("adaptMeaningSurface", () => {
 
   it("maps transforms when present", () => {
     const surface = makeSurface();
-    // MeaningSurface does not have transforms, so adapted should have empty/undefined
+    // BidMeaning does not have transforms, so adapted should have empty/undefined
     const adapted = adaptMeaningSurface(surface);
 
     expect(adapted.transforms).toBeUndefined();
   });
 
   it("maps exclusivityGroup when present on the surface", () => {
-    // MeaningSurface does not have exclusivityGroup natively — adapted should be undefined
+    // BidMeaning does not have exclusivityGroup natively — adapted should be undefined
     const surface = makeSurface();
     const adapted = adaptMeaningSurface(surface);
 
@@ -102,7 +102,7 @@ describe("adaptMeaningSurface", () => {
     expect(adapted.defaultSemanticClassId).toBe("bridge:nt-invite");
   });
 
-  it("provides appropriate defaults for fields not on MeaningSurface", () => {
+  it("provides appropriate defaults for fields not on BidMeaning", () => {
     const surface = makeSurface();
     const adapted = adaptMeaningSurface(surface);
 
@@ -110,7 +110,7 @@ describe("adaptMeaningSurface", () => {
     expect(adapted.decisionProgram).toBe("clause-evaluator");
     // encoderKind should default to "direct"
     expect(adapted.encoderKind).toBe("direct");
-    // localRegisters should be undefined (not present on MeaningSurface)
+    // localRegisters should be undefined (not present on BidMeaning)
     expect(adapted.localRegisters).toBeUndefined();
   });
 
@@ -169,8 +169,8 @@ describe("adaptMeaningSurface", () => {
 });
 
 describe("adaptMeaningSurfaces", () => {
-  it("maps an array of MeaningSurfaces to DecisionSurfaceIR[]", () => {
-    const surfaces: MeaningSurface[] = [
+  it("maps an array of MeaningSurfaces to DecisionSurface[]", () => {
+    const surfaces: BidMeaning[] = [
       makeSurface({ meaningId: "a:one", moduleId: "mod-a" }),
       makeSurface({ meaningId: "b:two", moduleId: "mod-b" }),
     ];
@@ -191,7 +191,7 @@ describe("adaptMeaningSurfaces", () => {
 });
 
 describe("round-trip: adapted surface through pipeline", () => {
-  it("produces same ArbitrationResult as original MeaningSurface", () => {
+  it("produces same ArbitrationResult as original BidMeaning", () => {
     const surface = makeSurface({
       meaningId: "stayman:ask-major",
       semanticClassId: "stayman:ask",
@@ -219,13 +219,13 @@ describe("round-trip: adapted surface through pipeline", () => {
       "bridge.hasFourCardMajor": true,
     });
 
-    // Original MeaningSurface path
-    const originalProposals = evaluateAllSurfaces([surface], facts);
+    // Original BidMeaning path
+    const originalProposals = evaluateAllBidMeanings([surface], facts);
     const originalInputs = zipProposalsWithSurfaces(originalProposals, [surface]);
     const originalResult = arbitrateMeanings(originalInputs);
 
-    // Adapted DecisionSurfaceIR round-trip: still evaluates through MeaningSurface pipeline
-    // The adapter maps fields but the pipeline uses the original MeaningSurface for evaluation
+    // Adapted DecisionSurface round-trip: still evaluates through BidMeaning pipeline
+    // The adapter maps fields but the pipeline uses the original BidMeaning for evaluation
     const adapted = adaptMeaningSurface(surface);
 
     // Verify the adapted surface has the right structural fields
@@ -240,8 +240,8 @@ describe("round-trip: adapted surface through pipeline", () => {
   });
 });
 
-describe("DecisionSurfaceIR structural conformance", () => {
-  it("adapted surface satisfies the DecisionSurfaceIR interface", () => {
+describe("DecisionSurface structural conformance", () => {
+  it("adapted surface satisfies the DecisionSurface interface", () => {
     const surface = makeSurface({
       meaningId: "test:surface",
       semanticClassId: "bridge:test",
@@ -249,7 +249,7 @@ describe("DecisionSurfaceIR structural conformance", () => {
       surfaceBindings: { key: "value" },
     });
 
-    const adapted: DecisionSurfaceIR = adaptMeaningSurface(surface);
+    const adapted: DecisionSurface = adaptMeaningSurface(surface);
 
     // Required fields
     expect(typeof adapted.surfaceId).toBe("string");
@@ -264,9 +264,9 @@ describe("DecisionSurfaceIR structural conformance", () => {
   });
 });
 
-describe("evaluateAllSurfaces dual-path", () => {
-  it("evaluates DecisionSurfaceIR[] through the IR path", () => {
-    const irSurfaces: DecisionSurfaceIR[] = [
+describe("evaluateAllBidMeanings dual-path", () => {
+  it("evaluates DecisionSurface[] through the IR path", () => {
+    const irSurfaces: DecisionSurface[] = [
       {
         surfaceId: "ir:test-one",
         moduleId: "ir-mod",
@@ -279,7 +279,7 @@ describe("evaluateAllSurfaces dual-path", () => {
     ];
 
     const facts = buildFacts({ "hand.hcp": 10 });
-    const proposals = evaluateAllSurfaces(irSurfaces, facts);
+    const proposals = evaluateAllBidMeanings(irSurfaces, facts);
 
     expect(proposals).toHaveLength(1);
     expect(proposals[0]!.meaningId).toBe("ir:test-one");
@@ -287,11 +287,11 @@ describe("evaluateAllSurfaces dual-path", () => {
     expect(proposals[0]!.semanticClassId).toBe("bridge:ir-class");
     expect(proposals[0]!.ranking.modulePrecedence).toBe(2);
     expect(proposals[0]!.ranking.recommendationBand).toBe("should");
-    // DecisionSurfaceIR path produces empty clauses (decision program not yet wired)
+    // DecisionSurface path produces empty clauses (decision program not yet wired)
     expect(proposals[0]!.clauses).toHaveLength(0);
   });
 
-  it("evaluates MeaningSurface[] through the existing path unchanged", () => {
+  it("evaluates BidMeaning[] through the existing path unchanged", () => {
     const surfaces = [
       makeSurface({
         meaningId: "ms:test",
@@ -308,7 +308,7 @@ describe("evaluateAllSurfaces dual-path", () => {
     ];
 
     const facts = buildFacts({ "hand.hcp": 12 });
-    const proposals = evaluateAllSurfaces(surfaces, facts);
+    const proposals = evaluateAllBidMeanings(surfaces, facts);
 
     expect(proposals).toHaveLength(1);
     expect(proposals[0]!.meaningId).toBe("ms:test");
@@ -318,12 +318,12 @@ describe("evaluateAllSurfaces dual-path", () => {
 
   it("handles empty arrays for both types", () => {
     const facts = buildFacts({});
-    expect(evaluateAllSurfaces([] as MeaningSurface[], facts)).toHaveLength(0);
-    expect(evaluateAllSurfaces([] as DecisionSurfaceIR[], facts)).toHaveLength(0);
+    expect(evaluateAllBidMeanings([] as BidMeaning[], facts)).toHaveLength(0);
+    expect(evaluateAllBidMeanings([] as DecisionSurface[], facts)).toHaveLength(0);
   });
 
   it("maps PriorityClass to RecommendationBand correctly in IR path", () => {
-    const irSurfaces: DecisionSurfaceIR[] = [
+    const irSurfaces: DecisionSurface[] = [
       {
         surfaceId: "ir:obligatory",
         moduleId: "mod",
@@ -351,7 +351,7 @@ describe("evaluateAllSurfaces dual-path", () => {
     ];
 
     const facts = buildFacts({});
-    const proposals = evaluateAllSurfaces(irSurfaces, facts);
+    const proposals = evaluateAllBidMeanings(irSurfaces, facts);
 
     expect(proposals[0]!.ranking.recommendationBand).toBe("must");
     expect(proposals[1]!.ranking.recommendationBand).toBe("may");

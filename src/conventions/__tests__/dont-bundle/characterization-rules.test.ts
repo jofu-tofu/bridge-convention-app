@@ -1,21 +1,17 @@
 /**
- * Characterization tests — DONT rule interpreter parity with FSM.
+ * Characterization tests — DONT rule interpreter surface selection.
  */
 
 import { describe, it, expect } from "vitest";
 import { collectMatchingClaims } from "../../core/pipeline/rule-interpreter";
 import type { RuleModule } from "../../core/rule-module";
 import type { CommittedStep } from "../../../core/contracts/committed-step";
-import { INITIAL_KERNEL } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { AuctionContext } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import { Seat } from "../../../engine/types";
 
 import { dontRules } from "../../definitions/modules/dont/dont-rules";
-
-import { buildAuction } from "../../../engine/auction-helpers";
-import { replay, computeActiveSurfaces } from "../../core/protocol/replay";
-import { dontConventionSpec } from "../../definitions/dont-bundle/convention-spec";
 
 const allRuleModules: RuleModule[] = [dontRules];
 
@@ -23,15 +19,15 @@ const allRuleModules: RuleModule[] = [dontRules];
 
 function makeStep(
   actor: Seat,
-  obs: CommittedStep["publicObs"],
+  obs: CommittedStep["publicActions"],
 ): CommittedStep {
   return {
     actor,
     call: { type: "pass" },
     resolvedClaim: null,
-    publicObs: obs,
-    kernelDelta: {},
-    postKernel: INITIAL_KERNEL,
+    publicActions: obs,
+    negotiationDelta: {},
+    stateAfter: INITIAL_NEGOTIATION,
     status: obs.length > 0 ? "resolved" : "raw-only",
   };
 }
@@ -41,9 +37,9 @@ function passStep(actor: Seat): CommittedStep {
     actor,
     call: { type: "pass" },
     resolvedClaim: null,
-    publicObs: [],
-    kernelDelta: {},
-    postKernel: INITIAL_KERNEL,
+    publicActions: [],
+    negotiationDelta: {},
+    stateAfter: INITIAL_NEGOTIATION,
     status: "raw-only",
   };
 }
@@ -57,35 +53,23 @@ function ruleSurfaceIds(log: readonly CommittedStep[], nextSeat: Seat = Seat.Sou
   return results.flatMap((r) => r.surfaces.map((s) => s.meaningId)).sort();
 }
 
-function fsmSurfaceIds(bids: string[], seat: Seat = Seat.South, dealer: Seat = Seat.East): string[] {
-  const auction = buildAuction(dealer, bids);
-  const history = auction.entries.map((e) => ({ call: e.call, seat: e.seat }));
-  const snapshot = replay(history, dontConventionSpec, seat);
-  const composed = computeActiveSurfaces(snapshot, dontConventionSpec);
-  return composed.visibleSurfaces.map((s) => s.meaningId).sort();
-}
-
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe("DONT rules: characterization tests", () => {
   describe("1NT (R1 — overcaller surfaces)", () => {
-    // East opens 1NT, overcaller (South) bids
     const log: CommittedStep[] = [
       makeStep(Seat.East, [{ act: "open", strain: "notrump" }]),
     ];
 
     it("produces R1 overcaller surfaces", () => {
-      // DONT omits match.turn, so we don't pass nextSeat for turn matching.
-      // However, we still pass South for rule matching (collectMatchingClaims
-      // uses it for deriveTurnRole, which DONT rules don't check).
       const ids = ruleSurfaceIds(log, Seat.South);
       expect(ids.length).toBeGreaterThan(0);
-    });
-
-    it("matches FSM surface IDs", () => {
-      const ruleIds = ruleSurfaceIds(log, Seat.South);
-      const fsmIds = fsmSurfaceIds(["1NT"]);
-      expect(ruleIds).toEqual(fsmIds);
+      expect(ids).toContain("dont:both-majors-2h");
+      expect(ids).toContain("dont:clubs-higher-2c");
+      expect(ids).toContain("dont:diamonds-major-2d");
+      expect(ids).toContain("dont:natural-spades-2s");
+      expect(ids).toContain("dont:overcaller-pass");
+      expect(ids).toContain("dont:single-suited-double");
     });
   });
 
@@ -100,10 +84,13 @@ describe("DONT rules: characterization tests", () => {
       passStep(Seat.West),
     ];
 
-    it("matches FSM surface IDs", () => {
+    it("produces advancer surfaces after 2H", () => {
       const ruleIds = ruleSurfaceIds(log, Seat.North);
-      const fsmIds = fsmSurfaceIds(["1NT", "2H", "P"], Seat.North);
-      expect(ruleIds).toEqual(fsmIds);
+      expect(ruleIds.length).toBeGreaterThan(0);
+      expect(ruleIds).toContain("dont:accept-hearts-pass");
+      expect(ruleIds).toContain("dont:escape-clubs-3c");
+      expect(ruleIds).toContain("dont:escape-diamonds-3d");
+      expect(ruleIds).toContain("dont:prefer-spades-2s");
     });
   });
 
@@ -117,10 +104,11 @@ describe("DONT rules: characterization tests", () => {
       passStep(Seat.West),
     ];
 
-    it("matches FSM surface IDs", () => {
+    it("produces advancer surfaces after 2D", () => {
       const ruleIds = ruleSurfaceIds(log, Seat.North);
-      const fsmIds = fsmSurfaceIds(["1NT", "2D", "P"], Seat.North);
-      expect(ruleIds).toEqual(fsmIds);
+      expect(ruleIds.length).toBeGreaterThan(0);
+      expect(ruleIds).toContain("dont:accept-diamonds-pass");
+      expect(ruleIds).toContain("dont:relay-2h-after-2d");
     });
   });
 });

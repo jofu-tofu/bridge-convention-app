@@ -5,7 +5,7 @@ import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
 import type { ResolvedCandidateDTO, PracticalRecommendation } from "../../core/contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
-import type { PracticalScoreBreakdown, PracticalScoredCandidate, ScorableCandidate } from "./practical-types";
+import type { PracticalScoreBreakdown, ScoredCandidate, ScorableCandidate } from "./practical-types";
 
 export const LEVEL_HCP_TABLE: Record<number, number> = {
   1: 20, 2: 23, 3: 26, 4: 26, 5: 29, 6: 33, 7: 37,
@@ -30,20 +30,20 @@ export function scoreCandidatePractically(
   candidate: ResolvedCandidateDTO,
   belief: ScoringInput,
   misunderstandingRisk?: number,
-): PracticalScoredCandidate;
+): ScoredCandidate;
 
 /** Score a scorable candidate (normative or pragmatic). */
 export function scoreCandidatePractically(
   candidate: ScorableCandidate,
   belief: ScoringInput,
   misunderstandingRisk?: number,
-): PracticalScoredCandidate;
+): ScoredCandidate;
 
 export function scoreCandidatePractically(
   candidateOrScorable: ResolvedCandidateDTO | ScorableCandidate,
   belief: ScoringInput,
   misunderstandingRisk = 0,
-): PracticalScoredCandidate {
+): ScoredCandidate {
   // Normalize to ScorableCandidate
   const scorable = normalizeToScorable(candidateOrScorable);
 
@@ -62,7 +62,7 @@ function scoreNormative(
   candidate: ResolvedCandidateDTO,
   belief: ScoringInput,
   misunderstandingRisk: number,
-): PracticalScoredCandidate {
+): ScoredCandidate {
   const call = candidate.resolvedCall;
 
   // Pass/double/redouble → score 0
@@ -94,7 +94,7 @@ function scoreNormative(
   return { candidate, practicalScore: totalScore, scoreBreakdown: breakdown, source: "normative" };
 }
 
-function scorePragmatic(candidate: PragmaticCandidate, belief: ScoringInput): PracticalScoredCandidate {
+function scorePragmatic(candidate: PragmaticCandidate, belief: ScoringInput): ScoredCandidate {
   const call = candidate.call;
 
   // Pass/double/redouble → score 0
@@ -125,7 +125,7 @@ function scorePragmatic(candidate: PragmaticCandidate, belief: ScoringInput): Pr
 }
 
 export function buildPracticalRecommendation(
-  scored: readonly PracticalScoredCandidate[],
+  scored: readonly ScoredCandidate[],
 ): PracticalRecommendation | null {
   if (scored.length === 0) return null;
 
@@ -147,21 +147,21 @@ export function buildPracticalRecommendation(
   };
 }
 
-function getCallFromCandidate(scored: PracticalScoredCandidate): Call {
+function getCallFromCandidate(scored: ScoredCandidate): Call {
   if (scored.source === "normative") {
     return scored.candidate.resolvedCall;
   }
   return scored.candidate.call;
 }
 
-function getBidNameFromCandidate(scored: PracticalScoredCandidate): string {
+function getBidNameFromCandidate(scored: ScoredCandidate): string {
   if (scored.source === "normative") {
     return scored.candidate.bidName;
   }
   return scored.candidate.distortionType;
 }
 
-function getMeaningFromCandidate(scored: PracticalScoredCandidate): string {
+function getMeaningFromCandidate(scored: ScoredCandidate): string {
   if (scored.source === "normative") {
     return scored.candidate.meaning;
   }

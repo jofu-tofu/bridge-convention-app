@@ -3,7 +3,7 @@ import { createSurface } from "../surface-builder";
 import type { ModuleContext, SurfaceInput } from "../surface-builder";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { SAME_FAMILY } from "../../definitions/pedagogical-vocabulary";
+import { SAME_FAMILY } from "../../definitions/teaching-vocabulary";
 
 const bid = (level: number, strain: BidSuit): Call => ({
   type: "bid",
@@ -30,7 +30,7 @@ function baseInput(overrides?: Partial<SurfaceInput>): SurfaceInput {
 }
 
 describe("createSurface", () => {
-  it("produces a valid MeaningSurface with all fields populated", () => {
+  it("produces a valid BidMeaning with all fields populated", () => {
     const surface = createSurface(baseInput(), CTX);
 
     expect(surface.meaningId).toBe("test:surface");
@@ -154,13 +154,13 @@ describe("createSurface", () => {
     expect(surface.surfaceBindings).toEqual({ suit: "hearts" });
   });
 
-  it("preserves pedagogicalTags", () => {
+  it("preserves teachingTags", () => {
     const tags = [{ tag: SAME_FAMILY, scope: "test" }];
     const surface = createSurface(
-      baseInput({ pedagogicalTags: tags }),
+      baseInput({ teachingTags: tags }),
       CTX,
     );
-    expect(surface.pedagogicalTags).toEqual(tags);
+    expect(surface.teachingTags).toEqual(tags);
   });
 
   it("handles range clause correctly", () => {

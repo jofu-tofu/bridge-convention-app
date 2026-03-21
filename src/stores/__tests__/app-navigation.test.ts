@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { createAppStore } from "../app.svelte";
-import { ntBundleConventionConfig } from "../../conventions/definitions/nt-bundle/convention-config";
-import { bergenBundleConventionConfig } from "../../conventions/definitions/bergen-bundle/convention-config";
+import { createConventionConfigFromBundle } from "../../conventions/core/bundle";
+import { ntBundle } from "../../conventions/definitions/nt-bundle";
+import { bergenBundle } from "../../conventions/definitions/bergen-bundle";
+
+const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
+const bergenBundleConventionConfig = createConventionConfigFromBundle(bergenBundle);
 
 describe("app store learning navigation", () => {
   it("learningConvention is null initially", () => {

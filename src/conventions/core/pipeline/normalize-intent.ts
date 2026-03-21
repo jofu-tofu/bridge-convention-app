@@ -3,7 +3,7 @@
  *
  * This is a migration bridge. Modules currently author `sourceIntent` strings
  * ("StaymanAsk", "DONTRevealClubs"). This function normalizes them into bridge-universal
- * `CanonicalObs[]` ("inquire(majorSuit)", "show(heldSuit, clubs)").
+ * `BidAction[]` ("inquire(majorSuit)", "show(heldSuit, clubs)").
  *
  * Once modules emit observations directly (Phase 6 of the redesign), this layer
  * becomes unnecessary.
@@ -13,10 +13,10 @@
  */
 
 import type {
-  CanonicalObs,
+  BidAction,
   ObsSuit,
-  ObsStrain,
-} from "../../../core/contracts/canonical-observation";
+  BidSuitName,
+} from "../../../core/contracts/bid-action";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ interface SourceIntent {
   readonly params: Readonly<Record<string, string | number | boolean>>;
 }
 
-type IntentMapper = (params: Readonly<Record<string, string | number | boolean>>) => readonly CanonicalObs[];
+type IntentMapper = (params: Readonly<Record<string, string | number | boolean>>) => readonly BidAction[];
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -37,8 +37,8 @@ function suit(params: Readonly<Record<string, string | number | boolean>>): ObsS
   return params.suit as ObsSuit;
 }
 
-function strain(params: Readonly<Record<string, string | number | boolean>>): ObsStrain {
-  return params.suit as ObsStrain;
+function strain(params: Readonly<Record<string, string | number | boolean>>): BidSuitName {
+  return params.suit as BidSuitName;
 }
 
 // ── Mapping table ──────────────────────────────────────────────────
@@ -169,7 +169,7 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
  * Returns `[]` for unknown intent types (graceful degradation).
  * The exhaustiveness coverage test guards against drift.
  */
-export function normalizeIntent(intent: SourceIntent): readonly CanonicalObs[] {
+export function normalizeIntent(intent: SourceIntent): readonly BidAction[] {
   const mapper = INTENT_MAP.get(intent.type);
   if (!mapper) return [];
   return mapper(intent.params);

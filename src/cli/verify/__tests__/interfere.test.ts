@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { RuleModule } from "../../../conventions/core/rule-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { InterferenceEdge } from "../types";
 import {
   detectActivationOverlap,
@@ -27,7 +27,7 @@ function makeModule(id: string, overrides: Partial<RuleModule> = {}): RuleModule
 function makeSurface(
   meaningId: string,
   callType?: { type: "bid"; level: number; strain: string },
-): MeaningSurface {
+): BidMeaning {
   return {
     meaningId,
     semanticClassId: `test:${meaningId}`,
@@ -39,7 +39,7 @@ function makeSurface(
       defaultCall: callType ?? { type: "bid", level: 1, strain: "NT" },
     },
     ranking: { recommendationBand: "should", intraModuleOrder: 0 },
-  } as unknown as MeaningSurface;
+  } as unknown as BidMeaning;
 }
 
 // ── detectActivationOverlap ───────────────────────────────────────
@@ -179,7 +179,7 @@ describe("detectObservationCrosstalk", () => {
               surface: {
                 ...makeSurface("a1"),
                 sourceIntent: { type: "StaymanAsk", params: {} },
-              } as unknown as MeaningSurface,
+              } as unknown as BidMeaning,
             },
           ],
         },
@@ -240,7 +240,7 @@ describe("detectKernelConflict", () => {
           claims: [
             {
               surface: makeSurface("a1"),
-              kernelDelta: { forcing: "game" },
+              negotiationDelta: { forcing: "game" },
             },
           ],
         },
@@ -253,7 +253,7 @@ describe("detectKernelConflict", () => {
           claims: [
             {
               surface: makeSurface("b1"),
-              kernelDelta: { forcing: "one-round" },
+              negotiationDelta: { forcing: "one-round" },
             },
           ],
         },
@@ -274,7 +274,7 @@ describe("detectKernelConflict", () => {
           claims: [
             {
               surface: makeSurface("a1"),
-              kernelDelta: { forcing: "game" },
+              negotiationDelta: { forcing: "game" },
             },
           ],
         },
@@ -287,7 +287,7 @@ describe("detectKernelConflict", () => {
           claims: [
             {
               surface: makeSurface("b1"),
-              kernelDelta: { captain: "responder" },
+              negotiationDelta: { captain: "responder" },
             },
           ],
         },

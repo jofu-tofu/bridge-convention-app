@@ -6,7 +6,7 @@
  * this is the fundamental decoupling invariant.
  *
  * Pedagogical relations, alternatives, and intent families are derived automatically
- * from `pedagogicalTags` on surfaces by the derivation function. Modules do not
+ * from `teachingTags` on surfaces by the derivation function. Modules do not
  * declare these explicitly.
  *
  * Bundles (bidding systems) compose modules via system profiles. Cross-module
@@ -14,7 +14,7 @@
  * system/bundle level.
  */
 
-import type { MeaningSurface } from "../../core/contracts/meaning";
+import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
 import type {
@@ -32,10 +32,10 @@ import type {
  */
 export interface ModuleProvider {
   readonly moduleId: string;
-  readonly entrySurfaces: readonly MeaningSurface[];
+  readonly entrySurfaces: readonly BidMeaning[];
   readonly surfaceGroups: readonly {
     readonly groupId: string;
-    readonly surfaces: readonly MeaningSurface[];
+    readonly surfaces: readonly BidMeaning[];
   }[];
   readonly facts: FactCatalogExtension;
   readonly explanationEntries: readonly ExplanationEntry[];
@@ -48,12 +48,12 @@ export interface ConventionModule extends ModuleProvider {
   // ── Bidding logic ────────────────────────────────────────────
 
   /** Entry-round surfaces (responder's first bid options). */
-  readonly entrySurfaces: readonly MeaningSurface[];
+  readonly entrySurfaces: readonly BidMeaning[];
 
   /** Named surface groups for subsequent rounds/states. */
   readonly surfaceGroups: readonly {
     readonly groupId: string;
-    readonly surfaces: readonly MeaningSurface[];
+    readonly surfaces: readonly BidMeaning[];
   }[];
 
   /** Entry-round FSM transitions. */

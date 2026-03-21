@@ -3,7 +3,7 @@ import type {
   BiddingStrategy,
   BidResult,
   PlayStrategy,
-  ConventionBiddingStrategy,
+  ConventionStrategy,
 } from "../core/contracts";
 import type { InferenceConfig } from "../inference/types";
 import type { InferenceEngine } from "../inference/inference-engine";
@@ -35,7 +35,7 @@ export interface DrillBundle {
   deal: Deal;
   session: DrillSession;
   initialAuction?: Auction;
-  strategy?: ConventionBiddingStrategy;
+  strategy?: ConventionStrategy;
   nsInferenceEngine: InferenceEngine | null;
   ewInferenceEngine: InferenceEngine | null;
   /** True when this deal was generated as an off-convention hand

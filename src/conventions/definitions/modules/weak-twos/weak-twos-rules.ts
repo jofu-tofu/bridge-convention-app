@@ -13,7 +13,7 @@
  */
 
 import type { RuleModule } from "../../../core/rule-module";
-import type { KernelDelta } from "../../../../core/contracts/committed-step";
+import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
 import {
   WEAK_TWO_R1_SURFACES,
   WEAK_TWO_R2_HEARTS_SURFACES,
@@ -45,10 +45,10 @@ type Phase =
 // ── Kernel deltas ─────────────────────────────────────────────────
 
 /** Ogust ask: forcing one round (opener must respond). */
-const OGUST_ASK_DELTA: KernelDelta = { forcing: "one-round" };
+const OGUST_ASK_DELTA: NegotiationDelta = { forcing: "one-round" };
 
 /** Ogust response: forcing resolved. */
-const OGUST_RESPONSE_DELTA: KernelDelta = { forcing: "none" };
+const OGUST_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
 
 export const weakTwosRules: RuleModule<Phase> = {
   id: "weak-twos",
@@ -106,7 +106,7 @@ export const weakTwosRules: RuleModule<Phase> = {
       claims: WEAK_TWO_R2_HEARTS_SURFACES.map((s) => {
         // Ogust 2NT ask is forcing one round
         if (s.sourceIntent.type === "OgustAsk") {
-          return { surface: s, kernelDelta: OGUST_ASK_DELTA };
+          return { surface: s, negotiationDelta: OGUST_ASK_DELTA };
         }
         return { surface: s };
       }),
@@ -115,7 +115,7 @@ export const weakTwosRules: RuleModule<Phase> = {
       match: { local: "opened-spades", turn: "responder" },
       claims: WEAK_TWO_R2_SPADES_SURFACES.map((s) => {
         if (s.sourceIntent.type === "OgustAsk") {
-          return { surface: s, kernelDelta: OGUST_ASK_DELTA };
+          return { surface: s, negotiationDelta: OGUST_ASK_DELTA };
         }
         return { surface: s };
       }),
@@ -124,7 +124,7 @@ export const weakTwosRules: RuleModule<Phase> = {
       match: { local: "opened-diamonds", turn: "responder" },
       claims: WEAK_TWO_R2_DIAMONDS_SURFACES.map((s) => {
         if (s.sourceIntent.type === "OgustAsk") {
-          return { surface: s, kernelDelta: OGUST_ASK_DELTA };
+          return { surface: s, negotiationDelta: OGUST_ASK_DELTA };
         }
         return { surface: s };
       }),
@@ -135,21 +135,21 @@ export const weakTwosRules: RuleModule<Phase> = {
       match: { local: "ogust-asked-hearts", turn: "opener" },
       claims: WEAK_TWO_OGUST_HEARTS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: OGUST_RESPONSE_DELTA,
+        negotiationDelta: OGUST_RESPONSE_DELTA,
       })),
     },
     {
       match: { local: "ogust-asked-spades", turn: "opener" },
       claims: WEAK_TWO_OGUST_SPADES_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: OGUST_RESPONSE_DELTA,
+        negotiationDelta: OGUST_RESPONSE_DELTA,
       })),
     },
     {
       match: { local: "ogust-asked-diamonds", turn: "opener" },
       claims: WEAK_TWO_OGUST_DIAMONDS_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: OGUST_RESPONSE_DELTA,
+        negotiationDelta: OGUST_RESPONSE_DELTA,
       })),
     },
 

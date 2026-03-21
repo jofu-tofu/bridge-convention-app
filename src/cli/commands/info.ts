@@ -4,13 +4,13 @@ import {
   enumerateRuleAtoms,
   generateRuleCoverageManifest,
 } from "../../conventions/core";
-import { listSystems } from "../../conventions/definitions/system-registry";
+import { listSystemBundles } from "../../conventions/definitions/system-registry";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 
 import type { Flags, Vulnerability } from "../shared";
 import {
   requireArg,
-  resolveSpec, resolveSystemWithRules,
+  resolveSpec, resolveBundleWithRules,
   generateSeededDeal, resolveUserSeat,
   buildInitialAuction, buildContext, nextSeatClockwise,
 } from "../shared";
@@ -19,8 +19,8 @@ import {
 
 export function runList(flags: Flags): void {
   const bundleId = requireArg(flags, "bundle");
-  const system = resolveSystemWithRules(bundleId);
-  const ruleModules = system.ruleModules ?? [];
+  const bundle = resolveBundleWithRules(bundleId);
+  const ruleModules = bundle.ruleModules ?? [];
   const atoms = enumerateRuleAtoms(ruleModules);
 
   for (const atom of atoms) {
@@ -41,19 +41,19 @@ export function runList(flags: Flags): void {
 // ── bundles ──────────────────────────────────────────────────────
 
 export function runBundles(): void {
-  const systems = listSystems().filter((s) => !s.internal);
-  const result = systems.map((s) => {
-    const ruleModules = s.ruleModules ?? [];
+  const bundles = listSystemBundles().filter((b) => !b.internal);
+  const result = bundles.map((b) => {
+    const ruleModules = b.ruleModules ?? [];
     const atomCount = ruleModules.length > 0
       ? enumerateRuleAtoms(ruleModules).length
       : 0;
     return {
-      id: s.id,
-      name: s.name,
-      description: s.description ?? null,
-      category: s.category ?? null,
+      id: b.id,
+      name: b.name,
+      description: b.description ?? null,
+      category: b.category ?? null,
       atomCount,
-      moduleIds: s.moduleIds,
+      moduleIds: b.memberIds,
     };
   });
   console.log(JSON.stringify(result, null, 2));
@@ -64,10 +64,10 @@ export function runBundles(): void {
 export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   const bundleId = requireArg(flags, "bundle");
   const spec = resolveSpec(bundleId);
-  const system = resolveSystemWithRules(bundleId);
-  const ruleModules = system.ruleModules ?? [];
+  const bundle = resolveBundleWithRules(bundleId);
+  const ruleModules = bundle.ruleModules ?? [];
 
-  const manifest = generateRuleCoverageManifest(system.id, ruleModules);
+  const manifest = generateRuleCoverageManifest(bundle.id, ruleModules);
   const allAtoms = manifest.atoms;
 
   // Group atoms by module
@@ -86,9 +86,9 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   for (let i = 0; i < allAtoms.length; i++) {
     const atomSeed = 42 + i;
     try {
-      const deal = generateSeededDeal(system, atomSeed, vuln);
-      const userSeat = resolveUserSeat(system, deal);
-      const auction = buildInitialAuction(system, userSeat, deal);
+      const deal = generateSeededDeal(bundle, atomSeed, vuln);
+      const userSeat = resolveUserSeat(bundle, deal);
+      const auction = buildInitialAuction(bundle, userSeat, deal);
       const activeSeat = auction.entries.length > 0
         ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
         : userSeat;
@@ -109,10 +109,10 @@ export function runDescribe(flags: Flags, vuln: Vulnerability): void {
   modules.sort((a, b) => a.moduleId.localeCompare(b.moduleId));
 
   console.log(JSON.stringify({
-    id: system.id,
-    name: system.name,
-    description: system.description ?? null,
-    category: system.category ?? null,
+    id: bundle.id,
+    name: bundle.name,
+    description: bundle.description ?? null,
+    category: bundle.category ?? null,
     totalAtoms: allAtoms.length,
     totalModules: manifest.totalModules,
     strategyCoverage: {

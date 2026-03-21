@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveActiveModules } from "../profile-activation";
-import type { SystemProfileIR, PublicConstraint } from "../../../../core/contracts/agreement-module";
+import type { SystemProfile, PublicConstraint } from "../../../../core/contracts/agreement-module";
 import type { PublicSnapshot } from "../../../../core/contracts/module-surface";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
@@ -27,7 +27,7 @@ describe("resolveActiveModules", () => {
     // Two modules in the same exclusivity group, both active.
     // Module at index 0 has higher precedence (lower index) than index 2.
     // Only the higher-precedence module should survive.
-    const profile: SystemProfileIR = {
+    const profile: SystemProfile = {
       profileId: "test-exclusive",
       baseSystem: "sayc",
       modules: [
@@ -63,7 +63,7 @@ describe("resolveActiveModules", () => {
   });
 
   it("does not affect modules outside any exclusivity group", () => {
-    const profile: SystemProfileIR = {
+    const profile: SystemProfile = {
       profileId: "test-exclusive-2",
       baseSystem: "sayc",
       modules: [
@@ -93,7 +93,7 @@ describe("resolveActiveModules", () => {
   });
 
   it("handles multiple exclusivity groups independently", () => {
-    const profile: SystemProfileIR = {
+    const profile: SystemProfile = {
       profileId: "test-multi-group",
       baseSystem: "sayc",
       modules: [
@@ -125,7 +125,7 @@ describe("resolveActiveModules", () => {
       field: string,
       operator: "eq" | "neq" | "in" | "exists",
       value?: unknown,
-    ): SystemProfileIR {
+    ): SystemProfile {
       return {
         profileId: "test-public-guard",
         baseSystem: "sayc",
@@ -241,7 +241,7 @@ describe("resolveActiveModules", () => {
 
     function profileWithVisibleMeanings(
       meaningIds: readonly string[],
-    ): SystemProfileIR {
+    ): SystemProfile {
       return {
         profileId: "test-visible-meanings",
         baseSystem: "sayc",
@@ -335,7 +335,7 @@ describe("resolveActiveModules", () => {
 
   describe("whenAuction: contains pattern", () => {
     it("activates when auction contains the specified call", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-contains",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -351,7 +351,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("does not activate when auction does not contain the specified call", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-contains-miss",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -366,7 +366,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("activates when byRole restricts to a specific role", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-contains-role",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -382,7 +382,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("does not activate when call exists but by wrong role", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-contains-wrong-role",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -398,7 +398,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("returns empty when byRole cannot be resolved (no bids)", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-contains-no-opener",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -416,7 +416,7 @@ describe("resolveActiveModules", () => {
 
   describe("whenAuction: by-role pattern", () => {
     it("activates when last call by role matches", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-byrole",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -433,7 +433,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("does not activate when last call by role does not match", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-byrole-miss",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -449,7 +449,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("does not activate when role cannot be resolved", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-byrole-no-opener",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -465,7 +465,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("checks the LAST call by the role, not the first", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-byrole-last",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{
@@ -482,7 +482,7 @@ describe("resolveActiveModules", () => {
     });
 
     it("does not activate when role seat never acted", () => {
-      const profile: SystemProfileIR = {
+      const profile: SystemProfile = {
         profileId: "test-byrole-never-acted",
         baseSystem: BASE_SYSTEM_SAYC,
         modules: [{

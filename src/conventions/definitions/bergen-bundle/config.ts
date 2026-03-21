@@ -1,3 +1,2 @@
-import { bundleFromSystem, bergenSystem } from "../system-registry";
-
-export const bergenBundle = bundleFromSystem(bergenSystem);
+// Re-export bundle from system-registry (single source of truth)
+export { bergenBundle } from "../system-registry";

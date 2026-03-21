@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { deriveSpecificity } from "../specificity-deriver";
-import type { MeaningSurface, ConstraintDimension } from "../../../../core/contracts/meaning";
+import type { BidMeaning, ConstraintDimension } from "../../../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
 import type { SurfaceFragment } from "../../../core/protocol/types";
 import { SHARED_FACTS } from "../../../../core/contracts/shared-facts";
@@ -83,7 +83,7 @@ import { WEAK_TWO_SURFACE_FRAGMENTS } from "../../../definitions/weak-twos-bundl
 
 // ─── Collect all surfaces ───────────────────────────────────
 
-const bergenSurfaces: readonly MeaningSurface[] = [
+const bergenSurfaces: readonly BidMeaning[] = [
   ...BERGEN_R1_HEARTS_SURFACES,
   ...BERGEN_R1_SPADES_SURFACES,
   ...BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES,
@@ -99,7 +99,7 @@ const bergenSurfaces: readonly MeaningSurface[] = [
   ...BERGEN_R4_SURFACES,
 ];
 
-const dontSurfaces: readonly MeaningSurface[] = [
+const dontSurfaces: readonly BidMeaning[] = [
   ...DONT_R1_SURFACES,
   ...DONT_ADVANCER_2H_SURFACES,
   ...DONT_ADVANCER_2D_SURFACES,
@@ -111,7 +111,7 @@ const dontSurfaces: readonly MeaningSurface[] = [
   ...DONT_2D_RELAY_SURFACES,
 ];
 
-const ntSurfaces: readonly MeaningSurface[] = [
+const ntSurfaces: readonly BidMeaning[] = [
   ...RESPONDER_SURFACES,
   ...OPENER_STAYMAN_SURFACES,
   ...STAYMAN_R3_AFTER_2H_SURFACES,
@@ -127,7 +127,7 @@ const ntSurfaces: readonly MeaningSurface[] = [
   ...OPENER_1NT_SURFACE,
 ];
 
-const weakTwoSurfaces: readonly MeaningSurface[] = [
+const weakTwoSurfaces: readonly BidMeaning[] = [
   ...WEAK_TWO_R1_SURFACES,
   ...WEAK_TWO_R2_HEARTS_SURFACES,
   ...WEAK_TWO_R2_SPADES_SURFACES,
@@ -140,7 +140,7 @@ const weakTwoSurfaces: readonly MeaningSurface[] = [
   ...POST_OGUST_DIAMONDS_SURFACES,
 ];
 
-const allSurfaces: readonly MeaningSurface[] = [
+const allSurfaces: readonly BidMeaning[] = [
   ...bergenSurfaces,
   ...dontSurfaces,
   ...ntSurfaces,

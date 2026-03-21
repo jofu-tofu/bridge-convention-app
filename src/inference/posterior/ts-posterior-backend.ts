@@ -1,5 +1,5 @@
 import type { Hand, Seat } from "../../engine/types";
-import type { PosteriorBackend, PosteriorState, WeightedParticle, PosteriorQueryIR } from "../../core/contracts/posterior-backend";
+import type { PosteriorBackend, PosteriorState, WeightedParticle, PosteriorQuery } from "../../core/contracts/posterior-backend";
 import type { ConditioningContext, PosteriorQueryResult, InferenceHealth, FactorIntrospection } from "../../core/contracts/posterior-query";
 import type { HandFactResolverFn } from "../../core/contracts/fact-catalog";
 import { sampleDeals } from "./posterior-sampler";
@@ -40,7 +40,7 @@ export function createTsBackend(options?: {
       return { particles, context };
     },
 
-    query(state: PosteriorState, query: PosteriorQueryIR): PosteriorQueryResult {
+    query(state: PosteriorState, query: PosteriorQuery): PosteriorQueryResult {
       const health = buildHealth(state);
       const particles = state.particles;
 

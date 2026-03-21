@@ -3,7 +3,7 @@
  *
  * Replaces the FSM + skeleton + hookTransitions model with pattern matching
  * over a canonical observation stream. Modules match on bridge semantics
- * (via CanonicalObs), not on implementation-specific FSM state IDs.
+ * (via BidAction), not on implementation-specific FSM state IDs.
  *
  * **Phase 3 scope:** RuleModule handles surface SELECTION only.
  * Kernel state tracking still uses the old FSM (via MachineRegisters).
@@ -11,14 +11,14 @@
  */
 
 import type {
-  ObsAct,
+  BidActionType,
   ObsSuit,
-  ObsStrain,
-  ObsFeature,
-  ObsStrength,
-} from "../../core/contracts/canonical-observation";
-import type { KernelState, KernelDelta } from "../../core/contracts/committed-step";
-import type { MeaningSurface } from "../../core/contracts/meaning";
+  BidSuitName,
+  HandFeature,
+  HandStrength,
+} from "../../core/contracts/bid-action";
+import type { NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
+import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
 
@@ -39,11 +39,11 @@ export type TurnRole = "opener" | "responder" | "opponent";
  * or opponent). When omitted, matches any actor (backward compatible).
  */
 export interface ObsPattern {
-  readonly act: ObsAct | "any";
-  readonly feature?: ObsFeature;
+  readonly act: BidActionType | "any";
+  readonly feature?: HandFeature;
   readonly suit?: ObsSuit;
-  readonly strain?: ObsStrain;
-  readonly strength?: ObsStrength;
+  readonly strain?: BidSuitName;
+  readonly strength?: HandStrength;
   readonly actor?: TurnRole;
 }
 
@@ -69,31 +69,31 @@ export type RouteExpr =
   | { readonly kind: "not"; readonly expr: RouteExpr };
   // Known extension point (Phase 4+): "strict-seq" for consecutive-step matching.
 
-// ── KernelExpr ───────────────────────────────────────────────────────
+// ── NegotiationExpr ───────────────────────────────────────────────────────
 
-/** Predicate over KernelState. */
-export type KernelExpr =
-  | { readonly kind: "fit"; readonly strain?: ObsStrain }
+/** Predicate over NegotiationState. */
+export type NegotiationExpr =
+  | { readonly kind: "fit"; readonly strain?: BidSuitName }
   | { readonly kind: "no-fit" }
-  | { readonly kind: "forcing"; readonly level: KernelState["forcing"] }
-  | { readonly kind: "captain"; readonly who: KernelState["captain"] }
+  | { readonly kind: "forcing"; readonly level: NegotiationState["forcing"] }
+  | { readonly kind: "captain"; readonly who: NegotiationState["captain"] }
   | { readonly kind: "uncontested" }
   | {
       readonly kind: "overcalled";
-      readonly below?: { readonly level: number; readonly strain: ObsStrain };
+      readonly below?: { readonly level: number; readonly strain: BidSuitName };
     }
   | { readonly kind: "doubled" }
   | { readonly kind: "redoubled" }
-  | { readonly kind: "and"; readonly exprs: readonly KernelExpr[] }
-  | { readonly kind: "or"; readonly exprs: readonly KernelExpr[] }
-  | { readonly kind: "not"; readonly expr: KernelExpr };
+  | { readonly kind: "and"; readonly exprs: readonly NegotiationExpr[] }
+  | { readonly kind: "or"; readonly exprs: readonly NegotiationExpr[] }
+  | { readonly kind: "not"; readonly expr: NegotiationExpr };
 
 // ── PhaseTransition ──────────────────────────────────────────────────
 
 /**
  * Local FSM advancement from CommittedStep observations.
  *
- * Fires if ANY observation in CommittedStep.publicObs matches the `on` pattern.
+ * Fires if ANY observation in CommittedStep.publicActions matches the `on` pattern.
  * This is intentional — a step like Smolen emits both show(shortMajor) +
  * force(game), and a transition on show(shortMajor) should fire regardless
  * of other co-emitted observations.
@@ -115,13 +115,13 @@ export interface PhaseTransition<Phase extends string> {
 export interface Rule<Phase extends string> {
   readonly match: {
     readonly turn?: "opener" | "responder" | "opponent";
-    readonly kernel?: KernelExpr;
+    readonly kernel?: NegotiationExpr;
     readonly route?: RouteExpr;
     readonly local?: Phase | readonly Phase[];
   };
   readonly claims: readonly {
-    readonly surface: MeaningSurface;
-    readonly kernelDelta?: KernelDelta;
+    readonly surface: BidMeaning;
+    readonly negotiationDelta?: NegotiationDelta;
   }[];
 }
 

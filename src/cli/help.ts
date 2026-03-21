@@ -1,6 +1,6 @@
 // ── CLI usage and per-subcommand help ───────────────────────────────
 
-import { printAvailableSystems } from "./shared";
+import { printAvailableBundles } from "./shared";
 
 export function printUsage(): void {
   console.error("Usage: main.ts <subcommand> [options]");
@@ -29,7 +29,7 @@ export function printUsage(): void {
   console.error("Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error");
   console.error("");
   console.error("Available bundles:");
-  printAvailableSystems();
+  printAvailableBundles();
   console.error("");
   console.error("Tip: Run '<subcommand> --help' for detailed subcommand usage.");
 }

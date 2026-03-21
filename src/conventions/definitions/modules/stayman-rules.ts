@@ -11,7 +11,7 @@
  */
 
 import type { RuleModule } from "../../core/rule-module";
-import type { KernelDelta } from "../../../core/contracts/committed-step";
+import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 import {
   staymanModule,
   OPENER_STAYMAN_SURFACES,
@@ -27,10 +27,10 @@ const staymanR1Surface = staymanModule.entrySurfaces[0]!;
 // ── Kernel deltas (derived from old FSM entryEffects) ───────────────
 
 /** 2C Stayman ask: forcing one round, responder is captain. */
-const STAYMAN_ASK_DELTA: KernelDelta = { forcing: "one-round", captain: "responder" };
+const STAYMAN_ASK_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
 
 /** Opener responds to Stayman: forcing resolved (one-round obligation fulfilled). */
-const STAYMAN_RESPONSE_DELTA: KernelDelta = { forcing: "none" };
+const STAYMAN_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
 
 export const staymanRules: RuleModule<Phase> = {
   id: "stayman",
@@ -54,14 +54,14 @@ export const staymanRules: RuleModule<Phase> = {
     // R1: Stayman entry (only at idle — before any R1 bid)
     {
       match: { local: "idle", turn: "responder" },
-      claims: [{ surface: staymanR1Surface, kernelDelta: STAYMAN_ASK_DELTA }],
+      claims: [{ surface: staymanR1Surface, negotiationDelta: STAYMAN_ASK_DELTA }],
     },
     // Opener response surfaces — forcing resolved on all responses
     {
       match: { local: "asked", turn: "opener" },
       claims: OPENER_STAYMAN_SURFACES.map((s) => ({
         surface: s,
-        kernelDelta: STAYMAN_RESPONSE_DELTA,
+        negotiationDelta: STAYMAN_RESPONSE_DELTA,
       })),
     },
     // R3 after hearts shown (terminal decisions — no kernel change)

@@ -4,7 +4,7 @@ import type {
   EliminationRecord,
 } from "../../../core/contracts/module-surface";
 import type { Call } from "../../../engine/types";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
   DecisionProvenance,
   EliminationTrace,
@@ -18,8 +18,8 @@ import type { MeaningProposal } from "../../../core/contracts/meaning";
 import { compareRanking, BAND_PRIORITY } from "../../../core/contracts/meaning";
 import { evaluateProposal, classifyIntoSets } from "./arbitration-helpers";
 import type {
-  EvidenceBundleIR,
-  ConditionEvidenceIR,
+  EvidenceBundle,
+  ConditionEvidence,
   RejectionEvidence,
   AlternativeEvidence,
 } from "../../../core/contracts/evidence-bundle";
@@ -40,7 +40,7 @@ export interface ArbitrationInput {
 /** Build ArbitrationInput[] by zipping proposals with their source surfaces. */
 export function zipProposalsWithSurfaces(
   proposals: readonly MeaningProposal[],
-  surfaces: readonly MeaningSurface[],
+  surfaces: readonly BidMeaning[],
 ): ArbitrationInput[] {
   return proposals.map((proposal, i) => {
     const surface = surfaces[i];
@@ -131,8 +131,8 @@ function deduplicateBySemanticClassAlias(
 
 // ─── Provenance Helpers ────────────────────────────────────────
 
-/** Map a MeaningClause to a ConditionEvidenceIR (shared across provenance builders). */
-function clauseToEvidence(c: { factId: string; satisfied: boolean; observedValue?: unknown; value: unknown }): ConditionEvidenceIR {
+/** Map a MeaningClause to a ConditionEvidence (shared across provenance builders). */
+function clauseToEvidence(c: { factId: string; satisfied: boolean; observedValue?: unknown; value: unknown }): ConditionEvidence {
   return { conditionId: c.factId, factId: c.factId, satisfied: c.satisfied, observedValue: c.observedValue, threshold: c.value };
 }
 
@@ -185,14 +185,14 @@ function buildProvenance(
   };
 }
 
-/** Build EvidenceBundleIR from arbitration results. */
+/** Build EvidenceBundle from arbitration results. */
 function buildEvidenceBundle(
   inputs: readonly ArbitrationInput[],
   eliminations: readonly EliminationRecord[],
   finalTruthSet: readonly EncodedProposal[],
   selected: EncodedProposal | null,
-): EvidenceBundleIR {
-  const matched: EvidenceBundleIR["matched"] = selected
+): EvidenceBundle {
+  const matched: EvidenceBundle["matched"] = selected
     ? { meaningId: selected.proposal.meaningId, satisfiedConditions: selected.proposal.clauses.map(clauseToEvidence) }
     : null;
 

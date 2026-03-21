@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { derivePedagogicalContent } from "../derive-cross-module";
-import type { PedagogicalRelation } from "../../../core/contracts/teaching-projection";
+import { deriveTeachingContent } from "../derive-cross-module";
+import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
 import type { AlternativeGroup } from "../../../core/contracts/tree-evaluation";
 import type { ConventionModule } from "../../core/convention-module";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
-import type { PedagogicalTagDef } from "../../../core/contracts/pedagogical-tag";
+import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { TeachingTagDef } from "../../../core/contracts/teaching-tag";
 
 // ── Real NT modules ─────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ const NT_MODULES: readonly ConventionModule[] = [
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function sortRelations(rels: readonly PedagogicalRelation[]): PedagogicalRelation[] {
+function sortRelations(rels: readonly TeachingRelation[]): TeachingRelation[] {
   return [...rels].sort((a, b) => {
     const kindCmp = a.kind.localeCompare(b.kind);
     if (kindCmp !== 0) return kindCmp;
@@ -41,24 +41,24 @@ function sortAlternatives(alts: readonly AlternativeGroup[]): AlternativeGroup[]
 
 // ── Tests ────────────────────────────────────────────────────────────
 
-describe("derivePedagogicalContent", () => {
+describe("deriveTeachingContent", () => {
   it("produces expected relations from NT modules (snapshot)", () => {
-    const result = derivePedagogicalContent(NT_MODULES);
+    const result = deriveTeachingContent(NT_MODULES);
     expect(sortRelations(result.relations)).toMatchSnapshot();
   });
 
   it("produces expected alternative groups from NT modules (snapshot)", () => {
-    const result = derivePedagogicalContent(NT_MODULES);
+    const result = deriveTeachingContent(NT_MODULES);
     expect(sortAlternatives(result.alternatives)).toMatchSnapshot();
   });
 
   it("produces zero intent families from NT modules (regression)", () => {
-    const result = derivePedagogicalContent(NT_MODULES);
+    const result = deriveTeachingContent(NT_MODULES);
     expect(result.intentFamilies).toEqual([]);
   });
 
   it("produces both cross-module and intra-module relations", () => {
-    const result = derivePedagogicalContent(NT_MODULES);
+    const result = deriveTeachingContent(NT_MODULES);
     // Cross-module: same-family across stayman/transfers
     const crossModule = result.relations.filter(
       (r) => r.kind === "same-family" && r.a === "stayman:ask-major",
@@ -74,7 +74,7 @@ describe("derivePedagogicalContent", () => {
   });
 
   it("produces 2 alternative groups", () => {
-    const result = derivePedagogicalContent(NT_MODULES);
+    const result = deriveTeachingContent(NT_MODULES);
     expect(result.alternatives).toHaveLength(2);
   });
 
@@ -88,7 +88,7 @@ describe("derivePedagogicalContent", () => {
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
-    const result = derivePedagogicalContent([emptyModule]);
+    const result = deriveTeachingContent([emptyModule]);
     expect(result.relations).toEqual([]);
     expect(result.alternatives).toEqual([]);
     expect(result.intentFamilies).toEqual([]);
@@ -97,8 +97,8 @@ describe("derivePedagogicalContent", () => {
 
 // ── Validation tests ─────────────────────────────────────────────────
 
-describe("derivePedagogicalContent validation", () => {
-  function makeSurface(meaningId: string, semanticClassId: string, tags: MeaningSurface["pedagogicalTags"]): MeaningSurface {
+describe("deriveTeachingContent validation", () => {
+  function makeSurface(meaningId: string, semanticClassId: string, tags: BidMeaning["teachingTags"]): BidMeaning {
     return {
       meaningId,
       semanticClassId,
@@ -108,11 +108,11 @@ describe("derivePedagogicalContent validation", () => {
       ranking: { recommendationBand: "should", modulePrecedence: 0, intraModuleOrder: 0 },
       sourceIntent: { type: "Test", params: {} },
       teachingLabel: meaningId,
-      pedagogicalTags: tags,
+      teachingTags: tags,
     };
   }
 
-  function makeModule(surfaces: MeaningSurface[]): ConventionModule {
+  function makeModule(surfaces: BidMeaning[]): ConventionModule {
     return {
       moduleId: "test",
       entrySurfaces: surfaces,
@@ -125,7 +125,7 @@ describe("derivePedagogicalContent validation", () => {
   }
 
   it("skips directed relation tag missing role:a (incomplete group)", () => {
-    const tag: PedagogicalTagDef = {
+    const tag: TeachingTagDef = {
       id: "test-directed",
       label: "Test",
       derives: { type: "relation", kind: "stronger-than" },
@@ -133,12 +133,12 @@ describe("derivePedagogicalContent validation", () => {
     const mod = makeModule([
       makeSurface("x", "x", [{ tag, scope: "s", role: "b" }]),
     ]);
-    const result = derivePedagogicalContent([mod]);
+    const result = deriveTeachingContent([mod]);
     expect(result.relations).toEqual([]);
   });
 
   it("skips directed relation tag missing role:b (incomplete group)", () => {
-    const tag: PedagogicalTagDef = {
+    const tag: TeachingTagDef = {
       id: "test-directed",
       label: "Test",
       derives: { type: "relation", kind: "stronger-than" },
@@ -146,12 +146,12 @@ describe("derivePedagogicalContent validation", () => {
     const mod = makeModule([
       makeSurface("x", "x", [{ tag, scope: "s", role: "a" }]),
     ]);
-    const result = derivePedagogicalContent([mod]);
+    const result = deriveTeachingContent([mod]);
     expect(result.relations).toEqual([]);
   });
 
   it("throws when symmetric relation tag uses roles", () => {
-    const tag: PedagogicalTagDef = {
+    const tag: TeachingTagDef = {
       id: "test-symmetric",
       label: "Test",
       derives: { type: "relation", kind: "same-family", symmetric: true },
@@ -160,11 +160,11 @@ describe("derivePedagogicalContent validation", () => {
       makeSurface("x", "x", [{ tag, scope: "s", role: "a" }]),
       makeSurface("y", "y", [{ tag, scope: "s" }]),
     ]);
-    expect(() => derivePedagogicalContent([mod])).toThrow("must not use roles");
+    expect(() => deriveTeachingContent([mod])).toThrow("must not use roles");
   });
 
   it("skips alternative-group tag with fewer than 2 members (incomplete group)", () => {
-    const tag: PedagogicalTagDef = {
+    const tag: TeachingTagDef = {
       id: "test-group",
       label: "Test",
       derives: { type: "alternative-group", tier: "alternative" },
@@ -172,12 +172,12 @@ describe("derivePedagogicalContent validation", () => {
     const mod = makeModule([
       makeSurface("x", "x", [{ tag, scope: "My Group" }]),
     ]);
-    const result = derivePedagogicalContent([mod]);
+    const result = deriveTeachingContent([mod]);
     expect(result.alternatives).toEqual([]);
   });
 
   it("throws on duplicate (tag, scope, meaningId) tuples", () => {
-    const tag: PedagogicalTagDef = {
+    const tag: TeachingTagDef = {
       id: "test-dup",
       label: "Test",
       derives: { type: "relation", kind: "same-family", symmetric: true },
@@ -185,11 +185,11 @@ describe("derivePedagogicalContent validation", () => {
     const surface = makeSurface("x", "x", [{ tag, scope: "s" }]);
     const mod = makeModule([surface]);
     const mod2 = makeModule([surface]);
-    expect(() => derivePedagogicalContent([mod, mod2])).toThrow("Duplicate");
+    expect(() => deriveTeachingContent([mod, mod2])).toThrow("Duplicate");
   });
 
   it("derives adjacent pairs from ordinal chains", () => {
-    const tag: PedagogicalTagDef = {
+    const tag: TeachingTagDef = {
       id: "test-chain",
       label: "Test",
       derives: { type: "relation", kind: "stronger-than" },
@@ -199,7 +199,7 @@ describe("derivePedagogicalContent validation", () => {
       makeSurface("b", "b", [{ tag, scope: "chain", ordinal: 1 }]),
       makeSurface("c", "c", [{ tag, scope: "chain", ordinal: 2 }]),
     ]);
-    const result = derivePedagogicalContent([mod]);
+    const result = deriveTeachingContent([mod]);
     expect(result.relations).toEqual([
       { kind: "stronger-than", a: "a", b: "b" },
       { kind: "stronger-than", a: "b", b: "c" },
@@ -207,7 +207,7 @@ describe("derivePedagogicalContent validation", () => {
   });
 
   it("uses scope as label for alternative groups", () => {
-    const tag: PedagogicalTagDef = {
+    const tag: TeachingTagDef = {
       id: "test-alts",
       label: "Test",
       derives: { type: "alternative-group", tier: "alternative" },
@@ -216,7 +216,7 @@ describe("derivePedagogicalContent validation", () => {
       makeSurface("x", "x", [{ tag, scope: "My Label" }]),
       makeSurface("y", "y", [{ tag, scope: "My Label" }]),
     ]);
-    const result = derivePedagogicalContent([mod]);
+    const result = deriveTeachingContent([mod]);
     expect(result.alternatives).toEqual([
       { label: "My Label", members: ["x", "y"], tier: "alternative" },
     ]);

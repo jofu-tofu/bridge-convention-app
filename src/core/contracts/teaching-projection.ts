@@ -1,9 +1,9 @@
 import type { Call, NumberRange } from "../../engine/types";
-import type { ConditionEvidenceIR } from "./evidence-bundle";
+import type { ConditionEvidence } from "./evidence-bundle";
 
 /** Pedagogical relation between two bids or meanings.
  *  Used by teaching UI to explain "why is X better than Y?" */
-export type PedagogicalRelation =
+export type TeachingRelation =
   | { readonly kind: "same-family"; readonly a: string; readonly b: string }
   | { readonly kind: "stronger-than"; readonly a: string; readonly b: string }
   | { readonly kind: "weaker-than"; readonly a: string; readonly b: string }
@@ -18,7 +18,7 @@ export interface TeachingProjection {
   readonly primaryExplanation: readonly ExplanationNode[];
   readonly whyNot: readonly WhyNotEntry[];
   readonly conventionsApplied: readonly ConventionContribution[];
-  readonly handSpace: SeatRelativeHandSpaceSummary;
+  readonly handSpace: HandSpaceSummary;
   /** Post-bid parse tree showing the full decision chain:
    *  which conventions were considered, why each was accepted/rejected,
    *  and the path to the correct bid. */
@@ -41,7 +41,7 @@ export interface MeaningView {
   readonly displayLabel: string;
   readonly status: "live" | "eliminated" | "not-applicable";
   readonly eliminationReason?: string;
-  readonly supportingEvidence: readonly ConditionEvidenceIR[];
+  readonly supportingEvidence: readonly ConditionEvidence[];
 }
 
 /** Explanation node for structured teaching text. */
@@ -59,13 +59,13 @@ export interface ExplanationNode {
 export interface WhyNotEntry {
   readonly call: Call;
   readonly grade: "near-miss" | "wrong";
-  readonly familyRelation?: PedagogicalRelation;
+  readonly familyRelation?: TeachingRelation;
   readonly explanation: readonly ExplanationNode[];
   readonly eliminationStage: string;
 }
 
-/** Pedagogical relation kind values (derived from PedagogicalRelation). */
-export type PedagogicalRelationKind = PedagogicalRelation["kind"];
+/** Pedagogical relation kind values (derived from TeachingRelation). */
+export type TeachingRelationKind = TeachingRelation["kind"];
 
 /** How a convention contributed to the decision. */
 export interface ConventionContribution {
@@ -84,19 +84,19 @@ interface HandArchetypeSummary {
 }
 
 /** A representative example hand from the consistent space. */
-interface WitnessHand {
+interface ExampleHand {
   readonly description: string;
   readonly hcp: number;
 }
 
 /** Seat-relative hand space summary for teaching context. */
-export interface SeatRelativeHandSpaceSummary {
+export interface HandSpaceSummary {
   readonly seatLabel: string;
   readonly hcpRange: NumberRange;
   readonly shapeDescription: string;
   readonly partnerSummary?: string;
   readonly archetypes?: readonly HandArchetypeSummary[];
-  readonly witnessHands?: readonly WitnessHand[];
+  readonly witnessHands?: readonly ExampleHand[];
 }
 
 // ── Parse Tree ──────────────────────────────────────────────────────

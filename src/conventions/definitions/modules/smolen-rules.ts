@@ -14,7 +14,7 @@
  */
 
 import type { RuleModule, RouteExpr } from "../../core/rule-module";
-import type { KernelDelta } from "../../../core/contracts/committed-step";
+import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 import {
   smolenModule,
   smolenFacts,
@@ -34,7 +34,7 @@ const smolenR3Surfaces = smolenModule.surfaceGroups
 // ── Kernel deltas (derived from old FSM entryEffects) ───────────────
 
 /** Smolen entry (2C): same as Stayman ask — forcing one round, responder is captain. */
-const SMOLEN_ENTRY_DELTA: KernelDelta = { forcing: "one-round", captain: "responder" };
+const SMOLEN_ENTRY_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
 
 /**
  * Smolen 3H (shows short hearts = 5 spades): game-forcing, tentative spade fit,
@@ -43,7 +43,7 @@ const SMOLEN_ENTRY_DELTA: KernelDelta = { forcing: "one-round", captain: "respon
  *   setAgreedStrain: { suit: "spades", confidence: "tentative" },
  *   setForcingState: GameForcing
  */
-const SMOLEN_3H_DELTA: KernelDelta = {
+const SMOLEN_3H_DELTA: NegotiationDelta = {
   forcing: "game",
   captain: "opener",
   fitAgreed: { strain: "spades", confidence: "tentative" },
@@ -53,7 +53,7 @@ const SMOLEN_3H_DELTA: KernelDelta = {
  * Smolen 3S (shows short spades = 5 hearts): game-forcing, tentative heart fit,
  * captain transfers to opener for final placement.
  */
-const SMOLEN_3S_DELTA: KernelDelta = {
+const SMOLEN_3S_DELTA: NegotiationDelta = {
   forcing: "game",
   captain: "opener",
   fitAgreed: { strain: "hearts", confidence: "tentative" },
@@ -94,7 +94,7 @@ export const smolenRules: RuleModule<Phase> = {
       match: { local: "idle", turn: "responder" },
       claims: smolenEntrySurfaces.map((s) => ({
         surface: s,
-        kernelDelta: SMOLEN_ENTRY_DELTA,
+        negotiationDelta: SMOLEN_ENTRY_DELTA,
       })),
     },
     // R3 Smolen bids: 3H/3S after Stayman denial
@@ -108,7 +108,7 @@ export const smolenRules: RuleModule<Phase> = {
       },
       claims: smolenR3Surfaces.map((s) => ({
         surface: s,
-        kernelDelta: s.meaningId === "smolen:bid-short-hearts"
+        negotiationDelta: s.meaningId === "smolen:bid-short-hearts"
           ? SMOLEN_3H_DELTA
           : SMOLEN_3S_DELTA,
       })),

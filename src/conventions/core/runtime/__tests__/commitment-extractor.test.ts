@@ -6,7 +6,7 @@ import {
 } from "../commitment-extractor";
 import type { Auction, Call } from "../../../../engine/types";
 import { Seat } from "../../../../engine/types";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import type { ChoiceClosurePolicy } from "../../../../core/contracts/agreement-module";
 
 describe("formatCallString", () => {
@@ -35,8 +35,8 @@ describe("formatCallString", () => {
 // ─── deriveEntailedDenials domain kind tests ────────────────────────
 
 function makeSurface(
-  overrides: Partial<MeaningSurface> & { meaningId: string },
-): MeaningSurface {
+  overrides: Partial<BidMeaning> & { meaningId: string },
+): BidMeaning {
   return {
     semanticClassId: "test:class",
     moduleId: "test-module",
@@ -53,7 +53,7 @@ function makeSurface(
     sourceIntent: { type: "test", params: {} },
     teachingLabel: "Test meaning",
     ...overrides,
-  } as MeaningSurface;
+  } as BidMeaning;
 }
 
 const surfaceA = makeSurface({
@@ -97,7 +97,7 @@ const allTestSurfaces = [surfaceA, surfaceB, surfaceC, surfaceNoConsequences];
 
 const testEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" } as Call };
 const emptyAuction: Auction = { entries: [], isComplete: false };
-const testRouter = (_a: Auction, _s: Seat): readonly MeaningSurface[] => allTestSurfaces;
+const testRouter = (_a: Auction, _s: Seat): readonly BidMeaning[] => allTestSurfaces;
 
 describe("deriveEntailedDenials — domain kind: surface", () => {
   const policy: ChoiceClosurePolicy = {
@@ -254,7 +254,7 @@ describe("extractCommitments", () => {
 
   it("surfaceRouter receives sub-auction (entries 0..i-1) for entry i", () => {
     const routerCalls: Auction[] = [];
-    const captureRouter = (a: Auction, _s: Seat): readonly MeaningSurface[] => {
+    const captureRouter = (a: Auction, _s: Seat): readonly BidMeaning[] => {
       routerCalls.push(a);
       return allTestSurfaces;
     };

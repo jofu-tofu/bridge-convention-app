@@ -4,7 +4,7 @@
 // settings resolution, spec/bundle lookup, deal generation,
 // auction construction, hand formatting, and viewport construction.
 
-import { getSystem, listSystems, specFromSystem } from "../conventions/definitions/system-registry";
+import { getSystemBundle, listSystemBundles, specFromBundle } from "../conventions/definitions/system-registry";
 import { createBiddingContext } from "../conventions/core";
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
@@ -22,7 +22,7 @@ import type {
   Card,
 } from "../engine/types";
 import type { ConventionSpec } from "../conventions/core";
-import type { BiddingSystem } from "../conventions/definitions/bidding-system";
+import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
 import type { BiddingContext, BidHistoryEntry } from "../core/contracts/bidding";
 import type { BiddingStrategy } from "../core/contracts/bidding";
 import type { OpponentMode } from "../core/contracts/drill";
@@ -36,7 +36,7 @@ import { buildBiddingViewport } from "../core/viewport/build-viewport";
 export { Seat, Vulnerability };
 export { callKey, parsePatternCall, getLegalCalls, evaluateHand };
 export { buildBiddingViewport };
-export type { Auction, Call, Hand, Deal, Card, ConventionSpec, BiddingSystem, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry, DrillSettings };
+export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry, DrillSettings };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -214,19 +214,19 @@ function pickVulnUniform(roll: number): Vulnerability {
   return Vulnerability.Both;
 }
 
-// ── Resolve spec + system ───────────────────────────────────────────
+// ── Resolve spec + bundle ────────────────────────────────────────────
 
-/** Print available system IDs from the system registry (single source of truth). */
-export function printAvailableSystems(): void {
-  for (const s of listSystems()) {
-    if (s.internal) continue;
-    console.error(`  ${s.id} — ${s.name}`);
+/** Print available bundle IDs from the system registry (single source of truth). */
+export function printAvailableBundles(): void {
+  for (const b of listSystemBundles()) {
+    if (b.internal) continue;
+    console.error(`  ${b.id} — ${b.name}`);
   }
 }
 
 export function resolveSpec(bundleId: string): ConventionSpec {
-  const system = resolveSystem(bundleId);
-  const spec = specFromSystem(system);
+  const bundle = resolveBundle(bundleId);
+  const spec = specFromBundle(bundle);
   if (!spec) {
     console.error(`No ConventionSpec derivable for "${bundleId}"`);
     process.exit(2);
@@ -234,27 +234,27 @@ export function resolveSpec(bundleId: string): ConventionSpec {
   return spec;
 }
 
-export function resolveSystem(bundleId: string): BiddingSystem {
-  const system = getSystem(bundleId);
-  if (!system) {
+export function resolveBundle(bundleId: string): ConventionBundle {
+  const bundle = getSystemBundle(bundleId);
+  if (!bundle) {
     console.error(`Unknown bundle: "${bundleId}"`);
     console.error("Available bundles:");
-    printAvailableSystems();
+    printAvailableBundles();
     process.exit(2);
   }
-  return system;
+  return bundle;
 }
 
 // ── Deal generation ─────────────────────────────────────────────────
 
 export function generateSeededDeal(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   seed: number,
   vulnerability?: Vulnerability,
 ): Deal {
   const rng = mulberry32(seed);
   const constraints: DealConstraints = {
-    ...system.dealConstraints,
+    ...bundle.dealConstraints,
     ...(vulnerability !== undefined ? { vulnerability } : {}),
   };
   const result = generateDeal(constraints, rng);
@@ -263,11 +263,11 @@ export function generateSeededDeal(
 
 // ── Auction + context setup ─────────────────────────────────────────
 
-export function resolveUserSeat(system: BiddingSystem, deal: Deal): Seat {
+export function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
   const candidates: Seat[] = [Seat.South, Seat.East, Seat.North, Seat.West];
   for (const seat of candidates) {
-    if (system.defaultAuction) {
-      const auction = system.defaultAuction(seat, deal);
+    if (bundle.defaultAuction) {
+      const auction = bundle.defaultAuction(seat, deal);
       if (auction && auction.entries.length > 0) {
         return seat;
       }
@@ -277,12 +277,12 @@ export function resolveUserSeat(system: BiddingSystem, deal: Deal): Seat {
 }
 
 export function buildInitialAuction(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   userSeat: Seat,
   deal: Deal,
 ): Auction {
-  if (system.defaultAuction) {
-    const auction = system.defaultAuction(userSeat, deal);
+  if (bundle.defaultAuction) {
+    const auction = bundle.defaultAuction(userSeat, deal);
     if (auction) return auction;
   }
   return { entries: [], isComplete: false };
@@ -340,19 +340,19 @@ export function partnerOf(seat: Seat): Seat {
   }
 }
 
-/** Resolve a BiddingSystem, falling back to spec derivation for sub-bundle IDs.
- *  Returns the system and its ruleModules (required for rule enumeration). */
-export function resolveSystemWithRules(bundleId: string): BiddingSystem {
-  const system = resolveSystem(bundleId);
-  if (!system.ruleModules || system.ruleModules.length === 0) {
+/** Resolve a ConventionBundle, falling back to spec derivation for sub-bundle IDs.
+ *  Returns the bundle and its ruleModules (required for rule enumeration). */
+export function resolveBundleWithRules(bundleId: string): ConventionBundle {
+  const bundle = resolveBundle(bundleId);
+  if (!bundle.ruleModules || bundle.ruleModules.length === 0) {
     // Sub-bundle IDs (e.g. nt-stayman, nt-transfers) may not have ruleModules
     // directly. Derive a spec which attaches parent ruleModules.
-    const spec = specFromSystem(system);
+    const spec = specFromBundle(bundle);
     if (spec?.ruleModules && spec.ruleModules.length > 0) {
-      return { ...system, ruleModules: spec.ruleModules };
+      return { ...bundle, ruleModules: spec.ruleModules };
     }
   }
-  return system;
+  return bundle;
 }
 
 // ── Viewport construction ───────────────────────────────────────────

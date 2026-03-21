@@ -1,4 +1,4 @@
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { WEAK_TWO_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit } from "../../../core/surface-helpers";
@@ -10,7 +10,7 @@ import {
   CONTINUATION_OF,
   NEAR_MISS_OF,
   ALTERNATIVES,
-} from "../../pedagogical-vocabulary";
+} from "../../teaching-vocabulary";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
@@ -35,7 +35,7 @@ function gameRaiseBid(suit: WeakTwoSuit) {
 // Surfaces use $suit binding — clauses reference hand.suitLength.$suit
 // which resolves via surfaceBindings in the meaning evaluator.
 
-export function createWeakTwoR1Surfaces(): readonly MeaningSurface[] {
+export function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
   const suits: readonly { suit: WeakTwoSuit; order: number; cls: string }[] = [
     { suit: "hearts", order: 0, cls: WEAK_TWO_CLASSES.OPEN_2H },
     { suit: "spades", order: 1, cls: WEAK_TWO_CLASSES.OPEN_2S },
@@ -64,7 +64,7 @@ export function createWeakTwoR1Surfaces(): readonly MeaningSurface[] {
     sourceIntent: { type: "WeakTwoOpen", params: { suit } },
     teachingLabel: `Open 2${suitLabel(suit)}`,
     surfaceBindings: { suit },
-    pedagogicalTags: [
+    teachingTags: [
       { tag: SAME_FAMILY, scope: "weak-two:opener-bids" },
     ],
   }, WEAK_TWOS_CTX));
@@ -82,7 +82,7 @@ export function createWeakTwoR1Surfaces(): readonly MeaningSurface[] {
 
 export function createWeakTwoR2Surfaces(
   suit: WeakTwoSuit,
-): readonly MeaningSurface[] {
+): readonly BidMeaning[] {
   const bindings = { suit } as const;
   const sl = suitLabel(suit);
   const gameCall = gameRaiseBid(suit);
@@ -111,7 +111,7 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "GameRaise", params: { suit } },
       teachingLabel: `Game raise (${gameLevel}${sl})`,
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 0 },
         { tag: NEAR_MISS_OF, scope: `weak-two:raise-boundary-${suit}`, role: "a" },
@@ -142,7 +142,7 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "OgustAsk", params: { suit } },
       teachingLabel: "Ogust ask (2NT)",
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "b" },
         { tag: ALTERNATIVES, scope: `Weak Two responder action (${suit})` },
@@ -171,7 +171,7 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "InviteRaise", params: { suit } },
       teachingLabel: `Invite raise (3${sl})`,
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 1 },
         { tag: NEAR_MISS_OF, scope: `weak-two:raise-boundary-${suit}`, role: "b" },
@@ -190,7 +190,7 @@ export function createWeakTwoR2Surfaces(
       sourceIntent: { type: "WeakPass", params: { suit } },
       teachingLabel: "Pass (no action)",
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 2 },
       ],
     }, WEAK_TWOS_CTX),
@@ -210,7 +210,7 @@ export function createWeakTwoR2Surfaces(
 
 export function createWeakTwoOgustSurfaces(
   suit: WeakTwoSuit,
-): readonly MeaningSurface[] {
+): readonly BidMeaning[] {
   const bindings = { suit } as const;
 
   return [
@@ -232,7 +232,7 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustSolid", params: { suit } },
       teachingLabel: "Ogust solid (3NT)",
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 0 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
@@ -264,7 +264,7 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMinBad", params: { suit } },
       teachingLabel: "Ogust min/bad (3C)",
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 4 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
@@ -296,7 +296,7 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMinGood", params: { suit } },
       teachingLabel: "Ogust min/good (3D)",
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 3 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
@@ -329,7 +329,7 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMaxBad", params: { suit } },
       teachingLabel: "Ogust max/bad (3H)",
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 2 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
@@ -362,7 +362,7 @@ export function createWeakTwoOgustSurfaces(
       sourceIntent: { type: "OgustMaxGood", params: { suit } },
       teachingLabel: "Ogust max/good (3S)",
       surfaceBindings: bindings,
-      pedagogicalTags: [
+      teachingTags: [
         { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
         { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 1 },
         { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
@@ -385,7 +385,7 @@ export function createWeakTwoOgustSurfaces(
 
 export function createPostOgustSurfaces(
   suit: WeakTwoSuit,
-): readonly MeaningSurface[] {
+): readonly BidMeaning[] {
   const bindings = { suit } as const;
   const gameCall = gameRaiseBid(suit);
 

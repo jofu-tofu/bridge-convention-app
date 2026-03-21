@@ -7,18 +7,18 @@
 
 import type { Seat } from "../../../engine/types";
 import { partnerSeat } from "../../../engine/constants";
-import type { CanonicalObs } from "../../../core/contracts/canonical-observation";
+import type { BidAction } from "../../../core/contracts/bid-action";
 import type { CommittedStep } from "../../../core/contracts/committed-step";
 import type { ObsPattern, RouteExpr, TurnRole } from "../rule-module";
 
 /**
- * Match a single ObsPattern against a single CanonicalObs.
+ * Match a single ObsPattern against a single BidAction.
  *
  * Matches if `act` matches AND all specified optional fields match.
  * Unspecified fields are wildcards. When `pattern.actor` is set and
  * `actorRole` is provided, the actor must match too.
  */
-export function matchObs(pattern: ObsPattern, obs: CanonicalObs, actorRole?: TurnRole): boolean {
+export function matchObs(pattern: ObsPattern, obs: BidAction, actorRole?: TurnRole): boolean {
   // Actor check — only applies when both pattern and caller specify actor
   if (pattern.actor !== undefined && actorRole !== undefined && pattern.actor !== actorRole) return false;
 
@@ -104,7 +104,7 @@ function stepMatchesObs(
   openerSeat?: Seat,
 ): boolean {
   const actorRole = openerSeat !== undefined ? deriveActorRole(step.actor, openerSeat) : undefined;
-  return step.publicObs.some((obs) => matchObs(pattern, obs, actorRole));
+  return step.publicActions.some((obs) => matchObs(pattern, obs, actorRole));
 }
 
 function matchLast(

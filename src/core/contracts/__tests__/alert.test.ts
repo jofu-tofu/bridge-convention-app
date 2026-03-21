@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveAlert, isAlertable, derivePublicConstraints } from "../alert";
 import type { AlertResolvable } from "../alert";
-import type { MeaningSurfaceClause } from "../meaning";
+import type { BidMeaningClause } from "../meaning";
 
 function makeSurface(overrides: Partial<AlertResolvable> = {}): AlertResolvable {
   return {
@@ -130,7 +130,7 @@ describe("resolveAlert", () => {
 
 describe("derivePublicConstraints", () => {
   it("includes primitive hand.* facts automatically", () => {
-    const clauses: MeaningSurfaceClause[] = [
+    const clauses: BidMeaningClause[] = [
       { clauseId: "hcp-10", factId: "hand.hcp", operator: "gte", value: 10, description: "10+ HCP" },
       { clauseId: "spades-5", factId: "hand.suitLength.spades", operator: "gte", value: 5, description: "5+ spades" },
     ];
@@ -141,7 +141,7 @@ describe("derivePublicConstraints", () => {
   });
 
   it("excludes module-derived and unmarked bridge facts", () => {
-    const clauses: MeaningSurfaceClause[] = [
+    const clauses: BidMeaningClause[] = [
       { clauseId: "hcp-10", factId: "hand.hcp", operator: "gte", value: 10, description: "10+ HCP" },
       { clauseId: "game-values", factId: "module.ntResponse.gameValues", operator: "boolean", value: true, description: "Module routing" },
       { clauseId: "no-5cm", factId: "bridge.hasFiveCardMajor", operator: "boolean", value: false, description: "Routing" },
@@ -152,7 +152,7 @@ describe("derivePublicConstraints", () => {
   });
 
   it("includes bridge-derived clauses marked isPublic by the bundle", () => {
-    const clauses: MeaningSurfaceClause[] = [
+    const clauses: BidMeaningClause[] = [
       { clauseId: "hcp-8", factId: "hand.hcp", operator: "gte", value: 8, description: "8+ HCP" },
       { clauseId: "has-4cm", factId: "bridge.hasFourCardMajor", operator: "boolean", value: true, description: "Has 4-card major", isPublic: true },
       { clauseId: "no-5cm", factId: "bridge.hasFiveCardMajor", operator: "boolean", value: false, description: "Routing" },
@@ -164,7 +164,7 @@ describe("derivePublicConstraints", () => {
   });
 
   it("returns empty for surfaces with only module/routing clauses", () => {
-    const clauses: MeaningSurfaceClause[] = [
+    const clauses: BidMeaningClause[] = [
       { clauseId: "invite", factId: "module.ntResponse.inviteValues", operator: "boolean", value: true, description: "Invite values" },
       { clauseId: "no-4cm", factId: "bridge.hasFourCardMajor", operator: "boolean", value: false, description: "Routing" },
     ];

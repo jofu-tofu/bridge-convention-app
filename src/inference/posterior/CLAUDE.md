@@ -8,8 +8,8 @@ Posterior inference engine — sampling, factor compilation, and probabilistic h
 |------|------|
 | `posterior-engine.ts` | **Deprecated.** `createPosteriorEngine()` — old interface, still used by consumers during migration. |
 | `posterior-compiler.ts` | **Deprecated.** `compilePublicHandSpace()` — old compilation path. Used internally by `ts-posterior-backend.ts`. |
-| `factor-compiler.ts` | `compileFactorGraph()`, `validateFactorGraph()` — new compilation: `PublicSnapshot` → `FactorGraphIR`. Convention-erased. |
-| `ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation. Wraps existing sampler, answers `PosteriorQueryIR` queries. |
+| `factor-compiler.ts` | `compileFactorGraph()`, `validateFactorGraph()` — new compilation: `PublicSnapshot` → `FactorGraph`. Convention-erased. |
+| `ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation. Wraps existing sampler, answers `PosteriorQuery` queries. |
 | `query-port.ts` | `createQueryPort()` — creates `PosteriorQueryPort` from backend + state. Consumer-facing query interface. |
 | `posterior-sampler.ts` | `sampleDeals()` — Monte Carlo rejection sampling. Used by both old engine and new backend. |
 | `posterior-facts.ts` | `POSTERIOR_FACT_HANDLERS` — 5 posterior fact handlers (used by old engine path). |
@@ -20,7 +20,7 @@ Posterior inference engine — sampling, factor compilation, and probabilistic h
 
 The redesigned posterior boundary separates concerns:
 
-1. **Factor Compiler** (`factor-compiler.ts`): `PublicSnapshot` → `FactorGraphIR` (convention-erased)
+1. **Factor Compiler** (`factor-compiler.ts`): `PublicSnapshot` → `FactorGraph` (convention-erased)
 2. **Backend** (`ts-posterior-backend.ts`): `ConditioningContext` → `PosteriorState` (weighted particles)
 3. **Query Port** (`query-port.ts`): `PosteriorState` → typed queries (`PosteriorQueryPort`)
 
@@ -34,7 +34,7 @@ The old `PosteriorEngine` → `SeatPosterior` path still works and is used by `m
 
 - `ts-posterior-backend.ts` uses the OLD `compilePublicHandSpace()` internally (the sampler still expects `PublicHandSpace[]`)
 - `branch-probability` queries return 0 (not yet wired to latent branch resolution)
-- `FactorGraphIR` is serializable (designed for future WASM boundary)
+- `FactorGraph` is serializable (designed for future WASM boundary)
 - Boundary invariant tests in `boundary-invariants.test.ts` enforce: no convention imports, no publicBeliefs on snapshot, JSON round-trip, compilation trace integrity
 
 ---

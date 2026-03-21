@@ -1,15 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { bundleToRuntimeModules } from "../bundle-adapter";
 import type { ConventionBundle } from "../../bundle/bundle-types";
-import type { SystemProfileIR } from "../../../../core/contracts/agreement-module";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { SystemProfile } from "../../../../core/contracts/agreement-module";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { Seat } from "../../../../engine/types";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { CAP_OPENING_1NT } from "../../../definitions/capability-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
+import { ConventionCategory } from "../../../../core/contracts/convention";
 
 /** Minimal profile that activates a module when opening.1nt capability is present. */
-const profileRequiringNtCapability: SystemProfileIR = {
+const profileRequiringNtCapability: SystemProfile = {
   profileId: "test-profile",
   modules: [
     {
@@ -27,7 +28,7 @@ const profileRequiringNtCapability: SystemProfileIR = {
 };
 
 /** Minimal profile that activates a module unconditionally (no capability requirement). */
-const unconditionalProfile: SystemProfileIR = {
+const unconditionalProfile: SystemProfile = {
   profileId: "test-unconditional",
   modules: [
     {
@@ -40,7 +41,7 @@ const unconditionalProfile: SystemProfileIR = {
   conflictPolicy: { activationDefault: "simultaneous" },
 };
 
-const dummySurface: MeaningSurface = {
+const dummySurface: BidMeaning = {
   meaningId: "test:dummy",
   semanticClassId: "test:dummy-class",
   moduleId: "test-module",
@@ -63,11 +64,13 @@ function makeBundleWithSurfaces(
   return {
     id: "test-bundle",
     name: "Test Bundle",
+    category: ConventionCategory.Constructive,
+    description: "test",
     memberIds: ["test-conv"],
     dealConstraints: { seats: [], dealer: Seat.North },
     meaningSurfaces: [{ groupId: "test-group", surfaces: [dummySurface] }],
     explanationCatalog: { version: "1.0.0", entries: [] },
-    pedagogicalRelations: [],
+    teachingRelations: [],
     acceptableAlternatives: [],
     intentFamilies: [],
     ...overrides,

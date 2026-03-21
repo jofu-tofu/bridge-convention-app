@@ -11,9 +11,8 @@
  */
 
 import type { DealConstraints, Deal, Seat, Auction } from "../../engine/types";
-import type { SystemProfileIR } from "../../core/contracts/agreement-module";
-import type { ConventionCategory } from "../../core/contracts/convention";
-import type { BundleSkeleton } from "../core/composition/compose-modules";
+import type { SystemProfile } from "../../core/contracts/agreement-module";
+import type { ConventionCategory, ConventionTeaching } from "../../core/contracts/convention";
 import type { RuleModule } from "../core/rule-module";
 
 export interface BiddingSystem {
@@ -29,7 +28,7 @@ export interface BiddingSystem {
   readonly internal?: boolean;
 
   /** System profile — declares which modules to activate and when. */
-  readonly profile: SystemProfileIR;
+  readonly profile: SystemProfile;
   /** Module IDs that this system composes. */
   readonly moduleIds: readonly string[];
 
@@ -43,13 +42,13 @@ export interface BiddingSystem {
   /** Capabilities injected into profile-based activation. */
   readonly declaredCapabilities?: Readonly<Record<string, string>>;
 
-  /** Bundle skeleton for generic module composition.
-   *  When present, `composeModules()` auto-generates the BaseModuleSpec,
-   *  SurfaceFragments, and ConventionSpec from the skeleton + modules. */
-  readonly skeleton?: BundleSkeleton;
-
-  /** Rule modules for rule-based surface selection (Phase 3+).
-   *  When present, the rule interpreter replaces FSM-based surface selection.
-   *  The old FSM still runs for register/kernel state tracking. */
+  /** Rule modules for rule-based surface selection.
+   *  The rule interpreter is the sole source of surface selection. */
   readonly ruleModules?: readonly RuleModule[];
+
+  /** Convention-level teaching metadata for learning UI. */
+  readonly teaching?: ConventionTeaching;
+
+  /** If set, drill infrastructure picks a random dealer from this list. */
+  readonly allowedDealers?: readonly Seat[];
 }

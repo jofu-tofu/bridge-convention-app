@@ -5,23 +5,23 @@
  * records what each bid communicated in convention-erased terms, enabling rule
  * modules to match on bridge semantics rather than FSM state IDs.
  *
- * **KernelState** is a small, closed, purely semantic state owned by the framework.
+ * **NegotiationState** is a small, closed, purely semantic state owned by the framework.
  * Every field passes the kernel litmus test:
  *   1. Semantic (not genealogical) — describes negotiation state, not route history
  *   2. Reused across unrelated modules — not convention-specific
  *   3. Stable under route variations — same meaning regardless of how you got here
- *   4. Set by module effects via kernelDelta — not mechanically derived
+ *   4. Set by module effects via negotiationDelta — not mechanically derived
  */
 
 import type { Seat, Call } from "../../engine/types";
-import type { CanonicalObs, ObsStrain } from "./canonical-observation";
+import type { BidAction, BidSuitName } from "./bid-action";
 import type { PublicSnapshot } from "./module-surface";
 
-// ── KernelState ──────────────────────────────────────────────────────
+// ── NegotiationState ──────────────────────────────────────────────────────
 
-export interface KernelState {
+export interface NegotiationState {
   readonly fitAgreed: {
-    readonly strain: ObsStrain;
+    readonly strain: BidSuitName;
     readonly confidence: "tentative" | "final";
   } | null;
   readonly forcing: "none" | "one-round" | "game";
@@ -32,19 +32,19 @@ export interface KernelState {
     | "redoubled"
     | {
         readonly kind: "overcalled";
-        readonly strain: ObsStrain;
+        readonly strain: BidSuitName;
         readonly level: number;
       };
 }
 
-export const INITIAL_KERNEL: KernelState = Object.freeze({
+export const INITIAL_NEGOTIATION: NegotiationState = Object.freeze({
   fitAgreed: null,
   forcing: "none",
   captain: "undecided",
   competition: "uncontested",
 } as const);
 
-export type KernelDelta = Partial<KernelState>;
+export type NegotiationDelta = Partial<NegotiationState>;
 
 // ── ClaimRef ─────────────────────────────────────────────────────────
 
@@ -66,9 +66,9 @@ export interface CommittedStep {
   readonly actor: Seat;
   readonly call: Call;
   readonly resolvedClaim: ClaimRef | null;
-  readonly publicObs: readonly CanonicalObs[];
-  readonly kernelDelta: KernelDelta;
-  readonly postKernel: KernelState;
+  readonly publicActions: readonly BidAction[];
+  readonly negotiationDelta: NegotiationDelta;
+  readonly stateAfter: NegotiationState;
   readonly status: "resolved" | "raw-only" | "ambiguous" | "off-system";
 }
 

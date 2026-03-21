@@ -22,10 +22,10 @@ import type {
   ExplanationNode,
 } from "../core/contracts/teaching-projection";
 
-import type { PedagogicalRelation } from "../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../core/contracts/teaching-projection";
 
-import type { PedagogicalGraph } from "./pedagogical-graph";
-import { findRelationsFor } from "./pedagogical-graph";
+import type { TeachingGraph } from "./teaching-graph";
+import { findRelationsFor } from "./teaching-graph";
 
 import type { CatalogIndex } from "./teaching-projection-builder";
 import { resolveDisplayText } from "./teaching-projection-builder";
@@ -40,7 +40,7 @@ export function buildWhyNot(
   arbitration: ArbitrationResult,
   provenance: DecisionProvenance,
   catalogIndex?: CatalogIndex,
-  pedGraph?: PedagogicalGraph,
+  teachingGraph?: TeachingGraph,
   truthMeaningIds?: ReadonlySet<string>,
 ): WhyNotEntry[] {
   const entries: WhyNotEntry[] = [];
@@ -56,8 +56,8 @@ export function buildWhyNot(
 
     const explanation = buildWhyNotExplanation(encoded, eliminationTrace, catalogIndex);
     const stage = eliminationTrace?.stage ?? "applicability";
-    const familyRelation = pedGraph
-      ? findNearMissRelation(pedGraph, encoded.proposal.meaningId, truthMeaningIds)
+    const familyRelation = teachingGraph
+      ? findNearMissRelation(teachingGraph, encoded.proposal.meaningId, truthMeaningIds)
       : undefined;
 
     // Grade based on pedagogical relationship: bids in the same family as the
@@ -81,10 +81,10 @@ export function buildWhyNot(
  * Prefers `near-miss-of` relations, then any relation linking the two.
  */
 function findNearMissRelation(
-  graph: PedagogicalGraph,
+  graph: TeachingGraph,
   nearMissMeaningId: string,
   truthMeaningIds?: ReadonlySet<string>,
-): PedagogicalRelation | undefined {
+): TeachingRelation | undefined {
   if (!truthMeaningIds || truthMeaningIds.size === 0) return undefined;
 
   const relations = findRelationsFor(graph, nearMissMeaningId);

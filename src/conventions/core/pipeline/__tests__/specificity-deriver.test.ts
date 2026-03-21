@@ -2,11 +2,11 @@ import { describe, it, expect } from "vitest";
 import { deriveSpecificity } from "../specificity-deriver";
 import { makeSurface } from "../../../../test-support/convention-factories";
 import type { FactCatalogExtension, FactDefinition } from "../../../../core/contracts/fact-catalog";
-import type { MeaningSurfaceClause } from "../../../../core/contracts/meaning";
+import type { BidMeaningClause } from "../../../../core/contracts/meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 
-function clause(factId: string, description = factId, value: number = 4): MeaningSurfaceClause {
+function clause(factId: string, description = factId, value: number = 4): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
@@ -16,7 +16,7 @@ function clause(factId: string, description = factId, value: number = 4): Meanin
   };
 }
 
-function boolClause(factId: string, description = factId): MeaningSurfaceClause {
+function boolClause(factId: string, description = factId): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,

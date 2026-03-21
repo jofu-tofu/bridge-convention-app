@@ -31,7 +31,7 @@ export function advanceLocalFsm<Phase extends string>(
     if (!matchesFrom(currentPhase, transition.from)) continue;
 
     // Check if ANY observation in the step matches the transition's pattern
-    if (step.publicObs.some((obs) => matchObs(transition.on, obs))) {
+    if (step.publicActions.some((obs) => matchObs(transition.on, obs))) {
       return transition.to;
     }
   }

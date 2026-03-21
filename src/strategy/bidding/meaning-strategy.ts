@@ -1,12 +1,12 @@
 import type {
   BiddingContext,
   BidResult,
-  ConventionBiddingStrategy,
+  ConventionStrategy,
   StrategyEvaluation,
   AlternativeGroup,
   IntentFamily,
 } from "../../core/contracts";
-import type { MeaningSurface, ConstraintDimension } from "../../core/contracts/meaning";
+import type { BidMeaning, ConstraintDimension } from "../../core/contracts/meaning";
 import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
 import type { EvaluatedFacts, FactCatalog } from "../../core/contracts/fact-catalog";
@@ -15,7 +15,7 @@ import type { RelationalFactContext } from "../../conventions/core";
 import {
   evaluateFacts,
   createSharedFactCatalog,
-  evaluateAllSurfaces,
+  evaluateAllBidMeanings,
   arbitrateMeanings,
   zipProposalsWithSurfaces,
   composeSurfaces,
@@ -40,7 +40,7 @@ import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
 
 /** Input to the core meaning pipeline. */
 export interface PipelineInput {
-  readonly surfaces: readonly MeaningSurface[];
+  readonly surfaces: readonly BidMeaning[];
   readonly transforms?: readonly CandidateTransform[];
   readonly context: BiddingContext;
   readonly catalog: FactCatalog;
@@ -66,7 +66,7 @@ export interface PipelineOutput {
  */
 export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
   // Step 1: Compose surfaces (apply suppress/inject/remap transforms)
-  const { composedSurfaces, appliedTransforms, diagnostics } = composeSurfaces(
+  const { composedMeanings, appliedTransforms, diagnostics } = composeSurfaces(
     input.surfaces,
     input.transforms,
   );
@@ -77,9 +77,12 @@ export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
     : undefined;
   const facts = evaluateFacts(
     input.context.hand, input.context.evaluation,
-    input.catalog, input.relationalContext, input.posteriorProvider,
-    input.posteriorProvider ? partnerSeat(input.context.seat) : undefined,
-    vulFlag,
+    input.catalog, {
+      relationalContext: input.relationalContext,
+      posterior: input.posteriorProvider,
+      posteriorSeatId: input.posteriorProvider ? partnerSeat(input.context.seat) : undefined,
+      isVulnerable: vulFlag,
+    },
   );
 
   // Step 3: Evaluate each surface's clauses against the facts.
@@ -89,13 +92,13 @@ export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
     definitions: input.catalog.definitions,
     evaluators: input.catalog.evaluators,
   };
-  const proposals = evaluateAllSurfaces(
-    composedSurfaces, facts, undefined,
+  const proposals = evaluateAllBidMeanings(
+    composedMeanings, facts, undefined,
     [catalogAsExtension], input.inheritedDimsLookup,
   );
 
   // Step 4: Arbitrate — encode, gate-check, rank, and select winner
-  const inputs = zipProposalsWithSurfaces(proposals, composedSurfaces);
+  const inputs = zipProposalsWithSurfaces(proposals, composedMeanings);
   const legalCalls = getLegalCalls(input.context.auction, input.context.seat);
   const arbitration = arbitrateMeanings(inputs, { legalCalls });
 
@@ -108,11 +111,11 @@ export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
 // ─── Public API ────────────────────────────────────────────────
 
 /**
- * Create a ConventionBiddingStrategy from a set of MeaningSurfaces.
+ * Create a ConventionStrategy from a set of MeaningSurfaces.
  * Tree-free: uses the meaning pipeline (compose → facts → evaluate → arbitrate).
  */
 export function meaningToStrategy(
-  surfaces: readonly MeaningSurface[],
+  surfaces: readonly BidMeaning[],
   moduleId: string,
   options?: {
     name?: string;
@@ -121,7 +124,7 @@ export function meaningToStrategy(
     acceptableAlternatives?: readonly AlternativeGroup[];
     intentFamilies?: readonly IntentFamily[];
   },
-): ConventionBiddingStrategy {
+): ConventionStrategy {
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
     acceptableAlternatives: options?.acceptableAlternatives ?? null,

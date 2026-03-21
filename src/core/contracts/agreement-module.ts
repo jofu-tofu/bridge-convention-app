@@ -1,4 +1,4 @@
-import type { AuctionPatternIR, PublicGuardIR } from "./predicate-surfaces";
+import type { AuctionPattern, PublicGuard } from "./predicates";
 import type { CandidateTransform, SemanticClassId, RecommendationBand } from "./meaning";
 import type { FactOperator } from "./meaning";
 import type { Call } from "../../engine/types";
@@ -41,16 +41,16 @@ export const ACCEPTABLE_NATURAL: PrioritySpec = { obligation: "acceptable", conv
 export const RESIDUAL_NATURAL: PrioritySpec = { obligation: "residual", conventionality: "natural" };
 
 // ─── Legacy PriorityClass (deprecated) ──────────────────────
-/** @deprecated Use PrioritySpec instead. Retained for DecisionSurfaceIR backward compatibility. */
+/** @deprecated Use PrioritySpec instead. Retained for DecisionSurface backward compatibility. */
 export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"
                           | "neutralCorrect" | "fallbackCorrect";
 
-// ─── DecisionSurfaceIR ─────────────────────────────────────
+// ─── DecisionSurface ─────────────────────────────────────
 // The primary IR contract type for decision surfaces. The runtime evaluates these
 // through the meaning pipeline. When decisionProgram === "clause-evaluator" and
 // inlineClauses are provided, the pipeline evaluates them against facts.
 // Other decision programs remain as a future extension point.
-export interface DecisionSurfaceIR {
+export interface DecisionSurface {
   readonly surfaceId: string;
   readonly moduleId: string;
   readonly decisionProgram: string;
@@ -65,7 +65,7 @@ export interface DecisionSurfaceIR {
   /** Inline clauses for the "clause-evaluator" decision program.
    *  When present, the pipeline evaluates these against EvaluatedFacts
    *  instead of producing empty all-pass clauses. */
-  readonly inlineClauses?: readonly FactConstraintIR[];
+  readonly inlineClauses?: readonly FactConstraint[];
   /** Human-readable teaching label for this surface. */
   readonly teachingLabel?: string;
   /** Default call when encoding is "direct". */
@@ -79,15 +79,15 @@ export interface DecisionSurfaceIR {
 }
 
 // ─── Attachment contract ────────────────────────────────────
-export interface AttachmentIR {
-  readonly whenAuction?: AuctionPatternIR;
-  readonly whenPublic?: PublicGuardIR;
+export interface Attachment {
+  readonly whenAuction?: AuctionPattern;
+  readonly whenPublic?: PublicGuard;
   readonly requiresCapabilities?: readonly string[];
   readonly requiresVisibleMeanings?: readonly string[];
 }
 
 // ─── Fact constraint ────────────────────────────────────────
-export interface FactConstraintIR {
+export interface FactConstraint {
   readonly factId: string;
   readonly operator: FactOperator;
   readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
@@ -110,14 +110,14 @@ import type { SystemConfig } from "./system-config";
 import type { BaseSystemId } from "./base-system-vocabulary";
 
 // ─── System Profile ─────────────────────────────────────────
-export interface SystemProfileIR {
+export interface SystemProfile {
   readonly profileId: string;
   readonly baseSystem: BaseSystemId;
   /** System-level bidding configuration (HCP ranges, thresholds).
    *  When present, convention modules use these values instead of hardcoded defaults. */
   readonly systemConfig?: SystemConfig;
-  readonly modules: readonly ModuleEntryIR[];
-  readonly conflictPolicy: ConflictPolicyIR;
+  readonly modules: readonly ModuleEntry[];
+  readonly conflictPolicy: ConflictPolicy;
   /** Profile-level mapping from obligation levels to runtime bands.
    *  When present, surfaces with a `prioritySpec` resolve their recommendationBand
    *  through this mapping instead of using the surface-level band directly. */
@@ -127,14 +127,14 @@ export interface SystemProfileIR {
   readonly priorityClassMapping?: Readonly<Record<PriorityClass, RecommendationBand>>;
 }
 
-export interface ModuleEntryIR {
+export interface ModuleEntry {
   readonly moduleId: string;
   readonly kind: ModuleKind;
-  readonly attachments: readonly AttachmentIR[];
+  readonly attachments: readonly Attachment[];
   readonly options?: Readonly<Record<string, unknown>>;
 }
 
-export interface ConflictPolicyIR {
+export interface ConflictPolicy {
   readonly activationDefault: "simultaneous";
   readonly exclusivityGroups?: readonly { groupId: string; memberModuleIds: readonly string[] }[];
   readonly semanticClassAliases?: readonly { from: string; to: string }[];
@@ -155,7 +155,7 @@ export interface PublicEvent {
 
 export interface PublicConstraint {
   readonly subject: string;
-  readonly constraint: FactConstraintIR;
+  readonly constraint: FactConstraint;
   readonly origin: "call-meaning" | "entailed-denial";
   readonly strength: "hard" | "entailed";
   readonly sourceCall?: string;
@@ -189,7 +189,7 @@ export function defaultPriorityClassMapping(): Readonly<Record<PriorityClass, Re
 }
 
 /** Convert a PrioritySpec to a legacy PriorityClass.
- *  Used during migration for backward compatibility with DecisionSurfaceIR. */
+ *  Used during migration for backward compatibility with DecisionSurface. */
 export function prioritySpecToClass(spec: PrioritySpec): PriorityClass {
   if (spec.obligation === "forced" && spec.conventionality === "conventional") return "obligatory";
   if (spec.obligation === "preferred" && spec.conventionality === "conventional") return "preferredConventional";

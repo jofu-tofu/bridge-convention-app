@@ -9,12 +9,11 @@
 // Phase 6: Uses rule enumeration (RuleAtom) instead of FSM BFS coverage.
 // Atom ID format: `moduleId/meaningId`.
 
-import { getSystem } from "../conventions/definitions/system-registry";
+import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
 import { enumerateRuleAtoms, type RuleAtom } from "../conventions/core";
 import { getBundle } from "../conventions/core/bundle";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
-import { specFromSystem } from "../conventions/definitions/system-registry";
 import { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
 import { BidGrade } from "../core/contracts/teaching-grading";
 import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../core/viewport/build-viewport";
@@ -27,7 +26,7 @@ import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
 import type { Auction, Deal, Hand, DealConstraints } from "../engine/types";
 import type { BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
-import type { ConventionBiddingStrategy } from "../core/contracts/recommendation";
+import type { ConventionStrategy } from "../core/contracts/recommendation";
 import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import type { AtomGradeResult } from "./types";
@@ -140,16 +139,16 @@ function makeViewport(
 
 /** Resolve the atom list for a bundle using rule enumeration. */
 function resolveAtoms(bundleId: string): readonly RuleAtom[] {
-  const system = getSystem(bundleId);
-  if (!system?.ruleModules) return [];
-  return enumerateRuleAtoms(system.ruleModules);
+  const bundle = getSystemBundle(bundleId);
+  if (!bundle?.ruleModules) return [];
+  return enumerateRuleAtoms(bundle.ruleModules);
 }
 
 /** Create a strategy from a bundle ID. */
 function createStrategy(bundleId: string): BiddingStrategy {
-  const system = getSystem(bundleId);
-  if (!system) throw new Error(`Unknown bundle: "${bundleId}"`);
-  const spec = specFromSystem(system);
+  const bundle = getSystemBundle(bundleId);
+  if (!bundle) throw new Error(`Unknown bundle: "${bundleId}"`);
+  const spec = specFromBundle(bundle);
   if (!spec) throw new Error(`No spec for bundle: "${bundleId}"`);
   return protocolSpecToStrategy(spec);
 }
@@ -230,7 +229,7 @@ export function gradeAtomBid(
     };
   }
 
-  const strategyEval = (strategy as ConventionBiddingStrategy).getLastEvaluation?.() ?? null;
+  const strategyEval = (strategy as ConventionStrategy).getLastEvaluation?.() ?? null;
   const teachingResolution = resolveTeachingAnswer(
     result,
     strategyEval?.acceptableAlternatives ?? undefined,

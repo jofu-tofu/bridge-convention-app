@@ -1,3 +1,2 @@
-import { bundleFromSystem, weakTwosSystem } from "../system-registry";
-
-export const weakTwoBundle = bundleFromSystem(weakTwosSystem);
+// Re-export bundle from system-registry (single source of truth)
+export { weakTwoBundle } from "../system-registry";

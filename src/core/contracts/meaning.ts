@@ -2,9 +2,9 @@ import type { ConditionResult } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
 import type {
   ChoiceClosurePolicy,
-  FactConstraintIR,
+  FactConstraint,
 } from "./agreement-module";
-import type { PedagogicalTagRef } from "./pedagogical-tag";
+import type { TeachingTagRef } from "./teaching-tag";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;
@@ -72,7 +72,7 @@ export interface MeaningClause {
 }
 
 /** Evidence for how and why a meaning was evaluated. */
-export interface MeaningEvaluationEvidence {
+export interface EvaluationEvidence {
   readonly factDependencies: readonly string[];
   readonly evaluatedConditions: readonly (ConditionResult & {
     readonly conditionId: string;
@@ -92,18 +92,18 @@ export interface MeaningProposal {
   readonly moduleId: string;
   readonly clauses: readonly MeaningClause[];
   readonly ranking: RankingMetadata;
-  readonly evidence: MeaningEvaluationEvidence;
+  readonly evidence: EvaluationEvidence;
   readonly sourceIntent: {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
   readonly modulePriority?: "preferred" | "alternative";
   /** Human-readable teaching label (e.g., "Stayman 2C", "Transfer to hearts").
-   *  Threaded from MeaningSurface.teachingLabel through the evaluation pipeline. */
+   *  Threaded from BidMeaning.teachingLabel through the evaluation pipeline. */
   readonly teachingLabel?: string;
   /** Structured constraints auto-derived from primitive/bridge-observable clauses.
    *  Threaded through the pipeline for BidAlert construction in the strategy layer. */
-  readonly publicConstraints?: readonly FactConstraintIR[];
+  readonly publicConstraints?: readonly FactConstraint[];
   /** True when this bid is alertable (derived from sourceIntent.type). */
   readonly isAlertable?: boolean;
 }
@@ -160,7 +160,7 @@ export interface CandidateTransform {
   readonly targetId: string;
   readonly sourceModuleId: string;
   readonly reason: string;
-  readonly surface?: MeaningSurface; // required when kind === "inject"
+  readonly surface?: BidMeaning; // required when kind === "inject"
   readonly newCall?: Call; // shorthand when remap only changes the call
   readonly remapTo?: {
     readonly meaningId?: string;
@@ -182,10 +182,10 @@ export interface TransformTrace {
 }
 
 // ---------------------------------------------------------------------------
-// MeaningSurface types (merged from meaning-surface.ts to break circular dep)
+// BidMeaning types (merged from meaning-surface.ts to break circular dep)
 // ---------------------------------------------------------------------------
 
-export interface MeaningSurfaceClause extends FactConstraintIR {
+export interface BidMeaningClause extends FactConstraint {
   /** Deterministic identifier. Optional — auto-derived from factId:operator:value
    *  by the `createSurface()` builder or pipeline fallback. */
   readonly clauseId?: string;
@@ -199,7 +199,7 @@ export interface MeaningSurfaceClause extends FactConstraintIR {
   readonly isPublic?: boolean;
 }
 
-export interface MeaningSurface {
+export interface BidMeaning {
   readonly meaningId: MeaningId;
   readonly semanticClassId: SemanticClassId;
   /** Module that owns this surface. Optional — injected by `createSurface()` builder
@@ -212,7 +212,7 @@ export interface MeaningSurface {
       condition?: string;
     }[];
   };
-  readonly clauses: readonly MeaningSurfaceClause[];
+  readonly clauses: readonly BidMeaningClause[];
   readonly ranking: AuthoredRankingMetadata;
   readonly sourceIntent: {
     readonly type: string;
@@ -225,7 +225,7 @@ export interface MeaningSurface {
   readonly closurePolicy?: ChoiceClosurePolicy;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
   /** Cross-module pedagogical tags for deriving relations and alternatives. */
-  readonly pedagogicalTags?: readonly PedagogicalTagRef[];
+  readonly teachingTags?: readonly TeachingTagRef[];
 }
 
 // ---------------------------------------------------------------------------

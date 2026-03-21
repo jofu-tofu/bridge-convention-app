@@ -2,9 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { composeBundles } from "../composite-builder";
 import type { ConventionBundle } from "../bundle-types";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
-import type { ExplanationCatalogIR } from "../../../../core/contracts/explanation-catalog";
-import type { MeaningSurface } from "../../../../core/contracts/meaning";
+import type { ExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
+import { ConventionCategory } from "../../../../core/contracts/convention";
 
 function makeBundle(
   id: string,
@@ -14,10 +15,12 @@ function makeBundle(
   return {
     id,
     name: `Bundle ${id}`,
+    category: ConventionCategory.Constructive,
+    description: "test",
     memberIds,
     dealConstraints: { seats: [] },
     explanationCatalog: { version: "1.0.0", entries: [] },
-    pedagogicalRelations: [],
+    teachingRelations: [],
     acceptableAlternatives: [],
     intentFamilies: [],
     ...extras,
@@ -58,8 +61,8 @@ describe("composeBundles", () => {
   });
 
   it("concatenates meaning surfaces from all bundles", () => {
-    const surfaceA = { surfaceId: "s-a" } as unknown as MeaningSurface;
-    const surfaceB = { surfaceId: "s-b" } as unknown as MeaningSurface;
+    const surfaceA = { surfaceId: "s-a" } as unknown as BidMeaning;
+    const surfaceB = { surfaceId: "s-b" } as unknown as BidMeaning;
 
     const a = makeBundle("a", [], {
       meaningSurfaces: [{ groupId: "g-a", surfaces: [surfaceA] }],
@@ -121,7 +124,7 @@ describe("composeBundles", () => {
 
     expect(composite.meaningSurfaces).toBeUndefined();
     expect(composite.factExtensions).toBeUndefined();
-    expect(composite.pedagogicalRelations).toEqual([]);
+    expect(composite.teachingRelations).toEqual([]);
     expect(composite.acceptableAlternatives).toEqual([]);
     expect(composite.intentFamilies).toEqual([]);
     expect(composite.explanationCatalog).toEqual({ version: "1.0.0", entries: [] });
@@ -131,7 +134,7 @@ describe("composeBundles", () => {
   });
 
   it("merges explanation catalog entries with deduplication", () => {
-    const catA: ExplanationCatalogIR = {
+    const catA: ExplanationCatalog = {
       version: "1.0.0",
       entries: [
         {
@@ -148,7 +151,7 @@ describe("composeBundles", () => {
         },
       ],
     };
-    const catB: ExplanationCatalogIR = {
+    const catB: ExplanationCatalog = {
       version: "1.0.0",
       entries: [
         {
@@ -251,19 +254,19 @@ describe("composeBundles", () => {
 
   it("concatenates pedagogical relations", () => {
     const a = makeBundle("a", [], {
-      pedagogicalRelations: [
+      teachingRelations: [
         { kind: "stronger-than" as const, a: "bid-1", b: "bid-2" },
       ],
     });
     const b = makeBundle("b", [], {
-      pedagogicalRelations: [
+      teachingRelations: [
         { kind: "same-family" as const, a: "bid-3", b: "bid-4" },
       ],
     });
 
     const composite = composeBundles("ab", "AB", [a, b]);
 
-    expect(composite.pedagogicalRelations).toHaveLength(2);
+    expect(composite.teachingRelations).toHaveLength(2);
   });
 
   it("concatenates acceptable alternatives", () => {
@@ -284,8 +287,8 @@ describe("composeBundles", () => {
   });
 
   it("composes surface routers by concatenating results", () => {
-    const surfaceA = { surfaceId: "s-a" } as unknown as MeaningSurface;
-    const surfaceB = { surfaceId: "s-b" } as unknown as MeaningSurface;
+    const surfaceA = { surfaceId: "s-a" } as unknown as BidMeaning;
+    const surfaceB = { surfaceId: "s-b" } as unknown as BidMeaning;
 
     const a = makeBundle("a", [], {
       surfaceRouter: () => [surfaceA],

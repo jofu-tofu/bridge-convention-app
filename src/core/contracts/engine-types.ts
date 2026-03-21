@@ -2,5 +2,5 @@
 export * from "./meaning";
 export * from "./fact-catalog";
 export * from "./agreement-module";
-export * from "./canonical-observation";
+export * from "./bid-action";
 export * from "./committed-step";

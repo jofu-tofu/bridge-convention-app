@@ -30,7 +30,7 @@ Session-handle-oriented service module that owns all game state and exposes only
 
 **Allowed to cross:** `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, `Call`, `Card`, `Seat`, `Vulnerability`, `BidGrade`, `BidHistoryEntry`, `GamePhase`, `SessionHandle` (opaque string), session config DTOs.
 
-**Never crosses:** `Deal`, `BidResult`, `DrillSession`, `DrillBundle`, `ConventionBiddingStrategy`, `StrategyEvaluation`, `ArbitrationResult`, `MeaningSurface`, `InferenceEngine`.
+**Never crosses:** `Deal`, `BidResult`, `DrillSession`, `DrillBundle`, `ConventionStrategy`, `StrategyEvaluation`, `ArbitrationResult`, `BidMeaning`, `InferenceEngine`.
 
 ## Dependency Direction
 

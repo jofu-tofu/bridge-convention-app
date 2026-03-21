@@ -1,9 +1,9 @@
-// Derive PublicBeliefs from accumulated FactConstraintIR[].
+// Derive PublicBeliefs from accumulated FactConstraint[].
 // Replaces the old mergeInferences() approach with a lossless constraint-first model.
 
 import type { Seat, Suit } from "../engine/types";
 import { Suit as SuitEnum } from "../engine/types";
-import type { FactConstraintIR } from "../core/contracts/agreement-module";
+import type { FactConstraint } from "../core/contracts/agreement-module";
 import type { PublicBeliefs, DerivedRanges, QualitativeConstraint } from "../core/contracts/inference";
 
 const ALL_SUITS: Suit[] = [SuitEnum.Spades, SuitEnum.Hearts, SuitEnum.Diamonds, SuitEnum.Clubs];
@@ -30,7 +30,7 @@ const QUALITATIVE_LABELS: Record<string, string> = {
  */
 export function derivePublicBeliefs(
   seat: Seat,
-  constraints: readonly FactConstraintIR[],
+  constraints: readonly FactConstraint[],
 ): PublicBeliefs {
   return {
     seat,
@@ -44,7 +44,7 @@ export function derivePublicBeliefs(
  * Compute flat display-friendly ranges from constraints.
  * Handles: hand.hcp, hand.suitLength.*, hand.isBalanced.
  */
-function deriveRanges(constraints: readonly FactConstraintIR[]): DerivedRanges {
+function deriveRanges(constraints: readonly FactConstraint[]): DerivedRanges {
   let hcpMin = 0;
   let hcpMax = 40;
   let balanced: boolean | undefined;
@@ -130,7 +130,7 @@ function deriveRanges(constraints: readonly FactConstraintIR[]): DerivedRanges {
  * Extract qualitative constraints — those that don't reduce to flat per-suit ranges.
  * These are displayed as-is in the UI (e.g. "Has 4-card major").
  */
-function deriveQualitative(constraints: readonly FactConstraintIR[]): QualitativeConstraint[] {
+function deriveQualitative(constraints: readonly FactConstraint[]): QualitativeConstraint[] {
   const result: QualitativeConstraint[] = [];
 
   for (const c of constraints) {
@@ -150,17 +150,17 @@ function deriveQualitative(constraints: readonly FactConstraintIR[]): Qualitativ
 }
 
 /**
- * Convert a HandInference to FactConstraintIR[].
+ * Convert a HandInference to FactConstraint[].
  * Used at the boundary where InferenceProvider returns HandInference
- * but the public beliefs pipeline needs FactConstraintIR[].
+ * but the public beliefs pipeline needs FactConstraint[].
  */
 export function handInferenceToConstraints(inf: {
   readonly minHcp?: number;
   readonly maxHcp?: number;
   readonly isBalanced?: boolean;
   readonly suits: Partial<Record<Suit, { readonly minLength?: number; readonly maxLength?: number }>>;
-}): FactConstraintIR[] {
-  const constraints: FactConstraintIR[] = [];
+}): FactConstraint[] {
+  const constraints: FactConstraint[] = [];
 
   if (inf.minHcp !== undefined) {
     constraints.push({ factId: "hand.hcp", operator: "gte", value: inf.minHcp });

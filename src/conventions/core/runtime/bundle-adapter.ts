@@ -2,7 +2,7 @@ import type { Auction, Seat } from "../../../engine/types";
 import type { ConventionBundle } from "../bundle/bundle-types";
 import type { RuntimeModule } from "./types";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import { resolveActiveModules } from "./profile-activation";
 
 /**
@@ -55,7 +55,7 @@ export function bundleToRuntimeModules(
       _snapshot: PublicSnapshot,
       auction: Auction,
       seat: Seat,
-    ): readonly MeaningSurface[] => {
+    ): readonly BidMeaning[] => {
       if (bundle.surfaceRouter) {
         const routedSurfaces = bundle.surfaceRouter(auction, seat);
         return group.surfaces.filter((s) => routedSurfaces.includes(s));

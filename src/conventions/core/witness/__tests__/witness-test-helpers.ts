@@ -1,9 +1,9 @@
-import type { WitnessSpecIR } from "../../../../core/contracts/witness-spec";
+import type { DealSpec } from "../../../../core/contracts/deal-spec";
 
-/** Build a minimal WitnessSpecIR, overriding any fields as needed. */
+/** Build a minimal DealSpec, overriding any fields as needed. */
 export function makeSpec(
-  overrides: Partial<WitnessSpecIR> = {},
-): WitnessSpecIR {
+  overrides: Partial<DealSpec> = {},
+): DealSpec {
   return {
     specId: "test-spec",
     moduleId: "test-module",

@@ -4,15 +4,15 @@ import {
   enumerateRuleAtoms,
 } from "../../conventions/core";
 import type { RuleAtom } from "../../conventions/core";
-import { listSystems } from "../../conventions/definitions/system-registry";
+import { listSystemBundles } from "../../conventions/definitions/system-registry";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
-import type { Flags, ConventionSpec, BiddingSystem, Vulnerability, Auction, Call, Seat, Deal } from "../shared";
+import type { Flags, ConventionSpec, ConventionBundle, Vulnerability, Auction, Call, Seat, Deal } from "../shared";
 import {
   callKey,
   optionalNumericArg,
-  resolveSpec, resolveSystemWithRules,
+  resolveSpec, resolveBundleWithRules,
   generateSeededDeal, resolveUserSeat,
   buildInitialAuction, buildContext, nextSeatClockwise, partnerOf,
 } from "../shared";
@@ -25,7 +25,7 @@ import {
  * encoding or hits a safety limit. Opponents always pass.
  */
 function buildForwardAuction(
-  system: BiddingSystem,
+  bundle: ConventionBundle,
   spec: ConventionSpec,
   deal: Deal,
   userSeat: Seat,
@@ -34,7 +34,7 @@ function buildForwardAuction(
 ): { auction: Auction; reached: boolean } {
   const strategy = createSpecStrategy(spec);
   const partner = partnerOf(userSeat);
-  const initAuction = buildInitialAuction(system, userSeat, deal);
+  const initAuction = buildInitialAuction(bundle, userSeat, deal);
   const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
   const maxBids = 20;
 
@@ -87,19 +87,19 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
     process.exit(2);
   }
 
-  const specs: { id: string; spec: ConventionSpec; system: BiddingSystem }[] = [];
+  const specs: { id: string; spec: ConventionSpec; bundle: ConventionBundle }[] = [];
 
   if (all) {
-    for (const system of listSystems()) {
-      if (system.internal) continue;
-      if (!system.ruleModules || system.ruleModules.length === 0) continue;
-      const spec = resolveSpec(system.id);
-      specs.push({ id: system.id, spec, system });
+    for (const bundle of listSystemBundles()) {
+      if (bundle.internal) continue;
+      if (!bundle.ruleModules || bundle.ruleModules.length === 0) continue;
+      const spec = resolveSpec(bundle.id);
+      specs.push({ id: bundle.id, spec, bundle });
     }
   } else {
     const spec = resolveSpec(bundleId!);
-    const system = resolveSystemWithRules(bundleId!);
-    specs.push({ id: bundleId!, spec, system });
+    const bundle = resolveBundleWithRules(bundleId!);
+    specs.push({ id: bundleId!, spec, bundle });
   }
 
   let totalPass = 0;
@@ -114,8 +114,8 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
     details?: string;
   }[] = [];
 
-  for (const { id, spec, system } of specs) {
-    const ruleModules = system.ruleModules ?? [];
+  for (const { id, spec, bundle } of specs) {
+    const ruleModules = bundle.ruleModules ?? [];
     const allAtoms = enumerateRuleAtoms(ruleModules);
     const strategy = createSpecStrategy(spec);
 
@@ -126,17 +126,17 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
 
       try {
         // Generate deal for this atom
-        const deal = generateSeededDeal(system, atomSeed, vuln);
-        const userSeat = resolveUserSeat(system, deal);
+        const deal = generateSeededDeal(bundle, atomSeed, vuln);
+        const userSeat = resolveUserSeat(bundle, deal);
 
         // Build auction via strategy-driven forward approach
         const { auction, reached } = buildForwardAuction(
-          system, spec, deal, userSeat, atom, vuln,
+          bundle, spec, deal, userSeat, atom, vuln,
         );
 
         if (!reached) {
           // Strategy didn't reach the atom's encoding — try at initial auction
-          const initAuction = buildInitialAuction(system, userSeat, deal);
+          const initAuction = buildInitialAuction(bundle, userSeat, deal);
           const activeSeat = initAuction.entries.length > 0
             ? nextSeatClockwise(initAuction.entries[initAuction.entries.length - 1]!.seat)
             : userSeat;

@@ -1,6 +1,6 @@
 // Composed NT surfaces — re-exports individual module surfaces and defines
 // cross-module composed surfaces (RESPONDER_SURFACES, STAYMAN_R3_AFTER_2D_SURFACES).
-import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../core/contracts/meaning";
 import { staymanModule } from "../modules/stayman";
 import { jacobyTransfersModule } from "../modules/jacoby-transfers";
 import { naturalNtModule } from "../modules/natural-nt";
@@ -16,14 +16,14 @@ export { OPENER_1NT_SURFACE } from "../modules/natural-nt";
 const smolenR3Surfaces = smolenModule.surfaceGroups.find(
   (g) => g.groupId === "responder-r3-after-stayman-2d",
 )?.surfaces ?? [];
-export const STAYMAN_R3_AFTER_2D_SURFACES: readonly MeaningSurface[] = [
+export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
   ...STAYMAN_ONLY_R3_2D,
   ...smolenR3Surfaces,
 ];
 
 // RESPONDER_SURFACES = all modules' entry surfaces concatenated
 // (previously assembled by composeNtModules, now inlined)
-export const RESPONDER_SURFACES: readonly MeaningSurface[] = [
+export const RESPONDER_SURFACES: readonly BidMeaning[] = [
   ...naturalNtModule.entrySurfaces,
   ...jacobyTransfersModule.entrySurfaces,
   ...staymanModule.entrySurfaces,

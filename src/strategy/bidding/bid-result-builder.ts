@@ -6,8 +6,8 @@ import type {
 import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
-import type { ExplanationCatalogIR } from "../../core/contracts/explanation-catalog";
-import type { PedagogicalRelation } from "../../core/contracts/teaching-projection";
+import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import { formatHandSummary } from "../../core/display/hand-summary";
@@ -85,14 +85,14 @@ export function buildBidResult(
 export function buildTeachingProjection(
   arbitration: ArbitrationResult,
   provenance: DecisionProvenance | null,
-  explanationCatalog?: ExplanationCatalogIR,
+  explanationCatalog?: ExplanationCatalog,
   posteriorSummary?: PosteriorSummary | null,
-  pedagogicalRelations?: readonly PedagogicalRelation[],
+  teachingRelations?: readonly TeachingRelation[],
 ): TeachingProjection | null {
   if (!provenance) return null;
   return projectTeaching(arbitration, provenance, {
     explanationCatalog,
     posteriorSummary: posteriorSummary ?? undefined,
-    pedagogicalRelations,
+    teachingRelations,
   });
 }
