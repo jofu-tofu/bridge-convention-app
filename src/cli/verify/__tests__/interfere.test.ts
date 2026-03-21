@@ -1,0 +1,360 @@
+import { describe, it, expect } from "vitest";
+import type { RuleModule } from "../../../conventions/core/rule-module";
+import type { MeaningSurface } from "../../../core/contracts/meaning";
+import type { InterferenceEdge } from "../types";
+import {
+  detectActivationOverlap,
+  detectEncodingCollision,
+  detectObservationCrosstalk,
+  detectKernelConflict,
+  analyzeBundle,
+  classifyPairRisk,
+} from "../interfere";
+
+// ── Fixture factories ─────────────────────────────────────────────
+
+function makeModule(id: string, overrides: Partial<RuleModule> = {}): RuleModule {
+  return {
+    id,
+    local: { initial: "idle", transitions: [] },
+    rules: [],
+    facts: { definitions: [], evaluators: new Map() },
+    explanationEntries: [],
+    ...overrides,
+  };
+}
+
+function makeSurface(
+  meaningId: string,
+  callType?: { type: "bid"; level: number; strain: string },
+): MeaningSurface {
+  return {
+    meaningId,
+    semanticClassId: `test:${meaningId}`,
+    teachingLabel: meaningId,
+    sourceIntent: { type: "TestIntent", params: {} },
+    clauses: [],
+    encoding: {
+      kind: "direct",
+      defaultCall: callType ?? { type: "bid", level: 1, strain: "NT" },
+    },
+    ranking: { recommendationBand: "should", intraModuleOrder: 0 },
+  } as unknown as MeaningSurface;
+}
+
+// ── detectActivationOverlap ───────────────────────────────────────
+
+describe("detectActivationOverlap", () => {
+  it("detects overlap when both modules have compatible turn+phase guards", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("a1") }],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("b1") }],
+        },
+      ],
+    });
+
+    const edges = detectActivationOverlap(a, b);
+    expect(edges.length).toBeGreaterThan(0);
+    expect(edges[0]!.kind).toBe("activation-overlap");
+    expect(edges[0]!.risk).toBe("low");
+  });
+
+  it("detects overlap when one module has wildcard turn guard", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { local: "idle" },
+          claims: [{ surface: makeSurface("a1") }],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("b1") }],
+        },
+      ],
+    });
+
+    const edges = detectActivationOverlap(a, b);
+    expect(edges.length).toBeGreaterThan(0);
+  });
+
+  it("reports no overlap when turn guards are incompatible", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "opener", local: "idle" },
+          claims: [{ surface: makeSurface("a1") }],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "opponent", local: "idle" },
+          claims: [{ surface: makeSurface("b1") }],
+        },
+      ],
+    });
+
+    const edges = detectActivationOverlap(a, b);
+    expect(edges).toHaveLength(0);
+  });
+});
+
+// ── detectEncodingCollision ───────────────────────────────────────
+
+describe("detectEncodingCollision", () => {
+  it("detects collision when two modules claim the same bid", () => {
+    const sameBid = { type: "bid" as const, level: 2, strain: "C" };
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("a1", sameBid) }],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("b1", sameBid) }],
+        },
+      ],
+    });
+
+    const edges = detectEncodingCollision(a, b);
+    expect(edges.length).toBeGreaterThan(0);
+    expect(edges[0]!.kind).toBe("encoding-collision");
+    expect(edges[0]!.risk).toBe("high");
+  });
+
+  it("reports no collision when bids differ", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("a1", { type: "bid", level: 2, strain: "C" }) }],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("b1", { type: "bid", level: 3, strain: "D" }) }],
+        },
+      ],
+    });
+
+    const edges = detectEncodingCollision(a, b);
+    expect(edges).toHaveLength(0);
+  });
+});
+
+// ── detectObservationCrosstalk ────────────────────────────────────
+
+describe("detectObservationCrosstalk", () => {
+  it("detects crosstalk when module A claim obs matches module B transition", () => {
+    // StaymanAsk normalizes to [{ act: "inquire", feature: "majorSuit" }]
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [
+            {
+              surface: {
+                ...makeSurface("a1"),
+                sourceIntent: { type: "StaymanAsk", params: {} },
+              } as unknown as MeaningSurface,
+            },
+          ],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      local: {
+        initial: "idle",
+        transitions: [
+          { from: "idle", to: "responded", on: { act: "inquire", feature: "majorSuit" } },
+        ],
+      },
+      rules: [],
+      facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
+    });
+
+    const edges = detectObservationCrosstalk(a, b);
+    expect(edges.length).toBeGreaterThan(0);
+    expect(edges[0]!.kind).toBe("observation-crosstalk");
+    expect(edges[0]!.risk).toBe("medium");
+  });
+
+  it("reports no crosstalk for unknown intents (empty canonical obs)", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [{ surface: makeSurface("a1") }],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      local: {
+        initial: "idle",
+        transitions: [
+          { from: "idle", to: "responded", on: { act: "inquire", feature: "majorSuit" } },
+        ],
+      },
+      rules: [],
+      facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
+    });
+
+    const edges = detectObservationCrosstalk(a, b);
+    expect(edges).toHaveLength(0);
+  });
+});
+
+// ── detectKernelConflict ──────────────────────────────────────────
+
+describe("detectKernelConflict", () => {
+  it("detects conflict when both modules write the same kernel field", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [
+            {
+              surface: makeSurface("a1"),
+              kernelDelta: { forcing: "game" },
+            },
+          ],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [
+            {
+              surface: makeSurface("b1"),
+              kernelDelta: { forcing: "one-round" },
+            },
+          ],
+        },
+      ],
+    });
+
+    const edges = detectKernelConflict(a, b);
+    expect(edges.length).toBeGreaterThan(0);
+    expect(edges[0]!.kind).toBe("kernel-conflict");
+    expect(edges[0]!.risk).toBe("medium");
+  });
+
+  it("reports no conflict when kernel fields differ", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [
+            {
+              surface: makeSurface("a1"),
+              kernelDelta: { forcing: "game" },
+            },
+          ],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "responder", local: "idle" },
+          claims: [
+            {
+              surface: makeSurface("b1"),
+              kernelDelta: { captain: "responder" },
+            },
+          ],
+        },
+      ],
+    });
+
+    const edges = detectKernelConflict(a, b);
+    expect(edges).toHaveLength(0);
+  });
+});
+
+// ── analyzeBundle ────────────────────────────────────────────────
+
+describe("analyzeBundle", () => {
+  it("returns no edges for two clean modules with no overlap", () => {
+    const a = makeModule("mod-a", {
+      rules: [
+        {
+          match: { turn: "opener", local: "idle" },
+          claims: [{ surface: makeSurface("a1", { type: "bid", level: 1, strain: "H" }) }],
+        },
+      ],
+    });
+    const b = makeModule("mod-b", {
+      rules: [
+        {
+          match: { turn: "opponent", local: "idle" },
+          claims: [{ surface: makeSurface("b1", { type: "bid", level: 2, strain: "D" }) }],
+        },
+      ],
+    });
+
+    const interactions = analyzeBundle([a, b]);
+    expect(interactions).toHaveLength(1);
+    expect(interactions[0]!.edges).toHaveLength(0);
+    expect(interactions[0]!.riskLevel).toBe("none");
+  });
+});
+
+// ── classifyPairRisk ─────────────────────────────────────────────
+
+describe("classifyPairRisk", () => {
+  it("returns 'none' for empty edges", () => {
+    expect(classifyPairRisk([])).toBe("none");
+  });
+
+  it("returns max risk across edges", () => {
+    const edges: InterferenceEdge[] = [
+      { kind: "activation-overlap", description: "test", risk: "low" },
+      { kind: "encoding-collision", description: "test", risk: "high" },
+      { kind: "observation-crosstalk", description: "test", risk: "medium" },
+    ];
+    expect(classifyPairRisk(edges)).toBe("high");
+  });
+
+  it("returns 'medium' when that is the max risk", () => {
+    const edges: InterferenceEdge[] = [
+      { kind: "activation-overlap", description: "test", risk: "low" },
+      { kind: "observation-crosstalk", description: "test", risk: "medium" },
+    ];
+    expect(classifyPairRisk(edges)).toBe("medium");
+  });
+
+  it("returns 'low' when only low-risk edges exist", () => {
+    const edges: InterferenceEdge[] = [
+      { kind: "activation-overlap", description: "test", risk: "low" },
+    ];
+    expect(classifyPairRisk(edges)).toBe("low");
+  });
+});

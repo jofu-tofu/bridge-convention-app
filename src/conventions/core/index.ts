@@ -31,7 +31,7 @@ export {
   createSharedFactCatalog,
   createHandFactResolver,
 } from "./pipeline/fact-evaluator";
-export type { RelationalFactContext } from "./pipeline/fact-evaluator";
+export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/fact-evaluator";
 
 export { evaluateAllSurfaces } from "./pipeline/meaning-evaluator";
 
@@ -75,8 +75,10 @@ export { enumerateRuleAtoms, generateRuleCoverageManifest } from "./pipeline/rul
 export type { RuleAtom, RuleCoverageManifest } from "./pipeline/rule-enumeration";
 
 // ── Rule interpretation workflow — used by strategy/bidding/protocol-adapter ──
-export { collectMatchingClaims, collectMatchingClaimsWithPhases } from "./pipeline/rule-interpreter";
+export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole } from "./pipeline/rule-interpreter";
+export type { ModuleClaimResult } from "./pipeline/rule-interpreter";
 export { normalizeIntent } from "./pipeline/normalize-intent";
+export { matchObs } from "./pipeline/route-matcher";
 export { advanceLocalFsm } from "./pipeline/local-fsm";
 
 // ── Rule Module ─────────────────────────────────────────────────────────

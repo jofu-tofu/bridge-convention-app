@@ -15,6 +15,7 @@ export function printUsage(): void {
   console.error("                                             Playthrough evaluation (Phase 2)");
   console.error("  selftest  --bundle=<id> | --all [--seed=N] Strategy self-test (CI)");
   console.error("  plan      --bundle=<id> --agents=N [...]   Precompute evaluation plan");
+  console.error("  verify    <subcommand> --bundle=<id> [...]   Compositional verification");
   console.error("  help                                       Show this help");
   console.error("");
   console.error("Global settings:");
@@ -157,6 +158,31 @@ export function printSubcommandHelp(cmd: string): void {
       console.error("");
       console.error("  phase2 — Auto-scaled seed assignments per agent, balanced by step count.");
       console.error("           Agent-facing: agents use 'play' to walk these seeds.");
+      break;
+
+    case "verify":
+      console.error("verify — Compositional verification framework.");
+      console.error("");
+      console.error("Subcommands:");
+      console.error("  verify lint      --bundle=<id> [--module=<id>] [--severity=<error|warn|all>]");
+      console.error("                   Per-module static analysis (unreachable phases, dead rules)");
+      console.error("");
+      console.error("  verify interfere --bundle=<id> [--pair=A,B] [--kind=<activation|encoding|kernel|observation|all>]");
+      console.error("                   Pairwise interference analysis (bid collisions, crosstalk)");
+      console.error("");
+      console.error("  verify explore   --bundle=<id> [--depth=6] [--seed=42] [--trials=50] [--invariant=<name>]");
+      console.error("                   Bounded state exploration with invariant checks");
+      console.error("");
+      console.error("  verify motif     --bundle=<id> --pair=A,B [--depth=8] [--seed=42] [--trials=100]");
+      console.error("                   Pairwise motif testing (co-activation analysis)");
+      console.error("");
+      console.error("  verify fuzz      --bundle=<id> [--trials=200] [--seed=0] [--vuln=mixed]");
+      console.error("                   Property-based fuzz testing");
+      console.error("");
+      console.error("  verify preflight --bundle=<id> [--budget=fast|full]");
+      console.error("                   Bundle certification (runs all stages)");
+      console.error("");
+      console.error("All commands output JSON to stdout. Exit codes: 0=pass, 1=fail, 2=arg error.");
       break;
 
     default:

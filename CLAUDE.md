@@ -21,6 +21,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 | `npm run lint:fix`        | ESLint auto-fix                                            |
 | `npm run lint:dead`       | Report unused files/dead references via Knip                  |
 | `npm run lint:full`       | `npm run lint` plus dead-reference check                     |
+| `npx tsx src/cli/main.ts verify preflight --bundle=<id>` | Bundle compositional verification |
 | `npm run format`          | Prettier format all files                                  |
 | `npm run format:check`    | Prettier check (CI)                                        |
 | `cargo test --workspace`  | Run all Rust tests (from src-tauri/)                       |
@@ -34,6 +35,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Target surface:** `?targetSurface=Z` exercises a specific meaning surface at target state
 - **Coverage screen:** `?coverage=true&convention=X` opens coverage screen for a specific bundle
 - **CLI coverage:** `npx tsx src/cli/main.ts list --bundle=nt-bundle` runs headless coverage tests. Subcommands: `list` (enumerate atoms), `eval` (per-atom evaluation), `play` (playthrough evaluation), `selftest` (CI mode), `plan` (evaluation plan). Same seed = same deal across `eval`/`eval --bid`.
+- **Compositional verification:** `npx tsx src/cli/main.ts verify preflight --bundle=nt-bundle --budget=fast` runs full structural health check (lint + interference + exploration + fuzz). Individual stages: `verify lint`, `verify interfere`, `verify explore`, `verify fuzz`.
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-P` (pass), `bid-X` (double), `bid-XX` (redouble). Container test IDs: `level-bids` (contract grid), `special-bids` (pass/dbl/rdbl row).
 
 ## Code Hygiene

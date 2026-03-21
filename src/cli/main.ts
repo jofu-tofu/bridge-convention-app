@@ -11,6 +11,7 @@
 //   plan      — precompute two-phase evaluation plan
 //   bundles   — list all available bundles
 //   describe  — inspect a bundle in detail
+//   verify    — compositional verification (lint, interfere, explore, motif, fuzz, preflight)
 
 // ── Side-effect import: registers all bundles + conventions ─────────
 import "../conventions";
@@ -22,6 +23,7 @@ import { runSelftest } from "./commands/selftest";
 import { runPlay } from "./commands/play";
 import { runPlan } from "./commands/plan";
 import { printUsage, printSubcommandHelp } from "./help";
+import { runVerify } from "./verify";
 
 // ── Main dispatch ───────────────────────────────────────────────────
 
@@ -62,6 +64,16 @@ switch (subcommand) {
   case "describe":
     runDescribe(flags, parseVulnerability(flags));
     break;
+  case "verify": {
+    const verifySubcommand = rawArgs[1];
+    const verifyFlags = parseArgs(rawArgs.slice(2));
+    if (!verifySubcommand || verifyFlags["help"] === true || verifyFlags["h"] === true) {
+      printSubcommandHelp("verify");
+      process.exit(verifySubcommand ? 0 : 2);
+    }
+    runVerify(verifySubcommand, verifyFlags);
+    break;
+  }
   default:
     console.error(`Unknown subcommand: "${subcommand}"`);
     printUsage();

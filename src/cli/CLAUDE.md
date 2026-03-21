@@ -2,6 +2,8 @@
 
 Headless CLI for evaluating bridge convention correctness. Two evaluation modes: **per-atom** (targeted, orchestrator-driven) and **playthrough** (end-to-end, agent-driven). No browser, no Svelte — pure strategy evaluation via JSON.
 
+Includes a **compositional verification framework** (`verify` namespace) for catching composition bugs through static analysis, runtime exploration, and property-based fuzz testing.
+
 ## Commands
 
 ```
@@ -34,6 +36,50 @@ Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 Same seed = same deal across all commands. Deterministic (Mulberry32 PRNG).
 
 Bundle IDs are discovered at runtime via `bundles` subcommand. Do not hardcode bundle IDs — use self-discovery.
+
+## Verification Commands
+
+```
+── Compositional verification ──────────────────────────────────
+  verify lint      --bundle=<id> [--module=<id>] [--severity=<error|warn|all>]
+  verify interfere --bundle=<id> [--pair=A,B] [--kind=<activation|encoding|kernel|observation|all>]
+  verify explore   --bundle=<id> [--depth=6] [--seed=42] [--trials=50]
+  verify motif     --bundle=<id> --pair=A,B [--depth=8] [--seed=42] [--trials=100]
+  verify fuzz      --bundle=<id> [--trials=200] [--seed=0] [--vuln=mixed]
+  verify preflight --bundle=<id> [--budget=fast|full]
+```
+
+All verify commands output JSON to stdout. Exit codes: 0=pass, 1=fail, 2=arg error.
+
+### verify lint
+Per-module static analysis. Checks: unreachable phases, dead rules, broad patterns, orphan transitions, undeclared kernel writes, duplicate encodings. Advisory only — warnings are informational, errors indicate module declaration defects.
+
+### verify interfere
+Pairwise interference analysis. Detects: activation overlap, encoding collision, observation crosstalk, kernel conflict. Static analysis only — no deals generated.
+
+### verify explore
+Bounded state exploration with invariant checks. Generates deals, runs strategy-driven auctions, checks invariants at each step. Tracks coverage: modules activated, phases reached, rules fired, atoms exercised.
+
+### verify fuzz
+Property-based fuzz testing. Runs many random deals through the strategy, checking invariants and catching crashes. Deterministic via mulberry32 seed.
+
+### verify motif
+Pairwise motif testing. Focuses exploration on a specific module pair, tracking co-activation and pair-specific conflicts.
+
+### verify preflight
+Bundle certification. Orchestrates: lint → interfere → explore → motif (if flagged pairs) → fuzz. Returns pass/fail verdict. Fast budget: 20 explore trials, 50 fuzz trials. Full budget: 100/200 + motif on flagged pairs.
+
+## CLI Output Philosophy
+
+**Pipeline results, not internals.** The CLI is an agent-facing interface. All output is expressed in terms of pipeline results — modules, atoms, bids, grades, violations — not implementation internals like kernel state fields, FSM phase names, or observation logs.
+
+Kernel state, local phases, and observation logs are consumed internally by invariant checks, rule matching, and exploration loops. They appear in the code but never in JSON output unless they directly serve the agent's decision-making.
+
+Concrete rules:
+- Output identifies modules by `moduleId`, not by phase vectors or kernel snapshots
+- Coverage is expressed as "which atoms were exercised" and "which modules activated"
+- Violations include enough context to reproduce (seed, step, auction sequence) but describe the problem in pipeline terms
+- Invariant checks read kernel/phase internals to detect problems, but violation messages translate findings into agent-comprehensible descriptions
 
 ## Agent Self-Discovery Workflow
 
@@ -167,6 +213,18 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 | `src/conventions/core/pipeline/rule-enumeration.ts` | Rule-based atom enumeration, coverage manifest |
 | `src/engine/deal-generator.ts` | Constraint-based deal generation with seeded PRNG |
 | `src/core/util/seeded-rng.ts` | `mulberry32()` — deterministic PRNG |
+| `src/cli/verify/index.ts` | Verify subcommand dispatcher |
+| `src/cli/verify/types.ts` | Shared types for verification framework |
+| `src/cli/verify/lint.ts` | Module linting (static analysis) |
+| `src/cli/verify/interfere.ts` | Pairwise interference analysis |
+| `src/cli/verify/invariants.ts` | Invariant definitions for exploration |
+| `src/cli/verify/explore.ts` | Bounded state exploration |
+| `src/cli/verify/motif.ts` | Pairwise motif testing |
+| `src/cli/verify/fuzz.ts` | Property-based fuzz testing |
+| `src/cli/verify/preflight.ts` | Bundle certification orchestrator |
+
+### Verification is CLI-only
+The verify framework lives entirely in `src/cli/verify/` — not in `src/conventions/core/analysis/`. This is intentional simplicity. If the UI later needs preflight at bundle-creation time, extract then — don't pre-optimize.
 
 ## Module Boundary
 
