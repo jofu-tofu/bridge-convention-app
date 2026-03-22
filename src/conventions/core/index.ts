@@ -51,13 +51,7 @@ export type {
 } from "./runtime/types";
 
 export type {
-  ConversationMachine,
-  MachineEvalResult,
   MachineRegisters,
-  MachineState,
-  MachineTransition,
-  MachineEffect,
-  MachineContext,
 } from "./runtime/machine-types";
 
 // ── Protocol Frame Architecture (legacy — retained for ConventionSpec type) ──

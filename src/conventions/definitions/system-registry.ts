@@ -10,13 +10,13 @@ import type { ConventionBundle } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import type { RuleModule } from "../core/rule-module";
-import type { BidMeaning } from "../../core/contracts/meaning";
 import type { SystemProfile } from "../../core/contracts/agreement-module";
 import type { ConventionTeaching } from "../../core/contracts/convention";
 import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
 import type { DealConstraints, Deal, Seat as SeatType, Auction } from "../../engine/types";
+import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import { getModules } from "./module-registry";
 import { deriveTeachingContent } from "./derive-cross-module";
@@ -107,44 +107,55 @@ function buildBundle(def: BundleDefinition): ConventionBundle {
     explanationCatalog,
     teachingRelations,
     acceptableAlternatives,
-    intentFamilies,
-    ...collectRuleModuleContent(def.ruleModules),
+    intentFamilies: [...intentFamilies, ...deriveIntentFamiliesFromRules(def.ruleModules)],
+    factExtensions: collectRuleModuleFacts(def.ruleModules),
   };
 }
 
 /**
- * Collect surfaces, facts, and explanations directly from RuleModule[].
+ * Collect fact extensions directly from RuleModule[].
  * No FSM or skeleton needed — rules are the sole source of convention logic.
  */
-function collectRuleModuleContent(
+function collectRuleModuleFacts(
   ruleModules: readonly RuleModule[],
-): Pick<ConventionBundle, "meaningSurfaces" | "factExtensions"> {
-  const surfaceGroups: { groupId: string; surfaces: BidMeaning[] }[] = [];
-  const seenMeaningIds = new Set<string>();
+): readonly FactCatalogExtension[] {
+  return ruleModules
+    .map((m) => m.facts)
+    .filter((f) => f.definitions.length > 0 || f.evaluators.size > 0);
+}
+
+/**
+ * Auto-derive IntentFamilies from rule module structure.
+ * Each rule with 2+ claims represents surfaces competing at the same
+ * decision point — a natural IntentFamily with mutually_exclusive relationship.
+ */
+function deriveIntentFamiliesFromRules(
+  ruleModules: readonly RuleModule[],
+): IntentFamily[] {
+  const families: IntentFamily[] = [];
 
   for (const mod of ruleModules) {
-    const moduleSurfaces: BidMeaning[] = [];
     for (const rule of mod.rules) {
-      for (const claim of rule.claims) {
-        if (!seenMeaningIds.has(claim.surface.meaningId)) {
-          seenMeaningIds.add(claim.surface.meaningId);
-          moduleSurfaces.push(claim.surface);
-        }
-      }
-    }
-    if (moduleSurfaces.length > 0) {
-      surfaceGroups.push({ groupId: mod.id, surfaces: moduleSurfaces });
+      if (rule.claims.length < 2) continue;
+
+      const members = rule.claims.map((c) => c.surface.meaningId);
+      const localPhase = Array.isArray(rule.match.local)
+        ? (rule.match.local as readonly string[]).join("|")
+        : (rule.match.local ?? "entry");
+      const turn = rule.match.turn ?? "any";
+      const id = `${mod.id}/${localPhase}:${turn}`;
+
+      families.push({
+        id,
+        label: `${mod.id} ${localPhase} (${turn})`,
+        members,
+        relationship: "mutually_exclusive",
+        description: `Surfaces competing at ${localPhase} in ${mod.id} (${turn}'s turn)`,
+      });
     }
   }
 
-  const factExtensions = ruleModules
-    .map((m) => m.facts)
-    .filter((f) => f.definitions.length > 0 || f.evaluators.size > 0);
-
-  return {
-    meaningSurfaces: surfaceGroups,
-    factExtensions,
-  };
+  return families;
 }
 
 // ── Deal constraint helpers ─────────────────────────────────────────

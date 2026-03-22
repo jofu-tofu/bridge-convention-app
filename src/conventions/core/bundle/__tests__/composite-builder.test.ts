@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { composeBundles } from "../composite-builder";
 import type { ConventionBundle } from "../bundle-types";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
-import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
 import { ConventionCategory } from "../../../../core/contracts/convention";
+import { FactLayer } from "../../../../core/contracts/fact-layer";
 
 function makeBundle(
   id: string,
@@ -60,30 +60,12 @@ describe("composeBundles", () => {
     ]);
   });
 
-  it("concatenates meaning surfaces from all bundles", () => {
-    const surfaceA = { surfaceId: "s-a" } as unknown as BidMeaning;
-    const surfaceB = { surfaceId: "s-b" } as unknown as BidMeaning;
-
-    const a = makeBundle("a", [], {
-      meaningSurfaces: [{ groupId: "g-a", surfaces: [surfaceA] }],
-    });
-    const b = makeBundle("b", [], {
-      meaningSurfaces: [{ groupId: "g-b", surfaces: [surfaceB] }],
-    });
-
-    const composite = composeBundles("ab", "AB", [a, b]);
-
-    expect(composite.meaningSurfaces).toHaveLength(2);
-    expect(composite.meaningSurfaces![0]!.groupId).toBe("g-a");
-    expect(composite.meaningSurfaces![1]!.groupId).toBe("g-b");
-  });
-
   it("concatenates fact extensions from all bundles", () => {
     const extA: FactCatalogExtension = {
       definitions: [
         {
           id: "fact-a",
-          layer: "module-derived",
+          layer: FactLayer.ModuleDerived,
           world: "acting-hand",
           description: "Fact A",
           valueType: "number",
@@ -96,7 +78,7 @@ describe("composeBundles", () => {
       definitions: [
         {
           id: "fact-b",
-          layer: "module-derived",
+          layer: FactLayer.ModuleDerived,
           world: "acting-hand",
           description: "Fact B",
           valueType: "boolean",
@@ -122,15 +104,12 @@ describe("composeBundles", () => {
 
     const composite = composeBundles("ab", "AB", [a, b]);
 
-    expect(composite.meaningSurfaces).toBeUndefined();
     expect(composite.factExtensions).toBeUndefined();
     expect(composite.teachingRelations).toEqual([]);
     expect(composite.acceptableAlternatives).toEqual([]);
     expect(composite.intentFamilies).toEqual([]);
     expect(composite.explanationCatalog).toEqual({ version: "1.0.0", entries: [] });
     expect(composite.systemProfile).toBeUndefined();
-    expect(composite.conversationMachine).toBeUndefined();
-    expect(composite.surfaceRouter).toBeUndefined();
   });
 
   it("merges explanation catalog entries with deduplication", () => {
@@ -183,34 +162,6 @@ describe("composeBundles", () => {
       composite.explanationCatalog!.entries.find((e) => e.explanationId === "exp-shared")!
         .templateKey,
     ).toBe("tpl-shared-a");
-  });
-
-  it("warns when multiple conversation machines exist", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const machineA = {
-      machineId: "m-a",
-      states: new Map(),
-      initialStateId: "init-a",
-      seatRole: () => "self" as const,
-    };
-    const machineB = {
-      machineId: "m-b",
-      states: new Map(),
-      initialStateId: "init-b",
-      seatRole: () => "self" as const,
-    };
-
-    const a = makeBundle("a", [], { conversationMachine: machineA });
-    const b = makeBundle("b", [], { conversationMachine: machineB });
-
-    const composite = composeBundles("ab", "AB", [a, b]);
-
-    expect(composite.conversationMachine).toBe(machineA);
-    expect(warnSpy).toHaveBeenCalledOnce();
-    expect(warnSpy.mock.calls[0]![0]).toContain("Multiple conversation machines");
-
-    warnSpy.mockRestore();
   });
 
   it("merges system profiles by concatenating modules", () => {
@@ -284,26 +235,6 @@ describe("composeBundles", () => {
     const composite = composeBundles("ab", "AB", [a, b]);
 
     expect(composite.acceptableAlternatives).toHaveLength(2);
-  });
-
-  it("composes surface routers by concatenating results", () => {
-    const surfaceA = { surfaceId: "s-a" } as unknown as BidMeaning;
-    const surfaceB = { surfaceId: "s-b" } as unknown as BidMeaning;
-
-    const a = makeBundle("a", [], {
-      surfaceRouter: () => [surfaceA],
-    });
-    const b = makeBundle("b", [], {
-      surfaceRouter: () => [surfaceB],
-    });
-
-    const composite = composeBundles("ab", "AB", [a, b]);
-
-    expect(composite.surfaceRouter).toBeDefined();
-    const result = composite.surfaceRouter!([] as any, "N" as any);
-    expect(result).toHaveLength(2);
-    expect(result[0]).toBe(surfaceA);
-    expect(result[1]).toBe(surfaceB);
   });
 
   it("merges declared capabilities from all bundles", () => {
