@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { BidSuit } from "../../engine/types";
-import type { Call } from "../../engine/types";
+import { BidSuit } from "../../../engine/types";
+import type { Call } from "../../../engine/types";
 import { buildMeaningViews } from "../meaning-view-builder";
 import type {
   ArbitrationResult,
   EncodedProposal,
   EliminationRecord,
-} from "../../core/contracts/module-surface";
-import type { DecisionProvenance } from "../../core/contracts/provenance";
+} from "../../pipeline/pipeline-types";
+import type { DecisionProvenance } from "../../../core/contracts/provenance";
 
 import {
   makeCall,
@@ -18,7 +18,7 @@ import {
   makeEncoded,
   makeArbitration,
   makeProvenance,
-} from "../../test-support/convention-factories";
+} from "../../../test-support/convention-factories";
 
 // -- Tests --
 

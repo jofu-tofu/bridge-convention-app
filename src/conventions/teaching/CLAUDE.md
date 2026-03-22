@@ -1,6 +1,6 @@
 # Teaching
 
-Convention teaching resolution, projection building, and pedagogical weighting. Consumer of `engine/`, `core/contracts/`.
+Convention teaching resolution, projection building, and parse-tree construction. Sibling of `pipeline/` and `definitions/` inside `conventions/`. Consumer of `engine/`, `core/contracts/`, and sibling `pipeline/`.
 
 ## Architecture
 
@@ -9,20 +9,26 @@ Convention teaching resolution, projection building, and pedagogical weighting. 
 | `teaching-resolution.ts`   | `BidGrade` (3 grades: Correct/Acceptable/Incorrect), `AcceptableBid` (with optional `relationship: SurfaceGroupRelationship`), `TeachingResolution`, `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)`, `gradeBid(userCall, resolution)` — three-grade bid feedback layer with SurfaceGroup-aware grading |
 | `teaching-projection-builder.ts` | `projectTeaching(result: PipelineResult, options?)` — single-signature entry point, builds read-only `TeachingProjection` from `PipelineResult`. Internally converts to `ArbitrationResult`/`DecisionProvenance` for sub-builders. Pure function, no side effects. Produces `CallProjection[]` (with `projectionKind` classification), `MeaningView[]`, `WhyNotEntry[]` (with optional `familyRelation` from pedagogical graph), `ConventionContribution[]`, `ExplanationNode[]`, `HandSpaceSummary`. All types imported from `core/contracts/`. |
 | `parse-tree-builder.ts` | `buildParseTree(result: PipelineResult, catalogIndex?)` — builds `ParseTreeView` from `PipelineResult`. Shows full post-bid decision chain: which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Each module gets a `ParseTreeModuleVerdict` (`selected` / `applicable` / `eliminated`) with conditions, truth-set meanings, and elimination reasons. Sorted: selected → applicable → eliminated. Integrated into Incorrect and NearMiss feedback panels via `ParseTreePanel.svelte`. |
+| `call-view-builder.ts` | `buildCallViews(arbitration)` — builds `CallProjection[]` from truth set and acceptable set. |
+| `meaning-view-builder.ts` | `buildMeaningViews(arbitration, provenance)` — builds `MeaningView[]` from truth set, acceptable set, and eliminated proposals. |
+| `explanation-builder.ts` | `buildClauseDescriptionIndex(arbitration)`, `buildPrimaryExplanation(arbitration, provenance, catalogIndex?)` — builds primary explanation nodes. |
+| `why-not-builder.ts` | `buildWhyNot(arbitration, provenance, teachingGraph?, catalogIndex?)` — builds `WhyNotEntry[]` for calls in acceptable set but not truth set. |
 | `teaching-graph.ts` | `buildTeachingGraph(relations)` — indexes `TeachingRelation[]` by meaning ref for O(1) lookup. `findRelationsFor(graph, meaningRef)`. Pure functions, consumed by `teaching-projection-builder.ts`. |
-| `teaching-weighting.ts` | `computeScenarioDistribution(controls)` — maps `TeachingControls.weightingMode` to scenario distribution parameters (positive/nearBoundary/competitive fractions). |
-
-## Deleted Files (old pipeline)
-
-The following files were removed as part of the old tree-pipeline cleanup:
-- `teaching-content.ts` — walked protocol trees to extract teaching content. Replaced by `TeachingProjection` via `teaching-projection-builder.ts`.
-- `condition-explanations.ts` — provided condition explanations tied to `RuleCondition` system. Replaced by explanation catalog in `core/contracts/`.
-- `tree-projection-adapter.ts` — adapted tree-pipeline `BidResult` → `TeachingProjection`. No longer needed; `teaching-projection-builder.ts` builds projections from `ArbitrationResult`.
 
 ## Boundary Rules
 
-- **Allowed imports:** `engine/`, `core/contracts/`
-- **Blocked imports:** `conventions/core/`, `components/`, `stores/`, `core/display/`, `strategy/`, `bootstrap/`, `inference/`
+- **Allowed imports:** `../../engine/`, `../../core/contracts/`, sibling `../pipeline/pipeline-types`
+- **Blocked imports:** `../core/` (conventions infrastructure), `components/`, `stores/`, `core/display/`, `strategy/`, `bootstrap/`, `inference/`
+- **Circular import warning:** Teaching files must use direct sibling imports (e.g., `../pipeline/pipeline-types`), never the conventions barrel (`../index` or `../../conventions`). Importing the barrel from inside conventions creates a circular dependency. This matches the pattern used by `pipeline/` and `core/` files.
+
+## Public API
+
+Only 3 entry points are exported via the conventions barrel (`conventions/index.ts`):
+- `resolveTeachingAnswer`, `gradeBid`, `BidGrade` (+ types `AcceptableBid`, `TeachingResolution`)
+- `projectTeaching` (+ type `TeachingProjectionOptions`)
+- `buildParseTree`
+
+Sub-builders (`call-view-builder`, `meaning-view-builder`, `explanation-builder`, `why-not-builder`, `teaching-graph`) are internal — zero external consumers.
 
 ## Pedagogical Separation
 
@@ -33,5 +39,3 @@ Pedagogical acceptability is NOT a selection gate in the candidate pipeline. Ins
 ## Context Maintenance
 
 **Staleness anchor:** This file assumes `teaching-resolution.ts` exists. If it doesn't, this file is stale.
-
-<!-- context-layer: generated=2026-03-07 | last-audited=2026-06-11 | version=2 | tree-sig=dirs:2,files:5,exts:ts:4,md:1 -->

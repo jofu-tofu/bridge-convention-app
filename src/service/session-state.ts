@@ -13,7 +13,6 @@ import type { PublicBeliefs } from "../core/contracts";
 import type { InferenceCoordinator } from "../inference/inference-coordinator";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
 import type { GamePhase } from "../core/phase-machine";
-import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
 import type { DebugSnapshot, DebugLogEntry } from "../stores/game.svelte";
 import { nextSeat, partnerSeat } from "../engine/constants";
 
@@ -55,7 +54,10 @@ export class SessionState {
   readonly strategy: ConventionStrategy | null;
   readonly inferenceCoordinator: InferenceCoordinator;
   readonly conventionId: string;
+  readonly conventionName: string;
   readonly isOffConvention: boolean;
+  /** Transitional: raw bundle for stores that still need it. Will be removed (Phases 2-4). */
+  readonly bundle: DrillBundle;
 
   // Inference state
   playInferences: Record<Seat, PublicBeliefs> | null;
@@ -79,6 +81,7 @@ export class SessionState {
   constructor(
     bundle: DrillBundle,
     coordinator: InferenceCoordinator,
+    conventionName?: string,
   ) {
     this.deal = bundle.deal;
     this.auction = { entries: [], isComplete: false };
@@ -92,14 +95,15 @@ export class SessionState {
     this.strategy = bundle.strategy ?? null;
     this.inferenceCoordinator = coordinator;
     this.conventionId = bundle.session.config.conventionId;
+    this.conventionName = conventionName ?? bundle.session.config.conventionId;
     this.isOffConvention = bundle.isOffConvention ?? false;
+    this.bundle = bundle;
 
     this.playInferences = null;
     this.publicBeliefState = coordinator.getPublicBeliefState();
 
     this.debugLog = [];
     this.debugTurnCounter = 0;
-    this.currentFeedback = null;
 
     // Play state defaults
     this.tricks = [];

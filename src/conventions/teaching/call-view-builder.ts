@@ -5,16 +5,16 @@
  * truth set and acceptable set.
  */
 
-import type { Call } from "../engine/types";
+import type { Call } from "../../engine/types";
 
 import type {
   ArbitrationResult,
   EncodedProposal,
-} from "../core/contracts/module-surface";
+} from "../pipeline/pipeline-types";
 
 import type {
   CallProjection,
-} from "../core/contracts/teaching-projection";
+} from "../../core/contracts/teaching-projection";
 
 // -- Call Views --
 

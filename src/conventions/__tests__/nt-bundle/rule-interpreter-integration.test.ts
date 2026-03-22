@@ -58,7 +58,7 @@ function makeContext(log: readonly CommittedStep[]): AuctionContext {
 /** Get surface IDs from the rule interpreter. */
 function ruleSurfaceIds(log: readonly CommittedStep[], nextSeat: Seat = Seat.South): string[] {
   const results = collectMatchingClaims(allRuleModules, makeContext(log), nextSeat);
-  return results.flatMap((r) => r.claims.map((c) => c.surface.meaningId)).sort();
+  return results.flatMap((r) => r.resolved.map((c) => c.surface.meaningId)).sort();
 }
 
 // ── Tests ────────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ describe("Rule interpreter integration: NT bundle", () => {
       const smolenResult = results.find((r) => r.moduleId === "smolen");
 
       expect(smolenResult).toBeDefined();
-      const smolenIds = smolenResult!.claims.map((c) => c.surface.meaningId);
+      const smolenIds = smolenResult!.resolved.map((c) => c.surface.meaningId);
       expect(smolenIds).toContain("smolen:bid-short-hearts");
       expect(smolenIds).toContain("smolen:bid-short-spades");
     });
@@ -197,7 +197,7 @@ describe("Rule interpreter integration: NT bundle", () => {
 
       // Smolen may still contribute its R1 entries but should NOT contribute R3 surfaces
       if (smolenResult) {
-        const smolenR3 = smolenResult.claims.filter(
+        const smolenR3 = smolenResult.resolved.filter(
           (c) => c.surface.meaningId.startsWith("smolen:bid-short"),
         );
         expect(smolenR3).toHaveLength(0);

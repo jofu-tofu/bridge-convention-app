@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { BidSuit } from "../../engine/types";
+import { BidSuit } from "../../../engine/types";
 import { buildParseTree } from "../parse-tree-builder";
 import {
   makeCall,
@@ -8,7 +8,7 @@ import {
   makeArbitration,
   makeProvenance,
   makeClause,
-} from "../../test-support/convention-factories";
+} from "../../../test-support/convention-factories";
 
 describe("buildParseTree", () => {
   test("empty arbitration and provenance produces empty tree with no selected path", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { buildTeachingGraph, findRelationsFor } from "../teaching-graph";
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
 
 describe("buildTeachingGraph", () => {
   test("indexes relations for O(1) lookup by meaning ref", () => {

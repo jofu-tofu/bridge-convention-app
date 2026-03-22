@@ -8,15 +8,15 @@
  * Pure function — no side effects, no imports from strategy/stores/components.
  */
 
-import type { ArbitrationResult } from "../core/contracts/module-surface";
-import type { DecisionProvenance } from "../core/contracts/provenance";
-import type { Call } from "../engine/types";
+import type { ArbitrationResult } from "../pipeline/pipeline-types";
+import type { DecisionProvenance } from "../../core/contracts/provenance";
+import type { Call } from "../../engine/types";
 import type {
   ParseTreeView,
   ParseTreeModuleNode,
   ParseTreeModuleVerdict,
   ParseTreeCondition,
-} from "../core/contracts/teaching-projection";
+} from "../../core/contracts/teaching-projection";
 import type { CatalogIndex } from "./teaching-projection-builder";
 import { resolveDisplayText } from "./teaching-projection-builder";
 

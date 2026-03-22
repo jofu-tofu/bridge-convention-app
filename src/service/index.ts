@@ -21,11 +21,15 @@ export type {
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
-  AtomGradeResult,
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
 } from "./response-types";
+
+// Evaluation facade (CLI + stateless grading)
+export type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./evaluation/types";
+export { buildAtomViewport, gradeAtomBid, validateAtomId, parseAtomId } from "./evaluation/atom-evaluator";
+export { startPlaythrough, getPlaythroughStepViewport, gradePlaythroughBid, getPlaythroughRevealSteps } from "./evaluation/playthrough-evaluator";
 
 // Implementation
 export { createLocalService } from "./local-service";

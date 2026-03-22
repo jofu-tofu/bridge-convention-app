@@ -8,7 +8,7 @@
  * - Kernel conflict: claims that write the same kernel state field
  */
 
-import type { ConventionModule, Claim, ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "../../conventions";
+import type { ConventionModule, ResolvedSurface, ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "../../conventions";
 import type { InterferenceEdge, PairInteraction } from "./types";
 import { normalizeIntent, matchObs } from "../../conventions";
 import { callKey } from "../../engine/call-helpers";
@@ -21,7 +21,7 @@ interface NormalizedRule {
     readonly route?: RouteExpr;
     readonly local?: string | readonly string[];
   };
-  readonly claims: readonly Claim[];
+  readonly resolved: readonly ResolvedSurface[];
 }
 
 /** Convert a module's state entries into normalized rules for analysis. */
@@ -33,7 +33,7 @@ function getVirtualRules(mod: ConventionModule): readonly NormalizedRule[] {
       kernel: entry.kernel,
       route: entry.route,
     },
-    claims: entry.surfaces.map((surface): Claim =>
+    resolved: entry.surfaces.map((surface): ResolvedSurface =>
       entry.negotiationDelta
         ? { surface, negotiationDelta: entry.negotiationDelta }
         : { surface },
@@ -148,26 +148,26 @@ export function detectEncodingCollision(a: ConventionModule, b: ConventionModule
 
       if (!turnsCompatible(ruleA.match.turn, ruleB.match.turn)) continue;
 
-      for (const claimA of ruleA.claims) {
-        const keyA = callKey(claimA.surface.encoding.defaultCall);
+      for (const entryA of ruleA.resolved) {
+        const keyA = callKey(entryA.surface.encoding.defaultCall);
 
-        for (const claimB of ruleB.claims) {
-          const keyB = callKey(claimB.surface.encoding.defaultCall);
+        for (const entryB of ruleB.resolved) {
+          const keyB = callKey(entryB.surface.encoding.defaultCall);
 
           if (keyA === keyB) {
             // Same band and compatible turn → high risk; otherwise medium
             const sameBand =
-              claimA.surface.ranking.recommendationBand ===
-              claimB.surface.ranking.recommendationBand;
+              entryA.surface.ranking.recommendationBand ===
+              entryB.surface.ranking.recommendationBand;
             const risk = sameBand ? "high" : "medium";
 
             edges.push({
               kind: "encoding-collision",
-              description: `Both claim ${keyA}: ${a.moduleId}/${claimA.surface.meaningId} vs ${b.moduleId}/${claimB.surface.meaningId}`,
+              description: `Both claim ${keyA}: ${a.moduleId}/${entryA.surface.meaningId} vs ${b.moduleId}/${entryB.surface.meaningId}`,
               risk,
               ruleA: { ruleIndex: ai, matchSummary: summarizeMatch(ruleA, ai) },
               ruleB: { ruleIndex: bi, matchSummary: summarizeMatch(ruleB, bi) },
-              detail: `band A=${claimA.surface.ranking.recommendationBand}, band B=${claimB.surface.ranking.recommendationBand}`,
+              detail: `band A=${entryA.surface.ranking.recommendationBand}, band B=${entryB.surface.ranking.recommendationBand}`,
             });
           }
         }
@@ -207,8 +207,8 @@ function detectCrosstalkDirection(
   for (let ri = 0; ri < sourceRules.length; ri++) {
     const rule = sourceRules[ri]!;
 
-    for (const claim of rule.claims) {
-      const canonicalObs = normalizeIntent(claim.surface.sourceIntent);
+    for (const entry of rule.resolved) {
+      const canonicalObs = normalizeIntent(entry.surface.sourceIntent);
       if (canonicalObs.length === 0) continue;
 
       for (const obs of canonicalObs) {
@@ -216,7 +216,7 @@ function detectCrosstalkDirection(
           if (matchObs(transition.on, obs)) {
             edges.push({
               kind: "observation-crosstalk",
-              description: `${source.moduleId}/${claim.surface.meaningId} obs could trigger ${target.moduleId} transition ${formatTransition(transition.on)}`,
+              description: `${source.moduleId}/${entry.surface.meaningId} obs could trigger ${target.moduleId} transition ${formatTransition(transition.on)}`,
               risk: "medium",
               ruleA: { ruleIndex: ri, matchSummary: summarizeMatch(rule, ri) },
               detail: `obs act=${obs.act}, transition from=${String(transition.from)} to=${transition.to}`,
@@ -281,13 +281,13 @@ function collectKernelDeltas(mod: ConventionModule): KernelDeltaEntry[] {
   const modRules = getVirtualRules(mod);
   for (let ri = 0; ri < modRules.length; ri++) {
     const rule = modRules[ri]!;
-    for (const claim of rule.claims) {
-      if (!claim.negotiationDelta) continue;
-      for (const [field, value] of Object.entries(claim.negotiationDelta)) {
+    for (const entry of rule.resolved) {
+      if (!entry.negotiationDelta) continue;
+      for (const [field, value] of Object.entries(entry.negotiationDelta)) {
         if (value !== undefined) {
           entries.push({
             ruleIndex: ri,
-            meaningId: claim.surface.meaningId,
+            meaningId: entry.surface.meaningId,
             field,
             value,
           });

@@ -6,9 +6,9 @@
 //
 // This is the type-level enforcement of the viewport boundary.
 
-import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport/player-viewport";
-import type { BidGrade } from "../core/contracts/teaching-grading";
-import type { Call, Vulnerability, Seat } from "../engine/types";
+import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../../core/viewport/player-viewport";
+import type { BidGrade } from "../../core/contracts/teaching-grading";
+import type { Call, Vulnerability, Seat } from "../../engine/types";
 
 // ── Atom evaluation (Phase 1) ───────────────────────────────────────
 
@@ -57,6 +57,3 @@ export interface RevealStep {
   readonly isUserStep: boolean;
 }
 
-// Re-export viewport types so consumers only need one import
-export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, BidGrade };
-export type { Call, Vulnerability, Seat };

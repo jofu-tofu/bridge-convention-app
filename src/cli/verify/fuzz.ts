@@ -121,7 +121,7 @@ export function fuzzBundle(
           nextSeat,
           localPhases: new Map(modules.map((m) => [m.moduleId, m.local.initial])),
           kernel: currentKernel,
-          claims,
+          resolved: claims,
           log,
         };
 

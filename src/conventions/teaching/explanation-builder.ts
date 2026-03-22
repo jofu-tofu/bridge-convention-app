@@ -7,15 +7,15 @@
 
 import type {
   ArbitrationResult,
-} from "../core/contracts/module-surface";
+} from "../pipeline/pipeline-types";
 
 import type {
   DecisionProvenance,
-} from "../core/contracts/provenance";
+} from "../../core/contracts/provenance";
 
 import type {
   ExplanationNode,
-} from "../core/contracts/teaching-projection";
+} from "../../core/contracts/teaching-projection";
 
 import type { CatalogIndex } from "./teaching-projection-builder";
 import { resolveDisplayText } from "./teaching-projection-builder";

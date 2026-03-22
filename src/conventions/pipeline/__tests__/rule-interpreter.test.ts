@@ -78,8 +78,8 @@ describe("collectMatchingClaims", () => {
     const result = collectMatchingClaims([mod], makeContext(log));
     expect(result).toHaveLength(1);
     expect(result[0]!.moduleId).toBe("stayman");
-    expect(result[0]!.claims).toHaveLength(1);
-    expect(result[0]!.claims[0]!.surface.meaningId).toBe("stayman-ask");
+    expect(result[0]!.resolved).toHaveLength(1);
+    expect(result[0]!.resolved[0]!.surface.meaningId).toBe("stayman-ask");
   });
 
   it("filters by local phase constraint", () => {
@@ -173,7 +173,7 @@ describe("collectMatchingClaims", () => {
       ]),
     );
     expect(result2).toHaveLength(1);
-    expect(result2[0]!.claims[0]!.surface.meaningId).toBe("smolen-entry");
+    expect(result2[0]!.resolved[0]!.surface.meaningId).toBe("smolen-entry");
   });
 
   it("collects surfaces from multiple modules", () => {
@@ -237,6 +237,6 @@ describe("collectMatchingClaims", () => {
 
     const result = collectMatchingClaims([mod], makeContext([]));
     expect(result).toHaveLength(1);
-    expect(result[0]!.claims).toHaveLength(2);
+    expect(result[0]!.resolved).toHaveLength(2);
   });
 });

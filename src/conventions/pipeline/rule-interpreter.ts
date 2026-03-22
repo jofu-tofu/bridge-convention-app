@@ -5,7 +5,7 @@
  * 1. Replay log to advance local FSM from initial through each CommittedStep
  * 2. Get current local phase and current kernel
  * 3. For each rule: check turn, local, kernel, route match conditions
- * 4. Collect matching claims (surfaces + negotiationDeltas)
+ * 4. Collect matching surfaces (with negotiationDeltas)
  *
  * Phase 3 simplification: replays local FSMs once per collectMatchingClaims() call.
  * With N ≤ 20 steps and 4 modules, this is ~80 phase transition checks (negligible).
@@ -17,20 +17,20 @@ import type { BidMeaning } from "../../core/contracts/meaning";
 import type { AuctionContext, CommittedStep, NegotiationState } from "../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import type { ConventionModule } from "../core/convention-module";
-import type { TurnRole, Claim, StateEntry } from "../core/rule-module";
+import type { TurnRole, ResolvedSurface, StateEntry } from "../core/rule-module";
 import { advanceLocalFsm } from "./local-fsm";
 import { matchKernel } from "./negotiation-matcher";
 import { matchRoute } from "./route-matcher";
 
-/** Result for one module — claims include surfaces with their negotiation deltas. */
-export interface ModuleClaimResult {
+/** Result for one module — resolved surfaces with their negotiation deltas. */
+export interface ModuleSurfaceResult {
   readonly moduleId: string;
-  readonly claims: readonly Claim[];
+  readonly resolved: readonly ResolvedSurface[];
 }
 
-/** Convenience: flatten claims to surfaces (discarding deltas). */
-export function flattenSurfaces(results: readonly ModuleClaimResult[]): readonly BidMeaning[] {
-  return results.flatMap(r => r.claims.map(c => c.surface));
+/** Convenience: flatten resolved surfaces to BidMeaning[] (discarding deltas). */
+export function flattenSurfaces(results: readonly ModuleSurfaceResult[]): readonly BidMeaning[] {
+  return results.flatMap(r => r.resolved.map(c => c.surface));
 }
 
 // Re-export TurnRole from its canonical home in rule-module.ts
@@ -78,8 +78,8 @@ export function collectMatchingClaims(
   modules: readonly ConventionModule[],
   context: AuctionContext,
   nextSeat?: Seat,
-): readonly ModuleClaimResult[] {
-  const results: ModuleClaimResult[] = [];
+): readonly ModuleSurfaceResult[] {
+  const results: ModuleSurfaceResult[] = [];
   const currentKernel = getCurrentKernel(context);
   const turnRole = nextSeat !== undefined
     ? deriveTurnRole(nextSeat, context.log)
@@ -88,12 +88,12 @@ export function collectMatchingClaims(
 
   for (const mod of modules) {
     const currentPhase = replayLocalFsm(mod, context);
-    const claims = collectModuleClaims(
+    const resolved = collectModuleSurfaces(
       mod, currentPhase, currentKernel, context, turnRole, openerSeat,
     );
 
-    if (claims.length > 0) {
-      results.push({ moduleId: mod.moduleId, claims });
+    if (resolved.length > 0) {
+      results.push({ moduleId: mod.moduleId, resolved });
     }
   }
 
@@ -101,7 +101,7 @@ export function collectMatchingClaims(
 }
 
 /**
- * Collect matching claims using pre-computed local phases (no replay).
+ * Collect matching surfaces using pre-computed local phases (no replay).
  *
  * Used by buildObservationLogViaRules() to avoid O(N²×M) replay cost —
  * caller maintains a phase cache and advances it incrementally.
@@ -111,8 +111,8 @@ export function collectMatchingClaimsWithPhases(
   context: AuctionContext,
   nextSeat: Seat | undefined,
   localPhases: ReadonlyMap<string, string>,
-): readonly ModuleClaimResult[] {
-  const results: ModuleClaimResult[] = [];
+): readonly ModuleSurfaceResult[] {
+  const results: ModuleSurfaceResult[] = [];
   const currentKernel = getCurrentKernel(context);
   const turnRole = nextSeat !== undefined
     ? deriveTurnRole(nextSeat, context.log)
@@ -121,12 +121,12 @@ export function collectMatchingClaimsWithPhases(
 
   for (const mod of modules) {
     const currentPhase = localPhases.get(mod.moduleId) ?? mod.local.initial;
-    const claims = collectModuleClaims(
+    const resolved = collectModuleSurfaces(
       mod, currentPhase, currentKernel, context, turnRole, openerSeat,
     );
 
-    if (claims.length > 0) {
-      results.push({ moduleId: mod.moduleId, claims });
+    if (resolved.length > 0) {
+      results.push({ moduleId: mod.moduleId, resolved });
     }
   }
 
@@ -163,23 +163,23 @@ function replayLocalFsm(
   return phase;
 }
 
-/** Collect all claims from matching state entries in a module. */
-function collectModuleClaims(
+/** Collect all resolved surfaces from matching state entries in a module. */
+function collectModuleSurfaces(
   mod: ConventionModule,
   currentPhase: string,
   currentKernel: NegotiationState,
   context: AuctionContext,
   turnRole: TurnRole | undefined,
   openerSeat: Seat | undefined,
-): Claim[] {
-  const claims: Claim[] = [];
+): ResolvedSurface[] {
+  const resolved: ResolvedSurface[] = [];
   for (const entry of (mod.states ?? [])) {
     if (!stateEntryMatches(entry, currentPhase, currentKernel, context, turnRole, openerSeat)) continue;
     for (const surface of entry.surfaces) {
-      claims.push(entry.negotiationDelta ? { surface, negotiationDelta: entry.negotiationDelta } : { surface });
+      resolved.push(entry.negotiationDelta ? { surface, negotiationDelta: entry.negotiationDelta } : { surface });
     }
   }
-  return claims;
+  return resolved;
 }
 
 /** Check if all of a state entry's activation conditions are satisfied. */

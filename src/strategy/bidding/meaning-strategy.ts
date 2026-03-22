@@ -9,7 +9,7 @@ import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import { createSharedFactCatalog, runPipeline } from "../../conventions";
 
 import { buildBidResult } from "./bid-result-builder";
-import { projectTeaching } from "../../teaching/teaching-projection-builder";
+import { projectTeaching } from "../../conventions";
 
 // ─── Public API ────────────────────────────────────────────────
 

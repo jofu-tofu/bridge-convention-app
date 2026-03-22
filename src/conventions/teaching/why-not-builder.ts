@@ -5,24 +5,24 @@
  * calls that are in the acceptable set but NOT in the truth set.
  */
 
-import { callsMatch } from "../engine/call-helpers";
+import { callsMatch } from "../../engine/call-helpers";
 
 import type {
   ArbitrationResult,
   EncodedProposal,
-} from "../core/contracts/module-surface";
+} from "../pipeline/pipeline-types";
 
 import type {
   DecisionProvenance,
   EliminationTrace,
-} from "../core/contracts/provenance";
+} from "../../core/contracts/provenance";
 
 import type {
   WhyNotEntry,
   ExplanationNode,
-} from "../core/contracts/teaching-projection";
+} from "../../core/contracts/teaching-projection";
 
-import type { TeachingRelation } from "../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 
 import type { TeachingGraph } from "./teaching-graph";
 import { findRelationsFor } from "./teaching-graph";

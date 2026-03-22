@@ -22,11 +22,11 @@ import type {
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
-  AtomGradeResult,
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
 } from "./response-types";
+import type { AtomGradeResult } from "./evaluation/types";
 
 /** Production service interface — all methods return Promise<T>. */
 export interface ServicePort {

@@ -92,7 +92,6 @@ export async function processBid(
 
   // Correct-path-only: wrong bids are never applied to the auction
   if (!isCorrect) {
-    state.currentFeedback = feedback;
     const viewportFeedback = buildViewportFeedback(feedback);
     const teaching = buildTeachingDetail(feedback);
     return {
@@ -206,9 +205,6 @@ async function applyBidAndRunAi(
   const nextTurn = nextSeat(seat);
   const aiResult = await runAiBidLoop(state, nextTurn, engine);
 
-  // Clear feedback after successful bid + AI bids
-  state.currentFeedback = null;
-
   // Build viewport feedback for correct bid
   let viewportFeedback: ViewportBidFeedback | null = null;
   let teaching: TeachingDetail | null = null;
@@ -245,7 +241,6 @@ async function handleAuctionComplete(
   state.capturePlayInferences();
   const contract = await engine.getContract(state.auction);
   state.contract = contract;
-  state.currentFeedback = null;
 
   if (contract) {
     state.effectiveUserSeat = state.userSeat;

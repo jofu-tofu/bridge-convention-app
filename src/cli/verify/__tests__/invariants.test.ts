@@ -22,7 +22,7 @@ function makeSnapshot(overrides: Partial<VerificationSnapshot> = {}): Verificati
     nextSeat: Seat.South,
     localPhases: new Map([["test-mod", "idle"]]),
     kernel: INITIAL_NEGOTIATION,
-    claims: [],
+    resolved: [],
     log: [],
     ...overrides,
   };
@@ -68,7 +68,7 @@ describe("arbitration-totality", () => {
     const snapshot = makeSnapshot({
       nextSeat: Seat.South,
       log: openerLog,
-      claims: [],
+      resolved: [],
     });
     const result = checkArbitrationTotality(snapshot);
     expect(result).not.toBeNull();
@@ -79,10 +79,10 @@ describe("arbitration-totality", () => {
     const snapshot = makeSnapshot({
       nextSeat: Seat.South,
       log: openerLog,
-      claims: [
+      resolved: [
         {
           moduleId: "test-mod",
-          claims: [{ surface: makeSurface() }],
+          resolved: [{ surface: makeSurface() }],
         },
       ],
     });
@@ -94,7 +94,7 @@ describe("arbitration-totality", () => {
     const snapshot = makeSnapshot({
       nextSeat: Seat.East,
       log: openerLog,
-      claims: [],
+      resolved: [],
     });
     const result = checkArbitrationTotality(snapshot);
     expect(result).toBeNull();
@@ -170,10 +170,10 @@ describe("kernel-consistency", () => {
 describe("encoding-uniqueness", () => {
   it("flags two modules claiming the same call", () => {
     const snapshot = makeSnapshot({
-      claims: [
+      resolved: [
         {
           moduleId: "mod-a",
-          claims: [
+          resolved: [
             { surface: makeSurface({
               moduleId: "mod-a",
               meaningId: "a1",
@@ -183,7 +183,7 @@ describe("encoding-uniqueness", () => {
         },
         {
           moduleId: "mod-b",
-          claims: [
+          resolved: [
             { surface: makeSurface({
               moduleId: "mod-b",
               meaningId: "b1",
@@ -201,10 +201,10 @@ describe("encoding-uniqueness", () => {
 
   it("passes when different calls are used", () => {
     const snapshot = makeSnapshot({
-      claims: [
+      resolved: [
         {
           moduleId: "mod-a",
-          claims: [
+          resolved: [
             { surface: makeSurface({
               moduleId: "mod-a",
               meaningId: "a1",
@@ -214,7 +214,7 @@ describe("encoding-uniqueness", () => {
         },
         {
           moduleId: "mod-b",
-          claims: [
+          resolved: [
             { surface: makeSurface({
               moduleId: "mod-b",
               meaningId: "b1",
@@ -233,10 +233,10 @@ describe("phase-coherence", () => {
   it("flags module in claims but not in localPhases", () => {
     const snapshot = makeSnapshot({
       localPhases: new Map([["other-mod", "idle"]]),
-      claims: [
+      resolved: [
         {
           moduleId: "missing-mod",
-          claims: [{ surface: makeSurface({ moduleId: "missing-mod" }) }],
+          resolved: [{ surface: makeSurface({ moduleId: "missing-mod" }) }],
         },
       ],
     });
@@ -249,10 +249,10 @@ describe("phase-coherence", () => {
   it("passes when all claim modules have phase entries", () => {
     const snapshot = makeSnapshot({
       localPhases: new Map([["test-mod", "idle"]]),
-      claims: [
+      resolved: [
         {
           moduleId: "test-mod",
-          claims: [{ surface: makeSurface({ moduleId: "test-mod" }) }],
+          resolved: [{ surface: makeSurface({ moduleId: "test-mod" }) }],
         },
       ],
     });

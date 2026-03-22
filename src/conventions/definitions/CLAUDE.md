@@ -166,7 +166,7 @@ Adding a new convention is a **definitions-only** change. The following director
 |-----------|--------|
 | `src/engine/` | Bridge engine types/logic are convention-agnostic |
 | `src/strategy/` | Strategy layer consumes bundles generically via `meaningBundleToStrategy()` |
-| `src/teaching/` | Teaching system reads `ExplanationCatalog` and `TeachingRelation[]` from bundles |
+| `src/conventions/teaching/` | Teaching system reads `ExplanationCatalog` and `TeachingRelation[]` from bundles |
 | `src/service/` | Service layer is convention-agnostic orchestration |
 | `src/stores/` | Stores bind to the convention registry, not individual conventions |
 | `src/components/` | UI renders from generic `ConventionConfig` and `DecisionSurfaceEntry[]` |

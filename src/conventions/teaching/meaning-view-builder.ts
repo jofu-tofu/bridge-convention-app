@@ -7,19 +7,19 @@
 
 import type {
   ArbitrationResult,
-} from "../core/contracts/module-surface";
+} from "../pipeline/pipeline-types";
 
 import type {
   DecisionProvenance,
-} from "../core/contracts/provenance";
+} from "../../core/contracts/provenance";
 
 import type {
   MeaningView,
-} from "../core/contracts/teaching-projection";
+} from "../../core/contracts/teaching-projection";
 
-import type { MeaningClause } from "../core/contracts/meaning";
+import type { MeaningClause } from "../../core/contracts/meaning";
 
-import type { ConditionEvidence } from "../core/contracts/evidence-bundle";
+import type { ConditionEvidence } from "../../core/contracts/evidence-bundle";
 
 // -- Meaning Views --
 

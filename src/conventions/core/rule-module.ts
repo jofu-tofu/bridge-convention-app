@@ -1,7 +1,7 @@
 /**
  * Rule pattern primitives — types for declarative rule-based surface selection.
  *
- * Defines LocalFsm, Claim, StateEntry, and pattern types (ObsPattern, RouteExpr,
+ * Defines LocalFsm, ResolvedSurface, StateEntry, and pattern types (ObsPattern, RouteExpr,
  * NegotiationExpr, PhaseTransition, TurnRole) used by ConventionModule.
  *
  * Import direction: rule-module.ts → core/contracts/ only.
@@ -109,10 +109,10 @@ export interface LocalFsm<Phase extends string = string> {
   readonly transitions: readonly PhaseTransition<Phase>[];
 }
 
-// ── Claim ────────────────────────────────────────────────────────────
+// ── ResolvedSurface ──────────────────────────────────────────────────
 
-/** One surface claim emitted by a rule, with optional kernel delta. */
-export interface Claim {
+/** One resolved surface from a matched state entry, with optional kernel delta. */
+export interface ResolvedSurface {
   readonly surface: BidMeaning;
   readonly negotiationDelta?: NegotiationDelta;
 }

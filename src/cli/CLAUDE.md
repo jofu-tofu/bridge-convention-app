@@ -206,7 +206,7 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 | `src/core/viewport/build-viewport.ts` | `buildViewportFeedback()`, `buildTeachingDetail()` — information boundary |
 | `src/core/viewport/player-viewport.ts` | `ViewportBidFeedback`, `TeachingDetail` type definitions |
 | `src/core/contracts/teaching-grading.ts` | `BidGrade`, `TeachingResolution`, `AcceptableBid` — grading contracts |
-| `src/teaching/teaching-resolution.ts` | `resolveTeachingAnswer()`, `gradeBid()` — 5-level grading implementation |
+| `src/conventions/teaching/teaching-resolution.ts` | `resolveTeachingAnswer()`, `gradeBid()` — 5-level grading implementation |
 | `src/strategy/bidding/protocol-adapter.ts` | `protocolSpecToStrategy()` — ConventionSpec to strategy |
 | `src/conventions/core/pipeline/rule-enumeration.ts` | Rule-based atom enumeration, coverage manifest |
 | `src/engine/deal-generator.ts` | Constraint-based deal generation with seeded PRNG |

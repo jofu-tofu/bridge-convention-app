@@ -5,7 +5,7 @@
 
 import type { Seat } from "../../engine/types";
 import type { NegotiationState, CommittedStep } from "../../core/contracts/committed-step";
-import type { ModuleClaimResult } from "../../conventions";
+import type { ModuleSurfaceResult } from "../../conventions";
 
 // ── Lint ─────────────────────────────────────────────────────────────
 
@@ -70,7 +70,7 @@ export interface VerificationSnapshot {
   /** Runtime Map — use Object.fromEntries() for JSON output. */
   readonly localPhases: Map<string, string>;
   readonly kernel: NegotiationState;
-  readonly claims: readonly ModuleClaimResult[];
+  readonly resolved: readonly ModuleSurfaceResult[];
   readonly log: readonly CommittedStep[];
 }
 

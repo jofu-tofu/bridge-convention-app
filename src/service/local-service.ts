@@ -26,7 +26,6 @@ import { getBundle, resolveConventionForSystem } from "../conventions";
 import { getSystemConfig } from "../core/contracts/system-config";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
-import type { ConventionConfig } from "../conventions";
 import type { DevServicePort } from "./port";
 import type {
   SessionHandle,
@@ -40,11 +39,11 @@ import type {
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
-  AtomGradeResult,
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
 } from "./response-types";
+import type { AtomGradeResult } from "./evaluation/types";
 import { SessionManager, createHandle } from "./session-manager";
 import { SessionState, getCurrentTurn as getCurrentTurnFromState } from "./session-state";
 import { DDSController } from "./dds-controller";
@@ -60,16 +59,6 @@ import { partnerSeat } from "../engine/constants";
 
 import type { DrillBundle } from "../bootstrap/types";
 
-/** Per-session ancillary state not on SessionState. */
-interface SessionAncillary {
-  dds: DDSController;
-  conventionConfig: ConventionConfig;
-  conventionName: string;
-  /** Original bundle — transitional escape hatch for stores that still need raw state.
-   *  Will be removed once stores fully delegate to the service (Phases 2-4). */
-  bundle: DrillBundle;
-}
-
 /**
  * Create a local (in-process) service.
  *
@@ -77,13 +66,7 @@ interface SessionAncillary {
  */
 export function createLocalService(engine: EnginePort): DevServicePort {
   const manager = new SessionManager();
-  const ancillary = new Map<SessionHandle, SessionAncillary>();
-
-  function getAncillary(handle: SessionHandle): SessionAncillary {
-    const a = ancillary.get(handle);
-    if (!a) throw new Error(`Unknown session handle: ${handle}`);
-    return a;
-  }
+  const ddsControllers = new Map<SessionHandle, DDSController>();
 
   return {
     // ── Session lifecycle ─────────────────────────────────────────
@@ -116,14 +99,9 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       );
 
       const coordinator = createInferenceCoordinator();
-      const state = new SessionState(bundle, coordinator);
+      const state = new SessionState(bundle, coordinator, convention.name);
       manager.set(handle, state);
-      ancillary.set(handle, {
-        dds: new DDSController(),
-        conventionConfig: convention,
-        conventionName: convention.name,
-        bundle,
-      });
+      ddsControllers.set(handle, new DDSController());
 
       // Initialize with initial auction if provided by bundle
       if (bundle.initialAuction) {
@@ -134,7 +112,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     },
 
     async destroySession(handle: SessionHandle): Promise<void> {      manager.delete(handle);
-      ancillary.delete(handle);
+      ddsControllers.delete(handle);
     },
 
     // ── Drill lifecycle ───────────────────────────────────────────
@@ -187,14 +165,12 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     async acceptPrompt(handle: SessionHandle, mode?: "play" | "skip"): Promise<PromptAcceptResult> {
       const state = manager.get(handle);
-      const anc = getAncillary(handle);
-
       if (mode === "skip" || !mode) {
         if (isValidTransition(state.phase, "EXPLANATION")) {
           state.phase = "EXPLANATION";
           // Trigger DDS solve
           if (state.deal && state.contract) {
-            anc.dds.solve(state.deal, state.contract, engine).catch((err) => {
+            ddsControllers.get(handle)?.solve(state.deal, state.contract, engine).catch((err) => {
               console.error("DDS solve failed:", err);
             });
           }
@@ -239,27 +215,20 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         return { solution: null, error: "No deal or contract available" };
       }
 
-      return anc.dds.solve(state.deal, state.contract, engine);
+      return ddsControllers.get(handle)?.solve(state.deal, state.contract, engine);
     },
 
     // ── Stateless CLI evaluation ──────────────────────────────────
 
     async evaluateAtom(bundleId: string, atomId: string, seed: number): Promise<BiddingViewport> {
       // Delegate to evaluation module
-      const { buildAtomViewport } = await import("../evaluation");
+      const { buildAtomViewport } = await import("./evaluation");
       return buildAtomViewport(bundleId, atomId, seed);
     },
 
     async gradeAtom(bundleId: string, atomId: string, seed: number, bid: string): Promise<AtomGradeResult> {
-      const { buildAtomViewport, gradeAtomBid } = await import("../evaluation");
-      const viewport = buildAtomViewport(bundleId, atomId, seed);
-      const gradeResult = gradeAtomBid(bundleId, atomId, seed, bid);
-      return {
-        viewport,
-        feedback: gradeResult.feedback ?? null,
-        teaching: gradeResult.teaching ?? null,
-        grade: gradeResult.grade ?? null,
-      };
+      const { gradeAtomBid } = await import("./evaluation");
+      return gradeAtomBid(bundleId, atomId, seed, bid);
     },
 
     // ── Convention catalog ────────────────────────────────────────
@@ -310,27 +279,21 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     // ── Transitional methods (removed after Phases 2-4) ───────────
 
     async getSessionBundle(handle: SessionHandle): Promise<DrillBundle> {
-      const anc = getAncillary(handle);
-      return anc.bundle;
+      const state = manager.get(handle);
+      return state.bundle;
     },
 
     async getConventionName(handle: SessionHandle): Promise<string> {
-      const anc = getAncillary(handle);
-      return anc.conventionName;
+      const state = manager.get(handle);
+      return state.conventionName;
     },
 
     async createSessionFromBundle(bundle: DrillBundle): Promise<SessionHandle> {
       const handle = createHandle();
       const coordinator = createInferenceCoordinator();
-      const state = new SessionState(bundle, coordinator);
+      const state = new SessionState(bundle, coordinator, convention.name);
       manager.set(handle, state);
-      const convention = getConvention(bundle.session.config.conventionId);
-      ancillary.set(handle, {
-        dds: new DDSController(),
-        conventionConfig: convention,
-        conventionName: convention.name,
-        bundle,
-      });
+      ddsControllers.set(handle, new DDSController());
       if (bundle.initialAuction) {
         initializeAuction(state, bundle.initialAuction);
       }

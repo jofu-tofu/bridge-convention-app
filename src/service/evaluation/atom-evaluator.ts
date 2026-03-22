@@ -9,136 +9,30 @@
 // Phase 6: Uses rule enumeration (RuleAtom) instead of FSM BFS coverage.
 // Atom ID format: `moduleId/meaningId`.
 
-import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
-import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
-import { getSystemConfig } from "../core/contracts/system-config";
-import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions";
-import { enumerateRuleAtoms, type RuleAtom } from "../conventions";
-import { getBundle } from "../conventions";
-import { createBiddingContext } from "../conventions";
-import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
-import { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
-import { BidGrade } from "../core/contracts/teaching-grading";
-import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../core/viewport/build-viewport";
-import { generateDeal } from "../engine/deal-generator";
-import { mulberry32 } from "../core/util/seeded-rng";
-import { evaluateHand } from "../engine/hand-evaluator";
-import { callKey, callsMatch } from "../engine/call-helpers";
-import { parsePatternCall } from "../engine/auction-helpers";
-import { getLegalCalls } from "../engine/auction";
-import { Seat, Vulnerability } from "../engine/types";
-import type { Auction, Deal, Hand, DealConstraints, Call } from "../engine/types";
-import type { BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
-import type { ConventionStrategy } from "../conventions";
-import type { ConventionBundle } from "../conventions";
-import type { BiddingViewport } from "../core/viewport/player-viewport";
+import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../../core/contracts/system-config";
+import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../../conventions";
+import { enumerateRuleAtoms, type RuleAtom } from "../../conventions";
+import { getBundle } from "../../conventions";
+import { createBiddingContext } from "../../conventions";
+import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import { resolveTeachingAnswer, gradeBid } from "../../conventions";
+import { BidGrade } from "../../core/contracts/teaching-grading";
+import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../../core/viewport/build-viewport";
+import { callKey, callsMatch } from "../../engine/call-helpers";
+import { parsePatternCall } from "../../engine/auction-helpers";
+import { Seat, Vulnerability } from "../../engine/types";
+import type { Auction, Deal, Hand, DealConstraints, Call } from "../../engine/types";
+import type { BiddingStrategy, BidHistoryEntry } from "../../core/contracts/bidding";
+import type { ConventionStrategy } from "../../conventions";
+import type { ConventionBundle } from "../../conventions";
+import type { BiddingViewport } from "../../core/viewport/player-viewport";
 import type { AtomGradeResult } from "./types";
+import { nextSeat, partnerSeat, generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, makeViewport } from "./helpers";
 
-// ── Internal helpers (not exported) ─────────────────────────────────
 
-function nextSeatClockwise(seat: Seat): Seat {
-  switch (seat) {
-    case Seat.North: return Seat.East;
-    case Seat.East: return Seat.South;
-    case Seat.South: return Seat.West;
-    case Seat.West: return Seat.North;
-  }
-}
-
-function partnerOf(seat: Seat): Seat {
-  switch (seat) {
-    case Seat.North: return Seat.South;
-    case Seat.South: return Seat.North;
-    case Seat.East: return Seat.West;
-    case Seat.West: return Seat.East;
-  }
-}
-
-function generateSeededDeal(
-  bundle: ConventionBundle,
-  seed: number,
-  vulnerability?: Vulnerability,
-): Deal {
-  const rng = mulberry32(seed);
-  const constraints: DealConstraints = {
-    ...bundle.dealConstraints,
-    ...(vulnerability !== undefined ? { vulnerability } : {}),
-  };
-  return generateDeal(constraints, rng).deal;
-}
-
-function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
-  for (const seat of [Seat.South, Seat.East, Seat.North, Seat.West]) {
-    if (bundle.defaultAuction) {
-      const auction = bundle.defaultAuction(seat, deal);
-      if (auction && auction.entries.length > 0) return seat;
-    }
-  }
-  return Seat.South;
-}
-
-function buildInitialAuction(bundle: ConventionBundle, userSeat: Seat, deal: Deal): Auction {
-  if (bundle.defaultAuction) {
-    const auction = bundle.defaultAuction(userSeat, deal);
-    if (auction) return auction;
-  }
-  return { entries: [], isComplete: false };
-}
-
-function buildContext(hand: Hand, auction: Auction, seat: Seat, vulnerability: Vulnerability) {
-  return createBiddingContext({
-    hand,
-    auction,
-    seat,
-    evaluation: evaluateHand(hand),
-    vulnerability,
-    dealer: auction.entries.length > 0 ? auction.entries[0]!.seat : Seat.North,
-  });
-}
-
-function buildBidHistory(
-  auction: Auction, deal: Deal, userSeat: Seat,
-  strategy: BiddingStrategy, vulnerability: Vulnerability,
-): BidHistoryEntry[] {
-  const partner = partnerOf(userSeat);
-  const history: BidHistoryEntry[] = [];
-  for (let i = 0; i < auction.entries.length; i++) {
-    const entry = auction.entries[i]!;
-    if (entry.seat !== userSeat && entry.seat !== partner) {
-      history.push({ seat: entry.seat, call: entry.call, isUser: false });
-      continue;
-    }
-    const auctionBefore: Auction = { entries: auction.entries.slice(0, i), isComplete: false };
-    const ctx = buildContext(deal.hands[entry.seat], auctionBefore, entry.seat, vulnerability);
-    const result = strategy.suggest(ctx);
-    // Only use the strategy's alert/meaning when the suggested bid matches the actual bid.
-    // In targeted auctions, the forced bid may differ from what the strategy would suggest
-    // for the given hand, which would produce wrong alert labels.
-    const bidMatches = result && callsMatch(result.call, entry.call);
-    history.push({
-      seat: entry.seat, call: entry.call,
-      meaning: bidMatches ? result?.meaning : undefined, isUser: entry.seat === userSeat,
-      alertLabel: bidMatches ? result?.alert?.teachingLabel : undefined,
-      annotationType: bidMatches ? result?.alert?.annotationType : undefined,
-    });
-  }
-  return history;
-}
-
-function makeViewport(
-  deal: Deal, auction: Auction, userSeat: Seat, activeSeat: Seat,
-  strategy: BiddingStrategy, bundleName: string, vulnerability: Vulnerability,
-): BiddingViewport {
-  const bidHistory = buildBidHistory(auction, deal, userSeat, strategy, vulnerability);
-  return buildBiddingViewport({
-    deal, userSeat: activeSeat, auction, bidHistory,
-    legalCalls: getLegalCalls(auction, activeSeat),
-    faceUpSeats: new Set([activeSeat]),
-    conventionName: bundleName,
-    isUserTurn: true,
-    currentBidder: activeSeat,
-  });
-}
+// ── Private helpers (atom-evaluator-specific) ───────────────────────
 
 /** Resolve the atom list for a bundle using rule enumeration. */
 function resolveAtoms(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): readonly RuleAtom[] {
@@ -174,14 +68,14 @@ function buildForwardAuction(
   atom: RuleAtom,
   vuln: Vulnerability,
 ): { auction: Auction; reached: boolean } {
-  const partner = partnerOf(userSeat);
+  const partner = partnerSeat(userSeat);
   const initAuction = buildInitialAuction(bundle, userSeat, deal);
   const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
   const maxBids = 20;
 
   for (let iter = 0; iter < maxBids; iter++) {
     const activeSeat = entries.length > 0
-      ? nextSeatClockwise(entries[entries.length - 1]!.seat)
+      ? nextSeat(entries[entries.length - 1]!.seat)
       : userSeat;
 
     // Opponents always pass
@@ -270,7 +164,7 @@ export function buildAtomViewport(
   }
 
   const activeSeat = auction.entries.length > 0
-    ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+    ? nextSeat(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;
 
   return makeViewport(deal, auction, userSeat, activeSeat, strategy, bundle.name, vuln);
@@ -308,7 +202,7 @@ export function gradeAtomBid(
   }
 
   const activeSeat = auction.entries.length > 0
-    ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
+    ? nextSeat(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;
 
   const viewport = makeViewport(deal, auction, userSeat, activeSeat, strategy, bundle.name, vuln);

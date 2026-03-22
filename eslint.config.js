@@ -65,20 +65,6 @@ const strategyImports = [
     message: "Module boundary violation: no strategy imports",
   },
 ];
-const teachingImports = [
-  {
-    name: "../teaching/*",
-    message: "Module boundary violation: no teaching imports",
-  },
-  {
-    name: "../../teaching/*",
-    message: "Module boundary violation: no teaching imports",
-  },
-  {
-    name: "../../../teaching/*",
-    message: "Module boundary violation: no teaching imports",
-  },
-];
 const bootstrapImports = [
   {
     name: "../bootstrap/*",
@@ -233,12 +219,12 @@ export default tseslint.config(
             ...storeImports,
             ...componentImports,
             ...strategyImports,
-            ...teachingImports,
           ],
           patterns: [{
             group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
                       "*/conventions/definitions/**", "**/conventions/definitions/**",
-                      "*/conventions/core/**", "**/conventions/core/**"],
+                      "*/conventions/core/**", "**/conventions/core/**",
+                      "*/conventions/teaching/**", "**/conventions/teaching/**"],
             message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
@@ -260,13 +246,13 @@ export default tseslint.config(
         {
           paths: [
             ...strategyImports,
-            ...teachingImports,
             ...inferenceImports,
           ],
           patterns: [{
             group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
                       "*/conventions/definitions/**", "**/conventions/definitions/**",
-                      "*/conventions/core/**", "**/conventions/core/**"],
+                      "*/conventions/core/**", "**/conventions/core/**",
+                      "*/conventions/teaching/**", "**/conventions/teaching/**"],
             message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
@@ -399,14 +385,6 @@ export default tseslint.config(
               message: "stores must use service layer, not strategy directly",
             },
             {
-              name: "../teaching/*",
-              message: "stores must use service layer, not teaching directly",
-            },
-            {
-              name: "../../teaching/*",
-              message: "stores must use service layer, not teaching directly",
-            },
-            {
               name: "../inference/*",
               message: "stores must use service layer, not inference directly",
             },
@@ -426,7 +404,8 @@ export default tseslint.config(
           patterns: [{
             group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
                       "*/conventions/definitions/**", "**/conventions/definitions/**",
-                      "*/conventions/core/**", "**/conventions/core/**"],
+                      "*/conventions/core/**", "**/conventions/core/**",
+                      "*/conventions/teaching/**", "**/conventions/teaching/**"],
             message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
@@ -476,14 +455,6 @@ export default tseslint.config(
               name: "../../inference/*",
               message: "engine/ must not import inference/",
             },
-            {
-              name: "../teaching/*",
-              message: "engine/ must not import teaching/",
-            },
-            {
-              name: "../../teaching/*",
-              message: "engine/ must not import teaching/",
-            },
           ],
         },
       ],
@@ -531,14 +502,6 @@ export default tseslint.config(
             {
               name: "../../../inference/*",
               message: "contracts/ must not import inference/",
-            },
-            {
-              name: "../../teaching/*",
-              message: "contracts/ must not import teaching/",
-            },
-            {
-              name: "../../../teaching/*",
-              message: "contracts/ must not import teaching/",
             },
           ],
         },
@@ -596,14 +559,6 @@ export default tseslint.config(
             {
               name: "../../bootstrap/*",
               message: "conventions/ must not import bootstrap/",
-            },
-            {
-              name: "../teaching/*",
-              message: "conventions/ must not import teaching/",
-            },
-            {
-              name: "../../teaching/*",
-              message: "conventions/ must not import teaching/",
             },
           ],
         },
@@ -745,68 +700,12 @@ export default tseslint.config(
               name: "../../../inference/*",
               message: "display/ must not import inference/",
             },
-            {
-              name: "../../teaching/*",
-              message: "display/ must not import teaching/",
-            },
-            {
-              name: "../../../teaching/*",
-              message: "display/ must not import teaching/",
-            },
           ],
           patterns: [{
             group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
                     "*/conventions/definitions/**", "**/conventions/definitions/**",
-                    "*/conventions/core/**", "**/conventions/core/**"],
-            message: "Import from 'conventions' barrel instead of deep paths",
-          }],
-        },
-      ],
-    },
-  },
-
-  // ── Module boundary: teaching/ ──
-  {
-    files: ["src/teaching/**/*.ts"],
-    ignores: ["src/teaching/__tests__/**", "src/teaching/**/*.test.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            ...svelteImports,
-            ...storeImports,
-            ...componentImports,
-            ...strategyImports,
-            {
-              name: "../core/display/*",
-              message: "teaching/ must not import display/",
-            },
-            {
-              name: "../../core/display/*",
-              message: "teaching/ must not import display/",
-            },
-            {
-              name: "../bootstrap/*",
-              message: "teaching/ must not import bootstrap/",
-            },
-            {
-              name: "../../bootstrap/*",
-              message: "teaching/ must not import bootstrap/",
-            },
-            {
-              name: "../inference/*",
-              message: "teaching/ must not import inference/",
-            },
-            {
-              name: "../../inference/*",
-              message: "teaching/ must not import inference/",
-            },
-          ],
-          patterns: [{
-            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
-                    "*/conventions/definitions/**", "**/conventions/definitions/**",
-                    "*/conventions/core/**", "**/conventions/core/**"],
+                    "*/conventions/core/**", "**/conventions/core/**",
+                    "*/conventions/teaching/**", "**/conventions/teaching/**"],
             message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
@@ -827,7 +726,6 @@ export default tseslint.config(
             ...storeImports,
             ...componentImports,
             ...strategyImports,
-            ...teachingImports,
             ...bootstrapImports,
             ...inferenceImports,
           ],
@@ -849,7 +747,6 @@ export default tseslint.config(
             ...storeImports,
             ...componentImports,
             ...strategyImports,
-            ...teachingImports,
             ...bootstrapImports,
           ],
         },
@@ -925,7 +822,8 @@ export default tseslint.config(
         patterns: [{
           group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
                     "*/conventions/definitions/**", "**/conventions/definitions/**",
-                    "*/conventions/core/**", "**/conventions/core/**"],
+                    "*/conventions/core/**", "**/conventions/core/**",
+                    "*/conventions/teaching/**", "**/conventions/teaching/**"],
           message: "Import from 'conventions' barrel instead of deep paths",
         }],
       }],
@@ -970,14 +868,6 @@ export default tseslint.config(
             {
               name: "../../inference/*",
               message: "test-support/ must not import inference/",
-            },
-            {
-              name: "../teaching/*",
-              message: "test-support/ must not import teaching/",
-            },
-            {
-              name: "../../teaching/*",
-              message: "test-support/ must not import teaching/",
             },
           ],
         },

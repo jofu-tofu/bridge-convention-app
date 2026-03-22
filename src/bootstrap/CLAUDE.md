@@ -18,6 +18,7 @@ bootstrap/
   session.ts          createDrillSession() — DrillSession implementation
   config-factory.ts   createDrillConfig() — builds DrillConfig from convention ID + user seat
   start-drill.ts      startDrill() + pickVulnerability() + rotation utilities (rotateSeat180, rotateDealConstraints, rotateAuction)
+  teaching-weighting.ts  computeScenarioDistribution() — maps pedagogical weighting modes to deal-generation sampling parameters. Lives in bootstrap/ (not conventions/teaching/) because it's deal-generation infrastructure with no production consumers.
   __tests__/          Tests for all bootstrap files
 ```
 

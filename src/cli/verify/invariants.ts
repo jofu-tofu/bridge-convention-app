@@ -45,8 +45,8 @@ export function checkArbitrationTotality(
   const role = deriveTurnRole(snapshot.nextSeat, snapshot.log);
   if (role === "opponent") return null;
 
-  const hasMatchingSurfaces = snapshot.claims.some(
-    (claim) => claim.claims.length > 0,
+  const hasMatchingSurfaces = snapshot.resolved.some(
+    (claim) => claim.resolved.length > 0,
   );
   if (hasMatchingSurfaces) return null;
 
@@ -148,7 +148,7 @@ export function checkKernelConsistency(
 export function checkPhaseCoherence(
   snapshot: VerificationSnapshot,
 ): InvariantViolation | null {
-  for (const claim of snapshot.claims) {
+  for (const claim of snapshot.resolved) {
     if (!snapshot.localPhases.has(claim.moduleId)) {
       return buildViolation(
         "phase-coherence",
@@ -174,8 +174,8 @@ export function checkEncodingUniqueness(
   // Key: callKey+band → moduleId
   const callBandToModule = new Map<string, string>();
 
-  for (const claim of snapshot.claims) {
-    for (const { surface } of claim.claims) {
+  for (const claim of snapshot.resolved) {
+    for (const { surface } of claim.resolved) {
       const ck = callKey(surface.encoding.defaultCall);
       const band = surface.ranking.recommendationBand;
       const key = `${ck}::${band}`;

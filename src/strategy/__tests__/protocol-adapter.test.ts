@@ -335,7 +335,7 @@ describe("findMatchingClaimForCall", () => {
     const results = [
       {
         moduleId: "test",
-        claims: [{ surface, negotiationDelta: undefined }],
+        resolved: [{ surface, negotiationDelta: undefined }],
       },
     ];
 
@@ -353,7 +353,7 @@ describe("findMatchingClaimForCall", () => {
     const results = [
       {
         moduleId: "test",
-        claims: [{ surface, negotiationDelta: undefined }],
+        resolved: [{ surface, negotiationDelta: undefined }],
       },
     ];
 
@@ -369,7 +369,7 @@ describe("findMatchingClaimForCall", () => {
     const results = [
       {
         moduleId: "test",
-        claims: [{ surface, negotiationDelta: undefined }],
+        resolved: [{ surface, negotiationDelta: undefined }],
       },
     ];
 
@@ -396,11 +396,11 @@ describe("findMatchingClaimForCall", () => {
     const results = [
       {
         moduleId: "mod-a",
-        claims: [{ surface: shouldSurface, negotiationDelta: undefined }],
+        resolved: [{ surface: shouldSurface, negotiationDelta: undefined }],
       },
       {
         moduleId: "mod-b",
-        claims: [{ surface: mustSurface, negotiationDelta: undefined }],
+        resolved: [{ surface: mustSurface, negotiationDelta: undefined }],
       },
     ];
 

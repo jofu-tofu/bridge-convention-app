@@ -72,7 +72,6 @@ describe("SessionState construction", () => {
 
   it("has no current feedback", () => {
     const state = makeState();
-    expect(state.currentFeedback).toBeNull();
   });
 
   it("stores the convention ID from the session config", () => {

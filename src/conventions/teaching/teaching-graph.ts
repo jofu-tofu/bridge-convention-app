@@ -5,7 +5,7 @@
  * Pure function — no side effects, no imports from strategy/stores/components.
  */
 
-import type { TeachingRelation } from "../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 
 /** Indexed pedagogical relation graph for efficient lookup by meaning ref. */
 export interface TeachingGraph {

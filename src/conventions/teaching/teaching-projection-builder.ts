@@ -11,26 +11,26 @@ import type {
   PipelineResult,
   PipelineCarrier,
   EncodedProposal,
-} from "../core/contracts/module-surface";
+} from "../pipeline/pipeline-types";
 
 import type {
   DecisionProvenance,
-} from "../core/contracts/provenance";
+} from "../../core/contracts/provenance";
 
 import type {
   TeachingProjection,
   ConventionContribution,
   HandSpaceSummary,
-} from "../core/contracts/teaching-projection";
+} from "../../core/contracts/teaching-projection";
 
 import type {
   ExplanationCatalog,
   ExplanationEntry,
-} from "../core/contracts/explanation-catalog";
+} from "../../core/contracts/explanation-catalog";
 
-import type { TeachingRelation } from "../core/contracts/teaching-projection";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 
-import type { PosteriorSummary } from "../core/contracts/recommendation";
+import type { PosteriorSummary } from "../../core/contracts/recommendation";
 
 import {
   buildTeachingGraph,

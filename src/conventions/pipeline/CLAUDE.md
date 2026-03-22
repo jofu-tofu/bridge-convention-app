@@ -16,7 +16,7 @@ Meaning pipeline: surfaces → facts → evaluation → arbitration → encoding
 | `arbitration-helpers.ts` | `evaluateProposal()` (runs single proposal through gate pipeline), `classifyIntoSets()` (buckets carriers into truth/acceptable sets) |
 | `encoder-resolver.ts` | `resolveEncoding()` — resolves encoding for non-direct encoders (choice-set, frontier-step, relay-map). `EncoderConfig`, `FrontierStepConfig`, `ChoiceSetConfig`. |
 | `gate-order.ts` | `evaluateGates()` — 4-gate sequence: semantic-applicability → obligation-satisfaction → encoder-availability → concrete-legality. `GateId` type. |
-| `rule-interpreter.ts` | `collectMatchingClaims()` — collects matching claims from `ConventionModule[]` against `AuctionContext`. Replays local FSMs, checks turn/phase/kernel/route constraints. `ModuleClaimResult`, `flattenSurfaces()`, `deriveTurnRole()`. |
+| `rule-interpreter.ts` | `collectMatchingClaims()` — collects matching surfaces from `ConventionModule[]` against `AuctionContext`. Replays local FSMs, checks turn/phase/kernel/route constraints. `ModuleSurfaceResult`, `flattenSurfaces()`, `deriveTurnRole()`. |
 | `rule-enumeration.ts` | `enumerateRuleAtoms()`, `generateRuleCoverageManifest()` — walks `ConventionModule[].states[].surfaces[]` for CLI coverage commands. Atom ID format: `moduleId/meaningId`. |
 | `local-fsm.ts` | `advanceLocalFsm()` — advances a module's local phase based on `CommittedStep` observations. Actor-agnostic by design. |
 | `route-matcher.ts` | `matchRoute()` — evaluates `RouteExpr` patterns (subseq, last, contains, and/or/not) against `CommittedStep[]`. `matchObs()` for single observation matching. Supports `ObsPattern.actor` for actor-aware filtering. |

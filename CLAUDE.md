@@ -56,7 +56,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
 - **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Builders in `src/core/viewport/` filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
-- **Service is the single cross-consumer facade for both UI stores and CLI commands.** `service/evaluation/` is an internal subfolder containing stateless CLI grading logic (atom evaluation, playthrough evaluation). External consumers must import via the `service/` root barrel, enforced by ESLint. Agent-facing CLI commands (`eval.ts`, `play.ts`) import from `service/` only — ESLint blocks direct imports from `strategy/`, `teaching/`, `conventions/`, `core/viewport/`, `core/contracts/`, `engine/`, and `evaluation/` in those files.
+- **Service is the single cross-consumer facade for both UI stores and CLI commands.** `service/evaluation/` is an internal subfolder containing stateless CLI grading logic (atom evaluation, playthrough evaluation). External consumers must import via the `service/` root barrel, enforced by ESLint. Agent-facing CLI commands (`eval.ts`, `play.ts`) import from `service/` only — ESLint blocks direct imports from `strategy/`, `conventions/`, `core/viewport/`, `core/contracts/`, `engine/`, and `evaluation/` in those files.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
 ## Design Philosophy
@@ -87,8 +87,8 @@ src/
   conventions/     Convention system
     core/            Registry, context factory, bundle registry, runtime (runtime/) — public API via index.ts barrel
     pipeline/        Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding)
+    teaching/        Teaching resolution, projection builder, parse-tree builder, teaching graph
     definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises), weak-twos-bundle/ (Weak Two Bids + Ogust), dont-bundle/ (DONT competitive overcalls) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
-  teaching/        Teaching resolution (teaching-resolution.ts), projection builder, teaching graph
   inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
   strategy/        AI strategies
     bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
@@ -122,9 +122,9 @@ tests/
 | Display | `src/core/display/format.ts` | UI display utilities |
 | Util | `src/core/util/delay.ts` | Zero-dep pure utilities |
 | Viewport | `src/core/viewport/player-viewport.ts` | Player information boundary (BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, EvaluationOracle) |
-| Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + definitions/) |
+| Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + teaching/ + definitions/) |
 | Pipeline | `src/conventions/pipeline/run-pipeline.ts` | Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding) |
-| Teaching | `src/teaching/teaching-resolution.ts` | Teaching resolution and projection |
+| Teaching | `src/conventions/teaching/teaching-resolution.ts` | Teaching resolution and projection (inside conventions/) |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline; `runPipeline()` in `conventions/pipeline/run-pipeline.ts`) |
 | Service | `src/service/index.ts` | Session-handle service layer + evaluation facade (local-service, bidding/play/dds controllers, evaluation/) |
@@ -149,9 +149,9 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 - **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `BidMeaning` describes a bidding meaning with clauses evaluated against facts. `semanticClassId` and `teachingLabel` are required on every surface. The pipeline's output types are `PipelineCarrier` (accumulated state through pipeline stages) and `PipelineResult` (the public result containing winning meaning, truth set, and provenance).
 - **Alert system.** `resolveAlert()` derives alertability from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). `BidMeaning` does not carry `prioritySpec` or `priorityClass`; the pipeline derives alertability in `resolveAlert()`. Public constraints are auto-derived from primitive/bridge-observable clauses via `derivePublicConstraints()`. `annotation-producer.ts` converts `publicConstraints` to `HandInference` for Layer 1 belief updates. Inference model: only hard constraints from chosen bid's clauses + entailed denials from within-module exhaustive closure policy. No cross-module soft inference.
-- **`TeachingResolution`** (`src/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), CorrectNotPreferred (truth set but not recommended), Acceptable (preferred/alternative tier candidates), NearMiss (same family, fails constraint), Incorrect. `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)` extracts acceptable alternatives and near-miss candidates. `gradeBid()` grades user input with 5-grade cascade.
-- **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects pipeline results into teaching-optimized views for "why not X?" UI. `projectTeaching(result: PipelineResult, options?)` is the single entry point; internally converts to `ArbitrationResult`/`DecisionProvenance` for sub-builders. Teaching relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
-- **Parse-tree feedback.** After a bid, `buildParseTree()` (`src/teaching/parse-tree-builder.ts`) shows the full decision chain — which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Data flows: `PipelineResult` → `ParseTreeView` → `ParseTreePanel.svelte` (integrated into Incorrect and NearMiss feedback panels). Verdict per module: `selected` / `applicable` / `eliminated`.
+- **`TeachingResolution`** (`src/conventions/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), CorrectNotPreferred (truth set but not recommended), Acceptable (preferred/alternative tier candidates), NearMiss (same family, fails constraint), Incorrect. `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)` extracts acceptable alternatives and near-miss candidates. `gradeBid()` grades user input with 5-grade cascade.
+- **`TeachingProjection`** (`src/conventions/teaching/teaching-projection-builder.ts`) projects pipeline results into teaching-optimized views for "why not X?" UI. `projectTeaching(result: PipelineResult, options?)` is the single entry point; internally converts to `ArbitrationResult`/`DecisionProvenance` for sub-builders. Teaching relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
+- **Parse-tree feedback.** After a bid, `buildParseTree()` (`src/conventions/teaching/parse-tree-builder.ts`) shows the full decision chain — which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Data flows: `PipelineResult` → `ParseTreeView` → `ParseTreePanel.svelte` (integrated into Incorrect and NearMiss feedback panels). Verdict per module: `selected` / `applicable` / `eliminated`.
 - **Off-convention drills.** Generate hands where the convention doesn't apply, training recognition ("does this convention apply?") not just execution. `ConventionBundle.offConventionConstraints` defines the anti-constraints (e.g., South 0–7 HCP for NT). `DrillTuning.includeOffConvention` + `offConventionRate` control frequency (default 30%). `DrillBundle.isOffConvention` flag tells the UI/teaching layer the deal is off-convention.
 - **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
 - **Opponent modes:** "none" (opponents always pass) or "natural" (opponents bid with 6+ HCP and 5+ suit). Configurable via settings dropdown, persisted in localStorage.
@@ -224,7 +224,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
-- **Convention imports.** External consumers import from `conventions/index.ts` barrel — deep imports into `conventions/core/`, `conventions/pipeline/`, or `conventions/definitions/` are ESLint-blocked.
+- **Convention imports.** External consumers import from `conventions/index.ts` barrel — deep imports into `conventions/core/`, `conventions/pipeline/`, `conventions/teaching/`, or `conventions/definitions/` are ESLint-blocked.
 - All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. All teaching content (relations, alternatives, intent families) is derived from `pedagogicalTags` on surfaces — modules are portable building blocks that compose into any bundle. 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`) with scope-based grouping; derivation in `conventions/definitions/derive-cross-module.ts`
 - **CLI commands use rule enumeration.** All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration (`findPathToState`, `buildTargetedAuction`, `resolveAuction`) has been removed from `cli/shared.ts`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
@@ -257,7 +257,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/bootstrap/CLAUDE.md` — DrillConfig, DrillSession, DrillBundle, drill lifecycle
 - `src/cli/CLAUDE.md` — headless coverage test runner
 - `src/core/display/CLAUDE.md` — display utility inventory, dependency rules
-- `src/teaching/CLAUDE.md` — convention evaluation for teaching
+- `src/conventions/teaching/CLAUDE.md` — convention evaluation for teaching
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
 - `src/test-support/CLAUDE.md` — shared test factories, dependency rules

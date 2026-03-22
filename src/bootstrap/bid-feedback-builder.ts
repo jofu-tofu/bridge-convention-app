@@ -11,16 +11,16 @@ import type { Call } from "../engine/types";
 import type { BidResult } from "../core/contracts/bidding";
 import type { BidGrade } from "../core/contracts/teaching-grading";
 import type {
-  StrategyEvaluation,
   PracticalRecommendation,
   PracticalScoreBreakdown,
 } from "../core/contracts/recommendation";
+import type { StrategyEvaluation } from "../conventions";
 import type { TeachingProjection } from "../core/contracts/teaching-projection";
 import type { TeachingResolution } from "../core/contracts/teaching-grading";
 import {
   resolveTeachingAnswer,
   gradeBid,
-} from "../teaching/teaching-resolution";
+} from "../conventions";
 
 /** Assembled bid feedback — produced by grading a user's bid against strategy output.
  *  Satisfies the BidFeedbackLike interface required by buildViewportFeedback(). */
@@ -60,4 +60,4 @@ export function assembleBidFeedback(
 
 // Re-export grading utilities for callers that need just the grade
 export { BidGrade } from "../core/contracts/teaching-grading";
-export { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
+export { resolveTeachingAnswer, gradeBid } from "../conventions";

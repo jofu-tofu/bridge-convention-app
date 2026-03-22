@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { BidSuit } from "../../engine/types";
+import { BidSuit } from "../../../engine/types";
 import { projectTeaching } from "../teaching-projection-builder";
 import type {
   ArbitrationResult,
@@ -7,11 +7,11 @@ import type {
   EliminationRecord,
   PipelineResult,
   PipelineCarrier,
-} from "../../core/contracts/module-surface";
-import type { DecisionProvenance } from "../../core/contracts/provenance";
-import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
+} from "../../pipeline/pipeline-types";
+import type { DecisionProvenance } from "../../../core/contracts/provenance";
+import type { ExplanationCatalog } from "../../../core/contracts/explanation-catalog";
+import { createExplanationCatalog } from "../../../core/contracts/explanation-catalog";
+import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
 
 import {
   makeCall,
@@ -22,7 +22,7 @@ import {
   makeArbitration,
   makeProvenance,
   makeCarrier,
-} from "../../test-support/convention-factories";
+} from "../../../test-support/convention-factories";
 
 // -- Test helper: convert legacy ArbitrationResult + DecisionProvenance → PipelineResult --
 // The sub-builders internally use ArbitrationResult/DecisionProvenance, but

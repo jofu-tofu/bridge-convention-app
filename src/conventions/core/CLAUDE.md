@@ -9,8 +9,8 @@ Infrastructure for the meaning-centric convention system: registry, rule interpr
 ```
 core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
-  convention-module.ts  Unified ConventionModule interface — the single module type (moduleId, facts, explanationEntries, local: LocalFsm, states: StateEntry[]). Exports `moduleSurfaces()` helper (extracts deduplicated surfaces from a module's states). Re-exports `Claim`, `LocalFsm`, `StateEntry` from `rule-module.ts` for convenience.
-  rule-module.ts        Pattern primitives for rule-based surface selection: `LocalFsm`, `StateEntry` (phase + turn + surfaces + negotiationDelta), `Claim` (surface + negotiationDelta), `TurnRole`, `ObsPattern`, `RouteExpr`, `NegotiationExpr`, `PhaseTransition`. `StateEntry` groups surfaces by conversation state — activation context stays in `conventions/core/`, not on `BidMeaning` in `contracts/`.
+  convention-module.ts  Unified ConventionModule interface — the single module type (moduleId, facts, explanationEntries, local: LocalFsm, states: StateEntry[]). Exports `moduleSurfaces()` helper (extracts deduplicated surfaces from a module's states). Re-exports `ResolvedSurface`, `LocalFsm`, `StateEntry` from `rule-module.ts` for convenience.
+  rule-module.ts        Pattern primitives for rule-based surface selection: `LocalFsm`, `StateEntry` (phase + turn + surfaces + negotiationDelta), `ResolvedSurface` (surface + negotiationDelta), `TurnRole`, `ObsPattern`, `RouteExpr`, `NegotiationExpr`, `PhaseTransition`. `StateEntry` groups surfaces by conversation state — activation context stays in `conventions/core/`, not on `BidMeaning` in `contracts/`.
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())

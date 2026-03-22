@@ -104,14 +104,6 @@ export interface ConventionInfo {
   readonly category?: string;
 }
 
-/** Result of grading an atom bid (stateless). */
-export interface AtomGradeResult {
-  readonly viewport: BiddingViewport;
-  readonly feedback: ViewportBidFeedback | null;
-  readonly teaching: TeachingDetail | null;
-  readonly grade: ViewportBidGrade | null;
-}
-
 // ── Debug types ─────────────────────────────────────────────────────
 
 /** Debug snapshot visible through DevServicePort. */

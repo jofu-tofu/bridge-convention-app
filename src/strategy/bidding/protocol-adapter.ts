@@ -10,13 +10,13 @@ import type {
   BiddingContext,
   BidResult,
 } from "../../core/contracts";
-import type { ConventionStrategy, StrategyEvaluation, BidMeaning, ConventionSpec, ConventionModule, ModuleClaimResult } from "../../conventions";
+import type { ConventionStrategy, StrategyEvaluation, BidMeaning, ConventionSpec, ConventionModule, ModuleSurfaceResult } from "../../conventions";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, runPipeline } from "../../conventions";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { buildBidResult } from "./bid-result-builder";
-import { projectTeaching } from "../../teaching/teaching-projection-builder";
+import { projectTeaching } from "../../conventions";
 import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
@@ -235,7 +235,7 @@ export function buildObservationLogViaRules(
  * 4. Return null for unmatched calls.
  */
 export function findMatchingClaimForCall(
-  results: readonly ModuleClaimResult[],
+  results: readonly ModuleSurfaceResult[],
   call: Call,
 ): { surface: BidMeaning; negotiationDelta: NegotiationDelta | undefined; moduleId: string } | null {
   if (call.type === "pass") return null;
@@ -247,11 +247,11 @@ export function findMatchingClaimForCall(
   }[] = [];
 
   for (const result of results) {
-    for (const claim of result.claims) {
-      if (callMatchesEncoding(call, claim.surface.encoding)) {
+    for (const rs of result.resolved) {
+      if (callMatchesEncoding(call, rs.surface.encoding)) {
         candidates.push({
-          surface: claim.surface,
-          negotiationDelta: claim.negotiationDelta,
+          surface: rs.surface,
+          negotiationDelta: rs.negotiationDelta,
           moduleId: result.moduleId,
         });
       }

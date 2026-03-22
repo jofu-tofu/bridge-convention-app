@@ -253,13 +253,13 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
           allRuleModules,
           { snapshot: {} as never, log: realLog },
           nextSeat,
-        ).flatMap((r) => r.claims.map((c) => c.surface.meaningId)).sort();
+        ).flatMap((r) => r.resolved.map((c) => c.surface.meaningId)).sort();
 
         const flatSurfaces = collectMatchingClaims(
           allRuleModules,
           { snapshot: {} as never, log: flatLog },
           nextSeat,
-        ).flatMap((r) => r.claims.map((c) => c.surface.meaningId)).sort();
+        ).flatMap((r) => r.resolved.map((c) => c.surface.meaningId)).sort();
 
         expect(realSurfaces).toEqual(flatSurfaces);
       }

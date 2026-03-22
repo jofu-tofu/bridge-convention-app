@@ -1,8 +1,8 @@
 // ── conventions/ public API barrel ──────────────────────────────────────
 // This is the ONLY public import path for external consumers
-// (strategy/, teaching/, evaluation/, cli/, bootstrap/, service/, stores/, components/).
+// (strategy/, evaluation/, cli/, bootstrap/, service/, stores/, components/).
 // ESLint enforces no deep imports into conventions/core/, conventions/pipeline/,
-// or conventions/definitions/.
+// conventions/teaching/, or conventions/definitions/.
 
 // ── Side-effect registration (must be first — registers bundles before any consumer access) ──
 import "./registration";
@@ -70,7 +70,7 @@ export { createHandFactResolver } from "./pipeline/hand-fact-resolver";
 export { evaluateAllBidMeanings } from "./pipeline/meaning-evaluator";
 export { arbitrateMeanings, zipProposalsWithSurfaces } from "./pipeline/meaning-arbitrator";
 export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole, flattenSurfaces } from "./pipeline/rule-interpreter";
-export type { ModuleClaimResult } from "./pipeline/rule-interpreter";
+export type { ModuleSurfaceResult } from "./pipeline/rule-interpreter";
 export { normalizeIntent } from "./pipeline/normalize-intent";
 export { matchObs } from "./pipeline/route-matcher";
 export { advanceLocalFsm } from "./pipeline/local-fsm";
@@ -89,7 +89,7 @@ export type { ConventionBundle, BundleInput } from "./core/bundle";
 export type { RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic, EvaluationResult } from "./core/runtime/types";
 export type { MachineRegisters } from "./core/runtime/machine-types";
 export type { ConventionSpec } from "./core/protocol/types";
-export type { ConventionModule, Claim, LocalFsm, StateEntry } from "./core/convention-module";
+export type { ConventionModule, ResolvedSurface, LocalFsm, StateEntry } from "./core/convention-module";
 export { moduleSurfaces } from "./core/convention-module";
 export type { ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "./core/rule-module";
 
@@ -102,3 +102,10 @@ export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from 
 // ── Definitions (concrete bundles — for test setup) ─────────────────────
 export { ntBundle } from "./definitions/nt-bundle";
 export { bergenBundle } from "./definitions/bergen-bundle";
+
+// ── Teaching (resolution, projection, parse-tree) ─────────────────────
+export { resolveTeachingAnswer, gradeBid, BidGrade } from "./teaching/teaching-resolution";
+export type { AcceptableBid, TeachingResolution } from "./teaching/teaching-resolution";
+export { projectTeaching } from "./teaching/teaching-projection-builder";
+export type { TeachingProjectionOptions } from "./teaching/teaching-projection-builder";
+export { buildParseTree } from "./teaching/parse-tree-builder";

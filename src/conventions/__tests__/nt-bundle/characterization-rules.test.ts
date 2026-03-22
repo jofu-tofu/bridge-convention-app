@@ -61,7 +61,7 @@ function evaluatePosition(
   const log = buildObservationLogViaRules(history, seat, ruleModules);
   const auctionCtx: AuctionContext = { snapshot: {} as PublicSnapshot, log };
   const results = collectMatchingClaims(ruleModules, auctionCtx, seat);
-  const visibleSurfaces = results.flatMap((r) => r.claims.map((c) => c.surface));
+  const visibleSurfaces = results.flatMap((r) => r.resolved.map((c) => c.surface));
 
   const ev = evaluateHand(testHand);
   const context = createBiddingContext({

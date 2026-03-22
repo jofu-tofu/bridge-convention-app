@@ -17,9 +17,9 @@ import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
 import type { LocalFsm, StateEntry } from "./rule-module";
 
-// Re-export for consumer convenience (Claim, LocalFsm, and StateEntry are structurally
+// Re-export for consumer convenience (ResolvedSurface, LocalFsm, and StateEntry are structurally
 // part of rule-module.ts but frequently needed alongside ConventionModule).
-export type { Claim, LocalFsm, StateEntry } from "./rule-module";
+export type { ResolvedSurface, LocalFsm, StateEntry } from "./rule-module";
 
 export interface ConventionModule<Phase extends string = string> {
   /** Unique module identifier (kebab-case). */

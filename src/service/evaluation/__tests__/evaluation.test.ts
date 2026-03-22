@@ -20,7 +20,7 @@ import {
 } from "../index";
 
 // ── Ensure convention registrations are loaded ────────────────────────
-import "../../conventions";
+import "../../../conventions";
 
 const BUNDLE = "nt-bundle";
 

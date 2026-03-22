@@ -5,131 +5,31 @@
 //
 // Internal strategy/teaching/convention access is encapsulated here.
 
-import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
-import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
-import { getSystemConfig } from "../core/contracts/system-config";
-import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions";
-import { enumerateRuleAtoms } from "../conventions";
-import { createBiddingContext } from "../conventions";
-import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
-import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
-import { createStrategyChain } from "../strategy/bidding/strategy-chain";
-import { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
-import { BidGrade } from "../core/contracts/teaching-grading";
-import type { BidResult, BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
-import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../core/viewport/build-viewport";
-import type { BiddingViewport } from "../core/viewport/player-viewport";
-import { generateDeal } from "../engine/deal-generator";
-import { mulberry32 } from "../core/util/seeded-rng";
-import { evaluateHand } from "../engine/hand-evaluator";
-import { callKey, callsMatch } from "../engine/call-helpers";
-import { parsePatternCall } from "../engine/auction-helpers";
-import { getLegalCalls } from "../engine/auction";
-import { Seat, Vulnerability } from "../engine/types";
-import type { Auction, Call, Deal, Hand, DealConstraints } from "../engine/types";
-import type { ConventionBundle } from "../conventions";
-import type { ConventionSpec } from "../conventions";
-import type { OpponentMode } from "../core/contracts/drill";
+import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../../core/contracts/system-config";
+import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../../conventions";
+import { enumerateRuleAtoms } from "../../conventions";
+import { createBiddingContext } from "../../conventions";
+import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import { naturalFallbackStrategy } from "../../strategy/bidding/natural-fallback";
+import { createStrategyChain } from "../../strategy/bidding/strategy-chain";
+import { resolveTeachingAnswer, gradeBid } from "../../conventions";
+import { BidGrade } from "../../core/contracts/teaching-grading";
+import type { BidResult, BiddingStrategy, BidHistoryEntry } from "../../core/contracts/bidding";
+import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../../core/viewport/build-viewport";
+import type { BiddingViewport } from "../../core/viewport/player-viewport";
+import { callKey } from "../../engine/call-helpers";
+import { parsePatternCall } from "../../engine/auction-helpers";
+import { Seat, Vulnerability } from "../../engine/types";
+import type { Auction, Call, Deal, Hand, DealConstraints } from "../../engine/types";
+import type { ConventionBundle } from "../../conventions";
+import type { ConventionSpec } from "../../conventions";
+import type { OpponentMode } from "../../core/contracts/drill";
 import type { PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./types";
+import { nextSeat, partnerSeat, generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, buildBidHistory, makeViewport } from "./helpers";
 
-// ── Internal helpers ────────────────────────────────────────────────
-
-function nextSeatClockwise(seat: Seat): Seat {
-  switch (seat) {
-    case Seat.North: return Seat.East;
-    case Seat.East: return Seat.South;
-    case Seat.South: return Seat.West;
-    case Seat.West: return Seat.North;
-  }
-}
-
-function partnerOf(seat: Seat): Seat {
-  switch (seat) {
-    case Seat.North: return Seat.South;
-    case Seat.South: return Seat.North;
-    case Seat.East: return Seat.West;
-    case Seat.West: return Seat.East;
-  }
-}
-
-function generateSeededDeal(bundle: ConventionBundle, seed: number, vulnerability?: Vulnerability): Deal {
-  const rng = mulberry32(seed);
-  const constraints: DealConstraints = {
-    ...bundle.dealConstraints,
-    ...(vulnerability !== undefined ? { vulnerability } : {}),
-  };
-  return generateDeal(constraints, rng).deal;
-}
-
-function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
-  for (const seat of [Seat.South, Seat.East, Seat.North, Seat.West]) {
-    if (bundle.defaultAuction) {
-      const auction = bundle.defaultAuction(seat, deal);
-      if (auction && auction.entries.length > 0) return seat;
-    }
-  }
-  return Seat.South;
-}
-
-function buildInitialAuction(bundle: ConventionBundle, userSeat: Seat, deal: Deal): Auction {
-  if (bundle.defaultAuction) {
-    const auction = bundle.defaultAuction(userSeat, deal);
-    if (auction) return auction;
-  }
-  return { entries: [], isComplete: false };
-}
-
-function buildContext(hand: Hand, auction: Auction, seat: Seat, vulnerability: Vulnerability) {
-  return createBiddingContext({
-    hand, auction, seat,
-    evaluation: evaluateHand(hand),
-    vulnerability,
-    dealer: auction.entries.length > 0 ? auction.entries[0]!.seat : Seat.North,
-  });
-}
-
-function buildBidHistory(
-  auction: Auction, deal: Deal, userSeat: Seat,
-  strategy: BiddingStrategy, vulnerability: Vulnerability,
-): BidHistoryEntry[] {
-  const partner = partnerOf(userSeat);
-  const history: BidHistoryEntry[] = [];
-  for (let i = 0; i < auction.entries.length; i++) {
-    const entry = auction.entries[i]!;
-    if (entry.seat !== userSeat && entry.seat !== partner) {
-      history.push({ seat: entry.seat, call: entry.call, isUser: false });
-      continue;
-    }
-    const auctionBefore: Auction = { entries: auction.entries.slice(0, i), isComplete: false };
-    const ctx = buildContext(deal.hands[entry.seat], auctionBefore, entry.seat, vulnerability);
-    const result = strategy.suggest(ctx);
-    const bidMatches = result && callsMatch(result.call, entry.call);
-    history.push({
-      seat: entry.seat, call: entry.call,
-      meaning: bidMatches ? result?.meaning : undefined, isUser: entry.seat === userSeat,
-      alertLabel: bidMatches ? result?.alert?.teachingLabel : undefined,
-      annotationType: bidMatches ? result?.alert?.annotationType : undefined,
-    });
-  }
-  return history;
-}
-
-function makeViewport(
-  deal: Deal, auction: Auction, userSeat: Seat, activeSeat: Seat,
-  strategy: BiddingStrategy, bundleName: string, vulnerability: Vulnerability,
-): BiddingViewport {
-  const bidHistory = buildBidHistory(auction, deal, userSeat, strategy, vulnerability);
-  return buildBiddingViewport({
-    deal, userSeat: activeSeat, auction, bidHistory,
-    legalCalls: getLegalCalls(auction, activeSeat),
-    faceUpSeats: new Set([activeSeat]),
-    conventionName: bundleName,
-    isUserTurn: true,
-    currentBidder: activeSeat,
-  });
-}
-
-// ── Internal step type ──────────────────────────────────────────────
+// ── Internal step type // ── Internal step type ──────────────────────────────────────────────
 
 interface InternalStep {
   readonly stepIndex: number;
@@ -167,7 +67,7 @@ function runPlaythroughInternal(
   const spec = specFromBundle(input, getSystemConfig(baseSystem))!;
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
-  const partner = partnerOf(userSeat);
+  const partner = partnerSeat(userSeat);
   const strategy = protocolSpecToStrategy(spec);
   const ewStrategy = opponents === "natural"
     ? createStrategyChain([naturalFallbackStrategy])
@@ -182,7 +82,7 @@ function runPlaythroughInternal(
 
   for (let iter = 0; iter < maxIter; iter++) {
     const activeSeat = entries.length > 0
-      ? nextSeatClockwise(entries[entries.length - 1]!.seat)
+      ? nextSeat(entries[entries.length - 1]!.seat)
       : userSeat;
 
     if (activeSeat !== userSeat && activeSeat !== partner) {

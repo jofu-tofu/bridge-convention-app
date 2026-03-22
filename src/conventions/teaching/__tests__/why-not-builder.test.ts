@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { BidSuit } from "../../engine/types";
-import type { Call } from "../../engine/types";
+import { BidSuit } from "../../../engine/types";
+import type { Call } from "../../../engine/types";
 import { buildWhyNot } from "../why-not-builder";
 import { buildTeachingGraph } from "../teaching-graph";
 import type {
   ArbitrationResult,
   EncodedProposal,
-} from "../../core/contracts/module-surface";
-import type { DecisionProvenance } from "../../core/contracts/provenance";
-import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
+} from "../../pipeline/pipeline-types";
+import type { DecisionProvenance } from "../../../core/contracts/provenance";
+import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
 import type { CatalogIndex } from "../teaching-projection-builder";
 
 import {
@@ -22,7 +22,7 @@ import {
   makeArbitration,
   makeProvenance,
   makeCatalogEntry,
-} from "../../test-support/convention-factories";
+} from "../../../test-support/convention-factories";
 
 function makeCatalogIndex(
   byFactId: [string, ExplanationEntry][] = [],

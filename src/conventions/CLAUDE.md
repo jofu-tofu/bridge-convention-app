@@ -7,13 +7,14 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 - **Designed for 100+ modules.** The module/bundle system scales to hundreds of convention modules composed into arbitrary bundles. Adding a module never requires editing existing modules or core infrastructure. Registries, derivation, and composition are all O(N).
 - **Registry pattern.** All conventions register via `registerBundle()` in `core/`, which auto-derives and registers `ConventionConfig`. No separate `registerConvention()` calls needed. Never hardcode convention logic in switch statements.
 - **Contract boundary.** Cross-module DTOs come from `src/core/contracts/`; convention internals must not leak across that boundary.
-- **Three-way split.** `core/` contains stable infrastructure (runtime, registry). `pipeline/` contains the meaning pipeline (surfaces → facts → evaluation → arbitration). `definitions/` contains convention modules and bundles. Convention-specific logic belongs in `definitions/`, never in `core/` or `pipeline/`.
+- **Four-way split.** `core/` contains stable infrastructure (runtime, registry). `pipeline/` contains the meaning pipeline (surfaces → facts → evaluation → arbitration). `teaching/` contains teaching resolution, projection, and parse-tree builders — derived views over pipeline results. `definitions/` contains convention modules and bundles. Convention-specific logic belongs in `definitions/`, never in `core/`, `pipeline/`, or `teaching/`.
 - **Bounded-context barrel.** `index.ts` is the single public API for external consumers. Import from the barrel, not deep paths (e.g., `conventions/core/registry` or `conventions/pipeline/meaning-evaluator`). ESLint enforces this boundary.
 - **Auto-registration.** `index.ts` imports each convention and calls `registerBundle()`, which auto-derives `ConventionConfig`. No `convention-config.ts` wrappers needed.
 
 **Context tree:**
 - `core/CLAUDE.md` — rule interpreter, runtime, witness, test architecture
 - `pipeline/CLAUDE.md` — meaning pipeline (fact evaluation, surface evaluation, arbitration, encoding)
+- `teaching/CLAUDE.md` — teaching resolution, projection builder, parse-tree builder
 
 ## Convention Authoring (Meaning Pipeline)
 

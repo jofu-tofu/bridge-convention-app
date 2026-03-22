@@ -41,5 +41,5 @@ export type {
 export type { ConventionSpec } from "./protocol/types";
 
 // ── Convention Module (unified type) ─────────────────────────────────────
-export type { ConventionModule, Claim, LocalFsm, StateEntry } from "./convention-module";
+export type { ConventionModule, ResolvedSurface, LocalFsm, StateEntry } from "./convention-module";
 export { moduleSurfaces } from "./convention-module";

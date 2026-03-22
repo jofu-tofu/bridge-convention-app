@@ -14,7 +14,7 @@ UI display utilities and pure functions. Consumer of `engine/`, `conventions/cor
 | `filter-conventions.ts`| `filterConventions()` — convention picker search/filter           |
 | `table-scale.ts`       | `computeTableScale()` — responsive table scaling                  |
 
-Convention evaluation moved to `src/teaching/`. Component-specific logic co-located in `src/components/game/` (DecisionTree.ts, RoundBidList.ts, DebugDrawer.ts).
+Convention evaluation moved to `src/conventions/teaching/`. Component-specific logic co-located in `src/components/game/` (DecisionTree.ts, RoundBidList.ts, DebugDrawer.ts).
 
 ## Gotchas
 

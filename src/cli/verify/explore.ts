@@ -114,7 +114,7 @@ export function exploreBundle(
         // Track coverage
         for (const claim of claims) {
           modulesActivated.add(claim.moduleId);
-          for (const { surface } of claim.claims) {
+          for (const { surface } of claim.resolved) {
             atomsExercised.add(`${claim.moduleId}/${surface.meaningId}`);
           }
         }
@@ -135,7 +135,7 @@ export function exploreBundle(
           nextSeat,
           localPhases: new Map(localPhases),
           kernel: currentKernel,
-          claims,
+          resolved: claims,
           log,
         };
 
@@ -167,7 +167,7 @@ export function exploreBundle(
               const entries = mod.states ?? [];
               for (let ri = 0; ri < entries.length; ri++) {
                 const surfaces = entries[ri]!.surfaces;
-                if (claim.claims.some(cl => surfaces.some(s => s.meaningId === cl.surface.meaningId))) {
+                if (claim.resolved.some(rs => surfaces.some(s => s.meaningId === rs.surface.meaningId))) {
                   rulesFired.get(claim.moduleId)!.add(ri);
                 }
               }
