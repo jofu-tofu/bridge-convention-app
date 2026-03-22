@@ -65,41 +65,9 @@ export function isDtoTeachingAcceptable(c: ResolvedCandidateDTO): boolean {
   return c.eligibility.pedagogical.acceptable;
 }
 
-/** Groups of meanings that are acceptable alternatives to each other for grading.
- *  When the matched meaning is in a group, other group members become acceptable bids.
- *  Bypasses surface clause exclusivity — these are semantic, not structural, neighbors. */
-export interface AlternativeGroup {
-  /** Human-readable label for the group (e.g., "Bergen strength raises") */
-  readonly label: string;
-  /** bidNames (meaningIds) of meanings in this group. */
-  readonly members: readonly string[];
-  /** Whether alternatives get full credit or partial.
-   *  "preferred" → fullCredit: true (teal, same as correct).
-   *  "alternative" → fullCredit: false (teal, partial credit).
-   *  Maps to existing AcceptableBid.fullCredit in teaching-resolution.ts. */
-  readonly tier: "preferred" | "alternative";
-  /** Optional: only activate when matched meaning is one of these specific bidNames.
-   *  If omitted, any member match activates all other members as alternatives.
-   *  If present, ONLY matching one of these members activates the group. */
-  readonly whenMatched?: readonly string[];
-}
-
-/** Discriminator for how members within a family are related. */
-export type IntentRelationship =
-  | "mutually_exclusive"    // Only one applies per hand (e.g., game vs limit raise)
-  | "equivalent_encoding"   // Same meaning, different call (e.g., relay paths)
-  | "policy_alternative";   // Both valid, convention policy prefers one
-
-/** Declares that multiple meaning leaves belong to the same conceptual family.
- *  Members reference meaningIds (bidName). Convention-level grouping for
- *  diagnostics, teaching, and relationship-aware grading. */
-export interface IntentFamily {
-  readonly id: string;
-  readonly label: string;
-  readonly members: readonly string[];
-  readonly relationship: IntentRelationship;
-  readonly description: string;
-}
+// Re-export teaching/grading types that were moved to teaching-grading.ts.
+// Kept here so existing consumers importing from tree-evaluation continue to work.
+export type { AlternativeGroup, IntentFamily, IntentRelationship } from "./teaching-grading";
 
 /** Structured trace of how the convention pipeline evaluated a bid.
  *  Always-on (not DEV-gated). Plain DTO — no convention-core imports. */

@@ -14,7 +14,7 @@ import type { ConventionModule } from "../core/convention-module";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { TeachingTagDef } from "../../core/contracts/teaching-tag";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
-import type { AlternativeGroup, IntentFamily, IntentRelationship } from "../../core/contracts/tree-evaluation";
+import type { AlternativeGroup, IntentFamily, IntentRelationship } from "../../core/contracts/teaching-grading";
 
 // ── Internal types ──────────────────────────────────────────────────
 

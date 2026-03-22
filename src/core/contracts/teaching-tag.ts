@@ -13,7 +13,7 @@
  */
 
 import type { TeachingRelationKind } from "./teaching-projection";
-import type { IntentRelationship } from "./tree-evaluation";
+import type { IntentRelationship } from "./teaching-grading";
 
 /** What a single tag derives. Each tag derives exactly one kind of output. */
 export type TagDerivation =

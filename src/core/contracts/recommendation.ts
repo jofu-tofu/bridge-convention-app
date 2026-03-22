@@ -1,6 +1,6 @@
 import type { Call } from "../../engine/types";
 import type { BiddingStrategy } from "./bidding";
-import type { AlternativeGroup, IntentFamily } from "./tree-evaluation";
+import type { AlternativeGroup, IntentFamily } from "./teaching-grading";
 import type { ExplanationCatalog } from "./explanation-catalog";
 import type { ArbitrationResult, MachineRegisters } from "./module-surface";
 import type { DecisionProvenance, HandoffTrace } from "./provenance";

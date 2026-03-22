@@ -73,3 +73,6 @@ export type { RuleModule } from "./rule-module";
 
 // ── Convention Module ────────────────────────────────────────────────────
 export type { ConventionModule } from "./convention-module";
+
+// ── System Registry (re-exported from definitions for external consumers) ────
+export { getSystemBundle, listSystemBundles, specFromBundle } from "../definitions/system-registry";

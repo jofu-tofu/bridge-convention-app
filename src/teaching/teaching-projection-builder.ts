@@ -250,3 +250,21 @@ function buildHandSpace(
     partnerSummary,
   };
 }
+
+/**
+ * Build a TeachingProjection from arbitration and provenance, returning null if provenance is missing.
+ */
+export function buildTeachingProjection(
+  arbitration: ArbitrationResult,
+  provenance: DecisionProvenance | null,
+  explanationCatalog?: ExplanationCatalog,
+  posteriorSummary?: PosteriorSummary | null,
+  teachingRelations?: readonly TeachingRelation[],
+): TeachingProjection | null {
+  if (!provenance) return null;
+  return projectTeaching(arbitration, provenance, {
+    explanationCatalog,
+    posteriorSummary: posteriorSummary ?? undefined,
+    teachingRelations,
+  });
+}

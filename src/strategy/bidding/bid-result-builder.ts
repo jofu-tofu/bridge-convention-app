@@ -4,14 +4,12 @@ import type {
   BidAlert,
 } from "../../core/contracts";
 import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation";
-import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
-import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
-import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import { formatHandSummary } from "../../core/display/hand-summary";
-import { projectTeaching } from "../../teaching/teaching-projection-builder";
+
+// Re-export from teaching layer so existing callers don't break.
+export { buildTeachingProjection } from "../../teaching/teaching-projection-builder";
 
 // ─── Result Mapping ────────────────────────────────────────────
 
@@ -79,20 +77,4 @@ export function buildBidResult(
   };
 }
 
-/**
- * Build a TeachingProjection from arbitration and provenance, returning null if provenance is missing.
- */
-export function buildTeachingProjection(
-  arbitration: ArbitrationResult,
-  provenance: DecisionProvenance | null,
-  explanationCatalog?: ExplanationCatalog,
-  posteriorSummary?: PosteriorSummary | null,
-  teachingRelations?: readonly TeachingRelation[],
-): TeachingProjection | null {
-  if (!provenance) return null;
-  return projectTeaching(arbitration, provenance, {
-    explanationCatalog,
-    posteriorSummary: posteriorSummary ?? undefined,
-    teachingRelations,
-  });
-}
+

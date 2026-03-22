@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { deriveTeachingContent } from "../derive-cross-module";
 import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
-import type { AlternativeGroup } from "../../../core/contracts/tree-evaluation";
+import type { AlternativeGroup } from "../../../core/contracts/teaching-grading";
 import type { ConventionModule } from "../../core/convention-module";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { TeachingTagDef } from "../../../core/contracts/teaching-tag";

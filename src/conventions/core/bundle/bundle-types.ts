@@ -1,6 +1,7 @@
 import type { DealConstraints, Deal, Auction } from "../../../engine/types";
 import type { Seat } from "../../../engine/types";
-import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/tree-evaluation";
+import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/teaching-grading";
+import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
 import type { SystemProfile } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig, ConventionTeaching } from "../../../core/contracts/convention";
 import { ConventionCategory } from "../../../core/contracts/convention";
@@ -64,6 +65,8 @@ export interface DerivedTeachingContent {
   readonly acceptableAlternatives: readonly AlternativeGroup[];
   /** @derived From teachingTags + rule module structure. */
   readonly intentFamilies: readonly IntentFamily[];
+  /** @derived From relation teachingTags (same-family, stronger-than, etc.) on surfaces. */
+  readonly relations: readonly TeachingRelation[];
 }
 
 // ── Full computed bundle ────────────────────────────────────────────
@@ -75,11 +78,7 @@ export interface DerivedTeachingContent {
  * cannot be set by authors.
  */
 export interface ConventionBundle extends BundleInput {
-  /** System-level bidding configuration (HCP ranges, thresholds).
-   *  Convention modules use this to parameterize system-dependent values
-   *  (e.g. 1NT range, invite/game thresholds) instead of hardcoding them. */
-  readonly systemConfig?: SystemConfig;
-  /** Derived teaching/grading metadata (acceptableAlternatives, intentFamilies). */
+  /** Derived teaching/grading metadata (acceptableAlternatives, intentFamilies, relations). */
   readonly derivedTeaching: DerivedTeachingContent;
 }
 

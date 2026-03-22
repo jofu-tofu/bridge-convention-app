@@ -16,7 +16,7 @@ function makeBundle(
     description: "test",
     memberIds,
     dealConstraints: { seats: [] },
-    derivedTeaching: { acceptableAlternatives: [], intentFamilies: [] },
+    derivedTeaching: { acceptableAlternatives: [], intentFamilies: [], relations: [] },
     ...extras,
   };
 }
@@ -111,6 +111,7 @@ describe("composeBundles", () => {
           { label: "group-a", members: ["m1", "m2"], tier: "preferred" as const },
         ],
         intentFamilies: [],
+        relations: [],
       },
     });
     const b = makeBundle("b", [], {
@@ -119,6 +120,7 @@ describe("composeBundles", () => {
           { label: "group-b", members: ["m3"], tier: "alternative" as const },
         ],
         intentFamilies: [],
+        relations: [],
       },
     });
 

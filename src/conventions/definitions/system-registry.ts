@@ -10,7 +10,8 @@ import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types"
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import type { RuleModule } from "../core/rule-module";
-import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
+import type { AlternativeGroup, IntentFamily } from "../../core/contracts/teaching-grading";
+import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import { getModules } from "./module-registry";
 import { deriveTeachingContent } from "./derive-cross-module";
 
@@ -37,12 +38,14 @@ import { weakTwosRules } from "./modules/weak-twos/weak-twos-rules";
 function aggregateTeachingContent(moduleIds: readonly string[], ruleModules: readonly RuleModule[]): {
   acceptableAlternatives: readonly AlternativeGroup[];
   intentFamilies: readonly IntentFamily[];
+  relations: readonly TeachingRelation[];
 } {
   const modules = getModules(moduleIds);
   const derived = deriveTeachingContent(modules);
   return {
     acceptableAlternatives: derived.alternatives,
     intentFamilies: [...derived.intentFamilies, ...deriveIntentFamiliesFromRules(ruleModules)],
+    relations: derived.relations,
   };
 }
 
@@ -54,10 +57,10 @@ function aggregateTeachingContent(moduleIds: readonly string[], ruleModules: rea
  * Authors provide BundleInput; derived fields are computed here.
  */
 function buildBundle(def: BundleInput): ConventionBundle {
-  const { acceptableAlternatives, intentFamilies } = aggregateTeachingContent(def.memberIds, def.ruleModules ?? []);
+  const { acceptableAlternatives, intentFamilies, relations } = aggregateTeachingContent(def.memberIds, def.ruleModules ?? []);
   return {
     ...def,
-    derivedTeaching: { acceptableAlternatives, intentFamilies },
+    derivedTeaching: { acceptableAlternatives, intentFamilies, relations },
   };
 }
 

@@ -49,6 +49,7 @@ export function composeBundles(
     derivedTeaching: {
       acceptableAlternatives: bundles.flatMap((b) => b.derivedTeaching.acceptableAlternatives),
       intentFamilies: bundles.flatMap((b) => b.derivedTeaching.intentFamilies),
+      relations: bundles.flatMap((b) => b.derivedTeaching.relations),
     },
   };
 }
