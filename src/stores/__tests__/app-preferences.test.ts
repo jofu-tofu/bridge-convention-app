@@ -52,6 +52,15 @@ describe("localStorage persistence", () => {
     expect(saved.baseSystemId).toBe("two-over-one");
   });
 
+  it("setBaseSystemId persists acol and round-trips", () => {
+    const store = createAppStore();
+    store.setBaseSystemId("acol");
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)!);
+    expect(saved.baseSystemId).toBe("acol");
+    const store2 = createAppStore();
+    expect(store2.baseSystemId).toBe("acol");
+  });
+
   it("loads preferences from localStorage on creation", () => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
       ...DEFAULTS,

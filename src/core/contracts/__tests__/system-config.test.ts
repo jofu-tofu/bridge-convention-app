@@ -3,11 +3,13 @@ import {
   getSystemConfig,
   SAYC_SYSTEM_CONFIG,
   TWO_OVER_ONE_SYSTEM_CONFIG,
+  ACOL_SYSTEM_CONFIG,
   AVAILABLE_BASE_SYSTEMS,
 } from "../system-config";
 import {
   BASE_SYSTEM_SAYC,
   BASE_SYSTEM_TWO_OVER_ONE,
+  BASE_SYSTEM_ACOL,
   type BaseSystemId,
 } from "../base-system-vocabulary";
 
@@ -35,6 +37,22 @@ describe("getSystemConfig", () => {
     expect(cfg.displayName).toBe("2/1 Game Forcing");
   });
 
+  it("returns Acol config for BASE_SYSTEM_ACOL", () => {
+    const cfg = getSystemConfig(BASE_SYSTEM_ACOL);
+    expect(cfg).toBe(ACOL_SYSTEM_CONFIG);
+    expect(cfg.systemId).toBe(BASE_SYSTEM_ACOL);
+    expect(cfg.displayName).toBe("Acol");
+    expect(cfg.ntOpening).toEqual({ minHcp: 12, maxHcp: 14 });
+    expect(cfg.responderThresholds).toEqual({
+      inviteMin: 11,
+      inviteMax: 12,
+      gameMin: 13,
+      slamMin: 19,
+    });
+    expect(cfg.openerRebid.notMinimum).toBe(13);
+    expect(cfg.interference.redoubleMin).toBe(9);
+  });
+
   it("falls back to SAYC for an unknown system id", () => {
     const cfg = getSystemConfig("unknown" as BaseSystemId);
     expect(cfg).toBe(SAYC_SYSTEM_CONFIG);
@@ -58,6 +76,11 @@ describe("suit response config", () => {
     expect(TWO_OVER_ONE_SYSTEM_CONFIG.suitResponse.twoLevelMin).toBe(12);
     expect(TWO_OVER_ONE_SYSTEM_CONFIG.suitResponse.twoLevelForcingDuration).toBe("game");
   });
+
+  it("Acol: 2-level new suit requires 10 HCP, one-round forcing", () => {
+    expect(ACOL_SYSTEM_CONFIG.suitResponse.twoLevelMin).toBe(10);
+    expect(ACOL_SYSTEM_CONFIG.suitResponse.twoLevelForcingDuration).toBe("one-round");
+  });
 });
 
 describe("1NT response after major config", () => {
@@ -70,25 +93,33 @@ describe("1NT response after major config", () => {
     expect(TWO_OVER_ONE_SYSTEM_CONFIG.oneNtResponseAfterMajor.forcing).toBe("semi-forcing");
     expect(TWO_OVER_ONE_SYSTEM_CONFIG.oneNtResponseAfterMajor.maxHcp).toBe(12);
   });
+
+  it("Acol: non-forcing, max 9 HCP", () => {
+    expect(ACOL_SYSTEM_CONFIG.oneNtResponseAfterMajor.forcing).toBe("non-forcing");
+    expect(ACOL_SYSTEM_CONFIG.oneNtResponseAfterMajor.maxHcp).toBe(9);
+  });
 });
 
 describe("threshold invariants", () => {
-  it("SAYC responder thresholds are ordered: inviteMin < inviteMax < gameMin < slamMin", () => {
-    const { inviteMin, inviteMax, gameMin, slamMin } =
-      SAYC_SYSTEM_CONFIG.responderThresholds;
-    expect(inviteMin).toBeLessThan(inviteMax);
-    expect(inviteMax).toBeLessThan(gameMin);
-    expect(gameMin).toBeLessThan(slamMin);
+  const allConfigs = AVAILABLE_BASE_SYSTEMS.map((s) => getSystemConfig(s.id));
+
+  it("responder thresholds are ordered: inviteMin < inviteMax < gameMin < slamMin", () => {
+    for (const cfg of allConfigs) {
+      const { inviteMin, inviteMax, gameMin, slamMin } = cfg.responderThresholds;
+      expect(inviteMin).toBeLessThan(inviteMax);
+      expect(inviteMax).toBeLessThan(gameMin);
+      expect(gameMin).toBeLessThan(slamMin);
+    }
   });
 
   it("openerRebid.notMinimum > ntOpening.minHcp", () => {
-    for (const cfg of [SAYC_SYSTEM_CONFIG, TWO_OVER_ONE_SYSTEM_CONFIG]) {
+    for (const cfg of allConfigs) {
       expect(cfg.openerRebid.notMinimum).toBeGreaterThan(cfg.ntOpening.minHcp);
     }
   });
 
   it("ntOpening.minHcp < ntOpening.maxHcp", () => {
-    for (const cfg of [SAYC_SYSTEM_CONFIG, TWO_OVER_ONE_SYSTEM_CONFIG]) {
+    for (const cfg of allConfigs) {
       expect(cfg.ntOpening.minHcp).toBeLessThan(cfg.ntOpening.maxHcp);
     }
   });

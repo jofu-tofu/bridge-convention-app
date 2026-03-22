@@ -31,7 +31,7 @@ Includes a **compositional verification framework** (`verify` namespace) for cat
   <subcommand> --help                        Show subcommand help
 ```
 
-Global settings: `--system=<sayc|two-over-one>`, `--vuln=<none|ns|ew|both>`, `--opponents=<natural|none>`, `--help`.
+Global settings: `--system=<sayc|two-over-one|acol>`, `--vuln=<none|ns|ew|both>`, `--opponents=<natural|none>`, `--help`.
 
 Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 Same seed = same deal across all commands. Deterministic (Mulberry32 PRNG).
@@ -171,7 +171,7 @@ Atoms include both opener (North) and responder (South) states. The BFS path det
 
 ## Settings Flags
 
-### `--system=<sayc|two-over-one>`
+### `--system=<sayc|two-over-one|acol>`
 Selects the base bidding system. Affects HCP thresholds, forcing durations, and system-fact-gated surface evaluation. Default: `sayc`. The system ID is threaded through all spec resolution, strategy creation, and evaluation — no backend code defaults silently.
 
 ### `--vuln=<none|ns|ew|both>`

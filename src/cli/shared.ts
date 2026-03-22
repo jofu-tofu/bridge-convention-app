@@ -29,7 +29,7 @@ import type { OpponentMode } from "../core/contracts/drill";
 import type { DrillSettings } from "../core/contracts/drill";
 import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
-import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import { buildBiddingViewport } from "../core/viewport/build-viewport";
@@ -105,6 +105,7 @@ export function parseVulnerability(args: Flags): Vulnerability {
 const SYSTEM_MAP: Record<string, BaseSystemId> = {
   sayc: BASE_SYSTEM_SAYC,
   "two-over-one": "two-over-one",
+  acol: BASE_SYSTEM_ACOL,
 };
 
 export function parseBaseSystem(args: Flags): BaseSystemId {
@@ -112,7 +113,7 @@ export function parseBaseSystem(args: Flags): BaseSystemId {
   if (val === undefined || val === true) return BASE_SYSTEM_SAYC;
   const mapped = SYSTEM_MAP[val.toLowerCase()];
   if (mapped === undefined) {
-    console.error(`Invalid --system value: "${val}" (expected: sayc, two-over-one)`);
+    console.error(`Invalid --system value: "${val}" (expected: sayc, two-over-one, acol)`);
     process.exit(2);
   }
   return mapped;
@@ -212,7 +213,7 @@ export function parseScenarioConfig(args: Flags): ScenarioConfig {
 export function assignSeedScenario(
   seed: number,
   config: ScenarioConfig,
-  userSeat: Seat = Seat.South,
+  _userSeat: Seat = Seat.South,
 ): { vulnerability: Vulnerability; opponents: OpponentMode } {
   const vulnerability = config.vuln.type === "fixed"
     ? config.vuln.value

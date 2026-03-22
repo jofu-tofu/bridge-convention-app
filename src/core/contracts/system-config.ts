@@ -13,7 +13,7 @@
  */
 
 import type { BaseSystemId } from "./base-system-vocabulary";
-import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE } from "./base-system-vocabulary";
+import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTEM_ACOL } from "./base-system-vocabulary";
 
 // ─── 1NT system parameters ──────────────────────────────────
 
@@ -125,6 +125,28 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
   oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12 },
 };
 
+export const ACOL_SYSTEM_CONFIG: SystemConfig = {
+  systemId: BASE_SYSTEM_ACOL,
+  displayName: "Acol",
+  // Standard weak NT: 12-14 HCP (EBU standard, UK tournament play)
+  ntOpening: { minHcp: 12, maxHcp: 14 },
+  responderThresholds: {
+    // All thresholds shift +3 vs SAYC because 1NT is 3 HCP weaker
+    inviteMin: 11,  // game = 25 combined → 25-14=11 minimum to invite
+    inviteMax: 12,  // invite range: 11-12
+    gameMin: 13,    // 13+12=25 combined for game
+    slamMin: 19,    // 19+14=33 combined for slam
+  },
+  // minHcp+1 pattern: accepts invite with 13-14, declines with 12
+  openerRebid: { notMinimum: 13 },
+  // 9+12=21 min combined for penalty interest (cf. SAYC: 10+15=25)
+  interference: { redoubleMin: 9 },
+  // Same as SAYC: 2-level new suit = 10 HCP, forcing one round
+  suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
+  // "Dustbin 1NT": non-forcing, capped at 9; with 10+ responder bids a new suit
+  oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 9 },
+};
+
 // ─── System config registry ─────────────────────────────────
 
 /** UI-friendly metadata for each base system. */
@@ -138,11 +160,13 @@ export interface BaseSystemMeta {
 export const AVAILABLE_BASE_SYSTEMS: readonly BaseSystemMeta[] = [
   { id: BASE_SYSTEM_SAYC, label: "Standard American Yellow Card", shortLabel: "SAYC" },
   { id: BASE_SYSTEM_TWO_OVER_ONE, label: "2/1 Game Forcing", shortLabel: "2/1" },
+  { id: BASE_SYSTEM_ACOL, label: "Acol", shortLabel: "Acol" },
 ] as const;
 
 const SYSTEM_CONFIG_MAP: Readonly<Record<string, SystemConfig>> = {
   [BASE_SYSTEM_SAYC]: SAYC_SYSTEM_CONFIG,
   [BASE_SYSTEM_TWO_OVER_ONE]: TWO_OVER_ONE_SYSTEM_CONFIG,
+  [BASE_SYSTEM_ACOL]: ACOL_SYSTEM_CONFIG,
 };
 
 /** Look up SystemConfig by base system id. Falls back to SAYC for unknown ids. */
