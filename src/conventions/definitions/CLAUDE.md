@@ -75,214 +75,11 @@ Every convention bundle must satisfy all items before being considered complete:
 10. **`teachingTags` on surfaces.** All surfaces participating in pedagogical relations or grading alternatives must have `teachingTags` annotations using the 6 general tags from `teaching-vocabulary.ts`. No separate `pedagogical-relations.ts` or `alternatives.ts` files.
 12. **`semantic-classes.ts` constants.** Module-local semantic class strings. Do not add to central registry — keep them co-located with the surfaces that reference them.
 
-## Type Reference
-
-### ConventionConfig (`core/contracts/convention.ts`)
-
-The minimal registry interface. Auto-derived by `registerBundle()` from `ConventionBundle` fields.
-
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `id` | Yes | `string` | Unique convention identifier (kebab-case). Used as registry key and URL parameter. |
-| `name` | Yes | `string` | Human-readable display name. |
-| `description` | Yes | `string` | One-line description for UI display. |
-| `category` | Yes | `ConventionCategory` | One of `Asking`, `Defensive`, `Constructive`, `Competitive`. |
-| `teaching` | No | `ConventionTeaching` | Convention-level teaching metadata (purpose, whenToUse, whenNotToUse, tradeoff, principle, roles). |
-| `dealConstraints` | Yes | `DealConstraints` | Seat-specific HCP, shape, and balanced constraints for deal generation. |
-| `defaultAuction` | No | `(seat, deal?) => Auction \| undefined` | Returns pre-filled auction for drill start position. Return `undefined` for empty auction. |
-| `internal` | No | `boolean` | If `true`, hidden from UI picker. |
-| `allowedDealers` | No | `readonly Seat[]` | Random dealer selection; constraints rotate 180° when dealer differs from `dealConstraints.dealer`. |
-
-### ConventionBundle (`core/bundle/bundle-types.ts`)
-
-The full bundle interface — the primary authoring surface for new conventions.
-
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `id` | Yes | `string` | Unique bundle identifier (kebab-case). |
-| `name` | Yes | `string` | Human-readable display name. |
-| `memberIds` | Yes | `readonly string[]` | Convention IDs this bundle implements. Order matters for tie-breaking priority. |
-| `internal` | No | `boolean` | If `true`, hidden from UI picker (e.g., parity testing). |
-| `dealConstraints` | Yes | `DealConstraints` | Seat-specific HCP, shape, and balanced constraints. |
-| `offConventionConstraints` | No | `DealConstraints` | Anti-constraints for off-convention drills (hands where the convention doesn't apply). Used by `startDrill()` when `DrillTuning.includeOffConvention` is set. |
-| `defaultAuction` | No | `(seat, deal?) => Auction \| undefined` | Pre-filled auction for drill start. |
-| `meaningSurfaces` | No* | `readonly { groupId: string; surfaces: readonly BidMeaning[] }[]` | Meaning surfaces organized by group. When present, the meaning pipeline is used. |
-| `factExtensions` | No | `readonly FactCatalogExtension[]` | Module-derived fact definitions for surface clause evaluation. |
-| `systemProfile` | No | `SystemProfile` | Profile-based module activation. |
-| `declaredCapabilities` | No | `Readonly<Record<string, string>>` | Capabilities injected into profile-based activation. Bundles without this get none. |
-| `category` | Yes | `ConventionCategory` | Convention category for UI grouping. |
-| `description` | Yes | `string` | Human-readable description for UI display. |
-| `teaching` | No | `ConventionTeaching` | Convention-level teaching metadata (purpose, whenToUse, whenNotToUse, tradeoff, principle, roles). |
-| `allowedDealers` | No | `readonly Seat[]` | Random dealer selection; constraints rotate 180° when dealer differs from `dealConstraints.dealer`. |
-| `ruleModules` | No | `readonly RuleModule[]` | Rule-based convention modules for surface selection via `collectMatchingClaims()`. |
-| `explanationCatalog` | Yes | `ExplanationCatalog` | Explanation catalog for enriching teaching projections. |
-| `teachingRelations` | Yes | `readonly TeachingRelation[]` | Derived from `teachingTags` on surfaces by `deriveTeachingContent()`. |
-| `acceptableAlternatives` | Yes | `readonly AlternativeGroup[]` | Derived from `teachingTags` on surfaces by `deriveTeachingContent()`. |
-| `intentFamilies` | Yes | `readonly IntentFamily[]` | Derived from `teachingTags` on surfaces (currently empty for all bundles). |
-
-*Required in practice for a meaning-pipeline convention, though TypeScript marks it optional.
-
 ## File Templates
 
-Skeleton templates for a new convention bundle. Replace `{name}` with bundle ID (kebab-case), `{Name}` with PascalCase name, `{NAME}` with SCREAMING_CASE.
+See `docs/convention-templates.md` for skeleton code templates (config.ts, meaning-surfaces.ts, facts.ts, rules.ts, semantic-classes.ts, system-profile.ts, explanation-catalog.ts).
 
-### config.ts
-
-Thin re-export from `system-registry.ts`. The bundle is defined in the system registry; `config.ts` re-exports it for backward compatibility.
-
-```ts
-// Re-export the bundle from system-registry
-export { {name}Bundle } from "../system-registry";
-```
-
-### meaning-surfaces.ts
-
-```ts
-import { BidSuit } from "../../../engine/types";
-import { bid } from "../../core/surface-helpers";
-import { createSurface } from "../../core/surface-builder";
-import type { ModuleContext } from "../../core/surface-builder";
-import { {NAME}_SEMANTIC } from "./semantic-classes";
-
-const {NAME}_CTX: ModuleContext = { moduleId: "{name}" };
-
-export const {NAME}_SURFACES: readonly BidMeaning[] = [
-  createSurface({
-    meaningId: "{name}:surface-name",
-    semanticClassId: {NAME}_SEMANTIC.MY_CLASS,
-    encoding: bid(2, BidSuit.Clubs),
-    clauses: [
-      { factId: "hand.hcp", operator: "gte", value: 10 },
-      { factId: "hand.suitLength.clubs", operator: "gte", value: 4 },
-    ],
-    band: "should",
-    declarationOrder: 0,
-    sourceIntent: { type: "MyBid", params: {} },
-    teachingLabel: "My bid",
-    // Optional: surfaceBindings: { suit: "hearts" } for parameterized surfaces
-    // Optional: description on clauses — only when adding parenthetical rationale
-  }, {NAME}_CTX),
-  // Additional surfaces...
-];
-```
-
-### facts.ts
-
-```ts
-import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
-import {
-  defineBooleanFact,
-  defineHcpRangeFact,
-  buildExtension,
-  type FactEntry,
-} from "../../core/pipeline/fact-factory";
-
-// Use factory helpers for common patterns; hand-write complex evaluators as FactEntry
-export const {name}Facts: FactCatalogExtension = {
-  moduleId: "{name}",
-  ...buildExtension([
-    defineBooleanFact({
-      id: "module.{name}.hasSuit",
-      description: "Has 4+ cards in suit",
-      factId: "hand.suitLength.hearts",
-      operator: "gte",
-      value: 4,
-      constrainsDimensions: ["suitIdentity"],
-    }),
-    defineHcpRangeFact({
-      id: "module.{name}.inRange",
-      description: "HCP in range for this bid",
-      range: { min: 10, max: 15 },
-    }),
-    // Hand-written FactEntry for complex evaluators:
-    // { definition: { ... }, evaluator: ["factId", (hand, auction, memo) => ...] },
-  ]),
-};
-```
-
-### {name}-rules.ts (RuleModule)
-
-```ts
-import type { RuleModule } from "../../core/rule-module";
-import { {NAME}_SURFACES } from "./meaning-surfaces";
-
-export const {name}Rules: RuleModule = {
-  moduleId: "{name}",
-  phases: ["idle", "opened", "responded", "done"],
-  initialPhase: "idle",
-  phaseTransitions: [
-    { from: "idle", obs: { type: "BidAction", call: { type: "bid", level: 1, suit: "notrump" } }, to: "opened" },
-    // Additional transitions...
-  ],
-  rules: [
-    {
-      phase: "opened",
-      match: { turn: "responder" },
-      surfaces: {NAME}_SURFACES,
-      // Optional: route, kernel, negotiationDelta
-    },
-    // Additional rules...
-  ],
-};
-```
-
-### semantic-classes.ts
-
-```ts
-/** Module-local semantic classes for {Name} surfaces.
- *  NOT registered in the central BRIDGE_SEMANTIC_CLASSES registry. */
-export const {NAME}_SEMANTIC = {
-  MY_CLASS: "{name}:my-class",
-  ANOTHER_CLASS: "{name}:another-class",
-} as const;
-```
-
-### system-profile.ts
-
-```ts
-import type { SystemProfile } from "../../../core/contracts/agreement-module";
-
-export const {NAME}_PROFILE: SystemProfile = {
-  profileId: "{name}-profile",
-  modules: [
-    {
-      moduleId: "{name}",
-      description: "Description of what this module provides",
-      activationConditions: [
-        // Conditions under which this module is active
-      ],
-    },
-  ],
-};
-```
-
-### explanation-catalog.ts
-
-```ts
-import type { ExplanationCatalog } from "../../../core/contracts/explanation-catalog";
-import { createExplanationCatalog } from "../../../core/contracts/explanation-catalog";
-
-const {NAME}_ENTRIES = [
-  {
-    explanationId: "{name}.hcp.threshold",
-    factId: "hand.hcp",
-    templateKey: "{name}.threshold.met",
-    displayText: "You have enough HCP for this bid",
-    contrastiveTemplateKey: "{name}.threshold.missed",
-    contrastiveDisplayText: "You don't have enough HCP for this bid",
-    preferredLevel: "semantic" as const,
-    roles: ["supporting", "blocking"] as const,
-  },
-  // Additional entries...
-];
-
-export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
-  createExplanationCatalog("{name}", {NAME}_ENTRIES);
-```
-
-*(No separate `pedagogical-relations.ts` or `alternatives.ts` needed — use `teachingTags` on surfaces instead.)*
-
-## Adding a Convention Bundle
+## Adding a New Convention Bundle
 
 1. Create `definitions/{name}-bundle/` folder with the modules listed in the Folder Structure table above.
 2. Define `BidMeaning[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
@@ -294,8 +91,10 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 8. Add `teachingTags` to surfaces using the 6 general tags from `teaching-vocabulary.ts`. Use scope strings to group related surfaces.
 9. Wire `config.ts` as a thin re-export from `system-registry.ts`.
 10. Create `index.ts` barrel with re-exports.
-11. Create `__tests__/` with at minimum: surface evaluation tests and config/factory E2E tests.
-12. Run the completeness checklist above before considering the bundle complete.
+11. Register the module in `module-registry.ts` and define the bundle in `system-registry.ts` via `buildBundle()`.
+12. Create `__tests__/` with at minimum: surface evaluation tests and config/factory E2E tests.
+13. **Verify:** `npm run lint` (boundary violations), `npm run test:run` (all tests), `npx tsx src/cli/main.ts selftest` (pipeline selftest).
+14. Run the completeness checklist above before considering the bundle complete.
 
 ## Authoring Rules
 
@@ -359,28 +158,6 @@ __tests__/                          (at src/conventions/__tests__/)
 
 Bundle-local tests (`definitions/{name}-bundle/__tests__/`) test individual modules in isolation. Cross-cutting integration tests (`src/conventions/__tests__/nt-bundle/`) test the full pipeline end-to-end.
 
-## New Convention Checklist
-
-Step-by-step for adding a new convention. All work stays inside `src/conventions/definitions/`.
-
-1. **Create the module** in `modules/<name>/index.ts`. Export a `ConventionModule` with `moduleId`, `surfaces`, `facts`, and `explanationEntries`. Supporting files go alongside it:
-   - `meaning-surfaces.ts` — `BidMeaning[]` definitions
-   - `facts.ts` — `FactCatalogExtension` for module-derived facts
-   - `explanation-catalog.ts` — `ExplanationCatalog` entries
-   - `semantic-classes.ts` — module-local semantic class constants
-2. **Create the RuleModule** in `modules/<name>/<name>-rules.ts`. Define phases, claims with `ObsPattern`/`RouteExpr`/`NegotiationExpr`, and `negotiationDelta` where needed.
-3. **Create the bundle** in `<name>-bundle/`. Minimum files:
-   - `system-profile.ts` — `SystemProfile` for activation
-   - `config.ts` — thin re-export from `system-registry.ts`
-   - `index.ts` — barrel re-export
-   - `__tests__/` — machine, surface evaluation, and golden-master tests
-4. **Register the module** in `module-registry.ts`: import the `ConventionModule` and add it to `ALL_MODULES`.
-5. **Define the bundle** in `system-registry.ts`: import the profile and `RuleModule`, define the bundle via `buildBundle()`, and register it.
-6. **Verify:**
-   - `npm run lint` — confirms no boundary violations (ESLint enforces module isolation)
-   - `npm run test:run` — all existing + new tests pass
-   - `npx tsx src/cli/main.ts selftest` — end-to-end pipeline selftest passes
-
 ## Boundary Contract
 
 Adding a new convention is a **definitions-only** change. The following directories must NOT be modified:
@@ -415,4 +192,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `nt-bundle/config.ts`, `bergen-bundle/config.ts`, `weak-twos-bundle/config.ts`, and `dont-bundle/config.ts` exist.
 If any is missing, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-22 | version=9 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:90+,exts:ts:88+,md:1 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-22 | version=10 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:90+,exts:ts:88+,md:1 -->

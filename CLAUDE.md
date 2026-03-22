@@ -67,50 +67,11 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Contain complexity through modularity.** Low impact radius (changes to one convention don't ripple), clean module boundaries (runtime/pipeline are separate subsystems), and convention-agnostic infrastructure in `core/` that never assumes convention-specific structure.
 - **Semantic ownership: fields belong where they mean something.** Before adding a field to a type, ask: "does this describe what this type IS, or is it metadata about how something else uses it?" Derive what you can from existing data; don't store what can be computed.
 - **Bundle-specific knowledge stays in the bundle.** Core infrastructure (`core/`, `inference/`, `conventions/core/`) must not contain convention-specific fact IDs, heuristics, or special-case logic. If a behavior differs between conventions, the bundle declares it (e.g., `isPublic` on clauses) and the framework reads the declaration.
-- **System-agnostic modules, system-aware facts.** Modules never import concrete system configs or branch on system identity. System-level differences (HCP thresholds, forcing durations) are expressed as `SystemConfig` fields, surfaced as system facts via `system-fact-vocabulary.ts`, and referenced in surface clauses. Modules that need different surfaces for different systems (e.g., jump shift: strong in SAYC, weak in 2/1) author BOTH meanings as surfaces, gated by system fact clauses — the pipeline filters to the correct one at runtime. This enables frictionless system substitution: same modules, same bundles, different `SystemConfig` → different behavior. See the System Parameterization section below for the author guide.
+- **System-agnostic modules, system-aware facts.** Modules never import concrete system configs or branch on system identity. System-level differences (HCP thresholds, forcing durations) are expressed as `SystemConfig` fields, surfaced as system facts via `system-fact-vocabulary.ts`, and referenced in surface clauses. See `src/core/contracts/CLAUDE.md` § System Parameterization for the full module author guide.
 
 ## System Parameterization
 
-The app supports multiple base bidding systems (SAYC, 2/1 Game Forcing, future: Acol, Precision). Modules are system-agnostic — the same module works in any system. System differences flow through `SystemConfig` → system facts → surface clause evaluation.
-
-**How it works:**
-
-1. `SystemConfig` (`src/core/contracts/system-config.ts`) captures system-level parameters: HCP thresholds, forcing durations, 1NT response forcing status. Two concrete configs exist: `SAYC_SYSTEM_CONFIG` and `TWO_OVER_ONE_SYSTEM_CONFIG`.
-
-2. System facts (`src/core/contracts/system-fact-vocabulary.ts`) provide stable fact IDs that modules reference in surface clauses without knowing the thresholds. Evaluators in `system-fact-catalog.ts` are parameterized by `SystemConfig` via closures.
-
-3. At runtime, `specFromBundle(bundle, systemConfigOverride?)` injects the selected system's config. `createProtocolDrillConfig()` requires `{ baseSystem: BaseSystemId }` to select the active system. No duplicate bundles or profiles needed.
-
-4. **Backend never defaults; boundaries default.** Backend functions (`startDrill`, `createProtocolDrillConfig`, evaluator facades, verify internals) take `BaseSystemId` explicitly — they never silently fall back to SAYC. Only user-facing boundaries provide defaults: UI store (`app.svelte.ts`, existing `BASE_SYSTEM_SAYC` default), CLI (`parseBaseSystem()`, defaults to SAYC when `--system` omitted), and the service layer (`local-service.ts`, defaults to SAYC from `config.baseSystemId`). CLI flag: `--system=<sayc|two-over-one>` (global, applies to all subcommands including `verify`).
-
-**Three categories of system differences:**
-
-| Category | Example | Mechanism |
-|----------|---------|-----------|
-| **Parametric** (different thresholds, same meaning) | 2-level response: 10+ HCP (SAYC) vs 12+ HCP (2/1) | `SystemConfig` field → system fact → surface clause |
-| **Semantic** (different forcing promise, same bid) | 2-level response: one-round forcing (SAYC) vs game-forcing (2/1) | `SystemConfig` field (`twoLevelForcingDuration`) → system fact (`isGameForcing`) → `NegotiationDelta` on claims |
-| **Inverted** (same bid, opposite meaning) | Jump shift: strong (SAYC) vs weak/preemptive (2/1) | One module, both meanings as surfaces, gated by system fact clause (e.g., `isGameForcing === true` for weak, `false` for strong) |
-
-**Module author guide for system-aware surfaces:**
-
-- **Never import concrete system configs** (`SAYC_SYSTEM_CONFIG`, `TWO_OVER_ONE_SYSTEM_CONFIG`). Receive `SystemConfig` via factory parameter.
-- **Reference system facts by ID** from `system-fact-vocabulary.ts` in surface clauses. Never hardcode system-dependent HCP thresholds.
-- **For inverted meanings:** Author surfaces for ALL system variants in the same module. Gate each with a system fact clause. The pipeline evaluates all surfaces but only those matching the active system pass. The gating fact should reflect the bridge reason for the inversion (e.g., `isGameForcing` is the correct discriminator for jump shifts because weak jump shifts exist BECAUSE the 2-level response is game-forcing).
-- **Convention-intrinsic thresholds** (Bergen 7-10 constructive, Weak Two 5-10 HCP) stay as named constants in the module — they don't change between systems.
-- **SystemConfig naming:** Use convention-universal names scoped to auction context (`suitResponse` not `twoOverOne`, `oneNtResponseAfterMajor` not `forcingNotrump`). See naming rationale in `system-config.ts`.
-
-**SystemConfig fields:**
-
-| Group | Field | SAYC | 2/1 | Purpose |
-|-------|-------|------|-----|---------|
-| `ntOpening` | `minHcp`, `maxHcp` | 15, 17 | 15, 17 | 1NT opening HCP range |
-| `responderThresholds` | `inviteMin`, `inviteMax`, `gameMin`, `slamMin` | 8, 9, 10, 15 | 8, 9, 10, 15 | Responder HCP buckets (1NT context) |
-| `openerRebid` | `notMinimum` | 16 | 16 | Opener rebid threshold |
-| `interference` | `redoubleMin` | 10 | 10 | Interference threshold |
-| `suitResponse` | `twoLevelMin` | 10 | 12 | Min HCP for 2-level new suit response |
-| `suitResponse` | `twoLevelForcingDuration` | `"one-round"` | `"game"` | Forcing promise of 2-level response |
-| `oneNtResponseAfterMajor` | `forcing` | `"non-forcing"` | `"semi-forcing"` | 1NT response forcing status after 1M |
-| `oneNtResponseAfterMajor` | `maxHcp` | 10 | 12 | Max HCP for 1NT response to 1M |
+Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. Details in `src/core/contracts/CLAUDE.md` § System Parameterization.
 
 ## Architecture
 
@@ -178,37 +139,7 @@ tests/
 
 ## Typography & Responsive Sizing
 
-The game screen uses a **single-source typography system** so that card text, panel text, and table-interior text all scale from one computed base (`--panel-font`). This prevents font-size drift across viewports, orientations, and future features.
-
-**How it works:**
-
-1. **`--panel-font`** — GameScreen computes a px value from viewport width + table scale: `Math.max(12, round(rootFontSize * (0.5 + 0.5 * tableScale)))`. Set as a CSS variable on `<main>`.
-2. **`--text-*` tokens** — em-relative CSS custom properties defined in `app.css :root`. They cascade from the local `font-size`, which is `--panel-font` in panels and a compensated value in the table.
-3. **ScaledTableArea font compensation** — The CSS-transform container sets `font-size: calc(--panel-font / scale)`, so after the transform, text appears at `--panel-font` size on screen.
-4. **Card text** — Uses `var(--text-value)` (1.2em), not a card-width ratio. Card rank/suit text matches panel `--text-value` in apparent size.
-5. **Z-index hierarchy** — `--z-header` (10), `--z-tooltip` (20), `--z-overlay` (30), `--z-modal` (40), `--z-above-all` (50). Use `z-[--z-header]` instead of `z-10`.
-
-**Token scale** (all em-relative, defined in `app.css`):
-
-| Token | Value | Purpose |
-|---|---|---|
-| `--text-annotation` | 0.65em | Tiny: alert annotations on bids |
-| `--text-label` | 0.75em | Section headings, muted labels |
-| `--text-detail` | 0.85em | Secondary info, seat labels |
-| `--text-body` | 1em | Primary readable content (= parent font) |
-| `--text-value` | 1.2em | Prominent: card rank/suit, contract, trick count |
-| `--text-heading` | 1.35em | Sub-section headings |
-| `--text-title` | 1.6em | Screen titles, hero text |
-
-**Rules:**
-
-- **Game screen components MUST use `--text-*` tokens** (via `text-[--text-label]` Tailwind syntax or `font-size: var(--text-label)`) instead of hardcoded `text-xs` / `text-sm` / `text-base`. **Enforced by ESLint** (`local/no-hardcoded-style-classes` — error).
-- **Raw Tailwind color-palette classes** (e.g. `text-red-400`, `bg-green-600`) are **banned** in game components. Use `--color-*` tokens from `app.css @theme` instead: existing semantics (`text-accent-success`, `bg-bg-card`), feedback palettes (`text-fb-incorrect-text`, `bg-fb-correct-bg/80`), phase badges (`bg-phase-bidding`), vulnerable seat (`text-vulnerable-text`), annotations (`text-annotation-announce`), supplementary notes (`text-note-encoding`). **Enforced by ESLint** (`local-colors/no-hardcoded-style-classes` — error).
-- **Non-game screens** (ConventionSelectScreen, LearningScreen, etc.) may use standard Tailwind text classes for now — they scale with the root `clamp(16px, 1.5vw, 28px)`.
-- **TypeScript typing:** `TextToken` type and `TEXT_TOKEN_CLASS` map in `src/core/display/tokens.ts`.
-- **Do NOT add new hardcoded px font-sizes** to game components. Derive from the token scale.
-- **ESLint rule:** `eslint-rules/no-hardcoded-style-classes.js` — bans hardcoded Tailwind text-size, raw color-palette, z-index (`z-10` etc.), and border-radius (`rounded-lg` etc.) classes. Scoped to `game-screen/` and `game/` (excluding debug components). All checks = error. Use `--text-*`, `--color-*`, `--z-*`, `--radius-*` tokens instead.
-- **Border-radius:** Use `rounded-[--radius-sm]` / `rounded-[--radius-md]` / `rounded-[--radius-lg]` / `rounded-[--radius-xl]` instead of raw Tailwind `rounded-sm/md/lg/xl`. `rounded-full` is allowed (it's a shape, not a configurable radius).
+Single-source typography system: `--panel-font` base → `--text-*` em-relative tokens → consistent sizing across panels and CSS-transformed table. Z-index hierarchy via `--z-*` tokens. ESLint enforces token usage in game components. Details in `src/components/CLAUDE.md` § Typography & Responsive Sizing.
 
 ## Teaching Architecture
 
@@ -248,32 +179,12 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 | Open Question | Status | Blocks |
 |---|---|---|
-| Posterior engine boundary redesign | **Phases 0-5 complete** — contracts, factor compiler, backend, query port, CI tests done. Consumer migration (Phase 4B) pending. | Inference spectrum / difficulty config |
-| Fact catalog posterior compilers | **Subsumed** by posterior plan Phase 3 (factor compiler replaces `compilePublicHandSpace()`) | DealSpec wiring |
-| Evidence group correlation model | **Design complete** — typed groups (Independent, ExclusiveAlternative, SharedSourceJoint, TemporalChain). Reserved in schema as Phase 7 (soft evidence). | Posterior combiner accuracy |
-| Host-attachment activation | Spec designed, vocabulary resolved (`conventions/definitions/capability-vocabulary.ts`), not exercised by a convention yet | Negative Doubles, Fourth Suit Forcing |
-
-**Alignment summary (as of 2026-03-21):**
-
-| Area | Alignment | Key gaps |
-|------|-----------|----------|
-| Pipeline (selection, teaching, provenance) | ~97% | Evaluation runtime path live via `config-factory.ts` → `bundleToRuntimeModules()` → `evaluationRuntime` option. 5-grade taxonomy implemented. |
-| Upstream (modules, profiles, machine) | ~90% | All 4 bundles migrated to RuleModule (Phases 4-6 complete). Rule interpreter is self-sufficient — per-step replay with kernel threading, no FSM. Old FSM infrastructure removed from barrel exports. `ModuleProvider` interface introduced. No host-attachment exercised. |
-| Posterior engine | ~70% (boundary designed and implemented, consumer migration pending) | Contracts, factor compiler, backend, query port, CI boundary tests done. Old `PosteriorEngine` → `SeatPosterior` path still works. Consumer migration (Phase 4B) pending. |
-| Convention coverage | Patterns 1 + 3 + submachine | Stayman, Bergen, Weak Twos, DONT, Smolen — all with RuleModule. Patterns 2, 4-6 not yet exercised. |
-| DealSpec | Types + test code exist | Not wired to deal generation. Raw DealConstraints used instead. |
-| DecisionSurface migration | Adapter exists (test-only) | Pipeline still consumes BidMeaning[], not DecisionSurface[]. |
-| Multi-system support | SystemConfig extended, runtime injection, CLI `--system` wired | `isGameForcing` system fact enables system-fact-gated surfaces. CLI `--system=<sayc\|two-over-one>` flag wired to all commands. Service layer threads `baseSystemId` to `startDrill()`. UI system selector not yet wired. |
-
-**Next steps:**
-
-1. **Posterior engine consumer migration (Phase 4B)** — Phases 0-5 complete (contracts, factor compiler, backend, query port, CI boundary tests, documentation). Next: migrate consumers (`meaning-strategy.ts`, `config-factory.ts`) from old `PosteriorEngine` → `SeatPosterior` to `createTsBackend()` → `createQueryPort()`. See `docs/posterior-implementation-plan.md`.
-2. **Host-attachment** — exercise with Negative Doubles convention (vocabulary resolved, ready to implement)
-3. **Convention content** — Lebensohl (relay encoding), Negative Doubles (host-attachment)
-4. **Wire DealSpec to deal generation** (unblocked after posterior Phase 3)
-5. **Migrate pipeline to DecisionSurface** (adapter exists — migrate consumption)
-6. **Build the learning screen** (needs its own design spec — `docs/learning/research-summary.md` is research, not a spec)
-7. **Multi-system UI** — wire base system selection (SAYC vs 2/1) through stores → GameScreen → `startDrill()`. Add `?system=two-over-one` dev URL param. CLI `--system` flag is wired.
+| Posterior consumer migration (Phase 4B) | Boundary complete; consumers still on old `PosteriorEngine` → `SeatPosterior` path | Inference spectrum / difficulty config |
+| Evidence group correlation model | Design complete; reserved as Phase 7 (soft evidence) | Posterior combiner accuracy |
+| Host-attachment activation | Spec designed, vocabulary resolved (`conventions/definitions/capability-vocabulary.ts`), not yet exercised | Negative Doubles, Fourth Suit Forcing |
+| DealSpec wiring | Types + test code exist; not wired to deal generation | Deal constraints |
+| DecisionSurface migration | Adapter exists (test-only); pipeline still consumes BidMeaning[] | Pipeline modernization |
+| Multi-system UI | Backend wired; UI system selector not yet connected | User-facing system choice |
 
 ## Test-Driven Development
 
@@ -386,4 +297,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-18 | version=16 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-22 | version=17 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->

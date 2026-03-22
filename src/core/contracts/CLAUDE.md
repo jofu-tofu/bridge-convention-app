@@ -29,40 +29,40 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 
 | File | Role |
 |------|------|
-| `index.ts` | Barrel re-export for all contract files (delegates to the 3 tier sub-barrels) |
+| `index.ts` | Barrel re-export (delegates to the 3 tier sub-barrels) |
 | `engine-types.ts` | Tier 1 sub-barrel: engine-stable bridge primitives |
 | `convention-types.ts` | Tier 2 sub-barrel: convention pipeline infrastructure |
 | `session-types.ts` | Tier 3 sub-barrel: session lifecycle and UI preferences |
-| `bidding.ts` | `BiddingContext`, `ForcingState`, `BidAlert` (with `kind: "alert" \| "announce"`, `publicConstraints`, `teachingLabel`), `BiddingStrategy`, `BidResult` (with optional `alert`), `BidHistoryEntry` |
-| `inference.ts` | `SuitInference`, `HandInference`, `QualitativeConstraint`, `DerivedRanges`, `PublicBeliefs`, `InferenceProvider`, `BeliefData` (deprecated) |
-| `tree-evaluation.ts` | `SiblingConditionDetail`, `CandidateEligibility`, `ResolvedCandidateDTO` (with optional `allEncodings`), `AlternativeGroup`, `IntentFamily`, `IntentRelationship`, `EvaluationTrace`, `isDtoSelectable()`, `isDtoTeachingAcceptable()` |
-| `play.ts` | `PlayContext`, `PlayResult`, `PlayStrategy` |
-| `recommendation.ts` | `PracticalScoreBreakdown`, `PracticalRecommendation`, `PosteriorSummary`, `StrategyEvaluation` (unified DTO: all pipeline outputs from last suggest()), `ConventionStrategy` (extends `BiddingStrategy` with single `getLastEvaluation(): StrategyEvaluation \| null`) |
-| `module-surface.ts` | `PublicSnapshot` (with epistemic layers: `publicRecord`, `publicCommitments`, `latentBranches` — populated by runtime's `buildSnapshotFromAuction()`; `publicBeliefs` removed in Phase 2, belief views now via `PosteriorQueryPort`), `ModuleSurface`, `MultiModuleSurface`, `EncodedProposal`, `EliminationRecord`, `ArbitrationResult`, `buildPublicSnapshot()` |
-| `meaning.ts` | `MeaningId`, `SemanticClassId`, `RecommendationBand`, `RankingMetadata`, `MeaningClause`, `EvidenceBundle`, `MeaningProposal`, `BAND_PRIORITY`, `compareRanking()`, `BidMeaningClause`, `BidMeaning` (with optional `closurePolicy`, `teachingTags`), `BRIDGE_SEMANTIC_CLASSES`. `BidMeaning` = authored, hand-independent meaning units. `teachingTags` carries `TeachingTagRef[]` for deriving relations/alternatives. **Optional fields:** `BidMeaningClause.clauseId`/`.description` (auto-derived from factId/operator/value by builder or pipeline), `BidMeaning.moduleId` (injected by builder, defaults to `"unknown"`), `AuthoredRankingMetadata.modulePrecedence` (injected by builder, defaults to `0`). |
-| `fact-catalog.ts` | `FactLayer`, `EvaluationWorld`, `FactMetadata`, `FactDefinition` (with `derivesFrom`, optional `metadata`, required `constrainsDimensions`), `FactValue`, `EvaluatedFacts`, `getFactValue()`, `FactEvaluatorFn`, `RelationalFactEvaluatorFn`, `FactCatalog` (with optional `relationalEvaluators`, optional `posteriorEvaluators`), `FactCatalogExtension`, `createFactCatalog()`, `PRIMITIVE_FACTS` (6), `BRIDGE_DERIVED_FACTS` (8, including 4 relational: `supportForBoundSuit`, `fitWithBoundSuit`, `shortageInSuit`, `totalPointsForRaise`, plus `hasShortage` non-relational), `SHARED_FACTS` (19 = primitive + bridge-derived + posterior-derived) |
-| `alert.ts` | `AlertResolvable`, `resolveAlert()`, `derivePublicConstraints()` — derives `BidAlert` from surface properties and auto-derives public constraints from primitive/bridge-observable clauses. `derivePublicConstraints()` is also used by `commitment-extractor.ts`. |
-| `provenance.ts` | `EncoderKind`, `DecisionProvenance`, `ApplicabilityEvidence`, `EliminationTrace`, `ActivationTrace`, `ArbitrationTrace`, `EncodingTrace`, `LegalityTrace`, `HandoffTrace` — full decision provenance DTOs for pipeline tracing. `ApplicabilityEvidence.evaluatedConditions` and `EliminationTrace.evidence` use `ConditionEvidence` from `evidence-bundle.ts`. |
-| `teaching-projection.ts` | `TeachingProjection`, `CallProjection`, `MeaningView`, `ExplanationNode`, `WhyNotEntry`, `TeachingRelation` (discriminated union), `PedagogicalRelationEntry`, `TeachingRelationKind`, `ConventionContribution`, `HandArchetypeSummary`, `ExampleHand`, `HandSpaceSummary` (with optional `partnerSummary`, `archetypes`, `witnessHands`) — teaching-optimized views for "why not X?" UI |
-| `predicates.ts` | `AuctionPattern`, `PublicGuard`, `HandPredicate`, `DealConstraint` — site-specific typed predicate surfaces scoped by evaluation world |
-| `evidence-bundle.ts` | `ConditionEvidence` (canonical evidence type: `conditionId`, `satisfied`, `factId?`, `observedValue?`, `threshold?`), `RejectionEvidence` (with optional `negatableFailures` for negative inference / `invertInference()`), `AlternativeEvidence` (with optional `conditionDelta` for per-condition diff vs. matched meaning), `EvidenceBundle` — evidence types for decision program representations. `ConditionEvidence` is the single evidence type used across provenance, teaching, and evidence bundles. |
-| `posterior.ts` | **Deprecated** (kept for backward compat during migration). `PosteriorEngine`, `SeatPosterior`, `PublicHandSpace` (with optional `latentBranches`), `PosteriorFactor`, `LikelihoodModel`, `PosteriorFactRequest`, `PosteriorFactValue`, `SubjectRef`, `PosteriorSourceRef`, `EvidenceGroupId`, `BeliefView` (enriched: `beliefId`, `subject`, `constraint`, `provenance`, `explanationKey`, `evidenceGroupId` — all optional), `LatentBranchAlternative`, `LatentBranchSet`, `PosteriorFactProvider` — old posterior engine contract types. Consumers should migrate to `factor-graph.ts` / `posterior-query.ts` / `posterior-backend.ts`. |
-| `factor-graph.ts` | `FactorStrength`, `FactorOrigin`, `FactorSpec` (discriminated union: `HcpRangeFactor`, `SuitLengthFactor`, `ShapeFactor`, `ExclusionFactor`, `FitFactor`), `AmbiguityFamily`, `AmbiguityAlternative`, `EvidencePin`, `FactorGraph` — convention-erased factor graph IR for posterior boundary |
-| `posterior-query.ts` | `InferenceHealth`, `PosteriorQueryResult<T>`, `FactorIntrospection`, `ConditioningContext`, `PosteriorQueryPort` — consumer-facing query interface for posterior inference |
-| `posterior-backend.ts` | `LatentWorld`, `WeightedParticle`, `PosteriorState`, `PosteriorQuery`, `PosteriorBackend` — backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
-| `agreement-module.ts` | `ActivationKind`, `ModuleKind`, `ObligationLevel`, `Conventionality`, `PrioritySpec` (closed union of 4 attested obligation×conventionality combinations), `FORCED_CONVENTIONAL`, `PREFERRED_CONVENTIONAL`, `ACCEPTABLE_NATURAL`, `RESIDUAL_NATURAL` (named constructors), `PriorityClass` (deprecated — use `PrioritySpec`), `DecisionSurface`, `Attachment`, `FactConstraint`, `ChoiceClosurePolicy`, `ClosureDomain`, `SystemProfile` (with `obligationMapping` + deprecated `priorityClassMapping`), `ModuleEntry`, `ConflictPolicy`, `DeclaredEncoderKind`, `PublicEvent`, `PublicConstraint`, `defaultObligationMapping()`, `defaultPriorityClassMapping()` (deprecated), `prioritySpecToClass()` — agreement module IR types |
-| `deal-spec.ts` | `SeatRole`, `SeatConstraint`, `JointConstraint`, `PublicGuardConstraint`, `ExclusionConstraint`, `ConstraintLayer`, `TeachingControls`, `GeneratorStrategy`, `DealSpecTarget`, `DealSpec`, `UnsatisfiableResult` — witness spec IR types for deal generation |
-| `explanation-catalog.ts` | `ExplanationRole`, `ExplanationLevel`, `ExplanationEntry`, `ExplanationCatalog`, `createExplanationCatalog()` |
-| `convention.ts` | `ConventionCategory`, `ConventionTeaching`, `ConventionConfig`, `DealConstraints` — convention registry types and deal constraint shapes |
-| `fact-helpers.ts` | `num()`, `bool()`, `fv()` — shared utilities for convention fact evaluators and pipeline fact evaluation |
-| `shared-facts.ts` | `PRIMITIVE_FACTS`, `BRIDGE_DERIVED_FACTS` definitions — bridge-universal fact vocabulary. Module-specific facts belong in their module's `FactCatalogExtension` |
-| `teaching-grading.ts` | `BidGrade`, `AcceptableBid`, `TeachingResolution` — cross-boundary teaching grading types used by viewport, stores, teaching, and strategy |
-| `drill.ts` | `OpponentMode`, `VulnerabilityDistribution`, `DrillTuning`, `DEFAULT_DRILL_TUNING` — drill session tuning DTOs |
-| `teaching-tag.ts` | `TeachingTagDef`, `TagDerivation`, `TeachingTagRef` (with `scope`, optional `role`, optional `ordinal`) — general-purpose types for deriving all pedagogical content from surface-level tags. Relations use `semanticClassId`; alternative groups use `meaningId`. `BidMeaning.teachingTags` carries the annotations. |
-| `bid-action.ts` | `BidAction` (17-member discriminated union of bridge communicative acts), `BidActionType`, `BID_ACTION_TYPES`, `ObsSuit`, `BidSuitName`, `HandFeature`, `HandStrength`, `SuitQuality` — bridge-universal observation vocabulary for convention-erased pattern matching. Consumed by continuation composition, CommittedStep pipeline, strategy layer. Produced by `normalizeIntent()` in `conventions/core/pipeline/normalize-intent.ts`. |
-| `system-config.ts` | `SystemConfig` (with `suitResponse`, `oneNtResponseAfterMajor` for multi-system support), `SuitResponseForcingDuration`, `OneNtForcingStatus`, `SuitResponseConfig`, `OneNtResponseAfterMajorConfig`, `SAYC_SYSTEM_CONFIG`, `TWO_OVER_ONE_SYSTEM_CONFIG`, `ACOL_SYSTEM_CONFIG`, `getSystemConfig()`, `AVAILABLE_BASE_SYSTEMS` |
-| `system-fact-vocabulary.ts` | System-provided fact IDs (`system.responder.twoLevelNewSuit`, `system.suitResponse.isGameForcing`, `system.oneNtResponseAfterMajor.forcing`, `system.responder.oneNtRange` + 5 original facts). Modules reference these in surface clauses without knowing thresholds. Evaluators parameterized by `SystemConfig` in `conventions/core/pipeline/system-fact-catalog.ts`. |
-| `committed-step.ts` | `NegotiationState` (closed semantic negotiation state: `fitAgreed`, `forcing`, `captain`, `competition`), `INITIAL_NEGOTIATION`, `NegotiationDelta`, `ClaimRef` (minimal winning arbitration reference), `CommittedStep` (one adjudicated auction action with `publicActions`, `negotiationDelta`, `stateAfter`, `status`), `AuctionContext` (composite wrapper: `PublicSnapshot` + observation log). Phase 4: `stateAfter` now carries real threaded kernel state for NT (via `negotiationDelta` on rule module claims), not just `INITIAL_NEGOTIATION`. |
+| `bidding.ts` | Bidding context, forcing state, bid alerts, strategy interface, bid results |
+| `inference.ts` | Suit/hand inference, qualitative constraints, public beliefs |
+| `tree-evaluation.ts` | Candidate eligibility, alternative groups, intent families, evaluation trace |
+| `play.ts` | Play context, results, strategy interface |
+| `recommendation.ts` | Practical recommendation, posterior summary, strategy evaluation DTO |
+| `module-surface.ts` | Public snapshot (epistemic layers), module surfaces, arbitration results |
+| `meaning.ts` | BidMeaning (authored meaning units), clauses, ranking, semantic classes, teaching tags |
+| `fact-catalog.ts` | Fact definitions (with `constrainsDimensions`), evaluators, catalog, extensions, shared facts (19) |
+| `alert.ts` | Alert resolution and public constraint derivation from surface properties |
+| `provenance.ts` | Full decision provenance DTOs for pipeline tracing |
+| `teaching-projection.ts` | Teaching-optimized views for "why not X?" UI |
+| `predicates.ts` | Typed predicate surfaces scoped by evaluation world |
+| `evidence-bundle.ts` | `ConditionEvidence` (sole evidence type), rejection/alternative evidence |
+| `posterior.ts` | **Deprecated** — old posterior engine contracts. Migrate to factor-graph/query/backend. |
+| `factor-graph.ts` | Convention-erased factor graph IR for posterior boundary |
+| `posterior-query.ts` | Consumer-facing query interface for posterior inference |
+| `posterior-backend.ts` | Backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
+| `agreement-module.ts` | Agreement module IR: priority specs, decision surfaces, system profiles, closure policies |
+| `deal-spec.ts` | DealSpec IR types for deal generation |
+| `explanation-catalog.ts` | Explanation catalog entries for teaching projections |
+| `convention.ts` | Convention registry types and deal constraint shapes |
+| `fact-helpers.ts` | Shared utilities for fact evaluators (`num()`, `bool()`, `fv()`) |
+| `shared-facts.ts` | Bridge-universal fact vocabulary (primitive + bridge-derived) |
+| `teaching-grading.ts` | BidGrade, TeachingResolution — cross-boundary grading types |
+| `drill.ts` | Drill session tuning DTOs (opponent mode, vulnerability, tuning) |
+| `teaching-tag.ts` | Teaching tag types for deriving pedagogical content from surfaces |
+| `bid-action.ts` | 17-act bridge-universal observation vocabulary for convention-erased pattern matching |
+| `system-config.ts` | SystemConfig with per-system thresholds (SAYC, 2/1, Acol) |
+| `system-fact-vocabulary.ts` | System-provided fact IDs for system-dependent surface clauses |
+| `committed-step.ts` | NegotiationState, CommittedStep, AuctionContext — adjudicated auction actions |
 
 ## Design Decisions
 
@@ -112,6 +112,49 @@ The `specificity` field is **pipeline-derived, not hand-authored**. `BidMeaning.
 
 When adding a new `FactDefinition`, you MUST provide `constrainsDimensions`. The type system enforces this. When adding a new `BidMeaning`, do NOT set `specificity` — `AuthoredRankingMetadata` does not have that field. The pipeline derives it automatically from your clauses and fact definitions.
 
+## System Parameterization
+
+The app supports multiple base bidding systems (SAYC, 2/1 Game Forcing, Acol). Modules are system-agnostic — the same module works in any system. System differences flow through `SystemConfig` → system facts → surface clause evaluation.
+
+**How it works:**
+
+1. `SystemConfig` (`system-config.ts`) captures system-level parameters: HCP thresholds, forcing durations, 1NT response forcing status. Concrete configs: `SAYC_SYSTEM_CONFIG`, `TWO_OVER_ONE_SYSTEM_CONFIG`, `ACOL_SYSTEM_CONFIG`.
+
+2. System facts (`system-fact-vocabulary.ts`) provide stable fact IDs that modules reference in surface clauses without knowing the thresholds. Evaluators in `system-fact-catalog.ts` are parameterized by `SystemConfig` via closures.
+
+3. At runtime, `specFromBundle(bundle, systemConfigOverride?)` injects the selected system's config. `createProtocolDrillConfig()` requires `{ baseSystem: BaseSystemId }` to select the active system.
+
+4. **Backend never defaults; boundaries default.** Backend functions take `BaseSystemId` explicitly. Only user-facing boundaries provide defaults: UI store (`app.svelte.ts`), CLI (`parseBaseSystem()`), service layer (`local-service.ts`).
+
+**Three categories of system differences:**
+
+| Category | Example | Mechanism |
+|----------|---------|-----------|
+| **Parametric** (different thresholds, same meaning) | 2-level response: 10+ HCP (SAYC) vs 12+ HCP (2/1) | `SystemConfig` field → system fact → surface clause |
+| **Semantic** (different forcing promise, same bid) | 2-level response: one-round forcing (SAYC) vs game-forcing (2/1) | `SystemConfig` field → system fact → `NegotiationDelta` on claims |
+| **Inverted** (same bid, opposite meaning) | Jump shift: strong (SAYC) vs weak (2/1) | One module, both meanings as surfaces, gated by system fact clause |
+
+**Module author guide:**
+
+- **Never import concrete system configs.** Receive `SystemConfig` via factory parameter.
+- **Reference system facts by ID** from `system-fact-vocabulary.ts`. Never hardcode system-dependent thresholds.
+- **For inverted meanings:** Author surfaces for ALL system variants in the same module, gated by system fact clauses.
+- **Convention-intrinsic thresholds** (Bergen 7-10, Weak Two 5-10) stay as named constants — they don't change between systems.
+- **SystemConfig naming:** Use convention-universal names scoped to auction context (`suitResponse` not `twoOverOne`).
+
+**SystemConfig fields:**
+
+| Group | Field | SAYC | 2/1 | Purpose |
+|-------|-------|------|-----|---------|
+| `ntOpening` | `minHcp`, `maxHcp` | 15, 17 | 15, 17 | 1NT opening HCP range |
+| `responderThresholds` | `inviteMin`, `inviteMax`, `gameMin`, `slamMin` | 8, 9, 10, 15 | 8, 9, 10, 15 | Responder HCP buckets (1NT context) |
+| `openerRebid` | `notMinimum` | 16 | 16 | Opener rebid threshold |
+| `interference` | `redoubleMin` | 10 | 10 | Interference threshold |
+| `suitResponse` | `twoLevelMin` | 10 | 12 | Min HCP for 2-level new suit |
+| `suitResponse` | `twoLevelForcingDuration` | `"one-round"` | `"game"` | Forcing promise of 2-level response |
+| `oneNtResponseAfterMajor` | `forcing` | `"non-forcing"` | `"semi-forcing"` | 1NT response forcing status after 1M |
+| `oneNtResponseAfterMajor` | `maxHcp` | 10 | 12 | Max HCP for 1NT response to 1M |
+
 ## Gotchas
 
 - `index.ts` is the public entry point for most consumers; prefer importing from a tier sub-barrel (`engine-types`, `convention-types`, `session-types`) when your dependency is clearly within one tier, or from `../contracts` for backwards compatibility.
@@ -153,4 +196,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `index.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-07 | last-audited=2026-03-20 | version=4 | dir-commits-at-audit=0 | tree-sig=dirs:1,files:27,exts:ts:25,md:1 -->
+<!-- context-layer: generated=2026-03-07 | last-audited=2026-03-22 | version=5 | dir-commits-at-audit=0 | tree-sig=dirs:1,files:27,exts:ts:25,md:1 -->
