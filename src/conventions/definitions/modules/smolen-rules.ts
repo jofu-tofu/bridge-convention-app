@@ -16,7 +16,6 @@
 import type { RuleModule, RouteExpr } from "../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 import {
-  smolenModule,
   smolenFacts,
   SMOLEN_ENTRY_SURFACES,
   SMOLEN_R3_SURFACES,
@@ -126,5 +125,4 @@ export const smolenRules: RuleModule<Phase> = {
     },
   ],
   facts: smolenFacts,
-  explanationEntries: smolenModule.explanationEntries,
 };

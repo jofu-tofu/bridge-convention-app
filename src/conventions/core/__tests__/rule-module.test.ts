@@ -17,7 +17,6 @@ describe("RuleModule type construction", () => {
       },
       rules: [],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
     expect(mod.id).toBe("test-module");
     expect(mod.local.initial).toBe("idle");

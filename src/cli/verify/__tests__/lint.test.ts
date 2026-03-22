@@ -20,7 +20,6 @@ function makeModule(overrides: Partial<RuleModule> = {}): RuleModule {
     local: { initial: "idle", transitions: [] },
     rules: [],
     facts: { definitions: [], evaluators: new Map() },
-    explanationEntries: [],
     ...overrides,
   };
 }

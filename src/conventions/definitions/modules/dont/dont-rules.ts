@@ -40,7 +40,6 @@ import {
   DONT_2D_RELAY_SURFACES,
 } from "./meaning-surfaces";
 import { dontFacts } from "./facts";
-import { DONT_ENTRIES } from "./explanation-catalog";
 
 // ── Stub 1NT opening surface ──────────────────────────────────────
 
@@ -145,5 +144,4 @@ export const dontRules: RuleModule<Phase> = {
     { match: { local: "wait-2d-relay" }, claims: DONT_2D_RELAY_SURFACES.map((s) => ({ surface: s })) },
   ],
   facts: dontFacts,
-  explanationEntries: DONT_ENTRIES,
 };

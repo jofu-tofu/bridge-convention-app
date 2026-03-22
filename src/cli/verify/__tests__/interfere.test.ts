@@ -19,7 +19,6 @@ function makeModule(id: string, overrides: Partial<RuleModule> = {}): RuleModule
     local: { initial: "idle", transitions: [] },
     rules: [],
     facts: { definitions: [], evaluators: new Map() },
-    explanationEntries: [],
     ...overrides,
   };
 }
@@ -194,7 +193,6 @@ describe("detectObservationCrosstalk", () => {
       },
       rules: [],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     });
 
     const edges = detectObservationCrosstalk(a, b);
@@ -221,7 +219,6 @@ describe("detectObservationCrosstalk", () => {
       },
       rules: [],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     });
 
     const edges = detectObservationCrosstalk(a, b);

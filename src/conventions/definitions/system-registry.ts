@@ -6,16 +6,13 @@
  * content from the module registry and collects surfaces/facts from rule modules.
  */
 
-import type { ConventionBundle } from "../core/bundle/bundle-types";
+import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import type { RuleModule } from "../core/rule-module";
-import type { SystemProfile } from "../../core/contracts/agreement-module";
-import type { ConventionTeaching } from "../../core/contracts/convention";
 import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
-import type { DealConstraints, Deal, Seat as SeatType, Auction } from "../../engine/types";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import { getModules } from "./module-registry";
@@ -37,25 +34,6 @@ import { DONT_PROFILE } from "./dont-bundle/system-profile";
 import { dontRules } from "./modules/dont/dont-rules";
 import { WEAK_TWO_PROFILE } from "./weak-twos-bundle/system-profile";
 import { weakTwosRules } from "./modules/weak-twos/weak-twos-rules";
-
-// ── Bundle definition type (internal) ──────────────────────────────
-
-interface BundleDefinition {
-  readonly id: string;
-  readonly name: string;
-  readonly description: string;
-  readonly category: ConventionCategory;
-  readonly internal?: boolean;
-  readonly memberIds: readonly string[];
-  readonly systemProfile: SystemProfile;
-  readonly ruleModules: readonly RuleModule[];
-  readonly dealConstraints: DealConstraints;
-  readonly offConventionConstraints?: DealConstraints;
-  readonly defaultAuction?: (seat: SeatType, deal?: Deal) => Auction | undefined;
-  readonly declaredCapabilities?: Readonly<Record<string, string>>;
-  readonly teaching?: ConventionTeaching;
-  readonly allowedDealers?: readonly SeatType[];
-}
 
 // ── Module aggregation ──────────────────────────────────────────────
 
@@ -81,34 +59,22 @@ function aggregateModuleContent(moduleIds: readonly string[]): {
 // ── Bundle factory ──────────────────────────────────────────────────
 
 /**
- * Build a ConventionBundle from a flat definition object.
- * Aggregates pedagogical content from modules and collects surfaces/facts
- * from rule modules.
+ * Build a ConventionBundle from authored input.
+ * Aggregates pedagogical content from modules and collects facts
+ * from rule modules. Authors provide BundleInput; derived fields are
+ * computed here and cannot be set by authors.
  */
-function buildBundle(def: BundleDefinition): ConventionBundle {
+function buildBundle(def: BundleInput): ConventionBundle {
   const { explanationCatalog, teachingRelations, acceptableAlternatives, intentFamilies } =
     aggregateModuleContent(def.memberIds);
 
   return {
-    id: def.id,
-    name: def.name,
-    description: def.description,
-    category: def.category,
-    internal: def.internal,
-    memberIds: def.memberIds,
-    dealConstraints: def.dealConstraints,
-    offConventionConstraints: def.offConventionConstraints,
-    defaultAuction: def.defaultAuction,
-    declaredCapabilities: def.declaredCapabilities,
-    systemProfile: def.systemProfile,
-    teaching: def.teaching,
-    allowedDealers: def.allowedDealers,
-    ruleModules: def.ruleModules,
+    ...def,
     explanationCatalog,
     teachingRelations,
     acceptableAlternatives,
-    intentFamilies: [...intentFamilies, ...deriveIntentFamiliesFromRules(def.ruleModules)],
-    factExtensions: collectRuleModuleFacts(def.ruleModules),
+    intentFamilies: [...intentFamilies, ...deriveIntentFamiliesFromRules(def.ruleModules ?? [])],
+    factExtensions: collectRuleModuleFacts(def.ruleModules ?? []),
   };
 }
 

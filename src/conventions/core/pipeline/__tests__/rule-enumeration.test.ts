@@ -44,7 +44,6 @@ describe("enumerateRuleAtoms", () => {
       local: { initial: "idle", transitions: [] },
       rules: [],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
     expect(enumerateRuleAtoms([mod])).toEqual([]);
   });
@@ -62,7 +61,6 @@ describe("enumerateRuleAtoms", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod]);
@@ -85,7 +83,6 @@ describe("enumerateRuleAtoms", () => {
         { match: { local: "phase-b" }, claims: [{ surface }] },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod]);
@@ -106,7 +103,6 @@ describe("enumerateRuleAtoms", () => {
         { match: { local: "idle" }, claims: [{ surface }] },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod]);
@@ -122,14 +118,12 @@ describe("enumerateRuleAtoms", () => {
       local: { initial: "idle", transitions: [] },
       rules: [{ match: {}, claims: [{ surface: s1 }] }],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
     const mod2: RuleModule = {
       id: "second",
       local: { initial: "idle", transitions: [] },
       rules: [{ match: {}, claims: [{ surface: s2 }] }],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod1, mod2]);
@@ -144,7 +138,6 @@ describe("enumerateRuleAtoms", () => {
       local: { initial: "idle", transitions: [] },
       rules: [{ match: { local: "idle" }, claims: [] }],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
     expect(enumerateRuleAtoms([mod])).toEqual([]);
   });
@@ -158,7 +151,6 @@ describe("generateRuleCoverageManifest", () => {
       local: { initial: "idle", transitions: [] },
       rules: [{ match: { local: "idle" }, claims: [{ surface }] }],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const manifest = generateRuleCoverageManifest("test-system", [mod]);

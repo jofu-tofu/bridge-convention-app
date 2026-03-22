@@ -27,7 +27,6 @@ import {
   POST_OGUST_DIAMONDS_SURFACES,
 } from "./meaning-surfaces";
 import { weakTwoFacts } from "./facts";
-import { WEAK_TWO_ENTRIES } from "./explanation-catalog";
 
 type Phase =
   | "idle"
@@ -168,5 +167,4 @@ export const weakTwosRules: RuleModule<Phase> = {
     },
   ],
   facts: weakTwoFacts,
-  explanationEntries: WEAK_TWO_ENTRIES,
 };

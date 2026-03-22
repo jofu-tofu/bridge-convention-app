@@ -71,7 +71,6 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const log = [
@@ -102,7 +101,6 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     // Empty log → module is in "idle" phase, not "opened"
@@ -125,7 +123,6 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     // Initial kernel has forcing: "none"
@@ -161,7 +158,6 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     // Log without the subsequence
@@ -195,14 +191,12 @@ describe("collectMatchingClaims", () => {
       local: { initial: "active", transitions: [] },
       rules: [{ match: { local: "active" }, claims: [{ surface: s1 }] }],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
     const mod2: RuleModule<"active"> = {
       id: "mod2",
       local: { initial: "active", transitions: [] },
       rules: [{ match: { local: "active" }, claims: [{ surface: s2 }] }],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const result = collectMatchingClaims([mod1, mod2], makeContext([]));
@@ -222,7 +216,6 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const result = collectMatchingClaims([mod], makeContext([]));
@@ -241,7 +234,6 @@ describe("collectMatchingClaims", () => {
         { match: { local: "active" }, claims: [{ surface: s2 }] },
       ],
       facts: { definitions: [], evaluators: new Map() },
-      explanationEntries: [],
     };
 
     const result = collectMatchingClaims([mod], makeContext([]));

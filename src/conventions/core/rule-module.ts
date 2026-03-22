@@ -20,7 +20,6 @@ import type {
 import type { NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
-import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
 
 // ── TurnRole ─────────────────────────────────────────────────────────
 
@@ -136,5 +135,4 @@ export interface RuleModule<Phase extends string = string> {
   };
   readonly rules: readonly Rule<Phase>[];
   readonly facts: FactCatalogExtension;
-  readonly explanationEntries: readonly ExplanationEntry[];
 }

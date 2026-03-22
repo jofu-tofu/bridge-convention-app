@@ -69,7 +69,6 @@ function makeRuleModule(overrides: {
       },
     ],
     facts: emptyFacts,
-    explanationEntries: [],
   };
 }
 
@@ -243,7 +242,6 @@ describe("buildObservationLogViaRules", () => {
         },
       ],
       facts: emptyFacts,
-      explanationEntries: [],
     };
 
     const history: { call: Call; seat: Seat }[] = [
@@ -310,7 +308,6 @@ describe("buildObservationLogViaRules", () => {
         },
       ],
       facts: emptyFacts,
-      explanationEntries: [],
     };
 
     const history: { call: Call; seat: Seat }[] = [

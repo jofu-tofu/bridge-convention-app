@@ -46,5 +46,4 @@ export const naturalNtRules: RuleModule<Phase> = {
     },
   ],
   facts: naturalNtModule.facts,
-  explanationEntries: naturalNtModule.explanationEntries,
 };

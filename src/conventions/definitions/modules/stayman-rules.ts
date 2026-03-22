@@ -82,5 +82,4 @@ export const staymanRules: RuleModule<Phase> = {
     },
   ],
   facts: staymanModule.facts,
-  explanationEntries: staymanModule.explanationEntries,
 };

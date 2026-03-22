@@ -176,5 +176,4 @@ export const jacobyTransfersRules: RuleModule<Phase> = {
     },
   ],
   facts: jacobyTransfersModule.facts,
-  explanationEntries: jacobyTransfersModule.explanationEntries,
 };

@@ -24,6 +24,8 @@ import type { ModuleContext } from "../../../core/surface-builder";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
+  BERGEN_NATURAL_1NT_HEARTS_SURFACES,
+  BERGEN_NATURAL_1NT_SPADES_SURFACES,
   BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES,
   BERGEN_R2_AFTER_CONSTRUCTIVE_SPADES_SURFACES,
   BERGEN_R2_AFTER_LIMIT_HEARTS_SURFACES,
@@ -37,7 +39,6 @@ import {
   BERGEN_R4_SURFACES,
 } from "./meaning-surfaces";
 import { bergenFacts } from "./facts";
-import { BERGEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
 // ── Stub opening surfaces ─────────────────────────────────────────
 // Bergen needs 1H/1S opening observations for phase transitions.
@@ -127,11 +128,17 @@ export const bergenRules: RuleModule<Phase> = {
       { from: "opened-hearts", to: "done", on: { act: "raise", strain: "hearts", strength: "game" } },
       { from: "opened-hearts", to: "done", on: { act: "show", feature: "shortage" } },
 
+      // Natural 1NT response terminates Bergen (no further raise conversation)
+      { from: "opened-hearts", to: "done", on: { act: "place", strain: "notrump" } },
+
       { from: "opened-spades", to: "after-constructive-spades", on: { act: "raise", strain: "spades", strength: "constructive" } },
       { from: "opened-spades", to: "after-limit-spades", on: { act: "raise", strain: "spades", strength: "limit" } },
       { from: "opened-spades", to: "after-preemptive-spades", on: { act: "raise", strain: "spades", strength: "preemptive" } },
       { from: "opened-spades", to: "done", on: { act: "raise", strain: "spades", strength: "game" } },
       { from: "opened-spades", to: "done", on: { act: "show", feature: "shortage" } },
+
+      // Natural 1NT response terminates Bergen (no further raise conversation)
+      { from: "opened-spades", to: "done", on: { act: "place", strain: "notrump" } },
 
       // R2 opener → R3 phases
       { from: "after-constructive-hearts", to: "after-game", on: { act: "raise", strength: "game" } },
@@ -180,18 +187,28 @@ export const bergenRules: RuleModule<Phase> = {
     // R1: responder raises (hearts)
     {
       match: { local: "opened-hearts", turn: "responder" },
-      claims: BERGEN_R1_HEARTS_SURFACES.map((s) => ({
-        surface: s,
-        negotiationDelta: R1_HEARTS_DELTA,
-      })),
+      claims: [
+        ...BERGEN_R1_HEARTS_SURFACES.map((s) => ({
+          surface: s,
+          negotiationDelta: R1_HEARTS_DELTA,
+        })),
+        ...BERGEN_NATURAL_1NT_HEARTS_SURFACES.map((s) => ({
+          surface: s,
+        })),
+      ],
     },
     // R1: responder raises (spades)
     {
       match: { local: "opened-spades", turn: "responder" },
-      claims: BERGEN_R1_SPADES_SURFACES.map((s) => ({
-        surface: s,
-        negotiationDelta: R1_SPADES_DELTA,
-      })),
+      claims: [
+        ...BERGEN_R1_SPADES_SURFACES.map((s) => ({
+          surface: s,
+          negotiationDelta: R1_SPADES_DELTA,
+        })),
+        ...BERGEN_NATURAL_1NT_SPADES_SURFACES.map((s) => ({
+          surface: s,
+        })),
+      ],
     },
 
     // R2: opener after constructive (hearts/spades)
@@ -288,5 +305,4 @@ export const bergenRules: RuleModule<Phase> = {
     },
   ],
   facts: bergenFacts,
-  explanationEntries: BERGEN_EXPLANATION_ENTRIES,
 };
