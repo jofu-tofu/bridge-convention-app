@@ -65,7 +65,7 @@ The redesigned posterior boundary (Phases 0-5 complete) separates concerns into 
 2. **Backend** (`posterior/ts-posterior-backend.ts`): `ConditioningContext` → `PosteriorState` — weighted particle generation via Monte Carlo sampling. The backend is replaceable (future Rust/WASM swap).
 3. **Query Port** (`posterior/query-port.ts`): `PosteriorState` → typed queries via `PosteriorQueryPort` — consumer-facing interface (`marginalHcp()`, `fitProbability()`, etc.).
 
-The old `PosteriorEngine` → `SeatPosterior` path still works and is used during migration. See `posterior/CLAUDE.md` for migration status and gotchas. Boundary invariant tests in `boundary-invariants.test.ts` enforce: no convention imports, no `publicBeliefs` on snapshot, JSON round-trip, compilation trace integrity.
+The deprecated `PosteriorEngine` → `SeatPosterior` path has been removed (Phase 4B complete). All consumers use the new boundary: `createTsBackend()` → `createQueryPort()`. See `posterior/CLAUDE.md` for details. Boundary invariant tests in `boundary-invariants.test.ts` enforce: no convention imports, no `publicBeliefs` on snapshot, JSON round-trip, compilation trace integrity.
 
 ## Gotchas
 

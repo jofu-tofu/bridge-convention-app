@@ -1,18 +1,11 @@
 import type {
-  ArbitrationResult,
-  EncodedProposal,
-  EliminationRecord,
   PipelineCarrier,
   PipelineResult,
 } from "../../../core/contracts/module-surface";
 import type { Call } from "../../../engine/types";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
-  DecisionProvenance,
-  EliminationTrace,
   ArbitrationTrace,
-  LegalityTrace,
-  EncodingTrace,
   ApplicabilityEvidence,
   HandoffTrace,
 } from "../../../core/contracts/provenance";
@@ -256,50 +249,3 @@ export function arbitrateMeanings(
   };
 }
 
-// ─── Legacy Conversion Shims (temporary — removed in Phase 4) ──
-
-/** Convert PipelineResult to ArbitrationResult for unmigrated consumers. */
-export function pipelineResultToArbitration(result: PipelineResult): ArbitrationResult {
-  const carrierToEncoded = (c: PipelineCarrier): EncodedProposal => ({
-    proposal: c.proposal,
-    call: c.call,
-    isDefaultEncoding: c.isDefaultEncoding,
-    legal: c.legal,
-    allEncodings: c.allEncodings,
-    eligibility: c.eligibility,
-  });
-
-  return {
-    selected: result.selected ? carrierToEncoded(result.selected) : null,
-    truthSet: result.truthSet.map(carrierToEncoded),
-    acceptableSet: result.acceptableSet.map(carrierToEncoded),
-    recommended: result.recommended.map(carrierToEncoded),
-    eliminations: result.eliminated.map((c) => ({
-      candidateBidName: c.proposal.meaningId,
-      moduleId: c.proposal.moduleId,
-      reason: c.traces.elimination?.reason ?? "Gate check failed",
-      gateId: undefined,
-    })),
-    evidenceBundle: result.evidenceBundle,
-  };
-}
-
-/** Convert PipelineResult to DecisionProvenance for unmigrated consumers. */
-export function pipelineResultToProvenance(result: PipelineResult): DecisionProvenance {
-  const allCarriers = [
-    ...result.truthSet,
-    ...result.acceptableSet,
-    ...result.eliminated,
-  ];
-  return {
-    applicability: result.applicability,
-    activation: result.activation,
-    encoding: allCarriers.map((c) => c.traces.encoding),
-    legality: allCarriers.map((c) => c.traces.legality),
-    arbitration: result.arbitration,
-    eliminations: result.eliminated
-      .filter((c) => c.traces.elimination !== undefined)
-      .map((c) => c.traces.elimination!),
-    handoffs: result.handoffs,
-  };
-}

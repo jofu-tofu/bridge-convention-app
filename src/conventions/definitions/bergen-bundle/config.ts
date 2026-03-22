@@ -1,2 +1,4 @@
-// Re-export bundle from system-registry (single source of truth)
-export { bergenBundle } from "../system-registry";
+import { resolveBundle, getBundleInput } from "../system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+
+export const bergenBundle = resolveBundle(getBundleInput("bergen-bundle")!, SAYC_SYSTEM_CONFIG);

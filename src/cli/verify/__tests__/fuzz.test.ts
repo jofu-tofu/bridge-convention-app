@@ -8,12 +8,13 @@ import { describe, it, expect } from "vitest";
 // Side-effect import: registers all bundles + conventions
 import "../../../conventions";
 
-import { getSystemBundle } from "../../../conventions/definitions/system-registry";
+import { resolveBundle, getBundleInput } from "../../../conventions/definitions/system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { fuzzBundle } from "../fuzz";
 
 describe("fuzzBundle", () => {
   it("runs without crashes on nt-bundle with minimal trials", () => {
-    const system = getSystemBundle("nt-bundle")!;
+    const system = resolveBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG);
     const modules = system.modules ?? [];
     expect(modules.length).toBeGreaterThan(0);
 
@@ -29,7 +30,7 @@ describe("fuzzBundle", () => {
   });
 
   it("cycles vulnerability when vulnMixed is true", () => {
-    const system = getSystemBundle("nt-bundle")!;
+    const system = resolveBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG);
     const modules = system.modules ?? [];
 
     const result = fuzzBundle(system, modules, {
@@ -43,7 +44,7 @@ describe("fuzzBundle", () => {
   });
 
   it("produces deterministic results with same seed", () => {
-    const system = getSystemBundle("nt-bundle")!;
+    const system = resolveBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG);
     const modules = system.modules ?? [];
 
     const result1 = fuzzBundle(system, modules, { trials: 3, seed: 42 });
@@ -54,7 +55,7 @@ describe("fuzzBundle", () => {
   });
 
   it("works on bergen-bundle", () => {
-    const system = getSystemBundle("bergen-bundle")!;
+    const system = resolveBundle(getBundleInput("bergen-bundle")!, SAYC_SYSTEM_CONFIG);
     const modules = system.modules ?? [];
     expect(modules.length).toBeGreaterThan(0);
 

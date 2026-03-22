@@ -1,11 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../engine/types";
-import type { Call } from "../../engine/types";
 import { projectTeaching } from "../teaching-projection-builder";
 import type {
   ArbitrationResult,
   EncodedProposal,
   EliminationRecord,
+  PipelineResult,
+  PipelineCarrier,
 } from "../../core/contracts/module-surface";
 import type { DecisionProvenance } from "../../core/contracts/provenance";
 import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
@@ -14,14 +15,96 @@ import type { TeachingRelation } from "../../core/contracts/teaching-projection"
 
 import {
   makeCall,
-  makeRankingMetadata as makeRanking,
   makeClause,
   makeProposal,
   makeEligibility,
   makeEncoded,
   makeArbitration,
   makeProvenance,
+  makeCarrier,
 } from "../../test-support/convention-factories";
+
+// -- Test helper: convert legacy ArbitrationResult + DecisionProvenance → PipelineResult --
+// The sub-builders internally use ArbitrationResult/DecisionProvenance, but
+// projectTeaching now only accepts PipelineResult. This helper synthesizes a
+// PipelineResult from the legacy types so existing test data can be reused.
+
+function encodedToCarrier(
+  ep: EncodedProposal,
+  provElim?: DecisionProvenance["eliminations"][number],
+): PipelineCarrier {
+  return {
+    ...ep,
+    traces: {
+      encoding: {
+        encoderId: ep.proposal.meaningId,
+        encoderKind: "default-call",
+        consideredCalls: [ep.call],
+        chosenCall: ep.call,
+        blockedCalls: [],
+      },
+      legality: { call: ep.call, legal: ep.legal },
+      ...(provElim ? {
+        elimination: {
+          candidateId: provElim.candidateId,
+          stage: provElim.stage,
+          reason: provElim.reason,
+          evidence: provElim.evidence,
+          strength: provElim.strength as "entailed" | "preference",
+        },
+      } : {}),
+    },
+  };
+}
+
+function toPipelineResult(
+  arbitration: ArbitrationResult,
+  provenance: DecisionProvenance,
+): PipelineResult {
+  const findProvElim = (meaningId: string) =>
+    provenance.eliminations?.find((pe) => pe.candidateId === meaningId);
+
+  return {
+    selected: arbitration.selected ? encodedToCarrier(arbitration.selected) : null,
+    truthSet: arbitration.truthSet.map((ep) => encodedToCarrier(ep)),
+    acceptableSet: arbitration.acceptableSet.map((ep) =>
+      encodedToCarrier(ep, findProvElim(ep.proposal.meaningId)),
+    ),
+    recommended: arbitration.recommended.map((ep) => encodedToCarrier(ep)),
+    eliminated: (arbitration.eliminations ?? []).map((elim) => {
+      const provElim = findProvElim(elim.candidateBidName);
+      const proposal = makeProposal({
+        meaningId: elim.candidateBidName,
+        moduleId: elim.moduleId,
+      });
+      return makeCarrier({
+        proposal,
+        traces: {
+          encoding: {
+            encoderId: elim.candidateBidName,
+            encoderKind: "default-call",
+            consideredCalls: [],
+            chosenCall: makeCall(1, BidSuit.Clubs),
+            blockedCalls: [],
+          },
+          legality: { call: makeCall(1, BidSuit.Clubs), legal: false },
+          elimination: {
+            candidateId: elim.candidateBidName,
+            stage: provElim?.stage ?? "applicability",
+            reason: provElim?.reason ?? elim.reason ?? "Gate check failed",
+            evidence: provElim?.evidence ?? [],
+            strength: (provElim?.strength as "entailed" | "preference") ?? "entailed",
+          },
+        },
+      });
+    }),
+    applicability: provenance.applicability,
+    activation: provenance.activation,
+    arbitration: provenance.arbitration ?? [],
+    handoffs: provenance.handoffs ?? [],
+    evidenceBundle: arbitration.evidenceBundle,
+  };
+}
 
 // -- Tests --
 
@@ -47,7 +130,7 @@ describe("projectTeaching", () => {
       },
     });
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     // Single call view with truth status and single-rationale kind
     expect(projection.callViews).toHaveLength(1);
@@ -104,7 +187,7 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     // Two call views (different calls)
     expect(projection.callViews).toHaveLength(2);
@@ -177,7 +260,7 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     // Two meaning views: one live, one eliminated
     expect(projection.meaningViews).toHaveLength(2);
@@ -239,9 +322,9 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
-    // WhyNot entry for the eliminated call (no ped graph → grade "wrong")
+    // WhyNot entry for the eliminated call (no ped graph -> grade "wrong")
     expect(projection.whyNot).toHaveLength(1);
     const whyNot = projection.whyNot[0]!;
     expect(whyNot.call).toEqual(makeCall(2, BidSuit.NoTrump));
@@ -294,7 +377,7 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     // No truth-status call views
     const truthViews = projection.callViews.filter(cv => cv.status === "truth");
@@ -332,7 +415,7 @@ describe("projectTeaching", () => {
     });
     const provenance = makeProvenance();
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     // Merged into a single call view with merged-equivalent kind
     const ntViews = projection.callViews.filter(cv =>
@@ -367,7 +450,7 @@ describe("projectTeaching", () => {
     });
     const provenance = makeProvenance();
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     const ntViews = projection.callViews.filter(cv =>
       cv.call.type === "bid" && cv.call.strain === BidSuit.NoTrump && cv.call.level === 2,
@@ -396,7 +479,7 @@ describe("projectTeaching", () => {
       },
     });
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     expect(projection.primaryExplanation.length).toBeGreaterThan(0);
     // Condition nodes reflect the evaluated conditions
@@ -415,7 +498,7 @@ describe("projectTeaching", () => {
     });
     const provenance = makeProvenance();
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     expect(projection.handSpace.seatLabel).toBe("South");
     expect(projection.handSpace.hcpRange.min).toBeLessThanOrEqual(projection.handSpace.hcpRange.max);
@@ -458,7 +541,10 @@ describe("projectTeaching", () => {
       },
     });
 
-    const projection = projectTeaching(arbitration, provenance, { explanationCatalog: catalog });
+    const projection = projectTeaching(
+      toPipelineResult(arbitration, provenance),
+      { explanationCatalog: catalog },
+    );
 
     const conditionNodes = projection.primaryExplanation.filter(n => n.kind === "condition");
     expect(conditionNodes.length).toBe(2);
@@ -523,7 +609,10 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const projection = projectTeaching(arbitration, provenance, { explanationCatalog: catalog });
+    const projection = projectTeaching(
+      toPipelineResult(arbitration, provenance),
+      { explanationCatalog: catalog },
+    );
 
     expect(projection.whyNot).toHaveLength(1);
     const whyNotConditions = projection.whyNot[0]!.explanation.filter(n => n.kind === "condition");
@@ -550,7 +639,7 @@ describe("projectTeaching", () => {
       },
     });
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     const conditionNodes = projection.primaryExplanation.filter(n => n.kind === "condition");
     expect(conditionNodes.length).toBe(1);
@@ -600,9 +689,10 @@ describe("projectTeaching", () => {
       { kind: "near-miss-of", a: "stayman:ask-major", b: "transfer:to-hearts" },
     ];
 
-    const projection = projectTeaching(arbitration, provenance, {
-      teachingRelations: relations,
-    });
+    const projection = projectTeaching(
+      toPipelineResult(arbitration, provenance),
+      { teachingRelations: relations },
+    );
 
     expect(projection.whyNot).toHaveLength(1);
     const whyNot = projection.whyNot[0]!;
@@ -641,7 +731,7 @@ describe("projectTeaching", () => {
     });
     const provenance = makeProvenance();
 
-    const projection = projectTeaching(arbitration, provenance);
+    const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     expect(projection.whyNot).toHaveLength(1);
     expect(projection.whyNot[0]!.familyRelation).toBeUndefined();
@@ -688,9 +778,10 @@ describe("projectTeaching", () => {
       { kind: "stronger-than", a: "bridge:to-3nt", b: "bridge:nt-invite" },
     ];
 
-    const projection = projectTeaching(arbitration, provenance, {
-      teachingRelations: relations,
-    });
+    const projection = projectTeaching(
+      toPipelineResult(arbitration, provenance),
+      { teachingRelations: relations },
+    );
 
     const eliminatedMeaning = projection.meaningViews.find(mv => mv.meaningId === "bridge:nt-invite");
     expect(eliminatedMeaning).toBeDefined();
@@ -733,7 +824,10 @@ describe("projectTeaching", () => {
       },
     });
 
-    const projection = projectTeaching(arbitration, provenance, { explanationCatalog: catalog });
+    const projection = projectTeaching(
+      toPipelineResult(arbitration, provenance),
+      { explanationCatalog: catalog },
+    );
 
     // Should NOT produce convention-reference nodes because the fact entry has no meaningId
     // (the fact entry "nt.stayman.eligible" has factId but no meaningId)

@@ -3,9 +3,9 @@
 
 import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
-import type { ResolvedCandidateDTO, PracticalRecommendation } from "../../core/contracts";
+import type { ResolvedCandidateDTO, PracticalRecommendation, PracticalScoreBreakdown } from "../../core/contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
-import type { PracticalScoreBreakdown, ScoredCandidate, ScorableCandidate } from "./practical-types";
+import type { ScoredCandidate, ScorableCandidate } from "./practical-types";
 
 export const LEVEL_HCP_TABLE: Record<number, number> = {
   1: 20, 2: 23, 3: 26, 4: 26, 5: 29, 6: 33, 7: 37,

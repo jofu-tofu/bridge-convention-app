@@ -9,7 +9,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `derive-cross-module.ts` — `deriveTeachingContent(modules)` — derives all pedagogical relations, alternatives, and intent families from `teachingTags` on surfaces. Groups by `(tagId, scope)`. Supports ordinal chains for strength progressions. Called by `aggregateModuleContent()` in `system-registry.ts`.
 - `surface-group-vocabulary.ts` — *(Removed. Cross-module surface groupIds are now defined locally in modules.)*
 - `pedagogical-scope-vocabulary.ts` — Type-safe scope constants (branded `PedagogicalScope` type) for `teachingTags` scopes. Replaces free-form strings.
-- `system-registry.ts` — Bundle registry. Stores `BundleInput` definitions (no modules). `getBundleInput(id)`, `listBundleInputs()`, `resolveBundle(input, sys)` (resolves modules for a SystemConfig), `specFromBundle(input, sys)`. Deprecated shims `getSystemBundle()`, `listSystemBundles()` resolve with SAYC defaults. Pre-resolved `ntBundle`, `bergenBundle`, etc. exports kept for backwards compat.
+- `system-registry.ts` — Bundle registry. Stores `BundleInput` definitions (no modules). `getBundleInput(id)`, `listBundleInputs()`, `resolveBundle(input, sys)` (resolves modules for a SystemConfig), `specFromBundle(input, sys)`. Pre-resolved bundle constants (`ntBundle`, `bergenBundle`, etc.) live in each bundle's own `config.ts`.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
 - `system-fact-vocabulary.ts` (in `core/contracts/`) — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs.
@@ -20,7 +20,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 | File | Purpose |
 |------|---------|
-| `config.ts` | Re-export from system-registry (thin shim) |
+| `config.ts` | Pre-resolved SAYC bundle constant via `resolveBundle(getBundleInput(...), SAYC_SYSTEM_CONFIG)` |
 | `meaning-surfaces.ts` | `BidMeaning[]` definitions — the core bidding logic (single-module bundles). In multi-module bundles like nt-bundle, this is `composed-surfaces.ts` (cross-module composition re-exports). |
 | `facts.ts` | `FactCatalogExtension`s for module-derived facts. Use factory helpers from `core/pipeline/fact-factory.ts` for common patterns. |
 | `semantic-classes.ts` | Module-local semantic class constants (not in central registry) |
@@ -42,7 +42,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
   - `jacoby-transfers-rules.ts` — LocalFsm + Rule[] for Jacoby Transfers (phases: idle/inactive/transferred-*/accepted-*/placing-*/invited-*). Claims carry `negotiationDelta` for forcing/fitAgreed/captain effects.
   - `smolen-rules.ts` — LocalFsm + Rule[] for Smolen (phases: idle/post-r1/placing-hearts/placing-spades/done). Claims carry `negotiationDelta` for game-forcing/fitAgreed/captain effects. Proof case: uses route pattern `subseq([inquire(majorSuit), deny(majorSuit)])` instead of hookTransitions.
 - `config.ts` — Re-exports `ntBundle` from `system-registry.ts`.
-- `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles via `buildBundle()`, auto-composing pedagogical content from module subsets.
+- `sub-bundles.ts` — Stayman-only and Transfer-only pre-resolved SAYC sub-bundle constants via `resolveBundle(getBundleInput(...), SAYC_SYSTEM_CONFIG)`.
 - `composed-surfaces.ts` — Cross-module composition re-exports. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
 - `semantic-classes.ts` — Re-export shim from modules.
 - `explanation-catalog.ts` — Composed from all modules' explanation entries.

@@ -92,7 +92,6 @@ function mergeSystemProfiles(
       exclusivityGroups:
         allExclusivityGroups.length > 0 ? allExclusivityGroups : undefined,
     },
-    priorityClassMapping: base.priorityClassMapping,
   };
 }
 

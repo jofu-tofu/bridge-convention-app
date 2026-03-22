@@ -15,13 +15,14 @@ import type {
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import type { ConventionSpec } from "../../conventions/core";
-import type { ConventionModule, Claim } from "../../conventions/core";
+import type { ConventionModule } from "../../conventions/core";
 import type { ModuleClaimResult } from "../../conventions/core";
-import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, pipelineResultToArbitration, pipelineResultToProvenance } from "../../conventions/core";
+import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm } from "../../conventions/core";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { runMeaningPipeline } from "./meaning-strategy";
-import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
+import { buildBidResult } from "./bid-result-builder";
+import { projectTeaching } from "../../teaching/teaching-projection-builder";
 import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
@@ -102,9 +103,7 @@ export function protocolSpecToStrategy(
       });
 
       // Step 4: Build output
-      const legacyArbitration = pipelineResultToArbitration(result);
-      const legacyProvenance = pipelineResultToProvenance(result);
-      const teachingProjection = buildTeachingProjection(legacyArbitration, legacyProvenance);
+      const teachingProjection = projectTeaching(result);
 
       lastEvaluation = {
         practicalRecommendation: null,
@@ -121,7 +120,7 @@ export function protocolSpecToStrategy(
 
       if (!result.selected) return null;
       const winningModuleId = result.selected.proposal.moduleId;
-      return buildBidResult(result.selected, context, winningModuleId, legacyArbitration);
+      return buildBidResult(result.selected, context, winningModuleId, result);
     },
   };
 }

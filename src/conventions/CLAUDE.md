@@ -35,7 +35,7 @@ When creating or modifying convention modules under `definitions/modules/`:
 
 4. **System-dependent vs convention-intrinsic.** System-dependent thresholds (e.g., invite/game HCP) use system facts (`system.responder.inviteValues`). Convention-intrinsic thresholds (e.g., Bergen splinter = 12+ HCP) use named constants. If unsure, use system facts — they're the safer default.
 
-5. **Profile builder.** Use `createSystemProfile({ baseSystem, ... })` instead of `createSaycProfile()`. The latter is deprecated.
+5. **Profile builder.** Use `createSystemProfile({ baseSystem, ... })` for building system profiles.
 
 ## Test Organization
 

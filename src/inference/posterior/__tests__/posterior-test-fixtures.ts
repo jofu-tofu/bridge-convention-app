@@ -2,8 +2,8 @@
  * Shared test fixtures for posterior inference tests.
  *
  * Consolidates duplicated makeSnapshot/makeHand/southHand/oneNtCommitments
- * from query-port, ts-posterior-backend, posterior-engine, boundary-characterization,
- * boundary-invariants, posterior-compiler, and factor-compiler tests.
+ * from query-port, ts-posterior-backend, boundary-invariants,
+ * posterior-compiler, and factor-compiler tests.
  */
 
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";

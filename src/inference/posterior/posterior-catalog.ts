@@ -2,7 +2,6 @@ import type {
   PosteriorFactProvider,
   PosteriorFactRequest,
   PosteriorFactValue,
-  SeatPosterior,
 } from "../../core/contracts/posterior";
 import { SHARED_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
 import type { PosteriorFactEvaluator, FactValue } from "../../core/contracts/fact-catalog";
@@ -41,39 +40,6 @@ export function createPosteriorFactEvaluators(
   }
 
   return entries;
-}
-
-/** Default sample count used by createPosteriorEngine. */
-const DEFAULT_SAMPLE_COUNT = 200;
-
-/**
- * Wrap a SeatPosterior as a PosteriorFactProvider.
- * All queryFact calls delegate to the posterior's probability() method.
- * Confidence is derived from the acceptance rate (effectiveSampleSize / requestedCount).
- */
-export function createPosteriorFactProvider(
-  posterior: SeatPosterior,
-  requestedSampleCount?: number,
-): PosteriorFactProvider {
-  const requested = requestedSampleCount ?? DEFAULT_SAMPLE_COUNT;
-  const confidence = requested > 0
-    ? Math.min(posterior.effectiveSampleSize / requested, 1)
-    : 0;
-
-  return {
-    queryFact(request: PosteriorFactRequest): PosteriorFactValue | null {
-      const probability = posterior.probability(request);
-      return {
-        factId: request.factId,
-        seatId: posterior.seatId,
-        expectedValue: probability,
-        confidence,
-      };
-    },
-    getBeliefView() {
-      return null;
-    },
-  };
 }
 
 /**

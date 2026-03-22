@@ -1,7 +1,7 @@
 /**
  * Teaching Projection Builder
  *
- * Builds a read-only TeachingProjection from arbitration results and decision provenance.
+ * Builds a read-only TeachingProjection from a PipelineResult.
  * Pure function — no side effects, no imports from strategy/stores/components.
  * NEVER affects truth/recommendation/selection.
  */
@@ -104,66 +104,42 @@ export function resolveDisplayText(
 // -- Main entry point --
 
 /**
- * Build a TeachingProjection from an ArbitrationResult and DecisionProvenance.
+ * Build a TeachingProjection from a PipelineResult.
  *
  * Pure function — no side effects, no imports from strategy/stores/components.
  * This is a read-only projection for UI display; it NEVER affects truth/recommendation/selection.
- */
-export function projectTeaching(
-  arbitration: ArbitrationResult,
-  provenance: DecisionProvenance,
-  options?: TeachingProjectionOptions,
-): TeachingProjection;
-/**
- * Build a TeachingProjection from a PipelineResult.
+ *
+ * Internally converts PipelineResult to ArbitrationResult/DecisionProvenance for sub-builders.
  */
 export function projectTeaching(
   result: PipelineResult,
   options?: TeachingProjectionOptions,
-): TeachingProjection;
-export function projectTeaching(
-  arbOrResult: ArbitrationResult | PipelineResult,
-  provOrOptions?: DecisionProvenance | TeachingProjectionOptions,
-  maybeOptions?: TeachingProjectionOptions,
 ): TeachingProjection {
-  // Detect which overload was called
-  let arbitration: ArbitrationResult;
-  let provenance: DecisionProvenance;
-  let options: TeachingProjectionOptions | undefined;
-
-  if (isPipelineResult(arbOrResult)) {
-    // PipelineResult overload — synthesize legacy types inline for sub-builders
-    const pr = arbOrResult;
-    arbitration = {
-      selected: pr.selected ? carrierToEncoded(pr.selected) : null,
-      truthSet: pr.truthSet.map(carrierToEncoded),
-      acceptableSet: pr.acceptableSet.map(carrierToEncoded),
-      recommended: pr.recommended.map(carrierToEncoded),
-      eliminations: pr.eliminated.map((c) => ({
-        candidateBidName: c.proposal.meaningId,
-        moduleId: c.proposal.moduleId,
-        reason: c.traces.elimination?.reason ?? "Gate check failed",
-      })),
-      evidenceBundle: pr.evidenceBundle,
-    };
-    const allCarriers = [...pr.truthSet, ...pr.acceptableSet, ...pr.eliminated];
-    provenance = {
-      applicability: pr.applicability,
-      activation: pr.activation,
-      encoding: allCarriers.map((c) => c.traces.encoding),
-      legality: allCarriers.map((c) => c.traces.legality),
-      arbitration: pr.arbitration,
-      eliminations: pr.eliminated
-        .filter((c) => c.traces.elimination !== undefined)
-        .map((c) => c.traces.elimination!),
-      handoffs: pr.handoffs,
-    };
-    options = provOrOptions as TeachingProjectionOptions | undefined;
-  } else {
-    arbitration = arbOrResult;
-    provenance = provOrOptions as DecisionProvenance;
-    options = maybeOptions;
-  }
+  // Synthesize legacy types inline for sub-builders
+  const arbitration: ArbitrationResult = {
+    selected: result.selected ? carrierToEncoded(result.selected) : null,
+    truthSet: result.truthSet.map(carrierToEncoded),
+    acceptableSet: result.acceptableSet.map(carrierToEncoded),
+    recommended: result.recommended.map(carrierToEncoded),
+    eliminations: result.eliminated.map((c) => ({
+      candidateBidName: c.proposal.meaningId,
+      moduleId: c.proposal.moduleId,
+      reason: c.traces.elimination?.reason ?? "Gate check failed",
+    })),
+    evidenceBundle: result.evidenceBundle,
+  };
+  const allCarriers = [...result.truthSet, ...result.acceptableSet, ...result.eliminated];
+  const provenance: DecisionProvenance = {
+    applicability: result.applicability,
+    activation: result.activation,
+    encoding: allCarriers.map((c) => c.traces.encoding),
+    legality: allCarriers.map((c) => c.traces.legality),
+    arbitration: result.arbitration,
+    eliminations: [...result.eliminated, ...result.acceptableSet]
+      .filter((c) => c.traces.elimination !== undefined)
+      .map((c) => c.traces.elimination!),
+    handoffs: result.handoffs,
+  };
 
   const catalogIndex = options?.explanationCatalog
     ? buildCatalogIndex(options.explanationCatalog)
@@ -198,11 +174,6 @@ export function projectTeaching(
     fallbackReached: arbitration.evidenceBundle?.fallbackReached ?? false,
     encoderKind: provenance.encoding?.[0]?.encoderKind,
   };
-}
-
-/** Type guard: PipelineResult has `eliminated` and `applicability` fields, ArbitrationResult has `eliminations`. */
-function isPipelineResult(value: ArbitrationResult | PipelineResult): value is PipelineResult {
-  return "applicability" in value && "eliminated" in value;
 }
 
 // -- Convention Contributions --
@@ -311,24 +282,6 @@ function buildHandSpace(
     ...base,
     partnerSummary,
   };
-}
-
-/**
- * Build a TeachingProjection from arbitration and provenance, returning null if provenance is missing.
- */
-export function buildTeachingProjection(
-  arbitration: ArbitrationResult,
-  provenance: DecisionProvenance | null,
-  explanationCatalog?: ExplanationCatalog,
-  posteriorSummary?: PosteriorSummary | null,
-  teachingRelations?: readonly TeachingRelation[],
-): TeachingProjection | null {
-  if (!provenance) return null;
-  return projectTeaching(arbitration, provenance, {
-    explanationCatalog,
-    posteriorSummary: posteriorSummary ?? undefined,
-    teachingRelations,
-  });
 }
 
 // -- Internal helpers --

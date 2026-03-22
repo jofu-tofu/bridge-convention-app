@@ -616,7 +616,7 @@ export function createGameStore(
 
     currentPlayer = nextSeat(contract.declarer);
 
-    // If opening leader is AI, start AI plays (only in legacy local path)
+    // If opening leader is AI, start AI plays (only in local path)
     if (!activeHandle && !isUserControlled(currentPlayer)) {
       playProcessing = true;
       runAiPlays().catch((err) => {

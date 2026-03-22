@@ -26,12 +26,10 @@ export { findBundleForConvention, getBundle, listBundles, composeBundles, resolv
 export type { ConventionBundle, BundleInput } from "./bundle";
 
 // ── Pipeline ────────────────────────────────────────────────────────────
-export {
-  evaluateFacts,
-  createSharedFactCatalog,
-  createHandFactResolver,
-} from "./pipeline/fact-evaluator";
+export { evaluateFacts } from "./pipeline/fact-evaluator";
 export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/fact-evaluator";
+export { createSharedFactCatalog } from "./pipeline/shared-fact-catalog";
+export { createHandFactResolver } from "./pipeline/hand-fact-resolver";
 
 export { createSystemFactCatalog } from "./pipeline/system-fact-catalog";
 
@@ -40,8 +38,6 @@ export { evaluateAllBidMeanings } from "./pipeline/meaning-evaluator";
 export {
   arbitrateMeanings,
   zipProposalsWithSurfaces,
-  pipelineResultToArbitration,
-  pipelineResultToProvenance,
 } from "./pipeline/meaning-arbitrator";
 
 // ── Runtime (remaining) ─────────────────────────────────────────────────
@@ -76,5 +72,3 @@ export { moduleSurfaces } from "./convention-module";
 
 // ── System Registry (re-exported from definitions for external consumers) ────
 export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "../definitions/system-registry";
-/** @deprecated Use getBundleInput() + resolveBundle() instead. */
-export { getSystemBundle, listSystemBundles } from "../definitions/system-registry";

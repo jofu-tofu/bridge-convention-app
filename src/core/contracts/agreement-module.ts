@@ -1,7 +1,6 @@
 import type { AuctionPattern, PublicGuard } from "./predicates";
-import type { SemanticClassId, RecommendationBand } from "./meaning";
+import type { RecommendationBand } from "./meaning";
 import type { FactOperator } from "./meaning";
-import type { Call } from "../../engine/types";
 
 // ─── Module classification ──────────────────────────────────
 export type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-tool" | "defensive";
@@ -28,43 +27,6 @@ export type PrioritySpec =
   | { readonly obligation: "preferred"; readonly conventionality: "conventional" }
   | { readonly obligation: "acceptable"; readonly conventionality: "natural" }
   | { readonly obligation: "residual"; readonly conventionality: "natural" };
-
-// ─── Legacy PriorityClass (deprecated) ──────────────────────
-/** @deprecated Use PrioritySpec instead. Retained for DecisionSurface backward compatibility. */
-export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"
-                          | "neutralCorrect" | "fallbackCorrect";
-
-// ─── DecisionSurface ─────────────────────────────────────
-// The primary IR contract type for decision surfaces. The runtime evaluates these
-// through the meaning pipeline. When decisionProgram === "clause-evaluator" and
-// inlineClauses are provided, the pipeline evaluates them against facts.
-// Other decision programs remain as a future extension point.
-export interface DecisionSurface {
-  readonly surfaceId: string;
-  readonly moduleId: string;
-  readonly decisionProgram: string;
-  readonly encoderKind: DeclaredEncoderKind;
-  readonly surfaceBindings?: Readonly<Record<string, unknown>>;
-  readonly localRegisters?: Readonly<Record<string, unknown>>;
-  readonly modulePrecedence: number;
-  readonly exclusivityGroup?: string;
-  readonly defaultSemanticClassId?: SemanticClassId;
-  readonly defaultPriorityClass?: PriorityClass;
-  /** Inline clauses for the "clause-evaluator" decision program.
-   *  When present, the pipeline evaluates these against EvaluatedFacts
-   *  instead of producing empty all-pass clauses. */
-  readonly inlineClauses?: readonly FactConstraint[];
-  /** Human-readable teaching label for this surface. */
-  readonly teachingLabel?: string;
-  /** Default call when encoding is "direct". */
-  readonly defaultCall?: Call;
-  /** Source intent for provenance tracking. */
-  readonly sourceIntent?: Readonly<{ type: string; params: Readonly<Record<string, string | number | boolean>> }>;
-  /** Ranking metadata for intra-module ordering. */
-  readonly declarationOrder?: number;
-  /** Specificity for ranking. */
-  readonly specificity?: number;
-}
 
 // ─── Attachment contract ────────────────────────────────────
 export interface Attachment {
@@ -110,9 +72,6 @@ export interface SystemProfile {
    *  When present, surfaces with a `prioritySpec` resolve their recommendationBand
    *  through this mapping instead of using the surface-level band directly. */
   readonly obligationMapping?: Readonly<Record<ObligationLevel, RecommendationBand>>;
-  /** @deprecated Use obligationMapping instead.
-   *  Profile-level mapping from author-declared priority classes to runtime bands. */
-  readonly priorityClassMapping?: Readonly<Record<PriorityClass, RecommendationBand>>;
 }
 
 export interface ModuleEntry {
@@ -159,20 +118,6 @@ export function defaultObligationMapping(): Readonly<Record<ObligationLevel, Rec
     preferred: "should",
     acceptable: "may",
     residual: "avoid",
-  };
-}
-
-// ─── Legacy default priority-class → band mapping ───────────
-/** @deprecated Use defaultObligationMapping() instead.
- *  The standard mapping from author-declared priority classes to runtime bands.
- *  Profiles may override this with their own `priorityClassMapping`. */
-export function defaultPriorityClassMapping(): Readonly<Record<PriorityClass, RecommendationBand>> {
-  return {
-    obligatory: "must",
-    preferredConventional: "should",
-    preferredNatural: "should",
-    neutralCorrect: "may",
-    fallbackCorrect: "avoid",
   };
 }
 

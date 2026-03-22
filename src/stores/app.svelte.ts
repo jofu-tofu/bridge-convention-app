@@ -1,5 +1,5 @@
 import type { ConventionConfig } from "../conventions/core";
-import type { OpponentMode, DrillTuning, VulnerabilityDistribution, DrillSettings } from "../core/contracts/drill";
+import type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../core/contracts/drill";
 import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../core/contracts/drill";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import type { PracticePreferences, DisplayPreferences } from "../core/contracts/practice-preferences";
@@ -12,113 +12,22 @@ export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
 
 const SETTINGS_KEY = "bridge-app:practice-preferences";
 
-// Legacy keys — read once during migration, then ignored.
-const LEGACY_KEYS = [
-  "bridge-app:opponent-mode",
-  "bridge-app:drill-tuning",
-  "bridge-app:display-settings",
-  "bridge-app:base-system",
-  "bridge-app:settings", // previous unified key before rename
-] as const;
-
 function loadPreferences(): PracticePreferences {
   try {
-    // Prefer the current key
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
       return mergePreferences(JSON.parse(raw) as Record<string, unknown>);
-    }
-
-    // Try previous unified key
-    const prev = localStorage.getItem("bridge-app:settings");
-    if (prev) {
-      const prefs = mergePreferences(remapLegacyBlob(JSON.parse(prev) as Record<string, unknown>));
-      savePreferences(prefs);
-      localStorage.removeItem("bridge-app:settings");
-      return prefs;
-    }
-
-    // Migrate from legacy scattered keys
-    const migrated = migrateLegacyKeys();
-    if (migrated) {
-      savePreferences(migrated);
-      for (const key of LEGACY_KEYS) localStorage.removeItem(key);
-      return migrated;
     }
   } catch { /* SSR or storage unavailable */ }
   return DEFAULT_PRACTICE_PREFERENCES;
 }
 
-/** Remap the previous UserSettings shape (displaySettings → display). */
-function remapLegacyBlob(blob: Record<string, unknown>): Record<string, unknown> {
-  const result = { ...blob };
-  if ("displaySettings" in result && !("display" in result)) {
-    result.display = result.displaySettings;
-    delete result.displaySettings;
-  }
-  return result;
-}
-
-function migrateLegacyKeys(): PracticePreferences | null {
-  try {
-    let found = false;
-    let opponentMode: OpponentMode = DEFAULT_DRILL_SETTINGS.opponentMode;
-    let baseSystemId: BaseSystemId = DEFAULT_PRACTICE_PREFERENCES.baseSystemId;
-    let drillTuning: DrillTuning = DEFAULT_DRILL_SETTINGS.tuning;
-    let display: DisplayPreferences = DEFAULT_PRACTICE_PREFERENCES.display;
-
-    const opp = localStorage.getItem("bridge-app:opponent-mode");
-    if (opp === "none" || opp === "natural") { opponentMode = opp; found = true; }
-
-    const sys = localStorage.getItem("bridge-app:base-system");
-    if (sys && AVAILABLE_BASE_SYSTEMS.some((s) => s.id === sys)) { baseSystemId = sys as BaseSystemId; found = true; }
-
-    const tuningRaw = localStorage.getItem("bridge-app:drill-tuning");
-    if (tuningRaw) {
-      const parsed = JSON.parse(tuningRaw) as Partial<DrillTuning>;
-      const vd = parsed.vulnerabilityDistribution;
-      if (
-        vd &&
-        typeof vd.none === "number" && typeof vd.ours === "number" &&
-        typeof vd.theirs === "number" && typeof vd.both === "number"
-      ) {
-        drillTuning = { ...DEFAULT_DRILL_TUNING, ...parsed, vulnerabilityDistribution: vd };
-        found = true;
-      }
-    }
-
-    const dispRaw = localStorage.getItem("bridge-app:display-settings");
-    if (dispRaw) {
-      const parsed = JSON.parse(dispRaw) as Partial<DisplayPreferences>;
-      display = { ...DEFAULT_DISPLAY_PREFERENCES, ...parsed };
-      found = true;
-    }
-
-    return found ? { baseSystemId, drill: { opponentMode, tuning: drillTuning }, display } : null;
-  } catch { return null; }
-}
-
-/** Merge a partial persisted blob with defaults.
- *  Handles both the old flat shape (baseSystemId, opponentMode, drillTuning at top level)
- *  and the new nested shape (drill: { opponentMode, tuning }). */
+/** Merge a partial persisted blob with defaults. */
 function mergePreferences(partial: Record<string, unknown>): PracticePreferences {
-  // Detect legacy flat shape: opponentMode/drillTuning at top level instead of under drill
-  const isLegacyFlat = !partial.drill && ("opponentMode" in partial || "drillTuning" in partial);
-
-  let opponentMode: OpponentMode;
-  let tuningRaw: Partial<DrillTuning> | undefined;
-  let baseSystemIdRaw: unknown;
-
-  if (isLegacyFlat) {
-    opponentMode = partial.opponentMode as OpponentMode ?? DEFAULT_DRILL_SETTINGS.opponentMode;
-    tuningRaw = partial.drillTuning as Partial<DrillTuning> | undefined;
-    baseSystemIdRaw = partial.baseSystemId;
-  } else {
-    const drill = partial.drill as Partial<DrillSettings> | undefined;
-    opponentMode = drill?.opponentMode ?? DEFAULT_DRILL_SETTINGS.opponentMode;
-    tuningRaw = drill?.tuning;
-    baseSystemIdRaw = partial.baseSystemId;
-  }
+  const drill = partial.drill as Partial<DrillSettings> | undefined;
+  let opponentMode: OpponentMode = drill?.opponentMode ?? DEFAULT_DRILL_SETTINGS.opponentMode;
+  const tuningRaw = drill?.tuning;
+  const baseSystemIdRaw = partial.baseSystemId;
 
   // Validate opponentMode
   if (opponentMode !== "none" && opponentMode !== "natural") {

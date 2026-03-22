@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Trick, Seat, Card as CardType } from "../../../engine/types";
-  import type { AuctionEntry, Auction } from "../../../engine/types";
+  import type { AuctionEntry } from "../../../engine/types";
   import type { AuctionEntryView } from "../../../core/viewport";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import { Suit } from "../../../engine/types";
@@ -14,13 +14,11 @@
     declarerSeat: Seat | null;
     /** Viewport-safe auction entries (preferred). */
     auctionEntries?: readonly AuctionEntryView[];
-    /** Raw auction (legacy — used when auctionEntries not provided). */
-    auction?: Auction;
     dealer?: Seat;
     bidHistory?: readonly BidHistoryEntry[];
   }
 
-  let { tricks, declarerSeat, auctionEntries, auction, dealer, bidHistory }: Props = $props();
+  let { tricks, declarerSeat, auctionEntries, dealer, bidHistory }: Props = $props();
 
   let scrollContainer: HTMLDivElement | undefined = $state();
 
@@ -51,9 +49,8 @@
     return groups;
   });
 
-  /** Resolve the effective entries: prefer viewport entries, fall back to raw auction. */
   const effectiveEntries = $derived<readonly (AuctionEntryView | AuctionEntry)[]>(
-    auctionEntries ?? auction?.entries ?? [],
+    auctionEntries ?? [],
   );
 
   /** Build compact auction rows (same logic as AuctionTable). */

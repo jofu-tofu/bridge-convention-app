@@ -25,7 +25,8 @@ import {
 } from "../bidding/protocol-adapter";
 
 // ── Real convention imports ──────────────────────────────────────────
-import { ntBundle, specFromBundle } from "../../conventions/definitions/system-registry";
+import { ntBundle } from "../../conventions/definitions/nt-bundle";
+import { specFromBundle } from "../../conventions/definitions/system-registry";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 // ── Helpers ──────────────────────────────────────────────────────────

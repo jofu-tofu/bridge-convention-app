@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  SHARED_FACTS,
-  PRIMITIVE_FACTS,
-  BRIDGE_DERIVED_FACTS,
   getFactValue,
   createFactCatalog,
   type EvaluatedFacts,
@@ -12,8 +9,10 @@ import {
   type FactCatalogExtension,
   type FactEvaluatorFn,
 } from "../fact-catalog";
+import { SHARED_FACTS, PRIMITIVE_FACTS, BRIDGE_DERIVED_FACTS } from "../shared-facts";
 // Integration test: exercises fact-catalog DTOs through the convention pipeline
-import { evaluateFacts, createSharedFactCatalog } from "../../../conventions/core/pipeline/fact-evaluator";
+import { evaluateFacts } from "../../../conventions/core/pipeline/fact-evaluator";
+import { createSharedFactCatalog } from "../../../conventions/core/pipeline/shared-fact-catalog";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { FactLayer } from "../fact-layer";

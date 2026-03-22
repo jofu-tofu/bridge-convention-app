@@ -5,8 +5,10 @@ const SETTINGS_KEY = "bridge-app:practice-preferences";
 
 const DEFAULTS = {
   baseSystemId: "sayc",
-  opponentMode: "natural",
-  drillTuning: { vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 } },
+  drill: {
+    opponentMode: "natural",
+    tuning: { vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 } },
+  },
   display: { showEducationalAnnotations: true },
 };
 
@@ -65,64 +67,11 @@ describe("localStorage persistence", () => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
       ...DEFAULTS,
       baseSystemId: "two-over-one",
-      opponentMode: "none",
+      drill: { opponentMode: "none", tuning: DEFAULTS.drill.tuning },
     }));
     const store = createAppStore();
     expect(store.baseSystemId).toBe("two-over-one");
     expect(store.opponentMode).toBe("none");
-  });
-});
-
-// ─── Legacy migration ───────────────────────────────────────
-
-describe("legacy migration", () => {
-  it("remaps displaySettings → display from bridge-app:settings", () => {
-    localStorage.setItem("bridge-app:settings", JSON.stringify({
-      displaySettings: { showEducationalAnnotations: false },
-    }));
-    const store = createAppStore();
-    expect(store.displaySettings.showEducationalAnnotations).toBe(false);
-    expect(localStorage.getItem("bridge-app:settings")).toBeNull();
-    expect(localStorage.getItem(SETTINGS_KEY)).not.toBeNull();
-  });
-
-  it("migrates scattered legacy keys", () => {
-    localStorage.setItem("bridge-app:opponent-mode", "none");
-    localStorage.setItem("bridge-app:base-system", "sayc");
-    const store = createAppStore();
-    expect(store.opponentMode).toBe("none");
-    expect(store.baseSystemId).toBe("sayc");
-  });
-
-  it("removes all legacy keys after migration", () => {
-    localStorage.setItem("bridge-app:opponent-mode", "none");
-    localStorage.setItem("bridge-app:base-system", "sayc");
-    localStorage.setItem("bridge-app:drill-tuning", JSON.stringify({
-      vulnerabilityDistribution: { none: 0, ours: 1, theirs: 0, both: 0 },
-    }));
-    localStorage.setItem("bridge-app:display-settings", JSON.stringify({
-      showEducationalAnnotations: false,
-    }));
-    createAppStore();
-    expect(localStorage.getItem("bridge-app:opponent-mode")).toBeNull();
-    expect(localStorage.getItem("bridge-app:base-system")).toBeNull();
-    expect(localStorage.getItem("bridge-app:drill-tuning")).toBeNull();
-    expect(localStorage.getItem("bridge-app:display-settings")).toBeNull();
-    expect(localStorage.getItem(SETTINGS_KEY)).not.toBeNull();
-  });
-
-  it("migrates drill-tuning and display-settings from legacy keys", () => {
-    localStorage.setItem("bridge-app:drill-tuning", JSON.stringify({
-      vulnerabilityDistribution: { none: 0, ours: 0, theirs: 1, both: 0 },
-    }));
-    localStorage.setItem("bridge-app:display-settings", JSON.stringify({
-      showEducationalAnnotations: false,
-    }));
-    const store = createAppStore();
-    expect(store.drillTuning.vulnerabilityDistribution).toEqual({
-      none: 0, ours: 0, theirs: 1, both: 0,
-    });
-    expect(store.displaySettings.showEducationalAnnotations).toBe(false);
   });
 });
 
@@ -138,7 +87,7 @@ describe("validation via mergePreferences", () => {
 
   it("invalid opponentMode falls back to natural", () => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      ...DEFAULTS, opponentMode: "aggressive",
+      ...DEFAULTS, drill: { opponentMode: "aggressive", tuning: DEFAULTS.drill.tuning },
     }));
     expect(createAppStore().opponentMode).toBe("natural");
   });
@@ -146,7 +95,7 @@ describe("validation via mergePreferences", () => {
   it("invalid vulnerabilityDistribution falls back to default", () => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
       ...DEFAULTS,
-      drillTuning: { vulnerabilityDistribution: { none: 1 } },
+      drill: { opponentMode: "natural", tuning: { vulnerabilityDistribution: { none: 1 } } },
     }));
     expect(createAppStore().drillTuning.vulnerabilityDistribution).toEqual({
       none: 1, ours: 0, theirs: 0, both: 0,
@@ -154,7 +103,7 @@ describe("validation via mergePreferences", () => {
   });
 
   it("partial preferences are filled with defaults", () => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ opponentMode: "none" }));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ drill: { opponentMode: "none" } }));
     const store = createAppStore();
     expect(store.opponentMode).toBe("none");
     expect(store.baseSystemId).toBe("sayc");

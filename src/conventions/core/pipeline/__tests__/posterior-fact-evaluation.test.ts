@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { evaluateFacts, createSharedFactCatalog } from "../fact-evaluator";
+import { evaluateFacts } from "../fact-evaluator";
+import { createSharedFactCatalog } from "../shared-fact-catalog";
 import type { FactCatalog } from "../../../../core/contracts/fact-catalog";
 import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../../../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider } from "../../../../core/contracts/posterior";

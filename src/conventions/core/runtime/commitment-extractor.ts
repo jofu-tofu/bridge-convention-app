@@ -8,9 +8,6 @@ import { callsMatch, callKey } from "../../../engine/call-helpers";
 import { derivePublicConstraints } from "../../../core/contracts/alert";
 import { resolveClause } from "../pipeline/binding-resolver";
 
-// Re-export for backward compatibility — canonical location is engine/call-helpers
-export { callKey as formatCallString } from "../../../engine/call-helpers";
-
 /**
  * Derive entailed denials from a closure policy.
  *

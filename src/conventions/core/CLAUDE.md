@@ -24,7 +24,6 @@ core/
     meaning-evaluator.ts  evaluateBidMeaning(), evaluateAllBidMeanings() — clause evaluation against facts
     meaning-arbitrator.ts arbitrateMeanings() — tiered selection (band → specificity → precedence), zipProposalsWithSurfaces()
     arbitration-helpers.ts evaluateProposal(), classifyIntoSets() — gate logic and truth/acceptable bucketing
-    surface-adapter.ts    adaptMeaningSurface() — BidMeaning ↔ DecisionSurface mapping
     encoder-resolver.ts   resolveEncoding() — direct/choice-set/frontier-step/relay-map encoders
     gate-order.ts         evaluateGates() — 4-gate sequence (semantic, obligation, encoder, legality)
     deal-constraint-evaluator.ts  evaluateDealConstraint() — fit-check, combined-hcp, custom constraints
@@ -41,7 +40,6 @@ core/
     rule-enumeration.ts   enumerateRuleAtoms(), generateRuleCoverageManifest() — enumerates coverage atoms from ConventionModule[] for CLI commands. Atom ID format: moduleId/meaningId.
     clause-derivation.ts  deriveClauseId(), deriveClauseDescription(), fillClauseDefaults() — auto-derive clause metadata from factId/operator/value
     hand-fact-resolver.ts Hand fact resolution utilities
-    priority-mapping.ts   Priority class mapping logic
     fact-utils.ts         Fact evaluation utility functions
     shared-fact-catalog.ts Shared fact catalog construction
     fact-factory.ts       defineBooleanFact(), definePerSuitFacts(), defineHcpRangeFact(), buildExtension() — factory helpers for module-derived fact definitions
@@ -76,7 +74,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 3. **Surface evaluation** — `evaluateAllBidMeanings()` checks each surface's clauses against facts → `MeaningProposal[]`
 4. **Encoding resolution** — `resolveEncoding()` per-proposal for non-direct encoders
 5. **Gate evaluation** — `evaluateGates()` 4-gate sequence per proposal
-6. **Arbitration** — `arbitrateMeanings()` selects best proposal (band ranking → specificity → deduplication), producing `PipelineResult` (not raw `ArbitrationResult`). Conversion shims exist for teaching sub-builders that still consume the legacy types.
+6. **Arbitration** — `arbitrateMeanings()` selects best proposal (band ranking → specificity → deduplication), producing `PipelineResult` (not raw `ArbitrationResult`). Teaching sub-builders internally convert `PipelineResult` to legacy `ArbitrationResult`/`DecisionProvenance` types.
 
 `clauseId`, `description`, and `moduleId` are optional on `BidMeaning`. The `createSurface()` builder stamps them at definition time. `modulePrecedence` defaults to 0. The pipeline derives fallbacks for any surface not created via the builder (via `fillClauseDefaults()` and `?? 0` / `?? "unknown"` defaults).
 

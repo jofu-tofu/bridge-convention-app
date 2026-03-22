@@ -4,9 +4,6 @@
 import type { ResolvedCandidateDTO, PracticalScoreBreakdown } from "../../core/contracts";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 
-// Re-export from contracts so existing importers continue to work
-export type { PracticalScoreBreakdown } from "../../core/contracts";
-
 /** Discriminated union for scorer input — normative (from convention pipeline) or pragmatic (tactical). */
 export type ScorableCandidate =
   | { readonly kind: "normative"; readonly candidate: ResolvedCandidateDTO }

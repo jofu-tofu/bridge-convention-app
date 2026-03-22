@@ -19,7 +19,7 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, Vulnerability } from "../../../engine/types";
-import { ntBundle } from "../../definitions/system-registry";
+import { ntBundle } from "../../definitions/nt-bundle";
 import { createSharedFactCatalog, collectMatchingClaims } from "../../core";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { createBiddingContext } from "../../core/context-factory";

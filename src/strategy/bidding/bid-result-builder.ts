@@ -4,26 +4,23 @@ import type {
   BidAlert,
 } from "../../core/contracts";
 import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation";
-import type { ArbitrationResult } from "../../core/contracts/module-surface";
+import type { PipelineCarrier, PipelineResult } from "../../core/contracts/module-surface";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import { formatHandSummary } from "../../core/display/hand-summary";
-
-// Re-export from teaching layer so existing callers don't break.
-export { buildTeachingProjection } from "../../teaching/teaching-projection-builder";
 
 // ─── Result Mapping ────────────────────────────────────────────
 
 export function buildBidResult(
-  selected: NonNullable<ArbitrationResult["selected"]>,
+  selected: PipelineCarrier,
   context: BiddingContext,
   moduleId: string,
-  arbitration: ArbitrationResult,
+  result: PipelineResult,
   posteriorSummary?: PosteriorSummary | null,
 ): BidResult {
   // Map truth + acceptable sets to ResolvedCandidateDTO for teaching-resolution
   const resolvedCandidates: ResolvedCandidateDTO[] = [
-    ...arbitration.truthSet,
-    ...arbitration.acceptableSet,
+    ...result.truthSet,
+    ...result.acceptableSet,
   ].map((ep) => ({
     bidName: ep.proposal.meaningId,
     call: ep.call,
@@ -66,7 +63,7 @@ export function buildBidResult(
     handSummary: formatHandSummary(context.evaluation),
     evaluationTrace: {
       conventionId: moduleId,
-      candidateCount: arbitration.truthSet.length + arbitration.acceptableSet.length,
+      candidateCount: result.truthSet.length + result.acceptableSet.length,
       strategyChainPath: [],
       ...(posteriorSummary ? {
         posteriorSampleCount: posteriorSummary.sampleCount,
@@ -76,5 +73,3 @@ export function buildBidResult(
     resolvedCandidates,
   };
 }
-
-

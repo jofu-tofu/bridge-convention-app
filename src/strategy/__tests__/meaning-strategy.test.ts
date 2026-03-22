@@ -7,11 +7,9 @@ import type { BiddingContext } from "../../core/contracts";
 import { meaningToStrategy, runMeaningPipeline } from "../bidding/meaning-strategy";
 import { protocolSpecToStrategy } from "../bidding/protocol-adapter";
 import { makeSurface, makeRanking } from "../../test-support/convention-factories";
-import {
-  ntBundle,
-  bergenBundle,
-  specFromBundle,
-} from "../../conventions/definitions/system-registry";
+import { specFromBundle } from "../../conventions/definitions/system-registry";
+import { ntBundle } from "../../conventions/definitions/nt-bundle/config";
+import { bergenBundle } from "../../conventions/definitions/bergen-bundle/config";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 // ─── Helpers ──────────────────────────────────────────────────────

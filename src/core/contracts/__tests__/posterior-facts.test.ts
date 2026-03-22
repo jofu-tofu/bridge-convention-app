@@ -1,10 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
-  SHARED_FACTS,
-  POSTERIOR_DERIVED_FACTS,
   createFactCatalog,
 } from "../fact-catalog";
-import { FactLayer } from '../fact-catalog';
+import { SHARED_FACTS, POSTERIOR_DERIVED_FACTS } from "../shared-facts";
+import { FactLayer } from '../fact-layer';
 import type { FactCatalog, FactCatalogExtension } from "../fact-catalog";
 import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../fact-catalog";
 import { SHARED_POSTERIOR_FACT_IDS } from "../posterior";

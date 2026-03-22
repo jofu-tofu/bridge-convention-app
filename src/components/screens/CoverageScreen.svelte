@@ -1,19 +1,22 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listSystemBundles, getSystemBundle } from "../../conventions/definitions/system-registry";
+  import { listBundleInputs, resolveBundle, getBundleInput } from "../../conventions/definitions/system-registry";
+  import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
   import { enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions/core";
   import type { RuleCoverageManifest } from "../../conventions/core";
   import type { ConventionBundle } from "../../conventions/core";
 
   const appStore = getAppStore();
 
-  const bundles: readonly ConventionBundle[] = listSystemBundles();
+  const bundles: readonly ConventionBundle[] = listBundleInputs().map(i => resolveBundle(i, SAYC_SYSTEM_CONFIG));
 
   let selectedBundleId = $state<string | null>(appStore.coverageBundle);
 
   let manifest = $derived.by<RuleCoverageManifest | null>(() => {
     if (!selectedBundleId) return null;
-    const bundle = getSystemBundle(selectedBundleId);
+    const input = getBundleInput(selectedBundleId);
+    if (!input) return null;
+    const bundle = resolveBundle(input, SAYC_SYSTEM_CONFIG);
     if (!bundle?.modules) return null;
     return generateRuleCoverageManifest(bundle.id, bundle.modules);
   });

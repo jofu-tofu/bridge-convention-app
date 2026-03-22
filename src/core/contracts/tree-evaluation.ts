@@ -68,10 +68,6 @@ export function isDtoTeachingAcceptable(c: ResolvedCandidateDTO): boolean {
 // Re-export teaching/grading types that were moved to teaching-grading.ts.
 // Kept here so existing consumers importing from tree-evaluation continue to work.
 export type { AlternativeGroup, SurfaceGroup, SurfaceGroupRelationship } from "./teaching-grading";
-/** @deprecated Use SurfaceGroup instead. */
-export type IntentFamily = import("./teaching-grading").SurfaceGroup;
-/** @deprecated Use SurfaceGroupRelationship instead. */
-export type IntentRelationship = import("./teaching-grading").SurfaceGroupRelationship;
 
 /** Structured trace of how the convention pipeline evaluated a bid.
  *  Always-on (not DEV-gated). Plain DTO — no convention-core imports. */

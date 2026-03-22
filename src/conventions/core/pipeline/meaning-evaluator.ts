@@ -7,7 +7,6 @@ import type {
   MeaningClause,
   EvaluationEvidence,
   RankingMetadata,
-  RecommendationBand,
 } from "../../../core/contracts/meaning";
 import type {
   EvaluatedFacts,
@@ -15,10 +14,8 @@ import type {
   FactCatalogExtension,
 } from "../../../core/contracts/fact-catalog";
 import { getFactValue } from "../../../core/contracts/fact-catalog";
-import type { DecisionSurface, PriorityClass } from "../../../core/contracts/agreement-module";
 import { resolveAlert, derivePublicConstraints } from "../../../core/contracts/alert";
 import { resolveFactId, resolveClause } from "./binding-resolver";
-import { priorityClassToBand } from "./priority-mapping";
 import type { ConstraintDimension } from "../../../core/contracts/meaning";
 import { deriveSpecificity } from "./specificity-deriver";
 import { fillClauseDefaults } from "./clause-derivation";
@@ -178,116 +175,22 @@ export function evaluateBidMeaning(
   };
 }
 
-/** Input type for evaluateAllBidMeanings: either BidMeaning[] or DecisionSurface[]. */
-type EvaluableSurface = BidMeaning | DecisionSurface;
-
 /**
- * Type guard: distinguishes BidMeaning from DecisionSurface.
- * BidMeaning has `meaningId`; DecisionSurface has `surfaceId` + `decisionProgram`.
- */
-function isMeaningSurface(
-  surface: EvaluableSurface,
-): surface is BidMeaning {
-  return "meaningId" in surface && !("decisionProgram" in surface);
-}
-
-/**
- * Evaluate a DecisionSurface against facts.
- *
- * When the surface has `inlineClauses` and `decisionProgram === "clause-evaluator"`,
- * evaluates them against facts using the same clause evaluation logic as BidMeaning.
- * For other decision programs or when no inlineClauses are present, produces
- * empty clauses (all-pass) as a fallback.
- */
-function evaluateDecisionSurface(
-  surface: DecisionSurface,
-  facts: EvaluatedFacts,
-): MeaningProposal {
-  const ranking: RankingMetadata = {
-    recommendationBand: priorityClassToBand(surface.defaultPriorityClass),
-    specificity: surface.specificity ?? 1,
-    modulePrecedence: surface.modulePrecedence,
-    declarationOrder: surface.declarationOrder ?? 0,
-  };
-
-  const bindings = surface.surfaceBindings
-    ? Object.fromEntries(
-        Object.entries(surface.surfaceBindings).filter(
-          (e): e is [string, string] => typeof e[1] === "string",
-        ),
-      )
-    : undefined;
-
-  // Evaluate inline clauses when available (clause-evaluator program)
-  let clauses: MeaningClause[] = [];
-  if (surface.decisionProgram === "clause-evaluator" && surface.inlineClauses && surface.inlineClauses.length > 0) {
-    clauses = surface.inlineClauses.map((ic) => {
-      // Convert FactConstraint to BidMeaningClause for reuse of evaluateClause
-      const asSurfaceClause: BidMeaningClause = {
-        clauseId: ic.factId,
-        factId: ic.factId,
-        operator: ic.operator,
-        value: ic.value,
-        description: ic.factId,
-      };
-      return evaluateClause(asSurfaceClause, facts, bindings);
-    });
-  }
-
-  const evidence: EvaluationEvidence = {
-    factDependencies: clauses.map((c) => c.factId),
-    evaluatedConditions: clauses.map((c) => ({
-      conditionId: c.factId,
-      satisfied: c.satisfied,
-      description: c.description,
-    })),
-    provenance: {
-      moduleId: surface.moduleId,
-      nodeName: surface.surfaceId,
-      origin: "meaning-pipeline" as const,
-    },
-  };
-
-  return {
-    meaningId: surface.surfaceId,
-    semanticClassId: surface.defaultSemanticClassId,
-    moduleId: surface.moduleId,
-    clauses,
-    ranking,
-    evidence,
-    sourceIntent: surface.sourceIntent ?? { type: "decision-surface-ir", params: {} },
-    teachingLabel: surface.teachingLabel,
-  };
-}
-
-/**
- * Evaluate all surfaces against facts. Accepts both BidMeaning[] and
- * DecisionSurface[] (dual-path). Detects which type is passed by inspecting
- * the first element: if all elements are the same type, uses the appropriate
- * evaluation path.
+ * Evaluate all BidMeaning surfaces against facts.
  */
 export function evaluateAllBidMeanings(
-  surfaces: readonly BidMeaning[] | readonly DecisionSurface[],
+  surfaces: readonly BidMeaning[],
   facts: EvaluatedFacts,
-  profileMapping?: Readonly<Record<PriorityClass, RecommendationBand>>,
+  _profileMapping?: undefined,
   factExtensions?: readonly FactCatalogExtension[],
   inheritedDimsLookup?: ReadonlyMap<string, readonly ConstraintDimension[]>,
 ): readonly MeaningProposal[] {
   if (surfaces.length === 0) return [];
 
-  const first = surfaces[0]!;
-  if (isMeaningSurface(first)) {
-    // BidMeaning path: recommendationBand comes from authored ranking directly
-    return (surfaces as readonly BidMeaning[]).map((surface) =>
-      evaluateBidMeaning(
-        surface, facts, factExtensions,
-        inheritedDimsLookup?.get(surface.meaningId),
-      ),
-    );
-  }
-
-  // DecisionSurface path
-  return (surfaces as readonly DecisionSurface[]).map((surface) =>
-    evaluateDecisionSurface(surface, facts),
+  return surfaces.map((surface) =>
+    evaluateBidMeaning(
+      surface, facts, factExtensions,
+      inheritedDimsLookup?.get(surface.meaningId),
+    ),
   );
 }

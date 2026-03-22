@@ -1,4 +1,4 @@
-import { FactLayer } from "../../../core/contracts/fact-catalog";
+import { FactLayer } from "../../../core/contracts/fact-layer";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
   FactCatalogExtension,

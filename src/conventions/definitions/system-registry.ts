@@ -11,7 +11,6 @@
 import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
-import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import type { ConventionModule } from "../core/convention-module";
 import type { AlternativeGroup, SurfaceGroup } from "../../core/contracts/teaching-grading";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
@@ -400,31 +399,3 @@ export function specFromBundle(
   };
 }
 
-// ── Deprecated shims (backwards compat) ──────────────────────────────
-
-/** @deprecated Use getBundleInput() + resolveBundle() instead. */
-export function getSystemBundle(id: string): ConventionBundle | undefined {
-  const input = getBundleInput(id);
-  return input ? resolveBundle(input, SAYC_SYSTEM_CONFIG) : undefined;
-}
-
-/** @deprecated Use listBundleInputs() + resolveBundle() instead. */
-export function listSystemBundles(): readonly ConventionBundle[] {
-  return ALL_INPUTS.map(input => resolveBundle(input, SAYC_SYSTEM_CONFIG));
-}
-
-// ── Pre-resolved bundle exports (backwards compat for existing consumers) ────
-// These resolve with SAYC defaults. Prefer getBundleInput() + resolveBundle() for new code.
-
-/** @deprecated Use getBundleInput("nt-bundle") + resolveBundle() instead. */
-export const ntBundle: ConventionBundle = resolveBundle(ntBundleInput, SAYC_SYSTEM_CONFIG);
-/** @deprecated Use getBundleInput("nt-stayman") + resolveBundle() instead. */
-export const ntStaymanBundle: ConventionBundle = resolveBundle(ntStaymanInput, SAYC_SYSTEM_CONFIG);
-/** @deprecated Use getBundleInput("nt-transfers") + resolveBundle() instead. */
-export const ntTransfersBundle: ConventionBundle = resolveBundle(ntTransfersInput, SAYC_SYSTEM_CONFIG);
-/** @deprecated Use getBundleInput("bergen-bundle") + resolveBundle() instead. */
-export const bergenBundle: ConventionBundle = resolveBundle(bergenInput, SAYC_SYSTEM_CONFIG);
-/** @deprecated Use getBundleInput("dont-bundle") + resolveBundle() instead. */
-export const dontBundle: ConventionBundle = resolveBundle(dontInput, SAYC_SYSTEM_CONFIG);
-/** @deprecated Use getBundleInput("weak-twos-bundle") + resolveBundle() instead. */
-export const weakTwoBundle: ConventionBundle = resolveBundle(weakTwoInput, SAYC_SYSTEM_CONFIG);

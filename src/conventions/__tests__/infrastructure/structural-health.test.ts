@@ -11,7 +11,8 @@ import { describe, it, expect } from "vitest";
 // Side-effect import: registers all bundles + conventions
 import "../../../conventions";
 
-import { listSystemBundles } from "../../../conventions/definitions/system-registry";
+import { listBundleInputs, resolveBundle } from "../../../conventions/definitions/system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { lintModule } from "../../../cli/verify/lint";
 import { analyzeBundle } from "../../../cli/verify/interfere";
 import type { ConventionBundle } from "../../core";
@@ -20,9 +21,11 @@ import type { LintDiagnostic } from "../../../cli/verify/types";
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function getNonInternalBundles(): ConventionBundle[] {
-  return listSystemBundles().filter(
-    (b) => !b.internal && b.modules && b.modules.length > 0,
-  ) as ConventionBundle[];
+  return listBundleInputs()
+    .map(i => resolveBundle(i, SAYC_SYSTEM_CONFIG))
+    .filter(
+      (b) => !b.internal && b.modules && b.modules.length > 0,
+    ) as ConventionBundle[];
 }
 
 // ── Per-bundle lint ──────────────────────────────────────────────────

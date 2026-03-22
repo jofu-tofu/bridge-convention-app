@@ -2,12 +2,8 @@ import type { Hand, HandEvaluation } from "../../engine/types";
 import type { PublicConstraint } from "./agreement-module";
 import type { PosteriorFactProvider, PosteriorFactRequest } from "./posterior";
 import type { ConstraintDimension } from "./meaning";
+import type { FactLayer } from "./fact-layer";
 
-// Re-export extracted modules for backward compatibility
-export { num, bool, fv } from "./fact-helpers";
-export type { HandFactResolverFn } from "./fact-helpers";
-export { PRIMITIVE_FACTS, BRIDGE_DERIVED_FACTS, POSTERIOR_DERIVED_FACTS, SHARED_FACTS } from "./shared-facts";
-export { FactLayer } from "./fact-layer";
 
 /** World scope for fact evaluation. */
 export type EvaluationWorld = "public" | "acting-hand" | "full-deal";

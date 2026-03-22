@@ -10,9 +10,7 @@
  * and conventions own the "what to do about it."
  */
 
-import {
-  FactLayer,
-} from "../../../core/contracts/fact-catalog";
+import { FactLayer } from "../../../core/contracts/fact-layer";
 import type {
   FactCatalogExtension,
   FactDefinition,

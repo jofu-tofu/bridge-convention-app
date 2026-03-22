@@ -12,13 +12,6 @@ import type { PublicConstraint } from "../../../core/contracts/agreement-module"
 import { createSharedFactCatalog, SHARED_EVALUATORS } from "./shared-fact-catalog";
 import { topologicalSort } from "./fact-utils";
 
-// Re-export FactEvaluatorFn from contracts (canonical location)
-export type { FactEvaluatorFn } from "../../../core/contracts/fact-catalog";
-export type { HandFactResolverFn } from "../../../core/contracts/fact-catalog";
-
-// Re-export for backward compatibility — consumers that imported these from fact-evaluator
-export { createSharedFactCatalog } from "./shared-fact-catalog";
-export { createHandFactResolver } from "./hand-fact-resolver";
 
 /**
  * Context for relational fact evaluation. Relational facts derive from

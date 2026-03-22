@@ -148,7 +148,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 - **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `BidMeaning` describes a bidding meaning with clauses evaluated against facts. `semanticClassId` and `teachingLabel` are required on every surface. The pipeline's output types are `PipelineCarrier` (accumulated state through pipeline stages) and `PipelineResult` (the public result containing winning meaning, truth set, and provenance).
 - **Alert system.** `resolveAlert()` derives alertability from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). `BidMeaning` does not carry `prioritySpec` or `priorityClass`; the pipeline derives alertability in `resolveAlert()`. Public constraints are auto-derived from primitive/bridge-observable clauses via `derivePublicConstraints()`. `annotation-producer.ts` converts `publicConstraints` to `HandInference` for Layer 1 belief updates. Inference model: only hard constraints from chosen bid's clauses + entailed denials from within-module exhaustive closure policy. No cross-module soft inference.
 - **`TeachingResolution`** (`src/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), CorrectNotPreferred (truth set but not recommended), Acceptable (preferred/alternative tier candidates), NearMiss (same family, fails constraint), Incorrect. `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)` extracts acceptable alternatives and near-miss candidates. `gradeBid()` grades user input with 5-grade cascade.
-- **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects pipeline results into teaching-optimized views for "why not X?" UI. `projectTeaching(result: PipelineResult, options?)` is the primary overload; a legacy `(arbitration, provenance, options?)` overload exists for backwards compatibility. Teaching relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
+- **`TeachingProjection`** (`src/teaching/teaching-projection-builder.ts`) projects pipeline results into teaching-optimized views for "why not X?" UI. `projectTeaching(result: PipelineResult, options?)` is the single entry point; internally converts to `ArbitrationResult`/`DecisionProvenance` for sub-builders. Teaching relations and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
 - **Parse-tree feedback.** After a bid, `buildParseTree()` (`src/teaching/parse-tree-builder.ts`) shows the full decision chain — which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Data flows: `PipelineResult` → `ParseTreeView` → `ParseTreePanel.svelte` (integrated into Incorrect and NearMiss feedback panels). Verdict per module: `selected` / `applicable` / `eliminated`.
 - **Off-convention drills.** Generate hands where the convention doesn't apply, training recognition ("does this convention apply?") not just execution. `ConventionBundle.offConventionConstraints` defines the anti-constraints (e.g., South 0–7 HCP for NT). `DrillTuning.includeOffConvention` + `offConventionRate` control frequency (default 30%). `DrillBundle.isOffConvention` flag tells the UI/teaching layer the deal is off-convention.
 - **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
@@ -156,14 +156,13 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 ## Roadmap
 
-**Completed:** See `docs/roadmap-history.md`. Phases 4-10 plus Continuation Composition Phases 4-6 are complete. All 4 bundles (NT, Bergen, Weak Twos, DONT) on unified ConventionModule with per-step kernel threading. Old tree/protocol/overlay pipeline and FSM infrastructure fully removed. Dead CandidateTransform system removed. Multi-system backend wired (SAYC, 2/1, Acol base profiles). CLI `--system` flag live.
+**Completed:** See `docs/roadmap-history.md`. Phases 4-10 plus Continuation Composition Phases 4-6 are complete. Posterior Engine Consumer Migration (Phase 4B) complete — deprecated types removed. All 4 bundles (NT, Bergen, Weak Twos, DONT) on unified ConventionModule with per-step kernel threading. Old tree/protocol/overlay pipeline and FSM infrastructure fully removed. Dead CandidateTransform system removed. Multi-system backend wired (SAYC, 2/1, Acol base profiles). CLI `--system` flag live.
 
 **Upcoming (all blocked on design work or specs):**
 
-1. **Posterior Engine Consumer Migration (Phase 4B)** — boundary Phases 0-5 done; consumers not yet migrated. See `docs/posterior-implementation-plan.md`. Unblocks difficulty config / inference spectrum.
-2. **User Learning Enhancements** — learning screen needs rebuild + design spec.
-3. **Difficulty Configuration** — blocked on posterior consumer migration.
-4. **Convention Migration** — Lebensohl (blocked on relay encoding spec), Negative Doubles (blocked on host-attachment exercise), SAYC (full base system).
+1. **User Learning Enhancements** — learning screen needs rebuild + design spec.
+2. **Difficulty Configuration** — blocked on design spec (posterior consumer migration complete).
+3. **Convention Migration** — Lebensohl (blocked on relay encoding spec), Negative Doubles (blocked on host-attachment exercise), SAYC (full base system).
 
 ## Architecture Spec & Alignment
 
@@ -179,11 +178,10 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 | Open Question | Status | Blocks |
 |---|---|---|
-| Posterior consumer migration (Phase 4B) | Boundary complete; consumers still on old `PosteriorEngine` → `SeatPosterior` path | Inference spectrum / difficulty config |
+| Posterior consumer migration (Phase 4B) | Complete — deprecated `PosteriorEngine`, `SeatPosterior`, `LikelihoodModel` removed | Inference spectrum / difficulty config |
 | Evidence group correlation model | Design complete; reserved as Phase 7 (soft evidence) | Posterior combiner accuracy |
 | Host-attachment activation | Spec designed, vocabulary resolved (`conventions/definitions/capability-vocabulary.ts`), not yet exercised | Negative Doubles, Fourth Suit Forcing |
 | DealSpec wiring | Types + test code exist; not wired to deal generation | Deal constraints |
-| DecisionSurface migration | Adapter exists (test-only); pipeline still consumes BidMeaning[] | Pipeline modernization |
 | Multi-system UI | Backend wired; UI system selector not yet connected | User-facing system choice |
 
 ## Test-Driven Development

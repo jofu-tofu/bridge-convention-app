@@ -6,7 +6,8 @@
 import { describe, it, expect } from "vitest";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { evaluateFacts, createSharedFactCatalog } from "../../core/pipeline/fact-evaluator";
+import { evaluateFacts } from "../../core/pipeline/fact-evaluator";
+import { createSharedFactCatalog } from "../../core/pipeline/shared-fact-catalog";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { createStaymanFacts } from "../../definitions/modules/stayman";
 import { createTransferFacts } from "../../definitions/modules/jacoby-transfers";

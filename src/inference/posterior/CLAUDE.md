@@ -6,14 +6,13 @@ Posterior inference engine — sampling, factor compilation, and probabilistic h
 
 | File | Role |
 |------|------|
-| `posterior-engine.ts` | **Deprecated.** `createPosteriorEngine()` — old interface, still used by consumers during migration. |
-| `posterior-compiler.ts` | **Deprecated.** `compilePublicHandSpace()` — old compilation path. Used internally by `ts-posterior-backend.ts`. |
+| `posterior-compiler.ts` | `compilePublicHandSpace()` — compilation path used internally by `ts-posterior-backend.ts`. |
 | `factor-compiler.ts` | `compileFactorGraph()`, `validateFactorGraph()` — new compilation: `PublicSnapshot` → `FactorGraph`. Convention-erased. |
 | `ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation. Wraps existing sampler, answers `PosteriorQuery` queries. |
 | `query-port.ts` | `createQueryPort()` — creates `PosteriorQueryPort` from backend + state. Consumer-facing query interface. |
-| `posterior-sampler.ts` | `sampleDeals()` — Monte Carlo rejection sampling. Used by both old engine and new backend. |
-| `posterior-facts.ts` | `POSTERIOR_FACT_HANDLERS` — 5 posterior fact handlers (used by old engine path). |
-| `posterior-catalog.ts` | `createPosteriorFactEvaluators()`, `createPosteriorFactProvider()` — bridges posterior to fact catalog. |
+| `posterior-sampler.ts` | `sampleDeals()` — Monte Carlo rejection sampling. Used by backend. |
+| `posterior-facts.ts` | `POSTERIOR_FACT_HANDLERS` — 5 posterior fact handlers. |
+| `posterior-catalog.ts` | `createPosteriorFactEvaluators()`, `createPosteriorFactProviderFromBackend()` — bridges posterior to fact catalog. |
 | `latent-branch-resolver.ts` | `resolveLatentBranches()` — computes marginal probabilities for latent branches. |
 
 ## New Boundary (Phase 4)
@@ -28,11 +27,11 @@ Consumers call `PosteriorQueryPort` methods (e.g., `marginalHcp()`, `fitProbabil
 
 ## Migration Status
 
-The old `PosteriorEngine` → `SeatPosterior` path still works and is used by `meaning-strategy.ts` and `config-factory.ts`. Consumer migration (Phase 4B) will replace these with `createTsBackend()` → `createQueryPort()`.
+Phase 4B complete — deprecated `PosteriorEngine`, `SeatPosterior`, `LikelihoodModel`, and `createPosteriorFactProvider(SeatPosterior)` have been removed. All consumers use `createTsBackend()` → `createQueryPort()` or `createPosteriorFactProviderFromBackend()`.
 
 ## Gotchas
 
-- `ts-posterior-backend.ts` uses the OLD `compilePublicHandSpace()` internally (the sampler still expects `PublicHandSpace[]`)
+- `ts-posterior-backend.ts` uses `compilePublicHandSpace()` internally (the sampler expects `PublicHandSpace[]`)
 - `branch-probability` queries return 0 (not yet wired to latent branch resolution)
 - `FactorGraph` is serializable (designed for future WASM boundary)
 - Boundary invariant tests in `boundary-invariants.test.ts` enforce: no convention imports, no publicBeliefs on snapshot, JSON round-trip, compilation trace integrity
@@ -47,4 +46,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `ts-posterior-backend.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-15 | version=1 | tree-sig=dirs:1,files:10,exts:ts:9,md:1 -->
+<!-- context-layer: generated=2026-03-22 | version=2 | tree-sig=dirs:1,files:9,exts:ts:8,md:1 -->

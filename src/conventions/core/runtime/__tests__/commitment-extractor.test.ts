@@ -1,34 +1,34 @@
 import { describe, it, expect } from "vitest";
 import {
-  formatCallString,
   deriveEntailedDenials,
   extractCommitments,
 } from "../commitment-extractor";
+import { callKey } from "../../../../engine/call-helpers";
 import type { Auction, Call } from "../../../../engine/types";
 import { Seat } from "../../../../engine/types";
 import type { BidMeaning } from "../../../../core/contracts/meaning";
 import type { ChoiceClosurePolicy } from "../../../../core/contracts/agreement-module";
 
-describe("formatCallString", () => {
+describe("callKey", () => {
   it("formats contract bids as level+strain", () => {
     expect(
-      formatCallString({ type: "bid", level: 1, strain: "NT" as never }),
+      callKey({ type: "bid", level: 1, strain: "NT" as never }),
     ).toBe("1NT");
     expect(
-      formatCallString({ type: "bid", level: 2, strain: "C" as never }),
+      callKey({ type: "bid", level: 2, strain: "C" as never }),
     ).toBe("2C");
   });
 
   it("formats pass as P", () => {
-    expect(formatCallString({ type: "pass" })).toBe("P");
+    expect(callKey({ type: "pass" })).toBe("P");
   });
 
   it("formats double as X", () => {
-    expect(formatCallString({ type: "double" })).toBe("X");
+    expect(callKey({ type: "double" })).toBe("X");
   });
 
   it("formats redouble as XX", () => {
-    expect(formatCallString({ type: "redouble" })).toBe("XX");
+    expect(callKey({ type: "redouble" })).toBe("XX");
   });
 });
 

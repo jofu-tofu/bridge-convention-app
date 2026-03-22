@@ -4,9 +4,6 @@ import {
   listBundleInputs,
   resolveBundle,
   specFromBundle,
-  // Deprecated shims (kept for backwards compat)
-  getSystemBundle,
-  listSystemBundles,
 } from "../system-registry";
 import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { moduleSurfaces } from "../../core/convention-module";
@@ -174,27 +171,3 @@ describe("NT dealConstraintFactory", () => {
   });
 });
 
-// ── Deprecated shims (backwards compat) ──────────────────────────
-
-describe("deprecated getSystemBundle", () => {
-  it("still resolves nt-bundle (with SAYC defaults)", () => {
-    const bundle = getSystemBundle("nt-bundle");
-    expect(bundle).toBeDefined();
-    expect(bundle!.id).toBe("nt-bundle");
-    expect(bundle!.modules.length).toBeGreaterThan(0);
-  });
-
-  it("returns undefined for unknown ID", () => {
-    expect(getSystemBundle("nonexistent")).toBeUndefined();
-  });
-});
-
-describe("deprecated listSystemBundles", () => {
-  it("returns resolved bundles with modules", () => {
-    const bundles = listSystemBundles();
-    expect(bundles.length).toBe(6);
-    for (const b of bundles) {
-      expect(b.modules.length).toBeGreaterThan(0);
-    }
-  });
-});

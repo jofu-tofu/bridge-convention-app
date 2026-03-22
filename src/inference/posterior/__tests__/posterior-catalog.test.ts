@@ -1,13 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   createPosteriorFactEvaluators,
-  createPosteriorFactProvider,
   createPosteriorFactProviderFromBackend,
 } from "../posterior-catalog";
-import type { SeatPosterior, PosteriorFactRequest, PosteriorFactValue } from "../../../core/contracts/posterior";
+import type { PosteriorFactValue } from "../../../core/contracts/posterior";
 import type { PosteriorFactProvider as PosteriorFactProviderType } from "../../../core/contracts/posterior";
 import { SHARED_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
-import type { PublicHandSpace, LikelihoodModel } from "../../../core/contracts/posterior";
 import type { PosteriorState, WeightedParticle } from "../../../core/contracts/posterior-backend";
 import type { ConditioningContext } from "../../../core/contracts/posterior-query";
 import type { Hand } from "../../../engine/types";
@@ -17,21 +15,6 @@ function makeMockProvider(values: Record<string, PosteriorFactValue | null>): Po
   return {
     queryFact(request) { return values[request.factId] ?? null; },
     getBeliefView() { return null; },
-  };
-}
-
-function makeMockSeatPosterior(probabilities: Record<string, number>): SeatPosterior {
-  const handSpace: PublicHandSpace = { seatId: "N", constraints: [] };
-  const likelihoodModel: LikelihoodModel = { factors: [], combinationRule: "independent" };
-  return {
-    seatId: "N",
-    handSpace,
-    likelihoodModel,
-    effectiveSampleSize: 200,
-    probability(query: PosteriorFactRequest): number {
-      return probabilities[query.factId] ?? 0;
-    },
-    distribution() { return []; },
   };
 }
 
@@ -93,66 +76,6 @@ describe("createPosteriorFactEvaluators", () => {
     expect(evaluators.size).toBe(2);
     expect(evaluators.get("bridge.combinedHcpInRangeLikely")!.conditionedOn).toEqual(["25", "40"]);
     expect(evaluators.get("module.stayman.openerStillBalancedLikely")!.conditionedOn).toBeUndefined();
-  });
-});
-
-describe("createPosteriorFactProvider", () => {
-  it("queryFact delegates to SeatPosterior.probability and returns PosteriorFactValue", () => {
-    const posterior = makeMockSeatPosterior({
-      "bridge.partnerHas4HeartsLikely": 0.65,
-    });
-    const provider = createPosteriorFactProvider(posterior);
-    const result = provider.queryFact({
-      factId: "bridge.partnerHas4HeartsLikely",
-      seatId: "N",
-      conditionedOn: ["H"],
-    });
-    expect(result).not.toBeNull();
-    expect(result!.factId).toBe("bridge.partnerHas4HeartsLikely");
-    expect(result!.seatId).toBe("N");
-    expect(result!.expectedValue).toBe(0.65);
-  });
-
-  it("confidence reflects effectiveSampleSize ratio, not hardcoded 1", () => {
-    const handSpace: PublicHandSpace = { seatId: "N", constraints: [] };
-    const posterior: SeatPosterior = {
-      seatId: "N",
-      handSpace,
-      likelihoodModel: { factors: [], combinationRule: "independent" },
-      effectiveSampleSize: 80,
-      probability() { return 0.7; },
-      distribution() { return []; },
-    };
-    const provider = createPosteriorFactProvider(posterior);
-    const result = provider.queryFact({
-      factId: "bridge.partnerHas4HeartsLikely",
-      seatId: "N",
-    });
-    expect(result).not.toBeNull();
-    // confidence should derive from effectiveSampleSize, not be hardcoded 1
-    // With effectiveSampleSize = 80, confidence should be < 1
-    expect(result!.confidence).toBeLessThan(1);
-    expect(result!.confidence).toBeGreaterThan(0);
-  });
-
-  it("confidence is 1 when effectiveSampleSize equals default sample count", () => {
-    const posterior = makeMockSeatPosterior({
-      "bridge.partnerHas4HeartsLikely": 0.65,
-    });
-    // effectiveSampleSize = 200 (default), so confidence = 200/200 = 1
-    const provider = createPosteriorFactProvider(posterior);
-    const result = provider.queryFact({
-      factId: "bridge.partnerHas4HeartsLikely",
-      seatId: "N",
-    });
-    expect(result).not.toBeNull();
-    expect(result!.confidence).toBe(1);
-  });
-
-  it("getBeliefView returns null (populated separately)", () => {
-    const posterior = makeMockSeatPosterior({});
-    const provider = createPosteriorFactProvider(posterior);
-    expect(provider.getBeliefView("N", "S")).toBeNull();
   });
 });
 

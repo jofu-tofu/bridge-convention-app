@@ -17,14 +17,13 @@ import {
   evaluateAllBidMeanings,
   arbitrateMeanings,
   zipProposalsWithSurfaces,
-  pipelineResultToArbitration,
-  pipelineResultToProvenance,
 } from "../../conventions/core";
 import { getLegalCalls } from "../../engine/auction";
 import { partnerSeat } from "../../engine/constants";
 import { isVulnerable } from "../../engine/scoring";
-import { Vulnerability } from "../../engine/types";
-import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
+
+import { buildBidResult } from "./bid-result-builder";
+import { projectTeaching } from "../../teaching/teaching-projection-builder";
 
 // ─── Core Pipeline ─────────────────────────────────────────────
 //
@@ -64,7 +63,7 @@ export interface PipelineOutput {
  */
 export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
   // Step 1: Evaluate facts against the hand
-  const vulFlag = input.context.vulnerability != null
+  const vulFlag = input.context.vulnerability !== null
     ? isVulnerable(input.context.seat, input.context.vulnerability)
     : undefined;
   const facts = evaluateFacts(
@@ -139,9 +138,7 @@ export function meaningToStrategy(
         catalog,
       });
 
-      const legacyArbitration = pipelineResultToArbitration(result);
-      const legacyProvenance = pipelineResultToProvenance(result);
-      const teachingProjection = buildTeachingProjection(legacyArbitration, legacyProvenance);
+      const teachingProjection = projectTeaching(result);
 
       lastEvaluation = {
         practicalRecommendation: null,
@@ -157,8 +154,7 @@ export function meaningToStrategy(
       };
 
       if (!result.selected) return null;
-      const selected = legacyArbitration.selected!;
-      return buildBidResult(selected, context, moduleId, legacyArbitration);
+      return buildBidResult(result.selected, context, moduleId, result);
     },
   };
 }

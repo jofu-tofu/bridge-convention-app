@@ -3,15 +3,13 @@ import { BidSuit, Seat } from "../../engine/types";
 import type { BiddingContext } from "../../core/contracts/bidding";
 import type { HandEvaluation } from "../../engine/types";
 import {
-  makeArbitration,
-  makeEncoded,
+  makeCarrier,
+  makePipelineResult,
   makeProposal,
   makeCall,
   makeClause,
-  makeEligibility,
 } from "../../test-support/convention-factories";
-import { buildBidResult, buildTeachingProjection } from "../bidding/bid-result-builder";
-import { makeProvenance } from "../../test-support/convention-factories";
+import { buildBidResult } from "../bidding/bid-result-builder";
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
@@ -29,7 +27,7 @@ function makeEvaluation(overrides: Partial<HandEvaluation> = {}): HandEvaluation
 function makeBiddingContext(overrides: Partial<BiddingContext> = {}): BiddingContext {
   return {
     hand: { cards: [] },
-    auction: { calls: [], dealer: Seat.North },
+    auction: { entries: [], isComplete: false },
     seat: Seat.South,
     evaluation: makeEvaluation(),
     opponentConventionIds: [],
@@ -42,30 +40,30 @@ function makeBiddingContext(overrides: Partial<BiddingContext> = {}): BiddingCon
 describe("buildBidResult", () => {
   test("maps selected call to BidResult.call", () => {
     const call = makeCall(2, BidSuit.Hearts);
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       call,
       proposal: makeProposal({ meaningId: "transfer:hearts" }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.call).toEqual(call);
+    expect(bidResult.call).toEqual(call);
   });
 
   test("maps meaningId to ruleName", () => {
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({ meaningId: "stayman:ask-major" }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.ruleName).toBe("stayman:ask-major");
+    expect(bidResult.ruleName).toBe("stayman:ask-major");
   });
 
   test("maps provenance nodeName to explanation", () => {
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         evidence: {
           factDependencies: [],
@@ -74,79 +72,79 @@ describe("buildBidResult", () => {
         },
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.explanation).toBe("Stayman convention bid");
+    expect(bidResult.explanation).toBe("Stayman convention bid");
   });
 
   test("uses teachingLabel for meaning when present", () => {
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         meaningId: "stayman:ask-major",
         teachingLabel: "Stayman 2C",
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.meaning).toBe("Stayman 2C");
+    expect(bidResult.meaning).toBe("Stayman 2C");
   });
 
   test("falls back to meaningId for meaning when teachingLabel is absent", () => {
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         meaningId: "natural:pass",
         teachingLabel: undefined,
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.meaning).toBe("natural:pass");
+    expect(bidResult.meaning).toBe("natural:pass");
   });
 
   // ─── Alert ───────────────────────────────────────────────────
 
   test("includes alert with publicConstraints when bid is alertable", () => {
     const publicConstraints = [
-      { factId: "hand.hcp", operator: "range" as const, min: 8, max: 9 },
+      { factId: "hand.hcp", operator: "range" as const, value: { min: 8, max: 9 } },
     ];
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         isAlertable: true,
         publicConstraints,
         teachingLabel: "Stayman 2C",
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.alert).toEqual({
+    expect(bidResult.alert).toEqual({
       publicConstraints,
       teachingLabel: "Stayman 2C",
     });
   });
 
   test("alert is null when bid is not alertable", () => {
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         isAlertable: false,
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.alert).toBeNull();
+    expect(bidResult.alert).toBeNull();
   });
 
   test("alert uses meaningId as teachingLabel fallback", () => {
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         meaningId: "weak:two-hearts",
         teachingLabel: undefined,
@@ -154,11 +152,11 @@ describe("buildBidResult", () => {
         publicConstraints: [],
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.alert).toEqual({
+    expect(bidResult.alert).toEqual({
       publicConstraints: [],
       teachingLabel: "weak:two-hearts",
     });
@@ -169,94 +167,94 @@ describe("buildBidResult", () => {
   test("includes hand summary from evaluation", () => {
     const evaluation = makeEvaluation({ hcp: 16, shape: [4, 3, 3, 3] });
     const context = makeBiddingContext({ evaluation });
-    const selected = makeEncoded();
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const selected = makeCarrier();
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, context, "nt", arbitration);
+    const bidResult = buildBidResult(selected, context, "nt", result);
 
-    expect(result.handSummary).toContain("16 HCP");
-    expect(result.handSummary).toBeDefined();
+    expect(bidResult.handSummary).toContain("16 HCP");
+    expect(bidResult.handSummary).toBeDefined();
   });
 
   // ─── Evaluation trace ─────────────────────────────────────────
 
   test("evaluationTrace includes candidateCount from truthSet + acceptableSet", () => {
-    const ep1 = makeEncoded({ proposal: makeProposal({ meaningId: "a" }) });
-    const ep2 = makeEncoded({ proposal: makeProposal({ meaningId: "b" }) });
-    const ep3 = makeEncoded({ proposal: makeProposal({ meaningId: "c" }) });
-    const arbitration = makeArbitration({
+    const ep1 = makeCarrier({ proposal: makeProposal({ meaningId: "a" }) });
+    const ep2 = makeCarrier({ proposal: makeProposal({ meaningId: "b" }) });
+    const ep3 = makeCarrier({ proposal: makeProposal({ meaningId: "c" }) });
+    const result = makePipelineResult({
       selected: ep1,
       truthSet: [ep1, ep2],
       acceptableSet: [ep3],
     });
 
-    const result = buildBidResult(ep1, makeBiddingContext(), "nt-bundle", arbitration);
+    const bidResult = buildBidResult(ep1, makeBiddingContext(), "nt-bundle", result);
 
-    expect(result.evaluationTrace).toBeDefined();
-    expect(result.evaluationTrace!.candidateCount).toBe(3);
-    expect(result.evaluationTrace!.conventionId).toBe("nt-bundle");
+    expect(bidResult.evaluationTrace).toBeDefined();
+    expect(bidResult.evaluationTrace!.candidateCount).toBe(3);
+    expect(bidResult.evaluationTrace!.conventionId).toBe("nt-bundle");
   });
 
   test("evaluationTrace includes posterior fields when posteriorSummary provided", () => {
-    const selected = makeEncoded();
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
-    const posteriorSummary = { sampleCount: 500, confidence: 0.85 };
+    const selected = makeCarrier();
+    const result = makePipelineResult({ selected, truthSet: [selected] });
+    const posteriorSummary = { sampleCount: 500, confidence: 0.85, factValues: [] };
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration, posteriorSummary);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result, posteriorSummary);
 
-    expect(result.evaluationTrace!.posteriorSampleCount).toBe(500);
-    expect(result.evaluationTrace!.posteriorConfidence).toBe(0.85);
+    expect(bidResult.evaluationTrace!.posteriorSampleCount).toBe(500);
+    expect(bidResult.evaluationTrace!.posteriorConfidence).toBe(0.85);
   });
 
   test("evaluationTrace omits posterior fields when no posteriorSummary", () => {
-    const selected = makeEncoded();
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const selected = makeCarrier();
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.evaluationTrace!.posteriorSampleCount).toBeUndefined();
-    expect(result.evaluationTrace!.posteriorConfidence).toBeUndefined();
+    expect(bidResult.evaluationTrace!.posteriorSampleCount).toBeUndefined();
+    expect(bidResult.evaluationTrace!.posteriorConfidence).toBeUndefined();
   });
 
   // ─── Resolved candidates ──────────────────────────────────────
 
   test("resolvedCandidates includes truthSet and acceptableSet entries", () => {
-    const truth1 = makeEncoded({
+    const truth1 = makeCarrier({
       call: makeCall(2, BidSuit.Clubs),
       proposal: makeProposal({ meaningId: "stayman:ask-major", teachingLabel: "Stayman" }),
     });
-    const acceptable1 = makeEncoded({
+    const acceptable1 = makeCarrier({
       call: makeCall(2, BidSuit.Diamonds),
       proposal: makeProposal({ meaningId: "transfer:hearts", teachingLabel: "Transfer" }),
     });
-    const arbitration = makeArbitration({
+    const result = makePipelineResult({
       selected: truth1,
       truthSet: [truth1],
       acceptableSet: [acceptable1],
     });
 
-    const result = buildBidResult(truth1, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(truth1, makeBiddingContext(), "nt", result);
 
-    expect(result.resolvedCandidates).toHaveLength(2);
-    expect(result.resolvedCandidates![0].bidName).toBe("stayman:ask-major");
-    expect(result.resolvedCandidates![1].bidName).toBe("transfer:hearts");
+    expect(bidResult.resolvedCandidates).toHaveLength(2);
+    expect(bidResult.resolvedCandidates![0]!.bidName).toBe("stayman:ask-major");
+    expect(bidResult.resolvedCandidates![1]!.bidName).toBe("transfer:hearts");
   });
 
   test("resolvedCandidates maps failed conditions from unsatisfied clauses", () => {
     const failedClause = makeClause({ factId: "hand.hcp", satisfied: false, description: "HCP >= 15" });
     const passedClause = makeClause({ factId: "bridge.majorFit", satisfied: true, description: "Major fit" });
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         clauses: [failedClause, passedClause],
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    const candidate = result.resolvedCandidates![0];
+    const candidate = bidResult.resolvedCandidates![0]!;
     expect(candidate.failedConditions).toHaveLength(1);
-    expect(candidate.failedConditions[0]).toEqual({
+    expect(candidate.failedConditions[0]!).toEqual({
       name: "hand.hcp",
       passed: false,
       description: "HCP >= 15",
@@ -264,55 +262,31 @@ describe("buildBidResult", () => {
   });
 
   test("resolvedCandidates carries moduleId and semanticClassId", () => {
-    const selected = makeEncoded({
+    const selected = makeCarrier({
       proposal: makeProposal({
         moduleId: "stayman",
         semanticClassId: "stayman:ask",
       }),
     });
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
-    expect(result.resolvedCandidates![0].moduleId).toBe("stayman");
-    expect(result.resolvedCandidates![0].semanticClassId).toBe("stayman:ask");
+    expect(bidResult.resolvedCandidates![0]!.moduleId).toBe("stayman");
+    expect(bidResult.resolvedCandidates![0]!.semanticClassId).toBe("stayman:ask");
   });
 
   test("output is a clean DTO with no internal pipeline types", () => {
-    const selected = makeEncoded();
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
+    const selected = makeCarrier();
+    const result = makePipelineResult({ selected, truthSet: [selected] });
 
-    const result = buildBidResult(selected, makeBiddingContext(), "nt", arbitration);
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
     // BidResult should be a plain object serializable to JSON
-    const serialized = JSON.stringify(result);
+    const serialized = JSON.stringify(bidResult);
     const deserialized = JSON.parse(serialized);
-    expect(deserialized.call).toEqual(result.call);
-    expect(deserialized.ruleName).toEqual(result.ruleName);
-    expect(deserialized.explanation).toEqual(result.explanation);
-  });
-});
-
-// ─── buildTeachingProjection ─────────────────────────────────────
-
-describe("buildTeachingProjection", () => {
-  test("returns null when provenance is null", () => {
-    const arbitration = makeArbitration();
-
-    const result = buildTeachingProjection(arbitration, null);
-
-    expect(result).toBeNull();
-  });
-
-  test("returns a TeachingProjection when provenance is provided", () => {
-    const selected = makeEncoded();
-    const arbitration = makeArbitration({ selected, truthSet: [selected] });
-    const provenance = makeProvenance();
-
-    const result = buildTeachingProjection(arbitration, provenance);
-
-    expect(result).not.toBeNull();
-    // TeachingProjection should have callViews
-    expect(result).toHaveProperty("callViews");
+    expect(deserialized.call).toEqual(bidResult.call);
+    expect(deserialized.ruleName).toEqual(bidResult.ruleName);
+    expect(deserialized.explanation).toEqual(bidResult.explanation);
   });
 });

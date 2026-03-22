@@ -1,2 +1,4 @@
-// Re-export bundle from system-registry (single source of truth)
-export { weakTwoBundle } from "../system-registry";
+import { resolveBundle, getBundleInput } from "../system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+
+export const weakTwoBundle = resolveBundle(getBundleInput("weak-twos-bundle")!, SAYC_SYSTEM_CONFIG);

@@ -35,7 +35,7 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `session-types.ts` | Tier 3 sub-barrel: session lifecycle and UI preferences |
 | `bidding.ts` | Bidding context, forcing state, bid alerts, strategy interface, bid results |
 | `inference.ts` | Suit/hand inference, qualitative constraints, public beliefs |
-| `tree-evaluation.ts` | Candidate eligibility, alternative groups, intent families, evaluation trace |
+| `tree-evaluation.ts` | Candidate eligibility, alternative groups, surface groups, evaluation trace |
 | `play.ts` | Play context, results, strategy interface |
 | `recommendation.ts` | Practical recommendation, posterior summary, strategy evaluation DTO. `StrategyEvaluation` has `pipelineResult: PipelineResult | null` (replaces old `provenance` + `arbitration` fields). |
 | `module-surface.ts` | Public snapshot (epistemic layers), module surfaces, `PipelineCarrier`, `PipelineResult` (pipeline output types). `EncodedProposal`, `ArbitrationResult`, `EliminationRecord` still exist but are internal to teaching sub-builders. |
@@ -46,11 +46,11 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `teaching-projection.ts` | Teaching-optimized views for "why not X?" UI |
 | `predicates.ts` | Typed predicate surfaces scoped by evaluation world |
 | `evidence-bundle.ts` | `ConditionEvidence` (sole evidence type), rejection/alternative evidence |
-| `posterior.ts` | **Deprecated** — old posterior engine contracts. Migrate to factor-graph/query/backend. |
+| `posterior.ts` | Posterior fact provider, belief views, hand space types, and shared posterior fact IDs |
 | `factor-graph.ts` | Convention-erased factor graph IR for posterior boundary |
 | `posterior-query.ts` | Consumer-facing query interface for posterior inference |
 | `posterior-backend.ts` | Backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
-| `agreement-module.ts` | Agreement module IR: priority specs, decision surfaces, system profiles, closure policies |
+| `agreement-module.ts` | Agreement module IR: priority specs, system profiles, closure policies, fact constraints |
 | `deal-spec.ts` | DealSpec IR types for deal generation |
 | `explanation-catalog.ts` | Explanation catalog entries for teaching projections |
 | `convention.ts` | Convention registry types and deal constraint shapes |
@@ -68,7 +68,6 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 
 - **Semantic ownership test for every field.** Before adding a field to a contract type, ask: "does this describe what this type IS in bridge terms, or is it metadata for a different concern?" `BidMeaning` = what a bid means (clauses, encoding, ranking). `BidResult` = what bid was chosen and why. `BidAnnotation` = what a bid reveals to the table. Display formatting, pipeline routing, and table procedures should be derived or computed, not stored. If a field threads through multiple types just to reach a UI consumer, find a different path.
 - **Public constraints and alertability are auto-derived, not declared.** Alertability is derived from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). `BidMeaning` does not carry `prioritySpec` or `priorityClass`; the pipeline derives alertability in `resolveAlert()`. Public constraints come from `hand.*` clauses (auto-public) + `isPublic: true` clauses (bundle-declared). Convention authors write clauses and `sourceIntent` once; the framework derives everything else. See `alert.ts` for `isAlertable()`, `resolveAlert()`, and `derivePublicConstraints()`.
-- **`DecisionSurface` is consumed via dual-path adapter in the pipeline.** `evaluateAllBidMeanings()` accepts both `BidMeaning[]` and `DecisionSurface[]`. The adapter `adaptMeaningSurface()` / `adaptMeaningSurfaces()` in `conventions/core/pipeline/surface-adapter.ts` maps `BidMeaning` to `DecisionSurface`. Existing `BidMeaning[]` callers are unchanged.
 - **`DeclaredEncoderKind` (agreement-module.ts) is distinct from `EncoderKind` (provenance.ts).** `DeclaredEncoderKind` describes the authored encoder type on a surface (`"direct"`, `"choice-set"`, `"frontier-step"`, `"relay-map"`). `EncoderKind` describes how encoding was resolved at runtime (`"default-call"`, `"resolver"`, etc.).
 - **`ConditionEvidence` is the sole evidence type.** Unified from the former `ConditionEvidence` (provenance.ts, removed) and `ConditionEvidence` (evidence-bundle.ts). Fields: `conditionId`, `satisfied`, `factId?`, `observedValue?`, `threshold?`. Used by `EvidenceBundle`, `ApplicabilityEvidence.evaluatedConditions`, `EliminationTrace.evidence`, and `MeaningView.supportingEvidence`.
 

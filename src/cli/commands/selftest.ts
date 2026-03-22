@@ -4,7 +4,8 @@ import {
   enumerateRuleAtoms,
 } from "../../conventions/core";
 import type { RuleAtom } from "../../conventions/core";
-import { listSystemBundles } from "../../conventions/definitions/system-registry";
+import { listBundleInputs, resolveBundle } from "../../conventions/definitions/system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
@@ -90,7 +91,7 @@ export function runSelftest(flags: Flags, vuln: Vulnerability, baseSystem: BaseS
   const specs: { id: string; spec: ConventionSpec; bundle: ConventionBundle }[] = [];
 
   if (all) {
-    for (const bundle of listSystemBundles()) {
+    for (const bundle of listBundleInputs().map(i => resolveBundle(i, SAYC_SYSTEM_CONFIG))) {
       if (bundle.internal) continue;
       if (!bundle.modules || bundle.modules.length === 0) continue;
       const spec = resolveSpec(bundle.id, baseSystem);

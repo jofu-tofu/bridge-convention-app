@@ -1,20 +1,5 @@
 import type { HandPredicate } from "./predicates";
-import type { PublicSnapshot } from "./module-surface";
-import type { Hand, Seat } from "../../engine/types";
 import type { FactConstraint } from "./agreement-module";
-
-// ─── Posterior factor types ─────────────────────────────────
-export interface PosteriorFactor {
-  readonly factorId: string;
-  readonly kind: "call-meaning" | "announcement" | "inference" | "prior";
-  readonly weight: number;
-  readonly description: string;
-}
-
-export interface LikelihoodModel {
-  readonly factors: readonly PosteriorFactor[];
-  readonly combinationRule: "independent" | "chained";
-}
 
 // ─── Hand space types ───────────────────────────────────────
 export interface PublicHandSpace {
@@ -22,19 +7,6 @@ export interface PublicHandSpace {
   readonly constraints: readonly HandPredicate[];
   readonly estimatedSize?: number;
   readonly latentBranches?: readonly LatentBranchSet[];
-}
-
-// ─── Seat posterior with query methods ──────────────────────
-/** @deprecated Use PosteriorBackend (posterior-backend.ts) + PosteriorQueryPort (posterior-query.ts) */
-export interface SeatPosterior {
-  readonly seatId: string;
-  readonly handSpace: PublicHandSpace;
-  readonly likelihoodModel: LikelihoodModel;
-  /** Actual number of samples accepted by rejection sampling.
-   *  May be less than requested when constraints are tight. */
-  readonly effectiveSampleSize: number;
-  readonly probability: (query: PosteriorFactRequest) => number;
-  readonly distribution: (target: string) => readonly { value: number; probability: number }[];
 }
 
 // ─── Fact request/response ──────────────────────────────────
@@ -123,17 +95,3 @@ export const SHARED_POSTERIOR_FACT_IDS = [
   "bridge.combinedHcpInRangeLikely",
 ] as const;
 
-// ─── Posterior engine interface ─────────────────────────────
-/** @deprecated Use PosteriorBackend (posterior-backend.ts) + PosteriorQueryPort (posterior-query.ts) */
-export interface PosteriorEngine {
-  readonly compilePublic: (snapshot: PublicSnapshot) => PublicHandSpace[];
-  readonly conditionOnHand: (
-    space: PublicHandSpace,
-    seat: Seat,
-    hand: Hand,
-  ) => SeatPosterior;
-  readonly deriveActingHandFacts: (
-    handSpace: PublicHandSpace,
-    factIds: readonly string[],
-  ) => readonly PosteriorFactValue[];
-}
