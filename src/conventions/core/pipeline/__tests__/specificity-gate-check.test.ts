@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { deriveSpecificity } from "../specificity-deriver";
-import type { BidMeaning, ConstraintDimension } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
-import type { SurfaceFragment } from "../../../core/protocol/types";
 import { SHARED_FACTS } from "../../../../core/contracts/shared-facts";
 
 // ─── Bergen surfaces ────────────────────────────────────────
@@ -73,12 +72,6 @@ import { staymanFacts } from "../../../definitions/modules/stayman";
 import { transferFacts } from "../../../definitions/modules/jacoby-transfers";
 import { smolenFacts } from "../../../definitions/modules/smolen";
 import { weakTwoFacts } from "../../../definitions/modules/weak-twos/facts";
-
-// ─── Surface fragment imports (for inherited dimensions) ────
-import { BERGEN_SURFACE_FRAGMENTS } from "../../../definitions/bergen-bundle/base-track";
-import { DONT_SURFACE_FRAGMENTS } from "../../../definitions/dont-bundle/base-track";
-import { NT_SURFACE_FRAGMENTS } from "../../../definitions/nt-bundle/base-track";
-import { WEAK_TWO_SURFACE_FRAGMENTS } from "../../../definitions/weak-twos-bundle/base-track";
 
 // ─── Collect all surfaces ───────────────────────────────────
 
@@ -163,34 +156,19 @@ const allFactExtensions: readonly FactCatalogExtension[] = [
   weakTwoFacts,
 ];
 
-// ─── Build inherited dimensions lookup ──────────────────────
-// Maps each surface (by meaningId) to inherited dimensions from its
-// containing SurfaceFragment. Surfaces not in any annotated fragment
-// get no inherited dimensions.
-
-const allFragments: Readonly<Record<string, SurfaceFragment>> = {
-  ...BERGEN_SURFACE_FRAGMENTS,
-  ...DONT_SURFACE_FRAGMENTS,
-  ...NT_SURFACE_FRAGMENTS,
-  ...WEAK_TWO_SURFACE_FRAGMENTS,
-};
-
-const inheritedDimsLookup = new Map<string, readonly ConstraintDimension[]>();
-for (const fragment of Object.values(allFragments)) {
-  if (fragment.inheritedDimensions && fragment.inheritedDimensions.length > 0) {
-    for (const surface of fragment.surfaces) {
-      inheritedDimsLookup.set(surface.meaningId, fragment.inheritedDimensions);
-    }
-  }
-}
+// ─── Inherited dimensions (legacy) ──────────────────────────
+// Inherited-dimension testing previously used SurfaceFragment objects
+// exported from bundle base-track files. Those files have been removed.
+// The deriveSpecificity calls below pass `undefined` for the inherited
+// dimensions parameter; re-add fragment-based coverage if the concept
+// is reintroduced.
 
 // ─── Specificity derivation tests ───────────────────────────
 
 describe("Specificity derivation: regression suite across all bundles", () => {
   it("should derive a non-negative specificity for every surface", () => {
     for (const surface of allSurfaces) {
-      const inherited = inheritedDimsLookup.get(surface.meaningId);
-      const result = deriveSpecificity(surface, allFactExtensions, inherited);
+      const result = deriveSpecificity(surface, allFactExtensions, undefined);
       expect(result.advisorySpecificity).toBeGreaterThanOrEqual(0);
     }
   });
@@ -198,8 +176,7 @@ describe("Specificity derivation: regression suite across all bundles", () => {
   it("should produce a valid basis classification for every surface", () => {
     const validBases = new Set(["derived", "asserted", "partial"]);
     for (const surface of allSurfaces) {
-      const inherited = inheritedDimsLookup.get(surface.meaningId);
-      const result = deriveSpecificity(surface, allFactExtensions, inherited);
+      const result = deriveSpecificity(surface, allFactExtensions, undefined);
       expect(validBases.has(result.basis)).toBe(true);
     }
   });
@@ -223,9 +200,8 @@ describe("Specificity derivation: regression suite across all bundles", () => {
     // Sanity: surfaces with clauses should generally have higher specificity
     // than surfaces with no clauses (pass/accept surfaces).
     for (const surface of allSurfaces) {
-      const inherited = inheritedDimsLookup.get(surface.meaningId);
-      const result = deriveSpecificity(surface, allFactExtensions, inherited);
-      if (surface.clauses.length === 0 && !inherited) {
+      const result = deriveSpecificity(surface, allFactExtensions, undefined);
+      if (surface.clauses.length === 0) {
         expect(result.advisorySpecificity).toBe(0);
       }
     }
@@ -242,8 +218,7 @@ describe("Specificity derivation: regression suite across all bundles", () => {
     for (const bundle of bundles) {
       const specificities: number[] = [];
       for (const surface of bundle.surfaces) {
-        const inherited = inheritedDimsLookup.get(surface.meaningId);
-        const result = deriveSpecificity(surface, allFactExtensions, inherited);
+        const result = deriveSpecificity(surface, allFactExtensions, undefined);
         specificities.push(result.advisorySpecificity);
       }
       const avg = specificities.reduce((a, b) => a + b, 0) / specificities.length;

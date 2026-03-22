@@ -1,5 +1,4 @@
 import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { MachineState, MachineTransition } from "../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
   FactDefinition,
@@ -28,6 +27,15 @@ import {
   NEAR_MISS_OF,
   ALTERNATIVES,
 } from "../teaching-vocabulary";
+import {
+  SCOPE_R1_MAJOR_FIT,
+  SCOPE_NT_RESPONSE_TRANSFER_VS_STAYMAN,
+  SCOPE_R1_ASK_VS_TRANSFER,
+  SCOPE_TRANSFER_SIGNOFF_CONTINUES_R1_HEARTS,
+  SCOPE_TRANSFER_R3_HEARTS_STRENGTH,
+  SCOPE_TRANSFER_R3_SPADES_STRENGTH,
+  SCOPE_TRANSFER_GAME_VS_NT_HEARTS,
+} from "../pedagogical-scope-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -78,10 +86,10 @@ const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "TransferToHearts", params: {} },
     teachingLabel: "Transfer to hearts",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "r1-major-fit" },
-      { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
-      { tag: NEAR_MISS_OF, scope: "r1-ask-vs-transfer", role: "b" },
-      { tag: CONTINUATION_OF, scope: "transfer:signoff-continues-r1-hearts", role: "b" },
+      { tag: SAME_FAMILY, scope: SCOPE_R1_MAJOR_FIT },
+      { tag: ALTERNATIVES, scope: SCOPE_NT_RESPONSE_TRANSFER_VS_STAYMAN },
+      { tag: NEAR_MISS_OF, scope: SCOPE_R1_ASK_VS_TRANSFER, role: "b" },
+      { tag: CONTINUATION_OF, scope: SCOPE_TRANSFER_SIGNOFF_CONTINUES_R1_HEARTS, role: "b" },
     ],
   }, TRANSFER_CTX),
 
@@ -101,8 +109,8 @@ const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "TransferToSpades", params: {} },
     teachingLabel: "Transfer to spades",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "r1-major-fit" },
-      { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
+      { tag: SAME_FAMILY, scope: SCOPE_R1_MAJOR_FIT },
+      { tag: ALTERNATIVES, scope: SCOPE_NT_RESPONSE_TRANSFER_VS_STAYMAN },
     ],
   }, TRANSFER_CTX),
 ];
@@ -155,7 +163,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "Signoff", params: { suit: "hearts" } },
     teachingLabel: "Pass (signoff in hearts)",
     teachingTags: [
-      { tag: CONTINUATION_OF, scope: "transfer:signoff-continues-r1-hearts", role: "a" },
+      { tag: CONTINUATION_OF, scope: SCOPE_TRANSFER_SIGNOFF_CONTINUES_R1_HEARTS, role: "a" },
     ],
   }, TRANSFER_CTX),
 
@@ -182,8 +190,8 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "GameInMajor", params: { suit: "hearts" } },
     teachingLabel: "4H game",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 0 },
-      { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "a" },
+      { tag: STRONGER_THAN, scope: SCOPE_TRANSFER_R3_HEARTS_STRENGTH, ordinal: 0 },
+      { tag: NEAR_MISS_OF, scope: SCOPE_TRANSFER_GAME_VS_NT_HEARTS, role: "a" },
     ],
   }, TRANSFER_CTX),
 
@@ -210,7 +218,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "TransferNTGame", params: { suit: "hearts" } },
     teachingLabel: "3NT (5 hearts, let opener choose)",
     teachingTags: [
-      { tag: NEAR_MISS_OF, scope: "transfer:game-vs-nt-hearts", role: "b" },
+      { tag: NEAR_MISS_OF, scope: SCOPE_TRANSFER_GAME_VS_NT_HEARTS, role: "b" },
     ],
   }, TRANSFER_CTX),
 
@@ -231,7 +239,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "Invite", params: { suit: "hearts" } },
     teachingLabel: "2NT invite",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "transfer:r3-hearts-strength", ordinal: 1 },
+      { tag: STRONGER_THAN, scope: SCOPE_TRANSFER_R3_HEARTS_STRENGTH, ordinal: 1 },
     ],
   }, TRANSFER_CTX),
 ];
@@ -278,7 +286,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "GameInMajor", params: { suit: "spades" } },
     teachingLabel: "4S game",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 0 },
+      { tag: STRONGER_THAN, scope: SCOPE_TRANSFER_R3_SPADES_STRENGTH, ordinal: 0 },
     ],
   }, TRANSFER_CTX),
 
@@ -323,7 +331,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     teachingLabel: "2NT invite",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "transfer:r3-spades-strength", ordinal: 1 },
+      { tag: STRONGER_THAN, scope: SCOPE_TRANSFER_R3_SPADES_STRENGTH, ordinal: 1 },
     ],
   }, TRANSFER_CTX),
 ];
@@ -480,271 +488,6 @@ export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly BidMeaning[] = [
   }, TRANSFER_CTX),
 ];
 
-// ─── R1 transitions ──────────────────────────────────────────
-
-const TRANSFER_R1_TRANSITIONS: readonly MachineTransition[] = [
-  {
-    transitionId: "r1-transfer-hearts",
-    match: { kind: "call", level: 2, strain: BidSuit.Diamonds },
-    target: "opener-transfer-hearts",
-  },
-  {
-    transitionId: "r1-transfer-spades",
-    match: { kind: "call", level: 2, strain: BidSuit.Hearts },
-    target: "opener-transfer-spades",
-  },
-];
-
-// ─── Machine states ──────────────────────────────────────────
-
-const TRANSFER_MACHINE_STATES: readonly MachineState[] = [
-  {
-    stateId: "transfers-scope",
-    parentId: "nt-opened",
-    transitions: [
-      {
-        transitionId: "transfers-opponent-interrupt",
-        match: { kind: "opponent-action" },
-        target: "transfers-interrupted",
-      },
-    ],
-    allowedParentTransitions: ["nt-opened-opponent-interrupt", "nt-opened-pass"],
-  },
-  {
-    stateId: "transfers-interrupted",
-    parentId: "transfers-scope",
-    transitions: [
-      {
-        transitionId: "transfers-interrupted-absorb",
-        match: { kind: "pass" },
-        target: "transfers-interrupted",
-      },
-    ],
-    surfaceGroupId: "transfers-interrupted",
-    entryEffects: { setCompetitionMode: "Contested" },
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-  },
-  {
-    stateId: "opener-transfer-hearts",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.tentative"],
-    transitions: [
-      {
-        transitionId: "transfer-h-pass",
-        match: { kind: "pass" },
-        target: "opener-transfer-hearts",
-      },
-      {
-        transitionId: "transfer-h-accept",
-        match: { kind: "call", level: 2, strain: BidSuit.Hearts },
-        target: "responder-r3-transfer-hearts",
-      },
-    ],
-    surfaceGroupId: "opener-transfer-accept",
-    entryEffects: {
-      setAgreedStrain: {
-        type: "suit",
-        suit: "hearts",
-        confidence: "tentative",
-      },
-    },
-  },
-
-  {
-    stateId: "opener-transfer-spades",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.tentative"],
-    transitions: [
-      {
-        transitionId: "transfer-s-pass",
-        match: { kind: "pass" },
-        target: "opener-transfer-spades",
-      },
-      {
-        transitionId: "transfer-s-accept",
-        match: { kind: "call", level: 2, strain: BidSuit.Spades },
-        target: "responder-r3-transfer-spades",
-      },
-    ],
-    surfaceGroupId: "opener-transfer-accept-spades",
-    entryEffects: {
-      setAgreedStrain: {
-        type: "suit",
-        suit: "spades",
-        confidence: "tentative",
-      },
-    },
-  },
-
-  {
-    stateId: "responder-r3-transfer-hearts",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    transitions: [
-      {
-        transitionId: "r3-4h-game",
-        match: { kind: "call", level: 4, strain: BidSuit.Hearts },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-3nt-hearts",
-        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-        target: "opener-place-after-transfer-hearts",
-      },
-      {
-        transitionId: "r3-2nt-invite-hearts",
-        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-        target: "opener-accept-invite-hearts",
-      },
-      {
-        transitionId: "r3-self-pass-th",
-        match: { kind: "pass", seatRole: "self" },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-opp-pass-wait-th",
-        match: { kind: "pass", seatRole: "opponent" },
-        target: "responder-r3-transfer-hearts",
-      },
-      {
-        transitionId: "r3-partner-pass-th",
-        match: { kind: "pass", seatRole: "partner" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "responder-r3-after-transfer-hearts",
-  },
-
-  {
-    stateId: "responder-r3-transfer-spades",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    transitions: [
-      {
-        transitionId: "r3-4s-game",
-        match: { kind: "call", level: 4, strain: BidSuit.Spades },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-3nt-spades",
-        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-        target: "opener-place-after-transfer-spades",
-      },
-      {
-        transitionId: "r3-2nt-invite-spades",
-        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-        target: "opener-accept-invite-spades",
-      },
-      {
-        transitionId: "r3-self-pass-ts",
-        match: { kind: "pass", seatRole: "self" },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-opp-pass-wait-ts",
-        match: { kind: "pass", seatRole: "opponent" },
-        target: "responder-r3-transfer-spades",
-      },
-      {
-        transitionId: "r3-partner-pass-ts",
-        match: { kind: "pass", seatRole: "partner" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "responder-r3-after-transfer-spades",
-  },
-
-  // ─── Opener placement states (after responder's 3NT "let opener choose") ──
-
-  {
-    stateId: "opener-place-after-transfer-hearts",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.final"],
-    transitions: [
-      {
-        transitionId: "place-th-correct-4h",
-        match: { kind: "call", level: 4, strain: BidSuit.Hearts },
-        target: "terminal",
-      },
-      {
-        transitionId: "place-th-pass",
-        match: { kind: "pass" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "opener-place-after-transfer-hearts",
-    entryEffects: { setCaptain: "opener" },
-  },
-
-  {
-    stateId: "opener-place-after-transfer-spades",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.final"],
-    transitions: [
-      {
-        transitionId: "place-ts-correct-4s",
-        match: { kind: "call", level: 4, strain: BidSuit.Spades },
-        target: "terminal",
-      },
-      {
-        transitionId: "place-ts-pass",
-        match: { kind: "pass" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "opener-place-after-transfer-spades",
-    entryEffects: { setCaptain: "opener" },
-  },
-
-  // ─── Opener invite acceptance states (after responder's 2NT invite) ──
-
-  {
-    stateId: "opener-accept-invite-hearts",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.final"],
-    transitions: [
-      {
-        transitionId: "accept-invite-h-bid",
-        match: { kind: "any-bid" },
-        target: "terminal",
-      },
-      {
-        transitionId: "accept-invite-h-pass",
-        match: { kind: "pass" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "opener-accept-invite-hearts",
-    entryEffects: { setCaptain: "opener" },
-  },
-
-  {
-    stateId: "opener-accept-invite-spades",
-    parentId: "transfers-scope",
-    allowedParentTransitions: ["transfers-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.final"],
-    transitions: [
-      {
-        transitionId: "accept-invite-s-bid",
-        match: { kind: "any-bid" },
-        target: "terminal",
-      },
-      {
-        transitionId: "accept-invite-s-pass",
-        match: { kind: "pass" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "opener-accept-invite-spades",
-    entryEffects: { setCaptain: "opener" },
-  },
-];
-
 // ─── Facts ───────────────────────────────────────────────────
 
 const TRANSFER_FACTS: readonly FactDefinition[] = [
@@ -887,10 +630,6 @@ export function createJacobyTransfersModule(sys: SystemConfig) {
       { groupId: "opener-accept-invite-hearts", surfaces: OPENER_ACCEPT_INVITE_HEARTS_SURFACES },
       { groupId: "opener-accept-invite-spades", surfaces: OPENER_ACCEPT_INVITE_SPADES_SURFACES },
     ],
-
-    entryTransitions: TRANSFER_R1_TRANSITIONS,
-
-    machineStates: TRANSFER_MACHINE_STATES,
 
     facts: createTransferFacts(sys),
 

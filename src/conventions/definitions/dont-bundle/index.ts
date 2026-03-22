@@ -1,1 +1,0 @@
-export { dontBundle } from "./config";

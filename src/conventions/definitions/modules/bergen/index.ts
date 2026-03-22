@@ -2,7 +2,6 @@
  * Bergen Raises convention module.
  *
  * Self-contained module exporting a ConventionModule object.
- * FSM states and transitions are handled by the protocol frame (base-track.ts).
  */
 
 import type { ConventionModule } from "../../../core/convention-module";
@@ -47,9 +46,6 @@ export const bergenModule: ConventionModule = {
     { groupId: "responder-after-game-try-spades", surfaces: BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES },
     { groupId: "opener-r4", surfaces: BERGEN_R4_SURFACES },
   ],
-
-  entryTransitions: [],
-  machineStates: [],
 
   facts: bergenFacts,
 

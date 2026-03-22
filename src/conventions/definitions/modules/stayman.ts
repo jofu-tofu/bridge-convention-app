@@ -1,5 +1,4 @@
 import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { MachineState, MachineTransition } from "../../core/runtime/machine-types";
 import type {
   FactCatalogExtension,
   FactDefinition,
@@ -28,6 +27,21 @@ import {
   FALLBACK_OF,
   ALTERNATIVES,
 } from "../teaching-vocabulary";
+import {
+  SCOPE_R1_MAJOR_FIT,
+  SCOPE_NT_RESPONSE_TRANSFER_VS_STAYMAN,
+  SCOPE_R1_MAJOR_FIT_FALLBACK,
+  SCOPE_R1_ASK_VS_TRANSFER,
+  SCOPE_R3_GF_CONTINUES_ASK,
+  SCOPE_R3_GF_VS_INVITE_DENIAL,
+  SCOPE_R3_GF_VS_GAME_DENIAL,
+  SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT,
+  SCOPE_STAYMAN_RAISE_CONTINUES_ASK,
+  SCOPE_STAYMAN_R3_2H_STRENGTH,
+  SCOPE_STAYMAN_R3_2S_STRENGTH,
+  SCOPE_STAYMAN_R3_NO_FIT_STRENGTH,
+  SCOPE_STAYMAN_R3_DENIAL_STRENGTH,
+} from "../pedagogical-scope-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -108,12 +122,12 @@ export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
     sourceIntent: { type: "StaymanAsk", params: {} },
     teachingLabel: "Stayman 2♣",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "r1-major-fit" },
-      { tag: ALTERNATIVES, scope: "NT response: transfer vs Stayman" },
-      { tag: FALLBACK_OF, scope: "r1-major-fit-fallback", role: "b" },
-      { tag: NEAR_MISS_OF, scope: "r1-ask-vs-transfer", role: "a" },
-      { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "b" },
-      { tag: CONTINUATION_OF, scope: "stayman:raise-continues-ask", role: "b" },
+      { tag: SAME_FAMILY, scope: SCOPE_R1_MAJOR_FIT },
+      { tag: ALTERNATIVES, scope: SCOPE_NT_RESPONSE_TRANSFER_VS_STAYMAN },
+      { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "b" },
+      { tag: NEAR_MISS_OF, scope: SCOPE_R1_ASK_VS_TRANSFER, role: "a" },
+      { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "b" },
+      { tag: CONTINUATION_OF, scope: SCOPE_STAYMAN_RAISE_CONTINUES_ASK, role: "b" },
     ],
   }, STAYMAN_CTX);
 }
@@ -202,8 +216,8 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "RaiseGame", params: { suit: "hearts" } },
     teachingLabel: "Raise to game in hearts",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 0 },
-      { tag: CONTINUATION_OF, scope: "stayman:raise-continues-ask", role: "a" },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2H_STRENGTH, ordinal: 0 },
+      { tag: CONTINUATION_OF, scope: SCOPE_STAYMAN_RAISE_CONTINUES_ASK, role: "a" },
     ],
   }, STAYMAN_CTX),
 
@@ -230,7 +244,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "RaiseInvite", params: { suit: "hearts" } },
     teachingLabel: "Invite in hearts",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-2h-strength", ordinal: 1 },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2H_STRENGTH, ordinal: 1 },
     ],
   }, STAYMAN_CTX),
 
@@ -257,7 +271,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-heart-fit" } },
     teachingLabel: "3NT (no heart fit)",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 0 },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_NO_FIT_STRENGTH, ordinal: 0 },
     ],
   }, STAYMAN_CTX),
 
@@ -284,7 +298,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-heart-fit" } },
     teachingLabel: "2NT invite (no heart fit)",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-no-fit-strength", ordinal: 1 },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_NO_FIT_STRENGTH, ordinal: 1 },
     ],
   }, STAYMAN_CTX),
 ];
@@ -313,7 +327,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "RaiseGame", params: { suit: "spades" } },
     teachingLabel: "Raise to game in spades",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 0 },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2S_STRENGTH, ordinal: 0 },
     ],
   }, STAYMAN_CTX),
 
@@ -340,7 +354,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "RaiseInvite", params: { suit: "spades" } },
     teachingLabel: "Invite in spades",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-2s-strength", ordinal: 1 },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2S_STRENGTH, ordinal: 1 },
     ],
   }, STAYMAN_CTX),
 
@@ -412,9 +426,9 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "StaymanNTGame", params: { reason: "denial" } },
     teachingLabel: "3NT after denial",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-denial-strength", ordinal: 0 },
-      { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "b" },
-      { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_DENIAL_STRENGTH, ordinal: 0 },
+      { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "b" },
+      { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
     ],
   }, STAYMAN_CTX),
 
@@ -435,8 +449,8 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     teachingLabel: "2NT invite after denial",
     teachingTags: [
-      { tag: STRONGER_THAN, scope: "stayman:r3-denial-strength", ordinal: 1 },
-      { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "b" },
+      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_DENIAL_STRENGTH, ordinal: 1 },
+      { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "b" },
     ],
   }, STAYMAN_CTX),
 ];
@@ -468,200 +482,6 @@ export function createInterferenceRedoubleSurface(sys: SystemConfig): BidMeaning
 /** Legacy default — uses SAYC system config. */
 export const INTERFERENCE_REDOUBLE_SURFACE: BidMeaning =
   createInterferenceRedoubleSurface(SAYC_SYSTEM_CONFIG);
-
-// ─── R1 transition ───────────────────────────────────────────
-
-const STAYMAN_R1_TRANSITION: MachineTransition = {
-  transitionId: "r1-stayman",
-  match: { kind: "call", level: 2, strain: BidSuit.Clubs },
-  target: "opener-stayman",
-};
-
-// ─── Machine states ──────────────────────────────────────────
-
-const STAYMAN_MACHINE_STATES: readonly MachineState[] = [
-  {
-    stateId: "stayman-scope",
-    parentId: "nt-opened",
-    transitions: [
-      {
-        transitionId: "stayman-opponent-interrupt",
-        match: { kind: "opponent-action" },
-        target: "stayman-interrupted",
-      },
-    ],
-    allowedParentTransitions: ["nt-opened-opponent-interrupt", "nt-opened-pass"],
-  },
-  {
-    stateId: "stayman-interrupted",
-    parentId: "stayman-scope",
-    transitions: [
-      {
-        transitionId: "stayman-interrupted-absorb",
-        match: { kind: "pass" },
-        target: "stayman-interrupted",
-      },
-    ],
-    surfaceGroupId: "stayman-interrupted",
-    entryEffects: { setCompetitionMode: "Contested" },
-    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
-  },
-  {
-    stateId: "opener-stayman",
-    parentId: "stayman-scope",
-    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.pending"],
-    transitions: [
-      {
-        transitionId: "stayman-pass",
-        match: { kind: "pass" },
-        target: "opener-stayman",
-      },
-      {
-        transitionId: "stayman-2h",
-        match: { kind: "call", level: 2, strain: BidSuit.Hearts },
-        target: "responder-r3-stayman-2h",
-      },
-      {
-        transitionId: "stayman-2s",
-        match: { kind: "call", level: 2, strain: BidSuit.Spades },
-        target: "responder-r3-stayman-2s",
-      },
-      {
-        transitionId: "stayman-2d",
-        match: { kind: "call", level: 2, strain: BidSuit.Diamonds },
-        target: "responder-r3-stayman-2d",
-      },
-    ],
-    surfaceGroupId: "opener-stayman-response",
-    entryEffects: {
-      setObligation: { kind: "ShowMajor", obligatedSide: "opener" },
-    },
-  },
-  {
-    stateId: "responder-r3-stayman-2h",
-    parentId: "stayman-scope",
-    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.pending"],
-    transitions: [
-      {
-        transitionId: "r3-4h-game",
-        match: { kind: "call", level: 4, strain: BidSuit.Hearts },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-3h-invite",
-        match: { kind: "call", level: 3, strain: BidSuit.Hearts },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-3nt-no-fit",
-        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-2nt-invite-no-fit",
-        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-self-pass-2h",
-        match: { kind: "pass", seatRole: "self" },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-opp-pass-wait-2h",
-        match: { kind: "pass", seatRole: "opponent" },
-        target: "responder-r3-stayman-2h",
-      },
-      {
-        transitionId: "r3-partner-pass-2h",
-        match: { kind: "pass", seatRole: "partner" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "responder-r3-after-stayman-2h",
-  },
-  {
-    stateId: "responder-r3-stayman-2s",
-    parentId: "stayman-scope",
-    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.pending"],
-    transitions: [
-      {
-        transitionId: "r3-4s-game",
-        match: { kind: "call", level: 4, strain: BidSuit.Spades },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-3s-invite",
-        match: { kind: "call", level: 3, strain: BidSuit.Spades },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-3nt-no-fit-s",
-        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-2nt-invite-no-fit-s",
-        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-self-pass-2s",
-        match: { kind: "pass", seatRole: "self" },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-opp-pass-wait-2s",
-        match: { kind: "pass", seatRole: "opponent" },
-        target: "responder-r3-stayman-2s",
-      },
-      {
-        transitionId: "r3-partner-pass-2s",
-        match: { kind: "pass", seatRole: "partner" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "responder-r3-after-stayman-2s",
-  },
-  // responder-r3-stayman-2d: Smolen transitions removed — added via hookTransitions
-  {
-    stateId: "responder-r3-stayman-2d",
-    parentId: "stayman-scope",
-    allowedParentTransitions: ["stayman-opponent-interrupt", "nt-opened-opponent-interrupt"],
-    exportTags: ["agreement.pending"],
-    transitions: [
-      {
-        transitionId: "r3-3nt-after-denial",
-        match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-2nt-after-denial",
-        match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-self-pass-2d",
-        match: { kind: "pass", seatRole: "self" },
-        target: "terminal",
-      },
-      {
-        transitionId: "r3-opp-pass-wait-2d",
-        match: { kind: "pass", seatRole: "opponent" },
-        target: "responder-r3-stayman-2d",
-      },
-      {
-        transitionId: "r3-partner-pass-2d",
-        match: { kind: "pass", seatRole: "partner" },
-        target: "terminal",
-      },
-    ],
-    surfaceGroupId: "responder-r3-after-stayman-2d",
-  },
-];
 
 // ─── Facts ───────────────────────────────────────────────────
 
@@ -795,10 +615,6 @@ export function createStaymanModule(sys: SystemConfig) {
   return {
     moduleId: "stayman",
 
-    exposedStates: {
-      afterOpener2D: "responder-r3-stayman-2d",
-    },
-
     entrySurfaces: [createStaymanR1Surface(sys)],
 
     surfaceGroups: [
@@ -808,10 +624,6 @@ export function createStaymanModule(sys: SystemConfig) {
       { groupId: "responder-r3-after-stayman-2d", surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
       { groupId: "nt-interrupted", surfaces: [createInterferenceRedoubleSurface(sys)] },
     ],
-
-    entryTransitions: [STAYMAN_R1_TRANSITION],
-
-    machineStates: STAYMAN_MACHINE_STATES,
 
     facts: createStaymanFacts(sys),
 

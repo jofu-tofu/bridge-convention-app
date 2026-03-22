@@ -1,7 +1,6 @@
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
   MachineState,
-  MachineTransition,
   ConversationMachine,
 } from "../../core/runtime/machine-types";
 import { buildConversationMachine } from "../../core/runtime/machine-types";
@@ -11,7 +10,6 @@ import type {
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
 import { num, fv } from "../../core/pipeline/fact-helpers";
-import { ForcingState } from "../../../core/contracts/bidding";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 
 import { BidSuit } from "../../../engine/types";
@@ -29,6 +27,14 @@ import {
   NEAR_MISS_OF,
   ALTERNATIVES,
 } from "../teaching-vocabulary";
+import {
+  SCOPE_SMOLEN_ENTRY_VARIANTS,
+  SCOPE_SMOLEN_R3_BIDS,
+  SCOPE_R3_GF_VS_INVITE_DENIAL,
+  SCOPE_R3_GF_CONTINUES_ASK,
+  SCOPE_R3_GF_VS_GAME_DENIAL,
+  SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT,
+} from "../pedagogical-scope-vocabulary";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -81,7 +87,7 @@ const SMOLEN_ENTRY_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "smolen:entry-variants" },
+      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_ENTRY_VARIANTS },
     ],
   }, SMOLEN_CTX),
 
@@ -113,7 +119,7 @@ const SMOLEN_ENTRY_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
     teachingLabel: "Stayman 2♣ (planning Smolen)",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "smolen:entry-variants" },
+      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_ENTRY_VARIANTS },
     ],
   }, SMOLEN_CTX),
 ];
@@ -150,11 +156,11 @@ const SMOLEN_R3_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
     teachingLabel: "Smolen 3♥ (4♥ + 5♠, game force)",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "smolen:r3-bids" },
-      { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "a" },
-      { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "a" },
-      { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "a" },
-      { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
+      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_R3_BIDS },
+      { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "a" },
+      { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "a" },
+      { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "a" },
+      { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
     ],
   }, SMOLEN_CTX),
 
@@ -187,11 +193,11 @@ const SMOLEN_R3_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
     teachingLabel: "Smolen 3♠ (4♠ + 5♥, game force)",
     teachingTags: [
-      { tag: SAME_FAMILY, scope: "smolen:r3-bids" },
-      { tag: STRONGER_THAN, scope: "r3-gf-vs-invite-denial", role: "a" },
-      { tag: CONTINUATION_OF, scope: "r3-gf-continues-ask", role: "a" },
-      { tag: NEAR_MISS_OF, scope: "r3-gf-vs-game-denial", role: "a" },
-      { tag: ALTERNATIVES, scope: "After denial: Smolen vs 3NT" },
+      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_R3_BIDS },
+      { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "a" },
+      { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "a" },
+      { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "a" },
+      { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
     ],
   }, SMOLEN_CTX),
 ];
@@ -270,90 +276,6 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
     teachingLabel: "3NT (no spade fit)",
   }, SMOLEN_CTX),
-];
-
-// ─── Hook transitions (into Stayman's responder-r3-stayman-2d) ───
-
-const SMOLEN_HOOK_TRANSITIONS: readonly {
-  readonly targetStateId: string;
-  readonly transitions: readonly MachineTransition[];
-}[] = [
-  {
-    targetStateId: "responder-r3-stayman-2d",
-    transitions: [
-      {
-        transitionId: "r3-smolen-hearts",
-        match: { kind: "call", level: 3, strain: BidSuit.Hearts },
-        target: "smolen-invoke-hearts",
-      },
-      {
-        transitionId: "r3-smolen-spades",
-        match: { kind: "call", level: 3, strain: BidSuit.Spades },
-        target: "smolen-invoke-spades",
-      },
-    ],
-  },
-];
-
-// ─── Machine states ──────────────────────────────────────────
-
-const SMOLEN_MACHINE_STATES: readonly MachineState[] = [
-  {
-    stateId: "smolen-scope",
-    parentId: "nt-opened",
-    transitions: [
-      {
-        transitionId: "smolen-opponent-interrupt",
-        match: { kind: "opponent-action" },
-        target: "smolen-interrupted",
-      },
-    ],
-    allowedParentTransitions: ["nt-opened-opponent-interrupt", "nt-opened-pass"],
-  },
-  {
-    stateId: "smolen-interrupted",
-    parentId: "smolen-scope",
-    transitions: [
-      {
-        transitionId: "smolen-interrupted-absorb",
-        match: { kind: "pass" },
-        target: "smolen-interrupted",
-      },
-    ],
-    surfaceGroupId: "smolen-interrupted",
-    entryEffects: { setCompetitionMode: "Contested" },
-    allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt"],
-  },
-  {
-    stateId: "smolen-invoke-hearts",
-    parentId: "smolen-scope",
-    allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt", "nt-opened-pass"],
-    exportTags: ["agreement.tentative"],
-    transitions: [],
-    submachineRef: {
-      machineId: "smolen-continuation",
-      returnTarget: "terminal",
-    },
-    entryEffects: {
-      setAgreedStrain: { type: "suit", suit: "spades", confidence: "tentative" },
-      setForcingState: ForcingState.GameForcing,
-    },
-  },
-  {
-    stateId: "smolen-invoke-spades",
-    parentId: "smolen-scope",
-    allowedParentTransitions: ["smolen-opponent-interrupt", "nt-opened-opponent-interrupt", "nt-opened-pass"],
-    exportTags: ["agreement.tentative"],
-    transitions: [],
-    submachineRef: {
-      machineId: "smolen-continuation",
-      returnTarget: "terminal",
-    },
-    entryEffects: {
-      setAgreedStrain: { type: "suit", suit: "hearts", confidence: "tentative" },
-      setForcingState: ForcingState.GameForcing,
-    },
-  },
 ];
 
 // ─── Submachine ──────────────────────────────────────────────
@@ -602,8 +524,6 @@ const SMOLEN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
 
 // ─── Module assembly ─────────────────────────────────────────
 
-const smolenSub = createSmolenSubmachine();
-
 /** Factory: creates the smolen module parameterized by system config.
  *  Smolen currently has no system-dependent thresholds (inherits from
  *  natural-nt gameValues fact), but accepts SystemConfig for DI consistency. */
@@ -618,14 +538,6 @@ export function createSmolenModule(_sys: SystemConfig) {
       { groupId: "opener-smolen-hearts", surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
       { groupId: "opener-smolen-spades", surfaces: OPENER_SMOLEN_SPADES_SURFACES },
     ],
-
-    entryTransitions: [],
-
-    machineStates: SMOLEN_MACHINE_STATES,
-
-    hookTransitions: SMOLEN_HOOK_TRANSITIONS,
-
-    submachines: new Map([["smolen-continuation", smolenSub]]),
 
     facts: smolenFacts,
 

@@ -3,7 +3,7 @@ import { ntBundle } from "./definitions/nt-bundle";
 import { ntStaymanBundle, ntTransfersBundle } from "./definitions/nt-bundle";
 import { bergenBundle } from "./definitions/bergen-bundle";
 import { weakTwoBundle } from "./definitions/weak-twos-bundle";
-import { dontBundle } from "./definitions/dont-bundle";
+import { dontBundle } from "./definitions/system-registry";
 
 registerBundle(ntBundle);
 registerBundle(ntStaymanBundle);

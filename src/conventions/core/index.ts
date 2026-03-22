@@ -46,9 +46,6 @@ export {
 } from "./pipeline/surface-composer";
 
 // ── Runtime (remaining) ─────────────────────────────────────────────────
-export { buildSnapshotFromAuction } from "./runtime/public-snapshot-builder";
-export { bundleToRuntimeModules } from "./runtime/bundle-adapter";
-
 export type {
   RuntimeModule,
   DecisionSurfaceEntry,
@@ -65,7 +62,6 @@ export type {
   MachineEffect,
   MachineContext,
 } from "./runtime/machine-types";
-export { buildConversationMachine } from "./runtime/machine-types";
 
 // ── Protocol Frame Architecture (legacy — retained for ConventionSpec type) ──
 export type { ConventionSpec } from "./protocol/types";

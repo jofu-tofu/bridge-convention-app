@@ -83,8 +83,6 @@ describe("deriveTeachingContent", () => {
       moduleId: "empty",
       entrySurfaces: [],
       surfaceGroups: [],
-      entryTransitions: [],
-      machineStates: [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -117,8 +115,6 @@ describe("deriveTeachingContent validation", () => {
       moduleId: "test",
       entrySurfaces: surfaces,
       surfaceGroups: [],
-      entryTransitions: [],
-      machineStates: [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };

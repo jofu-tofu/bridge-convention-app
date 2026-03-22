@@ -55,14 +55,6 @@ describe.each(moduleEntries)("structural contract — %s", (_id, mod) => {
     expect(Array.isArray(mod.surfaceGroups)).toBe(true);
   });
 
-  it("entryTransitions is an array", () => {
-    expect(Array.isArray(mod.entryTransitions)).toBe(true);
-  });
-
-  it("machineStates is an array", () => {
-    expect(Array.isArray(mod.machineStates)).toBe(true);
-  });
-
   it("facts has definitions array and evaluators map", () => {
     expect(mod.facts).toBeDefined();
     expect(Array.isArray(mod.facts.definitions)).toBe(true);

@@ -1,5 +1,4 @@
 import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { MachineTransition } from "../../core/runtime/machine-types";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 
 import { BidSuit } from "../../../engine/types";
@@ -140,26 +139,6 @@ export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[]
 /** Legacy default — uses SAYC system config. */
 export const OPENER_1NT_SURFACE: readonly BidMeaning[] =
   createOpener1NtSurface(SAYC_SYSTEM_CONFIG);
-
-// ─── R1 transitions ──────────────────────────────────────────
-
-const NT_R1_TRANSITIONS: readonly MachineTransition[] = [
-  {
-    transitionId: "r1-3nt",
-    match: { kind: "call", level: 3, strain: BidSuit.NoTrump },
-    target: "terminal",
-  },
-  {
-    transitionId: "r1-pass",
-    match: { kind: "pass" },
-    target: "terminal",
-  },
-  {
-    transitionId: "r1-2nt",
-    match: { kind: "call", level: 2, strain: BidSuit.NoTrump },
-    target: "terminal",
-  },
-];
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -334,10 +313,6 @@ export function createNaturalNtModule(sys: SystemConfig) {
       { groupId: "opener-1nt", surfaces: createOpener1NtSurface(sys) },
       { groupId: "terminal-pass", surfaces: TERMINAL_PASS_SURFACE },
     ],
-
-    entryTransitions: NT_R1_TRANSITIONS,
-
-    machineStates: [],
 
     facts: { definitions: [], evaluators: new Map() },
 

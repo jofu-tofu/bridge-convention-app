@@ -37,9 +37,6 @@ export const dontModule: ConventionModule = {
     { groupId: "relay-2d", surfaces: DONT_2D_RELAY_SURFACES },
   ],
 
-  entryTransitions: [],
-  machineStates: [],
-
   facts: dontFacts,
 
   explanationEntries: DONT_ENTRIES,

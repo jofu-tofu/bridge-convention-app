@@ -39,9 +39,6 @@ export const weakTwosModule: ConventionModule = {
     { groupId: "post-ogust-diamonds", surfaces: POST_OGUST_DIAMONDS_SURFACES },
   ],
 
-  entryTransitions: [],
-  machineStates: [],
-
   facts: weakTwoFacts,
 
   explanationEntries: WEAK_TWO_ENTRIES,

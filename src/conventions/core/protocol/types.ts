@@ -1,20 +1,14 @@
-// ── Protocol Frame Architecture: Core Types ─────────────────────────
+// ── Protocol Types: Declarative Expressions & Surface Fragments ─────
 //
-// All convention behavior is expressed as **modules**. A module is either:
-// - role: "base"     — mutually exclusive, selected by opening pattern
-// - role: "protocol" — guard-activated, layered on top of base modules
-//
-// Both share the same core: states, transitions, surfaces, facts, effects.
-// The role field determines activation semantics, not the type shape.
-//
-// The runtime snapshot is a sparse state vector:
-//   { bootNode, baseModule?, protocols[], registers, tags, doneLatches }
+// Shared types for the convention pipeline:
+// - Declarative expression types (BoolExpr, Ref, EffectSpec)
+// - Public semantic schema (registers, capabilities)
+// - Event patterns and transition specs
+// - Surface fragments for decision surface composition
+// - ConventionSpec top-level composition type
 
-import type { Call, Seat, Auction } from "../../../engine/types";
-import type { ConstraintDimension } from "../../../core/contracts/meaning";
-import type { BidMeaning, RankingMetadata } from "../../../core/contracts/meaning";
-import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
-import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { Call } from "../../../engine/types";
+import type { ConstraintDimension, BidMeaning } from "../../../core/contracts/meaning";
 
 
 // ── Declarative Expression Types ────────────────────────────────────
@@ -172,129 +166,6 @@ export interface ReactionSpec {
   readonly priority?: number;
 }
 
-// ── Frame State (shared by all modules) ─────────────────────────────
-
-/** A state in a module's FSM. */
-export interface FrameStateSpec {
-  readonly id: string;
-  /** Surface fragment ID active at this state. */
-  readonly surface?: string;
-  /** Tags exported when this state is active. */
-  readonly exportTags?: readonly string[];
-  readonly onEnter?: readonly EffectSpec[];
-  readonly onExit?: readonly EffectSpec[];
-  /** Event-driven transitions. */
-  readonly eventTransitions: readonly TransitionSpec[];
-  /** Zero-event reactions evaluated in settle phase. */
-  readonly reactions?: readonly ReactionSpec[];
-  /**
-   * Protocol-only: whether this state overlays or takes over.
-   * Ignored for base-role modules.
-   */
-  readonly mode?: "overlay" | "exclusive";
-  /**
-   * Protocol-only: whether other protocols may mount above this state.
-   * - true: any protocol may mount
-   * - false: no protocols may mount
-   * - string[]: only listed module IDs may mount
-   * Default: true. Ignored for base-role modules.
-   */
-  readonly acceptsMountedProtocols?: boolean | readonly string[];
-  /** Protocol-only, exclusive states: whether to inherit the base surface. */
-  readonly inheritBaseSurface?: "all" | "none";
-}
-
-// ── Module Spec (unified base + protocol) ───────────────────────────
-
-/** Opening pattern that routes to a base module. */
-export interface OpeningPatternSpec {
-  /** Prefix of events that selects this module. */
-  readonly prefix: readonly EventPattern[];
-  /** State to enter when this pattern matches. */
-  readonly startState: string;
-  /** Priority for ambiguity resolution (lower = higher priority). */
-  readonly priority?: number;
-}
-
-/** Anchor policy — where a protocol module attaches in the frame stack. */
-export interface AnchorPolicy {
-  /** What the module anchors to. */
-  readonly target: "base" | "topVisible" | { readonly activeTag: string };
-  /** Behavior when mounting is blocked. */
-  readonly ifBlocked: "suppress" | "defer";
-}
-
-/**
- * Shared fields for all modules regardless of role.
- */
-interface ModuleSpecBase {
-  readonly id: string;
-  readonly name: string;
-  /** States in this module's FSM. */
-  readonly states: Readonly<Record<string, FrameStateSpec>>;
-  /** Initial state when the module activates. */
-  readonly initialStateId: string;
-  /** Fact catalog extension for this module. */
-  readonly facts: FactCatalogExtension;
-  /** Deal constraints for generating test hands. */
-  readonly dealConstraints?: unknown;
-  /** Explanation entries for teaching. */
-  readonly explanationEntries?: readonly ExplanationEntry[];
-}
-
-/**
- * A base module — the primary conversation flow for an opening type.
- * Exactly one base module is active per conversation.
- */
-export interface BaseModuleSpec extends ModuleSpecBase {
-  readonly role: "base";
-  /** Opening patterns contributed to the boot router. */
-  readonly openingPatterns: readonly OpeningPatternSpec[];
-  /** Surface fragment active while this module is a viable route (pre-selection). */
-  readonly openingSurface?: string;
-}
-
-/**
- * A protocol module — guard-activated, layered on top of base modules.
- * Activates based on public state (registers, tags, capabilities),
- * not on specific base module state IDs.
- */
-export interface ProtocolModuleSpec extends ModuleSpecBase {
-  readonly role: "protocol";
-  /**
-   * Durable join condition: should an instance for this scope exist?
-   * Evaluated against public state after every event.
-   * Once true and instance created, this is not re-checked.
-   */
-  readonly attachWhen: BoolExpr;
-  /**
-   * Is the attached instance currently actionable/visible?
-   * Evaluated each tick. Controls surface visibility, not lifecycle.
-   */
-  readonly surfaceWhen?: BoolExpr;
-  /** Instance identity key — e.g., "verify:${reg.agreement.topic}". */
-  readonly scopeKey?: string;
-  /** Anchor policy for where in the frame stack this mounts. */
-  readonly anchorPolicy?: AnchorPolicy;
-  /** Completion configuration. */
-  readonly completion?: {
-    /** Prevents immediate re-entry after completion. */
-    readonly doneLatchUntil?: BoolExpr;
-  };
-  /** Coexistence rules with other protocol modules. */
-  readonly coexistence?: {
-    /** Mutex group — only one module per group may be active. */
-    readonly mutexGroup?: string;
-    /** Priority within mutex group (lower = wins). */
-    readonly priority?: number;
-    /** Maximum concurrent instances of this module. */
-    readonly maxInstances?: number;
-  };
-}
-
-/** A module is either a base module or a protocol module. */
-export type ModuleSpec = BaseModuleSpec | ProtocolModuleSpec;
-
 // ── Surface Fragment ────────────────────────────────────────────────
 
 /**
@@ -335,133 +206,6 @@ export interface SurfaceFragment {
   readonly inheritedDimensions?: readonly ConstraintDimension[];
 }
 
-// ── Runtime Snapshot ────────────────────────────────────────────────
-
-/** A value in the register bus with provenance tracking. */
-export interface ProvenancedValue {
-  readonly value: unknown;
-  readonly writtenAtPly: number;
-  readonly writtenBy: {
-    readonly ownerType: "boot" | "baseTrack" | "protocol";
-    readonly ownerId: string;
-    readonly stateId: string;
-  };
-}
-
-/** Active instance of a base track. */
-export interface BaseTrackInstance {
-  readonly trackId: string;
-  readonly stateId: string;
-}
-
-/** Active instance of a protocol. */
-export interface ProtocolInstance {
-  readonly protocolId: string;
-  readonly instanceKey: string;
-  readonly stateId: string;
-  /** What this instance is anchored to. */
-  readonly anchor: "base" | string; // "base" or parent protocol instance key
-  /** Depth in the frame stack. */
-  readonly depth: number;
-  /** Ply at which this instance was created. */
-  readonly attachedAtPly: number;
-  /** Local state for this instance. */
-  readonly localState: Readonly<Record<string, unknown>>;
-}
-
-/**
- * The full runtime state at any point in the conversation.
- * This is the sparse state vector — exactly one base frame,
- * zero or more protocol frames, plus shared public state.
- */
-export interface RuntimeSnapshot {
-  /** Current node in the compiled boot router trie. */
-  readonly bootNodeId: string;
-  /** Active base track (undefined until opening pattern selects one). */
-  readonly base?: BaseTrackInstance;
-  /** Active protocol instances, ordered by depth. */
-  readonly protocols: readonly ProtocolInstance[];
-  /** Public register bus with provenance. */
-  readonly registers: Readonly<Record<string, ProvenancedValue>>;
-  /** Active tags (from state exports + effects). */
-  readonly activeTags: ReadonlySet<string>;
-  /** Done latches — protocol instances that have completed and cannot re-attach. */
-  readonly doneLatches: ReadonlySet<string>; // "protocolId:scopeKey"
-  /** Current ply (event index). */
-  readonly ply: number;
-}
-
-// ── Provenance Types ────────────────────────────────────────────────
-
-/** Trace of a register write. */
-export interface RegisterWriteTrace {
-  readonly registerPath: string;
-  readonly value: unknown;
-  readonly writtenAtPly: number;
-  readonly by: {
-    readonly ownerType: "boot" | "baseTrack" | "protocol";
-    readonly ownerId: string;
-    readonly stateId: string;
-    readonly effectId?: string;
-  };
-}
-
-/** Trace of a protocol attachment — why it activated. */
-export interface ProtocolAttachTrace {
-  readonly protocolId: string;
-  readonly instanceKey: string;
-  readonly attachedAtPly: number;
-  readonly witness: readonly (
-    | { readonly kind: "register"; readonly path: string; readonly source: RegisterWriteTrace }
-    | { readonly kind: "tag"; readonly tag: string; readonly sourceOwner: { readonly ownerType: string; readonly ownerId: string; readonly stateId: string } }
-    | { readonly kind: "capability"; readonly capabilityId: string; readonly inputs: readonly string[] }
-  )[];
-}
-
-/** Full decision trace — provenance across the entire frame stack. */
-export interface DecisionTrace {
-  readonly winningRule: {
-    readonly ownerType: "baseTrack" | "protocol";
-    readonly ownerId: string;
-    readonly stateId: string;
-    readonly surfaceId: string;
-    readonly ruleId: string;
-    readonly instanceKey?: string;
-  };
-  readonly activeSurfaceStack: readonly {
-    readonly surfaceId: string;
-    readonly ownerType: "baseTrack" | "protocol";
-    readonly ownerId: string;
-    readonly stateId: string;
-    readonly relation: SurfaceRelation;
-    readonly layerPriority: number;
-  }[];
-  readonly activationChain: readonly ProtocolAttachTrace[];
-}
-
-/** Per-action resolution for teaching UI. */
-export interface ActionResolution {
-  readonly call: Call;
-  readonly status: "recommended" | "available" | "blocked" | "shadowed";
-  readonly effectiveMeaning: string;
-  readonly controllingLayer: {
-    readonly ownerType: "boot" | "baseTrack" | "protocol";
-    readonly ownerId: string;
-    readonly surfaceId: string;
-  };
-  readonly supportingRules: readonly {
-    readonly ownerType: "baseTrack" | "protocol";
-    readonly ownerId: string;
-    readonly surfaceId: string;
-    readonly ruleId: string;
-  }[];
-  readonly blockedBy?: readonly {
-    readonly ownerId: string;
-    readonly surfaceId: string;
-    readonly reason: "shadow" | "ban";
-  }[];
-}
-
 // ── Convention Spec (Top-Level Composition) ─────────────────────────
 
 /**
@@ -481,23 +225,4 @@ export interface ConventionSpec {
 // Forward reference for RuleModule — avoid circular import
 import type { RuleModule } from "../rule-module";
 
-// ── Boot Router Types ───────────────────────────────────────────────
 
-/** A node in the compiled opening pattern trie. */
-export interface BootTrieNode {
-  readonly nodeId: string;
-  /** Child nodes keyed by call string (e.g., "1NT", "P", "2C"). */
-  readonly children: Readonly<Record<string, string>>; // call string → child nodeId
-  /** If this node is a leaf, which base track does it select? */
-  readonly selectedTrackId?: string;
-  /** Opening surface fragments active while this node is current. */
-  readonly viableSurfaces?: readonly string[]; // surface fragment IDs
-  /** Which tracks are still viable at this node. */
-  readonly viableTrackIds: readonly string[];
-}
-
-/** Compiled boot router — a prefix trie over opening patterns. */
-export interface BootRouter {
-  readonly rootNodeId: string;
-  readonly nodes: Readonly<Record<string, BootTrieNode>>;
-}
