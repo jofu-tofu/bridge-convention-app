@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { buildObservationLog } from "../observation-log-builder";
 import type { ObservationLogStep } from "../observation-log-builder";
 import { INITIAL_NEGOTIATION } from "../../../../core/contracts/committed-step";
-import type { MachineRegisters, ArbitrationResult, EncodedProposal } from "../../../../core/contracts/module-surface";
+import type { MachineRegisters, PipelineResult, PipelineCarrier } from "../../../../core/contracts/module-surface";
 import type { MeaningProposal } from "../../../../core/contracts/meaning";
 import { ForcingState } from "../../../../core/contracts/bidding";
 import { Seat, BidSuit } from "../../../../engine/types";
@@ -46,11 +46,11 @@ function makeProposal(overrides: Partial<MeaningProposal> = {}): MeaningProposal
   } as MeaningProposal;
 }
 
-function makeArb(
+function makeResult(
   proposal: MeaningProposal,
   call: Call,
-): ArbitrationResult {
-  const encoded: EncodedProposal = {
+): PipelineResult {
+  const carrier: PipelineCarrier = {
     proposal,
     call,
     isDefaultEncoding: true,
@@ -61,14 +61,22 @@ function makeArb(
       encoding: { legal: true },
       pedagogical: { acceptable: true, reasons: [] },
     },
+    traces: {
+      encoding: { encoderId: proposal.meaningId, encoderKind: "default-call", consideredCalls: [call], chosenCall: call, blockedCalls: [] },
+      legality: { call, legal: true },
+    },
   };
 
   return {
-    selected: encoded,
-    truthSet: [encoded],
+    selected: carrier,
+    truthSet: [carrier],
     acceptableSet: [],
     recommended: [],
-    eliminations: [],
+    eliminated: [],
+    applicability: { factDependencies: [], evaluatedConditions: [] },
+    activation: [],
+    arbitration: [],
+    handoffs: [],
   };
 }
 
@@ -92,7 +100,7 @@ describe("buildObservationLog", () => {
         actor: Seat.North,
         call,
         registers: makeRegisters(),
-        arbitration: makeArb(proposal, call),
+        pipelineResult: makeResult(proposal, call),
       },
     ];
 
@@ -130,13 +138,13 @@ describe("buildObservationLog", () => {
         actor: Seat.North,
         call: ntCall,
         registers: makeRegisters(),
-        arbitration: makeArb(ntProposal, ntCall),
+        pipelineResult: makeResult(ntProposal, ntCall),
       },
       {
         actor: Seat.East,
         call: pass,
         registers: makeRegisters(),
-        arbitration: null,
+        pipelineResult: null,
       },
       {
         actor: Seat.South,
@@ -144,7 +152,7 @@ describe("buildObservationLog", () => {
         registers: makeRegisters({
           forcingState: ForcingState.ForcingOneRound,
         }),
-        arbitration: makeArb(staymanProposal, staymanCall),
+        pipelineResult: makeResult(staymanProposal, staymanCall),
       },
     ];
 
@@ -155,7 +163,7 @@ describe("buildObservationLog", () => {
     expect(log[0]!.status).toBe("resolved");
     expect(log[0]!.publicActions[0]).toEqual({ act: "open", strain: "notrump" });
 
-    // Step 1: opponent pass — off-system (null arbitration)
+    // Step 1: opponent pass — off-system (null pipelineResult)
     expect(log[1]!.status).toBe("off-system");
     expect(log[1]!.publicActions).toEqual([]);
     expect(log[1]!.resolvedClaim).toBeNull();
@@ -186,7 +194,7 @@ describe("buildObservationLog", () => {
         registers: makeRegisters({
           captain: "undecided",
         }),
-        arbitration: makeArb(p1, call1),
+        pipelineResult: makeResult(p1, call1),
       },
       {
         actor: Seat.South,
@@ -195,7 +203,7 @@ describe("buildObservationLog", () => {
           captain: "responder",
           forcingState: ForcingState.ForcingOneRound,
         }),
-        arbitration: makeArb(p2, call2),
+        pipelineResult: makeResult(p2, call2),
       },
     ];
 

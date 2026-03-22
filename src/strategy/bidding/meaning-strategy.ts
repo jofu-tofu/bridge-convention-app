@@ -7,7 +7,7 @@ import type {
   SurfaceGroup,
 } from "../../core/contracts";
 import type { BidMeaning, ConstraintDimension } from "../../core/contracts/meaning";
-import type { ArbitrationResult } from "../../core/contracts/module-surface";
+import type { PipelineResult } from "../../core/contracts/module-surface";
 import type { EvaluatedFacts, FactCatalog } from "../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider } from "../../core/contracts/posterior";
 import type { RelationalFactContext } from "../../conventions/core";
@@ -17,6 +17,8 @@ import {
   evaluateAllBidMeanings,
   arbitrateMeanings,
   zipProposalsWithSurfaces,
+  pipelineResultToArbitration,
+  pipelineResultToProvenance,
 } from "../../conventions/core";
 import { getLegalCalls } from "../../engine/auction";
 import { partnerSeat } from "../../engine/constants";
@@ -50,7 +52,7 @@ export interface PipelineInput {
 
 /** Output from the core meaning pipeline. */
 export interface PipelineOutput {
-  readonly result: ArbitrationResult;
+  readonly result: PipelineResult;
   readonly facts: EvaluatedFacts;
 }
 
@@ -115,8 +117,7 @@ export function meaningToStrategy(
     practicalRecommendation: null,
     acceptableAlternatives: options?.acceptableAlternatives ?? null,
     surfaceGroups: options?.surfaceGroups ?? null,
-    provenance: null,
-    arbitration: null,
+    pipelineResult: null,
     posteriorSummary: null,
     explanationCatalog: null,
     teachingProjection: null,
@@ -138,25 +139,26 @@ export function meaningToStrategy(
         catalog,
       });
 
-      const provenance = result.provenance ?? null;
-      const teachingProjection = buildTeachingProjection(result, provenance);
+      const legacyArbitration = pipelineResultToArbitration(result);
+      const legacyProvenance = pipelineResultToProvenance(result);
+      const teachingProjection = buildTeachingProjection(legacyArbitration, legacyProvenance);
 
       lastEvaluation = {
         practicalRecommendation: null,
         acceptableAlternatives: options?.acceptableAlternatives ?? null,
         surfaceGroups: options?.surfaceGroups ?? null,
-        provenance,
-        arbitration: result,
+        pipelineResult: result,
         posteriorSummary: null,
         explanationCatalog: null,
         teachingProjection,
         facts,
         machineSnapshot: null,
-    auctionContext: null,
+        auctionContext: null,
       };
 
       if (!result.selected) return null;
-      return buildBidResult(result.selected, context, moduleId, result);
+      const selected = legacyArbitration.selected!;
+      return buildBidResult(selected, context, moduleId, legacyArbitration);
     },
   };
 }

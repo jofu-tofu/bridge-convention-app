@@ -1,31 +1,31 @@
 <script lang="ts">
-  import type { DecisionProvenance } from "../../../core/contracts/provenance";
+  import type { PipelineResult } from "../../../core/contracts/module-surface";
   import { fmtCall, truncate } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
-    provenance: DecisionProvenance | null;
+    pipelineResult: PipelineResult | null;
   }
 
-  let { provenance }: Props = $props();
+  let { pipelineResult }: Props = $props();
 </script>
 
 <DebugSection
   title="Provenance"
-  preview={provenance ? `${provenance.applicability.evaluatedConditions.length} conditions, ${provenance.encoding.length} encoders` : null}
+  preview={pipelineResult ? `${pipelineResult.applicability.evaluatedConditions.length} conditions` : null}
 >
-  {#if provenance}
-    {@const prov = provenance}
+  {#if pipelineResult}
+    {@const pr = pipelineResult}
 
     <!-- Applicability -->
-    {#if prov.applicability.evaluatedConditions.length > 0}
+    {#if pr.applicability.evaluatedConditions.length > 0}
       <DebugSection
         title="Applicability"
-        count={prov.applicability.evaluatedConditions.length}
-        preview="{prov.applicability.evaluatedConditions.filter(c => c.satisfied).length}/{prov.applicability.evaluatedConditions.length} pass"
+        count={pr.applicability.evaluatedConditions.length}
+        preview="{pr.applicability.evaluatedConditions.filter(c => c.satisfied).length}/{pr.applicability.evaluatedConditions.length} pass"
         nested
       >
-        {#each prov.applicability.evaluatedConditions as cond, i (i)}
+        {#each pr.applicability.evaluatedConditions as cond, i (i)}
           <div class="text-[10px] leading-tight">
             <span class={cond.satisfied ? "text-green-400" : "text-red-400"}>{cond.satisfied ? "+" : "-"}</span>
             <span class="text-text-primary ml-0.5">{cond.conditionId ?? ""}</span>
@@ -37,10 +37,11 @@
       </DebugSection>
     {/if}
 
-    <!-- Encoding -->
-    {#if prov.encoding.length > 0}
-      <DebugSection title="Encoding" count={prov.encoding.length} nested>
-        {#each prov.encoding as enc, i (i)}
+    <!-- Encoding (from carriers) -->
+    {@const encodingTraces = [...pr.truthSet, ...pr.acceptableSet, ...pr.eliminated].map(c => c.traces.encoding)}
+    {#if encodingTraces.length > 0}
+      <DebugSection title="Encoding" count={encodingTraces.length} nested>
+        {#each encodingTraces as enc, i (i)}
           <div class="text-[10px] leading-tight mb-0.5">
             <span class="text-purple-300">{enc.encoderKind}</span>
             <span class="text-text-muted ml-0.5">({enc.encoderId})</span>
@@ -60,9 +61,9 @@
     {/if}
 
     <!-- Ranking -->
-    {#if prov.arbitration.length > 0}
-      <DebugSection title="Ranking" count={prov.arbitration.length} nested>
-        {#each prov.arbitration as at (at.candidateId)}
+    {#if pr.arbitration.length > 0}
+      <DebugSection title="Ranking" count={pr.arbitration.length} nested>
+        {#each pr.arbitration as at (at.candidateId)}
           <div class="text-[10px] leading-tight">
             <span class={at.truthSetMember ? "text-green-300" : "text-text-muted"}>{truncate(at.candidateId, 30)}</span>
             <span class="text-text-muted ml-0.5">band:{at.rankingInputs.recommendationBand} spec:{at.rankingInputs.specificity} mod:{at.rankingInputs.modulePrecedence}</span>

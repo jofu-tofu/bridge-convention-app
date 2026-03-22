@@ -81,9 +81,9 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
     expect(result.truthSet[0]!.proposal.meaningId).toBe("stayman:ask-major");
     expect(result.selected!.proposal.meaningId).toBe("stayman:ask-major");
 
-    // The eliminated proposal appears in eliminations with alias dedup reason
-    expect(result.eliminations.some(
-      (e) => e.candidateBidName === "precision-stayman:ask-major",
+    // The eliminated carrier has an alias dedup elimination trace
+    expect(result.eliminated.some(
+      (c) => c.proposal.meaningId === "precision-stayman:ask-major",
     )).toBe(true);
   });
 

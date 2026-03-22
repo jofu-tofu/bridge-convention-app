@@ -17,7 +17,7 @@ describe("arbitrateMeanings", () => {
     expect(result.selected).not.toBeNull();
     expect(result.selected!.call).toEqual(makeCall(2, BidSuit.Clubs));
     expect(result.truthSet).toHaveLength(1);
-    expect(result.eliminations).toHaveLength(0);
+    expect(result.eliminated).toHaveLength(0);
   });
 
   it("does not select a proposal that fails semantic gate", () => {
@@ -26,8 +26,8 @@ describe("arbitrateMeanings", () => {
 
     expect(result.selected).toBeNull();
     expect(result.truthSet).toHaveLength(0);
-    expect(result.eliminations).toHaveLength(1);
-    expect(result.eliminations[0]!.gateId).toBe("semantic-applicability");
+    expect(result.eliminated).toHaveLength(1);
+    expect(result.eliminated[0]!.traces.elimination!.stage).toBe("applicability");
   });
 
   it("selects highest band when multiple proposals have different bands", () => {
@@ -106,11 +106,11 @@ describe("arbitrateMeanings", () => {
 
     expect(result.selected).toBeNull();
     expect(result.truthSet).toHaveLength(0);
-    expect(result.eliminations).toHaveLength(1);
-    expect(result.eliminations[0]!.reason).toContain("not legal");
+    expect(result.eliminated).toHaveLength(1);
+    expect(result.eliminated[0]!.traces.elimination!.reason).toContain("not legal");
   });
 
-  it("threads blockedCalls through to DecisionProvenance.encoding when call is illegal", () => {
+  it("threads blockedCalls on carrier encoding trace when call is illegal", () => {
     const illegalCall = makeCall(2, BidSuit.Clubs);
     const legalCalls: Call[] = [
       { type: "bid", level: 1, strain: BidSuit.Clubs },
@@ -120,27 +120,27 @@ describe("arbitrateMeanings", () => {
     const input = makeArbitrationInput({ meaningId: "test:blocked" }, illegalCall);
     const result = arbitrateMeanings([input], { legalCalls });
 
-    expect(result.provenance).toBeDefined();
-    expect(result.provenance!.encoding).toHaveLength(1);
-    expect(result.provenance!.encoding[0]!.blockedCalls).toHaveLength(1);
-    expect(result.provenance!.encoding[0]!.blockedCalls[0]).toEqual({
+    expect(result.eliminated).toHaveLength(1);
+    const carrier = result.eliminated[0]!;
+    expect(carrier.traces.encoding.blockedCalls).toHaveLength(1);
+    expect(carrier.traces.encoding.blockedCalls[0]).toEqual({
       call: illegalCall,
       reason: "illegal_in_auction",
     });
-    expect(result.provenance!.encoding[0]!.chosenCall).toBeUndefined();
+    expect(carrier.traces.encoding.chosenCall).toBeUndefined();
   });
 
-  it("threads empty blockedCalls through to DecisionProvenance.encoding when call is legal", () => {
+  it("threads empty blockedCalls on carrier encoding trace when call is legal", () => {
     const legalCall = makeCall(1, BidSuit.Clubs);
     const legalCalls: Call[] = [legalCall, { type: "pass" }];
 
     const input = makeArbitrationInput({}, legalCall);
     const result = arbitrateMeanings([input], { legalCalls });
 
-    expect(result.provenance).toBeDefined();
-    expect(result.provenance!.encoding).toHaveLength(1);
-    expect(result.provenance!.encoding[0]!.blockedCalls).toHaveLength(0);
-    expect(result.provenance!.encoding[0]!.chosenCall).toEqual(legalCall);
+    expect(result.truthSet).toHaveLength(1);
+    const carrier = result.truthSet[0]!;
+    expect(carrier.traces.encoding.blockedCalls).toHaveLength(0);
+    expect(carrier.traces.encoding.chosenCall).toEqual(legalCall);
   });
 
   it("returns null selected and empty truthSet for empty proposals", () => {
@@ -150,7 +150,7 @@ describe("arbitrateMeanings", () => {
     expect(result.truthSet).toHaveLength(0);
     expect(result.acceptableSet).toHaveLength(0);
     expect(result.recommended).toHaveLength(0);
-    expect(result.eliminations).toHaveLength(0);
+    expect(result.eliminated).toHaveLength(0);
   });
 
   it("places failed-semantic may-band legal proposals in acceptableSet", () => {
@@ -207,7 +207,7 @@ describe("arbitrateMeanings", () => {
 
     // Eliminated due to semantic failure; "should" band (priority 1) <= "may" (priority 2)
     // so it IS in acceptableSet. Verify the eligibility shape on that entry.
-    expect(result.eliminations).toHaveLength(1);
+    expect(result.eliminated).toHaveLength(1);
     expect(result.acceptableSet).toHaveLength(1);
     const acceptable = result.acceptableSet[0]!;
     expect(acceptable.eligibility.hand.satisfied).toBe(false);
@@ -247,7 +247,7 @@ describe("arbitrateMeanings", () => {
     const result = arbitrateMeanings([input]);
 
     expect(result.acceptableSet).toHaveLength(0);
-    expect(result.eliminations).toHaveLength(1);
+    expect(result.eliminated).toHaveLength(1);
   });
 });
 
@@ -381,17 +381,15 @@ describe("handoff provenance", () => {
 
     const result = arbitrateMeanings([input], { handoffs });
 
-    expect(result.provenance).toBeDefined();
-    expect(result.provenance!.handoffs).toEqual(handoffs);
-    expect(result.provenance!.handoffs).toHaveLength(2);
+    expect(result.handoffs).toEqual(handoffs);
+    expect(result.handoffs).toHaveLength(2);
   });
 
   it("defaults handoffs to empty array when not provided", () => {
     const input = makeArbitrationInput();
     const result = arbitrateMeanings([input]);
 
-    expect(result.provenance).toBeDefined();
-    expect(result.provenance!.handoffs).toEqual([]);
+    expect(result.handoffs).toEqual([]);
   });
 });
 

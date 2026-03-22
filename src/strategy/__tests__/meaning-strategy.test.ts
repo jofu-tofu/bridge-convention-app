@@ -101,7 +101,7 @@ describe("meaningToStrategy", () => {
 
     const evaluation = strategy.getLastEvaluation();
     expect(evaluation).not.toBeNull();
-    expect(evaluation!.arbitration).not.toBeNull();
+    expect(evaluation!.pipelineResult).not.toBeNull();
     expect(evaluation!.facts).not.toBeNull();
   });
 
@@ -298,8 +298,8 @@ describe("protocolSpecToStrategy with NT bundle", () => {
 
     const evaluation = strategy.getLastEvaluation();
     expect(evaluation).not.toBeNull();
-    expect(evaluation!.arbitration).not.toBeNull();
-    expect(evaluation!.arbitration!.truthSet.length).toBeGreaterThan(0);
+    expect(evaluation!.pipelineResult).not.toBeNull();
+    expect(evaluation!.pipelineResult!.truthSet.length).toBeGreaterThan(0);
     expect(evaluation!.facts).not.toBeNull();
   });
 });

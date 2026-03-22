@@ -2,6 +2,8 @@ import type {
   ArbitrationResult,
   EncodedProposal,
   EliminationRecord,
+  PipelineCarrier,
+  PipelineResult,
 } from "../../../core/contracts/module-surface";
 import type { Call } from "../../../engine/types";
 import type { BidMeaning } from "../../../core/contracts/meaning";
@@ -75,58 +77,57 @@ function buildAliasResolver(
 
 /**
  * Deduplicate a truth set by resolved semantic class.
- * For each group of proposals sharing the same resolved semanticClassId,
+ * For each group of carriers sharing the same resolved semanticClassId,
  * only the highest-ranked (first in sorted order) survives. Others are
  * eliminated with reason "semantic-class-alias-dedup".
  *
- * Proposals without a semanticClassId are never deduplicated.
+ * Carriers without a semanticClassId are never deduplicated.
  * The input array must already be sorted by ranking (highest first).
  */
 function deduplicateBySemanticClassAlias(
-  sorted: readonly EncodedProposal[],
+  sorted: readonly PipelineCarrier[],
   resolveAlias: (id: string | undefined) => string | undefined,
 ): {
-  deduplicated: readonly EncodedProposal[];
-  aliasEliminations: readonly EliminationRecord[];
-  aliasEliminationTraces: readonly EliminationTrace[];
+  deduplicated: readonly PipelineCarrier[];
+  aliasEliminated: readonly PipelineCarrier[];
 } {
-  const seen = new Map<string, EncodedProposal>();
-  const deduplicated: EncodedProposal[] = [];
-  const aliasEliminations: EliminationRecord[] = [];
-  const aliasEliminationTraces: EliminationTrace[] = [];
+  const seen = new Map<string, PipelineCarrier>();
+  const deduplicated: PipelineCarrier[] = [];
+  const aliasEliminated: PipelineCarrier[] = [];
 
-  for (const entry of sorted) {
-    const resolved = resolveAlias(entry.proposal.semanticClassId);
+  for (const carrier of sorted) {
+    const resolved = resolveAlias(carrier.proposal.semanticClassId);
 
-    // Proposals without a semanticClassId cannot be alias-deduplicated
+    // Carriers without a semanticClassId cannot be alias-deduplicated
     if (resolved === undefined) {
-      deduplicated.push(entry);
+      deduplicated.push(carrier);
       continue;
     }
 
     const existing = seen.get(resolved);
     if (existing === undefined) {
-      seen.set(resolved, entry);
-      deduplicated.push(entry);
+      seen.set(resolved, carrier);
+      deduplicated.push(carrier);
     } else {
-      // This proposal is a lower-ranked duplicate — eliminate it
-      aliasEliminations.push({
-        candidateBidName: entry.proposal.meaningId,
-        moduleId: entry.proposal.moduleId,
-        reason: `Semantic class alias dedup: "${entry.proposal.semanticClassId}" and "${existing.proposal.semanticClassId}" both resolve to "${resolved}"`,
-        gateId: "semantic-class-alias-dedup",
-      });
-      aliasEliminationTraces.push({
-        candidateId: entry.proposal.meaningId,
-        stage: "arbitration",
-        reason: `Semantic class alias dedup: resolved to "${resolved}", already represented by "${existing.proposal.meaningId}"`,
-        evidence: [],
-        strength: "entailed",
-      });
+      // This carrier is a lower-ranked duplicate — mark as eliminated
+      const eliminatedCarrier: PipelineCarrier = {
+        ...carrier,
+        traces: {
+          ...carrier.traces,
+          elimination: {
+            candidateId: carrier.proposal.meaningId,
+            stage: "arbitration",
+            reason: `Semantic class alias dedup: resolved to "${resolved}", already represented by "${existing.proposal.meaningId}"`,
+            evidence: [],
+            strength: "entailed",
+          },
+        },
+      };
+      aliasEliminated.push(eliminatedCarrier);
     }
   }
 
-  return { deduplicated, aliasEliminations, aliasEliminationTraces };
+  return { deduplicated, aliasEliminated };
 }
 
 // ─── Provenance Helpers ────────────────────────────────────────
@@ -136,85 +137,37 @@ function clauseToEvidence(c: { factId: string; satisfied: boolean; observedValue
   return { conditionId: c.factId, factId: c.factId, satisfied: c.satisfied, observedValue: c.observedValue, threshold: c.value };
 }
 
-/** Build DecisionProvenance from gate-level traces and arbitration results. */
-function buildProvenance(
-  encoded: readonly EncodedProposal[],
-  finalTruthSet: readonly EncodedProposal[],
-  recommended: readonly EncodedProposal[],
-  selected: EncodedProposal | null,
-  traces: {
-    legality: readonly LegalityTrace[];
-    encoding: readonly EncodingTrace[];
-    eliminations: readonly EliminationTrace[];
-  },
-  handoffs: readonly HandoffTrace[],
-): DecisionProvenance {
-  const arbitration: ArbitrationTrace[] = encoded.map((e) => {
-    const isTruth = finalTruthSet.includes(e) && e.eligibility.hand.satisfied && e.eligibility.encoding.legal;
-    const recIndex = recommended.indexOf(e);
-    return {
-      candidateId: e.proposal.meaningId,
-      truthSetMember: isTruth,
-      acceptableSetMember: !e.eligibility.hand.satisfied && e.eligibility.encoding.legal,
-      recommendationRank: recIndex >= 0 ? recIndex : undefined,
-      rankingInputs: {
-        recommendationBand: BAND_PRIORITY[e.proposal.ranking.recommendationBand],
-        handFitScore: undefined,
-        modulePrecedence: e.proposal.ranking.modulePrecedence ?? 0,
-        specificity: e.proposal.ranking.specificity,
-      },
-    };
-  });
 
-  const applicability: ApplicabilityEvidence = selected
-    ? {
-      factDependencies: selected.proposal.clauses.map((c) => c.factId),
-      evaluatedConditions: selected.proposal.clauses.map(clauseToEvidence),
-    }
-    : { factDependencies: [], evaluatedConditions: [] };
-
-  return {
-    applicability,
-    activation: [], // activation traces not yet implemented — always empty
-    encoding: traces.encoding,
-    legality: traces.legality,
-    arbitration,
-    eliminations: traces.eliminations,
-    handoffs,
-  };
-}
-
-/** Build EvidenceBundle from arbitration results. */
-function buildEvidenceBundle(
+/** Build EvidenceBundle from carriers. */
+function buildEvidenceBundleFromCarriers(
   inputs: readonly ArbitrationInput[],
-  eliminations: readonly EliminationRecord[],
-  finalTruthSet: readonly EncodedProposal[],
-  selected: EncodedProposal | null,
+  eliminated: readonly PipelineCarrier[],
+  finalTruthSet: readonly PipelineCarrier[],
+  selected: PipelineCarrier | null,
 ): EvidenceBundle {
   const matched: EvidenceBundle["matched"] = selected
     ? { meaningId: selected.proposal.meaningId, satisfiedConditions: selected.proposal.clauses.map(clauseToEvidence) }
     : null;
 
-  const rejected: RejectionEvidence[] = eliminations.map((e) => {
-    const input = inputs.find((i) => i.proposal.meaningId === e.candidateBidName);
-    const failedClauses = input?.proposal.clauses.filter((c) => !c.satisfied) ?? [];
+  const rejected: RejectionEvidence[] = eliminated.map((c) => {
+    const failedClauses = c.proposal.clauses.filter((cl) => !cl.satisfied);
     return {
-      meaningId: e.candidateBidName,
+      meaningId: c.proposal.meaningId,
       failedConditions: failedClauses.map(clauseToEvidence),
-      negatableFailures: failedClauses.map((c) => clauseToEvidence({ ...c, satisfied: false })),
-      moduleId: input?.proposal.moduleId ?? "unknown",
+      negatableFailures: failedClauses.map((cl) => clauseToEvidence({ ...cl, satisfied: false })),
+      moduleId: c.proposal.moduleId,
     };
   });
 
   const selectedFacts = selected ? new Set(selected.proposal.clauses.map(c => c.factId)) : new Set<string>();
   const alternatives: AlternativeEvidence[] = finalTruthSet
-    .filter((e) => e !== selected)
-    .map((e) => ({
-      meaningId: e.proposal.meaningId,
-      call: formatCallForEvidence(e.call),
-      ranking: { band: e.proposal.ranking.recommendationBand, specificity: e.proposal.ranking.specificity },
+    .filter((c) => c !== selected)
+    .map((c) => ({
+      meaningId: c.proposal.meaningId,
+      call: formatCallForEvidence(c.call),
+      ranking: { band: c.proposal.ranking.recommendationBand, specificity: c.proposal.ranking.specificity },
       reason: "truth-set-member-not-selected",
-      conditionDelta: e.proposal.clauses.filter(c => !selectedFacts.has(c.factId)).map(clauseToEvidence),
+      conditionDelta: c.proposal.clauses.filter(cl => !selectedFacts.has(cl.factId)).map(clauseToEvidence),
     }));
 
   return { matched, rejected, alternatives, exhaustive: true, fallbackReached: selected === null };
@@ -229,51 +182,124 @@ export function arbitrateMeanings(
     semanticClassAliases?: readonly { from: string; to: string }[];
     handoffs?: readonly HandoffTrace[];
   },
-): ArbitrationResult {
+): PipelineResult {
   // Step 1: Evaluate each proposal through gates (semantic, legality, encoding)
-  const encoded: EncodedProposal[] = [];
-  const eliminations: EliminationRecord[] = [];
-  const provenanceEliminations: EliminationTrace[] = [];
-  const provenanceLegality: LegalityTrace[] = [];
-  const provenanceEncoding: EncodingTrace[] = [];
+  const passedCarriers: PipelineCarrier[] = [];
+  const eliminatedCarriers: PipelineCarrier[] = [];
 
   for (const input of inputs) {
     const result = evaluateProposal(input, options?.legalCalls);
-    provenanceLegality.push(result.provenanceLegality);
-    provenanceEncoding.push(result.provenanceEncoding);
-    if (result.elimination) eliminations.push(result.elimination);
-    if (result.provenanceElimination) provenanceEliminations.push(result.provenanceElimination);
-    if (result.encoded) encoded.push(result.encoded);
+    if (result.passedAllGates || result.addToAcceptable) {
+      passedCarriers.push(result.carrier);
+    }
+    if (!result.passedAllGates) {
+      eliminatedCarriers.push(result.carrier);
+    }
   }
 
   // Step 2: Classify into truth set (all satisfied + legal) and acceptable set
-  const { truthSet, acceptableSet } = classifyIntoSets(encoded);
+  const { truthSet, acceptableSet } = classifyIntoSets(passedCarriers);
 
   // Step 3: Sort truth set by ranking, then deduplicate by semantic class alias
   const sortedTruth = [...truthSet].sort((a, b) =>
     compareRanking(a.proposal.ranking, b.proposal.ranking),
   );
   const resolveAlias = buildAliasResolver(options?.semanticClassAliases ?? []);
-  const { deduplicated, aliasEliminations, aliasEliminationTraces } =
+  const { deduplicated, aliasEliminated } =
     deduplicateBySemanticClassAlias(sortedTruth, resolveAlias);
-  eliminations.push(...aliasEliminations);
-  provenanceEliminations.push(...aliasEliminationTraces);
+  eliminatedCarriers.push(...aliasEliminated);
 
   // Step 4: Select winner (highest-ranked in deduplicated truth set)
   const finalTruthSet = deduplicated;
   const recommended = deduplicated;
-  const selected: EncodedProposal | null = recommended[0] ?? null;
+  const selected: PipelineCarrier | null = recommended[0] ?? null;
 
-  // Step 5: Build provenance and evidence (post-processing — separate from selection)
-  const provenance = buildProvenance(
-    encoded, finalTruthSet, recommended, selected,
-    { legality: provenanceLegality, encoding: provenanceEncoding, eliminations: provenanceEliminations },
-    options?.handoffs ?? [],
-  );
-  const evidenceBundle = buildEvidenceBundle(inputs, eliminations, finalTruthSet, selected);
+  // Step 5: Build cross-surface provenance
+  const allCarriers = [...passedCarriers, ...eliminatedCarriers.filter(c => !passedCarriers.includes(c))];
+  const arbitrationTraces: ArbitrationTrace[] = allCarriers.map((c) => {
+    const isTruth = finalTruthSet.includes(c) && c.eligibility.hand.satisfied && c.eligibility.encoding.legal;
+    const recIndex = recommended.indexOf(c);
+    return {
+      candidateId: c.proposal.meaningId,
+      truthSetMember: isTruth,
+      acceptableSetMember: !c.eligibility.hand.satisfied && c.eligibility.encoding.legal,
+      recommendationRank: recIndex >= 0 ? recIndex : undefined,
+      rankingInputs: {
+        recommendationBand: BAND_PRIORITY[c.proposal.ranking.recommendationBand],
+        handFitScore: undefined,
+        modulePrecedence: c.proposal.ranking.modulePrecedence ?? 0,
+        specificity: c.proposal.ranking.specificity,
+      },
+    };
+  });
+
+  const applicability: ApplicabilityEvidence = selected
+    ? {
+      factDependencies: selected.proposal.clauses.map((c) => c.factId),
+      evaluatedConditions: selected.proposal.clauses.map(clauseToEvidence),
+    }
+    : { factDependencies: [], evaluatedConditions: [] };
+
+  const evidenceBundle = buildEvidenceBundleFromCarriers(inputs, eliminatedCarriers, finalTruthSet, selected);
 
   return {
-    selected, truthSet: finalTruthSet, acceptableSet, recommended, eliminations,
-    provenance, evidenceBundle,
+    selected,
+    truthSet: finalTruthSet,
+    acceptableSet,
+    recommended,
+    eliminated: eliminatedCarriers,
+    applicability,
+    activation: [], // activation traces not yet implemented — always empty
+    arbitration: arbitrationTraces,
+    handoffs: options?.handoffs ?? [],
+    evidenceBundle,
+  };
+}
+
+// ─── Legacy Conversion Shims (temporary — removed in Phase 4) ──
+
+/** Convert PipelineResult to ArbitrationResult for unmigrated consumers. */
+export function pipelineResultToArbitration(result: PipelineResult): ArbitrationResult {
+  const carrierToEncoded = (c: PipelineCarrier): EncodedProposal => ({
+    proposal: c.proposal,
+    call: c.call,
+    isDefaultEncoding: c.isDefaultEncoding,
+    legal: c.legal,
+    allEncodings: c.allEncodings,
+    eligibility: c.eligibility,
+  });
+
+  return {
+    selected: result.selected ? carrierToEncoded(result.selected) : null,
+    truthSet: result.truthSet.map(carrierToEncoded),
+    acceptableSet: result.acceptableSet.map(carrierToEncoded),
+    recommended: result.recommended.map(carrierToEncoded),
+    eliminations: result.eliminated.map((c) => ({
+      candidateBidName: c.proposal.meaningId,
+      moduleId: c.proposal.moduleId,
+      reason: c.traces.elimination?.reason ?? "Gate check failed",
+      gateId: undefined,
+    })),
+    evidenceBundle: result.evidenceBundle,
+  };
+}
+
+/** Convert PipelineResult to DecisionProvenance for unmigrated consumers. */
+export function pipelineResultToProvenance(result: PipelineResult): DecisionProvenance {
+  const allCarriers = [
+    ...result.truthSet,
+    ...result.acceptableSet,
+    ...result.eliminated,
+  ];
+  return {
+    applicability: result.applicability,
+    activation: result.activation,
+    encoding: allCarriers.map((c) => c.traces.encoding),
+    legality: allCarriers.map((c) => c.traces.legality),
+    arbitration: result.arbitration,
+    eliminations: result.eliminated
+      .filter((c) => c.traces.elimination !== undefined)
+      .map((c) => c.traces.elimination!),
+    handoffs: result.handoffs,
   };
 }

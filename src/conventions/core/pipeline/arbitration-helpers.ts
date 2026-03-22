@@ -1,6 +1,5 @@
 import type {
-  EncodedProposal,
-  EliminationRecord,
+  PipelineCarrier,
 } from "../../../core/contracts/module-surface";
 import type { CandidateEligibility } from "../../../core/contracts/tree-evaluation";
 import type {
@@ -16,14 +15,13 @@ import { resolveEncoding } from "./encoder-resolver";
 import type { DeclaredEncoderKind } from "../../../core/contracts/agreement-module";
 
 /** Result of evaluating a single proposal through the gate pipeline. */
-interface ProposalResult {
-  encoded?: EncodedProposal;
-  elimination?: EliminationRecord;
-  provenanceElimination?: EliminationTrace;
-  provenanceLegality: LegalityTrace;
-  provenanceEncoding: EncodingTrace;
-  /** Whether this should be added to encoded array even though eliminated (for acceptableSet). */
-  addToEncoded: boolean;
+export interface ProposalResult {
+  /** The carrier with all per-surface data and traces attached. */
+  carrier: PipelineCarrier;
+  /** Whether this carrier passed all gates (eligible for truth/acceptable sets). */
+  passedAllGates: boolean;
+  /** Whether this should be included in the acceptable set even though gates failed. */
+  addToAcceptable: boolean;
 }
 
 /**
@@ -130,39 +128,29 @@ export function evaluateProposal(
     },
   };
 
-  const encodedProposal: EncodedProposal = {
-    proposal,
-    call,
-    isDefaultEncoding: true,
-    legal: legalityPassed,
-    allEncodings: [{ call, legal: legalityPassed }],
-    eligibility,
-  };
-
   if (gateResult.passedAll) {
-    return {
-      encoded: encodedProposal,
-      provenanceLegality,
-      provenanceEncoding,
-      addToEncoded: true,
+    const carrier: PipelineCarrier = {
+      proposal,
+      call,
+      isDefaultEncoding: true,
+      legal: legalityPassed,
+      allEncodings: [{ call, legal: legalityPassed }],
+      eligibility,
+      traces: {
+        encoding: provenanceEncoding,
+        legality: provenanceLegality,
+      },
     };
+    return { carrier, passedAllGates: true, addToAcceptable: false };
   }
 
-  // Gate failed — build elimination
+  // Gate failed — build elimination trace
   const failedGate = gateResult.results.find((r) => !r.passed);
-  const elimination: EliminationRecord = {
-    candidateBidName: proposal.meaningId,
-    moduleId: proposal.moduleId,
-    reason: failedGate?.reason ?? "Gate check failed",
-    gateId: failedGate?.gateId,
-  };
-
-  // Provenance elimination trace
   const eliminationStage: EliminationTrace["stage"] =
     failedGate?.gateId === "semantic-applicability" ? "applicability"
       : failedGate?.gateId === "concrete-legality" ? "legality"
         : "arbitration";
-  const provenanceElimination: EliminationTrace = {
+  const eliminationTrace: EliminationTrace = {
     candidateId: proposal.meaningId,
     stage: eliminationStage,
     reason: failedGate?.reason ?? "Gate check failed",
@@ -172,40 +160,47 @@ export function evaluateProposal(
 
   // Check if it belongs in the acceptable set:
   // semantic failed but band is "may" or better, and legality passes
-  let addToEncoded = false;
+  let addToAcceptable = false;
   if (!semanticPassed && legalityPassed) {
     const bandValue = BAND_PRIORITY[proposal.ranking.recommendationBand];
     if (bandValue <= BAND_PRIORITY["may"]) {
-      addToEncoded = true;
+      addToAcceptable = true;
     }
   }
 
-  return {
-    encoded: addToEncoded ? encodedProposal : undefined,
-    elimination,
-    provenanceElimination,
-    provenanceLegality,
-    provenanceEncoding,
-    addToEncoded,
+  const carrier: PipelineCarrier = {
+    proposal,
+    call,
+    isDefaultEncoding: true,
+    legal: legalityPassed,
+    allEncodings: [{ call, legal: legalityPassed }],
+    eligibility,
+    traces: {
+      encoding: provenanceEncoding,
+      legality: provenanceLegality,
+      elimination: eliminationTrace,
+    },
   };
+
+  return { carrier, passedAllGates: false, addToAcceptable };
 }
 
 /**
- * Split encoded proposals into truth (hand satisfied + legal) and acceptable
+ * Split carriers into truth (hand satisfied + legal) and acceptable
  * (hand not satisfied + legal) partitions.
  */
-export function classifyIntoSets(encoded: readonly EncodedProposal[]): {
-  truthSet: readonly EncodedProposal[];
-  acceptableSet: readonly EncodedProposal[];
+export function classifyIntoSets(carriers: readonly PipelineCarrier[]): {
+  truthSet: readonly PipelineCarrier[];
+  acceptableSet: readonly PipelineCarrier[];
 } {
-  const truthSet = encoded.filter(
-    (e) =>
-      e.eligibility.hand.satisfied && e.eligibility.encoding.legal,
+  const truthSet = carriers.filter(
+    (c) =>
+      c.eligibility.hand.satisfied && c.eligibility.encoding.legal,
   );
 
-  const acceptableSet = encoded.filter(
-    (e) =>
-      !e.eligibility.hand.satisfied && e.eligibility.encoding.legal,
+  const acceptableSet = carriers.filter(
+    (c) =>
+      !c.eligibility.hand.satisfied && c.eligibility.encoding.legal,
   );
 
   return { truthSet, acceptableSet };

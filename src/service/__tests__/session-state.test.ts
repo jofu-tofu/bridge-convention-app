@@ -445,7 +445,6 @@ describe("SessionState.captureSnapshot", () => {
 
     expect(snapshot.expectedBid).toBeNull();
     expect(snapshot.practicalRecommendation).toBeNull();
-    expect(snapshot.provenance).toBeNull();
-    expect(snapshot.arbitration).toBeNull();
+    expect(snapshot.pipelineResult).toBeNull();
   });
 });

@@ -121,8 +121,7 @@ const EMPTY_EVALUATION: StrategyEvaluation = {
   practicalRecommendation: null,
   acceptableAlternatives: null,
   surfaceGroups: null,
-  provenance: null,
-  arbitration: null,
+  pipelineResult: null,
   posteriorSummary: null,
   explanationCatalog: null,
   teachingProjection: null,
@@ -157,7 +156,7 @@ export function createGameStore(
 
   // ── Session state ─────────────────────────────────────────────
   let activeHandle = $state<SessionHandle | null>(null);
-  /** Active service for current session — may differ from constructor service when tests provide their own. */
+  // Not $state — swapped per-drill, not reactive (components access via closures)
   let activeService: DevServicePort = service;
   let deal = $state<Deal | null>(null);
   let phase = $state<GamePhase>("BIDDING");
@@ -207,6 +206,7 @@ export function createGameStore(
   let ddsSolution = $state<DDSolution | null>(null);
   let ddsSolving = $state(false);
   let ddsError = $state<string | null>(null);
+  // Intentionally not $state — used as an async generation counter to discard stale DDS results
   let solveGeneration = 0;
 
   // ── Inference state ───────────────────────────────────────────
@@ -583,7 +583,8 @@ export function createGameStore(
         await scoreTrick();
       }
       await completePlay();
-    } catch {
+    } catch (err) {
+      console.error('skipToReviewLocal error:', err);
       currentPlayer = null;
       onPlayComplete?.(null);
     }
@@ -618,7 +619,8 @@ export function createGameStore(
     // If opening leader is AI, start AI plays (only in legacy local path)
     if (!activeHandle && !isUserControlled(currentPlayer)) {
       playProcessing = true;
-      runAiPlays().catch(() => {
+      runAiPlays().catch((err) => {
+        console.error('runAiPlays failed:', err);
         playProcessing = false;
       });
     }
@@ -643,7 +645,8 @@ export function createGameStore(
         let newAuction: Auction;
         try {
           newAuction = await engine.addCall(auction, bidEntry);
-        } catch {
+        } catch (err) {
+          console.error('AI bid failed:', err);
           break;
         }
         auction = newAuction;
@@ -1185,7 +1188,7 @@ export function createGameStore(
 
     userPlayCard(card: Card, seat: Seat): void {
       const impl = activeHandle ? userPlayCardViaService : userPlayCardLocal;
-      impl(card, seat).catch(() => {});
+      impl(card, seat).catch((err) => { console.error('userPlayCard failed:', err); });
     },
 
     skipToReview(): void {
@@ -1193,7 +1196,7 @@ export function createGameStore(
         playAborted = true;
         onPlayComplete?.(null);
       } else {
-        skipToReviewLocal().catch(() => {});
+        skipToReviewLocal().catch((err) => { console.error('skipToReview failed:', err); });
       }
     },
 

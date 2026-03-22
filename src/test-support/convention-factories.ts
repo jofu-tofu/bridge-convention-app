@@ -8,9 +8,9 @@
 import { BidSuit } from "../engine/types";
 import type { Call } from "../engine/types";
 import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClause, MeaningProposal } from "../core/contracts/meaning";
-import type { ArbitrationResult, EncodedProposal } from "../core/contracts/module-surface";
+import type { ArbitrationResult, EncodedProposal, PipelineCarrier, PipelineResult } from "../core/contracts/module-surface";
 import type { CandidateEligibility } from "../core/contracts/tree-evaluation";
-import type { DecisionProvenance } from "../core/contracts/provenance";
+import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../core/contracts/provenance";
 import type { ExplanationEntry } from "../core/contracts/explanation-catalog";
 /** Create a minimal BidMeaning with override support. */
 export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {
@@ -133,6 +133,53 @@ export function makeProvenance(overrides: Partial<DecisionProvenance> = {}): Dec
     legality: [],
     arbitration: [],
     eliminations: [],
+    handoffs: [],
+    ...overrides,
+  };
+}
+
+/** Create a PipelineCarrier with defaults. */
+export function makeCarrier(overrides: Partial<PipelineCarrier> = {}): PipelineCarrier {
+  const proposal = overrides.proposal ?? makeProposal();
+  const call = overrides.call ?? makeCall(2, BidSuit.Clubs);
+  const legal = overrides.legal ?? true;
+  const defaultEncoding: EncodingTrace = {
+    encoderId: proposal.meaningId,
+    encoderKind: "default-call",
+    consideredCalls: [call],
+    chosenCall: call,
+    blockedCalls: [],
+  };
+  const defaultLegality: LegalityTrace = {
+    call,
+    legal,
+  };
+  return {
+    proposal,
+    call,
+    isDefaultEncoding: true,
+    legal,
+    allEncodings: [{ call, legal }],
+    eligibility: makeEligibility(),
+    traces: {
+      encoding: defaultEncoding,
+      legality: defaultLegality,
+    },
+    ...overrides,
+  };
+}
+
+/** Create a PipelineResult with defaults. */
+export function makePipelineResult(overrides: Partial<PipelineResult> = {}): PipelineResult {
+  return {
+    selected: null,
+    truthSet: [],
+    acceptableSet: [],
+    recommended: [],
+    eliminated: [],
+    applicability: { factDependencies: [], evaluatedConditions: [] },
+    activation: [],
+    arbitration: [],
     handoffs: [],
     ...overrides,
   };

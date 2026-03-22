@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { buildCommittedStep } from "../committed-step-builder";
 import { INITIAL_NEGOTIATION } from "../../../../core/contracts/committed-step";
 import type { MachineRegisters } from "../../../../core/contracts/module-surface";
-import type { ArbitrationResult, EncodedProposal } from "../../../../core/contracts/module-surface";
+import type { PipelineResult, PipelineCarrier } from "../../../../core/contracts/module-surface";
 import type { MeaningProposal } from "../../../../core/contracts/meaning";
 import { ForcingState } from "../../../../core/contracts/bidding";
 import { Seat, BidSuit } from "../../../../engine/types";
@@ -48,10 +48,10 @@ function makeProposal(
   } as MeaningProposal;
 }
 
-function makeEncodedProposal(
+function makeCarrier(
   proposal: MeaningProposal,
   call: Call = bid(2, BidSuit.Clubs),
-): EncodedProposal {
+): PipelineCarrier {
   return {
     proposal,
     call,
@@ -63,33 +63,41 @@ function makeEncodedProposal(
       encoding: { legal: true },
       pedagogical: { acceptable: true, reasons: [] },
     },
+    traces: {
+      encoding: { encoderId: proposal.meaningId, encoderKind: "default-call", consideredCalls: [call], chosenCall: call, blockedCalls: [] },
+      legality: { call, legal: true },
+    },
   };
 }
 
-function makeArbitrationResult(
-  selected: EncodedProposal | null,
-  truthSet: EncodedProposal[] = [],
-): ArbitrationResult {
+function makePipelineResult(
+  selected: PipelineCarrier | null,
+  truthSet: PipelineCarrier[] = [],
+): PipelineResult {
   return {
     selected,
     truthSet,
     acceptableSet: [],
     recommended: [],
-    eliminations: [],
+    eliminated: [],
+    applicability: { factDependencies: [], evaluatedConditions: [] },
+    activation: [],
+    arbitration: [],
+    handoffs: [],
   };
 }
 
 describe("buildCommittedStep", () => {
-  it("builds a resolved step from a winning arbitration", () => {
+  it("builds a resolved step from a winning pipeline result", () => {
     const proposal = makeProposal();
-    const encoded = makeEncodedProposal(proposal);
-    const arb = makeArbitrationResult(encoded, [encoded]);
+    const carrier = makeCarrier(proposal);
+    const result = makePipelineResult(carrier, [carrier]);
     const call = bid(2, BidSuit.Clubs);
 
     const step = buildCommittedStep(
       Seat.South,
       call,
-      arb,
+      result,
       INITIAL_NEGOTIATION,
       makeRegisters(),
     );
@@ -110,7 +118,7 @@ describe("buildCommittedStep", () => {
     expect(step.negotiationDelta).toEqual({});
   });
 
-  it("builds an off-system step when arbitration is null", () => {
+  it("builds an off-system step when pipeline result is null", () => {
     const call = bid(1, BidSuit.Hearts);
 
     const step = buildCommittedStep(
@@ -128,13 +136,13 @@ describe("buildCommittedStep", () => {
 
   it("builds an ambiguous step when truthSet exists but no selected", () => {
     const proposal = makeProposal();
-    const encoded = makeEncodedProposal(proposal);
-    const arb = makeArbitrationResult(null, [encoded]);
+    const carrier = makeCarrier(proposal);
+    const result = makePipelineResult(null, [carrier]);
 
     const step = buildCommittedStep(
       Seat.South,
       bid(2, BidSuit.Clubs),
-      arb,
+      result,
       INITIAL_NEGOTIATION,
       makeRegisters(),
     );
@@ -144,13 +152,13 @@ describe("buildCommittedStep", () => {
 
   it("computes kernel delta from register changes", () => {
     const proposal = makeProposal();
-    const encoded = makeEncodedProposal(proposal);
-    const arb = makeArbitrationResult(encoded, [encoded]);
+    const carrier = makeCarrier(proposal);
+    const result = makePipelineResult(carrier, [carrier]);
 
     const step = buildCommittedStep(
       Seat.South,
       bid(2, BidSuit.Clubs),
-      arb,
+      result,
       INITIAL_NEGOTIATION,
       makeRegisters({ forcingState: ForcingState.ForcingOneRound }),
     );
@@ -159,13 +167,13 @@ describe("buildCommittedStep", () => {
     expect(step.stateAfter.forcing).toBe("one-round");
   });
 
-  it("builds off-system step for pass with empty arbitration", () => {
-    const arb = makeArbitrationResult(null, []);
+  it("builds off-system step for pass with empty pipeline result", () => {
+    const result = makePipelineResult(null, []);
 
     const step = buildCommittedStep(
       Seat.East,
       pass,
-      arb,
+      result,
       INITIAL_NEGOTIATION,
       makeRegisters(),
     );

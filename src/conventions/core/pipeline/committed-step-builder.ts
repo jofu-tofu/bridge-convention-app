@@ -11,7 +11,7 @@ import type {
   ClaimRef,
   CommittedStep,
 } from "../../../core/contracts/committed-step";
-import type { ArbitrationResult } from "../../../core/contracts/module-surface";
+import type { PipelineResult } from "../../../core/contracts/module-surface";
 import type { MachineRegisters } from "../../../core/contracts/module-surface";
 import type { BidAction } from "../../../core/contracts/bid-action";
 import { extractKernelState, computeKernelDelta } from "./negotiation-extractor";
@@ -22,22 +22,22 @@ import { normalizeIntent } from "./normalize-intent";
  *
  * @param actor - The seat that made the call
  * @param call - The call made
- * @param arbitrationResult - The pipeline's arbitration result, or null for unresolved bids
+ * @param pipelineResult - The pipeline result, or null for unresolved bids
  * @param prevKernel - Kernel state before this step
  * @param currentRegisters - Machine registers after this step's effects
  */
 export function buildCommittedStep(
   actor: Seat,
   call: Call,
-  arbitrationResult: ArbitrationResult | null,
+  pipelineResult: PipelineResult | null,
   prevKernel: NegotiationState,
   currentRegisters: MachineRegisters,
 ): CommittedStep {
-  const resolvedClaim = extractClaimRef(arbitrationResult);
-  const publicActions = extractPublicObs(arbitrationResult);
+  const resolvedClaim = extractClaimRef(pipelineResult);
+  const publicActions = extractPublicObs(pipelineResult);
   const stateAfter = extractKernelState(currentRegisters);
   const negotiationDelta = computeKernelDelta(prevKernel, stateAfter);
-  const status = deriveStatus(arbitrationResult);
+  const status = deriveStatus(pipelineResult);
 
   return {
     actor,
@@ -53,7 +53,7 @@ export function buildCommittedStep(
 // ── Internal helpers ─────────────────────────────────────────────────
 
 function extractClaimRef(
-  arb: ArbitrationResult | null,
+  arb: PipelineResult | null,
 ): ClaimRef | null {
   if (!arb?.selected) return null;
 
@@ -67,7 +67,7 @@ function extractClaimRef(
 }
 
 function extractPublicObs(
-  arb: ArbitrationResult | null,
+  arb: PipelineResult | null,
 ): readonly BidAction[] {
   if (!arb?.selected) return [];
 
@@ -76,7 +76,7 @@ function extractPublicObs(
 }
 
 function deriveStatus(
-  arb: ArbitrationResult | null,
+  arb: PipelineResult | null,
 ): CommittedStep["status"] {
   if (!arb) return "off-system";
   if (arb.selected) return "resolved";

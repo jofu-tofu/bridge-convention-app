@@ -6,7 +6,7 @@ import { BidSuit } from "../../../../engine/types";
 import { makeArbitrationInput, makeCall } from "./pipeline-test-helpers";
 
 describe("arbitrateMeanings — provenance characterization", () => {
-  it("provenance includes applicability evidence from selected candidate", () => {
+  it("applicability evidence from selected candidate", () => {
     const input = makeArbitrationInput({
       meaningId: "test:selected",
       clauses: [{
@@ -20,31 +20,32 @@ describe("arbitrateMeanings — provenance characterization", () => {
 
     const result = arbitrateMeanings([input]);
 
-    expect(result.provenance).toBeDefined();
-    expect(result.provenance!.applicability.factDependencies).toContain("hand.hcp");
-    expect(result.provenance!.applicability.evaluatedConditions).toHaveLength(1);
-    expect(result.provenance!.applicability.evaluatedConditions[0]!.satisfied).toBe(true);
+    expect(result.applicability.factDependencies).toContain("hand.hcp");
+    expect(result.applicability.evaluatedConditions).toHaveLength(1);
+    expect(result.applicability.evaluatedConditions[0]!.satisfied).toBe(true);
   });
 
-  it("provenance includes legality traces for all candidates", () => {
+  it("legality traces on carriers for all candidates", () => {
     const input1 = makeArbitrationInput({ meaningId: "a" }, makeCall(1, BidSuit.Clubs));
     const input2 = makeArbitrationInput({ meaningId: "b" }, makeCall(2, BidSuit.Hearts));
 
     const result = arbitrateMeanings([input1, input2]);
 
-    expect(result.provenance!.legality).toHaveLength(2);
-    expect(result.provenance!.legality.every(l => l.legal)).toBe(true);
+    // All carriers have legality traces
+    const allCarriers = [...result.truthSet, ...result.acceptableSet, ...result.eliminated];
+    expect(allCarriers.length).toBeGreaterThanOrEqual(2);
+    expect(allCarriers.every(c => c.traces.legality.legal)).toBe(true);
   });
 
-  it("provenance includes encoding traces for all candidates", () => {
+  it("encoding traces on carriers for all candidates", () => {
     const input = makeArbitrationInput({ meaningId: "test:enc" });
     const result = arbitrateMeanings([input]);
 
-    expect(result.provenance!.encoding).toHaveLength(1);
-    expect(result.provenance!.encoding[0]!.encoderKind).toBe("default-call");
+    expect(result.truthSet).toHaveLength(1);
+    expect(result.truthSet[0]!.traces.encoding.encoderKind).toBe("default-call");
   });
 
-  it("provenance includes arbitration traces with ranking inputs", () => {
+  it("arbitration traces with ranking inputs", () => {
     const input = makeArbitrationInput({
       meaningId: "test:arb",
       ranking: {
@@ -57,28 +58,29 @@ describe("arbitrateMeanings — provenance characterization", () => {
 
     const result = arbitrateMeanings([input]);
 
-    expect(result.provenance!.arbitration).toHaveLength(1);
-    const trace = result.provenance!.arbitration[0]!;
+    expect(result.arbitration).toHaveLength(1);
+    const trace = result.arbitration[0]!;
     expect(trace.truthSetMember).toBe(true);
     expect(trace.rankingInputs.recommendationBand).toBe(0); // BAND_PRIORITY["must"] = 0
     expect(trace.rankingInputs.specificity).toBe(5);
   });
 
-  it("provenance elimination traces track gate failures", () => {
+  it("elimination traces on eliminated carriers track gate failures", () => {
     const input = makeArbitrationInput({ allSatisfied: false, meaningId: "test:fail" });
     const result = arbitrateMeanings([input]);
 
-    expect(result.provenance!.eliminations.length).toBeGreaterThanOrEqual(1);
-    const elim = result.provenance!.eliminations.find(e => e.candidateId === "test:fail");
+    expect(result.eliminated.length).toBeGreaterThanOrEqual(1);
+    const elim = result.eliminated.find(c => c.proposal.meaningId === "test:fail");
     expect(elim).toBeDefined();
-    expect(elim!.stage).toBe("applicability");
+    expect(elim!.traces.elimination).toBeDefined();
+    expect(elim!.traces.elimination!.stage).toBe("applicability");
   });
 
   it("empty applicability evidence when no candidate selected", () => {
     const result = arbitrateMeanings([]);
 
-    expect(result.provenance!.applicability.factDependencies).toEqual([]);
-    expect(result.provenance!.applicability.evaluatedConditions).toEqual([]);
+    expect(result.applicability.factDependencies).toEqual([]);
+    expect(result.applicability.evaluatedConditions).toEqual([]);
   });
 });
 
@@ -102,7 +104,7 @@ describe("arbitrateMeanings — multi-proposal characterization", () => {
     expect(result.truthSet[0]!.proposal.meaningId).toBe("truth");
     expect(result.acceptableSet).toHaveLength(1);
     expect(result.acceptableSet[0]!.proposal.meaningId).toBe("acceptable");
-    expect(result.eliminations.length).toBeGreaterThanOrEqual(1);
+    expect(result.eliminated.length).toBeGreaterThanOrEqual(1);
     expect(result.selected!.proposal.meaningId).toBe("truth");
   });
 });

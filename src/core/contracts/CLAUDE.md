@@ -37,8 +37,8 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `inference.ts` | Suit/hand inference, qualitative constraints, public beliefs |
 | `tree-evaluation.ts` | Candidate eligibility, alternative groups, intent families, evaluation trace |
 | `play.ts` | Play context, results, strategy interface |
-| `recommendation.ts` | Practical recommendation, posterior summary, strategy evaluation DTO |
-| `module-surface.ts` | Public snapshot (epistemic layers), module surfaces, arbitration results |
+| `recommendation.ts` | Practical recommendation, posterior summary, strategy evaluation DTO. `StrategyEvaluation` has `pipelineResult: PipelineResult | null` (replaces old `provenance` + `arbitration` fields). |
+| `module-surface.ts` | Public snapshot (epistemic layers), module surfaces, `PipelineCarrier`, `PipelineResult` (pipeline output types). `EncodedProposal`, `ArbitrationResult`, `EliminationRecord` still exist but are internal to teaching sub-builders. |
 | `meaning.ts` | BidMeaning (authored meaning units), clauses, ranking, semantic classes, teaching tags |
 | `fact-catalog.ts` | Fact definitions (with `constrainsDimensions`), evaluators, catalog, extensions, shared facts (19) |
 | `alert.ts` | Alert resolution and public constraint derivation from surface properties |

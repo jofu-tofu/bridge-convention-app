@@ -1,32 +1,32 @@
 <script lang="ts">
-  import type { ArbitrationResult } from "../../../core/contracts/module-surface";
+  import type { PipelineResult } from "../../../core/contracts/module-surface";
   import type { TeachingProjection } from "../../../core/contracts";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
-    arbitration: ArbitrationResult | null;
+    pipelineResult: PipelineResult | null;
     teachingProjection: TeachingProjection | null;
   }
 
-  let { arbitration, teachingProjection }: Props = $props();
+  let { pipelineResult, teachingProjection }: Props = $props();
 </script>
 
 <DebugSection
   title="Pipeline"
-  count={arbitration ? arbitration.truthSet.length + arbitration.acceptableSet.length : null}
-  preview={arbitration?.selected ? fmtCall(arbitration.selected.call) + " — " + (arbitration.selected.proposal.teachingLabel ?? arbitration.selected.proposal.meaningId) : arbitration ? "no match (pass)" : null}
+  count={pipelineResult ? pipelineResult.truthSet.length + pipelineResult.acceptableSet.length : null}
+  preview={pipelineResult?.selected ? fmtCall(pipelineResult.selected.call) + " — " + (pipelineResult.selected.proposal.teachingLabel ?? pipelineResult.selected.proposal.meaningId) : pipelineResult ? "no match (pass)" : null}
 >
-  {#if arbitration}
-    {@const arb = arbitration}
+  {#if pipelineResult}
+    {@const pr = pipelineResult}
     {@const tp = teachingProjection}
 
     <!-- Winner (always visible, compact) -->
-    {#if arb.selected}
+    {#if pr.selected}
       <div class="mb-1.5 px-1.5 py-1 bg-green-900/20 rounded border border-green-500/30 flex items-baseline gap-1.5 flex-wrap">
-        <span class="text-sm font-bold text-green-300">{fmtCall(arb.selected.call)}</span>
-        <span class="text-xs text-green-200">{arb.selected.proposal.teachingLabel ?? arb.selected.proposal.meaningId}</span>
-        <span class="text-[10px] text-text-muted">band:{arb.selected.proposal.ranking.recommendationBand} spec:{arb.selected.proposal.ranking.specificity}</span>
+        <span class="text-sm font-bold text-green-300">{fmtCall(pr.selected.call)}</span>
+        <span class="text-xs text-green-200">{pr.selected.proposal.teachingLabel ?? pr.selected.proposal.meaningId}</span>
+        <span class="text-[10px] text-text-muted">band:{pr.selected.proposal.ranking.recommendationBand} spec:{pr.selected.proposal.ranking.specificity}</span>
       </div>
     {:else}
       <div class="mb-1.5 px-1.5 py-1 bg-yellow-900/20 rounded border border-yellow-500/30 text-xs text-yellow-300">
@@ -35,14 +35,14 @@
     {/if}
 
     <!-- Matched (truth set) — collapsed if >2 -->
-    {#if arb.truthSet.length > 0}
-      <DebugSection title="Matched" count={arb.truthSet.length} nested open={arb.truthSet.length <= 3}>
-        {#each arb.truthSet as ep (ep.proposal.meaningId)}
+    {#if pr.truthSet.length > 0}
+      <DebugSection title="Matched" count={pr.truthSet.length} nested open={pr.truthSet.length <= 3}>
+        {#each pr.truthSet as carrier (carrier.proposal.meaningId)}
           <div class="mb-0.5 border-l-2 border-green-500/40 pl-1.5">
-            <span class="text-green-300 font-bold">{fmtCall(ep.call)}</span>
-            <span class="text-text-primary ml-1">{ep.proposal.teachingLabel ?? ep.proposal.meaningId}</span>
+            <span class="text-green-300 font-bold">{fmtCall(carrier.call)}</span>
+            <span class="text-text-primary ml-1">{carrier.proposal.teachingLabel ?? carrier.proposal.meaningId}</span>
             <div class="text-[10px] text-text-muted leading-tight">
-              {#each ep.proposal.clauses as clause (clause.factId + clause.operator)}
+              {#each carrier.proposal.clauses as clause (clause.factId + clause.operator)}
                 <span class="{clause.satisfied ? 'text-green-400/70' : 'text-red-400/70'}">{clause.satisfied ? '+' : '-'}{clause.description}</span><span class="mx-0.5">|</span>
               {/each}
             </div>
@@ -52,14 +52,14 @@
     {/if}
 
     <!-- Not this hand (acceptable set) — collapsed by default -->
-    {#if arb.acceptableSet.length > 0}
-      <DebugSection title="Not this hand" count={arb.acceptableSet.length} nested>
-        {#each arb.acceptableSet as ep (ep.proposal.meaningId)}
+    {#if pr.acceptableSet.length > 0}
+      <DebugSection title="Not this hand" count={pr.acceptableSet.length} nested>
+        {#each pr.acceptableSet as carrier (carrier.proposal.meaningId)}
           <div class="mb-0.5 border-l-2 border-text-muted/30 pl-1.5">
-            <span class="text-text-muted font-bold">{fmtCall(ep.call)}</span>
-            <span class="text-text-muted ml-1">{ep.proposal.teachingLabel ?? ep.proposal.meaningId}</span>
+            <span class="text-text-muted font-bold">{fmtCall(carrier.call)}</span>
+            <span class="text-text-muted ml-1">{carrier.proposal.teachingLabel ?? carrier.proposal.meaningId}</span>
             <div class="text-[10px]">
-              {#each ep.proposal.clauses.filter(c => !c.satisfied) as clause (clause.factId + clause.operator)}
+              {#each carrier.proposal.clauses.filter(c => !c.satisfied) as clause (clause.factId + clause.operator)}
                 <div class="text-red-400/70 leading-tight">
                   {clause.description}
                   {#if clause.observedValue !== undefined}
@@ -74,12 +74,12 @@
     {/if}
 
     <!-- Eliminated — collapsed by default -->
-    {#if arb.eliminations.length > 0}
-      <DebugSection title="Eliminated" count={arb.eliminations.length} nested>
-        {#each arb.eliminations as el (el.candidateBidName + el.reason)}
+    {#if pr.eliminated.length > 0}
+      <DebugSection title="Eliminated" count={pr.eliminated.length} nested>
+        {#each pr.eliminated as carrier (carrier.proposal.meaningId + (carrier.traces.elimination?.reason ?? ''))}
           <div class="text-[10px] text-text-muted leading-tight">
-            <span class="text-red-400/60">{el.candidateBidName}</span>
-            <span class="ml-0.5">— {el.reason}</span>
+            <span class="text-red-400/60">{carrier.proposal.meaningId}</span>
+            <span class="ml-0.5">— {carrier.traces.elimination?.reason ?? 'Unknown'}</span>
           </div>
         {/each}
       </DebugSection>

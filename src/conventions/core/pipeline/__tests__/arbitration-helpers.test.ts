@@ -3,7 +3,7 @@ import {
   evaluateProposal,
   classifyIntoSets,
 } from "../arbitration-helpers";
-import type { EncodedProposal } from "../../../../core/contracts/module-surface";
+import type { PipelineCarrier } from "../../../../core/contracts/module-surface";
 import { BidSuit } from "../../../../engine/types";
 import {
   makeArbitrationInput,
@@ -17,45 +17,41 @@ import {
 // ─── evaluateProposal ───────────────────────────────────────
 
 describe("evaluateProposal", () => {
-  it("returns encoded proposal with no elimination when all gates pass", () => {
+  it("returns carrier with passedAllGates=true when all gates pass", () => {
     const input = makeArbitrationInput();
     const result = evaluateProposal(input);
 
-    expect(result.encoded).toBeDefined();
-    expect(result.elimination).toBeUndefined();
-    expect(result.provenanceElimination).toBeUndefined();
-    expect(result.addToEncoded).toBe(true);
-    expect(result.encoded!.eligibility.hand.satisfied).toBe(true);
-    expect(result.encoded!.eligibility.encoding.legal).toBe(true);
+    expect(result.passedAllGates).toBe(true);
+    expect(result.carrier.traces.elimination).toBeUndefined();
+    expect(result.carrier.eligibility.hand.satisfied).toBe(true);
+    expect(result.carrier.eligibility.encoding.legal).toBe(true);
   });
 
-  it("returns elimination with semantic-applicability gate when semantic fails", () => {
+  it("returns carrier with elimination trace when semantic fails", () => {
     const input = makeArbitrationInput({ allSatisfied: false });
     const result = evaluateProposal(input);
 
-    expect(result.elimination).toBeDefined();
-    expect(result.elimination!.gateId).toBe("semantic-applicability");
-    expect(result.elimination!.reason).toBe("One or more clauses not satisfied");
-    expect(result.provenanceElimination).toBeDefined();
-    expect(result.provenanceElimination!.stage).toBe("applicability");
+    expect(result.passedAllGates).toBe(false);
+    expect(result.carrier.traces.elimination).toBeDefined();
+    expect(result.carrier.traces.elimination!.stage).toBe("applicability");
+    expect(result.carrier.traces.elimination!.reason).toBe("One or more clauses not satisfied");
   });
 
-  it("returns elimination with concrete-legality gate when call is illegal", () => {
+  it("returns carrier with elimination trace when call is illegal", () => {
     const call = makeCall(2, BidSuit.Clubs);
     const legalCalls = [makeCall(1, BidSuit.Clubs)]; // 2C is not legal
     const input = makeArbitrationInput({ allSatisfied: true }, call);
 
     const result = evaluateProposal(input, legalCalls);
 
-    expect(result.elimination).toBeDefined();
-    expect(result.elimination!.gateId).toBe("concrete-legality");
-    expect(result.elimination!.reason).toContain("not legal");
-    expect(result.provenanceElimination).toBeDefined();
-    expect(result.provenanceElimination!.stage).toBe("legality");
-    expect(result.provenanceElimination!.strength).toBe("hard");
+    expect(result.passedAllGates).toBe(false);
+    expect(result.carrier.traces.elimination).toBeDefined();
+    expect(result.carrier.traces.elimination!.stage).toBe("legality");
+    expect(result.carrier.traces.elimination!.strength).toBe("hard");
+    expect(result.carrier.traces.elimination!.reason).toContain("not legal");
   });
 
-  it("sets addToEncoded=true for failed-semantic may-band proposals", () => {
+  it("sets addToAcceptable=true for failed-semantic may-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: { ...makeRanking({ recommendationBand: "may" }), specificity: 0 },
@@ -63,12 +59,12 @@ describe("evaluateProposal", () => {
 
     const result = evaluateProposal(input);
 
-    expect(result.addToEncoded).toBe(true);
-    expect(result.encoded).toBeDefined();
-    expect(result.elimination).toBeDefined();
+    expect(result.addToAcceptable).toBe(true);
+    expect(result.passedAllGates).toBe(false);
+    expect(result.carrier.traces.elimination).toBeDefined();
   });
 
-  it("sets addToEncoded=true for failed-semantic should-band proposals", () => {
+  it("sets addToAcceptable=true for failed-semantic should-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: { ...makeRanking({ recommendationBand: "should" }), specificity: 0 },
@@ -76,11 +72,11 @@ describe("evaluateProposal", () => {
 
     const result = evaluateProposal(input);
 
-    expect(result.addToEncoded).toBe(true);
-    expect(result.encoded).toBeDefined();
+    expect(result.addToAcceptable).toBe(true);
+    expect(result.carrier).toBeDefined();
   });
 
-  it("sets addToEncoded=false for failed-semantic avoid-band proposals", () => {
+  it("sets addToAcceptable=false for failed-semantic avoid-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: { ...makeRanking({ recommendationBand: "avoid" }), specificity: 0 },
@@ -88,19 +84,19 @@ describe("evaluateProposal", () => {
 
     const result = evaluateProposal(input);
 
-    expect(result.addToEncoded).toBe(false);
-    expect(result.encoded).toBeUndefined();
-    expect(result.elimination).toBeDefined();
+    expect(result.addToAcceptable).toBe(false);
+    expect(result.passedAllGates).toBe(false);
+    expect(result.carrier.traces.elimination).toBeDefined();
   });
 
-  it("populates legality and encoding traces for every proposal", () => {
+  it("populates legality and encoding traces on every carrier", () => {
     const input = makeArbitrationInput();
     const result = evaluateProposal(input);
 
-    expect(result.provenanceLegality).toBeDefined();
-    expect(result.provenanceLegality.legal).toBe(true);
-    expect(result.provenanceEncoding).toBeDefined();
-    expect(result.provenanceEncoding.encoderKind).toBe("default-call");
+    expect(result.carrier.traces.legality).toBeDefined();
+    expect(result.carrier.traces.legality.legal).toBe(true);
+    expect(result.carrier.traces.encoding).toBeDefined();
+    expect(result.carrier.traces.encoding.encoderKind).toBe("default-call");
   });
 
   it("populates blockedCalls with call and reason when encoding is illegal", () => {
@@ -110,12 +106,12 @@ describe("evaluateProposal", () => {
 
     const result = evaluateProposal(input, legalCalls);
 
-    expect(result.provenanceEncoding.blockedCalls).toHaveLength(1);
-    expect(result.provenanceEncoding.blockedCalls[0]).toEqual({
+    expect(result.carrier.traces.encoding.blockedCalls).toHaveLength(1);
+    expect(result.carrier.traces.encoding.blockedCalls[0]).toEqual({
       call,
       reason: "illegal_in_auction",
     });
-    expect(result.provenanceEncoding.chosenCall).toBeUndefined();
+    expect(result.carrier.traces.encoding.chosenCall).toBeUndefined();
   });
 
   it("has empty blockedCalls when encoding is legal", () => {
@@ -125,82 +121,87 @@ describe("evaluateProposal", () => {
 
     const result = evaluateProposal(input, legalCalls);
 
-    expect(result.provenanceEncoding.blockedCalls).toHaveLength(0);
-    expect(result.provenanceEncoding.chosenCall).toEqual(call);
+    expect(result.carrier.traces.encoding.blockedCalls).toHaveLength(0);
+    expect(result.carrier.traces.encoding.chosenCall).toEqual(call);
   });
 });
 
 // ─── classifyIntoSets ───────────────────────────────────────
 
 describe("classifyIntoSets", () => {
-  function makeEncodedProposal(overrides?: {
+  function makeCarrier(overrides?: {
     handSatisfied?: boolean;
     legal?: boolean;
     meaningId?: string;
-  }): EncodedProposal {
+  }): PipelineCarrier {
     const handSatisfied = overrides?.handSatisfied ?? true;
     const legal = overrides?.legal ?? true;
+    const call = makeCall(2, BidSuit.Clubs);
     return {
       proposal: makeMeaningProposal({
         meaningId: overrides?.meaningId ?? "test:meaning",
         allSatisfied: handSatisfied,
       }),
-      call: makeCall(2, BidSuit.Clubs),
+      call,
       isDefaultEncoding: true,
       legal,
-      allEncodings: [{ call: makeCall(2, BidSuit.Clubs), legal }],
+      allEncodings: [{ call, legal }],
       eligibility: makeEligibility({
         hand: { satisfied: handSatisfied, failedConditions: [] },
         encoding: { legal },
       }),
+      traces: {
+        encoding: { encoderId: "test", encoderKind: "default-call", consideredCalls: [call], chosenCall: call, blockedCalls: [] },
+        legality: { call, legal },
+      },
     };
   }
 
-  it("places hand-satisfied + legal proposals in truthSet", () => {
-    const encoded = [makeEncodedProposal({ handSatisfied: true, legal: true })];
-    const { truthSet, acceptableSet } = classifyIntoSets(encoded);
+  it("places hand-satisfied + legal carriers in truthSet", () => {
+    const carriers = [makeCarrier({ handSatisfied: true, legal: true })];
+    const { truthSet, acceptableSet } = classifyIntoSets(carriers);
 
     expect(truthSet).toHaveLength(1);
     expect(acceptableSet).toHaveLength(0);
   });
 
-  it("places hand-unsatisfied + legal proposals in acceptableSet", () => {
-    const encoded = [makeEncodedProposal({ handSatisfied: false, legal: true })];
-    const { truthSet, acceptableSet } = classifyIntoSets(encoded);
+  it("places hand-unsatisfied + legal carriers in acceptableSet", () => {
+    const carriers = [makeCarrier({ handSatisfied: false, legal: true })];
+    const { truthSet, acceptableSet } = classifyIntoSets(carriers);
 
     expect(truthSet).toHaveLength(0);
     expect(acceptableSet).toHaveLength(1);
   });
 
-  it("places hand-unsatisfied + illegal proposals in neither set", () => {
-    const encoded = [makeEncodedProposal({ handSatisfied: false, legal: false })];
-    const { truthSet, acceptableSet } = classifyIntoSets(encoded);
+  it("places hand-unsatisfied + illegal carriers in neither set", () => {
+    const carriers = [makeCarrier({ handSatisfied: false, legal: false })];
+    const { truthSet, acceptableSet } = classifyIntoSets(carriers);
 
     expect(truthSet).toHaveLength(0);
     expect(acceptableSet).toHaveLength(0);
   });
 
-  it("places hand-satisfied + illegal proposals in neither set", () => {
-    const encoded = [makeEncodedProposal({ handSatisfied: true, legal: false })];
-    const { truthSet, acceptableSet } = classifyIntoSets(encoded);
+  it("places hand-satisfied + illegal carriers in neither set", () => {
+    const carriers = [makeCarrier({ handSatisfied: true, legal: false })];
+    const { truthSet, acceptableSet } = classifyIntoSets(carriers);
 
     expect(truthSet).toHaveLength(0);
     expect(acceptableSet).toHaveLength(0);
   });
 
   it("correctly classifies a mixed set", () => {
-    const encoded = [
-      makeEncodedProposal({ handSatisfied: true, legal: true, meaningId: "truth:a" }),
-      makeEncodedProposal({ handSatisfied: false, legal: true, meaningId: "acceptable:b" }),
-      makeEncodedProposal({ handSatisfied: false, legal: false, meaningId: "neither:c" }),
-      makeEncodedProposal({ handSatisfied: true, legal: true, meaningId: "truth:d" }),
+    const carriers = [
+      makeCarrier({ handSatisfied: true, legal: true, meaningId: "truth:a" }),
+      makeCarrier({ handSatisfied: false, legal: true, meaningId: "acceptable:b" }),
+      makeCarrier({ handSatisfied: false, legal: false, meaningId: "neither:c" }),
+      makeCarrier({ handSatisfied: true, legal: true, meaningId: "truth:d" }),
     ];
-    const { truthSet, acceptableSet } = classifyIntoSets(encoded);
+    const { truthSet, acceptableSet } = classifyIntoSets(carriers);
 
     expect(truthSet).toHaveLength(2);
     expect(acceptableSet).toHaveLength(1);
-    expect(truthSet.map((e) => e.proposal.meaningId)).toEqual(["truth:a", "truth:d"]);
-    expect(acceptableSet.map((e) => e.proposal.meaningId)).toEqual(["acceptable:b"]);
+    expect(truthSet.map((c) => c.proposal.meaningId)).toEqual(["truth:a", "truth:d"]);
+    expect(acceptableSet.map((c) => c.proposal.meaningId)).toEqual(["acceptable:b"]);
   });
 
   it("returns empty sets for empty input", () => {

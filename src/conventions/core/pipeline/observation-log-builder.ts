@@ -13,7 +13,7 @@
 import type { Seat, Call } from "../../../engine/types";
 import type { CommittedStep, NegotiationState } from "../../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { ArbitrationResult, MachineRegisters } from "../../../core/contracts/module-surface";
+import type { PipelineResult, MachineRegisters } from "../../../core/contracts/module-surface";
 import { buildCommittedStep } from "./committed-step-builder";
 
 /** Input for one auction step. Provided by the strategy adapter. */
@@ -21,7 +21,7 @@ export interface ObservationLogStep {
   readonly actor: Seat;
   readonly call: Call;
   readonly registers: MachineRegisters;
-  readonly arbitration: ArbitrationResult | null;
+  readonly pipelineResult: PipelineResult | null;
 }
 
 /**
@@ -40,7 +40,7 @@ export function buildObservationLog(
     const committed = buildCommittedStep(
       step.actor,
       step.call,
-      step.arbitration,
+      step.pipelineResult,
       prevKernel,
       step.registers,
     );

@@ -3,6 +3,15 @@ import type { CandidateEligibility } from "./tree-evaluation";
 import type { ForcingState } from "./bidding";
 import type { MeaningProposal } from "./meaning";
 import type { DecisionProvenance } from "./provenance";
+import type {
+  ApplicabilityEvidence,
+  ActivationTrace,
+  ArbitrationTrace,
+  EncodingTrace,
+  HandoffTrace,
+  LegalityTrace,
+  EliminationTrace,
+} from "./provenance";
 import type { BidMeaning } from "./meaning";
 import type { PublicEvent, PublicConstraint } from "./agreement-module";
 import type { LatentBranchSet } from "./posterior";
@@ -65,6 +74,35 @@ export interface ArbitrationResult {
   readonly recommended: readonly EncodedProposal[];
   readonly eliminations: readonly EliminationRecord[];
   readonly provenance?: DecisionProvenance;
+  readonly evidenceBundle?: EvidenceBundle;
+}
+
+/** A surface carried through the entire pipeline with its per-surface traces attached. */
+export interface PipelineCarrier {
+  readonly proposal: MeaningProposal;
+  readonly call: Call;
+  readonly isDefaultEncoding: boolean;
+  readonly legal: boolean;
+  readonly allEncodings: readonly { readonly call: Call; readonly legal: boolean }[];
+  readonly eligibility: CandidateEligibility;
+  readonly traces: {
+    readonly encoding: EncodingTrace;
+    readonly legality: LegalityTrace;
+    readonly elimination?: EliminationTrace;
+  };
+}
+
+/** Complete pipeline result — per-surface data on carriers, cross-surface provenance at top level. */
+export interface PipelineResult {
+  readonly selected: PipelineCarrier | null;
+  readonly truthSet: readonly PipelineCarrier[];
+  readonly acceptableSet: readonly PipelineCarrier[];
+  readonly recommended: readonly PipelineCarrier[];
+  readonly eliminated: readonly PipelineCarrier[];
+  readonly applicability: ApplicabilityEvidence;
+  readonly activation: readonly ActivationTrace[];
+  readonly arbitration: readonly ArbitrationTrace[];
+  readonly handoffs: readonly HandoffTrace[];
   readonly evidenceBundle?: EvidenceBundle;
 }
 

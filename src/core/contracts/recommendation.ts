@@ -2,8 +2,8 @@ import type { Call } from "../../engine/types";
 import type { BiddingStrategy } from "./bidding";
 import type { AlternativeGroup, SurfaceGroup } from "./teaching-grading";
 import type { ExplanationCatalog } from "./explanation-catalog";
-import type { ArbitrationResult, MachineRegisters } from "./module-surface";
-import type { DecisionProvenance, HandoffTrace } from "./provenance";
+import type { MachineRegisters, PipelineResult } from "./module-surface";
+import type { HandoffTrace } from "./provenance";
 import type { PosteriorFactValue } from "./posterior";
 import type { TeachingProjection } from "./teaching-projection";
 import type { EvaluatedFacts } from "./fact-catalog";
@@ -58,10 +58,8 @@ export interface StrategyEvaluation {
   readonly acceptableAlternatives: readonly AlternativeGroup[] | null;
   /** Convention-level surface groups for relationship-aware grading. Null if not configured. */
   readonly surfaceGroups: readonly SurfaceGroup[] | null;
-  /** Provenance from the meaning-pipeline evaluation. Null when not produced. */
-  readonly provenance: DecisionProvenance | null;
-  /** Full arbitration result from the meaning-pipeline evaluation. Null when not produced. */
-  readonly arbitration: ArbitrationResult | null;
+  /** Full pipeline result from the meaning-pipeline evaluation. Null when not produced. */
+  readonly pipelineResult: PipelineResult | null;
   /** Posterior summary. Null when posterior engine not wired. */
   readonly posteriorSummary: PosteriorSummary | null;
   /** Explanation catalog for enriching teaching projections. Null when not available. */

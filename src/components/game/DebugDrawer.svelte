@@ -113,10 +113,10 @@
       <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Decision Pipeline</summary>
       <div class="pt-1 flex flex-col gap-0.5">
         <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
-        <DebugPipeline arbitration={debugSnap?.arbitration ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
+        <DebugPipeline pipelineResult={debugSnap?.pipelineResult ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
         <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
         <DebugHandFacts facts={debugSnap?.facts ?? null} />
-        <DebugProvenance provenance={debugSnap?.provenance ?? null} />
+        <DebugProvenance pipelineResult={debugSnap?.pipelineResult ?? null} />
         <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
       </div>
     </details>
