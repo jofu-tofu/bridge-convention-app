@@ -36,7 +36,7 @@ const emptyFacts: FactCatalogExtension = {
   evaluators: new Map(),
 };
 
-/** Create a minimal RuleModule with a single rule. */
+/** Create a minimal ConventionModule with a single state entry. */
 function makeRuleModule(overrides: {
   id?: string;
   surfaces?: BidMeaning[];
@@ -60,13 +60,11 @@ function makeRuleModule(overrides: {
       initial: "idle",
       transitions: [],
     },
-    rules: [
+    states: [
       {
-        match: {
-          turn: overrides.turn ?? "responder",
-          local: overrides.local ?? "idle",
-        },
-        claims: surfaces.map((s) => ({ surface: s })),
+        phase: overrides.local ?? "idle",
+        turn: overrides.turn ?? "responder",
+        surfaces,
       },
     ],
     facts: emptyFacts,
@@ -237,11 +235,8 @@ describe("buildObservationLogViaRules", () => {
     const mod: ConventionModule = {
       moduleId: "test",
       local: { initial: "idle", transitions: [] },
-      rules: [
-        {
-          match: { local: "idle", turn: "opener" },
-          claims: [{ surface }],
-        },
+      states: [
+        { phase: "idle", turn: "opener", surfaces: [surface] },
       ],
       facts: emptyFacts,
       explanationEntries: [],
@@ -297,17 +292,13 @@ describe("buildObservationLogViaRules", () => {
           { from: "idle", to: "opened", on: { act: "open", strain: "notrump" } },
         ],
       },
-      rules: [
+      states: [
+        { phase: "idle", turn: "opener", surfaces: [surface1] },
         {
-          match: { local: "idle", turn: "opener" },
-          claims: [{ surface: surface1 }],
-        },
-        {
-          match: { local: "opened", turn: "responder" },
-          claims: [{
-            surface: surface2,
-            negotiationDelta: { forcing: "one-round", captain: "responder" },
-          }],
+          phase: "opened",
+          turn: "responder",
+          surfaces: [surface2],
+          negotiationDelta: { forcing: "one-round", captain: "responder" },
         },
       ],
       facts: emptyFacts,

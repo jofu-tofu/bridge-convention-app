@@ -79,7 +79,7 @@ describe("deriveTeachingContent", () => {
     const emptyModule: ConventionModule = {
       moduleId: "empty",
       local: { initial: "idle", transitions: [] },
-      rules: [],
+      states: [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -111,8 +111,8 @@ describe("deriveTeachingContent validation", () => {
     return {
       moduleId: "test",
       local: { initial: "idle", transitions: [] },
-      rules: surfaces.length > 0
-        ? [{ match: {}, claims: surfaces.map((s) => ({ surface: s })) }]
+      states: surfaces.length > 0
+        ? [{ phase: "idle", surfaces }]
         : [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],

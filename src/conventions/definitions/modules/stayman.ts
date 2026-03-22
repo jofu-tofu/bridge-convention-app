@@ -8,6 +8,8 @@ import type {
 import { num, bool, fv } from "../../core/pipeline/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../inference/posterior";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { LocalFsm, StateEntry } from "../../core/rule-module";
+import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
@@ -576,6 +578,37 @@ const STAYMAN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
     roles: ["pedagogical"],
   },
 ];
+
+// ─── Local FSM + States ──────────────────────────────────────
+
+type StaymanPhase = "idle" | "asked" | "shown-hearts" | "shown-spades" | "denied" | "inactive";
+
+const STAYMAN_ASK_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
+const STAYMAN_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
+
+export const staymanLocal: LocalFsm<StaymanPhase> = {
+  initial: "idle",
+  transitions: [
+    { from: "idle", to: "asked", on: { act: "inquire", feature: "majorSuit" } },
+    { from: "idle", to: "inactive", on: { act: "transfer" } },
+    { from: "idle", to: "inactive", on: { act: "raise" } },
+    { from: "idle", to: "inactive", on: { act: "place" } },
+    { from: "idle", to: "inactive", on: { act: "signoff" } },
+    { from: "asked", to: "shown-hearts", on: { act: "show", feature: "heldSuit", suit: "hearts" } },
+    { from: "asked", to: "shown-spades", on: { act: "show", feature: "heldSuit", suit: "spades" } },
+    { from: "asked", to: "denied", on: { act: "deny", feature: "majorSuit" } },
+  ],
+};
+
+export function createStaymanStates(sys: SystemConfig): readonly StateEntry<StaymanPhase>[] {
+  return [
+    { phase: "idle", turn: "responder" as const, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys)] },
+    { phase: "asked", turn: "opener" as const, negotiationDelta: STAYMAN_RESPONSE_DELTA, surfaces: OPENER_STAYMAN_SURFACES },
+    { phase: "shown-hearts", turn: "responder" as const, surfaces: STAYMAN_R3_AFTER_2H_SURFACES },
+    { phase: "shown-spades", turn: "responder" as const, surfaces: STAYMAN_R3_AFTER_2S_SURFACES },
+    { phase: "denied", turn: "responder" as const, surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
+  ];
+}
 
 // ─── Module declarations ─────────────────────────────────────
 

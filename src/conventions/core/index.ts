@@ -67,7 +67,7 @@ export { matchObs } from "./pipeline/route-matcher";
 export { advanceLocalFsm } from "./pipeline/local-fsm";
 
 // ── Convention Module (unified type) ─────────────────────────────────────
-export type { ConventionModule, Claim, LocalFsm } from "./convention-module";
+export type { ConventionModule, Claim, LocalFsm, StateEntry } from "./convention-module";
 export { moduleSurfaces } from "./convention-module";
 
 // ── System Registry (re-exported from definitions for external consumers) ────

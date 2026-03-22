@@ -1,14 +1,11 @@
 /**
  * ConventionModule — the unified type for a self-contained convention module.
  *
- * Replaces both the old ConventionModule (surfaces + facts + explanations)
- * and RuleModule (local FSM + rules + facts). One type per module.
- *
  * Declaration fields: facts, explanationEntries
- * Runtime fields: local (FSM), rules (pattern-matched claims)
+ * Runtime fields: local (FSM), states (StateEntry-based surface selection)
  *
  * Surfaces are NOT stored directly — use `moduleSurfaces()` to extract
- * deduplicated surfaces from the module's rules.
+ * deduplicated surfaces from the module's states.
  *
  * Modules must NOT import from other modules — this is the fundamental
  * decoupling invariant. Pedagogical relations, alternatives, and surface
@@ -18,11 +15,11 @@
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
-import type { LocalFsm, Rule, Claim } from "./rule-module";
+import type { LocalFsm, StateEntry } from "./rule-module";
 
-// Re-export for consumer convenience (Claim and LocalFsm are structurally
+// Re-export for consumer convenience (Claim, LocalFsm, and StateEntry are structurally
 // part of rule-module.ts but frequently needed alongside ConventionModule).
-export type { Claim, LocalFsm } from "./rule-module";
+export type { Claim, LocalFsm, StateEntry } from "./rule-module";
 
 export interface ConventionModule<Phase extends string = string> {
   /** Unique module identifier (kebab-case). */
@@ -37,23 +34,23 @@ export interface ConventionModule<Phase extends string = string> {
   // ── Runtime ─────────────────────────────────────────────────
   /** Local FSM for phase-based rule scoping. */
   readonly local: LocalFsm<Phase>;
-  /** Rules: pattern match conditions → surface claims. */
-  readonly rules: readonly Rule<Phase>[];
+  /** State entries: surfaces grouped by conversation state. */
+  readonly states?: readonly StateEntry<Phase>[];
 }
 
 /**
- * Extract deduplicated surfaces from a module's rules.
- * Traverses all rules' claims and deduplicates by meaningId.
+ * Extract deduplicated surfaces from a module's states.
+ * Iterates `state.surfaces` and deduplicates by meaningId.
  */
 export function moduleSurfaces(mod: ConventionModule): readonly BidMeaning[] {
   const seen = new Set<string>();
   const surfaces: BidMeaning[] = [];
 
-  for (const rule of mod.rules) {
-    for (const claim of rule.claims) {
-      if (!seen.has(claim.surface.meaningId)) {
-        seen.add(claim.surface.meaningId);
-        surfaces.push(claim.surface);
+  for (const entry of (mod.states ?? [])) {
+    for (const surface of entry.surfaces) {
+      if (!seen.has(surface.meaningId)) {
+        seen.add(surface.meaningId);
+        surfaces.push(surface);
       }
     }
   }

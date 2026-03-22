@@ -38,8 +38,9 @@ describe.each(moduleEntries)("structural contract — %s", (_id, mod) => {
     expect(mod.moduleId.length).toBeGreaterThan(0);
   });
 
-  it("rules is an array", () => {
-    expect(Array.isArray(mod.rules)).toBe(true);
+  it("has states", () => {
+    const hasStates = mod.states && mod.states.length > 0;
+    expect(hasStates).toBe(true);
   });
 
   it("facts has definitions array and evaluators map", () => {

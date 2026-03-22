@@ -17,7 +17,7 @@ function makeModule(id: string, overrides: Partial<ConventionModule> = {}): Conv
   return {
     moduleId: id,
     local: { initial: "idle", transitions: [] },
-    rules: [],
+    states: [],
     facts: { definitions: [], evaluators: new Map() },
     explanationEntries: [],
     ...overrides,
@@ -47,19 +47,13 @@ function makeSurface(
 describe("detectActivationOverlap", () => {
   it("detects overlap when both modules have compatible turn+phase guards", () => {
     const a = makeModule("mod-a", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("a1") }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1")] },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("b1") }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1")] },
       ],
     });
 
@@ -71,19 +65,13 @@ describe("detectActivationOverlap", () => {
 
   it("detects overlap when one module has wildcard turn guard", () => {
     const a = makeModule("mod-a", {
-      rules: [
-        {
-          match: { local: "idle" },
-          claims: [{ surface: makeSurface("a1") }],
-        },
+      states: [
+        { phase: "idle", surfaces: [makeSurface("a1")] },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("b1") }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1")] },
       ],
     });
 
@@ -93,19 +81,13 @@ describe("detectActivationOverlap", () => {
 
   it("reports no overlap when turn guards are incompatible", () => {
     const a = makeModule("mod-a", {
-      rules: [
-        {
-          match: { turn: "opener", local: "idle" },
-          claims: [{ surface: makeSurface("a1") }],
-        },
+      states: [
+        { phase: "idle", turn: "opener", surfaces: [makeSurface("a1")] },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
-        {
-          match: { turn: "opponent", local: "idle" },
-          claims: [{ surface: makeSurface("b1") }],
-        },
+      states: [
+        { phase: "idle", turn: "opponent", surfaces: [makeSurface("b1")] },
       ],
     });
 
@@ -120,19 +102,13 @@ describe("detectEncodingCollision", () => {
   it("detects collision when two modules claim the same bid", () => {
     const sameBid = { type: "bid" as const, level: 2, strain: "C" };
     const a = makeModule("mod-a", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("a1", sameBid) }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1", sameBid)] },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("b1", sameBid) }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1", sameBid)] },
       ],
     });
 
@@ -144,19 +120,13 @@ describe("detectEncodingCollision", () => {
 
   it("reports no collision when bids differ", () => {
     const a = makeModule("mod-a", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("a1", { type: "bid", level: 2, strain: "C" }) }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1", { type: "bid", level: 2, strain: "C" })] },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("b1", { type: "bid", level: 3, strain: "D" }) }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1", { type: "bid", level: 3, strain: "D" })] },
       ],
     });
 
@@ -171,16 +141,15 @@ describe("detectObservationCrosstalk", () => {
   it("detects crosstalk when module A claim obs matches module B transition", () => {
     // StaymanAsk normalizes to [{ act: "inquire", feature: "majorSuit" }]
     const a = makeModule("mod-a", {
-      rules: [
+      states: [
         {
-          match: { turn: "responder", local: "idle" },
-          claims: [
+          phase: "idle",
+          turn: "responder",
+          surfaces: [
             {
-              surface: {
-                ...makeSurface("a1"),
-                sourceIntent: { type: "StaymanAsk", params: {} },
-              } as unknown as BidMeaning,
-            },
+              ...makeSurface("a1"),
+              sourceIntent: { type: "StaymanAsk", params: {} },
+            } as unknown as BidMeaning,
           ],
         },
       ],
@@ -192,7 +161,7 @@ describe("detectObservationCrosstalk", () => {
           { from: "idle", to: "responded", on: { act: "inquire", feature: "majorSuit" } },
         ],
       },
-      rules: [],
+      states: [],
       facts: { definitions: [], evaluators: new Map() },
     });
 
@@ -204,11 +173,8 @@ describe("detectObservationCrosstalk", () => {
 
   it("reports no crosstalk for unknown intents (empty canonical obs)", () => {
     const a = makeModule("mod-a", {
-      rules: [
-        {
-          match: { turn: "responder", local: "idle" },
-          claims: [{ surface: makeSurface("a1") }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1")] },
       ],
     });
     const b = makeModule("mod-b", {
@@ -218,7 +184,7 @@ describe("detectObservationCrosstalk", () => {
           { from: "idle", to: "responded", on: { act: "inquire", feature: "majorSuit" } },
         ],
       },
-      rules: [],
+      states: [],
       facts: { definitions: [], evaluators: new Map() },
     });
 
@@ -232,28 +198,22 @@ describe("detectObservationCrosstalk", () => {
 describe("detectKernelConflict", () => {
   it("detects conflict when both modules write the same kernel field", () => {
     const a = makeModule("mod-a", {
-      rules: [
+      states: [
         {
-          match: { turn: "responder", local: "idle" },
-          claims: [
-            {
-              surface: makeSurface("a1"),
-              negotiationDelta: { forcing: "game" },
-            },
-          ],
+          phase: "idle",
+          turn: "responder",
+          surfaces: [makeSurface("a1")],
+          negotiationDelta: { forcing: "game" },
         },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
+      states: [
         {
-          match: { turn: "responder", local: "idle" },
-          claims: [
-            {
-              surface: makeSurface("b1"),
-              negotiationDelta: { forcing: "one-round" },
-            },
-          ],
+          phase: "idle",
+          turn: "responder",
+          surfaces: [makeSurface("b1")],
+          negotiationDelta: { forcing: "one-round" },
         },
       ],
     });
@@ -266,28 +226,22 @@ describe("detectKernelConflict", () => {
 
   it("reports no conflict when kernel fields differ", () => {
     const a = makeModule("mod-a", {
-      rules: [
+      states: [
         {
-          match: { turn: "responder", local: "idle" },
-          claims: [
-            {
-              surface: makeSurface("a1"),
-              negotiationDelta: { forcing: "game" },
-            },
-          ],
+          phase: "idle",
+          turn: "responder",
+          surfaces: [makeSurface("a1")],
+          negotiationDelta: { forcing: "game" },
         },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
+      states: [
         {
-          match: { turn: "responder", local: "idle" },
-          claims: [
-            {
-              surface: makeSurface("b1"),
-              negotiationDelta: { captain: "responder" },
-            },
-          ],
+          phase: "idle",
+          turn: "responder",
+          surfaces: [makeSurface("b1")],
+          negotiationDelta: { captain: "responder" },
         },
       ],
     });
@@ -302,19 +256,13 @@ describe("detectKernelConflict", () => {
 describe("analyzeBundle", () => {
   it("returns no edges for two clean modules with no overlap", () => {
     const a = makeModule("mod-a", {
-      rules: [
-        {
-          match: { turn: "opener", local: "idle" },
-          claims: [{ surface: makeSurface("a1", { type: "bid", level: 1, strain: "H" }) }],
-        },
+      states: [
+        { phase: "idle", turn: "opener", surfaces: [makeSurface("a1", { type: "bid", level: 1, strain: "H" })] },
       ],
     });
     const b = makeModule("mod-b", {
-      rules: [
-        {
-          match: { turn: "opponent", local: "idle" },
-          claims: [{ surface: makeSurface("b1", { type: "bid", level: 2, strain: "D" }) }],
-        },
+      states: [
+        { phase: "idle", turn: "opponent", surfaces: [makeSurface("b1", { type: "bid", level: 2, strain: "D" })] },
       ],
     });
 

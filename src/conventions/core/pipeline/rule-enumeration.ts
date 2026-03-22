@@ -1,11 +1,11 @@
 /**
- * Rule enumeration — walks RuleModule[].rules[].claims[] to produce RuleAtoms.
+ * Rule enumeration — walks ConventionModule[].states[].surfaces[] to produce RuleAtoms.
  *
  * Replaces the old FSM-based BFS coverage enumeration
  * (`coverage-enumeration.ts`) which walked state graphs.
  *
  * Atom identity: `moduleId/meaningId`. When the same meaningId appears
- * in multiple rules (reachable under different phase guards), one atom
+ * in multiple state entries (reachable under different phase guards), one atom
  * is emitted with all unique guard combinations in `allActivationPaths`.
  */
 
@@ -62,17 +62,16 @@ export function enumerateRuleAtoms(
       paths: { phaseGuards: string | readonly string[] | undefined; turnGuard: TurnRole | undefined }[];
     }>();
 
-    for (const rule of mod.rules) {
-      for (const claim of rule.claims) {
-        const surface = claim.surface;
+    // Iterate state entries
+    for (const state of (mod.states ?? [])) {
+      for (const surface of state.surfaces) {
         const path = {
-          phaseGuards: rule.match.local,
-          turnGuard: rule.match.turn,
+          phaseGuards: state.phase,
+          turnGuard: state.turn,
         };
 
         const existing = seen.get(surface.meaningId);
         if (existing) {
-          // Add path if unique
           const isDuplicate = existing.paths.some(
             (p) => pathsEqual(p, path),
           );
@@ -86,8 +85,8 @@ export function enumerateRuleAtoms(
               meaningId: surface.meaningId,
               meaningLabel: surface.teachingLabel,
               encoding: surface.encoding.defaultCall,
-              primaryPhaseGuard: rule.match.local,
-              turnGuard: rule.match.turn,
+              primaryPhaseGuard: state.phase,
+              turnGuard: state.turn,
               allActivationPaths: [], // filled below
             },
             paths: [path],

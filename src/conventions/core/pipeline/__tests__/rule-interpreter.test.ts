@@ -54,7 +54,7 @@ describe("collectMatchingClaims", () => {
     expect(result).toEqual([]);
   });
 
-  it("collects surfaces from a single matching rule", () => {
+  it("collects surfaces from a single matching state entry", () => {
     const surface = makeSurface("stayman-ask");
     const mod: ConventionModule<"idle" | "opened"> = {
       moduleId: "stayman",
@@ -64,11 +64,8 @@ describe("collectMatchingClaims", () => {
           { from: "idle", to: "opened", on: { act: "open", strain: "notrump" } },
         ],
       },
-      rules: [
-        {
-          match: { local: "opened" },
-          claims: [{ surface }],
-        },
+      states: [
+        { phase: "opened", surfaces: [surface] },
       ],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
@@ -95,11 +92,8 @@ describe("collectMatchingClaims", () => {
           { from: "idle", to: "opened", on: { act: "open", strain: "notrump" } },
         ],
       },
-      rules: [
-        {
-          match: { local: "opened" },
-          claims: [{ surface }],
-        },
+      states: [
+        { phase: "opened", surfaces: [surface] },
       ],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
@@ -115,13 +109,11 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"idle"> = {
       moduleId: "test-mod",
       local: { initial: "idle", transitions: [] },
-      rules: [
+      states: [
         {
-          match: {
-            local: "idle",
-            kernel: { kind: "forcing", level: "game" },
-          },
-          claims: [{ surface }],
+          phase: "idle",
+          kernel: { kind: "forcing", level: "game" },
+          surfaces: [surface],
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
@@ -145,19 +137,17 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"idle"> = {
       moduleId: "smolen",
       local: { initial: "idle", transitions: [] },
-      rules: [
+      states: [
         {
-          match: {
-            local: "idle",
-            route: {
-              kind: "subseq",
-              steps: [
-                { act: "inquire", feature: "majorSuit" },
-                { act: "deny", feature: "majorSuit" },
-              ],
-            },
+          phase: "idle",
+          route: {
+            kind: "subseq",
+            steps: [
+              { act: "inquire", feature: "majorSuit" },
+              { act: "deny", feature: "majorSuit" },
+            ],
           },
-          claims: [{ surface }],
+          surfaces: [surface],
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
@@ -193,14 +183,14 @@ describe("collectMatchingClaims", () => {
     const mod1: ConventionModule<"active"> = {
       moduleId: "mod1",
       local: { initial: "active", transitions: [] },
-      rules: [{ match: { local: "active" }, claims: [{ surface: s1 }] }],
+      states: [{ phase: "active", surfaces: [s1] }],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
     const mod2: ConventionModule<"active"> = {
       moduleId: "mod2",
       local: { initial: "active", transitions: [] },
-      rules: [{ match: { local: "active" }, claims: [{ surface: s2 }] }],
+      states: [{ phase: "active", surfaces: [s2] }],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -211,14 +201,15 @@ describe("collectMatchingClaims", () => {
     expect(result[1]!.moduleId).toBe("mod2");
   });
 
-  it("returns empty when no rules match", () => {
+  it("returns empty when no state entries match", () => {
     const mod: ConventionModule<"idle"> = {
       moduleId: "empty",
       local: { initial: "idle", transitions: [] },
-      rules: [
+      states: [
         {
-          match: { local: "idle", kernel: { kind: "forcing", level: "game" } },
-          claims: [{ surface: makeSurface("test") }],
+          phase: "idle",
+          kernel: { kind: "forcing", level: "game" },
+          surfaces: [makeSurface("test")],
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
@@ -229,16 +220,16 @@ describe("collectMatchingClaims", () => {
     expect(result).toHaveLength(0);
   });
 
-  it("collects surfaces from multiple matching rules in same module", () => {
+  it("collects surfaces from multiple matching state entries in same module", () => {
     const s1 = makeSurface("s1");
     const s2 = makeSurface("s2");
 
     const mod: ConventionModule<"active"> = {
       moduleId: "multi-rule",
       local: { initial: "active", transitions: [] },
-      rules: [
-        { match: { local: "active" }, claims: [{ surface: s1 }] },
-        { match: { local: "active" }, claims: [{ surface: s2 }] },
+      states: [
+        { phase: "active", surfaces: [s1] },
+        { phase: "active", surfaces: [s2] },
       ],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],

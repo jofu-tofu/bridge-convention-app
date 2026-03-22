@@ -18,7 +18,7 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 A convention bundle provides:
 1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, optional `closurePolicy`, and optional `teachingTags`
 2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions. Use factory helpers in `core/pipeline/fact-factory.ts` for common patterns (boolean comparison, per-suit, HCP range).
-3. **`modules`** — `ConventionModule[]` for declarative surface selection via `collectMatchingClaims()`. Each module has `local` (LocalFsm with phases + phase transitions) and `rules` (Rule[] with `ObsPattern`/`RouteExpr`/`NegotiationExpr` constraints). Modules are resolved by `buildBundle()` from `memberIds` via module-registry.
+3. **`modules`** — `ConventionModule[]` for declarative surface selection via `collectMatchingClaims()`. Each module has `local` (LocalFsm with phases + phase transitions) and `states` (StateEntry[] — surfaces grouped by conversation state with phase/turn/route/kernel constraints and group-level `negotiationDelta`). Modules are resolved by `buildBundle()` from `memberIds` via module-registry.
 4. **`systemProfile`** — `SystemProfile` declaring modules, attachments, exclusivity groups
 
 **Pedagogical content is tag-derived.** Modules do NOT declare `teachingRelations`, `alternatives`, or `intentFamilies` fields. Instead, surfaces carry `teachingTags` using 6 general tags from `definitions/teaching-vocabulary.ts`. When modules are composed into a bundle, `deriveTeachingContent()` scans all surfaces and produces the appropriate relations/alternatives automatically. This makes modules portable — compose any set into a bundle and it works.
@@ -27,7 +27,7 @@ A convention bundle provides:
 
 When creating or modifying convention modules under `definitions/modules/`:
 
-1. **Export raw parts, not assembled modules.** Module definition files (`-rules.ts`) export `LocalFsm` and `Rule[]` as named constants (e.g., `staymanLocal`, `staymanRuleDefs`). System-config-parameterized modules export factory functions (e.g., `createStaymanRuleDefs(sys)`). Module files (`modules/*.ts`) export factory functions returning `{ facts, explanationEntries }` — NOT a full `ConventionModule`. The module-registry is the ONLY place `ConventionModule` is assembled from these raw parts.
+1. **Export raw parts, not assembled modules.** Module files (`modules/*.ts`) export `LocalFsm`, `StateEntry[]` (or factory), and `{ facts, explanationEntries }` factory. System-config-parameterized modules export factory functions (e.g., `createStaymanStates(sys)`). The module-registry is the ONLY place `ConventionModule` is assembled from these raw parts.
 
 2. **Never import concrete system configs.** Modules must not import `SAYC_SYSTEM_CONFIG` or `TWO_OVER_ONE_SYSTEM_CONFIG`. They receive `SystemConfig` via the factory parameter. This is enforced by ESLint `no-restricted-imports`.
 

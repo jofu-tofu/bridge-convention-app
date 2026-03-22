@@ -166,11 +166,11 @@ export function exploreBundle(
             if (!rulesFired.has(claim.moduleId)) rulesFired.set(claim.moduleId, new Set());
             const mod = modules.find((m) => m.moduleId === claim.moduleId);
             if (mod) {
-              for (let ri = 0; ri < mod.rules.length; ri++) {
-                for (const c of mod.rules[ri]!.claims) {
-                  if (claim.claims.some(cl => cl.surface === c.surface)) {
-                    rulesFired.get(claim.moduleId)!.add(ri);
-                  }
+              const entries = mod.states ?? [];
+              for (let ri = 0; ri < entries.length; ri++) {
+                const surfaces = entries[ri]!.surfaces;
+                if (claim.claims.some(cl => surfaces.some(s => s.meaningId === cl.surface.meaningId))) {
+                  rulesFired.get(claim.moduleId)!.add(ri);
                 }
               }
             }

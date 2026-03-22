@@ -17,7 +17,7 @@ import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { AuctionContext, CommittedStep, NegotiationState } from "../../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { ConventionModule } from "../convention-module";
-import type { Rule, TurnRole, Claim } from "../rule-module";
+import type { TurnRole, Claim, StateEntry } from "../rule-module";
 import { advanceLocalFsm } from "./local-fsm";
 import { matchKernel } from "./negotiation-matcher";
 import { matchRoute } from "./route-matcher";
@@ -163,7 +163,7 @@ function replayLocalFsm(
   return phase;
 }
 
-/** Collect all claims from matching rules in a module. */
+/** Collect all claims from matching state entries in a module. */
 function collectModuleClaims(
   mod: ConventionModule,
   currentPhase: string,
@@ -173,52 +173,32 @@ function collectModuleClaims(
   openerSeat: Seat | undefined,
 ): Claim[] {
   const claims: Claim[] = [];
-
-  for (const rule of mod.rules) {
-    if (ruleMatches(rule, currentPhase, currentKernel, context, turnRole, openerSeat)) {
-      for (const claim of rule.claims) {
-        claims.push(claim);
-      }
+  for (const entry of (mod.states ?? [])) {
+    if (!stateEntryMatches(entry, currentPhase, currentKernel, context, turnRole, openerSeat)) continue;
+    for (const surface of entry.surfaces) {
+      claims.push(entry.negotiationDelta ? { surface, negotiationDelta: entry.negotiationDelta } : { surface });
     }
   }
-
   return claims;
 }
 
-/** Check if all of a rule's match conditions are satisfied. */
-function ruleMatches(
-  rule: Rule<string>,
+/** Check if all of a state entry's activation conditions are satisfied. */
+function stateEntryMatches(
+  entry: StateEntry<string>,
   currentPhase: string,
   currentKernel: NegotiationState,
   context: AuctionContext,
   turnRole: TurnRole | undefined,
   openerSeat: Seat | undefined,
 ): boolean {
-  const { match } = rule;
-
-  // Turn check
-  if (match.turn !== undefined && turnRole !== undefined) {
-    if (match.turn !== turnRole) return false;
+  if (entry.turn !== undefined && turnRole !== undefined && entry.turn !== turnRole) return false;
+  if (Array.isArray(entry.phase)) {
+    if (!(entry.phase as readonly string[]).includes(currentPhase)) return false;
+  } else {
+    if (entry.phase !== currentPhase) return false;
   }
-
-  // Local phase check
-  if (match.local !== undefined) {
-    if (Array.isArray(match.local)) {
-      if (!(match.local as readonly string[]).includes(currentPhase)) return false;
-    } else {
-      if (match.local !== currentPhase) return false;
-    }
-  }
-
-  // Kernel check
-  if (match.kernel !== undefined) {
-    if (!matchKernel(match.kernel, currentKernel)) return false;
-  }
-
-  // Route check — pass openerSeat for actor-aware pattern matching
-  if (match.route !== undefined) {
-    if (!matchRoute(match.route, context.log, openerSeat)) return false;
-  }
-
+  if (entry.kernel !== undefined && !matchKernel(entry.kernel, currentKernel)) return false;
+  if (entry.route !== undefined && !matchRoute(entry.route, context.log, openerSeat)) return false;
   return true;
 }
+

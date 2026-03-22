@@ -32,28 +32,25 @@ describe("enumerateRuleAtoms", () => {
     expect(enumerateRuleAtoms([])).toEqual([]);
   });
 
-  it("returns empty for module with no rules", () => {
+  it("returns empty for module with no state entries", () => {
     const mod: ConventionModule = {
       moduleId: "empty",
       local: { initial: "idle", transitions: [] },
-      rules: [],
+      states: [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
     expect(enumerateRuleAtoms([mod])).toEqual([]);
   });
 
-  it("extracts atoms from a single module with claims", () => {
+  it("extracts atoms from a single module with surfaces", () => {
     const s1 = makeSurface("s1");
     const s2 = makeSurface("s2", 2, BidSuit.Hearts);
     const mod: ConventionModule = {
       moduleId: "test-mod",
       local: { initial: "idle", transitions: [] },
-      rules: [
-        {
-          match: { local: "idle", turn: "responder" },
-          claims: [{ surface: s1 }, { surface: s2 }],
-        },
+      states: [
+        { phase: "idle", turn: "responder", surfaces: [s1, s2] },
       ],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
@@ -69,14 +66,14 @@ describe("enumerateRuleAtoms", () => {
     expect(atoms[1]!.meaningId).toBe("s2");
   });
 
-  it("deduplicates same meaningId across rules in same module", () => {
+  it("deduplicates same meaningId across state entries in same module", () => {
     const surface = makeSurface("dup-surface");
     const mod: ConventionModule = {
       moduleId: "dedup-mod",
       local: { initial: "idle", transitions: [] },
-      rules: [
-        { match: { local: "phase-a" }, claims: [{ surface }] },
-        { match: { local: "phase-b" }, claims: [{ surface }] },
+      states: [
+        { phase: "phase-a", surfaces: [surface] },
+        { phase: "phase-b", surfaces: [surface] },
       ],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
@@ -95,9 +92,9 @@ describe("enumerateRuleAtoms", () => {
     const mod: ConventionModule = {
       moduleId: "mod",
       local: { initial: "idle", transitions: [] },
-      rules: [
-        { match: { local: "idle" }, claims: [{ surface }] },
-        { match: { local: "idle" }, claims: [{ surface }] },
+      states: [
+        { phase: "idle", surfaces: [surface] },
+        { phase: "idle", surfaces: [surface] },
       ],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
@@ -114,14 +111,14 @@ describe("enumerateRuleAtoms", () => {
     const mod1: ConventionModule = {
       moduleId: "first",
       local: { initial: "idle", transitions: [] },
-      rules: [{ match: {}, claims: [{ surface: s1 }] }],
+      states: [{ phase: "idle", surfaces: [s1] }],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
     const mod2: ConventionModule = {
       moduleId: "second",
       local: { initial: "idle", transitions: [] },
-      rules: [{ match: {}, claims: [{ surface: s2 }] }],
+      states: [{ phase: "idle", surfaces: [s2] }],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -132,11 +129,11 @@ describe("enumerateRuleAtoms", () => {
     expect(atoms[1]!.moduleId).toBe("second");
   });
 
-  it("handles rules with no claims gracefully", () => {
+  it("handles state entries with no surfaces gracefully", () => {
     const mod: ConventionModule = {
-      moduleId: "no-claims",
+      moduleId: "no-surfaces",
       local: { initial: "idle", transitions: [] },
-      rules: [{ match: { local: "idle" }, claims: [] }],
+      states: [{ phase: "idle", surfaces: [] }],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -150,7 +147,7 @@ describe("generateRuleCoverageManifest", () => {
     const mod: ConventionModule = {
       moduleId: "test-mod",
       local: { initial: "idle", transitions: [] },
-      rules: [{ match: { local: "idle" }, claims: [{ surface }] }],
+      states: [{ phase: "idle", surfaces: [surface] }],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };

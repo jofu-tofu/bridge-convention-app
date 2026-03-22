@@ -7,8 +7,8 @@ Infrastructure for the meaning-centric convention system: registry, meaning pipe
 ```
 core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
-  convention-module.ts  Unified ConventionModule interface — the single module type (moduleId, facts, explanationEntries, local: LocalFsm, rules: Rule[]). Exports `moduleSurfaces()` helper (extracts deduplicated surfaces from a module's rules). Re-exports `Claim` and `LocalFsm` from `rule-module.ts` for convenience.
-  rule-module.ts        Pattern primitives for rule-based surface selection: `LocalFsm`, `Claim` (surface + negotiationDelta), `Rule`, `TurnRole`, `ObsPattern`, `RouteExpr`, `NegotiationExpr`, `PhaseTransition`. No `RuleModule` interface — modules use unified `ConventionModule`.
+  convention-module.ts  Unified ConventionModule interface — the single module type (moduleId, facts, explanationEntries, local: LocalFsm, states: StateEntry[]). Exports `moduleSurfaces()` helper (extracts deduplicated surfaces from a module's states). Re-exports `Claim`, `LocalFsm`, `StateEntry` from `rule-module.ts` for convenience.
+  rule-module.ts        Pattern primitives for rule-based surface selection: `LocalFsm`, `StateEntry` (phase + turn + surfaces + negotiationDelta), `Claim` (surface + negotiationDelta), `TurnRole`, `ObsPattern`, `RouteExpr`, `NegotiationExpr`, `PhaseTransition`. `StateEntry` groups surfaces by conversation state — activation context stays in `conventions/core/`, not on `BidMeaning` in `contracts/`.
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())
@@ -37,7 +37,7 @@ core/
     negotiation-matcher.ts     matchKernel() — evaluates NegotiationExpr predicates (fit, forcing, captain, competition, combinators) against NegotiationState
     local-fsm.ts          advanceLocalFsm() — advances a module's local phase based on CommittedStep observations
     rule-interpreter.ts   collectMatchingClaims() — collects matching claims from ConventionModule[] against AuctionContext (replays local FSMs, checks turn/phase/kernel/route constraints). `ModuleClaimResult` returns `claims: readonly Claim[]` (where `Claim` has `surface` + `negotiationDelta`). `flattenSurfaces()` converts claims to surfaces. deriveTurnRole() maps nextSeat to opener/responder/opponent
-    rule-enumeration.ts   enumerateRuleAtoms(), generateRuleCoverageManifest() — enumerates coverage atoms from ConventionModule[] for CLI commands. Atom ID format: moduleId/meaningId.
+    rule-enumeration.ts   enumerateRuleAtoms(), generateRuleCoverageManifest() — enumerates coverage atoms from ConventionModule[].states[] for CLI commands. Atom ID format: moduleId/meaningId.
     clause-derivation.ts  deriveClauseId(), deriveClauseDescription(), fillClauseDefaults() — auto-derive clause metadata from factId/operator/value
     hand-fact-resolver.ts Hand fact resolution utilities
     fact-utils.ts         Fact evaluation utility functions
@@ -82,9 +82,9 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 ## Rule Interpreter (Surface Selection)
 
-All bundles use `ConventionModule`-based surface selection via `collectMatchingClaims()` in `rule-interpreter.ts`. The old `ConversationMachine` FSM infrastructure has been removed.
+All bundles use `ConventionModule`-based surface selection via `collectMatchingClaims()` in `rule-interpreter.ts`.
 
-**How it works:** For each `ConventionModule`, the interpreter replays its local FSM phases (`advanceLocalFsm()`) against the auction history, then evaluates each rule's constraints (turn role, phase match, route pattern via `matchRoute()`, kernel state via `matchKernel()`) to produce matching `Claim[]` (each with `surface` + `negotiationDelta`). `flattenSurfaces()` extracts the `BidMeaning[]` from claims. `deriveTurnRole()` maps the next seat to opener/responder/opponent.
+**How it works:** For each `ConventionModule`, the interpreter replays its local FSM phases (`advanceLocalFsm()`) against the auction history, then evaluates each `StateEntry`'s constraints (turn role, phase match, route pattern via `matchRoute()`, kernel state via `matchKernel()`) to produce matching `Claim[]` (each with `surface` + `negotiationDelta` from the entry's group-level delta). `flattenSurfaces()` extracts the `BidMeaning[]` from claims. `deriveTurnRole()` maps the next seat to opener/responder/opponent.
 
 **Key files:**
 - `rule-interpreter.ts` — `collectMatchingClaims()` entry point

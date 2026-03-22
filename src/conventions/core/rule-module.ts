@@ -1,7 +1,7 @@
 /**
  * Rule pattern primitives — types for declarative rule-based surface selection.
  *
- * Defines LocalFsm, Claim, Rule, and pattern types (ObsPattern, RouteExpr,
+ * Defines LocalFsm, Claim, StateEntry, and pattern types (ObsPattern, RouteExpr,
  * NegotiationExpr, PhaseTransition, TurnRole) used by ConventionModule.
  *
  * Import direction: rule-module.ts → core/contracts/ only.
@@ -117,20 +117,21 @@ export interface Claim {
   readonly negotiationDelta?: NegotiationDelta;
 }
 
-// ── Rule ─────────────────────────────────────────────────────────────
+// ── StateEntry ──────────────────────────────────────────────────────
 
 /**
- * When match conditions hold, these claims are active.
+ * Groups surfaces by conversation state — "in this state, these bids
+ * are available." Flatter, inline authoring with group-level negotiationDelta.
  *
- * DESIGN INVARIANT: Route patterns and local phases should be used together.
- * A route pattern without a local phase guard can over-match in long auctions.
+ * All activation fields are optional wildcards (matching anything when omitted).
+ * `negotiationDelta` is shared by all surfaces in the entry.
+ * For per-surface deltas, use multiple StateEntry objects with the same phase/turn.
  */
-export interface Rule<Phase extends string> {
-  readonly match: {
-    readonly turn?: "opener" | "responder" | "opponent";
-    readonly kernel?: NegotiationExpr;
-    readonly route?: RouteExpr;
-    readonly local?: Phase | readonly Phase[];
-  };
-  readonly claims: readonly Claim[];
+export interface StateEntry<Phase extends string> {
+  readonly phase: Phase | readonly Phase[];
+  readonly turn?: TurnRole;
+  readonly kernel?: NegotiationExpr;
+  readonly route?: RouteExpr;
+  readonly negotiationDelta?: NegotiationDelta;
+  readonly surfaces: readonly BidMeaning[];
 }

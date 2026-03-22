@@ -1,29 +1,122 @@
 /**
  * DONT (Disturbing Opponents' Notrump) convention module.
  *
- * Self-contained module exporting a ConventionModule object.
- * FSM states and transitions are defined in the RuleModule (dont-rules.ts).
+ * Self-contained module exporting declarations, LocalFsm, and StateEntry[].
+ *
+ * **No turn matching** — DONT omits turn matching because `deriveTurnRole()` classifies
+ * the overcaller as "opponent" (the 1NT opener is "opener"). Phase + route scoping
+ * is sufficient because DONT's observations are seat-distinctive.
+ *
+ * Phases:
+ * - idle: before opponent 1NT
+ * - r1: after 1NT (overcaller bids)
+ * - after-2h/2d/2c/2s/double: advancer responses
+ * - wait-reveal/wait-2d-relay/wait-2c-relay: relay phases
+ * - done: terminal
  */
 
 import type { SystemConfig } from "../../../../core/contracts/system-config";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { BidSuit } from "../../../../engine/types";
+import { bid } from "../../../core/surface-helpers";
+import { createSurface } from "../../../core/surface-builder";
+import type { ModuleContext } from "../../../core/surface-builder";
 import { dontFacts } from "./facts";
 import { DONT_ENTRIES } from "./explanation-catalog";
+import {
+  DONT_R1_SURFACES,
+  DONT_ADVANCER_2H_SURFACES,
+  DONT_ADVANCER_2D_SURFACES,
+  DONT_ADVANCER_2C_SURFACES,
+  DONT_ADVANCER_2S_SURFACES,
+  DONT_ADVANCER_DOUBLE_SURFACES,
+  DONT_REVEAL_SURFACES,
+  DONT_2C_RELAY_SURFACES,
+  DONT_2D_RELAY_SURFACES,
+} from "./meaning-surfaces";
 
-/** Module parts returned by createDontModule (declaration-only — no local/rules). */
-export interface DontModuleParts {
-  readonly facts: FactCatalogExtension;
-  readonly explanationEntries: readonly ExplanationEntry[];
+// ── Stub 1NT opening surface ──────────────────────────────────────
+
+const DONT_CTX: ModuleContext = { moduleId: "dont" };
+
+const OPPONENT_1NT_SURFACE: BidMeaning = createSurface({
+  meaningId: "dont:opponent-1nt",
+  semanticClassId: "dont:opponent-open",
+  encoding: bid(1, BidSuit.NoTrump),
+  clauses: [],
+  band: "must",
+  declarationOrder: 0,
+  sourceIntent: { type: "NTOpening", params: {} },
+  teachingLabel: "Opponent's 1NT",
+}, DONT_CTX);
+
+// ── Phase type ────────────────────────────────────────────────────
+
+type Phase =
+  | "idle"
+  | "r1"
+  | "after-2h"
+  | "after-2d"
+  | "after-2c"
+  | "after-2s"
+  | "after-double"
+  | "wait-reveal"
+  | "wait-2d-relay"
+  | "wait-2c-relay"
+  | "done";
+
+// ── Local FSM ─────────────────────────────────────────────────────
+
+export const dontLocal: LocalFsm<Phase> = {
+  initial: "idle",
+  transitions: [
+      { from: "idle", to: "r1", on: { act: "open", strain: "notrump" } },
+      { from: "r1", to: "after-2h", on: { act: "show", feature: "heldSuit", suit: "spades" } },
+      { from: "r1", to: "after-2d", on: { act: "show", feature: "heldSuit", suit: "diamonds" } },
+      { from: "r1", to: "after-2c", on: { act: "show", feature: "heldSuit", suit: "clubs" } },
+      { from: "r1", to: "after-2s", on: { act: "overcall", feature: "heldSuit", suit: "spades" } },
+      { from: "r1", to: "after-double", on: { act: "overcall", feature: "heldSuit" } },
+      { from: "r1", to: "done", on: { act: "pass" } },
+      { from: "after-2h", to: "done", on: { act: "accept" } },
+      { from: "after-2h", to: "done", on: { act: "show" } },
+      { from: "after-2d", to: "done", on: { act: "accept" } },
+      { from: "after-2d", to: "wait-2d-relay", on: { act: "inquire", feature: "majorSuit" } },
+      { from: "after-2c", to: "done", on: { act: "accept" } },
+      { from: "after-2c", to: "wait-2c-relay", on: { act: "inquire", feature: "heldSuit" } },
+      { from: "after-2s", to: "done", on: { act: "accept" } },
+      { from: "after-2s", to: "done", on: { act: "show" } },
+      { from: "after-double", to: "done", on: { act: "accept" } },
+      { from: "after-double", to: "wait-reveal", on: { act: "relay" } },
+      { from: "wait-reveal", to: "done", on: { act: "show" } },
+      { from: "wait-2d-relay", to: "done", on: { act: "show" } },
+      { from: "wait-2c-relay", to: "done", on: { act: "show" } },
+  ],
+};
+
+// ── State entries ─────────────────────────────────────────────────
+
+/** Creates DONT state entries. No turn matching (see module doc). No negotiationDelta. */
+export function createDontStates(): readonly StateEntry<Phase>[] {
+  return [
+    { phase: "idle", surfaces: [OPPONENT_1NT_SURFACE] },
+    { phase: "r1", surfaces: DONT_R1_SURFACES },
+    { phase: "after-2h", surfaces: DONT_ADVANCER_2H_SURFACES },
+    { phase: "after-2d", surfaces: DONT_ADVANCER_2D_SURFACES },
+    { phase: "after-2c", surfaces: DONT_ADVANCER_2C_SURFACES },
+    { phase: "after-2s", surfaces: DONT_ADVANCER_2S_SURFACES },
+    { phase: "after-double", surfaces: DONT_ADVANCER_DOUBLE_SURFACES },
+    { phase: "wait-reveal", surfaces: DONT_REVEAL_SURFACES },
+    { phase: "wait-2c-relay", surfaces: DONT_2C_RELAY_SURFACES },
+    { phase: "wait-2d-relay", surfaces: DONT_2D_RELAY_SURFACES },
+  ];
 }
 
-/**
- * Create DONT module declaration parts for the given system config.
- *
- * Returns facts and explanations only. Full ConventionModule assembly
- * (adding local FSM + rules) happens in module-registry.ts.
- */
-export function createDontModule(_sys: SystemConfig): DontModuleParts {
+// ── Module declarations ───────────────────────────────────────────
+
+export function createDontModule(_sys: SystemConfig) {
   return {
     facts: dontFacts,
     explanationEntries: DONT_ENTRIES,

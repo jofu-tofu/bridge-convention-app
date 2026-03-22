@@ -8,11 +8,39 @@
  * - Kernel conflict: claims that write the same kernel state field
  */
 
-import type { ConventionModule } from "../../conventions/core";
-import type { Rule, ObsPattern } from "../../conventions/core/rule-module";
+import type { ConventionModule, Claim } from "../../conventions/core";
+import type { ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "../../conventions/core/rule-module";
 import type { InterferenceEdge, PairInteraction } from "./types";
 import { normalizeIntent, matchObs } from "../../conventions/core";
 import { callKey } from "../../engine/call-helpers";
+
+/** Normalized rule view for interference analysis. */
+interface NormalizedRule {
+  readonly match: {
+    readonly turn?: TurnRole;
+    readonly kernel?: NegotiationExpr;
+    readonly route?: RouteExpr;
+    readonly local?: string | readonly string[];
+  };
+  readonly claims: readonly Claim[];
+}
+
+/** Convert a module's state entries into normalized rules for analysis. */
+function getVirtualRules(mod: ConventionModule): readonly NormalizedRule[] {
+  return (mod.states ?? []).map((entry) => ({
+    match: {
+      turn: entry.turn,
+      local: entry.phase as string | readonly string[],
+      kernel: entry.kernel,
+      route: entry.route,
+    },
+    claims: entry.surfaces.map((surface): Claim =>
+      entry.negotiationDelta
+        ? { surface, negotiationDelta: entry.negotiationDelta }
+        : { surface },
+    ),
+  }));
+}
 
 // ── Risk ordering ─────────────────────────────────────────────────
 
@@ -26,7 +54,7 @@ const RISK_ORDER: Record<InterferenceEdge["risk"], number> = {
 // ── Helpers ───────────────────────────────────────────────────────
 
 /** Summarize a rule's match block for diagnostic output. */
-function summarizeMatch(rule: Rule<string>, ruleIndex: number): string {
+function summarizeMatch(rule: NormalizedRule, ruleIndex: number): string {
   const parts: string[] = [`rule[${ruleIndex}]`];
   if (rule.match.turn) parts.push(`turn=${rule.match.turn}`);
   if (rule.match.local) {
@@ -37,7 +65,7 @@ function summarizeMatch(rule: Rule<string>, ruleIndex: number): string {
 }
 
 /** Extract the set of phase strings from a rule's local match guard. */
-function getPhases(rule: Rule<string>): readonly string[] {
+function getPhases(rule: NormalizedRule): readonly string[] {
   const local = rule.match.local;
   if (local === undefined) return ["idle"];
   if (typeof local === "string") return [local];
@@ -46,8 +74,8 @@ function getPhases(rule: Rule<string>): readonly string[] {
 
 /** Check whether two turn guards are compatible (could both fire). */
 function turnsCompatible(
-  turnA: Rule<string>["match"]["turn"],
-  turnB: Rule<string>["match"]["turn"],
+  turnA: NormalizedRule["match"]["turn"],
+  turnB: NormalizedRule["match"]["turn"],
 ): boolean {
   // Undefined = wildcard, compatible with anything
   if (turnA === undefined || turnB === undefined) return true;
@@ -74,13 +102,15 @@ function phasesCompatible(
  */
 export function detectActivationOverlap(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   const edges: InterferenceEdge[] = [];
+  const rulesA = getVirtualRules(a);
+  const rulesB = getVirtualRules(b);
 
-  for (let ai = 0; ai < a.rules.length; ai++) {
-    const ruleA = a.rules[ai]!;
+  for (let ai = 0; ai < rulesA.length; ai++) {
+    const ruleA = rulesA[ai]!;
     const phasesA = getPhases(ruleA);
 
-    for (let bi = 0; bi < b.rules.length; bi++) {
-      const ruleB = b.rules[bi]!;
+    for (let bi = 0; bi < rulesB.length; bi++) {
+      const ruleB = rulesB[bi]!;
       const phasesB = getPhases(ruleB);
 
       if (turnsCompatible(ruleA.match.turn, ruleB.match.turn) && phasesCompatible(phasesA, phasesB)) {
@@ -108,12 +138,14 @@ export function detectActivationOverlap(a: ConventionModule, b: ConventionModule
  */
 export function detectEncodingCollision(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   const edges: InterferenceEdge[] = [];
+  const rulesA = getVirtualRules(a);
+  const rulesB = getVirtualRules(b);
 
-  for (let ai = 0; ai < a.rules.length; ai++) {
-    const ruleA = a.rules[ai]!;
+  for (let ai = 0; ai < rulesA.length; ai++) {
+    const ruleA = rulesA[ai]!;
 
-    for (let bi = 0; bi < b.rules.length; bi++) {
-      const ruleB = b.rules[bi]!;
+    for (let bi = 0; bi < rulesB.length; bi++) {
+      const ruleB = rulesB[bi]!;
 
       if (!turnsCompatible(ruleA.match.turn, ruleB.match.turn)) continue;
 
@@ -172,8 +204,9 @@ function detectCrosstalkDirection(
   target: ConventionModule,
   edges: InterferenceEdge[],
 ): void {
-  for (let ri = 0; ri < source.rules.length; ri++) {
-    const rule = source.rules[ri]!;
+  const sourceRules = getVirtualRules(source);
+  for (let ri = 0; ri < sourceRules.length; ri++) {
+    const rule = sourceRules[ri]!;
 
     for (const claim of rule.claims) {
       const canonicalObs = normalizeIntent(claim.surface.sourceIntent);
@@ -246,8 +279,9 @@ interface KernelDeltaEntry {
 function collectKernelDeltas(mod: ConventionModule): KernelDeltaEntry[] {
   const entries: KernelDeltaEntry[] = [];
 
-  for (let ri = 0; ri < mod.rules.length; ri++) {
-    const rule = mod.rules[ri]!;
+  const modRules = getVirtualRules(mod);
+  for (let ri = 0; ri < modRules.length; ri++) {
+    const rule = modRules[ri]!;
     for (const claim of rule.claims) {
       if (!claim.negotiationDelta) continue;
       for (const [field, value] of Object.entries(claim.negotiationDelta)) {

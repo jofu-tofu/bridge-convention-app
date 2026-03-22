@@ -1,5 +1,6 @@
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { LocalFsm, StateEntry } from "../../core/rule-module";
 
 import { BidSuit } from "../../../engine/types";
 import { BRIDGE_SEMANTIC_CLASSES } from "../../../core/contracts/meaning";
@@ -279,6 +280,30 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
     roles: ["inferential"],
   },
 ];
+
+// ─── Local FSM + States ──────────────────────────────────────
+
+type NaturalNtPhase = "idle" | "opened" | "responded";
+
+export const naturalNtLocal: LocalFsm<NaturalNtPhase> = {
+  initial: "idle",
+  transitions: [
+    { from: "idle", to: "opened", on: { act: "open", strain: "notrump" } },
+    { from: "opened", to: "responded", on: { act: "inquire" } },
+    { from: "opened", to: "responded", on: { act: "transfer" } },
+    { from: "opened", to: "responded", on: { act: "raise" } },
+    { from: "opened", to: "responded", on: { act: "place" } },
+    { from: "opened", to: "responded", on: { act: "signoff" } },
+    { from: "opened", to: "responded", on: { act: "show" } },
+  ],
+};
+
+export function createNaturalNtStates(sys: SystemConfig): readonly StateEntry<NaturalNtPhase>[] {
+  return [
+    { phase: "idle", turn: "opener" as const, surfaces: createOpener1NtSurface(sys) },
+    { phase: "opened", turn: "responder" as const, surfaces: NT_R1_SURFACES },
+  ];
+}
 
 // ─── Module declarations ─────────────────────────────────────
 

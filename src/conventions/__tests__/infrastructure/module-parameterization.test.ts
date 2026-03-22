@@ -17,8 +17,9 @@ describe("Module registry produces unified ConventionModule", () => {
     expect(mod!.moduleId).toBe("stayman");
     expect(mod!.local).toBeDefined();
     expect(mod!.local.initial).toBeDefined();
-    expect(mod!.rules).toBeDefined();
-    expect(mod!.rules.length).toBeGreaterThan(0);
+    // Module uses states
+    const hasStates = mod!.states && mod!.states.length > 0;
+    expect(hasStates).toBe(true);
     expect(mod!.facts).toBeDefined();
     expect(mod!.explanationEntries).toBeDefined();
   });
@@ -78,7 +79,7 @@ describe("Bundle has resolved modules", () => {
     for (const mod of bundle.modules) {
       expect(mod.moduleId).toBeTruthy();
       expect(mod.local).toBeDefined();
-      expect(mod.rules).toBeDefined();
+      expect(mod.states).toBeDefined();
       expect(mod.facts).toBeDefined();
     }
   });

@@ -1,16 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`lint warning stability > bergen-bundle warning count is stable 1`] = `39`;
+exports[`lint warning stability > bergen-bundle warning count is stable 1`] = `15`;
 
 exports[`lint warning stability > dont-bundle warning count is stable 1`] = `0`;
 
-exports[`lint warning stability > nt-bundle warning count is stable 1`] = `27`;
+exports[`lint warning stability > nt-bundle warning count is stable 1`] = `19`;
 
-exports[`lint warning stability > nt-stayman warning count is stable 1`] = `5`;
+exports[`lint warning stability > nt-stayman warning count is stable 1`] = `3`;
 
-exports[`lint warning stability > nt-transfers warning count is stable 1`] = `12`;
+exports[`lint warning stability > nt-transfers warning count is stable 1`] = `8`;
 
-exports[`lint warning stability > weak-twos-bundle warning count is stable 1`] = `18`;
+exports[`lint warning stability > weak-twos-bundle warning count is stable 1`] = `6`;
 
 exports[`per-bundle interference > bergen-bundle > high-risk encoding collision count is stable 1`] = `0`;
 

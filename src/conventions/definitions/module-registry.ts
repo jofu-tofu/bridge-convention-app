@@ -13,23 +13,13 @@ import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 // ── Declaration imports (facts + explanations) ─────────────────────
 
-import { createNaturalNtDeclarations } from "./modules/natural-nt";
-import { createStaymanDeclarations } from "./modules/stayman";
-import { createJacobyTransfersDeclarations } from "./modules/jacoby-transfers";
-import { createSmolenDeclarations } from "./modules/smolen";
-import { createBergenModule } from "./modules/bergen";
-import { createDontModule } from "./modules/dont";
-import { createWeakTwosModule } from "./modules/weak-twos";
-
-// ── Runtime imports (local FSM + rules) ────────────────────────────
-
-import { naturalNtLocal, createNaturalNtRuleDefs } from "./modules/natural-nt-rules";
-import { staymanLocal, createStaymanRuleDefs } from "./modules/stayman-rules";
-import { jacobyTransfersLocal, jacobyTransfersRuleDefs } from "./modules/jacoby-transfers-rules";
-import { smolenLocal, smolenRuleDefs } from "./modules/smolen-rules";
-import { bergenLocal, bergenRuleDefs } from "./modules/bergen/bergen-rules";
-import { dontLocal, dontRuleDefs } from "./modules/dont/dont-rules";
-import { weakTwosLocal, weakTwosRuleDefs } from "./modules/weak-twos/weak-twos-rules";
+import { createNaturalNtDeclarations, naturalNtLocal, createNaturalNtStates } from "./modules/natural-nt";
+import { createStaymanDeclarations, staymanLocal, createStaymanStates } from "./modules/stayman";
+import { createJacobyTransfersDeclarations, jacobyTransfersLocal, jacobyTransfersStates } from "./modules/jacoby-transfers";
+import { createSmolenDeclarations, smolenLocal, smolenStates } from "./modules/smolen";
+import { createBergenModule, bergenLocal, createBergenStates } from "./modules/bergen";
+import { createDontModule, dontLocal, createDontStates } from "./modules/dont";
+import { createWeakTwosModule, weakTwosLocal, createWeakTwosStates } from "./modules/weak-twos";
 
 // ── Factory type ────────────────────────────────────────────────────
 
@@ -43,43 +33,50 @@ const MODULE_FACTORIES = new Map<string, ModuleFactory>([
     moduleId: "natural-nt",
     ...createNaturalNtDeclarations(sys),
     local: naturalNtLocal,
-    rules: createNaturalNtRuleDefs(sys),
+
+    states: createNaturalNtStates(sys),
   })],
   ["stayman", (sys) => ({
     moduleId: "stayman",
     ...createStaymanDeclarations(sys),
     local: staymanLocal,
-    rules: createStaymanRuleDefs(sys),
+
+    states: createStaymanStates(sys),
   })],
   ["jacoby-transfers", (sys) => ({
     moduleId: "jacoby-transfers",
     ...createJacobyTransfersDeclarations(sys),
     local: jacobyTransfersLocal,
-    rules: jacobyTransfersRuleDefs,
+
+    states: jacobyTransfersStates,
   })],
   ["smolen", (sys) => ({
     moduleId: "smolen",
     ...createSmolenDeclarations(sys),
     local: smolenLocal,
-    rules: smolenRuleDefs,
+
+    states: smolenStates,
   })],
   ["bergen", (sys) => ({
     moduleId: "bergen",
     ...createBergenModule(sys),
     local: bergenLocal,
-    rules: bergenRuleDefs,
+
+    states: createBergenStates(sys),
   })],
   ["dont", (sys) => ({
     moduleId: "dont",
     ...createDontModule(sys),
     local: dontLocal,
-    rules: dontRuleDefs,
+
+    states: createDontStates(),
   })],
   ["weak-twos", (sys) => ({
     moduleId: "weak-twos",
     ...createWeakTwosModule(sys),
     local: weakTwosLocal,
-    rules: weakTwosRuleDefs,
+
+    states: createWeakTwosStates(),
   })],
 ]);
 

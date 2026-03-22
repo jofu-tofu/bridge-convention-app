@@ -54,16 +54,14 @@ function deriveSurfaceGroupsFromModules(
   const families: SurfaceGroup[] = [];
 
   for (const mod of modules) {
-    for (const rule of mod.rules) {
-      if (rule.claims.length < 2) continue;
-
-      const members = rule.claims.map((c) => c.surface.meaningId);
-      const localPhase: string = Array.isArray(rule.match.local)
-        ? (rule.match.local as readonly string[]).join("|")
-        : (rule.match.local ?? "entry");
-      const turn: string = rule.match.turn ?? "any";
+    for (const entry of (mod.states ?? [])) {
+      if (entry.surfaces.length < 2) continue;
+      const members = entry.surfaces.map((s) => s.meaningId);
+      const localPhase: string = Array.isArray(entry.phase)
+        ? (entry.phase as readonly string[]).join("|")
+        : String(entry.phase);
+      const turn: string = entry.turn ?? "any";
       const id = `${mod.moduleId}/${localPhase}:${turn}`;
-
       families.push({
         id,
         label: `${mod.moduleId} ${localPhase} (${turn})`,

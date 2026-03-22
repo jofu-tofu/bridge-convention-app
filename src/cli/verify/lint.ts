@@ -61,24 +61,24 @@ export function computePhaseReachability(mod: ConventionModule): Set<string> {
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
-/** Normalize match.local to string array. */
-function normalizeLocal(
-  local: string | readonly string[] | undefined,
+/** Normalize phase to string array. */
+function normalizePhase(
+  phase: string | readonly string[] | undefined,
 ): readonly string[] | null {
-  if (local === undefined) return null;
-  if (Array.isArray(local)) {
-    return local as readonly string[];
+  if (phase === undefined) return null;
+  if (Array.isArray(phase)) {
+    return phase as readonly string[];
   }
-  return [String(local)];
+  return [String(phase)];
 }
 
-/** Extract all phase names referenced in rule match.local guards. */
+/** Extract all phase names referenced in state entry phase guards. */
 function collectGuardPhases(mod: ConventionModule): Set<string> {
   const phases = new Set<string>();
-  for (const rule of mod.rules) {
-    const locals = normalizeLocal(rule.match.local);
-    if (locals) {
-      for (const p of locals) {
+  for (const entry of (mod.states ?? [])) {
+    const phaseList = normalizePhase(entry.phase);
+    if (phaseList) {
+      for (const p of phaseList) {
         phases.add(p);
       }
     }
@@ -134,7 +134,7 @@ export function detectUnreachablePhases(
       diags.push({
         ruleId: "unreachable-phase",
         severity: "error",
-        message: `Phase "${phase}" is referenced in a rule guard but is not reachable from initial phase "${mod.local.initial}"`,
+        message: `Phase "${phase}" is referenced in a state entry guard but is not reachable from initial phase "${mod.local.initial}"`,
         location: { phase },
         suggestion: `Add a transition path from "${mod.local.initial}" to "${phase}", or remove the guard`,
       });
@@ -145,7 +145,7 @@ export function detectUnreachablePhases(
 }
 
 /**
- * Rules guarded by unreachable phases — these rules can never fire.
+ * State entries guarded by unreachable phases — these entries can never activate.
  */
 export function detectDeadRules(
   mod: ConventionModule,
@@ -153,20 +153,20 @@ export function detectDeadRules(
 ): LintDiagnostic[] {
   const diags: LintDiagnostic[] = [];
 
-  for (let i = 0; i < mod.rules.length; i++) {
-    const rule = mod.rules[i]!;
-    const locals = normalizeLocal(rule.match.local);
-    if (!locals) continue;
+  for (let i = 0; i < (mod.states ?? []).length; i++) {
+    const entry = (mod.states ?? [])[i]!;
+    const phases = normalizePhase(entry.phase);
+    if (!phases) continue;
 
-    // Rule is dead if ALL its local guards are unreachable
-    const allUnreachable = locals.every((p) => !reachable.has(p));
+    // Entry is dead if ALL its phase guards are unreachable
+    const allUnreachable = phases.every((p) => !reachable.has(p));
     if (allUnreachable) {
       diags.push({
         ruleId: "dead-rule",
         severity: "error",
-        message: `Rule ${i} is guarded by unreachable phase(s): ${locals.join(", ")}`,
-        location: { ruleIndex: i, phase: locals[0] },
-        suggestion: "Ensure the phase is reachable or remove the rule",
+        message: `State entry ${i} is guarded by unreachable phase(s): ${phases.join(", ")}`,
+        location: { ruleIndex: i, phase: phases[0] },
+        suggestion: "Ensure the phase is reachable or remove the state entry",
       });
     }
   }
@@ -175,25 +175,11 @@ export function detectDeadRules(
 }
 
 /**
- * Rules with no `match.local` AND no `match.route` — too permissive.
+ * StateEntry always requires a `phase` field, so the "no local phase guard"
+ * issue that existed with legacy Rules doesn't apply. No diagnostics needed.
  */
-export function detectBroadRules(mod: ConventionModule): LintDiagnostic[] {
-  const diags: LintDiagnostic[] = [];
-
-  for (let i = 0; i < mod.rules.length; i++) {
-    const rule = mod.rules[i]!;
-    if (rule.match.local === undefined && rule.match.route === undefined) {
-      diags.push({
-        ruleId: "broad-rule",
-        severity: "warn",
-        message: `Rule ${i} has no local phase guard and no route guard — may over-match`,
-        location: { ruleIndex: i },
-        suggestion: "Add a match.local or match.route constraint to scope this rule",
-      });
-    }
-  }
-
-  return diags;
+export function detectBroadRules(_mod: ConventionModule): LintDiagnostic[] {
+  return [];
 }
 
 /**
@@ -229,30 +215,28 @@ export function detectOrphanTransitions(
  * `negotiationDelta` fields not read by any `NegotiationExpr` in same module.
  */
 export function detectUndeclaredWrites(mod: ConventionModule): LintDiagnostic[] {
-  // Collect all kernel fields read by any rule's match.kernel
+  // Collect all kernel fields read by any state entry's kernel guard
   const readFields = new Set<string>();
-  for (const rule of mod.rules) {
-    if (rule.match.kernel) {
-      collectKernelReads(rule.match.kernel, readFields);
+  for (const entry of (mod.states ?? [])) {
+    if (entry.kernel) {
+      collectKernelReads(entry.kernel, readFields);
     }
   }
 
   const diags: LintDiagnostic[] = [];
 
-  for (let i = 0; i < mod.rules.length; i++) {
-    const rule = mod.rules[i]!;
-    for (const claim of rule.claims) {
-      if (!claim.negotiationDelta) continue;
-      for (const field of Object.keys(claim.negotiationDelta)) {
-        if (!readFields.has(field)) {
-          diags.push({
-            ruleId: "undeclared-write",
-            severity: "warn",
-            message: `Rule ${i} writes negotiationDelta.${field} but no NegotiationExpr in this module reads it`,
-            location: { ruleIndex: i },
-            suggestion: `Add a kernel guard that reads "${field}", or remove the write if it's only for downstream modules`,
-          });
-        }
+  for (let i = 0; i < (mod.states ?? []).length; i++) {
+    const entry = (mod.states ?? [])[i]!;
+    if (!entry.negotiationDelta) continue;
+    for (const field of Object.keys(entry.negotiationDelta)) {
+      if (!readFields.has(field)) {
+        diags.push({
+          ruleId: "undeclared-write",
+          severity: "warn",
+          message: `State entry ${i} writes negotiationDelta.${field} but no NegotiationExpr in this module reads it`,
+          location: { ruleIndex: i },
+          suggestion: `Add a kernel guard that reads "${field}", or remove the write if it's only for downstream modules`,
+        });
       }
     }
   }
@@ -261,30 +245,30 @@ export function detectUndeclaredWrites(mod: ConventionModule): LintDiagnostic[] 
 }
 
 /**
- * Multiple claims in the same rule with the same `encoding.defaultCall`
+ * Multiple surfaces in the same state entry with the same `encoding.defaultCall`
  * AND the same `meaningId`. Different meaningIds with the same encoding
  * are valid (different hand shapes that make the same bid).
  */
 export function detectDuplicateEncodings(mod: ConventionModule): LintDiagnostic[] {
   const diags: LintDiagnostic[] = [];
 
-  for (let i = 0; i < mod.rules.length; i++) {
-    const rule = mod.rules[i]!;
-    if (rule.claims.length < 2) continue;
+  for (let i = 0; i < (mod.states ?? []).length; i++) {
+    const entry = (mod.states ?? [])[i]!;
+    if (entry.surfaces.length < 2) continue;
 
     // Key: encoding+meaningId pair
     const seen = new Map<string, number>();
-    for (let c = 0; c < rule.claims.length; c++) {
-      const claim = rule.claims[c]!;
-      const key = `${callKey(claim.surface.encoding.defaultCall)}::${claim.surface.meaningId}`;
+    for (let c = 0; c < entry.surfaces.length; c++) {
+      const surface = entry.surfaces[c]!;
+      const key = `${callKey(surface.encoding.defaultCall)}::${surface.meaningId}`;
       const prev = seen.get(key);
       if (prev !== undefined) {
         diags.push({
           ruleId: "duplicate-encoding",
           severity: "error",
-          message: `Rule ${i} has duplicate encoding+meaningId "${callKey(claim.surface.encoding.defaultCall)}" (${claim.surface.meaningId}) in claims ${prev} and ${c}`,
+          message: `State entry ${i} has duplicate encoding+meaningId "${callKey(surface.encoding.defaultCall)}" (${surface.meaningId}) in surfaces ${prev} and ${c}`,
           location: { ruleIndex: i },
-          suggestion: "Ensure each claim in a rule has a distinct defaultCall+meaningId combination",
+          suggestion: "Ensure each surface in a state entry has a distinct defaultCall+meaningId combination",
         });
       } else {
         seen.set(key, c);

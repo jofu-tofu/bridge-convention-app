@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import type {
   RouteExpr,
   NegotiationExpr,
-  Rule,
+  StateEntry,
   PhaseTransition,
 } from "../rule-module";
 import type { ConventionModule } from "../convention-module";
@@ -15,7 +15,7 @@ describe("ConventionModule type construction", () => {
         initial: "idle",
         transitions: [],
       },
-      rules: [],
+      states: [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -100,55 +100,50 @@ describe("ConventionModule type construction", () => {
     expect(combined.kind).toBe("and");
   });
 
-  it("constructs Rules with match conditions and claims", () => {
-    const rule: Rule<"idle" | "asked"> = {
-      match: {
-        turn: "responder",
-        local: "asked",
-        kernel: { kind: "uncontested" },
-        route: {
-          kind: "last",
-          pattern: { act: "deny", feature: "majorSuit" },
-        },
+  it("constructs StateEntry with match conditions and surfaces", () => {
+    const entry: StateEntry<"idle" | "asked"> = {
+      phase: "asked",
+      turn: "responder",
+      kernel: { kind: "uncontested" },
+      route: {
+        kind: "last",
+        pattern: { act: "deny", feature: "majorSuit" },
       },
-      claims: [
+      surfaces: [
         {
-          surface: {
-            meaningId: "test",
-            semanticClassId: "test:class",
-            teachingLabel: "Test surface",
-          // any: BidMeaning has many fields; test only exercises type compatibility
-          } as never,
-        },
+          meaningId: "test",
+          semanticClassId: "test:class",
+          teachingLabel: "Test surface",
+        // any: BidMeaning has many fields; test only exercises type compatibility
+        } as never,
       ],
     };
-    expect(rule.match.turn).toBe("responder");
-    expect(rule.claims).toHaveLength(1);
+    expect(entry.turn).toBe("responder");
+    expect(entry.surfaces).toHaveLength(1);
   });
 
-  it("constructs claims with optional negotiationDelta", () => {
-    const rule: Rule<"idle" | "active"> = {
-      match: { local: "active", turn: "opener" },
-      claims: [
-        {
-          surface: { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never,
-          negotiationDelta: { forcing: "one-round", captain: "responder" },
-        },
+  it("constructs StateEntry with optional negotiationDelta", () => {
+    const entry: StateEntry<"idle" | "active"> = {
+      phase: "active",
+      turn: "opener",
+      surfaces: [
+        { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never,
       ],
+      negotiationDelta: { forcing: "one-round", captain: "responder" },
     };
-    expect(rule.claims[0]!.negotiationDelta).toEqual({
+    expect(entry.negotiationDelta).toEqual({
       forcing: "one-round",
       captain: "responder",
     });
   });
 
-  it("allows claims without negotiationDelta (backward compatible)", () => {
-    const rule: Rule<"idle"> = {
-      match: { local: "idle" },
-      claims: [
-        { surface: { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never },
+  it("allows StateEntry without negotiationDelta", () => {
+    const entry: StateEntry<"idle"> = {
+      phase: "idle",
+      surfaces: [
+        { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never,
       ],
     };
-    expect(rule.claims[0]!.negotiationDelta).toBeUndefined();
+    expect(entry.negotiationDelta).toBeUndefined();
   });
 });
