@@ -9,7 +9,8 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { getSystemConfig } from "../../../core/contracts/system-config";
+import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
@@ -55,6 +56,7 @@ export const TRANSFER_CLASSES = {
 export const TRANSFER_R3_CLASSES = {
   SIGNOFF: "transfer:signoff",
   INVITE: "transfer:invite",
+  INVITE_RAISE: "transfer:invite-raise",
   GAME_IN_MAJOR: "transfer:game-in-major",
   NT_GAME: "transfer:nt-game",
 } as const;
@@ -223,6 +225,30 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
   }, TRANSFER_CTX),
 
   createSurface({
+    meaningId: "transfer:invite-raise-hearts",
+    semanticClassId: TRANSFER_R3_CLASSES.INVITE_RAISE,
+    encoding: bid(3, BidSuit.Hearts),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
+        operator: "boolean",
+        value: true,
+        description: "Invite values opposite 1NT (8-9 HCP)",
+      },
+      {
+        factId: "hand.suitLength.hearts",
+        operator: "gte",
+        value: 6,
+        description: "6+ hearts (invite in major with long suit)",
+      },
+    ],
+    band: "should",
+    intraModuleOrder: 3,
+    sourceIntent: { type: "InviteRaise", params: { suit: "hearts" } },
+    teachingLabel: "3H invite (6+ hearts)",
+  }, TRANSFER_CTX),
+
+  createSurface({
     meaningId: "transfer:invite-hearts",
     semanticClassId: TRANSFER_R3_CLASSES.INVITE,
     encoding: bid(2, BidSuit.NoTrump),
@@ -235,7 +261,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
       },
     ],
     band: "should",
-    intraModuleOrder: 3,
+    intraModuleOrder: 4,
     sourceIntent: { type: "Invite", params: { suit: "hearts" } },
     teachingLabel: "2NT invite",
     teachingTags: [
@@ -315,6 +341,30 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
   }, TRANSFER_CTX),
 
   createSurface({
+    meaningId: "transfer:invite-raise-spades",
+    semanticClassId: TRANSFER_R3_CLASSES.INVITE_RAISE,
+    encoding: bid(3, BidSuit.Spades),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
+        operator: "boolean",
+        value: true,
+        description: "Invite values opposite 1NT (8-9 HCP)",
+      },
+      {
+        factId: "hand.suitLength.spades",
+        operator: "gte",
+        value: 6,
+        description: "6+ spades (invite in major with long suit)",
+      },
+    ],
+    band: "should",
+    intraModuleOrder: 3,
+    sourceIntent: { type: "InviteRaise", params: { suit: "spades" } },
+    teachingLabel: "3S invite (6+ spades)",
+  }, TRANSFER_CTX),
+
+  createSurface({
     meaningId: "transfer:invite-spades",
     semanticClassId: TRANSFER_R3_CLASSES.INVITE,
     encoding: bid(2, BidSuit.NoTrump),
@@ -327,7 +377,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
       },
     ],
     band: "should",
-    intraModuleOrder: 3,
+    intraModuleOrder: 4,
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     teachingLabel: "2NT invite",
     teachingTags: [
@@ -570,7 +620,7 @@ function createTransferFacts(sys: SystemConfig): FactCatalogExtension {
 
 /** Legacy default — uses SAYC system config. */
 export const transferFacts: FactCatalogExtension =
-  createTransferFacts(SAYC_SYSTEM_CONFIG);
+  createTransferFacts(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -638,4 +688,4 @@ export function createJacobyTransfersModule(sys: SystemConfig) {
 }
 
 /** Legacy default — uses SAYC system config. */
-export const jacobyTransfersModule = createJacobyTransfersModule(SAYC_SYSTEM_CONFIG);
+export const jacobyTransfersModule = createJacobyTransfersModule(getSystemConfig(BASE_SYSTEM_SAYC));

@@ -442,6 +442,7 @@ export function specFromBundle(bundle: ConventionBundle): ConventionSpec | undef
       id: bundle.id,
       name: bundle.name,
       ruleModules: bundle.ruleModules,
+      systemConfig: bundle.systemProfile?.systemConfig,
     };
   }
 

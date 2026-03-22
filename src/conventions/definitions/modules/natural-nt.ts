@@ -4,7 +4,8 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 import { BidSuit } from "../../../engine/types";
 import { BRIDGE_SEMANTIC_CLASSES } from "../../../core/contracts/meaning";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { getSystemConfig } from "../../../core/contracts/system-config";
+import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
@@ -138,7 +139,7 @@ function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
 
 /** Legacy default — uses SAYC system config. */
 export const OPENER_1NT_SURFACE: readonly BidMeaning[] =
-  createOpener1NtSurface(SAYC_SYSTEM_CONFIG);
+  createOpener1NtSurface(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -321,4 +322,4 @@ export function createNaturalNtModule(sys: SystemConfig) {
 }
 
 /** Legacy default — uses SAYC system config. */
-export const naturalNtModule = createNaturalNtModule(SAYC_SYSTEM_CONFIG);
+export const naturalNtModule = createNaturalNtModule(getSystemConfig(BASE_SYSTEM_SAYC));

@@ -10,7 +10,8 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { getSystemConfig } from "../../../core/contracts/system-config";
+import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
@@ -162,6 +163,12 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
         factId: "hand.suitLength.spades",
         operator: "gte",
         value: 4,
+      },
+      {
+        factId: "hand.suitLength.hearts",
+        operator: "lte",
+        value: 3,
+        description: "Denies 4+ hearts (show hearts first with both)",
       },
     ],
     band: "must",
@@ -481,7 +488,7 @@ function createInterferenceRedoubleSurface(sys: SystemConfig): BidMeaning {
 
 /** Legacy default — uses SAYC system config. */
 export const INTERFERENCE_REDOUBLE_SURFACE: BidMeaning =
-  createInterferenceRedoubleSurface(SAYC_SYSTEM_CONFIG);
+  createInterferenceRedoubleSurface(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Facts ───────────────────────────────────────────────────
 
@@ -575,7 +582,7 @@ function createStaymanFacts(sys: SystemConfig): FactCatalogExtension {
 
 /** Legacy default — uses SAYC system config. */
 export const staymanFacts: FactCatalogExtension =
-  createStaymanFacts(SAYC_SYSTEM_CONFIG);
+  createStaymanFacts(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -632,4 +639,4 @@ export function createStaymanModule(sys: SystemConfig) {
 }
 
 /** Legacy default — uses SAYC system config. */
-export const staymanModule = createStaymanModule(SAYC_SYSTEM_CONFIG);
+export const staymanModule = createStaymanModule(getSystemConfig(BASE_SYSTEM_SAYC));

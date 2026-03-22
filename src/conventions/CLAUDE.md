@@ -5,10 +5,10 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 ## Architecture
 
 - **Designed for 100+ modules.** The module/bundle system scales to hundreds of convention modules composed into arbitrary bundles. Adding a module never requires editing existing modules or core infrastructure. Registries, derivation, and composition are all O(N).
-- **Registry pattern.** All conventions register via `registerConvention()` and bundles via `registerBundle()` in `core/`. Never hardcode convention logic in switch statements.
+- **Registry pattern.** All conventions register via `registerBundle()` in `core/`, which auto-derives and registers `ConventionConfig`. No separate `registerConvention()` calls needed. Never hardcode convention logic in switch statements.
 - **Contract boundary.** Cross-module DTOs come from `src/core/contracts/`; convention internals must not leak across that boundary.
 - **Core vs definitions split.** `core/` contains stable infrastructure (pipeline, runtime, registry). `definitions/` contains convention modules and bundles. Convention-specific logic belongs in `definitions/`, never in `core/`.
-- **Auto-registration.** `index.ts` imports each convention and calls `registerConvention()`/`registerBundle()`.
+- **Auto-registration.** `index.ts` imports each convention and calls `registerBundle()`, which auto-derives `ConventionConfig`. No `convention-config.ts` wrappers needed.
 
 **Context tree:**
 - `core/CLAUDE.md` — meaning pipeline, FSM, runtime, witness, test architecture
@@ -23,6 +23,20 @@ A convention bundle provides:
 5. **`surfaceRouter`** — function mapping (auction, seat) → active surfaces (legacy; machine-based routing preferred)
 
 **Pedagogical content is tag-derived.** Modules do NOT declare `teachingRelations`, `alternatives`, or `intentFamilies` fields. Instead, surfaces carry `teachingTags` using 6 general tags from `definitions/teaching-vocabulary.ts`. When modules are composed into a bundle, `deriveTeachingContent()` scans all surfaces and produces the appropriate relations/alternatives automatically. This makes modules portable — compose any set into a bundle and it works.
+
+## Convention Module Authoring Rules
+
+When creating or modifying convention modules under `definitions/modules/`:
+
+1. **Export a factory function.** Every module must export `createXxxModule(sys: SystemConfig): ConventionModule`. The module registry calls these factories to instantiate modules for the active system. Pre-instantiated `export const xxxModule = ...` are deprecated legacy exports.
+
+2. **Never import concrete system configs.** Modules must not import `SAYC_SYSTEM_CONFIG` or `TWO_OVER_ONE_SYSTEM_CONFIG`. They receive `SystemConfig` via the factory parameter. This is enforced by ESLint `no-restricted-imports`.
+
+3. **Use named constants for HCP thresholds.** All numeric values in surface clauses must come from a named constants object (e.g., `BERGEN_THRESHOLDS`, `WEAK_TWO_THRESHOLDS`), not inline literals. Register new threshold objects in `__tests__/infrastructure/module-conventions.test.ts`. This is enforced by the structural test.
+
+4. **System-dependent vs convention-intrinsic.** System-dependent thresholds (e.g., invite/game HCP) use system facts (`system.responder.inviteValues`). Convention-intrinsic thresholds (e.g., Bergen splinter = 12+ HCP) use named constants. If unsure, use system facts — they're the safer default.
+
+5. **Profile builder.** Use `createSystemProfile({ baseSystem, ... })` instead of `createSaycProfile()`. The latter is deprecated.
 
 ## Test Organization
 
@@ -44,4 +58,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `core/registry.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-14 | version=12 | dir-commits-at-audit=60 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-21 | version=13 | dir-commits-at-audit=60 -->

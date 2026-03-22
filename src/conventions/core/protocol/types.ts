@@ -220,9 +220,12 @@ export interface ConventionSpec {
   readonly name: string;
   /** Rule modules for rule-based surface selection. */
   readonly ruleModules: readonly RuleModule[];
+  /** System config for parameterized fact evaluation. When omitted, defaults to SAYC. */
+  readonly systemConfig?: SystemConfig;
 }
 
 // Forward reference for RuleModule — avoid circular import
 import type { RuleModule } from "../rule-module";
+import type { SystemConfig } from "../../../core/contracts/system-config";
 
 

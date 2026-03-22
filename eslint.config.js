@@ -621,8 +621,8 @@ export default tseslint.config(
   // Allowed: conventions/core/, core/contracts/, engine/, pedagogical-vocabulary.
   // Blocked: sibling module directories and files within modules/.
   //
-  // Note: SAYC_SYSTEM_CONFIG imports are a legacy compat layer (see git history).
-  // New modules should receive SystemConfig via DI, not import the concrete value.
+  // Concrete SystemConfig imports (SAYC_SYSTEM_CONFIG, TWO_OVER_ONE_SYSTEM_CONFIG)
+  // are banned — modules must receive SystemConfig via factory parameter.
   {
     files: ["src/conventions/definitions/modules/**/*.ts"],
     ignores: ["**/__tests__/**", "**/*.test.ts"],
@@ -630,6 +630,18 @@ export default tseslint.config(
       "no-restricted-imports": [
         "error",
         {
+          paths: [
+            {
+              name: "../../../core/contracts/system-config",
+              importNames: ["SAYC_SYSTEM_CONFIG", "TWO_OVER_ONE_SYSTEM_CONFIG"],
+              message: "Convention modules must receive SystemConfig via factory parameter, not import a concrete system config.",
+            },
+            {
+              name: "../../../../core/contracts/system-config",
+              importNames: ["SAYC_SYSTEM_CONFIG", "TWO_OVER_ONE_SYSTEM_CONFIG"],
+              message: "Convention modules must receive SystemConfig via factory parameter, not import a concrete system config.",
+            },
+          ],
           patterns: [
             {
               // Block subdirectory modules importing sibling subdirectories

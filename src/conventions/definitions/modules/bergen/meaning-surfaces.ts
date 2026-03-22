@@ -20,6 +20,44 @@ import {
 
 const BERGEN_CTX: ModuleContext = { moduleId: "bergen" };
 
+// ─── Convention-intrinsic thresholds ────────────────────────
+//
+// Bergen Raises HCP thresholds are convention-intrinsic (same in all
+// bidding systems). Named constants prevent magic numbers and make
+// the values discoverable by enforcement tests.
+
+export const BERGEN_THRESHOLDS = {
+  // R1: Responder initial bids
+  SPLINTER_MIN: 12,
+  GAME_RAISE_MIN: 13,
+  LIMIT_RAISE_MIN: 10,
+  LIMIT_RAISE_MAX: 12,
+  CONSTRUCTIVE_MIN: 7,
+  CONSTRUCTIVE_MAX: 10,
+  PREEMPTIVE_MAX: 6,
+
+  // R2: Opener rebids after constructive raise
+  OPENER_GAME_AFTER_CONSTRUCTIVE_MIN: 17,
+  OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_MAX: 13,
+
+  // R2: Opener rebids after limit raise
+  OPENER_GAME_AFTER_LIMIT_MIN: 15,
+  OPENER_SIGNOFF_AFTER_LIMIT_MAX: 14,
+
+  // R2: Opener rebids after preemptive raise
+  OPENER_GAME_AFTER_PREEMPTIVE_MIN: 18,
+  OPENER_PASS_AFTER_PREEMPTIVE_MAX: 17,
+
+  // R3: Responder game try decisions
+  RESPONDER_TRY_ACCEPT_MIN: 9,
+  RESPONDER_TRY_ACCEPT_MAX: 10,
+  RESPONDER_TRY_REJECT_MIN: 7,
+  RESPONDER_TRY_REJECT_MAX: 8,
+
+  // Suit support
+  SUPPORT_LENGTH: 4,
+} as const;
+
 /**
  * Create the 5 Bergen Raises R1 surfaces for a given major suit.
  *
@@ -42,7 +80,7 @@ function createBergenR1Surfaces(
   const otherMajor = otherMajorBidSuit(suit);
 
   return [
-    // 1. Splinter -- 12+ HCP, 4+ support, shortage (singleton or void)
+    // 1. Splinter -- 12+ HCP, exactly 4 support, shortage (singleton or void)
     // Highest priority: checked first (intraModuleOrder 0)
     createSurface({
       meaningId: `bergen:splinter-${suit}`,
@@ -52,12 +90,12 @@ function createBergenR1Surfaces(
         {
           factId: "hand.hcp",
           operator: "gte",
-          value: 12,
+          value: BERGEN_THRESHOLDS.SPLINTER_MIN,
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
-          value: 4,
+          operator: "eq",
+          value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
         },
         {
           factId: "bridge.hasShortage",
@@ -76,7 +114,7 @@ function createBergenR1Surfaces(
       ],
     }, BERGEN_CTX),
 
-    // 2. Game raise -- 13+ HCP, 4+ support
+    // 2. Game raise -- 13+ HCP, exactly 4 support
     createSurface({
       meaningId: `bergen:game-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.GAME_RAISE,
@@ -85,12 +123,12 @@ function createBergenR1Surfaces(
         {
           factId: "hand.hcp",
           operator: "gte",
-          value: 13,
+          value: BERGEN_THRESHOLDS.GAME_RAISE_MIN,
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
-          value: 4,
+          operator: "eq",
+          value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
         },
       ],
       band: "must",
@@ -107,7 +145,7 @@ function createBergenR1Surfaces(
       ],
     }, BERGEN_CTX),
 
-    // 3. Limit raise -- 10-12 HCP, 4+ support
+    // 3. Limit raise -- 10-12 HCP, exactly 4 support
     createSurface({
       meaningId: `bergen:limit-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.LIMIT_RAISE,
@@ -116,12 +154,12 @@ function createBergenR1Surfaces(
         {
           factId: "hand.hcp",
           operator: "range",
-          value: { min: 10, max: 12 },
+          value: { min: BERGEN_THRESHOLDS.LIMIT_RAISE_MIN, max: BERGEN_THRESHOLDS.LIMIT_RAISE_MAX },
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
-          value: 4,
+          operator: "eq",
+          value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
         },
       ],
       band: "should",
@@ -138,7 +176,7 @@ function createBergenR1Surfaces(
       ],
     }, BERGEN_CTX),
 
-    // 4. Constructive raise -- 7-10 HCP, 4+ support
+    // 4. Constructive raise -- 7-10 HCP, exactly 4 support
     createSurface({
       meaningId: `bergen:constructive-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.CONSTRUCTIVE_RAISE,
@@ -147,12 +185,12 @@ function createBergenR1Surfaces(
         {
           factId: "hand.hcp",
           operator: "range",
-          value: { min: 7, max: 10 },
+          value: { min: BERGEN_THRESHOLDS.CONSTRUCTIVE_MIN, max: BERGEN_THRESHOLDS.CONSTRUCTIVE_MAX },
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
-          value: 4,
+          operator: "eq",
+          value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
         },
       ],
       band: "should",
@@ -170,7 +208,7 @@ function createBergenR1Surfaces(
       ],
     }, BERGEN_CTX),
 
-    // 5. Preemptive raise -- 0-6 HCP, 4+ support
+    // 5. Preemptive raise -- 0-6 HCP, exactly 4 support
     createSurface({
       meaningId: `bergen:preemptive-raise-${suit}`,
       semanticClassId: BERGEN_CLASSES.PREEMPTIVE_RAISE,
@@ -179,12 +217,12 @@ function createBergenR1Surfaces(
         {
           factId: "hand.hcp",
           operator: "lte",
-          value: 6,
+          value: BERGEN_THRESHOLDS.PREEMPTIVE_MAX,
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
-          value: 4,
+          operator: "eq",
+          value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
         },
       ],
       band: "may",
@@ -232,7 +270,7 @@ function createBergenR2AfterConstructiveSurfaces(
         {
           factId: "hand.hcp",
           operator: "gte",
-          value: 17,
+          value: BERGEN_THRESHOLDS.OPENER_GAME_AFTER_CONSTRUCTIVE_MIN,
         },
       ],
       band: "must",
@@ -257,7 +295,7 @@ function createBergenR2AfterConstructiveSurfaces(
         {
           factId: "hand.hcp",
           operator: "lte",
-          value: 13,
+          value: BERGEN_THRESHOLDS.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_MAX,
         },
       ],
       band: "must",
@@ -297,7 +335,7 @@ function createBergenR2AfterLimitSurfaces(
         {
           factId: "hand.hcp",
           operator: "gte",
-          value: 15,
+          value: BERGEN_THRESHOLDS.OPENER_GAME_AFTER_LIMIT_MIN,
         },
       ],
       band: "must",
@@ -322,7 +360,7 @@ function createBergenR2AfterLimitSurfaces(
         {
           factId: "hand.hcp",
           operator: "lte",
-          value: 14,
+          value: BERGEN_THRESHOLDS.OPENER_SIGNOFF_AFTER_LIMIT_MAX,
         },
       ],
       band: "must",
@@ -362,7 +400,7 @@ function createBergenR2AfterPreemptiveSurfaces(
         {
           factId: "hand.hcp",
           operator: "gte",
-          value: 18,
+          value: BERGEN_THRESHOLDS.OPENER_GAME_AFTER_PREEMPTIVE_MIN,
         },
       ],
       band: "must",
@@ -386,7 +424,7 @@ function createBergenR2AfterPreemptiveSurfaces(
         {
           factId: "hand.hcp",
           operator: "lte",
-          value: 17,
+          value: BERGEN_THRESHOLDS.OPENER_PASS_AFTER_PREEMPTIVE_MAX,
         },
       ],
       band: "must",
@@ -427,7 +465,7 @@ function createBergenR3AfterGameTrySurfaces(
         {
           factId: "hand.hcp",
           operator: "range",
-          value: { min: 9, max: 10 },
+          value: { min: BERGEN_THRESHOLDS.RESPONDER_TRY_ACCEPT_MIN, max: BERGEN_THRESHOLDS.RESPONDER_TRY_ACCEPT_MAX },
         },
       ],
       band: "must",
@@ -452,7 +490,7 @@ function createBergenR3AfterGameTrySurfaces(
         {
           factId: "hand.hcp",
           operator: "range",
-          value: { min: 7, max: 8 },
+          value: { min: BERGEN_THRESHOLDS.RESPONDER_TRY_REJECT_MIN, max: BERGEN_THRESHOLDS.RESPONDER_TRY_REJECT_MAX },
         },
       ],
       band: "must",

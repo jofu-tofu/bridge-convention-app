@@ -15,14 +15,15 @@ import type {
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
 import type { ConventionSpec, RuleModule } from "../../conventions/core";
-import { createSharedFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, normalizeIntent, advanceLocalFsm } from "../../conventions/core";
+import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, normalizeIntent, advanceLocalFsm } from "../../conventions/core";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
+import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { runMeaningPipeline } from "./meaning-strategy";
 import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
 import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import type { Seat, Call, BidSuit } from "../../engine/types";
+import type { Seat, Call } from "../../engine/types";
 
 /**
  * Convert a ConventionSpec into a ConventionStrategy.
@@ -36,14 +37,13 @@ import type { Seat, Call, BidSuit } from "../../engine/types";
 export function protocolSpecToStrategy(
   spec: ConventionSpec,
 ): ConventionStrategy {
-  // Build a fact catalog from ruleModule fact extensions
+  // Build a fact catalog: shared facts + system-semantic facts + module fact extensions
+  const systemFacts = createSystemFactCatalog(spec.systemConfig ?? SAYC_SYSTEM_CONFIG);
   const factExtensions = spec.ruleModules
     .map((m) => m.facts)
     .filter((f) => f !== undefined && f !== null && (f.definitions.length > 0 || f.evaluators.size > 0));
 
-  const catalog: FactCatalog = factExtensions.length > 0
-    ? createFactCatalog(createSharedFactCatalog(), ...factExtensions)
-    : createSharedFactCatalog();
+  const catalog: FactCatalog = createFactCatalog(createSharedFactCatalog(), systemFacts, ...factExtensions);
 
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,

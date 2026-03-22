@@ -8,9 +8,9 @@ import { meaningToStrategy, runMeaningPipeline } from "../bidding/meaning-strate
 import { protocolSpecToStrategy } from "../bidding/protocol-adapter";
 import { makeSurface, makeRanking } from "../../test-support/convention-factories";
 import {
-  ntSystem,
-  bergenSystem,
-  specFromSystem,
+  ntBundle,
+  bergenBundle,
+  specFromBundle,
 } from "../../conventions/definitions/system-registry";
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -218,7 +218,7 @@ describe("runMeaningPipeline", () => {
 
 describe("protocolSpecToStrategy with NT bundle", () => {
   function ntStrategy() {
-    const spec = specFromSystem(ntSystem);
+    const spec = specFromBundle(ntBundle);
     expect(spec).toBeDefined();
     return protocolSpecToStrategy(spec!);
   }
@@ -250,19 +250,18 @@ describe("protocolSpecToStrategy with NT bundle", () => {
     expect(result!.call).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
   });
 
-  test("returns null for balanced hand without 4-card major (system facts not in module catalog)", () => {
+  test("returns natural NT bid for balanced hand without 4-card major (system facts wired)", () => {
     // Natural NT surfaces (2NT invite, 3NT game) depend on system-level facts
     // (system.responder.inviteValues, system.responder.gameValues) which are
-    // not included in protocolSpecToStrategy's module-only catalog.
-    // This tests that the strategy correctly returns null when facts are absent.
+    // now included via createSystemFactCatalog in the pipeline.
     const strategy = ntStrategy();
-    // 9 HCP balanced, no 4-card major, no 5-card major
+    // 9 HCP balanced, no 4-card major, no 5-card major → invite with 2NT
     const h = hand("SJ", "S5", "S2", "H4", "H3", "H2", "DQ", "DJ", "D8", "D3", "CK", "CQ", "C5");
     const ctx = makeContext(h, ["1NT", "P"]);
 
     const result = strategy.suggest(ctx);
-    // Without system facts, natural NT surfaces can't satisfy their clauses
-    expect(result).toBeNull();
+    // With system facts wired, natural NT surfaces can satisfy their clauses
+    expect(result).not.toBeNull();
   });
 
   test("returns null when no convention surfaces are active (empty auction)", () => {
@@ -309,7 +308,7 @@ describe("protocolSpecToStrategy with NT bundle", () => {
 
 describe("protocolSpecToStrategy with Bergen bundle", () => {
   function bergenStrategy() {
-    const spec = specFromSystem(bergenSystem);
+    const spec = specFromBundle(bergenBundle);
     expect(spec).toBeDefined();
     return protocolSpecToStrategy(spec!);
   }

@@ -9,7 +9,8 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { getSystemConfig } from "../../../core/contracts/system-config";
+import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import { SYSTEM_RESPONDER_GAME_VALUES } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
@@ -453,4 +454,4 @@ export function createSmolenModule(_sys: SystemConfig) {
 }
 
 /** Legacy default — uses SAYC system config. */
-export const smolenModule = createSmolenModule(SAYC_SYSTEM_CONFIG);
+export const smolenModule = createSmolenModule(getSystemConfig(BASE_SYSTEM_SAYC));

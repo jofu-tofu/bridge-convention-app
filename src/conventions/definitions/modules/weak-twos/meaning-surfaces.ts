@@ -20,6 +20,31 @@ type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
 const WEAK_TWOS_CTX: ModuleContext = { moduleId: "weak-twos" };
 
+// ─── Convention-intrinsic thresholds ────────────────────────
+//
+// Weak Two thresholds are convention-intrinsic (same in all bidding
+// systems). Named constants prevent magic numbers and make the
+// values discoverable by enforcement tests.
+
+export const WEAK_TWO_THRESHOLDS = {
+  // R1: Opener minimum suit length
+  MIN_SUIT_LENGTH: 6,
+
+  // R2: Responder actions (total points = HCP + shortage)
+  GAME_RAISE_MIN: 16,
+  OGUST_ASK_MIN: 15,
+  INVITE_RAISE_MIN: 14,
+  INVITE_RAISE_MAX: 15,
+
+  // R2: Responder support requirements
+  GAME_RAISE_FIT: 3,
+  OGUST_FIT: 2,
+  INVITE_FIT: 3,
+
+  // R4: Post-Ogust responder rebid
+  POST_OGUST_GAME_MIN: 17,
+} as const;
+
 function suitLabel(suit: WeakTwoSuit): string {
   switch (suit) {
     case "hearts": return "H";
@@ -54,7 +79,7 @@ function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
       {
         factId: "hand.suitLength.$suit",
         operator: "gte",
-        value: 6,
+        value: WEAK_TWO_THRESHOLDS.MIN_SUIT_LENGTH,
       },
       {
         factId: "module.weakTwo.inOpeningHcpRange",
@@ -102,13 +127,13 @@ function createWeakTwoR2Surfaces(
         {
           factId: "bridge.totalPointsForRaise",
           operator: "gte",
-          value: 16,
+          value: WEAK_TWO_THRESHOLDS.GAME_RAISE_MIN,
           description: "16+ total points (HCP + shortage) for game",
         },
         {
           factId: "hand.suitLength.$suit",
           operator: "gte",
-          value: 3,
+          value: WEAK_TWO_THRESHOLDS.GAME_RAISE_FIT,
         },
       ],
       band: "must",
@@ -124,7 +149,7 @@ function createWeakTwoR2Surfaces(
       ],
     }, WEAK_TWOS_CTX),
 
-    // 2. Ogust ask: 16+ total points → 2NT (lower specificity than game raise)
+    // 2. Ogust ask: 15+ total points → 2NT (lower specificity than game raise)
     createSurface({
       meaningId: `weak-two:ogust-ask-${suit}`,
       semanticClassId: WEAK_TWO_CLASSES.OGUST_ASK,
@@ -133,17 +158,17 @@ function createWeakTwoR2Surfaces(
         {
           factId: "bridge.totalPointsForRaise",
           operator: "gte",
-          value: 16,
-          description: "16+ total points for Ogust inquiry",
+          value: WEAK_TWO_THRESHOLDS.OGUST_ASK_MIN,
+          description: "15+ total points for Ogust inquiry",
         },
         {
           factId: `hand.suitLength.$suit`,
           operator: "gte",
-          value: 2,
+          value: WEAK_TWO_THRESHOLDS.OGUST_FIT,
           description: "2+ support for Ogust (usually shows fit)",
         },
       ],
-      band: "must",
+      band: "should",
       intraModuleOrder: 1,
       sourceIntent: { type: "OgustAsk", params: { suit } },
       teachingLabel: "Ogust ask (2NT)",
@@ -164,13 +189,13 @@ function createWeakTwoR2Surfaces(
         {
           factId: "bridge.totalPointsForRaise",
           operator: "range",
-          value: { min: 14, max: 15 },
+          value: { min: WEAK_TWO_THRESHOLDS.INVITE_RAISE_MIN, max: WEAK_TWO_THRESHOLDS.INVITE_RAISE_MAX },
           description: "14-15 total points (HCP + shortage) for invite",
         },
         {
           factId: "hand.suitLength.$suit",
           operator: "gte",
-          value: 3,
+          value: WEAK_TWO_THRESHOLDS.INVITE_FIT,
         },
       ],
       band: "should",
@@ -406,7 +431,7 @@ function createPostOgustSurfaces(
         {
           factId: "hand.hcp",
           operator: "gte",
-          value: 17,
+          value: WEAK_TWO_THRESHOLDS.POST_OGUST_GAME_MIN,
         },
       ],
       band: "must",

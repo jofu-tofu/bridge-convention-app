@@ -6,6 +6,7 @@
  */
 
 import type { ConventionModule } from "../../../core/convention-module";
+import type { SystemConfig } from "../../../../core/contracts/system-config";
 import {
   WEAK_TWO_R1_SURFACES,
   WEAK_TWO_R2_HEARTS_SURFACES,
@@ -21,25 +22,39 @@ import {
 import { weakTwoFacts } from "./facts";
 import { WEAK_TWO_ENTRIES } from "./explanation-catalog";
 
-export const weakTwosModule: ConventionModule = {
-  moduleId: "weak-twos",
+/**
+ * Create a Weak Twos ConventionModule for the given system config.
+ *
+ * Weak Two thresholds are convention-intrinsic (same in all systems),
+ * so the SystemConfig parameter is currently unused. Accepting it
+ * maintains a uniform factory signature for the module registry.
+ */
+export function createWeakTwosModule(_sys: SystemConfig): ConventionModule {
+  return {
+    moduleId: "weak-twos",
 
-  entrySurfaces: WEAK_TWO_R1_SURFACES,
+    entrySurfaces: WEAK_TWO_R1_SURFACES,
 
-  surfaceGroups: [
-    { groupId: "responder-r1", surfaces: WEAK_TWO_R1_SURFACES },
-    { groupId: "opener-r2-hearts", surfaces: WEAK_TWO_R2_HEARTS_SURFACES },
-    { groupId: "opener-r2-spades", surfaces: WEAK_TWO_R2_SPADES_SURFACES },
-    { groupId: "opener-r2-diamonds", surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES },
-    { groupId: "ogust-hearts", surfaces: WEAK_TWO_OGUST_HEARTS_SURFACES },
-    { groupId: "ogust-spades", surfaces: WEAK_TWO_OGUST_SPADES_SURFACES },
-    { groupId: "ogust-diamonds", surfaces: WEAK_TWO_OGUST_DIAMONDS_SURFACES },
-    { groupId: "post-ogust-hearts", surfaces: POST_OGUST_HEARTS_SURFACES },
-    { groupId: "post-ogust-spades", surfaces: POST_OGUST_SPADES_SURFACES },
-    { groupId: "post-ogust-diamonds", surfaces: POST_OGUST_DIAMONDS_SURFACES },
-  ],
+    surfaceGroups: [
+      { groupId: "responder-r1", surfaces: WEAK_TWO_R1_SURFACES },
+      { groupId: "opener-r2-hearts", surfaces: WEAK_TWO_R2_HEARTS_SURFACES },
+      { groupId: "opener-r2-spades", surfaces: WEAK_TWO_R2_SPADES_SURFACES },
+      { groupId: "opener-r2-diamonds", surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES },
+      { groupId: "ogust-hearts", surfaces: WEAK_TWO_OGUST_HEARTS_SURFACES },
+      { groupId: "ogust-spades", surfaces: WEAK_TWO_OGUST_SPADES_SURFACES },
+      { groupId: "ogust-diamonds", surfaces: WEAK_TWO_OGUST_DIAMONDS_SURFACES },
+      { groupId: "post-ogust-hearts", surfaces: POST_OGUST_HEARTS_SURFACES },
+      { groupId: "post-ogust-spades", surfaces: POST_OGUST_SPADES_SURFACES },
+      { groupId: "post-ogust-diamonds", surfaces: POST_OGUST_DIAMONDS_SURFACES },
+    ],
 
-  facts: weakTwoFacts,
+    facts: weakTwoFacts,
 
-  explanationEntries: WEAK_TWO_ENTRIES,
-};
+    explanationEntries: WEAK_TWO_ENTRIES,
+  };
+}
+
+/** @deprecated Use `createWeakTwosModule` via module registry. */
+export const weakTwosModule: ConventionModule = createWeakTwosModule(
+  undefined as unknown as SystemConfig,
+);

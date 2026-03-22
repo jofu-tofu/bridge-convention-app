@@ -33,6 +33,8 @@ export {
 } from "./pipeline/fact-evaluator";
 export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/fact-evaluator";
 
+export { createSystemFactCatalog } from "./pipeline/system-fact-catalog";
+
 export { evaluateAllBidMeanings } from "./pipeline/meaning-evaluator";
 
 export {
