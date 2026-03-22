@@ -201,7 +201,7 @@ describe("setter behavior", () => {
     store.setIncludeOffConvention(true);
     expect(store.drillTuning.includeOffConvention).toBe(true);
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)!);
-    expect(saved.drillTuning.includeOffConvention).toBe(true);
+    expect(saved.drill.tuning.includeOffConvention).toBe(true);
   });
 });
 
