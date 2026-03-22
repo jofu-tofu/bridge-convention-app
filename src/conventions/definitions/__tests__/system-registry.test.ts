@@ -69,21 +69,8 @@ describe("pre-built bundles", () => {
   });
 
   it("weakTwoBundle includes aggregated content fields", () => {
-    expect(weakTwoBundle.explanationCatalog).toBeDefined();
-    expect(Array.isArray(weakTwoBundle.teachingRelations)).toBe(true);
-    expect(Array.isArray(weakTwoBundle.acceptableAlternatives)).toBe(true);
-    expect(Array.isArray(weakTwoBundle.intentFamilies)).toBe(true);
-  });
-
-  it.each([
-    ["ntBundle", ntBundle],
-    ["ntStaymanBundle", ntStaymanBundle],
-    ["ntTransfersBundle", ntTransfersBundle],
-    ["bergenBundle", bergenBundle],
-    ["dontBundle", dontBundle],
-    ["weakTwoBundle", weakTwoBundle],
-  ] as const)("%s has non-empty explanationCatalog", (_label, bundle) => {
-    expect(bundle.explanationCatalog.entries.length).toBeGreaterThan(0);
+    expect(Array.isArray(weakTwoBundle.derivedTeaching.acceptableAlternatives)).toBe(true);
+    expect(Array.isArray(weakTwoBundle.derivedTeaching.intentFamilies)).toBe(true);
   });
 
   it.each([
@@ -94,18 +81,12 @@ describe("pre-built bundles", () => {
     ["dontBundle", dontBundle],
     ["weakTwoBundle", weakTwoBundle],
   ] as const)("%s has arrays for all teaching fields", (_label, bundle) => {
-    expect(Array.isArray(bundle.teachingRelations)).toBe(true);
-    expect(Array.isArray(bundle.acceptableAlternatives)).toBe(true);
-    expect(Array.isArray(bundle.intentFamilies)).toBe(true);
-    expect(bundle.explanationCatalog).toBeDefined();
-  });
-
-  it("ntBundle includes cross-module pedagogical relations", () => {
-    expect(ntBundle.teachingRelations.length).toBeGreaterThan(0);
+    expect(Array.isArray(bundle.derivedTeaching.acceptableAlternatives)).toBe(true);
+    expect(Array.isArray(bundle.derivedTeaching.intentFamilies)).toBe(true);
   });
 
   it("bergenBundle produces alternatives from derivation", () => {
-    expect(bergenBundle.acceptableAlternatives.length).toBeGreaterThanOrEqual(0);
+    expect(bergenBundle.derivedTeaching.acceptableAlternatives.length).toBeGreaterThanOrEqual(0);
   });
 });
 

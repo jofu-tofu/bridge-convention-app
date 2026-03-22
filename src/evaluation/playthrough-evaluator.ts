@@ -354,8 +354,8 @@ export function gradePlaythroughBid(
   const bundleForAlts = getSystemBundle(bundleId);
   const teachingResolution = resolveTeachingAnswer(
     result,
-    strategyEval?.acceptableAlternatives ?? bundleForAlts?.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? bundleForAlts?.intentFamilies ?? undefined,
+    strategyEval?.acceptableAlternatives ?? bundleForAlts?.derivedTeaching.acceptableAlternatives ?? undefined,
+    strategyEval?.intentFamilies ?? bundleForAlts?.derivedTeaching.intentFamilies ?? undefined,
   );
   const grade = gradeBid(submittedCall, teachingResolution);
   const bidFeedback = {

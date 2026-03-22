@@ -1,16 +1,13 @@
 import type { ConventionBundle } from "./bundle-types";
 import { ConventionCategory } from "../../../core/contracts/convention";
 import type { SystemProfile, ModuleEntry } from "../../../core/contracts/agreement-module";
-import type { ExplanationCatalog, ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { DealConstraints, SeatConstraint } from "../../../engine/types";
 
 /**
  * Compose multiple convention bundles into a single composite bundle.
  *
- * Fact merge: concatenates all fact extensions (namespaced by module, so no conflicts).
  * Profile merge: concatenates module arrays from all profiles.
- * Explanation merge: merges all explanation catalog entries (deduplicates by explanationId).
- * Pedagogical merge: concatenates all relations.
+ * DerivedTeaching merge: concatenates acceptableAlternatives and intentFamilies.
  *
  * Prerequisite: bundles must have non-overlapping activation contexts
  * (e.g., Bergen on 1H/1S, Stayman on 1NT — no conflict).
@@ -26,23 +23,6 @@ export function composeBundles(
 
   // ── Member IDs (union) ──────────────────────────────────────
   const memberIds = bundles.flatMap((b) => b.memberIds);
-
-  // ── Fact extensions (concatenate) ───────────────────────────
-  const factExtensions = bundles.some((b) => b.factExtensions)
-    ? bundles.flatMap((b) => b.factExtensions ?? [])
-    : undefined;
-
-  // ── Pedagogical relations (concatenate) ─────────────────────
-  const teachingRelations = bundles.flatMap((b) => b.teachingRelations);
-
-  // ── Acceptable alternatives (concatenate) ───────────────────
-  const acceptableAlternatives = bundles.flatMap((b) => b.acceptableAlternatives);
-
-  // ── Intent families (concatenate) ───────────────────────────
-  const intentFamilies = bundles.flatMap((b) => b.intentFamilies);
-
-  // ── Explanation catalog (merge entries, deduplicate) ─────────
-  const explanationCatalog = mergeExplanationCatalogs(bundles);
 
   // ── System profile (merge modules from all profiles) ────────
   const systemProfile = mergeSystemProfiles(bundles);
@@ -64,38 +44,16 @@ export function composeBundles(
     category: bundles[0]!.category ?? ConventionCategory.Constructive,
     memberIds,
     dealConstraints,
-    factExtensions,
     systemProfile,
     declaredCapabilities,
-    explanationCatalog,
-    teachingRelations,
-    acceptableAlternatives,
-    intentFamilies,
+    derivedTeaching: {
+      acceptableAlternatives: bundles.flatMap((b) => b.derivedTeaching.acceptableAlternatives),
+      intentFamilies: bundles.flatMap((b) => b.derivedTeaching.intentFamilies),
+    },
   };
 }
 
 // ── Helpers ─────────────────────────────────────────────────────
-
-function mergeExplanationCatalogs(
-  bundles: readonly ConventionBundle[],
-): ExplanationCatalog {
-  const seen = new Set<string>();
-  const merged: ExplanationEntry[] = [];
-
-  for (const bundle of bundles) {
-    for (const entry of bundle.explanationCatalog.entries) {
-      if (!seen.has(entry.explanationId)) {
-        seen.add(entry.explanationId);
-        merged.push(entry);
-      }
-    }
-  }
-
-  return {
-    version: bundles[0]!.explanationCatalog.version,
-    entries: merged,
-  };
-}
 
 function mergeSystemProfiles(
   bundles: readonly ConventionBundle[],

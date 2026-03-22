@@ -1,9 +1,6 @@
 import type { DealConstraints, Deal, Auction } from "../../../engine/types";
 import type { Seat } from "../../../engine/types";
-import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
-import type { ExplanationCatalog } from "../../../core/contracts/explanation-catalog";
 import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/tree-evaluation";
-import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
 import type { SystemProfile } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig, ConventionTeaching } from "../../../core/contracts/convention";
 import { ConventionCategory } from "../../../core/contracts/convention";
@@ -15,9 +12,9 @@ import type { RuleModule } from "../rule-module";
 /**
  * What convention authors hand-write when defining a bundle.
  *
- * Does NOT include derived fields (explanationCatalog, teachingRelations,
- * acceptableAlternatives, intentFamilies, factExtensions). Those are
- * computed by `buildBundle()` from module registrations and rule modules.
+ * Does NOT include derived fields. Those are computed by `buildBundle()`
+ * from module registrations and rule modules, and returned separately
+ * as `DerivedTeachingContent`.
  */
 export interface BundleInput {
   readonly id: string;
@@ -53,30 +50,37 @@ export interface BundleInput {
   readonly ruleModules?: readonly RuleModule[];
 }
 
+// ── Derived teaching content ────────────────────────────────────────
+
+/**
+ * Teaching/grading metadata derived from module content at bundle build time.
+ * Computed by `buildBundle()`, NOT hand-authored.
+ *
+ * Stored alongside the bundle and passed to evaluation consumers for
+ * bid grading (acceptable alternatives, near-miss detection).
+ */
+export interface DerivedTeachingContent {
+  /** @derived From ALTERNATIVES teachingTags on surfaces. */
+  readonly acceptableAlternatives: readonly AlternativeGroup[];
+  /** @derived From teachingTags + rule module structure. */
+  readonly intentFamilies: readonly IntentFamily[];
+}
+
 // ── Full computed bundle ────────────────────────────────────────────
 
 /**
- * Complete convention bundle with both authored and derived fields.
+ * Complete convention bundle: authored input + derived teaching content.
  *
- * Produced by `buildBundle()`. Consumers read from this type.
- * Authors write `BundleInput`; they cannot set derived fields.
+ * Produced by `buildBundle()`. The `teaching` content is derived and
+ * cannot be set by authors.
  */
 export interface ConventionBundle extends BundleInput {
   /** System-level bidding configuration (HCP ranges, thresholds).
    *  Convention modules use this to parameterize system-dependent values
    *  (e.g. 1NT range, invite/game thresholds) instead of hardcoding them. */
   readonly systemConfig?: SystemConfig;
-  // ── Derived fields (computed by buildBundle, never hand-authored) ──
-  /** @derived Aggregated from module fact extensions via ruleModules. */
-  readonly factExtensions?: readonly FactCatalogExtension[];
-  /** @derived Aggregated from module explanation entries via module registry. */
-  readonly explanationCatalog: ExplanationCatalog;
-  /** @derived From teachingTags on surfaces via deriveTeachingContent(). */
-  readonly teachingRelations: readonly TeachingRelation[];
-  /** @derived From ALTERNATIVES teachingTags on surfaces. */
-  readonly acceptableAlternatives: readonly AlternativeGroup[];
-  /** @derived From teachingTags + rule module structure. */
-  readonly intentFamilies: readonly IntentFamily[];
+  /** Derived teaching/grading metadata (acceptableAlternatives, intentFamilies). */
+  readonly derivedTeaching: DerivedTeachingContent;
 }
 
 /**

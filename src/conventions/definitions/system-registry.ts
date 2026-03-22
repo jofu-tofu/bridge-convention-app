@@ -3,18 +3,14 @@
  *
  * Each bundle definition composes modules (via ruleModules) with deal constraints,
  * system profile, and teaching metadata. `buildBundle()` aggregates pedagogical
- * content from the module registry and collects surfaces/facts from rule modules.
+ * content from the module registry into `derivedTeaching`.
  */
 
 import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import type { RuleModule } from "../core/rule-module";
-import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import type { AlternativeGroup, IntentFamily } from "../../core/contracts/tree-evaluation";
-import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
-import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import { getModules } from "./module-registry";
 import { deriveTeachingContent } from "./derive-cross-module";
 
@@ -37,22 +33,16 @@ import { weakTwosRules } from "./modules/weak-twos/weak-twos-rules";
 
 // ── Module aggregation ──────────────────────────────────────────────
 
-/** Aggregate teaching/grading content from module IDs. */
-function aggregateModuleContent(moduleIds: readonly string[]): {
-  explanationCatalog: ExplanationCatalog;
-  teachingRelations: readonly TeachingRelation[];
+/** Aggregate teaching/grading content from module IDs and rule modules. */
+function aggregateTeachingContent(moduleIds: readonly string[], ruleModules: readonly RuleModule[]): {
   acceptableAlternatives: readonly AlternativeGroup[];
   intentFamilies: readonly IntentFamily[];
 } {
   const modules = getModules(moduleIds);
   const derived = deriveTeachingContent(modules);
   return {
-    explanationCatalog: createExplanationCatalog(
-      modules.flatMap((m) => m.explanationEntries),
-    ),
-    teachingRelations: derived.relations,
     acceptableAlternatives: derived.alternatives,
-    intentFamilies: derived.intentFamilies,
+    intentFamilies: [...derived.intentFamilies, ...deriveIntentFamiliesFromRules(ruleModules)],
   };
 }
 
@@ -60,34 +50,15 @@ function aggregateModuleContent(moduleIds: readonly string[]): {
 
 /**
  * Build a ConventionBundle from authored input.
- * Aggregates pedagogical content from modules and collects facts
- * from rule modules. Authors provide BundleInput; derived fields are
- * computed here and cannot be set by authors.
+ * Aggregates pedagogical content from modules and rule modules.
+ * Authors provide BundleInput; derived fields are computed here.
  */
 function buildBundle(def: BundleInput): ConventionBundle {
-  const { explanationCatalog, teachingRelations, acceptableAlternatives, intentFamilies } =
-    aggregateModuleContent(def.memberIds);
-
+  const { acceptableAlternatives, intentFamilies } = aggregateTeachingContent(def.memberIds, def.ruleModules ?? []);
   return {
     ...def,
-    explanationCatalog,
-    teachingRelations,
-    acceptableAlternatives,
-    intentFamilies: [...intentFamilies, ...deriveIntentFamiliesFromRules(def.ruleModules ?? [])],
-    factExtensions: collectRuleModuleFacts(def.ruleModules ?? []),
+    derivedTeaching: { acceptableAlternatives, intentFamilies },
   };
-}
-
-/**
- * Collect fact extensions directly from RuleModule[].
- * No FSM or skeleton needed — rules are the sole source of convention logic.
- */
-function collectRuleModuleFacts(
-  ruleModules: readonly RuleModule[],
-): readonly FactCatalogExtension[] {
-  return ruleModules
-    .map((m) => m.facts)
-    .filter((f) => f.definitions.length > 0 || f.evaluators.size > 0);
 }
 
 /**

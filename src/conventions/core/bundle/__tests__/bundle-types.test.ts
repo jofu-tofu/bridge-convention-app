@@ -15,10 +15,7 @@ function stubBundle(overrides: Partial<ConventionBundle> = {}): ConventionBundle
     category: ConventionCategory.Constructive,
     memberIds: [],
     dealConstraints: { seats: [{ seat: Seat.North, minHcp: 15 }], dealer: Seat.North },
-    explanationCatalog: { entries: new Map() } as any,
-    teachingRelations: [],
-    acceptableAlternatives: [],
-    intentFamilies: [],
+    derivedTeaching: { acceptableAlternatives: [], intentFamilies: [] },
     ...overrides,
   } as ConventionBundle;
 }

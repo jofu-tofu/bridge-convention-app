@@ -72,4 +72,4 @@ export { advanceLocalFsm } from "./pipeline/local-fsm";
 export type { RuleModule } from "./rule-module";
 
 // ── Convention Module ────────────────────────────────────────────────────
-export type { ConventionModule, ModuleProvider } from "./convention-module";
+export type { ConventionModule } from "./convention-module";
