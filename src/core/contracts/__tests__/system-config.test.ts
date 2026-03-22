@@ -44,7 +44,7 @@ describe("getSystemConfig", () => {
     expect(cfg.displayName).toBe("Acol");
     expect(cfg.ntOpening).toEqual({ minHcp: 12, maxHcp: 14 });
     expect(cfg.responderThresholds).toEqual({
-      inviteMin: 11,
+      inviteMin: 10,
       inviteMax: 12,
       gameMin: 13,
       slamMin: 19,
@@ -129,5 +129,26 @@ describe("AVAILABLE_BASE_SYSTEMS", () => {
   it("has unique IDs", () => {
     const ids = AVAILABLE_BASE_SYSTEMS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe("opening requirements", () => {
+  it("SAYC/2/1 require 5-card majors", () => {
+    expect(SAYC_SYSTEM_CONFIG.openingRequirements.majorSuitMinLength).toBe(5);
+    expect(TWO_OVER_ONE_SYSTEM_CONFIG.openingRequirements.majorSuitMinLength).toBe(5);
+  });
+
+  it("Acol requires 4-card majors", () => {
+    expect(ACOL_SYSTEM_CONFIG.openingRequirements.majorSuitMinLength).toBe(4);
+  });
+});
+
+describe("1NT response minHcp", () => {
+  it("all systems have minHcp defined", () => {
+    for (const meta of AVAILABLE_BASE_SYSTEMS) {
+      const cfg = getSystemConfig(meta.id);
+      expect(cfg.oneNtResponseAfterMajor.minHcp).toBeGreaterThanOrEqual(5);
+      expect(cfg.oneNtResponseAfterMajor.minHcp).toBeLessThanOrEqual(7);
+    }
   });
 });

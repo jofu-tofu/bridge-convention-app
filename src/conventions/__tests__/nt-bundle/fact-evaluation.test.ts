@@ -8,10 +8,13 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts, createSharedFactCatalog } from "../../core/pipeline/fact-evaluator";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
-import { staymanFacts } from "../../definitions/modules/stayman";
-import { transferFacts } from "../../definitions/modules/jacoby-transfers";
+import { createStaymanFacts } from "../../definitions/modules/stayman";
+import { createTransferFacts } from "../../definitions/modules/jacoby-transfers";
 import { createSystemFactCatalog } from "../../core/pipeline/system-fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+
+const staymanFacts = createStaymanFacts(SAYC_SYSTEM_CONFIG);
+const transferFacts = createTransferFacts(SAYC_SYSTEM_CONFIG);
 
 /** Create a full catalog with shared + system + module facts. */
 function fullCatalog() {

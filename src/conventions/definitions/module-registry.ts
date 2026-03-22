@@ -11,27 +11,24 @@ import type { ConventionModule } from "../core/convention-module";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
-// ── Module raw parts imports ────────────────────────────────────────
+// ── Declaration imports (facts + explanations) ─────────────────────
 
-import { createNaturalNtModule } from "./modules/natural-nt";
-import { naturalNtLocal, createNaturalNtRuleDefs } from "./modules/natural-nt-rules";
-
-import { createStaymanModule } from "./modules/stayman";
-import { staymanLocal, createStaymanRuleDefs } from "./modules/stayman-rules";
-
-import { createJacobyTransfersModule } from "./modules/jacoby-transfers";
-import { jacobyTransfersLocal, jacobyTransfersRuleDefs } from "./modules/jacoby-transfers-rules";
-
-import { createSmolenModule } from "./modules/smolen";
-import { smolenLocal, smolenRuleDefs } from "./modules/smolen-rules";
-
+import { createNaturalNtDeclarations } from "./modules/natural-nt";
+import { createStaymanDeclarations } from "./modules/stayman";
+import { createJacobyTransfersDeclarations } from "./modules/jacoby-transfers";
+import { createSmolenDeclarations } from "./modules/smolen";
 import { createBergenModule } from "./modules/bergen";
-import { bergenLocal, bergenRuleDefs } from "./modules/bergen/bergen-rules";
-
 import { createDontModule } from "./modules/dont";
-import { dontLocal, dontRuleDefs } from "./modules/dont/dont-rules";
-
 import { createWeakTwosModule } from "./modules/weak-twos";
+
+// ── Runtime imports (local FSM + rules) ────────────────────────────
+
+import { naturalNtLocal, createNaturalNtRuleDefs } from "./modules/natural-nt-rules";
+import { staymanLocal, createStaymanRuleDefs } from "./modules/stayman-rules";
+import { jacobyTransfersLocal, jacobyTransfersRuleDefs } from "./modules/jacoby-transfers-rules";
+import { smolenLocal, smolenRuleDefs } from "./modules/smolen-rules";
+import { bergenLocal, bergenRuleDefs } from "./modules/bergen/bergen-rules";
+import { dontLocal, dontRuleDefs } from "./modules/dont/dont-rules";
 import { weakTwosLocal, weakTwosRuleDefs } from "./modules/weak-twos/weak-twos-rules";
 
 // ── Factory type ────────────────────────────────────────────────────
@@ -42,76 +39,48 @@ export type ModuleFactory = (sys: SystemConfig) => ConventionModule;
 // ── Factory registry ────────────────────────────────────────────────
 
 const MODULE_FACTORIES = new Map<string, ModuleFactory>([
-  ["natural-nt", (sys) => {
-    const parts = createNaturalNtModule(sys);
-    return {
-      moduleId: "natural-nt",
-      facts: parts.facts,
-      explanationEntries: parts.explanationEntries,
-      local: naturalNtLocal,
-      rules: createNaturalNtRuleDefs(sys),
-    };
-  }],
-  ["stayman", (sys) => {
-    const parts = createStaymanModule(sys);
-    return {
-      moduleId: "stayman",
-      facts: parts.facts,
-      explanationEntries: parts.explanationEntries,
-      local: staymanLocal,
-      rules: createStaymanRuleDefs(sys),
-    };
-  }],
-  ["jacoby-transfers", (sys) => {
-    const parts = createJacobyTransfersModule(sys);
-    return {
-      moduleId: "jacoby-transfers",
-      facts: parts.facts,
-      explanationEntries: parts.explanationEntries,
-      local: jacobyTransfersLocal,
-      rules: jacobyTransfersRuleDefs,
-    };
-  }],
-  ["smolen", (sys) => {
-    const parts = createSmolenModule(sys);
-    return {
-      moduleId: "smolen",
-      facts: parts.facts,
-      explanationEntries: parts.explanationEntries,
-      local: smolenLocal,
-      rules: smolenRuleDefs,
-    };
-  }],
-  ["bergen", (sys) => {
-    const parts = createBergenModule(sys);
-    return {
-      moduleId: "bergen",
-      facts: parts.facts,
-      explanationEntries: parts.explanationEntries,
-      local: bergenLocal,
-      rules: bergenRuleDefs,
-    };
-  }],
-  ["dont", (sys) => {
-    const parts = createDontModule(sys);
-    return {
-      moduleId: "dont",
-      facts: parts.facts,
-      explanationEntries: parts.explanationEntries,
-      local: dontLocal,
-      rules: dontRuleDefs,
-    };
-  }],
-  ["weak-twos", (sys) => {
-    const parts = createWeakTwosModule(sys);
-    return {
-      moduleId: "weak-twos",
-      facts: parts.facts,
-      explanationEntries: parts.explanationEntries,
-      local: weakTwosLocal,
-      rules: weakTwosRuleDefs,
-    };
-  }],
+  ["natural-nt", (sys) => ({
+    moduleId: "natural-nt",
+    ...createNaturalNtDeclarations(sys),
+    local: naturalNtLocal,
+    rules: createNaturalNtRuleDefs(sys),
+  })],
+  ["stayman", (sys) => ({
+    moduleId: "stayman",
+    ...createStaymanDeclarations(sys),
+    local: staymanLocal,
+    rules: createStaymanRuleDefs(sys),
+  })],
+  ["jacoby-transfers", (sys) => ({
+    moduleId: "jacoby-transfers",
+    ...createJacobyTransfersDeclarations(sys),
+    local: jacobyTransfersLocal,
+    rules: jacobyTransfersRuleDefs,
+  })],
+  ["smolen", (sys) => ({
+    moduleId: "smolen",
+    ...createSmolenDeclarations(sys),
+    local: smolenLocal,
+    rules: smolenRuleDefs,
+  })],
+  ["bergen", (sys) => ({
+    moduleId: "bergen",
+    ...createBergenModule(sys),
+    local: bergenLocal,
+    rules: bergenRuleDefs,
+  })],
+  ["dont", (sys) => ({
+    moduleId: "dont",
+    ...createDontModule(sys),
+    local: dontLocal,
+    rules: dontRuleDefs,
+  })],
+  ["weak-twos", (sys) => ({
+    moduleId: "weak-twos",
+    ...createWeakTwosModule(sys),
+    local: weakTwosLocal,
+    rules: weakTwosRuleDefs,
+  })],
 ]);
 
 // ── Instance cache ──────────────────────────────────────────────────

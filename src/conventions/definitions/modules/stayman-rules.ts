@@ -14,13 +14,12 @@ import type { LocalFsm, Rule } from "../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 import {
-  createStaymanModule,
+  createStaymanR1Surface,
   OPENER_STAYMAN_SURFACES,
   STAYMAN_R3_AFTER_2H_SURFACES,
   STAYMAN_R3_AFTER_2S_SURFACES,
   STAYMAN_R3_AFTER_2D_SURFACES,
 } from "./stayman";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 
 type Phase = "idle" | "asked" | "shown-hearts" | "shown-spades" | "denied" | "inactive";
 
@@ -51,8 +50,7 @@ export const staymanLocal: LocalFsm<Phase> = {
 
 /** Factory: creates Stayman rules parameterized by system config. */
 export function createStaymanRuleDefs(sys: SystemConfig): readonly Rule<Phase>[] {
-  const staymanModule = createStaymanModule(sys);
-  const staymanR1Surface = staymanModule.surfaces.find(s => s.meaningId === "stayman:ask-major")!;
+  const staymanR1Surface = createStaymanR1Surface(sys);
 
   return [
     // R1: Stayman entry (only at idle — before any R1 bid)
@@ -85,6 +83,3 @@ export function createStaymanRuleDefs(sys: SystemConfig): readonly Rule<Phase>[]
     },
   ];
 }
-
-/** Backwards-compat constant for SAYC (used by tests and SAYC bundles). */
-export const staymanRuleDefs: readonly Rule<Phase>[] = createStaymanRuleDefs(SAYC_SYSTEM_CONFIG);

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createSystemFactCatalog } from "../system-fact-catalog";
-import { SAYC_SYSTEM_CONFIG } from "../../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../../../core/contracts/system-config";
 import type { SystemConfig } from "../../../../core/contracts/system-config";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
@@ -140,7 +140,7 @@ describe("createSystemFactCatalog", () => {
       responderThresholds: { inviteMin: 10, inviteMax: 11, gameMin: 13, slamMin: 17 },
       openerRebid: { notMinimum: 18 },
       suitResponse: { twoLevelMin: 11, twoLevelForcingDuration: "one-round" },
-      oneNtResponseAfterMajor: { forcing: "forcing", maxHcp: 11 },
+      oneNtResponseAfterMajor: { forcing: "forcing", maxHcp: 11, minHcp: 6 },
     };
     const customCatalog = createSystemFactCatalog(custom);
     const ev = customCatalog.evaluators;
@@ -174,6 +174,39 @@ describe("createSystemFactCatalog", () => {
     it("openerNotMinimum uses custom notMinimum", () => {
       expect(call(SYSTEM_OPENER_NOT_MINIMUM, 18).value).toBe(true);
       expect(call(SYSTEM_OPENER_NOT_MINIMUM, 17).value).toBe(false);
+    });
+  });
+
+  describe("evaluator behavior (Acol thresholds)", () => {
+    const acolCatalog = createSystemFactCatalog(ACOL_SYSTEM_CONFIG);
+    const ev = acolCatalog.evaluators;
+
+    function call(factId: string, hcp: number): FactValue {
+      return ev.get(factId)!(undefined as any, undefined as any, hcpMap(hcp));
+    }
+
+    it("weakHand: true for HCP < 10, false at 10 (Acol inviteMin)", () => {
+      expect(call(SYSTEM_RESPONDER_WEAK_HAND, 9).value).toBe(true);
+      expect(call(SYSTEM_RESPONDER_WEAK_HAND, 10).value).toBe(false);
+    });
+
+    it("inviteValues: true for 10-12 (Acol invite range)", () => {
+      expect(call(SYSTEM_RESPONDER_INVITE_VALUES, 10).value).toBe(true);
+      expect(call(SYSTEM_RESPONDER_INVITE_VALUES, 12).value).toBe(true);
+      expect(call(SYSTEM_RESPONDER_INVITE_VALUES, 9).value).toBe(false);
+      expect(call(SYSTEM_RESPONDER_INVITE_VALUES, 13).value).toBe(false);
+    });
+
+    it("gameValues: true for HCP >= 13 (Acol game threshold)", () => {
+      expect(call(SYSTEM_RESPONDER_GAME_VALUES, 13).value).toBe(true);
+      expect(call(SYSTEM_RESPONDER_GAME_VALUES, 12).value).toBe(false);
+    });
+
+    it("oneNtRange: Acol true for 6-9, false at 5 and 10", () => {
+      expect(call(SYSTEM_RESPONDER_ONE_NT_RANGE, 6).value).toBe(true);
+      expect(call(SYSTEM_RESPONDER_ONE_NT_RANGE, 9).value).toBe(true);
+      expect(call(SYSTEM_RESPONDER_ONE_NT_RANGE, 5).value).toBe(false);
+      expect(call(SYSTEM_RESPONDER_ONE_NT_RANGE, 10).value).toBe(false);
     });
   });
 });

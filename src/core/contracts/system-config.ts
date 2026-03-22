@@ -67,6 +67,16 @@ export interface OneNtResponseAfterMajorConfig {
   /** Maximum HCP for 1NT response to 1M.
    *  SAYC: 10. 2/1: 12. */
   readonly maxHcp: number;
+  /** Minimum HCP for 1NT response to 1M (e.g. 6 in SAYC/Acol). */
+  readonly minHcp: number;
+}
+
+// ─── Opening requirements ───────────────────────────────────
+
+/** Opening bid structural requirements that vary by system. */
+export interface OpeningRequirements {
+  /** Minimum suit length to open a major (4 in Acol, 5 in SAYC/2/1). */
+  readonly majorSuitMinLength: 4 | 5;
 }
 
 // ─── Top-level SystemConfig ─────────────────────────────────
@@ -89,6 +99,8 @@ export interface SystemConfig {
   readonly suitResponse: SuitResponseConfig;
   /** 1NT response to 1M parameters (forcing status, HCP ceiling). */
   readonly oneNtResponseAfterMajor: OneNtResponseAfterMajorConfig;
+  /** Structural opening bid requirements (major length, etc.). */
+  readonly openingRequirements: OpeningRequirements;
 }
 
 // ─── Concrete system configs ────────────────────────────────
@@ -106,7 +118,8 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
   openerRebid: { notMinimum: 16 },
   interference: { redoubleMin: 10 },
   suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
-  oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10 },
+  oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10, minHcp: 6 },
+  openingRequirements: { majorSuitMinLength: 5 },
 };
 
 export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
@@ -122,7 +135,8 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
   openerRebid: { notMinimum: 16 },
   interference: { redoubleMin: 10 },
   suitResponse: { twoLevelMin: 12, twoLevelForcingDuration: "game" },
-  oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12 },
+  oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12, minHcp: 6 },
+  openingRequirements: { majorSuitMinLength: 5 },
 };
 
 export const ACOL_SYSTEM_CONFIG: SystemConfig = {
@@ -131,20 +145,21 @@ export const ACOL_SYSTEM_CONFIG: SystemConfig = {
   // Standard weak NT: 12-14 HCP (EBU standard, UK tournament play)
   ntOpening: { minHcp: 12, maxHcp: 14 },
   responderThresholds: {
-    // All thresholds shift +3 vs SAYC because 1NT is 3 HCP weaker
-    inviteMin: 11,  // game = 25 combined → 25-14=11 minimum to invite
-    inviteMax: 12,  // invite range: 11-12
+    // Thresholds shifted to keep 25 combined for game (EBU standard Acol)
+    inviteMin: 10,  // 10+12=22 combined; invite with 22-24, game at 25+
+    inviteMax: 12,  // invite range: 10-12
     gameMin: 13,    // 13+12=25 combined for game
     slamMin: 19,    // 19+14=33 combined for slam
   },
   // minHcp+1 pattern: accepts invite with 13-14, declines with 12
   openerRebid: { notMinimum: 13 },
-  // 9+12=21 min combined for penalty interest (cf. SAYC: 10+15=25)
+  // 9+12=21 min combined for penalty interest (cf. SAYC: 10+15=25). Assumes strength redouble — not Wriggle/SOS escape.
   interference: { redoubleMin: 9 },
-  // Same as SAYC: 2-level new suit = 10 HCP, forcing one round
+  // Practical guideline; Acol forces new suit by structure regardless of HCP. Simplified for teaching.
   suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
   // "Dustbin 1NT": non-forcing, capped at 9; with 10+ responder bids a new suit
-  oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 9 },
+  oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 9, minHcp: 6 },
+  openingRequirements: { majorSuitMinLength: 4 },
 };
 
 // ─── System config registry ─────────────────────────────────

@@ -4,8 +4,6 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 import { BidSuit } from "../../../engine/types";
 import { BRIDGE_SEMANTIC_CLASSES } from "../../../core/contracts/meaning";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { getSystemConfig } from "../../../core/contracts/system-config";
-import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
@@ -104,7 +102,7 @@ export const NT_R1_SURFACES: readonly BidMeaning[] = [
 // Declares the 1NT opening promise (HCP range, balanced) so that the
 // commitment extractor produces public constraints for the posterior sampler.
 
-function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
+export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
       meaningId: "bridge:1nt-opening",
@@ -136,10 +134,6 @@ function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
     }, NATURAL_NT_CTX),
   ];
 }
-
-/** Legacy default — uses SAYC system config. */
-export const OPENER_1NT_SURFACE: readonly BidMeaning[] =
-  createOpener1NtSurface(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -286,39 +280,14 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Terminal pass surface (auction settled — intentional pass) ───
+// ─── Module declarations ─────────────────────────────────────
 
-const TERMINAL_PASS_SURFACE: readonly BidMeaning[] = [
-  createSurface({
-    meaningId: "bridge:terminal-pass",
-    semanticClassId: "bridge:terminal-pass",
-    encoding: { type: "pass" },
-    clauses: [],
-    band: "must",
-    declarationOrder: 0,
-    sourceIntent: { type: "TerminalPass", params: {} },
-    teachingLabel: "Pass (auction complete)",
-  }, NATURAL_NT_CTX),
-];
-
-// ─── Module assembly ─────────────────────────────────────────
-
-/** Factory: creates the natural-nt module parameterized by system config. */
-export function createNaturalNtModule(sys: SystemConfig) {
+/** Factory: creates natural-nt declaration parts (facts + explanations).
+ *  Full ConventionModule assembly happens in module-registry.ts. */
+export function createNaturalNtDeclarations(_sys: SystemConfig) {
   return {
-    moduleId: "natural-nt",
-
-    surfaces: [
-      ...NT_R1_SURFACES,
-      ...createOpener1NtSurface(sys),
-      ...TERMINAL_PASS_SURFACE,
-    ],
-
-    facts: { definitions: [], evaluators: new Map() },
-
+    facts: { definitions: [], evaluators: new Map() } as const,
     explanationEntries: NT_EXPLANATION_ENTRIES,
   };
 }
 
-/** Legacy default — uses SAYC system config. */
-export const naturalNtModule = createNaturalNtModule(getSystemConfig(BASE_SYSTEM_SAYC));

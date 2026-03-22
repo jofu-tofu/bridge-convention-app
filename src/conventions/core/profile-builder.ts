@@ -39,3 +39,27 @@ export function createSystemProfile(config: SystemProfileConfig): SystemProfile 
 export function createSaycProfile(config: Omit<SystemProfileConfig, "baseSystem">): SystemProfile {
   return createSystemProfile({ ...config, baseSystem: BASE_SYSTEM_SAYC });
 }
+
+/**
+ * Create system profiles for the same module list across multiple base systems.
+ * Reduces boilerplate when registering the same convention for several systems.
+ */
+export function createProfilesForSystems(
+  template: {
+    readonly profileIdPrefix: string;
+    readonly modules: readonly ModuleEntry[];
+    readonly systemConfig?: (sys: BaseSystemId) => SystemConfig | undefined;
+  },
+  systems: readonly BaseSystemId[],
+): ReadonlyMap<BaseSystemId, SystemProfile> {
+  const result = new Map<BaseSystemId, SystemProfile>();
+  for (const sys of systems) {
+    result.set(sys, createSystemProfile({
+      baseSystem: sys,
+      profileId: `${template.profileIdPrefix}-${sys}`,
+      modules: template.modules,
+      systemConfig: template.systemConfig?.(sys),
+    }));
+  }
+  return result;
+}

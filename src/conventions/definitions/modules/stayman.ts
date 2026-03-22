@@ -11,8 +11,6 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { getSystemConfig } from "../../../core/contracts/system-config";
-import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
@@ -69,11 +67,6 @@ export const STAYMAN_R3_CLASSES = {
   NT_INVITE_DENIAL: "stayman:nt-invite-denial",
 } as const;
 
-/** Interference semantic class IDs — module-local. */
-export const INTERFERENCE_CLASSES = {
-  REDOUBLE_STRENGTH: "interference:redouble-strength",
-} as const;
-
 // ─── Closure policy (shared across opener Stayman response surfaces) ───
 
 const OPENER_STAYMAN_CLOSURE_POLICY = {
@@ -93,7 +86,7 @@ const OPENER_STAYMAN_CLOSURE_POLICY = {
 // ─── R1 surface ──────────────────────────────────────────────
 
 /** Factory: creates the Stayman R1 surface parameterized by system config. */
-function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
+export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
   const minHcp = sys.responderThresholds.inviteMin;
   return createSurface({
     meaningId: "stayman:ask-major",
@@ -133,10 +126,6 @@ function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
     ],
   }, STAYMAN_CTX);
 }
-
-/** Legacy default — uses SAYC system config. */
-export const STAYMAN_R1_SURFACE: BidMeaning =
-  createStaymanR1Surface(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Opener Stayman response surfaces ────────────────────────
 
@@ -467,34 +456,6 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
   }, STAYMAN_CTX),
 ];
 
-// ─── Interference surface ────────────────────────────────────
-
-/** Factory: creates the interference redouble surface parameterized by system config. */
-function createInterferenceRedoubleSurface(sys: SystemConfig): BidMeaning {
-  const minHcp = sys.interference.redoubleMin;
-  return createSurface({
-    meaningId: "interference:redouble-strength",
-    semanticClassId: INTERFERENCE_CLASSES.REDOUBLE_STRENGTH,
-    encoding: { type: "redouble" },
-    clauses: [
-      {
-        factId: "hand.hcp",
-        operator: "gte",
-        value: minHcp,
-        description: `${minHcp}+ HCP to redouble after opponent doubles 1NT`,
-      },
-    ],
-    band: "must",
-    declarationOrder: 0,
-    sourceIntent: { type: "RedoubleStrength", params: {} },
-    teachingLabel: `Redouble (showing ${minHcp}+ HCP)`,
-  }, STAYMAN_CTX);
-}
-
-/** Legacy default — uses SAYC system config. */
-export const INTERFERENCE_REDOUBLE_SURFACE: BidMeaning =
-  createInterferenceRedoubleSurface(getSystemConfig(BASE_SYSTEM_SAYC));
-
 // ─── Facts ───────────────────────────────────────────────────
 
 const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
@@ -585,10 +546,6 @@ export function createStaymanFacts(sys: SystemConfig): FactCatalogExtension {
   };
 }
 
-/** Legacy default — uses SAYC system config. */
-export const staymanFacts: FactCatalogExtension =
-  createStaymanFacts(getSystemConfig(BASE_SYSTEM_SAYC));
-
 // ─── Explanation entries ─────────────────────────────────────
 
 const STAYMAN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
@@ -620,27 +577,14 @@ const STAYMAN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Module assembly ─────────────────────────────────────────
+// ─── Module declarations ─────────────────────────────────────
 
-/** Factory: creates the stayman module parameterized by system config. */
-export function createStaymanModule(sys: SystemConfig) {
+/** Factory: creates Stayman declaration parts (facts + explanations).
+ *  Full ConventionModule assembly happens in module-registry.ts. */
+export function createStaymanDeclarations(sys: SystemConfig) {
   return {
-    moduleId: "stayman",
-
-    surfaces: [
-      createStaymanR1Surface(sys),
-      ...OPENER_STAYMAN_SURFACES,
-      ...STAYMAN_R3_AFTER_2H_SURFACES,
-      ...STAYMAN_R3_AFTER_2S_SURFACES,
-      ...STAYMAN_R3_AFTER_2D_SURFACES,
-      createInterferenceRedoubleSurface(sys),
-    ],
-
     facts: createStaymanFacts(sys),
-
     explanationEntries: STAYMAN_EXPLANATION_ENTRIES,
   };
 }
 
-/** Legacy default — uses SAYC system config. */
-export const staymanModule = createStaymanModule(getSystemConfig(BASE_SYSTEM_SAYC));

@@ -51,10 +51,15 @@ import {
 // ─── Fact extensions ────────────────────────────────────────
 import { bergenFacts } from "../../../definitions/modules/bergen/facts";
 import { dontFacts } from "../../../definitions/modules/dont/facts";
-import { staymanFacts } from "../../../definitions/modules/stayman";
-import { transferFacts } from "../../../definitions/modules/jacoby-transfers";
-import { smolenFacts } from "../../../definitions/modules/smolen";
+import { createStaymanFacts } from "../../../definitions/modules/stayman";
+import { createTransferFacts } from "../../../definitions/modules/jacoby-transfers";
+import { createSmolenFacts } from "../../../definitions/modules/smolen";
 import { weakTwoFacts } from "../../../definitions/modules/weak-twos/facts";
+import { SAYC_SYSTEM_CONFIG } from "../../../../core/contracts/system-config";
+
+const staymanFacts = createStaymanFacts(SAYC_SYSTEM_CONFIG);
+const transferFacts = createTransferFacts(SAYC_SYSTEM_CONFIG);
+const smolenFacts = createSmolenFacts(SAYC_SYSTEM_CONFIG);
 
 // ─── Collect all surfaces ───────────────────────────────────
 
@@ -86,17 +91,11 @@ const dontSurfaces: readonly BidMeaning[] = [
   ...DONT_2D_RELAY_SURFACES,
 ];
 
-import { naturalNtModule } from "../../../definitions/modules/natural-nt";
-import { staymanModule } from "../../../definitions/modules/stayman";
-import { jacobyTransfersModule } from "../../../definitions/modules/jacoby-transfers";
-import { smolenModule } from "../../../definitions/modules/smolen";
+import { getModules } from "../../../definitions/module-registry";
+import { moduleSurfaces } from "../../convention-module";
 
-const ntSurfaces: readonly BidMeaning[] = [
-  ...naturalNtModule.surfaces,
-  ...jacobyTransfersModule.surfaces,
-  ...staymanModule.surfaces,
-  ...smolenModule.surfaces,
-];
+const ntModules = getModules(["natural-nt", "stayman", "jacoby-transfers", "smolen"], SAYC_SYSTEM_CONFIG);
+const ntSurfaces: readonly BidMeaning[] = ntModules.flatMap(m => moduleSurfaces(m));
 
 const weakTwoSurfaces: readonly BidMeaning[] = [
   ...WEAK_TWO_R1_SURFACES,

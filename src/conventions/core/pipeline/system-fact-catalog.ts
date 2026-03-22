@@ -175,7 +175,7 @@ function createSystemEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn>
       fv(SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, num(m, "hand.hcp") >= sys.suitResponse.twoLevelMin)],
     [SYSTEM_RESPONDER_ONE_NT_RANGE, (_h, _ev, m) => {
       const hcp = num(m, "hand.hcp");
-      return fv(SYSTEM_RESPONDER_ONE_NT_RANGE, hcp >= 6 && hcp <= sys.oneNtResponseAfterMajor.maxHcp);
+      return fv(SYSTEM_RESPONDER_ONE_NT_RANGE, hcp >= sys.oneNtResponseAfterMajor.minHcp && hcp <= sys.oneNtResponseAfterMajor.maxHcp);
     }],
     // System-constant: pure config values, no hand data
     [SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, () =>

@@ -3,15 +3,18 @@ import {
   createExplanationCatalog,
   type ExplanationCatalog,
 } from "../../../core/contracts/explanation-catalog";
-import { staymanModule } from "../modules/stayman";
-import { jacobyTransfersModule } from "../modules/jacoby-transfers";
-import { smolenModule } from "../modules/smolen";
-import { naturalNtModule } from "../modules/natural-nt";
+import { createStaymanDeclarations } from "../modules/stayman";
+import { createJacobyTransfersDeclarations } from "../modules/jacoby-transfers";
+import { createSmolenDeclarations } from "../modules/smolen";
+import { createNaturalNtDeclarations } from "../modules/natural-nt";
+import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+
+const defaultSys = SAYC_SYSTEM_CONFIG;
 
 export const NT_EXPLANATION_CATALOG: ExplanationCatalog =
   createExplanationCatalog([
-    ...naturalNtModule.explanationEntries,
-    ...staymanModule.explanationEntries,
-    ...jacobyTransfersModule.explanationEntries,
-    ...smolenModule.explanationEntries,
+    ...createNaturalNtDeclarations(defaultSys).explanationEntries,
+    ...createStaymanDeclarations(defaultSys).explanationEntries,
+    ...createJacobyTransfersDeclarations(defaultSys).explanationEntries,
+    ...createSmolenDeclarations(defaultSys).explanationEntries,
   ]);

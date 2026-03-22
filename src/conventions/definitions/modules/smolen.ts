@@ -10,8 +10,6 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { getSystemConfig } from "../../../core/contracts/system-config";
-import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import { SYSTEM_RESPONDER_GAME_VALUES } from "../../../core/contracts/system-fact-vocabulary";
 
 import { bid } from "../../core/surface-helpers";
@@ -349,10 +347,14 @@ const SMOLEN_EVALUATORS = new Map<string, FactEvaluatorFn>([
     fv("module.smolen.openerHasSpadesFit", num(m, "hand.suitLength.spades") >= 3)],
 ]);
 
-export const smolenFacts: FactCatalogExtension = {
-  definitions: SMOLEN_FACTS,
-  evaluators: SMOLEN_EVALUATORS,
-};
+/** Factory: creates Smolen facts (no system-dependent thresholds currently,
+ *  but accepts SystemConfig for DI consistency). */
+export function createSmolenFacts(_sys: SystemConfig): FactCatalogExtension {
+  return {
+    definitions: SMOLEN_FACTS,
+    evaluators: SMOLEN_EVALUATORS,
+  };
+}
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -431,27 +433,14 @@ const SMOLEN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Module assembly ─────────────────────────────────────────
+// ─── Module declarations ─────────────────────────────────────
 
-/** Factory: creates the smolen module parameterized by system config.
- *  Smolen currently has no system-dependent thresholds (inherits from
- *  natural-nt gameValues fact), but accepts SystemConfig for DI consistency. */
-export function createSmolenModule(_sys: SystemConfig) {
+/** Factory: creates Smolen declaration parts (facts + explanations).
+ *  Full ConventionModule assembly happens in module-registry.ts. */
+export function createSmolenDeclarations(_sys: SystemConfig) {
   return {
-    moduleId: "smolen",
-
-    surfaces: [
-      ...SMOLEN_ENTRY_SURFACES,
-      ...SMOLEN_R3_SURFACES,
-      ...OPENER_SMOLEN_HEARTS_SURFACES,
-      ...OPENER_SMOLEN_SPADES_SURFACES,
-    ],
-
-    facts: smolenFacts,
-
+    facts: createSmolenFacts(_sys),
     explanationEntries: SMOLEN_EXPLANATION_ENTRIES,
   };
 }
 
-/** Legacy default — uses SAYC system config. */
-export const smolenModule = createSmolenModule(getSystemConfig(BASE_SYSTEM_SAYC));

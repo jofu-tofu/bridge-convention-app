@@ -13,7 +13,6 @@ import {
   createOpener1NtSurface,
   NT_R1_SURFACES,
 } from "./natural-nt";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 
 type Phase = "idle" | "opened" | "responded";
 
@@ -47,6 +46,3 @@ export function createNaturalNtRuleDefs(sys: SystemConfig): readonly Rule<Phase>
     },
   ];
 }
-
-/** Backwards-compat constant for SAYC (used by tests and SAYC bundles). */
-export const naturalNtRuleDefs: readonly Rule<Phase>[] = createNaturalNtRuleDefs(SAYC_SYSTEM_CONFIG);

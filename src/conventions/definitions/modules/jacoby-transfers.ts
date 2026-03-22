@@ -10,8 +10,6 @@ import type { ExplanationEntry } from "../../../core/contracts/explanation-catal
 
 import { BidSuit } from "../../../engine/types";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import { getSystemConfig } from "../../../core/contracts/system-config";
-import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
@@ -668,7 +666,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
 ];
 
 /** Factory: creates transfer fact evaluators parameterized by system config. */
-function createTransferEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
+function createTransferEvaluators(_sys: SystemConfig): Map<string, FactEvaluatorFn> {
   return new Map<string, FactEvaluatorFn>([
     ["module.transfer.targetSuit", (_h, _ev, m) => {
       const spades = num(m, "hand.suitLength.spades");
@@ -690,16 +688,12 @@ function createTransferEvaluators(sys: SystemConfig): Map<string, FactEvaluatorF
 }
 
 /** Factory: creates transfer facts parameterized by system config. */
-function createTransferFacts(sys: SystemConfig): FactCatalogExtension {
+export function createTransferFacts(sys: SystemConfig): FactCatalogExtension {
   return {
     definitions: TRANSFER_FACTS,
     evaluators: createTransferEvaluators(sys),
   };
 }
-
-/** Legacy default — uses SAYC system config. */
-export const transferFacts: FactCatalogExtension =
-  createTransferFacts(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Explanation entries ─────────────────────────────────────
 
@@ -740,32 +734,14 @@ const TRANSFER_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
 ];
 
-// ─── Module assembly ─────────────────────────────────────────
+// ─── Module declarations ─────────────────────────────────────
 
-/** Factory: creates the jacoby-transfers module parameterized by system config. */
-export function createJacobyTransfersModule(sys: SystemConfig) {
+/** Factory: creates jacoby-transfers declaration parts (facts + explanations).
+ *  Full ConventionModule assembly happens in module-registry.ts. */
+export function createJacobyTransfersDeclarations(sys: SystemConfig) {
   return {
-    moduleId: "jacoby-transfers",
-
-    surfaces: [
-      ...TRANSFER_R1_SURFACES,
-      ...OPENER_TRANSFER_HEARTS_SURFACES,
-      ...OPENER_TRANSFER_SPADES_SURFACES,
-      ...TRANSFER_R3_HEARTS_SURFACES,
-      ...TRANSFER_R3_SPADES_SURFACES,
-      ...OPENER_PLACE_HEARTS_SURFACES,
-      ...OPENER_PLACE_SPADES_SURFACES,
-      ...OPENER_ACCEPT_INVITE_HEARTS_SURFACES,
-      ...OPENER_ACCEPT_INVITE_SPADES_SURFACES,
-      ...OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES,
-      ...OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES,
-    ],
-
     facts: createTransferFacts(sys),
-
     explanationEntries: TRANSFER_EXPLANATION_ENTRIES,
   };
 }
 
-/** Legacy default — uses SAYC system config. */
-export const jacobyTransfersModule = createJacobyTransfersModule(getSystemConfig(BASE_SYSTEM_SAYC));
