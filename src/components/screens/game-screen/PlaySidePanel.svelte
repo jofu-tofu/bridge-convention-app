@@ -37,8 +37,8 @@
     Tricks
   </h2>
   <div class="flex gap-4 text-[--text-value] font-mono text-text-primary">
-    <span>Decl: {declarerTricksWon}</span>
-    <span>Def: {defenderTricksWon}</span>
+    <span aria-label="Declarer: {declarerTricksWon} tricks">Decl: {declarerTricksWon}</span>
+    <span aria-label="Defenders: {defenderTricksWon} tricks">Def: {defenderTricksWon}</span>
   </div>
 </section>
 

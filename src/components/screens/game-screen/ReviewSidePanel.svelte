@@ -1,9 +1,8 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
-  import type { Contract, Vulnerability, Deal } from "../../../engine/types";
+  import type { Contract, Vulnerability } from "../../../engine/types";
   import { Vulnerability as Vul } from "../../../engine/types";
   import type { BidHistoryEntry } from "../../../core/contracts";
-  import type { ConventionConfig } from "../../../core/contracts/convention";
   import type { ConventionContribution } from "../../../core/contracts/teaching-projection";
   import { formatContractWithDeclarer, formatRuleName } from "../../../core/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
@@ -23,8 +22,6 @@
     onNextDeal: () => void;
     onBackToMenu: () => void;
     onPlayHand?: (() => void) | undefined;
-    convention?: ConventionConfig | undefined;
-    deal?: Deal | undefined;
   }
 
   let {
@@ -40,8 +37,6 @@
     onNextDeal,
     onBackToMenu,
     onPlayHand,
-    convention: _convention,
-    deal: _deal,
   }: Props = $props();
 
   let activeTab = $state<"bidding" | "analysis">("bidding");

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DebugLogEntry } from "../../../stores/game.svelte";
-  import { fmtCall } from "./debug-helpers";
+  import { fmtCall, gradeBorderColor } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
@@ -29,7 +29,7 @@
             <span class="text-text-muted">exp: <span class="text-green-300">{fmtCall(entry.snapshot.expectedBid.call)}</span></span>
           {/if}
         </summary>
-        <div class="pl-3 text-[10px] pb-0.5 border-l-2 ml-1 {entry.feedback ? (entry.feedback.grade === 'correct' || entry.feedback.grade === 'correct-not-preferred' || entry.feedback.grade === 'acceptable' ? 'border-green-500/40' : entry.feedback.grade === 'near-miss' ? 'border-yellow-500/40' : 'border-red-500/40') : 'border-border-subtle/30'}">
+        <div class="pl-3 text-[10px] pb-0.5 border-l-2 ml-1 {gradeBorderColor(entry.feedback?.grade)}">
           {#if entry.snapshot.expectedBid?.meaning}
             <div class="text-text-muted">meaning: <span class="text-yellow-300">{entry.snapshot.expectedBid.meaning}</span></div>
           {/if}

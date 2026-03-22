@@ -147,9 +147,12 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
       // Build viewport
       const viewport = buildBiddingViewportFromState(state);
+      if (!viewport) {
+        throw new Error("Failed to build initial bidding viewport — no current turn in auction");
+      }
 
       return {
-        viewport: viewport!,
+        viewport,
         isOffConvention: state.isOffConvention,
         aiBids,
         auctionComplete,
@@ -191,7 +194,9 @@ export function createLocalService(engine: EnginePort): DevServicePort {
           state.phase = "EXPLANATION";
           // Trigger DDS solve
           if (state.deal && state.contract) {
-            void anc.dds.solve(state.deal, state.contract, engine);
+            anc.dds.solve(state.deal, state.contract, engine).catch((err) => {
+              console.error("DDS solve failed:", err);
+            });
           }
         }
       } else if (mode === "play") {
@@ -319,10 +324,11 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       const coordinator = createInferenceCoordinator();
       const state = new SessionState(bundle, coordinator);
       manager.set(handle, state);
+      const convention = getConvention(bundle.session.config.conventionId);
       ancillary.set(handle, {
         dds: new DDSController(),
-        conventionConfig: { id: bundle.session.config.conventionId, name: bundle.session.config.conventionId, description: "", dealConstraints: { seats: [] } } as unknown as ConventionConfig,
-        conventionName: bundle.session.config.conventionId,
+        conventionConfig: convention,
+        conventionName: convention.name,
         bundle,
       });
       if (bundle.initialAuction) {

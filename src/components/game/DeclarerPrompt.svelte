@@ -36,15 +36,19 @@
   );
 </script>
 
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') onSkip(); }} />
+
 <div
   class="bg-bg-card/95 rounded-[--radius-lg] p-3 border border-border-subtle shadow-lg text-center max-w-[240px]"
   role="dialog"
   aria-label={ariaLabel}
+  aria-modal="true"
+  aria-describedby="declarer-prompt-description"
 >
   <p class="text-[--text-value] font-mono text-text-primary mb-1">
     {formatContractWithDeclarer(contract)}
   </p>
-  <p class="text-text-secondary text-[--text-label] mb-2">
+  <p id="declarer-prompt-description" class="text-text-secondary text-[--text-label] mb-2">
     {promptText}
   </p>
   <div class="flex gap-2 justify-center">

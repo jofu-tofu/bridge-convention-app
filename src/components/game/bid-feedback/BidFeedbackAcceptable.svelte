@@ -2,6 +2,7 @@
   import type { BidFeedbackBaseProps } from "./types";
   import { formatCall } from "../../../core/display/format";
   import { formatAmbiguity } from "./BidFeedbackPanel";
+  import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
 
   interface Props extends BidFeedbackBaseProps {}
 
@@ -30,8 +31,6 @@
     <p class="text-fb-acceptable-dim/60 text-[--text-annotation] mt-1 italic">{ambiguityNote}</p>
   {/if}
   {#if showPracticalNote && practicalRec}
-    <p class="text-fb-near-miss-text/70 text-[--text-label] mt-2 italic" data-testid="practical-note">
-      Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
-    </p>
+    <PracticalRecommendationNote {practicalRec} />
   {/if}
 </div>

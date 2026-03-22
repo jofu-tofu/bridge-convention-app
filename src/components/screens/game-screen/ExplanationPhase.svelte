@@ -91,7 +91,7 @@
       tableWidth={layout.tableBaseW}
       tableHeight={layout.tableBaseH}
     >
-      <BridgeTable visibleHands={viewport.allHands} vulnerability={viewport.vulnerability} dealer={viewport.dealer}>
+      <BridgeTable visibleHands={viewport.allHands} vulnerability={viewport.vulnerability}>
         <div class="flex flex-col items-center gap-2">
           <div
             class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"

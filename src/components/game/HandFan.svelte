@@ -36,6 +36,8 @@
 <div
   class="hand flex {vertical ? 'flex-col' : 'flex-row'}"
   data-testid="hand-fan"
+  role="group"
+  aria-label="{displayCards.length} cards"
 >
   {#each displayCards as card (card.suit + card.rank)}
     {@const legal = isLegal(card)}

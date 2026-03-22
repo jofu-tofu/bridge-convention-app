@@ -17,6 +17,7 @@
   } from "./BidFeedbackPanel";
   import { formatRuleName } from "../../../core/display/format";
   import ParseTreePanel from "./ParseTreePanel.svelte";
+  import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
 
   interface Props extends BidFeedbackInteractiveProps {}
 
@@ -210,7 +211,7 @@
       {#if failingConditions.length > 0}
         <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-accent-danger/20">
           <p class="text-[--text-annotation] text-accent-danger/80 uppercase tracking-wide mb-1.5">
-            {failingConditions.length === 1 ? "Where it breaks down" : "Where it breaks down"}
+            Where it breaks down
           </p>
           <ul class="space-y-1" role="list" aria-label="Failed conditions">
             {#each failingConditions as node, ci (node.content + '-fail-' + ci)}
@@ -349,6 +350,7 @@
                           class="flex items-center gap-1 text-left cursor-pointer hover:text-fb-incorrect-bright transition-colors w-full flex-wrap"
                           onclick={() => toggleWhyNot(wi)}
                           aria-expanded={expandedWhyNot.has(wi)}
+                          aria-label={`Toggle details for bid ${formatCall(entry.call)}`}
                         >
                           <span class="text-fb-incorrect-text/50 shrink-0">{expandedWhyNot.has(wi) ? "▾" : "▸"}</span>
                           <span class="font-mono font-bold text-fb-incorrect-dim/80">{formatCall(entry.call)}</span>
@@ -437,9 +439,7 @@
   {/if}
 
   {#if showPracticalNote && practicalRec}
-    <p class="text-fb-near-miss-text/70 text-[--text-label] mt-2 italic" data-testid="practical-note">
-      Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
-    </p>
+    <PracticalRecommendationNote {practicalRec} />
     {#if scoreBreakdown}
       <button
         type="button"

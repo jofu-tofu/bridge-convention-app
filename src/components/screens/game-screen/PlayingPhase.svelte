@@ -46,7 +46,6 @@
     <BridgeTable
       visibleHands={viewport.visibleHands}
       vulnerability={viewport.vulnerability}
-      dealer={viewport.dealer}
       legalPlays={viewport.legalPlays}
       {onPlayCard}
       currentPlayer={viewport.currentPlayer ?? undefined}
@@ -57,7 +56,6 @@
       <TrickArea
         currentTrick={viewport.currentTrick}
         currentPlayer={viewport.currentPlayer}
-        trumpSuit={viewport.trumpSuit}
         rotated={viewport.rotated}
       />
     </BridgeTable>

@@ -16,12 +16,14 @@
   let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
 
   function init(): void {
+    engineReady = false;
     initError = null;
     createEngine()
       .then((eng) => {
         resolvedEngine = eng;
-        resolvedService = createLocalService(eng);
-        resolvedGameStore = createGameStore(eng, resolvedService!);
+        const svc = createLocalService(eng);
+        resolvedService = svc;
+        resolvedGameStore = createGameStore(eng, svc);
         const store = createAppStore();
         appStore = store;
         applyDevParams(store);

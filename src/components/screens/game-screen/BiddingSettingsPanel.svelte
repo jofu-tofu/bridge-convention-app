@@ -4,6 +4,8 @@
   import { getAppStore } from "../../../stores/context";
 
   const appStore = getAppStore();
+
+  const OFF_CONVENTION_RATE = { MIN: 0.1, MAX: 0.7, STEP: 0.05, DEFAULT: 0.3 } as const;
 </script>
 
 <div class="space-y-3">
@@ -69,16 +71,16 @@
         <div class="mt-1 px-1">
           <input
             type="range"
-            min="0.1"
-            max="0.7"
-            step="0.05"
-            value={appStore.drillTuning.offConventionRate ?? 0.3}
+            min={OFF_CONVENTION_RATE.MIN}
+            max={OFF_CONVENTION_RATE.MAX}
+            step={OFF_CONVENTION_RATE.STEP}
+            value={appStore.drillTuning.offConventionRate ?? OFF_CONVENTION_RATE.DEFAULT}
             oninput={(e) => appStore.setOffConventionRate(parseFloat(e.currentTarget.value))}
             class="w-full accent-accent-primary cursor-pointer"
             data-testid="settings-off-conv-rate"
           />
           <p class="text-[--text-annotation] text-text-muted">
-            {Math.round((appStore.drillTuning.offConventionRate ?? 0.3) * 100)}% off-convention
+            {Math.round((appStore.drillTuning.offConventionRate ?? OFF_CONVENTION_RATE.DEFAULT) * 100)}% off-convention
           </p>
         </div>
       {/if}

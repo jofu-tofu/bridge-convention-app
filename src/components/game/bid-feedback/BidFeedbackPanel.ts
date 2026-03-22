@@ -66,6 +66,10 @@ export function formatModuleRole(role: "primary" | "alternative" | "suppressed")
       return "Alternative";
     case "suppressed":
       return "Not active";
+    default: {
+      const _exhaustive: never = role;
+      return _exhaustive;
+    }
   }
 }
 

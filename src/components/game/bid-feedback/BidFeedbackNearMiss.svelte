@@ -3,6 +3,7 @@
   import { formatCall } from "../../../core/display/format";
   import { callsMatch } from "../../../engine/call-helpers";
   import ParseTreePanel from "./ParseTreePanel.svelte";
+  import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
 
   interface Props extends BidFeedbackInteractiveProps {}
 
@@ -53,8 +54,6 @@
     </div>
   {/if}
   {#if showPracticalNote && practicalRec}
-    <p class="text-fb-near-miss-text/70 text-[--text-label] mt-2 italic" data-testid="practical-note">
-      Experienced players might prefer <span class="font-mono font-semibold">{formatCall(practicalRec.topCandidateCall)}</span> here — {practicalRec.rationale}
-    </p>
+    <PracticalRecommendationNote {practicalRec} />
   {/if}
 </div>

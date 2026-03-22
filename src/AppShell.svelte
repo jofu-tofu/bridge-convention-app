@@ -36,5 +36,9 @@
     <SettingsScreen />
   {:else if props.appStore.screen === "coverage"}
     <CoverageScreen />
+  {:else}
+    <div class="flex h-screen items-center justify-center text-red-400">
+      <p>Unknown screen: {props.appStore.screen}</p>
+    </div>
   {/if}
 </div>

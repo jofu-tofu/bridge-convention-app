@@ -8,7 +8,6 @@
     onBid: (call: Call) => void;
     disabled: boolean;
     isUserTurn: boolean;
-    isFeedbackBlocking: boolean;
     onRetry: () => void;
     viewportFeedback: ViewportBidFeedback | null;
     teachingDetail: TeachingDetail | null;
@@ -21,7 +20,6 @@
     onBid,
     disabled,
     isUserTurn,
-    isFeedbackBlocking: _isFeedbackBlocking,
     onRetry,
     viewportFeedback,
     teachingDetail,
@@ -38,9 +36,7 @@
     class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"
   >
-    {#if hasFeedback}
-      Your bid
-    {:else if isUserTurn}
+    {#if isUserTurn || hasFeedback}
       Your bid
     {:else}
       Waiting...

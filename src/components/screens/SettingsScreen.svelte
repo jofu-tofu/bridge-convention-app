@@ -1,19 +1,13 @@
 <script lang="ts">
   import type { OpponentMode, VulnerabilityDistribution } from "../../core/contracts/drill";
   import { DEFAULT_DRILL_TUNING } from "../../core/contracts/drill";
+  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../../core/display/vulnerability-labels";
+  import type { VulnKey } from "../../core/display/vulnerability-labels";
   import { getAppStore } from "../../stores/context";
 
   const appStore = getAppStore();
 
-  const VULN_KEYS = ["none", "ours", "theirs", "both"] as const;
-  const VULN_LABELS: Record<typeof VULN_KEYS[number], string> = {
-    none: "None",
-    ours: "NS Vulnerable",
-    theirs: "EW Vulnerable",
-    both: "Both Vulnerable",
-  };
-
-  function isVulnEnabled(key: typeof VULN_KEYS[number]): boolean {
+  function isVulnEnabled(key: VulnKey): boolean {
     return appStore.drillTuning.vulnerabilityDistribution[key] > 0;
   }
 
@@ -21,7 +15,7 @@
   // (future-proofs for sliders that set weights like 3, 0.5, etc.)
   const lastNonZero: Record<string, number> = {};
 
-  function toggleVuln(key: typeof VULN_KEYS[number]) {
+  function toggleVuln(key: VulnKey) {
     const current = appStore.drillTuning.vulnerabilityDistribution;
     const enabled = current[key] > 0;
     // Don't allow disabling all — at least one must remain
@@ -194,7 +188,7 @@
       {#if appStore.drillTuning.includeOffConvention}
         <div class="mt-3">
           <label class="block text-sm text-text-secondary mb-1.5" for="off-conv-rate">
-            Frequency: {Math.round((appStore.drillTuning.offConventionRate ?? 0.3) * 100)}% of deals
+            Frequency: {Math.round((appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE) * 100)}% of deals
           </label>
           <input
             id="off-conv-rate"
@@ -202,13 +196,13 @@
             min="0.1"
             max="0.7"
             step="0.05"
-            value={appStore.drillTuning.offConventionRate ?? 0.3}
+            value={appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE}
             oninput={(e) => appStore.setOffConventionRate(parseFloat(e.currentTarget.value))}
             class="w-full max-w-xs accent-accent-primary cursor-pointer"
             data-testid="off-convention-rate"
           />
           <p class="text-xs text-text-muted mt-1">
-            About {Math.round((appStore.drillTuning.offConventionRate ?? 0.3) * 100)}% of practice
+            About {Math.round((appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE) * 100)}% of practice
             deals will be hands where the convention doesn't apply.
           </p>
         </div>

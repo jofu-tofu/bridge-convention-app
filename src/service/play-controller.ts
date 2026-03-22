@@ -121,36 +121,6 @@ export async function processPlayCard(
   };
 }
 
-/**
- * Run initial AI plays after play starts (if opening leader is AI).
- * Returns the list of AI plays for animation.
- */
-async function _runInitialAiPlays(
-  state: SessionState,
-  engine: EnginePort,
-): Promise<{ aiPlays: AiPlayEntry[]; legalPlays: Card[] | null }> {
-  if (!state.currentPlayer || !state.contract) {
-    return { aiPlays: [], legalPlays: null };
-  }
-
-  // If the opening leader is user-controlled, just return legal plays
-  if (state.isUserControlledPlay(state.currentPlayer)) {
-    const legalPlays = await getNextLegalPlays(state, engine);
-    return { aiPlays: [], legalPlays };
-  }
-
-  // Opening leader is AI -- run AI plays
-  const aiPlays = await runAiPlayLoop(state, engine);
-
-  // After AI plays, get legal plays for user if it's their turn
-  let legalPlays: Card[] | null = null;
-  if (state.currentPlayer && state.isUserControlledPlay(state.currentPlayer)) {
-    legalPlays = await getNextLegalPlays(state, engine);
-  }
-
-  return { aiPlays, legalPlays };
-}
-
 // ── Internal helpers ────────────────────────────────────────────────
 
 /** Add a card to the current trick. */
@@ -239,6 +209,11 @@ async function runAiPlayLoop(
   state: SessionState,
   engine: EnginePort,
 ): Promise<AiPlayEntry[]> {
+  if (!state.contract) {
+    console.error("runAiPlayLoop called without an active contract");
+    return [];
+  }
+
   const aiPlays: AiPlayEntry[] = [];
 
   while (state.currentPlayer && !state.isUserControlledPlay(state.currentPlayer)) {

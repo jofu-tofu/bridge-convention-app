@@ -340,7 +340,10 @@ function formatObservation(obs: BidAction): ObservationView {
   if ("targetSuit" in obs && obs.targetSuit) parts.push(obs.targetSuit);
   if ("strength" in obs && obs.strength) parts.push(obs.strength);
   if ("quality" in obs && obs.quality) parts.push(String(obs.quality));
-  return { act: obs.act, detail: parts.join("(") + (parts.length > 1 ? ")" : "") };
+  const detail = parts.length > 1
+    ? `${parts[0]}(${parts.slice(1).join(", ")})`
+    : parts[0] ?? "";
+  return { act: obs.act, detail };
 }
 
 // ── Shared helpers ──────────────────────────────────────────────────

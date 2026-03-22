@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DebugBidFeedback } from "../../../stores/game.svelte";
-  import { fmtCall } from "./debug-helpers";
+  import { fmtCall, GRADE_COLORS, GRADE_COLOR_FALLBACK } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
@@ -8,20 +8,12 @@
   }
 
   let { feedback }: Props = $props();
-
-  const gradeColors: Record<string, string> = {
-    correct: "bg-green-900/50 text-green-300",
-    "correct-not-preferred": "bg-green-900/40 text-green-200",
-    acceptable: "bg-teal-900/50 text-teal-300",
-    "near-miss": "bg-yellow-900/50 text-yellow-300",
-    incorrect: "bg-red-900/50 text-red-300",
-  };
 </script>
 
 <DebugSection
   title="Teaching"
   badge={feedback?.grade ?? null}
-  badgeColor={feedback ? (gradeColors[feedback.grade] ?? "bg-gray-700 text-gray-300") : "bg-gray-700 text-gray-300"}
+  badgeColor={feedback ? (GRADE_COLORS[feedback.grade] ?? GRADE_COLOR_FALLBACK) : GRADE_COLOR_FALLBACK}
 >
   {#if feedback}
     <div class="text-[10px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-0 mb-1">

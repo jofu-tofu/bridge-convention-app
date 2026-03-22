@@ -28,7 +28,6 @@
     <BridgeTable
       visibleHands={viewport.visibleHands}
       vulnerability={viewport.vulnerability}
-      dealer={viewport.dealer}
     >
       <DeclarerPrompt
         contract={viewport.contract}

@@ -22,6 +22,22 @@
 
   const userSeat = Seat.South;
 
+  /** Layout constants for responsive scaling */
+  const LAYOUT = {
+    DEBUG_PANEL_W: 420,
+    ROOT_FONT_MULTIPLIER: 0.015,
+    FONT_MAX: 28,
+    FONT_MIN: 16,
+    SIDE_PANEL_REM_MAX: 20,
+    SIDE_PANEL_REM_MIN: 13,
+    SIDE_PANEL_WIDTH_RATIO: 0.18,
+    GAP_REM: 0.75,
+    PANEL_FONT_DAMPEN: 0.4,
+    PANEL_FONT_MIN: 12,
+    PADDING: 32,
+    HEADER_H: 64,
+  } as const;
+
   let dealNumber = $state(0);
 
   // Refresh legal plays when current player changes during PLAYING phase
@@ -114,21 +130,27 @@
     gameStore.userBid(call);
   }
 
+  interface PhaseInfo {
+    label: string;
+    color: string;
+    textColor: string;
+  }
+
+  const PHASE_DISPLAY: Record<string, PhaseInfo> = {
+    BIDDING: { label: "Bidding", color: "bg-phase-bidding", textColor: "text-phase-bidding-text" },
+    DECLARER_PROMPT: { label: "Declarer", color: "bg-phase-declarer", textColor: "text-phase-declarer-text" },
+    PLAYING: { label: "Playing", color: "bg-phase-playing", textColor: "text-phase-playing-text" },
+    EXPLANATION: { label: "Review", color: "bg-phase-review", textColor: "text-phase-review-text" },
+  };
+
+  const DEFENDER_PHASE: PhaseInfo = { label: "Defend", color: "bg-phase-playing", textColor: "text-phase-playing-text" };
+
   // Phase display info
   const phaseInfo = $derived.by(() => {
-    if (gameStore.phase === "BIDDING") {
-      return { label: "Bidding", color: "bg-phase-bidding", textColor: "text-phase-bidding-text" };
+    if (gameStore.phase === "DECLARER_PROMPT" && gameStore.promptMode === "defender") {
+      return DEFENDER_PHASE;
     }
-    if (gameStore.phase === "DECLARER_PROMPT") {
-      if (gameStore.promptMode === "defender") {
-        return { label: "Defend", color: "bg-phase-playing", textColor: "text-phase-playing-text" };
-      }
-      return { label: "Declarer", color: "bg-phase-declarer", textColor: "text-phase-declarer-text" };
-    }
-    if (gameStore.phase === "PLAYING") {
-      return { label: "Playing", color: "bg-phase-playing", textColor: "text-phase-playing-text" };
-    }
-    return { label: "Review", color: "bg-phase-review", textColor: "text-phase-review-text" };
+    return PHASE_DISPLAY[gameStore.phase] ?? { label: "Unknown", color: "bg-gray-700", textColor: "text-gray-300" };
   });
 
   // Responsive layout — single source of truth for all sizing.
@@ -140,14 +162,14 @@
   let innerH = $state(768);
   let headerH = $state(0);
 
-  const debugPanelW = $derived(DEV && appStore.debugPanelOpen ? 420 : 0);
+  const debugPanelW = $derived(DEV && appStore.debugPanelOpen ? LAYOUT.DEBUG_PANEL_W : 0);
   const availableW = $derived(innerW - debugPanelW);
 
-  const rootFontSize = $derived(Math.min(28, Math.max(16, availableW * 0.015)));
+  const rootFontSize = $derived(Math.min(LAYOUT.FONT_MAX, Math.max(LAYOUT.FONT_MIN, availableW * LAYOUT.ROOT_FONT_MULTIPLIER)));
   const tableBaseW = 800;
   const tableBaseH = 650;
   const sidePanelW = $derived(
-    Math.min(20 * rootFontSize, Math.max(13 * rootFontSize, availableW * 0.18)),
+    Math.min(LAYOUT.SIDE_PANEL_REM_MAX * rootFontSize, Math.max(LAYOUT.SIDE_PANEL_REM_MIN * rootFontSize, availableW * LAYOUT.SIDE_PANEL_WIDTH_RATIO)),
   );
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
@@ -155,15 +177,15 @@
   const hasTwoPanels = $derived(isDesktop && gameStore.phase === "PLAYING");
   const effectiveSidePanelW = $derived(hasTwoPanels ? sidePanelW * 2 : sidePanelW);
   // gap-3 = 0.75rem per gap; 2 gaps in 3-col layout, 1 gap in 2-col layout
-  const gridGaps = $derived(isDesktop ? (hasTwoPanels ? 2 : 1) * 0.75 * rootFontSize : 0);
+  const gridGaps = $derived(isDesktop ? (hasTwoPanels ? 2 : 1) * LAYOUT.GAP_REM * rootFontSize : 0);
   const tableScale = $derived(
     computeTableScale(availableW, innerH, {
       sidePanel: isDesktop,
       tableW: tableBaseW,
       tableH: tableBaseH,
       sidePanelW: effectiveSidePanelW,
-      headerH: headerH || 64,
-      padding: 32 + gridGaps,
+      headerH: headerH || LAYOUT.HEADER_H,
+      padding: LAYOUT.PADDING + gridGaps,
     }),
   );
 
@@ -171,7 +193,7 @@
   // feel proportional. Uses a dampened curve (0.4 + 0.4*scale) so panels
   // don't shrink as aggressively as the table itself.
   const panelFontPx = $derived(
-    Math.max(12, Math.round(rootFontSize * (0.4 + 0.4 * tableScale))),
+    Math.max(LAYOUT.PANEL_FONT_MIN, Math.round(rootFontSize * (LAYOUT.PANEL_FONT_DAMPEN + LAYOUT.PANEL_FONT_DAMPEN * tableScale))),
   );
 
   const tableOrigin = $derived(isDesktop ? "top left" : "center");
@@ -274,7 +296,6 @@
         onBid={handleBid}
         disabled={!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback}
         isUserTurn={gameStore.isUserTurn}
-        isFeedbackBlocking={gameStore.isFeedbackBlocking}
         onRetry={() => gameStore.retryBid()}
         viewportFeedback={gameStore.viewportFeedback}
         teachingDetail={gameStore.teachingDetail}

@@ -44,7 +44,7 @@
       <span class="text-[10px] text-text-muted font-normal truncate">{preview}</span>
     {/if}
   </summary>
-  <div class="{nested ? 'pl-2 py-0.5' : 'pl-2 py-0.5'}">
+  <div class="pl-2 py-0.5">
     {@render children()}
   </div>
 </details>

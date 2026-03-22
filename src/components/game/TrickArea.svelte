@@ -1,13 +1,12 @@
 <script lang="ts">
   import { Seat } from "../../engine/types";
-  import type { PlayedCard, Suit } from "../../engine/types";
+  import type { PlayedCard } from "../../engine/types";
   import { viewSeat } from "../../core/display/seat-mapping";
   import Card from "../shared/Card.svelte";
 
   interface Props {
     currentTrick: readonly PlayedCard[];
     currentPlayer: Seat | null;
-    trumpSuit: Suit | undefined;
     /** When true, rotate card positions 180°: North's card at bottom, etc. */
     rotated?: boolean;
   }
@@ -15,7 +14,6 @@
   let {
     currentTrick,
     currentPlayer,
-    trumpSuit: _trumpSuit,
     rotated = false,
   }: Props = $props();
 

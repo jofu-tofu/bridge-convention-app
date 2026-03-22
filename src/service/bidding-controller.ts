@@ -300,7 +300,8 @@ async function runAiBidLoop(
     let newAuction: Auction;
     try {
       newAuction = await engine.addCall(state.auction, bidEntry);
-    } catch {
+    } catch (err) {
+      console.error(`AI bid failed for seat ${currentSeat}:`, err);
       break;
     }
     state.auction = newAuction;

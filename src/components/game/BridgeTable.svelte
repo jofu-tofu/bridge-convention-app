@@ -31,8 +31,6 @@
     rotated?: boolean;
     /** Deal vulnerability for visual indicators on seat labels */
     vulnerability?: Vulnerability;
-    /** Dealer seat — shows "D" badge */
-    dealer?: Seat;
   }
 
   let {
@@ -47,7 +45,6 @@
     remainingCards,
     rotated = false,
     vulnerability,
-    dealer: _dealer,
   }: Props = $props();
 
   // ── Mode detection: viewport mode when visibleHands is provided ───
@@ -61,14 +58,15 @@
 
   const southHcp = $derived.by(() => {
     if (useViewport) {
-      const southHand = visibleHands![Seat.South];
+      const southHand = visibleHands?.[Seat.South];
       return southHand ? calculateHcp(southHand) : 0;
     }
-    return calculateHcp(hands![Seat.South]);
+    const southHand = hands?.[Seat.South];
+    return southHand ? calculateHcp(southHand) : 0;
   });
 
   const southDistPoints = $derived.by(() => {
-    const hand = useViewport ? visibleHands![Seat.South] : hands?.[Seat.South];
+    const hand = useViewport ? visibleHands?.[Seat.South] : hands?.[Seat.South];
     if (!hand) return 0;
     return calculateDistributionPoints(getSuitLength(hand)).total;
   });
@@ -81,19 +79,19 @@
 
   function isFaceUp(seat: Seat): boolean {
     if (useViewport) {
-      return seat in visibleHands!;
+      return visibleHands?.[seat] !== undefined;
     }
-    return faceUpSeats!.has(seat);
+    return faceUpSeats?.has(seat) ?? false;
   }
 
   function getCards(seat: Seat): readonly CardType[] {
-    if (remainingCards && remainingCards[seat]) {
+    if (remainingCards?.[seat]) {
       return remainingCards[seat];
     }
     if (useViewport) {
-      return visibleHands![seat]?.cards ?? PLACEHOLDER_CARDS;
+      return visibleHands?.[seat]?.cards ?? PLACEHOLDER_CARDS;
     }
-    return hands![seat].cards;
+    return hands?.[seat]?.cards ?? PLACEHOLDER_CARDS;
   }
 
   function getSeatLegalPlays(seat: Seat): readonly CardType[] {

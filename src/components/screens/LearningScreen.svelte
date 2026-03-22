@@ -123,7 +123,7 @@
           </div>
           <div class="flex items-center gap-3 flex-wrap">
             <!-- Depth mode tabs -->
-            <div class="flex gap-1 bg-[#1c2530] rounded-[--radius-md] p-1" role="tablist" aria-label="Detail level">
+            <div class="flex gap-1 bg-bg-card rounded-[--radius-md] p-1" role="tablist" aria-label="Detail level">
               {#each [
                 { mode: "compact" as const, label: "Compact" },
                 { mode: "study" as const, label: "Study" },
@@ -154,7 +154,7 @@
         <!-- Scrollable content -->
         <div class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-7">
           <!-- About This Convention card -->
-          <section class="bg-[#1c2530] rounded-[--radius-lg] border border-border-subtle">
+          <section class="bg-bg-card rounded-[--radius-lg] border border-border-subtle">
             <button
               class="w-full flex items-center justify-between px-5 py-4 cursor-pointer"
               aria-expanded={!headerCollapsed}

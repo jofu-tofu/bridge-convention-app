@@ -6,6 +6,7 @@
   import { getAppStore } from "../../stores/context";
   import { filterConventions } from "../../core/display/filter-conventions";
   import { displayConventionName } from "../../core/display/format";
+  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../../core/display/vulnerability-labels";
 
   const appStore = getAppStore();
 
@@ -13,13 +14,15 @@
   let activeCategory = $state<ConventionCategory | null>(null);
   let expandedIds = new SvelteSet<string>();
 
+  const allConventions = $derived(listConventions());
+
   const filteredConventions = $derived(
-    filterConventions(listConventions(), searchQuery, activeCategory),
+    filterConventions(allConventions, searchQuery, activeCategory),
   );
 
   const categories = $derived(
     Object.values(ConventionCategory).filter(
-      (cat) => listConventions().some((c) => c.category === cat),
+      (cat) => allConventions.some((c) => c.category === cat),
     ),
   );
 
@@ -45,17 +48,15 @@
   const settingsSummary = $derived.by(() => {
     const parts: string[] = [];
     const dist = appStore.drillTuning.vulnerabilityDistribution;
-    const vulnKeys = ["none", "ours", "theirs", "both"] as const;
-    const vulnLabels: Record<string, string> = { none: "None", ours: "NS", theirs: "EW", both: "Both" };
-    const active = vulnKeys.filter((k) => dist[k] > 0);
+    const active = VULN_KEYS.filter((k) => dist[k] > 0);
     if (active.length === 4) {
       parts.push("All vulnerabilities");
     } else {
-      parts.push(active.map((k) => vulnLabels[k]).join(", ") + " vulnerable");
+      parts.push(active.map((k) => VULN_LABELS[k]).join(", ") + " vulnerable");
     }
     parts.push(appStore.opponentMode === "natural" ? "Natural opponents" : "Silent opponents");
     if (appStore.drillTuning.includeOffConvention) {
-      const rate = Math.round((appStore.drillTuning.offConventionRate ?? 0.3) * 100);
+      const rate = Math.round((appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE) * 100);
       parts.push(`${rate}% off-convention`);
     }
     return parts.join(" · ");
