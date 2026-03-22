@@ -8,7 +8,7 @@ import { listSystemBundles } from "../../conventions/definitions/system-registry
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
-import type { Flags, ConventionSpec, ConventionBundle, Vulnerability, Auction, Call, Seat, Deal } from "../shared";
+import type { Flags, ConventionSpec, ConventionBundle, Vulnerability, Auction, Call, Seat, Deal, BaseSystemId } from "../shared";
 import {
   callKey,
   optionalNumericArg,
@@ -77,7 +77,7 @@ function buildForwardAuction(
   return { auction: { entries, isComplete: false }, reached: false };
 }
 
-export function runSelftest(flags: Flags, vuln: Vulnerability): void {
+export function runSelftest(flags: Flags, vuln: Vulnerability, baseSystem: BaseSystemId): void {
   const bundleId = flags["bundle"] as string | undefined;
   const all = flags["all"] === true;
   const seed = optionalNumericArg(flags, "seed") ?? 42;
@@ -93,12 +93,12 @@ export function runSelftest(flags: Flags, vuln: Vulnerability): void {
     for (const bundle of listSystemBundles()) {
       if (bundle.internal) continue;
       if (!bundle.ruleModules || bundle.ruleModules.length === 0) continue;
-      const spec = resolveSpec(bundle.id);
+      const spec = resolveSpec(bundle.id, baseSystem);
       specs.push({ id: bundle.id, spec, bundle });
     }
   } else {
-    const spec = resolveSpec(bundleId!);
-    const bundle = resolveBundleWithRules(bundleId!);
+    const spec = resolveSpec(bundleId!, baseSystem);
+    const bundle = resolveBundleWithRules(bundleId!, baseSystem);
     specs.push({ id: bundleId!, spec, bundle });
   }
 

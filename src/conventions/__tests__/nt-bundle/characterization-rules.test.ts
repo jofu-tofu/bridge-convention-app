@@ -19,7 +19,7 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, Vulnerability } from "../../../engine/types";
-import { ntSystem } from "../../definitions/system-registry";
+import { ntBundle } from "../../definitions/system-registry";
 import { createSharedFactCatalog, collectMatchingClaims } from "../../core";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { createBiddingContext } from "../../core/context-factory";
@@ -29,7 +29,7 @@ import type { AuctionContext } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import type { RuleModule } from "../../core/rule-module";
 
-const ruleModules: readonly RuleModule[] = ntSystem.ruleModules!;
+const ruleModules: readonly RuleModule[] = ntBundle.ruleModules!;
 
 // Build fact catalog from rule module fact extensions
 const moduleFactExtensions = ruleModules

@@ -168,10 +168,10 @@
   );
 
   // Panel font: scales with the table so text in panels and on the table
-  // feel proportional. Uses a dampened curve (0.5 + 0.5*scale) so panels
+  // feel proportional. Uses a dampened curve (0.4 + 0.4*scale) so panels
   // don't shrink as aggressively as the table itself.
   const panelFontPx = $derived(
-    Math.max(12, Math.round(rootFontSize * (0.5 + 0.5 * tableScale))),
+    Math.max(12, Math.round(rootFontSize * (0.4 + 0.4 * tableScale))),
   );
 
   const tableOrigin = $derived(isDesktop ? "top left" : "center");

@@ -4,12 +4,15 @@
 // at each step. Reports coverage and violations.
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../../conventions/core";
 import type { AuctionContext } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
 import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import { collectMatchingClaims, advanceLocalFsm } from "../../conventions/core";
 import { buildObservationLogViaRules, protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../../core/contracts/system-config";
 import { specFromBundle } from "../../conventions/definitions/system-registry";
 import { callKey } from "../../engine/call-helpers";
 import type { Call, Seat } from "../../engine/types";
@@ -37,6 +40,7 @@ export interface ExploreConfig {
   readonly seed: number;
   readonly trials: number;
   readonly invariants?: readonly string[];
+  readonly baseSystem?: BaseSystemId;
 }
 
 const EMPTY_RESULT = (bundle: ConventionBundle, config: ExploreConfig): ExplorationResult => ({
@@ -59,7 +63,8 @@ export function exploreBundle(
   modules: readonly RuleModule[],
   config: ExploreConfig,
 ): ExplorationResult {
-  const spec = specFromBundle(bundle);
+  const systemConfig = getSystemConfig(config.baseSystem ?? BASE_SYSTEM_SAYC);
+  const spec = specFromBundle(bundle, systemConfig);
   if (!spec) return EMPTY_RESULT(bundle, config);
 
   // Filter invariants if specified

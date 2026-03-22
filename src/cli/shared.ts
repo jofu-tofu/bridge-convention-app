@@ -22,12 +22,15 @@ import type {
   Card,
 } from "../engine/types";
 import type { ConventionSpec } from "../conventions/core";
-import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../conventions/core";
 import type { BiddingContext, BidHistoryEntry } from "../core/contracts/bidding";
 import type { BiddingStrategy } from "../core/contracts/bidding";
 import type { OpponentMode } from "../core/contracts/drill";
 import type { DrillSettings } from "../core/contracts/drill";
 import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
+import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../core/contracts/system-config";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import { buildBiddingViewport } from "../core/viewport/build-viewport";
 
@@ -36,7 +39,7 @@ import { buildBiddingViewport } from "../core/viewport/build-viewport";
 export { Seat, Vulnerability };
 export { callKey, parsePatternCall, getLegalCalls, evaluateHand };
 export { buildBiddingViewport };
-export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry, DrillSettings };
+export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry, DrillSettings, BaseSystemId };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -94,6 +97,22 @@ export function parseVulnerability(args: Flags): Vulnerability {
   const mapped = VULN_MAP[val.toLowerCase()];
   if (mapped === undefined) {
     console.error(`Invalid --vuln value: "${val}" (expected: none, ns, ew, both)`);
+    process.exit(2);
+  }
+  return mapped;
+}
+
+const SYSTEM_MAP: Record<string, BaseSystemId> = {
+  sayc: BASE_SYSTEM_SAYC,
+  "two-over-one": "two-over-one",
+};
+
+export function parseBaseSystem(args: Flags): BaseSystemId {
+  const val = args["system"];
+  if (val === undefined || val === true) return BASE_SYSTEM_SAYC;
+  const mapped = SYSTEM_MAP[val.toLowerCase()];
+  if (mapped === undefined) {
+    console.error(`Invalid --system value: "${val}" (expected: sayc, two-over-one)`);
     process.exit(2);
   }
   return mapped;
@@ -224,9 +243,9 @@ export function printAvailableBundles(): void {
   }
 }
 
-export function resolveSpec(bundleId: string): ConventionSpec {
+export function resolveSpec(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionSpec {
   const bundle = resolveBundle(bundleId);
-  const spec = specFromBundle(bundle);
+  const spec = specFromBundle(bundle, getSystemConfig(baseSystem));
   if (!spec) {
     console.error(`No ConventionSpec derivable for "${bundleId}"`);
     process.exit(2);
@@ -342,12 +361,12 @@ export function partnerOf(seat: Seat): Seat {
 
 /** Resolve a ConventionBundle, falling back to spec derivation for sub-bundle IDs.
  *  Returns the bundle and its ruleModules (required for rule enumeration). */
-export function resolveBundleWithRules(bundleId: string): ConventionBundle {
+export function resolveBundleWithRules(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
   const bundle = resolveBundle(bundleId);
   if (!bundle.ruleModules || bundle.ruleModules.length === 0) {
     // Sub-bundle IDs (e.g. nt-stayman, nt-transfers) may not have ruleModules
     // directly. Derive a spec which attaches parent ruleModules.
-    const spec = specFromBundle(bundle);
+    const spec = specFromBundle(bundle, getSystemConfig(baseSystem));
     if (spec?.ruleModules && spec.ruleModules.length > 0) {
       return { ...bundle, ruleModules: spec.ruleModules };
     }

@@ -24,6 +24,7 @@ import { startDrill as bootstrapStartDrill } from "../bootstrap/start-drill";
 import { getConvention, listConventions as listConventionConfigs } from "../conventions/core";
 import { getBundle, resolveConventionForSystem } from "../conventions/core/bundle";
 import { getSystemConfig } from "../core/contracts/system-config";
+import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import type { ConventionConfig } from "../conventions/core";
 import type { DevServicePort } from "./port";
@@ -103,6 +104,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         convention = resolveConventionForSystem(baseConvention, convBundle, systemConfig);
       }
 
+      const baseSystemId = (config.baseSystemId as BaseSystemId) ?? BASE_SYSTEM_SAYC;
       const bundle = await bootstrapStartDrill(
         engine,
         convention,
@@ -110,6 +112,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         undefined,
         config.seed,
         config.drill,
+        baseSystemId,
       );
 
       const coordinator = createInferenceCoordinator();

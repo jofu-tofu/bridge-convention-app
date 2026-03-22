@@ -163,7 +163,7 @@ const DONT_FACTS: readonly FactDefinition[] = [
     id: "module.dont.hasHeartSupport",
     layer: "module-derived",
     world: "acting-hand",
-    description: "3+ hearts",
+    description: "3+ hearts, or equal length in both majors (2-2)",
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: ["suitIdentity", "suitLength"],
@@ -357,8 +357,12 @@ const DONT_EVALUATORS = new Map<string, FactEvaluatorFn>([
   }],
 
   // Advancer support facts
-  ["module.dont.hasHeartSupport", (h, _ev, _m) =>
-    fv("module.dont.hasHeartSupport", suitLengthOf(h, Suit.Hearts) >= 3)],
+  ["module.dont.hasHeartSupport", (h, _ev, _m) => {
+    const hearts = suitLengthOf(h, Suit.Hearts);
+    const spades = suitLengthOf(h, Suit.Spades);
+    // Accept 3+ hearts, or equal length in both majors (pass is fine with 2-2)
+    return fv("module.dont.hasHeartSupport", hearts >= 3 || (hearts >= 2 && hearts >= spades));
+  }],
 
   ["module.dont.hasSpadeSupport", (h, _ev, _m) =>
     fv("module.dont.hasSpadeSupport", suitLengthOf(h, Suit.Spades) >= 3)],

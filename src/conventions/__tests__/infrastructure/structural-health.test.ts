@@ -14,7 +14,7 @@ import "../../../conventions";
 import { listSystemBundles } from "../../../conventions/definitions/system-registry";
 import { lintModule } from "../../../cli/verify/lint";
 import { analyzeBundle } from "../../../cli/verify/interfere";
-import type { ConventionBundle } from "../../../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../../core";
 import type { LintDiagnostic } from "../../../cli/verify/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────

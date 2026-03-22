@@ -10,12 +10,12 @@ import {
   getPlaythroughRevealSteps,
 } from "../../evaluation";
 import type { Flags, OpponentMode ,
-  Vulnerability} from "../shared";
+  Vulnerability, BaseSystemId} from "../shared";
 import {
   requireArg, optionalNumericArg,
 } from "../shared";
 
-export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: OpponentMode): void {
+export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: OpponentMode, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const stepIdx = optionalNumericArg(flags, "step");
@@ -23,13 +23,13 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   const reveal = flags["reveal"] === true;
 
   if (reveal) {
-    const { totalSteps, steps, atomsCovered } = getPlaythroughRevealSteps(bundleId, seed, vuln, opponentMode);
+    const { totalSteps, steps, atomsCovered } = getPlaythroughRevealSteps(bundleId, seed, vuln, opponentMode, baseSystem);
     console.log(JSON.stringify({ seed, totalSteps, steps, atomsCovered }, null, 2));
     return;
   }
 
   if (stepIdx === undefined) {
-    const { handle, firstStep } = startPlaythrough(bundleId, seed, vuln, opponentMode);
+    const { handle, firstStep } = startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
     console.log(JSON.stringify({
       seed,
       totalSteps: handle.totalUserSteps,
@@ -39,8 +39,8 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   }
 
   if (!bidStr || bidStr === "true") {
-    const viewport = getPlaythroughStepViewport(bundleId, seed, stepIdx, vuln, opponentMode);
-    const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode);
+    const viewport = getPlaythroughStepViewport(bundleId, seed, stepIdx, vuln, opponentMode, baseSystem);
+    const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
     console.log(JSON.stringify({
       seed,
       totalSteps: handle.totalUserSteps,
@@ -52,13 +52,13 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   // Bid submitted: grade + next viewport
   let result;
   try {
-    result = gradePlaythroughBid(bundleId, seed, stepIdx, bidStr, vuln, opponentMode);
+    result = gradePlaythroughBid(bundleId, seed, stepIdx, bidStr, vuln, opponentMode, baseSystem);
   } catch {
     console.error(`Invalid bid: "${bidStr}"`);
     process.exit(2);
   }
 
-  const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode);
+  const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
 
   console.log(JSON.stringify({
     seed,

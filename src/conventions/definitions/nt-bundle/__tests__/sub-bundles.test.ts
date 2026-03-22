@@ -64,14 +64,14 @@ describe("NT sub-bundle profiles", () => {
   const auctionAfter1NT = buildAuction(Seat.North, ["1NT", "P"]);
 
   describe("full NT profile (reference)", () => {
-    it("activates all three modules after 1NT P", () => {
+    it("activates all four modules after 1NT P", () => {
       const result = resolveActiveModules(
         NT_SAYC_PROFILE,
         auctionAfter1NT,
         Seat.South,
         ntCapabilities,
       );
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers"]);
+      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
     });
   });
 
@@ -152,7 +152,7 @@ describe("NT sub-bundle profiles", () => {
       );
 
       // Full profile = union of both sub-profiles (with natural-nt in both)
-      expect(fullResult).toHaveLength(3);
+      expect(fullResult).toHaveLength(4);
       expect(staymanResult).toHaveLength(2);
       expect(transferResult).toHaveLength(2);
 

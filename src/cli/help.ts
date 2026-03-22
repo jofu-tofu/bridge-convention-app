@@ -7,6 +7,7 @@ export function printUsage(): void {
   console.error("");
   console.error("Subcommands:");
   console.error("  bundles                                    List all available bundles (JSON)");
+  console.error("  systems                                    List all available base systems (JSON)");
   console.error("  describe  --bundle=<id>                    Inspect a bundle (atoms, depth, coverage)");
   console.error("  list      --bundle=<id>                    List all coverage atoms (JSON lines)");
   console.error("  eval      --bundle=<id> --atom=<id> --seed=N [--bid=<bid>]");
@@ -19,6 +20,7 @@ export function printUsage(): void {
   console.error("  help                                       Show this help");
   console.error("");
   console.error("Global settings:");
+  console.error("  --system=<sayc|two-over-one>     Base bidding system (default: sayc)");
   console.error("  --vuln=<none|ns|ew|both|mixed>   Vulnerability (default: none)");
   console.error("  --opponents=<natural|none|mixed>  Opponent bidding mode (default: natural)");
   console.error("  --help                           Show help (global or per-subcommand)");
@@ -43,6 +45,15 @@ export function printSubcommandHelp(cmd: string): void {
       console.error("");
       console.error("Returns JSON array of bundles with id, name, description, atomCount.");
       console.error("Use this for self-discovery: find valid bundle IDs before calling other commands.");
+      break;
+
+    case "systems":
+      console.error("systems — List all available base bidding systems.");
+      console.error("");
+      console.error("Usage: main.ts systems");
+      console.error("");
+      console.error("Returns JSON array of systems with id, label, shortLabel.");
+      console.error("Use system IDs with --system=<id> to test under different bidding systems.");
       break;
 
     case "describe":

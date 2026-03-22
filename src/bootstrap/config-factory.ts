@@ -2,6 +2,8 @@ import { Seat } from "../engine/types";
 import type { BiddingStrategy } from "../core/contracts";
 import type { DrillConfig } from "./types";
 import type { OpponentMode } from "./types";
+import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../core/contracts/system-config";
 import type { InferenceConfig } from "../inference/types";
 import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
@@ -20,7 +22,7 @@ const NS_SEATS = new Set([Seat.North, Seat.South]);
 export function createProtocolDrillConfig(
   conventionId: string,
   userSeat: Seat,
-  options?: { opponentMode?: OpponentMode },
+  options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId },
 ): DrillConfig {
   const bundle = getSystemBundle(conventionId);
   if (!bundle) {
@@ -28,7 +30,8 @@ export function createProtocolDrillConfig(
       `No bundle registered for "${conventionId}".`,
     );
   }
-  const spec = specFromBundle(bundle);
+  const systemConfig = getSystemConfig(options.baseSystem);
+  const spec = specFromBundle(bundle, systemConfig);
   if (!spec) {
     throw new Error(
       `No ConventionSpec derivable for "${conventionId}".`,

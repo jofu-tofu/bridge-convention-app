@@ -12,6 +12,9 @@ import type { VulnerabilityDistribution, DrillSettings } from "./types";
 import { DEFAULT_DRILL_TUNING } from "./types";
 import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./session";
+import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../core/contracts/system-config";
 import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createInferenceEngine } from "../inference/inference-engine";
@@ -78,9 +81,12 @@ export async function startDrill(
   rng?: () => number,
   seed?: number,
   options?: Partial<DrillSettings>,
+  baseSystem?: BaseSystemId,
 ): Promise<DrillBundle> {
+  const resolvedSystem = baseSystem ?? BASE_SYSTEM_SAYC;
   const config = createProtocolDrillConfig(convention.id, userSeat, {
     opponentMode: options?.opponentMode,
+    baseSystem: resolvedSystem,
   });
   const session = createDrillSession(config);
 
@@ -89,7 +95,7 @@ export async function startDrill(
   if (!bundle) {
     throw new Error(`No bundle registered for "${convention.id}".`);
   }
-  const spec = specFromBundle(bundle);
+  const spec = specFromBundle(bundle, getSystemConfig(resolvedSystem));
   if (!spec) {
     throw new Error(`No ConventionSpec derivable for "${convention.id}".`);
   }

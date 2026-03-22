@@ -26,6 +26,8 @@ import {
   OPENER_PLACE_SPADES_SURFACES,
   OPENER_ACCEPT_INVITE_HEARTS_SURFACES,
   OPENER_ACCEPT_INVITE_SPADES_SURFACES,
+  OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES,
+  OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES,
 } from "./jacoby-transfers";
 
 type Phase =
@@ -38,7 +40,9 @@ type Phase =
   | "placing-hearts"
   | "placing-spades"
   | "invited-hearts"
-  | "invited-spades";
+  | "invited-spades"
+  | "invite-raised-hearts"
+  | "invite-raised-spades";
 
 // R1 entry surfaces: transfer bids (2D, 2H)
 const transferR1Surfaces = jacobyTransfersModule.entrySurfaces;
@@ -95,6 +99,10 @@ export const jacobyTransfersRules: RuleModule<Phase> = {
       // accepted → placing when responder places 3NT (signoff in notrump)
       { from: "accepted-hearts", to: "placing-hearts", on: { act: "place", strain: "notrump" } },
       { from: "accepted-spades", to: "placing-spades", on: { act: "place", strain: "notrump" } },
+      // accepted → invite-raised when responder bids 3M (suit invite raise with 6+ cards)
+      // Must appear BEFORE the generic invite transition so the more-specific pattern matches first.
+      { from: "accepted-hearts", to: "invite-raised-hearts", on: { act: "raise", strength: "invitational", feature: "heldSuit" } },
+      { from: "accepted-spades", to: "invite-raised-spades", on: { act: "raise", strength: "invitational", feature: "heldSuit" } },
       // accepted → invited when responder raises with invitational strength (2NT)
       { from: "accepted-hearts", to: "invited-hearts", on: { act: "raise", strength: "invitational" } },
       { from: "accepted-spades", to: "invited-spades", on: { act: "raise", strength: "invitational" } },
@@ -154,6 +162,16 @@ export const jacobyTransfersRules: RuleModule<Phase> = {
     {
       match: { local: "invited-spades", turn: "opener" },
       claims: OPENER_ACCEPT_INVITE_SPADES_SURFACES.map((s) => ({ surface: s })),
+    },
+    // Opener invite-raise accept/decline after hearts 3H (accept = 4H, terminal)
+    {
+      match: { local: "invite-raised-hearts", turn: "opener" },
+      claims: OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES.map((s) => ({ surface: s })),
+    },
+    // Opener invite-raise accept/decline after spades 3S (accept = 4S, terminal)
+    {
+      match: { local: "invite-raised-spades", turn: "opener" },
+      claims: OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES.map((s) => ({ surface: s })),
     },
   ],
   facts: jacobyTransfersModule.facts,

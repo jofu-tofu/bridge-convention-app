@@ -48,6 +48,30 @@ describe("getSystemConfig", () => {
   });
 });
 
+describe("suit response config", () => {
+  it("SAYC: 2-level new suit requires 10 HCP, one-round forcing", () => {
+    expect(SAYC_SYSTEM_CONFIG.suitResponse.twoLevelMin).toBe(10);
+    expect(SAYC_SYSTEM_CONFIG.suitResponse.twoLevelForcingDuration).toBe("one-round");
+  });
+
+  it("2/1: 2-level new suit requires 12 HCP, game forcing", () => {
+    expect(TWO_OVER_ONE_SYSTEM_CONFIG.suitResponse.twoLevelMin).toBe(12);
+    expect(TWO_OVER_ONE_SYSTEM_CONFIG.suitResponse.twoLevelForcingDuration).toBe("game");
+  });
+});
+
+describe("1NT response after major config", () => {
+  it("SAYC: non-forcing, max 10 HCP", () => {
+    expect(SAYC_SYSTEM_CONFIG.oneNtResponseAfterMajor.forcing).toBe("non-forcing");
+    expect(SAYC_SYSTEM_CONFIG.oneNtResponseAfterMajor.maxHcp).toBe(10);
+  });
+
+  it("2/1: semi-forcing, max 12 HCP", () => {
+    expect(TWO_OVER_ONE_SYSTEM_CONFIG.oneNtResponseAfterMajor.forcing).toBe("semi-forcing");
+    expect(TWO_OVER_ONE_SYSTEM_CONFIG.oneNtResponseAfterMajor.maxHcp).toBe(12);
+  });
+});
+
 describe("threshold invariants", () => {
   it("SAYC responder thresholds are ordered: inviteMin < inviteMax < gameMin < slamMin", () => {
     const { inviteMin, inviteMax, gameMin, slamMin } =

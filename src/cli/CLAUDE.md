@@ -9,6 +9,7 @@ Includes a **compositional verification framework** (`verify` namespace) for cat
 ```
 ── Self-discovery ─────────────────────────────────────────────
   bundles                                    List all available bundles (JSON)
+  systems                                    List all available base systems (JSON)
   describe  --bundle=<id>                    Inspect a bundle (atoms, depth, coverage)
 
 ── Planning & diagnostics ──────────────────────────────────────
@@ -30,7 +31,7 @@ Includes a **compositional verification framework** (`verify` namespace) for cat
   <subcommand> --help                        Show subcommand help
 ```
 
-Global settings: `--vuln=<none|ns|ew|both>`, `--opponents=<natural|none>`, `--help`.
+Global settings: `--system=<sayc|two-over-one>`, `--vuln=<none|ns|ew|both>`, `--opponents=<natural|none>`, `--help`.
 
 Exit codes: 0=correct/pass, 1=wrong/fail, 2=arg error.
 Same seed = same deal across all commands. Deterministic (Mulberry32 PRNG).
@@ -169,6 +170,9 @@ Playthrough-based testing over-covers shallow atoms (depth 0 is hit on every see
 Atoms include both opener (North) and responder (South) states. The BFS path determines which seat is active. In playthroughs, both convention-player bids are presented as steps.
 
 ## Settings Flags
+
+### `--system=<sayc|two-over-one>`
+Selects the base bidding system. Affects HCP thresholds, forcing durations, and system-fact-gated surface evaluation. Default: `sayc`. The system ID is threaded through all spec resolution, strategy creation, and evaluation — no backend code defaults silently.
 
 ### `--vuln=<none|ns|ew|both>`
 Sets vulnerability for deal generation and bidding context. Maps to the app's `VulnerabilityDistribution` setting — the CLI uses explicit values rather than weighted random distribution since it's about deterministic, reproducible evaluation. Default: `none`.

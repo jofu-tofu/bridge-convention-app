@@ -288,7 +288,7 @@ describe("normalizeIntent", () => {
 
     it("normalizes InviteRaise with suit", () => {
       expect(normalize("InviteRaise", { suit: "diamonds" })).toEqual([
-        { act: "raise", strain: "diamonds", strength: "invitational" },
+        { act: "raise", strain: "diamonds", strength: "invitational", feature: "heldSuit" },
       ]);
     });
 

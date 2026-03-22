@@ -538,6 +538,84 @@ export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly BidMeaning[] = [
   }, TRANSFER_CTX),
 ];
 
+// ─── Opener invite-raise acceptance surfaces (after responder's 3M invite raise) ──
+// After 3H/3S (6+ cards, invitational), opener knows there's a guaranteed
+// major fit (opener has 2-3+ in the suit from 1NT balanced). Accept = 4M, decline = Pass.
+
+export const OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES: readonly BidMeaning[] = [
+  createSurface({
+    meaningId: "transfer:accept-invite-raise-hearts",
+    semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
+    encoding: bid(4, BidSuit.Hearts),
+    clauses: [
+      {
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
+        operator: "boolean",
+        value: true,
+        description: "Opener has 16-17 HCP (not minimum)",
+      },
+    ],
+    band: "should",
+    intraModuleOrder: 0,
+    sourceIntent: { type: "AcceptInvite", params: { suit: "hearts" } },
+    teachingLabel: "4H (accept invite, heart fit guaranteed)",
+  }, TRANSFER_CTX),
+  createSurface({
+    meaningId: "transfer:decline-invite-raise-hearts",
+    semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
+    encoding: { type: "pass" },
+    clauses: [
+      {
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
+        operator: "boolean",
+        value: false,
+        description: "Opener has 15 HCP (minimum)",
+      },
+    ],
+    band: "should",
+    intraModuleOrder: 1,
+    sourceIntent: { type: "DeclineInvite", params: {} },
+    teachingLabel: "Pass (decline invite, minimum)",
+  }, TRANSFER_CTX),
+];
+
+export const OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES: readonly BidMeaning[] = [
+  createSurface({
+    meaningId: "transfer:accept-invite-raise-spades",
+    semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
+    encoding: bid(4, BidSuit.Spades),
+    clauses: [
+      {
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
+        operator: "boolean",
+        value: true,
+        description: "Opener has 16-17 HCP (not minimum)",
+      },
+    ],
+    band: "should",
+    intraModuleOrder: 0,
+    sourceIntent: { type: "AcceptInvite", params: { suit: "spades" } },
+    teachingLabel: "4S (accept invite, spade fit guaranteed)",
+  }, TRANSFER_CTX),
+  createSurface({
+    meaningId: "transfer:decline-invite-raise-spades",
+    semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
+    encoding: { type: "pass" },
+    clauses: [
+      {
+        factId: SYSTEM_OPENER_NOT_MINIMUM,
+        operator: "boolean",
+        value: false,
+        description: "Opener has 15 HCP (minimum)",
+      },
+    ],
+    band: "should",
+    intraModuleOrder: 1,
+    sourceIntent: { type: "DeclineInvite", params: {} },
+    teachingLabel: "Pass (decline invite, minimum)",
+  }, TRANSFER_CTX),
+];
+
 // ─── Facts ───────────────────────────────────────────────────
 
 const TRANSFER_FACTS: readonly FactDefinition[] = [
@@ -679,6 +757,8 @@ export function createJacobyTransfersModule(sys: SystemConfig) {
       { groupId: "opener-place-after-transfer-spades", surfaces: OPENER_PLACE_SPADES_SURFACES },
       { groupId: "opener-accept-invite-hearts", surfaces: OPENER_ACCEPT_INVITE_HEARTS_SURFACES },
       { groupId: "opener-accept-invite-spades", surfaces: OPENER_ACCEPT_INVITE_SPADES_SURFACES },
+      { groupId: "opener-accept-invite-raise-hearts", surfaces: OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES },
+      { groupId: "opener-accept-invite-raise-spades", surfaces: OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES },
     ],
 
     facts: createTransferFacts(sys),

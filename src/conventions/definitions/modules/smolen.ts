@@ -281,7 +281,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     id: "module.smolen.hasFiveHearts",
     layer: "module-derived",
     world: "acting-hand",
-    description: "Hand has 5+ hearts (for 3♠ Smolen showing long hearts)",
+    description: "Hand has exactly 5 hearts (for 3♠ Smolen showing long hearts)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.hearts"],
     constrainsDimensions: ["suitIdentity", "suitLength"],
@@ -290,7 +290,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
     id: "module.smolen.hasFiveSpades",
     layer: "module-derived",
     world: "acting-hand",
-    description: "Hand has 5+ spades (for 3♥ Smolen showing long spades)",
+    description: "Hand has exactly 5 spades (for 3♥ Smolen showing long spades)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades"],
     constrainsDimensions: ["suitIdentity", "suitLength"],
@@ -335,9 +335,9 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
 
 const SMOLEN_EVALUATORS = new Map<string, FactEvaluatorFn>([
   ["module.smolen.hasFiveHearts", (_h, _ev, m) =>
-    fv("module.smolen.hasFiveHearts", num(m, "hand.suitLength.hearts") >= 5)],
+    fv("module.smolen.hasFiveHearts", num(m, "hand.suitLength.hearts") === 5)],
   ["module.smolen.hasFiveSpades", (_h, _ev, m) =>
-    fv("module.smolen.hasFiveSpades", num(m, "hand.suitLength.spades") >= 5)],
+    fv("module.smolen.hasFiveSpades", num(m, "hand.suitLength.spades") === 5)],
   ["module.smolen.hasFourSpades", (_h, _ev, m) =>
     fv("module.smolen.hasFourSpades", num(m, "hand.suitLength.spades") === 4)],
   ["module.smolen.hasFourHearts", (_h, _ev, m) =>

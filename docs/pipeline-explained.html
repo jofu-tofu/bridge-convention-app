@@ -84,7 +84,7 @@
   <ul class="space-y-2 text-muted">
     <li><a href="#big-picture" class="block hover:text-accent">The Big Picture</a></li>
     <li><a href="#layer-1" class="block hover:text-accent">Layer 1: Config & Bundle</a></li>
-    <li><a href="#layer-2" class="block hover:text-accent">Layer 2: Meaning Surfaces</a></li>
+    <li><a href="#layer-2" class="block hover:text-accent">Layer 2: Bid Meanings</a></li>
     <li><a href="#layer-3" class="block hover:text-accent">Layer 3: The Pipeline</a></li>
     <li><a href="#layer-4" class="block hover:text-accent">Layer 4: Convention Protocol</a></li>
     <li><a href="#end-to-end" class="block hover:text-accent">End-to-End Walk-through</a></li>
@@ -116,7 +116,7 @@
           <p class="text-sm text-muted mt-1">Defines <em>what</em> conventions exist and packages them into usable units.</p>
         </div>
         <div class="layer-card border-emerald-500 p-4">
-          <p class="font-bold text-emerald-700">Layer 2 &mdash; Meaning Surfaces</p>
+          <p class="font-bold text-emerald-700">Layer 2 &mdash; Bid Meanings</p>
           <p class="text-sm text-muted mt-1">Each possible bid meaning is described as a set of hand requirements.</p>
         </div>
         <div class="layer-card border-amber-600 p-4">
@@ -132,7 +132,7 @@
       <pre class="mermaid">
 flowchart LR
   A["Convention Modules\n(LEGO bricks)"] --> B["Bundle\n(kit box)"]
-  B --> C["Active Surfaces\n(candidate bids)"]
+  B --> C["Active Bid Meanings\n(candidates)"]
   C --> D["Pipeline\n(screening + judging)"]
   D --> E["Recommended Bid"]
       </pre>
@@ -155,7 +155,7 @@ flowchart LR
       <p>A <strong>module</strong> (<code>ConventionModule</code>) is a self-contained unit of bidding logic. Each module owns:</p>
 
       <ul class="list-disc pl-6 space-y-1">
-        <li><strong>Meaning surfaces</strong> &mdash; the possible bids it contributes (covered in Layer 2)</li>
+        <li><strong>Bid meanings</strong> &mdash; the possible bids it contributes (covered in Layer 2)</li>
         <li><strong>Facts</strong> &mdash; hand properties it cares about (e.g., "has a 4-card major")</li>
         <li><strong>FSM states</strong> &mdash; where the conversation is in this module's flow</li>
         <li><strong>Teaching metadata</strong> &mdash; explanations for the UI</li>
@@ -213,15 +213,17 @@ flowchart TD
           <tr><td><code>surfaceRouter</code></td><td>Function that filters surfaces based on the current auction</td></tr>
           <tr><td><code>conversationMachine</code></td><td>A state machine that tracks the conversation flow across modules</td></tr>
           <tr><td><code>explanationCatalog</code></td><td>Library of teaching explanations for the UI</td></tr>
-          <tr><td><code>pedagogicalRelations</code></td><td>Cross-module teaching links (e.g., "this bid is stronger than that bid")</td></tr>
+          <tr><td><code>teachingRelations</code></td><td>Cross-module teaching links (e.g., "this bid is stronger than that bid")</td></tr>
         </tbody>
       </table>
 
-      <h3 id="config" class="mt-8 mb-3">Convention Config: The Album Cover</h3>
+      <h3 id="config" class="mt-8 mb-3">Convention Config: Auto-Derived from the Bundle</h3>
 
       <p><code>ConventionConfig</code> is the lightweight, UI-facing metadata extracted from a bundle. It's what the convention picker screen displays: name, description, category.</p>
 
-      <p>The flow is always: <strong>Modules</strong> &rarr; <code>bundleFromSystem()</code> &rarr; <strong>Bundle</strong> &rarr; <code>createConventionConfigFromBundle()</code> &rarr; <strong>Config</strong> &rarr; registered globally.</p>
+      <p>The config is <strong>auto-derived</strong> &mdash; there's no separate config file. When you call <code>registerBundle()</code>, it automatically extracts a <code>ConventionConfig</code> via <code>createConventionConfigFromBundle()</code> and registers both.</p>
+
+      <p class="mt-2">The flow is: <strong>Modules</strong> &rarr; <code>buildBundle()</code> &rarr; <strong>Bundle</strong> &rarr; <code>registerBundle()</code> &rarr; auto-derives <strong>Config</strong>.</p>
 
       <details class="mt-4 bg-white p-4 rounded-lg shadow-sm border border-border">
         <summary>composeBundles() &mdash; merging multiple kits</summary>
@@ -233,15 +235,15 @@ flowchart TD
     <!-- LAYER 2: MEANING SURFACES -->
     <!-- ================================================================ -->
     <section id="layer-2" class="mb-16">
-      <h2 class="text-accent mb-4">Layer 2: Meaning Surfaces</h2>
+      <h2 class="text-accent mb-4">Layer 2: Bid Meanings</h2>
 
       <p><strong>Problem this solves:</strong> How do you formally describe what a bid <em>means</em> so the system can evaluate whether it applies to a given hand?</p>
 
       <div class="analogy-box bg-green-light mt-4 mb-6">
-        <p><strong>Analogy:</strong> A <code>MeaningSurface</code> is like a <strong>job posting</strong>. It says: "I am the bid 2C, and I'm the right choice IF you have 8+ HCP AND a 4-card major AND no 5-card major." The hand is the applicant; the clauses are the job requirements.</p>
+        <p><strong>Analogy:</strong> A <code>BidMeaning</code> is like a <strong>job posting</strong>. It says: "I am the bid 2C, and I'm the right choice IF you have 8+ HCP AND a 4-card major AND no 5-card major." The hand is the applicant; the clauses are the job requirements.</p>
       </div>
 
-      <h3 class="mt-6 mb-3">Anatomy of a MeaningSurface</h3>
+      <h3 class="mt-6 mb-3">Anatomy of a BidMeaning</h3>
 
       <p>Every surface has five key parts:</p>
 
@@ -259,7 +261,7 @@ flowchart TD
           <p><strong>4. Ranking</strong> &mdash; how important this bid is. The <code>recommendationBand</code> is <code>"must"</code>, <code>"should"</code>, <code>"may"</code>, or <code>"avoid"</code>. Specificity (how narrow the requirements are) is calculated automatically by the pipeline.</p>
         </div>
         <div class="bg-white p-3 rounded-lg border border-border">
-          <p><strong>5. Teaching</strong> &mdash; <code>teachingLabel</code> (human name like "Stayman 2C"), <code>sourceIntent</code> (bridge semantics like "StaymanAsk"), and <code>pedagogicalTags</code> (links to related surfaces).</p>
+          <p><strong>5. Teaching</strong> &mdash; <code>teachingLabel</code> (human name like "Stayman 2C"), <code>sourceIntent</code> (bridge semantics like "StaymanAsk"), and <code>teachingTags</code> (links to related bid meanings).</p>
         </div>
       </div>
 
@@ -279,9 +281,9 @@ flowchart TD
         </tbody>
       </table>
 
-      <h3 class="mt-8 mb-3">How Surfaces Are Created</h3>
+      <h3 class="mt-8 mb-3">How Bid Meanings Are Created</h3>
 
-      <p>Convention authors use the <code>createSurface()</code> builder. It takes simplified inputs and fills in derived fields automatically:</p>
+      <p>Convention authors use the <code>createSurface()</code> builder. It takes simplified inputs and returns a complete <code>BidMeaning</code> with derived fields filled in automatically:</p>
 
       <ul class="list-disc pl-6 space-y-1">
         <li><code>clauseId</code> &mdash; auto-derived from <code>factId + operator + value</code></li>
@@ -342,14 +344,14 @@ flowchart LR
       <div class="layer-card border-blue-400 p-5 my-6">
         <h3 class="text-blue-700 mb-2">Stage 1: Select Surfaces</h3>
         <p><strong>What happens:</strong> The rule interpreter (<code>collectMatchingClaims()</code>) looks at the auction history and asks each module: "Given where we are in the conversation, which of your surfaces are candidates right now?"</p>
-        <p class="mt-2"><strong>How it decides:</strong> Each module has a local state machine (phases like <code>"idle"</code> &rarr; <code>"asked"</code> &rarr; <code>"shown-hearts"</code>). The interpreter replays the auction through each module's phases, then collects surfaces whose rules match the current <strong>turn</strong> (opener/responder/opponent), <strong>phase</strong>, and <strong>kernel state</strong> (fit agreed? forcing? who's captain?).</p>
+        <p class="mt-2"><strong>How it decides:</strong> Each module has a local state machine (phases like <code>"idle"</code> &rarr; <code>"asked"</code> &rarr; <code>"shown-hearts"</code>). The interpreter replays the auction through each module's phases, then collects bid meanings whose rules match the current <strong>turn</strong> (opener/responder/opponent), <strong>phase</strong>, and <strong>negotiation state</strong> (fit agreed? forcing? who's captain?).</p>
         <table class="vocab-table w-full mt-3 bg-white rounded overflow-hidden text-sm">
           <thead class="bg-gray-50"><tr><th>Code Name</th><th>Plain English</th></tr></thead>
           <tbody>
             <tr><td><code>collectMatchingClaims()</code></td><td>Ask each module: "What bids do you offer right now?"</td></tr>
             <tr><td><code>deriveTurnRole()</code></td><td>Figure out if the next bidder is opener, responder, or an opponent</td></tr>
             <tr><td><code>Phase</code></td><td>Where a module is in its local conversation flow (e.g., "asked", "denied")</td></tr>
-            <tr><td><code>KernelState</code></td><td>The shared negotiation state: has a fit been agreed? Is the auction forcing?</td></tr>
+            <tr><td><code>NegotiationState</code></td><td>The shared negotiation state: has a fit been agreed? Is the auction forcing?</td></tr>
           </tbody>
         </table>
       </div>
@@ -381,12 +383,12 @@ flowchart LR
       <!-- Stage 4 -->
       <div class="layer-card border-amber-400 p-5 my-6">
         <h3 class="text-amber-700 mb-2">Stage 4: Evaluate Meanings</h3>
-        <p><strong>What happens:</strong> <code>evaluateAllSurfaces()</code> takes each surface and checks every clause against the actual facts. A surface becomes a <code>MeaningProposal</code> &mdash; the same structure, but now each clause is marked <code>satisfied: true/false</code> with the <code>observedValue</code>.</p>
+        <p><strong>What happens:</strong> <code>evaluateAllBidMeanings()</code> takes each bid meaning and checks every clause against the actual facts. A bid meaning becomes a <code>MeaningProposal</code> &mdash; the same structure, but now each clause is marked <code>satisfied: true/false</code> with the <code>observedValue</code>.</p>
         <p class="mt-2">This stage also derives <strong>specificity</strong> &mdash; how narrow the surface's requirements are. More dimensions constrained (suit identity + point range + shape) = higher specificity. This is never hand-authored; it's computed from the clause structure.</p>
         <table class="vocab-table w-full mt-3 bg-white rounded overflow-hidden text-sm">
           <thead class="bg-gray-50"><tr><th>Code Name</th><th>Plain English</th></tr></thead>
           <tbody>
-            <tr><td><code>MeaningProposal</code></td><td>A surface after evaluation &mdash; each clause now has a pass/fail verdict</td></tr>
+            <tr><td><code>MeaningProposal</code></td><td>A bid meaning after evaluation &mdash; each clause now has a pass/fail verdict</td></tr>
             <tr><td><code>satisfied</code></td><td>Did this hand requirement pass?</td></tr>
             <tr><td><code>observedValue</code></td><td>What the hand's actual value was (e.g., HCP = 14)</td></tr>
             <tr><td><code>specificity</code></td><td>How narrow the requirements are (more constraints = more specific)</td></tr>
@@ -465,8 +467,10 @@ flowchart TD
       <p><strong>Problem this solves:</strong> How do you model complex, multi-round, overlapping conventions with state that evolves through the auction?</p>
 
       <div class="analogy-box bg-violet-light mt-4 mb-6">
-        <p><strong>Analogy:</strong> The protocol layer is a <strong>franchise operating manual</strong>. It defines the formal contract every convention module must follow: what states it can be in, what triggers transitions, what data it can read and write, and how multiple active conventions coexist without conflicts.</p>
+        <p><strong>Analogy:</strong> The protocol layer is a <strong>franchise operating manual</strong>. It defines the formal type contracts for how convention modules can be structured: what states they can be in, what triggers transitions, what data they can read and write, and how multiple active conventions coexist without conflicts.</p>
       </div>
+
+      <p><strong>Current status:</strong> The protocol types (<code>ConventionSpec</code>, <code>ModuleSpec</code>, etc.) define the formal architecture. The active runtime uses the <strong>rule interpreter + meaning pipeline</strong> (Layer 3) rather than the protocol's own replay engine. The protocol types remain as the canonical specification language.</p>
 
       <h3 class="mt-6 mb-3">Two Module Roles</h3>
       <p>The protocol architecture distinguishes two kinds of modules:</p>
@@ -495,7 +499,7 @@ flowchart TD
           <tr><td><code>BoolExpr</code></td><td>A condition tree (AND/OR/NOT over register values, tags, capabilities). Used for guards and activation.</td></tr>
           <tr><td><code>EffectSpec</code></td><td>A write operation: set a register, export a tag, clear a value</td></tr>
           <tr><td><code>FrameStateSpec</code></td><td>A state in a module's state machine &mdash; has transitions, reactions, and an optional surface fragment</td></tr>
-          <tr><td><code>SurfaceFragment</code></td><td>A set of meaning surfaces contributed by one module at one state</td></tr>
+          <tr><td><code>SurfaceFragment</code></td><td>A set of bid meanings contributed by one module at one state</td></tr>
           <tr><td><code>attachWhen</code></td><td>The condition that causes a protocol module to activate (e.g., "when opening-1nt tag is active")</td></tr>
           <tr><td><code>surfaceWhen</code></td><td>The condition that controls whether an active protocol's surfaces are visible (separate from lifecycle)</td></tr>
         </tbody>
@@ -584,8 +588,8 @@ sequenceDiagram
       <table class="vocab-table w-full mt-4 bg-white rounded-lg overflow-hidden shadow-sm">
         <thead class="bg-gray-50"><tr><th>Term</th><th>Translation</th></tr></thead>
         <tbody>
-          <tr><td><code>MeaningSurface</code></td><td>A candidate bid with its hand requirements ("job posting")</td></tr>
-          <tr><td><code>MeaningProposal</code></td><td>A surface after evaluation &mdash; requirements are now marked pass/fail</td></tr>
+          <tr><td><code>BidMeaning</code></td><td>A candidate bid with its hand requirements ("job posting")</td></tr>
+          <tr><td><code>MeaningProposal</code></td><td>A bid meaning after evaluation &mdash; requirements are now marked pass/fail</td></tr>
           <tr><td><code>EncodedProposal</code></td><td>A proposal with a concrete call assigned and legality checked</td></tr>
           <tr><td><code>ArbitrationResult</code></td><td>The final output: winning bid + full audit trail</td></tr>
           <tr><td><code>truthSet</code></td><td>All proposals whose requirements are fully satisfied and whose call is legal</td></tr>
@@ -593,21 +597,21 @@ sequenceDiagram
           <tr><td><code>specificity</code></td><td>How narrow/precise the requirements are (auto-computed)</td></tr>
           <tr><td><code>modulePrecedence</code></td><td>Cross-module tiebreaker (lower = higher priority)</td></tr>
           <tr><td><code>factId</code></td><td>Name of a measurable hand property (e.g., <code>"hand.hcp"</code>)</td></tr>
-          <tr><td><code>clause</code></td><td>A single requirement in a surface (fact + operator + threshold)</td></tr>
-          <tr><td><code>KernelState</code></td><td>Shared negotiation state: fit agreed, forcing status, who's captain</td></tr>
+          <tr><td><code>clause</code></td><td>A single requirement in a bid meaning (fact + operator + threshold)</td></tr>
+          <tr><td><code>NegotiationState</code></td><td>Shared negotiation state: fit agreed, forcing status, who's captain</td></tr>
           <tr><td><code>Phase</code></td><td>Where a module is in its local conversation flow</td></tr>
           <tr><td><code>ConventionBundle</code></td><td>A complete bidding system package (multiple modules + config)</td></tr>
-          <tr><td><code>ConventionConfig</code></td><td>Lightweight metadata for the UI (name, description, category)</td></tr>
-          <tr><td><code>ConventionSpec</code></td><td>Full protocol specification (state machines + registers + surfaces)</td></tr>
-          <tr><td><code>SurfaceFragment</code></td><td>Surfaces contributed by one module at one state (protocol layer)</td></tr>
+          <tr><td><code>ConventionConfig</code></td><td>Lightweight metadata for the UI (auto-derived from the bundle)</td></tr>
+          <tr><td><code>ConventionSpec</code></td><td>Protocol specification types (state machines + registers + surfaces)</td></tr>
+          <tr><td><code>SurfaceFragment</code></td><td>Bid meanings contributed by one module at one state (protocol layer)</td></tr>
           <tr><td><code>BoolExpr</code></td><td>A condition tree (AND/OR/NOT) over registers and tags</td></tr>
           <tr><td><code>provenance</code></td><td>Audit trail: why each decision was made at every pipeline step</td></tr>
-          <tr><td><code>pedagogicalTags</code></td><td>Annotations linking related surfaces for teaching</td></tr>
+          <tr><td><code>teachingTags</code></td><td>Annotations linking related bid meanings for teaching</td></tr>
           <tr><td><code>sourceIntent</code></td><td>What a bid does in bridge terms (e.g., "StaymanAsk", "Transfer")</td></tr>
           <tr><td><code>surfaceBindings</code></td><td>Variable substitutions (e.g., replacing <code>$suit</code> with <code>"hearts"</code>)</td></tr>
           <tr><td><code>composeSurfaces()</code></td><td>Apply suppress/inject/remap transforms before evaluation</td></tr>
           <tr><td><code>evaluateFacts()</code></td><td>Analyze the hand and produce a dictionary of fact values</td></tr>
-          <tr><td><code>evaluateAllSurfaces()</code></td><td>Check each surface's clauses against the facts</td></tr>
+          <tr><td><code>evaluateAllBidMeanings()</code></td><td>Check each bid meaning's clauses against the facts</td></tr>
           <tr><td><code>arbitrateMeanings()</code></td><td>Pick the winner from all evaluated proposals</td></tr>
         </tbody>
       </table>

@@ -5,9 +5,10 @@ import {
   generateRuleCoverageManifest,
 } from "../../conventions/core";
 import { listSystemBundles } from "../../conventions/definitions/system-registry";
+import { AVAILABLE_BASE_SYSTEMS } from "../../core/contracts/system-config";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 
-import type { Flags, Vulnerability } from "../shared";
+import type { Flags, Vulnerability, BaseSystemId } from "../shared";
 import {
   requireArg,
   resolveSpec, resolveBundleWithRules,
@@ -59,12 +60,23 @@ export function runBundles(): void {
   console.log(JSON.stringify(result, null, 2));
 }
 
+// ── systems ─────────────────────────────────────────────────────
+
+export function runSystems(): void {
+  const result = AVAILABLE_BASE_SYSTEMS.map((s) => ({
+    id: s.id,
+    label: s.label,
+    shortLabel: s.shortLabel,
+  }));
+  console.log(JSON.stringify(result, null, 2));
+}
+
 // ── describe ─────────────────────────────────────────────────────
 
-export function runDescribe(flags: Flags, vuln: Vulnerability): void {
+export function runDescribe(flags: Flags, vuln: Vulnerability, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
-  const spec = resolveSpec(bundleId);
-  const bundle = resolveBundleWithRules(bundleId);
+  const spec = resolveSpec(bundleId, baseSystem);
+  const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const ruleModules = bundle.ruleModules ?? [];
 
   const manifest = generateRuleCoverageManifest(bundle.id, ruleModules);

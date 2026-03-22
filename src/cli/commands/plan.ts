@@ -7,7 +7,7 @@ import type { RuleAtom } from "../../conventions/core";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
-import type { Flags, OpponentMode, Vulnerability, Call, ScenarioConfig, Auction, Seat, Deal, ConventionBundle, ConventionSpec } from "../shared";
+import type { Flags, OpponentMode, Vulnerability, Call, ScenarioConfig, Auction, Seat, Deal, ConventionBundle, ConventionSpec, BaseSystemId } from "../shared";
 import {
   callKey,
   requireArg, optionalNumericArg,
@@ -39,7 +39,7 @@ type AtomPlan = {
 
 // ── Public entry point ──────────────────────────────────────────────
 
-export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
+export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const minAgentCount = optionalNumericArg(flags, "agents") ?? 3;
   const targetCoverage = optionalNumericArg(flags, "coverage") ?? 2;
@@ -48,8 +48,8 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
   const maxAtomsPerAgent = optionalNumericArg(flags, "max-atoms") ?? 8;
   const maxSeedsPerAgent = optionalNumericArg(flags, "max-seeds-per-agent") ?? 5;
 
-  const spec = resolveSpec(bundleId);
-  const bundle = resolveBundleWithRules(bundleId);
+  const spec = resolveSpec(bundleId, baseSystem);
+  const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const strategy = createSpecStrategy(spec);
   const ruleModules = bundle.ruleModules ?? [];
 
@@ -201,6 +201,7 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig): void {
 
   console.log(JSON.stringify({
     bundle: bundleId,
+    system: baseSystem,
     targetCoverage,
     totalAtoms: atomPlans.length,
     atomsCoveredAtTarget: covered,

@@ -4,12 +4,15 @@
 // and catching crashes. Seeds from mulberry32 for reproducibility.
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../../conventions/core";
 import type { AuctionContext } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
 import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
 import { collectMatchingClaims } from "../../conventions/core";
 import { buildObservationLogViaRules, protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
+import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../../core/contracts/system-config";
 import { specFromBundle } from "../../conventions/definitions/system-registry";
 import { callKey } from "../../engine/call-helpers";
 import { mulberry32 } from "../../core/util/seeded-rng";
@@ -38,6 +41,7 @@ export interface FuzzConfig {
   readonly trials: number;
   readonly seed: number;
   readonly vulnMixed?: boolean;
+  readonly baseSystem?: BaseSystemId;
 }
 
 const VULN_CYCLE: Vulnerability[] = [
@@ -58,7 +62,8 @@ export function fuzzBundle(
   modules: readonly RuleModule[],
   config: FuzzConfig,
 ): FuzzResult {
-  const spec = specFromBundle(bundle);
+  const systemConfig = getSystemConfig(config.baseSystem ?? BASE_SYSTEM_SAYC);
+  const spec = specFromBundle(bundle, systemConfig);
   if (!spec) {
     return {
       command: "verify fuzz",

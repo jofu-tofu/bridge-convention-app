@@ -8,6 +8,7 @@
 
 import type { ConventionBundle } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
+import type { SystemConfig } from "../../core/contracts/system-config";
 import type { RuleModule } from "../core/rule-module";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { SystemProfile } from "../../core/contracts/agreement-module";
@@ -435,14 +436,18 @@ export function listSystemBundles(): readonly ConventionBundle[] {
 // ── Spec generation ──────────────────────────────────────────────────
 
 /** Derive a ConventionSpec from a ConventionBundle.
- *  Returns undefined if no ruleModules are present. */
-export function specFromBundle(bundle: ConventionBundle): ConventionSpec | undefined {
+ *  Returns undefined if no ruleModules are present.
+ *  Optional systemConfigOverride replaces the bundle's default SystemConfig. */
+export function specFromBundle(
+  bundle: ConventionBundle,
+  systemConfigOverride?: SystemConfig,
+): ConventionSpec | undefined {
   if (bundle.ruleModules && bundle.ruleModules.length > 0) {
     return {
       id: bundle.id,
       name: bundle.name,
       ruleModules: bundle.ruleModules,
-      systemConfig: bundle.systemProfile?.systemConfig,
+      systemConfig: systemConfigOverride ?? bundle.systemProfile?.systemConfig,
     };
   }
 

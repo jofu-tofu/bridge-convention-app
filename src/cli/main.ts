@@ -16,8 +16,8 @@
 // ── Side-effect import: registers all bundles + conventions ─────────
 import "../conventions";
 
-import { parseArgs, parseVulnerability, parseOpponentMode, parseScenarioConfig } from "./shared";
-import { runList, runBundles, runDescribe } from "./commands/info";
+import { parseArgs, parseVulnerability, parseOpponentMode, parseScenarioConfig, parseBaseSystem } from "./shared";
+import { runList, runBundles, runSystems, runDescribe } from "./commands/info";
 import { runEval } from "./commands/eval";
 import { runSelftest } from "./commands/selftest";
 import { runPlay } from "./commands/play";
@@ -42,27 +42,32 @@ if (flags["help"] === true || flags["h"] === true) {
   process.exit(0);
 }
 
+const baseSystem = parseBaseSystem(flags);
+
 switch (subcommand) {
   case "list":
     runList(flags);
     break;
   case "eval":
-    runEval(flags, parseVulnerability(flags));
+    runEval(flags, parseVulnerability(flags), baseSystem);
     break;
   case "play":
-    runPlay(flags, parseVulnerability(flags), parseOpponentMode(flags));
+    runPlay(flags, parseVulnerability(flags), parseOpponentMode(flags), baseSystem);
     break;
   case "selftest":
-    runSelftest(flags, parseVulnerability(flags));
+    runSelftest(flags, parseVulnerability(flags), baseSystem);
     break;
   case "plan":
-    runPlan(flags, parseScenarioConfig(flags));
+    runPlan(flags, parseScenarioConfig(flags), baseSystem);
     break;
   case "bundles":
     runBundles();
     break;
+  case "systems":
+    runSystems();
+    break;
   case "describe":
-    runDescribe(flags, parseVulnerability(flags));
+    runDescribe(flags, parseVulnerability(flags), baseSystem);
     break;
   case "verify": {
     const verifySubcommand = rawArgs[1];

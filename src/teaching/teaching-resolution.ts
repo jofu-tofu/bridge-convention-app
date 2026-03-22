@@ -82,7 +82,6 @@ export function resolveTeachingAnswer(
           if (memberName === matchedName) continue;
           const memberCandidate = candidates.find(c => c.bidName === memberName);
           if (!memberCandidate) continue;
-          if (memberCandidate.isMatched) continue;
           if (!memberCandidate.legal) continue;
 
           // Credit logic: equivalent_encoding → fullCredit, otherwise group tier

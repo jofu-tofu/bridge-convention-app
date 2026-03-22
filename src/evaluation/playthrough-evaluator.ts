@@ -5,6 +5,9 @@
 //
 // Internal strategy/teaching/convention access is encapsulated here.
 
+import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../core/contracts/system-config";
 import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
 import { enumerateRuleAtoms } from "../conventions/core";
 import { createBiddingContext } from "../conventions/core/context-factory";
@@ -24,7 +27,7 @@ import { parsePatternCall } from "../engine/auction-helpers";
 import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
 import type { Auction, Call, Deal, Hand, DealConstraints } from "../engine/types";
-import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../conventions/core";
 import type { ConventionSpec } from "../conventions/core";
 import type { OpponentMode } from "../core/contracts/drill";
 import type { PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./types";
@@ -157,9 +160,10 @@ let lastPlaythrough: InternalPlaythroughResult | null = null;
 function runPlaythroughInternal(
   bundleId: string, seed: number,
   vulnerability: Vulnerability, opponents: OpponentMode,
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): InternalPlaythroughResult {
   const bundle = getSystemBundle(bundleId)!;
-  const spec = specFromBundle(bundle)!;
+  const spec = specFromBundle(bundle, getSystemConfig(baseSystem))!;
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
   const partner = partnerOf(userSeat);
@@ -259,11 +263,12 @@ function buildAtomCallMap(bundleId: string): Map<string, { atomId: string; meani
 function getOrRunPlaythrough(
   bundleId: string, seed: number,
   vulnerability: Vulnerability, opponents: OpponentMode,
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): InternalPlaythroughResult {
   if (lastPlaythrough && lastPlaythrough.handle.seed === seed && lastPlaythrough.bundleName === getSystemBundle(bundleId)?.name) {
     return lastPlaythrough;
   }
-  lastPlaythrough = runPlaythroughInternal(bundleId, seed, vulnerability, opponents);
+  lastPlaythrough = runPlaythroughInternal(bundleId, seed, vulnerability, opponents, baseSystem);
   return lastPlaythrough;
 }
 
@@ -276,8 +281,9 @@ export function startPlaythrough(
   bundleId: string, seed: number,
   vuln: Vulnerability = Vulnerability.None,
   opponents: OpponentMode = "none",
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): { handle: PlaythroughHandle; firstStep: BiddingViewport | null } {
-  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents);
+  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);
   const first = pt.userSteps[0];
   if (!first) return { handle: pt.handle, firstStep: null };
 
@@ -294,8 +300,9 @@ export function getPlaythroughStepViewport(
   bundleId: string, seed: number, stepIdx: number,
   vuln: Vulnerability = Vulnerability.None,
   opponents: OpponentMode = "none",
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): BiddingViewport {
-  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents);
+  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);
   const s = pt.userSteps[stepIdx];
   if (!s) throw new Error(`Step ${stepIdx} out of range (0-${pt.userSteps.length - 1})`);
 
@@ -311,8 +318,9 @@ export function gradePlaythroughBid(
   bundleId: string, seed: number, stepIdx: number, bidStr: string,
   vuln: Vulnerability = Vulnerability.None,
   opponents: OpponentMode = "none",
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): PlaythroughGradeResult {
-  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents);
+  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);
   const s = pt.userSteps[stepIdx];
   if (!s) throw new Error(`Step ${stepIdx} out of range (0-${pt.userSteps.length - 1})`);
 
@@ -343,10 +351,11 @@ export function gradePlaythroughBid(
   }
 
   const strategyEval = (strategy).getLastEvaluation?.() ?? null;
+  const bundleForAlts = getSystemBundle(bundleId);
   const teachingResolution = resolveTeachingAnswer(
     result,
-    strategyEval?.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? undefined,
+    strategyEval?.acceptableAlternatives ?? bundleForAlts?.acceptableAlternatives ?? undefined,
+    strategyEval?.intentFamilies ?? bundleForAlts?.intentFamilies ?? undefined,
   );
   const grade = gradeBid(submittedCall, teachingResolution);
   const bidFeedback = {
@@ -393,8 +402,9 @@ export function getPlaythroughRevealSteps(
   bundleId: string, seed: number,
   vuln: Vulnerability = Vulnerability.None,
   opponents: OpponentMode = "none",
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): { totalSteps: number; steps: readonly RevealStep[]; atomsCovered: readonly string[] } {
-  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents);
+  const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);
   const revealSteps: RevealStep[] = pt.steps.map((s) => ({
     stepIndex: s.stepIndex,
     seat: s.seat as string,

@@ -10,12 +10,12 @@ import {
   parseAtomId,
 } from "../../evaluation";
 import type { Flags ,
-  Vulnerability} from "../shared";
+  Vulnerability, BaseSystemId} from "../shared";
 import {
   requireArg, optionalNumericArg,
 } from "../shared";
 
-export function runEval(flags: Flags, vuln: Vulnerability): void {
+export function runEval(flags: Flags, vuln: Vulnerability, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const atomId = requireArg(flags, "atom");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
@@ -39,7 +39,7 @@ export function runEval(flags: Flags, vuln: Vulnerability): void {
 
   if (!bidStr || bidStr === "true") {
     // No bid: return viewport only
-    const viewport = buildAtomViewport(bundleId, atomId, seed, vuln);
+    const viewport = buildAtomViewport(bundleId, atomId, seed, vuln, baseSystem);
     console.log(JSON.stringify(viewport, null, 2));
     return;
   }
@@ -47,7 +47,7 @@ export function runEval(flags: Flags, vuln: Vulnerability): void {
   // Bid submitted: grade with full teaching feedback
   let result;
   try {
-    result = gradeAtomBid(bundleId, atomId, seed, bidStr, vuln);
+    result = gradeAtomBid(bundleId, atomId, seed, bidStr, vuln, baseSystem);
   } catch {
     console.error(`Invalid bid: "${bidStr}"`);
     process.exit(2);

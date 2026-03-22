@@ -100,7 +100,7 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   // ── Weak Twos ────────────────────────────────────────────────────
   ["WeakTwoOpen", (p) => [{ act: "open", strain: strain(p), strength: "weak" }]],
   ["OgustAsk", () => [{ act: "inquire", feature: "suitQuality" }]],
-  ["InviteRaise", (p) => [{ act: "raise", strain: strain(p), strength: "invitational" }]],
+  ["InviteRaise", (p) => [{ act: "raise", strain: strain(p), strength: "invitational", feature: "heldSuit" }]],
   ["WeakPass", () => [{ act: "pass" }]],
   ["OgustSolid", () => [{ act: "show", feature: "suitQuality", quality: "solid" }]],
   ["OgustMinBad", () => [

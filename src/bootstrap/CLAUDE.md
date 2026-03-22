@@ -8,6 +8,7 @@ Dependency assembly and drill lifecycle — session management, config construct
 - **DrillBundle is the bridge between bootstrap and stores.** `startDrill()` returns a `DrillBundle` containing deal, session, inference engines, and strategy. The caller (GameScreen) passes the bundle to `gameStore.startDrill(bundle)`.
 - **No Svelte imports.** Bootstrap is plain .ts — inference engines are created statically (no dynamic import workaround needed).
 - **Drill tuning types live in `core/contracts/drill.ts`.** `OpponentMode`, `VulnerabilityDistribution`, `DrillTuning`, `DEFAULT_DRILL_TUNING` are re-exported from `bootstrap/types.ts` for backwards compatibility but canonically live in contracts.
+- **`baseSystem` is required at the backend boundary.** `createProtocolDrillConfig()` requires `{ baseSystem: BaseSystemId }` in its options. `startDrill()` accepts an optional `baseSystem` parameter (defaults to SAYC). Backend code never implicitly defaults — the caller provides the system ID.
 
 ## Architecture
 

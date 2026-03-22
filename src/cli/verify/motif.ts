@@ -4,8 +4,9 @@
 // tracking co-activation and pair-specific conflicts.
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../../conventions/core";
 
+import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
 import { exploreBundle } from "./explore";
 import type { MotifResult, InvariantViolation } from "./types";
 
@@ -14,6 +15,7 @@ export interface MotifConfig {
   readonly seed: number;
   readonly trials: number;
   readonly pair: readonly [string, string];
+  readonly baseSystem?: BaseSystemId;
 }
 
 /**
@@ -34,6 +36,7 @@ export function motifTest(
     depth: config.depth,
     seed: config.seed,
     trials: config.trials,
+    baseSystem: config.baseSystem,
   });
 
   // Count co-activations from coverage data

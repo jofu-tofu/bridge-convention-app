@@ -12,6 +12,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `system-registry.ts` — System definitions (including NT sub-bundle systems), module aggregation. Defines bundles directly via `buildBundle()` and exports them. `getSystemBundle()`, `listSystemBundles()`, `specFromBundle()`.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
+- `system-fact-vocabulary.ts` (in `core/contracts/`) — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs.
 
 **Architectural rule:** ALL pedagogical content (relations, alternatives, intent families) — both intra-module and cross-module — is derived from `teachingTags` on surfaces. `ConventionModule` has no `teachingRelations`, `alternatives`, or `intentFamilies` fields. Modules are portable building blocks: compose any set into a bundle and pedagogical content derives automatically. Do not create standalone `pedagogical-relations.ts` or `alternatives.ts` files.
 
@@ -378,6 +379,7 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - **Use scope constants from `pedagogical-scope-vocabulary.ts`** for `teachingTags` scopes. The branded `PedagogicalScope` type catches typos at compile time. Do not use free-form strings.
 - **`entryTransitions` must be populated** on every module that is reachable from the bundle entry state. Empty `entryTransitions` means the module is only reachable via `hookTransitions` from another module.
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
+- **System-fact-gated surfaces for cross-system modules.** When a bid has different meanings in different systems (e.g., jump shift: strong in SAYC, weak in 2/1), author surfaces for ALL meanings in the same module. Gate each with a system fact clause (`{ factId: SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, operator: "eq", value: true/false }`). The pipeline evaluates all surfaces and selects only those matching the active `SystemConfig`. Never create system-specific modules or branch on `systemId` in module code.
 
 ## Common Pitfalls
 

@@ -3,23 +3,24 @@
 // All verification commands under the `verify` namespace.
 // Usage: main.ts verify <subcommand> [options]
 
-import type { Flags } from "../shared";
-import { requireArg, optionalNumericArg, resolveBundleWithRules } from "../shared";
+import type { Flags, BaseSystemId } from "../shared";
+import { requireArg, optionalNumericArg, resolveBundleWithRules, parseBaseSystem } from "../shared";
 import { exploreBundle } from "./explore";
 import { motifTest } from "./motif";
 import { fuzzBundle } from "./fuzz";
 import { runPreflight } from "./preflight";
 
 export function runVerify(subcommand: string, flags: Flags): void {
+  const baseSystem = parseBaseSystem(flags);
   switch (subcommand) {
     case "explore":
-      return runVerifyExplore(flags);
+      return runVerifyExplore(flags, baseSystem);
     case "motif":
-      return runVerifyMotif(flags);
+      return runVerifyMotif(flags, baseSystem);
     case "fuzz":
-      return runVerifyFuzz(flags);
+      return runVerifyFuzz(flags, baseSystem);
     case "preflight":
-      return runVerifyPreflight(flags);
+      return runVerifyPreflight(flags, baseSystem);
     default:
       console.error(`Unknown verify subcommand: "${subcommand}"`);
       console.error("Available: explore, motif, fuzz, preflight");
@@ -27,9 +28,9 @@ export function runVerify(subcommand: string, flags: Flags): void {
   }
 }
 
-function runVerifyExplore(flags: Flags): void {
+function runVerifyExplore(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
-  const bundle = resolveBundleWithRules(bundleId);
+  const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const modules = bundle.ruleModules ?? [];
   const depth = optionalNumericArg(flags, "depth") ?? 6;
   const seed = optionalNumericArg(flags, "seed") ?? 42;
@@ -46,16 +47,17 @@ function runVerifyExplore(flags: Flags): void {
     seed,
     trials,
     invariants: invariantFilter ? [invariantFilter] : undefined,
+    baseSystem,
   });
 
   console.log(JSON.stringify(result, null, 2));
   process.exit(result.violations.length > 0 ? 1 : 0);
 }
 
-function runVerifyMotif(flags: Flags): void {
+function runVerifyMotif(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const pairStr = requireArg(flags, "pair");
-  const bundle = resolveBundleWithRules(bundleId);
+  const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const modules = bundle.ruleModules ?? [];
   const depth = optionalNumericArg(flags, "depth") ?? 8;
   const seed = optionalNumericArg(flags, "seed") ?? 42;
@@ -72,15 +74,15 @@ function runVerifyMotif(flags: Flags): void {
     process.exit(2);
   }
 
-  const result = motifTest(bundle, modules, { depth, seed, trials, pair: [a, b] });
+  const result = motifTest(bundle, modules, { depth, seed, trials, pair: [a, b], baseSystem });
 
   console.log(JSON.stringify(result, null, 2));
   process.exit(result.verdict === "failing" ? 1 : 0);
 }
 
-function runVerifyFuzz(flags: Flags): void {
+function runVerifyFuzz(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
-  const bundle = resolveBundleWithRules(bundleId);
+  const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const modules = bundle.ruleModules ?? [];
   const trials = optionalNumericArg(flags, "trials") ?? 200;
   const seed = optionalNumericArg(flags, "seed") ?? 0;
@@ -91,15 +93,15 @@ function runVerifyFuzz(flags: Flags): void {
     process.exit(2);
   }
 
-  const result = fuzzBundle(bundle, modules, { trials, seed, vulnMixed });
+  const result = fuzzBundle(bundle, modules, { trials, seed, vulnMixed, baseSystem });
 
   console.log(JSON.stringify(result, null, 2));
   process.exit(result.summary.clean ? 0 : 1);
 }
 
-function runVerifyPreflight(flags: Flags): void {
+function runVerifyPreflight(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
-  const bundle = resolveBundleWithRules(bundleId);
+  const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const modules = bundle.ruleModules ?? [];
   const budgetStr = (flags["budget"] as string) ?? "fast";
 
@@ -113,7 +115,7 @@ function runVerifyPreflight(flags: Flags): void {
     process.exit(2);
   }
 
-  const result = runPreflight(bundle, modules, { budget: budgetStr });
+  const result = runPreflight(bundle, modules, { budget: budgetStr, baseSystem });
 
   console.log(JSON.stringify(result, null, 2));
   process.exit(result.verdict === "pass" ? 0 : 1);

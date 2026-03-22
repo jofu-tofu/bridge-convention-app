@@ -4,7 +4,8 @@
 // lint → interfere → explore → motif (if needed) → fuzz
 
 import type { RuleModule } from "../../conventions/core/rule-module";
-import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
+import type { ConventionBundle } from "../../conventions/core";
+import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
 
 import { lintModule } from "./lint";
 import { analyzeBundle } from "./interfere";
@@ -18,6 +19,7 @@ export type PreflightBudget = "fast" | "full";
 
 interface PreflightConfig {
   readonly budget: PreflightBudget;
+  readonly baseSystem?: BaseSystemId;
 }
 
 const BUDGET_PARAMS = {
@@ -61,6 +63,7 @@ export function runPreflight(
     depth: 6,
     seed: 42,
     trials: params.exploreTrials,
+    baseSystem: config.baseSystem,
   });
 
   // Stage 4: Motif (only for full budget + flagged pairs)
@@ -75,6 +78,7 @@ export function runPreflight(
           seed: 42,
           trials: params.motifTrials,
           pair: [a, b],
+          baseSystem: config.baseSystem,
         });
         if (motifResult.verdict === "failing") failing++;
       }
@@ -87,6 +91,7 @@ export function runPreflight(
     trials: params.fuzzTrials,
     seed: 0,
     vulnMixed: true,
+    baseSystem: config.baseSystem,
   });
 
   // Determine verdict — only error-severity invariant violations cause failure

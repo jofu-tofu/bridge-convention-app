@@ -45,6 +45,30 @@ export interface InterferenceThresholds {
   readonly redoubleMin: number;
 }
 
+// ─── Suit response parameters ───────────────────────────────
+
+export type SuitResponseForcingDuration = "one-round" | "game";
+export type OneNtForcingStatus = "non-forcing" | "forcing" | "semi-forcing";
+
+export interface SuitResponseConfig {
+  /** Minimum HCP for a 2-level new-suit response to a 1-level suit opening.
+   *  SAYC: 10 (forcing one round). 2/1: 12 (game-forcing). */
+  readonly twoLevelMin: number;
+  /** Forcing duration of a 2-level new-suit response.
+   *  SAYC: "one-round". 2/1: "game". */
+  readonly twoLevelForcingDuration: SuitResponseForcingDuration;
+}
+
+export interface OneNtResponseAfterMajorConfig {
+  /** Whether 1NT response to 1M is forcing.
+   *  SAYC: "non-forcing". 2/1: "semi-forcing" (opener may pass 5332 min).
+   *  Strict 2/1: "forcing". */
+  readonly forcing: OneNtForcingStatus;
+  /** Maximum HCP for 1NT response to 1M.
+   *  SAYC: 10. 2/1: 12. */
+  readonly maxHcp: number;
+}
+
 // ─── Top-level SystemConfig ─────────────────────────────────
 
 export interface SystemConfig {
@@ -61,6 +85,10 @@ export interface SystemConfig {
   readonly openerRebid: OpenerRebidThresholds;
   /** Interference thresholds. */
   readonly interference: InterferenceThresholds;
+  /** 2-level new-suit response parameters (forcing level, HCP threshold). */
+  readonly suitResponse: SuitResponseConfig;
+  /** 1NT response to 1M parameters (forcing status, HCP ceiling). */
+  readonly oneNtResponseAfterMajor: OneNtResponseAfterMajorConfig;
 }
 
 // ─── Concrete system configs ────────────────────────────────
@@ -77,6 +105,8 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
   },
   openerRebid: { notMinimum: 16 },
   interference: { redoubleMin: 10 },
+  suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
+  oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10 },
 };
 
 export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
@@ -91,6 +121,8 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
   },
   openerRebid: { notMinimum: 16 },
   interference: { redoubleMin: 10 },
+  suitResponse: { twoLevelMin: 12, twoLevelForcingDuration: "game" },
+  oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12 },
 };
 
 // ─── System config registry ─────────────────────────────────

@@ -380,9 +380,9 @@ function createBergenR2AfterLimitSurfaces(
 /**
  * R2 surfaces after preemptive raise (1M-P-3M-P).
  *
- * Opener evaluates HCP:
- * - 18+ HCP → bid game (4M)
- * - ≤17 HCP → pass
+ * Opener evaluates total points (HCP + shortage):
+ * - 18+ total points → bid game (4M)
+ * - ≤17 total points → pass
  */
 function createBergenR2AfterPreemptiveSurfaces(
   suit: "hearts" | "spades",
@@ -391,14 +391,14 @@ function createBergenR2AfterPreemptiveSurfaces(
   const majorStrain = suitToBidSuit(suit);
 
   return [
-    // Opener game: 18+ HCP → 4M
+    // Opener game: 18+ total points → 4M
     createSurface({
       meaningId: `bergen:opener-game-after-preemptive-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_PREEMPTIVE,
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: "bridge.totalPointsForRaise",
           operator: "gte",
           value: BERGEN_THRESHOLDS.OPENER_GAME_AFTER_PREEMPTIVE_MIN,
         },
@@ -415,14 +415,14 @@ function createBergenR2AfterPreemptiveSurfaces(
       ],
     }, BERGEN_CTX),
 
-    // Opener pass: ≤17 HCP → Pass
+    // Opener pass: ≤17 total points → Pass
     createSurface({
       meaningId: `bergen:opener-pass-after-preemptive-${suit}`,
       semanticClassId: BERGEN_CLASSES.OPENER_PASS_AFTER_PREEMPTIVE,
       encoding: { type: "pass" },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: "bridge.totalPointsForRaise",
           operator: "lte",
           value: BERGEN_THRESHOLDS.OPENER_PASS_AFTER_PREEMPTIVE_MAX,
         },

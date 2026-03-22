@@ -11,7 +11,7 @@ describe("profile-driven activation", () => {
     const seat = Seat.North;
     const ntCapabilities = { [CAP_OPENING_1NT]: "active" } as const;
 
-    it("after 1NT P — activates all three modules", () => {
+    it("after 1NT P — activates all four modules", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P"]);
       const result = resolveActiveModules(
         NT_SAYC_PROFILE,
@@ -20,7 +20,7 @@ describe("profile-driven activation", () => {
         ntCapabilities,
       );
 
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers"]);
+      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
     });
 
     it("after 1NT P 2C P — all modules remain active", () => {
@@ -32,7 +32,7 @@ describe("profile-driven activation", () => {
         ntCapabilities,
       );
 
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers"]);
+      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
     });
 
     it("empty auction — returns nothing", () => {
@@ -75,7 +75,7 @@ describe("profile-driven activation", () => {
         ntCapabilities,
       );
 
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers"]);
+      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
     });
 
     it("without opening.1nt capability — only base module activates", () => {

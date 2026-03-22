@@ -9,6 +9,9 @@
 // Phase 6: Uses rule enumeration (RuleAtom) instead of FSM BFS coverage.
 // Atom ID format: `moduleId/meaningId`.
 
+import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../core/contracts/system-config";
 import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
 import { enumerateRuleAtoms, type RuleAtom } from "../conventions/core";
 import { getBundle } from "../conventions/core/bundle";
@@ -145,10 +148,10 @@ function resolveAtoms(bundleId: string): readonly RuleAtom[] {
 }
 
 /** Create a strategy from a bundle ID. */
-function createStrategy(bundleId: string): BiddingStrategy {
+function createStrategy(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): BiddingStrategy {
   const bundle = getSystemBundle(bundleId);
   if (!bundle) throw new Error(`Unknown bundle: "${bundleId}"`);
-  const spec = specFromBundle(bundle);
+  const spec = specFromBundle(bundle, getSystemConfig(baseSystem));
   if (!spec) throw new Error(`No spec for bundle: "${bundleId}"`);
   return protocolSpecToStrategy(spec);
 }
@@ -244,10 +247,11 @@ export function buildAtomViewport(
   atomId: string,
   seed: number,
   vuln: Vulnerability = Vulnerability.None,
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): BiddingViewport {
   validateAtomId(bundleId, atomId);
   const bundle = getBundle(bundleId)!;
-  const strategy = createStrategy(bundleId);
+  const strategy = createStrategy(bundleId, baseSystem);
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
 
@@ -281,10 +285,11 @@ export function gradeAtomBid(
   seed: number,
   bidStr: string,
   vuln: Vulnerability = Vulnerability.None,
+  baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): AtomGradeResult {
   validateAtomId(bundleId, atomId);
   const bundle = getBundle(bundleId)!;
-  const strategy = createStrategy(bundleId);
+  const strategy = createStrategy(bundleId, baseSystem);
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
 
@@ -321,8 +326,8 @@ export function gradeAtomBid(
   const strategyEval = (strategy as ConventionStrategy).getLastEvaluation?.() ?? null;
   const teachingResolution = resolveTeachingAnswer(
     result,
-    strategyEval?.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? undefined,
+    strategyEval?.acceptableAlternatives ?? bundle.acceptableAlternatives ?? undefined,
+    strategyEval?.intentFamilies ?? bundle.intentFamilies ?? undefined,
   );
   const grade = gradeBid(submittedCall, teachingResolution);
   const bidFeedback = {
