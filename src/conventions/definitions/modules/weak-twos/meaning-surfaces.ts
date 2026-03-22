@@ -39,7 +39,7 @@ function gameRaiseBid(suit: WeakTwoSuit) {
 // Surfaces use $suit binding — clauses reference hand.suitLength.$suit
 // which resolves via surfaceBindings in the meaning evaluator.
 
-export function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
+function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
   const suits: readonly { suit: WeakTwoSuit; order: number; cls: string }[] = [
     { suit: "hearts", order: 0, cls: WEAK_TWO_CLASSES.OPEN_2H },
     { suit: "spades", order: 1, cls: WEAK_TWO_CLASSES.OPEN_2S },
@@ -84,7 +84,7 @@ export function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
 // Invite raise: 14-15 HCP, 3+ fit → 3 of opener's suit
 // Pass: fallback (no action in 10-13 HCP range)
 
-export function createWeakTwoR2Surfaces(
+function createWeakTwoR2Surfaces(
   suit: WeakTwoSuit,
 ): readonly BidMeaning[] {
   const bindings = { suit } as const;
@@ -215,7 +215,7 @@ export function createWeakTwoR2Surfaces(
 //   3NT = solid (AKQ), 3C = min/bad, 3D = min/good,
 //   3H = max/bad, 3S = max/good
 
-export function createWeakTwoOgustSurfaces(
+function createWeakTwoOgustSurfaces(
   suit: WeakTwoSuit,
 ): readonly BidMeaning[] {
   const bindings = { suit } as const;
@@ -390,7 +390,7 @@ export function createWeakTwoOgustSurfaces(
 //          was below the agreed suit)
 // Pass: fallback (when already in agreed suit or higher)
 
-export function createPostOgustSurfaces(
+function createPostOgustSurfaces(
   suit: WeakTwoSuit,
 ): readonly BidMeaning[] {
   const bindings = { suit } as const;

@@ -91,7 +91,7 @@ const OPENER_STAYMAN_CLOSURE_POLICY = {
 // ─── R1 surface ──────────────────────────────────────────────
 
 /** Factory: creates the Stayman R1 surface parameterized by system config. */
-export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
+function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
   const minHcp = sys.responderThresholds.inviteMin;
   return createSurface({
     meaningId: "stayman:ask-major",
@@ -458,7 +458,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
 // ─── Interference surface ────────────────────────────────────
 
 /** Factory: creates the interference redouble surface parameterized by system config. */
-export function createInterferenceRedoubleSurface(sys: SystemConfig): BidMeaning {
+function createInterferenceRedoubleSurface(sys: SystemConfig): BidMeaning {
   const minHcp = sys.interference.redoubleMin;
   return createSurface({
     meaningId: "interference:redouble-strength",
@@ -537,7 +537,7 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
 ];
 
 /** Factory: creates Stayman fact evaluators parameterized by system config. */
-export function createStaymanEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
+function createStaymanEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
   const minHcp = sys.responderThresholds.inviteMin;
   return new Map<string, FactEvaluatorFn>([
     ["module.stayman.eligible", (_h, _ev, m) =>
@@ -565,7 +565,7 @@ const posteriorEvaluators = createPosteriorFactEvaluators([
 ]));
 
 /** Factory: creates Stayman facts parameterized by system config. */
-export function createStaymanFacts(sys: SystemConfig): FactCatalogExtension {
+function createStaymanFacts(sys: SystemConfig): FactCatalogExtension {
   return {
     definitions: [...STAYMAN_FACTS, ...NT_POSTERIOR_FACTS],
     evaluators: createStaymanEvaluators(sys),

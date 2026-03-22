@@ -29,16 +29,6 @@ export type PrioritySpec =
   | { readonly obligation: "acceptable"; readonly conventionality: "natural" }
   | { readonly obligation: "residual"; readonly conventionality: "natural" };
 
-// ─── PrioritySpec constructors ──────────────────────────────
-/** Forced conventional bid (e.g., forced rebid, Ogust step, accept transfer). */
-export const FORCED_CONVENTIONAL: PrioritySpec = { obligation: "forced", conventionality: "conventional" };
-/** Preferred conventional bid (e.g., Stayman ask, transfer bid, invite raise). */
-export const PREFERRED_CONVENTIONAL: PrioritySpec = { obligation: "preferred", conventionality: "conventional" };
-/** Acceptable natural bid (e.g., NT invite, NT game, NT opening). */
-export const ACCEPTABLE_NATURAL: PrioritySpec = { obligation: "acceptable", conventionality: "natural" };
-/** Residual natural bid (e.g., Pass as fallback when nothing else applies). */
-export const RESIDUAL_NATURAL: PrioritySpec = { obligation: "residual", conventionality: "natural" };
-
 // ─── Legacy PriorityClass (deprecated) ──────────────────────
 /** @deprecated Use PrioritySpec instead. Retained for DecisionSurface backward compatibility. */
 export type PriorityClass = "obligatory" | "preferredConventional" | "preferredNatural"

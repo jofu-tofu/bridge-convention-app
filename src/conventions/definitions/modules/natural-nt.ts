@@ -103,7 +103,7 @@ const NT_R1_SURFACES: readonly BidMeaning[] = [
 // Declares the 1NT opening promise (HCP range, balanced) so that the
 // commitment extractor produces public constraints for the posterior sampler.
 
-export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
+function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
       meaningId: "bridge:1nt-opening",

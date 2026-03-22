@@ -31,7 +31,6 @@
   --color-border-default: rgba(255, 255, 255, 0.1);
   --color-border-strong: rgba(255, 255, 255, 0.18);
   --color-accent-primary-subtle: rgba(77, 144, 247, 0.12);
-  --color-convention-highlight: rgba(77, 144, 247, 0.18);
 
   /* ── Feedback palettes — tonal scale per grading state ──
      Each state defines: base (borders/dividers), bg (panel), surface (content
@@ -94,12 +93,6 @@
   /* ── Auction annotations ── */
   --color-annotation-announce: #60a5fa;
   --color-annotation-alert: #fbbf24;
-
-  /* ── Supplementary note colors (one-off accents in feedback) ── */
-  --color-note-multi-rationale: #7dd3fc;
-  --color-note-encoding: #c4b5fd;
-  --color-note-relation: #d8b4fe;
-  --color-note-elimination: #a1a1aa;
 
   /* ── Z-index hierarchy — prevents stacking-context collisions ── */
   --z-header: 10;

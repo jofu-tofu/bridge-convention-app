@@ -3,7 +3,7 @@
   import { listSystemBundles, getSystemBundle } from "../../conventions/definitions/system-registry";
   import { enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions/core";
   import type { RuleCoverageManifest } from "../../conventions/core";
-  import type { ConventionBundle } from "../../conventions/core/bundle/bundle-types";
+  import type { ConventionBundle } from "../../conventions/core";
 
   const appStore = getAppStore();
 
@@ -83,7 +83,7 @@
       <div class="grid gap-3">
         {#each bundles as bundle (bundle.id)}
           <button
-            class="block w-full text-left rounded-[--radius-lg] bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-card-hover transition-colors cursor-pointer group"
+            class="block w-full text-left rounded-[--radius-lg] bg-bg-card border border-border-subtle p-4 hover:border-blue-500 hover:bg-bg-hover transition-colors cursor-pointer group"
             onclick={() => selectBundle(bundle.id)}
           >
             <div class="flex items-center justify-between">

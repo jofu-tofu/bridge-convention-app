@@ -93,7 +93,7 @@
   }
 
   .trick-placeholder-active {
-    border-color: var(--color-accent);
+    border-color: var(--color-accent-primary);
     opacity: 0.6;
   }
 </style>

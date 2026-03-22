@@ -539,7 +539,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
 ];
 
 /** Factory: creates transfer fact evaluators parameterized by system config. */
-export function createTransferEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
+function createTransferEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
   return new Map<string, FactEvaluatorFn>([
     ["module.transfer.targetSuit", (_h, _ev, m) => {
       const spades = num(m, "hand.suitLength.spades");
@@ -561,7 +561,7 @@ export function createTransferEvaluators(sys: SystemConfig): Map<string, FactEva
 }
 
 /** Factory: creates transfer facts parameterized by system config. */
-export function createTransferFacts(sys: SystemConfig): FactCatalogExtension {
+function createTransferFacts(sys: SystemConfig): FactCatalogExtension {
   return {
     definitions: TRANSFER_FACTS,
     evaluators: createTransferEvaluators(sys),
