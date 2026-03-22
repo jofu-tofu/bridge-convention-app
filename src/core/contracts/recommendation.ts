@@ -1,6 +1,6 @@
 import type { Call } from "../../engine/types";
 import type { BiddingStrategy } from "./bidding";
-import type { AlternativeGroup, IntentFamily } from "./teaching-grading";
+import type { AlternativeGroup, SurfaceGroup } from "./teaching-grading";
 import type { ExplanationCatalog } from "./explanation-catalog";
 import type { ArbitrationResult, MachineRegisters } from "./module-surface";
 import type { DecisionProvenance, HandoffTrace } from "./provenance";
@@ -56,8 +56,8 @@ export interface StrategyEvaluation {
   readonly practicalRecommendation: PracticalRecommendation | null;
   /** Convention-level alternative groups for teaching grading. Null if not configured. */
   readonly acceptableAlternatives: readonly AlternativeGroup[] | null;
-  /** Convention-level intent families for relationship-aware grading. Null if not configured. */
-  readonly intentFamilies: readonly IntentFamily[] | null;
+  /** Convention-level surface groups for relationship-aware grading. Null if not configured. */
+  readonly surfaceGroups: readonly SurfaceGroup[] | null;
   /** Provenance from the meaning-pipeline evaluation. Null when not produced. */
   readonly provenance: DecisionProvenance | null;
   /** Full arbitration result from the meaning-pipeline evaluation. Null when not produced. */

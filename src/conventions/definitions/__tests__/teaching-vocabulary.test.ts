@@ -9,7 +9,7 @@ describe("pedagogical vocabulary", () => {
 
   it("every tag has a valid derivation type", () => {
     for (const tag of ALL_PEDAGOGICAL_TAGS) {
-      expect(["relation", "alternative-group", "intent-family"]).toContain(
+      expect(["relation", "alternative-group", "surface-group"]).toContain(
         tag.derives.type,
       );
     }

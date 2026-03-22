@@ -4,7 +4,7 @@ import type {
   ConventionStrategy,
   StrategyEvaluation,
   AlternativeGroup,
-  IntentFamily,
+  SurfaceGroup,
 } from "../../core/contracts";
 import type { BidMeaning, ConstraintDimension } from "../../core/contracts/meaning";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
@@ -108,13 +108,13 @@ export function meaningToStrategy(
     name?: string;
     factCatalog?: FactCatalog;
     acceptableAlternatives?: readonly AlternativeGroup[];
-    intentFamilies?: readonly IntentFamily[];
+    surfaceGroups?: readonly SurfaceGroup[];
   },
 ): ConventionStrategy {
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
     acceptableAlternatives: options?.acceptableAlternatives ?? null,
-    intentFamilies: options?.intentFamilies ?? null,
+    surfaceGroups: options?.surfaceGroups ?? null,
     provenance: null,
     arbitration: null,
     posteriorSummary: null,
@@ -144,7 +144,7 @@ export function meaningToStrategy(
       lastEvaluation = {
         practicalRecommendation: null,
         acceptableAlternatives: options?.acceptableAlternatives ?? null,
-        intentFamilies: options?.intentFamilies ?? null,
+        surfaceGroups: options?.surfaceGroups ?? null,
         provenance,
         arbitration: result,
         posteriorSummary: null,

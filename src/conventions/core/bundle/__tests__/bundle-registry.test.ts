@@ -17,7 +17,7 @@ function makeBundle(id: string, memberIds: string[] = []): ConventionBundle {
     description: "test",
     memberIds,
     dealConstraints: { seats: [] },
-    derivedTeaching: { acceptableAlternatives: [], intentFamilies: [], relations: [] },
+    derivedTeaching: { acceptableAlternatives: [], surfaceGroups: [], relations: [] },
   };
 }
 

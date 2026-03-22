@@ -225,15 +225,14 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 
 ## Roadmap
 
-**Completed:** See `docs/roadmap-history.md`. Phases 4-10 (Decision Model Architecture, Competitive Auction Hardening, Boundary Hardening, Architectural Gap Resolution, Teaching Resolution Layer, Practical Bidder Layer, Meaning-Centric Bundles) are complete. Old tree/protocol/overlay pipeline fully removed. **Continuation Composition Phases 4-5 complete** — all 4 bundles (NT, Bergen, Weak Twos, DONT) migrated to RuleModule with per-step kernel threading. Old FSM path removed from protocol-adapter. `AuctionContext` observation history projected through viewport boundary.
+**Completed:** See `docs/roadmap-history.md`. Phases 4-10 plus Continuation Composition Phases 4-6 are complete. All 4 bundles (NT, Bergen, Weak Twos, DONT) on RuleModule with per-step kernel threading. Old tree/protocol/overlay pipeline and FSM infrastructure fully removed. Dead CandidateTransform system removed. Multi-system backend wired (SAYC, 2/1, Acol base profiles). CLI `--system` flag live.
 
-**Active/upcoming:**
+**Upcoming (all blocked on design work or specs):**
 
-1. **Posterior Engine Boundary Redesign** — see `docs/posterior-implementation-plan.md`. Unblocks difficulty configuration and inference spectrum.
-2. **User Learning Enhancements** — dedicated learning screen needs rebuild for meaning pipeline. Blocked on learning screen design spec.
-3. **Difficulty Configuration** — UI for inference spectrum (easy/medium/hard). Blocked on posterior redesign.
-4. **Convention Migration** — Migrate remaining conventions (SAYC, Lebensohl Lite) to meaning pipeline bundles. Lebensohl blocked on relay encoding spec; SAYC is a full base system.
-5. **Continuation Composition Phase 6 complete.** All Phase 6 items done: incremental local FSM advancement, actor-aware observation matching, CLI atom enumeration rebuild, evaluation subsystem migration, old FSM infrastructure cleanup. Old FSM infrastructure removed from barrel exports.
+1. **Posterior Engine Consumer Migration (Phase 4B)** — boundary Phases 0-5 done; consumers not yet migrated. See `docs/posterior-implementation-plan.md`. Unblocks difficulty config / inference spectrum.
+2. **User Learning Enhancements** — learning screen needs rebuild + design spec.
+3. **Difficulty Configuration** — blocked on posterior consumer migration.
+4. **Convention Migration** — Lebensohl (blocked on relay encoding spec), Negative Doubles (blocked on host-attachment exercise), SAYC (full base system).
 
 ## Architecture Spec & Alignment
 

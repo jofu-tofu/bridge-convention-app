@@ -1,6 +1,6 @@
 import type { DealConstraints, Deal, Auction } from "../../../engine/types";
 import type { Seat } from "../../../engine/types";
-import type { AlternativeGroup, IntentFamily } from "../../../core/contracts/teaching-grading";
+import type { AlternativeGroup, SurfaceGroup } from "../../../core/contracts/teaching-grading";
 import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
 import type { SystemProfile } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig, ConventionTeaching } from "../../../core/contracts/convention";
@@ -64,7 +64,7 @@ export interface DerivedTeachingContent {
   /** @derived From ALTERNATIVES teachingTags on surfaces. */
   readonly acceptableAlternatives: readonly AlternativeGroup[];
   /** @derived From teachingTags + rule module structure. */
-  readonly intentFamilies: readonly IntentFamily[];
+  readonly surfaceGroups: readonly SurfaceGroup[];
   /** @derived From relation teachingTags (same-family, stronger-than, etc.) on surfaces. */
   readonly relations: readonly TeachingRelation[];
 }
@@ -78,7 +78,7 @@ export interface DerivedTeachingContent {
  * cannot be set by authors.
  */
 export interface ConventionBundle extends BundleInput {
-  /** Derived teaching/grading metadata (acceptableAlternatives, intentFamilies, relations). */
+  /** Derived teaching/grading metadata (acceptableAlternatives, surfaceGroups, relations). */
   readonly derivedTeaching: DerivedTeachingContent;
 }
 

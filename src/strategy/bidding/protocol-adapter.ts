@@ -48,7 +48,7 @@ export function protocolSpecToStrategy(
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
     acceptableAlternatives: null,
-    intentFamilies: null,
+    surfaceGroups: null,
     provenance: null,
     arbitration: null,
     posteriorSummary: null,
@@ -107,7 +107,7 @@ export function protocolSpecToStrategy(
       lastEvaluation = {
         practicalRecommendation: null,
         acceptableAlternatives: null,
-        intentFamilies: null,
+        surfaceGroups: null,
         provenance,
         arbitration: result,
         posteriorSummary: null,

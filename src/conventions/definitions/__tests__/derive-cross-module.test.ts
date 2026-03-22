@@ -52,9 +52,9 @@ describe("deriveTeachingContent", () => {
     expect(sortAlternatives(result.alternatives)).toMatchSnapshot();
   });
 
-  it("produces zero intent families from NT modules (regression)", () => {
+  it("produces zero surface groups from NT modules (regression)", () => {
     const result = deriveTeachingContent(NT_MODULES);
-    expect(result.intentFamilies).toEqual([]);
+    expect(result.surfaceGroups).toEqual([]);
   });
 
   it("produces both cross-module and intra-module relations", () => {
@@ -88,7 +88,7 @@ describe("deriveTeachingContent", () => {
     const result = deriveTeachingContent([emptyModule]);
     expect(result.relations).toEqual([]);
     expect(result.alternatives).toEqual([]);
-    expect(result.intentFamilies).toEqual([]);
+    expect(result.surfaceGroups).toEqual([]);
   });
 });
 

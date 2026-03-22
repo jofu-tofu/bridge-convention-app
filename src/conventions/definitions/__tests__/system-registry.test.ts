@@ -70,7 +70,7 @@ describe("pre-built bundles", () => {
 
   it("weakTwoBundle includes aggregated content fields", () => {
     expect(Array.isArray(weakTwoBundle.derivedTeaching.acceptableAlternatives)).toBe(true);
-    expect(Array.isArray(weakTwoBundle.derivedTeaching.intentFamilies)).toBe(true);
+    expect(Array.isArray(weakTwoBundle.derivedTeaching.surfaceGroups)).toBe(true);
   });
 
   it.each([
@@ -82,7 +82,7 @@ describe("pre-built bundles", () => {
     ["weakTwoBundle", weakTwoBundle],
   ] as const)("%s has arrays for all teaching fields", (_label, bundle) => {
     expect(Array.isArray(bundle.derivedTeaching.acceptableAlternatives)).toBe(true);
-    expect(Array.isArray(bundle.derivedTeaching.intentFamilies)).toBe(true);
+    expect(Array.isArray(bundle.derivedTeaching.surfaceGroups)).toBe(true);
   });
 
   it("bergenBundle produces alternatives from derivation", () => {

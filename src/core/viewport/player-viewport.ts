@@ -227,7 +227,7 @@ export interface TeachingDetail {
   readonly ambiguityScore?: number;
   /** How the teaching grading was resolved.
    *  "exact" = only one correct bid; "primary_plus_acceptable" = primary + alternatives;
-   *  "intent_based" = intent-family-aware grading. */
+   *  "intent_based" = surface-group-aware grading. */
   readonly gradingType?: "exact" | "primary_plus_acceptable" | "intent_based";
 
   // ── Practical score breakdown ─────────────────────────────────

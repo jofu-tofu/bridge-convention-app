@@ -5,7 +5,7 @@
  * and teaching metadata. Modules must NOT import from other modules —
  * this is the fundamental decoupling invariant.
  *
- * Pedagogical relations, alternatives, and intent families are derived automatically
+ * Pedagogical relations, alternatives, and surface groups are derived automatically
  * from `teachingTags` on surfaces by the derivation function. Modules do not
  * declare these explicitly.
  *

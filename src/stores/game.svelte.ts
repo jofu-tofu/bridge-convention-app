@@ -120,7 +120,7 @@ const DDS_TIMEOUT_MS = 10_000;
 const EMPTY_EVALUATION: StrategyEvaluation = {
   practicalRecommendation: null,
   acceptableAlternatives: null,
-  intentFamilies: null,
+  surfaceGroups: null,
   provenance: null,
   arbitration: null,
   posteriorSummary: null,

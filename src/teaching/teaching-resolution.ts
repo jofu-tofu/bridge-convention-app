@@ -1,6 +1,6 @@
 import { callsMatch } from "../engine/call-helpers";
 import type { Call } from "../engine/types";
-import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, IntentFamily } from "../core/contracts";
+import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, SurfaceGroup } from "../core/contracts";
 import { BidGrade } from "../core/contracts/teaching-grading";
 import type { AcceptableBid, TeachingResolution } from "../core/contracts/teaching-grading";
 
@@ -21,15 +21,15 @@ function isTeachingEligible(c: ResolvedCandidateDTO): boolean {
   return c.legal && c.failedConditions.length === 0;
 }
 
-/** Look up the IntentFamily containing a given bidName. */
-function findFamilyForBid(bidName: string, families: readonly IntentFamily[]): IntentFamily | undefined {
+/** Look up the SurfaceGroup containing a given bidName. */
+function findGroupForBid(bidName: string, families: readonly SurfaceGroup[]): SurfaceGroup | undefined {
   return families.find(f => f.members.includes(bidName));
 }
 
 export function resolveTeachingAnswer(
   bidResult: BidResult,
   alternativeGroups?: readonly AlternativeGroup[],
-  intentFamilies?: readonly IntentFamily[],
+  surfaceGroups?: readonly SurfaceGroup[],
 ): TeachingResolution {
   const primaryBid = bidResult.call;
   const candidates = bidResult.resolvedCandidates ?? [];
@@ -73,9 +73,9 @@ export function resolveTeachingAnswer(
         if (!group.members.includes(matchedName)) continue;
         if (group.whenMatched && !group.whenMatched.includes(matchedName)) continue;
 
-        // Look up IntentFamily for relationship-aware credit
-        const family = intentFamilies?.length
-          ? findFamilyForBid(matchedName, intentFamilies)
+        // Look up SurfaceGroup for relationship-aware credit
+        const family = surfaceGroups?.length
+          ? findGroupForBid(matchedName, surfaceGroups)
           : undefined;
 
         for (const memberName of group.members) {
@@ -119,14 +119,14 @@ export function resolveTeachingAnswer(
   }
   const acceptableBids = [...acceptableMap.values()];
 
-  // Phase 4: near-miss detection — candidates sharing an intent family with
+  // Phase 4: near-miss detection — candidates sharing an surface group with
   // the matched bid that have failedConditions (they qualified for a related
   // meaning but not the exact one)
   let nearMissCalls: { call: Call; reason: string }[] | undefined;
-  if (intentFamilies && intentFamilies.length > 0) {
+  if (surfaceGroups && surfaceGroups.length > 0) {
     const matchedCandidate2 = candidates.find(c => c.isMatched);
     if (matchedCandidate2) {
-      const matchedFamily = findFamilyForBid(matchedCandidate2.bidName, intentFamilies);
+      const matchedFamily = findGroupForBid(matchedCandidate2.bidName, surfaceGroups);
       if (matchedFamily) {
         const nearMisses: { call: Call; reason: string }[] = [];
         for (const c of candidates) {

@@ -48,7 +48,7 @@ export function assembleBidFeedback(
   const teachingResolution = resolveTeachingAnswer(
     expectedResult,
     strategyEval?.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? undefined,
+    strategyEval?.surfaceGroups ?? undefined,
   );
   const grade = gradeBid(userCall, teachingResolution);
   return {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../engine/types";
-import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, IntentFamily } from "../../core/contracts";
+import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, SurfaceGroup } from "../../core/contracts";
 import { BidGrade, gradeBid, resolveTeachingAnswer } from "../teaching-resolution";
 
 function makeCandidate(overrides: Partial<ResolvedCandidateDTO> = {}): ResolvedCandidateDTO {
@@ -640,8 +640,8 @@ describe("5-grade gradeBid", () => {
 });
 
 describe("resolveTeachingAnswer near-miss population", () => {
-  test("populates nearMissCalls from candidates sharing intent family with matched bid that have failedConditions", () => {
-    const families: IntentFamily[] = [
+  test("populates nearMissCalls from candidates sharing surface group with matched bid that have failedConditions", () => {
+    const families: SurfaceGroup[] = [
       {
         id: "raise-family",
         label: "Raises",
@@ -675,7 +675,7 @@ describe("resolveTeachingAnswer near-miss population", () => {
     expect(result.nearMissCalls![0]!.reason).toContain("13+ HCP required");
   });
 
-  test("does not populate nearMissCalls when no intent families provided", () => {
+  test("does not populate nearMissCalls when no surface groups provided", () => {
     const result = resolveTeachingAnswer(
       makeBidResult([
         makeCandidate({
@@ -697,7 +697,7 @@ describe("resolveTeachingAnswer near-miss population", () => {
   });
 
   test("does not include candidates that passed all conditions (already eligible) as near-miss", () => {
-    const families: IntentFamily[] = [
+    const families: SurfaceGroup[] = [
       {
         id: "raise-family",
         label: "Raises",
@@ -732,7 +732,7 @@ describe("resolveTeachingAnswer near-miss population", () => {
   });
 });
 
-describe("IntentFamily-aware grading", () => {
+describe("SurfaceGroup-aware grading", () => {
   const matchedCandidate = makeCandidate({
     bidName: "relay-a",
     isMatched: true,
@@ -756,7 +756,7 @@ describe("IntentFamily-aware grading", () => {
   };
 
   test("equivalent_encoding family → fullCredit true for group members", () => {
-    const family: IntentFamily = {
+    const family: SurfaceGroup = {
       id: "relay-paths-family",
       label: "Relay Paths",
       members: ["relay-a", "relay-b"],
@@ -777,7 +777,7 @@ describe("IntentFamily-aware grading", () => {
   });
 
   test("mutually_exclusive family → tier from AlternativeGroup preserved", () => {
-    const family: IntentFamily = {
+    const family: SurfaceGroup = {
       id: "raise-strengths",
       label: "Raise Strengths",
       members: ["relay-a", "relay-b"],
@@ -812,7 +812,7 @@ describe("IntentFamily-aware grading", () => {
   });
 
   test("policy_alternative family → fullCredit false", () => {
-    const family: IntentFamily = {
+    const family: SurfaceGroup = {
       id: "style-choices",
       label: "Style Choices",
       members: ["relay-a", "relay-b"],

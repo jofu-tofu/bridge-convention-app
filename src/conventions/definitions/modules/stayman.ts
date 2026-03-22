@@ -577,7 +577,7 @@ const posteriorEvaluators = createPosteriorFactEvaluators([
 ]));
 
 /** Factory: creates Stayman facts parameterized by system config. */
-function createStaymanFacts(sys: SystemConfig): FactCatalogExtension {
+export function createStaymanFacts(sys: SystemConfig): FactCatalogExtension {
   return {
     definitions: [...STAYMAN_FACTS, ...NT_POSTERIOR_FACTS],
     evaluators: createStaymanEvaluators(sys),

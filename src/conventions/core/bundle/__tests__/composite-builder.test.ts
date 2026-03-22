@@ -16,7 +16,7 @@ function makeBundle(
     description: "test",
     memberIds,
     dealConstraints: { seats: [] },
-    derivedTeaching: { acceptableAlternatives: [], intentFamilies: [], relations: [] },
+    derivedTeaching: { acceptableAlternatives: [], surfaceGroups: [], relations: [] },
     ...extras,
   };
 }
@@ -61,7 +61,7 @@ describe("composeBundles", () => {
     const composite = composeBundles("ab", "AB", [a, b]);
 
     expect(composite.derivedTeaching.acceptableAlternatives).toEqual([]);
-    expect(composite.derivedTeaching.intentFamilies).toEqual([]);
+    expect(composite.derivedTeaching.surfaceGroups).toEqual([]);
     expect(composite.systemProfile).toBeUndefined();
   });
 
@@ -110,7 +110,7 @@ describe("composeBundles", () => {
         acceptableAlternatives: [
           { label: "group-a", members: ["m1", "m2"], tier: "preferred" as const },
         ],
-        intentFamilies: [],
+        surfaceGroups: [],
         relations: [],
       },
     });
@@ -119,7 +119,7 @@ describe("composeBundles", () => {
         acceptableAlternatives: [
           { label: "group-b", members: ["m3"], tier: "alternative" as const },
         ],
-        intentFamilies: [],
+        surfaceGroups: [],
         relations: [],
       },
     });

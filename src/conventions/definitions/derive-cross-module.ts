@@ -1,5 +1,5 @@
 /**
- * Derives ALL pedagogical content (relations, alternatives, intent families)
+ * Derives ALL pedagogical content (relations, alternatives, surface groups)
  * from `teachingTags` on MeaningSurfaces.
  *
  * Scans all surfaces across all modules, groups by (tagId, scope),
@@ -14,7 +14,7 @@ import type { ConventionModule } from "../core/convention-module";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { TeachingTagDef } from "../../core/contracts/teaching-tag";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
-import type { AlternativeGroup, IntentFamily, IntentRelationship } from "../../core/contracts/teaching-grading";
+import type { AlternativeGroup, SurfaceGroup, SurfaceGroupRelationship } from "../../core/contracts/teaching-grading";
 
 // ── Internal types ──────────────────────────────────────────────────
 
@@ -186,12 +186,12 @@ function deriveAlternativeGroup(
   };
 }
 
-function deriveIntentFamily(
+function deriveSurfaceGroup(
   groupKey: string,
   scope: string,
   members: readonly TagMember[],
-  derives: { readonly type: "intent-family"; readonly relationship: IntentRelationship; readonly description: string },
-): IntentFamily {
+  derives: { readonly type: "surface-group"; readonly relationship: SurfaceGroupRelationship; readonly description: string },
+): SurfaceGroup {
   return {
     id: groupKey,
     label: scope,
@@ -206,13 +206,13 @@ function deriveIntentFamily(
 export interface DerivedPedagogicalContent {
   readonly relations: readonly TeachingRelation[];
   readonly alternatives: readonly AlternativeGroup[];
-  readonly intentFamilies: readonly IntentFamily[];
+  readonly surfaceGroups: readonly SurfaceGroup[];
 }
 
 /**
  * Derive all pedagogical content from `teachingTags` on surfaces.
  * Scans all surfaces across all modules, groups by (tagId, scope),
- * validates, and produces relations, alternative groups, and intent families.
+ * validates, and produces relations, alternative groups, and surface groups.
  */
 export function deriveTeachingContent(
   modules: readonly ConventionModule[],
@@ -233,7 +233,7 @@ export function deriveTeachingContent(
 
   const relations: TeachingRelation[] = [];
   const alternatives: AlternativeGroup[] = [];
-  const intentFamilies: IntentFamily[] = [];
+  const surfaceGroups: SurfaceGroup[] = [];
 
   for (const [groupKey, members] of groups) {
     if (!validateTagGroup(groupKey, members)) continue;
@@ -248,12 +248,12 @@ export function deriveTeachingContent(
       case "alternative-group":
         alternatives.push(deriveAlternativeGroup(scope, members, derives));
         break;
-      case "intent-family":
-        intentFamilies.push(deriveIntentFamily(groupKey, scope, members, derives));
+      case "surface-group":
+        surfaceGroups.push(deriveSurfaceGroup(groupKey, scope, members, derives));
         break;
     }
   }
 
-  return { relations, alternatives, intentFamilies };
+  return { relations, alternatives, surfaceGroups };
 }
 

@@ -7,7 +7,7 @@ import type { DealConstraints, SeatConstraint } from "../../../engine/types";
  * Compose multiple convention bundles into a single composite bundle.
  *
  * Profile merge: concatenates module arrays from all profiles.
- * DerivedTeaching merge: concatenates acceptableAlternatives and intentFamilies.
+ * DerivedTeaching merge: concatenates acceptableAlternatives and surfaceGroups.
  *
  * Prerequisite: bundles must have non-overlapping activation contexts
  * (e.g., Bergen on 1H/1S, Stayman on 1NT — no conflict).
@@ -48,7 +48,7 @@ export function composeBundles(
     declaredCapabilities,
     derivedTeaching: {
       acceptableAlternatives: bundles.flatMap((b) => b.derivedTeaching.acceptableAlternatives),
-      intentFamilies: bundles.flatMap((b) => b.derivedTeaching.intentFamilies),
+      surfaceGroups: bundles.flatMap((b) => b.derivedTeaching.surfaceGroups),
       relations: bundles.flatMap((b) => b.derivedTeaching.relations),
     },
   };

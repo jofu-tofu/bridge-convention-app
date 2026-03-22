@@ -20,7 +20,7 @@ import { nextSeat, partnerSeat } from "../engine/constants";
 const EMPTY_EVALUATION: StrategyEvaluation = {
   practicalRecommendation: null,
   acceptableAlternatives: null,
-  intentFamilies: null,
+  surfaceGroups: null,
   provenance: null,
   arbitration: null,
   posteriorSummary: null,

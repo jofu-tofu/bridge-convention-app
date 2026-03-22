@@ -1,6 +1,6 @@
 /**
  * Pedagogical tag types — general-purpose vocabulary for deriving
- * pedagogical relations, alternative groups, and intent families
+ * pedagogical relations, alternative groups, and surface groups
  * from surface-level annotations.
  *
  * There are exactly 6 general tags (one per relation kind + alternatives).
@@ -13,7 +13,7 @@
  */
 
 import type { TeachingRelationKind } from "./teaching-projection";
-import type { IntentRelationship } from "./teaching-grading";
+import type { SurfaceGroupRelationship } from "./teaching-grading";
 
 /** What a single tag derives. Each tag derives exactly one kind of output. */
 export type TagDerivation =
@@ -27,8 +27,8 @@ export type TagDerivation =
       readonly tier: "preferred" | "alternative";
     }
   | {
-      readonly type: "intent-family";
-      readonly relationship: IntentRelationship;
+      readonly type: "surface-group";
+      readonly relationship: SurfaceGroupRelationship;
       readonly description: string;
     };
 

@@ -1,7 +1,7 @@
 import type { Call } from "../../engine/types";
 
 /** Discriminator for how members within a family are related. */
-export type IntentRelationship =
+export type SurfaceGroupRelationship =
   | "mutually_exclusive"    // Only one applies per hand (e.g., game vs limit raise)
   | "equivalent_encoding"   // Same meaning, different call (e.g., relay paths)
   | "policy_alternative";   // Both valid, convention policy prefers one
@@ -28,11 +28,11 @@ export interface AlternativeGroup {
 /** Declares that multiple meaning leaves belong to the same conceptual family.
  *  Members reference meaningIds (bidName). Convention-level grouping for
  *  diagnostics, teaching, and relationship-aware grading. */
-export interface IntentFamily {
+export interface SurfaceGroup {
   readonly id: string;
   readonly label: string;
   readonly members: readonly string[];
-  readonly relationship: IntentRelationship;
+  readonly relationship: SurfaceGroupRelationship;
   readonly description: string;
 }
 
@@ -51,8 +51,8 @@ export interface AcceptableBid {
   readonly reason: string;
   readonly fullCredit: boolean;
   readonly tier: "preferred" | "alternative";
-  /** Intent family relationship, if the bid belongs to an IntentFamily. */
-  readonly relationship?: IntentRelationship;
+  /** Intent family relationship, if the bid belongs to an SurfaceGroup. */
+  readonly relationship?: SurfaceGroupRelationship;
   /** Originating module — threaded from ResolvedCandidateDTO. */
   readonly moduleId?: string;
 }
@@ -65,7 +65,7 @@ export interface TeachingResolution {
   /** All calls in the truth set (correct bids that aren't the primary recommendation).
    *  When populated, matching a truth-set call yields CorrectNotPreferred instead of Incorrect. */
   readonly truthSetCalls?: readonly Call[];
-  /** Calls that are in the same intent family as a correct answer but fail a constraint.
+  /** Calls that are in the same surface group as a correct answer but fail a constraint.
    *  When populated, matching a near-miss call yields NearMiss instead of Incorrect. */
   readonly nearMissCalls?: readonly { call: Call; reason: string }[];
 }

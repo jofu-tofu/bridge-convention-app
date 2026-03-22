@@ -10,7 +10,7 @@ import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types"
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import type { RuleModule } from "../core/rule-module";
-import type { AlternativeGroup, IntentFamily } from "../../core/contracts/teaching-grading";
+import type { AlternativeGroup, SurfaceGroup } from "../../core/contracts/teaching-grading";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import { getModules } from "./module-registry";
 import { deriveTeachingContent } from "./derive-cross-module";
@@ -37,14 +37,14 @@ import { weakTwosRules } from "./modules/weak-twos/weak-twos-rules";
 /** Aggregate teaching/grading content from module IDs and rule modules. */
 function aggregateTeachingContent(moduleIds: readonly string[], ruleModules: readonly RuleModule[]): {
   acceptableAlternatives: readonly AlternativeGroup[];
-  intentFamilies: readonly IntentFamily[];
+  surfaceGroups: readonly SurfaceGroup[];
   relations: readonly TeachingRelation[];
 } {
   const modules = getModules(moduleIds);
   const derived = deriveTeachingContent(modules);
   return {
     acceptableAlternatives: derived.alternatives,
-    intentFamilies: [...derived.intentFamilies, ...deriveIntentFamiliesFromRules(ruleModules)],
+    surfaceGroups: [...derived.surfaceGroups, ...deriveSurfaceGroupsFromRules(ruleModules)],
     relations: derived.relations,
   };
 }
@@ -57,22 +57,22 @@ function aggregateTeachingContent(moduleIds: readonly string[], ruleModules: rea
  * Authors provide BundleInput; derived fields are computed here.
  */
 function buildBundle(def: BundleInput): ConventionBundle {
-  const { acceptableAlternatives, intentFamilies, relations } = aggregateTeachingContent(def.memberIds, def.ruleModules ?? []);
+  const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(def.memberIds, def.ruleModules ?? []);
   return {
     ...def,
-    derivedTeaching: { acceptableAlternatives, intentFamilies, relations },
+    derivedTeaching: { acceptableAlternatives, surfaceGroups, relations },
   };
 }
 
 /**
  * Auto-derive IntentFamilies from rule module structure.
  * Each rule with 2+ claims represents surfaces competing at the same
- * decision point — a natural IntentFamily with mutually_exclusive relationship.
+ * decision point — a natural SurfaceGroup with mutually_exclusive relationship.
  */
-function deriveIntentFamiliesFromRules(
+function deriveSurfaceGroupsFromRules(
   ruleModules: readonly RuleModule[],
-): IntentFamily[] {
-  const families: IntentFamily[] = [];
+): SurfaceGroup[] {
+  const families: SurfaceGroup[] = [];
 
   for (const mod of ruleModules) {
     for (const rule of mod.rules) {

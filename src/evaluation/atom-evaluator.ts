@@ -327,7 +327,7 @@ export function gradeAtomBid(
   const teachingResolution = resolveTeachingAnswer(
     result,
     strategyEval?.acceptableAlternatives ?? bundle.derivedTeaching.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? bundle.derivedTeaching.intentFamilies ?? undefined,
+    strategyEval?.surfaceGroups ?? bundle.derivedTeaching.surfaceGroups ?? undefined,
   );
   const grade = gradeBid(submittedCall, teachingResolution);
   const bidFeedback = {

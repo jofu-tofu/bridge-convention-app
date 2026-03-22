@@ -355,7 +355,7 @@ export function gradePlaythroughBid(
   const teachingResolution = resolveTeachingAnswer(
     result,
     strategyEval?.acceptableAlternatives ?? bundleForAlts?.derivedTeaching.acceptableAlternatives ?? undefined,
-    strategyEval?.intentFamilies ?? bundleForAlts?.derivedTeaching.intentFamilies ?? undefined,
+    strategyEval?.surfaceGroups ?? bundleForAlts?.derivedTeaching.surfaceGroups ?? undefined,
   );
   const grade = gradeBid(submittedCall, teachingResolution);
   const bidFeedback = {
