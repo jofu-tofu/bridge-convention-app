@@ -12,22 +12,10 @@
 
 <DebugSection
   title="Provenance"
-  preview={provenance ? `${provenance.transforms.length} transforms, ${provenance.applicability.evaluatedConditions.length} conditions, ${provenance.encoding.length} encoders` : null}
+  preview={provenance ? `${provenance.applicability.evaluatedConditions.length} conditions, ${provenance.encoding.length} encoders` : null}
 >
   {#if provenance}
     {@const prov = provenance}
-
-    <!-- Transforms -->
-    {#if prov.transforms.length > 0}
-      <DebugSection title="Transforms" count={prov.transforms.length} nested>
-        {#each prov.transforms as tr (tr.transformId)}
-          <div class="text-[10px] leading-tight">
-            <span class="text-orange-300">{tr.kind}</span>
-            <span class="text-text-muted ml-0.5">{tr.targetId} — {tr.reason}</span>
-          </div>
-        {/each}
-      </DebugSection>
-    {/if}
 
     <!-- Applicability -->
     {#if prov.applicability.evaluatedConditions.length > 0}

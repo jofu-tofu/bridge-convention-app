@@ -176,7 +176,6 @@ function buildProvenance(
   return {
     applicability,
     activation: [], // activation traces not yet implemented — always empty
-    transforms: [],
     encoding: traces.encoding,
     legality: traces.legality,
     arbitration,
@@ -275,7 +274,6 @@ export function arbitrateMeanings(
 
   return {
     selected, truthSet: finalTruthSet, acceptableSet, recommended, eliminations,
-    transformTraces: undefined,
     provenance, evidenceBundle,
   };
 }

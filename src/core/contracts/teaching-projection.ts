@@ -72,7 +72,6 @@ export interface ConventionContribution {
   readonly moduleId: string;
   readonly role: "primary" | "alternative" | "suppressed";
   readonly meaningsProposed: readonly string[];
-  readonly transformsApplied: readonly string[];
 }
 
 /** Compact description of a class of hands consistent with constraints. */

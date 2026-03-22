@@ -46,8 +46,6 @@ export function formatEliminationStage(stage: string): string {
       return "Convention not active";
     case "applicability":
       return "Hand doesn't qualify";
-    case "transform":
-      return "Suppressed by interference";
     case "encoding":
       return "Encoding failed";
     case "legality":

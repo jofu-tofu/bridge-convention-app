@@ -42,11 +42,6 @@ export {
   zipProposalsWithSurfaces,
 } from "./pipeline/meaning-arbitrator";
 
-export {
-  composeSurfaces,
-  mergeUpstreamProvenance,
-} from "./pipeline/surface-composer";
-
 // ── Runtime (remaining) ─────────────────────────────────────────────────
 export type {
   RuntimeModule,

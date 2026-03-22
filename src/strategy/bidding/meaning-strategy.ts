@@ -7,7 +7,6 @@ import type {
   IntentFamily,
 } from "../../core/contracts";
 import type { BidMeaning, ConstraintDimension } from "../../core/contracts/meaning";
-import type { CandidateTransform } from "../../core/contracts/meaning";
 import type { ArbitrationResult } from "../../core/contracts/module-surface";
 import type { EvaluatedFacts, FactCatalog } from "../../core/contracts/fact-catalog";
 import type { PosteriorFactProvider } from "../../core/contracts/posterior";
@@ -18,8 +17,6 @@ import {
   evaluateAllBidMeanings,
   arbitrateMeanings,
   zipProposalsWithSurfaces,
-  composeSurfaces,
-  mergeUpstreamProvenance,
 } from "../../conventions/core";
 import { getLegalCalls } from "../../engine/auction";
 import { partnerSeat } from "../../engine/constants";
@@ -29,9 +26,9 @@ import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
 
 // ─── Core Pipeline ─────────────────────────────────────────────
 //
-// The meaning pipeline is a 5-step pure transformation:
+// The meaning pipeline is a 4-step pure transformation:
 //
-//   surfaces → compose → evaluate facts → evaluate meanings → arbitrate
+//   surfaces → evaluate facts → evaluate meanings → arbitrate
 //
 // `runMeaningPipeline` is the single entry point used by the protocol
 // adapter. Everything before the pipeline (surface selection via protocol
@@ -41,7 +38,6 @@ import { buildBidResult, buildTeachingProjection } from "./bid-result-builder";
 /** Input to the core meaning pipeline. */
 export interface PipelineInput {
   readonly surfaces: readonly BidMeaning[];
-  readonly transforms?: readonly CandidateTransform[];
   readonly context: BiddingContext;
   readonly catalog: FactCatalog;
   readonly posteriorProvider?: PosteriorFactProvider;
@@ -59,19 +55,13 @@ export interface PipelineOutput {
 }
 
 /**
- * Core meaning pipeline: compose → evaluate facts → evaluate meanings → arbitrate.
+ * Core meaning pipeline: evaluate facts → evaluate meanings → arbitrate.
  *
  * Pure transformation — no caching, no side effects, no state mutation.
  * Callers handle surface selection (upstream) and result mapping (downstream).
  */
 export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
-  // Step 1: Compose surfaces (apply suppress/inject/remap transforms)
-  const { composedMeanings, appliedTransforms, diagnostics } = composeSurfaces(
-    input.surfaces,
-    input.transforms,
-  );
-
-  // Step 2: Evaluate facts against the hand
+  // Step 1: Evaluate facts against the hand
   const vulFlag = input.context.vulnerability != null
     ? isVulnerable(input.context.seat, input.context.vulnerability)
     : undefined;
@@ -85,7 +75,7 @@ export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
     },
   );
 
-  // Step 3: Evaluate each surface's clauses against the facts.
+  // Step 2: Evaluate each surface's clauses against the facts.
   // Thread fact catalog as a FactCatalogExtension so deriveSpecificity()
   // can resolve constrainsDimensions for module-derived facts.
   const catalogAsExtension = {
@@ -93,17 +83,14 @@ export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
     evaluators: input.catalog.evaluators,
   };
   const proposals = evaluateAllBidMeanings(
-    composedMeanings, facts, undefined,
+    input.surfaces, facts, undefined,
     [catalogAsExtension], input.inheritedDimsLookup,
   );
 
-  // Step 4: Arbitrate — encode, gate-check, rank, and select winner
-  const inputs = zipProposalsWithSurfaces(proposals, composedMeanings);
+  // Step 3: Arbitrate — encode, gate-check, rank, and select winner
+  const inputs = zipProposalsWithSurfaces(proposals, input.surfaces);
   const legalCalls = getLegalCalls(input.context.auction, input.context.seat);
-  const arbitration = arbitrateMeanings(inputs, { legalCalls });
-
-  // Step 5: Graft upstream provenance (transform traces) into the result
-  const result = mergeUpstreamProvenance(arbitration, appliedTransforms, diagnostics);
+  const result = arbitrateMeanings(inputs, { legalCalls });
 
   return { result, facts };
 }
@@ -112,7 +99,7 @@ export function runMeaningPipeline(input: PipelineInput): PipelineOutput {
 
 /**
  * Create a ConventionStrategy from a set of MeaningSurfaces.
- * Tree-free: uses the meaning pipeline (compose → facts → evaluate → arbitrate).
+ * Tree-free: uses the meaning pipeline (facts → evaluate → arbitrate).
  */
 export function meaningToStrategy(
   surfaces: readonly BidMeaning[],
@@ -120,7 +107,6 @@ export function meaningToStrategy(
   options?: {
     name?: string;
     factCatalog?: FactCatalog;
-    transforms?: readonly CandidateTransform[];
     acceptableAlternatives?: readonly AlternativeGroup[];
     intentFamilies?: readonly IntentFamily[];
   },
@@ -148,7 +134,6 @@ export function meaningToStrategy(
     suggest(context: BiddingContext): BidResult | null {
       const { result, facts } = runMeaningPipeline({
         surfaces,
-        transforms: options?.transforms,
         context,
         catalog,
       });

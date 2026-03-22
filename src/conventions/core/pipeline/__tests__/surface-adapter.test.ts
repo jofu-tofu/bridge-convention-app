@@ -79,14 +79,6 @@ describe("adaptMeaningSurface", () => {
     expect(adapted.surfaceBindings).toEqual({ suit: "hearts" });
   });
 
-  it("maps transforms when present", () => {
-    const surface = makeSurface();
-    // BidMeaning does not have transforms, so adapted should have empty/undefined
-    const adapted = adaptMeaningSurface(surface);
-
-    expect(adapted.transforms).toBeUndefined();
-  });
-
   it("maps exclusivityGroup when present on the surface", () => {
     // BidMeaning does not have exclusivityGroup natively — adapted should be undefined
     const surface = makeSurface();

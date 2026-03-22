@@ -1,5 +1,5 @@
 import type { AuctionPattern, PublicGuard } from "./predicates";
-import type { CandidateTransform, SemanticClassId, RecommendationBand } from "./meaning";
+import type { SemanticClassId, RecommendationBand } from "./meaning";
 import type { FactOperator } from "./meaning";
 import type { Call } from "../../engine/types";
 
@@ -46,7 +46,6 @@ export interface DecisionSurface {
   readonly encoderKind: DeclaredEncoderKind;
   readonly surfaceBindings?: Readonly<Record<string, unknown>>;
   readonly localRegisters?: Readonly<Record<string, unknown>>;
-  readonly transforms?: readonly CandidateTransform[];
   readonly modulePrecedence: number;
   readonly exclusivityGroup?: string;
   readonly defaultSemanticClassId?: SemanticClassId;

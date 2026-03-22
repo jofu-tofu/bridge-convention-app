@@ -146,41 +146,6 @@ export function compareRanking(a: RankingMetadata, b: RankingMetadata): number {
   return a.intraModuleOrder - b.intraModuleOrder;
 }
 
-/**
- * Structural transform applied to the meaning candidate pool before/during arbitration.
- *
- * `targetId` matches against `meaningId` for suppress/remap, or is set to the
- * injected surface's meaningId for inject transforms. Suppress may also match
- * against `semanticClassId` as a batch operation. The arbitrator tries meaningId
- * first, then semanticClassId — first match wins.
- */
-export interface CandidateTransform {
-  readonly transformId: string;
-  readonly kind: "suppress" | "inject" | "remap";
-  readonly targetId: string;
-  readonly sourceModuleId: string;
-  readonly reason: string;
-  readonly surface?: BidMeaning; // required when kind === "inject"
-  readonly newCall?: Call; // shorthand when remap only changes the call
-  readonly remapTo?: {
-    readonly meaningId?: string;
-    readonly semanticClassId?: string;
-    readonly encoderRef?: string;
-    readonly defaultCall?: Call;
-  };
-}
-
-/** Trace of a transform applied during arbitration. */
-export interface TransformTrace {
-  readonly transformId: string;
-  readonly kind: "suppress" | "inject" | "remap";
-  readonly targetId: string;
-  readonly sourceModuleId: string;
-  readonly reason: string;
-  /** IDs of candidates/meanings affected by this transform. */
-  readonly affectedIds?: readonly string[];
-}
-
 // ---------------------------------------------------------------------------
 // BidMeaning types (merged from meaning-surface.ts to break circular dep)
 // ---------------------------------------------------------------------------

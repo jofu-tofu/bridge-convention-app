@@ -28,7 +28,6 @@ interface ProposalResult {
 
 /**
  * Evaluate a single proposal through gate checks, eligibility building, and classification.
- * Transforms are handled upstream by `composeSurfaces()` — this function never sees suppressed proposals.
  */
 export function evaluateProposal(
   input: ArbitrationInput,

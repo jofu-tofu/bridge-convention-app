@@ -153,7 +153,6 @@ function buildConventionContributions(
   const moduleMap = new Map<string, {
     role: ConventionContribution["role"];
     meanings: Set<string>;
-    transforms: Set<string>;
   }>();
 
   // Selected module is primary
@@ -179,17 +178,10 @@ function buildConventionContributions(
     // Don't override primary/alternative with suppressed
   }
 
-  // Transform contributions
-  for (const transform of provenance.transforms) {
-    const entry = getOrCreateModuleEntry(moduleMap, transform.sourceModuleId);
-    entry.transforms.add(transform.transformId);
-  }
-
   return [...moduleMap.entries()].map(([moduleId, data]) => ({
     moduleId,
     role: data.role,
     meaningsProposed: [...data.meanings],
-    transformsApplied: [...data.transforms],
   }));
 }
 
@@ -197,13 +189,12 @@ function getOrCreateModuleEntry(
   map: Map<string, {
     role: ConventionContribution["role"];
     meanings: Set<string>;
-    transforms: Set<string>;
   }>,
   moduleId: string,
-): { role: ConventionContribution["role"]; meanings: Set<string>; transforms: Set<string> } {
+): { role: ConventionContribution["role"]; meanings: Set<string> } {
   let entry = map.get(moduleId);
   if (!entry) {
-    entry = { role: "suppressed", meanings: new Set(), transforms: new Set() };
+    entry = { role: "suppressed", meanings: new Set() };
     map.set(moduleId, entry);
   }
   return entry;

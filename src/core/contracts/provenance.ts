@@ -1,10 +1,5 @@
 import type { Call } from "../../engine/types";
 import type { ConditionEvidence } from "./evidence-bundle";
-import type { TransformTrace } from "./meaning";
-import type { CompositionDiagnostic } from "./module-surface";
-
-/** @deprecated Use TransformTrace directly — affectedIds is now on TransformTrace. */
-export type TransformTraceEntry = TransformTrace;
 
 /** Kind of encoder used for call assignment. */
 export type EncoderKind = "default-call" | "resolver" | "alternate-encoding" | "frontier-step" | "relay-map";
@@ -15,8 +10,6 @@ export interface DecisionProvenance {
   readonly applicability: ApplicabilityEvidence;
   /** Module activation traces (which modules were live and why). */
   readonly activation: readonly ActivationTrace[];
-  /** Transforms applied during arbitration (suppress, inject, remap). */
-  readonly transforms: readonly TransformTrace[];
   /** Encoding traces (how meanings became concrete calls). */
   readonly encoding: readonly EncodingTrace[];
   /** Legality traces (which calls were legal/illegal). */
@@ -27,8 +20,6 @@ export interface DecisionProvenance {
   readonly eliminations: readonly EliminationTrace[];
   /** Handoff traces (module-to-module delegation). */
   readonly handoffs: readonly HandoffTrace[];
-  /** Surface composition diagnostics (suppress/inject/remap application notes). */
-  readonly surfaceDiagnostics?: readonly CompositionDiagnostic[];
 }
 
 /** Evidence for why a candidate's conditions were or weren't satisfied. */
@@ -42,7 +33,7 @@ export interface EliminationTrace {
   /** meaningId or callRef of the eliminated candidate. */
   readonly candidateId: string;
   /** Pipeline stage where elimination occurred. */
-  readonly stage: "activation" | "applicability" | "transform" | "encoding" | "legality" | "arbitration";
+  readonly stage: "activation" | "applicability" | "encoding" | "legality" | "arbitration";
   /** Human-readable reason for elimination. */
   readonly reason: string;
   /** Supporting evidence (evaluated conditions). */

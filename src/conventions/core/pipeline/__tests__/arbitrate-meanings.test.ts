@@ -1,18 +1,9 @@
 // Characterization tests for arbitrateMeanings() — provenance, multi-proposal, and type guards.
-// Transform handling moved to composeSurfaces() in surface-composer.ts.
 
 import { describe, it, expect } from "vitest";
 import { arbitrateMeanings } from "../meaning-arbitrator";
 import { BidSuit } from "../../../../engine/types";
 import { makeArbitrationInput, makeCall } from "./pipeline-test-helpers";
-
-describe("arbitrateMeanings — type guard", () => {
-  it("does not accept transforms option (moved to composeSurfaces)", () => {
-    const input = makeArbitrationInput();
-    // @ts-expect-error transforms removed from arbitrateMeanings options
-    arbitrateMeanings([input], { transforms: [] });
-  });
-});
 
 describe("arbitrateMeanings — provenance characterization", () => {
   it("provenance includes applicability evidence from selected candidate", () => {
@@ -81,13 +72,6 @@ describe("arbitrateMeanings — provenance characterization", () => {
     const elim = result.provenance!.eliminations.find(e => e.candidateId === "test:fail");
     expect(elim).toBeDefined();
     expect(elim!.stage).toBe("applicability");
-  });
-
-  it("provenance.transforms is empty (transforms handled upstream by composeSurfaces)", () => {
-    const input = makeArbitrationInput({ meaningId: "test:bid" });
-    const result = arbitrateMeanings([input]);
-
-    expect(result.provenance!.transforms).toHaveLength(0);
   });
 
   it("empty applicability evidence when no candidate selected", () => {

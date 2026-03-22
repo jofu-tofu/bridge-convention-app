@@ -129,7 +129,6 @@ export function makeProvenance(overrides: Partial<DecisionProvenance> = {}): Dec
   return {
     applicability: { factDependencies: [], evaluatedConditions: [] },
     activation: [],
-    transforms: [],
     encoding: [],
     legality: [],
     arbitration: [],

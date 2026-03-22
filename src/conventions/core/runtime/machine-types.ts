@@ -1,6 +1,5 @@
 import type { PublicSnapshot, MachineRegisters } from "../../../core/contracts/module-surface";
 export type { MachineRegisters };
-import type { CandidateTransform } from "../../../core/contracts/meaning";
 import type { ForcingState } from "../../../core/contracts/bidding";
 import type { Call, Seat, BidSuit, Auction } from "../../../engine/types";
 import { areSamePartnership } from "../../../engine/constants";
@@ -16,7 +15,6 @@ export interface MachineState {
   /** Tags exported when this state is active (e.g., "agreement.pending").
    *  Passed through 1:1 to FrameStateSpec.exportTags by the converter. */
   readonly exportTags?: readonly string[];
-  readonly transforms?: readonly CandidateTransform[];
   readonly submachineRef?: {
     readonly machineId: string; // Which submachine to invoke
     readonly returnTarget: string; // Where to go when submachine completes
@@ -90,7 +88,6 @@ export interface ConversationMachine {
 export interface MachineEvalResult {
   readonly context: MachineContext;
   readonly activeSurfaceGroupIds: readonly string[];
-  readonly collectedTransforms: readonly CandidateTransform[];
   readonly diagnostics: readonly RuntimeDiagnostic[];
   readonly handoffTraces: readonly HandoffTrace[];
 }

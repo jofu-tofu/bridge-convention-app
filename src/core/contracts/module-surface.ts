@@ -1,8 +1,8 @@
 import type { Call } from "../../engine/types";
 import type { CandidateEligibility } from "./tree-evaluation";
 import type { ForcingState } from "./bidding";
-import type { MeaningProposal, TransformTrace } from "./meaning";
-import type { DecisionProvenance, TransformTraceEntry } from "./provenance";
+import type { MeaningProposal } from "./meaning";
+import type { DecisionProvenance } from "./provenance";
 import type { BidMeaning } from "./meaning";
 import type { PublicEvent, PublicConstraint } from "./agreement-module";
 import type { LatentBranchSet } from "./posterior";
@@ -64,28 +64,12 @@ export interface ArbitrationResult {
   readonly acceptableSet: readonly EncodedProposal[];
   readonly recommended: readonly EncodedProposal[];
   readonly eliminations: readonly EliminationRecord[];
-  readonly transformTraces?: readonly TransformTrace[];
   readonly provenance?: DecisionProvenance;
   readonly evidenceBundle?: EvidenceBundle;
 }
 
 /** Build a PublicSnapshot from machine state fields.
  *  Takes plain fields to avoid importing from conventions/. */
-/** Result of upstream surface composition (transform application before pipeline). */
-export interface CompositionResult {
-  readonly composedMeanings: readonly BidMeaning[];
-  readonly appliedTransforms: readonly TransformApplication[];
-  readonly diagnostics: readonly CompositionDiagnostic[];
-}
-
-/** Record of a single transform applied during surface composition. */
-export type TransformApplication = TransformTraceEntry;
-
-/** Diagnostic emitted during surface composition. */
-export interface CompositionDiagnostic {
-  readonly level: "info" | "warn";
-  readonly message: string;
-}
 
 export function buildPublicSnapshot(params: {
   activeModuleIds: readonly string[];

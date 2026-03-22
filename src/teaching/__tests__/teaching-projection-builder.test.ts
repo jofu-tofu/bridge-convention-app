@@ -422,41 +422,6 @@ describe("projectTeaching", () => {
     expect(typeof projection.handSpace.shapeDescription).toBe("string");
   });
 
-  test("suppressed module contributions are tracked with transforms", () => {
-    const liveProposal = makeProposal({
-      meaningId: "stayman:ask-major",
-      moduleId: "stayman",
-    });
-    const liveEncoded = makeEncoded({
-      proposal: liveProposal,
-      call: makeCall(2, BidSuit.Clubs),
-    });
-
-    const arbitration = makeArbitration({
-      selected: liveEncoded,
-      truthSet: [liveEncoded],
-      recommended: [liveEncoded],
-    });
-    const provenance = makeProvenance({
-      transforms: [
-        {
-          transformId: "suppress-transfer",
-          kind: "suppress",
-          targetId: "transfer:hearts",
-          sourceModuleId: "stayman",
-          reason: "Stayman takes priority",
-        },
-      ],
-    });
-
-    const projection = projectTeaching(arbitration, provenance);
-
-    // Stayman's transform shows up in its contribution
-    const staymanContrib = projection.conventionsApplied.find(cc => cc.moduleId === "stayman");
-    expect(staymanContrib).toBeDefined();
-    expect(staymanContrib!.transformsApplied).toContain("suppress-transfer");
-  });
-
   test("with catalog: primary explanation nodes get explanationId and templateKey enrichment", () => {
     const catalog: ExplanationCatalog = createExplanationCatalog([
       {

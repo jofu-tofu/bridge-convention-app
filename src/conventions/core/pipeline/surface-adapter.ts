@@ -28,7 +28,6 @@ export function adaptMeaningSurface(surface: BidMeaning): DecisionSurface {
     encoderKind: "direct",
     surfaceBindings: surface.surfaceBindings,
     localRegisters: undefined,
-    transforms: undefined,
     modulePrecedence: surface.ranking.modulePrecedence ?? 0,
     exclusivityGroup: undefined,
     defaultSemanticClassId: surface.semanticClassId,

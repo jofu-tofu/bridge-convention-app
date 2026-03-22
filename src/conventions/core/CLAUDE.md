@@ -24,7 +24,6 @@ core/
     meaning-evaluator.ts  evaluateBidMeaning(), evaluateAllBidMeanings() — clause evaluation against facts
     meaning-arbitrator.ts arbitrateMeanings() — tiered selection (band → specificity → precedence), zipProposalsWithSurfaces()
     arbitration-helpers.ts evaluateProposal(), classifyIntoSets() — gate logic and truth/acceptable bucketing
-    surface-composer.ts   composeSurfaces() — suppress/inject/remap transforms, mergeUpstreamProvenance()
     surface-adapter.ts    adaptMeaningSurface() — BidMeaning ↔ DecisionSurface mapping
     encoder-resolver.ts   resolveEncoding() — direct/choice-set/frontier-step/relay-map encoders
     gate-order.ts         evaluateGates() — 4-gate sequence (semantic, obligation, encoder, legality)
@@ -84,12 +83,11 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 **Pipeline flow:**
 1. **Surface selection** — ConversationMachine produces `activeSurfaceGroupIds`, or `surfaceRouter` filters, or all surfaces used
-2. **Surface composition** — `composeSurfaces()` applies suppress/inject/remap transforms
-3. **Fact evaluation** — `evaluateFacts()` runs 3-tier evaluation: primitive (hand → fact), bridge-derived (fact → fact), module-derived (convention-specific)
-4. **Surface evaluation** — `evaluateAllBidMeanings()` checks each surface's clauses against facts → `MeaningProposal[]`
-5. **Encoding resolution** — `resolveEncoding()` per-proposal for non-direct encoders
-6. **Gate evaluation** — `evaluateGates()` 4-gate sequence per proposal
-7. **Arbitration** — `arbitrateMeanings()` selects best proposal (band ranking → specificity → deduplication)
+2. **Fact evaluation** — `evaluateFacts()` runs 3-tier evaluation: primitive (hand → fact), bridge-derived (fact → fact), module-derived (convention-specific)
+3. **Surface evaluation** — `evaluateAllBidMeanings()` checks each surface's clauses against facts → `MeaningProposal[]`
+4. **Encoding resolution** — `resolveEncoding()` per-proposal for non-direct encoders
+5. **Gate evaluation** — `evaluateGates()` 4-gate sequence per proposal
+6. **Arbitration** — `arbitrateMeanings()` selects best proposal (band ranking → specificity → deduplication)
 
 `clauseId`, `description`, and `moduleId` are optional on `BidMeaning`. The `createSurface()` builder stamps them at definition time. `modulePrecedence` defaults to 0. The pipeline derives fallbacks for any surface not created via the builder (via `fillClauseDefaults()` and `?? 0` / `?? "unknown"` defaults).
 
@@ -100,12 +98,12 @@ Every subsystem here exists because simpler designs failed the convention-univer
 `ConversationMachine` in `runtime/machine-types.ts` — hierarchical state machine tracking auction progression.
 
 **Key types:**
-- `MachineState` — `stateId`, `parentId` (hierarchy), `transitions`, `entryEffects`, `surfaceGroupId`, `transforms`
+- `MachineState` — `stateId`, `parentId` (hierarchy), `transitions`, `entryEffects`, `surfaceGroupId`
 - `MachineTransition` — 5-kind `TransitionMatch`: `call`, `any-bid`, `pass`, `opponent-action`, `predicate`. `allowedRoles` field overrides default role matching (see role-safe matching below).
 - `MachineEffect` — sets `forcingState`, `obligation`, `agreedStrain`, `competitionMode`, `captain`, `systemCapabilities`
 - `MachineContext` — includes `interruptedFromStateId` capturing the source state when a scope interrupt fires (provenance for interrupted states)
 
-**`evaluateMachine()`** walks auction entries with descendant-first transition preemption. **Role-safe matching:** `call` and `any-bid` transitions default to self+partner only — opponent bids are blocked unless `allowedRoles` explicitly includes opponents. Use `opponent-action` with `callType: "bid"` to match opponent bids. Output: `MachineEvalResult` with `currentStateId`, `activeSurfaceGroupIds`, `collectedTransforms`. Machine-over-profile precedence: profile = "what's installed", machine = "what's live".
+**`evaluateMachine()`** walks auction entries with descendant-first transition preemption. **Role-safe matching:** `call` and `any-bid` transitions default to self+partner only — opponent bids are blocked unless `allowedRoles` explicitly includes opponents. Use `opponent-action` with `callType: "bid"` to match opponent bids. Output: `MachineEvalResult` with `currentStateId`, `activeSurfaceGroupIds`. Machine-over-profile precedence: profile = "what's installed", machine = "what's live".
 
 **`areSamePartnership()`** is used by machine `seatRole` functions — defined in `engine/constants.ts` and imported by machine files.
 
@@ -137,7 +135,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 - `buildMachine()`, `makeSyntheticMachine()` — ConversationMachine factories
 - `makeSyntheticProfile()`, `makeSnapshot()` — profile/snapshot factories
 - `makeRuntimeModule()`, `makeSyntheticBundle()` — runtime/bundle factories
-- `makeArbitrationInput()`, `makeSuppressTransform()`, `makeInjectTransform()` — pipeline factories
+- `makeArbitrationInput()` — pipeline factories
 
 **Boundary rule:** When adding new pipeline infrastructure, write tests using synthetic fixtures first. Convention-specific tests go in `conventions/__tests__/<bundle-name>/`.
 
