@@ -1,3 +1,4 @@
+import { FactLayer } from "../../../core/contracts/fact-catalog";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
   FactCatalogExtension,
@@ -132,6 +133,10 @@ function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
     ],
   }, STAYMAN_CTX);
 }
+
+/** Legacy default — uses SAYC system config. */
+export const STAYMAN_R1_SURFACE: BidMeaning =
+  createStaymanR1Surface(getSystemConfig(BASE_SYSTEM_SAYC));
 
 // ─── Opener Stayman response surfaces ────────────────────────
 
@@ -494,8 +499,8 @@ export const INTERFERENCE_REDOUBLE_SURFACE: BidMeaning =
 
 const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
   {
-    id: "bridge.nsHaveEightCardFitLikely",
-    layer: "module-derived",
+    id: "module.stayman.nsHaveEightCardFitLikely",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Posterior probability that N/S have an 8+ card major fit",
     valueType: "number",
@@ -503,8 +508,8 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: [],
   },
   {
-    id: "bridge.openerStillBalancedLikely",
-    layer: "module-derived",
+    id: "module.stayman.openerStillBalancedLikely",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Posterior probability that opener has balanced shape",
     valueType: "number",
@@ -512,8 +517,8 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: [],
   },
   {
-    id: "bridge.openerHasSecondMajorLikely",
-    layer: "module-derived",
+    id: "module.stayman.openerHasSecondMajorLikely",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Posterior probability that opener has a second 4-card major",
     valueType: "number",
@@ -525,7 +530,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
 const STAYMAN_FACTS: readonly FactDefinition[] = [
   {
     id: "module.stayman.eligible",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Eligible for Stayman (4+ card major AND 8+ HCP)",
     valueType: "boolean",
@@ -534,7 +539,7 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.stayman.preferred",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Stayman preferred (eligible AND no 5-card major)",
     valueType: "boolean",
@@ -560,9 +565,9 @@ const posteriorEvaluators = createPosteriorFactEvaluators([
   "bridge.partnerHas4DiamondsLikely",
   "bridge.partnerHas4ClubsLikely",
   "bridge.combinedHcpInRangeLikely",
-  "bridge.nsHaveEightCardFitLikely",
-  "bridge.openerStillBalancedLikely",
-  "bridge.openerHasSecondMajorLikely",
+  "module.stayman.nsHaveEightCardFitLikely",
+  "module.stayman.openerStillBalancedLikely",
+  "module.stayman.openerHasSecondMajorLikely",
 ], new Map([
   ["bridge.partnerHas4HeartsLikely", ["H"]],
   ["bridge.partnerHas4SpadesLikely", ["S"]],
@@ -622,14 +627,13 @@ export function createStaymanModule(sys: SystemConfig) {
   return {
     moduleId: "stayman",
 
-    entrySurfaces: [createStaymanR1Surface(sys)],
-
-    surfaceGroups: [
-      { groupId: "opener-stayman-response", surfaces: OPENER_STAYMAN_SURFACES },
-      { groupId: "responder-r3-after-stayman-2h", surfaces: STAYMAN_R3_AFTER_2H_SURFACES },
-      { groupId: "responder-r3-after-stayman-2s", surfaces: STAYMAN_R3_AFTER_2S_SURFACES },
-      { groupId: "responder-r3-after-stayman-2d", surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
-      { groupId: "nt-interrupted", surfaces: [createInterferenceRedoubleSurface(sys)] },
+    surfaces: [
+      createStaymanR1Surface(sys),
+      ...OPENER_STAYMAN_SURFACES,
+      ...STAYMAN_R3_AFTER_2H_SURFACES,
+      ...STAYMAN_R3_AFTER_2S_SURFACES,
+      ...STAYMAN_R3_AFTER_2D_SURFACES,
+      createInterferenceRedoubleSurface(sys),
     ],
 
     facts: createStaymanFacts(sys),

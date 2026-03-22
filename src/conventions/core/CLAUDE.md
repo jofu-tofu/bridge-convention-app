@@ -7,7 +7,7 @@ Infrastructure for the meaning-centric convention system: registry, meaning pipe
 ```
 core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
-  convention-module.ts  ConventionModule interface — formal contract for self-contained convention modules (surfaces, facts, FSM states, explanations). Also exports ModuleProvider — minimal shared contract (moduleId, entrySurfaces, surfaceGroups, facts, explanationEntries) that both ConventionModule and rule-only modules conform to.
+  convention-module.ts  ConventionModule interface — formal contract for self-contained convention modules (surfaces, facts, explanations). Also exports ModuleProvider — minimal shared contract (moduleId, surfaces, facts, explanationEntries) that both ConventionModule and rule-only modules conform to.
   rule-module.ts        RuleModule interface — declarative convention module for rule-based surface selection (ObsPattern, RouteExpr, NegotiationExpr, PhaseTransition, Rule). Claims carry optional `negotiationDelta?: NegotiationDelta` for kernel threading. All bundles use rule-only path.
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry

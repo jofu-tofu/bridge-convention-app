@@ -32,7 +32,7 @@ const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
-const NT_R1_SURFACES: readonly BidMeaning[] = [
+export const NT_R1_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "bridge:nt-invite",
     semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
@@ -254,7 +254,7 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
   {
     explanationId: "nt.posterior.nsHaveEightCardFit",
-    factId: "bridge.nsHaveEightCardFitLikely",
+    factId: "module.stayman.nsHaveEightCardFitLikely",
     templateKey: "nt.posterior.nsHaveEightCardFit",
     displayText: "N-S likely have an 8-card fit",
     preferredLevel: "semantic",
@@ -270,7 +270,7 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
   {
     explanationId: "nt.posterior.openerStillBalanced",
-    factId: "bridge.openerStillBalancedLikely",
+    factId: "module.stayman.openerStillBalancedLikely",
     templateKey: "nt.posterior.openerStillBalanced",
     displayText: "Opener likely still has balanced shape",
     preferredLevel: "semantic",
@@ -278,7 +278,7 @@ const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   },
   {
     explanationId: "nt.posterior.openerHasSecondMajor",
-    factId: "bridge.openerHasSecondMajorLikely",
+    factId: "module.stayman.openerHasSecondMajorLikely",
     templateKey: "nt.posterior.openerHasSecondMajor",
     displayText: "Opener may have a second 4-card major",
     preferredLevel: "semantic",
@@ -308,11 +308,10 @@ export function createNaturalNtModule(sys: SystemConfig) {
   return {
     moduleId: "natural-nt",
 
-    entrySurfaces: NT_R1_SURFACES,
-
-    surfaceGroups: [
-      { groupId: "opener-1nt", surfaces: createOpener1NtSurface(sys) },
-      { groupId: "terminal-pass", surfaces: TERMINAL_PASS_SURFACE },
+    surfaces: [
+      ...NT_R1_SURFACES,
+      ...createOpener1NtSurface(sys),
+      ...TERMINAL_PASS_SURFACE,
     ],
 
     facts: { definitions: [], evaluators: new Map() },

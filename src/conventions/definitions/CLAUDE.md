@@ -444,7 +444,7 @@ Bundle-local tests (`definitions/{name}-bundle/__tests__/`) test individual modu
 
 Step-by-step for adding a new convention. All work stays inside `src/conventions/definitions/`.
 
-1. **Create the module** in `modules/<name>/index.ts`. Export a `ConventionModule` with `moduleId`, `entrySurfaces`, `surfaceGroups`, `facts`, and `explanationEntries`. Supporting files go alongside it:
+1. **Create the module** in `modules/<name>/index.ts`. Export a `ConventionModule` with `moduleId`, `surfaces`, `facts`, and `explanationEntries`. Supporting files go alongside it:
    - `meaning-surfaces.ts` — `BidMeaning[]` definitions
    - `facts.ts` — `FactCatalogExtension` for module-derived facts
    - `explanation-catalog.ts` — `ExplanationCatalog` entries

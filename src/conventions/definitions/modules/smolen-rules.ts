@@ -18,6 +18,8 @@ import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 import {
   smolenModule,
   smolenFacts,
+  SMOLEN_ENTRY_SURFACES,
+  SMOLEN_R3_SURFACES,
   OPENER_SMOLEN_HEARTS_SURFACES,
   OPENER_SMOLEN_SPADES_SURFACES,
 } from "./smolen";
@@ -25,11 +27,10 @@ import {
 type Phase = "idle" | "post-r1" | "placing-hearts" | "placing-spades" | "done";
 
 // Entry surfaces: Smolen Stayman entries (2C with 5-4 hand)
-const smolenEntrySurfaces = smolenModule.entrySurfaces;
+const smolenEntrySurfaces = SMOLEN_ENTRY_SURFACES;
 
 // R3 surfaces: 3H/3S Smolen bids after Stayman denial
-const smolenR3Surfaces = smolenModule.surfaceGroups
-  .find((g) => g.groupId === "responder-r3-after-stayman-2d")!.surfaces;
+const smolenR3Surfaces = SMOLEN_R3_SURFACES;
 
 // ── Kernel deltas (derived from old FSM entryEffects) ───────────────
 

@@ -18,6 +18,7 @@ import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import {
   jacobyTransfersModule,
+  TRANSFER_R1_SURFACES,
   OPENER_TRANSFER_HEARTS_SURFACES,
   OPENER_TRANSFER_SPADES_SURFACES,
   TRANSFER_R3_HEARTS_SURFACES,
@@ -45,7 +46,7 @@ type Phase =
   | "invite-raised-spades";
 
 // R1 entry surfaces: transfer bids (2D, 2H)
-const transferR1Surfaces = jacobyTransfersModule.entrySurfaces;
+const transferR1Surfaces = TRANSFER_R1_SURFACES;
 
 // ── Kernel deltas (derived from old FSM entryEffects) ───────────────
 

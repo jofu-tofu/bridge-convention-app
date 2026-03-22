@@ -14,6 +14,7 @@ import type { RuleModule } from "../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/contracts/committed-step";
 import {
   staymanModule,
+  STAYMAN_R1_SURFACE,
   OPENER_STAYMAN_SURFACES,
   STAYMAN_R3_AFTER_2H_SURFACES,
   STAYMAN_R3_AFTER_2S_SURFACES,
@@ -22,7 +23,7 @@ import {
 
 type Phase = "idle" | "asked" | "shown-hearts" | "shown-spades" | "denied" | "inactive";
 
-const staymanR1Surface = staymanModule.entrySurfaces[0]!;
+const staymanR1Surface = STAYMAN_R1_SURFACE;
 
 // ── Kernel deltas (derived from old FSM entryEffects) ───────────────
 

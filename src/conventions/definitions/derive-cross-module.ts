@@ -47,23 +47,11 @@ function collectTagMembers(modules: readonly ConventionModule[]): TagMember[] {
   }
 
   for (const mod of modules) {
-    // Collect meaningIds from surfaceGroups to avoid double-counting
-    // surfaces that appear in both entrySurfaces and surfaceGroups.
-    const groupMeaningIds = new Set<string>();
-    for (const group of mod.surfaceGroups) {
-      for (const surface of group.surfaces) {
-        groupMeaningIds.add(surface.meaningId);
-      }
-    }
-    for (const surface of mod.entrySurfaces) {
-      if (!groupMeaningIds.has(surface.meaningId)) {
-        processSurface(surface);
-      }
-    }
-    for (const group of mod.surfaceGroups) {
-      for (const surface of group.surfaces) {
-        processSurface(surface);
-      }
+    const seenMeaningIds = new Set<string>();
+    for (const surface of mod.surfaces) {
+      if (seenMeaningIds.has(surface.meaningId)) continue;
+      seenMeaningIds.add(surface.meaningId);
+      processSurface(surface);
     }
   }
 

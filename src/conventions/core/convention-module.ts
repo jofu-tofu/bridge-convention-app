@@ -26,11 +26,8 @@ import type { ExplanationEntry } from "../../core/contracts/explanation-catalog"
  */
 export interface ModuleProvider {
   readonly moduleId: string;
-  readonly entrySurfaces: readonly BidMeaning[];
-  readonly surfaceGroups: readonly {
-    readonly groupId: string;
-    readonly surfaces: readonly BidMeaning[];
-  }[];
+  /** All surfaces for this module (flat list; grouping derived from RuleModule rules). */
+  readonly surfaces: readonly BidMeaning[];
   readonly facts: FactCatalogExtension;
   readonly explanationEntries: readonly ExplanationEntry[];
 }
@@ -39,21 +36,11 @@ export interface ConventionModule extends ModuleProvider {
   /** Unique module identifier (kebab-case). */
   readonly moduleId: string;
 
-  // ── Bidding logic ────────────────────────────────────────────
-
-  /** Entry-round surfaces (responder's first bid options). */
-  readonly entrySurfaces: readonly BidMeaning[];
-
-  /** Named surface groups for subsequent rounds/states. */
-  readonly surfaceGroups: readonly {
-    readonly groupId: string;
-    readonly surfaces: readonly BidMeaning[];
-  }[];
+  /** All surfaces for this module (flat list; grouping derived from RuleModule rules). */
+  readonly surfaces: readonly BidMeaning[];
 
   /** Module-derived fact definitions and evaluators. */
   readonly facts: FactCatalogExtension;
-
-  // ── Teaching ─────────────────────────────────────────────────
 
   /** Explanation entries for teaching projections. */
   readonly explanationEntries: readonly ExplanationEntry[];

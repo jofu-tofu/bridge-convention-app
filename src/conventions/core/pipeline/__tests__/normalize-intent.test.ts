@@ -1,7 +1,7 @@
 /**
  * Tests for normalizeIntent() — sourceIntent → BidAction[] mapping.
  *
- * Covers all 77 intent types across 7 modules. Each test verifies the
+ * Covers all 78 intent types across 7 modules. Each test verifies the
  * canonical observation output for a given sourceIntent shape.
  */
 
@@ -271,7 +271,7 @@ describe("normalizeIntent", () => {
     });
   });
 
-  // ── Weak Twos (13 intents) ─────────────────────────────────────
+  // ── Weak Twos (14 intents) ─────────────────────────────────────
 
   describe("Weak Twos", () => {
     it("normalizes WeakTwoOpen with suit", () => {
@@ -333,6 +333,12 @@ describe("normalizeIntent", () => {
     it("normalizes PostOgustGame with suit", () => {
       expect(normalize("PostOgustGame", { suit: "hearts" })).toEqual([
         { act: "raise", strain: "hearts", strength: "game" },
+      ]);
+    });
+
+    it("normalizes PostOgust3NT", () => {
+      expect(normalize("PostOgust3NT")).toEqual([
+        { act: "raise", strain: "notrump", strength: "game" },
       ]);
     });
 
@@ -511,13 +517,8 @@ describe("normalizeIntent", () => {
 
       const allIntentTypes = new Set<string>();
       for (const mod of modules) {
-        for (const s of mod.entrySurfaces) {
+        for (const s of mod.surfaces) {
           allIntentTypes.add(s.sourceIntent.type);
-        }
-        for (const group of mod.surfaceGroups) {
-          for (const s of group.surfaces) {
-            allIntentTypes.add(s.sourceIntent.type);
-          }
         }
       }
 

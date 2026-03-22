@@ -1,3 +1,4 @@
+import { FactLayer } from "../../../core/contracts/fact-catalog";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
   FactCatalogExtension,
@@ -71,7 +72,7 @@ export const OPENER_PLACE_CLASSES = {
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
-const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
+export const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "transfer:to-hearts",
     semanticClassId: TRANSFER_CLASSES.TO_HEARTS,
@@ -621,7 +622,7 @@ export const OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES: readonly BidMeaning[] =
 const TRANSFER_FACTS: readonly FactDefinition[] = [
   {
     id: "module.transfer.targetSuit",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Transfer target suit (hearts, spades, or none)",
     valueType: "string",
@@ -630,7 +631,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.transfer.eligible",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Eligible for Jacoby transfer (5+ card major)",
     valueType: "boolean",
@@ -639,7 +640,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.transfer.preferred",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Transfer preferred (eligible with 5+ card suit)",
     valueType: "boolean",
@@ -648,7 +649,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.transfer.openerHasHeartFit",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Opener has 3+ hearts (fit with responder's 5-card suit)",
     valueType: "boolean",
@@ -657,7 +658,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.transfer.openerHasSpadesFit",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Opener has 3+ spades (fit with responder's 5-card suit)",
     valueType: "boolean",
@@ -746,19 +747,18 @@ export function createJacobyTransfersModule(sys: SystemConfig) {
   return {
     moduleId: "jacoby-transfers",
 
-    entrySurfaces: TRANSFER_R1_SURFACES,
-
-    surfaceGroups: [
-      { groupId: "opener-transfer-accept", surfaces: OPENER_TRANSFER_HEARTS_SURFACES },
-      { groupId: "opener-transfer-accept-spades", surfaces: OPENER_TRANSFER_SPADES_SURFACES },
-      { groupId: "responder-r3-after-transfer-hearts", surfaces: TRANSFER_R3_HEARTS_SURFACES },
-      { groupId: "responder-r3-after-transfer-spades", surfaces: TRANSFER_R3_SPADES_SURFACES },
-      { groupId: "opener-place-after-transfer-hearts", surfaces: OPENER_PLACE_HEARTS_SURFACES },
-      { groupId: "opener-place-after-transfer-spades", surfaces: OPENER_PLACE_SPADES_SURFACES },
-      { groupId: "opener-accept-invite-hearts", surfaces: OPENER_ACCEPT_INVITE_HEARTS_SURFACES },
-      { groupId: "opener-accept-invite-spades", surfaces: OPENER_ACCEPT_INVITE_SPADES_SURFACES },
-      { groupId: "opener-accept-invite-raise-hearts", surfaces: OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES },
-      { groupId: "opener-accept-invite-raise-spades", surfaces: OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES },
+    surfaces: [
+      ...TRANSFER_R1_SURFACES,
+      ...OPENER_TRANSFER_HEARTS_SURFACES,
+      ...OPENER_TRANSFER_SPADES_SURFACES,
+      ...TRANSFER_R3_HEARTS_SURFACES,
+      ...TRANSFER_R3_SPADES_SURFACES,
+      ...OPENER_PLACE_HEARTS_SURFACES,
+      ...OPENER_PLACE_SPADES_SURFACES,
+      ...OPENER_ACCEPT_INVITE_HEARTS_SURFACES,
+      ...OPENER_ACCEPT_INVITE_SPADES_SURFACES,
+      ...OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES,
+      ...OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES,
     ],
 
     facts: createTransferFacts(sys),

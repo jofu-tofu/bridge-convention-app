@@ -27,10 +27,7 @@ const sharedFactIds = new Set(
 function allUniqueSurfaces(mod: ConventionModule): BidMeaning[] {
   const seen = new Set<string>();
   const result: BidMeaning[] = [];
-  for (const s of [
-    ...mod.entrySurfaces,
-    ...mod.surfaceGroups.flatMap((g) => g.surfaces),
-  ]) {
+  for (const s of mod.surfaces) {
     if (!seen.has(s.meaningId)) {
       seen.add(s.meaningId);
       result.push(s);
@@ -47,12 +44,8 @@ describe.each(moduleEntries)("structural contract — %s", (_id, mod) => {
     expect(mod.moduleId.length).toBeGreaterThan(0);
   });
 
-  it("entrySurfaces is an array", () => {
-    expect(Array.isArray(mod.entrySurfaces)).toBe(true);
-  });
-
-  it("surfaceGroups is an array", () => {
-    expect(Array.isArray(mod.surfaceGroups)).toBe(true);
+  it("surfaces is an array", () => {
+    expect(Array.isArray(mod.surfaces)).toBe(true);
   });
 
   it("facts has definitions array and evaluators map", () => {
@@ -91,16 +84,9 @@ describe.each(moduleEntries)("surface integrity — %s", (_id, mod) => {
     }
   });
 
-  it("no duplicate meaningIds within entrySurfaces", () => {
-    const ids = mod.entrySurfaces.map((s) => s.meaningId);
+  it("no duplicate meaningIds within surfaces", () => {
+    const ids = mod.surfaces.map((s) => s.meaningId);
     expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it("no duplicate meaningIds within each surfaceGroup", () => {
-    for (const group of mod.surfaceGroups) {
-      const ids = group.surfaces.map((s) => s.meaningId);
-      expect(new Set(ids).size).toBe(ids.length);
-    }
   });
 });
 

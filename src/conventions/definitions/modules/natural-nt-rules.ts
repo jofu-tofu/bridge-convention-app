@@ -10,12 +10,13 @@
 import type { RuleModule } from "../../core/rule-module";
 import {
   naturalNtModule,
+  NT_R1_SURFACES,
   OPENER_1NT_SURFACE,
 } from "./natural-nt";
 
 type Phase = "idle" | "opened" | "responded";
 
-const r1Surfaces = naturalNtModule.entrySurfaces;
+const r1Surfaces = NT_R1_SURFACES;
 
 export const naturalNtRules: RuleModule<Phase> = {
   id: "natural-nt",

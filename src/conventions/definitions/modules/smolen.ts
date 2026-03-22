@@ -1,3 +1,4 @@
+import { FactLayer } from "../../../core/contracts/fact-catalog";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
   FactCatalogExtension,
@@ -54,7 +55,7 @@ export const SMOLEN_CLASSES = {
  * These override the Jacoby Transfer entry for Smolen-eligible hands.
  * After opener's 2D denial, responder follows up with 3H/3S (Smolen).
  */
-const SMOLEN_ENTRY_SURFACES: readonly BidMeaning[] = [
+export const SMOLEN_ENTRY_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "smolen:stayman-entry-5h4s",
     semanticClassId: "smolen:stayman-entry",
@@ -122,7 +123,7 @@ const SMOLEN_ENTRY_SURFACES: readonly BidMeaning[] = [
 
 // ─── R3 Smolen surfaces (contributed to responder-r3-after-stayman-2d) ───
 
-const SMOLEN_R3_SURFACES: readonly BidMeaning[] = [
+export const SMOLEN_R3_SURFACES: readonly BidMeaning[] = [
   createSurface({
     meaningId: "smolen:bid-short-hearts",
     semanticClassId: SMOLEN_CLASSES.BID_SHORT_HEARTS,
@@ -279,7 +280,7 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
 const SMOLEN_FACTS: readonly FactDefinition[] = [
   {
     id: "module.smolen.hasFiveHearts",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Hand has exactly 5 hearts (for 3♠ Smolen showing long hearts)",
     valueType: "boolean",
@@ -288,7 +289,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.smolen.hasFiveSpades",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Hand has exactly 5 spades (for 3♥ Smolen showing long spades)",
     valueType: "boolean",
@@ -297,7 +298,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.smolen.hasFourSpades",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Hand has exactly 4 spades (short major for 3♠ Smolen: 4♠+5♥)",
     valueType: "boolean",
@@ -306,7 +307,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.smolen.hasFourHearts",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Hand has exactly 4 hearts (short major for 3♥ Smolen: 4♥+5♠)",
     valueType: "boolean",
@@ -315,7 +316,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.smolen.openerHasHeartFit",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Opener has 3+ hearts (heart fit for Smolen placement)",
     valueType: "boolean",
@@ -324,7 +325,7 @@ const SMOLEN_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "module.smolen.openerHasSpadesFit",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Opener has 3+ spades (spade fit for Smolen placement)",
     valueType: "boolean",
@@ -439,12 +440,11 @@ export function createSmolenModule(_sys: SystemConfig) {
   return {
     moduleId: "smolen",
 
-    entrySurfaces: SMOLEN_ENTRY_SURFACES,
-
-    surfaceGroups: [
-      { groupId: "responder-r3-after-stayman-2d", surfaces: SMOLEN_R3_SURFACES },
-      { groupId: "opener-smolen-hearts", surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
-      { groupId: "opener-smolen-spades", surfaces: OPENER_SMOLEN_SPADES_SURFACES },
+    surfaces: [
+      ...SMOLEN_ENTRY_SURFACES,
+      ...SMOLEN_R3_SURFACES,
+      ...OPENER_SMOLEN_HEARTS_SURFACES,
+      ...OPENER_SMOLEN_SPADES_SURFACES,
     ],
 
     facts: smolenFacts,

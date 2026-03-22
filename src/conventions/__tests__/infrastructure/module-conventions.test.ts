@@ -75,7 +75,7 @@ describe("module conventions", () => {
 
   describe("numeric clause values use named constants or module-derived facts", () => {
     for (const mod of modules) {
-      const allSurfaces = mod.surfaceGroups.flatMap((g) => g.surfaces);
+      const allSurfaces = mod.surfaces;
       const numericValues = extractNumericClauseValues(allSurfaces);
 
       // Filter to only point-based values (not suit lengths, module-derived facts, or system facts)

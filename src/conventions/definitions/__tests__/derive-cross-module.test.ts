@@ -81,8 +81,7 @@ describe("deriveTeachingContent", () => {
   it("produces empty output for modules with no tags", () => {
     const emptyModule: ConventionModule = {
       moduleId: "empty",
-      entrySurfaces: [],
-      surfaceGroups: [],
+      surfaces: [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -113,8 +112,7 @@ describe("deriveTeachingContent validation", () => {
   function makeModule(surfaces: BidMeaning[]): ConventionModule {
     return {
       moduleId: "test",
-      entrySurfaces: surfaces,
-      surfaceGroups: [],
+      surfaces,
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };

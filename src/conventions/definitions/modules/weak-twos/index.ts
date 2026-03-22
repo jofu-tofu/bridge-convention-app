@@ -33,19 +33,17 @@ export function createWeakTwosModule(_sys: SystemConfig): ConventionModule {
   return {
     moduleId: "weak-twos",
 
-    entrySurfaces: WEAK_TWO_R1_SURFACES,
-
-    surfaceGroups: [
-      { groupId: "responder-r1", surfaces: WEAK_TWO_R1_SURFACES },
-      { groupId: "opener-r2-hearts", surfaces: WEAK_TWO_R2_HEARTS_SURFACES },
-      { groupId: "opener-r2-spades", surfaces: WEAK_TWO_R2_SPADES_SURFACES },
-      { groupId: "opener-r2-diamonds", surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES },
-      { groupId: "ogust-hearts", surfaces: WEAK_TWO_OGUST_HEARTS_SURFACES },
-      { groupId: "ogust-spades", surfaces: WEAK_TWO_OGUST_SPADES_SURFACES },
-      { groupId: "ogust-diamonds", surfaces: WEAK_TWO_OGUST_DIAMONDS_SURFACES },
-      { groupId: "post-ogust-hearts", surfaces: POST_OGUST_HEARTS_SURFACES },
-      { groupId: "post-ogust-spades", surfaces: POST_OGUST_SPADES_SURFACES },
-      { groupId: "post-ogust-diamonds", surfaces: POST_OGUST_DIAMONDS_SURFACES },
+    surfaces: [
+      ...WEAK_TWO_R1_SURFACES,
+      ...WEAK_TWO_R2_HEARTS_SURFACES,
+      ...WEAK_TWO_R2_SPADES_SURFACES,
+      ...WEAK_TWO_R2_DIAMONDS_SURFACES,
+      ...WEAK_TWO_OGUST_HEARTS_SURFACES,
+      ...WEAK_TWO_OGUST_SPADES_SURFACES,
+      ...WEAK_TWO_OGUST_DIAMONDS_SURFACES,
+      ...POST_OGUST_HEARTS_SURFACES,
+      ...POST_OGUST_SPADES_SURFACES,
+      ...POST_OGUST_DIAMONDS_SURFACES,
     ],
 
     facts: weakTwoFacts,

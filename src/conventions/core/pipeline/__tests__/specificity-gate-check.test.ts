@@ -34,22 +34,6 @@ import {
   DONT_2D_RELAY_SURFACES,
 } from "../../../definitions/modules/dont/meaning-surfaces";
 
-// ─── NT surfaces ────────────────────────────────────────────
-import {
-  OPENER_STAYMAN_SURFACES,
-  STAYMAN_R3_AFTER_2H_SURFACES,
-  STAYMAN_R3_AFTER_2S_SURFACES,
-  STAYMAN_R3_AFTER_2D_SURFACES,
-  INTERFERENCE_REDOUBLE_SURFACE,
-  OPENER_TRANSFER_HEARTS_SURFACES,
-  OPENER_TRANSFER_SPADES_SURFACES,
-  TRANSFER_R3_HEARTS_SURFACES,
-  TRANSFER_R3_SPADES_SURFACES,
-  OPENER_SMOLEN_HEARTS_SURFACES,
-  OPENER_SMOLEN_SPADES_SURFACES,
-  OPENER_1NT_SURFACE,
-} from "../../../definitions/nt-bundle/composed-surfaces";
-
 // ─── Weak Twos surfaces ─────────────────────────────────────
 import {
   WEAK_TWO_R1_SURFACES,
@@ -108,22 +92,10 @@ import { jacobyTransfersModule } from "../../../definitions/modules/jacoby-trans
 import { smolenModule } from "../../../definitions/modules/smolen";
 
 const ntSurfaces: readonly BidMeaning[] = [
-  ...naturalNtModule.entrySurfaces,
-  ...jacobyTransfersModule.entrySurfaces,
-  ...staymanModule.entrySurfaces,
-  ...smolenModule.entrySurfaces,
-  ...OPENER_STAYMAN_SURFACES,
-  ...STAYMAN_R3_AFTER_2H_SURFACES,
-  ...STAYMAN_R3_AFTER_2S_SURFACES,
-  ...STAYMAN_R3_AFTER_2D_SURFACES,
-  INTERFERENCE_REDOUBLE_SURFACE,
-  ...OPENER_TRANSFER_HEARTS_SURFACES,
-  ...OPENER_TRANSFER_SPADES_SURFACES,
-  ...TRANSFER_R3_HEARTS_SURFACES,
-  ...TRANSFER_R3_SPADES_SURFACES,
-  ...OPENER_SMOLEN_HEARTS_SURFACES,
-  ...OPENER_SMOLEN_SPADES_SURFACES,
-  ...OPENER_1NT_SURFACE,
+  ...naturalNtModule.surfaces,
+  ...jacobyTransfersModule.surfaces,
+  ...staymanModule.surfaces,
+  ...smolenModule.surfaces,
 ];
 
 const weakTwoSurfaces: readonly BidMeaning[] = [
