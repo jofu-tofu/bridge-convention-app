@@ -4,7 +4,6 @@ import type { FactOperator } from "./meaning";
 import type { Call } from "../../engine/types";
 
 // ─── Module classification ──────────────────────────────────
-export type ActivationKind = "auction-pattern" | "host-attachment" | "invoke-only";
 export type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "slam-tool" | "defensive";
 
 // ─── Priority specification ─────────────────────────────────
@@ -188,11 +187,4 @@ export function defaultPriorityClassMapping(): Readonly<Record<PriorityClass, Re
   };
 }
 
-/** Convert a PrioritySpec to a legacy PriorityClass.
- *  Used during migration for backward compatibility with DecisionSurface. */
-export function prioritySpecToClass(spec: PrioritySpec): PriorityClass {
-  if (spec.obligation === "forced" && spec.conventionality === "conventional") return "obligatory";
-  if (spec.obligation === "preferred" && spec.conventionality === "conventional") return "preferredConventional";
-  if (spec.obligation === "acceptable" && spec.conventionality === "natural") return "neutralCorrect";
-  return "fallbackCorrect";
-}
+

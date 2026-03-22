@@ -1,19 +1,17 @@
 /**
  * Shared test factories for convention system types.
  *
- * Consolidates duplicated makeSurface/makeArbitrationInput/buildMachine/makeRanking
+ * Consolidates duplicated makeSurface/makeArbitrationInput/makeRanking
  * from pipeline-test-helpers, runtime-test-helpers, and strategy-test-helpers.
  */
 
-import { BidSuit, Seat } from "../engine/types";
+import { BidSuit } from "../engine/types";
 import type { Call } from "../engine/types";
 import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClause, MeaningProposal } from "../core/contracts/meaning";
 import type { ArbitrationResult, EncodedProposal } from "../core/contracts/module-surface";
 import type { CandidateEligibility } from "../core/contracts/tree-evaluation";
 import type { DecisionProvenance } from "../core/contracts/provenance";
 import type { ExplanationEntry } from "../core/contracts/explanation-catalog";
-import type { ConversationMachine, MachineState } from "../conventions/core/runtime/machine-types";
-
 /** Create a minimal BidMeaning with override support. */
 export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {
   return {
@@ -36,29 +34,6 @@ export function makeRanking(overrides?: Partial<AuthoredRankingMetadata>): Autho
     modulePrecedence: 0,
     intraModuleOrder: 0,
     ...overrides,
-  };
-}
-
-/** Create a minimal ConversationMachine from an array of states. */
-export function buildMachine(
-  states: MachineState[],
-  initialStateId: string,
-): ConversationMachine {
-  const stateMap = new Map<string, MachineState>();
-  for (const s of states) {
-    stateMap.set(s.stateId, s);
-  }
-  return {
-    machineId: "test-machine",
-    states: stateMap,
-    initialStateId,
-    seatRole: (_auction, seat, callSeat) => {
-      if (seat === callSeat) return "self";
-      const samePartnership =
-        (seat === Seat.North || seat === Seat.South) ===
-        (callSeat === Seat.North || callSeat === Seat.South);
-      return samePartnership ? "partner" : "opponent";
-    },
   };
 }
 

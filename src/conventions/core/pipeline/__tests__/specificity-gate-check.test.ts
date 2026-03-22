@@ -36,7 +36,6 @@ import {
 
 // ─── NT surfaces ────────────────────────────────────────────
 import {
-  RESPONDER_SURFACES,
   OPENER_STAYMAN_SURFACES,
   STAYMAN_R3_AFTER_2H_SURFACES,
   STAYMAN_R3_AFTER_2S_SURFACES,
@@ -103,8 +102,16 @@ const dontSurfaces: readonly BidMeaning[] = [
   ...DONT_2D_RELAY_SURFACES,
 ];
 
+import { naturalNtModule } from "../../../definitions/modules/natural-nt";
+import { staymanModule } from "../../../definitions/modules/stayman";
+import { jacobyTransfersModule } from "../../../definitions/modules/jacoby-transfers";
+import { smolenModule } from "../../../definitions/modules/smolen";
+
 const ntSurfaces: readonly BidMeaning[] = [
-  ...RESPONDER_SURFACES,
+  ...naturalNtModule.entrySurfaces,
+  ...jacobyTransfersModule.entrySurfaces,
+  ...staymanModule.entrySurfaces,
+  ...smolenModule.entrySurfaces,
   ...OPENER_STAYMAN_SURFACES,
   ...STAYMAN_R3_AFTER_2H_SURFACES,
   ...STAYMAN_R3_AFTER_2S_SURFACES,

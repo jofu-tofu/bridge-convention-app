@@ -2,7 +2,7 @@
  * DONT (Disturbing Opponents' Notrump) convention module.
  *
  * Self-contained module exporting a ConventionModule object.
- * FSM states and transitions are handled by the protocol frame (base-track.ts).
+ * FSM states and transitions are defined in the RuleModule (dont-rules.ts).
  */
 
 import type { ConventionModule } from "../../../core/convention-module";

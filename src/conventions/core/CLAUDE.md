@@ -15,8 +15,8 @@ core/
   surface-builder.ts    createSurface() builder — simplified BidMeaning construction with auto-derived clauseId/description/moduleId. modulePrecedence defaults to 0.
   profile-builder.ts    Profile building utilities
   bundle/               Bundle registry (ConventionBundle CRUD)
-    bundle-types.ts       ConventionBundle interface
-    bundle-registry.ts    registerBundle, getBundle, findBundleForConvention
+    bundle-types.ts       ConventionBundle interface — `category` and `description` are required; includes `teaching`, `allowedDealers`, `ruleModules` fields
+    bundle-registry.ts    registerBundle (auto-derives and registers ConventionConfig), getBundle, findBundleForConvention
     composite-builder.ts  Composite bundle builder for multi-module bundles
     create-bundle.ts      Bundle factory from convention spec + base-track
   pipeline/             Meaning pipeline (surfaces → facts → evaluation → arbitration)
@@ -46,20 +46,12 @@ core/
     fact-utils.ts         Fact evaluation utility functions
     shared-fact-catalog.ts Shared fact catalog construction
     witness-constants.ts  Witness generation constants
-  runtime/              Meaning-centric evaluation runtime (FSM + profiles + snapshots)
+  runtime/              Meaning-centric evaluation runtime (profiles + snapshots)
     machine-types.ts      ConversationMachine, MachineState, MachineTransition, MachineEffect, TransitionMatch
-    machine-evaluator.ts  evaluateMachine() — generic FSM stepper (SCXML-inspired)
-    machine-validation.ts 7 validators: validateMachine (structural), validateTransitionCompleteness (parent leaks), validateInterruptScoping (scope-only, local-target, coverage), validateRoleSafety (no opponent on call/any-bid), validateInterruptedStateWellFormedness (surfaceGroupId, competitionMode, pass handler), validateTerminalReachability, validateInterruptPathCompleteness (double + bid covered)
-    machine-enumeration.ts Machine state enumeration for coverage analysis
-    evaluation-runtime.ts evaluate() — two-phase orchestrator (public snapshot → decision surfaces)
     public-snapshot-builder.ts  buildSnapshotFromAuction() — Phase 1 output
-    decision-surface-emitter.ts emitDecisionSurfaces() — Phase 2 output
-    bundle-adapter.ts     bundleToRuntimeModules() — ConventionBundle → RuntimeModule[]
     commitment-extractor.ts extractCommitments() — auto-derives PublicConstraint[] (promises + entailed denials from closure policy)
     profile-activation.ts resolveActiveModules() — SystemProfile activation
-    profile-validation.ts validateProfile() — semantic collision detection
     fact-compiler.ts      FactConstraint compilation from surface conditions
-    coverage-spec-compiler.ts  Coverage spec compilation for CLI coverage runner
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
   modules/              Package-based module authoring (legacy adapter layer)
     module-package.ts     ModulePackage — separates exports (facts, surfaces, explanations) from runtime (activation, machine, handoffs)
@@ -119,9 +111,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 ## Runtime System
 
-**Two-phase evaluation** via `evaluate()`:
-1. Phase 1: Build `PublicSnapshot` from auction (with optional machine registers, commitments, beliefs)
-2. Phase 2: Emit `DecisionSurfaceEntry[]` from active `RuntimeModule[]`
+**Snapshot building** via `buildSnapshotFromAuction()`: builds `PublicSnapshot` from auction (with optional machine registers, commitments, beliefs).
 
 **Profile activation:** `resolveActiveModules()` evaluates `SystemProfile` attachments against auction patterns, capabilities, and public guards. Exclusivity groups enforce one-winner-per-group.
 
@@ -155,7 +145,6 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 | Gap | Impact | Blocks |
 |-----|--------|--------|
-| `mergeRegisters` is a no-op in `machine-evaluator.ts` | Can't track custom per-machine state (relay step count, controls shown) | Pattern 2, 5, 6 |
 | No `Attachment` for host-state attachment | Add-on modules can't attach to host states | Pattern 4 (Negative Doubles, Drury) |
 | `ActivationTrace` always `[]` in meaning arbitrator | Provenance can't answer "which modules were live and why?" | Diagnostics |
 | `evaluateFacts()` only evaluates `acting-hand` world | No `public` or `full-deal` world facts can be evaluated | Future scope |
@@ -175,4 +164,4 @@ how an agent acts here, remove it.
 
 **Staleness anchor:** This file assumes `core/registry.ts` and `core/pipeline/meaning-evaluator.ts` exist. If they don't, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-21 | version=6 | dir-commits-at-audit=70 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-21 | version=7 | dir-commits-at-audit=70 -->

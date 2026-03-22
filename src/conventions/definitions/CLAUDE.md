@@ -7,7 +7,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 **Shared files** (at `definitions/` root):
 - `teaching-vocabulary.ts` — 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`). Modules annotate surfaces with these + a scope string to express any pedagogical relationship.
 - `derive-cross-module.ts` — `deriveTeachingContent(modules)` — derives all pedagogical relations, alternatives, and intent families from `teachingTags` on surfaces. Groups by `(tagId, scope)`. Supports ordinal chains for strength progressions. Called by `aggregateModuleContent()` in `system-registry.ts`.
-- `surface-group-vocabulary.ts` — Shared constants for cross-module surface groupIds. Typos caught at compile time.
+- `surface-group-vocabulary.ts` — *(Removed. Cross-module surface groupIds are now defined locally in modules.)*
 - `pedagogical-scope-vocabulary.ts` — Type-safe scope constants (branded `PedagogicalScope` type) for `teachingTags` scopes. Replaces free-form strings.
 - `system-registry.ts` — System definitions (including NT sub-bundle systems), module aggregation. Defines bundles directly via `buildBundle()` and exports them. `getSystemBundle()`, `listSystemBundles()`, `specFromBundle()`.
 - `module-registry.ts` — Convention module registry.
@@ -20,17 +20,15 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | File | Purpose |
 |------|---------|
 | `config.ts` | Re-export from system-registry (thin shim) |
-| `base-track.ts` | `BaseTrackTable` defining the FSM state→surface mapping as a declarative table. Used by `compose.ts` to build the conversation machine and surface routing. |
 | `meaning-surfaces.ts` | `BidMeaning[]` definitions — the core bidding logic (single-module bundles). In multi-module bundles like nt-bundle, this is `composed-surfaces.ts` (cross-module composition re-exports). |
 | `facts.ts` | `FactCatalogExtension`s for module-derived facts |
 | `semantic-classes.ts` | Module-local semantic class constants (not in central registry) |
 | `machine.ts` | `ConversationMachine` FSM for hierarchical state tracking |
 | `system-profile.ts` | `SystemProfile` for profile-based module activation |
 | `explanation-catalog.ts` | `ExplanationCatalog` entries for teaching projections |
-| `compose.ts` | Bundle composition from base-track table and module contributions |
 | `packages/` | ModulePackage definitions for profile-based compilation |
 | `module.ts` | *(dont-bundle, weak-twos-bundle only)* Single-module convention definition |
-| `surface-routing.ts` | *(nt-bundle only)* `RoutedSurfaceGroup[]` for round-aware surface selection. Newer bundles use `base-track.ts` instead. |
+| `surface-routing.ts` | *(nt-bundle only)* `RoutedSurfaceGroup[]` for round-aware surface selection. |
 | `index.ts` | Barrel exports |
 | `__tests__/` | Bundle-specific tests |
 
@@ -358,19 +356,17 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 ## Adding a Convention Bundle
 
 1. Create `definitions/{name}-bundle/` folder with the modules listed in the Folder Structure table above.
-2. Define `base-track.ts` with a `BaseTrackTable` — the declarative state→surface mapping used by `compose.ts`.
-4. Define `BidMeaning[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
-5. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses.
-6. Define module-local semantic class constants in `semantic-classes.ts`.
-7. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, and `terminal`. Use the **scoped interrupt pattern** for opponent interference: create abstract scope states (parents) with `opponent-action` transitions targeting local interrupted states. Do not use a single global contested sink. See DONT's `dont-active` as the reference pattern.
-8. Define `SystemProfile` in `system-profile.ts`.
-9. Populate `ExplanationCatalog` in `explanation-catalog.ts` with template-keyed explanations.
-10. Add `teachingTags` to surfaces using the 6 general tags from `teaching-vocabulary.ts`. Use scope strings to group related surfaces.
-11. Assemble the bundle in `compose.ts` using the base-track table and convention spec.
-13. Wire `config.ts` as a thin re-export from `system-registry.ts`.
-14. Create `index.ts` barrel with re-exports.
-16. Create `__tests__/` with at minimum: base-track tests, surface evaluation tests, machine tests, and config/factory E2E tests.
-17. Run the completeness checklist above before considering the bundle complete.
+2. Define `BidMeaning[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
+3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses.
+4. Define module-local semantic class constants in `semantic-classes.ts`.
+5. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, and `terminal`. Use the **scoped interrupt pattern** for opponent interference: create abstract scope states (parents) with `opponent-action` transitions targeting local interrupted states. Do not use a single global contested sink. See DONT's `dont-active` as the reference pattern.
+6. Define `SystemProfile` in `system-profile.ts`.
+7. Populate `ExplanationCatalog` in `explanation-catalog.ts` with template-keyed explanations.
+8. Add `teachingTags` to surfaces using the 6 general tags from `teaching-vocabulary.ts`. Use scope strings to group related surfaces.
+9. Wire `config.ts` as a thin re-export from `system-registry.ts`.
+10. Create `index.ts` barrel with re-exports.
+11. Create `__tests__/` with at minimum: surface evaluation tests, machine tests, and config/factory E2E tests.
+12. Run the completeness checklist above before considering the bundle complete.
 
 ## Authoring Rules
 
@@ -378,7 +374,7 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs. Use `teachingTags` with shared vocabulary scopes for cross-module relationships.
 - **Adding a module must not edit existing modules.** If your new module needs to relate to existing ones (same-family, near-miss, etc.), use shared scope strings in `teachingTags`. The derivation function handles the wiring.
 - **`predicate` transitions are not supported in auto-composition.** Use declarative `TransitionMatch` kinds (`call`, `pass`, `opponent-action`, `any-bid`). If a future convention requires runtime predicate logic, it must be expressed as a `BoolExpr` guard on the `FrameStateSpec` level — which means authoring it in the skeleton, not the module.
-- **Cross-module groupIds must use shared constants** from `surface-group-vocabulary.ts`. Never use string literals for groupIds that another module also references.
+- **Cross-module groupIds must use shared constants.** Never use string literals for groupIds that another module also references.
 - **Use scope constants from `pedagogical-scope-vocabulary.ts`** for `teachingTags` scopes. The branded `PedagogicalScope` type catches typos at compile time. Do not use free-form strings.
 - **`entryTransitions` must be populated** on every module that is reachable from the bundle entry state. Empty `entryTransitions` means the module is only reachable via `hookTransitions` from another module.
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
@@ -409,28 +405,19 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 definitions/
   __tests__/
   nt-bundle/__tests__/
-    base-track.test.ts                   Base-track table validation
     explanation-catalog.test.ts          Explanation catalog entry tests
-    machine.test.ts                      FSM state transition tests
-    meaning-pipeline.test.ts             Surface evaluation pipeline tests
-    pedagogical-relations.test.ts        Relation graph validation
-    profile-compilation.test.ts          Profile compilation tests
-    smolen.test.ts                       Smolen-specific tests
     sub-bundles.test.ts                  Sub-bundle composition tests
     system-profile.test.ts               Profile activation tests
   bergen-bundle/__tests__/
-    base-track.test.ts                   Base-track table validation
     config-factory-e2e.test.ts           Bundle config + factory integration
     golden-master.test.ts                Golden master snapshot tests
     machine.test.ts                      FSM state transition tests
     surface-evaluation.test.ts           Surface clause evaluation tests
   weak-twos-bundle/__tests__/
-    base-track.test.ts                   Base-track table validation
     golden-master.test.ts                Golden master snapshot tests
     machine.test.ts                      FSM state transition tests
     surface-evaluation.test.ts           Surface clause evaluation tests
   dont-bundle/__tests__/
-    base-track.test.ts                   Base-track table validation
     bundle-composition.test.ts           Bundle composition tests
     machine.test.ts                      Hierarchical FSM + predicate transition tests
     surface-evaluation.test.ts           R1 overcaller + reveal + relay response tests
@@ -462,12 +449,10 @@ Step-by-step for adding a new convention. All work stays inside `src/conventions
    - `semantic-classes.ts` — module-local semantic class constants
 2. **Create the RuleModule** in `modules/<name>/<name>-rules.ts`. Define phases, claims with `ObsPattern`/`RouteExpr`/`NegotiationExpr`, and `negotiationDelta` where needed.
 3. **Create the bundle** in `<name>-bundle/`. Minimum files:
-   - `base-track.ts` — `BaseTrackTable` (state-to-surface mapping)
-   - `compose.ts` — bundle composition from base-track + module contributions
    - `system-profile.ts` — `SystemProfile` for activation
    - `config.ts` — thin re-export from `system-registry.ts`
    - `index.ts` — barrel re-export
-   - `__tests__/` — base-track, machine, surface evaluation, and golden-master tests
+   - `__tests__/` — machine, surface evaluation, and golden-master tests
 4. **Register the module** in `module-registry.ts`: import the `ConventionModule` and add it to `ALL_MODULES`.
 5. **Define the bundle** in `system-registry.ts`: import the profile and `RuleModule`, define the bundle via `buildBundle()`, and register it.
 6. **Verify:**

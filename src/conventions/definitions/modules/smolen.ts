@@ -1,10 +1,5 @@
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type {
-  MachineState,
-  ConversationMachine,
-} from "../../core/runtime/machine-types";
-import { buildConversationMachine } from "../../core/runtime/machine-types";
-import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
@@ -277,94 +272,6 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     teachingLabel: "3NT (no spade fit)",
   }, SMOLEN_CTX),
 ];
-
-// ─── Submachine ──────────────────────────────────────────────
-
-export function createSmolenSubmachine(): ConversationMachine {
-  const states: MachineState[] = [
-    {
-      stateId: "smolen-wait",
-      parentId: null,
-      transitions: [
-        {
-          transitionId: "smolen-wait-pass-hearts",
-          match: { kind: "pass" },
-          target: "opener-place-hearts",
-          guard: (snapshot) => snapshot.agreedStrain.suit === "hearts",
-        },
-        {
-          transitionId: "smolen-wait-pass-spades",
-          match: { kind: "pass" },
-          target: "opener-place-spades",
-          guard: (snapshot) => snapshot.agreedStrain.suit === "spades",
-        },
-        {
-          transitionId: "smolen-wait-interference",
-          match: { kind: "opponent-action" },
-          target: "smolen-contested",
-        },
-      ],
-    },
-    {
-      stateId: "opener-place-hearts",
-      parentId: null,
-      surfaceGroupId: "opener-smolen-hearts",
-      exportTags: ["agreement.final"],
-      transitions: [
-        {
-          transitionId: "place-hearts-bid",
-          match: { kind: "any-bid" },
-          target: "smolen-done",
-        },
-        {
-          transitionId: "place-hearts-pass",
-          match: { kind: "pass" },
-          target: "opener-place-hearts",
-        },
-      ],
-      entryEffects: {
-        setCaptain: "opener",
-      },
-    },
-    {
-      stateId: "opener-place-spades",
-      parentId: null,
-      surfaceGroupId: "opener-smolen-spades",
-      exportTags: ["agreement.final"],
-      transitions: [
-        {
-          transitionId: "place-spades-bid",
-          match: { kind: "any-bid" },
-          target: "smolen-done",
-        },
-        {
-          transitionId: "place-spades-pass",
-          match: { kind: "pass" },
-          target: "opener-place-spades",
-        },
-      ],
-      entryEffects: {
-        setCaptain: "opener",
-      },
-    },
-    {
-      stateId: "smolen-done",
-      parentId: null,
-      transitions: [],
-    },
-    {
-      stateId: "smolen-contested",
-      parentId: null,
-      transitions: [],
-      surfaceGroupId: "smolen-contested",
-      entryEffects: {
-        setCompetitionMode: "Contested",
-      },
-    },
-  ];
-
-  return buildConversationMachine("smolen-continuation", states, "smolen-wait");
-}
 
 // ─── Facts ───────────────────────────────────────────────────
 
