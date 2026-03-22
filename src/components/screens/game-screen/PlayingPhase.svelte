@@ -22,21 +22,9 @@
   }: Props = $props();
 
   const layout = getLayoutConfig();
-
-  // Use 3-column layout on desktop: [compact history] [table] [controls]
-  // History panel uses the same side-panel width as the right panel;
-  // GameScreen accounts for both when computing table scale.
-  const containerClass = $derived(
-    layout.phaseContainerClass.includes('grid-cols-')
-      ? layout.phaseContainerClass.replace(
-          /grid-cols-\[1fr_var\(--width-side-panel\)\]/,
-          'grid-cols-[var(--width-side-panel)_minmax(0,1fr)_var(--width-side-panel)]'
-        )
-      : layout.phaseContainerClass
-  );
 </script>
 
-<div class={containerClass}>
+<div class={layout.playingPhaseContainerClass}>
   <!-- Desktop: dedicated left panel for trick history -->
   <aside class="{layout.sidePanelClass} hidden lg:flex" style="font-size: var(--panel-font, 1rem);" aria-label="Play history">
     <PlayHistoryPanel tricks={viewport.tricks} declarerSeat={viewport.contract?.declarer ?? null} auctionEntries={viewport.auctionEntries} dealer={viewport.dealer} bidHistory={viewport.bidHistory} />

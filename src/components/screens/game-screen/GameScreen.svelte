@@ -126,10 +126,6 @@
     await startNewDrill();
   }
 
-  function handleBid(call: Call) {
-    gameStore.userBid(call);
-  }
-
   interface PhaseInfo {
     label: string;
     color: string;
@@ -202,6 +198,11 @@
       ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] gap-3 overflow-hidden"
       : "flex-1 flex flex-col overflow-hidden",
   );
+  const playingPhaseContainerClass = $derived(
+    isDesktop
+      ? "flex-1 grid grid-cols-[var(--width-side-panel)_minmax(0,1fr)_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] gap-3 overflow-hidden"
+      : "flex-1 flex flex-col overflow-hidden",
+  );
   const sidePanelClass = $derived(
     `${isDesktop ? "h-full" : "border-t border-border-subtle"} bg-bg-base p-3 flex flex-col min-h-0 overflow-hidden`,
   );
@@ -214,6 +215,7 @@
     tableBaseW,
     tableBaseH,
     get phaseContainerClass() { return phaseContainerClass; },
+    get playingPhaseContainerClass() { return playingPhaseContainerClass; },
     get sidePanelClass() { return sidePanelClass; },
   });
 
@@ -290,15 +292,6 @@
     {#if gameStore.phase === "BIDDING" && gameStore.biddingViewport}
       <BiddingPhase
         viewport={gameStore.biddingViewport}
-        auction={gameStore.auction}
-        bidHistory={gameStore.bidHistory}
-        legalCalls={gameStore.legalCalls}
-        onBid={handleBid}
-        disabled={!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback}
-        isUserTurn={gameStore.isUserTurn}
-        onRetry={() => gameStore.retryBid()}
-        viewportFeedback={gameStore.viewportFeedback}
-        teachingDetail={gameStore.teachingDetail}
         onNewDeal={handleNextDeal}
       />
     {:else if gameStore.phase === "DECLARER_PROMPT" && gameStore.declarerPromptViewport}

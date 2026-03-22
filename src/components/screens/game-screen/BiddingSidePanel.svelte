@@ -1,33 +1,21 @@
 <script lang="ts">
-  import type { Call } from "../../../engine/types";
-  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
+  import { getGameStore } from "../../../stores/context";
   import BidPanel from "../../game/BidPanel.svelte";
   import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
   interface Props {
-    legalCalls: Call[];
-    onBid: (call: Call) => void;
-    disabled: boolean;
-    isUserTurn: boolean;
-    onRetry: () => void;
-    viewportFeedback: ViewportBidFeedback | null;
-    teachingDetail: TeachingDetail | null;
     onNewDeal: () => void;
     onOpenSettings: () => void;
   }
 
   let {
-    legalCalls,
-    onBid,
-    disabled,
-    isUserTurn,
-    onRetry,
-    viewportFeedback,
-    teachingDetail,
     onNewDeal,
     onOpenSettings,
   }: Props = $props();
 
-  const hasFeedback = $derived(viewportFeedback !== null);
+  const gameStore = getGameStore();
+
+  const disabled = $derived(!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback);
+  const hasFeedback = $derived(gameStore.viewportFeedback !== null);
 </script>
 
 <div class="flex flex-col h-full min-h-0">
@@ -36,19 +24,19 @@
     class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wider"
     aria-live="polite"
   >
-    {#if isUserTurn || hasFeedback}
+    {#if gameStore.isUserTurn || hasFeedback}
       Your bid
     {:else}
       Waiting...
     {/if}
   </h2>
-  <BidPanel {legalCalls} {onBid} {disabled} compact />
+  <BidPanel legalCalls={gameStore.legalCalls} onBid={(call) => gameStore.submitBid(call)} {disabled} compact />
   <div class="mt-3" class:hidden={!hasFeedback}>
-    {#if viewportFeedback}
+    {#if gameStore.viewportFeedback}
       <BidFeedbackPanel
-        feedback={viewportFeedback}
-        teaching={teachingDetail}
-        {onRetry}
+        feedback={gameStore.viewportFeedback}
+        teaching={gameStore.teachingDetail}
+        onRetry={() => gameStore.retryBid()}
       />
     {/if}
   </div>

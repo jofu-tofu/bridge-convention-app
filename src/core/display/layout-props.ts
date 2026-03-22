@@ -8,5 +8,7 @@ export interface LayoutProps {
   tableBaseW: number;
   tableBaseH: number;
   phaseContainerClass: string;
+  /** 3-column variant of phaseContainerClass for the playing phase (history | table | controls). */
+  playingPhaseContainerClass: string;
   sidePanelClass: string;
 }

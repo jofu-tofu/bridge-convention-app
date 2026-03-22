@@ -46,7 +46,7 @@ import type {
   ServiceInferenceSnapshot,
 } from "./response-types";
 import { SessionManager, createHandle } from "./session-manager";
-import { SessionState } from "./session-state";
+import { SessionState, getCurrentTurn as getCurrentTurnFromState } from "./session-state";
 import { DDSController } from "./dds-controller";
 import {
   processBid,
@@ -369,15 +369,4 @@ function buildBiddingViewportFromState(state: SessionState): BiddingViewport | n
     isUserTurn: state.isUserSeat(currentTurn) && state.phase === "BIDDING",
     currentBidder: currentTurn,
   });
-}
-
-import { nextSeat } from "../engine/constants";
-
-/** Get current turn seat from session state. */
-function getCurrentTurnFromState(state: SessionState): Seat | null {
-  if (state.auction.entries.length === 0) {
-    return state.deal.dealer;
-  }
-  const lastEntry = state.auction.entries[state.auction.entries.length - 1]!;
-  return nextSeat(lastEntry.seat);
 }

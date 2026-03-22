@@ -30,6 +30,15 @@ const EMPTY_EVALUATION: StrategyEvaluation = {
   auctionContext: null,
 };
 
+/** Get current turn seat from the auction in a session state. */
+export function getCurrentTurn(state: SessionState): Seat | null {
+  if (state.auction.entries.length === 0) {
+    return state.deal.dealer;
+  }
+  const lastEntry = state.auction.entries[state.auction.entries.length - 1]!;
+  return nextSeat(lastEntry.seat);
+}
+
 export class SessionState {
   // Game state
   deal: Deal;

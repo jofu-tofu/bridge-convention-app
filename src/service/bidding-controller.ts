@@ -16,7 +16,7 @@ import { createBiddingContext } from "../conventions/core";
 import { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
 import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
 import type { EnginePort } from "../engine/port";
-import type { SessionState } from "./session-state";
+import { getCurrentTurn, type SessionState } from "./session-state";
 import type { AiBidEntry } from "./response-types";
 import type { GamePhase } from "../core/phase-machine";
 import { isValidTransition } from "../core/phase-machine";
@@ -165,15 +165,6 @@ export function initializeAuction(
 }
 
 // ── Internal helpers ────────────────────────────────────────────────
-
-/** Get the current turn seat from the auction. */
-function getCurrentTurn(state: SessionState): Seat | null {
-  if (state.auction.entries.length === 0) {
-    return state.deal.dealer;
-  }
-  const lastEntry = state.auction.entries[state.auction.entries.length - 1]!;
-  return nextSeat(lastEntry.seat);
-}
 
 /** Apply user's bid, run AI bids, and return result. */
 async function applyBidAndRunAi(
