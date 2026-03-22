@@ -8,7 +8,7 @@
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
-import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
+import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions/definitions/system-registry";
 import { enumerateRuleAtoms } from "../conventions/core";
 import { createBiddingContext } from "../conventions/core/context-factory";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
@@ -162,8 +162,9 @@ function runPlaythroughInternal(
   vulnerability: Vulnerability, opponents: OpponentMode,
   baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): InternalPlaythroughResult {
-  const bundle = getSystemBundle(bundleId)!;
-  const spec = specFromBundle(bundle, getSystemConfig(baseSystem))!;
+  const input = getBundleInput(bundleId)!;
+  const bundle = resolveBundleFn(input, getSystemConfig(baseSystem));
+  const spec = specFromBundle(input, getSystemConfig(baseSystem))!;
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
   const partner = partnerOf(userSeat);
@@ -240,10 +241,10 @@ function runPlaythroughInternal(
  * Key: callKey, Value: { atomId, meaningLabel }.
  * When multiple atoms share the same encoding, the first one wins.
  */
-function buildAtomCallMap(bundleId: string): Map<string, { atomId: string; meaningLabel: string }> {
-  const bundle = getSystemBundle(bundleId);
-  if (!bundle?.modules) return new Map();
-
+function buildAtomCallMap(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): Map<string, { atomId: string; meaningLabel: string }> {
+  const input = getBundleInput(bundleId);
+  if (!input) return new Map();
+  const bundle = resolveBundleFn(input, getSystemConfig(baseSystem));
   const atoms = enumerateRuleAtoms(bundle.modules);
   const map = new Map<string, { atomId: string; meaningLabel: string }>();
 
@@ -265,7 +266,7 @@ function getOrRunPlaythrough(
   vulnerability: Vulnerability, opponents: OpponentMode,
   baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): InternalPlaythroughResult {
-  if (lastPlaythrough && lastPlaythrough.handle.seed === seed && lastPlaythrough.bundleName === getSystemBundle(bundleId)?.name) {
+  if (lastPlaythrough && lastPlaythrough.handle.seed === seed && lastPlaythrough.bundleName === getBundleInput(bundleId)?.name) {
     return lastPlaythrough;
   }
   lastPlaythrough = runPlaythroughInternal(bundleId, seed, vulnerability, opponents, baseSystem);
@@ -356,7 +357,8 @@ export function gradePlaythroughBid(
   }
 
   const strategyEval = (strategy).getLastEvaluation?.() ?? null;
-  const bundleForAlts = getSystemBundle(bundleId);
+  const bundleInputForAlts = getBundleInput(bundleId);
+  const bundleForAlts = bundleInputForAlts ? resolveBundleFn(bundleInputForAlts, getSystemConfig(baseSystem)) : undefined;
   const teachingResolution = resolveTeachingAnswer(
     result,
     strategyEval?.acceptableAlternatives ?? bundleForAlts?.derivedTeaching.acceptableAlternatives ?? undefined,

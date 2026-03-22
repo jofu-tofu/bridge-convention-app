@@ -9,7 +9,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `derive-cross-module.ts` — `deriveTeachingContent(modules)` — derives all pedagogical relations, alternatives, and intent families from `teachingTags` on surfaces. Groups by `(tagId, scope)`. Supports ordinal chains for strength progressions. Called by `aggregateModuleContent()` in `system-registry.ts`.
 - `surface-group-vocabulary.ts` — *(Removed. Cross-module surface groupIds are now defined locally in modules.)*
 - `pedagogical-scope-vocabulary.ts` — Type-safe scope constants (branded `PedagogicalScope` type) for `teachingTags` scopes. Replaces free-form strings.
-- `system-registry.ts` — System definitions (including NT sub-bundle systems), module aggregation. Defines bundles directly via `buildBundle()` and exports them. `getSystemBundle()`, `listSystemBundles()`, `specFromBundle()`.
+- `system-registry.ts` — Bundle registry. Stores `BundleInput` definitions (no modules). `getBundleInput(id)`, `listBundleInputs()`, `resolveBundle(input, sys)` (resolves modules for a SystemConfig), `specFromBundle(input, sys)`. Deprecated shims `getSystemBundle()`, `listSystemBundles()` resolve with SAYC defaults. Pre-resolved `ntBundle`, `bergenBundle`, etc. exports kept for backwards compat.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
 - `system-fact-vocabulary.ts` (in `core/contracts/`) — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs.

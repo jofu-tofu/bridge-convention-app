@@ -1,16 +1,18 @@
 /**
  * Bundle Registry — central definitions for all convention bundles.
  *
- * Each bundle definition composes modules (via memberIds) with deal constraints,
- * system profile, and teaching metadata. `buildBundle()` resolves modules from
- * the module registry and aggregates pedagogical content into `derivedTeaching`.
+ * The registry stores authored BundleInput definitions only (no modules).
+ * Consumers call resolveBundle(input, sys) to get a full ConventionBundle
+ * with modules resolved for a specific SystemConfig.
+ *
+ * SystemConfig is always external — never baked into bundle definitions.
  */
 
 import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import type { ConventionModule } from "../core/convention-module";
-import { moduleSurfaces } from "../core/convention-module";
 import type { AlternativeGroup, SurfaceGroup } from "../../core/contracts/teaching-grading";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import { getModules } from "./module-registry";
@@ -21,7 +23,7 @@ import { suitLengthOf } from "../../engine/hand-evaluator";
 import { ConventionCategory } from "../../core/contracts/convention";
 import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPPONENT_1NT } from "./capability-vocabulary";
 import { buildAuction } from "../../engine/auction-helpers";
-import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE, NT_ACOL_PROFILE } from "./nt-bundle/system-profile";
+import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./nt-bundle/system-profile";
 import { BERGEN_PROFILE } from "./bergen-bundle/system-profile";
 import { DONT_PROFILE } from "./dont-bundle/system-profile";
 import { WEAK_TWO_PROFILE } from "./weak-twos-bundle/system-profile";
@@ -42,23 +44,6 @@ function aggregateTeachingContent(modules: readonly ConventionModule[]): {
   };
 }
 
-// ── Bundle factory ──────────────────────────────────────────────────
-
-/**
- * Build a ConventionBundle from authored input.
- * Resolves modules from module registry via memberIds, aggregates
- * pedagogical content from the resolved modules.
- */
-function buildBundle(def: BundleInput, sys?: SystemConfig): ConventionBundle {
-  const modules = getModules(def.memberIds, sys ?? def.systemProfile?.systemConfig);
-  const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(modules);
-  return {
-    ...def,
-    modules,
-    derivedTeaching: { acceptableAlternatives, surfaceGroups, relations },
-  };
-}
-
 /**
  * Auto-derive SurfaceGroups from module rule structure.
  * Each rule with 2+ claims represents surfaces competing at the same
@@ -74,10 +59,10 @@ function deriveSurfaceGroupsFromModules(
       if (rule.claims.length < 2) continue;
 
       const members = rule.claims.map((c) => c.surface.meaningId);
-      const localPhase = Array.isArray(rule.match.local)
+      const localPhase: string = Array.isArray(rule.match.local)
         ? (rule.match.local as readonly string[]).join("|")
         : (rule.match.local ?? "entry");
-      const turn = rule.match.turn ?? "any";
+      const turn: string = rule.match.turn ?? "any";
       const id = `${mod.moduleId}/${localPhase}:${turn}`;
 
       families.push({
@@ -114,9 +99,9 @@ function longestWeakTwoSuit(hand: Hand): "D" | "H" | "S" {
   return "D";
 }
 
-// ── Bundle definitions ──────────────────────────────────────────────
+// ── Bundle definitions (BundleInput — no modules) ────────────────────
 
-export const ntBundle = buildBundle({
+const ntBundleInput: BundleInput = {
   id: "nt-bundle",
   name: "1NT Responses",
   description: "Full 1NT response system: Stayman + Jacoby Transfers + Smolen + natural bids — practice choosing between conventions",
@@ -137,6 +122,20 @@ export const ntBundle = buildBundle({
     ],
     dealer: Seat.North,
   },
+  dealConstraintFactory: (sys) => ({
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      { seat: Seat.South, minHcp: 0 },
+    ],
+    dealer: Seat.North,
+  }),
+  offConventionConstraintFactory: (sys) => ({
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      { seat: Seat.South, minHcp: 0, maxHcp: sys.responderThresholds.inviteMin - 1 },
+    ],
+    dealer: Seat.North,
+  }),
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
     return undefined;
@@ -160,55 +159,9 @@ export const ntBundle = buildBundle({
     roles:
       "Responder is captain after 1NT — opener describes, responder decides the final contract",
   },
-});
+};
 
-export const ntBundleAcol = buildBundle({
-  id: "nt-bundle-acol",
-  name: "1NT Responses (Acol)",
-  description: "Full 1NT response system for Acol (12-14 weak NT): Stayman + Jacoby Transfers + Smolen + natural bids",
-  category: ConventionCategory.Constructive,
-  systemProfile: NT_ACOL_PROFILE,
-  memberIds: ["natural-nt", "stayman", "jacoby-transfers", "smolen"],
-  dealConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 12, maxHcp: 14, balanced: true },
-      { seat: Seat.South, minHcp: 0 },
-    ],
-    dealer: Seat.North,
-  },
-  offConventionConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 12, maxHcp: 14, balanced: true },
-      { seat: Seat.South, minHcp: 0, maxHcp: 9 },
-    ],
-    dealer: Seat.North,
-  },
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
-    return undefined;
-  },
-  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  teaching: {
-    purpose:
-      "Find the best contract after partner opens 1NT (12-14 HCP Acol): major-suit fit via Stayman, transfers, or Smolen, or notrump game/invite",
-    whenToUse:
-      "Partner opens 1NT (12-14 HCP balanced, Acol). You choose between Stayman (4-card major, 10+ HCP), Jacoby Transfer (5+ card major), Smolen (5-4 in majors, game values), or natural NT bids (no major).",
-    whenNotToUse: [
-      "0-9 HCP with no 5-card major — pass",
-      "5+ card major with no 4-card in the other major — use transfer, not Stayman",
-      "5-4 in majors with only invite values (10-12 HCP) — transfer to the 5-card major",
-      "4333 shape with 10-12 HCP — 2NT invite may be better than Stayman",
-    ],
-    tradeoff:
-      "Artificial bids (2C Stayman, 2D/2H transfers, Smolen 3H/3S) give up natural meanings of those bids",
-    principle:
-      "Finding an 8-card major fit is worth more than notrump; Stayman, transfers, and Smolen are tools to find that fit while keeping the strong hand as declarer",
-    roles:
-      "Responder is captain after 1NT — opener describes, responder decides the final contract",
-  },
-});
-
-export const ntStaymanBundle = buildBundle({
+const ntStaymanInput: BundleInput = {
   id: "nt-stayman",
   name: "Stayman",
   description: "Stayman convention — find a 4-4 major fit after 1NT opening",
@@ -242,9 +195,9 @@ export const ntStaymanBundle = buildBundle({
     roles:
       "Responder is captain — asks opener to describe, then decides the final contract",
   },
-});
+};
 
-export const ntTransfersBundle = buildBundle({
+const ntTransfersInput: BundleInput = {
   id: "nt-transfers",
   name: "Jacoby Transfers",
   description: "Jacoby Transfers — ensure the strong hand declares in a major-suit contract",
@@ -277,9 +230,9 @@ export const ntTransfersBundle = buildBundle({
     roles:
       "Responder initiates the transfer; opener mechanically accepts; responder then decides the final contract level",
   },
-});
+};
 
-export const bergenBundle = buildBundle({
+const bergenInput: BundleInput = {
   id: "bergen-bundle",
   name: "Bergen Raises (Bundle)",
   description: "Bergen Raises via the meaning pipeline — constructive, limit, game, preemptive, and splinter raises after 1M opening",
@@ -322,9 +275,9 @@ export const bergenBundle = buildBundle({
     roles:
       "Opener evaluates whether the partnership has game after responder's Bergen bid",
   },
-});
+};
 
-export const dontBundle = buildBundle({
+const dontInput: BundleInput = {
   id: "dont-bundle",
   name: "DONT (Bundle)",
   description: "DONT — Disturbing Opponents' Notrump: competitive overcalls showing distributional hands",
@@ -361,9 +314,9 @@ export const dontBundle = buildBundle({
     roles:
       "Overcaller describes shape; advancer evaluates fit. After double, advancer must relay 2C to discover the suit.",
   },
-});
+};
 
-export const weakTwoBundle = buildBundle({
+const weakTwoInput: BundleInput = {
   id: "weak-twos-bundle",
   name: "Weak Two Bids (Bundle)",
   description: "Weak Two Bids with Ogust 2NT — preemptive openings at the 2-level with structured hand description",
@@ -402,40 +355,76 @@ export const weakTwoBundle = buildBundle({
     roles:
       "Opener describes; responder captains. After Ogust 2NT, opener further classifies along strength and quality dimensions",
   },
-});
+};
 
-// ── Registry ────────────────────────────────────────────────────────
+// ── Registry stores authored input only ──────────────────────────────
 
-const ALL_BUNDLES: readonly ConventionBundle[] = [ntBundle, ntBundleAcol, ntStaymanBundle, ntTransfersBundle, bergenBundle, dontBundle, weakTwoBundle];
-const BUNDLE_MAP = new Map<string, ConventionBundle>(ALL_BUNDLES.map((b) => [b.id, b]));
+const ALL_INPUTS: readonly BundleInput[] = [ntBundleInput, ntStaymanInput, ntTransfersInput, bergenInput, dontInput, weakTwoInput];
+const INPUT_MAP = new Map<string, BundleInput>(ALL_INPUTS.map(b => [b.id, b]));
 
-/** Look up a convention bundle definition by ID. */
-export function getSystemBundle(id: string): ConventionBundle | undefined {
-  return BUNDLE_MAP.get(id);
+/** Look up a bundle's authored definition (no modules). */
+export function getBundleInput(id: string): BundleInput | undefined {
+  return INPUT_MAP.get(id);
 }
 
-/** List all convention bundle definitions. */
-export function listSystemBundles(): readonly ConventionBundle[] {
-  return ALL_BUNDLES;
+/** List all bundle definitions. */
+export function listBundleInputs(): readonly BundleInput[] {
+  return ALL_INPUTS;
 }
 
-// ── Spec generation ──────────────────────────────────────────────────
+// ── Resolution: input + system → full bundle ─────────────────────────
 
-/** Derive a ConventionSpec from a ConventionBundle.
- *  Returns undefined if no modules are present.
- *  Optional systemConfigOverride replaces the bundle's default SystemConfig. */
+/** Resolve a BundleInput into a full ConventionBundle for a specific system. */
+export function resolveBundle(input: BundleInput, sys: SystemConfig): ConventionBundle {
+  const modules = getModules(input.memberIds, sys);
+  const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(modules);
+  return {
+    ...input,
+    modules,
+    derivedTeaching: { acceptableAlternatives, surfaceGroups, relations },
+  };
+}
+
+/** Derive a ConventionSpec from a BundleInput for a specific system. */
 export function specFromBundle(
-  bundle: ConventionBundle,
-  systemConfigOverride?: SystemConfig,
+  input: BundleInput,
+  sys: SystemConfig,
 ): ConventionSpec | undefined {
-  if (bundle.modules && bundle.modules.length > 0) {
-    return {
-      id: bundle.id,
-      name: bundle.name,
-      modules: bundle.modules,
-      systemConfig: systemConfigOverride ?? bundle.systemProfile?.systemConfig,
-    };
-  }
-
-  return undefined;
+  const modules = getModules(input.memberIds, sys);
+  if (modules.length === 0) return undefined;
+  return {
+    id: input.id,
+    name: input.name,
+    modules,
+    systemConfig: sys,
+  };
 }
+
+// ── Deprecated shims (backwards compat) ──────────────────────────────
+
+/** @deprecated Use getBundleInput() + resolveBundle() instead. */
+export function getSystemBundle(id: string): ConventionBundle | undefined {
+  const input = getBundleInput(id);
+  return input ? resolveBundle(input, SAYC_SYSTEM_CONFIG) : undefined;
+}
+
+/** @deprecated Use listBundleInputs() + resolveBundle() instead. */
+export function listSystemBundles(): readonly ConventionBundle[] {
+  return ALL_INPUTS.map(input => resolveBundle(input, SAYC_SYSTEM_CONFIG));
+}
+
+// ── Pre-resolved bundle exports (backwards compat for existing consumers) ────
+// These resolve with SAYC defaults. Prefer getBundleInput() + resolveBundle() for new code.
+
+/** @deprecated Use getBundleInput("nt-bundle") + resolveBundle() instead. */
+export const ntBundle: ConventionBundle = resolveBundle(ntBundleInput, SAYC_SYSTEM_CONFIG);
+/** @deprecated Use getBundleInput("nt-stayman") + resolveBundle() instead. */
+export const ntStaymanBundle: ConventionBundle = resolveBundle(ntStaymanInput, SAYC_SYSTEM_CONFIG);
+/** @deprecated Use getBundleInput("nt-transfers") + resolveBundle() instead. */
+export const ntTransfersBundle: ConventionBundle = resolveBundle(ntTransfersInput, SAYC_SYSTEM_CONFIG);
+/** @deprecated Use getBundleInput("bergen-bundle") + resolveBundle() instead. */
+export const bergenBundle: ConventionBundle = resolveBundle(bergenInput, SAYC_SYSTEM_CONFIG);
+/** @deprecated Use getBundleInput("dont-bundle") + resolveBundle() instead. */
+export const dontBundle: ConventionBundle = resolveBundle(dontInput, SAYC_SYSTEM_CONFIG);
+/** @deprecated Use getBundleInput("weak-twos-bundle") + resolveBundle() instead. */
+export const weakTwoBundle: ConventionBundle = resolveBundle(weakTwoInput, SAYC_SYSTEM_CONFIG);

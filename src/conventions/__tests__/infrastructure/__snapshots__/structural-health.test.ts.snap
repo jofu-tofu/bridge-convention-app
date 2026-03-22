@@ -6,8 +6,6 @@ exports[`lint warning stability > dont-bundle warning count is stable 1`] = `0`;
 
 exports[`lint warning stability > nt-bundle warning count is stable 1`] = `27`;
 
-exports[`lint warning stability > nt-bundle-acol warning count is stable 1`] = `27`;
-
 exports[`lint warning stability > nt-stayman warning count is stable 1`] = `5`;
 
 exports[`lint warning stability > nt-transfers warning count is stable 1`] = `12`;
@@ -39,17 +37,6 @@ exports[`per-bundle interference > dont-bundle > interference risk summary is st
 exports[`per-bundle interference > nt-bundle > high-risk encoding collision count is stable 1`] = `16`;
 
 exports[`per-bundle interference > nt-bundle > interference risk summary is stable 1`] = `
-{
-  "high": 3,
-  "low": 0,
-  "medium": 3,
-  "none": 0,
-}
-`;
-
-exports[`per-bundle interference > nt-bundle-acol > high-risk encoding collision count is stable 1`] = `16`;
-
-exports[`per-bundle interference > nt-bundle-acol > interference risk summary is stable 1`] = `
 {
   "high": 3,
   "low": 0,

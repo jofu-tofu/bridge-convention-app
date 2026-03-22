@@ -26,6 +26,7 @@ import {
 
 // ── Real convention imports ──────────────────────────────────────────
 import { ntBundle, specFromBundle } from "../../conventions/definitions/system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -427,7 +428,7 @@ describe("findMatchingClaimForCall", () => {
 
 describe("protocolSpecToStrategy with real NT system", () => {
   it("suggests Stayman 2C for a responder with 4-4 majors and 10+ HCP", () => {
-    const spec = specFromBundle(ntBundle);
+    const spec = specFromBundle(ntBundle, SAYC_SYSTEM_CONFIG);
     expect(spec).toBeDefined();
 
     const strategy = protocolSpecToStrategy(spec!);
@@ -451,7 +452,7 @@ describe("protocolSpecToStrategy with real NT system", () => {
   });
 
   it("suggests pass for a weak hand after 1NT-P", () => {
-    const spec = specFromBundle(ntBundle);
+    const spec = specFromBundle(ntBundle, SAYC_SYSTEM_CONFIG);
     const strategy = protocolSpecToStrategy(spec!);
 
     const h = weakHand();

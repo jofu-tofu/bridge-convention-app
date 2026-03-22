@@ -15,7 +15,7 @@ import { createDrillSession } from "./session";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
-import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
+import { getBundleInput, specFromBundle } from "../conventions/definitions/system-registry";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
@@ -91,11 +91,11 @@ export async function startDrill(
   const session = createDrillSession(config);
 
   // Build strategy from the bundle's spec
-  const bundle = getSystemBundle(convention.id);
-  if (!bundle) {
+  const bundleInput = getBundleInput(convention.id);
+  if (!bundleInput) {
     throw new Error(`No bundle registered for "${convention.id}".`);
   }
-  const spec = specFromBundle(bundle, getSystemConfig(resolvedSystem));
+  const spec = specFromBundle(bundleInput, getSystemConfig(resolvedSystem));
   if (!spec) {
     throw new Error(`No ConventionSpec derivable for "${convention.id}".`);
   }

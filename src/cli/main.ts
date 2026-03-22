@@ -46,7 +46,7 @@ const baseSystem = parseBaseSystem(flags);
 
 switch (subcommand) {
   case "list":
-    runList(flags);
+    runList(flags, baseSystem);
     break;
   case "eval":
     runEval(flags, parseVulnerability(flags), baseSystem);

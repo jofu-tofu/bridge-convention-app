@@ -12,7 +12,7 @@
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
-import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
+import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions/definitions/system-registry";
 import { enumerateRuleAtoms, type RuleAtom } from "../conventions/core";
 import { getBundle } from "../conventions/core/bundle";
 import { createBiddingContext } from "../conventions/core/context-factory";
@@ -141,17 +141,18 @@ function makeViewport(
 }
 
 /** Resolve the atom list for a bundle using rule enumeration. */
-function resolveAtoms(bundleId: string): readonly RuleAtom[] {
-  const bundle = getSystemBundle(bundleId);
-  if (!bundle?.modules) return [];
+function resolveAtoms(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): readonly RuleAtom[] {
+  const input = getBundleInput(bundleId);
+  if (!input) return [];
+  const bundle = resolveBundleFn(input, getSystemConfig(baseSystem));
   return enumerateRuleAtoms(bundle.modules);
 }
 
 /** Create a strategy from a bundle ID. */
 function createStrategy(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): BiddingStrategy {
-  const bundle = getSystemBundle(bundleId);
-  if (!bundle) throw new Error(`Unknown bundle: "${bundleId}"`);
-  const spec = specFromBundle(bundle, getSystemConfig(baseSystem));
+  const input = getBundleInput(bundleId);
+  if (!input) throw new Error(`Unknown bundle: "${bundleId}"`);
+  const spec = specFromBundle(input, getSystemConfig(baseSystem));
   if (!spec) throw new Error(`No spec for bundle: "${bundleId}"`);
   return protocolSpecToStrategy(spec);
 }

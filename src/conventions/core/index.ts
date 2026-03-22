@@ -23,7 +23,7 @@ export { createBiddingContext } from "./context-factory";
 
 // ── Bundle (sub-barrel) ─────────────────────────────────────────────────
 export { findBundleForConvention, getBundle, listBundles, composeBundles, resolveConventionForSystem } from "./bundle";
-export type { ConventionBundle } from "./bundle";
+export type { ConventionBundle, BundleInput } from "./bundle";
 
 // ── Pipeline ────────────────────────────────────────────────────────────
 export {
@@ -75,4 +75,6 @@ export type { ConventionModule, Claim, LocalFsm } from "./convention-module";
 export { moduleSurfaces } from "./convention-module";
 
 // ── System Registry (re-exported from definitions for external consumers) ────
-export { getSystemBundle, listSystemBundles, specFromBundle } from "../definitions/system-registry";
+export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "../definitions/system-registry";
+/** @deprecated Use getBundleInput() + resolveBundle() instead. */
+export { getSystemBundle, listSystemBundles } from "../definitions/system-registry";

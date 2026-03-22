@@ -4,7 +4,8 @@ import {
   enumerateRuleAtoms,
   generateRuleCoverageManifest,
 } from "../../conventions/core";
-import { listSystemBundles } from "../../conventions/definitions/system-registry";
+import { listBundleInputs, resolveBundle as resolveBundleFn } from "../../conventions/definitions/system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { AVAILABLE_BASE_SYSTEMS } from "../../core/contracts/system-config";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 
@@ -18,9 +19,9 @@ import {
 
 // ── list ─────────────────────────────────────────────────────────
 
-export function runList(flags: Flags): void {
+export function runList(flags: Flags, baseSystem?: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
-  const bundle = resolveBundleWithRules(bundleId);
+  const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const modules = bundle.modules ?? [];
   const atoms = enumerateRuleAtoms(modules);
 
@@ -42,9 +43,10 @@ export function runList(flags: Flags): void {
 // ── bundles ──────────────────────────────────────────────────────
 
 export function runBundles(): void {
-  const bundles = listSystemBundles().filter((b) => !b.internal);
-  const result = bundles.map((b) => {
-    const modules = b.modules ?? [];
+  const inputs = listBundleInputs().filter((b) => !b.internal);
+  const result = inputs.map((b) => {
+    const resolved = resolveBundleFn(b, SAYC_SYSTEM_CONFIG);
+    const modules = resolved.modules ?? [];
     const atomCount = modules.length > 0
       ? enumerateRuleAtoms(modules).length
       : 0;

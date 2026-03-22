@@ -12,6 +12,7 @@ import {
   bergenBundle,
   specFromBundle,
 } from "../../conventions/definitions/system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -218,7 +219,7 @@ describe("runMeaningPipeline", () => {
 
 describe("protocolSpecToStrategy with NT bundle", () => {
   function ntStrategy() {
-    const spec = specFromBundle(ntBundle);
+    const spec = specFromBundle(ntBundle, SAYC_SYSTEM_CONFIG);
     expect(spec).toBeDefined();
     return protocolSpecToStrategy(spec!);
   }
@@ -308,7 +309,7 @@ describe("protocolSpecToStrategy with NT bundle", () => {
 
 describe("protocolSpecToStrategy with Bergen bundle", () => {
   function bergenStrategy() {
-    const spec = specFromBundle(bergenBundle);
+    const spec = specFromBundle(bergenBundle, SAYC_SYSTEM_CONFIG);
     expect(spec).toBeDefined();
     return protocolSpecToStrategy(spec!);
   }

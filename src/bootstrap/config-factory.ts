@@ -8,7 +8,7 @@ import type { InferenceConfig } from "../inference/types";
 import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
 import { createHeuristicPlayStrategy } from "../strategy/play/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { getSystemBundle, specFromBundle } from "../conventions/definitions/system-registry";
+import { getBundleInput, specFromBundle } from "../conventions/definitions/system-registry";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
@@ -24,14 +24,14 @@ export function createProtocolDrillConfig(
   userSeat: Seat,
   options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId },
 ): DrillConfig {
-  const bundle = getSystemBundle(conventionId);
-  if (!bundle) {
+  const input = getBundleInput(conventionId);
+  if (!input) {
     throw new Error(
       `No bundle registered for "${conventionId}".`,
     );
   }
   const systemConfig = getSystemConfig(options.baseSystem);
-  const spec = specFromBundle(bundle, systemConfig);
+  const spec = specFromBundle(input, systemConfig);
   if (!spec) {
     throw new Error(
       `No ConventionSpec derivable for "${conventionId}".`,
