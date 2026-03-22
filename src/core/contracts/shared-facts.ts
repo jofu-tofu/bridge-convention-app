@@ -1,3 +1,4 @@
+import { FactLayer } from "./fact-layer";
 import type { FactDefinition } from "./fact-catalog";
 
 // ─── Shared facts ────────────────────────────────────────────
@@ -8,7 +9,7 @@ import type { FactDefinition } from "./fact-catalog";
 export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
   {
     id: "hand.hcp",
-    layer: "primitive",
+    layer: FactLayer.Primitive,
     world: "acting-hand",
     description: "High card points",
     valueType: "number",
@@ -17,7 +18,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "hand.suitLength.spades",
-    layer: "primitive",
+    layer: FactLayer.Primitive,
     world: "acting-hand",
     description: "Number of spades",
     valueType: "number",
@@ -26,7 +27,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "hand.suitLength.hearts",
-    layer: "primitive",
+    layer: FactLayer.Primitive,
     world: "acting-hand",
     description: "Number of hearts",
     valueType: "number",
@@ -35,7 +36,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "hand.suitLength.diamonds",
-    layer: "primitive",
+    layer: FactLayer.Primitive,
     world: "acting-hand",
     description: "Number of diamonds",
     valueType: "number",
@@ -44,7 +45,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "hand.suitLength.clubs",
-    layer: "primitive",
+    layer: FactLayer.Primitive,
     world: "acting-hand",
     description: "Number of clubs",
     valueType: "number",
@@ -53,7 +54,7 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "hand.isBalanced",
-    layer: "primitive",
+    layer: FactLayer.Primitive,
     world: "acting-hand",
     description: "Hand is balanced (4-3-3-3, 4-4-3-2, 5-3-3-2)",
     valueType: "boolean",
@@ -63,18 +64,24 @@ export const PRIMITIVE_FACTS: readonly FactDefinition[] = [
 ];
 
 export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
+  // NOTE: bridge.isVulnerable is context-seeded, not evaluator-derived.
+  // It is pre-seeded from EvaluateFactsOptions.isVulnerable in fact-evaluator.ts
+  // (computed from seat + deal vulnerability, not from hand analysis).
+  // It has no evaluator in shared-fact-catalog.ts. Callers must provide the
+  // isVulnerable option if modules depend on it (e.g., weak-twos uses it
+  // to adjust opening HCP range: 5-11 NV vs 6-11 vul).
   {
     id: "bridge.isVulnerable",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
-    description: "Whether the acting player's side is vulnerable",
+    description: "Whether the acting player's side is vulnerable (context-seeded, not evaluator-derived)",
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: [],
   },
   {
     id: "bridge.hasFourCardMajor",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has at least one 4+ card major",
     valueType: "boolean",
@@ -83,7 +90,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.hasFiveCardMajor",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has at least one 5+ card major",
     valueType: "boolean",
@@ -92,7 +99,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.majorPattern",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description:
       "Major suit pattern classification (none, one-four, both-four, one-five, five-four, five-five)",
@@ -102,7 +109,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.supportForBoundSuit",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Length in the suit specified by $suit binding",
     valueType: "number",
@@ -111,7 +118,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.fitWithBoundSuit",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "8+ combined cards in the bound suit (own length + partner's promised min)",
     valueType: "boolean",
@@ -120,7 +127,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.hasShortage",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has singleton or void in any suit (for splinter detection)",
     valueType: "boolean",
@@ -130,7 +137,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.shortageInSuit",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has 0-1 cards in the suit specified by $suit binding",
     valueType: "boolean",
@@ -139,7 +146,7 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.totalPointsForRaise",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Dummy points (HCP + shortage points) for raising the bound suit",
     valueType: "number",
@@ -148,10 +155,15 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
   },
 ];
 
+// Posterior-derived facts compute probabilities over hand samples.
+// The computation logic (e.g., "count hands with 4+ hearts") is bridge-universal
+// and system-agnostic — they belong in bridge-derived. The *prior* hand space
+// (constraints on partner's hand from the auction) may be system-dependent,
+// but that's handled by the posterior engine, not by these fact definitions.
 export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
   {
     id: "bridge.partnerHas4HeartsLikely",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ hearts",
     valueType: "number",
@@ -160,7 +172,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.partnerHas4SpadesLikely",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ spades",
     valueType: "number",
@@ -169,7 +181,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.partnerHas4DiamondsLikely",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ diamonds",
     valueType: "number",
@@ -178,7 +190,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.partnerHas4ClubsLikely",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ clubs",
     valueType: "number",
@@ -187,7 +199,7 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
   },
   {
     id: "bridge.combinedHcpInRangeLikely",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Posterior probability that combined HCP falls in specified range",
     valueType: "number",

@@ -140,7 +140,7 @@ describe("createPosteriorEngine", () => {
 
     // All sampled hands must be balanced since it's a hard constraint
     const probBalanced = posterior.probability({
-      factId: "bridge.openerStillBalancedLikely",
+      factId: "module.stayman.openerStillBalancedLikely",
       seatId: "N",
     });
     expect(probBalanced).toBe(1);
@@ -170,9 +170,9 @@ describe("createPosteriorEngine", () => {
 
     const factIds = [
       "bridge.partnerHas4HeartsLikely",
-      "bridge.nsHaveEightCardFitLikely",
-      "bridge.openerStillBalancedLikely",
-      "bridge.openerHasSecondMajorLikely",
+      "module.stayman.nsHaveEightCardFitLikely",
+      "module.stayman.openerStillBalancedLikely",
+      "module.stayman.openerHasSecondMajorLikely",
     ];
 
     for (const factId of factIds) {
@@ -208,11 +208,11 @@ describe("createPosteriorEngine", () => {
     const northSpace = spaces.find((s) => s.seatId === "N")!;
 
     const facts = engine.deriveActingHandFacts(northSpace, [
-      "bridge.openerStillBalancedLikely",
+      "module.stayman.openerStillBalancedLikely",
     ]);
 
     expect(facts).toHaveLength(1);
-    expect(facts[0]!.factId).toBe("bridge.openerStillBalancedLikely");
+    expect(facts[0]!.factId).toBe("module.stayman.openerStillBalancedLikely");
     expect(facts[0]!.expectedValue).toBeGreaterThanOrEqual(0);
     expect(facts[0]!.expectedValue).toBeLessThanOrEqual(1);
     expect(facts[0]!.confidence).toBeGreaterThan(0);

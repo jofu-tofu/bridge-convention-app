@@ -51,7 +51,7 @@ const OPPONENT_1NT_SURFACE: BidMeaning = createSurface({
   encoding: bid(1, BidSuit.NoTrump),
   clauses: [],
   band: "must",
-  intraModuleOrder: 0,
+  declarationOrder: 0,
   sourceIntent: { type: "NTOpening", params: {} },
   teachingLabel: "Opponent's 1NT",
 }, DONT_CTX);

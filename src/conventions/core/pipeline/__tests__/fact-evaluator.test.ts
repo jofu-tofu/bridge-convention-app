@@ -5,6 +5,7 @@ import { evaluateFacts, createSharedFactCatalog } from "../fact-evaluator";
 import { SHARED_FACTS, createFactCatalog } from "../../../../core/contracts/fact-catalog";
 import type { PublicConstraint } from "../../../../core/contracts/agreement-module";
 import type { RelationalFactContext } from "../fact-evaluator";
+import { FactLayer } from "../../../../core/contracts/fact-layer";
 
 function sharedFactsFor(...notations: string[]) {
   const h = hand(...notations);
@@ -83,7 +84,7 @@ describe("evaluateFacts", () => {
   it("accepts a custom catalog subset (backward compat with FactDefinition[])", () => {
     const h = hand("SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H3", "D6", "D4", "D3", "C8", "C3");
     const ev = evaluateHand(h);
-    const subset = SHARED_FACTS.filter((f) => f.layer === "primitive");
+    const subset = SHARED_FACTS.filter((f) => f.layer === FactLayer.Primitive);
     const result = evaluateFacts(h, ev, subset);
     expect(result.facts.size).toBe(6);
     expect(result.facts.has("bridge.hasFourCardMajor")).toBe(false);
@@ -95,7 +96,7 @@ describe("evaluateFacts", () => {
     const extension = {
       definitions: [{
         id: "synth.test",
-        layer: "module-derived" as const,
+        layer: FactLayer.ModuleDerived as const,
         world: "acting-hand" as const,
         description: "Synthetic test fact",
         valueType: "boolean" as const,
@@ -124,7 +125,7 @@ describe("evaluateFacts", () => {
     const catalog = createFactCatalog(createSharedFactCatalog(), {
       definitions: [{
         id: "module.test.noEvaluator",
-        layer: "module-derived",
+        layer: FactLayer.ModuleDerived,
         world: "acting-hand",
         description: "Has no evaluator",
         valueType: "boolean",

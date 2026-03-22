@@ -69,7 +69,7 @@ describe("meaningToStrategy", () => {
       clauses: [
         { factId: "hand.hcp", operator: "gte" as const, value: 15, satisfied: true, description: "HCP >= 15" },
       ],
-      ranking: makeRanking({ recommendationBand: "should", modulePrecedence: 0, intraModuleOrder: 0 }),
+      ranking: makeRanking({ recommendationBand: "should", modulePrecedence: 0, declarationOrder: 0 }),
       sourceIntent: { type: "OpenNT", params: {} },
       teachingLabel: "1NT Opening",
     });
@@ -191,13 +191,13 @@ describe("runMeaningPipeline", () => {
       meaningId: "must-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "must", intraModuleOrder: 0 }),
+      ranking: makeRanking({ recommendationBand: "must", declarationOrder: 0 }),
     });
     const shouldSurface = makeSurface({
       meaningId: "should-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Diamonds } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "should", intraModuleOrder: 0 }),
+      ranking: makeRanking({ recommendationBand: "should", declarationOrder: 0 }),
     });
 
     const h = hand("SA", "SK", "S8", "S7", "S6", "H4", "H3", "DQ", "D5", "D3", "CJ", "C4", "C2");
@@ -339,14 +339,17 @@ describe("protocolSpecToStrategy with Bergen bundle", () => {
     expect(result!.call).toEqual({ type: "bid", level: 1, strain: BidSuit.Hearts });
   });
 
-  test("returns null after 1H-P when responder hand has no major support", () => {
+  test("suggests natural 1NT after 1H-P when responder hand has no major support but is in 1NT range", () => {
     const strategy = bergenStrategy();
-    // 8 HCP, only 2 hearts (no Bergen raise possible): AK spades (7) + J diamonds (1) = 8 HCP
-    const h = hand("SA", "SK", "S9", "S7", "S6", "H4", "H3", "DJ", "D8", "D5", "D3", "C4", "C2");
+    // 8 HCP, only 2 hearts AND only 3 spades (no Bergen raise, no 1♠ bid):
+    // AK clubs (7) + J diamonds (1) = 8 HCP, shape 3-2-4-4
+    // Within the system's 1NT response range (6-10 in SAYC), so natural 1NT applies
+    const h = hand("S9", "S7", "S6", "H4", "H3", "DJ", "D8", "D5", "D3", "CA", "CK", "C4", "C2");
     const ctx = makeContext(h, ["1H", "P"]);
 
     const result = strategy.suggest(ctx);
-    // Without 4+ hearts, Bergen raise surfaces should not match
-    expect(result).toBeNull();
+    // Without 4+ hearts, Bergen raise surfaces don't match, but natural 1NT does
+    expect(result).not.toBeNull();
+    expect(result!.call).toEqual({ type: "bid", level: 1, strain: BidSuit.NoTrump });
   });
 });

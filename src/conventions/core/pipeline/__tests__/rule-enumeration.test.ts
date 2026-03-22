@@ -26,7 +26,7 @@ function makeSurface(id: string, level: number = 1, strain: BidSuit = BidSuit.Cl
     encoding: { defaultCall: { type: "bid", level, strain } },
     ranking: {
       recommendationBand: "preferred",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
     },
   } as unknown as BidMeaning;
 }

@@ -1,31 +1,34 @@
+import { FactLayer } from "../../../../core/contracts/fact-layer";
 import type {
   FactCatalogExtension,
-  FactDefinition,
-  FactEvaluatorFn,
 } from "../../../../core/contracts/fact-catalog";
 import { num, fv } from "../../../core/pipeline/fact-helpers";
+import { buildExtension } from "../../../core/pipeline/fact-factory";
+import type { FactEntry } from "../../../core/pipeline/fact-factory";
 
-// ─── Bergen module facts ────────────────────────────────────
+// ─── Bergen module facts (factory-based) ─────────────────────
 
-const BERGEN_FACTS: readonly FactDefinition[] = [
-  {
+// Bergen has a single cross-suit fact — hand-written FactEntry,
+// composed via buildExtension for consistency with other modules.
+
+const hasMajorSupportEntry: FactEntry = {
+  definition: {
     id: "module.bergen.hasMajorSupport",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Has exactly 4-card support in at least one major",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.hearts", "hand.suitLength.spades"],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
-];
-
-const BERGEN_EVALUATORS = new Map<string, FactEvaluatorFn>([
-  ["module.bergen.hasMajorSupport", (_h, _ev, m) =>
+  evaluator: ["module.bergen.hasMajorSupport", (_h, _ev, m) =>
     fv("module.bergen.hasMajorSupport",
       num(m, "hand.suitLength.hearts") === 4 || num(m, "hand.suitLength.spades") === 4)],
-]);
+};
+
+const { definitions, evaluators } = buildExtension([hasMajorSupportEntry]);
 
 export const bergenFacts: FactCatalogExtension = {
-  definitions: BERGEN_FACTS,
-  evaluators: BERGEN_EVALUATORS,
+  definitions,
+  evaluators,
 };

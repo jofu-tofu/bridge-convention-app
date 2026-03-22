@@ -1,6 +1,6 @@
 # Conventions Core
 
-Infrastructure for the meaning-centric convention system: registry, meaning pipeline (surfaces → facts → evaluation → arbitration), conversation machine (FSM), runtime (profile activation, commitment extraction, snapshot building), witness system (deal generation).
+Infrastructure for the meaning-centric convention system: registry, meaning pipeline (surfaces → facts → evaluation → arbitration), rule interpreter (RuleModule-based surface selection), runtime (profile activation, commitment extraction, snapshot building), witness system (deal generation).
 
 ## Module Graph
 
@@ -44,28 +44,17 @@ core/
     priority-mapping.ts   Priority class mapping logic
     fact-utils.ts         Fact evaluation utility functions
     shared-fact-catalog.ts Shared fact catalog construction
+    fact-factory.ts       defineBooleanFact(), definePerSuitFacts(), defineHcpRangeFact(), buildExtension() — factory helpers for module-derived fact definitions
     witness-constants.ts  Witness generation constants
   runtime/              Meaning-centric evaluation runtime (profiles + snapshots)
-    machine-types.ts      ConversationMachine, MachineState, MachineTransition, MachineEffect, TransitionMatch
+    machine-types.ts      MachineRegisters re-export + ForcingState default. All FSM types (ConversationMachine, MachineState, etc.) removed — rule-based system replaced FSM.
     public-snapshot-builder.ts  buildSnapshotFromAuction() — Phase 1 output
     commitment-extractor.ts extractCommitments() — auto-derives PublicConstraint[] (promises + entailed denials from closure policy)
     profile-activation.ts resolveActiveModules() — SystemProfile activation
     fact-compiler.ts      FactConstraint compilation from surface conditions
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
-  modules/              Package-based module authoring (legacy adapter layer)
-    module-package.ts     ModulePackage — separates exports (facts, surfaces, explanations) from runtime (activation, machine, handoffs)
-    machine-fragment.ts   MachineFragment, FrontierDeclaration — module-local FSM contribution
-    handoff.ts            HandoffSpec, HandoffTrigger — cross-module coupling via frontiers/capabilities
-    surface-emitter.ts    SurfaceEmitterSpec — surface emission strategy (placeholder)
-    legacy-adapter.ts     conventionBundleToPackages(), packagesToConventionBundle() — migration bridge
-  profile/              Profile-centric composition
-    types.ts              CompiledProfile, LegacyCompiledProfile, ResolvedModuleEntry
-    compile-profile.ts    compileProfileFromBundle() — legacy adapter (bundle → LegacyCompiledProfile)
-    compile-from-packages.ts  Package-based profile compilation
-    machine-assembler.ts  Machine assembly from profile modules
-    registry-merger.ts    Registry merging for multi-bundle profiles
-  protocol/             Convention protocol types (retained for ConventionSpec)
-    types.ts              ConventionSpec, ModuleSpec, FrameStateSpec, etc. — used by strategy and bootstrap layers
+  protocol/             Convention protocol types (retained for ConventionSpec — narrowing from 20+ bundle fields to 4 strategy-facing fields)
+    types.ts              ConventionSpec ({ id, name, ruleModules, systemConfig? }), declarative expression types (BoolExpr, Ref, EffectSpec), SurfaceFragment — used by strategy and bootstrap layers
   witness/              Deal witness system
     deal-spec-compiler.ts   compileDealSpec() — DealSpec → deal generation constraints
     deal-spec-unsat.ts      detectUnsat() — satisfiability checking
@@ -82,7 +71,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 **Entry point:** `meaningBundleToStrategy()` in `strategy/bidding/meaning-strategy.ts`.
 
 **Pipeline flow:**
-1. **Surface selection** — ConversationMachine produces `activeSurfaceGroupIds`, or `surfaceRouter` filters, or all surfaces used
+1. **Surface selection** — `collectMatchingClaims()` replays local FSMs per RuleModule, checks turn/phase/kernel/route constraints, returns matching `BidMeaning[]`
 2. **Fact evaluation** — `evaluateFacts()` runs 3-tier evaluation: primitive (hand → fact), bridge-derived (fact → fact), module-derived (convention-specific)
 3. **Surface evaluation** — `evaluateAllBidMeanings()` checks each surface's clauses against facts → `MeaningProposal[]`
 4. **Encoding resolution** — `resolveEncoding()` per-proposal for non-direct encoders
@@ -93,19 +82,17 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 **All pipeline stages are convention-agnostic.** They operate on generic types (`BidMeaning`, `EvaluatedFacts`, `MeaningProposal`). Convention-specific data comes from `definitions/` via `ConventionBundle`.
 
-## Conversation Machine (FSM)
+## Rule Interpreter (Surface Selection)
 
-`ConversationMachine` in `runtime/machine-types.ts` — hierarchical state machine tracking auction progression.
+All bundles use `RuleModule`-based surface selection via `collectMatchingClaims()` in `rule-interpreter.ts`. The old `ConversationMachine` FSM infrastructure has been removed.
 
-**Key types:**
-- `MachineState` — `stateId`, `parentId` (hierarchy), `transitions`, `entryEffects`, `surfaceGroupId`
-- `MachineTransition` — 5-kind `TransitionMatch`: `call`, `any-bid`, `pass`, `opponent-action`, `predicate`. `allowedRoles` field overrides default role matching (see role-safe matching below).
-- `MachineEffect` — sets `forcingState`, `obligation`, `agreedStrain`, `competitionMode`, `captain`, `systemCapabilities`
-- `MachineContext` — includes `interruptedFromStateId` capturing the source state when a scope interrupt fires (provenance for interrupted states)
+**How it works:** For each `RuleModule`, the interpreter replays its local FSM phases (`advanceLocalFsm()`) against the auction history, then evaluates each rule's constraints (turn role, phase match, route pattern via `matchRoute()`, kernel state via `matchKernel()`) to produce matching `BidMeaning[]` claims. `deriveTurnRole()` maps the next seat to opener/responder/opponent.
 
-**`evaluateMachine()`** walks auction entries with descendant-first transition preemption. **Role-safe matching:** `call` and `any-bid` transitions default to self+partner only — opponent bids are blocked unless `allowedRoles` explicitly includes opponents. Use `opponent-action` with `callType: "bid"` to match opponent bids. Output: `MachineEvalResult` with `currentStateId`, `activeSurfaceGroupIds`. Machine-over-profile precedence: profile = "what's installed", machine = "what's live".
-
-**`areSamePartnership()`** is used by machine `seatRole` functions — defined in `engine/constants.ts` and imported by machine files.
+**Key files:**
+- `rule-interpreter.ts` — `collectMatchingClaims()` entry point
+- `local-fsm.ts` — `advanceLocalFsm()` per-module phase advancement
+- `route-matcher.ts` — `matchRoute()` evaluates `RouteExpr` patterns against `CommittedStep[]`
+- `negotiation-matcher.ts` — `matchKernel()` evaluates `NegotiationExpr` against `NegotiationState`
 
 ## Runtime System
 
@@ -129,13 +116,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 - `commitment-integration.test.ts` — NT commitment extraction
 - `snapshot-integration.test.ts` — NT snapshot building
 
-**Synthetic fixtures** (`_synthetic-fixtures.ts`) provide:
-- `makeSurface()`, `makeHcpSurface()`, `makeBooleanSurface()` — BidMeaning factories
-- `buildFacts()`, `makeSyntheticFactCatalog()` — fact factories
-- `buildMachine()`, `makeSyntheticMachine()` — ConversationMachine factories
-- `makeSyntheticProfile()`, `makeSnapshot()` — profile/snapshot factories
-- `makeRuntimeModule()`, `makeSyntheticBundle()` — runtime/bundle factories
-- `makeArbitrationInput()` — pipeline factories
+**Shared test factories** in `src/test-support/convention-factories.ts` and inline synthetic data in test files provide BidMeaning factories, fact factories, bundle factories, and pipeline fixtures.
 
 **Boundary rule:** When adding new pipeline infrastructure, write tests using synthetic fixtures first. Convention-specific tests go in `conventions/__tests__/<bundle-name>/`.
 
@@ -162,4 +143,4 @@ how an agent acts here, remove it.
 
 **Staleness anchor:** This file assumes `core/registry.ts` and `core/pipeline/meaning-evaluator.ts` exist. If they don't, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-21 | version=7 | dir-commits-at-audit=70 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-22 | version=8 | dir-commits-at-audit=70 -->

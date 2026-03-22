@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { classifySpecificityBasis } from "../specificity-classifier";
 import { makeSurface } from "../../../../test-support/convention-factories";
+import { FactLayer } from '../../../../core/contracts/fact-catalog';
 import type { FactCatalogExtension, FactDefinition } from "../../../../core/contracts/fact-catalog";
 import type { BidMeaningClause } from "../../../../core/contracts/meaning";
 
@@ -38,7 +39,7 @@ function makeExtension(definitions: FactDefinition[]): FactCatalogExtension {
 const bridgeExtension = makeExtension([
   {
     id: "bridge.hasFourCardMajor",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has at least one 4+ card major",
     valueType: "boolean",
@@ -47,7 +48,7 @@ const bridgeExtension = makeExtension([
   },
   {
     id: "bridge.hasFiveCardMajor",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has at least one 5+ card major",
     valueType: "boolean",
@@ -61,7 +62,7 @@ const bridgeExtension = makeExtension([
 const opaqueModuleExtension = makeExtension([
   {
     id: "module.dont.bothMajors",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Both majors for DONT 2H",
     valueType: "boolean",
@@ -70,7 +71,7 @@ const opaqueModuleExtension = makeExtension([
   },
   {
     id: "module.dont.hasHeartSupport",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "3+ hearts",
     valueType: "boolean",
@@ -84,7 +85,7 @@ const opaqueModuleExtension = makeExtension([
 const transparentModuleExtension = makeExtension([
   {
     id: "module.stayman.hasFourCardMajor",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Has 4+ card major (derived from primitives)",
     valueType: "boolean",
@@ -98,7 +99,7 @@ const transparentModuleExtension = makeExtension([
 const transitiveModuleExtension = makeExtension([
   {
     id: "module.dont.singleSuitClubs",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Single suit is clubs",
     valueType: "boolean",
@@ -107,7 +108,7 @@ const transitiveModuleExtension = makeExtension([
   },
   {
     id: "module.dont.singleSuited",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Single-suited hand (opaque — derivesFrom is empty)",
     valueType: "boolean",

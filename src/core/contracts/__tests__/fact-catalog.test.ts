@@ -16,6 +16,7 @@ import {
 import { evaluateFacts, createSharedFactCatalog } from "../../../conventions/core/pipeline/fact-evaluator";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { hand } from "../../../engine/__tests__/fixtures";
+import { FactLayer } from "../fact-layer";
 
 describe("SHARED_FACTS", () => {
   it("has 20 shared facts (6 primitive + 9 bridge-derived + 5 posterior-derived)", () => {
@@ -71,7 +72,7 @@ describe("SHARED_FACTS", () => {
     for (const id of primitiveIds) {
       const fact = SHARED_FACTS.find((f) => f.id === id);
       expect(fact, `expected ${id} to exist`).toBeDefined();
-      expect(fact!.layer).toBe("primitive");
+      expect(fact!.layer).toBe(FactLayer.Primitive);
       expect(fact!.derivesFrom).toEqual([]);
     }
   });
@@ -85,7 +86,7 @@ describe("SHARED_FACTS", () => {
     for (const id of bridgeIds) {
       const fact = SHARED_FACTS.find((f) => f.id === id);
       expect(fact, `expected ${id} to exist`).toBeDefined();
-      expect(fact!.layer).toBe("bridge-derived");
+      expect(fact!.layer).toBe(FactLayer.BridgeDerived);
     }
   });
 
@@ -98,7 +99,7 @@ describe("SHARED_FACTS", () => {
   });
 
   it("shared facts do not include module-derived facts", () => {
-    const moduleFacts = SHARED_FACTS.filter((f) => f.layer === "module-derived");
+    const moduleFacts = SHARED_FACTS.filter((f) => f.layer === FactLayer.ModuleDerived);
     expect(moduleFacts).toHaveLength(0);
   });
 
@@ -146,7 +147,7 @@ describe("createFactCatalog", () => {
       definitions: [
         {
           id: "module.test.fact",
-          layer: "module-derived",
+          layer: FactLayer.ModuleDerived,
           world: "acting-hand",
           description: "Test fact",
           valueType: "boolean",
@@ -191,7 +192,7 @@ describe("createFactCatalog", () => {
     const ext1: FactCatalogExtension = {
       definitions: [{
         id: "ext1.fact",
-        layer: "module-derived",
+        layer: FactLayer.ModuleDerived,
         world: "acting-hand",
         description: "ext1",
         valueType: "boolean",
@@ -203,7 +204,7 @@ describe("createFactCatalog", () => {
     const ext2: FactCatalogExtension = {
       definitions: [{
         id: "ext2.fact",
-        layer: "module-derived",
+        layer: FactLayer.ModuleDerived,
         world: "acting-hand",
         description: "ext2",
         valueType: "number",
@@ -221,7 +222,7 @@ describe("createFactCatalog", () => {
     const ext: FactCatalogExtension = {
       definitions: [{
         id: "module.test.fact",
-        layer: "module-derived",
+        layer: FactLayer.ModuleDerived,
         world: "acting-hand",
         description: "Test",
         valueType: "boolean",
@@ -259,7 +260,7 @@ describe("topological evaluation order", () => {
   it("module facts evaluated after bridge-derived (topo sort)", () => {
     const moduleFactDef: FactDefinition = {
       id: "module.test.derived",
-      layer: "module-derived",
+      layer: FactLayer.ModuleDerived,
       world: "acting-hand",
       description: "Derives from bridge.hasFourCardMajor",
       valueType: "boolean",
@@ -294,7 +295,7 @@ describe("topological evaluation order", () => {
     // Add a fact definition with no corresponding evaluator
     const orphanDef: FactDefinition = {
       id: "module.orphan.noEvaluator",
-      layer: "module-derived",
+      layer: FactLayer.ModuleDerived,
       world: "acting-hand",
       description: "Has no evaluator registered",
       valueType: "boolean",

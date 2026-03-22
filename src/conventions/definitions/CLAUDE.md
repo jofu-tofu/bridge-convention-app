@@ -1,6 +1,6 @@
 # Convention Definitions
 
-Convention bundles that each implement a bridge bidding convention using the meaning pipeline. Each bundle is self-contained with deal constraints, meaning surfaces, fact extensions, a conversation machine FSM, and teaching metadata.
+Convention bundles that each implement a bridge bidding convention using the meaning pipeline. Each bundle is self-contained with deal constraints, meaning surfaces, fact extensions, rule modules (RuleModule), and teaching metadata.
 
 ## Folder Structure
 
@@ -22,14 +22,11 @@ Convention bundles that each implement a bridge bidding convention using the mea
 |------|---------|
 | `config.ts` | Re-export from system-registry (thin shim) |
 | `meaning-surfaces.ts` | `BidMeaning[]` definitions — the core bidding logic (single-module bundles). In multi-module bundles like nt-bundle, this is `composed-surfaces.ts` (cross-module composition re-exports). |
-| `facts.ts` | `FactCatalogExtension`s for module-derived facts |
+| `facts.ts` | `FactCatalogExtension`s for module-derived facts. Use factory helpers from `core/pipeline/fact-factory.ts` for common patterns. |
 | `semantic-classes.ts` | Module-local semantic class constants (not in central registry) |
-| `machine.ts` | `ConversationMachine` FSM for hierarchical state tracking |
 | `system-profile.ts` | `SystemProfile` for profile-based module activation |
 | `explanation-catalog.ts` | `ExplanationCatalog` entries for teaching projections |
-| `packages/` | ModulePackage definitions for profile-based compilation |
 | `module.ts` | *(dont-bundle, weak-twos-bundle only)* Single-module convention definition |
-| `surface-routing.ts` | *(nt-bundle only)* `RoutedSurfaceGroup[]` for round-aware surface selection. |
 | `index.ts` | Barrel exports |
 | `__tests__/` | Bundle-specific tests |
 
@@ -44,26 +41,17 @@ Convention bundles that each implement a bridge bidding convention using the mea
   - `stayman-rules.ts` — RuleModule for Stayman (phases: idle/asked/shown-hearts/shown-spades/denied/inactive). Claims carry `negotiationDelta` for forcing/captain effects.
   - `jacoby-transfers-rules.ts` — RuleModule for Jacoby Transfers (phases: idle/inactive/transferred-*/accepted-*/placing-*/invited-*). Claims carry `negotiationDelta` for forcing/fitAgreed/captain effects.
   - `smolen-rules.ts` — RuleModule for Smolen (phases: idle/post-r1/placing-hearts/placing-spades/done). Claims carry `negotiationDelta` for game-forcing/fitAgreed/captain effects. Proof case: uses route pattern `subseq([inquire(majorSuit), deny(majorSuit)])` instead of hookTransitions.
-- ~~`skeleton.ts`~~ — Removed. Skeleton-based composition replaced by `bundleFromRuleModules()` in Phase 6.
 - `config.ts` — Re-exports `ntBundle` from `system-registry.ts`.
 - `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles via `buildBundle()`, auto-composing pedagogical content from module subsets.
 - `composed-surfaces.ts` — Cross-module composition re-exports. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
-- ~~`facts.ts`~~ — Removed. Facts (`staymanFacts`, `transferFacts`, `smolenFacts`) are now re-exported directly from `modules/` via the barrel `index.ts`.
-- `machine.ts` — Re-export shim: `createNtConversationMachine()` delegates to `composeNtModules()`.
 - `semantic-classes.ts` — Re-export shim from modules.
 - `explanation-catalog.ts` — Composed from all modules' explanation entries.
-- ~~`pedagogical-relations.ts`~~ — Removed. All relations derived from `teachingTags` on surfaces.
-- ~~`alternatives.ts`~~ — Removed. All alternatives derived from `teachingTags` on surfaces.
-- `surface-routing.ts` — `NT_ROUTED_SURFACES` and `createNtSurfaceRouter()` for backward compatibility.
 
 **`bergen-bundle/`** — Bergen Raises using the meaning pipeline with `$suit` binding parameterization for hearts and spades.
-- `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `surfaceRouter`, `conversationMachine`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.
-- `meaning-surfaces.ts` — `createBergenR1Surfaces(suit)` factory producing 5 surfaces per suit (splinter, game, limit, constructive, preemptive) parameterized by `$suit` bindings. Also includes R2–R4 surfaces. 604 lines total.
-- `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4).
-- `machine.ts` — ~16-state hierarchical FSM using `bergen-active` abstract parent state that owns `opponent-action` interrupt transitions targeting local interrupted states. States: idle → major-opened-hearts/spades → responder-r1 → R2 (opener-after-constructive/limit/preemptive) → R3 (responder-after-opener-rebid) → R4 → terminal. Uses `surfaceGroupId` and `entryEffects` for `setCaptain`.
+- `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `ruleModules`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.
+- `meaning-surfaces.ts` — `createBergenR1Surfaces(suit)` factory producing 5 surfaces per suit (splinter, game, limit, constructive, preemptive) parameterized by `$suit` bindings. Also includes R2–R4 surfaces.
+- `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4). Uses `buildExtension()` from fact-factory.
 - `modules/bergen/bergen-rules.ts` — RuleModule for Bergen (15 phases: idle/opened-H/S/after-constructive-H/S/after-limit-H/S/after-preemptive-H/S/after-game/after-signoff/after-game-try-H/S/r4/done). Includes stub 1H/1S opening surfaces with `MajorOpen` intent for phase transitions. Claims carry captain/fitAgreed kernel deltas.
-- ~~`alternatives.ts`~~ — Removed. Alternatives now derived from `teachingTags` on surfaces.
-- ~~`pedagogical-relations.ts`~~ — Removed. Relations now derived from `teachingTags` on surfaces.
 
 ## Convention Quick Reference
 
@@ -76,11 +64,10 @@ Convention bundles that each implement a bridge bidding convention using the mea
 
 Every convention bundle must satisfy all items before being considered complete:
 
-1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `intraModuleOrder`). `modulePrecedence` defaults to 0 — do NOT set it on surfaces. **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
-2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state.
-3. **`surfaceRouter` for round-aware filtering.** Maps FSM state → surface group via `RoutedSurfaceGroup[]`. Without this, all surfaces are evaluated every round (expensive and semantically incorrect).
-4. **`conversationMachine` FSM.** Tracks auction progress through states with transitions. States use `surfaceGroupId` to link to surface groups. Must include `idle`, at least one active state, and `terminal`. **Scoped interrupt pattern:** opponent interference is handled by abstract scope states (parent states with `opponent-action` transitions targeting local interrupted states) — not a single global contested sink. Design rule: external events are handled by the nearest enclosing interrupt scope. `call` and `any-bid` transitions are role-safe by default (self+partner only); use `opponent-action` with `callType: "bid"` to match opponent bids explicitly.
-5. **`systemProfile` for activation.** Profile-based module activation via `SystemProfile`. The legacy `activationFilter` field is optional and no longer needed when `systemProfile` is present.
+1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `declarationOrder`). `modulePrecedence` defaults to 0 — do NOT set it on surfaces. **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
+2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state. Use factory helpers (`defineBooleanFact`, `definePerSuitFacts`, `defineHcpRangeFact`, `buildExtension`) from `core/pipeline/fact-factory.ts` for common patterns.
+3. **`ruleModules` for surface selection.** `RuleModule[]` with phases, phase transitions, and rules. Each rule declares turn role, phase match, optional route/kernel constraints, and surfaces to emit. The rule interpreter (`collectMatchingClaims()`) handles surface selection.
+4. **`systemProfile` for activation.** Profile-based module activation via `SystemProfile`.
 6. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate.
 7. **`category` and `description` are required** on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` — no separate wrapper needed.
 8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections. Each entry links a `factId` to display text and contrastive templates.
@@ -119,12 +106,9 @@ The full bundle interface — the primary authoring surface for new conventions.
 | `dealConstraints` | Yes | `DealConstraints` | Seat-specific HCP, shape, and balanced constraints. |
 | `offConventionConstraints` | No | `DealConstraints` | Anti-constraints for off-convention drills (hands where the convention doesn't apply). Used by `startDrill()` when `DrillTuning.includeOffConvention` is set. |
 | `defaultAuction` | No | `(seat, deal?) => Auction \| undefined` | Pre-filled auction for drill start. |
-| `activationFilter` | No | `(auction, seat) => readonly string[]` | Legacy activation filter. Optional when `systemProfile` is present. |
 | `meaningSurfaces` | No* | `readonly { groupId: string; surfaces: readonly BidMeaning[] }[]` | Meaning surfaces organized by group. When present, the meaning pipeline is used. |
 | `factExtensions` | No | `readonly FactCatalogExtension[]` | Module-derived fact definitions for surface clause evaluation. |
-| `surfaceRouter` | No | `(auction, seat) => readonly BidMeaning[]` | Round-aware surface filtering. When absent, all surfaces are evaluated. |
 | `systemProfile` | No | `SystemProfile` | Profile-based module activation. |
-| `conversationMachine` | No | `ConversationMachine` | FSM for hierarchical state tracking and surface group selection. |
 | `declaredCapabilities` | No | `Readonly<Record<string, string>>` | Capabilities injected into profile-based activation. Bundles without this get none. |
 | `category` | Yes | `ConventionCategory` | Convention category for UI grouping. |
 | `description` | Yes | `string` | Human-readable description for UI display. |
@@ -172,7 +156,7 @@ export const {NAME}_SURFACES: readonly BidMeaning[] = [
       { factId: "hand.suitLength.clubs", operator: "gte", value: 4 },
     ],
     band: "should",
-    intraModuleOrder: 0,
+    declarationOrder: 0,
     sourceIntent: { type: "MyBid", params: {} },
     teachingLabel: "My bid",
     // Optional: surfaceBindings: { suit: "hearts" } for parameterized surfaces
@@ -185,117 +169,61 @@ export const {NAME}_SURFACES: readonly BidMeaning[] = [
 ### facts.ts
 
 ```ts
-import type {
-  FactCatalogExtension,
-  FactDefinition,
-} from "../../../core/contracts/fact-catalog";
+import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
+import {
+  defineBooleanFact,
+  defineHcpRangeFact,
+  buildExtension,
+  type FactEntry,
+} from "../../core/pipeline/fact-factory";
 
-const {name}Definitions: readonly FactDefinition[] = [
-  {
-    factId: "module.{name}.myFact",
-    type: "boolean",
-    description: "Whether condition X holds",
-    evaluator: (hand, _auction) => {
-      // Pure function of hand/auction state
-      return hand.suitLengths.hearts >= 4;
-    },
-  },
-];
-
+// Use factory helpers for common patterns; hand-write complex evaluators as FactEntry
 export const {name}Facts: FactCatalogExtension = {
   moduleId: "{name}",
-  facts: {name}Definitions,
+  ...buildExtension([
+    defineBooleanFact({
+      id: "module.{name}.hasSuit",
+      description: "Has 4+ cards in suit",
+      factId: "hand.suitLength.hearts",
+      operator: "gte",
+      value: 4,
+      constrainsDimensions: ["suitIdentity"],
+    }),
+    defineHcpRangeFact({
+      id: "module.{name}.inRange",
+      description: "HCP in range for this bid",
+      range: { min: 10, max: 15 },
+    }),
+    // Hand-written FactEntry for complex evaluators:
+    // { definition: { ... }, evaluator: ["factId", (hand, auction, memo) => ...] },
+  ]),
 };
 ```
 
-### machine.ts
+### {name}-rules.ts (RuleModule)
 
 ```ts
-import type { ConversationMachine } from "../../core/runtime/machine-types";
-
-export function create{Name}ConversationMachine(): ConversationMachine {
-  return {
-    machineId: "{name}-conversation",
-    initialStateId: "idle",
-    states: [
-      {
-        stateId: "idle",
-        parentId: null,
-        transitions: [
-          {
-            on: { kind: "call", level: 1, strain: "notrump" },
-            target: "{name}-opened",
-          },
-        ],
-      },
-      // Scope state — abstract parent that owns the interrupt transition.
-      // Child states inherit this opponent-action handler automatically.
-      {
-        stateId: "{name}-scope",
-        parentId: null,
-        isAbstract: true,
-        transitions: [
-          { on: { kind: "opponent-action" }, target: "{name}-interrupted" },
-        ],
-      },
-      {
-        stateId: "{name}-opened",
-        parentId: "{name}-scope",  // child of scope — inherits interrupt
-        surfaceGroupId: "responder-r1",  // links to meaningSurfaces groupId
-        entryEffects: { setCaptain: "responder" },
-        transitions: [
-          // Transitions to next states...
-        ],
-      },
-      {
-        stateId: "{name}-interrupted",
-        parentId: "{name}-scope",  // local to scope — not a global sink
-        surfaceGroupId: "responder-r1-contested",
-        entryEffects: { setCompetitionMode: "contested" },
-        transitions: [
-          { on: { kind: "pass" }, target: "terminal" },
-          // Handle double, bid-over-bid, etc.
-        ],
-      },
-      {
-        stateId: "terminal",
-        parentId: null,
-        transitions: [],  // terminal — no outgoing transitions
-      },
-    ],
-  };
-}
-```
-
-### surface-routing.ts
-
-```ts
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { Auction, Seat } from "../../../engine/types";
-import type { ConversationMachine } from "../../core/runtime/machine-types";
+import type { RuleModule } from "../../core/rule-module";
 import { {NAME}_SURFACES } from "./meaning-surfaces";
 
-export interface RoutedSurfaceGroup {
-  readonly groupId: string;
-  readonly surfaces: readonly BidMeaning[];
-}
-
-const {NAME}_ROUTED_SURFACES: readonly RoutedSurfaceGroup[] = [
-  { groupId: "responder-r1", surfaces: {NAME}_SURFACES },
-  // Additional groups...
-];
-
-export function create{Name}SurfaceRouter(
-  routedGroups: readonly RoutedSurfaceGroup[] = {NAME}_ROUTED_SURFACES,
-  machine?: ConversationMachine,
-): (auction: Auction, seat: Seat) => readonly BidMeaning[] {
-  const lookup = new Map(routedGroups.map(g => [g.groupId, g.surfaces]));
-  return (auction, seat) => {
-    // Use machine to determine current state → groupId → surfaces
-    // Fallback: return all surfaces if no machine or no match
-    return routedGroups.flatMap(g => g.surfaces);
-  };
-}
+export const {name}Rules: RuleModule = {
+  moduleId: "{name}",
+  phases: ["idle", "opened", "responded", "done"],
+  initialPhase: "idle",
+  phaseTransitions: [
+    { from: "idle", obs: { type: "BidAction", call: { type: "bid", level: 1, suit: "notrump" } }, to: "opened" },
+    // Additional transitions...
+  ],
+  rules: [
+    {
+      phase: "opened",
+      match: { turn: "responder" },
+      surfaces: {NAME}_SURFACES,
+      // Optional: route, kernel, negotiationDelta
+    },
+    // Additional rules...
+  ],
+};
 ```
 
 ### semantic-classes.ts
@@ -358,15 +286,15 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 
 1. Create `definitions/{name}-bundle/` folder with the modules listed in the Folder Structure table above.
 2. Define `BidMeaning[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
-3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses.
+3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses. Use factory helpers from `core/pipeline/fact-factory.ts` for common patterns.
 4. Define module-local semantic class constants in `semantic-classes.ts`.
-5. Build a `ConversationMachine` FSM in `machine.ts`. States map to surface groups via `surfaceGroupId`. Include `idle`, active states, and `terminal`. Use the **scoped interrupt pattern** for opponent interference: create abstract scope states (parents) with `opponent-action` transitions targeting local interrupted states. Do not use a single global contested sink. See DONT's `dont-active` as the reference pattern.
+5. Define `RuleModule` in `{name}-rules.ts`. Declare phases, phase transitions (observation patterns that advance the local FSM), and rules (phase + turn + optional route/kernel constraints → surfaces).
 6. Define `SystemProfile` in `system-profile.ts`.
 7. Populate `ExplanationCatalog` in `explanation-catalog.ts` with template-keyed explanations.
 8. Add `teachingTags` to surfaces using the 6 general tags from `teaching-vocabulary.ts`. Use scope strings to group related surfaces.
 9. Wire `config.ts` as a thin re-export from `system-registry.ts`.
 10. Create `index.ts` barrel with re-exports.
-11. Create `__tests__/` with at minimum: surface evaluation tests, machine tests, and config/factory E2E tests.
+11. Create `__tests__/` with at minimum: surface evaluation tests and config/factory E2E tests.
 12. Run the completeness checklist above before considering the bundle complete.
 
 ## Authoring Rules
@@ -374,32 +302,26 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - **Use `createSurface()` for all new surfaces.** Import from `conventions/core/surface-builder.ts` with a `ModuleContext`. The builder derives `clauseId` and `description` automatically. Provide `description` only when it adds parenthetical rationale beyond the mechanical constraint (test: contains `(`). `moduleId` is injected from `ModuleContext`. `modulePrecedence` defaults to 0 — not hand-authored.
 - **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs. Use `teachingTags` with shared vocabulary scopes for cross-module relationships.
 - **Adding a module must not edit existing modules.** If your new module needs to relate to existing ones (same-family, near-miss, etc.), use shared scope strings in `teachingTags`. The derivation function handles the wiring.
-- **`predicate` transitions are not supported in auto-composition.** Use declarative `TransitionMatch` kinds (`call`, `pass`, `opponent-action`, `any-bid`). If a future convention requires runtime predicate logic, it must be expressed as a `BoolExpr` guard on the `FrameStateSpec` level — which means authoring it in the skeleton, not the module.
 - **Cross-module groupIds must use shared constants.** Never use string literals for groupIds that another module also references.
 - **Use scope constants from `pedagogical-scope-vocabulary.ts`** for `teachingTags` scopes. The branded `PedagogicalScope` type catches typos at compile time. Do not use free-form strings.
-- **`entryTransitions` must be populated** on every module that is reachable from the bundle entry state. Empty `entryTransitions` means the module is only reachable via `hookTransitions` from another module.
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
 - **System-fact-gated surfaces for cross-system modules.** When a bid has different meanings in different systems (e.g., jump shift: strong in SAYC, weak in 2/1), author surfaces for ALL meanings in the same module. Gate each with a system fact clause (`{ factId: SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, operator: "eq", value: true/false }`). The pipeline evaluates all surfaces and selects only those matching the active `SystemConfig`. Never create system-specific modules or branch on `systemId` in module code.
 
 ## Common Pitfalls
 
-1. **Forgetting `activationFilter`.** Without an activation filter, the bundle never activates. The filter must check for the convention's trigger bid in the auction and return member IDs when present, `[]` otherwise.
+1. **Surface clause `factId` not in catalog.** Every `factId` referenced in a surface clause must either be in the shared `BRIDGE_DERIVED_FACTS` or defined in a `FactCatalogExtension` in `facts.ts`. Missing facts cause clauses to fail closed (treated as not satisfied).
 
-2. **Surface clause `factId` not in catalog.** Every `factId` referenced in a surface clause must either be in the shared `BRIDGE_DERIVED_FACTS` or defined in a `FactCatalogExtension` in `facts.ts`. Missing facts cause clauses to fail closed (treated as not satisfied).
+2. **Reusing `meaningId` across surfaces.** Each surface must have a unique `meaningId`. Duplicates cause unpredictable surface selection.
 
-3. **`surfaceGroupId` mismatch between machine and config.** The `surfaceGroupId` on FSM states must exactly match a `groupId` in the bundle's `meaningSurfaces` array. Mismatches cause the surface router to return no surfaces for that state.
+3. **`$suit` binding errors in parameterized surfaces.** When using the factory pattern (like Bergen's `createBergenR1Surfaces(suit)`), clauses must reference the binding variable (e.g., `hand.suitLength.$suit`) and the surface must include a `bindings: { suit }` field. Missing bindings cause clause evaluation to fail.
 
-4. **Reusing `meaningId` across surfaces.** Each surface must have a unique `meaningId`. Duplicates cause unpredictable surface selection.
+4. **Missing `category` or `description` on bundle.** Both are required on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` from these fields.
 
-5. **Missing `surfaceRouter`.** Without a router, ALL surfaces are evaluated on every round — semantically incorrect and expensive. Always wire a router that delegates to the conversation machine.
+5. **Hand-authoring clauseId/description in surfaces.** These are auto-derived by the builder and pipeline. Only provide `description` when adding convention-specific rationale in parentheses.
 
-6. **`$suit` binding errors in parameterized surfaces.** When using the factory pattern (like Bergen's `createBergenR1Surfaces(suit)`), clauses must reference the binding variable (e.g., `hand.suitLength.$suit`) and the surface must include a `bindings: { suit }` field. Missing bindings cause clause evaluation to fail.
+6. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
 
-7. **Missing `category` or `description` on bundle.** Both are required on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` from these fields.
-
-8. **Hand-authoring clauseId/description in surfaces.** These are auto-derived by the builder and pipeline. Only provide `description` when adding convention-specific rationale in parentheses.
-
-9. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
+7. **Phase transition vs route matching confusion.** Phase transitions (`phaseTransitions` in RuleModule) advance the local FSM state — they are actor-agnostic and fire on observation shape. Route matching (`RouteExpr` in rules) filters which surfaces are active — it supports actor-aware patterns. Do not conflate the two.
 
 ## Test Organization
 
@@ -413,27 +335,24 @@ definitions/
   bergen-bundle/__tests__/
     config-factory-e2e.test.ts           Bundle config + factory integration
     golden-master.test.ts                Golden master snapshot tests
-    machine.test.ts                      FSM state transition tests
     surface-evaluation.test.ts           Surface clause evaluation tests
   weak-twos-bundle/__tests__/
     golden-master.test.ts                Golden master snapshot tests
-    machine.test.ts                      FSM state transition tests
     surface-evaluation.test.ts           Surface clause evaluation tests
   dont-bundle/__tests__/
     bundle-composition.test.ts           Bundle composition tests
-    machine.test.ts                      Hierarchical FSM + predicate transition tests
     surface-evaluation.test.ts           R1 overcaller + reveal + relay response tests
 
 __tests__/                          (at src/conventions/__tests__/)
   fixtures.test.ts                 Shared test helper tests
   fixtures.ts                      Shared helpers (hand, auctionFromBids, makeBiddingContext)
   infrastructure/
-    _synthetic-fixtures.ts         Synthetic test fixture factories
-    synthetic-fixtures.test.ts     Synthetic fixture tests
+    structural-health.test.ts      Structural health checks
+    module-conventions.test.ts     Module convention enforcement tests
   nt-bundle/
     commitment-integration.test.ts Commitment-level integration tests
     fact-evaluation.test.ts        Fact catalog evaluation tests
-    machine-integration.test.ts    Machine + pipeline integration tests
+    machine-integration.test.ts    Pipeline integration tests
     profile-tests.test.ts          Profile-based activation tests
     snapshot-integration.test.ts   Snapshot-based regression tests
 ```
@@ -496,4 +415,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `nt-bundle/config.ts`, `bergen-bundle/config.ts`, `weak-twos-bundle/config.ts`, and `dont-bundle/config.ts` exist.
 If any is missing, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-21 | version=8 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:90+,exts:ts:88+,md:1 -->
+<!-- context-layer: generated=2026-03-03 | last-audited=2026-03-22 | version=9 | dir-commits-at-audit=unknown | tree-sig=dirs:6,files:90+,exts:ts:88+,md:1 -->

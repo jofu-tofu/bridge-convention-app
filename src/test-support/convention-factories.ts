@@ -32,7 +32,7 @@ export function makeRanking(overrides?: Partial<AuthoredRankingMetadata>): Autho
   return {
     recommendationBand: "should",
     modulePrecedence: 0,
-    intraModuleOrder: 0,
+    declarationOrder: 0,
     ...overrides,
   };
 }
@@ -53,7 +53,7 @@ export function makeRankingMetadata(overrides: Partial<RankingMetadata> = {}): R
     recommendationBand: "should",
     specificity: 1,
     modulePrecedence: 1,
-    intraModuleOrder: 1,
+    declarationOrder: 1,
     ...overrides,
   };
 }

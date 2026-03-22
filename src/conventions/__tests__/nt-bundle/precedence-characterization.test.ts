@@ -12,13 +12,13 @@ function ranking(
   band: "must" | "should" | "may",
   specificity: number,
   modulePrecedence: number,
-  intraModuleOrder: number,
+  declarationOrder: number,
 ): RankingMetadata {
   return {
     recommendationBand: band,
     specificity,
     modulePrecedence,
-    intraModuleOrder,
+    declarationOrder,
   };
 }
 
@@ -89,9 +89,9 @@ describe("precedence characterization — band resolves critical NT tie-breaks",
     expect(compareRanking(highSpec, lowSpec)).toBeLessThan(0); // highSpec wins
   });
 
-  it("with uniform modulePrecedence=0, intraModuleOrder is the final tiebreaker", () => {
+  it("with uniform modulePrecedence=0, declarationOrder is the final tiebreaker", () => {
     // Two surfaces with same band, same specificity, same precedence.
-    // intraModuleOrder breaks the tie.
+    // declarationOrder breaks the tie.
     const first = ranking("should", 3, 0, 0);
     const second = ranking("should", 3, 0, 1);
 

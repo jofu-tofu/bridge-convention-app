@@ -56,7 +56,7 @@ function makeSurface(overrides: Partial<BidMeaning> = {}): BidMeaning {
       defaultCall: { type: "bid", level: 2 as const, strain: BidSuit.Clubs },
     },
     clauses: [],
-    ranking: { recommendationBand: "preferred" as const, intraModuleOrder: 0 },
+    ranking: { recommendationBand: "preferred" as const, declarationOrder: 0 },
     sourceIntent: { type: "TestIntent", params: {} },
     teachingLabel: "Test meaning",
     ...overrides,

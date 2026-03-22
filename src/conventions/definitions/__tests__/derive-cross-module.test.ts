@@ -102,7 +102,7 @@ describe("deriveTeachingContent validation", () => {
       moduleId: "test",
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
-      ranking: { recommendationBand: "should", modulePrecedence: 0, intraModuleOrder: 0 },
+      ranking: { recommendationBand: "should", modulePrecedence: 0, declarationOrder: 0 },
       sourceIntent: { type: "Test", params: {} },
       teachingLabel: meaningId,
       teachingTags: tags,

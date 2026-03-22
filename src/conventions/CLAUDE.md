@@ -1,6 +1,6 @@
 # Conventions
 
-Convention definitions for bridge bidding practice. Each convention is authored as a `ConventionBundle` with meaning surfaces, fact extensions, a conversation machine (FSM), and a system profile.
+Convention definitions for bridge bidding practice. Each convention is authored as a `ConventionBundle` with meaning surfaces, fact extensions, rule modules (RuleModule), and a system profile.
 
 ## Architecture
 
@@ -11,16 +11,15 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 - **Auto-registration.** `index.ts` imports each convention and calls `registerBundle()`, which auto-derives `ConventionConfig`. No `convention-config.ts` wrappers needed.
 
 **Context tree:**
-- `core/CLAUDE.md` — meaning pipeline, FSM, runtime, witness, test architecture
+- `core/CLAUDE.md` — meaning pipeline, rule interpreter, runtime, witness, test architecture
 
 ## Convention Authoring (Meaning Pipeline)
 
 A convention bundle provides:
 1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, optional `closurePolicy`, and optional `teachingTags`
-2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions
-3. **`conversationMachine`** — FSM tracking auction progression, producing `surfaceGroupId` per state and `MachineEffect` per transition
+2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions. Use factory helpers in `core/pipeline/fact-factory.ts` for common patterns (boolean comparison, per-suit, HCP range).
+3. **`ruleModules`** — `RuleModule[]` for declarative surface selection via `collectMatchingClaims()`. Each module declares phases, phase transitions, and rules with `ObsPattern`/`RouteExpr`/`NegotiationExpr` constraints.
 4. **`systemProfile`** — `SystemProfile` declaring modules, attachments, exclusivity groups
-5. **`surfaceRouter`** — function mapping (auction, seat) → active surfaces (legacy; machine-based routing preferred)
 
 **Pedagogical content is tag-derived.** Modules do NOT declare `teachingRelations`, `alternatives`, or `intentFamilies` fields. Instead, surfaces carry `teachingTags` using 6 general tags from `definitions/teaching-vocabulary.ts`. When modules are composed into a bundle, `deriveTeachingContent()` scans all surfaces and produces the appropriate relations/alternatives automatically. This makes modules portable — compose any set into a bundle and it works.
 
@@ -58,4 +57,4 @@ false or incomplete, update this file before ending the task. Do not defer.
 **Staleness anchor:** This file assumes `core/registry.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-21 | version=13 | dir-commits-at-audit=60 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-22 | version=14 | dir-commits-at-audit=60 -->

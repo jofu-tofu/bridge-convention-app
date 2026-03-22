@@ -48,9 +48,9 @@ describe("createPosteriorFactEvaluators", () => {
     const customIds = [
       "bridge.partnerHas4HeartsLikely",
       "bridge.combinedHcpInRangeLikely",
-      "bridge.nsHaveEightCardFitLikely",
-      "bridge.openerStillBalancedLikely",
-      "bridge.openerHasSecondMajorLikely",
+      "module.stayman.nsHaveEightCardFitLikely",
+      "module.stayman.openerStillBalancedLikely",
+      "module.stayman.openerHasSecondMajorLikely",
     ];
     const evaluators = createPosteriorFactEvaluators(customIds);
     expect(evaluators.size).toBe(5);
@@ -87,12 +87,12 @@ describe("createPosteriorFactEvaluators", () => {
   it("entries with conditions carry conditionedOn", () => {
     const conditionsMap = new Map([["bridge.combinedHcpInRangeLikely", ["25", "40"] as readonly string[]]]);
     const evaluators = createPosteriorFactEvaluators(
-      ["bridge.combinedHcpInRangeLikely", "bridge.openerStillBalancedLikely"],
+      ["bridge.combinedHcpInRangeLikely", "module.stayman.openerStillBalancedLikely"],
       conditionsMap,
     );
     expect(evaluators.size).toBe(2);
     expect(evaluators.get("bridge.combinedHcpInRangeLikely")!.conditionedOn).toEqual(["25", "40"]);
-    expect(evaluators.get("bridge.openerStillBalancedLikely")!.conditionedOn).toBeUndefined();
+    expect(evaluators.get("module.stayman.openerStillBalancedLikely")!.conditionedOn).toBeUndefined();
   });
 });
 
@@ -291,7 +291,7 @@ describe("createPosteriorFactProviderFromBackend", () => {
     const provider = createPosteriorFactProviderFromBackend(state, ownHand, 100);
 
     const result = provider.queryFact({
-      factId: "bridge.nsHaveEightCardFitLikely",
+      factId: "module.stayman.nsHaveEightCardFitLikely",
       seatId: "N",
     });
 

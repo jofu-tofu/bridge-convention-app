@@ -31,7 +31,7 @@ function makeSurface(
     ranking: {
       recommendationBand: "should",
       modulePrecedence: 0,
-      intraModuleOrder: 0,
+      declarationOrder: 0,
     },
     sourceIntent: { type: "test-intent", params: {} },
     teachingLabel: "Test meaning",
@@ -326,7 +326,7 @@ describe("evaluateBidMeaning", () => {
     // Authored ranking fields are preserved; specificity is derived
     expect(proposal.ranking.recommendationBand).toBe(surface.ranking.recommendationBand);
     expect(proposal.ranking.modulePrecedence).toBe(surface.ranking.modulePrecedence);
-    expect(proposal.ranking.intraModuleOrder).toBe(surface.ranking.intraModuleOrder);
+    expect(proposal.ranking.declarationOrder).toBe(surface.ranking.declarationOrder);
     expect(proposal.ranking.specificity).toBe(0); // no fact extensions → 0
   });
 
@@ -611,7 +611,7 @@ describe("evaluateBidMeaning preserves authored recommendationBand", () => {
       ranking: {
         recommendationBand: "should",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
     const facts = buildFacts({});
@@ -628,7 +628,7 @@ describe("evaluateBidMeaning preserves authored recommendationBand", () => {
         ranking: {
           recommendationBand: band,
           modulePrecedence: 0,
-          intraModuleOrder: 0,
+          declarationOrder: 0,
         },
       });
       const facts = buildFacts({});
@@ -643,7 +643,7 @@ describe("evaluateBidMeaning preserves authored recommendationBand", () => {
       ranking: {
         recommendationBand: "avoid",
         modulePrecedence: 3,
-        intraModuleOrder: 7,
+        declarationOrder: 7,
       },
     });
     const facts = buildFacts({});
@@ -652,7 +652,7 @@ describe("evaluateBidMeaning preserves authored recommendationBand", () => {
     expect(proposal.ranking.recommendationBand).toBe("avoid");
     expect(proposal.ranking.specificity).toBe(0); // no fact extensions → 0
     expect(proposal.ranking.modulePrecedence).toBe(3);
-    expect(proposal.ranking.intraModuleOrder).toBe(7);
+    expect(proposal.ranking.declarationOrder).toBe(7);
   });
 });
 
@@ -663,7 +663,7 @@ describe("evaluateAllBidMeanings preserves authored recommendationBand", () => {
       ranking: {
         recommendationBand: "must",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
     const surface2 = makeSurface({
@@ -671,7 +671,7 @@ describe("evaluateAllBidMeanings preserves authored recommendationBand", () => {
       ranking: {
         recommendationBand: "may",
         modulePrecedence: 0,
-        intraModuleOrder: 1,
+        declarationOrder: 1,
       },
     });
 

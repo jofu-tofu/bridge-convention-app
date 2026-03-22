@@ -24,7 +24,7 @@ describe("BidMeaning", () => {
       ranking: {
         recommendationBand: "should",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
       sourceIntent: {
         type: "stayman-ask",
@@ -62,7 +62,7 @@ describe("BidMeaning", () => {
       ranking: {
         recommendationBand: "should",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
       sourceIntent: {
         type: "stayman-ask",
@@ -147,7 +147,7 @@ describe("BidMeaning", () => {
       ranking: {
         recommendationBand: "must",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
       teachingLabel: "3NT contract bid",
@@ -164,7 +164,7 @@ describe("BidMeaning", () => {
       ranking: {
         recommendationBand: "may",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
       teachingLabel: "Pass",

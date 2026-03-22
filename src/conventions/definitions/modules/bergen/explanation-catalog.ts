@@ -319,6 +319,29 @@ export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
     preferredLevel: "semantic",
     roles: ["supporting", "blocking"],
   },
+
+  // ── Natural 1NT response (system-dependent) ────────────────
+
+  {
+    explanationId: "bergen.r1.natural1nt",
+    meaningId: "bergen:natural-1nt-response",
+    templateKey: "bergen.r1.natural1nt.semantic",
+    displayText: "Natural 1NT response — within system range, no 4-card support",
+    contrastiveTemplateKey: "bergen.r1.natural1nt.whyNotRaise",
+    contrastiveDisplayText: "Does not qualify for 1NT (outside system range or has 4-card support)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  {
+    explanationId: "bergen.system.oneNtRange",
+    factId: "system.responder.oneNtRange",
+    templateKey: "bergen.system.oneNtRange.supporting",
+    displayText: "HCP within the system's 1NT response range",
+    contrastiveTemplateKey: "bergen.system.oneNtRange.whyNot",
+    contrastiveDisplayText: "HCP outside the system's 1NT response range",
+    preferredLevel: "semantic",
+    roles: ["supporting", "blocking"],
+  },
 ];
 
 export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(BERGEN_EXPLANATION_ENTRIES);

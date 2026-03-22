@@ -37,7 +37,7 @@ function makeSurface(
       kind: "direct",
       defaultCall: callType ?? { type: "bid", level: 1, strain: "NT" },
     },
-    ranking: { recommendationBand: "should", intraModuleOrder: 0 },
+    ranking: { recommendationBand: "should", declarationOrder: 0 },
   } as unknown as BidMeaning;
 }
 

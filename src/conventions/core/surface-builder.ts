@@ -37,7 +37,7 @@ export interface SurfaceInput {
   };
   readonly clauses: readonly SimplifiedClause[];
   readonly band: RecommendationBand;
-  readonly intraModuleOrder: number;
+  readonly declarationOrder: number;
   readonly sourceIntent: {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
@@ -110,7 +110,7 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
     ranking: {
       recommendationBand: input.band,
       modulePrecedence,
-      intraModuleOrder: input.intraModuleOrder,
+      declarationOrder: input.declarationOrder,
     },
     sourceIntent: input.sourceIntent,
     teachingLabel: input.teachingLabel,

@@ -437,7 +437,7 @@ flowchart TD
           <li><strong><code>recommendationBand</code></strong> &mdash; <code>must</code> beats <code>should</code> beats <code>may</code> beats <code>avoid</code>. A "must" bid always wins over a "should" bid, regardless of other factors.</li>
           <li><strong><code>specificity</code></strong> &mdash; higher wins. A surface requiring 5 constraints beats one requiring 2, because it's a more precise match.</li>
           <li><strong><code>modulePrecedence</code></strong> &mdash; lower number wins. Controls cross-module priority (e.g., Stayman before natural bids).</li>
-          <li><strong><code>intraModuleOrder</code></strong> &mdash; lower number wins. Last-resort deterministic tiebreaker within a single module.</li>
+          <li><strong><code>declarationOrder</code></strong> &mdash; lower number wins. Last-resort deterministic tiebreaker within a single module.</li>
         </ol>
 
         <h3 class="mt-6 mb-2">Semantic Class Deduplication</h3>

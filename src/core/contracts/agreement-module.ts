@@ -61,7 +61,7 @@ export interface DecisionSurface {
   /** Source intent for provenance tracking. */
   readonly sourceIntent?: Readonly<{ type: string; params: Readonly<Record<string, string | number | boolean>> }>;
   /** Ranking metadata for intra-module ordering. */
-  readonly intraModuleOrder?: number;
+  readonly declarationOrder?: number;
   /** Specificity for ranking. */
   readonly specificity?: number;
 }

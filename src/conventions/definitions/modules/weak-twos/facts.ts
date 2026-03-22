@@ -1,9 +1,16 @@
+import { FactLayer } from "../../../../core/contracts/fact-catalog";
 import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../../core/contracts/fact-catalog";
 import { num, fv } from "../../../core/pipeline/fact-helpers";
+import {
+  definePerSuitFacts,
+  defineHcpRangeFact,
+  buildExtension,
+} from "../../../core/pipeline/fact-factory";
+import type { FactEntry } from "../../../core/pipeline/fact-factory";
 import { Rank, Suit } from "../../../../engine/types";
 import type { Hand } from "../../../../engine/types";
 import { SUIT_NAME_MAP } from "../../../../engine/constants";
@@ -19,131 +26,94 @@ function countTopHonorsInSuit(hand: Hand, suitName: string): number {
   ).length;
 }
 
-// ─── Weak Two module facts ──────────────────────────────────
+// ─── Weak Two module facts (factory-based) ──────────────────
 
-const WEAK_TWO_FACTS: readonly FactDefinition[] = [
-  {
-    id: "module.weakTwo.topHonorCount.hearts",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Count of A, K, Q in hearts",
-    valueType: "number",
-    derivesFrom: [],
-    constrainsDimensions: ["suitIdentity", "suitQuality"],
-  },
-  {
-    id: "module.weakTwo.topHonorCount.spades",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Count of A, K, Q in spades",
-    valueType: "number",
-    derivesFrom: [],
-    constrainsDimensions: ["suitIdentity", "suitQuality"],
-  },
-  {
-    id: "module.weakTwo.topHonorCount.diamonds",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Count of A, K, Q in diamonds",
-    valueType: "number",
-    derivesFrom: [],
-    constrainsDimensions: ["suitIdentity", "suitQuality"],
-  },
-  {
-    id: "module.weakTwo.isMinimum",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Opener is minimum for weak two (5-8 NV, 6-8 vul)",
-    valueType: "boolean",
-    derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
-    constrainsDimensions: ["pointRange"],
-  },
-  {
-    id: "module.weakTwo.isMaximum",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "Opener is maximum for weak two (9-11 HCP)",
-    valueType: "boolean",
-    derivesFrom: ["hand.hcp"],
-    constrainsDimensions: ["pointRange"],
-  },
-  {
-    id: "module.weakTwo.inOpeningHcpRange",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "HCP in weak two opening range (5-11 NV, 6-11 vul)",
-    valueType: "boolean",
-    derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
-    constrainsDimensions: ["pointRange"],
-  },
-  {
-    id: "module.weakTwo.isSolid.hearts",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "All three top honors (AKQ) in hearts",
-    valueType: "boolean",
-    derivesFrom: ["module.weakTwo.topHonorCount.hearts"],
-    constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
-  },
-  {
-    id: "module.weakTwo.isSolid.spades",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "All three top honors (AKQ) in spades",
-    valueType: "boolean",
-    derivesFrom: ["module.weakTwo.topHonorCount.spades"],
-    constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
-  },
-  {
-    id: "module.weakTwo.isSolid.diamonds",
-    layer: "module-derived",
-    world: "acting-hand",
-    description: "All three top honors (AKQ) in diamonds",
-    valueType: "boolean",
-    derivesFrom: ["module.weakTwo.topHonorCount.diamonds"],
-    constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
-  },
-];
+const WEAK_TWO_SUITS = ["hearts", "spades", "diamonds"] as const;
 
-const WEAK_TWO_EVALUATORS = new Map<string, FactEvaluatorFn>([
-  // Top honor counts per suit
-  ["module.weakTwo.topHonorCount.hearts", (h, _ev, _m) =>
-    fv("module.weakTwo.topHonorCount.hearts", countTopHonorsInSuit(h, "hearts"))],
-  ["module.weakTwo.topHonorCount.spades", (h, _ev, _m) =>
-    fv("module.weakTwo.topHonorCount.spades", countTopHonorsInSuit(h, "spades"))],
-  ["module.weakTwo.topHonorCount.diamonds", (h, _ev, _m) =>
-    fv("module.weakTwo.topHonorCount.diamonds", countTopHonorsInSuit(h, "diamonds"))],
+const topHonorEntries = definePerSuitFacts({
+  idPrefix: "module.weakTwo.topHonorCount",
+  suits: WEAK_TWO_SUITS,
+  description: (suit) => `Count of A, K, Q in ${suit}`,
+  evaluator: (h, suit, _m) =>
+    fv(`module.weakTwo.topHonorCount.${suit}`, countTopHonorsInSuit(h, suit)),
+  valueType: "number",
+  constrainsDimensions: ["suitIdentity", "suitQuality"],
+});
 
-  // Min/max classification (vulnerability-aware)
-  ["module.weakTwo.isMinimum", (_h, _ev, m) => {
-    const hcp = num(m, "hand.hcp");
-    const vul = m.get("bridge.isVulnerable")?.value === true;
-    const minHcp = vul ? 6 : 5;
-    return fv("module.weakTwo.isMinimum", hcp >= minHcp && hcp <= 8);
-  }],
-  ["module.weakTwo.isMaximum", (_h, _ev, m) => {
-    const hcp = num(m, "hand.hcp");
-    return fv("module.weakTwo.isMaximum", hcp >= 9 && hcp <= 11);
-  }],
+const isSolidEntries = definePerSuitFacts({
+  idPrefix: "module.weakTwo.isSolid",
+  suits: WEAK_TWO_SUITS,
+  description: (suit) => `All three top honors (AKQ) in ${suit}`,
+  evaluator: (_h, suit, m) =>
+    fv(`module.weakTwo.isSolid.${suit}`, num(m, `module.weakTwo.topHonorCount.${suit}`) === 3),
+  valueType: "boolean",
+  constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
+  derivesFrom: (suit) => [`module.weakTwo.topHonorCount.${suit}`],
+});
 
-  // Opening HCP range (vulnerability-aware)
-  ["module.weakTwo.inOpeningHcpRange", (_h, _ev, m) => {
-    const hcp = num(m, "hand.hcp");
-    const vul = m.get("bridge.isVulnerable")?.value === true;
-    const minHcp = vul ? 6 : 5;
-    return fv("module.weakTwo.inOpeningHcpRange", hcp >= minHcp && hcp <= 11);
-  }],
+const isMaximumEntry = defineHcpRangeFact({
+  id: "module.weakTwo.isMaximum",
+  description: "Opener is maximum for weak two (9-11 HCP)",
+  range: { min: 9, max: 11 },
+});
 
-  // Solid (AKQ) per suit
-  ["module.weakTwo.isSolid.hearts", (_h, _ev, m) =>
-    fv("module.weakTwo.isSolid.hearts", num(m, "module.weakTwo.topHonorCount.hearts") === 3)],
-  ["module.weakTwo.isSolid.spades", (_h, _ev, m) =>
-    fv("module.weakTwo.isSolid.spades", num(m, "module.weakTwo.topHonorCount.spades") === 3)],
-  ["module.weakTwo.isSolid.diamonds", (_h, _ev, m) =>
-    fv("module.weakTwo.isSolid.diamonds", num(m, "module.weakTwo.topHonorCount.diamonds") === 3)],
+// ─── Vulnerability-aware facts (hand-written) ───────────────
+
+const isMinimumDef: FactDefinition = {
+  id: "module.weakTwo.isMinimum",
+  layer: FactLayer.ModuleDerived,
+  world: "acting-hand",
+  description: "Opener is minimum for weak two (5-8 NV, 6-8 vul)",
+  valueType: "boolean",
+  derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
+  constrainsDimensions: ["pointRange"],
+};
+
+const isMinimumEvaluator: FactEvaluatorFn = (_h, _ev, m) => {
+  const hcp = num(m, "hand.hcp");
+  const vul = m.get("bridge.isVulnerable")?.value === true;
+  const minHcp = vul ? 6 : 5;
+  return fv("module.weakTwo.isMinimum", hcp >= minHcp && hcp <= 8);
+};
+
+const isMinimumEntry: FactEntry = {
+  definition: isMinimumDef,
+  evaluator: ["module.weakTwo.isMinimum", isMinimumEvaluator],
+};
+
+const inOpeningHcpRangeDef: FactDefinition = {
+  id: "module.weakTwo.inOpeningHcpRange",
+  layer: FactLayer.ModuleDerived,
+  world: "acting-hand",
+  description: "HCP in weak two opening range (5-11 NV, 6-11 vul)",
+  valueType: "boolean",
+  derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
+  constrainsDimensions: ["pointRange"],
+};
+
+const inOpeningHcpRangeEvaluator: FactEvaluatorFn = (_h, _ev, m) => {
+  const hcp = num(m, "hand.hcp");
+  const vul = m.get("bridge.isVulnerable")?.value === true;
+  const minHcp = vul ? 6 : 5;
+  return fv("module.weakTwo.inOpeningHcpRange", hcp >= minHcp && hcp <= 11);
+};
+
+const inOpeningHcpRangeEntry: FactEntry = {
+  definition: inOpeningHcpRangeDef,
+  evaluator: ["module.weakTwo.inOpeningHcpRange", inOpeningHcpRangeEvaluator],
+};
+
+// ─── Compose extension ──────────────────────────────────────
+
+const { definitions, evaluators } = buildExtension([
+  ...topHonorEntries,
+  isMinimumEntry,
+  isMaximumEntry,
+  inOpeningHcpRangeEntry,
+  ...isSolidEntries,
 ]);
 
 export const weakTwoFacts: FactCatalogExtension = {
-  definitions: WEAK_TWO_FACTS,
-  evaluators: WEAK_TWO_EVALUATORS,
+  definitions,
+  evaluators,
 };

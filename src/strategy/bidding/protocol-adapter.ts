@@ -246,7 +246,7 @@ export function buildObservationLogViaRules(
  *    For choice-set encoders, check all calls in the set.
  * 2. If exactly one → return it.
  * 3. If multiple → prefer higher band, then lower modulePrecedence, then lower
- *    intraModuleOrder (same logic as the forward-path arbitration).
+ *    declarationOrder (same logic as the forward-path arbitration).
  * 4. Return null for unmatched calls.
  */
 export function findMatchingClaimForCall(
@@ -276,7 +276,7 @@ export function findMatchingClaimForCall(
   if (candidates.length === 0) return null;
   if (candidates.length === 1) return candidates[0]!;
 
-  // Multiple matches — arbitrate using band → modulePrecedence → intraModuleOrder
+  // Multiple matches — arbitrate using band → modulePrecedence → declarationOrder
   return arbitrateMatchingClaims(candidates);
 }
 
@@ -338,7 +338,7 @@ function arbitrateMatchingClaims(
     moduleId: string;
   }[],
 ): { surface: BidMeaning; negotiationDelta: NegotiationDelta | undefined; moduleId: string } {
-  // Sort by: band (desc) → modulePrecedence (asc) → intraModuleOrder (asc)
+  // Sort by: band (desc) → modulePrecedence (asc) → declarationOrder (asc)
   const sorted = [...candidates].sort((a, b) => {
     const bandA = BAND_ORDER[a.surface.ranking.recommendationBand] ?? 0;
     const bandB = BAND_ORDER[b.surface.ranking.recommendationBand] ?? 0;
@@ -348,7 +348,7 @@ function arbitrateMatchingClaims(
     const precB = b.surface.ranking.modulePrecedence ?? 0;
     if (precA !== precB) return precA - precB;
 
-    return (a.surface.ranking.intraModuleOrder ?? 0) - (b.surface.ranking.intraModuleOrder ?? 0);
+    return (a.surface.ranking.declarationOrder ?? 0) - (b.surface.ranking.declarationOrder ?? 0);
   });
 
   return sorted[0]!;

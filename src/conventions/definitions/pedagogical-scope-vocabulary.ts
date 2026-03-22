@@ -110,6 +110,9 @@ export const SCOPE_OGUST_RESPONSES = scope("Ogust responses");
 /** Bergen R4 after game-try decision. */
 export const SCOPE_BERGEN_R4_AFTER_TRY_DECISION = scope("bergen:r4-after-try-decision");
 
+/** Bergen natural 1NT response vs raise alternatives. */
+export const SCOPE_BERGEN_1NT_VS_RAISE = scope("bergen:1nt-vs-raise");
+
 export const bergenScopes = {
   r1SplinterAndGame: (suit: string) => scope(`bergen:r1-splinter-and-game-${suit}`),
   r1SplinterVsGame: (suit: string) => scope(`bergen:r1-splinter-vs-game-${suit}`),

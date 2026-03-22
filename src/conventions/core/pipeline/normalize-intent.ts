@@ -97,6 +97,9 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   ["RaiseToGame", (p) => [{ act: "raise", strain: strain(p), strength: "game" }]],
   ["AcceptPartnerDecision", () => [{ act: "pass" }]],
 
+  // ── Natural 1NT response (Bergen alternative) ────────────────────
+  ["NaturalNtResponse", () => [{ act: "place", strain: "notrump" }]],
+
   // ── Weak Twos ────────────────────────────────────────────────────
   ["WeakTwoOpen", (p) => [{ act: "open", strain: strain(p), strength: "weak" }]],
   ["OgustAsk", () => [{ act: "inquire", feature: "suitQuality" }]],
@@ -120,6 +123,7 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
     { act: "show", feature: "suitQuality", quality: "good" },
   ]],
   ["PostOgustGame", (p) => [{ act: "raise", strain: strain(p), strength: "game" }]],
+  ["PostOgust3NT", () => [{ act: "raise", strain: "notrump", strength: "game" }]],
   ["PostOgustSignoff", (p) => [{ act: "signoff", strain: strain(p) }]],
   ["PostOgustPass", () => [{ act: "pass" }]],
 

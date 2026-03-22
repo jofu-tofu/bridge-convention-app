@@ -15,6 +15,7 @@ import {
 } from "../../teaching-vocabulary";
 import {
   SCOPE_BERGEN_R4_AFTER_TRY_DECISION,
+  SCOPE_BERGEN_1NT_VS_RAISE,
   bergenScopes,
 } from "../../pedagogical-scope-vocabulary";
 
@@ -81,7 +82,7 @@ function createBergenR1Surfaces(
 
   return [
     // 1. Splinter -- 12+ HCP, exactly 4 support, shortage (singleton or void)
-    // Highest priority: checked first (intraModuleOrder 0)
+    // Highest priority: checked first (declarationOrder 0)
     createSurface({
       meaningId: `bergen:splinter-${suit}`,
       semanticClassId: BERGEN_CLASSES.SPLINTER,
@@ -104,7 +105,7 @@ function createBergenR1Surfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "Splinter", params: { suit } },
       teachingLabel: `Splinter (3${suit === "hearts" ? "S" : "H"})`,
       surfaceBindings: bindings,
@@ -132,7 +133,7 @@ function createBergenR1Surfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "GameRaise", params: { suit } },
       teachingLabel: `Game raise (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -163,7 +164,7 @@ function createBergenR1Surfaces(
         },
       ],
       band: "should",
-      intraModuleOrder: 2,
+      declarationOrder: 2,
       sourceIntent: { type: "LimitRaise", params: { suit } },
       teachingLabel: "Limit raise (3D)",
       surfaceBindings: bindings,
@@ -194,7 +195,7 @@ function createBergenR1Surfaces(
         },
       ],
       band: "should",
-      intraModuleOrder: 3,
+      declarationOrder: 3,
       sourceIntent: { type: "ConstructiveRaise", params: { suit } },
       teachingLabel: "Constructive raise (3C)",
       surfaceBindings: bindings,
@@ -226,7 +227,7 @@ function createBergenR1Surfaces(
         },
       ],
       band: "may",
-      intraModuleOrder: 4,
+      declarationOrder: 4,
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
       teachingLabel: `Preemptive raise (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -274,7 +275,7 @@ function createBergenR2AfterConstructiveSurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept constructive → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -299,7 +300,7 @@ function createBergenR2AfterConstructiveSurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Decline constructive → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -339,7 +340,7 @@ function createBergenR2AfterLimitSurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept limit raise → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -364,7 +365,7 @@ function createBergenR2AfterLimitSurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Decline limit raise → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -404,7 +405,7 @@ function createBergenR2AfterPreemptiveSurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "RaiseToGame", params: { suit } },
       teachingLabel: `Bid game over preemptive (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -428,7 +429,7 @@ function createBergenR2AfterPreemptiveSurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "AcceptPartnerDecision", params: { suit } },
       teachingLabel: "Pass over preemptive",
       surfaceBindings: bindings,
@@ -469,7 +470,7 @@ function createBergenR3AfterGameTrySurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       teachingLabel: `Accept game try → game (4${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -494,7 +495,7 @@ function createBergenR3AfterGameTrySurfaces(
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       teachingLabel: `Reject game try → signoff (3${suit === "hearts" ? "H" : "S"})`,
       surfaceBindings: bindings,
@@ -526,7 +527,7 @@ function createBergenPassSurface(
       encoding: { type: "pass" },
       clauses: [],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "AcceptPartnerDecision", params: {} },
       teachingLabel,
       ...(teachingTags ? { teachingTags } : {}),
@@ -574,11 +575,71 @@ function createBergenR4Surfaces(): readonly BidMeaning[] {
   );
 }
 
+// ─── Natural 1NT response alternative (system-dependent) ────
+
+/**
+ * Natural 1NT response to partner's 1M opening.
+ *
+ * This surface represents "respond 1NT to partner's major" as a natural
+ * alternative when the hand does NOT have 4-card support for opener's major.
+ * The HCP range is system-dependent via `system.responder.oneNtRange`:
+ * - SAYC: 6-10 HCP (non-forcing)
+ * - 2/1 GF: 6-12 HCP (semi-forcing)
+ *
+ * This creates an observable behavioral difference between systems: a hand
+ * with 11 HCP and only 3-card support matches in 2/1 (11 <= 12) but not
+ * in SAYC (11 > 10).
+ */
+function createBergenNatural1NtResponseSurfaces(
+  suit: "hearts" | "spades",
+): readonly BidMeaning[] {
+  const bindings = { suit } as const;
+
+  return [
+    createSurface({
+      meaningId: `bergen:natural-1nt-response-${suit}`,
+      semanticClassId: BERGEN_CLASSES.NATURAL_1NT_RESPONSE,
+      encoding: { defaultCall: bid(1, BidSuit.NoTrump) },
+      clauses: [
+        {
+          factId: "system.responder.oneNtRange",
+          operator: "boolean",
+          value: true,
+        },
+        {
+          factId: "hand.suitLength.$suit",
+          operator: "lte",
+          value: 3,
+        },
+        // Over 1♥, responder must not have 4+ spades (bid 1♠ instead).
+        // Over 1♠, no higher-ranking suit exists, so this clause is vacuous.
+        ...(suit === "hearts" ? [{
+          factId: "hand.suitLength.spades" as const,
+          operator: "lte" as const,
+          value: 3,
+        }] : []),
+      ],
+      band: "should",
+      declarationOrder: 5,
+      sourceIntent: { type: "NaturalNtResponse", params: { suit } },
+      teachingLabel: `Natural 1NT response (no 4-card ${suit === "hearts" ? "heart" : "spade"} support)`,
+      surfaceBindings: bindings,
+      teachingTags: [
+        { tag: ALTERNATIVES, scope: SCOPE_BERGEN_1NT_VS_RAISE },
+      ],
+    }, BERGEN_CTX),
+  ];
+}
+
 // ─── Pre-instantiated surfaces ──────────────────────────────
 
 /** R1: Pre-instantiated surfaces for hearts and spades. */
 export const BERGEN_R1_HEARTS_SURFACES = createBergenR1Surfaces("hearts");
 export const BERGEN_R1_SPADES_SURFACES = createBergenR1Surfaces("spades");
+
+/** R1: Natural 1NT response alternatives (system-dependent range). */
+export const BERGEN_NATURAL_1NT_HEARTS_SURFACES = createBergenNatural1NtResponseSurfaces("hearts");
+export const BERGEN_NATURAL_1NT_SPADES_SURFACES = createBergenNatural1NtResponseSurfaces("spades");
 
 /** R2: Pre-instantiated surfaces for hearts and spades. */
 export const BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES =

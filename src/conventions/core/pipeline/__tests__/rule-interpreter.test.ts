@@ -18,7 +18,7 @@ function makeSurface(id: string): BidMeaning {
     encoding: { kind: "direct", defaultCall: { type: "pass" } },
     ranking: {
       recommendationBand: "preferred",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
     },
   } as unknown as BidMeaning;
 }

@@ -37,7 +37,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "must",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     }, makeCall(2, BidSuit.Hearts));
 
@@ -47,7 +47,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "should",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 1,
+        declarationOrder: 1,
       },
     }, makeCall(2, BidSuit.Clubs));
 
@@ -57,7 +57,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "may",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 2,
+        declarationOrder: 2,
       },
     }, makeCall(2, BidSuit.Diamonds));
 
@@ -76,7 +76,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "should",
         specificity: 5,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     }, makeCall(2, BidSuit.Hearts));
 
@@ -86,7 +86,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "should",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 1,
+        declarationOrder: 1,
       },
     }, makeCall(2, BidSuit.Clubs));
 
@@ -160,7 +160,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "may",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
 
@@ -192,7 +192,7 @@ describe("arbitrateMeanings", () => {
           { factId: "hand.hcp", operator: "gte", value: 8, satisfied: false, description: "8+ HCP" },
           { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true, satisfied: true, description: "Has 4-card major" },
         ],
-        ranking: { recommendationBand: "should", specificity: 1, modulePrecedence: 0, intraModuleOrder: 0 },
+        ranking: { recommendationBand: "should", specificity: 1, modulePrecedence: 0, declarationOrder: 0 },
         evidence: {
           factDependencies: ["hand.hcp", "bridge.hasFourCardMajor"],
           evaluatedConditions: [],
@@ -223,7 +223,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "should",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
 
@@ -240,7 +240,7 @@ describe("arbitrateMeanings", () => {
         recommendationBand: "avoid",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
 
@@ -298,7 +298,7 @@ describe("evidenceBundle production", () => {
         recommendationBand: "avoid",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
 
@@ -318,7 +318,7 @@ describe("evidenceBundle production", () => {
         recommendationBand: "must",
         specificity: 5,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     }, makeCall(2, BidSuit.Hearts));
 
@@ -328,7 +328,7 @@ describe("evidenceBundle production", () => {
         recommendationBand: "should",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 1,
+        declarationOrder: 1,
       },
     }, makeCall(2, BidSuit.Clubs));
 
@@ -350,7 +350,7 @@ describe("evidenceBundle production", () => {
         recommendationBand: "avoid",
         specificity: 1,
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
 
@@ -399,8 +399,8 @@ describe("zipProposalsWithSurfaces", () => {
   it("pairs proposals with their source surfaces by index", () => {
     const proposals: MeaningProposal[] = [makeMeaningProposal({ meaningId: "a" }), makeMeaningProposal({ meaningId: "b" })];
     const surfaces = [
-      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, intraModuleOrder: 0 }, sourceIntent: { type: "t", params: {} }, teachingLabel: "Test A" },
-      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, intraModuleOrder: 1 }, sourceIntent: { type: "t", params: {} }, teachingLabel: "Test B" },
+      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 0 }, sourceIntent: { type: "t", params: {} }, teachingLabel: "Test A" },
+      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 1 }, sourceIntent: { type: "t", params: {} }, teachingLabel: "Test B" },
     ];
 
     const inputs = zipProposalsWithSurfaces(proposals, surfaces);

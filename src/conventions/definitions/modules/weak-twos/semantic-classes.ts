@@ -20,6 +20,7 @@ export const WEAK_TWO_CLASSES = {
 
   // R4: Responder rebid after Ogust
   POST_OGUST_GAME: "weak-two:post-ogust-game",
+  POST_OGUST_3NT: "weak-two:post-ogust-3nt",
   POST_OGUST_SIGNOFF: "weak-two:post-ogust-signoff",
   POST_OGUST_PASS: "weak-two:post-ogust-pass",
 } as const;

@@ -4,6 +4,7 @@ import {
   POSTERIOR_DERIVED_FACTS,
   createFactCatalog,
 } from "../fact-catalog";
+import { FactLayer } from '../fact-catalog';
 import type { FactCatalog, FactCatalogExtension } from "../fact-catalog";
 import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../fact-catalog";
 import { SHARED_POSTERIOR_FACT_IDS } from "../posterior";
@@ -16,7 +17,7 @@ describe("POSTERIOR_DERIVED_FACTS", () => {
   it("all entries have world=acting-hand, layer=bridge-derived, valueType=number", () => {
     for (const fact of POSTERIOR_DERIVED_FACTS) {
       expect(fact.world).toBe("acting-hand");
-      expect(fact.layer).toBe("bridge-derived");
+      expect(fact.layer).toBe(FactLayer.BridgeDerived);
       expect(fact.valueType).toBe("number");
     }
   });
@@ -92,7 +93,7 @@ describe("createFactCatalog merges posteriorEvaluators", () => {
     const ext2: FactCatalogExtension = {
       definitions: [],
       evaluators: new Map(),
-      posteriorEvaluators: new Map([["bridge.nsHaveEightCardFitLikely", { evaluate: mockEval2 }]]),
+      posteriorEvaluators: new Map([["module.stayman.nsHaveEightCardFitLikely", { evaluate: mockEval2 }]]),
     };
 
     const result = createFactCatalog(base, ext1, ext2);

@@ -44,8 +44,8 @@ export interface AuthoredRankingMetadata {
    *  Optional — defaults to 0 when absent. Injected by `createSurface()` builder
    *  from `ModuleContext.modulePrecedence`, or derived as 0 by the pipeline. */
   readonly modulePrecedence?: number;
-  /** Preserves DFS orderKey for backward compat. Deterministic last resort. */
-  readonly intraModuleOrder: number;
+  /** Declaration order within the module. Deterministic last-resort tiebreaker. */
+  readonly declarationOrder: number;
 }
 
 /** Resolved ranking metadata — the frozen ranking knob matrix.
@@ -126,7 +126,7 @@ export const BAND_PRIORITY: Record<RecommendationBand, number> = {
  * 3. Hand-fit score (handled externally by ranker)
  * 4. specificity (higher = more specific = ranks higher)
  * 5. modulePrecedence (lower = higher priority)
- * 6. intraModuleOrder (lower = earlier DFS = ranks higher)
+ * 6. declarationOrder (lower = earlier DFS = ranks higher)
  */
 export function compareRanking(a: RankingMetadata, b: RankingMetadata): number {
   // Band comparison (lower BAND_PRIORITY = higher rank)
@@ -143,7 +143,7 @@ export function compareRanking(a: RankingMetadata, b: RankingMetadata): number {
   if (modDiff !== 0) return modDiff;
 
   // Intra-module order (lower = earlier DFS = ranks higher)
-  return a.intraModuleOrder - b.intraModuleOrder;
+  return a.declarationOrder - b.declarationOrder;
 }
 
 // ---------------------------------------------------------------------------

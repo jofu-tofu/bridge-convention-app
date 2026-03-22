@@ -27,10 +27,10 @@ const KNOWN_SHARED_FACT_IDS = new Set([
   "bridge.partnerHas4SpadesLikely",
   "bridge.partnerHas4DiamondsLikely",
   "bridge.partnerHas4ClubsLikely",
-  "bridge.nsHaveEightCardFitLikely",
+  "module.stayman.nsHaveEightCardFitLikely",
   "bridge.combinedHcpInRangeLikely",
-  "bridge.openerStillBalancedLikely",
-  "bridge.openerHasSecondMajorLikely",
+  "module.stayman.openerStillBalancedLikely",
+  "module.stayman.openerHasSecondMajorLikely",
 ]);
 
 /**

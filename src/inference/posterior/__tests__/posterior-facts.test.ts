@@ -117,10 +117,10 @@ describe("POSTERIOR_FACT_HANDLERS registry", () => {
     expect(keys).toContain("bridge.partnerHas4SpadesLikely");
     expect(keys).toContain("bridge.partnerHas4DiamondsLikely");
     expect(keys).toContain("bridge.partnerHas4ClubsLikely");
-    expect(keys).toContain("bridge.nsHaveEightCardFitLikely");
+    expect(keys).toContain("module.stayman.nsHaveEightCardFitLikely");
     expect(keys).toContain("bridge.combinedHcpInRangeLikely");
-    expect(keys).toContain("bridge.openerStillBalancedLikely");
-    expect(keys).toContain("bridge.openerHasSecondMajorLikely");
+    expect(keys).toContain("module.stayman.openerStillBalancedLikely");
+    expect(keys).toContain("module.stayman.openerHasSecondMajorLikely");
   });
 
   it("returns undefined for an unknown factId", () => {
@@ -250,10 +250,10 @@ describe("partnerHas4InSuitLikely", () => {
 
 describe("nsHaveEightCardFitLikely", () => {
   const handler = POSTERIOR_FACT_HANDLERS.get(
-    "bridge.nsHaveEightCardFitLikely",
+    "module.stayman.nsHaveEightCardFitLikely",
   )!;
   const baseRequest: PosteriorFactRequest = {
-    factId: "bridge.nsHaveEightCardFitLikely",
+    factId: "module.stayman.nsHaveEightCardFitLikely",
     seatId: "N",
   };
 
@@ -406,10 +406,10 @@ describe("combinedHcpInRangeLikely", () => {
 
 describe("openerStillBalancedLikely", () => {
   const handler = POSTERIOR_FACT_HANDLERS.get(
-    "bridge.openerStillBalancedLikely",
+    "module.stayman.openerStillBalancedLikely",
   )!;
   const baseRequest: PosteriorFactRequest = {
-    factId: "bridge.openerStillBalancedLikely",
+    factId: "module.stayman.openerStillBalancedLikely",
     seatId: "N",
   };
 
@@ -468,10 +468,10 @@ describe("openerStillBalancedLikely", () => {
 
 describe("openerHasSecondMajorLikely", () => {
   const handler = POSTERIOR_FACT_HANDLERS.get(
-    "bridge.openerHasSecondMajorLikely",
+    "module.stayman.openerHasSecondMajorLikely",
   )!;
   const baseRequest: PosteriorFactRequest = {
-    factId: "bridge.openerHasSecondMajorLikely",
+    factId: "module.stayman.openerHasSecondMajorLikely",
     seatId: "N",
   };
 

@@ -36,7 +36,7 @@ export function adaptMeaningSurface(surface: BidMeaning): DecisionSurface {
     teachingLabel: surface.teachingLabel,
     defaultCall: surface.encoding.defaultCall,
     sourceIntent: surface.sourceIntent,
-    intraModuleOrder: surface.ranking.intraModuleOrder,
+    declarationOrder: surface.ranking.declarationOrder,
     specificity: undefined,
   };
 }

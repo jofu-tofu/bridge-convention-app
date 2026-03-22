@@ -38,7 +38,7 @@ function makeProposal(overrides: Partial<MeaningProposal> = {}): MeaningProposal
       recommendationBand: "preferred",
       specificity: 3,
       modulePrecedence: 0,
-      intraModuleOrder: 0,
+      declarationOrder: 0,
     },
     evidence: { satisfied: [], unsatisfied: [] },
     sourceIntent: { type: "NTOpening", params: {} },

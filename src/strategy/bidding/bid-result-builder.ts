@@ -36,7 +36,7 @@ export function buildBidResult(
     meaning: ep.proposal.teachingLabel ?? ep.proposal.meaningId,
     intentType: ep.proposal.sourceIntent.type,
     priority: ep.proposal.modulePriority,
-    orderKey: ep.proposal.ranking.intraModuleOrder,
+    orderKey: ep.proposal.ranking.declarationOrder,
     failedConditions: ep.proposal.clauses
       .filter((c) => !c.satisfied)
       .map((c) => ({

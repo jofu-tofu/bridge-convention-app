@@ -218,7 +218,7 @@ test.describe("Jacoby Transfers — R1 bid verification (seeds 1–5)", () => {
       // ── Verify Jacoby Transfer rules ──
       if (shape.spades >= 5) {
         // 5+ spades → 2♥ (transfer to spades)
-        // Spades wins over hearts when both ≥5 (lower intraModuleOrder)
+        // Spades wins over hearts when both ≥5 (lower declarationOrder)
         expect(bid.bid).toBe("2♥");
         expect(bid.meaning).toContain("Transfer to spades");
       } else {

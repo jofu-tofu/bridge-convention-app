@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { deriveSpecificity } from "../specificity-deriver";
 import { makeSurface } from "../../../../test-support/convention-factories";
+import { FactLayer } from '../../../../core/contracts/fact-catalog';
 import type { FactCatalogExtension, FactDefinition } from "../../../../core/contracts/fact-catalog";
 import type { BidMeaningClause } from "../../../../core/contracts/meaning";
 
@@ -38,7 +39,7 @@ function makeExtension(definitions: FactDefinition[]): FactCatalogExtension {
 const bridgeExtension = makeExtension([
   {
     id: "bridge.hasFourCardMajor",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has at least one 4+ card major",
     valueType: "boolean",
@@ -46,7 +47,7 @@ const bridgeExtension = makeExtension([
   },
   {
     id: "bridge.hasFiveCardMajor",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has at least one 5+ card major",
     valueType: "boolean",
@@ -54,7 +55,7 @@ const bridgeExtension = makeExtension([
   },
   {
     id: "bridge.hasShortage",
-    layer: "bridge-derived",
+    layer: FactLayer.BridgeDerived,
     world: "acting-hand",
     description: "Has singleton or void",
     valueType: "boolean",
@@ -65,7 +66,7 @@ const bridgeExtension = makeExtension([
 const dontExtension = makeExtension([
   {
     id: "module.dont.bothMajors",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Both majors",
     valueType: "boolean",
@@ -73,7 +74,7 @@ const dontExtension = makeExtension([
   },
   {
     id: "module.dont.singleSuited",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Single suited",
     valueType: "boolean",
@@ -84,7 +85,7 @@ const dontExtension = makeExtension([
 const ntExtension = makeExtension([
   {
     id: "module.ntResponse.gameValues",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Game values",
     valueType: "boolean",
@@ -92,7 +93,7 @@ const ntExtension = makeExtension([
   },
   {
     id: "module.ntResponse.inviteValues",
-    layer: "module-derived",
+    layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Invite values",
     valueType: "boolean",

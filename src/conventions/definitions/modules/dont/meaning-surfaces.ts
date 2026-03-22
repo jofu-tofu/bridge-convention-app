@@ -26,7 +26,7 @@ const DONT_CTX: ModuleContext = { moduleId: "dont" };
 
 // ─── R1: Overcaller initial action (after opponent's 1NT) ───
 //
-// Priority order via specificity + intraModuleOrder:
+// Priority order via specificity + declarationOrder:
 //   2H (both majors, spec 3) > 2D (diamonds+major, spec 3) >
 //   2C (clubs+higher, spec 3) > 2S (natural, spec 2) >
 //   X (single suited, spec 2) > Pass (fallback, spec 0)
@@ -50,7 +50,7 @@ export const DONT_R1_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTBothMajors", params: {} },
       teachingLabel: "2H — both majors",
       teachingTags: [
@@ -77,7 +77,7 @@ export const DONT_R1_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTDiamondsMajor", params: {} },
       teachingLabel: "2D — diamonds + a major",
       teachingTags: [
@@ -106,7 +106,7 @@ export const DONT_R1_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 2,
+      declarationOrder: 2,
       sourceIntent: { type: "DONTClubsHigher", params: {} },
       teachingLabel: "2C — clubs + higher suit",
       teachingTags: [
@@ -133,7 +133,7 @@ export const DONT_R1_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 3,
+      declarationOrder: 3,
       sourceIntent: { type: "DONTNaturalSpades", params: {} },
       teachingLabel: "2S — natural spades",
       teachingTags: [
@@ -159,7 +159,7 @@ export const DONT_R1_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 4,
+      declarationOrder: 4,
       sourceIntent: { type: "DONTSingleSuited", params: {} },
       teachingLabel: "X — single suited (not spades)",
       teachingTags: [
@@ -180,7 +180,7 @@ export const DONT_R1_SURFACES = [
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
       band: "avoid",
-      intraModuleOrder: 5,
+      declarationOrder: 5,
       sourceIntent: { type: "DONTPass", params: {} },
       teachingLabel: "Pass (no DONT bid)",
     },
@@ -210,7 +210,7 @@ export const DONT_ADVANCER_2H_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTAcceptHearts", params: {} },
       teachingLabel: "Pass — accept hearts",
     },
@@ -225,7 +225,7 @@ export const DONT_ADVANCER_2H_SURFACES = [
       encoding: { defaultCall: bid(2, BidSuit.Spades) },
       clauses: [],
       band: "should",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTPreferSpades", params: {} },
       teachingLabel: "2S — prefer spades",
     },
@@ -253,7 +253,7 @@ export const DONT_ADVANCER_2H_SURFACES = [
         },
       ],
       band: "should",
-      intraModuleOrder: 2,
+      declarationOrder: 2,
       sourceIntent: { type: "DONTEscapeClubs", params: {} },
       teachingLabel: "3C — minor escape",
     },
@@ -281,7 +281,7 @@ export const DONT_ADVANCER_2H_SURFACES = [
         },
       ],
       band: "should",
-      intraModuleOrder: 3,
+      declarationOrder: 3,
       sourceIntent: { type: "DONTEscapeDiamonds", params: {} },
       teachingLabel: "3D — minor escape",
     },
@@ -309,7 +309,7 @@ export const DONT_ADVANCER_2D_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTAcceptDiamonds", params: {} },
       teachingLabel: "Pass — accept diamonds",
     },
@@ -324,7 +324,7 @@ export const DONT_ADVANCER_2D_SURFACES = [
       encoding: { defaultCall: bid(2, BidSuit.Hearts) },
       clauses: [],
       band: "should",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTRelayAskMajor", params: {} },
       teachingLabel: "2H — relay (ask for major)",
     },
@@ -352,7 +352,7 @@ export const DONT_ADVANCER_2C_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTAcceptClubs", params: {} },
       teachingLabel: "Pass — accept clubs",
     },
@@ -367,7 +367,7 @@ export const DONT_ADVANCER_2C_SURFACES = [
       encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
       clauses: [],
       band: "should",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTRelayAskHigher", params: {} },
       teachingLabel: "2D — relay (ask for higher suit)",
     },
@@ -395,7 +395,7 @@ export const DONT_ADVANCER_2S_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTAcceptSpades", params: {} },
       teachingLabel: "Pass — accept spades",
     },
@@ -410,7 +410,7 @@ export const DONT_ADVANCER_2S_SURFACES = [
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
       band: "avoid",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTAcceptSpadesFallback", params: {} },
       teachingLabel: "Pass (no alternative)",
     },
@@ -430,7 +430,7 @@ export const DONT_ADVANCER_DOUBLE_SURFACES = [
       encoding: { defaultCall: bid(2, BidSuit.Clubs) },
       clauses: [],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTForcedRelay", params: {} },
       teachingLabel: "2C — forced relay after double",
     },
@@ -459,7 +459,7 @@ export const DONT_REVEAL_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTRevealClubs", params: {} },
       teachingLabel: "Pass — clubs",
       teachingTags: [
@@ -484,7 +484,7 @@ export const DONT_REVEAL_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTRevealDiamonds", params: {} },
       teachingLabel: "2D — diamonds",
       teachingTags: [
@@ -509,7 +509,7 @@ export const DONT_REVEAL_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 2,
+      declarationOrder: 2,
       sourceIntent: { type: "DONTRevealHearts", params: {} },
       teachingLabel: "2H — hearts",
       teachingTags: [
@@ -542,7 +542,7 @@ export const DONT_2C_RELAY_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTShowDiamonds", params: {} },
       teachingLabel: "Pass — diamonds (from 2C+higher)",
       teachingTags: [
@@ -566,7 +566,7 @@ export const DONT_2C_RELAY_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTShowHearts", params: {} },
       teachingLabel: "2H — hearts (from 2C+higher)",
       teachingTags: [
@@ -590,7 +590,7 @@ export const DONT_2C_RELAY_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 2,
+      declarationOrder: 2,
       sourceIntent: { type: "DONTShowSpades", params: {} },
       teachingLabel: "2S — spades (from 2C+higher)",
       teachingTags: [
@@ -621,7 +621,7 @@ export const DONT_2D_RELAY_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 0,
+      declarationOrder: 0,
       sourceIntent: { type: "DONTShowHeartsFromDiamonds", params: {} },
       teachingLabel: "Pass — hearts (from 2D+major)",
       teachingTags: [
@@ -645,7 +645,7 @@ export const DONT_2D_RELAY_SURFACES = [
         },
       ],
       band: "must",
-      intraModuleOrder: 1,
+      declarationOrder: 1,
       sourceIntent: { type: "DONTShowSpadesFromDiamonds", params: {} },
       teachingLabel: "2S — spades (from 2D+major)",
       teachingTags: [

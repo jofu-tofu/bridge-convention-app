@@ -22,7 +22,7 @@ function baseInput(overrides?: Partial<SurfaceInput>): SurfaceInput {
       { factId: "hand.hcp", operator: "gte", value: 12 },
     ],
     band: "must",
-    intraModuleOrder: 0,
+    declarationOrder: 0,
     sourceIntent: { type: "Test", params: {} },
     teachingLabel: "Test surface",
     ...overrides,
@@ -39,7 +39,7 @@ describe("createSurface", () => {
     expect(surface.encoding.defaultCall).toEqual(bid(2, BidSuit.Clubs));
     expect(surface.ranking.recommendationBand).toBe("must");
     expect(surface.ranking.modulePrecedence).toBe(0);
-    expect(surface.ranking.intraModuleOrder).toBe(0);
+    expect(surface.ranking.declarationOrder).toBe(0);
     expect(surface.sourceIntent).toEqual({ type: "Test", params: {} });
     expect(surface.teachingLabel).toBe("Test surface");
   });

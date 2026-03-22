@@ -126,10 +126,10 @@ describe("PosteriorEngine contract", () => {
 
       const queries = [
         { factId: "bridge.partnerHas4HeartsLikely", seatId: "N", conditionedOn: ["H"] },
-        { factId: "bridge.nsHaveEightCardFitLikely", seatId: "N" },
+        { factId: "module.stayman.nsHaveEightCardFitLikely", seatId: "N" },
         { factId: "bridge.combinedHcpInRangeLikely", seatId: "N", conditionedOn: ["25", "40"] },
-        { factId: "bridge.openerStillBalancedLikely", seatId: "N" },
-        { factId: "bridge.openerHasSecondMajorLikely", seatId: "N" },
+        { factId: "module.stayman.openerStillBalancedLikely", seatId: "N" },
+        { factId: "module.stayman.openerHasSecondMajorLikely", seatId: "N" },
       ];
 
       for (const query of queries) {
@@ -202,7 +202,7 @@ describe("PosteriorEngine contract", () => {
 
       const posterior = engine.conditionOnHand(northSpace, Seat.South, southHand);
       const probBalanced = posterior.probability({
-        factId: "bridge.openerStillBalancedLikely",
+        factId: "module.stayman.openerStillBalancedLikely",
         seatId: "N",
       });
 
@@ -237,8 +237,8 @@ describe("PosteriorEngine contract", () => {
       const northSpace = spaces.find((s) => s.seatId === "N")!;
 
       const facts = engine.deriveActingHandFacts(northSpace, [
-        "bridge.openerStillBalancedLikely",
-        "bridge.openerHasSecondMajorLikely",
+        "module.stayman.openerStillBalancedLikely",
+        "module.stayman.openerHasSecondMajorLikely",
       ]);
 
       for (const fact of facts) {

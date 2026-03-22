@@ -54,7 +54,7 @@ const OPENER_1H_SURFACE: BidMeaning = createSurface({
   encoding: bid(1, BidSuit.Hearts),
   clauses: [],
   band: "must",
-  intraModuleOrder: 0,
+  declarationOrder: 0,
   sourceIntent: { type: "MajorOpen", params: { suit: "hearts" } },
   teachingLabel: "1♥ opening",
 }, BERGEN_CTX);
@@ -65,7 +65,7 @@ const OPENER_1S_SURFACE: BidMeaning = createSurface({
   encoding: bid(1, BidSuit.Spades),
   clauses: [],
   band: "must",
-  intraModuleOrder: 0,
+  declarationOrder: 0,
   sourceIntent: { type: "MajorOpen", params: { suit: "spades" } },
   teachingLabel: "1♠ opening",
 }, BERGEN_CTX);

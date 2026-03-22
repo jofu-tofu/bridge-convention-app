@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createProtocolDrillConfig } from "../config-factory";
 import { Seat } from "../../engine/types";
-import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE } from "../../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTEM_ACOL } from "../../core/contracts/base-system-vocabulary";
 
 describe("createProtocolDrillConfig", () => {
   it("assigns user seat as 'user'", () => {
@@ -52,6 +52,16 @@ describe("createProtocolDrillConfig", () => {
     expect(config.conventionId).toBe("nt-bundle");
     expect(config.seatStrategies[Seat.South]).toBe("user");
     // Strategy should be created — no throw
+    const northStrategy = config.seatStrategies[Seat.North];
+    expect(northStrategy).not.toBe("user");
+  });
+
+  it("accepts baseSystem override to select Acol system config", () => {
+    const config = createProtocolDrillConfig("nt-bundle", Seat.South, {
+      baseSystem: BASE_SYSTEM_ACOL,
+    });
+    expect(config.conventionId).toBe("nt-bundle");
+    expect(config.seatStrategies[Seat.South]).toBe("user");
     const northStrategy = config.seatStrategies[Seat.North];
     expect(northStrategy).not.toBe("user");
   });

@@ -34,7 +34,7 @@ function makeSurface(
     ranking: {
       recommendationBand: "should",
       modulePrecedence: 0,
-      intraModuleOrder: 0,
+      declarationOrder: 0,
     },
     sourceIntent: { type: "test-intent", params: {} },
     teachingLabel: "Test meaning",
@@ -62,7 +62,7 @@ describe("adaptMeaningSurface", () => {
       ranking: {
         recommendationBand: "should",
         modulePrecedence: 5,
-        intraModuleOrder: 3,
+        declarationOrder: 3,
       },
     });
     const adapted = adaptMeaningSurface(surface);
@@ -111,7 +111,7 @@ describe("adaptMeaningSurface", () => {
       ranking: {
         recommendationBand: "must",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
     const adapted = adaptMeaningSurface(surface);
@@ -125,7 +125,7 @@ describe("adaptMeaningSurface", () => {
       ranking: {
         recommendationBand: "should",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
     const adapted = adaptMeaningSurface(surface);
@@ -138,7 +138,7 @@ describe("adaptMeaningSurface", () => {
       ranking: {
         recommendationBand: "may",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
     const adapted = adaptMeaningSurface(surface);
@@ -151,7 +151,7 @@ describe("adaptMeaningSurface", () => {
       ranking: {
         recommendationBand: "avoid",
         modulePrecedence: 0,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
     const adapted = adaptMeaningSurface(surface);

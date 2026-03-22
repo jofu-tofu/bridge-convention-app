@@ -94,7 +94,7 @@ function partnerHas4InSuitLikely(
 }
 
 /**
- * bridge:nsHaveEightCardFitLikely
+ * module.stayman:nsHaveEightCardFitLikely
  * P(combined 8+ in hearts or spades) over samples.
  */
 const nsHaveEightCardFitLikely: PosteriorFactHandler = countingSampler(
@@ -127,7 +127,7 @@ const combinedHcpInRangeLikely: PosteriorFactHandler = countingSampler(
 );
 
 /**
- * bridge:openerStillBalancedLikely
+ * module.stayman:openerStillBalancedLikely
  * P(opener has balanced shape) over samples.
  */
 const openerStillBalancedLikely: PosteriorFactHandler = countingSampler(
@@ -140,7 +140,7 @@ const openerStillBalancedLikely: PosteriorFactHandler = countingSampler(
 );
 
 /**
- * bridge:openerHasSecondMajorLikely
+ * module.stayman:openerHasSecondMajorLikely
  * P(opener has a second 4-card major) over samples.
  * "Second major" means 4+ in both hearts AND spades.
  */
@@ -158,8 +158,8 @@ export const POSTERIOR_FACT_HANDLERS: ReadonlyMap<string, PosteriorFactHandler> 
   ["bridge.partnerHas4SpadesLikely", partnerHas4InSuitLikely],
   ["bridge.partnerHas4DiamondsLikely", partnerHas4InSuitLikely],
   ["bridge.partnerHas4ClubsLikely", partnerHas4InSuitLikely],
-  ["bridge.nsHaveEightCardFitLikely", nsHaveEightCardFitLikely],
+  ["module.stayman.nsHaveEightCardFitLikely", nsHaveEightCardFitLikely],
   ["bridge.combinedHcpInRangeLikely", combinedHcpInRangeLikely],
-  ["bridge.openerStillBalancedLikely", openerStillBalancedLikely],
-  ["bridge.openerHasSecondMajorLikely", openerHasSecondMajorLikely],
+  ["module.stayman.openerStillBalancedLikely", openerStillBalancedLikely],
+  ["module.stayman.openerHasSecondMajorLikely", openerHasSecondMajorLikely],
 ]);

@@ -51,7 +51,7 @@ describe("arbitrateMeanings — provenance characterization", () => {
         recommendationBand: "must",
         specificity: 5,
         modulePrecedence: 1,
-        intraModuleOrder: 0,
+        declarationOrder: 0,
       },
     });
 
@@ -88,12 +88,12 @@ describe("arbitrateMeanings — multi-proposal characterization", () => {
     const eliminated = makeArbitrationInput({
       meaningId: "eliminated",
       allSatisfied: false,
-      ranking: { recommendationBand: "avoid", specificity: 1, modulePrecedence: 0, intraModuleOrder: 2 },
+      ranking: { recommendationBand: "avoid", specificity: 1, modulePrecedence: 0, declarationOrder: 2 },
     }, makeCall(2, BidSuit.Hearts));
     const acceptable = makeArbitrationInput({
       meaningId: "acceptable",
       allSatisfied: false,
-      ranking: { recommendationBand: "may", specificity: 1, modulePrecedence: 0, intraModuleOrder: 1 },
+      ranking: { recommendationBand: "may", specificity: 1, modulePrecedence: 0, declarationOrder: 1 },
     }, makeCall(2, BidSuit.Diamonds));
 
     const result = arbitrateMeanings([truth, eliminated, acceptable]);

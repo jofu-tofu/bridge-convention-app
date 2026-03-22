@@ -12,7 +12,7 @@ function makeRanking(overrides: Partial<RankingMetadata> = {}): RankingMetadata 
     recommendationBand: "should",
     specificity: 1,
     modulePrecedence: 1,
-    intraModuleOrder: 1,
+    declarationOrder: 1,
     ...overrides,
   };
 }
@@ -69,9 +69,9 @@ describe("compareRanking", () => {
     expect(compareRanking(a, b)).toBeLessThan(0);
   });
 
-  it("breaks all-else-equal tie with intraModuleOrder (lower wins)", () => {
-    const a = makeRanking({ intraModuleOrder: 2 });
-    const b = makeRanking({ intraModuleOrder: 5 });
+  it("breaks all-else-equal tie with declarationOrder (lower wins)", () => {
+    const a = makeRanking({ declarationOrder: 2 });
+    const b = makeRanking({ declarationOrder: 5 });
     expect(compareRanking(a, b)).toBeLessThan(0);
   });
 

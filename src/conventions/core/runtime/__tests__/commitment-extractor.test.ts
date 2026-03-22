@@ -48,7 +48,7 @@ function makeSurface(
       recommendationBand: "should",
       specificity: 1,
       modulePrecedence: 1,
-      intraModuleOrder: 1,
+      declarationOrder: 1,
     },
     sourceIntent: { type: "test", params: {} },
     teachingLabel: "Test meaning",

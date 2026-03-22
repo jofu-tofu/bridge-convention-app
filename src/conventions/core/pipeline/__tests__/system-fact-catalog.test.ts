@@ -16,6 +16,7 @@ import {
 } from "../../../../core/contracts/system-fact-vocabulary";
 import { TWO_OVER_ONE_SYSTEM_CONFIG } from "../../../../core/contracts/system-config";
 import type { FactValue } from "../../../../core/contracts/fact-catalog";
+import { FactLayer } from "../../../../core/contracts/fact-layer";
 
 function hcpMap(hcp: number): ReadonlyMap<string, FactValue> {
   return new Map([["hand.hcp", { factId: "hand.hcp", value: hcp }]]);
@@ -42,9 +43,9 @@ describe("createSystemFactCatalog", () => {
       }
     });
 
-    it('all definitions have layer "bridge-derived" and world "acting-hand"', () => {
+    it('all definitions have layer FactLayer.SystemDerived and world "acting-hand"', () => {
       for (const def of catalog.definitions) {
-        expect(def.layer).toBe("bridge-derived");
+        expect(def.layer).toBe(FactLayer.SystemDerived);
         expect(def.world).toBe("acting-hand");
       }
     });

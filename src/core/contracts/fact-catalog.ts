@@ -7,9 +7,7 @@ import type { ConstraintDimension } from "./meaning";
 export { num, bool, fv } from "./fact-helpers";
 export type { HandFactResolverFn } from "./fact-helpers";
 export { PRIMITIVE_FACTS, BRIDGE_DERIVED_FACTS, POSTERIOR_DERIVED_FACTS, SHARED_FACTS } from "./shared-facts";
-
-/** Stratification of fact definitions. */
-export type FactLayer = "primitive" | "bridge-derived" | "module-derived";
+export { FactLayer } from "./fact-layer";
 
 /** World scope for fact evaluation. */
 export type EvaluationWorld = "public" | "acting-hand" | "full-deal";

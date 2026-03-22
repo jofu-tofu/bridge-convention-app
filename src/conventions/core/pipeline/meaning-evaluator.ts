@@ -150,7 +150,7 @@ export function evaluateBidMeaning(
     recommendationBand: resolvedBand,
     specificity: derivation?.advisorySpecificity ?? 0,
     modulePrecedence: surface.ranking.modulePrecedence ?? 0,
-    intraModuleOrder: surface.ranking.intraModuleOrder,
+    declarationOrder: surface.ranking.declarationOrder,
     ...(derivation ? { specificityBasis: derivation.basis } : {}),
   };
 
@@ -207,7 +207,7 @@ function evaluateDecisionSurface(
     recommendationBand: priorityClassToBand(surface.defaultPriorityClass),
     specificity: surface.specificity ?? 1,
     modulePrecedence: surface.modulePrecedence,
-    intraModuleOrder: surface.intraModuleOrder ?? 0,
+    declarationOrder: surface.declarationOrder ?? 0,
   };
 
   const bindings = surface.surfaceBindings

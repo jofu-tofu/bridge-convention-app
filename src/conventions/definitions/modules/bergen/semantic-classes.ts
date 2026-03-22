@@ -23,4 +23,7 @@ export const BERGEN_CLASSES = {
 
   // R4: Opener final acceptance
   OPENER_ACCEPT_AFTER_TRY: "bergen:opener-accept-after-try",
+
+  // Natural alternative: 1NT response to 1M (system-dependent range)
+  NATURAL_1NT_RESPONSE: "bergen:natural-1nt-response",
 } as const;
