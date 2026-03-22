@@ -4,7 +4,7 @@ import type {
   BidAlert,
 } from "../../core/contracts";
 import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation";
-import type { PipelineCarrier, PipelineResult } from "../../core/contracts/module-surface";
+import type { PipelineCarrier, PipelineResult } from "../../conventions";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 import { formatHandSummary } from "../../core/display/hand-summary";
 

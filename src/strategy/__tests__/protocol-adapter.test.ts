@@ -12,21 +12,16 @@ import type { Call } from "../../engine/types";
 import { buildAuction } from "../../engine/auction-helpers";
 import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
-import { createBiddingContext } from "../../conventions/core/context-factory";
+import { createBiddingContext, specFromBundle, ntBundle } from "../../conventions";
+import type { ConventionModule, ConventionSpec } from "../../conventions";
 import { makeSurface, makeRanking } from "../../test-support/convention-factories";
-import type { ConventionModule } from "../../conventions/core/convention-module";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
-import type { ConventionSpec } from "../../conventions/core/protocol/types";
 import {
   protocolSpecToStrategy,
   buildObservationLogViaRules,
   findMatchingClaimForCall,
 } from "../bidding/protocol-adapter";
-
-// ── Real convention imports ──────────────────────────────────────────
-import { ntBundle } from "../../conventions/definitions/nt-bundle";
-import { specFromBundle } from "../../conventions/definitions/system-registry";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 // ── Helpers ──────────────────────────────────────────────────────────

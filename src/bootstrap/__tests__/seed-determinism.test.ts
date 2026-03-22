@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { startDrill } from "../start-drill";
 import { createStubEngine, makeDeal } from "../../test-support/engine-stub";
 import { Seat } from "../../engine/types";
-import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../conventions/core/bundle";
-import { ntBundle } from "../../conventions/definitions/nt-bundle";
+import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle } from "../../conventions";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 import { mulberry32 } from "../../core/util/seeded-rng";

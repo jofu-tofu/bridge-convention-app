@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
 // Side-effect import: registers all bundles + conventions
 import "../../../conventions";
 
-import { resolveBundle, getBundleInput } from "../../../conventions/definitions/system-registry";
+import { resolveBundle, getBundleInput } from "../../../conventions";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { exploreBundle } from "../explore";
 

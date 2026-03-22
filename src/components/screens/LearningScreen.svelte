@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listConventions } from "../../conventions/core";
+  import { listConventions } from "../../conventions";
   import type { ConventionConfig, ConventionTeaching } from "../../core/contracts/convention";
   import { filterConventions } from "../../core/display/filter-conventions";
   import { displayConventionName } from "../../core/display/format";

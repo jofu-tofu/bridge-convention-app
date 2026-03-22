@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createAppStore } from "../app.svelte";
-import { createConventionConfigFromBundle } from "../../conventions/core/bundle";
-import { ntBundle } from "../../conventions/definitions/nt-bundle";
-import { bergenBundle } from "../../conventions/definitions/bergen-bundle";
+import { createConventionConfigFromBundle, ntBundle, bergenBundle } from "../../conventions";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 const bergenBundleConventionConfig = createConventionConfigFromBundle(bergenBundle);

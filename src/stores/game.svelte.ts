@@ -23,11 +23,11 @@ import type {
 import type {
   BidResult,
   BidHistoryEntry,
-  StrategyEvaluation,
   PlayStrategy,
   PlayContext,
   PublicBeliefs,
 } from "../core/contracts";
+import type { StrategyEvaluation } from "../conventions";
 import type { PublicBeliefState, InferenceSnapshot } from "../service";
 import { createInferenceCoordinator } from "../service";
 import { randomPlayStrategy } from "../service";

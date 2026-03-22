@@ -16,7 +16,7 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | Sub-barrel | Stability | Contents |
 |---|---|---|
 | `engine-types.ts` | Tier 1 — rarely changes | Bridge primitives: meaning, fact-catalog, agreement-module, bid-action, committed-step |
-| `convention-types.ts` | Tier 2 — convention/strategy/teaching scope | Pipeline infrastructure: bidding, explanation-catalog, inference, play, recommendation, tree-evaluation, module-surface, provenance, predicates, evidence-bundle, posterior, factor-graph, posterior-query, posterior-backend, alert, teaching-tag |
+| `convention-types.ts` | Tier 2 — convention/strategy/teaching scope | Pipeline infrastructure: bidding, explanation-catalog, inference, play, recommendation, tree-evaluation, module-surface, provenance, predicates, evidence-bundle, posterior, factor-graph, posterior-query, posterior-backend, teaching-tag |
 | `session-types.ts` | Tier 3 — orchestration/presentation scope | Session lifecycle & UI: teaching-projection, deal-spec, convention, system-config, base-system-vocabulary, teaching-grading, drill, practice-preferences |
 
 **When to use each tier import:**
@@ -37,11 +37,11 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `inference.ts` | Suit/hand inference, qualitative constraints, public beliefs |
 | `tree-evaluation.ts` | Candidate eligibility, alternative groups, surface groups, evaluation trace |
 | `play.ts` | Play context, results, strategy interface |
-| `recommendation.ts` | Practical recommendation, posterior summary, strategy evaluation DTO. `StrategyEvaluation` has `pipelineResult: PipelineResult | null` (replaces old `provenance` + `arbitration` fields). |
-| `module-surface.ts` | Public snapshot (epistemic layers), module surfaces, `PipelineCarrier`, `PipelineResult` (pipeline output types). `EncodedProposal`, `ArbitrationResult`, `EliminationRecord` still exist but are internal to teaching sub-builders. |
+| `recommendation.ts` | Practical recommendation, posterior summary (`PracticalRecommendation`, `PracticalScoreBreakdown`, `PosteriorSummary`). `StrategyEvaluation` and `ConventionStrategy` moved to `conventions/pipeline/strategy-evaluation.ts`. |
+| `module-surface.ts` | `MachineRegisters`, `PublicSnapshot`, `buildPublicSnapshot`. Pipeline output types (`PipelineResult`, `PipelineCarrier`, `ArbitrationResult`, `EncodedProposal`, `EliminationRecord`) moved to `conventions/pipeline/pipeline-types.ts`. |
 | `meaning.ts` | BidMeaning (authored meaning units), clauses, ranking, semantic classes, teaching tags |
 | `fact-catalog.ts` | Fact definitions (with `constrainsDimensions`), evaluators, catalog, extensions, shared facts (19) |
-| `alert.ts` | Alert resolution and public constraint derivation from surface properties |
+| `alert.ts` | **Moved** to `conventions/pipeline/alert.ts`. Alert resolution and public constraint derivation from surface properties. |
 | `provenance.ts` | Full decision provenance DTOs for pipeline tracing |
 | `teaching-projection.ts` | Teaching-optimized views for "why not X?" UI |
 | `predicates.ts` | Typed predicate surfaces scoped by evaluation world |

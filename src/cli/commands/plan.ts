@@ -1,9 +1,7 @@
 // ── CLI plan command ────────────────────────────────────────────────
 
-import {
-  enumerateRuleAtoms,
-} from "../../conventions/core";
-import type { RuleAtom } from "../../conventions/core";
+import { enumerateRuleAtoms } from "../../conventions";
+import type { RuleAtom } from "../../conventions";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 

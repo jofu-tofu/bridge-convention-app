@@ -9,7 +9,7 @@ import type {
   ExplorationInvariant,
 } from "./types";
 import { callKey } from "../../engine/call-helpers";
-import { deriveTurnRole } from "../../conventions/core";
+import { deriveTurnRole } from "../../conventions";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 

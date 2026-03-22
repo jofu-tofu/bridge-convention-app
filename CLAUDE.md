@@ -56,7 +56,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
 - **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Builders in `src/core/viewport/` filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
-- **Evaluation facade enforces viewport boundary at type level.** `src/evaluation/` encapsulates strategy → viewport → grading pipeline. Its exports use ONLY viewport types (`BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`). Agent-facing CLI commands (`eval.ts`, `play.ts`) import from `evaluation/` only — ESLint blocks direct imports from `strategy/`, `teaching/`, `conventions/`, `core/viewport/`, `core/contracts/`, and `engine/` in those files.
+- **Service is the single cross-consumer facade for both UI stores and CLI commands.** `service/evaluation/` is an internal subfolder containing stateless CLI grading logic (atom evaluation, playthrough evaluation). External consumers must import via the `service/` root barrel, enforced by ESLint. Agent-facing CLI commands (`eval.ts`, `play.ts`) import from `service/` only — ESLint blocks direct imports from `strategy/`, `teaching/`, `conventions/`, `core/viewport/`, `core/contracts/`, `engine/`, and `evaluation/` in those files.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
 ## Design Philosophy
@@ -67,7 +67,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Contain complexity through modularity.** Low impact radius (changes to one convention don't ripple), clean module boundaries (runtime/pipeline are separate subsystems), and convention-agnostic infrastructure in `core/` that never assumes convention-specific structure.
 - **Semantic ownership: fields belong where they mean something.** Before adding a field to a type, ask: "does this describe what this type IS, or is it metadata about how something else uses it?" Derive what you can from existing data; don't store what can be computed.
 - **No backwards compatibility during migrations.** When refactoring types or interfaces, delete the old versions immediately. Do not keep deprecated shims or backward-compat aliases — removing them lets the compiler surface every call site that needs updating, ensuring the migration is completed fully rather than left half-done.
-- **Bundle-specific knowledge stays in the bundle.** Core infrastructure (`core/`, `inference/`, `conventions/core/`) must not contain convention-specific fact IDs, heuristics, or special-case logic. If a behavior differs between conventions, the bundle declares it (e.g., `isPublic` on clauses) and the framework reads the declaration.
+- **Bundle-specific knowledge stays in the bundle.** Core infrastructure (`core/`, `inference/`, `conventions/core/`, `conventions/pipeline/`) must not contain convention-specific fact IDs, heuristics, or special-case logic. If a behavior differs between conventions, the bundle declares it (e.g., `isPublic` on clauses) and the framework reads the declaration.
 - **System-agnostic modules, system-aware facts.** Modules never import concrete system configs or branch on system identity. System-level differences (HCP thresholds, forcing durations) are expressed as `SystemConfig` fields, surfaced as system facts via `system-fact-vocabulary.ts`, and referenced in surface clauses. See `src/core/contracts/CLAUDE.md` § System Parameterization for the full module author guide.
 
 ## System Parameterization
@@ -85,7 +85,8 @@ src/
     viewport/        Player information boundary (BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, EvaluationOracle)
     util/            Zero-dep pure utilities (delay, seeded-rng)
   conventions/     Convention system
-    core/            Registry, context factory, bundle registry, meaning pipeline (pipeline/), runtime (runtime/) — public API via index.ts barrel
+    core/            Registry, context factory, bundle registry, runtime (runtime/) — public API via index.ts barrel
+    pipeline/        Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding)
     definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises), weak-twos-bundle/ (Weak Two Bids + Ogust), dont-bundle/ (DONT competitive overcalls) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
   teaching/        Teaching resolution (teaching-resolution.ts), projection builder, teaching graph
   inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
@@ -93,8 +94,8 @@ src/
     bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
   service/         Session-handle-oriented service layer — owns game state, exposes viewport-only data
+    evaluation/    Stateless CLI grading logic (atom evaluation, playthrough evaluation) — internal to service
   bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
-  evaluation/      Type-enforced viewport boundary — facade for strategy→viewport→grading pipeline
   cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI, dev-params)
@@ -121,13 +122,13 @@ tests/
 | Display | `src/core/display/format.ts` | UI display utilities |
 | Util | `src/core/util/delay.ts` | Zero-dep pure utilities |
 | Viewport | `src/core/viewport/player-viewport.ts` | Player information boundary (BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, EvaluationOracle) |
-| Conventions | `src/conventions/core/index.ts` | Convention system (core/ + definitions/) |
+| Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + definitions/) |
+| Pipeline | `src/conventions/pipeline/run-pipeline.ts` | Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding) |
 | Teaching | `src/teaching/teaching-resolution.ts` | Teaching resolution and projection |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
-| Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline) |
-| Service | `src/service/index.ts` | Session-handle service layer (local-service, bidding/play/dds controllers) |
+| Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline; `runPipeline()` in `conventions/pipeline/run-pipeline.ts`) |
+| Service | `src/service/index.ts` | Session-handle service layer + evaluation facade (local-service, bidding/play/dds controllers, evaluation/) |
 | Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
-| Evaluation | `src/evaluation/index.ts` | Type-enforced viewport boundary (facade for strategy/teaching/viewport pipeline) |
 | CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
@@ -223,8 +224,9 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
+- **Convention imports.** External consumers import from `conventions/index.ts` barrel — deep imports into `conventions/core/`, `conventions/pipeline/`, or `conventions/definitions/` are ESLint-blocked.
 - All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. All teaching content (relations, alternatives, intent families) is derived from `pedagogicalTags` on surfaces — modules are portable building blocks that compose into any bundle. 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`) with scope-based grouping; derivation in `conventions/definitions/derive-cross-module.ts`
-- **CLI commands use rule enumeration.** All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/core/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration (`findPathToState`, `buildTargetedAuction`, `resolveAuction`) has been removed from `cli/shared.ts`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
+- **CLI commands use rule enumeration.** All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration (`findPathToState`, `buildTargetedAuction`, `resolveAuction`) has been removed from `cli/shared.ts`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
 - `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports
@@ -245,7 +247,8 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/core/contracts/CLAUDE.md` — cross-boundary contract inventory and dependency rules
 - `src/core/viewport/CLAUDE.md` — player information boundary (BiddingViewport, EvaluationOracle)
 - `src/conventions/CLAUDE.md` — registry pattern, convention bundles
-- `src/conventions/core/CLAUDE.md` — runtime, pipeline, bundle systems
+- `src/conventions/core/CLAUDE.md` — runtime, bundle systems
+- `src/conventions/pipeline/CLAUDE.md` — pipeline module graph, 6-stage pipeline flow, test architecture
 - `src/conventions/definitions/CLAUDE.md` — convention bundle authoring guide
 - `src/inference/CLAUDE.md` — inference architecture, posterior engine, new posterior boundary
 - `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port, migration status

@@ -3,14 +3,14 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { collectMatchingClaims } from "../../core/pipeline/rule-interpreter";
+import { collectMatchingClaims } from "../../pipeline/rule-interpreter";
 import type { ConventionModule } from "../../core/convention-module";
 import type { CommittedStep, NegotiationState } from "../../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { AuctionContext } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import { Seat } from "../../../engine/types";
-import { flattenSurfaces } from "../../core/pipeline/rule-interpreter";
+import { flattenSurfaces } from "../../pipeline/rule-interpreter";
 
 import { getModule } from "../../definitions/module-registry";
 

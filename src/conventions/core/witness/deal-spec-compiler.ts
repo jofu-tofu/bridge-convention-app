@@ -4,8 +4,8 @@ import type {
   TeachingControls,
 } from "../../../core/contracts/deal-spec";
 import type { HandPredicate } from "../../../core/contracts/predicates";
-import { resolveRole } from "../pipeline/deal-spec-generator";
-import { VULNERABILITY_MAP } from "../pipeline/witness-constants";
+import { resolveRole } from "../../pipeline/deal-spec-generator";
+import { VULNERABILITY_MAP } from "../../pipeline/witness-constants";
 import { compileFactClause, SUIT_FACT_MAP, type MutableSeatConstraint } from "../runtime/fact-compiler";
 
 /**

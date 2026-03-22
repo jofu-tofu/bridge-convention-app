@@ -8,9 +8,9 @@
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
-import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions/definitions/system-registry";
-import { enumerateRuleAtoms } from "../conventions/core";
-import { createBiddingContext } from "../conventions/core/context-factory";
+import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions";
+import { enumerateRuleAtoms } from "../conventions";
+import { createBiddingContext } from "../conventions";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
@@ -27,8 +27,8 @@ import { parsePatternCall } from "../engine/auction-helpers";
 import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
 import type { Auction, Call, Deal, Hand, DealConstraints } from "../engine/types";
-import type { ConventionBundle } from "../conventions/core";
-import type { ConventionSpec } from "../conventions/core";
+import type { ConventionBundle } from "../conventions";
+import type { ConventionSpec } from "../conventions";
 import type { OpponentMode } from "../core/contracts/drill";
 import type { PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./types";
 

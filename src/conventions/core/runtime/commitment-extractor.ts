@@ -5,8 +5,8 @@ import type {
 } from "../../../core/contracts/agreement-module";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import { callsMatch, callKey } from "../../../engine/call-helpers";
-import { derivePublicConstraints } from "../../../core/contracts/alert";
-import { resolveClause } from "../pipeline/binding-resolver";
+import { derivePublicConstraints } from "../../pipeline/alert";
+import { resolveClause } from "../../pipeline/binding-resolver";
 
 /**
  * Derive entailed denials from a closure policy.

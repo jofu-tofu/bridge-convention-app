@@ -1,7 +1,7 @@
 import type { BiddingContext } from "../../core/contracts";
 import type { Call, Hand } from "../../engine/types";
 import { Seat, Suit, Rank } from "../../engine/types";
-import { createBiddingContext } from "../../conventions/core";
+import { createBiddingContext } from "../../conventions";
 import { evaluateHand } from "../../engine/hand-evaluator";
 
 export interface TreeDisplayRow {

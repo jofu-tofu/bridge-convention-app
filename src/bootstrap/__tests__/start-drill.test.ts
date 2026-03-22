@@ -12,12 +12,9 @@ import {
 } from "../../test-support/engine-stub";
 import { Seat, Vulnerability } from "../../engine/types";
 import type { DealConstraints, SeatConstraint } from "../../engine/types";
-import { clearBundleRegistry, registerBundle } from "../../conventions/core/bundle";
-import { createConventionConfigFromBundle } from "../../conventions/core/bundle";
-import { ntBundle } from "../../conventions/definitions/nt-bundle";
+import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle, ConventionCategory } from "../../conventions";
+import type { ConventionConfig } from "../../conventions";
 import { buildAuction } from "../../engine/auction-helpers";
-import { ConventionCategory } from "../../conventions/core";
-import type { ConventionConfig } from "../../conventions/core";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 

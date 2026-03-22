@@ -1,6 +1,6 @@
-// ── conventions/core public API barrel ──────────────────────────────────
-// External consumers import from here.
-// Internal files within conventions/ use direct paths.
+// ── conventions/core internal barrel ────────────────────────────────────
+// Internal barrel — external consumers use conventions/index.ts.
+// Kept for conventions-internal convenience imports.
 
 // ── Types & Config ──────────────────────────────────────────────────────
 export { ConventionCategory } from "../../core/contracts/convention";
@@ -25,22 +25,7 @@ export { createBiddingContext } from "./context-factory";
 export { findBundleForConvention, getBundle, listBundles, composeBundles, resolveConventionForSystem } from "./bundle";
 export type { ConventionBundle, BundleInput } from "./bundle";
 
-// ── Pipeline ────────────────────────────────────────────────────────────
-export { evaluateFacts } from "./pipeline/fact-evaluator";
-export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/fact-evaluator";
-export { createSharedFactCatalog } from "./pipeline/shared-fact-catalog";
-export { createHandFactResolver } from "./pipeline/hand-fact-resolver";
-
-export { createSystemFactCatalog } from "./pipeline/system-fact-catalog";
-
-export { evaluateAllBidMeanings } from "./pipeline/meaning-evaluator";
-
-export {
-  arbitrateMeanings,
-  zipProposalsWithSurfaces,
-} from "./pipeline/meaning-arbitrator";
-
-// ── Runtime (remaining) ─────────────────────────────────────────────────
+// ── Runtime ─────────────────────────────────────────────────────────────
 export type {
   RuntimeModule,
   DecisionSurfaceEntry,
@@ -55,20 +40,6 @@ export type {
 // ── Protocol Frame Architecture (legacy — retained for ConventionSpec type) ──
 export type { ConventionSpec } from "./protocol/types";
 
-// ── Rule Enumeration ────────────────────────────────────────────────────
-export { enumerateRuleAtoms, generateRuleCoverageManifest } from "./pipeline/rule-enumeration";
-export type { RuleAtom, RuleCoverageManifest } from "./pipeline/rule-enumeration";
-
-// ── Rule interpretation workflow — used by strategy/bidding/protocol-adapter ──
-export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole, flattenSurfaces } from "./pipeline/rule-interpreter";
-export type { ModuleClaimResult } from "./pipeline/rule-interpreter";
-export { normalizeIntent } from "./pipeline/normalize-intent";
-export { matchObs } from "./pipeline/route-matcher";
-export { advanceLocalFsm } from "./pipeline/local-fsm";
-
 // ── Convention Module (unified type) ─────────────────────────────────────
 export type { ConventionModule, Claim, LocalFsm, StateEntry } from "./convention-module";
 export { moduleSurfaces } from "./convention-module";
-
-// ── System Registry (re-exported from definitions for external consumers) ────
-export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "../definitions/system-registry";

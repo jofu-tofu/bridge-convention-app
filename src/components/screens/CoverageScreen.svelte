@@ -1,10 +1,8 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listBundleInputs, resolveBundle, getBundleInput } from "../../conventions/definitions/system-registry";
+  import { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions";
+  import type { RuleCoverageManifest, ConventionBundle } from "../../conventions";
   import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
-  import { enumerateRuleAtoms, generateRuleCoverageManifest } from "../../conventions/core";
-  import type { RuleCoverageManifest } from "../../conventions/core";
-  import type { ConventionBundle } from "../../conventions/core";
 
   const appStore = getAppStore();
 

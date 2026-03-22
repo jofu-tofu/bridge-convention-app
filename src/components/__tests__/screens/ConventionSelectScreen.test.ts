@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { listConventions } from "../../../conventions/core/registry";
-import { clearBundleRegistry, registerBundle } from "../../../conventions/core/bundle";
-import { ntBundle } from "../../../conventions/definitions/nt-bundle";
-import { bergenBundle } from "../../../conventions/definitions/bergen-bundle";
+import { listConventions, clearBundleRegistry, registerBundle, ntBundle, bergenBundle } from "../../../conventions";
 
 // ConventionSelectScreen uses getContext so we test via registry + filter logic
 describe("ConventionSelectScreen", () => {

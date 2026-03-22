@@ -5,7 +5,7 @@
 
 import type { Seat } from "../../engine/types";
 import type { NegotiationState, CommittedStep } from "../../core/contracts/committed-step";
-import type { ModuleClaimResult } from "../../conventions/core";
+import type { ModuleClaimResult } from "../../conventions";
 
 // ── Lint ─────────────────────────────────────────────────────────────
 

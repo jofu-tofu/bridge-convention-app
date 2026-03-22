@@ -8,10 +8,9 @@
  * - Kernel conflict: claims that write the same kernel state field
  */
 
-import type { ConventionModule, Claim } from "../../conventions/core";
-import type { ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "../../conventions/core/rule-module";
+import type { ConventionModule, Claim, ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "../../conventions";
 import type { InterferenceEdge, PairInteraction } from "./types";
-import { normalizeIntent, matchObs } from "../../conventions/core";
+import { normalizeIntent, matchObs } from "../../conventions";
 import { callKey } from "../../engine/call-helpers";
 
 /** Normalized rule view for interference analysis. */

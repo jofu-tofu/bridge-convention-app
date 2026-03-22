@@ -5,7 +5,7 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { num, bool, fv } from "../../core/pipeline/fact-helpers";
+import { num, bool, fv } from "../../pipeline/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../inference/posterior";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { LocalFsm, StateEntry } from "../../core/rule-module";

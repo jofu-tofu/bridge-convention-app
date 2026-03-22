@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import { listConventions } from "../../conventions/core";
+  import { listConventions } from "../../conventions";
   import { ConventionCategory } from "../../core/contracts/convention";
   import type { ConventionConfig } from "../../core/contracts/convention";
   import { getAppStore } from "../../stores/context";

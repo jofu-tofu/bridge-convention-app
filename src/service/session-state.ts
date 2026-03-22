@@ -7,7 +7,8 @@
 import type { Deal, Auction, AuctionEntry, Contract, Call, Seat, Card, Trick, PlayedCard } from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
 import type { DrillSession, DrillBundle } from "../bootstrap/types";
-import type { ConventionStrategy, BidResult, BidHistoryEntry, StrategyEvaluation, PlayStrategy } from "../core/contracts";
+import type { BidResult, BidHistoryEntry, PlayStrategy } from "../core/contracts";
+import type { ConventionStrategy, StrategyEvaluation } from "../conventions";
 import type { PublicBeliefs } from "../core/contracts";
 import type { InferenceCoordinator } from "../inference/inference-coordinator";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
@@ -63,9 +64,6 @@ export class SessionState {
   // Debug state
   debugLog: DebugLogEntry[];
   debugTurnCounter: number;
-
-  // Feedback
-  currentFeedback: BidFeedbackDTO | null;
 
   // ── Play state ──────────────────────────────────────────────────
   tricks: Trick[];

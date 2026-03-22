@@ -12,7 +12,7 @@ import { formatCall } from "../display/format";
 import { formatHandSummary } from "../display/hand-summary";
 import type { BidHistoryEntry, BidResult } from "../contracts/bidding";
 import type { BidMeaning } from "../contracts/meaning";
-import { isAlertable as isAlertableFromIntent } from "../contracts/alert";
+import { isAlertable as isAlertableFromIntent } from "../../conventions";
 import type { TeachingProjection } from "../contracts/teaching-projection";
 import type { TeachingResolution } from "../contracts/teaching-grading";
 import type { BidGrade } from "../contracts/teaching-grading";

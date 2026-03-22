@@ -3,8 +3,8 @@ import type {
   BiddingStrategy,
   BidResult,
   PlayStrategy,
-  ConventionStrategy,
 } from "../core/contracts";
+import type { ConventionStrategy } from "../conventions";
 import type { InferenceConfig } from "../inference/types";
 import type { InferenceEngine } from "../inference/inference-engine";
 

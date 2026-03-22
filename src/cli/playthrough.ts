@@ -3,10 +3,8 @@
 // Shared types and functions for running full auction playthroughs.
 // Used by the play, plan, and (future) integration-test commands.
 
-import {
-  enumerateRuleAtoms,
-} from "../conventions/core";
-import type { ConventionModule } from "../conventions/core";
+import { enumerateRuleAtoms } from "../conventions";
+import type { ConventionModule } from "../conventions";
 import { createSpecStrategy, createOpponentStrategy } from "../bootstrap/strategy-factory";
 import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder";
 import type { BidResult } from "../core/contracts/bidding";

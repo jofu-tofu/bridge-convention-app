@@ -20,10 +20,11 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, Vulnerability } from "../../../engine/types";
 import { ntBundle } from "../../definitions/nt-bundle";
-import { createSharedFactCatalog, collectMatchingClaims } from "../../core";
+import { createSharedFactCatalog } from "../../pipeline/shared-fact-catalog";
+import { collectMatchingClaims } from "../../pipeline/rule-interpreter";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { createBiddingContext } from "../../core/context-factory";
-import { runMeaningPipeline } from "../../../strategy/bidding/meaning-strategy";
+import { runPipeline } from "../../pipeline/run-pipeline";
 import { buildObservationLogViaRules } from "../../../strategy/bidding/protocol-adapter";
 import type { AuctionContext } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
@@ -80,7 +81,7 @@ function evaluatePosition(
     };
   }
 
-  const { result } = runMeaningPipeline({
+  const { result } = runPipeline({
     surfaces: visibleSurfaces,
     context,
     catalog,

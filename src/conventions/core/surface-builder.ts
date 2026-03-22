@@ -6,7 +6,7 @@ import type {
 import type { Call } from "../../engine/types";
 import type { ChoiceClosurePolicy } from "../../core/contracts/agreement-module";
 import type { TeachingTagRef } from "../../core/contracts/teaching-tag";
-import { deriveClauseId, deriveClauseDescription } from "./pipeline/clause-derivation";
+import { deriveClauseId, deriveClauseDescription } from "../pipeline/clause-derivation";
 
 /**
  * Simplified clause input for the surface builder.

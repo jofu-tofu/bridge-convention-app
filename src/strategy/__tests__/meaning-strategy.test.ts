@@ -4,12 +4,10 @@ import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { buildAuction } from "../../engine/auction-helpers";
 import type { BiddingContext } from "../../core/contracts";
-import { meaningToStrategy, runMeaningPipeline } from "../bidding/meaning-strategy";
+import { meaningToStrategy } from "../bidding/meaning-strategy";
+import { runPipeline, specFromBundle, ntBundle, bergenBundle } from "../../conventions";
 import { protocolSpecToStrategy } from "../bidding/protocol-adapter";
 import { makeSurface, makeRanking } from "../../test-support/convention-factories";
-import { specFromBundle } from "../../conventions/definitions/system-registry";
-import { ntBundle } from "../../conventions/definitions/nt-bundle/config";
-import { bergenBundle } from "../../conventions/definitions/bergen-bundle/config";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -161,9 +159,9 @@ describe("meaningToStrategy", () => {
   });
 });
 
-// ─── runMeaningPipeline (pure pipeline, synthetic surfaces) ───────
+// ─── runPipeline (pure pipeline, synthetic surfaces) ───────
 
-describe("runMeaningPipeline", () => {
+describe("runPipeline", () => {
   test("returns arbitration result and evaluated facts", () => {
     const surface = makeSurface({
       meaningId: "pipeline-test",
@@ -174,7 +172,7 @@ describe("runMeaningPipeline", () => {
     const h = hand("SA", "SK", "S8", "S7", "S6", "H4", "H3", "DQ", "D5", "D3", "CJ", "C4", "C2");
     const ctx = makeContext(h, []);
 
-    const { result, facts } = runMeaningPipeline({
+    const { result, facts } = runPipeline({
       surfaces: [surface],
       context: ctx,
       catalog: { definitions: [], evaluators: new Map() },
@@ -202,7 +200,7 @@ describe("runMeaningPipeline", () => {
     const h = hand("SA", "SK", "S8", "S7", "S6", "H4", "H3", "DQ", "D5", "D3", "CJ", "C4", "C2");
     const ctx = makeContext(h, []);
 
-    const { result } = runMeaningPipeline({
+    const { result } = runPipeline({
       surfaces: [shouldSurface, mustSurface],
       context: ctx,
       catalog: { definitions: [], evaluators: new Map() },

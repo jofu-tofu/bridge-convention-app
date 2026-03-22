@@ -12,10 +12,10 @@
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
-import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions/definitions/system-registry";
-import { enumerateRuleAtoms, type RuleAtom } from "../conventions/core";
-import { getBundle } from "../conventions/core/bundle";
-import { createBiddingContext } from "../conventions/core/context-factory";
+import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions";
+import { enumerateRuleAtoms, type RuleAtom } from "../conventions";
+import { getBundle } from "../conventions";
+import { createBiddingContext } from "../conventions";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { resolveTeachingAnswer, gradeBid } from "../teaching/teaching-resolution";
 import { BidGrade } from "../core/contracts/teaching-grading";
@@ -29,8 +29,8 @@ import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
 import type { Auction, Deal, Hand, DealConstraints, Call } from "../engine/types";
 import type { BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
-import type { ConventionStrategy } from "../core/contracts/recommendation";
-import type { ConventionBundle } from "../conventions/core";
+import type { ConventionStrategy } from "../conventions";
+import type { ConventionBundle } from "../conventions";
 import type { BiddingViewport } from "../core/viewport/player-viewport";
 import type { AtomGradeResult } from "./types";
 

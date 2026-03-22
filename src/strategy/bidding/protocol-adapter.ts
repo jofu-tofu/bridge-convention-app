@@ -9,18 +9,12 @@
 import type {
   BiddingContext,
   BidResult,
-  ConventionStrategy,
-  StrategyEvaluation,
 } from "../../core/contracts";
-import type { BidMeaning } from "../../core/contracts/meaning";
+import type { ConventionStrategy, StrategyEvaluation, BidMeaning, ConventionSpec, ConventionModule, ModuleClaimResult } from "../../conventions";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
-import type { ConventionSpec } from "../../conventions/core";
-import type { ConventionModule } from "../../conventions/core";
-import type { ModuleClaimResult } from "../../conventions/core";
-import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm } from "../../conventions/core";
+import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, runPipeline } from "../../conventions";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
-import { runMeaningPipeline } from "./meaning-strategy";
 import { buildBidResult } from "./bid-result-builder";
 import { projectTeaching } from "../../teaching/teaching-projection-builder";
 import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
@@ -95,7 +89,7 @@ export function protocolSpecToStrategy(
         ? { bindings: firstBindings as Readonly<Record<string, string>> }
         : undefined;
 
-      const { result, facts } = runMeaningPipeline({
+      const { result, facts } = runPipeline({
         surfaces: visibleSurfaces,
         context,
         catalog,

@@ -19,14 +19,14 @@ import type { GamePhase } from "../core/phase-machine";
 import { isValidTransition } from "../core/phase-machine";
 import { createInferenceCoordinator } from "../inference/inference-coordinator";
 import { evaluateHand } from "../engine/hand-evaluator";
-import { createBiddingContext } from "../conventions/core";
+import { createBiddingContext } from "../conventions";
 import { startDrill as bootstrapStartDrill } from "../bootstrap/start-drill";
-import { getConvention, listConventions as listConventionConfigs } from "../conventions/core";
-import { getBundle, resolveConventionForSystem } from "../conventions/core/bundle";
+import { getConvention, listConventions as listConventionConfigs } from "../conventions";
+import { getBundle, resolveConventionForSystem } from "../conventions";
 import { getSystemConfig } from "../core/contracts/system-config";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
-import type { ConventionConfig } from "../conventions/core";
+import type { ConventionConfig } from "../conventions";
 import type { DevServicePort } from "./port";
 import type {
   SessionHandle,

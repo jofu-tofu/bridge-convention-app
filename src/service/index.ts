@@ -33,7 +33,7 @@ export { createLocalService } from "./local-service";
 // Re-exported for store consumption (replaces direct internal imports)
 export { createInferenceCoordinator } from "../inference/inference-coordinator";
 export type { PublicBeliefState, InferenceSnapshot } from "../inference/types";
-export { createBiddingContext } from "../conventions/core";
+export { createBiddingContext } from "../conventions";
 export { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
 export type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
 export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../core/viewport";

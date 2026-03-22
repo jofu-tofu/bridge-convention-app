@@ -1,10 +1,7 @@
 // ── CLI selftest command ────────────────────────────────────────────
 
-import {
-  enumerateRuleAtoms,
-} from "../../conventions/core";
-import type { RuleAtom } from "../../conventions/core";
-import { listBundleInputs, resolveBundle } from "../../conventions/definitions/system-registry";
+import { enumerateRuleAtoms, listBundleInputs, resolveBundle } from "../../conventions";
+import type { RuleAtom } from "../../conventions";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";

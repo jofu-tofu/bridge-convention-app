@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Seat } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../../conventions/core/bundle";
-import { ntBundle } from "../../../conventions/definitions/nt-bundle";
+import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle } from "../../../conventions";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 import { createStubEngine, makeDeal } from "../../../test-support/engine-stub";

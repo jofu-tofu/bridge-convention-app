@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { ConventionModule } from "../../../conventions/core/convention-module";
+import type { ConventionModule } from "../../../conventions";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { InterferenceEdge } from "../types";
 import {

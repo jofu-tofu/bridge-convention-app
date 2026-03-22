@@ -5,8 +5,7 @@
  * orphan transitions, undeclared kernel writes, and duplicate encodings.
  */
 
-import type { ConventionModule } from "../../conventions/core";
-import type { NegotiationExpr } from "../../conventions/core/rule-module";
+import type { ConventionModule, NegotiationExpr } from "../../conventions";
 import type { LintDiagnostic } from "./types";
 import { callKey } from "../../engine/call-helpers";
 

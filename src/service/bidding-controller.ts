@@ -12,7 +12,7 @@ import type { BidResult, BidHistoryEntry } from "../core/contracts";
 import { BidGrade } from "../core/contracts/teaching-grading";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
-import { createBiddingContext } from "../conventions/core";
+import { createBiddingContext } from "../conventions";
 import { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
 import type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
 import type { EnginePort } from "../engine/port";

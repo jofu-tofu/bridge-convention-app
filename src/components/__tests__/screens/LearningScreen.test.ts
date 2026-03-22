@@ -5,9 +5,7 @@ import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
 import { createStubEngine } from "../../../test-support/engine-stub";
 import { createLocalService } from "../../../service";
-import { ntBundle } from "../../../conventions/definitions/nt-bundle";
-import { bergenBundle } from "../../../conventions/definitions/bergen-bundle";
-import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../../conventions/core/bundle";
+import { ntBundle, bergenBundle, clearBundleRegistry, registerBundle, createConventionConfigFromBundle } from "../../../conventions";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 

@@ -4,8 +4,7 @@
 // settings resolution, spec/bundle lookup, deal generation,
 // auction construction, hand formatting, and viewport construction.
 
-import { getBundleInput, listBundleInputs, resolveBundle as resolveBundleFn, specFromBundle } from "../conventions/definitions/system-registry";
-import { createBiddingContext } from "../conventions/core";
+import { getBundleInput, listBundleInputs, resolveBundle as resolveBundleFn, specFromBundle, createBiddingContext } from "../conventions";
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../core/util/seeded-rng";
 import { evaluateHand } from "../engine/hand-evaluator";
@@ -21,8 +20,7 @@ import type {
   DealConstraints,
   Card,
 } from "../engine/types";
-import type { ConventionSpec } from "../conventions/core";
-import type { ConventionBundle } from "../conventions/core";
+import type { ConventionSpec, ConventionBundle } from "../conventions";
 import type { BiddingContext, BidHistoryEntry } from "../core/contracts/bidding";
 import type { BiddingStrategy } from "../core/contracts/bidding";
 import type { OpponentMode } from "../core/contracts/drill";

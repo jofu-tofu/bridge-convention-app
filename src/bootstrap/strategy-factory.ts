@@ -4,9 +4,8 @@
 // convention specs.  Both CLI and stores use these instead of reaching
 // directly into strategy/bidding/ internals.
 
-import type { ConventionSpec } from "../conventions/core";
+import type { ConventionSpec, ConventionStrategy } from "../conventions";
 import type { BiddingStrategy } from "../core/contracts";
-import type { ConventionStrategy } from "../core/contracts/recommendation";
 import type { OpponentMode } from "../core/contracts/drill";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";

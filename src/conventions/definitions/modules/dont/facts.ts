@@ -4,12 +4,12 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../../core/contracts/fact-catalog";
-import { fv } from "../../../core/pipeline/fact-helpers";
+import { fv } from "../../../pipeline/fact-helpers";
 import {
   defineBooleanFact,
   buildExtension,
-} from "../../../core/pipeline/fact-factory";
-import type { FactEntry } from "../../../core/pipeline/fact-factory";
+} from "../../../pipeline/fact-factory";
+import type { FactEntry } from "../../../pipeline/fact-factory";
 import type { Hand } from "../../../../engine/types";
 import { Suit } from "../../../../engine/types";
 import { suitLengthOf } from "../../../../engine/hand-evaluator";

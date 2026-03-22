@@ -8,7 +8,7 @@
 import { BidSuit } from "../engine/types";
 import type { Call } from "../engine/types";
 import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClause, MeaningProposal } from "../core/contracts/meaning";
-import type { ArbitrationResult, EncodedProposal, PipelineCarrier, PipelineResult } from "../core/contracts/module-surface";
+import type { ArbitrationResult, EncodedProposal, PipelineCarrier, PipelineResult } from "../conventions";
 import type { CandidateEligibility } from "../core/contracts/tree-evaluation";
 import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../core/contracts/provenance";
 import type { ExplanationEntry } from "../core/contracts/explanation-catalog";

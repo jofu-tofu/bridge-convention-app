@@ -236,13 +236,10 @@ export default tseslint.config(
             ...teachingImports,
           ],
           patterns: [{
-            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
-                      "*/conventions/core/context-factory",
-                      "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
-                      "**/conventions/core/bundle/**", "**/conventions/core/witness/**",
-                      "**/conventions/core/context-factory"],
-            message: "Import from 'conventions/core' barrel instead of deep paths",
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                      "*/conventions/definitions/**", "**/conventions/definitions/**",
+                      "*/conventions/core/**", "**/conventions/core/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
       ],
@@ -267,13 +264,10 @@ export default tseslint.config(
             ...inferenceImports,
           ],
           patterns: [{
-            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
-                      "*/conventions/core/context-factory",
-                      "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
-                      "**/conventions/core/bundle/**", "**/conventions/core/witness/**",
-                      "**/conventions/core/context-factory"],
-            message: "Import from 'conventions/core' barrel instead of deep paths",
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                      "*/conventions/definitions/**", "**/conventions/definitions/**",
+                      "*/conventions/core/**", "**/conventions/core/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
       ],
@@ -281,7 +275,7 @@ export default tseslint.config(
   },
 
   // ── Viewport boundary enforcement: agent-facing CLI commands ──
-  // eval.ts and play.ts must use the evaluation/ facade — no direct
+  // eval.ts and play.ts must use the service/ facade — no direct
   // access to strategy, teaching, viewport builders, or convention internals.
   {
     files: ["src/cli/commands/eval.ts", "src/cli/commands/play.ts"],
@@ -297,27 +291,31 @@ export default tseslint.config(
           patterns: [
             {
               group: ["**/strategy/**"],
-              message: "Agent-facing commands must use evaluation/ facade, not strategy/ directly",
+              message: "Agent-facing commands must use service/ facade, not strategy/ directly",
             },
             {
               group: ["**/teaching/**"],
-              message: "Agent-facing commands must use evaluation/ facade, not teaching/ directly",
+              message: "Agent-facing commands must use service/ facade, not teaching/ directly",
             },
             {
               group: ["**/conventions/**"],
-              message: "Agent-facing commands must use evaluation/ facade, not conventions/ directly",
+              message: "Agent-facing commands must use service/ facade, not conventions/ directly",
             },
             {
               group: ["**/core/viewport/**"],
-              message: "Agent-facing commands must use evaluation/ facade, not core/viewport/ directly",
+              message: "Agent-facing commands must use service/ facade, not core/viewport/ directly",
             },
             {
               group: ["**/core/contracts/**"],
-              message: "Agent-facing commands must use evaluation/ facade, not core/contracts/ directly",
+              message: "Agent-facing commands must use service/ facade, not core/contracts/ directly",
             },
             {
               group: ["**/engine/**"],
-              message: "Agent-facing commands must use evaluation/ facade or cli/shared for engine types",
+              message: "Agent-facing commands must use service/ facade or cli/shared for engine types",
+            },
+            {
+              group: ["**/evaluation/**"],
+              message: "Agent-facing commands must use service/ barrel, not evaluation/ subfolder directly",
             },
           ],
         },
@@ -426,11 +424,10 @@ export default tseslint.config(
             },
           ],
           patterns: [{
-            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                      "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
-                      "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
-                      "**/conventions/core/bundle/**", "**/conventions/core/witness/**"],
-            message: "Import from 'conventions/core' barrel instead of deep paths",
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                      "*/conventions/definitions/**", "**/conventions/definitions/**",
+                      "*/conventions/core/**", "**/conventions/core/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
       ],
@@ -758,9 +755,10 @@ export default tseslint.config(
             },
           ],
           patterns: [{
-            group: ["*/conventions/core/*", "*/conventions/core/conditions/*",
-                    "*/conventions/core/dialogue/*", "*/conventions/core/intent/*"],
-            message: "Import from 'conventions/core' barrel instead of deep paths",
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                    "*/conventions/definitions/**", "**/conventions/definitions/**",
+                    "*/conventions/core/**", "**/conventions/core/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
       ],
@@ -806,11 +804,10 @@ export default tseslint.config(
             },
           ],
           patterns: [{
-            group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
-                    "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
-                    "**/conventions/core/bundle/**", "**/conventions/core/witness/**"],
-            message: "Import from 'conventions/core' barrel instead of deep paths",
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                    "*/conventions/definitions/**", "**/conventions/definitions/**",
+                    "*/conventions/core/**", "**/conventions/core/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
       ],
@@ -915,22 +912,21 @@ export default tseslint.config(
     },
   },
 
-  // ── Barrel enforcement: conventions/core/ ──
+  // ── Barrel enforcement: conventions/ ──
   {
     files: [
       "src/strategy/**/*.ts", "src/inference/**/*.ts", "src/bootstrap/**/*.ts",
       "src/components/**/*.ts", "src/components/**/*.svelte",
-      "src/engine/**/*.ts",
+      "src/engine/**/*.ts", "src/evaluation/**/*.ts", "src/service/**/*.ts",
     ],
     ignores: ["**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"],
     rules: {
       "no-restricted-imports": ["error", {
         patterns: [{
-          group: ["*/conventions/core/pipeline/**", "*/conventions/core/runtime/**",
-                    "*/conventions/core/bundle/**", "*/conventions/core/witness/**",
-                    "**/conventions/core/pipeline/**", "**/conventions/core/runtime/**",
-                    "**/conventions/core/bundle/**", "**/conventions/core/witness/**"],
-          message: "Import from 'conventions/core' barrel instead of deep paths",
+          group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                    "*/conventions/definitions/**", "**/conventions/definitions/**",
+                    "*/conventions/core/**", "**/conventions/core/**"],
+          message: "Import from 'conventions' barrel instead of deep paths",
         }],
       }],
     },

@@ -3,17 +3,15 @@
 // Runs many random deals through the strategy, checking invariants
 // and catching crashes. Seeds from mulberry32 for reproducibility.
 
-import type { ConventionModule } from "../../conventions/core";
-import type { ConventionBundle } from "../../conventions/core";
+import type { ConventionModule, ConventionBundle } from "../../conventions";
 import type { AuctionContext } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
 import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
-import { collectMatchingClaims } from "../../conventions/core";
+import { collectMatchingClaims, specFromBundle } from "../../conventions";
 import { buildObservationLogViaRules, protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
 import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../../core/contracts/system-config";
-import { specFromBundle } from "../../conventions/definitions/system-registry";
 import { callKey } from "../../engine/call-helpers";
 import { mulberry32 } from "../../core/util/seeded-rng";
 import type { Seat } from "../../engine/types";

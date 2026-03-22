@@ -1,10 +1,6 @@
 // ── CLI info commands: list, bundles, describe ──────────────────────
 
-import {
-  enumerateRuleAtoms,
-  generateRuleCoverageManifest,
-} from "../../conventions/core";
-import { listBundleInputs, resolveBundle as resolveBundleFn } from "../../conventions/definitions/system-registry";
+import { enumerateRuleAtoms, generateRuleCoverageManifest, listBundleInputs, resolveBundle as resolveBundleFn } from "../../conventions";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { AVAILABLE_BASE_SYSTEMS } from "../../core/contracts/system-config";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";

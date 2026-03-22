@@ -1,4 +1,4 @@
-import type { ConventionConfig } from "../conventions/core";
+import type { ConventionConfig } from "../conventions";
 import type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../core/contracts/drill";
 import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../core/contracts/drill";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";

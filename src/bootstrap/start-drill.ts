@@ -1,5 +1,5 @@
 import type { EnginePort } from "../engine/port";
-import type { ConventionConfig } from "../conventions/core";
+import type { ConventionConfig } from "../conventions";
 import {
   Seat,
   Vulnerability,
@@ -15,7 +15,7 @@ import { createDrillSession } from "./session";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
-import { getBundleInput, specFromBundle } from "../conventions/definitions/system-registry";
+import { getBundleInput, specFromBundle } from "../conventions";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";

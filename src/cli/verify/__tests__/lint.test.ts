@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { StateEntry, NegotiationExpr } from "../../../conventions/core/rule-module";
-import type { ConventionModule } from "../../../conventions/core/convention-module";
+import type { StateEntry, NegotiationExpr, ConventionModule } from "../../../conventions";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import {
   lintModule,

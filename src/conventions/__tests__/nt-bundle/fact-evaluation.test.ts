@@ -1,17 +1,17 @@
 /**
  * NT-bundle-specific fact evaluation tests.
- * Moved from core/pipeline/__tests__/fact-evaluator.test.ts to separate
+ * Moved from pipeline/__tests__/fact-evaluator.test.ts to separate
  * convention-specific tests from core infrastructure tests.
  */
 import { describe, it, expect } from "vitest";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { evaluateFacts } from "../../core/pipeline/fact-evaluator";
-import { createSharedFactCatalog } from "../../core/pipeline/shared-fact-catalog";
+import { evaluateFacts } from "../../pipeline/fact-evaluator";
+import { createSharedFactCatalog } from "../../pipeline/shared-fact-catalog";
 import { createFactCatalog } from "../../../core/contracts/fact-catalog";
 import { createStaymanFacts } from "../../definitions/modules/stayman";
 import { createTransferFacts } from "../../definitions/modules/jacoby-transfers";
-import { createSystemFactCatalog } from "../../core/pipeline/system-fact-catalog";
+import { createSystemFactCatalog } from "../../pipeline/system-fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 
 const staymanFacts = createStaymanFacts(SAYC_SYSTEM_CONFIG);

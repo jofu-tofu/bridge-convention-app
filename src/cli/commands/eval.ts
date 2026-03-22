@@ -8,7 +8,7 @@ import {
   gradeAtomBid,
   validateAtomId,
   parseAtomId,
-} from "../../evaluation";
+} from "../../service";
 import type { Flags ,
   Vulnerability, BaseSystemId} from "../shared";
 import {

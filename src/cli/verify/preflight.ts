@@ -3,8 +3,7 @@
 // Orchestrates all verification stages in sequence:
 // lint → interfere → explore → motif (if needed) → fuzz
 
-import type { ConventionModule } from "../../conventions/core";
-import type { ConventionBundle } from "../../conventions/core";
+import type { ConventionModule, ConventionBundle } from "../../conventions";
 import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
 
 import { lintModule } from "./lint";

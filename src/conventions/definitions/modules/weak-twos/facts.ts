@@ -4,13 +4,13 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../../core/contracts/fact-catalog";
-import { num, fv } from "../../../core/pipeline/fact-helpers";
+import { num, fv } from "../../../pipeline/fact-helpers";
 import {
   definePerSuitFacts,
   defineHcpRangeFact,
   buildExtension,
-} from "../../../core/pipeline/fact-factory";
-import type { FactEntry } from "../../../core/pipeline/fact-factory";
+} from "../../../pipeline/fact-factory";
+import type { FactEntry } from "../../../pipeline/fact-factory";
 import { Rank, Suit } from "../../../../engine/types";
 import type { Hand } from "../../../../engine/types";
 import { SUIT_NAME_MAP } from "../../../../engine/constants";

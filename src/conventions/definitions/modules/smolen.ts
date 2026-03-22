@@ -5,7 +5,7 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/contracts/fact-catalog";
-import { num, fv } from "../../core/pipeline/fact-helpers";
+import { num, fv } from "../../pipeline/fact-helpers";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { LocalFsm, StateEntry, RouteExpr } from "../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/contracts/committed-step";

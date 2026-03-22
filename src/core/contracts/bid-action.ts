@@ -13,7 +13,7 @@
  * Expect at most 1–2 additions for slam or advanced competitive conventions.
  *
  * **Consumers:** Pattern matchers (continuation composition), CommittedStep pipeline,
- * strategy layer. Producers: `normalizeIntent()` in `conventions/core/pipeline/`.
+ * strategy layer. Producers: `normalizeIntent()` in `conventions/pipeline/`.
  */
 
 // ── Parameter domains ──────────────────────────────────────────────

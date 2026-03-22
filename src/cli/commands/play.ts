@@ -8,7 +8,7 @@ import {
   getPlaythroughStepViewport,
   gradePlaythroughBid,
   getPlaythroughRevealSteps,
-} from "../../evaluation";
+} from "../../service";
 import type { Flags, OpponentMode ,
   Vulnerability, BaseSystemId} from "../shared";
 import {
