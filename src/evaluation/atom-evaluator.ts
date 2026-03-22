@@ -335,10 +335,6 @@ export function gradeAtomBid(
     practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
     teachingProjection: strategyEval?.teachingProjection ?? null,
     practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    evaluationExhaustive: (strategyEval?.arbitration as any)?.evidenceBundle?.exhaustive ?? false,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    fallbackReached: (strategyEval?.arbitration as any)?.evidenceBundle?.fallbackReached ?? false,
     observationHistory: projectObservationHistory(strategyEval?.auctionContext),
   };
 

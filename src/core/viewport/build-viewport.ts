@@ -17,8 +17,6 @@ import type { TeachingProjection } from "../contracts/teaching-projection";
 import type { TeachingResolution } from "../contracts/teaching-grading";
 import type { BidGrade } from "../contracts/teaching-grading";
 import type { PracticalScoreBreakdown } from "../contracts/recommendation";
-import type { EncoderKind } from "../contracts/provenance";
-
 // Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
 // Defined here to avoid importing the Svelte store in CLI context.
 interface BidFeedbackLike {
@@ -30,10 +28,6 @@ interface BidFeedbackLike {
   readonly teachingProjection: TeachingProjection | null;
   /** Score breakdown from the practical scorer (when available). */
   readonly practicalScoreBreakdown: PracticalScoreBreakdown | null;
-  /** Whether the evidence bundle reported exhaustive evaluation. */
-  readonly evaluationExhaustive: boolean;
-  /** Whether the evidence bundle reported fallback was reached (no surface matched). */
-  readonly fallbackReached: boolean;
   /** Viewport-safe observation history (projected from AuctionContext). */
   readonly observationHistory?: readonly ObservationStepView[];
 }
@@ -268,7 +262,7 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
     })),
 
     // Encoding trace
-    encoderKind: (feedback as { encodingTrace?: { encoderKind: EncoderKind } }).encodingTrace?.encoderKind,
+    encoderKind: projection?.encoderKind,
 
     // Practical recommendation
     practicalRecommendation: feedback.practicalRecommendation
@@ -297,9 +291,9 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
       ? { ...feedback.practicalScoreBreakdown }
       : undefined,
 
-    // Evaluation completeness (from evidence bundle)
-    evaluationExhaustive: feedback.evaluationExhaustive,
-    fallbackReached: feedback.fallbackReached,
+    // Evaluation completeness (from teaching projection)
+    evaluationExhaustive: projection?.evaluationExhaustive ?? false,
+    fallbackReached: projection?.fallbackReached ?? false,
 
     // Parse tree (from teaching projection)
     parseTree: projection?.parseTree,

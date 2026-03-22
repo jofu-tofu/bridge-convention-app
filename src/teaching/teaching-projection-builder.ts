@@ -140,6 +140,9 @@ export function projectTeaching(
     conventionsApplied,
     handSpace,
     parseTree,
+    evaluationExhaustive: arbitration.evidenceBundle?.exhaustive ?? false,
+    fallbackReached: arbitration.evidenceBundle?.fallbackReached ?? false,
+    encoderKind: provenance.encoding?.[0]?.encoderKind,
   };
 }
 
@@ -148,7 +151,7 @@ export function projectTeaching(
 /** Build ConventionContribution[] from arbitration and provenance. */
 function buildConventionContributions(
   arbitration: ArbitrationResult,
-  provenance: DecisionProvenance,
+  _provenance: DecisionProvenance,
 ): ConventionContribution[] {
   const moduleMap = new Map<string, {
     role: ConventionContribution["role"];

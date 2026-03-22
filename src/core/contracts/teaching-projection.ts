@@ -1,5 +1,6 @@
 import type { Call, NumberRange } from "../../engine/types";
 import type { ConditionEvidence } from "./evidence-bundle";
+import type { EncoderKind } from "./provenance";
 
 /** Pedagogical relation between two bids or meanings.
  *  Used by teaching UI to explain "why is X better than Y?" */
@@ -11,7 +12,10 @@ export type TeachingRelation =
   | { readonly kind: "continuation-of"; readonly a: string; readonly b: string }
   | { readonly kind: "near-miss-of"; readonly a: string; readonly b: string };
 
-/** Teaching-optimized view of a bid decision. */
+/** Teaching-optimized view of a bid decision.
+ *  This is the sole projection of ArbitrationResult metadata into the feedback
+ *  pipeline — consumers (BidFeedbackDTO, BidFeedbackLike, TeachingDetail) read
+ *  arbitration-derived data from here, never from ArbitrationResult directly. */
 export interface TeachingProjection {
   readonly callViews: readonly CallProjection[];
   readonly meaningViews: readonly MeaningView[];
@@ -23,6 +27,12 @@ export interface TeachingProjection {
    *  which conventions were considered, why each was accepted/rejected,
    *  and the path to the correct bid. */
   readonly parseTree?: ParseTreeView;
+  /** Whether the evidence bundle reported exhaustive evaluation. */
+  readonly evaluationExhaustive: boolean;
+  /** Whether the fallback was reached (no convention surface matched). */
+  readonly fallbackReached: boolean;
+  /** Encoder kind from the encoding provenance trace (when available). */
+  readonly encoderKind?: EncoderKind;
 }
 
 /** How a specific call appears in the teaching view. */

@@ -17,7 +17,6 @@ import type {
 } from "../core/contracts/recommendation";
 import type { TeachingProjection } from "../core/contracts/teaching-projection";
 import type { TeachingResolution } from "../core/contracts/teaching-grading";
-import type { EncodingTrace } from "../core/contracts/provenance";
 import {
   resolveTeachingAnswer,
   gradeBid,
@@ -32,10 +31,7 @@ export interface BidFeedbackDTO {
   readonly teachingResolution: TeachingResolution;
   readonly practicalRecommendation: PracticalRecommendation | null;
   readonly teachingProjection: TeachingProjection | null;
-  readonly encodingTrace: EncodingTrace | null;
   readonly practicalScoreBreakdown: PracticalScoreBreakdown | null;
-  readonly evaluationExhaustive: boolean;
-  readonly fallbackReached: boolean;
 }
 
 /** Grade a user's bid and assemble feedback from strategy evaluation.
@@ -58,10 +54,7 @@ export function assembleBidFeedback(
     teachingResolution,
     practicalRecommendation: strategyEval?.practicalRecommendation ?? null,
     teachingProjection: strategyEval?.teachingProjection ?? null,
-    encodingTrace: strategyEval?.provenance?.encoding[0] ?? null,
     practicalScoreBreakdown: strategyEval?.practicalRecommendation?.scoreBreakdown ?? null,
-    evaluationExhaustive: strategyEval?.arbitration?.evidenceBundle?.exhaustive ?? false,
-    fallbackReached: strategyEval?.arbitration?.evidenceBundle?.fallbackReached ?? false,
   };
 }
 
