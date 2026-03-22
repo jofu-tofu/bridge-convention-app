@@ -24,7 +24,7 @@ import { callKey, callsMatch } from "../engine/call-helpers";
 import { parsePatternCall } from "../engine/auction-helpers";
 import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
-import type { Auction, Deal, Hand, DealConstraints } from "../engine/types";
+import type { Auction, Deal, Hand, DealConstraints, Call } from "../engine/types";
 import type { BiddingStrategy, BidHistoryEntry } from "../core/contracts/bidding";
 import type { ConventionStrategy } from "../core/contracts/recommendation";
 import type { ConventionBundle } from "../conventions/core";
@@ -153,6 +153,67 @@ function createStrategy(bundleId: string): BiddingStrategy {
   return protocolSpecToStrategy(spec);
 }
 
+/**
+ * Strategy-driven forward auction construction.
+ *
+ * Starts from the bundle's initial auction, then runs the strategy in a
+ * loop to extend the auction until the strategy produces the atom's
+ * expected encoding or hits a safety limit. Opponents always pass.
+ *
+ * Falls back to the initial auction if the atom's position isn't reached.
+ */
+function buildForwardAuction(
+  bundle: ConventionBundle,
+  strategy: BiddingStrategy,
+  deal: Deal,
+  userSeat: Seat,
+  atom: RuleAtom,
+  vuln: Vulnerability,
+): { auction: Auction; reached: boolean } {
+  const partner = partnerOf(userSeat);
+  const initAuction = buildInitialAuction(bundle, userSeat, deal);
+  const entries: { seat: Seat; call: Call }[] = [...initAuction.entries];
+  const maxBids = 20;
+
+  for (let iter = 0; iter < maxBids; iter++) {
+    const activeSeat = entries.length > 0
+      ? nextSeatClockwise(entries[entries.length - 1]!.seat)
+      : userSeat;
+
+    // Opponents always pass
+    if (activeSeat !== userSeat && activeSeat !== partner) {
+      entries.push({ seat: activeSeat, call: { type: "pass" } });
+      // Check 3 consecutive passes after a bid → auction complete
+      if (entries.length >= 4) {
+        const tail = entries.slice(-3);
+        if (tail.every((e) => e.call.type === "pass") && entries.some((e) => e.call.type === "bid")) {
+          return { auction: { entries, isComplete: true }, reached: false };
+        }
+      }
+      continue;
+    }
+
+    // Convention player's turn — ask the strategy what to bid
+    const hand = deal.hands[activeSeat];
+    const auction: Auction = { entries: [...entries], isComplete: false };
+    const context = buildContext(hand, auction, activeSeat, vuln);
+    const result = strategy.suggest(context);
+
+    if (!result) {
+      return { auction: { entries, isComplete: false }, reached: false };
+    }
+
+    // Check if this bid matches the atom's encoding
+    if (callsMatch(result.call, atom.encoding)) {
+      return { auction: { entries, isComplete: false }, reached: true };
+    }
+
+    entries.push({ seat: activeSeat, call: result.call });
+  }
+
+  return { auction: { entries, isComplete: false }, reached: false };
+}
+
 // ── Public API ──────────────────────────────────────────────────────
 
 /** Validate that an atom ID exists in a bundle's rule atoms. */
@@ -174,7 +235,9 @@ export function parseAtomId(atomId: string): { moduleId: string; meaningId: stri
  * Build a BiddingViewport for an atom — the pre-bid view the player sees.
  * Returns the SAME type the Svelte UI renders. No internals leak.
  *
- * Uses the initial auction from the bundle (strategy-driven forward).
+ * Uses strategy-driven forward auction construction to reach the atom's
+ * target position in the auction. Falls back to the initial auction if
+ * the atom's position isn't reachable.
  */
 export function buildAtomViewport(
   bundleId: string,
@@ -187,7 +250,20 @@ export function buildAtomViewport(
   const strategy = createStrategy(bundleId);
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
-  const auction = buildInitialAuction(bundle, userSeat, deal);
+
+  // Resolve atom for forward auction targeting
+  const { moduleId, meaningId } = parseAtomId(atomId);
+  const atoms = resolveAtoms(bundleId);
+  const atom = atoms.find((a) => a.moduleId === moduleId && a.meaningId === meaningId);
+
+  let auction: Auction;
+  if (atom) {
+    const fwd = buildForwardAuction(bundle, strategy, deal, userSeat, atom, vuln);
+    auction = fwd.auction;
+  } else {
+    auction = buildInitialAuction(bundle, userSeat, deal);
+  }
+
   const activeSeat = auction.entries.length > 0
     ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;
@@ -211,7 +287,20 @@ export function gradeAtomBid(
   const strategy = createStrategy(bundleId);
   const deal = generateSeededDeal(bundle, seed, vuln);
   const userSeat = resolveUserSeat(bundle, deal);
-  const auction = buildInitialAuction(bundle, userSeat, deal);
+
+  // Resolve atom for forward auction targeting
+  const { moduleId, meaningId } = parseAtomId(atomId);
+  const atoms = resolveAtoms(bundleId);
+  const atom = atoms.find((a) => a.moduleId === moduleId && a.meaningId === meaningId);
+
+  let auction: Auction;
+  if (atom) {
+    const fwd = buildForwardAuction(bundle, strategy, deal, userSeat, atom, vuln);
+    auction = fwd.auction;
+  } else {
+    auction = buildInitialAuction(bundle, userSeat, deal);
+  }
+
   const activeSeat = auction.entries.length > 0
     ? nextSeatClockwise(auction.entries[auction.entries.length - 1]!.seat)
     : userSeat;

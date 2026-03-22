@@ -9,6 +9,18 @@ import {
   NEAR_MISS_OF,
   ALTERNATIVES,
 } from "../../teaching-vocabulary";
+import {
+  SCOPE_DONT_OVERCALLER_R1_ACTIONS,
+  SCOPE_DONT_TWO_SUITED_ACTIONS,
+  SCOPE_DONT_LONG_SUIT_ACTIONS,
+  SCOPE_DONT_2H_VS_2D,
+  SCOPE_DONT_2C_VS_2D,
+  SCOPE_DONT_2S_VS_DOUBLE,
+  SCOPE_DONT_OVERCALLER_REVEALS,
+  SCOPE_DONT_REVEAL_AFTER_DOUBLE,
+  SCOPE_DONT_SHOW_AFTER_2C_RELAY,
+  SCOPE_DONT_SHOW_AFTER_2D_RELAY,
+} from "../../pedagogical-scope-vocabulary";
 
 const DONT_CTX: ModuleContext = { moduleId: "dont" };
 
@@ -42,9 +54,9 @@ export const DONT_R1_SURFACES = [
       sourceIntent: { type: "DONTBothMajors", params: {} },
       teachingLabel: "2H — both majors",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
-        { tag: ALTERNATIVES, scope: "DONT overcaller two-suited actions" },
-        { tag: NEAR_MISS_OF, scope: "dont:2h-vs-2d", role: "a" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_R1_ACTIONS },
+        { tag: ALTERNATIVES, scope: SCOPE_DONT_TWO_SUITED_ACTIONS },
+        { tag: NEAR_MISS_OF, scope: SCOPE_DONT_2H_VS_2D, role: "a" },
       ],
     },
     DONT_CTX,
@@ -69,11 +81,11 @@ export const DONT_R1_SURFACES = [
       sourceIntent: { type: "DONTDiamondsMajor", params: {} },
       teachingLabel: "2D — diamonds + a major",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
-        { tag: ALTERNATIVES, scope: "DONT overcaller two-suited actions" },
-        { tag: NEAR_MISS_OF, scope: "dont:2h-vs-2d", role: "b" },
-        { tag: NEAR_MISS_OF, scope: "dont:2c-vs-2d", role: "b" },
-        { tag: CONTINUATION_OF, scope: "dont:show-after-2d-relay", role: "b" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_R1_ACTIONS },
+        { tag: ALTERNATIVES, scope: SCOPE_DONT_TWO_SUITED_ACTIONS },
+        { tag: NEAR_MISS_OF, scope: SCOPE_DONT_2H_VS_2D, role: "b" },
+        { tag: NEAR_MISS_OF, scope: SCOPE_DONT_2C_VS_2D, role: "b" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_SHOW_AFTER_2D_RELAY, role: "b" },
       ],
     },
     DONT_CTX,
@@ -98,10 +110,10 @@ export const DONT_R1_SURFACES = [
       sourceIntent: { type: "DONTClubsHigher", params: {} },
       teachingLabel: "2C — clubs + higher suit",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
-        { tag: ALTERNATIVES, scope: "DONT overcaller two-suited actions" },
-        { tag: NEAR_MISS_OF, scope: "dont:2c-vs-2d", role: "a" },
-        { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "b" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_R1_ACTIONS },
+        { tag: ALTERNATIVES, scope: SCOPE_DONT_TWO_SUITED_ACTIONS },
+        { tag: NEAR_MISS_OF, scope: SCOPE_DONT_2C_VS_2D, role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_SHOW_AFTER_2C_RELAY, role: "b" },
       ],
     },
     DONT_CTX,
@@ -125,9 +137,9 @@ export const DONT_R1_SURFACES = [
       sourceIntent: { type: "DONTNaturalSpades", params: {} },
       teachingLabel: "2S — natural spades",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
-        { tag: ALTERNATIVES, scope: "DONT overcaller long-suit actions" },
-        { tag: NEAR_MISS_OF, scope: "dont:2s-vs-double", role: "a" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_R1_ACTIONS },
+        { tag: ALTERNATIVES, scope: SCOPE_DONT_LONG_SUIT_ACTIONS },
+        { tag: NEAR_MISS_OF, scope: SCOPE_DONT_2S_VS_DOUBLE, role: "a" },
       ],
     },
     DONT_CTX,
@@ -151,10 +163,10 @@ export const DONT_R1_SURFACES = [
       sourceIntent: { type: "DONTSingleSuited", params: {} },
       teachingLabel: "X — single suited (not spades)",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-r1-actions" },
-        { tag: ALTERNATIVES, scope: "DONT overcaller long-suit actions" },
-        { tag: NEAR_MISS_OF, scope: "dont:2s-vs-double", role: "b" },
-        { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "b" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_R1_ACTIONS },
+        { tag: ALTERNATIVES, scope: SCOPE_DONT_LONG_SUIT_ACTIONS },
+        { tag: NEAR_MISS_OF, scope: SCOPE_DONT_2S_VS_DOUBLE, role: "b" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_REVEAL_AFTER_DOUBLE, role: "b" },
       ],
     },
     DONT_CTX,
@@ -220,7 +232,7 @@ export const DONT_ADVANCER_2H_SURFACES = [
     DONT_CTX,
   ),
 
-  // 3. 3C — escape with long clubs
+  // 3. 3C — escape with long clubs (only without spade support — prefer major fit)
   createSurface(
     {
       meaningId: "dont:escape-clubs-3c",
@@ -233,6 +245,12 @@ export const DONT_ADVANCER_2H_SURFACES = [
           value: true,
           description: "6+ clubs (longer minor)",
         },
+        {
+          factId: "module.dont.hasSpadeSupport",
+          operator: "boolean",
+          value: false,
+          description: "No spade tolerance — prefer major fit when 3+ spades",
+        },
       ],
       band: "should",
       intraModuleOrder: 2,
@@ -242,7 +260,7 @@ export const DONT_ADVANCER_2H_SURFACES = [
     DONT_CTX,
   ),
 
-  // 4. 3D — escape with long diamonds
+  // 4. 3D — escape with long diamonds (only without spade support — prefer major fit)
   createSurface(
     {
       meaningId: "dont:escape-diamonds-3d",
@@ -254,6 +272,12 @@ export const DONT_ADVANCER_2H_SURFACES = [
           operator: "boolean",
           value: true,
           description: "6+ diamonds (longer minor)",
+        },
+        {
+          factId: "module.dont.hasSpadeSupport",
+          operator: "boolean",
+          value: false,
+          description: "No spade tolerance — prefer major fit when 3+ spades",
         },
       ],
       band: "should",
@@ -439,8 +463,8 @@ export const DONT_REVEAL_SURFACES = [
       sourceIntent: { type: "DONTRevealClubs", params: {} },
       teachingLabel: "Pass — clubs",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-reveals" },
-        { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "a" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_REVEALS },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_REVEAL_AFTER_DOUBLE, role: "a" },
       ],
     },
     DONT_CTX,
@@ -464,8 +488,8 @@ export const DONT_REVEAL_SURFACES = [
       sourceIntent: { type: "DONTRevealDiamonds", params: {} },
       teachingLabel: "2D — diamonds",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-reveals" },
-        { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "a" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_REVEALS },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_REVEAL_AFTER_DOUBLE, role: "a" },
       ],
     },
     DONT_CTX,
@@ -489,8 +513,8 @@ export const DONT_REVEAL_SURFACES = [
       sourceIntent: { type: "DONTRevealHearts", params: {} },
       teachingLabel: "2H — hearts",
       teachingTags: [
-        { tag: SAME_FAMILY, scope: "dont:overcaller-reveals" },
-        { tag: CONTINUATION_OF, scope: "dont:reveal-after-double", role: "a" },
+        { tag: SAME_FAMILY, scope: SCOPE_DONT_OVERCALLER_REVEALS },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_REVEAL_AFTER_DOUBLE, role: "a" },
       ],
     },
     DONT_CTX,
@@ -522,7 +546,7 @@ export const DONT_2C_RELAY_SURFACES = [
       sourceIntent: { type: "DONTShowDiamonds", params: {} },
       teachingLabel: "Pass — diamonds (from 2C+higher)",
       teachingTags: [
-        { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_SHOW_AFTER_2C_RELAY, role: "a" },
       ],
     },
     DONT_CTX,
@@ -546,7 +570,7 @@ export const DONT_2C_RELAY_SURFACES = [
       sourceIntent: { type: "DONTShowHearts", params: {} },
       teachingLabel: "2H — hearts (from 2C+higher)",
       teachingTags: [
-        { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_SHOW_AFTER_2C_RELAY, role: "a" },
       ],
     },
     DONT_CTX,
@@ -570,7 +594,7 @@ export const DONT_2C_RELAY_SURFACES = [
       sourceIntent: { type: "DONTShowSpades", params: {} },
       teachingLabel: "2S — spades (from 2C+higher)",
       teachingTags: [
-        { tag: CONTINUATION_OF, scope: "dont:show-after-2c-relay", role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_SHOW_AFTER_2C_RELAY, role: "a" },
       ],
     },
     DONT_CTX,
@@ -601,7 +625,7 @@ export const DONT_2D_RELAY_SURFACES = [
       sourceIntent: { type: "DONTShowHeartsFromDiamonds", params: {} },
       teachingLabel: "Pass — hearts (from 2D+major)",
       teachingTags: [
-        { tag: CONTINUATION_OF, scope: "dont:show-after-2d-relay", role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_SHOW_AFTER_2D_RELAY, role: "a" },
       ],
     },
     DONT_CTX,
@@ -625,7 +649,7 @@ export const DONT_2D_RELAY_SURFACES = [
       sourceIntent: { type: "DONTShowSpadesFromDiamonds", params: {} },
       teachingLabel: "2S — spades (from 2D+major)",
       teachingTags: [
-        { tag: CONTINUATION_OF, scope: "dont:show-after-2d-relay", role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_DONT_SHOW_AFTER_2D_RELAY, role: "a" },
       ],
     },
     DONT_CTX,

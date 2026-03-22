@@ -86,10 +86,18 @@ export function protocolSpecToStrategy(
       if (visibleSurfaces.length === 0) return null;
 
       // Step 3: Run the meaning pipeline on visible surfaces
+      // Extract relational context from surface bindings — all surfaces in a
+      // given state share bindings (e.g. { suit: "hearts" }), so take the first.
+      const firstBindings = visibleSurfaces.find(s => s.surfaceBindings)?.surfaceBindings;
+      const relationalContext = firstBindings
+        ? { bindings: firstBindings as Readonly<Record<string, string>> }
+        : undefined;
+
       const { result, facts } = runMeaningPipeline({
         surfaces: visibleSurfaces,
         context,
         catalog,
+        relationalContext,
       });
 
       // Step 4: Build output
@@ -161,8 +169,10 @@ export function buildObservationLogViaRules(
   for (const entry of history) {
     const prevKernel = log.length > 0 ? log[log.length - 1]!.stateAfter : INITIAL_NEGOTIATION;
 
-    // Passes, doubles, redoubles — raw-only step, kernel unchanged
-    if (entry.call.type !== "bid") {
+    // Passes — raw-only step, kernel unchanged
+    // Doubles and redoubles may carry convention meaning (e.g. DONT single-suited
+    // double), so they go through claim matching like bids.
+    if (entry.call.type === "pass") {
       const step: CommittedStep = {
         actor: entry.seat,
         call: entry.call,
@@ -243,7 +253,7 @@ export function findMatchingClaimForCall(
   results: readonly EnrichedClaimResult[],
   call: Call,
 ): { surface: BidMeaning; negotiationDelta: NegotiationDelta | undefined; moduleId: string } | null {
-  if (call.type !== "bid") return null;
+  if (call.type === "pass") return null;
 
   const candidates: {
     surface: BidMeaning;
@@ -274,13 +284,16 @@ export function findMatchingClaimForCall(
 
 /** Check if a call matches a surface's encoding (defaultCall or alternate encodings). */
 function callMatchesEncoding(
-  call: { type: "bid"; level: number; strain: BidSuit },
+  call: Call,
   encoding: BidMeaning["encoding"],
 ): boolean {
   const dc = encoding.defaultCall;
-  if (dc.type === "bid" && dc.level === call.level && dc.strain === call.strain) return true;
 
-  if (encoding.alternateEncodings) {
+  // Bid matching (level + strain)
+  if (call.type === "bid" && dc.type === "bid" && dc.level === call.level && dc.strain === call.strain) return true;
+
+  // Alternate encoding matching
+  if (call.type === "bid" && encoding.alternateEncodings) {
     for (const alt of encoding.alternateEncodings) {
       if (alt.call.type === "bid" && alt.call.level === call.level && alt.call.strain === call.strain) {
         return true;
@@ -288,8 +301,14 @@ function callMatchesEncoding(
     }
   }
 
-  // Also match pass encoding for surfaces that encode as pass
+  // Pass matching
   if (dc.type === "pass" && call.type === "pass") return true;
+
+  // Double matching (e.g. DONT single-suited double)
+  if (dc.type === "double" && call.type === "double") return true;
+
+  // Redouble matching
+  if (dc.type === "redouble" && call.type === "redouble") return true;
 
   return false;
 }
