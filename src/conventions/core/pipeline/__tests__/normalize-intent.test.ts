@@ -9,6 +9,7 @@ import { describe, it, expect } from "vitest";
 import { normalizeIntent } from "../normalize-intent";
 import type { BidAction } from "../../../../core/contracts/bid-action";
 import { getAllModules } from "../../../../conventions/definitions/module-registry";
+import { moduleSurfaces } from "../../convention-module";
 
 // ── Helper ─────────────────────────────────────────────────────────
 
@@ -517,7 +518,7 @@ describe("normalizeIntent", () => {
 
       const allIntentTypes = new Set<string>();
       for (const mod of modules) {
-        for (const s of mod.surfaces) {
+        for (const s of moduleSurfaces(mod)) {
           allIntentTypes.add(s.sourceIntent.type);
         }
       }

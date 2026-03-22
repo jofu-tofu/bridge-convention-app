@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { collectMatchingClaims } from "../rule-interpreter";
-import type { RuleModule } from "../../rule-module";
+import type { ConventionModule } from "../../convention-module";
 import type { AuctionContext, CommittedStep } from "../../../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../../../core/contracts/committed-step";
 import type { NegotiationState } from "../../../../core/contracts/committed-step";
@@ -56,8 +56,8 @@ describe("collectMatchingClaims", () => {
 
   it("collects surfaces from a single matching rule", () => {
     const surface = makeSurface("stayman-ask");
-    const mod: RuleModule<"idle" | "opened"> = {
-      id: "stayman",
+    const mod: ConventionModule<"idle" | "opened"> = {
+      moduleId: "stayman",
       local: {
         initial: "idle",
         transitions: [
@@ -71,6 +71,7 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const log = [
@@ -80,14 +81,14 @@ describe("collectMatchingClaims", () => {
     const result = collectMatchingClaims([mod], makeContext(log));
     expect(result).toHaveLength(1);
     expect(result[0]!.moduleId).toBe("stayman");
-    expect(result[0]!.surfaces).toHaveLength(1);
-    expect(result[0]!.surfaces[0]!.meaningId).toBe("stayman-ask");
+    expect(result[0]!.claims).toHaveLength(1);
+    expect(result[0]!.claims[0]!.surface.meaningId).toBe("stayman-ask");
   });
 
   it("filters by local phase constraint", () => {
     const surface = makeSurface("stayman-ask");
-    const mod: RuleModule<"idle" | "opened"> = {
-      id: "stayman",
+    const mod: ConventionModule<"idle" | "opened"> = {
+      moduleId: "stayman",
       local: {
         initial: "idle",
         transitions: [
@@ -101,6 +102,7 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     // Empty log → module is in "idle" phase, not "opened"
@@ -110,8 +112,8 @@ describe("collectMatchingClaims", () => {
 
   it("filters by kernel constraint", () => {
     const surface = makeSurface("test");
-    const mod: RuleModule<"idle"> = {
-      id: "test-mod",
+    const mod: ConventionModule<"idle"> = {
+      moduleId: "test-mod",
       local: { initial: "idle", transitions: [] },
       rules: [
         {
@@ -123,6 +125,7 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     // Initial kernel has forcing: "none"
@@ -139,8 +142,8 @@ describe("collectMatchingClaims", () => {
 
   it("filters by route constraint", () => {
     const surface = makeSurface("smolen-entry");
-    const mod: RuleModule<"idle"> = {
-      id: "smolen",
+    const mod: ConventionModule<"idle"> = {
+      moduleId: "smolen",
       local: { initial: "idle", transitions: [] },
       rules: [
         {
@@ -158,6 +161,7 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     // Log without the subsequence
@@ -179,24 +183,26 @@ describe("collectMatchingClaims", () => {
       ]),
     );
     expect(result2).toHaveLength(1);
-    expect(result2[0]!.surfaces[0]!.meaningId).toBe("smolen-entry");
+    expect(result2[0]!.claims[0]!.surface.meaningId).toBe("smolen-entry");
   });
 
   it("collects surfaces from multiple modules", () => {
     const s1 = makeSurface("s1");
     const s2 = makeSurface("s2");
 
-    const mod1: RuleModule<"active"> = {
-      id: "mod1",
+    const mod1: ConventionModule<"active"> = {
+      moduleId: "mod1",
       local: { initial: "active", transitions: [] },
       rules: [{ match: { local: "active" }, claims: [{ surface: s1 }] }],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
-    const mod2: RuleModule<"active"> = {
-      id: "mod2",
+    const mod2: ConventionModule<"active"> = {
+      moduleId: "mod2",
       local: { initial: "active", transitions: [] },
       rules: [{ match: { local: "active" }, claims: [{ surface: s2 }] }],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const result = collectMatchingClaims([mod1, mod2], makeContext([]));
@@ -206,8 +212,8 @@ describe("collectMatchingClaims", () => {
   });
 
   it("returns empty when no rules match", () => {
-    const mod: RuleModule<"idle"> = {
-      id: "empty",
+    const mod: ConventionModule<"idle"> = {
+      moduleId: "empty",
       local: { initial: "idle", transitions: [] },
       rules: [
         {
@@ -216,6 +222,7 @@ describe("collectMatchingClaims", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const result = collectMatchingClaims([mod], makeContext([]));
@@ -226,18 +233,19 @@ describe("collectMatchingClaims", () => {
     const s1 = makeSurface("s1");
     const s2 = makeSurface("s2");
 
-    const mod: RuleModule<"active"> = {
-      id: "multi-rule",
+    const mod: ConventionModule<"active"> = {
+      moduleId: "multi-rule",
       local: { initial: "active", transitions: [] },
       rules: [
         { match: { local: "active" }, claims: [{ surface: s1 }] },
         { match: { local: "active" }, claims: [{ surface: s2 }] },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const result = collectMatchingClaims([mod], makeContext([]));
     expect(result).toHaveLength(1);
-    expect(result[0]!.surfaces).toHaveLength(2);
+    expect(result[0]!.claims).toHaveLength(2);
   });
 });

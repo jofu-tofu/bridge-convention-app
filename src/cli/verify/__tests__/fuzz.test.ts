@@ -14,7 +14,7 @@ import { fuzzBundle } from "../fuzz";
 describe("fuzzBundle", () => {
   it("runs without crashes on nt-bundle with minimal trials", () => {
     const system = getSystemBundle("nt-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
     expect(modules.length).toBeGreaterThan(0);
 
     const result = fuzzBundle(system, modules, {
@@ -30,7 +30,7 @@ describe("fuzzBundle", () => {
 
   it("cycles vulnerability when vulnMixed is true", () => {
     const system = getSystemBundle("nt-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
 
     const result = fuzzBundle(system, modules, {
       trials: 8,
@@ -44,7 +44,7 @@ describe("fuzzBundle", () => {
 
   it("produces deterministic results with same seed", () => {
     const system = getSystemBundle("nt-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
 
     const result1 = fuzzBundle(system, modules, { trials: 3, seed: 42 });
     const result2 = fuzzBundle(system, modules, { trials: 3, seed: 42 });
@@ -55,7 +55,7 @@ describe("fuzzBundle", () => {
 
   it("works on bergen-bundle", () => {
     const system = getSystemBundle("bergen-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
     expect(modules.length).toBeGreaterThan(0);
 
     const result = fuzzBundle(system, modules, { trials: 3, seed: 42 });

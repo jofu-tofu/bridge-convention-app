@@ -12,23 +12,19 @@ import { describe, it, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { RuleModule } from "../../core/rule-module";
+import type { ConventionModule } from "../../core/convention-module";
 
-import { naturalNtRules } from "../../definitions/modules/natural-nt-rules";
-import { staymanRules } from "../../definitions/modules/stayman-rules";
-import { jacobyTransfersRules } from "../../definitions/modules/jacoby-transfers-rules";
-import { smolenRules } from "../../definitions/modules/smolen-rules";
+import { getModules } from "../../definitions/module-registry";
 
 import { buildObservationLogViaRules } from "../../../strategy/bidding/protocol-adapter";
 import { collectMatchingClaims } from "../../core/pipeline/rule-interpreter";
 
-const allRuleModules: readonly RuleModule[] = [
-  naturalNtRules,
-  staymanRules,
-  jacobyTransfersRules,
-  smolenRules,
-];
+const allRuleModules: readonly ConventionModule[] = getModules([
+  "natural-nt",
+  "stayman",
+  "jacoby-transfers",
+  "smolen",
+]);
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -257,13 +253,13 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
           allRuleModules,
           { snapshot: {} as never, log: realLog },
           nextSeat,
-        ).flatMap((r) => r.surfaces.map((s) => s.meaningId)).sort();
+        ).flatMap((r) => r.claims.map((c) => c.surface.meaningId)).sort();
 
         const flatSurfaces = collectMatchingClaims(
           allRuleModules,
           { snapshot: {} as never, log: flatLog },
           nextSeat,
-        ).flatMap((r) => r.surfaces.map((s) => s.meaningId)).sort();
+        ).flatMap((r) => r.claims.map((c) => c.surface.meaningId)).sort();
 
         expect(realSurfaces).toEqual(flatSurfaces);
       }

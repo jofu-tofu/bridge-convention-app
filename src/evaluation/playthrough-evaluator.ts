@@ -242,9 +242,9 @@ function runPlaythroughInternal(
  */
 function buildAtomCallMap(bundleId: string): Map<string, { atomId: string; meaningLabel: string }> {
   const bundle = getSystemBundle(bundleId);
-  if (!bundle?.ruleModules) return new Map();
+  if (!bundle?.modules) return new Map();
 
-  const atoms = enumerateRuleAtoms(bundle.ruleModules);
+  const atoms = enumerateRuleAtoms(bundle.modules);
   const map = new Map<string, { atomId: string; meaningLabel: string }>();
 
   for (const atom of atoms) {

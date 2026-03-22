@@ -361,15 +361,15 @@ export function partnerOf(seat: Seat): Seat {
 }
 
 /** Resolve a ConventionBundle, falling back to spec derivation for sub-bundle IDs.
- *  Returns the bundle and its ruleModules (required for rule enumeration). */
+ *  Returns the bundle and its modules (required for rule enumeration). */
 export function resolveBundleWithRules(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
   const bundle = resolveBundle(bundleId);
-  if (!bundle.ruleModules || bundle.ruleModules.length === 0) {
-    // Sub-bundle IDs (e.g. nt-stayman, nt-transfers) may not have ruleModules
-    // directly. Derive a spec which attaches parent ruleModules.
+  if (!bundle.modules || bundle.modules.length === 0) {
+    // Sub-bundle IDs (e.g. nt-stayman, nt-transfers) may not have modules
+    // directly. Derive a spec which attaches parent modules.
     const spec = specFromBundle(bundle, getSystemConfig(baseSystem));
-    if (spec?.ruleModules && spec.ruleModules.length > 0) {
-      return { ...bundle, ruleModules: spec.ruleModules };
+    if (spec?.modules && spec.modules.length > 0) {
+      return { ...bundle, modules: spec.modules };
     }
   }
   return bundle;

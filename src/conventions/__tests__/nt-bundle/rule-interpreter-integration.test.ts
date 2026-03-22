@@ -8,23 +8,17 @@
 
 import { describe, it, expect } from "vitest";
 import { collectMatchingClaims } from "../../core/pipeline/rule-interpreter";
-import type { RuleModule } from "../../core/rule-module";
+import type { ConventionModule } from "../../core/convention-module";
 import type { AuctionContext, CommittedStep, NegotiationState } from "../../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import { Seat } from "../../../engine/types";
 
 // Rule modules under test
-import { naturalNtRules } from "../../definitions/modules/natural-nt-rules";
-import { staymanRules } from "../../definitions/modules/stayman-rules";
-import { jacobyTransfersRules } from "../../definitions/modules/jacoby-transfers-rules";
-import { smolenRules } from "../../definitions/modules/smolen-rules";
+import { getModules } from "../../definitions/module-registry";
 
-const allRuleModules: RuleModule[] = [
-  naturalNtRules,
-  staymanRules,
-  jacobyTransfersRules,
-  smolenRules,
+const allRuleModules: ConventionModule[] = [
+  ...getModules(["natural-nt", "stayman", "jacoby-transfers", "smolen"]),
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -64,7 +58,7 @@ function makeContext(log: readonly CommittedStep[]): AuctionContext {
 /** Get surface IDs from the rule interpreter. */
 function ruleSurfaceIds(log: readonly CommittedStep[], nextSeat: Seat = Seat.South): string[] {
   const results = collectMatchingClaims(allRuleModules, makeContext(log), nextSeat);
-  return results.flatMap((r) => r.surfaces.map((s) => s.meaningId)).sort();
+  return results.flatMap((r) => r.claims.map((c) => c.surface.meaningId)).sort();
 }
 
 // ── Tests ────────────────────────────────────────────────────────────
@@ -182,7 +176,7 @@ describe("Rule interpreter integration: NT bundle", () => {
       const smolenResult = results.find((r) => r.moduleId === "smolen");
 
       expect(smolenResult).toBeDefined();
-      const smolenIds = smolenResult!.surfaces.map((s) => s.meaningId);
+      const smolenIds = smolenResult!.claims.map((c) => c.surface.meaningId);
       expect(smolenIds).toContain("smolen:bid-short-hearts");
       expect(smolenIds).toContain("smolen:bid-short-spades");
     });
@@ -203,8 +197,8 @@ describe("Rule interpreter integration: NT bundle", () => {
 
       // Smolen may still contribute its R1 entries but should NOT contribute R3 surfaces
       if (smolenResult) {
-        const smolenR3 = smolenResult.surfaces.filter(
-          (s) => s.meaningId.startsWith("smolen:bid-short"),
+        const smolenR3 = smolenResult.claims.filter(
+          (c) => c.surface.meaningId.startsWith("smolen:bid-short"),
         );
         expect(smolenR3).toHaveLength(0);
       }

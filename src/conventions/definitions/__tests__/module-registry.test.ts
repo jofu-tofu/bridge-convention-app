@@ -60,7 +60,7 @@ describe("getModules", () => {
     const subset = ["natural-nt", "weak-twos"];
     const result = getModules(subset);
     expect(result).toHaveLength(2);
-    expect(result[0].moduleId).toBe("natural-nt");
-    expect(result[1].moduleId).toBe("weak-twos");
+    expect(result[0]!.moduleId).toBe("natural-nt");
+    expect(result[1]!.moduleId).toBe("weak-twos");
   });
 });

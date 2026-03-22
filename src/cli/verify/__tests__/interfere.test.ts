@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { RuleModule } from "../../../conventions/core/rule-module";
+import type { ConventionModule } from "../../../conventions/core/convention-module";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import type { InterferenceEdge } from "../types";
 import {
@@ -13,12 +13,13 @@ import {
 
 // ── Fixture factories ─────────────────────────────────────────────
 
-function makeModule(id: string, overrides: Partial<RuleModule> = {}): RuleModule {
+function makeModule(id: string, overrides: Partial<ConventionModule> = {}): ConventionModule {
   return {
-    id,
+    moduleId: id,
     local: { initial: "idle", transitions: [] },
     rules: [],
     facts: { definitions: [], evaluators: new Map() },
+    explanationEntries: [],
     ...overrides,
   };
 }

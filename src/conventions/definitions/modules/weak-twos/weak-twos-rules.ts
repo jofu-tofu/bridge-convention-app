@@ -12,7 +12,7 @@
  * convention module (no separate opening module needed).
  */
 
-import type { RuleModule } from "../../../core/rule-module";
+import type { LocalFsm, Rule } from "../../../core/rule-module";
 import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
 import {
   WEAK_TWO_R1_SURFACES,
@@ -26,7 +26,7 @@ import {
   POST_OGUST_SPADES_SURFACES,
   POST_OGUST_DIAMONDS_SURFACES,
 } from "./meaning-surfaces";
-import { weakTwoFacts } from "./facts";
+// weakTwoFacts removed — facts live on the assembled ConventionModule, not in rules.
 
 type Phase =
   | "idle"
@@ -49,11 +49,9 @@ const OGUST_ASK_DELTA: NegotiationDelta = { forcing: "one-round" };
 /** Ogust response: forcing resolved. */
 const OGUST_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
 
-export const weakTwosRules: RuleModule<Phase> = {
-  id: "weak-twos",
-  local: {
-    initial: "idle",
-    transitions: [
+export const weakTwosLocal: LocalFsm<Phase> = {
+  initial: "idle",
+  transitions: [
       // Opening observations
       { from: "idle", to: "opened-hearts", on: { act: "open", strain: "hearts" } },
       { from: "idle", to: "opened-spades", on: { act: "open", strain: "spades" } },
@@ -90,10 +88,11 @@ export const weakTwosRules: RuleModule<Phase> = {
       { from: "post-ogust-diamonds", to: "done", on: { act: "raise" } },
       { from: "post-ogust-diamonds", to: "done", on: { act: "signoff" } },
       { from: "post-ogust-diamonds", to: "done", on: { act: "pass" } },
-    ],
-  },
-  rules: [
-    // R0: Weak Two opening (opener bids 2H/2S/2D)
+  ],
+};
+
+export const weakTwosRuleDefs: readonly Rule<Phase>[] = [
+  // R0: Weak Two opening (opener bids 2H/2S/2D)
     {
       match: { local: "idle", turn: "opener" },
       claims: WEAK_TWO_R1_SURFACES.map((s) => ({ surface: s })),
@@ -163,8 +162,6 @@ export const weakTwosRules: RuleModule<Phase> = {
     },
     {
       match: { local: "post-ogust-diamonds", turn: "responder" },
-      claims: POST_OGUST_DIAMONDS_SURFACES.map((s) => ({ surface: s })),
-    },
-  ],
-  facts: weakTwoFacts,
-};
+    claims: POST_OGUST_DIAMONDS_SURFACES.map((s) => ({ surface: s })),
+  },
+];

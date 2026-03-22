@@ -14,7 +14,7 @@ import { exploreBundle } from "../explore";
 describe("exploreBundle", () => {
   it("runs without crashes on nt-bundle with minimal trials", () => {
     const system = getSystemBundle("nt-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
     expect(modules.length).toBeGreaterThan(0);
 
     const result = exploreBundle(system, modules, {
@@ -33,7 +33,7 @@ describe("exploreBundle", () => {
 
   it("tracks atom coverage across trials", () => {
     const system = getSystemBundle("nt-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
 
     const result = exploreBundle(system, modules, {
       depth: 6,
@@ -51,7 +51,7 @@ describe("exploreBundle", () => {
 
   it("produces deterministic results with same seed", () => {
     const system = getSystemBundle("nt-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
 
     const result1 = exploreBundle(system, modules, { depth: 4, seed: 42, trials: 3 });
     const result2 = exploreBundle(system, modules, { depth: 4, seed: 42, trials: 3 });
@@ -62,7 +62,7 @@ describe("exploreBundle", () => {
 
   it("filters invariants when specified", () => {
     const system = getSystemBundle("nt-bundle")!;
-    const modules = system.ruleModules ?? [];
+    const modules = system.modules ?? [];
 
     const result = exploreBundle(system, modules, {
       depth: 4,

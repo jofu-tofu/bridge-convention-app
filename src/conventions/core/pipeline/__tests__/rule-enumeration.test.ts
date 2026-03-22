@@ -3,18 +3,12 @@ import {
   enumerateRuleAtoms,
   generateRuleCoverageManifest,
 } from "../rule-enumeration";
-import type { RuleModule } from "../../rule-module";
+import type { ConventionModule } from "../../convention-module";
 import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BidSuit, Seat } from "../../../../engine/types";
 
-// ── Real bundle imports for equivalence checks ──────────────────────
-import { naturalNtRules } from "../../../definitions/modules/natural-nt-rules";
-import { staymanRules } from "../../../definitions/modules/stayman-rules";
-import { jacobyTransfersRules } from "../../../definitions/modules/jacoby-transfers-rules";
-import { smolenRules } from "../../../definitions/modules/smolen-rules";
-import { bergenRules } from "../../../definitions/modules/bergen/bergen-rules";
-import { dontRules } from "../../../definitions/modules/dont/dont-rules";
-import { weakTwosRules } from "../../../definitions/modules/weak-twos/weak-twos-rules";
+// ── Real module imports for equivalence checks ──────────────────────
+import { getModule } from "../../../definitions/module-registry";
 
 function makeSurface(id: string, level: number = 1, strain: BidSuit = BidSuit.Clubs): BidMeaning {
   return {
@@ -39,11 +33,12 @@ describe("enumerateRuleAtoms", () => {
   });
 
   it("returns empty for module with no rules", () => {
-    const mod: RuleModule = {
-      id: "empty",
+    const mod: ConventionModule = {
+      moduleId: "empty",
       local: { initial: "idle", transitions: [] },
       rules: [],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
     expect(enumerateRuleAtoms([mod])).toEqual([]);
   });
@@ -51,8 +46,8 @@ describe("enumerateRuleAtoms", () => {
   it("extracts atoms from a single module with claims", () => {
     const s1 = makeSurface("s1");
     const s2 = makeSurface("s2", 2, BidSuit.Hearts);
-    const mod: RuleModule = {
-      id: "test-mod",
+    const mod: ConventionModule = {
+      moduleId: "test-mod",
       local: { initial: "idle", transitions: [] },
       rules: [
         {
@@ -61,6 +56,7 @@ describe("enumerateRuleAtoms", () => {
         },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod]);
@@ -75,14 +71,15 @@ describe("enumerateRuleAtoms", () => {
 
   it("deduplicates same meaningId across rules in same module", () => {
     const surface = makeSurface("dup-surface");
-    const mod: RuleModule = {
-      id: "dedup-mod",
+    const mod: ConventionModule = {
+      moduleId: "dedup-mod",
       local: { initial: "idle", transitions: [] },
       rules: [
         { match: { local: "phase-a" }, claims: [{ surface }] },
         { match: { local: "phase-b" }, claims: [{ surface }] },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod]);
@@ -95,14 +92,15 @@ describe("enumerateRuleAtoms", () => {
 
   it("deduplicates identical guard combinations", () => {
     const surface = makeSurface("dup");
-    const mod: RuleModule = {
-      id: "mod",
+    const mod: ConventionModule = {
+      moduleId: "mod",
       local: { initial: "idle", transitions: [] },
       rules: [
         { match: { local: "idle" }, claims: [{ surface }] },
         { match: { local: "idle" }, claims: [{ surface }] },
       ],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod]);
@@ -113,17 +111,19 @@ describe("enumerateRuleAtoms", () => {
   it("preserves atom order: modules in array order, rules in array order", () => {
     const s1 = makeSurface("mod1-s1");
     const s2 = makeSurface("mod2-s1");
-    const mod1: RuleModule = {
-      id: "first",
+    const mod1: ConventionModule = {
+      moduleId: "first",
       local: { initial: "idle", transitions: [] },
       rules: [{ match: {}, claims: [{ surface: s1 }] }],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
-    const mod2: RuleModule = {
-      id: "second",
+    const mod2: ConventionModule = {
+      moduleId: "second",
       local: { initial: "idle", transitions: [] },
       rules: [{ match: {}, claims: [{ surface: s2 }] }],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const atoms = enumerateRuleAtoms([mod1, mod2]);
@@ -133,11 +133,12 @@ describe("enumerateRuleAtoms", () => {
   });
 
   it("handles rules with no claims gracefully", () => {
-    const mod: RuleModule = {
-      id: "no-claims",
+    const mod: ConventionModule = {
+      moduleId: "no-claims",
       local: { initial: "idle", transitions: [] },
       rules: [{ match: { local: "idle" }, claims: [] }],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
     expect(enumerateRuleAtoms([mod])).toEqual([]);
   });
@@ -146,11 +147,12 @@ describe("enumerateRuleAtoms", () => {
 describe("generateRuleCoverageManifest", () => {
   it("produces correct manifest structure", () => {
     const surface = makeSurface("test-atom");
-    const mod: RuleModule = {
-      id: "test-mod",
+    const mod: ConventionModule = {
+      moduleId: "test-mod",
       local: { initial: "idle", transitions: [] },
       rules: [{ match: { local: "idle" }, claims: [{ surface }] }],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
 
     const manifest = generateRuleCoverageManifest("test-system", [mod]);
@@ -166,15 +168,15 @@ describe("generateRuleCoverageManifest", () => {
 
 describe("real bundle atom counts", () => {
   const bundles = [
-    { name: "nt-bundle", modules: [naturalNtRules, staymanRules, jacobyTransfersRules, smolenRules] },
-    { name: "bergen-bundle", modules: [bergenRules] },
-    { name: "dont-bundle", modules: [dontRules] },
-    { name: "weak-twos-bundle", modules: [weakTwosRules] },
-  ] as const;
+    { name: "nt-bundle", modules: [getModule("natural-nt")!, getModule("stayman")!, getModule("jacoby-transfers")!, getModule("smolen")!] },
+    { name: "bergen-bundle", modules: [getModule("bergen")!] },
+    { name: "dont-bundle", modules: [getModule("dont")!] },
+    { name: "weak-twos-bundle", modules: [getModule("weak-twos")!] },
+  ];
 
   for (const { name, modules } of bundles) {
     it(`${name}: produces non-zero atoms from rule modules`, () => {
-      const atoms = enumerateRuleAtoms(modules as unknown as RuleModule[]);
+      const atoms = enumerateRuleAtoms(modules);
       expect(atoms.length).toBeGreaterThan(0);
       // Every atom has required fields
       for (const atom of atoms) {
@@ -187,7 +189,7 @@ describe("real bundle atom counts", () => {
     });
 
     it(`${name}: no duplicate atom IDs (moduleId/meaningId)`, () => {
-      const atoms = enumerateRuleAtoms(modules as unknown as RuleModule[]);
+      const atoms = enumerateRuleAtoms(modules);
       const ids = atoms.map((a) => `${a.moduleId}/${a.meaningId}`);
       const uniqueIds = new Set(ids);
       expect(uniqueIds.size).toBe(ids.length);
@@ -196,7 +198,7 @@ describe("real bundle atom counts", () => {
 
   it("logs atom counts for all bundles (informational)", () => {
     for (const { name, modules } of bundles) {
-      const atoms = enumerateRuleAtoms(modules as unknown as RuleModule[]);
+      const atoms = enumerateRuleAtoms(modules);
       const byModule = new Map<string, number>();
       for (const a of atoms) {
         byModule.set(a.moduleId, (byModule.get(a.moduleId) ?? 0) + 1);

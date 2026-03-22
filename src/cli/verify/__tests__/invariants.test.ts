@@ -82,7 +82,7 @@ describe("arbitration-totality", () => {
       claims: [
         {
           moduleId: "test-mod",
-          surfaces: [makeSurface()],
+          claims: [{ surface: makeSurface() }],
         },
       ],
     });
@@ -173,22 +173,22 @@ describe("encoding-uniqueness", () => {
       claims: [
         {
           moduleId: "mod-a",
-          surfaces: [
-            makeSurface({
+          claims: [
+            { surface: makeSurface({
               moduleId: "mod-a",
               meaningId: "a1",
               encoding: { defaultCall: { type: "bid", level: 2 as const, strain: BidSuit.Clubs } },
-            }),
+            }) },
           ],
         },
         {
           moduleId: "mod-b",
-          surfaces: [
-            makeSurface({
+          claims: [
+            { surface: makeSurface({
               moduleId: "mod-b",
               meaningId: "b1",
               encoding: { defaultCall: { type: "bid", level: 2 as const, strain: BidSuit.Clubs } },
-            }),
+            }) },
           ],
         },
       ],
@@ -204,22 +204,22 @@ describe("encoding-uniqueness", () => {
       claims: [
         {
           moduleId: "mod-a",
-          surfaces: [
-            makeSurface({
+          claims: [
+            { surface: makeSurface({
               moduleId: "mod-a",
               meaningId: "a1",
               encoding: { defaultCall: { type: "bid", level: 2 as const, strain: BidSuit.Clubs } },
-            }),
+            }) },
           ],
         },
         {
           moduleId: "mod-b",
-          surfaces: [
-            makeSurface({
+          claims: [
+            { surface: makeSurface({
               moduleId: "mod-b",
               meaningId: "b1",
               encoding: { defaultCall: { type: "bid", level: 2 as const, strain: BidSuit.Diamonds } },
-            }),
+            }) },
           ],
         },
       ],
@@ -236,7 +236,7 @@ describe("phase-coherence", () => {
       claims: [
         {
           moduleId: "missing-mod",
-          surfaces: [makeSurface({ moduleId: "missing-mod" })],
+          claims: [{ surface: makeSurface({ moduleId: "missing-mod" }) }],
         },
       ],
     });
@@ -252,7 +252,7 @@ describe("phase-coherence", () => {
       claims: [
         {
           moduleId: "test-mod",
-          surfaces: [makeSurface({ moduleId: "test-mod" })],
+          claims: [{ surface: makeSurface({ moduleId: "test-mod" }) }],
         },
       ],
     });

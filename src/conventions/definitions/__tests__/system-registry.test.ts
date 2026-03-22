@@ -4,6 +4,7 @@ import {
   listSystemBundles,
   specFromBundle,
   ntBundle,
+  ntBundleAcol,
   ntStaymanBundle,
   ntTransfersBundle,
   bergenBundle,
@@ -11,7 +12,7 @@ import {
   weakTwoBundle,
 } from "../system-registry";
 
-const ALL_IDS = ["nt-bundle", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"] as const;
+const ALL_IDS = ["nt-bundle", "nt-bundle-acol", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"] as const;
 
 describe("getSystemBundle", () => {
   it.each(ALL_IDS)("returns a bundle for %s", (id) => {
@@ -28,8 +29,8 @@ describe("getSystemBundle", () => {
 describe("listSystemBundles", () => {
   const bundles = listSystemBundles();
 
-  it("returns exactly 6 bundles", () => {
-    expect(bundles).toHaveLength(6);
+  it("returns exactly 7 bundles", () => {
+    expect(bundles).toHaveLength(7);
   });
 
   it("contains all expected IDs", () => {
@@ -39,7 +40,7 @@ describe("listSystemBundles", () => {
 
   it("has stable order", () => {
     const ids = bundles.map((b) => b.id);
-    expect(ids).toEqual(["nt-bundle", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"]);
+    expect(ids).toEqual(["nt-bundle", "nt-bundle-acol", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"]);
   });
 });
 

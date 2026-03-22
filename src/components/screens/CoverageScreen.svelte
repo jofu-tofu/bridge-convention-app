@@ -14,8 +14,8 @@
   let manifest = $derived.by<RuleCoverageManifest | null>(() => {
     if (!selectedBundleId) return null;
     const bundle = getSystemBundle(selectedBundleId);
-    if (!bundle?.ruleModules) return null;
-    return generateRuleCoverageManifest(bundle.id, bundle.ruleModules);
+    if (!bundle?.modules) return null;
+    return generateRuleCoverageManifest(bundle.id, bundle.modules);
   });
 
   let showByModule = $state(true);
@@ -39,13 +39,14 @@
   }
 
   function coverageUrl(bundleId: string): string {
-    const base = window.location.origin + window.location.pathname;
+    if (typeof window === 'undefined') return '';
+    const base = `${window.location.origin}${window.location.pathname}`;
     return `${base}?coverage=true&convention=${bundleId}`;
   }
 
   function atomCount(bundle: ConventionBundle): number {
-    if (!bundle.ruleModules) return 0;
-    return enumerateRuleAtoms(bundle.ruleModules).length;
+    if (!bundle.modules) return 0;
+    return enumerateRuleAtoms(bundle.modules).length;
   }
 </script>
 

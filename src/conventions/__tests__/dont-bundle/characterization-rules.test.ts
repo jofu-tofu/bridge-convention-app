@@ -4,16 +4,17 @@
 
 import { describe, it, expect } from "vitest";
 import { collectMatchingClaims } from "../../core/pipeline/rule-interpreter";
-import type { RuleModule } from "../../core/rule-module";
+import type { ConventionModule } from "../../core/convention-module";
 import type { CommittedStep } from "../../../core/contracts/committed-step";
 import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
 import type { AuctionContext } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
 import { Seat } from "../../../engine/types";
+import { flattenSurfaces } from "../../core/pipeline/rule-interpreter";
 
-import { dontRules } from "../../definitions/modules/dont/dont-rules";
+import { getModule } from "../../definitions/module-registry";
 
-const allRuleModules: RuleModule[] = [dontRules];
+const allRuleModules: ConventionModule[] = [getModule("dont")!];
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ function makeContext(log: readonly CommittedStep[]): AuctionContext {
 
 function ruleSurfaceIds(log: readonly CommittedStep[], nextSeat: Seat = Seat.South): string[] {
   const results = collectMatchingClaims(allRuleModules, makeContext(log), nextSeat);
-  return results.flatMap((r) => r.surfaces.map((s) => s.meaningId)).sort();
+  return flattenSurfaces(results).map((s) => s.meaningId).sort();
 }
 
 // ── Tests ────────────────────────────────────────────────────────────

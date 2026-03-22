@@ -14,7 +14,7 @@
  * - done: terminal
  */
 
-import type { RuleModule } from "../../../core/rule-module";
+import type { LocalFsm, Rule } from "../../../core/rule-module";
 import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
 import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BidSuit } from "../../../../engine/types";
@@ -38,7 +38,7 @@ import {
   BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES,
   BERGEN_R4_SURFACES,
 } from "./meaning-surfaces";
-import { bergenFacts } from "./facts";
+// bergenFacts removed — facts live on the assembled ConventionModule, not in rules.
 
 // ── Stub opening surfaces ─────────────────────────────────────────
 // Bergen needs 1H/1S opening observations for phase transitions.
@@ -112,11 +112,9 @@ const R4_OPENER_DELTA: NegotiationDelta = { captain: "opener" };
 
 // ── Rule module ───────────────────────────────────────────────────
 
-export const bergenRules: RuleModule<Phase> = {
-  id: "bergen",
-  local: {
-    initial: "idle",
-    transitions: [
+export const bergenLocal: LocalFsm<Phase> = {
+  initial: "idle",
+  transitions: [
       // Opening observations advance to suit-specific opened phase
       { from: "idle", to: "opened-hearts", on: { act: "open", strain: "hearts" } },
       { from: "idle", to: "opened-spades", on: { act: "open", strain: "spades" } },
@@ -172,10 +170,11 @@ export const bergenRules: RuleModule<Phase> = {
 
       // R4 → terminal
       { from: "r4", to: "done", on: { act: "pass" } },
-    ],
-  },
-  rules: [
-    // Opening stubs (idle, opener turn)
+  ],
+};
+
+export const bergenRuleDefs: readonly Rule<Phase>[] = [
+  // Opening stubs (idle, opener turn)
     {
       match: { local: "idle", turn: "opener" },
       claims: [
@@ -303,6 +302,4 @@ export const bergenRules: RuleModule<Phase> = {
         negotiationDelta: R4_OPENER_DELTA,
       })),
     },
-  ],
-  facts: bergenFacts,
-};
+];

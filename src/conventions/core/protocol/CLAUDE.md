@@ -1,12 +1,12 @@
 # Protocol Types
 
-Retained type definitions for `ConventionSpec` and related protocol frame types. The runtime protocol infrastructure (boot router, replay, surface stack, spec assembler, bridge schema) has been removed. All bundles now use rule-based surface selection via `RuleModule`.
+Retained type definitions for `ConventionSpec` and related protocol frame types. The runtime protocol infrastructure (boot router, replay, surface stack, spec assembler, bridge schema) has been removed. All bundles now use rule-based surface selection via unified `ConventionModule`.
 
 ## File Roles
 
 | File | Role |
 |------|------|
-| `types.ts` | Declarative expression types (`BoolExpr`, `Ref`, `EffectSpec`) with helpers (`and`, `or`, `not`, `exists`, `eq`, `reg`, `activeTag`, `cap`). Public semantic schema (`RegisterSpec`, `CapabilitySpec`, `PublicSemanticSchema`). Event patterns (`EventPattern`). Transition types (`TransitionSpec`, `ReactionSpec`). Surface composition (`SurfaceFragment`, `SurfaceRelation`). Top-level `ConventionSpec` (`{ id, name, ruleModules }`). Used by strategy and bootstrap layers. |
+| `types.ts` | Declarative expression types (`BoolExpr`, `Ref`, `EffectSpec`) with helpers (`and`, `or`, `not`, `exists`, `eq`, `reg`, `activeTag`, `cap`). Public semantic schema (`RegisterSpec`, `CapabilitySpec`, `PublicSemanticSchema`). Event patterns (`EventPattern`). Transition types (`TransitionSpec`, `ReactionSpec`). Surface composition (`SurfaceFragment`, `SurfaceRelation`). Top-level `ConventionSpec` (`{ id, name, modules }`). Used by strategy and bootstrap layers. |
 
 ---
 

@@ -3,7 +3,7 @@
 // Reuses exploreBundle infrastructure but focuses on a specific module pair,
 // tracking co-activation and pair-specific conflicts.
 
-import type { RuleModule } from "../../conventions/core/rule-module";
+import type { ConventionModule } from "../../conventions/core";
 import type { ConventionBundle } from "../../conventions/core";
 
 import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
@@ -26,7 +26,7 @@ export interface MotifConfig {
  */
 export function motifTest(
   bundle: ConventionBundle,
-  modules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
   config: MotifConfig,
 ): MotifResult {
   const [modA, modB] = config.pair;

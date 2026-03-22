@@ -21,8 +21,8 @@ import {
 export function runList(flags: Flags): void {
   const bundleId = requireArg(flags, "bundle");
   const bundle = resolveBundleWithRules(bundleId);
-  const ruleModules = bundle.ruleModules ?? [];
-  const atoms = enumerateRuleAtoms(ruleModules);
+  const modules = bundle.modules ?? [];
+  const atoms = enumerateRuleAtoms(modules);
 
   for (const atom of atoms) {
     const line = {
@@ -44,9 +44,9 @@ export function runList(flags: Flags): void {
 export function runBundles(): void {
   const bundles = listSystemBundles().filter((b) => !b.internal);
   const result = bundles.map((b) => {
-    const ruleModules = b.ruleModules ?? [];
-    const atomCount = ruleModules.length > 0
-      ? enumerateRuleAtoms(ruleModules).length
+    const modules = b.modules ?? [];
+    const atomCount = modules.length > 0
+      ? enumerateRuleAtoms(modules).length
       : 0;
     return {
       id: b.id,
@@ -77,9 +77,9 @@ export function runDescribe(flags: Flags, vuln: Vulnerability, baseSystem: BaseS
   const bundleId = requireArg(flags, "bundle");
   const spec = resolveSpec(bundleId, baseSystem);
   const bundle = resolveBundleWithRules(bundleId, baseSystem);
-  const ruleModules = bundle.ruleModules ?? [];
+  const bundleModules = bundle.modules ?? [];
 
-  const manifest = generateRuleCoverageManifest(bundle.id, ruleModules);
+  const manifest = generateRuleCoverageManifest(bundle.id, bundleModules);
   const allAtoms = manifest.atoms;
 
   // Group atoms by module

@@ -1,6 +1,6 @@
 # Convention Definitions
 
-Convention bundles that each implement a bridge bidding convention using the meaning pipeline. Each bundle is self-contained with deal constraints, meaning surfaces, fact extensions, rule modules (RuleModule), and teaching metadata.
+Convention bundles that each implement a bridge bidding convention using the meaning pipeline. Each bundle is self-contained with deal constraints, meaning surfaces, fact extensions, convention modules (`ConventionModule`), and teaching metadata.
 
 ## Folder Structure
 
@@ -31,16 +31,16 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `__tests__/` | Bundle-specific tests |
 
 
-**`nt-bundle/`** — Bottom-up composition of Stayman + Jacoby Transfers + Smolen + Natural NT into a single 1NT response bundle. Each convention is a self-contained `ConventionModule` in `modules/`; the bundle is assembled from `RuleModule` rule claims via `bundleFromRuleModules()`.
+**`nt-bundle/`** — Bottom-up composition of Stayman + Jacoby Transfers + Smolen + Natural NT into a single 1NT response bundle. Each convention is a self-contained `ConventionModule` in `modules/`; modules are assembled in `module-registry.ts` from raw parts (facts/explanations from module files, LocalFsm/Rules from rules files).
 - `modules/` — Convention modules (source of truth for all bidding logic):
-  - `stayman.ts` — Stayman convention: R1 surface (2C ask), opener response surfaces (show-hearts/spades/deny-major), R3 continuation surfaces, 4 FSM states with exportTags, 2 facts + posterior evaluators.
-  - `jacoby-transfers.ts` — Jacoby Transfers convention: R1 surfaces (2D/2H transfer), opener accept surfaces, R3 continuation surfaces, 8 FSM states with exportTags, 5 facts.
-  - `smolen.ts` — Smolen convention: R3 surfaces (3H/3S after 2D denial), opener placement surfaces, 2 FSM states + submachine (5 states) with exportTags, hooks into Stayman's R3-2D state via `hookTransitions`, 6 facts.
-  - `natural-nt.ts` — Natural NT responses: R1 surfaces (2NT invite, 3NT game), 1NT opening surface, R1 terminal transitions, shared explanation entries.
-  - `natural-nt-rules.ts` — RuleModule for natural-nt (phases: idle/opened/responded). No negotiationDelta needed (INITIAL_NEGOTIATION correct for opening/R1).
-  - `stayman-rules.ts` — RuleModule for Stayman (phases: idle/asked/shown-hearts/shown-spades/denied/inactive). Claims carry `negotiationDelta` for forcing/captain effects.
-  - `jacoby-transfers-rules.ts` — RuleModule for Jacoby Transfers (phases: idle/inactive/transferred-*/accepted-*/placing-*/invited-*). Claims carry `negotiationDelta` for forcing/fitAgreed/captain effects.
-  - `smolen-rules.ts` — RuleModule for Smolen (phases: idle/post-r1/placing-hearts/placing-spades/done). Claims carry `negotiationDelta` for game-forcing/fitAgreed/captain effects. Proof case: uses route pattern `subseq([inquire(majorSuit), deny(majorSuit)])` instead of hookTransitions.
+  - `stayman.ts` — Stayman convention: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
+  - `jacoby-transfers.ts` — Jacoby Transfers convention: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
+  - `smolen.ts` — Smolen convention: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
+  - `natural-nt.ts` — Natural NT responses: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
+  - `natural-nt-rules.ts` — LocalFsm + Rule[] for natural-nt (phases: idle/opened/responded). No negotiationDelta needed (INITIAL_NEGOTIATION correct for opening/R1).
+  - `stayman-rules.ts` — LocalFsm + Rule[] for Stayman (phases: idle/asked/shown-hearts/shown-spades/denied/inactive). Claims carry `negotiationDelta` for forcing/captain effects.
+  - `jacoby-transfers-rules.ts` — LocalFsm + Rule[] for Jacoby Transfers (phases: idle/inactive/transferred-*/accepted-*/placing-*/invited-*). Claims carry `negotiationDelta` for forcing/fitAgreed/captain effects.
+  - `smolen-rules.ts` — LocalFsm + Rule[] for Smolen (phases: idle/post-r1/placing-hearts/placing-spades/done). Claims carry `negotiationDelta` for game-forcing/fitAgreed/captain effects. Proof case: uses route pattern `subseq([inquire(majorSuit), deny(majorSuit)])` instead of hookTransitions.
 - `config.ts` — Re-exports `ntBundle` from `system-registry.ts`.
 - `sub-bundles.ts` — Stayman-only and Transfer-only sub-bundles via `buildBundle()`, auto-composing pedagogical content from module subsets.
 - `composed-surfaces.ts` — Cross-module composition re-exports. `RESPONDER_SURFACES` assembled from modules; individual arrays re-exported from owning modules.
@@ -48,17 +48,17 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `explanation-catalog.ts` — Composed from all modules' explanation entries.
 
 **`bergen-bundle/`** — Bergen Raises using the meaning pipeline with `$suit` binding parameterization for hearts and spades.
-- `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `ruleModules`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.
+- `config.ts` — `ConventionBundle` with `meaningSurfaces` (13 groups), `factExtensions`, `modules`. `memberIds: ["bergen-raises"]`. `internal: true` (parity testing). Activation handled by `systemProfile: BERGEN_PROFILE`.
 - `meaning-surfaces.ts` — `createBergenR1Surfaces(suit)` factory producing 5 surfaces per suit (splinter, game, limit, constructive, preemptive) parameterized by `$suit` bindings. Also includes R2–R4 surfaces.
 - `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4). Uses `buildExtension()` from fact-factory.
-- `modules/bergen/bergen-rules.ts` — RuleModule for Bergen (15 phases: idle/opened-H/S/after-constructive-H/S/after-limit-H/S/after-preemptive-H/S/after-game/after-signoff/after-game-try-H/S/r4/done). Includes stub 1H/1S opening surfaces with `MajorOpen` intent for phase transitions. Claims carry captain/fitAgreed kernel deltas.
+- `modules/bergen/bergen-rules.ts` — LocalFsm + Rule[] for Bergen (15 phases: idle/opened-H/S/after-constructive-H/S/after-limit-H/S/after-preemptive-H/S/after-game/after-signoff/after-game-try-H/S/r4/done). Includes stub 1H/1S opening surfaces with `MajorOpen` intent for phase transitions. Claims carry captain/fitAgreed kernel deltas.
 
 ## Convention Quick Reference
 
 - **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades) + Smolen (3H/3S game-forcing after 2D denial with 5-4 majors). 35 meaning surfaces, 4 fact extensions, 15-state hierarchical FSM with per-module scope states (`stayman-scope`, `transfers-scope`, `smolen-scope`) for scoped opponent interrupts + 5-state Smolen submachine (first real convention to use submachine invocation with guard-based routing). Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
 - **Bergen Bundle (Bergen Raises):** Responder raises after 1M opening. Standard Bergen variant (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding factory for DRY heart/spade parameterization. Deal constraints: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
-- **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Ogust responses. `modules/weak-twos/weak-twos-rules.ts` — RuleModule (11 phases: idle/opened-H/S/D/ogust-asked-H/S/D/post-ogust-H/S/D/done). Ogust ask carries `forcing: "one-round"` kernel delta. Deal constraints: opener 5–10 HCP with 6+ in a suit, responder 12+ HCP.
-- **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. `modules/dont/dont-rules.ts` — RuleModule (11 phases: idle/r1/after-2h/2d/2c/2s/double/wait-reveal/wait-2d-relay/wait-2c-relay/done). **No `match.turn`** — uses phase + route scoping because `deriveTurnRole()` classifies the overcaller as "opponent". Includes stub 1NT opening surface for phase transitions. 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
+- **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Ogust responses. `modules/weak-twos/weak-twos-rules.ts` — LocalFsm + Rule[] (11 phases: idle/opened-H/S/D/ogust-asked-H/S/D/post-ogust-H/S/D/done). Ogust ask carries `forcing: "one-round"` kernel delta. Deal constraints: opener 5–10 HCP with 6+ in a suit, responder 12+ HCP.
+- **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. `modules/dont/dont-rules.ts` — LocalFsm + Rule[] (11 phases: idle/r1/after-2h/2d/2c/2s/double/wait-reveal/wait-2d-relay/wait-2c-relay/done). **No `match.turn`** — uses phase + route scoping because `deriveTurnRole()` classifies the overcaller as "opponent". Includes stub 1NT opening surface for phase transitions. 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
 
 ## Convention Bundle Completeness Checklist
 
@@ -66,7 +66,7 @@ Every convention bundle must satisfy all items before being considered complete:
 
 1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `declarationOrder`). `modulePrecedence` defaults to 0 — do NOT set it on surfaces. **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
 2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state. Use factory helpers (`defineBooleanFact`, `definePerSuitFacts`, `defineHcpRangeFact`, `buildExtension`) from `core/pipeline/fact-factory.ts` for common patterns.
-3. **`ruleModules` for surface selection.** `RuleModule[]` with phases, phase transitions, and rules. Each rule declares turn role, phase match, optional route/kernel constraints, and surfaces to emit. The rule interpreter (`collectMatchingClaims()`) handles surface selection.
+3. **`modules` for surface selection.** `ConventionModule[]` with `local` (LocalFsm: phases + phase transitions) and `rules` (Rule[]: turn role, phase match, optional route/kernel constraints → surfaces to emit). The rule interpreter (`collectMatchingClaims()`) handles surface selection. Modules are resolved by `buildBundle()` from `memberIds` via module-registry.
 4. **`systemProfile` for activation.** Profile-based module activation via `SystemProfile`.
 6. **`dealConstraints` with HCP ranges and shape requirements.** Per-seat `minHcp`/`maxHcp` and `minLengthAny`/`maxLength` as appropriate.
 7. **`category` and `description` are required** on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` — no separate wrapper needed.
@@ -85,7 +85,7 @@ See `docs/convention-templates.md` for skeleton code templates (config.ts, meani
 2. Define `BidMeaning[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
 3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses. Use factory helpers from `core/pipeline/fact-factory.ts` for common patterns.
 4. Define module-local semantic class constants in `semantic-classes.ts`.
-5. Define `RuleModule` in `{name}-rules.ts`. Declare phases, phase transitions (observation patterns that advance the local FSM), and rules (phase + turn + optional route/kernel constraints → surfaces).
+5. Define `LocalFsm` and `Rule[]` in `{name}-rules.ts`. Declare phases, phase transitions (observation patterns that advance the local FSM), and rules (phase + turn + optional route/kernel constraints → surfaces). The module-registry assembles these into a `ConventionModule`.
 6. Define `SystemProfile` in `system-profile.ts`.
 7. Populate `ExplanationCatalog` in `explanation-catalog.ts` with template-keyed explanations.
 8. Add `teachingTags` to surfaces using the 6 general tags from `teaching-vocabulary.ts`. Use scope strings to group related surfaces.
@@ -120,7 +120,7 @@ See `docs/convention-templates.md` for skeleton code templates (config.ts, meani
 
 6. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
 
-7. **Phase transition vs route matching confusion.** Phase transitions (`phaseTransitions` in RuleModule) advance the local FSM state — they are actor-agnostic and fire on observation shape. Route matching (`RouteExpr` in rules) filters which surfaces are active — it supports actor-aware patterns. Do not conflate the two.
+7. **Phase transition vs route matching confusion.** Phase transitions (`phaseTransitions` in LocalFsm) advance the local FSM state — they are actor-agnostic and fire on observation shape. Route matching (`RouteExpr` in rules) filters which surfaces are active — it supports actor-aware patterns. Do not conflate the two.
 
 ## Test Organization
 

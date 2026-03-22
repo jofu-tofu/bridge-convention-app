@@ -1,13 +1,11 @@
 /**
- * RuleModule — declarative convention module for rule-based surface selection.
+ * Rule pattern primitives — types for declarative rule-based surface selection.
  *
- * Replaces the FSM + skeleton + hookTransitions model with pattern matching
- * over a canonical observation stream. Modules match on bridge semantics
- * (via BidAction), not on implementation-specific FSM state IDs.
+ * Defines LocalFsm, Claim, Rule, and pattern types (ObsPattern, RouteExpr,
+ * NegotiationExpr, PhaseTransition, TurnRole) used by ConventionModule.
  *
- * **Phase 3 scope:** RuleModule handles surface SELECTION only.
- * Kernel state tracking still uses the old FSM (via MachineRegisters).
- * Phase 4+ adds `effects` on claims for full FSM replacement.
+ * Import direction: rule-module.ts → core/contracts/ only.
+ * convention-module.ts → rule-module.ts (one-way).
  */
 
 import type {
@@ -19,7 +17,7 @@ import type {
 } from "../../core/contracts/bid-action";
 import type { NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
 import type { BidMeaning } from "../../core/contracts/meaning";
-import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
+// FactCatalogExtension import removed — facts now live on ConventionModule, not here.
 
 // ── TurnRole ─────────────────────────────────────────────────────────
 
@@ -103,6 +101,22 @@ export interface PhaseTransition<Phase extends string> {
   readonly on: ObsPattern;
 }
 
+// ── LocalFsm ────────────────────────────────────────────────────────
+
+/** A module's local finite state machine — scopes rule activation by phase. */
+export interface LocalFsm<Phase extends string = string> {
+  readonly initial: Phase;
+  readonly transitions: readonly PhaseTransition<Phase>[];
+}
+
+// ── Claim ────────────────────────────────────────────────────────────
+
+/** One surface claim emitted by a rule, with optional kernel delta. */
+export interface Claim {
+  readonly surface: BidMeaning;
+  readonly negotiationDelta?: NegotiationDelta;
+}
+
 // ── Rule ─────────────────────────────────────────────────────────────
 
 /**
@@ -118,21 +132,5 @@ export interface Rule<Phase extends string> {
     readonly route?: RouteExpr;
     readonly local?: Phase | readonly Phase[];
   };
-  readonly claims: readonly {
-    readonly surface: BidMeaning;
-    readonly negotiationDelta?: NegotiationDelta;
-  }[];
-}
-
-// ── RuleModule ───────────────────────────────────────────────────────
-
-/** One module — no special cases. */
-export interface RuleModule<Phase extends string = string> {
-  readonly id: string;
-  readonly local: {
-    readonly initial: Phase;
-    readonly transitions: readonly PhaseTransition<Phase>[];
-  };
-  readonly rules: readonly Rule<Phase>[];
-  readonly facts: FactCatalogExtension;
+  readonly claims: readonly Claim[];
 }

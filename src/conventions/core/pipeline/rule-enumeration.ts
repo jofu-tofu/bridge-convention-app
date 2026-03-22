@@ -10,7 +10,8 @@
  */
 
 import type { Call } from "../../../engine/types";
-import type { RuleModule, TurnRole } from "../rule-module";
+import type { ConventionModule } from "../convention-module";
+import type { TurnRole } from "../rule-module";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ export interface RuleCoverageManifest {
  * Traversal: modules in array order, rules in array order within module.
  */
 export function enumerateRuleAtoms(
-  modules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
 ): readonly RuleAtom[] {
   const atoms: RuleAtom[] = [];
 
@@ -81,7 +82,7 @@ export function enumerateRuleAtoms(
         } else {
           const entry = {
             atom: {
-              moduleId: mod.id,
+              moduleId: mod.moduleId,
               meaningId: surface.meaningId,
               meaningLabel: surface.teachingLabel,
               encoding: surface.encoding.defaultCall,
@@ -113,7 +114,7 @@ export function enumerateRuleAtoms(
  */
 export function generateRuleCoverageManifest(
   systemId: string,
-  modules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
 ): RuleCoverageManifest {
   const atoms = enumerateRuleAtoms(modules);
 

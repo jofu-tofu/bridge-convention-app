@@ -5,54 +5,27 @@
  * FSM states and transitions are defined in the RuleModule (weak-twos-rules.ts).
  */
 
-import type { ConventionModule } from "../../../core/convention-module";
 import type { SystemConfig } from "../../../../core/contracts/system-config";
-import {
-  WEAK_TWO_R1_SURFACES,
-  WEAK_TWO_R2_HEARTS_SURFACES,
-  WEAK_TWO_R2_SPADES_SURFACES,
-  WEAK_TWO_R2_DIAMONDS_SURFACES,
-  WEAK_TWO_OGUST_HEARTS_SURFACES,
-  WEAK_TWO_OGUST_SPADES_SURFACES,
-  WEAK_TWO_OGUST_DIAMONDS_SURFACES,
-  POST_OGUST_HEARTS_SURFACES,
-  POST_OGUST_SPADES_SURFACES,
-  POST_OGUST_DIAMONDS_SURFACES,
-} from "./meaning-surfaces";
+import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
+import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 import { weakTwoFacts } from "./facts";
 import { WEAK_TWO_ENTRIES } from "./explanation-catalog";
 
+/** Module parts returned by createWeakTwosModule (declaration-only — no local/rules). */
+export interface WeakTwosModuleParts {
+  readonly facts: FactCatalogExtension;
+  readonly explanationEntries: readonly ExplanationEntry[];
+}
+
 /**
- * Create a Weak Twos ConventionModule for the given system config.
+ * Create Weak Twos module declaration parts for the given system config.
  *
- * Weak Two thresholds are convention-intrinsic (same in all systems),
- * so the SystemConfig parameter is currently unused. Accepting it
- * maintains a uniform factory signature for the module registry.
+ * Returns facts and explanations only. Full ConventionModule assembly
+ * (adding local FSM + rules) happens in module-registry.ts.
  */
-export function createWeakTwosModule(_sys: SystemConfig): ConventionModule {
+export function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
   return {
-    moduleId: "weak-twos",
-
-    surfaces: [
-      ...WEAK_TWO_R1_SURFACES,
-      ...WEAK_TWO_R2_HEARTS_SURFACES,
-      ...WEAK_TWO_R2_SPADES_SURFACES,
-      ...WEAK_TWO_R2_DIAMONDS_SURFACES,
-      ...WEAK_TWO_OGUST_HEARTS_SURFACES,
-      ...WEAK_TWO_OGUST_SPADES_SURFACES,
-      ...WEAK_TWO_OGUST_DIAMONDS_SURFACES,
-      ...POST_OGUST_HEARTS_SURFACES,
-      ...POST_OGUST_SPADES_SURFACES,
-      ...POST_OGUST_DIAMONDS_SURFACES,
-    ],
-
     facts: weakTwoFacts,
-
     explanationEntries: WEAK_TWO_ENTRIES,
   };
 }
-
-/** @deprecated Use `createWeakTwosModule` via module registry. */
-export const weakTwosModule: ConventionModule = createWeakTwosModule(
-  undefined as unknown as SystemConfig,
-);

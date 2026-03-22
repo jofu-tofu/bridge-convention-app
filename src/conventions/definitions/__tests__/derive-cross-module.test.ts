@@ -8,17 +8,14 @@ import type { TeachingTagDef } from "../../../core/contracts/teaching-tag";
 
 // ── Real NT modules ─────────────────────────────────────────────────
 
-import { staymanModule } from "../modules/stayman";
-import { jacobyTransfersModule } from "../modules/jacoby-transfers";
-import { smolenModule } from "../modules/smolen";
-import { naturalNtModule } from "../modules/natural-nt";
+import { getModules } from "../module-registry";
 
-const NT_MODULES: readonly ConventionModule[] = [
-  naturalNtModule,
-  staymanModule,
-  jacobyTransfersModule,
-  smolenModule,
-];
+const NT_MODULES: readonly ConventionModule[] = getModules([
+  "natural-nt",
+  "stayman",
+  "jacoby-transfers",
+  "smolen",
+]);
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -81,7 +78,8 @@ describe("deriveTeachingContent", () => {
   it("produces empty output for modules with no tags", () => {
     const emptyModule: ConventionModule = {
       moduleId: "empty",
-      surfaces: [],
+      local: { initial: "idle", transitions: [] },
+      rules: [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };
@@ -112,7 +110,10 @@ describe("deriveTeachingContent validation", () => {
   function makeModule(surfaces: BidMeaning[]): ConventionModule {
     return {
       moduleId: "test",
-      surfaces,
+      local: { initial: "idle", transitions: [] },
+      rules: surfaces.length > 0
+        ? [{ match: {}, claims: surfaces.map((s) => ({ surface: s })) }]
+        : [],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
     };

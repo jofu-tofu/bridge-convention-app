@@ -212,20 +212,19 @@ export interface SurfaceFragment {
  * A fully composed convention specification.
  * This is what gets compiled into a runnable convention system.
  *
- * All convention behavior flows through ruleModules — declarative
- * modules with local FSM, rules, facts, and surfaces.
+ * All convention behavior flows through modules — declarative
+ * convention modules with local FSM, rules, facts, and explanations.
  */
 export interface ConventionSpec {
   readonly id: string;
   readonly name: string;
-  /** Rule modules for rule-based surface selection. */
-  readonly ruleModules: readonly RuleModule[];
+  /** Convention modules for rule-based surface selection. */
+  readonly modules: readonly ConventionModule[];
   /** System config for parameterized fact evaluation. When omitted, defaults to SAYC. */
   readonly systemConfig?: SystemConfig;
 }
 
-// Forward reference for RuleModule — avoid circular import
-import type { RuleModule } from "../rule-module";
+import type { ConventionModule } from "../convention-module";
 import type { SystemConfig } from "../../../core/contracts/system-config";
 
 

@@ -3,7 +3,7 @@
 // Generates deals, runs strategy-driven auctions, and checks invariants
 // at each step. Reports coverage and violations.
 
-import type { RuleModule } from "../../conventions/core/rule-module";
+import type { ConventionModule } from "../../conventions/core";
 import type { ConventionBundle } from "../../conventions/core";
 import type { AuctionContext } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
@@ -60,7 +60,7 @@ const EMPTY_RESULT = (bundle: ConventionBundle, config: ExploreConfig): Explorat
  */
 export function exploreBundle(
   bundle: ConventionBundle,
-  modules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
   config: ExploreConfig,
 ): ExplorationResult {
   const systemConfig = getSystemConfig(config.baseSystem ?? BASE_SYSTEM_SAYC);
@@ -96,9 +96,9 @@ export function exploreBundle(
       // Initialize local phases
       const localPhases = new Map<string, string>();
       for (const mod of modules) {
-        localPhases.set(mod.id, mod.local.initial);
-        if (!phasesReached.has(mod.id)) phasesReached.set(mod.id, new Set());
-        phasesReached.get(mod.id)!.add(mod.local.initial);
+        localPhases.set(mod.moduleId, mod.local.initial);
+        if (!phasesReached.has(mod.moduleId)) phasesReached.set(mod.moduleId, new Set());
+        phasesReached.get(mod.moduleId)!.add(mod.local.initial);
       }
 
       for (let step = 0; step < config.depth; step++) {
@@ -116,7 +116,7 @@ export function exploreBundle(
         // Track coverage
         for (const claim of claims) {
           modulesActivated.add(claim.moduleId);
-          for (const surface of claim.surfaces) {
+          for (const { surface } of claim.claims) {
             atomsExercised.add(`${claim.moduleId}/${surface.meaningId}`);
           }
         }
@@ -164,11 +164,11 @@ export function exploreBundle(
           // Track rules fired
           for (const claim of claims) {
             if (!rulesFired.has(claim.moduleId)) rulesFired.set(claim.moduleId, new Set());
-            const mod = modules.find((m) => m.id === claim.moduleId);
+            const mod = modules.find((m) => m.moduleId === claim.moduleId);
             if (mod) {
               for (let ri = 0; ri < mod.rules.length; ri++) {
                 for (const c of mod.rules[ri]!.claims) {
-                  if (claim.surfaces.includes(c.surface)) {
+                  if (claim.claims.some(cl => cl.surface === c.surface)) {
                     rulesFired.get(claim.moduleId)!.add(ri);
                   }
                 }
@@ -183,8 +183,8 @@ export function exploreBundle(
         if (log.length > 0) {
           const lastStep = log[log.length - 1]!;
           for (const mod of modules) {
-            const current = localPhases.get(mod.id) ?? mod.local.initial;
-            localPhases.set(mod.id, advanceLocalFsm(current, lastStep, mod.local.transitions));
+            const current = localPhases.get(mod.moduleId) ?? mod.local.initial;
+            localPhases.set(mod.moduleId, advanceLocalFsm(current, lastStep, mod.local.transitions));
           }
         }
 

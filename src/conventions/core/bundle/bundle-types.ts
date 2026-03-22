@@ -6,7 +6,7 @@ import type { SystemProfile } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig, ConventionTeaching } from "../../../core/contracts/convention";
 import { ConventionCategory } from "../../../core/contracts/convention";
 import type { SystemConfig } from "../../../core/contracts/system-config";
-import type { RuleModule } from "../rule-module";
+import type { ConventionModule } from "../convention-module";
 
 // ── Authored input ──────────────────────────────────────────────────
 
@@ -47,8 +47,7 @@ export interface BundleInput {
   readonly teaching?: ConventionTeaching;
   /** If set, drill infrastructure picks a random dealer from this list. */
   readonly allowedDealers?: readonly Seat[];
-  /** Rule modules for rule-based surface selection. */
-  readonly ruleModules?: readonly RuleModule[];
+  // ruleModules removed — modules are resolved by buildBundle() from memberIds via module-registry.
 }
 
 // ── Derived teaching content ────────────────────────────────────────
@@ -78,6 +77,8 @@ export interface DerivedTeachingContent {
  * cannot be set by authors.
  */
 export interface ConventionBundle extends BundleInput {
+  /** Resolved convention modules (assembled by buildBundle from memberIds). */
+  readonly modules: readonly ConventionModule[];
   /** Derived teaching/grading metadata (acceptableAlternatives, surfaceGroups, relations). */
   readonly derivedTeaching: DerivedTeachingContent;
 }

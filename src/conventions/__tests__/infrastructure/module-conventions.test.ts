@@ -10,6 +10,7 @@
 import { describe, it, expect } from "vitest";
 
 import { getAllModules } from "../../definitions/module-registry";
+import { moduleSurfaces } from "../../core/convention-module";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import { BERGEN_THRESHOLDS } from "../../definitions/modules/bergen/meaning-surfaces";
 import { WEAK_TWO_THRESHOLDS } from "../../definitions/modules/weak-twos/meaning-surfaces";
@@ -75,7 +76,7 @@ describe("module conventions", () => {
 
   describe("numeric clause values use named constants or module-derived facts", () => {
     for (const mod of modules) {
-      const allSurfaces = mod.surfaces;
+      const allSurfaces = moduleSurfaces(mod);
       const numericValues = extractNumericClauseValues(allSurfaces);
 
       // Filter to only point-based values (not suit lengths, module-derived facts, or system facts)

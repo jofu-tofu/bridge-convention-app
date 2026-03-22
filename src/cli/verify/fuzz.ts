@@ -3,7 +3,7 @@
 // Runs many random deals through the strategy, checking invariants
 // and catching crashes. Seeds from mulberry32 for reproducibility.
 
-import type { RuleModule } from "../../conventions/core/rule-module";
+import type { ConventionModule } from "../../conventions/core";
 import type { ConventionBundle } from "../../conventions/core";
 import type { AuctionContext } from "../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
@@ -59,7 +59,7 @@ const VULN_CYCLE: Vulnerability[] = [
  */
 export function fuzzBundle(
   bundle: ConventionBundle,
-  modules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
   config: FuzzConfig,
 ): FuzzResult {
   const systemConfig = getSystemConfig(config.baseSystem ?? BASE_SYSTEM_SAYC);
@@ -121,7 +121,7 @@ export function fuzzBundle(
           step,
           auction: auctionStrings,
           nextSeat,
-          localPhases: new Map(modules.map((m) => [m.id, m.local.initial])),
+          localPhases: new Map(modules.map((m) => [m.moduleId, m.local.initial])),
           kernel: currentKernel,
           claims,
           log,

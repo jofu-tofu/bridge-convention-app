@@ -51,10 +51,10 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig, baseSystem
   const spec = resolveSpec(bundleId, baseSystem);
   const bundle = resolveBundleWithRules(bundleId, baseSystem);
   const strategy = createSpecStrategy(spec);
-  const ruleModules = bundle.ruleModules ?? [];
+  const modules = bundle.modules ?? [];
 
   // All atoms from rule enumeration
-  const allAtoms = enumerateRuleAtoms(ruleModules);
+  const allAtoms = enumerateRuleAtoms(modules);
 
   // ── Per-atom seed search with per-seed scenario assignment ──
   const atomPlans: AtomPlan[] = [];
@@ -132,7 +132,7 @@ export function runPlan(flags: Flags, scenarioConfig: ScenarioConfig, baseSystem
   }
 
   // ── Phase 2: Playthrough seed selection ──
-  const atomCallMap = buildAtomCallMap(ruleModules);
+  const atomCallMap = buildAtomCallMap(modules);
   // Deduplicate seeds (same seed number) — each seed has a deterministic scenario
   const seenSeeds = new Set<number>();
   const uniqueSeedInfos: SeedInfo[] = [];

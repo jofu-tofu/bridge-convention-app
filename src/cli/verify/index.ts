@@ -31,7 +31,7 @@ export function runVerify(subcommand: string, flags: Flags): void {
 function runVerifyExplore(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const bundle = resolveBundleWithRules(bundleId, baseSystem);
-  const modules = bundle.ruleModules ?? [];
+  const modules = bundle.modules ?? [];
   const depth = optionalNumericArg(flags, "depth") ?? 6;
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const trials = optionalNumericArg(flags, "trials") ?? 50;
@@ -58,7 +58,7 @@ function runVerifyMotif(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const pairStr = requireArg(flags, "pair");
   const bundle = resolveBundleWithRules(bundleId, baseSystem);
-  const modules = bundle.ruleModules ?? [];
+  const modules = bundle.modules ?? [];
   const depth = optionalNumericArg(flags, "depth") ?? 8;
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const trials = optionalNumericArg(flags, "trials") ?? 100;
@@ -83,7 +83,7 @@ function runVerifyMotif(flags: Flags, baseSystem: BaseSystemId): void {
 function runVerifyFuzz(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const bundle = resolveBundleWithRules(bundleId, baseSystem);
-  const modules = bundle.ruleModules ?? [];
+  const modules = bundle.modules ?? [];
   const trials = optionalNumericArg(flags, "trials") ?? 200;
   const seed = optionalNumericArg(flags, "seed") ?? 0;
   const vulnMixed = flags["vuln"] === "mixed";
@@ -102,7 +102,7 @@ function runVerifyFuzz(flags: Flags, baseSystem: BaseSystemId): void {
 function runVerifyPreflight(flags: Flags, baseSystem: BaseSystemId): void {
   const bundleId = requireArg(flags, "bundle");
   const bundle = resolveBundleWithRules(bundleId, baseSystem);
-  const modules = bundle.ruleModules ?? [];
+  const modules = bundle.modules ?? [];
   const budgetStr = (flags["budget"] as string) ?? "fast";
 
   if (modules.length === 0) {

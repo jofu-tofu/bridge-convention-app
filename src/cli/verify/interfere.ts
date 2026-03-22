@@ -1,14 +1,14 @@
 /**
  * Pairwise interference analysis for convention module composition.
  *
- * Static analysis over RuleModule pairs to detect potential conflicts:
+ * Static analysis over ConventionModule pairs to detect potential conflicts:
  * - Activation overlap: rules that could fire at the same snapshot
  * - Encoding collision: claims that encode to the same bid
  * - Observation crosstalk: claims whose observations trigger foreign transitions
  * - Kernel conflict: claims that write the same kernel state field
  */
 
-import type { RuleModule } from "../../conventions/core";
+import type { ConventionModule } from "../../conventions/core";
 import type { Rule, ObsPattern } from "../../conventions/core/rule-module";
 import type { InterferenceEdge, PairInteraction } from "./types";
 import { normalizeIntent, matchObs } from "../../conventions/core";
@@ -72,7 +72,7 @@ function phasesCompatible(
  *
  * Conservative over-approximation: compatible turn + phase guards.
  */
-export function detectActivationOverlap(a: RuleModule, b: RuleModule): InterferenceEdge[] {
+export function detectActivationOverlap(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   const edges: InterferenceEdge[] = [];
 
   for (let ai = 0; ai < a.rules.length; ai++) {
@@ -86,7 +86,7 @@ export function detectActivationOverlap(a: RuleModule, b: RuleModule): Interfere
       if (turnsCompatible(ruleA.match.turn, ruleB.match.turn) && phasesCompatible(phasesA, phasesB)) {
         edges.push({
           kind: "activation-overlap",
-          description: `Rules could co-fire: ${a.id}[${ai}] and ${b.id}[${bi}]`,
+          description: `Rules could co-fire: ${a.moduleId}[${ai}] and ${b.moduleId}[${bi}]`,
           risk: "low",
           ruleA: { ruleIndex: ai, matchSummary: summarizeMatch(ruleA, ai) },
           ruleB: { ruleIndex: bi, matchSummary: summarizeMatch(ruleB, bi) },
@@ -106,7 +106,7 @@ export function detectActivationOverlap(a: RuleModule, b: RuleModule): Interfere
  * Cross-product of all claims from A and B; flags when callKey matches
  * and turn guards are compatible.
  */
-export function detectEncodingCollision(a: RuleModule, b: RuleModule): InterferenceEdge[] {
+export function detectEncodingCollision(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   const edges: InterferenceEdge[] = [];
 
   for (let ai = 0; ai < a.rules.length; ai++) {
@@ -132,7 +132,7 @@ export function detectEncodingCollision(a: RuleModule, b: RuleModule): Interfere
 
             edges.push({
               kind: "encoding-collision",
-              description: `Both claim ${keyA}: ${a.id}/${claimA.surface.meaningId} vs ${b.id}/${claimB.surface.meaningId}`,
+              description: `Both claim ${keyA}: ${a.moduleId}/${claimA.surface.meaningId} vs ${b.moduleId}/${claimB.surface.meaningId}`,
               risk,
               ruleA: { ruleIndex: ai, matchSummary: summarizeMatch(ruleA, ai) },
               ruleB: { ruleIndex: bi, matchSummary: summarizeMatch(ruleB, bi) },
@@ -156,7 +156,7 @@ export function detectEncodingCollision(a: RuleModule, b: RuleModule): Interfere
  * For each claim in A, normalizes sourceIntent → BidAction[], then checks
  * against B's transitions. Also checks reverse (B→A).
  */
-export function detectObservationCrosstalk(a: RuleModule, b: RuleModule): InterferenceEdge[] {
+export function detectObservationCrosstalk(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   const edges: InterferenceEdge[] = [];
 
   // A's claims → B's transitions
@@ -168,8 +168,8 @@ export function detectObservationCrosstalk(a: RuleModule, b: RuleModule): Interf
 }
 
 function detectCrosstalkDirection(
-  source: RuleModule,
-  target: RuleModule,
+  source: ConventionModule,
+  target: ConventionModule,
   edges: InterferenceEdge[],
 ): void {
   for (let ri = 0; ri < source.rules.length; ri++) {
@@ -184,7 +184,7 @@ function detectCrosstalkDirection(
           if (matchObs(transition.on, obs)) {
             edges.push({
               kind: "observation-crosstalk",
-              description: `${source.id}/${claim.surface.meaningId} obs could trigger ${target.id} transition ${formatTransition(transition.on)}`,
+              description: `${source.moduleId}/${claim.surface.meaningId} obs could trigger ${target.moduleId} transition ${formatTransition(transition.on)}`,
               risk: "medium",
               ruleA: { ruleIndex: ri, matchSummary: summarizeMatch(rule, ri) },
               detail: `obs act=${obs.act}, transition from=${String(transition.from)} to=${transition.to}`,
@@ -208,7 +208,7 @@ function formatTransition(pattern: ObsPattern): string {
 /**
  * Detect when both modules write the same kernel state field.
  */
-export function detectKernelConflict(a: RuleModule, b: RuleModule): InterferenceEdge[] {
+export function detectKernelConflict(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   const edges: InterferenceEdge[] = [];
 
   // Collect all (ruleIndex, field, value) tuples from each module
@@ -221,7 +221,7 @@ export function detectKernelConflict(a: RuleModule, b: RuleModule): Interference
         const sameValue = JSON.stringify(entryA.value) === JSON.stringify(entryB.value);
         edges.push({
           kind: "kernel-conflict",
-          description: `Both write kernel.${entryA.field}: ${a.id}[${entryA.ruleIndex}] vs ${b.id}[${entryB.ruleIndex}]`,
+          description: `Both write kernel.${entryA.field}: ${a.moduleId}[${entryA.ruleIndex}] vs ${b.moduleId}[${entryB.ruleIndex}]`,
           risk: sameValue ? "low" : "medium",
           ruleA: { ruleIndex: entryA.ruleIndex, matchSummary: entryA.meaningId },
           ruleB: { ruleIndex: entryB.ruleIndex, matchSummary: entryB.meaningId },
@@ -243,7 +243,7 @@ interface KernelDeltaEntry {
   readonly value: unknown;
 }
 
-function collectKernelDeltas(mod: RuleModule): KernelDeltaEntry[] {
+function collectKernelDeltas(mod: ConventionModule): KernelDeltaEntry[] {
   const entries: KernelDeltaEntry[] = [];
 
   for (let ri = 0; ri < mod.rules.length; ri++) {
@@ -271,7 +271,7 @@ function collectKernelDeltas(mod: RuleModule): KernelDeltaEntry[] {
 /**
  * Full pairwise analysis of two modules across all interference dimensions.
  */
-export function analyzeModulePair(a: RuleModule, b: RuleModule): InterferenceEdge[] {
+export function analyzeModulePair(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   return [
     ...detectActivationOverlap(a, b),
     ...detectEncodingCollision(a, b),
@@ -303,7 +303,7 @@ export function classifyPairRisk(edges: readonly InterferenceEdge[]): "high" | "
 /**
  * All-pairs interference analysis across a bundle's modules.
  */
-export function analyzeBundle(modules: readonly RuleModule[]): PairInteraction[] {
+export function analyzeBundle(modules: readonly ConventionModule[]): PairInteraction[] {
   const interactions: PairInteraction[] = [];
 
   for (let i = 0; i < modules.length; i++) {
@@ -313,8 +313,8 @@ export function analyzeBundle(modules: readonly RuleModule[]): PairInteraction[]
       const edges = analyzeModulePair(a, b);
 
       interactions.push({
-        moduleA: a.id,
-        moduleB: b.id,
+        moduleA: a.moduleId,
+        moduleB: b.moduleId,
         edges,
         riskLevel: classifyPairRisk(edges),
       });

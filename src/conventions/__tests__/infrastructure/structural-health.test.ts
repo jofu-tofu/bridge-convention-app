@@ -21,7 +21,7 @@ import type { LintDiagnostic } from "../../../cli/verify/types";
 
 function getNonInternalBundles(): ConventionBundle[] {
   return listSystemBundles().filter(
-    (b) => !b.internal && b.ruleModules && b.ruleModules.length > 0,
+    (b) => !b.internal && b.modules && b.modules.length > 0,
   ) as ConventionBundle[];
 }
 
@@ -34,7 +34,7 @@ describe("per-bundle lint", () => {
     it("has no lint errors", () => {
       const allDiags: LintDiagnostic[] = [];
 
-      for (const mod of bundle.ruleModules!) {
+      for (const mod of bundle.modules) {
         const diags = lintModule(mod);
         const errors = diags.filter((d) => d.severity === "error");
         allDiags.push(...errors);
@@ -52,7 +52,7 @@ describe("per-bundle interference", () => {
 
   describe.each(bundles.map((b) => [b.id, b] as const))("%s", (_id, bundle) => {
     it("high-risk encoding collision count is stable", () => {
-      const interactions = analyzeBundle(bundle.ruleModules!);
+      const interactions = analyzeBundle(bundle.modules);
 
       // Cross-module encoding collisions at the same band are expected in
       // multi-module bundles (e.g., Stayman 2H vs Jacoby Transfer accept 2H).
@@ -68,7 +68,7 @@ describe("per-bundle interference", () => {
     });
 
     it("interference risk summary is stable", () => {
-      const interactions = analyzeBundle(bundle.ruleModules!);
+      const interactions = analyzeBundle(bundle.modules);
 
       const summary = {
         high: interactions.filter((p) => p.riskLevel === "high").length,
@@ -92,7 +92,7 @@ describe("lint warning stability", () => {
     (_id, bundle) => {
       let warningCount = 0;
 
-      for (const mod of bundle.ruleModules!) {
+      for (const mod of bundle.modules) {
         const diags = lintModule(mod);
         warningCount += diags.filter((d) => d.severity === "warn").length;
       }

@@ -1,11 +1,12 @@
 /**
- * Module linting — static analysis of RuleModule structure.
+ * Module linting — static analysis of ConventionModule structure.
  *
  * Detects unreachable phases, dead rules, overly broad rules,
  * orphan transitions, undeclared kernel writes, and duplicate encodings.
  */
 
-import type { RuleModule, NegotiationExpr } from "../../conventions/core/rule-module";
+import type { ConventionModule } from "../../conventions/core";
+import type { NegotiationExpr } from "../../conventions/core/rule-module";
 import type { LintDiagnostic } from "./types";
 import { callKey } from "../../engine/call-helpers";
 
@@ -24,7 +25,7 @@ function normalizeFroms(from: string | readonly string[]): readonly string[] {
  * Transitions are edges from→to regardless of the `on` predicate.
  * If `from` is an array, each element is a source.
  */
-export function computePhaseReachability(mod: RuleModule): Set<string> {
+export function computePhaseReachability(mod: ConventionModule): Set<string> {
   const adjacency = new Map<string, string[]>();
 
   for (const t of mod.local.transitions) {
@@ -72,7 +73,7 @@ function normalizeLocal(
 }
 
 /** Extract all phase names referenced in rule match.local guards. */
-function collectGuardPhases(mod: RuleModule): Set<string> {
+function collectGuardPhases(mod: ConventionModule): Set<string> {
   const phases = new Set<string>();
   for (const rule of mod.rules) {
     const locals = normalizeLocal(rule.match.local);
@@ -122,7 +123,7 @@ function collectKernelReads(expr: NegotiationExpr, fields: Set<string>): void {
  * Phases referenced in `match.local` guards but not in the reachable set.
  */
 export function detectUnreachablePhases(
-  mod: RuleModule,
+  mod: ConventionModule,
   reachable: Set<string>,
 ): LintDiagnostic[] {
   const diags: LintDiagnostic[] = [];
@@ -147,7 +148,7 @@ export function detectUnreachablePhases(
  * Rules guarded by unreachable phases — these rules can never fire.
  */
 export function detectDeadRules(
-  mod: RuleModule,
+  mod: ConventionModule,
   reachable: Set<string>,
 ): LintDiagnostic[] {
   const diags: LintDiagnostic[] = [];
@@ -176,7 +177,7 @@ export function detectDeadRules(
 /**
  * Rules with no `match.local` AND no `match.route` — too permissive.
  */
-export function detectBroadRules(mod: RuleModule): LintDiagnostic[] {
+export function detectBroadRules(mod: ConventionModule): LintDiagnostic[] {
   const diags: LintDiagnostic[] = [];
 
   for (let i = 0; i < mod.rules.length; i++) {
@@ -199,7 +200,7 @@ export function detectBroadRules(mod: RuleModule): LintDiagnostic[] {
  * Transitions whose `from` phases are not reachable.
  */
 export function detectOrphanTransitions(
-  mod: RuleModule,
+  mod: ConventionModule,
   reachable: Set<string>,
 ): LintDiagnostic[] {
   const diags: LintDiagnostic[] = [];
@@ -227,7 +228,7 @@ export function detectOrphanTransitions(
 /**
  * `negotiationDelta` fields not read by any `NegotiationExpr` in same module.
  */
-export function detectUndeclaredWrites(mod: RuleModule): LintDiagnostic[] {
+export function detectUndeclaredWrites(mod: ConventionModule): LintDiagnostic[] {
   // Collect all kernel fields read by any rule's match.kernel
   const readFields = new Set<string>();
   for (const rule of mod.rules) {
@@ -264,7 +265,7 @@ export function detectUndeclaredWrites(mod: RuleModule): LintDiagnostic[] {
  * AND the same `meaningId`. Different meaningIds with the same encoding
  * are valid (different hand shapes that make the same bid).
  */
-export function detectDuplicateEncodings(mod: RuleModule): LintDiagnostic[] {
+export function detectDuplicateEncodings(mod: ConventionModule): LintDiagnostic[] {
   const diags: LintDiagnostic[] = [];
 
   for (let i = 0; i < mod.rules.length; i++) {
@@ -297,7 +298,7 @@ export function detectDuplicateEncodings(mod: RuleModule): LintDiagnostic[] {
 // ── Main entry ──────────────────────────────────────────────────────
 
 /** Run all lint rules on a module. */
-export function lintModule(mod: RuleModule): LintDiagnostic[] {
+export function lintModule(mod: ConventionModule): LintDiagnostic[] {
   const reachable = computePhaseReachability(mod);
   return [
     ...detectUnreachablePhases(mod, reachable),

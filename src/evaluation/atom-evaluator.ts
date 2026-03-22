@@ -143,8 +143,8 @@ function makeViewport(
 /** Resolve the atom list for a bundle using rule enumeration. */
 function resolveAtoms(bundleId: string): readonly RuleAtom[] {
   const bundle = getSystemBundle(bundleId);
-  if (!bundle?.ruleModules) return [];
-  return enumerateRuleAtoms(bundle.ruleModules);
+  if (!bundle?.modules) return [];
+  return enumerateRuleAtoms(bundle.modules);
 }
 
 /** Create a strategy from a bundle ID. */

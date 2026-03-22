@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getAllModules } from "../module-registry";
 import type { ConventionModule } from "../../core/convention-module";
+import { moduleSurfaces } from "../../core/convention-module";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import {
   PRIMITIVE_FACTS,
@@ -25,15 +26,8 @@ const sharedFactIds = new Set(
 
 /** Collect all distinct surfaces from a module (deduped by meaningId). */
 function allUniqueSurfaces(mod: ConventionModule): BidMeaning[] {
-  const seen = new Set<string>();
-  const result: BidMeaning[] = [];
-  for (const s of mod.surfaces) {
-    if (!seen.has(s.meaningId)) {
-      seen.add(s.meaningId);
-      result.push(s);
-    }
-  }
-  return result;
+  // moduleSurfaces already deduplicates by meaningId
+  return [...moduleSurfaces(mod)];
 }
 
 // ── 1. Structural contract ───────────────────────────────────────
@@ -44,8 +38,8 @@ describe.each(moduleEntries)("structural contract — %s", (_id, mod) => {
     expect(mod.moduleId.length).toBeGreaterThan(0);
   });
 
-  it("surfaces is an array", () => {
-    expect(Array.isArray(mod.surfaces)).toBe(true);
+  it("rules is an array", () => {
+    expect(Array.isArray(mod.rules)).toBe(true);
   });
 
   it("facts has definitions array and evaluators map", () => {
@@ -85,7 +79,7 @@ describe.each(moduleEntries)("surface integrity — %s", (_id, mod) => {
   });
 
   it("no duplicate meaningIds within surfaces", () => {
-    const ids = mod.surfaces.map((s) => s.meaningId);
+    const ids = moduleSurfaces(mod).map((s) => s.meaningId);
     expect(new Set(ids).size).toBe(ids.length);
   });
 });

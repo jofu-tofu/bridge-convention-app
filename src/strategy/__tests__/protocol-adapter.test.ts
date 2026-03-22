@@ -14,7 +14,7 @@ import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { createBiddingContext } from "../../conventions/core/context-factory";
 import { makeSurface, makeRanking } from "../../test-support/convention-factories";
-import type { RuleModule } from "../../conventions/core/rule-module";
+import type { ConventionModule } from "../../conventions/core/convention-module";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
 import type { ConventionSpec } from "../../conventions/core/protocol/types";
@@ -30,7 +30,6 @@ import { ntBundle, specFromBundle } from "../../conventions/definitions/system-r
 // ── Helpers ──────────────────────────────────────────────────────────
 
 const emptyFacts: FactCatalogExtension = {
-  moduleId: "test",
   definitions: [],
   evaluators: new Map(),
 };
@@ -41,7 +40,7 @@ function makeRuleModule(overrides: {
   surfaces?: BidMeaning[];
   turn?: "opener" | "responder" | "opponent";
   local?: string;
-}): RuleModule {
+}): ConventionModule {
   const surfaces = overrides.surfaces ?? [
     makeSurface({
       meaningId: "test:bid",
@@ -54,7 +53,7 @@ function makeRuleModule(overrides: {
   ];
 
   return {
-    id: overrides.id ?? "test-module",
+    moduleId: overrides.id ?? "test-module",
     local: {
       initial: "idle",
       transitions: [],
@@ -69,15 +68,16 @@ function makeRuleModule(overrides: {
       },
     ],
     facts: emptyFacts,
+    explanationEntries: [],
   };
 }
 
-/** Create a minimal ConventionSpec wrapping rule modules. */
-function makeSpec(ruleModules: readonly RuleModule[]): ConventionSpec {
+/** Create a minimal ConventionSpec wrapping convention modules. */
+function makeSpec(modules: readonly ConventionModule[]): ConventionSpec {
   return {
     id: "test-spec",
     name: "Test Spec",
-    ruleModules,
+    modules,
   };
 }
 
@@ -195,7 +195,7 @@ describe("protocolSpecToStrategy", () => {
 
     const evaluation = strategy.getLastEvaluation();
     expect(evaluation).not.toBeNull();
-    expect(evaluation!.arbitration).not.toBeNull();
+    expect(evaluation!.pipelineResult).not.toBeNull();
     expect(evaluation!.facts).not.toBeNull();
     expect(evaluation!.auctionContext).not.toBeNull();
   });
@@ -232,8 +232,8 @@ describe("buildObservationLogViaRules", () => {
       teachingLabel: "1NT opening",
     });
 
-    const mod: RuleModule = {
-      id: "test",
+    const mod: ConventionModule = {
+      moduleId: "test",
       local: { initial: "idle", transitions: [] },
       rules: [
         {
@@ -242,6 +242,7 @@ describe("buildObservationLogViaRules", () => {
         },
       ],
       facts: emptyFacts,
+      explanationEntries: [],
     };
 
     const history: { call: Call; seat: Seat }[] = [
@@ -285,8 +286,8 @@ describe("buildObservationLogViaRules", () => {
       teachingLabel: "Stayman",
     });
 
-    const mod: RuleModule = {
-      id: "test",
+    const mod: ConventionModule = {
+      moduleId: "test",
       local: {
         initial: "idle",
         transitions: [
@@ -308,6 +309,7 @@ describe("buildObservationLogViaRules", () => {
         },
       ],
       facts: emptyFacts,
+      explanationEntries: [],
     };
 
     const history: { call: Call; seat: Seat }[] = [
@@ -470,7 +472,7 @@ describe("protocolSpecToStrategy with real NT system", () => {
   });
 
   it("builds an observation log for a multi-step Stayman auction", () => {
-    const ruleModules = ntBundle.ruleModules!;
+    const ruleModules = ntBundle.modules;
 
     const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2D", "P"]);
     const history = auction.entries.map((e) => ({ call: e.call, seat: e.seat }));
@@ -498,7 +500,7 @@ describe("protocolSpecToStrategy with real NT system", () => {
   });
 
   it("threads kernel state correctly through Stayman auction", () => {
-    const ruleModules = ntBundle.ruleModules!;
+    const ruleModules = ntBundle.modules;
 
     const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P"]);
     const history = auction.entries.map((e) => ({ call: e.call, seat: e.seat }));

@@ -40,6 +40,8 @@ export { evaluateAllBidMeanings } from "./pipeline/meaning-evaluator";
 export {
   arbitrateMeanings,
   zipProposalsWithSurfaces,
+  pipelineResultToArbitration,
+  pipelineResultToProvenance,
 } from "./pipeline/meaning-arbitrator";
 
 // ── Runtime (remaining) ─────────────────────────────────────────────────
@@ -62,17 +64,15 @@ export { enumerateRuleAtoms, generateRuleCoverageManifest } from "./pipeline/rul
 export type { RuleAtom, RuleCoverageManifest } from "./pipeline/rule-enumeration";
 
 // ── Rule interpretation workflow — used by strategy/bidding/protocol-adapter ──
-export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole } from "./pipeline/rule-interpreter";
+export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole, flattenSurfaces } from "./pipeline/rule-interpreter";
 export type { ModuleClaimResult } from "./pipeline/rule-interpreter";
 export { normalizeIntent } from "./pipeline/normalize-intent";
 export { matchObs } from "./pipeline/route-matcher";
 export { advanceLocalFsm } from "./pipeline/local-fsm";
 
-// ── Rule Module ─────────────────────────────────────────────────────────
-export type { RuleModule } from "./rule-module";
-
-// ── Convention Module ────────────────────────────────────────────────────
-export type { ConventionModule } from "./convention-module";
+// ── Convention Module (unified type) ─────────────────────────────────────
+export type { ConventionModule, Claim, LocalFsm } from "./convention-module";
+export { moduleSurfaces } from "./convention-module";
 
 // ── System Registry (re-exported from definitions for external consumers) ────
 export { getSystemBundle, listSystemBundles, specFromBundle } from "../definitions/system-registry";

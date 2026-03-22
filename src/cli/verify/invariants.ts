@@ -46,7 +46,7 @@ export function checkArbitrationTotality(
   if (role === "opponent") return null;
 
   const hasMatchingSurfaces = snapshot.claims.some(
-    (claim) => claim.surfaces.length > 0,
+    (claim) => claim.claims.length > 0,
   );
   if (hasMatchingSurfaces) return null;
 
@@ -175,7 +175,7 @@ export function checkEncodingUniqueness(
   const callBandToModule = new Map<string, string>();
 
   for (const claim of snapshot.claims) {
-    for (const surface of claim.surfaces) {
+    for (const { surface } of claim.claims) {
       const ck = callKey(surface.encoding.defaultCall);
       const band = surface.ranking.recommendationBand;
       const key = `${ck}::${band}`;

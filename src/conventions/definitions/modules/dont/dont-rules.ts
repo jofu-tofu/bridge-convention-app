@@ -22,7 +22,7 @@
  * phase transitions (like Bergen's stub major opening).
  */
 
-import type { RuleModule } from "../../../core/rule-module";
+import type { LocalFsm, Rule } from "../../../core/rule-module";
 import type { BidMeaning } from "../../../../core/contracts/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
@@ -39,7 +39,7 @@ import {
   DONT_2C_RELAY_SURFACES,
   DONT_2D_RELAY_SURFACES,
 } from "./meaning-surfaces";
-import { dontFacts } from "./facts";
+// dontFacts removed — facts live on the assembled ConventionModule, not in rules.
 
 // ── Stub 1NT opening surface ──────────────────────────────────────
 
@@ -73,11 +73,9 @@ type Phase =
 
 // ── Rule module ───────────────────────────────────────────────────
 
-export const dontRules: RuleModule<Phase> = {
-  id: "dont",
-  local: {
-    initial: "idle",
-    transitions: [
+export const dontLocal: LocalFsm<Phase> = {
+  initial: "idle",
+  transitions: [
       // 1NT opening → overcaller's turn
       { from: "idle", to: "r1", on: { act: "open", strain: "notrump" } },
 
@@ -122,10 +120,11 @@ export const dontRules: RuleModule<Phase> = {
       { from: "wait-reveal", to: "done", on: { act: "show" } },
       { from: "wait-2d-relay", to: "done", on: { act: "show" } },
       { from: "wait-2c-relay", to: "done", on: { act: "show" } },
-    ],
-  },
-  rules: [
-    // Stub: opponent 1NT opening (for phase transition)
+  ],
+};
+
+export const dontRuleDefs: readonly Rule<Phase>[] = [
+  // Stub: opponent 1NT opening (for phase transition)
     { match: { local: "idle" }, claims: [{ surface: OPPONENT_1NT_SURFACE }] },
 
     // R1: overcaller's action after 1NT
@@ -141,7 +140,5 @@ export const dontRules: RuleModule<Phase> = {
     // Overcaller reveal/relay (after advancer's forced 2C)
     { match: { local: "wait-reveal" }, claims: DONT_REVEAL_SURFACES.map((s) => ({ surface: s })) },
     { match: { local: "wait-2c-relay" }, claims: DONT_2C_RELAY_SURFACES.map((s) => ({ surface: s })) },
-    { match: { local: "wait-2d-relay" }, claims: DONT_2D_RELAY_SURFACES.map((s) => ({ surface: s })) },
-  ],
-  facts: dontFacts,
-};
+  { match: { local: "wait-2d-relay" }, claims: DONT_2D_RELAY_SURFACES.map((s) => ({ surface: s })) },
+];

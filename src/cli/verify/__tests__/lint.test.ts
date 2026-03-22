@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { RuleModule, Rule, NegotiationExpr } from "../../../conventions/core/rule-module";
+import type { Rule, NegotiationExpr } from "../../../conventions/core/rule-module";
+import type { ConventionModule } from "../../../conventions/core/convention-module";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import {
   lintModule,
@@ -14,12 +15,13 @@ import {
 
 // ── Factories ───────────────────────────────────────────────────────
 
-function makeModule(overrides: Partial<RuleModule> = {}): RuleModule {
+function makeModule(overrides: Partial<ConventionModule> = {}): ConventionModule {
   return {
-    id: "test-mod",
+    moduleId: "test-mod",
     local: { initial: "idle", transitions: [] },
     rules: [],
     facts: { definitions: [], evaluators: new Map() },
+    explanationEntries: [],
     ...overrides,
   };
 }

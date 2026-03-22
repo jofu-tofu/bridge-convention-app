@@ -27,9 +27,9 @@ import { runMeaningPipeline } from "../../../strategy/bidding/meaning-strategy";
 import { buildObservationLogViaRules } from "../../../strategy/bidding/protocol-adapter";
 import type { AuctionContext } from "../../../core/contracts/committed-step";
 import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { RuleModule } from "../../core/rule-module";
+import type { ConventionModule } from "../../core/convention-module";
 
-const ruleModules: readonly RuleModule[] = ntBundle.ruleModules!;
+const ruleModules: readonly ConventionModule[] = ntBundle.modules;
 
 // Build fact catalog from rule module fact extensions
 const moduleFactExtensions = ruleModules
@@ -60,7 +60,7 @@ function evaluatePosition(
   const log = buildObservationLogViaRules(history, seat, ruleModules);
   const auctionCtx: AuctionContext = { snapshot: {} as PublicSnapshot, log };
   const results = collectMatchingClaims(ruleModules, auctionCtx, seat);
-  const visibleSurfaces = results.flatMap((r) => r.surfaces);
+  const visibleSurfaces = results.flatMap((r) => r.claims.map((c) => c.surface));
 
   const ev = evaluateHand(testHand);
   const context = createBiddingContext({

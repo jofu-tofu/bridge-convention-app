@@ -11,6 +11,7 @@
  */
 
 import type { ConventionModule } from "../core/convention-module";
+import { moduleSurfaces } from "../core/convention-module";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { TeachingTagDef } from "../../core/contracts/teaching-tag";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
@@ -48,7 +49,7 @@ function collectTagMembers(modules: readonly ConventionModule[]): TagMember[] {
 
   for (const mod of modules) {
     const seenMeaningIds = new Set<string>();
-    for (const surface of mod.surfaces) {
+    for (const surface of moduleSurfaces(mod)) {
       if (seenMeaningIds.has(surface.meaningId)) continue;
       seenMeaningIds.add(surface.meaningId);
       processSurface(surface);

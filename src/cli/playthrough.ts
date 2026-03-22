@@ -6,7 +6,7 @@
 import {
   enumerateRuleAtoms,
 } from "../conventions/core";
-import type { RuleModule } from "../conventions/core";
+import type { ConventionModule } from "../conventions/core";
 import { createSpecStrategy, createOpponentStrategy } from "../bootstrap/strategy-factory";
 import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder";
 import type { BidResult } from "../core/contracts/bidding";
@@ -54,10 +54,10 @@ export interface PlaythroughResult {
  * by their encoding call, not by FSM state.
  */
 export function buildAtomCallMap(
-  ruleModules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
 ): Map<string, { atomId: string; meaningLabel: string }> {
   const map = new Map<string, { atomId: string; meaningLabel: string }>();
-  const atoms = enumerateRuleAtoms(ruleModules);
+  const atoms = enumerateRuleAtoms(modules);
 
   for (const atom of atoms) {
     const key = callKey(atom.encoding);

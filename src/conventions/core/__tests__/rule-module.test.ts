@@ -1,24 +1,25 @@
 import { describe, it, expect } from "vitest";
 import type {
-  RuleModule,
   RouteExpr,
   NegotiationExpr,
   Rule,
   PhaseTransition,
 } from "../rule-module";
+import type { ConventionModule } from "../convention-module";
 
-describe("RuleModule type construction", () => {
-  it("constructs a minimal RuleModule", () => {
-    const mod: RuleModule<"idle" | "active"> = {
-      id: "test-module",
+describe("ConventionModule type construction", () => {
+  it("constructs a minimal ConventionModule", () => {
+    const mod: ConventionModule<"idle" | "active"> = {
+      moduleId: "test-module",
       local: {
         initial: "idle",
         transitions: [],
       },
       rules: [],
       facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
     };
-    expect(mod.id).toBe("test-module");
+    expect(mod.moduleId).toBe("test-module");
     expect(mod.local.initial).toBe("idle");
   });
 

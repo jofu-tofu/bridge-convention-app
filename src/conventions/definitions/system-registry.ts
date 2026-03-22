@@ -1,15 +1,16 @@
 /**
  * Bundle Registry — central definitions for all convention bundles.
  *
- * Each bundle definition composes modules (via ruleModules) with deal constraints,
- * system profile, and teaching metadata. `buildBundle()` aggregates pedagogical
- * content from the module registry into `derivedTeaching`.
+ * Each bundle definition composes modules (via memberIds) with deal constraints,
+ * system profile, and teaching metadata. `buildBundle()` resolves modules from
+ * the module registry and aggregates pedagogical content into `derivedTeaching`.
  */
 
 import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
-import type { RuleModule } from "../core/rule-module";
+import type { ConventionModule } from "../core/convention-module";
+import { moduleSurfaces } from "../core/convention-module";
 import type { AlternativeGroup, SurfaceGroup } from "../../core/contracts/teaching-grading";
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import { getModules } from "./module-registry";
@@ -20,31 +21,23 @@ import { suitLengthOf } from "../../engine/hand-evaluator";
 import { ConventionCategory } from "../../core/contracts/convention";
 import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPPONENT_1NT } from "./capability-vocabulary";
 import { buildAuction } from "../../engine/auction-helpers";
-import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./nt-bundle/system-profile";
-import { naturalNtRules } from "./modules/natural-nt-rules";
-import { staymanRules } from "./modules/stayman-rules";
-import { jacobyTransfersRules } from "./modules/jacoby-transfers-rules";
-import { smolenRules } from "./modules/smolen-rules";
+import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE, NT_ACOL_PROFILE } from "./nt-bundle/system-profile";
 import { BERGEN_PROFILE } from "./bergen-bundle/system-profile";
-import { bergenRules } from "./modules/bergen/bergen-rules";
 import { DONT_PROFILE } from "./dont-bundle/system-profile";
-import { dontRules } from "./modules/dont/dont-rules";
 import { WEAK_TWO_PROFILE } from "./weak-twos-bundle/system-profile";
-import { weakTwosRules } from "./modules/weak-twos/weak-twos-rules";
 
 // ── Module aggregation ──────────────────────────────────────────────
 
-/** Aggregate teaching/grading content from module IDs and rule modules. */
-function aggregateTeachingContent(moduleIds: readonly string[], ruleModules: readonly RuleModule[]): {
+/** Aggregate teaching/grading content from resolved modules. */
+function aggregateTeachingContent(modules: readonly ConventionModule[]): {
   acceptableAlternatives: readonly AlternativeGroup[];
   surfaceGroups: readonly SurfaceGroup[];
   relations: readonly TeachingRelation[];
 } {
-  const modules = getModules(moduleIds);
   const derived = deriveTeachingContent(modules);
   return {
     acceptableAlternatives: derived.alternatives,
-    surfaceGroups: [...derived.surfaceGroups, ...deriveSurfaceGroupsFromRules(ruleModules)],
+    surfaceGroups: [...derived.surfaceGroups, ...deriveSurfaceGroupsFromModules(modules)],
     relations: derived.relations,
   };
 }
@@ -53,28 +46,30 @@ function aggregateTeachingContent(moduleIds: readonly string[], ruleModules: rea
 
 /**
  * Build a ConventionBundle from authored input.
- * Aggregates pedagogical content from modules and rule modules.
- * Authors provide BundleInput; derived fields are computed here.
+ * Resolves modules from module registry via memberIds, aggregates
+ * pedagogical content from the resolved modules.
  */
-function buildBundle(def: BundleInput): ConventionBundle {
-  const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(def.memberIds, def.ruleModules ?? []);
+function buildBundle(def: BundleInput, sys?: SystemConfig): ConventionBundle {
+  const modules = getModules(def.memberIds, sys ?? def.systemProfile?.systemConfig);
+  const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(modules);
   return {
     ...def,
+    modules,
     derivedTeaching: { acceptableAlternatives, surfaceGroups, relations },
   };
 }
 
 /**
- * Auto-derive IntentFamilies from rule module structure.
+ * Auto-derive SurfaceGroups from module rule structure.
  * Each rule with 2+ claims represents surfaces competing at the same
  * decision point — a natural SurfaceGroup with mutually_exclusive relationship.
  */
-function deriveSurfaceGroupsFromRules(
-  ruleModules: readonly RuleModule[],
+function deriveSurfaceGroupsFromModules(
+  modules: readonly ConventionModule[],
 ): SurfaceGroup[] {
   const families: SurfaceGroup[] = [];
 
-  for (const mod of ruleModules) {
+  for (const mod of modules) {
     for (const rule of mod.rules) {
       if (rule.claims.length < 2) continue;
 
@@ -83,14 +78,14 @@ function deriveSurfaceGroupsFromRules(
         ? (rule.match.local as readonly string[]).join("|")
         : (rule.match.local ?? "entry");
       const turn = rule.match.turn ?? "any";
-      const id = `${mod.id}/${localPhase}:${turn}`;
+      const id = `${mod.moduleId}/${localPhase}:${turn}`;
 
       families.push({
         id,
-        label: `${mod.id} ${localPhase} (${turn})`,
+        label: `${mod.moduleId} ${localPhase} (${turn})`,
         members,
         relationship: "mutually_exclusive",
-        description: `Surfaces competing at ${localPhase} in ${mod.id} (${turn}'s turn)`,
+        description: `Surfaces competing at ${localPhase} in ${mod.moduleId} (${turn}'s turn)`,
       });
     }
   }
@@ -147,7 +142,6 @@ export const ntBundle = buildBundle({
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  ruleModules: [naturalNtRules, staymanRules, jacobyTransfersRules, smolenRules],
   teaching: {
     purpose:
       "Find the best contract after partner opens 1NT: major-suit fit via Stayman, transfers, or Smolen, or notrump game/invite",
@@ -161,6 +155,52 @@ export const ntBundle = buildBundle({
     ],
     tradeoff:
       "Artificial bids (2♣ Stayman, 2♦/2♥ transfers, Smolen 3H/3S) give up natural meanings of those bids",
+    principle:
+      "Finding an 8-card major fit is worth more than notrump; Stayman, transfers, and Smolen are tools to find that fit while keeping the strong hand as declarer",
+    roles:
+      "Responder is captain after 1NT — opener describes, responder decides the final contract",
+  },
+});
+
+export const ntBundleAcol = buildBundle({
+  id: "nt-bundle-acol",
+  name: "1NT Responses (Acol)",
+  description: "Full 1NT response system for Acol (12-14 weak NT): Stayman + Jacoby Transfers + Smolen + natural bids",
+  category: ConventionCategory.Constructive,
+  systemProfile: NT_ACOL_PROFILE,
+  memberIds: ["natural-nt", "stayman", "jacoby-transfers", "smolen"],
+  dealConstraints: {
+    seats: [
+      { seat: Seat.North, minHcp: 12, maxHcp: 14, balanced: true },
+      { seat: Seat.South, minHcp: 0 },
+    ],
+    dealer: Seat.North,
+  },
+  offConventionConstraints: {
+    seats: [
+      { seat: Seat.North, minHcp: 12, maxHcp: 14, balanced: true },
+      { seat: Seat.South, minHcp: 0, maxHcp: 9 },
+    ],
+    dealer: Seat.North,
+  },
+  defaultAuction: (seat) => {
+    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
+    return undefined;
+  },
+  declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
+  teaching: {
+    purpose:
+      "Find the best contract after partner opens 1NT (12-14 HCP Acol): major-suit fit via Stayman, transfers, or Smolen, or notrump game/invite",
+    whenToUse:
+      "Partner opens 1NT (12-14 HCP balanced, Acol). You choose between Stayman (4-card major, 10+ HCP), Jacoby Transfer (5+ card major), Smolen (5-4 in majors, game values), or natural NT bids (no major).",
+    whenNotToUse: [
+      "0-9 HCP with no 5-card major — pass",
+      "5+ card major with no 4-card in the other major — use transfer, not Stayman",
+      "5-4 in majors with only invite values (10-12 HCP) — transfer to the 5-card major",
+      "4333 shape with 10-12 HCP — 2NT invite may be better than Stayman",
+    ],
+    tradeoff:
+      "Artificial bids (2C Stayman, 2D/2H transfers, Smolen 3H/3S) give up natural meanings of those bids",
     principle:
       "Finding an 8-card major fit is worth more than notrump; Stayman, transfers, and Smolen are tools to find that fit while keeping the strong hand as declarer",
     roles:
@@ -187,7 +227,6 @@ export const ntStaymanBundle = buildBundle({
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  ruleModules: [naturalNtRules, staymanRules],
   teaching: {
     purpose:
       "Find a 4-4 major-suit fit after partner opens 1NT using the 2♣ Stayman bid",
@@ -224,7 +263,6 @@ export const ntTransfersBundle = buildBundle({
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
-  ruleModules: [naturalNtRules, jacobyTransfersRules],
   teaching: {
     purpose:
       "Transfer the contract to opener's hand when responder has a 5+ card major after 1NT opening",
@@ -267,7 +305,6 @@ export const bergenBundle = buildBundle({
     return undefined;
   },
   declaredCapabilities: { [CAP_OPENING_MAJOR]: "active" },
-  ruleModules: [bergenRules],
   teaching: {
     purpose:
       "Show the right level of support when partner opens 1 of a major and you have 4+ card fit",
@@ -306,7 +343,6 @@ export const dontBundle = buildBundle({
     return undefined;
   },
   declaredCapabilities: { [CAP_OPPONENT_1NT]: "active" },
-  ruleModules: [dontRules],
   allowedDealers: [Seat.East],
   teaching: {
     purpose:
@@ -348,7 +384,6 @@ export const weakTwoBundle = buildBundle({
     }
     return undefined;
   },
-  ruleModules: [weakTwosRules],
   allowedDealers: [Seat.North],
   teaching: {
     purpose:
@@ -371,7 +406,7 @@ export const weakTwoBundle = buildBundle({
 
 // ── Registry ────────────────────────────────────────────────────────
 
-const ALL_BUNDLES: readonly ConventionBundle[] = [ntBundle, ntStaymanBundle, ntTransfersBundle, bergenBundle, dontBundle, weakTwoBundle];
+const ALL_BUNDLES: readonly ConventionBundle[] = [ntBundle, ntBundleAcol, ntStaymanBundle, ntTransfersBundle, bergenBundle, dontBundle, weakTwoBundle];
 const BUNDLE_MAP = new Map<string, ConventionBundle>(ALL_BUNDLES.map((b) => [b.id, b]));
 
 /** Look up a convention bundle definition by ID. */
@@ -387,17 +422,17 @@ export function listSystemBundles(): readonly ConventionBundle[] {
 // ── Spec generation ──────────────────────────────────────────────────
 
 /** Derive a ConventionSpec from a ConventionBundle.
- *  Returns undefined if no ruleModules are present.
+ *  Returns undefined if no modules are present.
  *  Optional systemConfigOverride replaces the bundle's default SystemConfig. */
 export function specFromBundle(
   bundle: ConventionBundle,
   systemConfigOverride?: SystemConfig,
 ): ConventionSpec | undefined {
-  if (bundle.ruleModules && bundle.ruleModules.length > 0) {
+  if (bundle.modules && bundle.modules.length > 0) {
     return {
       id: bundle.id,
       name: bundle.name,
-      ruleModules: bundle.ruleModules,
+      modules: bundle.modules,
       systemConfig: systemConfigOverride ?? bundle.systemProfile?.systemConfig,
     };
   }

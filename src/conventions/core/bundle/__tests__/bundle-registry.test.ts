@@ -16,6 +16,7 @@ function makeBundle(id: string, memberIds: string[] = []): ConventionBundle {
     category: ConventionCategory.Constructive,
     description: "test",
     memberIds,
+    modules: [],
     dealConstraints: { seats: [] },
     derivedTeaching: { acceptableAlternatives: [], surfaceGroups: [], relations: [] },
   };

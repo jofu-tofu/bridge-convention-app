@@ -3,7 +3,7 @@
 // Orchestrates all verification stages in sequence:
 // lint → interfere → explore → motif (if needed) → fuzz
 
-import type { RuleModule } from "../../conventions/core/rule-module";
+import type { ConventionModule } from "../../conventions/core";
 import type { ConventionBundle } from "../../conventions/core";
 import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
 
@@ -35,7 +35,7 @@ const BUDGET_PARAMS = {
  */
 export function runPreflight(
   bundle: ConventionBundle,
-  modules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
   config: PreflightConfig,
 ): PreflightOutput {
   const start = Date.now();

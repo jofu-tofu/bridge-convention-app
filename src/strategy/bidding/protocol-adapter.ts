@@ -3,7 +3,7 @@
 // Converts a ConventionSpec (protocol frame architecture) into a
 // ConventionStrategy compatible with the existing drill system.
 //
-// Rule-only path: all bundles use ruleModules for surface selection
+// Rule-only path: all bundles use modules for surface selection
 // with per-step kernel threading (Phase 5 complete). Old FSM path removed.
 
 import type {
@@ -14,8 +14,10 @@ import type {
 } from "../../core/contracts";
 import type { BidMeaning } from "../../core/contracts/meaning";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
-import type { ConventionSpec, RuleModule } from "../../conventions/core";
-import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, normalizeIntent, advanceLocalFsm } from "../../conventions/core";
+import type { ConventionSpec } from "../../conventions/core";
+import type { ConventionModule, Claim } from "../../conventions/core";
+import type { ModuleClaimResult } from "../../conventions/core";
+import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, pipelineResultToArbitration, pipelineResultToProvenance } from "../../conventions/core";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { runMeaningPipeline } from "./meaning-strategy";
@@ -30,7 +32,7 @@ import type { Seat, Call } from "../../engine/types";
  *
  * Each call to suggest():
  * 1. Replays the auction through the protocol frame system to get a RuntimeSnapshot
- * 2. Computes active surfaces from the snapshot (or from rule interpreter if ruleModules present)
+ * 2. Computes active surfaces from the snapshot (or from rule interpreter if modules present)
  * 3. Runs the meaning pipeline on the visible surfaces
  * 4. Returns the arbitrated bid result
  */
@@ -39,7 +41,7 @@ export function protocolSpecToStrategy(
 ): ConventionStrategy {
   // Build a fact catalog: shared facts + system-semantic facts + module fact extensions
   const systemFacts = createSystemFactCatalog(spec.systemConfig ?? SAYC_SYSTEM_CONFIG);
-  const factExtensions = spec.ruleModules
+  const factExtensions = spec.modules
     .map((m) => m.facts)
     .filter((f) => f !== undefined && f !== null && (f.definitions.length > 0 || f.evaluators.size > 0));
 
@@ -49,8 +51,7 @@ export function protocolSpecToStrategy(
     practicalRecommendation: null,
     acceptableAlternatives: null,
     surfaceGroups: null,
-    provenance: null,
-    arbitration: null,
+    pipelineResult: null,
     posteriorSummary: null,
     explanationCatalog: null,
     teachingProjection: null,
@@ -70,18 +71,18 @@ export function protocolSpecToStrategy(
       }));
 
       // Rule-only path: per-step replay with real kernel threading.
-      if (spec.ruleModules.length === 0) {
+      if (spec.modules.length === 0) {
         return null;
       }
 
-      const log = buildObservationLogViaRules(history, context.seat, spec.ruleModules);
+      const log = buildObservationLogViaRules(history, context.seat, spec.modules);
       const auctionCtx: AuctionContext = { snapshot: {} as PublicSnapshot, log };
       const results = collectMatchingClaims(
-        spec.ruleModules,
+        spec.modules,
         auctionCtx,
         context.seat,
       );
-      const visibleSurfaces = results.flatMap((r) => r.surfaces);
+      const visibleSurfaces = flattenSurfaces(results);
 
       if (visibleSurfaces.length === 0) return null;
 
@@ -101,15 +102,15 @@ export function protocolSpecToStrategy(
       });
 
       // Step 4: Build output
-      const provenance = result.provenance ?? null;
-      const teachingProjection = buildTeachingProjection(result, provenance);
+      const legacyArbitration = pipelineResultToArbitration(result);
+      const legacyProvenance = pipelineResultToProvenance(result);
+      const teachingProjection = buildTeachingProjection(legacyArbitration, legacyProvenance);
 
       lastEvaluation = {
         practicalRecommendation: null,
         acceptableAlternatives: null,
         surfaceGroups: null,
-        provenance,
-        arbitration: result,
+        pipelineResult: result,
         posteriorSummary: null,
         explanationCatalog: null,
         teachingProjection,
@@ -120,21 +121,12 @@ export function protocolSpecToStrategy(
 
       if (!result.selected) return null;
       const winningModuleId = result.selected.proposal.moduleId;
-      return buildBidResult(result.selected, context, winningModuleId, result);
+      return buildBidResult(result.selected, context, winningModuleId, legacyArbitration);
     },
   };
 }
 
 // ── Rule-based observation log ────────────────────────────────────────
-
-/** Enriched claim result with kernel delta from the rule module. */
-interface EnrichedClaimResult {
-  readonly moduleId: string;
-  readonly claims: readonly {
-    readonly surface: BidMeaning;
-    readonly negotiationDelta: NegotiationDelta | undefined;
-  }[];
-}
 
 /**
  * Build a CommittedStep log by per-step rule replay with real kernel threading.
@@ -156,14 +148,14 @@ interface EnrichedClaimResult {
 export function buildObservationLogViaRules(
   history: readonly { call: Call; seat: Seat }[],
   _observerSeat: Seat,
-  ruleModules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
 ): readonly CommittedStep[] {
   const log: CommittedStep[] = [];
 
   // Initialize phase cache from each module's initial phase
   const phaseCache = new Map<string, string>();
-  for (const mod of ruleModules) {
-    phaseCache.set(mod.id, mod.local.initial);
+  for (const mod of modules) {
+    phaseCache.set(mod.moduleId, mod.local.initial);
   }
 
   for (const entry of history) {
@@ -184,7 +176,7 @@ export function buildObservationLogViaRules(
       };
       log.push(step);
       // Advance phases even for raw-only steps (transitions may fire on pass obs)
-      advancePhaseCache(phaseCache, step, ruleModules);
+      advancePhaseCache(phaseCache, step, modules);
       continue;
     }
 
@@ -192,10 +184,10 @@ export function buildObservationLogViaRules(
     const ctx: AuctionContext = { snapshot: {} as PublicSnapshot, log: [...log] };
 
     // Find candidate claims with kernel deltas using cached phases
-    const enriched = collectClaimsWithDeltasCached(ruleModules, ctx, entry.seat, phaseCache);
+    const claimResults = collectMatchingClaimsWithPhases(modules, ctx, entry.seat, phaseCache);
 
     // Match the actual call to a candidate claim
-    const matched = findMatchingClaimForCall(enriched, entry.call);
+    const matched = findMatchingClaimForCall(claimResults, entry.call);
 
     let step: CommittedStep;
     if (matched) {
@@ -232,7 +224,7 @@ export function buildObservationLogViaRules(
 
     log.push(step);
     // Advance phases for the new step
-    advancePhaseCache(phaseCache, step, ruleModules);
+    advancePhaseCache(phaseCache, step, modules);
   }
 
   return log;
@@ -250,7 +242,7 @@ export function buildObservationLogViaRules(
  * 4. Return null for unmatched calls.
  */
 export function findMatchingClaimForCall(
-  results: readonly EnrichedClaimResult[],
+  results: readonly ModuleClaimResult[],
   call: Call,
 ): { surface: BidMeaning; negotiationDelta: NegotiationDelta | undefined; moduleId: string } | null {
   if (call.type === "pass") return null;
@@ -354,57 +346,14 @@ function arbitrateMatchingClaims(
   return sorted[0]!;
 }
 
-/**
- * Cached variant — uses pre-computed local phases instead of replaying the FSM.
- * Used by `buildObservationLogViaRules()` for O(N×M) instead of O(N²×M).
- */
-function collectClaimsWithDeltasCached(
-  modules: readonly RuleModule[],
-  context: AuctionContext,
-  nextSeat: Seat,
-  phaseCache: ReadonlyMap<string, string>,
-): readonly EnrichedClaimResult[] {
-  const results = collectMatchingClaimsWithPhases(modules, context, nextSeat, phaseCache);
-  return enrichResults(results, modules);
-}
-
-/** Enrich ModuleClaimResults with negotiationDelta from rule module claims. */
-function enrichResults(
-  results: readonly { moduleId: string; surfaces: readonly BidMeaning[] }[],
-  modules: readonly RuleModule[],
-): readonly EnrichedClaimResult[] {
-  return results.map((result) => {
-    const mod = modules.find((m) => m.id === result.moduleId);
-    if (!mod) return { moduleId: result.moduleId, claims: result.surfaces.map((s) => ({ surface: s, negotiationDelta: undefined })) };
-
-    // Build a map from meaningId → negotiationDelta by scanning the module's rules
-    const deltaMap = new Map<string, NegotiationDelta | undefined>();
-    for (const rule of mod.rules) {
-      for (const claim of rule.claims) {
-        if (result.surfaces.includes(claim.surface)) {
-          deltaMap.set(claim.surface.meaningId, claim.negotiationDelta);
-        }
-      }
-    }
-
-    return {
-      moduleId: result.moduleId,
-      claims: result.surfaces.map((s) => ({
-        surface: s,
-        negotiationDelta: deltaMap.get(s.meaningId),
-      })),
-    };
-  });
-}
-
 /** Advance the phase cache one step for all modules. */
 function advancePhaseCache(
   phaseCache: Map<string, string>,
   step: CommittedStep,
-  modules: readonly RuleModule[],
+  modules: readonly ConventionModule[],
 ): void {
   for (const mod of modules) {
-    const current = phaseCache.get(mod.id) ?? mod.local.initial;
-    phaseCache.set(mod.id, advanceLocalFsm(current, step, mod.local.transitions));
+    const current = phaseCache.get(mod.moduleId) ?? mod.local.initial;
+    phaseCache.set(mod.moduleId, advanceLocalFsm(current, step, mod.local.transitions));
   }
 }

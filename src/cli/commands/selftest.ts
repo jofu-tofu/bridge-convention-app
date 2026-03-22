@@ -92,7 +92,7 @@ export function runSelftest(flags: Flags, vuln: Vulnerability, baseSystem: BaseS
   if (all) {
     for (const bundle of listSystemBundles()) {
       if (bundle.internal) continue;
-      if (!bundle.ruleModules || bundle.ruleModules.length === 0) continue;
+      if (!bundle.modules || bundle.modules.length === 0) continue;
       const spec = resolveSpec(bundle.id, baseSystem);
       specs.push({ id: bundle.id, spec, bundle });
     }
@@ -115,8 +115,8 @@ export function runSelftest(flags: Flags, vuln: Vulnerability, baseSystem: BaseS
   }[] = [];
 
   for (const { id, spec, bundle } of specs) {
-    const ruleModules = bundle.ruleModules ?? [];
-    const allAtoms = enumerateRuleAtoms(ruleModules);
+    const modules = bundle.modules ?? [];
+    const allAtoms = enumerateRuleAtoms(modules);
     const strategy = createSpecStrategy(spec);
 
     for (let i = 0; i < allAtoms.length; i++) {

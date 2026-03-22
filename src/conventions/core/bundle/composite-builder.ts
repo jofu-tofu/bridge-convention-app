@@ -43,6 +43,7 @@ export function composeBundles(
     description: bundles.map((b) => b.description).filter(Boolean).join("; ") || "",
     category: bundles[0]!.category ?? ConventionCategory.Constructive,
     memberIds,
+    modules: bundles.flatMap((b) => b.modules),
     dealConstraints,
     systemProfile,
     declaredCapabilities,
