@@ -195,7 +195,9 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
 
 // ─── Stayman R3 surfaces ─────────────────────────────────────
 
-export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
+/** Factory: creates Stayman R3 surfaces after opener shows hearts, parameterized by system config. */
+export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "stayman:raise-game-hearts",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
@@ -205,7 +207,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.hearts",
@@ -233,7 +235,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
       {
         factId: "hand.suitLength.hearts",
@@ -260,7 +262,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.hearts",
@@ -287,7 +289,7 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
       {
         factId: "hand.suitLength.hearts",
@@ -304,9 +306,12 @@ export const STAYMAN_R3_AFTER_2H_SURFACES: readonly BidMeaning[] = [
       { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_NO_FIT_STRENGTH, ordinal: 1 },
     ],
   }, STAYMAN_CTX),
-];
+  ];
+}
 
-export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
+/** Factory: creates Stayman R3 surfaces after opener shows spades, parameterized by system config. */
+export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "stayman:raise-game-spades",
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
@@ -316,7 +321,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.spades",
@@ -343,7 +348,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
       {
         factId: "hand.suitLength.spades",
@@ -370,7 +375,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.spades",
@@ -394,7 +399,7 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
       {
         factId: "hand.suitLength.spades",
@@ -408,10 +413,13 @@ export const STAYMAN_R3_AFTER_2S_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-spade-fit" } },
     teachingLabel: "2NT invite (no spade fit)",
   }, STAYMAN_CTX),
-];
+  ];
+}
 
 // Stayman R3 after 2D — ONLY the 2 Stayman surfaces (not Smolen)
-export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
+/** Factory: creates Stayman R3 surfaces after opener denies a major, parameterized by system config. */
+export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "stayman:nt-game-after-denial",
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_DENIAL,
@@ -421,7 +429,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
     ],
     band: "must",
@@ -444,7 +452,7 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
     ],
     band: "should",
@@ -456,7 +464,8 @@ export const STAYMAN_R3_AFTER_2D_SURFACES: readonly BidMeaning[] = [
       { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "b" },
     ],
   }, STAYMAN_CTX),
-];
+  ];
+}
 
 // ─── Facts ───────────────────────────────────────────────────
 
@@ -604,9 +613,9 @@ export function createStaymanStates(sys: SystemConfig): readonly StateEntry<Stay
   return [
     { phase: "idle", turn: "responder" as const, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys)] },
     { phase: "asked", turn: "opener" as const, negotiationDelta: STAYMAN_RESPONSE_DELTA, surfaces: OPENER_STAYMAN_SURFACES },
-    { phase: "shown-hearts", turn: "responder" as const, surfaces: STAYMAN_R3_AFTER_2H_SURFACES },
-    { phase: "shown-spades", turn: "responder" as const, surfaces: STAYMAN_R3_AFTER_2S_SURFACES },
-    { phase: "denied", turn: "responder" as const, surfaces: STAYMAN_R3_AFTER_2D_SURFACES },
+    { phase: "shown-hearts", turn: "responder" as const, surfaces: createStaymanR3After2HSurfaces(sys) },
+    { phase: "shown-spades", turn: "responder" as const, surfaces: createStaymanR3After2SSurfaces(sys) },
+    { phase: "denied", turn: "responder" as const, surfaces: createStaymanR3After2DSurfaces(sys) },
   ];
 }
 

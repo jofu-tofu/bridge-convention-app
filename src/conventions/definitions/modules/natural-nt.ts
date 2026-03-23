@@ -31,73 +31,75 @@ const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
-export const NT_R1_SURFACES: readonly BidMeaning[] = [
-  createSurface({
-    meaningId: "bridge:nt-invite",
-    semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
-    encoding: bid(2, BidSuit.NoTrump),
-    clauses: [
-      {
-        factId: SYSTEM_RESPONDER_INVITE_VALUES,
-        operator: "boolean",
-        value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
-      },
-      {
-        factId: "bridge.hasFourCardMajor",
-        operator: "boolean",
-        value: false,
-      },
-      {
-        factId: "bridge.hasFiveCardMajor",
-        operator: "boolean",
-        value: false,
-      },
-    ],
-    band: "may",
-    declarationOrder: 0,
-    sourceIntent: { type: "NTInvite", params: {} },
-    teachingLabel: "NT invite",
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_NATURAL_NT_R1 },
-      { tag: STRONGER_THAN, scope: SCOPE_NATURAL_NT_R1_STRENGTH, ordinal: 1 },
-      { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "a" },
-    ],
-  }, NATURAL_NT_CTX),
+export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
+    createSurface({
+      meaningId: "bridge:nt-invite",
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
+      encoding: bid(2, BidSuit.NoTrump),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_INVITE_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
+        },
+        {
+          factId: "bridge.hasFourCardMajor",
+          operator: "boolean",
+          value: false,
+        },
+        {
+          factId: "bridge.hasFiveCardMajor",
+          operator: "boolean",
+          value: false,
+        },
+      ],
+      band: "may",
+      declarationOrder: 0,
+      sourceIntent: { type: "NTInvite", params: {} },
+      teachingLabel: "NT invite",
+      teachingTags: [
+        { tag: SAME_FAMILY, scope: SCOPE_NATURAL_NT_R1 },
+        { tag: STRONGER_THAN, scope: SCOPE_NATURAL_NT_R1_STRENGTH, ordinal: 1 },
+        { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "a" },
+      ],
+    }, NATURAL_NT_CTX),
 
-  createSurface({
-    meaningId: "bridge:to-3nt",
-    semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_GAME,
-    encoding: bid(3, BidSuit.NoTrump),
-    clauses: [
-      {
-        factId: SYSTEM_RESPONDER_GAME_VALUES,
-        operator: "boolean",
-        value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
-      },
-      {
-        factId: "bridge.hasFourCardMajor",
-        operator: "boolean",
-        value: false,
-      },
-      {
-        factId: "bridge.hasFiveCardMajor",
-        operator: "boolean",
-        value: false,
-      },
-    ],
-    band: "may",
-    declarationOrder: 1,
-    sourceIntent: { type: "NTGame", params: {} },
-    teachingLabel: "3NT game",
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_NATURAL_NT_R1 },
-      { tag: STRONGER_THAN, scope: SCOPE_NATURAL_NT_R1_STRENGTH, ordinal: 0 },
-      { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "a" },
-    ],
-  }, NATURAL_NT_CTX),
-];
+    createSurface({
+      meaningId: "bridge:to-3nt",
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_GAME,
+      encoding: bid(3, BidSuit.NoTrump),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_GAME_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
+        },
+        {
+          factId: "bridge.hasFourCardMajor",
+          operator: "boolean",
+          value: false,
+        },
+        {
+          factId: "bridge.hasFiveCardMajor",
+          operator: "boolean",
+          value: false,
+        },
+      ],
+      band: "may",
+      declarationOrder: 1,
+      sourceIntent: { type: "NTGame", params: {} },
+      teachingLabel: "3NT game",
+      teachingTags: [
+        { tag: SAME_FAMILY, scope: SCOPE_NATURAL_NT_R1 },
+        { tag: STRONGER_THAN, scope: SCOPE_NATURAL_NT_R1_STRENGTH, ordinal: 0 },
+        { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "a" },
+      ],
+    }, NATURAL_NT_CTX),
+  ];
+}
 
 // ─── Opener 1NT surface (used as surface group for idle state) ───
 // Declares the 1NT opening promise (HCP range, balanced) so that the
@@ -301,7 +303,7 @@ export const naturalNtLocal: LocalFsm<NaturalNtPhase> = {
 export function createNaturalNtStates(sys: SystemConfig): readonly StateEntry<NaturalNtPhase>[] {
   return [
     { phase: "idle", turn: "opener" as const, surfaces: createOpener1NtSurface(sys) },
-    { phase: "opened", turn: "responder" as const, surfaces: NT_R1_SURFACES },
+    { phase: "opened", turn: "responder" as const, surfaces: createNtR1Surfaces(sys) },
   ];
 }
 

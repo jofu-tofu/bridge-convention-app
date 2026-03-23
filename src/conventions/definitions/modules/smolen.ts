@@ -55,149 +55,153 @@ export const SMOLEN_CLASSES = {
  * These override the Jacoby Transfer entry for Smolen-eligible hands.
  * After opener's 2D denial, responder follows up with 3H/3S (Smolen).
  */
-export const SMOLEN_ENTRY_SURFACES: readonly BidMeaning[] = [
-  createSurface({
-    meaningId: "smolen:stayman-entry-5h4s",
-    semanticClassId: "smolen:stayman-entry",
-    encoding: bid(2, BidSuit.Clubs),
-    clauses: [
-      {
-        factId: SYSTEM_RESPONDER_GAME_VALUES,
-        operator: "boolean",
-        value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
-      },
-      {
-        factId: "module.smolen.hasFiveHearts",
-        operator: "boolean",
-        value: true,
-        description: "5+ hearts",
-      },
-      {
-        factId: "module.smolen.hasFourSpades",
-        operator: "boolean",
-        value: true,
-      },
-    ],
-    band: "must",
-    declarationOrder: 0,
-    sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
-    teachingLabel: "Stayman 2♣ (planning Smolen)",
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_ENTRY_VARIANTS },
-    ],
-  }, SMOLEN_CTX),
+export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
+    createSurface({
+      meaningId: "smolen:stayman-entry-5h4s",
+      semanticClassId: "smolen:stayman-entry",
+      encoding: bid(2, BidSuit.Clubs),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_GAME_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
+        },
+        {
+          factId: "module.smolen.hasFiveHearts",
+          operator: "boolean",
+          value: true,
+          description: "5+ hearts",
+        },
+        {
+          factId: "module.smolen.hasFourSpades",
+          operator: "boolean",
+          value: true,
+        },
+      ],
+      band: "must",
+      declarationOrder: 0,
+      sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
+      teachingLabel: "Stayman 2♣ (planning Smolen)",
+      teachingTags: [
+        { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_ENTRY_VARIANTS },
+      ],
+    }, SMOLEN_CTX),
 
-  createSurface({
-    meaningId: "smolen:stayman-entry-5s4h",
-    semanticClassId: "smolen:stayman-entry",
-    encoding: bid(2, BidSuit.Clubs),
-    clauses: [
-      {
-        factId: SYSTEM_RESPONDER_GAME_VALUES,
-        operator: "boolean",
-        value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
-      },
-      {
-        factId: "module.smolen.hasFiveSpades",
-        operator: "boolean",
-        value: true,
-        description: "5+ spades",
-      },
-      {
-        factId: "module.smolen.hasFourHearts",
-        operator: "boolean",
-        value: true,
-      },
-    ],
-    band: "must",
-    declarationOrder: 1,
-    sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
-    teachingLabel: "Stayman 2♣ (planning Smolen)",
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_ENTRY_VARIANTS },
-    ],
-  }, SMOLEN_CTX),
-];
+    createSurface({
+      meaningId: "smolen:stayman-entry-5s4h",
+      semanticClassId: "smolen:stayman-entry",
+      encoding: bid(2, BidSuit.Clubs),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_GAME_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
+        },
+        {
+          factId: "module.smolen.hasFiveSpades",
+          operator: "boolean",
+          value: true,
+          description: "5+ spades",
+        },
+        {
+          factId: "module.smolen.hasFourHearts",
+          operator: "boolean",
+          value: true,
+        },
+      ],
+      band: "must",
+      declarationOrder: 1,
+      sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
+      teachingLabel: "Stayman 2♣ (planning Smolen)",
+      teachingTags: [
+        { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_ENTRY_VARIANTS },
+      ],
+    }, SMOLEN_CTX),
+  ];
+}
 
 // ─── R3 Smolen surfaces (contributed to responder-r3-after-stayman-2d) ───
 
-export const SMOLEN_R3_SURFACES: readonly BidMeaning[] = [
-  createSurface({
-    meaningId: "smolen:bid-short-hearts",
-    semanticClassId: SMOLEN_CLASSES.BID_SHORT_HEARTS,
-    encoding: bid(3, BidSuit.Hearts),
-    clauses: [
-      {
-        factId: SYSTEM_RESPONDER_GAME_VALUES,
-        operator: "boolean",
-        value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
-      },
-      {
-        factId: "module.smolen.hasFiveSpades",
-        operator: "boolean",
-        value: true,
-        description: "5+ spades (long major)",
-      },
-      {
-        factId: "module.smolen.hasFourHearts",
-        operator: "boolean",
-        value: true,
-        description: "Exactly 4 hearts (short major, bid this suit)",
-      },
-    ],
-    band: "must",
-    declarationOrder: 0,
-    sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
-    teachingLabel: "Smolen 3♥ (4♥ + 5♠, game force)",
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_R3_BIDS },
-      { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "a" },
-      { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "a" },
-      { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "a" },
-      { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
-    ],
-  }, SMOLEN_CTX),
+export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
+    createSurface({
+      meaningId: "smolen:bid-short-hearts",
+      semanticClassId: SMOLEN_CLASSES.BID_SHORT_HEARTS,
+      encoding: bid(3, BidSuit.Hearts),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_GAME_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
+        },
+        {
+          factId: "module.smolen.hasFiveSpades",
+          operator: "boolean",
+          value: true,
+          description: "5+ spades (long major)",
+        },
+        {
+          factId: "module.smolen.hasFourHearts",
+          operator: "boolean",
+          value: true,
+          description: "Exactly 4 hearts (short major, bid this suit)",
+        },
+      ],
+      band: "must",
+      declarationOrder: 0,
+      sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
+      teachingLabel: "Smolen 3♥ (4♥ + 5♠, game force)",
+      teachingTags: [
+        { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_R3_BIDS },
+        { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "a" },
+        { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "a" },
+        { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
+      ],
+    }, SMOLEN_CTX),
 
-  createSurface({
-    meaningId: "smolen:bid-short-spades",
-    semanticClassId: SMOLEN_CLASSES.BID_SHORT_SPADES,
-    encoding: bid(3, BidSuit.Spades),
-    clauses: [
-      {
-        factId: SYSTEM_RESPONDER_GAME_VALUES,
-        operator: "boolean",
-        value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
-      },
-      {
-        factId: "module.smolen.hasFiveHearts",
-        operator: "boolean",
-        value: true,
-        description: "5+ hearts (long major)",
-      },
-      {
-        factId: "module.smolen.hasFourSpades",
-        operator: "boolean",
-        value: true,
-        description: "Exactly 4 spades (short major, bid this suit)",
-      },
-    ],
-    band: "must",
-    declarationOrder: 1,
-    sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
-    teachingLabel: "Smolen 3♠ (4♠ + 5♥, game force)",
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_R3_BIDS },
-      { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "a" },
-      { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "a" },
-      { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "a" },
-      { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
-    ],
-  }, SMOLEN_CTX),
-];
+    createSurface({
+      meaningId: "smolen:bid-short-spades",
+      semanticClassId: SMOLEN_CLASSES.BID_SHORT_SPADES,
+      encoding: bid(3, BidSuit.Spades),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_GAME_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
+        },
+        {
+          factId: "module.smolen.hasFiveHearts",
+          operator: "boolean",
+          value: true,
+          description: "5+ hearts (long major)",
+        },
+        {
+          factId: "module.smolen.hasFourSpades",
+          operator: "boolean",
+          value: true,
+          description: "Exactly 4 spades (short major, bid this suit)",
+        },
+      ],
+      band: "must",
+      declarationOrder: 1,
+      sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
+      teachingLabel: "Smolen 3♠ (4♠ + 5♥, game force)",
+      teachingTags: [
+        { tag: SAME_FAMILY, scope: SCOPE_SMOLEN_R3_BIDS },
+        { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "a" },
+        { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "a" },
+        { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "a" },
+        { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
+      ],
+    }, SMOLEN_CTX),
+  ];
+}
 
 // ─── Opener Smolen placement surfaces ────────────────────────
 
@@ -468,24 +472,29 @@ export const smolenLocal: LocalFsm<SmolenPhase> = {
 };
 
 // Smolen R3: per-surface deltas (3H → spade fit, 3S → heart fit)
-const smolenR3Hearts = SMOLEN_R3_SURFACES.filter(s => s.meaningId === "smolen:bid-short-hearts");
-const smolenR3Spades = SMOLEN_R3_SURFACES.filter(s => s.meaningId === "smolen:bid-short-spades");
 
-export const smolenStates: readonly StateEntry<SmolenPhase>[] = [
-  { phase: "idle", turn: "responder" as const, negotiationDelta: SMOLEN_ENTRY_DELTA, surfaces: SMOLEN_ENTRY_SURFACES },
-  // R3 Smolen 3H (short hearts → 5 spades): game-forcing, spade fit
-  ...(smolenR3Hearts.length > 0 ? [{
-    phase: "post-r1" as const, turn: "responder" as const,
-    route: AFTER_STAYMAN_DENIAL, negotiationDelta: SMOLEN_3H_DELTA, surfaces: smolenR3Hearts,
-  }] : []),
-  // R3 Smolen 3S (short spades → 5 hearts): game-forcing, heart fit
-  ...(smolenR3Spades.length > 0 ? [{
-    phase: "post-r1" as const, turn: "responder" as const,
-    route: AFTER_STAYMAN_DENIAL, negotiationDelta: SMOLEN_3S_DELTA, surfaces: smolenR3Spades,
-  }] : []),
-  { phase: "placing-hearts", turn: "opener" as const, surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
-  { phase: "placing-spades", turn: "opener" as const, surfaces: OPENER_SMOLEN_SPADES_SURFACES },
-];
+export function createSmolenStates(sys: SystemConfig): readonly StateEntry<SmolenPhase>[] {
+  const smolenEntrySurfaces = createSmolenEntrySurfaces(sys);
+  const smolenR3Surfaces = createSmolenR3Surfaces(sys);
+  const smolenR3Hearts = smolenR3Surfaces.filter(s => s.meaningId === "smolen:bid-short-hearts");
+  const smolenR3Spades = smolenR3Surfaces.filter(s => s.meaningId === "smolen:bid-short-spades");
+
+  return [
+    { phase: "idle", turn: "responder" as const, negotiationDelta: SMOLEN_ENTRY_DELTA, surfaces: smolenEntrySurfaces },
+    // R3 Smolen 3H (short hearts → 5 spades): game-forcing, spade fit
+    ...(smolenR3Hearts.length > 0 ? [{
+      phase: "post-r1" as const, turn: "responder" as const,
+      route: AFTER_STAYMAN_DENIAL, negotiationDelta: SMOLEN_3H_DELTA, surfaces: smolenR3Hearts,
+    }] : []),
+    // R3 Smolen 3S (short spades → 5 hearts): game-forcing, heart fit
+    ...(smolenR3Spades.length > 0 ? [{
+      phase: "post-r1" as const, turn: "responder" as const,
+      route: AFTER_STAYMAN_DENIAL, negotiationDelta: SMOLEN_3S_DELTA, surfaces: smolenR3Spades,
+    }] : []),
+    { phase: "placing-hearts", turn: "opener" as const, surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
+    { phase: "placing-spades", turn: "opener" as const, surfaces: OPENER_SMOLEN_SPADES_SURFACES },
+  ];
+}
 
 // ─── Module declarations ─────────────────────────────────────
 

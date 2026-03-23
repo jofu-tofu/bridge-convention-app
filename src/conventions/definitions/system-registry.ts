@@ -172,6 +172,13 @@ const ntStaymanInput: BundleInput = {
     ],
     dealer: Seat.North,
   },
+  dealConstraintFactory: (sys) => ({
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      { seat: Seat.South, minHcp: sys.responderThresholds.inviteMin, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
+    ],
+    dealer: Seat.North,
+  }),
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
     return undefined;
@@ -208,6 +215,13 @@ const ntTransfersInput: BundleInput = {
     ],
     dealer: Seat.North,
   },
+  dealConstraintFactory: (sys) => ({
+    seats: [
+      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
+      { seat: Seat.South, minHcp: 0, minLengthAny: { [Suit.Spades]: 5, [Suit.Hearts]: 5 } },
+    ],
+    dealer: Seat.North,
+  }),
   defaultAuction: (seat) => {
     if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
     return undefined;
@@ -377,6 +391,9 @@ export function resolveBundle(input: BundleInput, sys: SystemConfig): Convention
   const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(modules);
   return {
     ...input,
+    // Apply constraint factories when present — derive constraints from system config
+    ...(input.dealConstraintFactory ? { dealConstraints: input.dealConstraintFactory(sys) } : {}),
+    ...(input.offConventionConstraintFactory ? { offConventionConstraints: input.offConventionConstraintFactory(sys) } : {}),
     modules,
     derivedTeaching: { acceptableAlternatives, surfaceGroups, relations },
   };

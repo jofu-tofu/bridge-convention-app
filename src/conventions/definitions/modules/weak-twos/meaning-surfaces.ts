@@ -439,9 +439,9 @@ function createPostOgustSurfaces(
       sourceIntent: { type: "PostOgustGame", params: { suit } },
       teachingLabel: `Bid game in ${suit}`,
       surfaceBindings: bindings,
-      teachingTags: suit === "diamonds" ? [
+      teachingTags: [
         { tag: ALTERNATIVES, scope: `Post-Ogust game (${suit})` },
-      ] : [],
+      ],
     }, WEAK_TWOS_CTX),
 
     // 1.5. 3NT alternative (diamonds only): when responder has game values
@@ -480,6 +480,9 @@ function createPostOgustSurfaces(
       sourceIntent: { type: "PostOgustSignoff", params: { suit } },
       teachingLabel: `Sign off in ${suit}`,
       surfaceBindings: bindings,
+      teachingTags: [
+        { tag: ALTERNATIVES, scope: `Post-Ogust game (${suit})` },
+      ],
     }, WEAK_TWOS_CTX),
 
     // 3. Pass (fallback — when already in agreed suit or 3NT)

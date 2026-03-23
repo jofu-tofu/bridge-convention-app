@@ -148,7 +148,8 @@ export const OPENER_TRANSFER_SPADES_SURFACES: readonly BidMeaning[] = [
 
 // ─── Transfer R3 surfaces ────────────────────────────────────
 
-export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
+function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "transfer:signoff-hearts",
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
@@ -179,7 +180,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.hearts",
@@ -207,7 +208,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.hearts",
@@ -240,7 +241,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
       {
         factId: "hand.suitLength.hearts",
@@ -264,7 +265,7 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
     ],
     band: "should",
@@ -275,9 +276,11 @@ export const TRANSFER_R3_HEARTS_SURFACES: readonly BidMeaning[] = [
       { tag: STRONGER_THAN, scope: SCOPE_TRANSFER_R3_HEARTS_STRENGTH, ordinal: 1 },
     ],
   }, TRANSFER_CTX),
-];
+  ];
+}
 
-export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
+function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "transfer:signoff-spades",
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
@@ -305,7 +308,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.spades",
@@ -332,7 +335,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_GAME_VALUES,
         operator: "boolean",
         value: true,
-        description: "Game values opposite 1NT (10+ HCP)",
+        description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
       },
       {
         factId: "hand.suitLength.spades",
@@ -362,7 +365,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
       {
         factId: "hand.suitLength.spades",
@@ -386,7 +389,7 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_RESPONDER_INVITE_VALUES,
         operator: "boolean",
         value: true,
-        description: "Invite values opposite 1NT (8-9 HCP)",
+        description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
       },
     ],
     band: "should",
@@ -397,7 +400,8 @@ export const TRANSFER_R3_SPADES_SURFACES: readonly BidMeaning[] = [
       { tag: STRONGER_THAN, scope: SCOPE_TRANSFER_R3_SPADES_STRENGTH, ordinal: 1 },
     ],
   }, TRANSFER_CTX),
-];
+  ];
+}
 
 // ─── Opener placement surfaces (after responder's 3NT "let opener choose") ──
 
@@ -477,7 +481,8 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
 
 // ─── Opener invite acceptance surfaces (after responder's 2NT invite) ──
 
-export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly BidMeaning[] = [
+function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "transfer:accept-invite-hearts",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
@@ -487,7 +492,7 @@ export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
-        description: "Opener has 16-17 HCP (not minimum)",
+        description: `Opener has ${sys.openerRebid.notMinimum}-${sys.ntOpening.maxHcp} HCP (not minimum)`,
       },
     ],
     band: "should",
@@ -504,7 +509,7 @@ export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
-        description: "Opener has 15 HCP (minimum)",
+        description: `Opener has ${sys.ntOpening.minHcp} HCP (minimum)`,
       },
     ],
     band: "should",
@@ -512,9 +517,11 @@ export const OPENER_ACCEPT_INVITE_HEARTS_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "DeclineInvite", params: {} },
     teachingLabel: "Pass (decline invite, minimum)",
   }, TRANSFER_CTX),
-];
+  ];
+}
 
-export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly BidMeaning[] = [
+function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "transfer:accept-invite-spades",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
@@ -524,7 +531,7 @@ export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
-        description: "Opener has 16-17 HCP (not minimum)",
+        description: `Opener has ${sys.openerRebid.notMinimum}-${sys.ntOpening.maxHcp} HCP (not minimum)`,
       },
     ],
     band: "should",
@@ -541,7 +548,7 @@ export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly BidMeaning[] = [
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
-        description: "Opener has 15 HCP (minimum)",
+        description: `Opener has ${sys.ntOpening.minHcp} HCP (minimum)`,
       },
     ],
     band: "should",
@@ -549,13 +556,15 @@ export const OPENER_ACCEPT_INVITE_SPADES_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "DeclineInvite", params: {} },
     teachingLabel: "Pass (decline invite, minimum)",
   }, TRANSFER_CTX),
-];
+  ];
+}
 
 // ─── Opener invite-raise acceptance surfaces (after responder's 3M invite raise) ──
 // After 3H/3S (6+ cards, invitational), opener knows there's a guaranteed
 // major fit (opener has 2-3+ in the suit from 1NT balanced). Accept = 4M, decline = Pass.
 
-export const OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES: readonly BidMeaning[] = [
+function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "transfer:accept-invite-raise-hearts",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
@@ -565,7 +574,7 @@ export const OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES: readonly BidMeaning[] =
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
-        description: "Opener has 16-17 HCP (not minimum)",
+        description: `Opener has ${sys.openerRebid.notMinimum}-${sys.ntOpening.maxHcp} HCP (not minimum)`,
       },
     ],
     band: "should",
@@ -582,7 +591,7 @@ export const OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES: readonly BidMeaning[] =
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
-        description: "Opener has 15 HCP (minimum)",
+        description: `Opener has ${sys.ntOpening.minHcp} HCP (minimum)`,
       },
     ],
     band: "should",
@@ -590,9 +599,11 @@ export const OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES: readonly BidMeaning[] =
     sourceIntent: { type: "DeclineInvite", params: {} },
     teachingLabel: "Pass (decline invite, minimum)",
   }, TRANSFER_CTX),
-];
+  ];
+}
 
-export const OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES: readonly BidMeaning[] = [
+function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
   createSurface({
     meaningId: "transfer:accept-invite-raise-spades",
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
@@ -602,7 +613,7 @@ export const OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES: readonly BidMeaning[] =
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: true,
-        description: "Opener has 16-17 HCP (not minimum)",
+        description: `Opener has ${sys.openerRebid.notMinimum}-${sys.ntOpening.maxHcp} HCP (not minimum)`,
       },
     ],
     band: "should",
@@ -619,7 +630,7 @@ export const OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES: readonly BidMeaning[] =
         factId: SYSTEM_OPENER_NOT_MINIMUM,
         operator: "boolean",
         value: false,
-        description: "Opener has 15 HCP (minimum)",
+        description: `Opener has ${sys.ntOpening.minHcp} HCP (minimum)`,
       },
     ],
     band: "should",
@@ -627,7 +638,8 @@ export const OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES: readonly BidMeaning[] =
     sourceIntent: { type: "DeclineInvite", params: {} },
     teachingLabel: "Pass (decline invite, minimum)",
   }, TRANSFER_CTX),
-];
+  ];
+}
 
 // ─── Facts ───────────────────────────────────────────────────
 
@@ -790,24 +802,33 @@ function splitR3(surfaces: readonly BidMeaning[]): { captainTransfer: BidMeaning
   return { captainTransfer, terminal };
 }
 
-const r3H = splitR3(TRANSFER_R3_HEARTS_SURFACES);
-const r3S = splitR3(TRANSFER_R3_SPADES_SURFACES);
+export function createJacobyTransfersStates(sys: SystemConfig): readonly StateEntry<TransferPhase>[] {
+  const r3Hearts = createTransferR3HeartsSurfaces(sys);
+  const r3Spades = createTransferR3SpadesSurfaces(sys);
+  const r3H = splitR3(r3Hearts);
+  const r3S = splitR3(r3Spades);
 
-export const jacobyTransfersStates: readonly StateEntry<TransferPhase>[] = [
-  { phase: "idle", turn: "responder" as const, negotiationDelta: TRANSFER_BID_DELTA, surfaces: TRANSFER_R1_SURFACES },
-  { phase: "transferred-hearts", turn: "opener" as const, negotiationDelta: ACCEPT_HEARTS_DELTA, surfaces: OPENER_TRANSFER_HEARTS_SURFACES },
-  { phase: "transferred-spades", turn: "opener" as const, negotiationDelta: ACCEPT_SPADES_DELTA, surfaces: OPENER_TRANSFER_SPADES_SURFACES },
-  ...(r3H.captainTransfer.length > 0 ? [{ phase: "accepted-hearts" as const, turn: "responder" as const, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3H.captainTransfer }] : []),
-  ...(r3H.terminal.length > 0 ? [{ phase: "accepted-hearts" as const, turn: "responder" as const, surfaces: r3H.terminal }] : []),
-  ...(r3S.captainTransfer.length > 0 ? [{ phase: "accepted-spades" as const, turn: "responder" as const, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3S.captainTransfer }] : []),
-  ...(r3S.terminal.length > 0 ? [{ phase: "accepted-spades" as const, turn: "responder" as const, surfaces: r3S.terminal }] : []),
-  { phase: "placing-hearts", turn: "opener" as const, surfaces: OPENER_PLACE_HEARTS_SURFACES },
-  { phase: "placing-spades", turn: "opener" as const, surfaces: OPENER_PLACE_SPADES_SURFACES },
-  { phase: "invited-hearts", turn: "opener" as const, surfaces: OPENER_ACCEPT_INVITE_HEARTS_SURFACES },
-  { phase: "invited-spades", turn: "opener" as const, surfaces: OPENER_ACCEPT_INVITE_SPADES_SURFACES },
-  { phase: "invite-raised-hearts", turn: "opener" as const, surfaces: OPENER_ACCEPT_INVITE_RAISE_HEARTS_SURFACES },
-  { phase: "invite-raised-spades", turn: "opener" as const, surfaces: OPENER_ACCEPT_INVITE_RAISE_SPADES_SURFACES },
-];
+  const openerAcceptInviteHearts = createOpenerAcceptInviteHeartsSurfaces(sys);
+  const openerAcceptInviteSpades = createOpenerAcceptInviteSpadesSurfaces(sys);
+  const openerAcceptInviteRaiseHearts = createOpenerAcceptInviteRaiseHeartsSurfaces(sys);
+  const openerAcceptInviteRaiseSpades = createOpenerAcceptInviteRaiseSpadesSurfaces(sys);
+
+  return [
+    { phase: "idle", turn: "responder" as const, negotiationDelta: TRANSFER_BID_DELTA, surfaces: TRANSFER_R1_SURFACES },
+    { phase: "transferred-hearts", turn: "opener" as const, negotiationDelta: ACCEPT_HEARTS_DELTA, surfaces: OPENER_TRANSFER_HEARTS_SURFACES },
+    { phase: "transferred-spades", turn: "opener" as const, negotiationDelta: ACCEPT_SPADES_DELTA, surfaces: OPENER_TRANSFER_SPADES_SURFACES },
+    ...(r3H.captainTransfer.length > 0 ? [{ phase: "accepted-hearts" as const, turn: "responder" as const, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3H.captainTransfer }] : []),
+    ...(r3H.terminal.length > 0 ? [{ phase: "accepted-hearts" as const, turn: "responder" as const, surfaces: r3H.terminal }] : []),
+    ...(r3S.captainTransfer.length > 0 ? [{ phase: "accepted-spades" as const, turn: "responder" as const, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3S.captainTransfer }] : []),
+    ...(r3S.terminal.length > 0 ? [{ phase: "accepted-spades" as const, turn: "responder" as const, surfaces: r3S.terminal }] : []),
+    { phase: "placing-hearts", turn: "opener" as const, surfaces: OPENER_PLACE_HEARTS_SURFACES },
+    { phase: "placing-spades", turn: "opener" as const, surfaces: OPENER_PLACE_SPADES_SURFACES },
+    { phase: "invited-hearts", turn: "opener" as const, surfaces: openerAcceptInviteHearts },
+    { phase: "invited-spades", turn: "opener" as const, surfaces: openerAcceptInviteSpades },
+    { phase: "invite-raised-hearts", turn: "opener" as const, surfaces: openerAcceptInviteRaiseHearts },
+    { phase: "invite-raised-spades", turn: "opener" as const, surfaces: openerAcceptInviteRaiseSpades },
+  ];
+}
 
 // ─── Module declarations ─────────────────────────────────────
 

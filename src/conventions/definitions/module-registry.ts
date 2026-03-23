@@ -15,8 +15,8 @@ import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
 import { createNaturalNtDeclarations, naturalNtLocal, createNaturalNtStates } from "./modules/natural-nt";
 import { createStaymanDeclarations, staymanLocal, createStaymanStates } from "./modules/stayman";
-import { createJacobyTransfersDeclarations, jacobyTransfersLocal, jacobyTransfersStates } from "./modules/jacoby-transfers";
-import { createSmolenDeclarations, smolenLocal, smolenStates } from "./modules/smolen";
+import { createJacobyTransfersDeclarations, jacobyTransfersLocal, createJacobyTransfersStates } from "./modules/jacoby-transfers";
+import { createSmolenDeclarations, smolenLocal, createSmolenStates } from "./modules/smolen";
 import { createBergenModule, bergenLocal, createBergenStates } from "./modules/bergen";
 import { createDontModule, dontLocal, createDontStates } from "./modules/dont";
 import { createWeakTwosModule, weakTwosLocal, createWeakTwosStates } from "./modules/weak-twos";
@@ -48,14 +48,14 @@ const MODULE_FACTORIES = new Map<string, ModuleFactory>([
     ...createJacobyTransfersDeclarations(sys),
     local: jacobyTransfersLocal,
 
-    states: jacobyTransfersStates,
+    states: createJacobyTransfersStates(sys),
   })],
   ["smolen", (sys) => ({
     moduleId: "smolen",
     ...createSmolenDeclarations(sys),
     local: smolenLocal,
 
-    states: smolenStates,
+    states: createSmolenStates(sys),
   })],
   ["bergen", (sys) => ({
     moduleId: "bergen",
