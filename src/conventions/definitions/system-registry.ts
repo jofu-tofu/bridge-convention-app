@@ -255,8 +255,9 @@ const bergenInput: BundleInput = {
       { seat: Seat.North, minHcp: 12, maxHcp: 21, minLengthAny: { [Suit.Hearts]: 5, [Suit.Spades]: 5 } },
       {
         seat: Seat.South, minHcp: 0,
-        // South must have 4+ in at least one major (convention requires fit)
+        // South must have exactly 4 in at least one major (Bergen requires exactly 4-card support)
         minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
+        maxLength: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
       },
     ],
     dealer: Seat.North,
