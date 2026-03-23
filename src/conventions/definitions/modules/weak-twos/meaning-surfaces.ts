@@ -439,6 +439,9 @@ function createPostOgustSurfaces(
       sourceIntent: { type: "PostOgustGame", params: { suit } },
       teachingLabel: `Bid game in ${suit}`,
       surfaceBindings: bindings,
+      teachingTags: suit === "diamonds" ? [
+        { tag: ALTERNATIVES, scope: `Post-Ogust game (${suit})` },
+      ] : [],
     }, WEAK_TWOS_CTX),
 
     // 1.5. 3NT alternative (diamonds only): when responder has game values
@@ -455,7 +458,7 @@ function createPostOgustSurfaces(
             value: WEAK_TWO_THRESHOLDS.POST_OGUST_GAME_MIN,
           },
         ],
-        band: "should",
+        band: "must",
         declarationOrder: 0,
         sourceIntent: { type: "PostOgust3NT", params: { suit } },
         teachingLabel: "3NT game (alternative to 5D)",
