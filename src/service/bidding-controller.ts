@@ -121,9 +121,10 @@ export async function runInitialAiBids(
   const currentTurn = getCurrentTurn(state);
   if (!currentTurn) return { aiBids: [], auctionComplete: false };
 
-  // If it's already the user's turn, fetch legal calls and return
+  // If it's already the user's turn, fetch legal calls and push pre-bid snapshot
   if (state.isUserSeat(currentTurn)) {
     state.legalCalls = await engine.getLegalCalls(state.auction, currentTurn);
+    pushPreBidSnapshot(state);
     return { aiBids: [], auctionComplete: false };
   }
 
@@ -330,9 +331,42 @@ async function runAiBidLoop(
   // Fetch legal calls for user's turn
   if (state.isUserSeat(currentSeat)) {
     state.legalCalls = await engine.getLegalCalls(state.auction, currentSeat);
+    pushPreBidSnapshot(state);
   }
 
   return { aiBids, auctionComplete: false };
+}
+
+/**
+ * Push a "pre-bid" debug snapshot when it becomes the user's turn.
+ * This lets the debug drawer show the expected bid and pipeline state
+ * before the user acts — on initial load and after each AI bid cycle.
+ */
+function pushPreBidSnapshot(state: SessionState): void {
+  if (!state.strategy) return;
+  const currentTurn = getCurrentTurn(state);
+  if (!currentTurn || !state.isUserSeat(currentTurn)) return;
+
+  const hand = state.deal.hands[currentTurn];
+  const evaluation = evaluateHand(hand);
+  const expectedResult = state.strategy.suggest(
+    createBiddingContext({ hand, auction: state.auction, seat: currentTurn, evaluation }),
+  );
+
+  const effectiveResult: BidResult = expectedResult ?? {
+    call: { type: "pass" },
+    ruleName: null,
+    explanation: "No convention bid applies — pass",
+  };
+
+  const snap = state.captureSnapshot();
+  state.pushDebugLog({
+    kind: "pre-bid",
+    turnIndex: state.debugTurnCounter,
+    seat: currentTurn,
+    snapshot: { ...snap, expectedBid: effectiveResult },
+    feedback: null,
+  });
 }
 
 function emptyResult(): BidProcessResult {

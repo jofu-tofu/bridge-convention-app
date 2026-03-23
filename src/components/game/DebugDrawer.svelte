@@ -37,21 +37,43 @@
 
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
 
+  // ─── Pipeline view toggle ────────────────────────────────────
+  type PipelineView = "current" | "last-bid";
+  let pipelineView = $state<PipelineView>("current");
+
   // ─── Reactive debug data ─────────────────────────────────────
-  // GOTCHA: getDebugSnapshot() is now async (service-delegated). The debug
-  // log is the primary data source. The initial pre-bid state shows null
-  // until the first bid populates the log.
-  const debugSnap = $derived.by<DebugSnapshot | null>(() => {
+  // Latest snapshot (pre-bid for current position).
+  const currentSnap = $derived.by<DebugSnapshot | null>(() => {
     const log = gameStore.debugLog;
     if (log.length > 0) return log[log.length - 1]!.snapshot;
     return null;
   });
 
-  // The "active" feedback: from latest debug log entry (internal type for debug panels).
-  // Live viewport feedback is too narrow for debug display.
+  // Most recent user-bid snapshot (pipeline state when the user last bid).
+  const lastBidSnap = $derived.by<DebugSnapshot | null>(() => {
+    const log = gameStore.debugLog;
+    for (let i = log.length - 1; i >= 0; i--) {
+      if (log[i]!.kind === "user-bid") return log[i]!.snapshot;
+    }
+    return null;
+  });
+
+  // The active snapshot shown in the Decision Pipeline section.
+  const debugSnap = $derived<DebugSnapshot | null>(
+    pipelineView === "last-bid" ? lastBidSnap : currentSnap,
+  );
+
+  // Whether the toggle should be shown (only when there's a user-bid entry).
+  const hasLastBid = $derived(lastBidSnap !== null);
+
+  // Feedback: scan backwards for the most recent entry that has feedback
+  // (user-bid entries). Pre-bid entries have null feedback, so reading
+  // only the last entry would hide teaching after each bid cycle.
   const feedback = $derived.by<DebugBidFeedback | null>(() => {
     const log = gameStore.debugLog;
-    if (log.length > 0) return log[log.length - 1]!.feedback;
+    for (let i = log.length - 1; i >= 0; i--) {
+      if (log[i]!.feedback) return log[i]!.feedback;
+    }
     return null;
   });
 </script>
@@ -89,8 +111,8 @@
   {/if}
 
   <div class="p-2 flex flex-col gap-2 min-w-[420px]">
-    <!-- At-a-glance summary — always visible -->
-    <DebugAtAGlance snapshot={debugSnap} {feedback} phase={gameStore.phase} />
+    <!-- At-a-glance summary — always visible, always shows current position -->
+    <DebugAtAGlance snapshot={currentSnap} {feedback} phase={gameStore.phase} />
 
     <!-- Group 1: Context -->
     <details>
@@ -111,6 +133,18 @@
     <!-- Group 2: Decision Pipeline -->
     <details open>
       <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Decision Pipeline</summary>
+      {#if hasLastBid}
+        <div class="flex gap-0.5 pt-1 pb-0.5">
+          <button
+            class="px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer {pipelineView === 'current' ? 'bg-blue-900/60 text-blue-200' : 'bg-bg-card/40 text-text-muted hover:text-text-secondary'}"
+            onclick={() => pipelineView = "current"}
+          >Current</button>
+          <button
+            class="px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer {pipelineView === 'last-bid' ? 'bg-amber-900/60 text-amber-200' : 'bg-bg-card/40 text-text-muted hover:text-text-secondary'}"
+            onclick={() => pipelineView = "last-bid"}
+          >Last bid</button>
+        </div>
+      {/if}
       <div class="pt-1 flex flex-col gap-0.5">
         <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
         <DebugPipeline pipelineResult={debugSnap?.pipelineResult ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />

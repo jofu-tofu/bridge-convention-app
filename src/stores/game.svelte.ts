@@ -1253,6 +1253,12 @@ export function createGameStore(
       }
 
       await initBidding(bundle, initialAiBids, initialLegalCalls, initialAuctionComplete);
+
+      // Populate debug drawer with pre-bid snapshot from the service
+      if (import.meta.env.DEV && activeHandle) {
+        const log = await activeService.getDebugLog(activeHandle);
+        debugLog = [...log] as DebugLogEntry[];
+      }
     },
 
     // Bidding actions
