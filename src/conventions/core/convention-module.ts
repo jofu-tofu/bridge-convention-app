@@ -8,8 +8,8 @@
  * deduplicated surfaces from the module's states.
  *
  * Modules must NOT import from other modules — this is the fundamental
- * decoupling invariant. Pedagogical relations, alternatives, and surface
- * groups are derived automatically from `teachingTags` on surfaces.
+ * decoupling invariant. Surface groups are derived automatically from
+ * module state structure (each state entry with 2+ surfaces).
  */
 
 import type { BidMeaning } from "../../core/contracts/meaning";

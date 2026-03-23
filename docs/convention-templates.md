@@ -158,4 +158,4 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
   createExplanationCatalog("{name}", {NAME}_ENTRIES);
 ```
 
-*(No separate `pedagogical-relations.ts` or `alternatives.ts` needed — use `teachingTags` on surfaces instead.)*
+*(No separate `pedagogical-relations.ts` or `alternatives.ts` needed — surface groups and cross-module alternatives are auto-derived from module structure.)*

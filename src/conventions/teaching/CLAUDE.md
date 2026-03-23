@@ -6,14 +6,13 @@ Convention teaching resolution, projection building, and parse-tree construction
 
 | File                       | Role                                                              |
 | -------------------------- | ----------------------------------------------------------------- |
-| `teaching-resolution.ts`   | `BidGrade` (3 grades: Correct/Acceptable/Incorrect), `AcceptableBid` (with optional `relationship: SurfaceGroupRelationship`), `TeachingResolution`, `resolveTeachingAnswer(bidResult, alternativeGroups?, intentFamilies?)`, `gradeBid(userCall, resolution)` — three-grade bid feedback layer with SurfaceGroup-aware grading |
-| `teaching-projection-builder.ts` | `projectTeaching(result: PipelineResult, options?)` — single-signature entry point, builds read-only `TeachingProjection` from `PipelineResult`. Internally converts to `ArbitrationResult`/`DecisionProvenance` for sub-builders. Pure function, no side effects. Produces `CallProjection[]` (with `projectionKind` classification), `MeaningView[]`, `WhyNotEntry[]` (with optional `familyRelation` from pedagogical graph), `ConventionContribution[]`, `ExplanationNode[]`, `HandSpaceSummary`. All types imported from `core/contracts/`. |
+| `teaching-resolution.ts`   | `BidGrade` (3 grades: Correct/Acceptable/Incorrect), `AcceptableBid` (with optional `relationship: SurfaceGroupRelationship`), `TeachingResolution`, `resolveTeachingAnswer(bidResult, surfaceGroups?)`, `gradeBid(userCall, resolution)` — three-grade bid feedback layer with SurfaceGroup-aware grading |
+| `teaching-projection-builder.ts` | `projectTeaching(result: PipelineResult, options?)` — single-signature entry point, builds read-only `TeachingProjection` from `PipelineResult`. Internally converts to `ArbitrationResult`/`DecisionProvenance` for sub-builders. Pure function, no side effects. Produces `CallProjection[]` (with `projectionKind` classification), `MeaningView[]`, `WhyNotEntry[]`, `ConventionContribution[]`, `ExplanationNode[]`, `HandSpaceSummary`. All types imported from `core/contracts/`. |
 | `parse-tree-builder.ts` | `buildParseTree(result: PipelineResult, catalogIndex?)` — builds `ParseTreeView` from `PipelineResult`. Shows full post-bid decision chain: which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Each module gets a `ParseTreeModuleVerdict` (`selected` / `applicable` / `eliminated`) with conditions, truth-set meanings, and elimination reasons. Sorted: selected → applicable → eliminated. Integrated into Incorrect and NearMiss feedback panels via `ParseTreePanel.svelte`. |
 | `call-view-builder.ts` | `buildCallViews(arbitration)` — builds `CallProjection[]` from truth set and acceptable set. |
 | `meaning-view-builder.ts` | `buildMeaningViews(arbitration, provenance)` — builds `MeaningView[]` from truth set, acceptable set, and eliminated proposals. |
 | `explanation-builder.ts` | `buildClauseDescriptionIndex(arbitration)`, `buildPrimaryExplanation(arbitration, provenance, catalogIndex?)` — builds primary explanation nodes. |
-| `why-not-builder.ts` | `buildWhyNot(arbitration, provenance, teachingGraph?, catalogIndex?)` — builds `WhyNotEntry[]` for calls in acceptable set but not truth set. |
-| `teaching-graph.ts` | `buildTeachingGraph(relations)` — indexes `TeachingRelation[]` by meaning ref for O(1) lookup. `findRelationsFor(graph, meaningRef)`. Pure functions, consumed by `teaching-projection-builder.ts`. |
+| `why-not-builder.ts` | `buildWhyNot(arbitration, provenance, catalogIndex?, surfaceGroups?, truthMeaningIds?)` — builds `WhyNotEntry[]` for calls in acceptable set but not truth set. Grades entries as "near-miss" or "wrong" based on SurfaceGroup membership. |
 
 ## Boundary Rules
 
@@ -28,7 +27,7 @@ Only 3 entry points are exported via the conventions barrel (`conventions/index.
 - `projectTeaching` (+ type `TeachingProjectionOptions`)
 - `buildParseTree`
 
-Sub-builders (`call-view-builder`, `meaning-view-builder`, `explanation-builder`, `why-not-builder`, `teaching-graph`) are internal — zero external consumers.
+Sub-builders (`call-view-builder`, `meaning-view-builder`, `explanation-builder`, `why-not-builder`) are internal — zero external consumers.
 
 ## Pedagogical Separation
 

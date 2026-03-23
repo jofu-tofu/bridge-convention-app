@@ -261,7 +261,7 @@ flowchart TD
           <p><strong>4. Ranking</strong> &mdash; how important this bid is. The <code>recommendationBand</code> is <code>"must"</code>, <code>"should"</code>, <code>"may"</code>, or <code>"avoid"</code>. Specificity (how narrow the requirements are) is calculated automatically by the pipeline.</p>
         </div>
         <div class="bg-white p-3 rounded-lg border border-border">
-          <p><strong>5. Teaching</strong> &mdash; <code>teachingLabel</code> (human name like "Stayman 2C"), <code>sourceIntent</code> (bridge semantics like "StaymanAsk"), and <code>teachingTags</code> (links to related bid meanings).</p>
+          <p><strong>5. Teaching</strong> &mdash; <code>teachingLabel</code> (human name like "Stayman 2C") and <code>sourceIntent</code> (bridge semantics like "StaymanAsk"). Related bid meanings (alternatives, near-misses) are auto-derived from module structure.</p>
         </div>
       </div>
 
@@ -606,7 +606,7 @@ sequenceDiagram
           <tr><td><code>SurfaceFragment</code></td><td>Bid meanings contributed by one module at one state (protocol layer)</td></tr>
           <tr><td><code>BoolExpr</code></td><td>A condition tree (AND/OR/NOT) over registers and tags</td></tr>
           <tr><td><code>provenance</code></td><td>Audit trail: why each decision was made at every pipeline step</td></tr>
-          <tr><td><code>teachingTags</code></td><td>Annotations linking related bid meanings for teaching</td></tr>
+          <tr><td><code>SurfaceGroup</code></td><td>Auto-derived group of related bid meanings (alternatives within a module state)</td></tr>
           <tr><td><code>sourceIntent</code></td><td>What a bid does in bridge terms (e.g., "StaymanAsk", "Transfer")</td></tr>
           <tr><td><code>surfaceBindings</code></td><td>Variable substitutions (e.g., replacing <code>$suit</code> with <code>"hearts"</code>)</td></tr>
           <tr><td><code>composeSurfaces()</code></td><td>Apply suppress/inject/remap transforms before evaluation</td></tr>

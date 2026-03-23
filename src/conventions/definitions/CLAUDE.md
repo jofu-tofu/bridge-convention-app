@@ -161,7 +161,7 @@ Adding a new convention is a **definitions-only** change. The following director
 |-----------|--------|
 | `src/engine/` | Bridge engine types/logic are convention-agnostic |
 | `src/strategy/` | Strategy layer consumes bundles generically via `meaningBundleToStrategy()` |
-| `src/conventions/teaching/` | Teaching system reads `ExplanationCatalog` and `TeachingRelation[]` from bundles |
+| `src/conventions/teaching/` | Teaching system reads `ExplanationCatalog` and `SurfaceGroup[]` from bundles |
 | `src/service/` | Service layer is convention-agnostic orchestration |
 | `src/stores/` | Stores bind to the convention registry, not individual conventions |
 | `src/components/` | UI renders from generic `ConventionConfig` and `DecisionSurfaceEntry[]` |
@@ -175,7 +175,6 @@ If any of these need changes to support a new convention, the boundary has leake
 - **Why ConventionConfig is kept as a separate DTO:** UI/stores should consume minimal types, not full pipeline bundles with 20+ fields. ConventionConfig is the stable UI contract — auto-derived by `registerBundle()`.
 - **Why explicit registration over auto-discovery:** Explicit `registerBundle()` calls are traceable and debuggable. Auto-discovery adds implicit ordering and makes registration non-obvious.
 - **Why two layers (Bundle → Config) not three:** BiddingSystem added no fields or behavior that ConventionBundle didn't already provide. The indirection created wiring fragility without architectural benefit.
-- **Why PedagogicalScope lives in definitions, not contracts:** Scope strings are convention-specific vocabulary. Contracts contains only convention-agnostic types. Enforcement via scope constants catches errors at authoring time without polluting the contracts tier.
 
 ---
 

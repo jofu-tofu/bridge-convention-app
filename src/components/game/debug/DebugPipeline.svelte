@@ -92,9 +92,6 @@
           <div class="text-[10px] leading-tight">
             <span class="text-yellow-400">{fmtCall(wn.call)}</span>
             <span class="text-text-muted ml-0.5">— eliminated at {wn.eliminationStage}</span>
-            {#if wn.familyRelation}
-              <span class="text-purple-300 ml-0.5">({wn.familyRelation.kind})</span>
-            {/if}
           </div>
         {/each}
       </DebugSection>

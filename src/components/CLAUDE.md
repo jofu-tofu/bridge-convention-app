@@ -85,8 +85,8 @@ components/
     TrickArea.svelte                 Center trick display with NSEW card positions and trick count
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
-    BidFeedbackPanel.svelte          Three-branch bid feedback (Correct green/Acceptable teal/Incorrect red) with show-answer toggle, tree fork display, acceptable badges on siblings, optional amber practical note, convention contribution badges, pedagogical relation labels, WhyNot grade distinction, multi-rationale indicator, meaning landscape section, encoding explanation, partner hand space summary, elimination stage annotations
-    BidFeedbackPanel.ts              Companion .ts file with convention-agnostic display helpers for TeachingProjection rendering: formatRelationKind, formatEliminationStage, formatModuleRole, roleColorClasses, whyNotGradeClasses, isArtificialEncoder, formatEncoderKind
+    BidFeedbackPanel.svelte          Three-branch bid feedback (Correct green/Acceptable teal/Incorrect red) with show-answer toggle, tree fork display, acceptable badges on siblings, optional amber practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, meaning landscape section, encoding explanation, partner hand space summary, elimination stage annotations
+    BidFeedbackPanel.ts              Companion .ts file with convention-agnostic display helpers for TeachingProjection rendering: formatAmbiguity, formatEliminationStage, formatModuleRole, roleColorClasses, whyNotGradeClasses, isArtificialEncoder, formatEncoderKind
     bid-feedback/
       BidFeedbackIncorrect.svelte    Incorrect bid feedback panel (integrates ParseTreePanel)
       BidFeedbackNearMiss.svelte     Near-miss bid feedback panel (integrates ParseTreePanel)
