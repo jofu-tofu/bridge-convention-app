@@ -19,7 +19,6 @@ import { nextSeat, partnerSeat } from "../engine/constants";
 /** Default empty evaluation — used when no strategy is wired. */
 const EMPTY_EVALUATION: StrategyEvaluation = {
   practicalRecommendation: null,
-  acceptableAlternatives: null,
   surfaceGroups: null,
   pipelineResult: null,
   posteriorSummary: null,

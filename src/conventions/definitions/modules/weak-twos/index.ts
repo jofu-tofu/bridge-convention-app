@@ -8,6 +8,7 @@
 import type { SystemConfig } from "../../../../core/contracts/system-config";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
+import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
 import { weakTwoFacts } from "./facts";
@@ -205,3 +206,11 @@ export function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
     explanationEntries: WEAK_TWO_ENTRIES,
   };
 }
+
+/** Self-contained factory producing a complete ConventionModule. */
+export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
+  moduleId: "weak-twos",
+  ...createWeakTwosModule(sys),
+  local: weakTwosLocal,
+  states: createWeakTwosStates(),
+});

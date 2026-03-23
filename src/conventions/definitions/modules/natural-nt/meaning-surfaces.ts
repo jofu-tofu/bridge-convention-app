@@ -1,0 +1,127 @@
+import type { BidMeaning } from "../../../../core/contracts/meaning";
+import { BidSuit } from "../../../../engine/types";
+import { BRIDGE_SEMANTIC_CLASSES } from "../../../../core/contracts/meaning";
+import type { SystemConfig } from "../../../../core/contracts/system-config";
+import {
+  SYSTEM_RESPONDER_INVITE_VALUES,
+  SYSTEM_RESPONDER_GAME_VALUES,
+} from "../../../../core/contracts/system-fact-vocabulary";
+
+import { bid } from "../../../core/surface-helpers";
+import { createSurface } from "../../../core/surface-builder";
+import type { ModuleContext } from "../../../core/surface-builder";
+
+// ─── Module context ──────────────────────────────────────────
+
+export const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
+
+// ─── R1 surfaces ─────────────────────────────────────────────
+
+export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
+  return [
+    createSurface({
+      meaningId: "bridge:nt-invite",
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
+      encoding: bid(2, BidSuit.NoTrump),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_INVITE_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
+          isPublic: true,
+        },
+        {
+          factId: "bridge.hasFourCardMajor",
+          operator: "boolean",
+          value: false,
+          isPublic: true,
+        },
+        {
+          factId: "bridge.hasFiveCardMajor",
+          operator: "boolean",
+          value: false,
+          isPublic: true,
+        },
+      ],
+      band: "may",
+      declarationOrder: 0,
+      sourceIntent: { type: "NTInvite", params: {} },
+      disclosure: "natural",
+      teachingLabel: "NT invite",
+    }, NATURAL_NT_CTX),
+
+    createSurface({
+      meaningId: "bridge:to-3nt",
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_GAME,
+      encoding: bid(3, BidSuit.NoTrump),
+      clauses: [
+        {
+          factId: SYSTEM_RESPONDER_GAME_VALUES,
+          operator: "boolean",
+          value: true,
+          description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
+          isPublic: true,
+        },
+        {
+          factId: "bridge.hasFourCardMajor",
+          operator: "boolean",
+          value: false,
+          isPublic: true,
+        },
+        {
+          factId: "bridge.hasFiveCardMajor",
+          operator: "boolean",
+          value: false,
+          isPublic: true,
+        },
+      ],
+      band: "may",
+      declarationOrder: 1,
+      sourceIntent: { type: "NTGame", params: {} },
+      disclosure: "natural",
+      teachingLabel: "3NT game",
+    }, NATURAL_NT_CTX),
+  ];
+}
+
+// ─── Opener 1NT surface (used as surface group for idle state) ───
+// Declares the 1NT opening promise (HCP range, balanced) so that the
+// commitment extractor produces public constraints for the posterior sampler.
+
+export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
+  return [
+    createSurface({
+      meaningId: "bridge:1nt-opening",
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_OPENING,
+      encoding: bid(1, BidSuit.NoTrump),
+      clauses: [
+        {
+          factId: "hand.hcp",
+          operator: "gte",
+          value: sys.ntOpening.minHcp,
+          description: `${sys.ntOpening.minHcp}+ HCP for 1NT opening`,
+          isPublic: true,
+        },
+        {
+          factId: "hand.hcp",
+          operator: "lte",
+          value: sys.ntOpening.maxHcp,
+          description: `At most ${sys.ntOpening.maxHcp} HCP for 1NT opening`,
+          isPublic: true,
+        },
+        {
+          factId: "hand.isBalanced",
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "must",
+      declarationOrder: 0,
+      sourceIntent: { type: "NTOpening", params: {} },
+      disclosure: "natural",
+      teachingLabel: `${sys.ntOpening.minHcp} to ${sys.ntOpening.maxHcp}`,
+    }, NATURAL_NT_CTX),
+  ];
+}

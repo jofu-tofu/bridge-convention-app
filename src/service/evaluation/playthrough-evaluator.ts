@@ -260,7 +260,6 @@ export function gradePlaythroughBid(
   const bundleForAlts = bundleInputForAlts ? resolveBundleFn(bundleInputForAlts, getSystemConfig(baseSystem)) : undefined;
   const teachingResolution = resolveTeachingAnswer(
     result,
-    strategyEval?.acceptableAlternatives ?? bundleForAlts?.derivedTeaching.acceptableAlternatives ?? undefined,
     strategyEval?.surfaceGroups ?? bundleForAlts?.derivedTeaching.surfaceGroups ?? undefined,
   );
   const grade = gradeBid(submittedCall, teachingResolution);

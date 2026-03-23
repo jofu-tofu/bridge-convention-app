@@ -1,73 +1,21 @@
-import { FactLayer } from "../../../core/contracts/fact-layer";
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type {
-  FactCatalogExtension,
-  FactDefinition,
-  FactEvaluatorFn,
-} from "../../../core/contracts/fact-catalog";
-import { num, bool, fv } from "../../pipeline/fact-helpers";
-import { createPosteriorFactEvaluators } from "../../../inference/posterior";
-import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
-import type { LocalFsm, StateEntry } from "../../core/rule-module";
-import type { NegotiationDelta } from "../../../core/contracts/committed-step";
+import type { BidMeaning } from "../../../../core/contracts/meaning";
 
-import { BidSuit } from "../../../engine/types";
-import type { SystemConfig } from "../../../core/contracts/system-config";
+import { BidSuit } from "../../../../engine/types";
+import type { SystemConfig } from "../../../../core/contracts/system-config";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
-} from "../../../core/contracts/system-fact-vocabulary";
+} from "../../../../core/contracts/system-fact-vocabulary";
 
-import { bid } from "../../core/surface-helpers";
-import { createSurface } from "../../core/surface-builder";
-import type { ModuleContext } from "../../core/surface-builder";
-import {
-  SAME_FAMILY,
-  STRONGER_THAN,
-  CONTINUATION_OF,
-  NEAR_MISS_OF,
-  FALLBACK_OF,
-  ALTERNATIVES,
-} from "../teaching-vocabulary";
-import {
-  SCOPE_R1_MAJOR_FIT,
-  SCOPE_NT_RESPONSE_TRANSFER_VS_STAYMAN,
-  SCOPE_R1_MAJOR_FIT_FALLBACK,
-  SCOPE_R1_ASK_VS_TRANSFER,
-  SCOPE_R3_GF_CONTINUES_ASK,
-  SCOPE_R3_GF_VS_INVITE_DENIAL,
-  SCOPE_R3_GF_VS_GAME_DENIAL,
-  SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT,
-  SCOPE_STAYMAN_RAISE_CONTINUES_ASK,
-  SCOPE_STAYMAN_R3_2H_STRENGTH,
-  SCOPE_STAYMAN_R3_2S_STRENGTH,
-  SCOPE_STAYMAN_R3_NO_FIT_STRENGTH,
-  SCOPE_STAYMAN_R3_DENIAL_STRENGTH,
-} from "../pedagogical-scope-vocabulary";
+import { bid } from "../../../core/surface-helpers";
+import { createSurface } from "../../../core/surface-builder";
+import type { ModuleContext } from "../../../core/surface-builder";
+
+import { STAYMAN_CLASSES, STAYMAN_R3_CLASSES } from "./semantic-classes";
 
 // ─── Module context ──────────────────────────────────────────
 
 const STAYMAN_CTX: ModuleContext = { moduleId: "stayman" };
-
-// ─── Semantic classes ────────────────────────────────────────
-
-/** Stayman semantic class IDs — module-local, not in the central registry. */
-export const STAYMAN_CLASSES = {
-  ASK: "stayman:ask-major",
-  SHOW_HEARTS: "stayman:show-hearts",
-  SHOW_SPADES: "stayman:show-spades",
-  DENY_MAJOR: "stayman:deny-major",
-} as const;
-
-/** Stayman R3 semantic class IDs — responder continuations after opener's Stayman response. */
-export const STAYMAN_R3_CLASSES = {
-  RAISE_GAME: "stayman:raise-game",
-  RAISE_INVITE: "stayman:raise-invite",
-  NT_GAME_NO_FIT: "stayman:nt-game-no-fit",
-  NT_INVITE_NO_FIT: "stayman:nt-invite-no-fit",
-  NT_GAME_DENIAL: "stayman:nt-game-denial",
-  NT_INVITE_DENIAL: "stayman:nt-invite-denial",
-} as const;
 
 // ─── R1 surface ──────────────────────────────────────────────
 
@@ -104,14 +52,6 @@ export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
     sourceIntent: { type: "StaymanAsk", params: {} },
     disclosure: "standard",
     teachingLabel: "Stayman 2♣",
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_R1_MAJOR_FIT },
-      { tag: ALTERNATIVES, scope: SCOPE_NT_RESPONSE_TRANSFER_VS_STAYMAN },
-      { tag: FALLBACK_OF, scope: SCOPE_R1_MAJOR_FIT_FALLBACK, role: "b" },
-      { tag: NEAR_MISS_OF, scope: SCOPE_R1_ASK_VS_TRANSFER, role: "a" },
-      { tag: CONTINUATION_OF, scope: SCOPE_R3_GF_CONTINUES_ASK, role: "b" },
-      { tag: CONTINUATION_OF, scope: SCOPE_STAYMAN_RAISE_CONTINUES_ASK, role: "b" },
-    ],
   }, STAYMAN_CTX);
 }
 
@@ -212,10 +152,6 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "RaiseGame", params: { suit: "hearts" } },
     disclosure: "alert",
     teachingLabel: "Raise to game in hearts",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2H_STRENGTH, ordinal: 0 },
-      { tag: CONTINUATION_OF, scope: SCOPE_STAYMAN_RAISE_CONTINUES_ASK, role: "a" },
-    ],
   }, STAYMAN_CTX),
 
   createSurface({
@@ -243,9 +179,6 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "RaiseInvite", params: { suit: "hearts" } },
     disclosure: "alert",
     teachingLabel: "Invite in hearts",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2H_STRENGTH, ordinal: 1 },
-    ],
   }, STAYMAN_CTX),
 
   createSurface({
@@ -273,9 +206,6 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-heart-fit" } },
     disclosure: "alert",
     teachingLabel: "3NT (no heart fit)",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_NO_FIT_STRENGTH, ordinal: 0 },
-    ],
   }, STAYMAN_CTX),
 
   createSurface({
@@ -303,9 +233,6 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-heart-fit" } },
     disclosure: "alert",
     teachingLabel: "2NT invite (no heart fit)",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_NO_FIT_STRENGTH, ordinal: 1 },
-    ],
   }, STAYMAN_CTX),
   ];
 }
@@ -338,9 +265,6 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "RaiseGame", params: { suit: "spades" } },
     disclosure: "alert",
     teachingLabel: "Raise to game in spades",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2S_STRENGTH, ordinal: 0 },
-    ],
   }, STAYMAN_CTX),
 
   createSurface({
@@ -368,9 +292,6 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "RaiseInvite", params: { suit: "spades" } },
     disclosure: "alert",
     teachingLabel: "Invite in spades",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_2S_STRENGTH, ordinal: 1 },
-    ],
   }, STAYMAN_CTX),
 
   createSurface({
@@ -451,11 +372,6 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "StaymanNTGame", params: { reason: "denial" } },
     disclosure: "alert",
     teachingLabel: "3NT after denial",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_DENIAL_STRENGTH, ordinal: 0 },
-      { tag: NEAR_MISS_OF, scope: SCOPE_R3_GF_VS_GAME_DENIAL, role: "b" },
-      { tag: ALTERNATIVES, scope: SCOPE_AFTER_DENIAL_SMOLEN_VS_3NT },
-    ],
   }, STAYMAN_CTX),
 
   createSurface({
@@ -476,171 +392,6 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     disclosure: "alert",
     teachingLabel: "2NT invite after denial",
-    teachingTags: [
-      { tag: STRONGER_THAN, scope: SCOPE_STAYMAN_R3_DENIAL_STRENGTH, ordinal: 1 },
-      { tag: STRONGER_THAN, scope: SCOPE_R3_GF_VS_INVITE_DENIAL, role: "b" },
-    ],
   }, STAYMAN_CTX),
   ];
 }
-
-// ─── Facts ───────────────────────────────────────────────────
-
-const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
-  {
-    id: "module.stayman.nsHaveEightCardFitLikely",
-    layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
-    description: "Posterior probability that N/S have an 8+ card major fit",
-    valueType: "number",
-    constrainsDimensions: [],
-  },
-  {
-    id: "module.stayman.openerStillBalancedLikely",
-    layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
-    description: "Posterior probability that opener has balanced shape",
-    valueType: "number",
-    constrainsDimensions: [],
-  },
-  {
-    id: "module.stayman.openerHasSecondMajorLikely",
-    layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
-    description: "Posterior probability that opener has a second 4-card major",
-    valueType: "number",
-    constrainsDimensions: [],
-  },
-];
-
-const STAYMAN_FACTS: readonly FactDefinition[] = [
-  {
-    id: "module.stayman.eligible",
-    layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
-    description: "Eligible for Stayman (4+ card major AND 8+ HCP)",
-    valueType: "boolean",
-    derivesFrom: ["bridge.hasFourCardMajor", "hand.hcp"],
-    constrainsDimensions: ["suitIdentity"],
-  },
-  {
-    id: "module.stayman.preferred",
-    layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
-    description: "Stayman preferred (eligible AND no 5-card major)",
-    valueType: "boolean",
-    derivesFrom: ["module.stayman.eligible", "bridge.hasFiveCardMajor"],
-    constrainsDimensions: ["suitIdentity"],
-  },
-];
-
-/** Factory: creates Stayman fact evaluators parameterized by system config. */
-function createStaymanEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
-  const minHcp = sys.responderThresholds.inviteMin;
-  return new Map<string, FactEvaluatorFn>([
-    ["module.stayman.eligible", (_h, _ev, m) =>
-      fv("module.stayman.eligible", bool(m, "bridge.hasFourCardMajor") && num(m, "hand.hcp") >= minHcp)],
-    ["module.stayman.preferred", (_h, _ev, m) =>
-      fv("module.stayman.preferred", bool(m, "module.stayman.eligible") && !bool(m, "bridge.hasFiveCardMajor"))],
-  ]);
-}
-
-const posteriorEvaluators = createPosteriorFactEvaluators([
-  "bridge.partnerHas4HeartsLikely",
-  "bridge.partnerHas4SpadesLikely",
-  "bridge.partnerHas4DiamondsLikely",
-  "bridge.partnerHas4ClubsLikely",
-  "bridge.combinedHcpInRangeLikely",
-  "module.stayman.nsHaveEightCardFitLikely",
-  "module.stayman.openerStillBalancedLikely",
-  "module.stayman.openerHasSecondMajorLikely",
-], new Map([
-  ["bridge.partnerHas4HeartsLikely", ["H"]],
-  ["bridge.partnerHas4SpadesLikely", ["S"]],
-  ["bridge.partnerHas4DiamondsLikely", ["D"]],
-  ["bridge.partnerHas4ClubsLikely", ["C"]],
-  ["bridge.combinedHcpInRangeLikely", ["25", "40"]],
-]));
-
-/** Factory: creates Stayman facts parameterized by system config. */
-export function createStaymanFacts(sys: SystemConfig): FactCatalogExtension {
-  return {
-    definitions: [...STAYMAN_FACTS, ...NT_POSTERIOR_FACTS],
-    evaluators: createStaymanEvaluators(sys),
-    posteriorEvaluators,
-  };
-}
-
-// ─── Explanation entries ─────────────────────────────────────
-
-const STAYMAN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
-  {
-    explanationId: "nt.stayman.eligible",
-    factId: "module.stayman.eligible",
-    templateKey: "nt.stayman.eligible.supporting",
-    displayText: "Eligible for Stayman",
-    contrastiveTemplateKey: "nt.stayman.eligible.whyNot",
-    contrastiveDisplayText: "Not eligible for Stayman",
-    preferredLevel: "semantic",
-    roles: ["supporting", "blocking", "pedagogical"],
-  },
-  {
-    explanationId: "nt.stayman.preferred",
-    factId: "module.stayman.preferred",
-    templateKey: "nt.stayman.preferred.supporting",
-    displayText: "Stayman is the preferred convention",
-    preferredLevel: "semantic",
-    roles: ["supporting", "inferential"],
-  },
-  {
-    explanationId: "nt.stayman.askMajor",
-    meaningId: "stayman:ask-major",
-    templateKey: "nt.stayman.askMajor.semantic",
-    displayText: "Stayman: asks opener for a 4-card major",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-];
-
-// ─── Local FSM + States ──────────────────────────────────────
-
-type StaymanPhase = "idle" | "asked" | "shown-hearts" | "shown-spades" | "denied" | "inactive";
-
-const STAYMAN_ASK_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
-const STAYMAN_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
-
-export const staymanLocal: LocalFsm<StaymanPhase> = {
-  initial: "idle",
-  transitions: [
-    { from: "idle", to: "asked", on: { act: "inquire", feature: "majorSuit" } },
-    { from: "idle", to: "inactive", on: { act: "transfer" } },
-    { from: "idle", to: "inactive", on: { act: "raise" } },
-    { from: "idle", to: "inactive", on: { act: "place" } },
-    { from: "idle", to: "inactive", on: { act: "signoff" } },
-    { from: "asked", to: "shown-hearts", on: { act: "show", feature: "heldSuit", suit: "hearts" } },
-    { from: "asked", to: "shown-spades", on: { act: "show", feature: "heldSuit", suit: "spades" } },
-    { from: "asked", to: "denied", on: { act: "deny", feature: "majorSuit" } },
-  ],
-};
-
-export function createStaymanStates(sys: SystemConfig): readonly StateEntry<StaymanPhase>[] {
-  return [
-    { phase: "idle", turn: "responder" as const, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys)] },
-    { phase: "asked", turn: "opener" as const, negotiationDelta: STAYMAN_RESPONSE_DELTA, surfaces: OPENER_STAYMAN_SURFACES },
-    { phase: "shown-hearts", turn: "responder" as const, surfaces: createStaymanR3After2HSurfaces(sys) },
-    { phase: "shown-spades", turn: "responder" as const, surfaces: createStaymanR3After2SSurfaces(sys) },
-    { phase: "denied", turn: "responder" as const, surfaces: createStaymanR3After2DSurfaces(sys) },
-  ];
-}
-
-// ─── Module declarations ─────────────────────────────────────
-
-/** Factory: creates Stayman declaration parts (facts + explanations).
- *  Full ConventionModule assembly happens in module-registry.ts. */
-export function createStaymanDeclarations(sys: SystemConfig) {
-  return {
-    facts: createStaymanFacts(sys),
-    explanationEntries: STAYMAN_EXPLANATION_ENTRIES,
-  };
-}
-

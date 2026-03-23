@@ -17,7 +17,7 @@ function makeBundle(
     memberIds,
     modules: [],
     dealConstraints: { seats: [] },
-    derivedTeaching: { acceptableAlternatives: [], surfaceGroups: [], relations: [] },
+    derivedTeaching: { surfaceGroups: [] },
     ...extras,
   };
 }
@@ -61,7 +61,6 @@ describe("composeBundles", () => {
 
     const composite = composeBundles("ab", "AB", [a, b]);
 
-    expect(composite.derivedTeaching.acceptableAlternatives).toEqual([]);
     expect(composite.derivedTeaching.surfaceGroups).toEqual([]);
     expect(composite.systemProfile).toBeUndefined();
   });
@@ -105,29 +104,25 @@ describe("composeBundles", () => {
     expect(composite.systemProfile!.modules[1]!.moduleId).toBe("mod-b");
   });
 
-  it("concatenates acceptable alternatives", () => {
+  it("concatenates surface groups from child bundles", () => {
     const a = makeBundle("a", [], {
       derivedTeaching: {
-        acceptableAlternatives: [
-          { label: "group-a", members: ["m1", "m2"], tier: "preferred" as const },
+        surfaceGroups: [
+          { id: "g1", label: "Group A", members: ["m1", "m2"], relationship: "mutually_exclusive" as const, description: "test" },
         ],
-        surfaceGroups: [],
-        relations: [],
       },
     });
     const b = makeBundle("b", [], {
       derivedTeaching: {
-        acceptableAlternatives: [
-          { label: "group-b", members: ["m3"], tier: "alternative" as const },
+        surfaceGroups: [
+          { id: "g2", label: "Group B", members: ["m3"], relationship: "mutually_exclusive" as const, description: "test" },
         ],
-        surfaceGroups: [],
-        relations: [],
       },
     });
 
     const composite = composeBundles("ab", "AB", [a, b]);
 
-    expect(composite.derivedTeaching.acceptableAlternatives).toHaveLength(2);
+    expect(composite.derivedTeaching.surfaceGroups).toHaveLength(2);
   });
 
   it("merges declared capabilities from all bundles", () => {

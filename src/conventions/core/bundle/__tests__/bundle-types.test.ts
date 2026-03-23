@@ -3,6 +3,7 @@ import { createConventionConfigFromBundle, resolveConventionForSystem } from "..
 import { ConventionCategory } from "../../../../core/contracts/convention";
 import type { ConventionBundle } from "../bundle-types";
 import type { ConventionConfig } from "../../../../core/contracts/convention";
+import type { ConventionModule } from "../../convention-module";
 import { SAYC_SYSTEM_CONFIG } from "../../../../core/contracts/system-config";
 import { Seat } from "../../../../engine/types";
 
@@ -13,8 +14,9 @@ function stubBundle(overrides: Partial<ConventionBundle> = {}): ConventionBundle
     description: "Test description",
     category: ConventionCategory.Constructive,
     memberIds: [],
+    modules: [],
     dealConstraints: { seats: [{ seat: Seat.North, minHcp: 15 }], dealer: Seat.North },
-    derivedTeaching: { acceptableAlternatives: [], surfaceGroups: [], relations: [] },
+    derivedTeaching: { surfaceGroups: [] },
     ...overrides,
   } as ConventionBundle;
 }
@@ -87,5 +89,51 @@ describe("resolveConventionForSystem", () => {
   it("returns config unchanged when bundle is provided (no factory re-derivation)", () => {
     const config = stubConfig();
     expect(resolveConventionForSystem(config, stubBundle(), sys)).toBe(config);
+  });
+});
+
+describe("variesBySystem derivation", () => {
+  function stubModule(clauses: { factId: string }[]): ConventionModule {
+    return {
+      moduleId: "test-mod",
+      facts: { definitions: [], evaluators: new Map() },
+      explanationEntries: [],
+      local: { initial: "idle", transitions: [] },
+      states: [{
+        phase: "idle",
+        surfaces: [{
+          meaningId: "test-meaning",
+          semanticClassId: "test:class",
+          clauses: clauses.map((c) => ({ ...c, operator: "boolean" as const, value: true })),
+          encoding: { defaultCall: { type: "bid" as const, level: 2, suit: "C" as const } },
+          ranking: { recommendationBand: "preferred" as const, declarationOrder: 0 },
+          sourceIntent: { type: "test", params: {} },
+          disclosure: "natural" as const,
+          teachingLabel: "Test",
+        }],
+      }],
+    } as ConventionModule;
+  }
+
+  it("is true when a surface clause references a system fact", () => {
+    const bundle = stubBundle({
+      modules: [stubModule([{ factId: "system.responder.inviteValues" }])],
+    });
+    const result = createConventionConfigFromBundle(bundle);
+    expect(result.variesBySystem).toBe(true);
+  });
+
+  it("is undefined when clauses only reference non-system facts", () => {
+    const bundle = stubBundle({
+      modules: [stubModule([{ factId: "hand.hcp" }, { factId: "module.foo.bar" }])],
+    });
+    const result = createConventionConfigFromBundle(bundle);
+    expect(result.variesBySystem).toBeUndefined();
+  });
+
+  it("is undefined when bundle has no modules", () => {
+    const bundle = stubBundle({ modules: [] });
+    const result = createConventionConfigFromBundle(bundle);
+    expect(result.variesBySystem).toBeUndefined();
   });
 });

@@ -63,6 +63,8 @@ tailwind.config = {
     <li><a href="#profile-creation" class="toc-link">3. Profile Creation</a></li>
     <li><a href="#activation" class="toc-link">4. Runtime Activation</a></li>
     <li><a href="#fact-injection" class="toc-link">5. Fact Injection</a></li>
+    <li><a href="#deal-derivation" class="toc-link">6. Deal Derivation</a></li>
+    <li><a href="#public-beliefs" class="toc-link">7. Public Beliefs</a></li>
     <li><a href="#full-flow" class="toc-link">Full Flow</a></li>
     <li><a href="#file-map" class="toc-link">File Map</a></li>
   </ul>
@@ -196,7 +198,8 @@ export type BaseSystemId =
     <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>suitResponse.twoLevelMin</code></td><td class="text-center">10</td><td class="text-center">12</td><td class="text-center">10</td></tr>
     <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>suitResponse.twoLevelForcingDuration</code></td><td class="text-center">one-round</td><td class="text-center">game</td><td class="text-center">one-round</td></tr>
     <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>oneNtResponseAfterMajor.forcing</code></td><td class="text-center">non-forcing</td><td class="text-center">semi-forcing</td><td class="text-center">non-forcing</td></tr>
-    <tr><td class="py-2 pr-4"><code>openingRequirements.majorSuitMinLength</code></td><td class="text-center">5</td><td class="text-center">5</td><td class="text-center">4</td></tr>
+    <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>openingRequirements.majorSuitMinLength</code></td><td class="text-center">5</td><td class="text-center">5</td><td class="text-center">4</td></tr>
+    <tr><td class="py-2 pr-4"><code>dontOvercall.minHcp/maxHcp</code></td><td class="text-center">8&ndash;15</td><td class="text-center">8&ndash;15</td><td class="text-center">8&ndash;15</td></tr>
   </tbody>
 </table>
 </div>
@@ -417,6 +420,118 @@ sequenceDiagram
 </div>
 </section>
 
+<!-- ───────────────────────── Layer 6: Deal Constraint Derivation ───────────────────────── -->
+<section id="deal-derivation" class="mb-12">
+<h2 class="text-2xl text-white mb-4">6. Deal Constraint Derivation</h2>
+<p class="text-muted mb-2"><strong class="text-text">File:</strong> <code>src/conventions/definitions/derive-deal-constraints.ts</code></p>
+
+<p class="mb-4">Deal constraints (what hands to generate for drills) are now <strong>fully derived</strong> from authored convention data &mdash; no hand-authored <code>dealConstraints</code>, factories, or <code>defaultAuction</code> on <code>BundleInput</code>. Three sources combine:</p>
+
+<pre class="mermaid">
+flowchart LR
+    subgraph SRC["Three Sources"]
+        CAP["Capability Archetype\nopener constraints,\ndefault auction,\nallowed dealers"]
+        R1["R1 Surface Analysis\npractitioner constraints\nfrom activation envelope"]
+        NEG["Complement Negation\noff-convention constraints"]
+    end
+
+    subgraph DRV["deriveBundleDealConstraints()"]
+        MERGE["Merge + narrow"]
+    end
+
+    subgraph OUT["DerivedDealConstraints"]
+        DC["dealConstraints"]
+        OC["offConventionConstraints"]
+        DA["defaultAuction"]
+        AD["allowedDealers"]
+    end
+
+    CAP --> MERGE
+    R1 --> MERGE
+    MERGE --> DC
+    MERGE --> DA
+    MERGE --> AD
+    DC -->|"complement"| NEG
+    NEG --> OC
+
+    style SRC fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style DRV fill:#1e293b,stroke:#38bdf8,color:#e2e8f0
+    style OUT fill:#1e293b,stroke:#22c55e,color:#e2e8f0
+</pre>
+
+<div class="card p-5 mt-4">
+  <p class="font-semibold text-accent mb-2">How this connects to SystemConfig</p>
+  <p class="text-muted text-sm mb-3"><code>deriveBundleDealConstraints(input, modules, sys)</code> receives <code>SystemConfig</code> as its third argument. The capability archetype produces opener constraints parameterized by the system (e.g., 1NT opening = <code>sys.ntOpening.minHcp</code> to <code>sys.ntOpening.maxHcp</code>). R1 surface analysis reads <code>FactComposition</code> trees on module-derived facts to extract the loosest HCP/shape bounds.</p>
+</div>
+
+<h3 class="text-xl text-white mt-6 mb-3"><code>FactComposition</code>: composable activation trees</h3>
+<p class="text-muted mb-2"><strong class="text-text">File:</strong> <code>src/core/contracts/fact-catalog.ts</code></p>
+<p class="mb-4">Module-derived facts now declare a <code>composition</code> &mdash; a tree of primitive clauses describing the <em>loosest</em> constraint under which the fact could be true. The deal constraint derivation walks these trees to extract HCP/shape bounds without re-implementing evaluator logic.</p>
+<pre><code class="language-typescript">// Composable tree: AND/OR/NOT over primitive clauses
+type FactComposition =
+  | { kind: "primitive"; clause: PrimitiveClause }
+  | { kind: "and"; operands: readonly FactComposition[] }
+  | { kind: "or"; operands: readonly FactComposition[] }
+  | { kind: "not"; operand: FactComposition };
+
+// A primitive clause maps to a fact-compiler call
+interface PrimitiveClause {
+  factId: string;            // e.g. "hand.hcp"
+  operator: "gte" | "lte" | "eq" | "range";
+  value: number | { min: number; max: number };
+}</code></pre>
+
+<div class="card p-5 mt-4">
+  <p class="font-semibold text-accent mb-2">What moved out of <code>BundleInput</code></p>
+  <p class="text-muted text-sm">These fields are now <strong>derived on <code>ConventionBundle</code></strong>, not authored on <code>BundleInput</code>:</p>
+  <ul class="list-disc pl-6 text-muted text-sm mt-2 space-y-1">
+    <li><code>dealConstraints</code> &mdash; derived from archetype + R1 surfaces</li>
+    <li><code>offConventionConstraints</code> &mdash; derived via complement negation</li>
+    <li><code>defaultAuction</code> &mdash; derived from capability archetype</li>
+    <li><code>allowedDealers</code> &mdash; derived from capability archetype</li>
+    <li><del><code>dealConstraintFactory</code></del>, <del><code>offConventionConstraintFactory</code></del> &mdash; removed entirely</li>
+  </ul>
+</div>
+</section>
+
+<!-- ───────────────────────── Layer 7: Public Beliefs ───────────────────────── -->
+<section id="public-beliefs" class="mb-12">
+<h2 class="text-2xl text-white mb-4">7. Public Belief State</h2>
+<p class="text-muted mb-2"><strong class="text-text">File:</strong> <code>src/core/contracts/agreement-module.ts</code> &nbsp;|&nbsp; <strong class="text-text">File:</strong> <code>src/core/contracts/meaning.ts</code></p>
+
+<p class="mb-4">The pipeline now tracks which constraints are <strong>public</strong> (disclosed to opponents) vs. <strong>routing</strong> (internal evaluation logic). Two changes make this work:</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <div class="card p-4">
+    <p class="font-semibold text-accent mb-2"><code>isPublic</code> on FactConstraint</p>
+    <p class="text-muted text-sm mb-2">Each surface clause is now marked <code>isPublic: true</code> (communicative &mdash; what you'd tell opponents) or absent/false (routing &mdash; internal logic). This flag travels with the constraint through the entire pipeline: BidAnnotation, PublicBeliefs, posterior engine.</p>
+    <pre><code class="language-typescript">interface FactConstraint {
+  factId: string;
+  operator: FactOperator;
+  value: ...;
+  isPublic?: boolean;  // NEW
+}</code></pre>
+    <p class="text-muted text-sm mt-2">Replaces the old <code>derivePublicConstraints()</code> heuristic that filtered by <code>hand.*</code> prefix.</p>
+  </div>
+  <div class="card p-4">
+    <p class="font-semibold text-accent mb-2"><code>disclosure</code> on BidMeaning</p>
+    <p class="text-muted text-sm mb-2">Convention authors declare how a bid's meaning is disclosed to opponents, replacing the old hardcoded alert-intent set membership.</p>
+    <pre><code class="language-typescript">// On BidMeaning:
+disclosure:
+  | "alert"        // conventional, must tell
+  | "announcement" // partner speaks it
+  | "standard"     // universally known
+  | "natural"      // no disclosure</code></pre>
+    <p class="text-muted text-sm mt-2">Replaces <code>NATURAL_INTENTS</code>, <code>ANNOUNCE_INTENTS</code>, and <code>isAlertableFromIntent()</code>.</p>
+  </div>
+</div>
+
+<div class="card p-5">
+  <p class="font-semibold text-warm mb-2">Also removed: ChoiceClosurePolicy</p>
+  <p class="text-muted text-sm">The closure policy stack (<code>ChoiceClosurePolicy</code>, <code>ClosureDomain</code>, <code>deriveEntailedDenials()</code>) was removed entirely. Entailed denials from unchosen peer surfaces were either redundant or logically incorrect (individual clause negation violates De Morgan's law). Positive inference from the chosen surface's <code>isPublic</code> clauses is sufficient.</p>
+</div>
+</section>
+
 <!-- ───────────────────────── Full Flow ───────────────────────── -->
 <section id="full-flow" class="mb-12">
 <h2 class="text-2xl text-white mb-4">Full Flow: Definition to Runtime</h2>
@@ -534,6 +649,26 @@ flowchart TB
       <td class="py-2 pr-4 font-mono text-xs"><code>conventions/definitions/system-registry.ts</code></td>
       <td class="pr-4">Bundle registry</td>
       <td><code>resolveBundle()</code>, <code>specFromBundle()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>conventions/definitions/derive-deal-constraints.ts</code></td>
+      <td class="pr-4">Deal derivation</td>
+      <td><code>deriveBundleDealConstraints()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>conventions/definitions/capability-constraint-registry.ts</code></td>
+      <td class="pr-4">Archetypes</td>
+      <td><code>getArchetype()</code>, <code>CapabilityArchetype</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>conventions/pipeline/fact-inversion.ts</code></td>
+      <td class="pr-4">Composition inversion</td>
+      <td><code>invertComposition()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>core/contracts/fact-catalog.ts</code></td>
+      <td class="pr-4">Fact types</td>
+      <td><code>FactComposition</code>, <code>FactDefinition</code>, <code>FactCatalog</code></td>
     </tr>
     <tr class="border-b border-surfaceHigh/50">
       <td class="py-2 pr-4 font-mono text-xs"><code>bootstrap/config-factory.ts</code></td>

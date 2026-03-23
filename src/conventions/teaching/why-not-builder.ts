@@ -22,10 +22,7 @@ import type {
   ExplanationNode,
 } from "../../core/contracts/teaching-projection";
 
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
-
-import type { TeachingGraph } from "./teaching-graph";
-import { findRelationsFor } from "./teaching-graph";
+import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
 
 import type { CatalogIndex } from "./teaching-projection-builder";
 import { resolveDisplayText } from "./teaching-projection-builder";
@@ -40,7 +37,7 @@ export function buildWhyNot(
   arbitration: ArbitrationResult,
   provenance: DecisionProvenance,
   catalogIndex?: CatalogIndex,
-  teachingGraph?: TeachingGraph,
+  surfaceGroups?: readonly SurfaceGroup[],
   truthMeaningIds?: ReadonlySet<string>,
 ): WhyNotEntry[] {
   const entries: WhyNotEntry[] = [];
@@ -56,18 +53,18 @@ export function buildWhyNot(
 
     const explanation = buildWhyNotExplanation(encoded, eliminationTrace, catalogIndex);
     const stage = eliminationTrace?.stage ?? "applicability";
-    const familyRelation = teachingGraph
-      ? findNearMissRelation(teachingGraph, encoded.proposal.meaningId, truthMeaningIds)
-      : undefined;
 
-    // Grade based on pedagogical relationship: bids in the same family as the
-    // correct answer are "near-miss"; unrelated bids are "wrong".
-    const grade: "near-miss" | "wrong" = familyRelation ? "near-miss" : "wrong";
+    // Grade based on surface group membership: bids in the same group as
+    // any truth-set meaning are "near-miss"; unrelated bids are "wrong".
+    const grade: "near-miss" | "wrong" = surfaceGroups && truthMeaningIds
+      ? isInSameGroup(encoded.proposal.meaningId, truthMeaningIds, surfaceGroups)
+        ? "near-miss"
+        : "wrong"
+      : "wrong";
 
     entries.push({
       call: encoded.call,
       grade,
-      familyRelation,
       explanation,
       eliminationStage: stage,
     });
@@ -77,32 +74,20 @@ export function buildWhyNot(
 }
 
 /**
- * Find the best pedagogical relation between a near-miss meaning and any truth-set meaning.
- * Prefers `near-miss-of` relations, then any relation linking the two.
+ * Check if a meaningId shares a SurfaceGroup with any truth-set meaningId.
  */
-function findNearMissRelation(
-  graph: TeachingGraph,
-  nearMissMeaningId: string,
-  truthMeaningIds?: ReadonlySet<string>,
-): TeachingRelation | undefined {
-  if (!truthMeaningIds || truthMeaningIds.size === 0) return undefined;
-
-  const relations = findRelationsFor(graph, nearMissMeaningId);
-  if (relations.length === 0) return undefined;
-
-  // Find relations that connect this near-miss to a truth-set meaning
-  const connecting = relations.filter(r => {
-    const otherRef = r.a === nearMissMeaningId ? r.b : r.a;
-    return truthMeaningIds.has(otherRef);
-  });
-
-  if (connecting.length === 0) return undefined;
-
-  // Prefer near-miss-of relations
-  const nearMissRelation = connecting.find(r => r.kind === "near-miss-of");
-  const best = nearMissRelation ?? connecting[0]!;
-
-  return { kind: best.kind, a: best.a, b: best.b };
+function isInSameGroup(
+  meaningId: string,
+  truthMeaningIds: ReadonlySet<string>,
+  surfaceGroups: readonly SurfaceGroup[],
+): boolean {
+  for (const group of surfaceGroups) {
+    if (!group.members.includes(meaningId)) continue;
+    for (const truthId of truthMeaningIds) {
+      if (group.members.includes(truthId)) return true;
+    }
+  }
+  return false;
 }
 
 /** Build explanation nodes for a WhyNot entry. */

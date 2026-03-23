@@ -4,7 +4,7 @@ import type { PipelineResult } from "./pipeline-types";
 import type { HandoffTrace } from "../../core/contracts/provenance";
 import type { TeachingProjection } from "../../core/contracts/teaching-projection";
 import type { PracticalRecommendation, PosteriorSummary } from "../../core/contracts/recommendation";
-import type { AlternativeGroup, SurfaceGroup } from "../../core/contracts/teaching-grading";
+import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
 import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import type { EvaluatedFacts } from "../../core/contracts/fact-catalog";
 import type { AuctionContext } from "../../core/contracts/committed-step";
@@ -25,8 +25,6 @@ export interface MachineDebugSnapshot {
 export interface StrategyEvaluation {
   /** Practical recommendation (what an experienced player might prefer). Null when not produced. */
   readonly practicalRecommendation: PracticalRecommendation | null;
-  /** Convention-level alternative groups for teaching grading. Null if not configured. */
-  readonly acceptableAlternatives: readonly AlternativeGroup[] | null;
   /** Convention-level surface groups for relationship-aware grading. Null if not configured. */
   readonly surfaceGroups: readonly SurfaceGroup[] | null;
   /** Full pipeline result from the meaning-pipeline evaluation. Null when not produced. */

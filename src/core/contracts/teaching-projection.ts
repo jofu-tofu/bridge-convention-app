@@ -2,16 +2,6 @@ import type { Call, NumberRange } from "../../engine/types";
 import type { ConditionEvidence } from "./evidence-bundle";
 import type { EncoderKind } from "./provenance";
 
-/** Pedagogical relation between two bids or meanings.
- *  Used by teaching UI to explain "why is X better than Y?" */
-export type TeachingRelation =
-  | { readonly kind: "same-family"; readonly a: string; readonly b: string }
-  | { readonly kind: "stronger-than"; readonly a: string; readonly b: string }
-  | { readonly kind: "weaker-than"; readonly a: string; readonly b: string }
-  | { readonly kind: "fallback-of"; readonly a: string; readonly b: string }
-  | { readonly kind: "continuation-of"; readonly a: string; readonly b: string }
-  | { readonly kind: "near-miss-of"; readonly a: string; readonly b: string };
-
 /** Teaching-optimized view of a bid decision.
  *  This is the sole projection of ArbitrationResult metadata into the feedback
  *  pipeline — consumers (BidFeedbackDTO, BidFeedbackLike, TeachingDetail) read
@@ -69,13 +59,9 @@ export interface ExplanationNode {
 export interface WhyNotEntry {
   readonly call: Call;
   readonly grade: "near-miss" | "wrong";
-  readonly familyRelation?: TeachingRelation;
   readonly explanation: readonly ExplanationNode[];
   readonly eliminationStage: string;
 }
-
-/** Pedagogical relation kind values (derived from TeachingRelation). */
-export type TeachingRelationKind = TeachingRelation["kind"];
 
 /** How a convention contributed to the decision. */
 export interface ConventionContribution {

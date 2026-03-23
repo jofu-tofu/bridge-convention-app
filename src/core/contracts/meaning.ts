@@ -3,7 +3,6 @@ import type { Call } from "../../engine/types";
 import type {
   FactConstraint,
 } from "./agreement-module";
-import type { TeachingTagRef } from "./teaching-tag";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;
@@ -187,8 +186,6 @@ export interface BidMeaning {
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
   readonly teachingLabel: string;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
-  /** Cross-module pedagogical tags for deriving relations and alternatives. */
-  readonly teachingTags?: readonly TeachingTagRef[];
 }
 
 // ---------------------------------------------------------------------------

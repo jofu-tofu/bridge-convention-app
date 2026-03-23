@@ -6,7 +6,6 @@
  * not by convention-specific checks.
  */
 
-import type { TeachingRelationKind } from "../../../core/contracts/teaching-projection";
 import type { EncoderKind } from "../../../core/contracts/provenance";
 
 /** Human-readable ambiguity description. Returns null when score is 0 (clear-cut). */
@@ -15,28 +14,6 @@ export function formatAmbiguity(score: number): string | null {
   if (score <= 0.3) return "Mildly ambiguous";
   if (score <= 0.6) return "Moderately ambiguous — alternatives exist";
   return "Highly ambiguous — multiple bids are reasonable";
-}
-
-/** Map pedagogical relation kinds to short display labels. */
-export function formatRelationKind(kind: TeachingRelationKind): string {
-  switch (kind) {
-    case "same-family":
-      return "Same family";
-    case "stronger-than":
-      return "Stronger";
-    case "weaker-than":
-      return "Weaker";
-    case "fallback-of":
-      return "Fallback";
-    case "continuation-of":
-      return "Continuation";
-    case "near-miss-of":
-      return "Near miss";
-    default: {
-      const _exhaustive: never = kind;
-      return _exhaustive;
-    }
-  }
 }
 
 /** Map elimination stage identifiers to readable labels for teaching context. */

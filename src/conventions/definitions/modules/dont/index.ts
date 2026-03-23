@@ -19,6 +19,7 @@ import type { SystemConfig } from "../../../../core/contracts/system-config";
 import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
 import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
@@ -123,3 +124,11 @@ export function createDontModule(_sys: SystemConfig) {
     explanationEntries: DONT_ENTRIES,
   };
 }
+
+/** Self-contained factory producing a complete ConventionModule. */
+export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
+  moduleId: "dont",
+  ...createDontModule(sys),
+  local: dontLocal,
+  states: createDontStates(),
+});

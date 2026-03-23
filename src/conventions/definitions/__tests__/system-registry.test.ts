@@ -102,12 +102,10 @@ describe("resolveBundle", () => {
     expect(opening!.teachingLabel).toBe("15 to 17");
   });
 
-  it("produces derivedTeaching with arrays", () => {
+  it("produces derivedTeaching with surfaceGroups array", () => {
     const input = getBundleInput("bergen-bundle")!;
     const bundle = resolveBundle(input, SAYC_SYSTEM_CONFIG);
-    expect(Array.isArray(bundle.derivedTeaching.acceptableAlternatives)).toBe(true);
     expect(Array.isArray(bundle.derivedTeaching.surfaceGroups)).toBe(true);
-    expect(Array.isArray(bundle.derivedTeaching.relations)).toBe(true);
   });
 });
 

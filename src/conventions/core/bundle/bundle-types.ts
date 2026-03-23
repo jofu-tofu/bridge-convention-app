@@ -1,11 +1,11 @@
 import type { DealConstraints, Deal, Auction } from "../../../engine/types";
 import type { Seat } from "../../../engine/types";
-import type { AlternativeGroup, SurfaceGroup } from "../../../core/contracts/teaching-grading";
-import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
+import type { SurfaceGroup } from "../../../core/contracts/teaching-grading";
 import type { SystemProfile } from "../../../core/contracts/agreement-module";
 import type { ConventionConfig, ConventionTeaching } from "../../../core/contracts/convention";
 import type { ConventionCategory } from "../../../core/contracts/convention";
 import type { ConventionModule } from "../convention-module";
+import { moduleSurfaces } from "../convention-module";
 
 // ── Authored input ──────────────────────────────────────────────────
 
@@ -48,12 +48,8 @@ export interface BundleInput {
  * bid grading (acceptable alternatives, near-miss detection).
  */
 export interface DerivedTeachingContent {
-  /** @derived From ALTERNATIVES teachingTags on surfaces. */
-  readonly acceptableAlternatives: readonly AlternativeGroup[];
-  /** @derived From teachingTags + rule module structure. */
+  /** @derived From rule module structure. */
   readonly surfaceGroups: readonly SurfaceGroup[];
-  /** @derived From relation teachingTags (same-family, stronger-than, etc.) on surfaces. */
-  readonly relations: readonly TeachingRelation[];
 }
 
 // ── Full computed bundle ────────────────────────────────────────────
@@ -67,7 +63,7 @@ export interface DerivedTeachingContent {
 export interface ConventionBundle extends BundleInput {
   /** Resolved convention modules (assembled by resolveBundle from memberIds). */
   readonly modules: readonly ConventionModule[];
-  /** Derived teaching/grading metadata (acceptableAlternatives, surfaceGroups, relations). */
+  /** Derived teaching/grading metadata (surfaceGroups). */
   readonly derivedTeaching: DerivedTeachingContent;
   /** @derived Deal constraints from capability archetype + R1 surface analysis. */
   readonly dealConstraints: DealConstraints;
@@ -77,6 +73,19 @@ export interface ConventionBundle extends BundleInput {
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   /** @derived Allowed dealers from capability archetype. */
   readonly allowedDealers?: readonly Seat[];
+}
+
+/** Checks whether any surface clause in any module references a system-provided fact.
+ *  System facts have IDs prefixed with "system." (defined in system-fact-vocabulary.ts). */
+function bundleUsesSystemFacts(modules: readonly ConventionModule[]): boolean {
+  for (const mod of modules) {
+    for (const surface of moduleSurfaces(mod)) {
+      for (const clause of surface.clauses) {
+        if (clause.factId.startsWith("system.")) return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -97,6 +106,7 @@ export function createConventionConfigFromBundle(
     internal: bundle.internal,
     teaching: bundle.teaching,
     allowedDealers: bundle.allowedDealers,
+    variesBySystem: bundleUsesSystemFacts(bundle.modules) || undefined,
   };
 }
 

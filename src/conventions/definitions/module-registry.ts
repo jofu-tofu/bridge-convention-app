@@ -1,25 +1,25 @@
 /**
  * Convention Module Registry — central lookup for all convention modules.
  *
- * Modules register here via factory functions parameterized by SystemConfig.
- * The registry is the ONLY place ConventionModule is assembled — module files
- * export raw parts (surfaces, facts, explanations, local FSM, rules), and
- * the registry combines them into the unified type.
+ * Each module folder exports a self-contained `moduleFactory` that produces
+ * a complete ConventionModule for a given SystemConfig. The registry simply
+ * collects these factories — no per-module assembly logic needed here.
  */
 
 import type { ConventionModule } from "../core/convention-module";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 
-// ── Declaration imports (facts + explanations) ─────────────────────
+// ── Module factory imports ──────────────────────────────────────────
+// Each module exports a standardized `moduleFactory: ModuleFactory`.
 
-import { createNaturalNtDeclarations, naturalNtLocal, createNaturalNtStates } from "./modules/natural-nt";
-import { createStaymanDeclarations, staymanLocal, createStaymanStates } from "./modules/stayman";
-import { createJacobyTransfersDeclarations, jacobyTransfersLocal, createJacobyTransfersStates } from "./modules/jacoby-transfers";
-import { createSmolenDeclarations, smolenLocal, createSmolenStates } from "./modules/smolen";
-import { createBergenModule, bergenLocal, createBergenStates } from "./modules/bergen";
-import { createDontModule, dontLocal, createDontStates } from "./modules/dont";
-import { createWeakTwosModule, weakTwosLocal, createWeakTwosStates } from "./modules/weak-twos";
+import { moduleFactory as naturalNt } from "./modules/natural-nt";
+import { moduleFactory as stayman } from "./modules/stayman";
+import { moduleFactory as jacobyTransfers } from "./modules/jacoby-transfers";
+import { moduleFactory as smolen } from "./modules/smolen";
+import { moduleFactory as bergen } from "./modules/bergen";
+import { moduleFactory as dont } from "./modules/dont";
+import { moduleFactory as weakTwos } from "./modules/weak-twos";
 
 // ── Factory type ────────────────────────────────────────────────────
 
@@ -29,55 +29,13 @@ export type ModuleFactory = (sys: SystemConfig) => ConventionModule;
 // ── Factory registry ────────────────────────────────────────────────
 
 const MODULE_FACTORIES = new Map<string, ModuleFactory>([
-  ["natural-nt", (sys) => ({
-    moduleId: "natural-nt",
-    ...createNaturalNtDeclarations(sys),
-    local: naturalNtLocal,
-
-    states: createNaturalNtStates(sys),
-  })],
-  ["stayman", (sys) => ({
-    moduleId: "stayman",
-    ...createStaymanDeclarations(sys),
-    local: staymanLocal,
-
-    states: createStaymanStates(sys),
-  })],
-  ["jacoby-transfers", (sys) => ({
-    moduleId: "jacoby-transfers",
-    ...createJacobyTransfersDeclarations(sys),
-    local: jacobyTransfersLocal,
-
-    states: createJacobyTransfersStates(sys),
-  })],
-  ["smolen", (sys) => ({
-    moduleId: "smolen",
-    ...createSmolenDeclarations(sys),
-    local: smolenLocal,
-
-    states: createSmolenStates(sys),
-  })],
-  ["bergen", (sys) => ({
-    moduleId: "bergen",
-    ...createBergenModule(sys),
-    local: bergenLocal,
-
-    states: createBergenStates(sys),
-  })],
-  ["dont", (sys) => ({
-    moduleId: "dont",
-    ...createDontModule(sys),
-    local: dontLocal,
-
-    states: createDontStates(),
-  })],
-  ["weak-twos", (sys) => ({
-    moduleId: "weak-twos",
-    ...createWeakTwosModule(sys),
-    local: weakTwosLocal,
-
-    states: createWeakTwosStates(),
-  })],
+  ["natural-nt", naturalNt],
+  ["stayman", stayman],
+  ["jacoby-transfers", jacobyTransfers],
+  ["smolen", smolen],
+  ["bergen", bergen],
+  ["dont", dont],
+  ["weak-twos", weakTwos],
 ]);
 
 // ── Instance cache ──────────────────────────────────────────────────

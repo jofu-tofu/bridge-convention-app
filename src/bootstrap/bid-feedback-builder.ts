@@ -43,7 +43,6 @@ export function assembleBidFeedback(
 ): BidFeedbackDTO {
   const teachingResolution = resolveTeachingAnswer(
     expectedResult,
-    strategyEval?.acceptableAlternatives ?? undefined,
     strategyEval?.surfaceGroups ?? undefined,
   );
   const grade = gradeBid(userCall, teachingResolution);

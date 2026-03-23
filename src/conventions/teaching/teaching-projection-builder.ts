@@ -28,13 +28,9 @@ import type {
   ExplanationEntry,
 } from "../../core/contracts/explanation-catalog";
 
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
-
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
 
-import {
-  buildTeachingGraph,
-} from "./teaching-graph";
+import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
 
 import { buildCallViews } from "./call-view-builder";
 import { buildMeaningViews } from "./meaning-view-builder";
@@ -54,8 +50,8 @@ export interface TeachingProjectionOptions {
   readonly shapeDescription?: string;
   /** Explanation catalog for enriching nodes with explanationId/templateKey. */
   readonly explanationCatalog?: ExplanationCatalog;
-  /** Pedagogical relations for enriching WhyNot entries with family context. */
-  readonly teachingRelations?: readonly TeachingRelation[];
+  /** Surface groups for enriching WhyNot entries with family context. */
+  readonly surfaceGroups?: readonly SurfaceGroup[];
   /** Posterior summary for enriching the hand space with probabilistic partner info.
    *  Convention-agnostic: renders whatever posterior-derived facts are present. */
   readonly posteriorSummary?: PosteriorSummary;
@@ -145,10 +141,6 @@ export function projectTeaching(
     ? buildCatalogIndex(options.explanationCatalog)
     : undefined;
 
-  const teachingGraph = options?.teachingRelations
-    ? buildTeachingGraph(options.teachingRelations)
-    : undefined;
-
   const truthMeaningIds = new Set(arbitration.truthSet.map(e => e.proposal.meaningId));
 
   // Build a clause description index from the selected proposal for primary explanation
@@ -157,7 +149,7 @@ export function projectTeaching(
   const meaningViews = buildMeaningViews(arbitration, provenance);
   const callViews = buildCallViews(arbitration);
   const primaryExplanation = buildPrimaryExplanation(provenance, catalogIndex, clauseDescriptions);
-  const whyNot = buildWhyNot(arbitration, provenance, catalogIndex, teachingGraph, truthMeaningIds);
+  const whyNot = buildWhyNot(arbitration, provenance, catalogIndex, options?.surfaceGroups, truthMeaningIds);
   const conventionsApplied = buildConventionContributions(arbitration, provenance);
   const handSpace = buildHandSpace(options, catalogIndex);
   const parseTree = buildParseTree(arbitration, provenance, catalogIndex);

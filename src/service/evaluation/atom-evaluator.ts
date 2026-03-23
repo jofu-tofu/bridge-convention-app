@@ -221,7 +221,6 @@ export function gradeAtomBid(
   const strategyEval = (strategy as ConventionStrategy).getLastEvaluation?.() ?? null;
   const teachingResolution = resolveTeachingAnswer(
     result,
-    strategyEval?.acceptableAlternatives ?? bundle.derivedTeaching.acceptableAlternatives ?? undefined,
     strategyEval?.surfaceGroups ?? bundle.derivedTeaching.surfaceGroups ?? undefined,
   );
   const grade = gradeBid(submittedCall, teachingResolution);

@@ -15,10 +15,8 @@ import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types"
 import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import type { ConventionModule } from "../core/convention-module";
-import type { AlternativeGroup, SurfaceGroup } from "../../core/contracts/teaching-grading";
-import type { TeachingRelation } from "../../core/contracts/teaching-projection";
+import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
 import { getModules } from "./module-registry";
-import { deriveTeachingContent } from "./derive-cross-module";
 import { deriveBundleDealConstraints } from "./derive-deal-constraints";
 
 import { ConventionCategory } from "../../core/contracts/convention";
@@ -32,15 +30,10 @@ import { WEAK_TWO_PROFILE } from "./weak-twos-bundle/system-profile";
 
 /** Aggregate teaching/grading content from resolved modules. */
 function aggregateTeachingContent(modules: readonly ConventionModule[]): {
-  acceptableAlternatives: readonly AlternativeGroup[];
   surfaceGroups: readonly SurfaceGroup[];
-  relations: readonly TeachingRelation[];
 } {
-  const derived = deriveTeachingContent(modules);
   return {
-    acceptableAlternatives: derived.alternatives,
-    surfaceGroups: [...derived.surfaceGroups, ...deriveSurfaceGroupsFromModules(modules)],
-    relations: derived.relations,
+    surfaceGroups: deriveSurfaceGroupsFromModules(modules),
   };
 }
 
@@ -256,7 +249,7 @@ export function listBundleInputs(): readonly BundleInput[] {
 /** Resolve a BundleInput into a full ConventionBundle for a specific system. */
 export function resolveBundle(input: BundleInput, sys: SystemConfig): ConventionBundle {
   const modules = getModules(input.memberIds, sys);
-  const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(modules);
+  const { surfaceGroups } = aggregateTeachingContent(modules);
 
   // Derive deal constraints from authored convention data
   const derived = deriveBundleDealConstraints(input, modules, sys);
@@ -265,7 +258,7 @@ export function resolveBundle(input: BundleInput, sys: SystemConfig): Convention
     ...input,
     ...derived,
     modules,
-    derivedTeaching: { acceptableAlternatives, surfaceGroups, relations },
+    derivedTeaching: { surfaceGroups },
   };
 }
 

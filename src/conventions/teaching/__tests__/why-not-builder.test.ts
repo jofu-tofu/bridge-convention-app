@@ -2,14 +2,13 @@ import { describe, it, expect } from "vitest";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { buildWhyNot } from "../why-not-builder";
-import { buildTeachingGraph } from "../teaching-graph";
 import type {
   ArbitrationResult,
   EncodedProposal,
 } from "../../pipeline/pipeline-types";
 import type { DecisionProvenance } from "../../../core/contracts/provenance";
 import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
-import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
+import type { SurfaceGroup } from "../../../core/contracts/teaching-grading";
 import type { CatalogIndex } from "../teaching-projection-builder";
 
 import {
@@ -168,7 +167,7 @@ describe("buildWhyNot", () => {
     expect(conditionNodes[0]!.passed).toBe(false);
   });
 
-  it("with pedagogical graph, familyRelation is populated from graph", () => {
+  it("with surface groups, grade is 'near-miss' when meaningId shares a group with truth-set", () => {
     const truthEncoded = makeEncoded({
       proposal: makeProposal({ meaningId: "stayman:ask-major" }),
       call: makeCall(2, BidSuit.Clubs),
@@ -182,22 +181,24 @@ describe("buildWhyNot", () => {
       acceptableSet: [nearMissEncoded],
     });
     const provenance = makeProvenance();
-    const relations: TeachingRelation[] = [
-      { kind: "near-miss-of", a: "stayman:ask-major", b: "transfer:to-hearts" },
+    const surfaceGroups: SurfaceGroup[] = [
+      {
+        id: "convention-bids",
+        label: "Convention Bids",
+        members: ["stayman:ask-major", "transfer:to-hearts"],
+        relationship: "mutually_exclusive",
+        description: "Different convention bids",
+      },
     ];
-    const teachingGraph = buildTeachingGraph(relations);
     const truthMeaningIds = new Set(["stayman:ask-major"]);
 
-    const entries = buildWhyNot(arbitration, provenance, undefined, teachingGraph, truthMeaningIds);
+    const entries = buildWhyNot(arbitration, provenance, undefined, surfaceGroups, truthMeaningIds);
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.familyRelation).toBeDefined();
-    expect(entries[0]!.familyRelation!.kind).toBe("near-miss-of");
-    expect(entries[0]!.familyRelation!.a).toBe("stayman:ask-major");
-    expect(entries[0]!.familyRelation!.b).toBe("transfer:to-hearts");
+    expect(entries[0]!.grade).toBe("near-miss");
   });
 
-  it("findNearMissRelation prefers 'near-miss-of' relation kind over others", () => {
+  it("with surface groups, grade is 'wrong' when meaningId does not share a group with truth-set", () => {
     const truthEncoded = makeEncoded({
       proposal: makeProposal({ meaningId: "stayman:ask-major" }),
       call: makeCall(2, BidSuit.Clubs),
@@ -211,19 +212,21 @@ describe("buildWhyNot", () => {
       acceptableSet: [nearMissEncoded],
     });
     const provenance = makeProvenance();
-    const relations: TeachingRelation[] = [
-      // same-family appears first
-      { kind: "same-family", a: "stayman:ask-major", b: "transfer:to-hearts" },
-      // near-miss-of appears second but should be preferred
-      { kind: "near-miss-of", a: "stayman:ask-major", b: "transfer:to-hearts" },
+    const surfaceGroups: SurfaceGroup[] = [
+      {
+        id: "stayman-group",
+        label: "Stayman",
+        members: ["stayman:ask-major"],
+        relationship: "mutually_exclusive",
+        description: "Stayman only",
+      },
     ];
-    const teachingGraph = buildTeachingGraph(relations);
     const truthMeaningIds = new Set(["stayman:ask-major"]);
 
-    const entries = buildWhyNot(arbitration, provenance, undefined, teachingGraph, truthMeaningIds);
+    const entries = buildWhyNot(arbitration, provenance, undefined, surfaceGroups, truthMeaningIds);
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.familyRelation!.kind).toBe("near-miss-of");
+    expect(entries[0]!.grade).toBe("wrong");
   });
 
   it("empty acceptable set produces empty array", () => {
@@ -289,7 +292,7 @@ describe("buildWhyNot", () => {
     expect(conditionNodes[0]!.content).toBe("Your HCP were too low for an invite");
   });
 
-  it("without pedagogical graph, familyRelation is undefined", () => {
+  it("without surface groups, grade defaults to 'wrong'", () => {
     const truthEncoded = makeEncoded({
       proposal: makeProposal({ meaningId: "stayman:ask-major" }),
       call: makeCall(2, BidSuit.Clubs),
@@ -307,7 +310,7 @@ describe("buildWhyNot", () => {
     const entries = buildWhyNot(arbitration, provenance);
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.familyRelation).toBeUndefined();
+    expect(entries[0]!.grade).toBe("wrong");
   });
 
   it("defaults eliminationStage to 'applicability' when no elimination trace exists", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../../engine/types";
-import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, SurfaceGroup } from "../../../core/contracts";
+import type { BidResult, ResolvedCandidateDTO, SurfaceGroup } from "../../../core/contracts";
 import { BidGrade, gradeBid, resolveTeachingAnswer } from "../teaching-resolution";
 
 function makeCandidate(overrides: Partial<ResolvedCandidateDTO> = {}): ResolvedCandidateDTO {
@@ -171,218 +171,70 @@ describe("resolveTeachingAnswer", () => {
     expect(twoPreferred.ambiguityScore).toBe(0.8);
   });
 
-  // ─── Alternative Groups ──────────────────────────────────────
+  // ─── Truth-set calls ───────────────────────────────────────
 
-  test("alternative group adds group members as acceptable when matched intent is in group", () => {
-    const groups: AlternativeGroup[] = [
-      {
-        label: "strength raises",
-        members: ["game-raise", "limit-raise", "constructive-raise"],
-        tier: "alternative",
-      },
-    ];
+  test("truthSetCalls populated when matched candidates encode a different call than primaryBid", () => {
     const result = resolveTeachingAnswer(
       makeBidResult([
         makeCandidate({
-          bidName: "limit-raise",
+          bidName: "stayman-ask",
           isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+          call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
         }),
         makeCandidate({
-          bidName: "game-raise",
-          call: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          failedConditions: [{ name: "hcp", description: "13+ HCP" }],
-        }),
-        makeCandidate({
-          bidName: "constructive-raise",
-          call: { type: "bid", level: 3, strain: BidSuit.Hearts },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Hearts },
-          failedConditions: [{ name: "hcp", description: "7-10 HCP" }],
+          bidName: "alt-meaning",
+          isMatched: true,
+          legal: true,
+          call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
         }),
       ]),
-      groups,
     );
 
-    expect(result.acceptableBids).toHaveLength(2);
-    const names = result.acceptableBids.map(b => b.bidName);
-    expect(names).toContain("game-raise");
-    expect(names).toContain("constructive-raise");
-    expect(result.acceptableBids.every(b => b.tier === "alternative")).toBe(true);
-    expect(result.acceptableBids.every(b => !b.fullCredit)).toBe(true);
+    expect(result.truthSetCalls).toBeDefined();
+    expect(result.truthSetCalls!).toHaveLength(1);
+    expect(result.truthSetCalls![0]).toEqual({ type: "bid", level: 2, strain: BidSuit.Diamonds });
   });
 
-  test("alternative group with preferred tier gives fullCredit: true", () => {
-    const groups: AlternativeGroup[] = [
-      {
-        label: "raises",
-        members: ["game-raise", "limit-raise"],
-        tier: "preferred",
-      },
-    ];
+  test("truthSetCalls undefined when no matched candidates encode a different call", () => {
     const result = resolveTeachingAnswer(
       makeBidResult([
         makeCandidate({
-          bidName: "limit-raise",
+          bidName: "stayman-ask",
           isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-        }),
-        makeCandidate({
-          bidName: "game-raise",
-          call: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          failedConditions: [{ name: "hcp", description: "13+ HCP" }],
+          call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
         }),
       ]),
-      groups,
     );
 
-    expect(result.acceptableBids).toHaveLength(1);
-    expect(result.acceptableBids[0]?.fullCredit).toBe(true);
-    expect(result.acceptableBids[0]?.tier).toBe("preferred");
+    expect(result.truthSetCalls).toBeUndefined();
   });
 
-  test("alternative group skips illegal candidates", () => {
-    const groups: AlternativeGroup[] = [
-      {
-        label: "raises",
-        members: ["game-raise", "limit-raise"],
-        tier: "alternative",
-      },
-    ];
+  test("truthSetCalls excludes illegal matched candidates", () => {
     const result = resolveTeachingAnswer(
       makeBidResult([
         makeCandidate({
-          bidName: "limit-raise",
+          bidName: "stayman-ask",
           isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
+          call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
         }),
         makeCandidate({
-          bidName: "game-raise",
+          bidName: "alt-meaning",
+          isMatched: true,
           legal: false,
-          call: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Clubs },
+          call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
+          resolvedCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
         }),
       ]),
-      groups,
     );
 
-    expect(result.acceptableBids).toEqual([]);
+    expect(result.truthSetCalls).toBeUndefined();
   });
 
-  test("alternative group respects whenMatched — only activates for specified members", () => {
-    const groups: AlternativeGroup[] = [
-      {
-        label: "raises",
-        members: ["game-raise", "limit-raise", "constructive-raise"],
-        tier: "alternative",
-        whenMatched: ["limit-raise"],
-      },
-    ];
-    // When matched is limit-raise (in whenMatched list): group activates
-    const result1 = resolveTeachingAnswer(
-      makeBidResult([
-        makeCandidate({
-          bidName: "limit-raise",
-          isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-        }),
-        makeCandidate({
-          bidName: "game-raise",
-          call: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          failedConditions: [{ name: "hcp", description: "13+ HCP" }],
-        }),
-      ]),
-      groups,
-    );
-    expect(result1.acceptableBids).toHaveLength(1);
-    expect(result1.acceptableBids[0]?.bidName).toBe("game-raise");
-
-    // When matched is game-raise (NOT in whenMatched list): group does NOT activate
-    const result2 = resolveTeachingAnswer(
-      makeBidResult([
-        makeCandidate({
-          bidName: "game-raise",
-          isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Clubs },
-        }),
-        makeCandidate({
-          bidName: "limit-raise",
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          failedConditions: [{ name: "hcp", description: "10-12 HCP" }],
-        }),
-      ]),
-      groups,
-    );
-    expect(result2.acceptableBids).toEqual([]);
-  });
-
-  test("alternative group does not re-add the matched bid", () => {
-    const groups: AlternativeGroup[] = [
-      {
-        label: "raises",
-        members: ["game-raise", "limit-raise"],
-        tier: "alternative",
-      },
-    ];
-    const result = resolveTeachingAnswer(
-      makeBidResult([
-        makeCandidate({
-          bidName: "limit-raise",
-          isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-        }),
-      ]),
-      groups,
-    );
-
-    // limit-raise is matched — should not appear as acceptable
-    expect(result.acceptableBids).toEqual([]);
-  });
-
-  test("deduplicates: priority-filter result kept over group result when both apply", () => {
-    const groups: AlternativeGroup[] = [
-      {
-        label: "raises",
-        members: ["game-raise", "limit-raise"],
-        tier: "alternative",
-      },
-    ];
-    const result = resolveTeachingAnswer(
-      makeBidResult([
-        makeCandidate({
-          bidName: "limit-raise",
-          isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-        }),
-        makeCandidate({
-          bidName: "game-raise",
-          call: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          priority: "preferred",
-        }),
-      ]),
-      groups,
-    );
-
-    // game-raise qualifies via BOTH priority filter (preferred) AND group (alternative).
-    // Higher-credit version (preferred/fullCredit:true) should win.
-    expect(result.acceptableBids).toHaveLength(1);
-    expect(result.acceptableBids[0]?.bidName).toBe("game-raise");
-    expect(result.acceptableBids[0]?.fullCredit).toBe(true);
-    expect(result.acceptableBids[0]?.tier).toBe("preferred");
-  });
-
-  test("backward compatible: no groups passed means same behavior as before", () => {
+  test("backward compatible: no surfaceGroups passed means same behavior as before", () => {
     const result = resolveTeachingAnswer(
       makeBidResult([
         makeCandidate({
@@ -400,40 +252,8 @@ describe("resolveTeachingAnswer", () => {
       ]),
     );
 
-    // Without groups, game-raise has failedConditions → filtered out
+    // Without surface groups, game-raise has failedConditions → filtered out
     expect(result.acceptableBids).toEqual([]);
-  });
-
-  test("alternative group skips members not found in candidates", () => {
-    const groups: AlternativeGroup[] = [
-      {
-        label: "raises",
-        members: ["game-raise", "limit-raise", "nonexistent-raise"],
-        tier: "alternative",
-      },
-    ];
-    const result = resolveTeachingAnswer(
-      makeBidResult([
-        makeCandidate({
-          bidName: "limit-raise",
-          isMatched: true,
-          call: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Diamonds },
-        }),
-        makeCandidate({
-          bidName: "game-raise",
-          call: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          resolvedCall: { type: "bid", level: 3, strain: BidSuit.Clubs },
-          failedConditions: [{ name: "hcp", description: "13+ HCP" }],
-        }),
-      ]),
-      groups,
-    );
-
-    // nonexistent-raise not in candidates → silently skipped
-    // game-raise has failedConditions but is added via group (bypasses tree eligibility)
-    expect(result.acceptableBids).toHaveLength(1);
-    expect(result.acceptableBids[0]?.bidName).toBe("game-raise");
   });
 });
 
@@ -665,7 +485,6 @@ describe("resolveTeachingAnswer near-miss population", () => {
           failedConditions: [{ name: "hcp", description: "13+ HCP required" }],
         }),
       ]),
-      undefined,
       families,
     );
 
@@ -722,113 +541,11 @@ describe("resolveTeachingAnswer near-miss population", () => {
           priority: "preferred",
         }),
       ]),
-      undefined,
       families,
     );
 
     // game-raise has no failedConditions — it should NOT be a near miss
     // (it's already picked up as an acceptable bid via priority)
     expect(result.nearMissCalls ?? []).toHaveLength(0);
-  });
-});
-
-describe("SurfaceGroup-aware grading", () => {
-  const matchedCandidate = makeCandidate({
-    bidName: "relay-a",
-    isMatched: true,
-    call: { type: "bid", level: 2, strain: BidSuit.Clubs },
-    resolvedCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
-  });
-
-  const altCandidate = makeCandidate({
-    bidName: "relay-b",
-    isMatched: false,
-    priority: undefined, // not picked up by Phase 1 priority filter
-    call: { type: "bid", level: 2, strain: BidSuit.Diamonds },
-    resolvedCall: { type: "bid", level: 2, strain: BidSuit.Diamonds },
-    legal: true,
-  });
-
-  const group: AlternativeGroup = {
-    label: "Relay paths",
-    members: ["relay-a", "relay-b"],
-    tier: "alternative",
-  };
-
-  test("equivalent_encoding family → fullCredit true for group members", () => {
-    const family: SurfaceGroup = {
-      id: "relay-paths-family",
-      label: "Relay Paths",
-      members: ["relay-a", "relay-b"],
-      relationship: "equivalent_encoding",
-      description: "Same intent, different relay path",
-    };
-
-    const resolution = resolveTeachingAnswer(
-      makeBidResult([matchedCandidate, altCandidate]),
-      [group],
-      [family],
-    );
-
-    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
-    expect(alt).toBeDefined();
-    expect(alt!.fullCredit).toBe(true);
-    expect(alt!.relationship).toBe("equivalent_encoding");
-  });
-
-  test("mutually_exclusive family → tier from AlternativeGroup preserved", () => {
-    const family: SurfaceGroup = {
-      id: "raise-strengths",
-      label: "Raise Strengths",
-      members: ["relay-a", "relay-b"],
-      relationship: "mutually_exclusive",
-      description: "Different strength levels",
-    };
-
-    const resolution = resolveTeachingAnswer(
-      makeBidResult([matchedCandidate, altCandidate]),
-      [group],
-      [family],
-    );
-
-    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
-    expect(alt).toBeDefined();
-    // mutually_exclusive: group tier stands, fullCredit from group config (alternative → false)
-    expect(alt!.fullCredit).toBe(false);
-    expect(alt!.relationship).toBe("mutually_exclusive");
-  });
-
-  test("no family found → backward-compatible behavior", () => {
-    const resolution = resolveTeachingAnswer(
-      makeBidResult([matchedCandidate, altCandidate]),
-      [group],
-      [], // empty families
-    );
-
-    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
-    expect(alt).toBeDefined();
-    expect(alt!.fullCredit).toBe(false); // alternative tier → false
-    expect(alt!.relationship).toBeUndefined();
-  });
-
-  test("policy_alternative family → fullCredit false", () => {
-    const family: SurfaceGroup = {
-      id: "style-choices",
-      label: "Style Choices",
-      members: ["relay-a", "relay-b"],
-      relationship: "policy_alternative",
-      description: "Both valid, convention policy prefers one",
-    };
-
-    const resolution = resolveTeachingAnswer(
-      makeBidResult([matchedCandidate, altCandidate]),
-      [group],
-      [family],
-    );
-
-    const alt = resolution.acceptableBids.find(b => b.bidName === "relay-b");
-    expect(alt).toBeDefined();
-    expect(alt!.fullCredit).toBe(false);
-    expect(alt!.relationship).toBe("policy_alternative");
   });
 });

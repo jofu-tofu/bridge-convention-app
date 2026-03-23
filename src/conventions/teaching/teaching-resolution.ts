@@ -1,6 +1,6 @@
 import { callsMatch } from "../../engine/call-helpers";
 import type { Call } from "../../engine/types";
-import type { BidResult, ResolvedCandidateDTO, AlternativeGroup, SurfaceGroup } from "../../core/contracts";
+import type { BidResult, ResolvedCandidateDTO, SurfaceGroup } from "../../core/contracts";
 import { BidGrade } from "../../core/contracts/teaching-grading";
 import type { AcceptableBid, TeachingResolution } from "../../core/contracts/teaching-grading";
 
@@ -28,7 +28,6 @@ function findGroupForBid(bidName: string, families: readonly SurfaceGroup[]): Su
 
 export function resolveTeachingAnswer(
   bidResult: BidResult,
-  alternativeGroups?: readonly AlternativeGroup[],
   surfaceGroups?: readonly SurfaceGroup[],
 ): TeachingResolution {
   const primaryBid = bidResult.call;
@@ -42,6 +41,12 @@ export function resolveTeachingAnswer(
       ambiguityScore: 0,
     };
   }
+
+  // Truth-set calls: candidates that satisfy hand constraints and are legal,
+  // but encode a different call than the primary recommendation.
+  const truthSetCalls: Call[] = candidates
+    .filter(c => c.isMatched && c.legal && !callsMatch(c.resolvedCall, primaryBid))
+    .map(c => c.resolvedCall);
 
   // Phase 1: existing priority-based filter
   const priorityBids: AcceptableBid[] = candidates
@@ -63,55 +68,9 @@ export function resolveTeachingAnswer(
       };
     });
 
-  // Phase 2: alternative group lookup (bypasses tree path-condition exclusivity)
-  const groupBids: AcceptableBid[] = [];
-  if (alternativeGroups && alternativeGroups.length > 0) {
-    const matchedCandidate = candidates.find(c => c.isMatched);
-    if (matchedCandidate) {
-      const matchedName = matchedCandidate.bidName;
-      for (const group of alternativeGroups) {
-        if (!group.members.includes(matchedName)) continue;
-        if (group.whenMatched && !group.whenMatched.includes(matchedName)) continue;
-
-        // Look up SurfaceGroup for relationship-aware credit
-        const family = surfaceGroups?.length
-          ? findGroupForBid(matchedName, surfaceGroups)
-          : undefined;
-
-        for (const memberName of group.members) {
-          if (memberName === matchedName) continue;
-          const memberCandidate = candidates.find(c => c.bidName === memberName);
-          if (!memberCandidate) continue;
-          if (!memberCandidate.legal) continue;
-
-          // Credit logic: equivalent_encoding → fullCredit, otherwise group tier
-          let fullCredit = group.tier === "preferred";
-          if (family && family.members.includes(memberName)) {
-            if (family.relationship === "equivalent_encoding") fullCredit = true;
-            // mutually_exclusive and policy_alternative: keep group tier
-          }
-
-          groupBids.push({
-            call: memberCandidate.resolvedCall,
-            bidName: memberCandidate.bidName,
-            meaning: memberCandidate.meaning,
-            reason: `${group.label}: ${memberCandidate.meaning}`,
-            fullCredit,
-            tier: group.tier,
-            relationship: family?.members.includes(memberName) ? family.relationship : undefined,
-            moduleId: memberCandidate.moduleId,
-          });
-        }
-      }
-    }
-  }
-
-  // Phase 3: deduplicate — higher-credit version wins
+  // Phase 2: deduplicate priority bids
   const acceptableMap = new Map<string, AcceptableBid>();
   for (const bid of priorityBids) {
-    acceptableMap.set(bid.bidName, bid);
-  }
-  for (const bid of groupBids) {
     const existing = acceptableMap.get(bid.bidName);
     if (!existing || (!existing.fullCredit && bid.fullCredit)) {
       acceptableMap.set(bid.bidName, bid);
@@ -119,7 +78,7 @@ export function resolveTeachingAnswer(
   }
   const acceptableBids = [...acceptableMap.values()];
 
-  // Phase 4: near-miss detection — candidates sharing an surface group with
+  // Phase 3: near-miss detection — candidates sharing a surface group with
   // the matched bid that have failedConditions (they qualified for a related
   // meaning but not the exact one)
   let nearMissCalls: { call: Call; reason: string }[] | undefined;
@@ -133,7 +92,7 @@ export function resolveTeachingAnswer(
           if (c.isMatched) continue;
           if (c.failedConditions.length === 0) continue;
           if (!matchedFamily.members.includes(c.bidName)) continue;
-          // Already in acceptableBids — skip (alternative group took precedence)
+          // Already in acceptableBids — skip
           if (acceptableMap.has(c.bidName)) continue;
           nearMisses.push({
             call: c.resolvedCall,
@@ -166,6 +125,7 @@ export function resolveTeachingAnswer(
 
   return {
     primaryBid,
+    truthSetCalls: truthSetCalls.length > 0 ? truthSetCalls : undefined,
     acceptableBids,
     gradingType,
     ambiguityScore,

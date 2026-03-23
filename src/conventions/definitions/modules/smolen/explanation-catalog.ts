@@ -1,0 +1,78 @@
+import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
+
+// ─── Explanation entries ─────────────────────────────────────
+
+export const SMOLEN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
+  {
+    explanationId: "nt.smolen.fiveHearts",
+    factId: "module.smolen.hasFiveHearts",
+    templateKey: "nt.smolen.fiveHearts.supporting",
+    displayText: "Has 5+ hearts for Smolen",
+    contrastiveTemplateKey: "nt.smolen.fiveHearts.whyNot",
+    contrastiveDisplayText: "Does not have 5+ hearts",
+    preferredLevel: "mechanical",
+    roles: ["supporting", "blocking"],
+  },
+  {
+    explanationId: "nt.smolen.fiveSpades",
+    factId: "module.smolen.hasFiveSpades",
+    templateKey: "nt.smolen.fiveSpades.supporting",
+    displayText: "Has 5+ spades for Smolen",
+    contrastiveTemplateKey: "nt.smolen.fiveSpades.whyNot",
+    contrastiveDisplayText: "Does not have 5+ spades",
+    preferredLevel: "mechanical",
+    roles: ["supporting", "blocking"],
+  },
+  {
+    explanationId: "nt.smolen.bidShortHearts",
+    meaningId: "smolen:bid-short-hearts",
+    templateKey: "nt.smolen.bidShortHearts.semantic",
+    displayText: "Smolen 3♥: shows 4 hearts and 5+ spades, game-forcing",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  {
+    explanationId: "nt.smolen.bidShortSpades",
+    meaningId: "smolen:bid-short-spades",
+    templateKey: "nt.smolen.bidShortSpades.semantic",
+    displayText: "Smolen 3♠: shows 4 spades and 5+ hearts, game-forcing",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  {
+    explanationId: "nt.smolen.openerHeartFit",
+    factId: "module.smolen.openerHasHeartFit",
+    templateKey: "nt.smolen.openerHeartFit.supporting",
+    displayText: "Opener has 3+ hearts (fit for Smolen)",
+    contrastiveTemplateKey: "nt.smolen.openerHeartFit.whyNot",
+    contrastiveDisplayText: "Opener has fewer than 3 hearts",
+    preferredLevel: "mechanical",
+    roles: ["supporting", "blocking"],
+  },
+  {
+    explanationId: "nt.smolen.openerSpadesFit",
+    factId: "module.smolen.openerHasSpadesFit",
+    templateKey: "nt.smolen.openerSpadesFit.supporting",
+    displayText: "Opener has 3+ spades (fit for Smolen)",
+    contrastiveTemplateKey: "nt.smolen.openerSpadesFit.whyNot",
+    contrastiveDisplayText: "Opener has fewer than 3 spades",
+    preferredLevel: "mechanical",
+    roles: ["supporting", "blocking"],
+  },
+  {
+    explanationId: "nt.smolen.staymanEntry5h4s",
+    meaningId: "smolen:stayman-entry-5h4s",
+    templateKey: "nt.smolen.staymanEntry5h4s.semantic",
+    displayText: "Stayman 2♣ with 5 hearts + 4 spades, planning Smolen",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  {
+    explanationId: "nt.smolen.staymanEntry5s4h",
+    meaningId: "smolen:stayman-entry-5s4h",
+    templateKey: "nt.smolen.staymanEntry5s4h.semantic",
+    displayText: "Stayman 2♣ with 5 spades + 4 hearts, planning Smolen",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+];

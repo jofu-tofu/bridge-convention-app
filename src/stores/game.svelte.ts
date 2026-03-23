@@ -119,7 +119,6 @@ const DDS_TIMEOUT_MS = 10_000;
 /** Default empty evaluation — used when no strategy is wired or before first suggest(). */
 const EMPTY_EVALUATION: StrategyEvaluation = {
   practicalRecommendation: null,
-  acceptableAlternatives: null,
   surfaceGroups: null,
   pipelineResult: null,
   posteriorSummary: null,

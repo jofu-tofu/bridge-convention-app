@@ -16,7 +16,7 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | Sub-barrel | Stability | Contents |
 |---|---|---|
 | `engine-types.ts` | Tier 1 — rarely changes | Bridge primitives: meaning, fact-catalog, agreement-module, bid-action, committed-step |
-| `convention-types.ts` | Tier 2 — convention/strategy/teaching scope | Pipeline infrastructure: bidding, explanation-catalog, inference, play, recommendation, tree-evaluation, module-surface, provenance, predicates, evidence-bundle, posterior, factor-graph, posterior-query, posterior-backend, teaching-tag |
+| `convention-types.ts` | Tier 2 — convention/strategy/teaching scope | Pipeline infrastructure: bidding, explanation-catalog, inference, play, recommendation, tree-evaluation, module-surface, provenance, predicates, evidence-bundle, posterior, factor-graph, posterior-query, posterior-backend |
 | `session-types.ts` | Tier 3 — orchestration/presentation scope | Session lifecycle & UI: teaching-projection, deal-spec, convention, system-config, base-system-vocabulary, teaching-grading, drill, practice-preferences |
 
 **When to use each tier import:**
@@ -39,7 +39,7 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `play.ts` | Play context, results, strategy interface |
 | `recommendation.ts` | Practical recommendation, posterior summary (`PracticalRecommendation`, `PracticalScoreBreakdown`, `PosteriorSummary`). `StrategyEvaluation` and `ConventionStrategy` moved to `conventions/pipeline/strategy-evaluation.ts`. |
 | `module-surface.ts` | `MachineRegisters`, `PublicSnapshot`, `buildPublicSnapshot`. Pipeline output types (`PipelineResult`, `PipelineCarrier`, `ArbitrationResult`, `EncodedProposal`, `EliminationRecord`) moved to `conventions/pipeline/pipeline-types.ts`. |
-| `meaning.ts` | BidMeaning (authored meaning units), clauses, ranking, semantic classes, teaching tags |
+| `meaning.ts` | BidMeaning (authored meaning units), clauses, ranking, semantic classes |
 | `fact-catalog.ts` | Fact definitions (with `constrainsDimensions`, optional `composition` for module-derived facts), `PrimitiveClause`, `FactComposition` types, evaluators, catalog, extensions, shared facts (19) |
 | `alert.ts` | **Moved** to `conventions/pipeline/alert.ts`. Alert resolution and public constraint derivation from surface properties. |
 | `provenance.ts` | Full decision provenance DTOs for pipeline tracing |
@@ -56,9 +56,8 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `convention.ts` | Convention registry types and deal constraint shapes |
 | `fact-helpers.ts` | Shared utilities for fact evaluators (`num()`, `bool()`, `fv()`) |
 | `shared-facts.ts` | Bridge-universal fact vocabulary (primitive + bridge-derived) |
-| `teaching-grading.ts` | BidGrade, TeachingResolution — cross-boundary grading types |
+| `teaching-grading.ts` | BidGrade, TeachingResolution, SurfaceGroup — cross-boundary grading types |
 | `drill.ts` | Drill session tuning DTOs (opponent mode, vulnerability, tuning) |
-| `teaching-tag.ts` | Teaching tag types for deriving pedagogical content from surfaces |
 | `bid-action.ts` | 17-act bridge-universal observation vocabulary for convention-erased pattern matching |
 | `system-config.ts` | SystemConfig with per-system thresholds (SAYC, 2/1, Acol) |
 | `system-fact-vocabulary.ts` | System-provided fact IDs for system-dependent surface clauses |

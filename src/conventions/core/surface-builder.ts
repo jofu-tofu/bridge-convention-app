@@ -4,7 +4,6 @@ import type {
   RecommendationBand,
 } from "../../core/contracts/meaning";
 import type { Call } from "../../engine/types";
-import type { TeachingTagRef } from "../../core/contracts/teaching-tag";
 import { deriveClauseId, deriveClauseDescription } from "../pipeline/clause-derivation";
 
 /**
@@ -51,7 +50,7 @@ export interface SurfaceInput {
   // Optional overrides:
   readonly moduleId?: string;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
-  readonly teachingTags?: readonly TeachingTagRef[];
+
 }
 
 /**
@@ -120,7 +119,6 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
     disclosure: input.disclosure,
     teachingLabel: input.teachingLabel,
     ...(input.surfaceBindings ? { surfaceBindings: input.surfaceBindings } : {}),
-    ...(input.teachingTags ? { teachingTags: input.teachingTags } : {}),
   };
 
   return surface;

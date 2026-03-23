@@ -5,18 +5,14 @@ Convention bundles that each implement a bridge bidding convention using the mea
 ## Folder Structure
 
 **Shared files** (at `definitions/` root):
-- `teaching-vocabulary.ts` — 6 general-purpose tags (`SAME_FAMILY`, `STRONGER_THAN`, `CONTINUATION_OF`, `NEAR_MISS_OF`, `FALLBACK_OF`, `ALTERNATIVES`). Modules annotate surfaces with these + a scope string to express any pedagogical relationship.
-- `derive-cross-module.ts` — `deriveTeachingContent(modules)` — derives all pedagogical relations, alternatives, and intent families from `teachingTags` on surfaces. Groups by `(tagId, scope)`. Supports ordinal chains for strength progressions. Called by `aggregateModuleContent()` in `system-registry.ts`.
-- `surface-group-vocabulary.ts` — *(Removed. Cross-module surface groupIds are now defined locally in modules.)*
-- `pedagogical-scope-vocabulary.ts` — Type-safe scope constants (branded `PedagogicalScope` type) for `teachingTags` scopes. Replaces free-form strings.
-- `system-registry.ts` — Bundle registry. Stores `BundleInput` definitions (no modules, no deal constraints). `getBundleInput(id)`, `listBundleInputs()`, `resolveBundle(input, sys)` (resolves modules + derives deal constraints for a SystemConfig), `specFromBundle(input, sys)`. Pre-resolved bundle constants (`ntBundle`, `bergenBundle`, etc.) live in each bundle's own `config.ts`.
+- `system-registry.ts` — Bundle registry. Stores `BundleInput` definitions (no modules, no deal constraints). `getBundleInput(id)`, `listBundleInputs()`, `resolveBundle(input, sys)` (resolves modules + derives deal constraints for a SystemConfig), `specFromBundle(input, sys)`. Also contains `deriveSurfaceGroupsFromModules()` which auto-derives `SurfaceGroup`s from module state structure (each state entry with 2+ surfaces = a `mutually_exclusive` group). Pre-resolved bundle constants (`ntBundle`, `bergenBundle`, etc.) live in each bundle's own `config.ts`.
 - `derive-deal-constraints.ts` — `deriveBundleDealConstraints(input, modules, sys)` — derives deal constraints from capability archetype + R1 surface clause analysis + complement negation. Called by `resolveBundle()`.
 - `capability-constraint-registry.ts` — Maps each capability ID to a `CapabilityArchetype` defining opener constraints, default auction, allowed dealers, and practitioner turn/seat.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
 - `system-fact-vocabulary.ts` (in `core/contracts/`) — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs.
 
-**Architectural rule:** ALL pedagogical content (relations, alternatives, intent families) — both intra-module and cross-module — is derived from `teachingTags` on surfaces. `ConventionModule` has no `teachingRelations`, `alternatives`, or `intentFamilies` fields. Modules are portable building blocks: compose any set into a bundle and pedagogical content derives automatically. Do not create standalone `pedagogical-relations.ts` or `alternatives.ts` files.
+**Architectural rule:** Pedagogical content is auto-derived from module structure. Surface groups come from `deriveSurfaceGroupsFromModules()` (state entries with 2+ surfaces). Cross-module alternatives are handled by `truthSetCalls` in `teaching-resolution.ts`. No manual teaching tags, scope annotations, or derivation files needed. Modules are portable building blocks.
 
 4 convention bundles: `nt-bundle/`, `bergen-bundle/`, `weak-twos-bundle/`, `dont-bundle/`. Each folder has a parallel set of modules:
 
@@ -74,8 +70,7 @@ Every convention bundle must satisfy all items before being considered complete:
 7. **`category` and `description` are required** on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` — no separate wrapper needed.
 8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections. Each entry links a `factId` to display text and contrastive templates.
 9. **`systemProfile` IR.** Profile-based module activation metadata.
-10. **`teachingTags` on surfaces.** All surfaces participating in pedagogical relations or grading alternatives must have `teachingTags` annotations using the 6 general tags from `teaching-vocabulary.ts`. No separate `pedagogical-relations.ts` or `alternatives.ts` files.
-12. **`semantic-classes.ts` constants.** Module-local semantic class strings. Do not add to central registry — keep them co-located with the surfaces that reference them.
+10. **`semantic-classes.ts` constants.** Module-local semantic class strings. Do not add to central registry — keep them co-located with the surfaces that reference them.
 
 ## File Templates
 
@@ -90,8 +85,7 @@ See `docs/convention-templates.md` for skeleton code templates (config.ts, meani
 5. Define `LocalFsm` and `StateEntry[]` in `{name}-rules.ts`. Declare phases, phase transitions (observation patterns that advance the local FSM), and state entries (phase + turn + optional route/kernel constraints + surfaces). The module-registry assembles these into a `ConventionModule`.
 6. Define `SystemProfile` in `system-profile.ts`.
 7. Populate `ExplanationCatalog` in `explanation-catalog.ts` with template-keyed explanations.
-8. Add `teachingTags` to surfaces using the 6 general tags from `teaching-vocabulary.ts`. Use scope strings to group related surfaces.
-9. Wire `config.ts` as a thin re-export from `system-registry.ts`.
+8. Wire `config.ts` as a thin re-export from `system-registry.ts`.
 10. Create `index.ts` barrel with re-exports.
 11. Register the module in `module-registry.ts` and define the bundle in `system-registry.ts` via `buildBundle()`.
 12. Create `__tests__/` with at minimum: surface evaluation tests and config/factory E2E tests.
@@ -101,10 +95,8 @@ See `docs/convention-templates.md` for skeleton code templates (config.ts, meani
 ## Authoring Rules
 
 - **Use `createSurface()` for all new surfaces.** Import from `conventions/core/surface-builder.ts` with a `ModuleContext`. The builder derives `clauseId` and `description` automatically. Provide `description` only when it adds parenthetical rationale beyond the mechanical constraint (test: contains `(`). `moduleId` is injected from `ModuleContext`. `modulePrecedence` defaults to 0 — not hand-authored.
-- **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs. Use `teachingTags` with shared vocabulary scopes for cross-module relationships.
-- **Adding a module must not edit existing modules.** If your new module needs to relate to existing ones (same-family, near-miss, etc.), use shared scope strings in `teachingTags`. The derivation function handles the wiring.
-- **Cross-module groupIds must use shared constants.** Never use string literals for groupIds that another module also references.
-- **Use scope constants from `pedagogical-scope-vocabulary.ts`** for `teachingTags` scopes. The branded `PedagogicalScope` type catches typos at compile time. Do not use free-form strings.
+- **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs.
+- **Adding a module must not edit existing modules.**
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
 - **Module-derived facts must have `composition`.** All `FactDefinition` objects with `layer: FactLayer.ModuleDerived` must declare a `composition` field describing the loosest constraint under which the fact could be true. The composition is used by deal constraint derivation to derive practitioner seat constraints from R1 surface clauses. Convention authors should write the LOOSEST correct composition — it does not need to be semantically equivalent to the evaluator. Factory helpers (`defineBooleanFact`, `defineHcpRangeFact`) auto-populate composition. Hand-written evaluators must add composition manually.
 - **System-fact-gated surfaces for cross-system modules.** When a bid has different meanings in different systems (e.g., jump shift: strong in SAYC, weak in 2/1), author surfaces for ALL meanings in the same module. Gate each with a system fact clause (`{ factId: SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, operator: "eq", value: true/false }`). The pipeline evaluates all surfaces and selects only those matching the active `SystemConfig`. Never create system-specific modules or branch on `systemId` in module code.

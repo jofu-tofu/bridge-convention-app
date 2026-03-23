@@ -11,7 +11,7 @@ import type {
 import type { DecisionProvenance } from "../../../core/contracts/provenance";
 import type { ExplanationCatalog } from "../../../core/contracts/explanation-catalog";
 import { createExplanationCatalog } from "../../../core/contracts/explanation-catalog";
-import type { TeachingRelation } from "../../../core/contracts/teaching-projection";
+import type { SurfaceGroup } from "../../../core/contracts/teaching-grading";
 
 import {
   makeCall,
@@ -647,7 +647,7 @@ describe("projectTeaching", () => {
     expect(conditionNodes[0]!.templateKey).toBeUndefined();
   });
 
-  test("with teachingRelations: near-miss WhyNotEntry gets familyRelation populated", () => {
+  test("with surfaceGroups: near-miss WhyNotEntry gets grade 'near-miss' when in same group", () => {
     const winnerProposal = makeProposal({
       meaningId: "stayman:ask-major",
       moduleId: "stayman",
@@ -685,25 +685,27 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const relations: TeachingRelation[] = [
-      { kind: "near-miss-of", a: "stayman:ask-major", b: "transfer:to-hearts" },
+    const surfaceGroups: SurfaceGroup[] = [
+      {
+        id: "convention-bids",
+        label: "Convention Bids",
+        members: ["stayman:ask-major", "transfer:to-hearts"],
+        relationship: "mutually_exclusive",
+        description: "Different convention bids",
+      },
     ];
 
     const projection = projectTeaching(
       toPipelineResult(arbitration, provenance),
-      { teachingRelations: relations },
+      { surfaceGroups },
     );
 
     expect(projection.whyNot).toHaveLength(1);
     const whyNot = projection.whyNot[0]!;
     expect(whyNot.grade).toBe("near-miss");
-    expect(whyNot.familyRelation).toBeDefined();
-    expect(whyNot.familyRelation!.kind).toBe("near-miss-of");
-    expect(whyNot.familyRelation!.a).toBe("stayman:ask-major");
-    expect(whyNot.familyRelation!.b).toBe("transfer:to-hearts");
   });
 
-  test("without teachingRelations: WhyNotEntry has no familyRelation (backward compat)", () => {
+  test("without surfaceGroups: WhyNotEntry defaults to grade 'wrong' (backward compat)", () => {
     const winnerProposal = makeProposal({
       meaningId: "stayman:ask-major",
       moduleId: "stayman",
@@ -734,10 +736,10 @@ describe("projectTeaching", () => {
     const projection = projectTeaching(toPipelineResult(arbitration, provenance));
 
     expect(projection.whyNot).toHaveLength(1);
-    expect(projection.whyNot[0]!.familyRelation).toBeUndefined();
+    expect(projection.whyNot[0]!.grade).toBe("wrong");
   });
 
-  test("with teachingRelations: eliminated meaningView gets eliminationReason enriched", () => {
+  test("eliminated meaningView gets eliminationReason enriched from provenance", () => {
     const winnerProposal = makeProposal({
       meaningId: "bridge:to-3nt",
       moduleId: "natural-nt",
@@ -774,13 +776,8 @@ describe("projectTeaching", () => {
       ],
     });
 
-    const relations: TeachingRelation[] = [
-      { kind: "stronger-than", a: "bridge:to-3nt", b: "bridge:nt-invite" },
-    ];
-
     const projection = projectTeaching(
       toPipelineResult(arbitration, provenance),
-      { teachingRelations: relations },
     );
 
     const eliminatedMeaning = projection.meaningViews.find(mv => mv.meaningId === "bridge:nt-invite");

@@ -1,7 +1,6 @@
 import type {
   BiddingContext,
   BidResult,
-  AlternativeGroup,
   SurfaceGroup,
 } from "../../core/contracts";
 import type { ConventionStrategy, StrategyEvaluation, BidMeaning } from "../../conventions";
@@ -23,13 +22,11 @@ export function meaningToStrategy(
   options?: {
     name?: string;
     factCatalog?: FactCatalog;
-    acceptableAlternatives?: readonly AlternativeGroup[];
     surfaceGroups?: readonly SurfaceGroup[];
   },
 ): ConventionStrategy {
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
-    acceptableAlternatives: options?.acceptableAlternatives ?? null,
     surfaceGroups: options?.surfaceGroups ?? null,
     pipelineResult: null,
     posteriorSummary: null,
@@ -57,7 +54,6 @@ export function meaningToStrategy(
 
       lastEvaluation = {
         practicalRecommendation: null,
-        acceptableAlternatives: options?.acceptableAlternatives ?? null,
         surfaceGroups: options?.surfaceGroups ?? null,
         pipelineResult: result,
         posteriorSummary: null,

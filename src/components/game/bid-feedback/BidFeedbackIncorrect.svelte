@@ -6,7 +6,6 @@
   import { formatCall } from "../../../core/display/format";
   import { callsMatch } from "../../../engine/call-helpers";
   import {
-    formatRelationKind,
     formatEliminationStage,
     formatModuleRole,
     roleColorClasses,
@@ -362,11 +361,6 @@
                             {@const gradeStyle = whyNotGradeClasses(entry.grade)}
                             <span class="rounded border px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide {gradeStyle.badge}">
                               {gradeStyle.label}
-                            </span>
-                          {/if}
-                          {#if entry.familyRelation && !(entry.grade === "near-miss" && entry.familyRelation.kind === "near-miss-of")}
-                            <span class="text-[--text-annotation] text-note-relation/60 italic">
-                              {formatRelationKind(entry.familyRelation.kind)}
                             </span>
                           {/if}
                           {#if entry.eliminationStage}

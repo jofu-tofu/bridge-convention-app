@@ -4,17 +4,6 @@ import { WEAK_TWO_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
-import {
-  SAME_FAMILY,
-  STRONGER_THAN,
-  CONTINUATION_OF,
-  NEAR_MISS_OF,
-  ALTERNATIVES,
-} from "../../teaching-vocabulary";
-import {
-  SCOPE_WEAK_TWO_OPENER_BIDS,
-  SCOPE_OGUST_RESPONSES,
-} from "../../pedagogical-scope-vocabulary";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
@@ -96,9 +85,6 @@ function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
     disclosure: "standard",
     teachingLabel: `Open 2${suitLabel(suit)}`,
     surfaceBindings: { suit },
-    teachingTags: [
-      { tag: SAME_FAMILY, scope: SCOPE_WEAK_TWO_OPENER_BIDS },
-    ],
   }, WEAK_TWOS_CTX));
 }
 
@@ -147,12 +133,6 @@ function createWeakTwoR2Surfaces(
       disclosure: "natural",
       teachingLabel: `Game raise (${gameLevel}${sl})`,
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
-        { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 0 },
-        { tag: NEAR_MISS_OF, scope: `weak-two:raise-boundary-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: `Weak Two responder action (${suit})` },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 2. Ogust ask: 15+ total points → 2NT (lower specificity than game raise)
@@ -181,11 +161,6 @@ function createWeakTwoR2Surfaces(
       disclosure: "alert",
       teachingLabel: "Ogust ask (2NT)",
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
-        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "b" },
-        { tag: ALTERNATIVES, scope: `Weak Two responder action (${suit})` },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 3. Invite raise: 14-15 total points, 3+ fit → 3 of opener's suit
@@ -214,12 +189,6 @@ function createWeakTwoR2Surfaces(
       disclosure: "natural",
       teachingLabel: `Invite raise (3${sl})`,
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:responder-actions-${suit}` },
-        { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 1 },
-        { tag: NEAR_MISS_OF, scope: `weak-two:raise-boundary-${suit}`, role: "b" },
-        { tag: ALTERNATIVES, scope: `Weak Two responder action (${suit})` },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 4. Pass (fallback — no convention bid applies)
@@ -234,9 +203,6 @@ function createWeakTwoR2Surfaces(
       disclosure: "natural",
       teachingLabel: "Pass (no action)",
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: STRONGER_THAN, scope: `weak-two:responder-strength-${suit}`, ordinal: 2 },
-      ],
     }, WEAK_TWOS_CTX),
   ];
 }
@@ -278,12 +244,6 @@ function createWeakTwoOgustSurfaces(
       disclosure: "alert",
       teachingLabel: "Ogust solid (3NT)",
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
-        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 0 },
-        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 2. Min bad: 5-8 NV / 6-8 vul HCP, 0-1 top honors → 3C
@@ -313,12 +273,6 @@ function createWeakTwoOgustSurfaces(
       disclosure: "alert",
       teachingLabel: "Ogust min/bad (3C)",
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
-        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 4 },
-        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 3. Min good: 5-8 NV / 6-8 vul HCP, 2+ top honors → 3D
@@ -348,13 +302,6 @@ function createWeakTwoOgustSurfaces(
       disclosure: "alert",
       teachingLabel: "Ogust min/good (3D)",
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
-        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 3 },
-        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: NEAR_MISS_OF, scope: `weak-two:ogust-strength-boundary-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 4. Max bad: 9-11 HCP, 0-1 top honors → 3H
@@ -384,13 +331,6 @@ function createWeakTwoOgustSurfaces(
       disclosure: "alert",
       teachingLabel: "Ogust max/bad (3H)",
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
-        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 2 },
-        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: NEAR_MISS_OF, scope: `weak-two:ogust-strength-boundary-${suit}`, role: "b" },
-        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 5. Max good: 9-11 HCP, 2+ top honors → 3S
@@ -420,12 +360,6 @@ function createWeakTwoOgustSurfaces(
       disclosure: "alert",
       teachingLabel: "Ogust max/good (3S)",
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: SAME_FAMILY, scope: `weak-two:ogust-responses-${suit}` },
-        { tag: STRONGER_THAN, scope: `weak-two:ogust-strength-${suit}`, ordinal: 1 },
-        { tag: CONTINUATION_OF, scope: `weak-two:ogust-continues-ask-${suit}`, role: "a" },
-        { tag: ALTERNATIVES, scope: SCOPE_OGUST_RESPONSES },
-      ],
     }, WEAK_TWOS_CTX),
   ];
 }
@@ -467,9 +401,6 @@ function createPostOgustSurfaces(
       disclosure: "alert",
       teachingLabel: `Bid game in ${suit}`,
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: ALTERNATIVES, scope: `Post-Ogust game (${suit})` },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 1.5. 3NT alternative (diamonds only): when responder has game values
@@ -493,9 +424,6 @@ function createPostOgustSurfaces(
         disclosure: "alert",
         teachingLabel: "3NT game (alternative to 5D)",
         surfaceBindings: bindings,
-        teachingTags: [
-          { tag: ALTERNATIVES, scope: `Post-Ogust game (${suit})` },
-        ],
       }, WEAK_TWOS_CTX),
     ] : []),
 
@@ -511,9 +439,6 @@ function createPostOgustSurfaces(
       disclosure: "natural",
       teachingLabel: `Sign off in ${suit}`,
       surfaceBindings: bindings,
-      teachingTags: [
-        { tag: ALTERNATIVES, scope: `Post-Ogust game (${suit})` },
-      ],
     }, WEAK_TWOS_CTX),
 
     // 3. Pass (fallback — when already in agreed suit or 3NT)

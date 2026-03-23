@@ -173,9 +173,16 @@
                 </p>
               </div>
               <div class="flex flex-col items-end gap-3 shrink-0">
-                <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2.5 py-1">
-                  {convention.category}
-                </span>
+                <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                  {#if convention.variesBySystem}
+                    <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2.5 py-1">
+                      Varies by system
+                    </span>
+                  {/if}
+                  <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2.5 py-1">
+                    {convention.category}
+                  </span>
+                </div>
                 <div class="flex items-center gap-1.5">
                   <button
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium

@@ -3,7 +3,6 @@ import { createSurface } from "../surface-builder";
 import type { ModuleContext, SurfaceInput } from "../surface-builder";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { SAME_FAMILY } from "../../definitions/teaching-vocabulary";
 
 const bid = (level: number, strain: BidSuit): Call => ({
   type: "bid",
@@ -144,13 +143,9 @@ describe("createSurface", () => {
     expect(surface.surfaceBindings).toEqual({ suit: "hearts" });
   });
 
-  it("preserves teachingTags", () => {
-    const tags = [{ tag: SAME_FAMILY, scope: "test" }];
-    const surface = createSurface(
-      baseInput({ teachingTags: tags }),
-      CTX,
-    );
-    expect(surface.teachingTags).toEqual(tags);
+  it("handles empty clauses array", () => {
+    const surface = createSurface(baseInput({ clauses: [] }), CTX);
+    expect(surface.clauses).toHaveLength(0);
   });
 
   it("handles range clause correctly", () => {
@@ -194,10 +189,5 @@ describe("createSurface", () => {
     expect(surface.clauses[0]!.clauseId).toBe("hand.hcp:gte:12");
     expect(surface.clauses[1]!.clauseId).toBe("hand.suitLength.$suit:gte:4");
     expect(surface.clauses[2]!.clauseId).toBe("bridge.hasShortage:boolean:true");
-  });
-
-  it("handles empty clauses array", () => {
-    const surface = createSurface(baseInput({ clauses: [] }), CTX);
-    expect(surface.clauses).toHaveLength(0);
   });
 });

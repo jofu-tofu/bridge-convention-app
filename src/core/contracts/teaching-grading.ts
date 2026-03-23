@@ -6,25 +6,6 @@ export type SurfaceGroupRelationship =
   | "equivalent_encoding"   // Same meaning, different call (e.g., relay paths)
   | "policy_alternative";   // Both valid, convention policy prefers one
 
-/** Groups of meanings that are acceptable alternatives to each other for grading.
- *  When the matched meaning is in a group, other group members become acceptable bids.
- *  Bypasses surface clause exclusivity — these are semantic, not structural, neighbors. */
-export interface AlternativeGroup {
-  /** Human-readable label for the group (e.g., "Bergen strength raises") */
-  readonly label: string;
-  /** bidNames (meaningIds) of meanings in this group. */
-  readonly members: readonly string[];
-  /** Whether alternatives get full credit or partial.
-   *  "preferred" → fullCredit: true (teal, same as correct).
-   *  "alternative" → fullCredit: false (teal, partial credit).
-   *  Maps to existing AcceptableBid.fullCredit in teaching-resolution.ts. */
-  readonly tier: "preferred" | "alternative";
-  /** Optional: only activate when matched meaning is one of these specific bidNames.
-   *  If omitted, any member match activates all other members as alternatives.
-   *  If present, ONLY matching one of these members activates the group. */
-  readonly whenMatched?: readonly string[];
-}
-
 /** Declares that multiple meaning leaves belong to the same conceptual family.
  *  Members reference meaningIds (bidName). Convention-level grouping for
  *  diagnostics, teaching, and relationship-aware grading. */

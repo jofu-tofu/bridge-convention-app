@@ -13,4 +13,4 @@ export * from "./posterior";
 export * from "./factor-graph";
 export * from "./posterior-query";
 export * from "./posterior-backend";
-export * from "./teaching-tag";
+

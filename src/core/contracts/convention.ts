@@ -48,6 +48,10 @@ export interface ConventionConfig {
    *  constraints and auction entries are rotated 180 degrees (N<->S, E<->W).
    *  Entries should be from the same partnership pair (E+W or N+S). */
   readonly allowedDealers?: readonly Seat[];
+  /** If true, convention behavior varies depending on the selected bidding system
+   *  (some surfaces reference system facts like HCP thresholds that differ between SAYC/2-1/Acol).
+   *  Derived at bundle build time from surface clause factIds — not hand-authored. */
+  readonly variesBySystem?: boolean;
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */
