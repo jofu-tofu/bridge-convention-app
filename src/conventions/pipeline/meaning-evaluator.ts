@@ -18,7 +18,7 @@ import { resolveAlert } from "./alert";
 import { resolveFactId } from "./binding-resolver";
 import type { ConstraintDimension } from "../../core/contracts/meaning";
 import { deriveSpecificity } from "./specificity-deriver";
-import { fillClauseDefaults } from "./clause-derivation";
+import { fillClauseDefaults, deriveClauseDescription } from "./clause-derivation";
 
 function evaluateClause(
   clause: BidMeaningClause,
@@ -35,7 +35,7 @@ function evaluateClause(
       operator: clause.operator === "in" ? "eq" : clause.operator,
       value: clause.operator === "in" ? false : (clause.value as MeaningClause["value"]),
       satisfied: false,
-      description: clause.description ?? clause.factId,
+      description: clause.description ?? deriveClauseDescription(clause.factId, clause.operator, clause.value),
     };
   }
 
@@ -93,7 +93,7 @@ function evaluateClause(
     operator: outputOperator,
     value: outputValue,
     satisfied,
-    description: clause.description ?? clause.factId,
+    description: clause.description ?? deriveClauseDescription(clause.factId, clause.operator, clause.value),
     observedValue: factValue,
   };
 }
@@ -124,7 +124,7 @@ export function evaluateBidMeaning(
       return {
         conditionId: sourceClause?.clauseId ?? clause.factId,
         satisfied: clause.satisfied,
-        description: clause.description ?? clause.factId,
+        description: clause.description ?? deriveClauseDescription(clause.factId, clause.operator, clause.value),
         conditionRole: "semantic" as const,
       };
     }),

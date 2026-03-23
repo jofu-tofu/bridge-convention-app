@@ -32,7 +32,7 @@
   const liveMeaning = $derived(
     teaching?.meaningViews?.find(v => v.status === "live"),
   );
-  const meaningLabel = $derived(liveMeaning?.displayLabel ?? feedback.correctBidLabel);
+  const meaningLabel = $derived(liveMeaning?.displayLabel ?? feedback.correctBidLabel ?? "");
 
   // Conditions from primary explanation (kind="condition" nodes)
   const conditionNodes = $derived(
