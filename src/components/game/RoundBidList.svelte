@@ -7,7 +7,7 @@
   import { Seat } from "../../engine/types";
 
   interface Props {
-    bidHistory: BidHistoryEntry[];
+    bidHistory: readonly BidHistoryEntry[];
     /** If true, shows expected result for incorrect user bids. */
     showExpectedResult?: boolean;
     /** Optional prefix for data-testid attributes. If omitted, no test IDs are added. */

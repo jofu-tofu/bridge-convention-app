@@ -3,7 +3,7 @@
   import RoundBidList from "./RoundBidList.svelte";
 
   interface Props {
-    bidHistory: BidHistoryEntry[];
+    bidHistory: readonly BidHistoryEntry[];
   }
 
   let { bidHistory }: Props = $props();

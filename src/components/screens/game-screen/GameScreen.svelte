@@ -6,6 +6,7 @@
   import type { SessionConfig } from "../../../service";
 
   import { computeTableScale } from "../../../core/display/table-scale";
+  import { displayConventionName } from "../../../core/display/format";
   import { DESKTOP_MIN } from "../../../core/display/breakpoints.svelte";
 
   import BiddingPhase from "./BiddingPhase.svelte";
@@ -236,7 +237,7 @@
     <!-- Header -->
     <header
       bind:clientHeight={headerH}
-      class="flex items-center justify-between px-3 sm:px-6 py-3 border-b border-border-subtle shrink-0 bg-bg-base relative z-[--z-header]"
+      class="flex items-center justify-between px-3 sm:px-6 py-3 border-b border-border-subtle shrink-0 bg-bg-base"
     >
       <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         <button
@@ -260,7 +261,7 @@
           >
         </button>
         <h1 class="text-[--text-heading] font-semibold text-text-primary truncate min-w-0">
-          {appStore.selectedConvention?.name ?? "Drill"} Practice
+          {displayConventionName(appStore.selectedConvention?.name ?? "Drill")} Practice
         </h1>
         <span
           class="shrink-0 px-2.5 py-0.5 rounded-full text-[--text-label] font-semibold {phaseInfo.color} {phaseInfo.textColor}"

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PipelineResult } from "../../../core/contracts/module-surface";
+  import type { PipelineResult } from "../../../conventions";
   import type { TeachingProjection } from "../../../core/contracts";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";

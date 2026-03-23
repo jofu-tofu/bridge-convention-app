@@ -132,7 +132,6 @@
       {onNextDeal}
       {onBackToMenu}
       {onPlayHand}
-      {convention}
     />
   </aside>
 </div>

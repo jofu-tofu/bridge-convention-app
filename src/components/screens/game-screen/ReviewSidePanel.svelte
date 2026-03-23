@@ -16,7 +16,7 @@
     contract: Contract | null;
     score: number | null;
     declarerTricksWon: number;
-    bidHistory: BidHistoryEntry[];
+    bidHistory: readonly BidHistoryEntry[];
     vulnerability: Vulnerability;
     dealNumber: number;
     onNextDeal: () => void;

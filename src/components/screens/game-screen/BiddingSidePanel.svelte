@@ -30,7 +30,7 @@
       Waiting...
     {/if}
   </h2>
-  <BidPanel legalCalls={gameStore.legalCalls} onBid={(call) => gameStore.submitBid(call)} {disabled} compact />
+  <BidPanel legalCalls={gameStore.legalCalls} onBid={(call) => gameStore.userBid(call)} {disabled} compact />
   <div class="mt-3" class:hidden={!hasFeedback}>
     {#if gameStore.viewportFeedback}
       <BidFeedbackPanel
