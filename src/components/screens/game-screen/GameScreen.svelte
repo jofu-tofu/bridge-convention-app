@@ -175,13 +175,21 @@
   const effectiveSidePanelW = $derived(hasTwoPanels ? sidePanelW * 2 : sidePanelW);
   // gap-3 = 0.75rem per gap; 2 gaps in 3-col layout, 1 gap in 2-col layout
   const gridGaps = $derived(isDesktop ? (hasTwoPanels ? 2 : 1) * LAYOUT.GAP_REM * rootFontSize : 0);
+  // On mobile/tablet, the table and side panel stack vertically, each taking
+  // ~50% of the non-header space. Account for this by treating the side panel
+  // half as unavailable height so the table scales down to fit.
+  const effectiveHeaderH = $derived(
+    isDesktop
+      ? headerH || LAYOUT.HEADER_H
+      : (innerH + (headerH || LAYOUT.HEADER_H)) / 2,
+  );
   const tableScale = $derived(
     computeTableScale(availableW, innerH, {
       sidePanel: isDesktop,
       tableW: tableBaseW,
       tableH: tableBaseH,
       sidePanelW: effectiveSidePanelW,
-      headerH: headerH || LAYOUT.HEADER_H,
+      headerH: effectiveHeaderH,
       padding: LAYOUT.PADDING + gridGaps,
     }),
   );
@@ -193,7 +201,7 @@
     Math.max(LAYOUT.PANEL_FONT_MIN, Math.round(rootFontSize * (LAYOUT.PANEL_FONT_DAMPEN + LAYOUT.PANEL_FONT_DAMPEN * tableScale))),
   );
 
-  const tableOrigin = $derived(isDesktop ? "top left" : "center");
+  const tableOrigin = "top left";
   const phaseContainerClass = $derived(
     isDesktop
       ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] gap-3 overflow-hidden"
@@ -205,7 +213,7 @@
       : "flex-1 flex flex-col overflow-hidden",
   );
   const sidePanelClass = $derived(
-    `${isDesktop ? "h-full" : "border-t border-border-subtle"} bg-bg-base p-3 flex flex-col min-h-0 overflow-hidden`,
+    `${isDesktop ? "h-full" : "flex-1 border-t border-border-subtle"} bg-bg-base p-3 flex flex-col min-h-0 overflow-hidden`,
   );
 
   // Expose layout configuration via context so phase components can read it
