@@ -11,6 +11,7 @@ describe("ConventionModule type construction", () => {
   it("constructs a minimal ConventionModule", () => {
     const mod: ConventionModule<"idle" | "active"> = {
       moduleId: "test-module",
+      description: "test module",
       local: {
         initial: "idle",
         transitions: [],

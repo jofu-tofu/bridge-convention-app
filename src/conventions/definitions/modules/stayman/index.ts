@@ -70,6 +70,7 @@ export function createStaymanDeclarations(sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "stayman",
+  description: "Stayman — bid 2C over 1NT to find a 4-4 major-suit fit",
   ...createStaymanDeclarations(sys),
   local: staymanLocal,
   states: createStaymanStates(sys),

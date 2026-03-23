@@ -83,6 +83,7 @@ export function createSmolenDeclarations(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "smolen",
+  description: "Smolen — jump to 3H/3S after Stayman denial to show 5-4 in majors game-forcing",
   ...createSmolenDeclarations(sys),
   local: smolenLocal,
   states: createSmolenStates(sys),

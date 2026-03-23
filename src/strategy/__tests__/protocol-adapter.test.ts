@@ -51,6 +51,7 @@ function makeRuleModule(overrides: {
 
   return {
     moduleId: overrides.id ?? "test-module",
+    description: "test module",
     local: {
       initial: "idle",
       transitions: [],
@@ -229,6 +230,7 @@ describe("buildObservationLogViaRules", () => {
 
     const mod: ConventionModule = {
       moduleId: "test",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "idle", turn: "opener", surfaces: [surface] },
@@ -280,6 +282,7 @@ describe("buildObservationLogViaRules", () => {
 
     const mod: ConventionModule = {
       moduleId: "test",
+      description: "test module",
       local: {
         initial: "idle",
         transitions: [

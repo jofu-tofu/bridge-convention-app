@@ -114,6 +114,7 @@ export function createJacobyTransfersDeclarations(sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "jacoby-transfers",
+  description: "Jacoby Transfers — bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
   ...createJacobyTransfersDeclarations(sys),
   local: jacobyTransfersLocal,
   states: createJacobyTransfersStates(sys),

@@ -52,6 +52,8 @@ export interface ConventionConfig {
    *  (some surfaces reference system facts like HCP thresholds that differ between SAYC/2-1/Acol).
    *  Derived at bundle build time from surface clause factIds — not hand-authored. */
   readonly variesBySystem?: boolean;
+  /** Per-module descriptions from the resolved bundle (moduleId → description). */
+  readonly moduleDescriptions?: ReadonlyMap<string, string>;
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */

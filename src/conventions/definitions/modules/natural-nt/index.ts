@@ -46,6 +46,7 @@ export function createNaturalNtDeclarations(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "natural-nt",
+  description: "Natural NT responses — raise to 2NT (invite) or 3NT (game) with no major fit",
   ...createNaturalNtDeclarations(sys),
   local: naturalNtLocal,
   states: createNaturalNtStates(sys),

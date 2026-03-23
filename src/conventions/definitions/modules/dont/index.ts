@@ -128,6 +128,7 @@ export function createDontModule(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "dont",
+  description: "DONT — Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
   ...createDontModule(sys),
   local: dontLocal,
   states: createDontStates(),

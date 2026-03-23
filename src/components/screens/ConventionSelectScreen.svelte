@@ -45,6 +45,13 @@
 
   const displayName = displayConventionName;
 
+  function formatModuleName(moduleId: string): string {
+    return moduleId
+      .split("-")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
   const settingsSummary = $derived.by(() => {
     const parts: string[] = [];
     const dist = appStore.drillTuning.vulnerabilityDistribution;
@@ -236,6 +243,16 @@
                   <p>{convention.teaching?.purpose}</p>
                   {#if convention.teaching?.whenToUse}
                     <p class="text-xs text-text-muted"><span class="font-medium text-text-secondary">When to use:</span> {convention.teaching.whenToUse}</p>
+                  {/if}
+                  {#if convention.moduleDescriptions?.size}
+                    <div class="mt-2 space-y-1">
+                      <p class="text-xs font-medium text-text-secondary">Conventions in this bundle:</p>
+                      {#each [...convention.moduleDescriptions.entries()] as [moduleId, desc]}
+                        <p class="text-xs text-text-muted pl-2">
+                          <span class="text-text-secondary">{formatModuleName(moduleId)}</span> — {desc}
+                        </p>
+                      {/each}
+                    </div>
                   {/if}
                 </div>
               {/if}

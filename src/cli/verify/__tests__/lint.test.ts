@@ -17,6 +17,7 @@ import {
 function makeModule(overrides: Partial<ConventionModule> = {}): ConventionModule {
   return {
     moduleId: "test-mod",
+    description: "test module",
     local: { initial: "idle", transitions: [] },
     states: [],
     facts: { definitions: [], evaluators: new Map() },

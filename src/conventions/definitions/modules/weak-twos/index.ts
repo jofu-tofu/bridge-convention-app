@@ -210,6 +210,7 @@ export function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "weak-twos",
+  description: "Weak Twos — open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
   ...createWeakTwosModule(sys),
   local: weakTwosLocal,
   states: createWeakTwosStates(),

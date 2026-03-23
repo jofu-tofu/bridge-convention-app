@@ -24,6 +24,8 @@ export type { ResolvedSurface, LocalFsm, StateEntry } from "./rule-module";
 export interface ConventionModule<Phase extends string = string> {
   /** Unique module identifier (kebab-case). */
   readonly moduleId: string;
+  /** Human-readable one-line description of what this module does. */
+  readonly description: string;
 
   // ── Declaration ─────────────────────────────────────────────
   /** Module-derived fact definitions and evaluators. */

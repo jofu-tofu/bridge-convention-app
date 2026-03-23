@@ -107,6 +107,7 @@ export function createConventionConfigFromBundle(
     teaching: bundle.teaching,
     allowedDealers: bundle.allowedDealers,
     variesBySystem: bundleUsesSystemFacts(bundle.modules) || undefined,
+    moduleDescriptions: new Map(bundle.modules.map(m => [m.moduleId, m.description])),
   };
 }
 

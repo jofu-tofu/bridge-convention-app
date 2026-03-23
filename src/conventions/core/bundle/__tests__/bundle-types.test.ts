@@ -96,6 +96,7 @@ describe("variesBySystem derivation", () => {
   function stubModule(clauses: { factId: string }[]): ConventionModule {
     return {
       moduleId: "test-mod",
+      description: "test module",
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
       local: { initial: "idle", transitions: [] },

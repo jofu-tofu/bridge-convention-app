@@ -35,6 +35,7 @@ describe("enumerateRuleAtoms", () => {
   it("returns empty for module with no state entries", () => {
     const mod: ConventionModule = {
       moduleId: "empty",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [],
       facts: { definitions: [], evaluators: new Map() },
@@ -48,6 +49,7 @@ describe("enumerateRuleAtoms", () => {
     const s2 = makeSurface("s2", 2, BidSuit.Hearts);
     const mod: ConventionModule = {
       moduleId: "test-mod",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "idle", turn: "responder", surfaces: [s1, s2] },
@@ -70,6 +72,7 @@ describe("enumerateRuleAtoms", () => {
     const surface = makeSurface("dup-surface");
     const mod: ConventionModule = {
       moduleId: "dedup-mod",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "phase-a", surfaces: [surface] },
@@ -91,6 +94,7 @@ describe("enumerateRuleAtoms", () => {
     const surface = makeSurface("dup");
     const mod: ConventionModule = {
       moduleId: "mod",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "idle", surfaces: [surface] },
@@ -110,6 +114,7 @@ describe("enumerateRuleAtoms", () => {
     const s2 = makeSurface("mod2-s1");
     const mod1: ConventionModule = {
       moduleId: "first",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [s1] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -117,6 +122,7 @@ describe("enumerateRuleAtoms", () => {
     };
     const mod2: ConventionModule = {
       moduleId: "second",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [s2] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -132,6 +138,7 @@ describe("enumerateRuleAtoms", () => {
   it("handles state entries with no surfaces gracefully", () => {
     const mod: ConventionModule = {
       moduleId: "no-surfaces",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -146,6 +153,7 @@ describe("generateRuleCoverageManifest", () => {
     const surface = makeSurface("test-atom");
     const mod: ConventionModule = {
       moduleId: "test-mod",
+      description: "test module",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [surface] }],
       facts: { definitions: [], evaluators: new Map() },
