@@ -3,13 +3,6 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/e2e",
   retries: process.env.CI ? 2 : 0,
-  reporter: [
-    ["list"],
-    // HTML report gives side-by-side diff viewer for screenshot failures:
-    //   expected | actual | diff + interactive slider
-    // Open with: npx playwright show-report
-    ["html", { open: "never" }],
-  ],
   webServer: {
     command: "npm run dev",
     port: 1420,
@@ -18,15 +11,6 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:1420",
     screenshot: "only-on-failure",
-  },
-  // Defaults for toHaveScreenshot() — applies to all projects.
-  expect: {
-    toHaveScreenshot: {
-      // Allow small anti-aliasing / sub-pixel differences across runs.
-      maxDiffPixelRatio: 0.01,
-      // Animations must settle before capture.
-      animations: "disabled",
-    },
   },
   projects: [
     {

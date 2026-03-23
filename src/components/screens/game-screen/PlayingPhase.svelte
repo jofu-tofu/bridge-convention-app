@@ -3,7 +3,6 @@
   import type { Card as CardType } from "../../../engine/types";
   import type { PlayingViewport } from "../../../core/viewport";
   import { getLayoutConfig } from "../../../stores/context";
-  import { PLAYING_PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../../core/display/layout-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import TrickArea from "../../game/TrickArea.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -25,9 +24,9 @@
   const layout = getLayoutConfig();
 </script>
 
-<div class={PLAYING_PHASE_CONTAINER_CLASS}>
+<div class={layout.playingPhaseContainerClass}>
   <!-- Desktop: dedicated left panel for trick history -->
-  <aside class="hidden lg:flex lg:flex-col lg:h-full bg-bg-base p-3 min-h-0 overflow-hidden" style="font-size: var(--panel-font, 1rem);" aria-label="Play history">
+  <aside class="{layout.sidePanelClass} hidden lg:flex" style="font-size: var(--panel-font, 1rem);" aria-label="Play history">
     <PlayHistoryPanel tricks={viewport.tricks} declarerSeat={viewport.contract?.declarer ?? null} auctionEntries={viewport.auctionEntries} dealer={viewport.dealer} bidHistory={viewport.bidHistory} />
   </aside>
 
@@ -50,7 +49,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Play controls">
+  <aside class={layout.sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Play controls">
     <!-- Mobile/tablet: trick history above controls (hidden on desktop where left panel shows it) -->
     <div class="lg:hidden max-h-48 min-h-0 overflow-hidden mb-2">
       <PlayHistoryPanel tricks={viewport.tricks} declarerSeat={viewport.contract?.declarer ?? null} auctionEntries={viewport.auctionEntries} dealer={viewport.dealer} bidHistory={viewport.bidHistory} />

@@ -2,7 +2,6 @@
   import type { DeclarerPromptViewport } from "../../../core/viewport";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
-  import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../../core/display/layout-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import DeclarerPrompt from "../../game/DeclarerPrompt.svelte";
@@ -24,7 +23,7 @@
   const appStore = getAppStore();
 </script>
 
-<div class={PHASE_CONTAINER_CLASS}>
+<div class={layout.phaseContainerClass}>
   <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
     <BridgeTable
       visibleHands={viewport.visibleHands}
@@ -40,7 +39,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Auction summary">
+  <aside class={layout.sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Auction summary">
     <div
       class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
     >
