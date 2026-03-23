@@ -109,14 +109,10 @@ describe("buildBidResult", () => {
 
   // ─── Alert ───────────────────────────────────────────────────
 
-  test("includes alert with publicConstraints when bid is alertable", () => {
-    const publicConstraints = [
-      { factId: "hand.hcp", operator: "range" as const, value: { min: 8, max: 9 } },
-    ];
+  test("includes alert with teachingLabel when bid is alertable", () => {
     const selected = makeCarrier({
       proposal: makeProposal({
         isAlertable: true,
-        publicConstraints,
         teachingLabel: "Stayman 2C",
       }),
     });
@@ -125,7 +121,6 @@ describe("buildBidResult", () => {
     const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
     expect(bidResult.alert).toEqual({
-      publicConstraints,
       teachingLabel: "Stayman 2C",
     });
   });
@@ -149,7 +144,6 @@ describe("buildBidResult", () => {
         meaningId: "weak:two-hearts",
         teachingLabel: undefined,
         isAlertable: true,
-        publicConstraints: [],
       }),
     });
     const result = makePipelineResult({ selected, truthSet: [selected] });
@@ -157,7 +151,6 @@ describe("buildBidResult", () => {
     const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
 
     expect(bidResult.alert).toEqual({
-      publicConstraints: [],
       teachingLabel: "weak:two-hearts",
     });
   });

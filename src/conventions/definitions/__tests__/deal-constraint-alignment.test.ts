@@ -23,7 +23,7 @@ import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import { getBundleInput, resolveBundle } from "../system-registry";
 import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { Seat } from "../../../engine/types";
-import type { Hand, DealConstraints } from "../../../engine/types";
+import type { Hand } from "../../../engine/types";
 
 const TRIALS = 30;
 const sys = SAYC_SYSTEM_CONFIG;
@@ -37,11 +37,6 @@ function buildCatalog(bundle: ConventionBundle): FactCatalog {
     createSystemFactCatalog(sys),
     ...bundle.modules.map((m) => m.facts),
   );
-}
-
-/** Resolve factory constraints if present, otherwise use static constraints. */
-function resolveConstraints(bundle: ConventionBundle): DealConstraints {
-  return bundle.dealConstraintFactory?.(sys) ?? bundle.dealConstraints;
 }
 
 /**
@@ -106,7 +101,7 @@ function checkHandAgainstSurfaces(
 describe("deal constraint alignment", () => {
   describe("nt-stayman", () => {
     const bundle = resolveBundle(getBundleInput("nt-stayman")!, sys);
-    const constraints = resolveConstraints(bundle);
+    const constraints = bundle.dealConstraints;
     const catalog = buildCatalog(bundle);
     // Stayman R1: responder surfaces in "idle" phase
     const r1 = collectR1Surfaces(bundle, ["idle"]).filter(
@@ -132,7 +127,7 @@ describe("deal constraint alignment", () => {
 
   describe("nt-transfers", () => {
     const bundle = resolveBundle(getBundleInput("nt-transfers")!, sys);
-    const constraints = resolveConstraints(bundle);
+    const constraints = bundle.dealConstraints;
     const catalog = buildCatalog(bundle);
     // Transfer R1: responder surfaces in "idle" phase
     const r1 = collectR1Surfaces(bundle, ["idle"]).filter(
@@ -158,7 +153,7 @@ describe("deal constraint alignment", () => {
 
   describe("bergen-bundle", () => {
     const bundle = resolveBundle(getBundleInput("bergen-bundle")!, sys);
-    const constraints = resolveConstraints(bundle);
+    const constraints = bundle.dealConstraints;
     const catalog = buildCatalog(bundle);
     // Bergen R1: responder surfaces in "opened-hearts" / "opened-spades"
     const r1 = collectR1Surfaces(bundle, ["opened-hearts", "opened-spades"]);
@@ -182,7 +177,7 @@ describe("deal constraint alignment", () => {
 
   describe("dont-bundle", () => {
     const bundle = resolveBundle(getBundleInput("dont-bundle")!, sys);
-    const constraints = resolveConstraints(bundle);
+    const constraints = bundle.dealConstraints;
     const catalog = buildCatalog(bundle);
     // DONT R1: overcaller surfaces in "r1" phase
     const r1 = collectR1Surfaces(bundle, ["r1"]);

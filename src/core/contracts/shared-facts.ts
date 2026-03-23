@@ -132,7 +132,6 @@ export const BRIDGE_DERIVED_FACTS: readonly FactDefinition[] = [
     description: "Has singleton or void in any suit (for splinter detection)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts", "hand.suitLength.diamonds", "hand.suitLength.clubs"],
-    metadata: { negatable: true, explainable: true },
     constrainsDimensions: ["shapeClass"],
   },
   {
@@ -167,7 +166,6 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ hearts",
     valueType: "number",
-    metadata: { inferable: true, explainable: true },
     constrainsDimensions: [],
   },
   {
@@ -176,7 +174,6 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ spades",
     valueType: "number",
-    metadata: { inferable: true, explainable: true },
     constrainsDimensions: [],
   },
   {
@@ -185,7 +182,6 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ diamonds",
     valueType: "number",
-    metadata: { inferable: true, explainable: true },
     constrainsDimensions: [],
   },
   {
@@ -194,7 +190,6 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     world: "acting-hand",
     description: "Posterior probability that partner has 4+ clubs",
     valueType: "number",
-    metadata: { inferable: true, explainable: true },
     constrainsDimensions: [],
   },
   {
@@ -203,7 +198,6 @@ export const POSTERIOR_DERIVED_FACTS: readonly FactDefinition[] = [
     world: "acting-hand",
     description: "Posterior probability that combined HCP falls in specified range",
     valueType: "number",
-    metadata: { inferable: true, explainable: true },
     constrainsDimensions: [],
   },
 ];

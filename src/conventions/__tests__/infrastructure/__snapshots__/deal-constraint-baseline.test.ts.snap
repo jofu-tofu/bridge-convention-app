@@ -1,0 +1,1828 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`deal constraint baseline > bergen-bundle > 2/1 > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > bergen-bundle > 2/1 > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "maxHcp": 21,
+      "minHcp": 12,
+      "minLengthAny": {
+        "H": 5,
+        "S": 5,
+      },
+      "seat": "N",
+    },
+    {
+      "maxLength": {
+        "H": 4,
+        "S": 4,
+      },
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > 2/1 > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 21,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 5,
+    "S": 5,
+  },
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > 2/1 > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": {
+    "H": 4,
+    "S": 4,
+  },
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > 2/1 > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "H",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > 2/1 > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "maxHcp": 21,
+      "minHcp": 12,
+      "minLengthAny": {
+        "H": 5,
+        "S": 5,
+      },
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > Acol > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > bergen-bundle > Acol > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "maxHcp": 21,
+      "minHcp": 12,
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "N",
+    },
+    {
+      "maxLength": {
+        "H": 4,
+        "S": 4,
+      },
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > Acol > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 21,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > Acol > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": {
+    "H": 4,
+    "S": 4,
+  },
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > Acol > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "H",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > Acol > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "maxHcp": 21,
+      "minHcp": 12,
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > SAYC > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > bergen-bundle > SAYC > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "maxHcp": 21,
+      "minHcp": 12,
+      "minLengthAny": {
+        "H": 5,
+        "S": 5,
+      },
+      "seat": "N",
+    },
+    {
+      "maxLength": {
+        "H": 4,
+        "S": 4,
+      },
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > SAYC > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 21,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 5,
+    "S": 5,
+  },
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > SAYC > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": {
+    "H": 4,
+    "S": 4,
+  },
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > SAYC > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "H",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > bergen-bundle > SAYC > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "maxHcp": 21,
+      "minHcp": 12,
+      "minLengthAny": {
+        "H": 5,
+        "S": 5,
+      },
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > 2/1 > allowedDealers 1`] = `
+[
+  "E",
+]
+`;
+
+exports[`deal constraint baseline > dont-bundle > 2/1 > dealConstraints snapshot 1`] = `
+{
+  "dealer": "E",
+  "seats": [
+    {
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "E",
+    },
+    {
+      "maxHcp": 15,
+      "minHcp": 8,
+      "minLengthAny": {
+        "C": 5,
+        "D": 4,
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > 2/1 > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "E",
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > 2/1 > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 15,
+  "maxLength": undefined,
+  "minHcp": 8,
+  "minLength": undefined,
+  "minLengthAny": {
+    "C": 5,
+    "D": 4,
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > 2/1 > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > 2/1 > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": "E",
+  "seats": [
+    {
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "E",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > Acol > allowedDealers 1`] = `
+[
+  "E",
+]
+`;
+
+exports[`deal constraint baseline > dont-bundle > Acol > dealConstraints snapshot 1`] = `
+{
+  "dealer": "E",
+  "seats": [
+    {
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "E",
+    },
+    {
+      "maxHcp": 15,
+      "minHcp": 8,
+      "minLengthAny": {
+        "C": 5,
+        "D": 4,
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > Acol > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "E",
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > Acol > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 15,
+  "maxLength": undefined,
+  "minHcp": 8,
+  "minLength": undefined,
+  "minLengthAny": {
+    "C": 5,
+    "D": 4,
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > Acol > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > Acol > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": "E",
+  "seats": [
+    {
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "E",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > SAYC > allowedDealers 1`] = `
+[
+  "E",
+]
+`;
+
+exports[`deal constraint baseline > dont-bundle > SAYC > dealConstraints snapshot 1`] = `
+{
+  "dealer": "E",
+  "seats": [
+    {
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "E",
+    },
+    {
+      "maxHcp": 15,
+      "minHcp": 8,
+      "minLengthAny": {
+        "C": 5,
+        "D": 4,
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > SAYC > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "E",
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > SAYC > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 15,
+  "maxLength": undefined,
+  "minHcp": 8,
+  "minLength": undefined,
+  "minLengthAny": {
+    "C": 5,
+    "D": 4,
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > SAYC > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > dont-bundle > SAYC > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": "E",
+  "seats": [
+    {
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "E",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > 2/1 > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-bundle > 2/1 > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > 2/1 > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > 2/1 > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > 2/1 > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > 2/1 > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > Acol > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-bundle > Acol > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 14,
+      "minHcp": 12,
+      "seat": "N",
+    },
+    {
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > Acol > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 14,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > Acol > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > Acol > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > Acol > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 14,
+      "minHcp": 12,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > SAYC > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-bundle > SAYC > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > SAYC > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > SAYC > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > SAYC > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-bundle > SAYC > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > 2/1 > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-stayman > 2/1 > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "maxLength": {
+        "H": 4,
+        "S": 4,
+      },
+      "minHcp": 8,
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > 2/1 > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > 2/1 > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": {
+    "H": 4,
+    "S": 4,
+  },
+  "minHcp": 8,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > 2/1 > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > 2/1 > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > Acol > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-stayman > Acol > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 14,
+      "minHcp": 12,
+      "seat": "N",
+    },
+    {
+      "maxLength": {
+        "H": 4,
+        "S": 4,
+      },
+      "minHcp": 10,
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > Acol > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 14,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > Acol > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": {
+    "H": 4,
+    "S": 4,
+  },
+  "minHcp": 10,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > Acol > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > Acol > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 14,
+      "minHcp": 12,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > SAYC > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-stayman > SAYC > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "maxLength": {
+        "H": 4,
+        "S": 4,
+      },
+      "minHcp": 8,
+      "minLengthAny": {
+        "H": 4,
+        "S": 4,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > SAYC > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > SAYC > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": {
+    "H": 4,
+    "S": 4,
+  },
+  "minHcp": 8,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 4,
+    "S": 4,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > SAYC > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-stayman > SAYC > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > 2/1 > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-transfers > 2/1 > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "minLengthAny": {
+        "H": 5,
+        "S": 5,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > 2/1 > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > 2/1 > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 5,
+    "S": 5,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > 2/1 > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > 2/1 > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > Acol > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-transfers > Acol > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 14,
+      "minHcp": 12,
+      "seat": "N",
+    },
+    {
+      "minLengthAny": {
+        "H": 5,
+        "S": 5,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > Acol > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 14,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > Acol > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 5,
+    "S": 5,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > Acol > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > Acol > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 14,
+      "minHcp": 12,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > SAYC > allowedDealers 1`] = `undefined`;
+
+exports[`deal constraint baseline > nt-transfers > SAYC > dealConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "minLengthAny": {
+        "H": 5,
+        "S": 5,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > SAYC > dealConstraints structural properties 1`] = `
+{
+  "balanced": true,
+  "hasCustomCheck": false,
+  "maxHcp": 17,
+  "maxLength": undefined,
+  "minHcp": 15,
+  "minLength": undefined,
+  "minLengthAny": undefined,
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > SAYC > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": undefined,
+  "minLength": undefined,
+  "minLengthAny": {
+    "H": 5,
+    "S": 5,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > SAYC > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 1,
+          "strain": "NT",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > nt-transfers > SAYC > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": undefined,
+  "seats": [
+    {
+      "balanced": true,
+      "maxHcp": 17,
+      "minHcp": 15,
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > 2/1 > allowedDealers 1`] = `
+[
+  "N",
+]
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > 2/1 > dealConstraints snapshot 1`] = `
+{
+  "dealer": "N",
+  "seats": [
+    {
+      "maxHcp": 10,
+      "minHcp": 5,
+      "minLengthAny": {
+        "D": 6,
+        "H": 6,
+        "S": 6,
+      },
+      "seat": "N",
+    },
+    {
+      "minHcp": 12,
+      "minLengthAny": {
+        "D": 2,
+        "H": 2,
+        "S": 2,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > 2/1 > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 10,
+  "maxLength": undefined,
+  "minHcp": 5,
+  "minLength": undefined,
+  "minLengthAny": {
+    "D": 6,
+    "H": 6,
+    "S": 6,
+  },
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > 2/1 > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": {
+    "D": 2,
+    "H": 2,
+    "S": 2,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > 2/1 > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 2,
+          "strain": "H",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > 2/1 > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": "N",
+  "seats": [
+    {
+      "maxHcp": 10,
+      "minHcp": 5,
+      "minLengthAny": {
+        "D": 6,
+        "H": 6,
+        "S": 6,
+      },
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > Acol > allowedDealers 1`] = `
+[
+  "N",
+]
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > Acol > dealConstraints snapshot 1`] = `
+{
+  "dealer": "N",
+  "seats": [
+    {
+      "maxHcp": 10,
+      "minHcp": 5,
+      "minLengthAny": {
+        "D": 6,
+        "H": 6,
+        "S": 6,
+      },
+      "seat": "N",
+    },
+    {
+      "minHcp": 12,
+      "minLengthAny": {
+        "D": 2,
+        "H": 2,
+        "S": 2,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > Acol > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 10,
+  "maxLength": undefined,
+  "minHcp": 5,
+  "minLength": undefined,
+  "minLengthAny": {
+    "D": 6,
+    "H": 6,
+    "S": 6,
+  },
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > Acol > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": {
+    "D": 2,
+    "H": 2,
+    "S": 2,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > Acol > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 2,
+          "strain": "H",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > Acol > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": "N",
+  "seats": [
+    {
+      "maxHcp": 10,
+      "minHcp": 5,
+      "minLengthAny": {
+        "D": 6,
+        "H": 6,
+        "S": 6,
+      },
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > SAYC > allowedDealers 1`] = `
+[
+  "N",
+]
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > SAYC > dealConstraints snapshot 1`] = `
+{
+  "dealer": "N",
+  "seats": [
+    {
+      "maxHcp": 10,
+      "minHcp": 5,
+      "minLengthAny": {
+        "D": 6,
+        "H": 6,
+        "S": 6,
+      },
+      "seat": "N",
+    },
+    {
+      "minHcp": 12,
+      "minLengthAny": {
+        "D": 2,
+        "H": 2,
+        "S": 2,
+      },
+      "seat": "S",
+    },
+  ],
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > SAYC > dealConstraints structural properties 1`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": 10,
+  "maxLength": undefined,
+  "minHcp": 5,
+  "minLength": undefined,
+  "minLengthAny": {
+    "D": 6,
+    "H": 6,
+    "S": 6,
+  },
+  "seat": "N",
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > SAYC > dealConstraints structural properties 2`] = `
+{
+  "balanced": undefined,
+  "hasCustomCheck": false,
+  "maxHcp": undefined,
+  "maxLength": undefined,
+  "minHcp": 12,
+  "minLength": undefined,
+  "minLengthAny": {
+    "D": 2,
+    "H": 2,
+    "S": 2,
+  },
+  "seat": "S",
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > SAYC > defaultAuction output 1`] = `
+{
+  "north": undefined,
+  "south": {
+    "entries": [
+      {
+        "call": {
+          "level": 2,
+          "strain": "H",
+          "type": "bid",
+        },
+        "seat": "N",
+      },
+      {
+        "call": {
+          "type": "pass",
+        },
+        "seat": "E",
+      },
+    ],
+    "isComplete": false,
+  },
+}
+`;
+
+exports[`deal constraint baseline > weak-twos-bundle > SAYC > offConventionConstraints snapshot 1`] = `
+{
+  "dealer": "N",
+  "seats": [
+    {
+      "maxHcp": 10,
+      "minHcp": 5,
+      "minLengthAny": {
+        "D": 6,
+        "H": 6,
+        "S": 6,
+      },
+      "seat": "N",
+    },
+    {
+      "seat": "S",
+    },
+  ],
+}
+`;

@@ -21,10 +21,9 @@ describe("POSTERIOR_DERIVED_FACTS", () => {
     }
   });
 
-  it("all entries have inferable and explainable metadata", () => {
+  it("entries have no metadata field (FactMetadata removed)", () => {
     for (const fact of POSTERIOR_DERIVED_FACTS) {
-      expect(fact.metadata?.inferable).toBe(true);
-      expect(fact.metadata?.explainable).toBe(true);
+      expect(fact).not.toHaveProperty("metadata");
     }
   });
 });

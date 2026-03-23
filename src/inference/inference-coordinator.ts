@@ -18,6 +18,7 @@ function toExtractorInput(bidResult: BidResult): InferenceExtractorInput {
     explanation: bidResult.explanation,
     meaning: bidResult.meaning,
     alert: bidResult.alert ?? null,
+    constraints: bidResult.constraints ?? [],
   };
 }
 

@@ -23,101 +23,6 @@ function makeSnapshot(overrides: Partial<PublicSnapshot> = {}): PublicSnapshot {
 }
 
 describe("resolveActiveModules", () => {
-  it("keeps only the highest-precedence module per exclusivity group", () => {
-    // Two modules in the same exclusivity group, both active.
-    // Module at index 0 has higher precedence (lower index) than index 2.
-    // Only the higher-precedence module should survive.
-    const profile: SystemProfile = {
-      profileId: "test-exclusive",
-      baseSystem: "sayc",
-      modules: [
-        {
-          moduleId: "mod-a",
-          kind: "base-system",
-          attachments: [{}], // always matches
-        },
-        {
-          moduleId: "mod-b",
-          kind: "add-on",
-          attachments: [{}], // always matches
-        },
-        {
-          moduleId: "mod-c",
-          kind: "add-on",
-          attachments: [{}], // always matches
-        },
-      ],
-      conflictPolicy: {
-        activationDefault: "simultaneous",
-        exclusivityGroups: [
-          { groupId: "responder-tools", memberModuleIds: ["mod-a", "mod-c"] },
-        ],
-      },
-    };
-
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const result = resolveActiveModules(profile, auction, Seat.South);
-
-    // mod-a (index 0) beats mod-c (index 2) in the group; mod-b is unaffected
-    expect(result).toEqual(["mod-a", "mod-b"]);
-  });
-
-  it("does not affect modules outside any exclusivity group", () => {
-    const profile: SystemProfile = {
-      profileId: "test-exclusive-2",
-      baseSystem: "sayc",
-      modules: [
-        {
-          moduleId: "mod-x",
-          kind: "base-system",
-          attachments: [{}],
-        },
-        {
-          moduleId: "mod-y",
-          kind: "add-on",
-          attachments: [{}],
-        },
-      ],
-      conflictPolicy: {
-        activationDefault: "simultaneous",
-        exclusivityGroups: [
-          { groupId: "some-group", memberModuleIds: ["mod-z"] }, // mod-z not in profile
-        ],
-      },
-    };
-
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const result = resolveActiveModules(profile, auction, Seat.South);
-
-    expect(result).toEqual(["mod-x", "mod-y"]);
-  });
-
-  it("handles multiple exclusivity groups independently", () => {
-    const profile: SystemProfile = {
-      profileId: "test-multi-group",
-      baseSystem: "sayc",
-      modules: [
-        { moduleId: "a1", kind: "base-system", attachments: [{}] },
-        { moduleId: "a2", kind: "add-on", attachments: [{}] },
-        { moduleId: "b1", kind: "add-on", attachments: [{}] },
-        { moduleId: "b2", kind: "add-on", attachments: [{}] },
-      ],
-      conflictPolicy: {
-        activationDefault: "simultaneous",
-        exclusivityGroups: [
-          { groupId: "group-a", memberModuleIds: ["a1", "a2"] },
-          { groupId: "group-b", memberModuleIds: ["b1", "b2"] },
-        ],
-      },
-    };
-
-    const auction = buildAuction(Seat.North, ["1NT", "P"]);
-    const result = resolveActiveModules(profile, auction, Seat.South);
-
-    // a1 wins group-a (index 0 < 1), b1 wins group-b (index 2 < 3)
-    expect(result).toEqual(["a1", "b1"]);
-  });
-
   describe("whenPublic guard", () => {
     const auction = buildAuction(Seat.North, ["1NT", "P"]);
 
@@ -136,7 +41,7 @@ describe("resolveActiveModules", () => {
             attachments: [{ whenPublic: { field, operator, value } }],
           },
         ],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
     }
 
@@ -252,7 +157,7 @@ describe("resolveActiveModules", () => {
             attachments: [{ requiresVisibleMeanings: meaningIds }],
           },
         ],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
     }
 
@@ -343,7 +248,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "contains", call: "X" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Auction: 1H - X (double by East)
       const auction = buildAuction(Seat.North, ["1H", "X"]);
@@ -359,7 +264,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "contains", call: "X" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       const auction = buildAuction(Seat.North, ["1H", "P"]);
       expect(resolveActiveModules(profile, auction, Seat.South)).toEqual([]);
@@ -374,7 +279,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "contains", call: "X", byRole: "overcaller" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Auction: North=1H, East=X — East is overcaller (next after opener)
       const auction = buildAuction(Seat.North, ["1H", "X"]);
@@ -390,7 +295,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "contains", call: "1H", byRole: "responder" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Auction: North=1H — 1H was by opener, not responder
       const auction = buildAuction(Seat.North, ["1H", "P"]);
@@ -406,7 +311,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "contains", call: "P", byRole: "opener" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Empty auction — no bids, so "opener" role can't be resolved
       const auction = buildAuction(Seat.North, []);
@@ -424,7 +329,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "by-role", role: "opener", lastCall: "2H" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Auction: North=1H, East=P, South=2C, West=P, North=2H
       // Opener (North) last call is 2H.
@@ -441,7 +346,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "by-role", role: "opener", lastCall: "2H" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Opener's last call is 1H, not 2H
       const auction = buildAuction(Seat.North, ["1H", "P"]);
@@ -457,7 +362,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "by-role", role: "opener", lastCall: "1H" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Empty auction — no opener
       const auction = buildAuction(Seat.North, []);
@@ -473,7 +378,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "by-role", role: "responder", lastCall: "3C" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Auction: N=1H, E=P, S=2C, W=P, N=2H, E=P, S=3C
       // Responder (South) first bid 2C, then 3C. Last call is 3C.
@@ -490,7 +395,7 @@ describe("resolveActiveModules", () => {
           kind: "add-on",
           attachments: [{ whenAuction: { kind: "by-role", role: "advancer", lastCall: "P" } }],
         }],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       };
       // Auction: N=1H, E=X — advancer is West (partner of East), who hasn't acted yet
       const auction = buildAuction(Seat.North, ["1H", "X"]);

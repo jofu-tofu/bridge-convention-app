@@ -26,13 +26,11 @@ describe("Seam type invariants", () => {
             attachments: [{ whenAuction: { kind: "by-role", role: "opener", lastCall: "1NT" } }],
           },
         ],
-        conflictPolicy: { activationDefault: "simultaneous" },
       };
 
       expect(profile.profileId).toBe("test-profile");
       expect(profile.baseSystem).toBe(BASE_SYSTEM_SAYC);
       expect(profile.modules).toHaveLength(1);
-      expect(profile.conflictPolicy.activationDefault).toBe("simultaneous");
     });
   });
 

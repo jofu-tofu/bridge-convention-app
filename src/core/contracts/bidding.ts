@@ -36,13 +36,8 @@ export enum ForcingState {
 }
 
 /** Alert at the bridge table — this bid is conventional and its meaning
- *  should be disclosed to opponents. The formal explanation comes from
- *  publicConstraints — same FactConstraint vocabulary used by the factor
- *  graph, making this directly translatable to public beliefs. */
+ *  should be disclosed to opponents. */
 export interface BidAlert {
-  /** Structured constraints that become public knowledge when this bid is explained.
-   *  Auto-derived from primitive/bridge-observable clauses on the BidMeaning. */
-  readonly publicConstraints: readonly FactConstraint[];
   /** Human-readable label for UI display (from surface.teachingLabel). */
   readonly teachingLabel: string;
   /** ACBL annotation type: alert (conventional bid), announce (announced range/transfer),
@@ -57,6 +52,9 @@ export interface BidResult {
   readonly meaning?: string;
   /** Alert information when this bid is conventional/alertable. Null for natural bids. */
   readonly alert?: BidAlert | null;
+  /** All constraints from the winning surface's clauses, with isPublic flag preserved.
+   *  Consumers filter by isPublic as needed. */
+  readonly constraints?: readonly FactConstraint[];
   readonly handSummary?: string;
   readonly evaluationTrace?: EvaluationTrace;
   /** All candidates the pipeline considered for this auction+hand.

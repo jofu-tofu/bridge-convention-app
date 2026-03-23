@@ -59,6 +59,8 @@ export interface InferenceExtractorInput {
   readonly explanation: string;
   readonly meaning?: string;
   readonly alert?: BidAlert | null;
+  /** All constraints from the winning surface's clauses, with isPublic preserved. */
+  readonly constraints?: readonly FactConstraint[];
 }
 
 /**

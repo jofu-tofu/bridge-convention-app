@@ -24,6 +24,7 @@ function baseInput(overrides?: Partial<SurfaceInput>): SurfaceInput {
     band: "must",
     declarationOrder: 0,
     sourceIntent: { type: "Test", params: {} },
+    disclosure: "alert",
     teachingLabel: "Test surface",
     ...overrides,
   };

@@ -14,8 +14,8 @@ import type {
   FactCatalogExtension,
 } from "../../core/contracts/fact-catalog";
 import { getFactValue } from "../../core/contracts/fact-catalog";
-import { resolveAlert, derivePublicConstraints } from "./alert";
-import { resolveFactId, resolveClause } from "./binding-resolver";
+import { resolveAlert } from "./alert";
+import { resolveFactId } from "./binding-resolver";
 import type { ConstraintDimension } from "../../core/contracts/meaning";
 import { deriveSpecificity } from "./specificity-deriver";
 import { fillClauseDefaults } from "./clause-derivation";
@@ -151,15 +151,8 @@ export function evaluateBidMeaning(
     ...(derivation ? { specificityBasis: derivation.basis } : {}),
   };
 
-  // Resolve alertability from sourceIntent.type (derived, not hand-authored)
+  // Resolve alertability from disclosure field (derived, not hand-authored)
   const resolved = resolveAlert(surface);
-
-  // Auto-derive public constraints from primitive/bridge-observable clauses
-  // Resolve $-bindings before deriving constraints so factIds are concrete
-  const resolvedClauses = bindings
-    ? surface.clauses.map(c => resolveClause(c, bindings))
-    : surface.clauses;
-  const publicConstraints = derivePublicConstraints(resolvedClauses);
 
   return {
     meaningId: surface.meaningId,
@@ -171,7 +164,6 @@ export function evaluateBidMeaning(
     sourceIntent: surface.sourceIntent,
     teachingLabel: surface.teachingLabel,
     ...(resolved ? { isAlertable: true } : {}),
-    ...(publicConstraints.length > 0 ? { publicConstraints } : {}),
   };
 }
 

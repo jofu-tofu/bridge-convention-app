@@ -50,6 +50,11 @@ export const SYSTEM_ONE_NT_FORCING_AFTER_MAJOR = "system.oneNtResponseAfterMajor
 /** Responder is within the 1NT-response-to-1M HCP range. */
 export const SYSTEM_RESPONDER_ONE_NT_RANGE = "system.responder.oneNtRange" as const;
 
+// ─── DONT overcall facts ───────────────────────────────────
+
+/** Overcaller HCP is within the DONT overcall range for this system (e.g. 8-15). */
+export const SYSTEM_DONT_OVERCALL_IN_RANGE = "system.dontOvercall.inRange" as const;
+
 // ─── Collected vocabulary ───────────────────────────────────
 
 /** All system-provided fact IDs. Used for catalog validation and documentation. */
@@ -63,6 +68,7 @@ export const SYSTEM_FACT_IDS = [
   SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING,
   SYSTEM_ONE_NT_FORCING_AFTER_MAJOR,
   SYSTEM_RESPONDER_ONE_NT_RANGE,
+  SYSTEM_DONT_OVERCALL_IN_RANGE,
 ] as const;
 
 /** Union type of all system-provided fact IDs. */

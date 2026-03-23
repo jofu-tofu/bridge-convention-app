@@ -194,44 +194,5 @@ export function resolveActiveModules(
     }
   }
 
-  // Enforce exclusivity groups: only the highest-precedence module
-  // (lowest index in profile.modules) survives per group.
-  const exclusivityGroups = profile.conflictPolicy.exclusivityGroups;
-  if (exclusivityGroups && exclusivityGroups.length > 0) {
-    const precedence = resolveModulePrecedence(profile);
-    const deactivated = new Set<string>();
-
-    for (const group of exclusivityGroups) {
-      // Find active members of this group, sorted by precedence (lowest index first)
-      const activeMembers = group.memberModuleIds
-        .filter((id) => activeIds.includes(id))
-        .sort((a, b) => (precedence.get(a) ?? Infinity) - (precedence.get(b) ?? Infinity));
-
-      // Deactivate all but the highest-precedence (first) member
-      for (let i = 1; i < activeMembers.length; i++) {
-        deactivated.add(activeMembers[i]!);
-      }
-    }
-
-    if (deactivated.size > 0) {
-      return activeIds.filter((id) => !deactivated.has(id));
-    }
-  }
-
   return activeIds;
-}
-
-/**
- * Compute module precedence from a profile's module ordering.
- * Maps each moduleId to its index position in the modules array.
- * @internal
- */
-export function resolveModulePrecedence(
-  profile: SystemProfile,
-): ReadonlyMap<string, number> {
-  const precedence = new Map<string, number>();
-  for (let i = 0; i < profile.modules.length; i++) {
-    precedence.set(profile.modules[i]!.moduleId, i);
-  }
-  return precedence;
 }

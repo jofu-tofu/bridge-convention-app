@@ -45,6 +45,7 @@ function makeSurface(
       declarationOrder: 1,
     },
     sourceIntent: { type: "test", params: {} },
+    disclosure: "alert" as const,
     teachingLabel: "Test meaning",
     ...overrides,
   } as BidMeaning;
@@ -56,7 +57,7 @@ const surfaceA = makeSurface({
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "C" } as Call },
   clauses: [
-    { clauseId: "hcp-10", factId: "hand.hcp", operator: "gte", value: 10, description: "10+ HCP" },
+    { clauseId: "hcp-10", factId: "hand.hcp", operator: "gte", value: 10, description: "10+ HCP", isPublic: true },
   ],
 });
 
@@ -66,7 +67,7 @@ const surfaceB = makeSurface({
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "D" } as Call },
   clauses: [
-    { clauseId: "hearts-5", factId: "hand.suitLength.hearts", operator: "gte", value: 5, description: "5+ hearts" },
+    { clauseId: "hearts-5", factId: "hand.suitLength.hearts", operator: "gte", value: 5, description: "5+ hearts", isPublic: true },
   ],
 });
 

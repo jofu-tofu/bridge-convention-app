@@ -51,6 +51,7 @@ const OPPONENT_1NT_SURFACE: BidMeaning = createSurface({
   declarationOrder: 0,
   sourceIntent: { type: "NTOpening", params: {} },
   teachingLabel: "Opponent's 1NT",
+  disclosure: "natural",
 }, DONT_CTX);
 
 // ── Phase type ────────────────────────────────────────────────────

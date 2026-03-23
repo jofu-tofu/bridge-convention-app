@@ -31,7 +31,7 @@ const STAYMAN_ONLY_PROFILE: SystemProfile = {
       ],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
+
 };
 
 const TRANSFER_ONLY_PROFILE: SystemProfile = {
@@ -54,7 +54,7 @@ const TRANSFER_ONLY_PROFILE: SystemProfile = {
       ],
     },
   ],
-  conflictPolicy: { activationDefault: "simultaneous" },
+
 };
 
 // ---------------------------------------------------------------------------

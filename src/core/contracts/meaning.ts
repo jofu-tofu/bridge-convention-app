@@ -100,9 +100,6 @@ export interface MeaningProposal {
   /** Human-readable teaching label (e.g., "Stayman 2C", "Transfer to hearts").
    *  Threaded from BidMeaning.teachingLabel through the evaluation pipeline. */
   readonly teachingLabel?: string;
-  /** Structured constraints auto-derived from primitive/bridge-observable clauses.
-   *  Threaded through the pipeline for BidAlert construction in the strategy layer. */
-  readonly publicConstraints?: readonly FactConstraint[];
   /** True when this bid is alertable (derived from sourceIntent.type). */
   readonly isAlertable?: boolean;
 }
@@ -182,6 +179,12 @@ export interface BidMeaning {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
+  /** How this bid's meaning is disclosed to opponents at the table.
+   *  - "alert": conventional bid, opponents must be told
+   *  - "announcement": partner speaks the meaning aloud (e.g., transfers)
+   *  - "standard": universally known convention, not ACBL-alerted (e.g., Stayman)
+   *  - "natural": natural meaning, no disclosure needed */
+  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
   readonly teachingLabel: string;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
   /** Cross-module pedagogical tags for deriving relations and alternatives. */

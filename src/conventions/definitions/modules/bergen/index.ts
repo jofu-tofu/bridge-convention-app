@@ -52,6 +52,7 @@ const OPENER_1H_SURFACE: BidMeaning = createSurface({
   declarationOrder: 0,
   sourceIntent: { type: "MajorOpen", params: { suit: "hearts" } },
   teachingLabel: "1\u2665 opening",
+  disclosure: "natural",
 }, BERGEN_CTX);
 
 const OPENER_1S_SURFACE: BidMeaning = createSurface({
@@ -63,6 +64,7 @@ const OPENER_1S_SURFACE: BidMeaning = createSurface({
   declarationOrder: 0,
   sourceIntent: { type: "MajorOpen", params: { suit: "spades" } },
   teachingLabel: "1\u2660 opening",
+  disclosure: "natural",
 }, BERGEN_CTX);
 
 // ── Phase type ────────────────────────────────────────────────────

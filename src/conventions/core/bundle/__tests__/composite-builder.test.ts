@@ -78,7 +78,7 @@ describe("composeBundles", () => {
             attachments: [],
           },
         ],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       },
     });
     const b = makeBundle("b", [], {
@@ -92,7 +92,7 @@ describe("composeBundles", () => {
             attachments: [],
           },
         ],
-        conflictPolicy: { activationDefault: "simultaneous" },
+
       },
     });
 

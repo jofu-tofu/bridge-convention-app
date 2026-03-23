@@ -22,7 +22,7 @@ A convention bundle provides:
 1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, and optional `teachingTags`
 2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions. Use factory helpers in `core/pipeline/fact-factory.ts` for common patterns (boolean comparison, per-suit, HCP range).
 3. **`modules`** — `ConventionModule[]` for declarative surface selection via `collectMatchingClaims()`. Each module has `local` (LocalFsm with phases + phase transitions) and `states` (StateEntry[] — surfaces grouped by conversation state with phase/turn/route/kernel constraints and group-level `negotiationDelta`). Modules are resolved by `buildBundle()` from `memberIds` via module-registry.
-4. **`systemProfile`** — `SystemProfile` declaring modules, attachments, exclusivity groups
+4. **`systemProfile`** — `SystemProfile` declaring modules and attachments
 
 **Pedagogical content is tag-derived.** Modules do NOT declare `teachingRelations`, `alternatives`, or `intentFamilies` fields. Instead, surfaces carry `teachingTags` using 6 general tags from `definitions/teaching-vocabulary.ts`. When modules are composed into a bundle, `deriveTeachingContent()` scans all surfaces and produces the appropriate relations/alternatives automatically. This makes modules portable — compose any set into a bundle and it works.
 

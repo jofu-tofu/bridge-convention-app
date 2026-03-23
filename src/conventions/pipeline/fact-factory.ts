@@ -2,6 +2,7 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
   FactValue,
+  FactComposition,
 } from "../../core/contracts/fact-catalog";
 import { FactLayer } from "../../core/contracts/fact-layer";
 import type { ConstraintDimension } from "../../core/contracts/meaning";
@@ -31,6 +32,10 @@ interface DefineBooleanFactOpts {
 /** Boolean fact derived from a single numeric comparison against an existing fact. */
 export function defineBooleanFact(opts: DefineBooleanFactOpts): FactEntry {
   const derivesFrom = opts.derivesFrom ?? [opts.factId];
+  const composition: FactComposition = {
+    kind: "primitive",
+    clause: { factId: opts.factId, operator: opts.operator, value: opts.value },
+  };
   const definition: FactDefinition = {
     id: opts.id,
     layer: FactLayer.ModuleDerived,
@@ -39,6 +44,7 @@ export function defineBooleanFact(opts: DefineBooleanFactOpts): FactEntry {
     valueType: "boolean",
     derivesFrom,
     constrainsDimensions: opts.constrainsDimensions,
+    composition,
   };
 
   const comparator = buildComparator(opts.operator, opts.value);
@@ -117,6 +123,13 @@ interface DefineHcpRangeFactOpts {
 
 /** Boolean fact that checks whether HCP falls within a given range. */
 export function defineHcpRangeFact(opts: DefineHcpRangeFactOpts): FactEntry {
+  const composition: FactComposition = {
+    kind: "and",
+    operands: [
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: "gte", value: opts.range.min } },
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: "lte", value: opts.range.max } },
+    ],
+  };
   const definition: FactDefinition = {
     id: opts.id,
     layer: FactLayer.ModuleDerived,
@@ -125,6 +138,7 @@ export function defineHcpRangeFact(opts: DefineHcpRangeFactOpts): FactEntry {
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
     constrainsDimensions: opts.constrainsDimensions ?? ["pointRange"],
+    composition,
   };
 
   const { min, max } = opts.range;

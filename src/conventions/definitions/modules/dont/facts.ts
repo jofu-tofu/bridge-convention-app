@@ -3,6 +3,7 @@ import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
+  FactComposition,
 } from "../../../../core/contracts/fact-catalog";
 import { fv } from "../../../pipeline/fact-helpers";
 import {
@@ -78,7 +79,7 @@ const hasClubSupportEntry = defineBooleanFact({
   derivesFrom: [],
 });
 
-// ─── Hand-written facts (complex evaluators) ────────────────
+// ─── Hand-written facts (complex evaluators with composition) ─
 
 function handWrittenEntry(
   definition: FactDefinition,
@@ -86,6 +87,21 @@ function handWrittenEntry(
 ): FactEntry {
   return { definition, evaluator: [definition.id, evaluator] };
 }
+
+// Composition: H5+S4+ OR S5+H4+ (loose activation prerequisite)
+const BOTH_MAJORS_COMPOSITION: FactComposition = {
+  kind: "or",
+  operands: [
+    { kind: "and", operands: [
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 5 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 4 } },
+    ]},
+    { kind: "and", operands: [
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 5 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
+    ]},
+  ],
+};
 
 const bothMajorsEntry = handWrittenEntry(
   {
@@ -96,6 +112,7 @@ const bothMajorsEntry = handWrittenEntry(
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
+    composition: BOTH_MAJORS_COMPOSITION,
   },
   (h, _ev, _m) => {
     const hearts = suitLengthOf(h, Suit.Hearts);
@@ -107,6 +124,18 @@ const bothMajorsEntry = handWrittenEntry(
   },
 );
 
+// Composition: D5+ AND (H4+ OR S4+)
+const DIAMONDS_AND_MAJOR_COMPOSITION: FactComposition = {
+  kind: "and",
+  operands: [
+    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 5 } },
+    { kind: "or", operands: [
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 4 } },
+    ]},
+  ],
+};
+
 const diamondsAndMajorEntry = handWrittenEntry(
   {
     id: "module.dont.diamondsAndMajor",
@@ -116,6 +145,7 @@ const diamondsAndMajorEntry = handWrittenEntry(
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
+    composition: DIAMONDS_AND_MAJOR_COMPOSITION,
   },
   (h, _ev, _m) => {
     const diamonds = suitLengthOf(h, Suit.Diamonds);
@@ -128,6 +158,19 @@ const diamondsAndMajorEntry = handWrittenEntry(
   },
 );
 
+// Composition: C5+ AND (D4+ OR H4+ OR S4+)
+const CLUBS_AND_HIGHER_COMPOSITION: FactComposition = {
+  kind: "and",
+  operands: [
+    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: "gte", value: 5 } },
+    { kind: "or", operands: [
+      { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 4 } },
+    ]},
+  ],
+};
+
 const clubsAndHigherEntry = handWrittenEntry(
   {
     id: "module.dont.clubsAndHigher",
@@ -137,6 +180,7 @@ const clubsAndHigherEntry = handWrittenEntry(
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
+    composition: CLUBS_AND_HIGHER_COMPOSITION,
   },
   (h, _ev, _m) => {
     const clubs = suitLengthOf(h, Suit.Clubs);
@@ -150,6 +194,17 @@ const clubsAndHigherEntry = handWrittenEntry(
   },
 );
 
+// Composition: loose approximation — one non-spade suit 6+ (evaluator also requires
+// no other suit 4+ and longest ≠ spades, but composition only needs activation prerequisite)
+const SINGLE_SUITED_COMPOSITION: FactComposition = {
+  kind: "or",
+  operands: [
+    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: "gte", value: 6 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 6 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 6 } },
+  ],
+};
+
 const singleSuitedEntry = handWrittenEntry(
   {
     id: "module.dont.singleSuited",
@@ -159,6 +214,7 @@ const singleSuitedEntry = handWrittenEntry(
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: ["shapeClass", "suitLength", "suitIdentity"],
+    composition: SINGLE_SUITED_COMPOSITION,
   },
   (h, _ev, _m) => {
     const lengths: { suit: Suit; length: number }[] = [

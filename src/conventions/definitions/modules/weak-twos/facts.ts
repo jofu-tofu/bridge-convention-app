@@ -3,6 +3,7 @@ import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
+  FactComposition,
 } from "../../../../core/contracts/fact-catalog";
 import { num, fv } from "../../../pipeline/fact-helpers";
 import {
@@ -67,6 +68,13 @@ const isMinimumDef: FactDefinition = {
   valueType: "boolean",
   derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
   constrainsDimensions: ["pointRange"],
+  composition: {
+    kind: "and",
+    operands: [
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: "gte", value: 5 } },
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: "lte", value: 8 } },
+    ],
+  },
 };
 
 const isMinimumEvaluator: FactEvaluatorFn = (_h, _ev, m) => {
@@ -81,6 +89,15 @@ const isMinimumEntry: FactEntry = {
   evaluator: ["module.weakTwo.isMinimum", isMinimumEvaluator],
 };
 
+// Composition: loose approximation — 5-11 HCP (widest across vulnerability states)
+const IN_OPENING_HCP_RANGE_COMPOSITION: FactComposition = {
+  kind: "and",
+  operands: [
+    { kind: "primitive", clause: { factId: "hand.hcp", operator: "gte", value: 5 } },
+    { kind: "primitive", clause: { factId: "hand.hcp", operator: "lte", value: 11 } },
+  ],
+};
+
 const inOpeningHcpRangeDef: FactDefinition = {
   id: "module.weakTwo.inOpeningHcpRange",
   layer: FactLayer.ModuleDerived,
@@ -89,6 +106,7 @@ const inOpeningHcpRangeDef: FactDefinition = {
   valueType: "boolean",
   derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
   constrainsDimensions: ["pointRange"],
+  composition: IN_OPENING_HCP_RANGE_COMPOSITION,
 };
 
 const inOpeningHcpRangeEvaluator: FactEvaluatorFn = (_h, _ev, m) => {

@@ -27,7 +27,7 @@ describe("createSystemFactCatalog", () => {
 
   describe("structure", () => {
     it("returns 9 definitions", () => {
-      expect(catalog.definitions).toHaveLength(9);
+      expect(catalog.definitions).toHaveLength(10);
     });
 
     it("includes all system fact IDs in definitions", () => {

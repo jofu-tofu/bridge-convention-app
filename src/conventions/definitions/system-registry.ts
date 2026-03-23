@@ -5,6 +5,9 @@
  * Consumers call resolveBundle(input, sys) to get a full ConventionBundle
  * with modules resolved for a specific SystemConfig.
  *
+ * Deal constraints are DERIVED from capabilities + R1 surface analysis —
+ * no hand-authored dealConstraints, factories, or defaultAuction.
+ *
  * SystemConfig is always external — never baked into bundle definitions.
  */
 
@@ -16,12 +19,10 @@ import type { AlternativeGroup, SurfaceGroup } from "../../core/contracts/teachi
 import type { TeachingRelation } from "../../core/contracts/teaching-projection";
 import { getModules } from "./module-registry";
 import { deriveTeachingContent } from "./derive-cross-module";
+import { deriveBundleDealConstraints } from "./derive-deal-constraints";
 
-import { Seat, Suit, type Hand } from "../../engine/types";
-import { suitLengthOf } from "../../engine/hand-evaluator";
 import { ConventionCategory } from "../../core/contracts/convention";
-import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPPONENT_1NT } from "./capability-vocabulary";
-import { buildAuction } from "../../engine/auction-helpers";
+import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPENING_WEAK_TWO, CAP_OPPONENT_1NT } from "./capability-vocabulary";
 import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./nt-bundle/system-profile";
 import { BERGEN_PROFILE } from "./bergen-bundle/system-profile";
 import { DONT_PROFILE } from "./dont-bundle/system-profile";
@@ -75,28 +76,7 @@ function deriveSurfaceGroupsFromModules(
   return families;
 }
 
-// ── Deal constraint helpers ─────────────────────────────────────────
-
-/** Determine which major suit the opener (North) should open based on hand. */
-function longestMajor(hand: Hand): "H" | "S" {
-  const h = suitLengthOf(hand, Suit.Hearts);
-  const s = suitLengthOf(hand, Suit.Spades);
-  // Standard: open the longer major; prefer hearts if equal (up-the-line)
-  return s > h ? "S" : "H";
-}
-
-/** Determine which weak-two suit North should open based on hand. */
-function longestWeakTwoSuit(hand: Hand): "D" | "H" | "S" {
-  const d = suitLengthOf(hand, Suit.Diamonds);
-  const h = suitLengthOf(hand, Suit.Hearts);
-  const s = suitLengthOf(hand, Suit.Spades);
-  // Open the longest 6+ card suit; priority: H > S > D if tied
-  if (h >= s && h >= d) return "H";
-  if (s >= d) return "S";
-  return "D";
-}
-
-// ── Bundle definitions (BundleInput — no modules) ────────────────────
+// ── Bundle definitions (BundleInput — no modules, no constraints) ────
 
 const ntBundleInput: BundleInput = {
   id: "nt-bundle",
@@ -105,38 +85,6 @@ const ntBundleInput: BundleInput = {
   category: ConventionCategory.Constructive,
   systemProfile: NT_SAYC_PROFILE,
   memberIds: ["natural-nt", "stayman", "jacoby-transfers", "smolen"],
-  dealConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-      { seat: Seat.South, minHcp: 0 },
-    ],
-    dealer: Seat.North,
-  },
-  offConventionConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-      { seat: Seat.South, minHcp: 0, maxHcp: 7 },
-    ],
-    dealer: Seat.North,
-  },
-  dealConstraintFactory: (sys) => ({
-    seats: [
-      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
-      { seat: Seat.South, minHcp: 0 },
-    ],
-    dealer: Seat.North,
-  }),
-  offConventionConstraintFactory: (sys) => ({
-    seats: [
-      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
-      { seat: Seat.South, minHcp: 0, maxHcp: sys.responderThresholds.inviteMin - 1 },
-    ],
-    dealer: Seat.North,
-  }),
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
-    return undefined;
-  },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -165,24 +113,6 @@ const ntStaymanInput: BundleInput = {
   category: ConventionCategory.Asking,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
   memberIds: ["natural-nt", "stayman"],
-  dealConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-      { seat: Seat.South, minHcp: 8, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 }, maxLength: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
-    ],
-    dealer: Seat.North,
-  },
-  dealConstraintFactory: (sys) => ({
-    seats: [
-      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
-      { seat: Seat.South, minHcp: sys.responderThresholds.inviteMin, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 }, maxLength: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
-    ],
-    dealer: Seat.North,
-  }),
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
-    return undefined;
-  },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -208,24 +138,6 @@ const ntTransfersInput: BundleInput = {
   category: ConventionCategory.Constructive,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,
   memberIds: ["natural-nt", "jacoby-transfers"],
-  dealConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-      { seat: Seat.South, minHcp: 0, minLengthAny: { [Suit.Spades]: 5, [Suit.Hearts]: 5 } },
-    ],
-    dealer: Seat.North,
-  },
-  dealConstraintFactory: (sys) => ({
-    seats: [
-      { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
-      { seat: Seat.South, minHcp: 0, minLengthAny: { [Suit.Spades]: 5, [Suit.Hearts]: 5 } },
-    ],
-    dealer: Seat.North,
-  }),
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.East) return buildAuction(Seat.North, ["1NT", "P"]);
-    return undefined;
-  },
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -250,25 +162,6 @@ const bergenInput: BundleInput = {
   category: ConventionCategory.Constructive,
   systemProfile: BERGEN_PROFILE,
   memberIds: ["bergen"],
-  dealConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 12, maxHcp: 21, minLengthAny: { [Suit.Hearts]: 5, [Suit.Spades]: 5 } },
-      {
-        seat: Seat.South, minHcp: 0,
-        // South must have exactly 4 in at least one major (Bergen requires exactly 4-card support)
-        minLengthAny: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
-        maxLength: { [Suit.Hearts]: 4, [Suit.Spades]: 4 },
-      },
-    ],
-    dealer: Seat.North,
-  },
-  defaultAuction: (seat, deal) => {
-    if (seat === Seat.South || seat === Seat.East) {
-      const openSuit = deal ? longestMajor(deal.hands[Seat.North]) : "H";
-      return buildAuction(Seat.North, [`1${openSuit}`, "P"]);
-    }
-    return undefined;
-  },
   declaredCapabilities: { [CAP_OPENING_MAJOR]: "active" },
   teaching: {
     purpose:
@@ -296,19 +189,7 @@ const dontInput: BundleInput = {
   category: ConventionCategory.Defensive,
   systemProfile: DONT_PROFILE,
   memberIds: ["dont"],
-  dealConstraints: {
-    seats: [
-      { seat: Seat.East, minHcp: 15, maxHcp: 17 },
-      { seat: Seat.South, minHcp: 8, maxHcp: 15, minLengthAny: { [Suit.Clubs]: 5, [Suit.Diamonds]: 5, [Suit.Hearts]: 5, [Suit.Spades]: 5 } },
-    ],
-    dealer: Seat.East,
-  },
-  defaultAuction: (seat) => {
-    if (seat === Seat.South || seat === Seat.West) return buildAuction(Seat.East, ["1NT"]);
-    return undefined;
-  },
   declaredCapabilities: { [CAP_OPPONENT_1NT]: "active" },
-  allowedDealers: [Seat.East],
   teaching: {
     purpose:
       "Compete against opponent's 1NT opening with distributional hands, showing two-suited or single-suited holdings via conventional bids and doubles",
@@ -335,21 +216,7 @@ const weakTwoInput: BundleInput = {
   category: ConventionCategory.Constructive,
   systemProfile: WEAK_TWO_PROFILE,
   memberIds: ["weak-twos"],
-  dealConstraints: {
-    seats: [
-      { seat: Seat.North, minHcp: 5, maxHcp: 10, minLengthAny: { [Suit.Diamonds]: 6, [Suit.Hearts]: 6, [Suit.Spades]: 6 } },
-      { seat: Seat.South, minHcp: 12 },
-    ],
-    dealer: Seat.North,
-  },
-  defaultAuction: (seat, deal) => {
-    if (seat === Seat.South || seat === Seat.East) {
-      const openSuit = deal ? longestWeakTwoSuit(deal.hands[Seat.North]) : "H";
-      return buildAuction(Seat.North, [`2${openSuit}`, "P"]);
-    }
-    return undefined;
-  },
-  allowedDealers: [Seat.North],
+  declaredCapabilities: { [CAP_OPENING_WEAK_TWO]: "active" },
   teaching: {
     purpose:
       "Open light hands with a long suit at the 2-level to preempt opponents, and use the Ogust convention to describe hand strength and suit quality",
@@ -390,11 +257,13 @@ export function listBundleInputs(): readonly BundleInput[] {
 export function resolveBundle(input: BundleInput, sys: SystemConfig): ConventionBundle {
   const modules = getModules(input.memberIds, sys);
   const { acceptableAlternatives, surfaceGroups, relations } = aggregateTeachingContent(modules);
+
+  // Derive deal constraints from authored convention data
+  const derived = deriveBundleDealConstraints(input, modules, sys);
+
   return {
     ...input,
-    // Apply constraint factories when present — derive constraints from system config
-    ...(input.dealConstraintFactory ? { dealConstraints: input.dealConstraintFactory(sys) } : {}),
-    ...(input.offConventionConstraintFactory ? { offConventionConstraints: input.offConventionConstraintFactory(sys) } : {}),
+    ...derived,
     modules,
     derivedTeaching: { acceptableAlternatives, surfaceGroups, relations },
   };
@@ -414,4 +283,3 @@ export function specFromBundle(
     systemConfig: sys,
   };
 }
-

@@ -41,6 +41,12 @@ export interface SurfaceInput {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
+  /** How this bid's meaning is disclosed to opponents at the table.
+   *  - "alert": conventional bid, opponents must be told
+   *  - "announcement": partner speaks the meaning aloud (e.g., transfers)
+   *  - "standard": universally known convention, not ACBL-alerted (e.g., Stayman)
+   *  - "natural": natural meaning, no disclosure needed */
+  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
   readonly teachingLabel: string;
   // Optional overrides:
   readonly moduleId?: string;
@@ -111,6 +117,7 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
       declarationOrder: input.declarationOrder,
     },
     sourceIntent: input.sourceIntent,
+    disclosure: input.disclosure,
     teachingLabel: input.teachingLabel,
     ...(input.surfaceBindings ? { surfaceBindings: input.surfaceBindings } : {}),
     ...(input.teachingTags ? { teachingTags: input.teachingTags } : {}),

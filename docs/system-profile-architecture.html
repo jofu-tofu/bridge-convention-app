@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Profile &amp; Base System Injection</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        bg: '#0f172a',
+        surface: '#1e293b',
+        surfaceHigh: '#334155',
+        accent: '#38bdf8',
+        accentDim: '#0ea5e9',
+        warm: '#f59e0b',
+        green: '#22c55e',
+        rose: '#f43f5e',
+        muted: '#94a3b8',
+        text: '#e2e8f0',
+      }
+    }
+  }
+}
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.7; }
+  .content { max-width: 75ch; }
+  h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.02em; }
+  pre.mermaid { background: transparent !important; text-align: center; }
+  .mermaid svg { max-width: 100%; margin: 0 auto; }
+  code:not([class*="language-"]) { background: #334155; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; color: #38bdf8; }
+  pre[class*="language-"] { background: #1e293b !important; border: 1px solid #334155; border-radius: 8px; font-size: 0.85rem; }
+  .toc-link { transition: color 0.15s; }
+  .toc-link:hover { color: #38bdf8; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+  details summary { cursor: pointer; }
+  details summary:hover { color: #38bdf8; }
+  .divider { border-top: 1px solid #334155; }
+  @media (max-width: 768px) { .toc-sidebar { display: none; } }
+</style>
+</head>
+<body class="min-h-screen">
+<script>mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', primaryBorderColor: '#38bdf8', lineColor: '#38bdf8', secondaryColor: '#334155', tertiaryColor: '#0f172a', edgeLabelBackground: '#1e293b', fontSize: '14px' }});</script>
+
+<!-- Sticky ToC -->
+<nav class="toc-sidebar fixed left-0 top-0 h-screen w-56 bg-surface border-r border-surfaceHigh overflow-y-auto p-4 z-50 text-sm">
+  <div class="font-bold text-accent mb-4 text-base">Contents</div>
+  <ul class="space-y-2 text-muted">
+    <li><a href="#tldr" class="toc-link">TL;DR</a></li>
+    <li><a href="#mental-model" class="toc-link">Mental Model</a></li>
+    <li><a href="#injection-chain" class="toc-link">Injection Chain</a></li>
+    <li><a href="#vocabulary" class="toc-link">1. Vocabulary</a></li>
+    <li><a href="#parameterization" class="toc-link">2. SystemConfig</a></li>
+    <li><a href="#profile-creation" class="toc-link">3. Profile Creation</a></li>
+    <li><a href="#activation" class="toc-link">4. Runtime Activation</a></li>
+    <li><a href="#fact-injection" class="toc-link">5. Fact Injection</a></li>
+    <li><a href="#full-flow" class="toc-link">Full Flow</a></li>
+    <li><a href="#file-map" class="toc-link">File Map</a></li>
+  </ul>
+</nav>
+
+<!-- Main content -->
+<main class="ml-56 px-8 py-12 max-md:ml-0">
+<div class="content mx-auto">
+
+<!-- Title -->
+<h1 id="top" class="text-4xl text-white mb-2">System Profile &amp; Base System Injection</h1>
+<p class="text-muted mb-8">How <code>BaseSystemId</code> propagates through the convention pipeline to produce system-aware module behavior at runtime.</p>
+<div class="divider mb-10"></div>
+
+<!-- ───────────────────────── TL;DR ───────────────────────── -->
+<section id="tldr" class="mb-12">
+<h2 class="text-2xl text-white mb-4">TL;DR</h2>
+<div class="card p-6">
+  <p class="mb-3"><strong class="text-accent">The core idea:</strong> Convention modules are system-agnostic. They never import concrete HCP thresholds. Instead, the base system choice (<code>BaseSystemId</code>) flows through a parameterization chain:</p>
+  <div class="flex items-center gap-3 text-lg font-mono my-4 flex-wrap">
+    <span class="badge bg-amber-500/20 text-warm">BaseSystemId</span>
+    <span class="text-muted">&rarr;</span>
+    <span class="badge bg-sky-500/20 text-accent">SystemConfig</span>
+    <span class="text-muted">&rarr;</span>
+    <span class="badge bg-green-500/20 text-green">SystemProfile</span>
+    <span class="text-muted">&rarr;</span>
+    <span class="badge bg-rose-500/20 text-rose">closures in fact evaluators</span>
+  </div>
+  <p>Modules declare <em>what they need</em> (a stable fact ID like <code>system.responder.inviteValues</code>). The system provides <em>the concrete answer</em> at runtime via closure-captured <code>SystemConfig</code>. Same module code, different system behavior.</p>
+</div>
+</section>
+
+<!-- ───────────────────────── Mental Model ───────────────────────── -->
+<section id="mental-model" class="mb-12">
+<h2 class="text-2xl text-white mb-4">Mental Model</h2>
+<div class="card p-6">
+  <p class="mb-3"><strong class="text-accent">Think: dependency injection via closures.</strong></p>
+  <p class="mb-3">In typical DI, a service declares an interface it needs and the container provides the concrete implementation. Here:</p>
+  <ul class="list-disc pl-6 space-y-1 text-muted">
+    <li><strong class="text-text">Interface</strong> = a fact ID string (e.g. <code>SYSTEM_RESPONDER_INVITE_VALUES</code>)</li>
+    <li><strong class="text-text">Container</strong> = <code>createSystemFactCatalog(sys)</code> which closes over <code>SystemConfig</code></li>
+    <li><strong class="text-text">Consumer</strong> = a surface clause that references the fact ID in its conditions</li>
+  </ul>
+  <p class="mt-3">Module attachments work similarly to <strong>CSS media queries</strong> &mdash; declarative conditions (auction pattern, capabilities) that toggle a module on/off without imperative logic.</p>
+</div>
+</section>
+
+<!-- ───────────────────────── Injection Chain Diagram ───────────────────────── -->
+<section id="injection-chain" class="mb-12">
+<h2 class="text-2xl text-white mb-4">The Injection Chain</h2>
+<p class="text-muted mb-4">Five layers, each transforming the base system choice into something more specific.</p>
+<pre class="mermaid">
+flowchart TB
+    subgraph VOC["1 Vocabulary"]
+        BSV["BaseSystemId\n'sayc' | 'two-over-one' | 'acol'"]
+    end
+
+    subgraph PARAM["2 Parameterization"]
+        GSC["getSystemConfig(id)"]
+        SC["SystemConfig\nntOpening, responderThresholds,\nsuitResponse, ..."]
+    end
+
+    subgraph PROFILE["3 Profile Creation"]
+        CSP["createSystemProfile(...)"]
+        SP["SystemProfile\nprofileId, baseSystem,\nmodules"]
+    end
+
+    subgraph RUNTIME["4 Runtime Activation"]
+        RAM["resolveActiveModules(\nprofile, auction, seat,\ncapabilities)"]
+        AID["Active Module IDs"]
+    end
+
+    subgraph FACTS["5 Fact Injection"]
+        CSFC["createSystemFactCatalog(sys)"]
+        EVAL["Closure-captured evaluators\nhcp >= sys.responderThresholds.inviteMin"]
+    end
+
+    BSV -->|"lookup"| GSC
+    GSC --> SC
+    SC -->|"auto-resolved"| CSP
+    CSP --> SP
+    SP -->|"per auction tick"| RAM
+    RAM --> AID
+    SC -->|"closure capture"| CSFC
+    CSFC --> EVAL
+    EVAL -.->|"surfaces reference\nfact IDs"| AID
+
+    style VOC fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style PARAM fill:#1e293b,stroke:#38bdf8,color:#e2e8f0
+    style PROFILE fill:#1e293b,stroke:#22c55e,color:#e2e8f0
+    style RUNTIME fill:#1e293b,stroke:#a78bfa,color:#e2e8f0
+    style FACTS fill:#1e293b,stroke:#f43f5e,color:#e2e8f0
+</pre>
+</section>
+
+<!-- ───────────────────────── Layer 1: Vocabulary ───────────────────────── -->
+<section id="vocabulary" class="mb-12">
+<h2 class="text-2xl text-white mb-4">1. Vocabulary: <code>BaseSystemId</code></h2>
+<p class="text-muted mb-2"><strong class="text-text">File:</strong> <code>src/core/contracts/base-system-vocabulary.ts</code></p>
+<p class="mb-4">Three string constants define the universe of supported bidding systems. Every reference to a system name in the codebase traces back here.</p>
+<pre><code class="language-typescript">export const BASE_SYSTEM_SAYC = "sayc" as const;
+export const BASE_SYSTEM_TWO_OVER_ONE = "two-over-one" as const;
+export const BASE_SYSTEM_ACOL = "acol" as const;
+
+export type BaseSystemId =
+  | typeof BASE_SYSTEM_SAYC
+  | typeof BASE_SYSTEM_TWO_OVER_ONE
+  | typeof BASE_SYSTEM_ACOL;</code></pre>
+<p class="text-muted mt-3">Adding a new system starts here: add a constant, extend the union.</p>
+</section>
+
+<!-- ───────────────────────── Layer 2: Parameterization ───────────────────────── -->
+<section id="parameterization" class="mb-12">
+<h2 class="text-2xl text-white mb-4">2. Parameterization: <code>SystemConfig</code></h2>
+<p class="text-muted mb-2"><strong class="text-text">File:</strong> <code>src/core/contracts/system-config.ts</code></p>
+<p class="mb-4"><code>SystemConfig</code> captures every threshold that varies between systems but is shared across all conventions within a system. Convention modules <strong>must not</strong> hardcode these values.</p>
+
+<div class="overflow-x-auto mb-6">
+<table class="w-full text-sm border-collapse">
+  <thead>
+    <tr class="border-b border-surfaceHigh text-left">
+      <th class="py-2 pr-4 text-accent">Parameter</th>
+      <th class="py-2 pr-4 text-center">SAYC</th>
+      <th class="py-2 pr-4 text-center">2/1</th>
+      <th class="py-2 text-center">Acol</th>
+    </tr>
+  </thead>
+  <tbody class="text-muted">
+    <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>ntOpening</code></td><td class="text-center">15&ndash;17</td><td class="text-center">15&ndash;17</td><td class="text-center">12&ndash;14</td></tr>
+    <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>responderThresholds.inviteMin/Max</code></td><td class="text-center">8&ndash;9</td><td class="text-center">8&ndash;9</td><td class="text-center">10&ndash;12</td></tr>
+    <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>suitResponse.twoLevelMin</code></td><td class="text-center">10</td><td class="text-center">12</td><td class="text-center">10</td></tr>
+    <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>suitResponse.twoLevelForcingDuration</code></td><td class="text-center">one-round</td><td class="text-center">game</td><td class="text-center">one-round</td></tr>
+    <tr class="border-b border-surfaceHigh/50"><td class="py-2 pr-4"><code>oneNtResponseAfterMajor.forcing</code></td><td class="text-center">non-forcing</td><td class="text-center">semi-forcing</td><td class="text-center">non-forcing</td></tr>
+    <tr><td class="py-2 pr-4"><code>openingRequirements.majorSuitMinLength</code></td><td class="text-center">5</td><td class="text-center">5</td><td class="text-center">4</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="mb-4">The lookup function resolves a <code>BaseSystemId</code> to its concrete config. Falls back to SAYC for unknown IDs.</p>
+<pre><code class="language-typescript">const SYSTEM_CONFIG_MAP: Record&lt;string, SystemConfig&gt; = {
+  [BASE_SYSTEM_SAYC]: SAYC_SYSTEM_CONFIG,
+  [BASE_SYSTEM_TWO_OVER_ONE]: TWO_OVER_ONE_SYSTEM_CONFIG,
+  [BASE_SYSTEM_ACOL]: ACOL_SYSTEM_CONFIG,
+};
+
+export function getSystemConfig(id: BaseSystemId): SystemConfig {
+  return SYSTEM_CONFIG_MAP[id] ?? SAYC_SYSTEM_CONFIG;
+}</code></pre>
+</section>
+
+<!-- ───────────────────────── Layer 3: Profile Creation ───────────────────────── -->
+<section id="profile-creation" class="mb-12">
+<h2 class="text-2xl text-white mb-4">3. Profile Creation: <code>SystemProfile</code></h2>
+<p class="text-muted mb-2"><strong class="text-text">Type:</strong> <code>src/core/contracts/agreement-module.ts</code> &nbsp;|&nbsp; <strong class="text-text">Factory:</strong> <code>src/conventions/core/profile-builder.ts</code></p>
+
+<p class="mb-4">A <code>SystemProfile</code> is the <strong>activation contract</strong> for a convention bundle. It declares which modules are active and under what conditions.</p>
+
+<pre class="mermaid">
+classDiagram
+    class SystemProfile {
+        +string profileId
+        +BaseSystemId baseSystem
+        +SystemConfig systemConfig
+        +ModuleEntry[] modules
+    }
+    class ModuleEntry {
+        +string moduleId
+        +ModuleKind kind
+        +Attachment[] attachments
+    }
+    class Attachment {
+        +AuctionPattern whenAuction
+        +PublicGuard whenPublic
+        +string[] requiresCapabilities
+        +string[] requiresVisibleMeanings
+    }
+    SystemProfile "1" --> "*" ModuleEntry : modules
+    ModuleEntry "1" --> "*" Attachment : attachments
+</pre>
+
+<p class="mt-4 mb-3"><strong class="text-accent">The factory:</strong> <code>createSystemProfile()</code> auto-resolves <code>SystemConfig</code> from the <code>baseSystem</code> ID.</p>
+<pre><code class="language-typescript">export function createSystemProfile(config: SystemProfileConfig): SystemProfile {
+  return {
+    profileId: config.profileId,
+    baseSystem: config.baseSystem,
+    systemConfig: config.systemConfig ?? getSystemConfig(config.baseSystem),  // auto-resolve
+    modules: config.modules,
+  };
+}</code></pre>
+
+<details class="mt-4">
+<summary class="text-accent font-semibold">Concrete example: NT bundle profile</summary>
+<div class="mt-3">
+<p class="text-muted mb-2"><strong class="text-text">File:</strong> <code>src/conventions/definitions/nt-bundle/system-profile.ts</code></p>
+<pre><code class="language-typescript">export const NT_SAYC_PROFILE = createSystemProfile({
+  baseSystem: BASE_SYSTEM_SAYC,
+  profileId: "1nt-sayc",
+  modules: [
+    {
+      moduleId: "natural-nt",
+      kind: "base-system",
+      attachments: [{ whenAuction: { kind: "sequence", calls: ["1NT"] } }],
+    },
+    {
+      moduleId: "stayman",
+      kind: "add-on",
+      attachments: [{
+        whenAuction: { kind: "sequence", calls: ["1NT"] },
+        requiresCapabilities: [CAP_OPENING_1NT],
+      }],
+    },
+    {
+      moduleId: "jacoby-transfers",
+      kind: "add-on",
+      attachments: [{
+        whenAuction: { kind: "sequence", calls: ["1NT"] },
+        requiresCapabilities: [CAP_OPENING_1NT],
+      }],
+    },
+    {
+      moduleId: "smolen",
+      kind: "add-on",
+      attachments: [{
+        whenAuction: { kind: "sequence", calls: ["1NT"] },
+        requiresCapabilities: [CAP_OPENING_1NT],
+      }],
+    },
+  ],
+});</code></pre>
+<p class="text-muted mt-2">The author writes <code>baseSystem: BASE_SYSTEM_SAYC</code>. The factory resolves <code>SAYC_SYSTEM_CONFIG</code> (15&ndash;17 HCP, invite 8&ndash;9, etc.) and attaches it to the profile automatically.</p>
+</div>
+</details>
+</section>
+
+<!-- ───────────────────────── Layer 4: Runtime Activation ───────────────────────── -->
+<section id="activation" class="mb-12">
+<h2 class="text-2xl text-white mb-4">4. Runtime Activation: <code>resolveActiveModules()</code></h2>
+<p class="text-muted mb-2"><strong class="text-text">File:</strong> <code>src/conventions/core/runtime/profile-activation.ts</code></p>
+<p class="mb-4">Each auction tick, the runtime asks: "given this profile and the current auction state, which modules are active?" Attachments are the declarative answer.</p>
+
+<pre class="mermaid">
+flowchart LR
+    subgraph INPUT["Inputs"]
+        P["SystemProfile"]
+        A["Auction state"]
+        C["Capabilities"]
+        PS["PublicSnapshot"]
+    end
+
+    subgraph EVAL["Per ModuleEntry"]
+        direction TB
+        ATT["For each Attachment"]
+        WA["whenAuction\nmatches prefix?"]
+        RC["requiresCapabilities\nall present?"]
+        WP["whenPublic\nguard satisfied?"]
+        RVM["requiresVisibleMeanings\nall committed?"]
+        AND["ALL conditions met?"]
+        ATT --> WA --> AND
+        ATT --> RC --> AND
+        ATT --> WP --> AND
+        ATT --> RVM --> AND
+    end
+
+    subgraph OUT["Output"]
+        ACTIVE["Active module IDs"]
+    end
+
+    P --> EVAL
+    A --> WA
+    C --> RC
+    PS --> WP
+    PS --> RVM
+    AND -->|"any attachment passes"| ACTIVE
+
+    style INPUT fill:#1e293b,stroke:#38bdf8,color:#e2e8f0
+    style EVAL fill:#1e293b,stroke:#a78bfa,color:#e2e8f0
+    style OUT fill:#1e293b,stroke:#22c55e,color:#e2e8f0
+</pre>
+
+<div class="card p-5 mt-4">
+  <p class="font-semibold text-accent mb-2">Attachment matching rules</p>
+  <ul class="list-disc pl-6 space-y-1 text-muted text-sm">
+    <li><strong class="text-text">whenAuction</strong> &mdash; <code>sequence</code>: auction starts with these calls. <code>contains</code>: auction includes a call (optionally by role). <code>by-role</code>: last call by a role matches.</li>
+    <li><strong class="text-text">requiresCapabilities</strong> &mdash; all named capabilities must be present in the active set.</li>
+    <li><strong class="text-text">whenPublic</strong> &mdash; a guard evaluated against the public snapshot's registers (<code>exists</code>, <code>eq</code>, <code>neq</code>, <code>in</code>).</li>
+    <li><strong class="text-text">requiresVisibleMeanings</strong> &mdash; all required meaning family IDs must have been committed to the public record.</li>
+  </ul>
+  <p class="text-muted text-sm mt-3">Within a single attachment, all conditions are <strong>AND</strong>-ed. Across attachments on the same module, they are <strong>OR</strong>-ed (any one match activates the module).</p>
+</div>
+</section>
+
+<!-- ───────────────────────── Layer 5: Fact Injection ───────────────────────── -->
+<section id="fact-injection" class="mb-12">
+<h2 class="text-2xl text-white mb-4">5. Fact Injection: The Closure Pattern</h2>
+<p class="text-muted mb-2"><strong class="text-text">Vocabulary:</strong> <code>src/core/contracts/system-fact-vocabulary.ts</code> &nbsp;|&nbsp; <strong class="text-text">Catalog:</strong> <code>src/conventions/pipeline/system-fact-catalog.ts</code></p>
+
+<p class="mb-4">This is the key mechanism that makes modules system-agnostic. Modules reference <strong>stable fact IDs</strong>. The system provides <strong>concrete evaluators</strong> that close over <code>SystemConfig</code>.</p>
+
+<pre class="mermaid">
+sequenceDiagram
+    participant Author as Convention Author
+    participant Surface as Surface Clause
+    participant Catalog as system-fact-catalog.ts
+    participant Config as SystemConfig
+
+    Author->>Surface: references fact ID "system.responder.inviteValues"
+    Note over Author,Surface: Module never imports concrete thresholds
+
+    Config->>Catalog: createSystemFactCatalog(sys)
+    Note over Catalog: Closure captures sys.responderThresholds
+
+    Surface->>Catalog: evaluate fact ID
+    Catalog->>Catalog: hcp >= sys.responderThresholds.inviteMin<br/>AND hcp <= sys.responderThresholds.inviteMax
+    Catalog-->>Surface: true/false
+    Note over Surface: Same module, different thresholds per system
+</pre>
+
+<h3 class="text-xl text-white mt-6 mb-3">Two flavors of system facts</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <div class="card p-4">
+    <p class="font-semibold text-warm mb-2">Hand-dependent</p>
+    <p class="text-muted text-sm mb-2">Combine hand data (HCP) with system thresholds. Value changes per hand AND per system.</p>
+    <pre><code class="language-typescript">// "Is this 11-HCP hand invite-strength?"
+// SAYC: yes (8-9 invite) -> no, 11 > inviteMax
+// Acol: yes (10-12 invite) -> yes
+[SYSTEM_RESPONDER_INVITE_VALUES,
+ (_h, _ev, m) => {
+  const hcp = num(m, "hand.hcp");
+  return fv(SYSTEM_RESPONDER_INVITE_VALUES,
+    hcp >= sys.responderThresholds.inviteMin
+    && hcp <= sys.responderThresholds.inviteMax);
+}]</code></pre>
+  </div>
+  <div class="card p-4">
+    <p class="font-semibold text-rose mb-2">System-constant</p>
+    <p class="text-muted text-sm mb-2">Pure system properties, same for every hand. Let surfaces gate on system rules.</p>
+    <pre><code class="language-typescript">// "Is a 2-level new suit game-forcing?"
+// SAYC: no (one-round)
+// 2/1: yes (game)
+[SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING,
+ () => fv(
+  SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING,
+  sys.suitResponse.twoLevelForcingDuration
+    === "game"
+)]</code></pre>
+  </div>
+</div>
+
+<div class="card p-5">
+  <p class="font-semibold text-accent mb-2">Why closures, not interface methods?</p>
+  <p class="text-muted text-sm">The evaluator signature (<code>FactEvaluatorFn</code>) doesn't include <code>SystemConfig</code> as a parameter. Instead, <code>createSystemEvaluators(sys)</code> captures <code>sys</code> in the closure scope. This keeps the evaluator API uniform across all fact layers (bridge-level, system-level, convention-level) while letting system facts access their config.</p>
+</div>
+</section>
+
+<!-- ───────────────────────── Full Flow ───────────────────────── -->
+<section id="full-flow" class="mb-12">
+<h2 class="text-2xl text-white mb-4">Full Flow: Definition to Runtime</h2>
+<p class="text-muted mb-4">How a user's base system choice travels from localStorage to a bid decision.</p>
+
+<pre class="mermaid">
+flowchart TB
+    subgraph UI["User Choice"]
+        USER["User selects 'SAYC'\nin settings UI"]
+        LS["localStorage\nbridge-app:practice-preferences"]
+    end
+
+    subgraph DEF["Definition Phase"]
+        direction TB
+        BI["BundleInput\nid, memberIds, systemProfile"]
+        SP2["SystemProfile\nvia createSystemProfile()"]
+        BI --> SP2
+    end
+
+    subgraph RES["Resolution Phase"]
+        RB["resolveBundle(input, sys)"]
+        GM["getModules(memberIds, sys)"]
+        DC["deriveBundleDealConstraints()"]
+        CB["ConventionBundle"]
+        RB --> GM
+        RB --> DC
+        GM --> CB
+        DC --> CB
+    end
+
+    subgraph BOOT["Bootstrap Phase"]
+        CF["createProtocolDrillConfig(\nconventionId, seat,\nbaseSystem)"]
+        GSC2["getSystemConfig(baseSystem)"]
+        DRILL["DrillConfig\nseatStrategies, playStrategy"]
+    end
+
+    subgraph RT["Runtime Phase"]
+        RAM2["resolveActiveModules()"]
+        CSFC2["createSystemFactCatalog(sys)"]
+        PIPE["Meaning pipeline"]
+        BID["BidResult"]
+    end
+
+    USER --> LS
+    LS -->|"baseSystemId"| CF
+    SP2 -->|"stored in registry"| RB
+    CF --> GSC2
+    GSC2 -->|"SystemConfig"| RB
+    RB --> CB
+    CB --> CF
+    CF --> DRILL
+    DRILL --> RAM2
+    DRILL --> CSFC2
+    RAM2 -->|"active modules"| PIPE
+    CSFC2 -->|"fact evaluators"| PIPE
+    PIPE --> BID
+
+    style UI fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style DEF fill:#1e293b,stroke:#22c55e,color:#e2e8f0
+    style RES fill:#1e293b,stroke:#38bdf8,color:#e2e8f0
+    style BOOT fill:#1e293b,stroke:#a78bfa,color:#e2e8f0
+    style RT fill:#1e293b,stroke:#f43f5e,color:#e2e8f0
+</pre>
+</section>
+
+<!-- ───────────────────────── File Map ───────────────────────── -->
+<section id="file-map" class="mb-12">
+<h2 class="text-2xl text-white mb-4">File Map</h2>
+<div class="overflow-x-auto">
+<table class="w-full text-sm border-collapse">
+  <thead>
+    <tr class="border-b border-surfaceHigh text-left">
+      <th class="py-2 pr-4 text-accent">File</th>
+      <th class="py-2 pr-4 text-accent">Role</th>
+      <th class="py-2 text-accent">Key Exports</th>
+    </tr>
+  </thead>
+  <tbody class="text-muted">
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>core/contracts/base-system-vocabulary.ts</code></td>
+      <td class="pr-4">Vocabulary</td>
+      <td><code>BASE_SYSTEM_SAYC</code>, <code>BaseSystemId</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>core/contracts/system-config.ts</code></td>
+      <td class="pr-4">Parameterization</td>
+      <td><code>SystemConfig</code>, <code>getSystemConfig()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>core/contracts/agreement-module.ts</code></td>
+      <td class="pr-4">IR types</td>
+      <td><code>SystemProfile</code>, <code>ModuleEntry</code>, <code>Attachment</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>conventions/core/profile-builder.ts</code></td>
+      <td class="pr-4">Factory</td>
+      <td><code>createSystemProfile()</code>, <code>createProfilesForSystems()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>core/contracts/system-fact-vocabulary.ts</code></td>
+      <td class="pr-4">Fact IDs</td>
+      <td><code>SYSTEM_RESPONDER_INVITE_VALUES</code>, etc.</td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>conventions/pipeline/system-fact-catalog.ts</code></td>
+      <td class="pr-4">Evaluators</td>
+      <td><code>createSystemFactCatalog()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>conventions/core/runtime/profile-activation.ts</code></td>
+      <td class="pr-4">Runtime</td>
+      <td><code>resolveActiveModules()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>conventions/definitions/system-registry.ts</code></td>
+      <td class="pr-4">Bundle registry</td>
+      <td><code>resolveBundle()</code>, <code>specFromBundle()</code></td>
+    </tr>
+    <tr class="border-b border-surfaceHigh/50">
+      <td class="py-2 pr-4 font-mono text-xs"><code>bootstrap/config-factory.ts</code></td>
+      <td class="pr-4">Bootstrap</td>
+      <td><code>createProtocolDrillConfig()</code></td>
+    </tr>
+    <tr>
+      <td class="py-2 pr-4 font-mono text-xs"><code>stores/app.svelte.ts</code></td>
+      <td class="pr-4">Persistence</td>
+      <td><code>baseSystemId</code>, <code>setBaseSystemId()</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<!-- Back to top -->
+<a href="#top" class="fixed bottom-6 right-6 bg-surface border border-surfaceHigh rounded-full px-4 py-2 text-sm text-muted hover:text-accent transition-colors">&uarr; Top</a>
+
+</div>
+</main>
+</body>
+</html>

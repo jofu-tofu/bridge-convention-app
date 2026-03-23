@@ -28,6 +28,7 @@ import {
   SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING,
   SYSTEM_ONE_NT_FORCING_AFTER_MAJOR,
   SYSTEM_RESPONDER_ONE_NT_RANGE,
+  SYSTEM_DONT_OVERCALL_IN_RANGE,
 } from "../../core/contracts/system-fact-vocabulary";
 
 // ─── Fact definitions ───────────────────────────────────────
@@ -147,6 +148,16 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
     derivesFrom: ["hand.hcp"],
     constrainsDimensions: ["pointRange"],
   },
+  // ── DONT overcall facts ──────────────────────────────────────
+  {
+    id: SYSTEM_DONT_OVERCALL_IN_RANGE,
+    layer: FactLayer.SystemDerived,
+    world: "acting-hand",
+    description: "Overcaller HCP is within the DONT overcall range",
+    valueType: "boolean",
+    derivesFrom: ["hand.hcp"],
+    constrainsDimensions: ["pointRange"],
+  },
 ];
 
 // ─── Evaluator factory ──────────────────────────────────────
@@ -180,6 +191,12 @@ function createSystemEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn>
       fv(SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, sys.suitResponse.twoLevelForcingDuration === "game")],
     [SYSTEM_ONE_NT_FORCING_AFTER_MAJOR, () =>
       fv(SYSTEM_ONE_NT_FORCING_AFTER_MAJOR, sys.oneNtResponseAfterMajor.forcing)],
+    // DONT overcall: boolean HCP range check
+    [SYSTEM_DONT_OVERCALL_IN_RANGE, (_h, _ev, m) => {
+      const hcp = num(m, "hand.hcp");
+      return fv(SYSTEM_DONT_OVERCALL_IN_RANGE,
+        hcp >= sys.dontOvercall.minHcp && hcp <= sys.dontOvercall.maxHcp);
+    }],
   ]);
 }
 

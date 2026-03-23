@@ -102,6 +102,7 @@ describe("deriveTeachingContent validation", () => {
       clauses: [],
       ranking: { recommendationBand: "should", modulePrecedence: 0, declarationOrder: 0 },
       sourceIntent: { type: "Test", params: {} },
+      disclosure: "alert" as const,
       teachingLabel: meaningId,
       teachingTags: tags,
     };

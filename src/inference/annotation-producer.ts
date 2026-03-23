@@ -23,8 +23,8 @@ export function produceAnnotation(
     const extracted = extractor.extractConstraints(ruleResult, entry.seat);
     // When the convention extractor produces constraints, use them.
     // When it returns empty (e.g. noopExtractor), try to use the
-    // alert's publicConstraints directly (already FactConstraint[]).
-    // Only fall back to the natural provider when no alert constraints exist.
+    // constraints directly (already FactConstraint[]).
+    // Only fall back to the natural provider when no constraints exist.
     if (extracted.length > 0) {
       return {
         call: entry.call,
@@ -35,8 +35,8 @@ export function produceAnnotation(
       };
     }
 
-    // Use alert's publicConstraints directly — no lossy conversion
-    const alertConstraints: readonly FactConstraint[] = ruleResult.alert?.publicConstraints ?? [];
+    // Use constraints directly — no lossy conversion
+    const alertConstraints: readonly FactConstraint[] = ruleResult.constraints ?? [];
     if (alertConstraints.length > 0) {
       return {
         call: entry.call,

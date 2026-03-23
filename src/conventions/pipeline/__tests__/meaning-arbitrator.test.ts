@@ -397,8 +397,8 @@ describe("zipProposalsWithSurfaces", () => {
   it("pairs proposals with their source surfaces by index", () => {
     const proposals: MeaningProposal[] = [makeMeaningProposal({ meaningId: "a" }), makeMeaningProposal({ meaningId: "b" })];
     const surfaces = [
-      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 0 }, sourceIntent: { type: "t", params: {} }, teachingLabel: "Test A" },
-      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 1 }, sourceIntent: { type: "t", params: {} }, teachingLabel: "Test B" },
+      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 0 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: "Test A" },
+      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 1 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: "Test B" },
     ];
 
     const inputs = zipProposalsWithSurfaces(proposals, surfaces);

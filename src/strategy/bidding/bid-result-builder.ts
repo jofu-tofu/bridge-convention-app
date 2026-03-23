@@ -3,6 +3,7 @@ import type {
   BidResult,
   BidAlert,
 } from "../../core/contracts";
+import type { FactConstraint } from "../../core/contracts/agreement-module";
 import type { ResolvedCandidateDTO } from "../../core/contracts/tree-evaluation";
 import type { PipelineCarrier, PipelineResult } from "../../conventions";
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
@@ -49,10 +50,16 @@ export function buildBidResult(
   // Build alert from proposal's threaded alertability metadata
   const alert: BidAlert | null = selected.proposal.isAlertable
     ? {
-        publicConstraints: selected.proposal.publicConstraints ?? [],
         teachingLabel: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
       }
     : null;
+
+  // Thread constraints from the pipeline's evaluated clauses
+  const constraints: readonly FactConstraint[] = selected.proposal.clauses.map((c) => ({
+    factId: c.factId,
+    operator: c.operator,
+    value: c.value,
+  }));
 
   return {
     call: selected.call,
@@ -60,6 +67,7 @@ export function buildBidResult(
     explanation: selected.proposal.evidence.provenance.nodeName,
     meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
     alert,
+    constraints,
     handSummary: formatHandSummary(context.evaluation),
     evaluationTrace: {
       conventionId: moduleId,

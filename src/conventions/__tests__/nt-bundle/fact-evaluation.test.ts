@@ -41,7 +41,7 @@ describe("NT bundle fact evaluation", () => {
       "D8", "D6", "D4",
       "C7", "C3",
     );
-    expect(result.facts.size).toBe(26);
+    expect(result.facts.size).toBe(27);
     expect(result.world).toBe("acting-hand");
   });
 
@@ -178,7 +178,7 @@ describe("NT bundle fact evaluation", () => {
     const ev = evaluateHand(h);
     const catalog = fullCatalog();
     const result = evaluateFacts(h, ev, catalog);
-    expect(result.facts.size).toBe(26);
+    expect(result.facts.size).toBe(27);
     expect(result.facts.has("module.stayman.eligible")).toBe(true);
   });
 });

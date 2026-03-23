@@ -3,7 +3,6 @@ import { createConventionConfigFromBundle, resolveConventionForSystem } from "..
 import { ConventionCategory } from "../../../../core/contracts/convention";
 import type { ConventionBundle } from "../bundle-types";
 import type { ConventionConfig } from "../../../../core/contracts/convention";
-import type { SystemConfig } from "../../../../core/contracts/system-config";
 import { SAYC_SYSTEM_CONFIG } from "../../../../core/contracts/system-config";
 import { Seat } from "../../../../engine/types";
 
@@ -85,65 +84,8 @@ describe("resolveConventionForSystem", () => {
     expect(resolveConventionForSystem(config, undefined, sys)).toBe(config);
   });
 
-  it("returns config unchanged when bundle has no constraint factories", () => {
+  it("returns config unchanged when bundle is provided (no factory re-derivation)", () => {
     const config = stubConfig();
     expect(resolveConventionForSystem(config, stubBundle(), sys)).toBe(config);
-  });
-
-  it("uses dealConstraintFactory when present", () => {
-    const newConstraints = { seats: [{ seat: Seat.South, minHcp: 12 }], dealer: Seat.South };
-    const bundle = stubBundle({ dealConstraintFactory: () => newConstraints });
-    const config = stubConfig();
-
-    const result = resolveConventionForSystem(config, bundle, sys);
-
-    expect(result.dealConstraints).toBe(newConstraints);
-    expect(result.offConventionConstraints).toBe(config.offConventionConstraints);
-  });
-
-  it("uses offConventionConstraintFactory when present", () => {
-    const newOff = { seats: [{ seat: Seat.West, minHcp: 8 }], dealer: Seat.West };
-    const bundle = stubBundle({ offConventionConstraintFactory: () => newOff });
-    const config = stubConfig();
-
-    const result = resolveConventionForSystem(config, bundle, sys);
-
-    expect(result.offConventionConstraints).toBe(newOff);
-    expect(result.dealConstraints).toBe(config.dealConstraints);
-  });
-
-  it("uses both factories when both present", () => {
-    const newDeal = { seats: [{ seat: Seat.South, minHcp: 12 }], dealer: Seat.South };
-    const newOff = { seats: [{ seat: Seat.West, minHcp: 8 }], dealer: Seat.West };
-    const bundle = stubBundle({
-      dealConstraintFactory: () => newDeal,
-      offConventionConstraintFactory: () => newOff,
-    });
-
-    const result = resolveConventionForSystem(stubConfig(), bundle, sys);
-
-    expect(result.dealConstraints).toBe(newDeal);
-    expect(result.offConventionConstraints).toBe(newOff);
-  });
-
-  it("preserves other config fields when factories are used", () => {
-    const bundle = stubBundle({
-      dealConstraintFactory: () => ({ seats: [], dealer: Seat.North }),
-    });
-    const config = stubConfig({
-      id: "keep-id",
-      name: "keep-name",
-      description: "keep-desc",
-      category: ConventionCategory.Defensive,
-      internal: true,
-    });
-
-    const result = resolveConventionForSystem(config, bundle, sys);
-
-    expect(result.id).toBe("keep-id");
-    expect(result.name).toBe("keep-name");
-    expect(result.description).toBe("keep-desc");
-    expect(result.category).toBe(ConventionCategory.Defensive);
-    expect(result.internal).toBe(true);
   });
 });

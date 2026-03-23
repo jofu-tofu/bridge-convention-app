@@ -71,6 +71,16 @@ export interface OneNtResponseAfterMajorConfig {
   readonly minHcp: number;
 }
 
+// ─── DONT overcall parameters ────────────────────────────────
+
+/** HCP bounds for DONT overcalls — may vary by system. */
+export interface DontOvercallConfig {
+  /** Minimum HCP for a DONT overcall (e.g. 8). */
+  readonly minHcp: number;
+  /** Maximum HCP for a DONT overcall (e.g. 15). */
+  readonly maxHcp: number;
+}
+
 // ─── Opening requirements ───────────────────────────────────
 
 /** Opening bid structural requirements that vary by system. */
@@ -101,6 +111,8 @@ export interface SystemConfig {
   readonly oneNtResponseAfterMajor: OneNtResponseAfterMajorConfig;
   /** Structural opening bid requirements (major length, etc.). */
   readonly openingRequirements: OpeningRequirements;
+  /** DONT overcall HCP bounds. */
+  readonly dontOvercall: DontOvercallConfig;
 }
 
 // ─── Concrete system configs ────────────────────────────────
@@ -120,6 +132,7 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
   suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 5 },
+  dontOvercall: { minHcp: 8, maxHcp: 15 },
 };
 
 export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
@@ -137,6 +150,7 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
   suitResponse: { twoLevelMin: 12, twoLevelForcingDuration: "game" },
   oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 5 },
+  dontOvercall: { minHcp: 8, maxHcp: 15 },
 };
 
 export const ACOL_SYSTEM_CONFIG: SystemConfig = {
@@ -160,6 +174,7 @@ export const ACOL_SYSTEM_CONFIG: SystemConfig = {
   // "Dustbin 1NT": non-forcing, capped at 9; with 10+ responder bids a new suit
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 9, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 4 },
+  dontOvercall: { minHcp: 8, maxHcp: 15 },
 };
 
 // ─── System config registry ─────────────────────────────────

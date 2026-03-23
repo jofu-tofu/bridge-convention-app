@@ -78,20 +78,10 @@ function mergeSystemProfiles(
     }
   }
 
-  // Merge exclusivity groups from all profiles' conflict policies
-  const allExclusivityGroups = withProfiles.flatMap(
-    (b) => b.systemProfile!.conflictPolicy.exclusivityGroups ?? [],
-  );
-
   return {
     profileId: base.profileId,
     baseSystem: base.baseSystem,
     modules: dedupedModules,
-    conflictPolicy: {
-      ...base.conflictPolicy,
-      exclusivityGroups:
-        allExclusivityGroups.length > 0 ? allExclusivityGroups : undefined,
-    },
   };
 }
 

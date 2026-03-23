@@ -12,7 +12,7 @@ import { formatCall } from "../display/format";
 import { formatHandSummary } from "../display/hand-summary";
 import type { BidHistoryEntry, BidResult } from "../contracts/bidding";
 import type { BidMeaning } from "../contracts/meaning";
-import { isAlertable as isAlertableFromIntent } from "../../conventions";
+import { isAlertable } from "../../conventions";
 import type { TeachingProjection } from "../contracts/teaching-projection";
 import type { TeachingResolution } from "../contracts/teaching-grading";
 import type { BidGrade } from "../contracts/teaching-grading";
@@ -120,7 +120,7 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
         call,
         callDisplay: formatCall(call),
         teachingLabel: surface.teachingLabel,
-        isAlertable: isAlertableFromIntent(surface.sourceIntent.type),
+        isAlertable: isAlertable(surface.disclosure),
         recommendation: surface.ranking.recommendationBand as BiddingOptionView["recommendation"],
       });
     }

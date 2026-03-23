@@ -8,15 +8,32 @@ import type { FactLayer } from "./fact-layer";
 /** World scope for fact evaluation. */
 export type EvaluationWorld = "public" | "acting-hand" | "full-deal";
 
-/** Metadata hints for downstream consumers (analyzers, solvers, explainers). */
-export interface FactMetadata {
-  readonly negatable?: boolean;
-  readonly inferable?: boolean;
-  readonly explainable?: boolean;
-  readonly preferredExplanationLevel?: "semantic" | "mechanical";
-  readonly analyzerHint?: "trigger" | "opaque";
-  readonly solverSupport?: "native" | "post-filter";
+// ─── Composable fact types ────────────────────────────────────
+
+/**
+ * A primitive clause that maps directly to a `compileFactClause()` call.
+ * The factId must be a primitive fact recognized by the fact compiler
+ * (hand.hcp, hand.suitLength.*, hand.isBalanced, bridge.*).
+ */
+export interface PrimitiveClause {
+  readonly factId: string;
+  readonly operator: "gte" | "lte" | "eq" | "range";
+  readonly value: number | { readonly min: number; readonly max: number };
 }
+
+/**
+ * Composable tree describing the activation prerequisite of a module-derived fact.
+ *
+ * A composition captures the LOOSEST constraint under which the fact COULD be true.
+ * It does NOT need to be semantically equivalent to the evaluator. Deal constraints
+ * only need to include all valid hands; the pipeline evaluates exact semantics at
+ * runtime. Convention authors should write the LOOSEST correct composition.
+ */
+export type FactComposition =
+  | { readonly kind: "primitive"; readonly clause: PrimitiveClause }
+  | { readonly kind: "and"; readonly operands: readonly FactComposition[] }
+  | { readonly kind: "or"; readonly operands: readonly FactComposition[] }
+  | { readonly kind: "not"; readonly operand: FactComposition };
 
 /** A fact definition in the catalog. */
 export interface FactDefinition {
@@ -26,7 +43,6 @@ export interface FactDefinition {
   readonly description: string;
   readonly valueType: "number" | "boolean" | "string";
   readonly derivesFrom?: readonly string[];
-  readonly metadata?: FactMetadata;
   /** Communicative constraint dimensions this fact provides when used in a bid's clause.
    *  REQUIRED. Describes what information the bid communicates to partner when this
    *  fact is checked — NOT what the evaluator code reads internally.
@@ -43,6 +59,13 @@ export interface FactDefinition {
    *  list the dimensions the BID COMMUNICATES, not what the evaluator reads.
    *  Specificity is derived from the union of dimensions across a surface's clauses. */
   readonly constrainsDimensions: readonly ConstraintDimension[];
+  /**
+   * Composable activation prerequisite for module-derived facts.
+   * REQUIRED for FactLayer.ModuleDerived after composition migration.
+   * The composition captures the loosest constraint under which the fact
+   * COULD be true — the pipeline evaluates exact semantics at runtime.
+   */
+  readonly composition?: FactComposition;
 }
 
 /** A concrete fact value. */

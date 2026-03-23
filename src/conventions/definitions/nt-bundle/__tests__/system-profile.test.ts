@@ -15,7 +15,4 @@ describe("NT_SAYC_PROFILE", () => {
     expect(ids).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
   });
 
-  it("has simultaneous conflict policy", () => {
-    expect(NT_SAYC_PROFILE.conflictPolicy.activationDefault).toBe("simultaneous");
-  });
 });

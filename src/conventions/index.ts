@@ -58,7 +58,7 @@ export type {
 // ── Pipeline types (moved from contracts) ───────────────────────────────
 export type { PipelineResult, PipelineCarrier, ArbitrationResult, EncodedProposal, EliminationRecord } from "./pipeline/pipeline-types";
 export type { StrategyEvaluation, ConventionStrategy, MachineDebugSnapshot } from "./pipeline/strategy-evaluation";
-export { resolveAlert, derivePublicConstraints, isAlertable } from "./pipeline/alert";
+export { resolveAlert, isAlertable } from "./pipeline/alert";
 export type { AlertResolvable } from "./pipeline/alert";
 
 // ── Pipeline functions (moved in Phase 1) ───────────────────────────────

@@ -30,6 +30,7 @@ describe("BidMeaning", () => {
         type: "stayman-ask",
         params: {},
       },
+      disclosure: "alert" as const,
       teachingLabel: "Stayman 2C",
     };
 
@@ -68,6 +69,7 @@ describe("BidMeaning", () => {
         type: "stayman-ask",
         params: { level: 2 },
       },
+      disclosure: "alert" as const,
       teachingLabel: "Stayman Convention",
     };
 
@@ -150,6 +152,7 @@ describe("BidMeaning", () => {
         declarationOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
+      disclosure: "alert" as const,
       teachingLabel: "3NT contract bid",
     };
 
@@ -167,6 +170,7 @@ describe("BidMeaning", () => {
         declarationOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
+      disclosure: "alert" as const,
       teachingLabel: "Pass",
     };
 

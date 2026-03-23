@@ -7,7 +7,6 @@ import {
 } from "../system-registry";
 import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
 import { moduleSurfaces } from "../../core/convention-module";
-import { Seat } from "../../../engine/types";
 
 const ALL_IDS = ["nt-bundle", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"] as const;
 
@@ -139,35 +138,4 @@ describe("specFromBundle", () => {
   });
 });
 
-// ── NT dealConstraintFactory ─────────────────────────────────────
-
-describe("NT dealConstraintFactory", () => {
-  it("NT bundle has dealConstraintFactory", () => {
-    const input = getBundleInput("nt-bundle")!;
-    expect(input.dealConstraintFactory).toBeDefined();
-  });
-
-  it("factory produces Acol constraints (12-14 HCP for North)", () => {
-    const input = getBundleInput("nt-bundle")!;
-    const constraints = input.dealConstraintFactory!(ACOL_SYSTEM_CONFIG);
-    const north = constraints.seats?.find((s) => s.seat === Seat.North);
-    expect(north).toBeDefined();
-    expect(north!.minHcp).toBe(12);
-    expect(north!.maxHcp).toBe(14);
-  });
-
-  it("factory produces SAYC constraints (15-17 HCP for North)", () => {
-    const input = getBundleInput("nt-bundle")!;
-    const constraints = input.dealConstraintFactory!(SAYC_SYSTEM_CONFIG);
-    const north = constraints.seats?.find((s) => s.seat === Seat.North);
-    expect(north).toBeDefined();
-    expect(north!.minHcp).toBe(15);
-    expect(north!.maxHcp).toBe(17);
-  });
-
-  it("NT bundle has offConventionConstraintFactory", () => {
-    const input = getBundleInput("nt-bundle")!;
-    expect(input.offConventionConstraintFactory).toBeDefined();
-  });
-});
 

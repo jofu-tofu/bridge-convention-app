@@ -4,7 +4,6 @@ import type {
 } from "../../../core/contracts/agreement-module";
 import type { BidMeaning } from "../../../core/contracts/meaning";
 import { callsMatch, callKey } from "../../../engine/call-helpers";
-import { derivePublicConstraints } from "../../pipeline/alert";
 import { resolveClause } from "../../pipeline/binding-resolver";
 
 /**
@@ -13,8 +12,8 @@ import { resolveClause } from "../../pipeline/binding-resolver";
  *
  * For each auction entry, the surfaceRouter determines which surfaces
  * are active at that position. If a surface's defaultCall matches the
- * actual call, public constraints are auto-derived from its primitive/
- * bridge-observable clauses.
+ * actual call, public constraints are derived by filtering clauses
+ * with `isPublic: true`.
  */
 export function extractCommitments(
   auction: Auction,
@@ -43,16 +42,15 @@ export function extractCommitments(
     if (matchingSurface) {
       const callStr = callKey(entry.call);
 
-      // Auto-derive public constraints from primitive/bridge-observable clauses
-      // Resolve $-bindings before deriving constraints so factIds are concrete
+      // Filter clauses with isPublic: true, resolving $-bindings first
       const resolvedClauses = matchingSurface.surfaceBindings
         ? matchingSurface.clauses.map(c => resolveClause(c, matchingSurface.surfaceBindings))
         : matchingSurface.clauses;
-      const publicConstraints = derivePublicConstraints(resolvedClauses);
-      for (const constraint of publicConstraints) {
+      const publicClauses = resolvedClauses.filter(c => c.isPublic === true);
+      for (const clause of publicClauses) {
         commitments.push({
           subject: entry.seat,
-          constraint,
+          constraint: { factId: clause.factId, operator: clause.operator, value: clause.value, isPublic: true },
           origin: "call-meaning",
           strength: "hard",
           sourceCall: callStr,

@@ -1,5 +1,4 @@
 import type { SystemProfile, ModuleEntry } from "../../core/contracts/agreement-module";
-import { defaultObligationMapping } from "../../core/contracts/agreement-module";
 import type { SystemConfig } from "../../core/contracts/system-config";
 import { getSystemConfig } from "../../core/contracts/system-config";
 import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
@@ -25,8 +24,6 @@ export function createSystemProfile(config: SystemProfileConfig): SystemProfile 
     baseSystem: config.baseSystem,
     systemConfig: config.systemConfig ?? getSystemConfig(config.baseSystem),
     modules: config.modules,
-    conflictPolicy: { activationDefault: "simultaneous" },
-    obligationMapping: defaultObligationMapping(),
   };
 }
 

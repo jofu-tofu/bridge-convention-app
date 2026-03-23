@@ -34,10 +34,13 @@ function makeStubNaturalProvider(inference: HandInference | null = null): Infere
 describe("produceAnnotation", () => {
   it("convention bid: alert from ruleResult.alert, meaning from ruleResult.meaning", () => {
     const alert: BidAlert = {
-      publicConstraints: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
       teachingLabel: "Stayman 2C",
     };
-    const ruleResult = makeRuleResult({ alert, meaning: "Asks for a 4-card major" });
+    const ruleResult = makeRuleResult({
+      alert,
+      constraints: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
+      meaning: "Asks for a 4-card major",
+    });
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" as never } };
 
     const annotation = produceAnnotation(
@@ -148,15 +151,18 @@ describe("produceAnnotation", () => {
     expect(annotation.constraints).toEqual([]);
   });
 
-  it("convention bid with alert publicConstraints: passes constraints through directly", () => {
+  it("convention bid with constraints on input: passes constraints through directly", () => {
     const alert: BidAlert = {
-      publicConstraints: [
+      teachingLabel: "Transfer to hearts",
+    };
+    const ruleResult = makeRuleResult({
+      alert,
+      constraints: [
         { factId: "hand.hcp", operator: "gte", value: 8 },
         { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
       ],
-      teachingLabel: "Transfer to hearts",
-    };
-    const ruleResult = makeRuleResult({ alert, meaning: "Transfer to hearts" });
+      meaning: "Transfer to hearts",
+    });
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "D" as never } };
 
     const annotation = produceAnnotation(
@@ -174,9 +180,8 @@ describe("produceAnnotation", () => {
     ]);
   });
 
-  it("convention bid with empty publicConstraints: falls back to natural inference converted to constraints", () => {
+  it("convention bid with no constraints: falls back to natural inference converted to constraints", () => {
     const alert: BidAlert = {
-      publicConstraints: [],
       teachingLabel: "DONT bid",
     };
     const naturalInference: HandInference = {
