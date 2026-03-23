@@ -2,6 +2,7 @@
   import type { BiddingViewport } from "../../../core/viewport";
   import { getGameStore, getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
+  import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../../core/display/layout-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -33,7 +34,7 @@
   }
 </script>
 
-<div class={layout.phaseContainerClass}>
+<div class={PHASE_CONTAINER_CLASS}>
   <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
     <BridgeTable visibleHands={viewport.visibleHands} vulnerability={viewport.vulnerability}>
       <div
@@ -50,7 +51,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class={layout.sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Bidding controls">
+  <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Bidding controls">
     <BiddingSidePanel
       {onNewDeal}
       onOpenSettings={openSettings}

@@ -4,6 +4,7 @@
   import type { ConventionConfig } from "../../../core/contracts/convention";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
+  import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../../core/display/layout-props";
   import type { DDSAnalysisProps } from "./shared-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
@@ -38,7 +39,7 @@
   let showAllCards = $state(false);
 </script>
 
-<div class={layout.phaseContainerClass}>
+<div class={PHASE_CONTAINER_CLASS}>
   {#if showAllCards}
     <div class="flex min-w-0 flex-1 flex-col gap-3 overflow-auto p-4">
       <div class="flex items-center justify-between">
@@ -118,7 +119,7 @@
     </ScaledTableArea>
   {/if}
 
-  <aside class={layout.sidePanelClass} style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
+  <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
     <ReviewSidePanel
       contract={viewport.contract}
       score={viewport.score}

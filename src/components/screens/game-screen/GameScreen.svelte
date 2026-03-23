@@ -202,30 +202,16 @@
   );
 
   const tableOrigin = "top left";
-  const phaseContainerClass = $derived(
-    isDesktop
-      ? "flex-1 grid grid-cols-[1fr_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] gap-3 overflow-hidden"
-      : "flex-1 flex flex-col overflow-hidden",
-  );
-  const playingPhaseContainerClass = $derived(
-    isDesktop
-      ? "flex-1 grid grid-cols-[var(--width-side-panel)_minmax(0,1fr)_var(--width-side-panel)] grid-rows-[minmax(0,1fr)] gap-3 overflow-hidden"
-      : "flex-1 flex flex-col overflow-hidden",
-  );
-  const sidePanelClass = $derived(
-    `${isDesktop ? "h-full" : "flex-1 border-t border-border-subtle"} bg-bg-base p-3 flex flex-col min-h-0 overflow-hidden`,
-  );
 
   // Expose layout configuration via context so phase components can read it
   // without prop drilling. Uses getters so derived values stay reactive.
+  // Responsive class strings (phase containers, side panels) are now static
+  // Tailwind-responsive constants in layout-props.ts — no JS derivation needed.
   setLayoutConfig({
     get tableScale() { return tableScale; },
     get tableOrigin() { return tableOrigin; },
     tableBaseW,
     tableBaseH,
-    get phaseContainerClass() { return phaseContainerClass; },
-    get playingPhaseContainerClass() { return playingPhaseContainerClass; },
-    get sidePanelClass() { return sidePanelClass; },
   });
 
   function handleBackToMenu() {
