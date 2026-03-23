@@ -8,7 +8,6 @@
 
 import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../../core/viewport/player-viewport";
 import type { BidGrade } from "../../core/contracts/teaching-grading";
-import type { Call, Vulnerability, Seat } from "../../engine/types";
 
 // ── Atom evaluation (Phase 1) ───────────────────────────────────────
 

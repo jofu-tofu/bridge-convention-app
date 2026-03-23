@@ -10,24 +10,23 @@ import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../../core/contracts/system-config";
 import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../../conventions";
 import { enumerateRuleAtoms } from "../../conventions";
-import { createBiddingContext } from "../../conventions";
 import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
 import { naturalFallbackStrategy } from "../../strategy/bidding/natural-fallback";
 import { createStrategyChain } from "../../strategy/bidding/strategy-chain";
 import { resolveTeachingAnswer, gradeBid } from "../../conventions";
 import { BidGrade } from "../../core/contracts/teaching-grading";
-import type { BidResult, BiddingStrategy, BidHistoryEntry } from "../../core/contracts/bidding";
-import { buildViewportFeedback, buildTeachingDetail, buildBiddingViewport, projectObservationHistory } from "../../core/viewport/build-viewport";
+import type { BidResult } from "../../core/contracts/bidding";
+import { buildViewportFeedback, buildTeachingDetail, projectObservationHistory } from "../../core/viewport/build-viewport";
 import type { BiddingViewport } from "../../core/viewport/player-viewport";
 import { callKey } from "../../engine/call-helpers";
 import { parsePatternCall } from "../../engine/auction-helpers";
-import { Seat, Vulnerability } from "../../engine/types";
-import type { Auction, Call, Deal, Hand, DealConstraints } from "../../engine/types";
+import { Vulnerability } from "../../engine/types";
+import type { Auction, Call, Deal,  Seat} from "../../engine/types";
 import type { ConventionBundle } from "../../conventions";
 import type { ConventionSpec } from "../../conventions";
 import type { OpponentMode } from "../../core/contracts/drill";
 import type { PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./types";
-import { nextSeat, partnerSeat, generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, buildBidHistory, makeViewport } from "./helpers";
+import { nextSeat, partnerSeat, generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, makeViewport } from "./helpers";
 
 // ── Internal step type // ── Internal step type ──────────────────────────────────────────────
 

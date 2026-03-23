@@ -23,6 +23,7 @@ import { createBiddingContext } from "../conventions";
 import { startDrill as bootstrapStartDrill } from "../bootstrap/start-drill";
 import { getConvention, listConventions as listConventionConfigs } from "../conventions";
 import { getBundle, resolveConventionForSystem } from "../conventions";
+import type { ConventionConfig } from "../conventions";
 import { getSystemConfig } from "../core/contracts/system-config";
 import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
@@ -209,13 +210,14 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     async getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult> {
       const state = manager.get(handle);
-      const anc = getAncillary(handle);
 
       if (!state.deal || !state.contract) {
         return { solution: null, error: "No deal or contract available" };
       }
 
-      return ddsControllers.get(handle)?.solve(state.deal, state.contract, engine);
+      const dds = ddsControllers.get(handle);
+      if (!dds) return { solution: null, error: "No DDS controller" };
+      return dds.solve(state.deal, state.contract, engine);
     },
 
     // ── Stateless CLI evaluation ──────────────────────────────────
@@ -291,7 +293,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async createSessionFromBundle(bundle: DrillBundle): Promise<SessionHandle> {
       const handle = createHandle();
       const coordinator = createInferenceCoordinator();
-      const state = new SessionState(bundle, coordinator, convention.name);
+      const state = new SessionState(bundle, coordinator);
       manager.set(handle, state);
       ddsControllers.set(handle, new DDSController());
       if (bundle.initialAuction) {
