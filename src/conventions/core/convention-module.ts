@@ -26,6 +26,8 @@ export interface ConventionModule<Phase extends string = string> {
   readonly moduleId: string;
   /** Human-readable one-line description of what this module does. */
   readonly description: string;
+  /** Why this module exists — the problem it solves for the partnership. */
+  readonly purpose: string;
 
   // ── Declaration ─────────────────────────────────────────────
   /** Module-derived fact definitions and evaluators. */

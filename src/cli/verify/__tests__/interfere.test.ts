@@ -17,6 +17,7 @@ function makeModule(id: string, overrides: Partial<ConventionModule> = {}): Conv
   return {
     moduleId: id,
     description: "test module",
+    purpose: "test",
     local: { initial: "idle", transitions: [] },
     states: [],
     facts: { definitions: [], evaluators: new Map() },

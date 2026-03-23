@@ -97,6 +97,7 @@ describe("variesBySystem derivation", () => {
     return {
       moduleId: "test-mod",
       description: "test module",
+      purpose: "test",
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
       local: { initial: "idle", transitions: [] },

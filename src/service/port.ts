@@ -8,6 +8,7 @@
 
 import type { Call, Card, Seat } from "../engine/types";
 import type { BiddingViewport } from "../core/viewport";
+import type { LearningViewport } from "./response-types";
 import type { GamePhase } from "../core/phase-machine";
 import type { DrillBundle } from "../bootstrap/types";
 import type {
@@ -60,6 +61,10 @@ export interface ServicePort {
 
   // ── Convention catalog ──────────────────────────────────────────
   listConventions(): Promise<ConventionInfo[]>;
+
+  // ── Learning ──────────────────────────────────────────────────
+  /** Build a learning viewport for a convention bundle by ID. */
+  getLearningViewport(conventionId: string): Promise<LearningViewport | null>;
 }
 
 /** Extends ServicePort with dev/debug methods.

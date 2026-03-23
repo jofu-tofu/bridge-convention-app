@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/svelte";
+import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
 import LearningScreenTestWrapper from "./LearningScreenTestWrapper.svelte";
 import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
@@ -18,20 +18,21 @@ describe("LearningScreen", () => {
 
   function renderLearningScreen() {
     const engine = createStubEngine();
-    const gameStore = createGameStore(engine, createLocalService(engine));
+    const service = createLocalService(engine);
+    const gameStore = createGameStore(engine, service);
     const appStore = createAppStore();
     appStore.navigateToLearning(ntBundleConventionConfig);
 
     render(LearningScreenTestWrapper, {
-      props: { engine, gameStore, appStore },
+      props: { engine, gameStore, appStore, service },
     });
 
     return { appStore };
   }
 
-  it("renders the convention name in the heading", () => {
+  it("renders the convention name in the heading", async () => {
     renderLearningScreen();
-    expect(screen.getByRole("heading", { name: "1NT Responses", level: 1 })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "1NT Responses", level: 1 })).toBeTruthy();
   });
 
   it("has a back button", () => {
@@ -45,58 +46,35 @@ describe("LearningScreen", () => {
     renderLearningScreen();
     const nav = screen.getByRole("navigation", { name: /convention list/i });
     expect(nav).toBeTruthy();
-    // Both registered conventions should appear in sidebar
     expect(screen.getByRole("button", { name: "1NT Responses" })).toBeTruthy();
   });
 
-  it("shows quick reference content for NT bundle", () => {
+  it("shows convention description", async () => {
     renderLearningScreen();
-    expect(screen.getByText("Quick Reference")).toBeTruthy();
-    expect(screen.getByText(/After partner opens 1NT \(15-17 HCP\)/i)).toBeTruthy();
+    expect(await screen.findByText(/Full 1NT response system/i)).toBeTruthy();
   });
 
-  it("has a practice button in the convention toolbar", () => {
+  it("shows convention purpose", async () => {
     renderLearningScreen();
-    expect(
-      screen.getByRole("button", { name: /practice/i }),
-    ).toBeTruthy();
+    expect(await screen.findByText(/Find the best contract after partner opens 1NT/i)).toBeTruthy();
+  });
+
+  it("has a practice button", async () => {
+    renderLearningScreen();
+    expect(await screen.findByRole("button", { name: /^practice$/i })).toBeTruthy();
   });
 
   it("practice button navigates to game screen", async () => {
     const { appStore } = renderLearningScreen();
-    const btn = screen.getByRole("button", { name: /^practice$/i });
+    const btn = await screen.findByRole("button", { name: /^practice$/i });
     await fireEvent.click(btn);
     expect(appStore.screen).toBe("game");
   });
 
-  it("renders depth mode tabs", () => {
+  it("shows module cards for multi-module bundles", async () => {
     renderLearningScreen();
-    const tablist = screen.getByRole("tablist", { name: /detail level/i });
-    expect(tablist).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Compact" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Study" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Learn" })).toBeTruthy();
-  });
-
-  it("defaults to Study mode tab selected", () => {
-    renderLearningScreen();
-    const studyTab = screen.getByRole("tab", { name: "Study" });
-    expect(studyTab.getAttribute("aria-selected")).toBe("true");
-  });
-
-  it("switching tabs updates the selected tab", async () => {
-    renderLearningScreen();
-    const compactTab = screen.getByRole("tab", { name: "Compact" });
-    await fireEvent.click(compactTab);
-    expect(compactTab.getAttribute("aria-selected")).toBe("true");
-
-    const studyTab = screen.getByRole("tab", { name: "Study" });
-    expect(studyTab.getAttribute("aria-selected")).toBe("false");
-  });
-
-  it("shows convention description as summary", () => {
-    renderLearningScreen();
-    expect(screen.getByText("About This Convention")).toBeTruthy();
-    expect(screen.getByText("Summary")).toBeTruthy();
+    expect(await screen.findByText("Conventions in this bundle")).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /Stayman/, level: 3 })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /Jacoby Transfers/, level: 3 })).toBeTruthy();
   });
 });

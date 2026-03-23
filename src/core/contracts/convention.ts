@@ -54,6 +54,8 @@ export interface ConventionConfig {
   readonly variesBySystem?: boolean;
   /** Per-module descriptions from the resolved bundle (moduleId → description). */
   readonly moduleDescriptions?: ReadonlyMap<string, string>;
+  /** Per-module purposes from the resolved bundle (moduleId → purpose). */
+  readonly modulePurposes?: ReadonlyMap<string, string>;
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */

@@ -42,5 +42,6 @@ export { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
 export type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
 export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../core/viewport";
 export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport } from "../core/viewport";
+export type { LearningViewport, ModuleView, SurfaceView, ConstraintView } from "./response-types";
 export { randomPlayStrategy } from "../strategy/play/random-play";
 export type { DrillSession, DrillBundle } from "../bootstrap/types";

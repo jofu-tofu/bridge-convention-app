@@ -59,6 +59,7 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"idle" | "opened"> = {
       moduleId: "stayman",
       description: "test module",
+      purpose: "test",
       local: {
         initial: "idle",
         transitions: [
@@ -88,6 +89,7 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"idle" | "opened"> = {
       moduleId: "stayman",
       description: "test module",
+      purpose: "test",
       local: {
         initial: "idle",
         transitions: [
@@ -111,6 +113,7 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"idle"> = {
       moduleId: "test-mod",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [
         {
@@ -140,6 +143,7 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"idle"> = {
       moduleId: "smolen",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [
         {
@@ -187,6 +191,7 @@ describe("collectMatchingClaims", () => {
     const mod1: ConventionModule<"active"> = {
       moduleId: "mod1",
       description: "test module",
+      purpose: "test",
       local: { initial: "active", transitions: [] },
       states: [{ phase: "active", surfaces: [s1] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -195,6 +200,7 @@ describe("collectMatchingClaims", () => {
     const mod2: ConventionModule<"active"> = {
       moduleId: "mod2",
       description: "test module",
+      purpose: "test",
       local: { initial: "active", transitions: [] },
       states: [{ phase: "active", surfaces: [s2] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -211,6 +217,7 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"idle"> = {
       moduleId: "empty",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [
         {
@@ -234,6 +241,7 @@ describe("collectMatchingClaims", () => {
     const mod: ConventionModule<"active"> = {
       moduleId: "multi-rule",
       description: "test module",
+      purpose: "test",
       local: { initial: "active", transitions: [] },
       states: [
         { phase: "active", surfaces: [s1] },

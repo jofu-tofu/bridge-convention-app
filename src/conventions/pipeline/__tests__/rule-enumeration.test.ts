@@ -36,6 +36,7 @@ describe("enumerateRuleAtoms", () => {
     const mod: ConventionModule = {
       moduleId: "empty",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [],
       facts: { definitions: [], evaluators: new Map() },
@@ -50,6 +51,7 @@ describe("enumerateRuleAtoms", () => {
     const mod: ConventionModule = {
       moduleId: "test-mod",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "idle", turn: "responder", surfaces: [s1, s2] },
@@ -73,6 +75,7 @@ describe("enumerateRuleAtoms", () => {
     const mod: ConventionModule = {
       moduleId: "dedup-mod",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "phase-a", surfaces: [surface] },
@@ -95,6 +98,7 @@ describe("enumerateRuleAtoms", () => {
     const mod: ConventionModule = {
       moduleId: "mod",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "idle", surfaces: [surface] },
@@ -115,6 +119,7 @@ describe("enumerateRuleAtoms", () => {
     const mod1: ConventionModule = {
       moduleId: "first",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [s1] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -123,6 +128,7 @@ describe("enumerateRuleAtoms", () => {
     const mod2: ConventionModule = {
       moduleId: "second",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [s2] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -139,6 +145,7 @@ describe("enumerateRuleAtoms", () => {
     const mod: ConventionModule = {
       moduleId: "no-surfaces",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -154,6 +161,7 @@ describe("generateRuleCoverageManifest", () => {
     const mod: ConventionModule = {
       moduleId: "test-mod",
       description: "test module",
+      purpose: "test",
       local: { initial: "idle", transitions: [] },
       states: [{ phase: "idle", surfaces: [surface] }],
       facts: { definitions: [], evaluators: new Map() },

@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { getAppStore } from "../../stores/context";
+  import { getAppStore, getService } from "../../stores/context";
   import { listConventions } from "../../conventions";
-  import type { ConventionConfig, ConventionTeaching } from "../../core/contracts/convention";
+  import type { ConventionConfig } from "../../core/contracts/convention";
+  import type { LearningViewport } from "../../service";
   import { filterConventions } from "../../core/display/filter-conventions";
   import { displayConventionName } from "../../core/display/format";
   import { DESKTOP_MIN } from "../../core/display/breakpoints.svelte";
 
   const appStore = getAppStore();
+  const service = getService();
 
   let searchQuery = $state("");
-  let depthMode = $state<"compact" | "study" | "learn">("study");
-  let headerCollapsed = $state(false);
   let innerW = $state(1024);
   let sidebarOpen = $state(false);
 
@@ -22,9 +22,21 @@
     filterConventions(listConventions(), searchQuery, null),
   );
 
-  const conventionTeaching = $derived<ConventionTeaching | null>(
-    config?.teaching ?? null,
-  );
+  /** Learning viewport — fetched from service when config changes. */
+  let viewport = $state<LearningViewport | null>(null);
+
+  $effect(() => {
+    const id = config?.id;
+    if (!id) {
+      viewport = null;
+      return;
+    }
+    service.getLearningViewport(id).then((vp) => {
+      viewport = vp;
+    });
+  });
+
+  const hasMultipleModules = $derived((viewport?.modules.length ?? 0) > 1);
 
   function handleConventionClick(conv: ConventionConfig) {
     appStore.navigateToLearning(conv);
@@ -112,166 +124,71 @@
 
     <!-- Main content -->
     <div class="flex-1 flex flex-col min-h-0">
-      {#if config}
-        <!-- Convention toolbar — always visible -->
-        <div class="shrink-0 px-4 sm:px-8 py-3 border-b border-border-subtle bg-bg-base flex flex-col gap-2">
-          <div class="flex items-center gap-3 min-w-0">
-            <h1 class="text-xl font-semibold text-text-primary truncate min-w-0 flex-1">{displayConventionName(config.name)}</h1>
-            <span class="shrink-0 rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1">
-              {config.category}
-            </span>
-          </div>
-          <div class="flex items-center gap-3 flex-wrap">
-            <!-- Depth mode tabs -->
-            <div class="flex gap-1 bg-bg-card rounded-[--radius-md] p-1" role="tablist" aria-label="Detail level">
-              {#each [
-                { mode: "compact" as const, label: "Compact" },
-                { mode: "study" as const, label: "Study" },
-                { mode: "learn" as const, label: "Learn" },
-              ] as tab (tab.mode)}
-                <button
-                  role="tab"
-                  aria-selected={depthMode === tab.mode}
-                  class="px-3 py-1.5 text-sm rounded-[--radius-md] transition-colors cursor-pointer
-                    {depthMode === tab.mode
-                      ? 'bg-accent-primary text-text-on-accent font-medium'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'}"
-                  onclick={() => depthMode = tab.mode}
-                >
-                  {tab.label}
-                </button>
-              {/each}
+      {#if viewport}
+        <!-- Scrollable content -->
+        <div class="flex-1 overflow-y-auto">
+          <!-- Convention hero -->
+          <div class="px-4 sm:px-8 pt-6 sm:pt-8 pb-6 border-b border-border-subtle">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <div class="flex items-center gap-3 mb-2">
+                  <h1 class="text-2xl font-bold text-text-primary">{viewport.name}</h1>
+                  <span class="shrink-0 rounded-full bg-bg-hover text-text-secondary text-xs font-medium px-3 py-1">
+                    {viewport.category}
+                  </span>
+                </div>
+                <p class="text-base text-text-secondary leading-relaxed">{viewport.description}</p>
+              </div>
+              <button
+                class="shrink-0 px-5 py-2.5 bg-accent-primary text-text-on-accent rounded-[--radius-md] text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer min-h-[--size-touch-target]"
+                onclick={() => config && appStore.selectConvention(config)}
+              >
+                Practice
+              </button>
             </div>
-            <button
-              class="shrink-0 px-5 py-2.5 bg-accent-primary text-text-on-accent rounded-[--radius-md] text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer min-h-[--size-touch-target]"
-              onclick={() => config && appStore.selectConvention(config)}
-            >
-              Practice
-            </button>
+          </div>
+
+          <div class="px-4 sm:px-8 py-6 sm:py-8 space-y-8">
+            <!-- Purpose -->
+            {#if viewport.purpose}
+              <section>
+                <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">Why it exists</h2>
+                <p class="text-sm text-text-primary leading-relaxed">{viewport.purpose}</p>
+              </section>
+            {/if}
+
+            <!-- Module breakdown (multi-module bundles only) -->
+            {#if hasMultipleModules}
+              <section>
+                <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conventions in this bundle</h2>
+                <div class="grid gap-3">
+                  {#each viewport.modules as mod (mod.moduleId)}
+                    <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+                      <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-sm font-semibold text-text-primary">{mod.displayName}</h3>
+                        <span class="text-xs text-text-muted">{mod.surfaceCount} bids</span>
+                      </div>
+                      <p class="text-sm text-text-secondary">{mod.description}</p>
+                      <p class="text-xs text-text-muted mt-2 italic">{mod.purpose}</p>
+                    </div>
+                  {/each}
+                </div>
+              </section>
+            {/if}
+
+            <!-- Placeholder: Bidding conversation flow -->
+            <!-- Future: render from viewport.modules[].surfaces grouped by FSM phase -->
+
+            <!-- Placeholder: Example hands -->
+            <!-- Future: service generates constrained hands, returns in viewport -->
+
+            <!-- Placeholder: Quick reference table -->
+            <!-- Future: render from viewport.modules[].surfaces -->
           </div>
         </div>
-
-        <!-- Scrollable content -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-7">
-          <!-- About This Convention card -->
-          <section class="bg-bg-card rounded-[--radius-lg] border border-border-subtle">
-            <button
-              class="w-full flex items-center justify-between px-5 py-4 cursor-pointer"
-              aria-expanded={!headerCollapsed}
-              aria-controls="convention-teaching-content"
-              onclick={() => headerCollapsed = !headerCollapsed}
-            >
-              <h2 class="text-lg font-semibold text-text-primary">About This Convention</h2>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="text-slate-400 transition-transform {headerCollapsed ? '' : 'rotate-180'}"
-                aria-hidden="true"
-              >
-                <path d="M7 10l5 5 5-5z" />
-              </svg>
-            </button>
-            {#if !headerCollapsed}
-              <div id="convention-teaching-content" class="px-5 pb-5 space-y-3">
-                <div>
-                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Summary</span>
-                  <p class="text-sm text-slate-200 mt-1">{config.description}</p>
-                </div>
-                {#if conventionTeaching && depthMode !== "compact"}
-                  {#if conventionTeaching.purpose}
-                    <div>
-                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Purpose</span>
-                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.purpose}</p>
-                    </div>
-                  {/if}
-                  {#if conventionTeaching.whenToUse}
-                    <div>
-                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">When to use</span>
-                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.whenToUse}</p>
-                    </div>
-                  {/if}
-                  {#if conventionTeaching.roles}
-                    <div>
-                      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Roles</span>
-                      <p class="text-sm text-slate-200 mt-1">{conventionTeaching.roles}</p>
-                    </div>
-                  {/if}
-                  <!-- Learn-only fields -->
-                  {#if depthMode === "learn"}
-                    {#if conventionTeaching.whenNotToUse && conventionTeaching.whenNotToUse.length > 0}
-                      <div>
-                        <span class="text-xs font-semibold text-amber-400 uppercase tracking-wide">When not to use</span>
-                        <ul class="text-sm text-slate-200 mt-1 list-disc list-inside space-y-1">
-                          {#each conventionTeaching.whenNotToUse as item (item)}
-                            <li>{item}</li>
-                          {/each}
-                        </ul>
-                      </div>
-                    {/if}
-                    {#if conventionTeaching.tradeoff}
-                      <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Tradeoff</span>
-                        <p class="text-sm text-slate-200 mt-1">{conventionTeaching.tradeoff}</p>
-                      </div>
-                    {/if}
-                    {#if conventionTeaching.principle}
-                      <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Principle</span>
-                        <p class="text-sm text-slate-200 mt-1">{conventionTeaching.principle}</p>
-                      </div>
-                    {/if}
-                  {/if}
-                {/if}
-              </div>
-            {/if}
-          </section>
-
-          <hr class="border-border-subtle" />
-
-          <!-- Quick Reference: common bidding decisions for this convention -->
-          {#if config}
-            <section class="bg-bg-card rounded-[--radius-lg] p-5 border border-border-subtle">
-              <h3 class="text-base font-semibold text-text-primary mb-3">Quick Reference</h3>
-              {#if config.id === "nt-bundle" || config.id === "stayman" || config.id === "jacoby-transfers"}
-                <div class="space-y-3 text-sm text-text-secondary leading-relaxed">
-                  <div>
-                    <h4 class="font-medium text-text-primary mb-1">After partner opens 1NT (15-17 HCP):</h4>
-                    <ul class="list-disc ml-5 space-y-1">
-                      <li><span class="font-mono text-text-primary">Pass</span> — 0-7 HCP, no 5-card major</li>
-                      <li><span class="font-mono text-suit-clubs">2♣</span> (Stayman) — 8+ HCP with a 4-card major, no 5-card major</li>
-                      <li><span class="font-mono text-suit-diamonds">2♦</span> (Transfer) — 5+ hearts, any HCP</li>
-                      <li><span class="font-mono text-suit-hearts">2♥</span> (Transfer) — 5+ spades, any HCP</li>
-                      <li><span class="font-mono text-text-primary">2NT</span> — 8-9 HCP, no 4-card major, no 5-card major (invitational)</li>
-                      <li><span class="font-mono text-text-primary">3NT</span> — 10-15 HCP, no 4-card major, no 5-card major (game)</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 class="font-medium text-text-primary mb-1">Key principles:</h4>
-                    <ul class="list-disc ml-5 space-y-1">
-                      <li>With 5+ in a major, always transfer (even with a 4-card major in the other suit)</li>
-                      <li>Stayman requires both a 4-card major AND 8+ HCP</li>
-                      <li>Responder is captain — opener describes, responder decides</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 class="font-medium text-text-primary mb-1">Alerts & Announcements:</h4>
-                    <ul class="list-disc ml-5 space-y-1">
-                      <li><span class="font-mono text-text-primary">1NT</span> — Partner announces "15 to 17"</li>
-                      <li><span class="font-mono text-suit-clubs">2♣</span> (Stayman) — Not alerted (standard)</li>
-                      <li><span class="font-mono"><span class="text-suit-diamonds">2♦</span>/<span class="text-suit-hearts">2♥</span></span> (Transfer) — Partner announces "Transfer"</li>
-                    </ul>
-                  </div>
-                </div>
-              {:else}
-                <p class="text-text-muted italic">
-                  Detailed bidding guide coming soon.
-                </p>
-              {/if}
-            </section>
-          {/if}
+      {:else if config}
+        <div class="text-center py-12 text-text-muted">
+          Loading convention data...
         </div>
       {:else}
         <div class="text-center py-12 text-text-muted">

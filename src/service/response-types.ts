@@ -104,6 +104,54 @@ export interface ConventionInfo {
   readonly category?: string;
 }
 
+// ── Learning viewport ───────────────────────────────────────────────
+
+/** Top-level learning viewport for a convention bundle. */
+export interface LearningViewport {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly category: string;
+
+  /** Bundle-level teaching metadata. */
+  readonly purpose: string | null;
+  readonly whenToUse: string | null;
+  readonly whenNotToUse: readonly string[];
+  readonly tradeoff: string | null;
+  readonly principle: string | null;
+  readonly roles: string | null;
+
+  /** Module summaries — one per convention module in the bundle. */
+  readonly modules: readonly ModuleView[];
+}
+
+/** Summary of a single convention module. */
+export interface ModuleView {
+  readonly moduleId: string;
+  readonly displayName: string;
+  readonly description: string;
+  readonly purpose: string;
+  readonly surfaceCount: number;
+  readonly surfaces: readonly SurfaceView[];
+}
+
+/** A single bid surface visible in the learning view. */
+export interface SurfaceView {
+  readonly meaningId: string;
+  readonly teachingLabel: string;
+  readonly call: Call;
+  readonly callDisplay: string;
+  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
+  readonly recommendation: "must" | "should" | "may" | "avoid" | null;
+  readonly constraints: readonly ConstraintView[];
+}
+
+/** A human-readable constraint on a bid surface. */
+export interface ConstraintView {
+  readonly factId: string;
+  readonly description: string;
+}
+
 // ── Debug types ─────────────────────────────────────────────────────
 
 /** Debug snapshot visible through DevServicePort. */

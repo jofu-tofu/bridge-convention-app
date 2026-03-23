@@ -145,40 +145,48 @@
       <span class="text-fb-incorrect-text font-semibold text-[--text-detail]">Incorrect</span>
       <span class="font-mono font-bold text-[--text-detail] text-fb-incorrect-dim">{formatCall(feedback.userCall)}</span>
     </div>
-    <div class="flex items-center gap-1">
-      <!-- Try Again (redo) -->
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-fb-incorrect-hover/50 text-fb-incorrect-text hover:text-fb-incorrect-bright transition-colors cursor-pointer"
-        onclick={onRetry}
-        title="Try Again"
-        aria-label="Try again"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-      </button>
-      <!-- Show/Hide Answer (eye toggle) -->
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-fb-incorrect-hover/50 text-fb-incorrect-text hover:text-fb-incorrect-bright transition-colors cursor-pointer"
-        onclick={() => { showAnswer = !showAnswer; }}
-        title={showAnswer ? "Hide Answer" : "Show Answer"}
-        aria-label={showAnswer ? "Hide answer" : "Show answer"}
-      >
-        {#if showAnswer}
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        {/if}
-      </button>
-    </div>
+    <!-- Try Again (redo) -->
+    <button
+      type="button"
+      class="p-1.5 rounded hover:bg-fb-incorrect-hover/50 text-fb-incorrect-text hover:text-fb-incorrect-bright transition-colors cursor-pointer"
+      onclick={onRetry}
+      title="Try Again"
+      aria-label="Try again"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+    </button>
   </div>
+
+  {#if !showAnswer}
+    <!-- Show Answer — prominent labeled button -->
+    <button
+      type="button"
+      class="flex items-center justify-center gap-1.5 w-full rounded border border-fb-incorrect/40 bg-fb-incorrect-surface/40 px-3 py-1.5 text-[--text-label] text-fb-incorrect-text hover:bg-fb-incorrect-hover/40 hover:text-fb-incorrect-bright transition-colors cursor-pointer mb-2"
+      onclick={() => { showAnswer = true; }}
+      aria-label="Show answer"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Show Answer</span>
+    </button>
+  {/if}
 
   {#if showAnswer && feedback.correctCall}
     <div class="min-w-0 space-y-3">
 
       <!-- ═══ SECTION 1: The correct answer (hero) ═══ -->
       <div class="bg-fb-incorrect-surface/50 rounded px-3 py-2.5 border border-fb-incorrect/30">
-        <p class="text-[--text-annotation] text-fb-incorrect-text/60 uppercase tracking-wide mb-1">You should bid</p>
+        <div class="flex items-center justify-between mb-1">
+          <p class="text-[--text-annotation] text-fb-incorrect-text/60 uppercase tracking-wide">You should bid</p>
+          <button
+            type="button"
+            class="text-[--text-annotation] text-fb-incorrect-text/40 hover:text-fb-incorrect-dim transition-colors cursor-pointer flex items-center gap-1"
+            onclick={() => { showAnswer = false; }}
+            aria-label="Hide answer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            <span>Hide</span>
+          </button>
+        </div>
         <p class="font-mono font-bold text-[--text-heading] text-fb-incorrect-bright leading-tight">
           {formatCall(feedback.correctCall)}
         </p>

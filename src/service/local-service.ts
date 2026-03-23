@@ -15,6 +15,8 @@ import type { Call, Card, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
 import type { BiddingViewport } from "../core/viewport";
 import { buildBiddingViewport } from "../core/viewport";
+import type { LearningViewport } from "./response-types";
+import { buildLearningViewport } from "./learning-viewport";
 import type { GamePhase } from "../core/phase-machine";
 import { isValidTransition } from "../core/phase-machine";
 import { createInferenceCoordinator } from "../inference/inference-coordinator";
@@ -243,6 +245,14 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         description: c.description,
         category: c.category,
       }));
+    },
+
+    // ── Learning ──────────────────────────────────────────────────
+
+    async getLearningViewport(conventionId: string): Promise<LearningViewport | null> {
+      const bundle = getBundle(conventionId);
+      if (!bundle) return null;
+      return buildLearningViewport(bundle);
     },
 
     // ── Dev methods ───────────────────────────────────────────────

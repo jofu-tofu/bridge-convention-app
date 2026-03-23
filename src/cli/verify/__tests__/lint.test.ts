@@ -18,6 +18,7 @@ function makeModule(overrides: Partial<ConventionModule> = {}): ConventionModule
   return {
     moduleId: "test-mod",
     description: "test module",
+    purpose: "test",
     local: { initial: "idle", transitions: [] },
     states: [],
     facts: { definitions: [], evaluators: new Map() },
