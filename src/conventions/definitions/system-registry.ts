@@ -168,14 +168,14 @@ const ntStaymanInput: BundleInput = {
   dealConstraints: {
     seats: [
       { seat: Seat.North, minHcp: 15, maxHcp: 17, balanced: true },
-      { seat: Seat.South, minHcp: 8, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
+      { seat: Seat.South, minHcp: 8, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 }, maxLength: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
     ],
     dealer: Seat.North,
   },
   dealConstraintFactory: (sys) => ({
     seats: [
       { seat: Seat.North, minHcp: sys.ntOpening.minHcp, maxHcp: sys.ntOpening.maxHcp, balanced: true },
-      { seat: Seat.South, minHcp: sys.responderThresholds.inviteMin, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
+      { seat: Seat.South, minHcp: sys.responderThresholds.inviteMin, minLengthAny: { [Suit.Spades]: 4, [Suit.Hearts]: 4 }, maxLength: { [Suit.Spades]: 4, [Suit.Hearts]: 4 } },
     ],
     dealer: Seat.North,
   }),
