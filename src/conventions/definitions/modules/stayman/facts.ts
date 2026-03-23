@@ -8,12 +8,13 @@ import { num, bool, fv } from "../../../pipeline/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../../inference/posterior";
 
 import type { SystemConfig } from "../../../../core/contracts/system-config";
+import { STAYMAN_FACT_IDS } from "./fact-ids";
 
 // ─── Facts ───────────────────────────────────────────────────
 
 const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
   {
-    id: "module.stayman.nsHaveEightCardFitLikely",
+    id: STAYMAN_FACT_IDS.NS_HAVE_EIGHT_CARD_FIT_LIKELY,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Posterior probability that N/S have an 8+ card major fit",
@@ -21,7 +22,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: [],
   },
   {
-    id: "module.stayman.openerStillBalancedLikely",
+    id: STAYMAN_FACT_IDS.OPENER_STILL_BALANCED_LIKELY,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Posterior probability that opener has balanced shape",
@@ -29,7 +30,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: [],
   },
   {
-    id: "module.stayman.openerHasSecondMajorLikely",
+    id: STAYMAN_FACT_IDS.OPENER_HAS_SECOND_MAJOR_LIKELY,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Posterior probability that opener has a second 4-card major",
@@ -40,7 +41,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
 
 const STAYMAN_FACTS: readonly FactDefinition[] = [
   {
-    id: "module.stayman.eligible",
+    id: STAYMAN_FACT_IDS.ELIGIBLE,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Eligible for Stayman (4+ card major AND 8+ HCP)",
@@ -49,12 +50,12 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: ["suitIdentity"],
   },
   {
-    id: "module.stayman.preferred",
+    id: STAYMAN_FACT_IDS.PREFERRED,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Stayman preferred (eligible AND no 5-card major)",
     valueType: "boolean",
-    derivesFrom: ["module.stayman.eligible", "bridge.hasFiveCardMajor"],
+    derivesFrom: [STAYMAN_FACT_IDS.ELIGIBLE, "bridge.hasFiveCardMajor"],
     constrainsDimensions: ["suitIdentity"],
   },
 ];
@@ -63,10 +64,10 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
 function createStaymanEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
   const minHcp = sys.responderThresholds.inviteMin;
   return new Map<string, FactEvaluatorFn>([
-    ["module.stayman.eligible", (_h, _ev, m) =>
-      fv("module.stayman.eligible", bool(m, "bridge.hasFourCardMajor") && num(m, "hand.hcp") >= minHcp)],
-    ["module.stayman.preferred", (_h, _ev, m) =>
-      fv("module.stayman.preferred", bool(m, "module.stayman.eligible") && !bool(m, "bridge.hasFiveCardMajor"))],
+    [STAYMAN_FACT_IDS.ELIGIBLE, (_h, _ev, m) =>
+      fv(STAYMAN_FACT_IDS.ELIGIBLE, bool(m, "bridge.hasFourCardMajor") && num(m, "hand.hcp") >= minHcp)],
+    [STAYMAN_FACT_IDS.PREFERRED, (_h, _ev, m) =>
+      fv(STAYMAN_FACT_IDS.PREFERRED, bool(m, STAYMAN_FACT_IDS.ELIGIBLE) && !bool(m, "bridge.hasFiveCardMajor"))],
   ]);
 }
 
@@ -76,9 +77,9 @@ const posteriorEvaluators = createPosteriorFactEvaluators([
   "bridge.partnerHas4DiamondsLikely",
   "bridge.partnerHas4ClubsLikely",
   "bridge.combinedHcpInRangeLikely",
-  "module.stayman.nsHaveEightCardFitLikely",
-  "module.stayman.openerStillBalancedLikely",
-  "module.stayman.openerHasSecondMajorLikely",
+  STAYMAN_FACT_IDS.NS_HAVE_EIGHT_CARD_FIT_LIKELY,
+  STAYMAN_FACT_IDS.OPENER_STILL_BALANCED_LIKELY,
+  STAYMAN_FACT_IDS.OPENER_HAS_SECOND_MAJOR_LIKELY,
 ], new Map([
   ["bridge.partnerHas4HeartsLikely", ["H"]],
   ["bridge.partnerHas4SpadesLikely", ["S"]],

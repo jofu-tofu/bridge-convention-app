@@ -4,3 +4,4 @@ export * from "./fact-catalog";
 export * from "./agreement-module";
 export * from "./bid-action";
 export * from "./committed-step";
+export * from "./shared-fact-vocabulary";

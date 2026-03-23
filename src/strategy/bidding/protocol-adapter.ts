@@ -12,8 +12,9 @@ import type {
 } from "../../core/contracts";
 import type { ConventionStrategy, StrategyEvaluation, BidMeaning, ConventionSpec, ConventionModule, ModuleSurfaceResult } from "../../conventions";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
-import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, runPipeline } from "../../conventions";
+import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, runPipeline, PLATFORM_EXPLANATION_ENTRIES } from "../../conventions";
 import { createFactCatalog } from "../../core/contracts/fact-catalog";
+import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
 import { buildBidResult } from "./bid-result-builder";
 import { projectTeaching } from "../../conventions";
@@ -41,6 +42,12 @@ export function protocolSpecToStrategy(
     .filter((f) => f !== undefined && f !== null && (f.definitions.length > 0 || f.evaluators.size > 0));
 
   const catalog: FactCatalog = createFactCatalog(createSharedFactCatalog(), systemFacts, ...factExtensions);
+
+  // Build explanation catalog: platform entries + module entries
+  const explanationCatalog = createExplanationCatalog([
+    ...PLATFORM_EXPLANATION_ENTRIES,
+    ...spec.modules.flatMap(m => m.explanationEntries),
+  ]);
 
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
@@ -96,14 +103,14 @@ export function protocolSpecToStrategy(
       });
 
       // Step 4: Build output
-      const teachingProjection = projectTeaching(result);
+      const teachingProjection = projectTeaching(result, { explanationCatalog });
 
       lastEvaluation = {
         practicalRecommendation: null,
         surfaceGroups: null,
         pipelineResult: result,
         posteriorSummary: null,
-        explanationCatalog: null,
+        explanationCatalog,
         teachingProjection,
         facts,
         machineSnapshot: null,

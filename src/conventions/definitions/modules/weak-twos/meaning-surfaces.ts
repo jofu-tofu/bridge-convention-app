@@ -4,10 +4,92 @@ import { WEAK_TWO_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
+import { WEAK_TWO_FACT_IDS } from "./fact-ids";
+import { WEAK_TWO_MEANING_IDS } from "./meaning-ids";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
 const WEAK_TWOS_CTX: ModuleContext = { moduleId: "weak-twos" };
+
+// ─── Per-suit meaning ID lookups ─────────────────────────────
+
+const R1_MEANING_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.OPEN_2H,
+  spades: WEAK_TWO_MEANING_IDS.OPEN_2S,
+  diamonds: WEAK_TWO_MEANING_IDS.OPEN_2D,
+};
+
+const R2_GAME_RAISE_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.GAME_RAISE_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.GAME_RAISE_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.GAME_RAISE_DIAMONDS,
+};
+
+const R2_OGUST_ASK_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.OGUST_ASK_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.OGUST_ASK_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.OGUST_ASK_DIAMONDS,
+};
+
+const R2_INVITE_RAISE_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.INVITE_RAISE_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.INVITE_RAISE_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.INVITE_RAISE_DIAMONDS,
+};
+
+const R2_WEAK_PASS_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.WEAK_PASS_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.WEAK_PASS_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.WEAK_PASS_DIAMONDS,
+};
+
+const OGUST_SOLID_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.OGUST_SOLID_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.OGUST_SOLID_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.OGUST_SOLID_DIAMONDS,
+};
+
+const OGUST_MIN_BAD_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_DIAMONDS,
+};
+
+const OGUST_MIN_GOOD_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_DIAMONDS,
+};
+
+const OGUST_MAX_BAD_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_DIAMONDS,
+};
+
+const OGUST_MAX_GOOD_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_DIAMONDS,
+};
+
+const POST_OGUST_GAME_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_DIAMONDS,
+};
+
+const POST_OGUST_SIGNOFF_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_DIAMONDS,
+};
+
+const POST_OGUST_PASS_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_DIAMONDS,
+};
 
 // ─── Convention-intrinsic thresholds ────────────────────────
 //
@@ -61,7 +143,7 @@ function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
   ];
 
   return suits.map(({ suit, order, cls }) => createSurface({
-    meaningId: `weak-two:open-2${suitLabel(suit).toLowerCase()}`,
+    meaningId: R1_MEANING_ID[suit],
     semanticClassId: cls,
     encoding: { defaultCall: bid(2, suitToBidSuit(suit)) },
     clauses: [
@@ -72,7 +154,7 @@ function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
         isPublic: true,
       },
       {
-        factId: "module.weakTwo.inOpeningHcpRange",
+        factId: WEAK_TWO_FACT_IDS.IN_OPENING_HCP_RANGE,
         operator: "boolean",
         value: true,
         isPublic: true,
@@ -109,7 +191,7 @@ function createWeakTwoR2Surfaces(
   return [
     // 1. Game raise: 16+ total points (HCP + shortage), 3+ fit (highest priority)
     createSurface({
-      meaningId: `weak-two:game-raise-${suit}`,
+      meaningId: R2_GAME_RAISE_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.GAME_RAISE,
       encoding: { defaultCall: gameCall },
       clauses: [
@@ -137,7 +219,7 @@ function createWeakTwoR2Surfaces(
 
     // 2. Ogust ask: 15+ total points → 2NT (lower specificity than game raise)
     createSurface({
-      meaningId: `weak-two:ogust-ask-${suit}`,
+      meaningId: R2_OGUST_ASK_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_ASK,
       encoding: { defaultCall: bid(2, BidSuit.NoTrump) },
       clauses: [
@@ -165,7 +247,7 @@ function createWeakTwoR2Surfaces(
 
     // 3. Invite raise: 14-15 total points, 3+ fit → 3 of opener's suit
     createSurface({
-      meaningId: `weak-two:invite-raise-${suit}`,
+      meaningId: R2_INVITE_RAISE_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.INVITE_RAISE,
       encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
       clauses: [
@@ -193,7 +275,7 @@ function createWeakTwoR2Surfaces(
 
     // 4. Pass (fallback — no convention bid applies)
     createSurface({
-      meaningId: `weak-two:weak-pass-${suit}`,
+      meaningId: R2_WEAK_PASS_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.WEAK_PASS,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
@@ -226,7 +308,7 @@ function createWeakTwoOgustSurfaces(
   return [
     // 1. Solid: AKQ in suit → 3NT (highest priority — checked first)
     createSurface({
-      meaningId: `weak-two:ogust-solid-${suit}`,
+      meaningId: OGUST_SOLID_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_SOLID,
       encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
       clauses: [
@@ -248,12 +330,12 @@ function createWeakTwoOgustSurfaces(
 
     // 2. Min bad: 5-8 NV / 6-8 vul HCP, 0-1 top honors → 3C
     createSurface({
-      meaningId: `weak-two:ogust-min-bad-${suit}`,
+      meaningId: OGUST_MIN_BAD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_BAD,
       encoding: { defaultCall: bid(3, BidSuit.Clubs) },
       clauses: [
         {
-          factId: "module.weakTwo.isMinimum",
+          factId: WEAK_TWO_FACT_IDS.IS_MINIMUM,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -277,12 +359,12 @@ function createWeakTwoOgustSurfaces(
 
     // 3. Min good: 5-8 NV / 6-8 vul HCP, 2+ top honors → 3D
     createSurface({
-      meaningId: `weak-two:ogust-min-good-${suit}`,
+      meaningId: OGUST_MIN_GOOD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_GOOD,
       encoding: { defaultCall: bid(3, BidSuit.Diamonds) },
       clauses: [
         {
-          factId: "module.weakTwo.isMinimum",
+          factId: WEAK_TWO_FACT_IDS.IS_MINIMUM,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -306,12 +388,12 @@ function createWeakTwoOgustSurfaces(
 
     // 4. Max bad: 9-11 HCP, 0-1 top honors → 3H
     createSurface({
-      meaningId: `weak-two:ogust-max-bad-${suit}`,
+      meaningId: OGUST_MAX_BAD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MAX_BAD,
       encoding: { defaultCall: bid(3, BidSuit.Hearts) },
       clauses: [
         {
-          factId: "module.weakTwo.isMaximum",
+          factId: WEAK_TWO_FACT_IDS.IS_MAXIMUM,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -335,12 +417,12 @@ function createWeakTwoOgustSurfaces(
 
     // 5. Max good: 9-11 HCP, 2+ top honors → 3S
     createSurface({
-      meaningId: `weak-two:ogust-max-good-${suit}`,
+      meaningId: OGUST_MAX_GOOD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MAX_GOOD,
       encoding: { defaultCall: bid(3, BidSuit.Spades) },
       clauses: [
         {
-          factId: "module.weakTwo.isMaximum",
+          factId: WEAK_TWO_FACT_IDS.IS_MAXIMUM,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -384,7 +466,7 @@ function createPostOgustSurfaces(
   return [
     // 1. Bid game: 17+ HCP → game in agreed suit (highest priority)
     createSurface({
-      meaningId: `weak-two:post-ogust-game-${suit}`,
+      meaningId: POST_OGUST_GAME_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_GAME,
       encoding: { defaultCall: gameCall },
       clauses: [
@@ -407,7 +489,7 @@ function createPostOgustSurfaces(
     // and may prefer 3NT to 5D with balanced hand / stoppers
     ...(suit === "diamonds" ? [
       createSurface({
-        meaningId: `weak-two:post-ogust-3nt-${suit}`,
+        meaningId: WEAK_TWO_MEANING_IDS.POST_OGUST_3NT_DIAMONDS,
         semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_3NT,
         encoding: { defaultCall: bid(3, BidSuit.NoTrump) },
         clauses: [
@@ -429,7 +511,7 @@ function createPostOgustSurfaces(
 
     // 2. Sign off in agreed suit at 3-level (when Ogust response was below suit)
     createSurface({
-      meaningId: `weak-two:post-ogust-signoff-${suit}`,
+      meaningId: POST_OGUST_SIGNOFF_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_SIGNOFF,
       encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
       clauses: [],
@@ -443,7 +525,7 @@ function createPostOgustSurfaces(
 
     // 3. Pass (fallback — when already in agreed suit or 3NT)
     createSurface({
-      meaningId: `weak-two:post-ogust-pass-${suit}`,
+      meaningId: POST_OGUST_PASS_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_PASS,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],

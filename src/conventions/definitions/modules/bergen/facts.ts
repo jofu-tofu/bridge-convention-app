@@ -5,6 +5,7 @@ import type {
 import { num, fv } from "../../../pipeline/fact-helpers";
 import { buildExtension } from "../../../pipeline/fact-factory";
 import type { FactEntry } from "../../../pipeline/fact-factory";
+import { BERGEN_FACT_IDS, BERGEN_CLAUSE_FACT_IDS } from "./fact-ids";
 
 // ─── Bergen module facts (factory-based) ─────────────────────
 
@@ -13,17 +14,17 @@ import type { FactEntry } from "../../../pipeline/fact-factory";
 
 const hasMajorSupportEntry: FactEntry = {
   definition: {
-    id: "module.bergen.hasMajorSupport",
+    id: BERGEN_FACT_IDS.HAS_MAJOR_SUPPORT,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Has exactly 4-card support in at least one major",
     valueType: "boolean",
-    derivesFrom: ["hand.suitLength.hearts", "hand.suitLength.spades"],
+    derivesFrom: [BERGEN_CLAUSE_FACT_IDS.HAND_SUIT_LENGTH_HEARTS, BERGEN_CLAUSE_FACT_IDS.HAND_SUIT_LENGTH_SPADES],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
-  evaluator: ["module.bergen.hasMajorSupport", (_h, _ev, m) =>
-    fv("module.bergen.hasMajorSupport",
-      num(m, "hand.suitLength.hearts") === 4 || num(m, "hand.suitLength.spades") === 4)],
+  evaluator: [BERGEN_FACT_IDS.HAS_MAJOR_SUPPORT, (_h, _ev, m) =>
+    fv(BERGEN_FACT_IDS.HAS_MAJOR_SUPPORT,
+      num(m, BERGEN_CLAUSE_FACT_IDS.HAND_SUIT_LENGTH_HEARTS) === 4 || num(m, BERGEN_CLAUSE_FACT_IDS.HAND_SUIT_LENGTH_SPADES) === 4)],
 };
 
 const { definitions, evaluators } = buildExtension([hasMajorSupportEntry]);

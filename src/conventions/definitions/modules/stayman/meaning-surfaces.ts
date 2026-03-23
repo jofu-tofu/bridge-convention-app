@@ -12,6 +12,7 @@ import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 
 import { STAYMAN_CLASSES, STAYMAN_R3_CLASSES } from "./semantic-classes";
+import { STAYMAN_MEANING_IDS } from "./meaning-ids";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -23,7 +24,7 @@ const STAYMAN_CTX: ModuleContext = { moduleId: "stayman" };
 export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
   const minHcp = sys.responderThresholds.inviteMin;
   return createSurface({
-    meaningId: "stayman:ask-major",
+    meaningId: STAYMAN_MEANING_IDS.ASK_MAJOR,
     semanticClassId: STAYMAN_CLASSES.ASK,
     encoding: bid(2, BidSuit.Clubs),
     clauses: [
@@ -59,7 +60,7 @@ export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
 
 export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "stayman:show-hearts",
+    meaningId: STAYMAN_MEANING_IDS.SHOW_HEARTS,
     semanticClassId: STAYMAN_CLASSES.SHOW_HEARTS,
     encoding: bid(2, BidSuit.Hearts),
     clauses: [
@@ -78,7 +79,7 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:show-spades",
+    meaningId: STAYMAN_MEANING_IDS.SHOW_SPADES,
     semanticClassId: STAYMAN_CLASSES.SHOW_SPADES,
     encoding: bid(2, BidSuit.Spades),
     clauses: [
@@ -103,7 +104,7 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:deny-major",
+    meaningId: STAYMAN_MEANING_IDS.DENY_MAJOR,
     semanticClassId: STAYMAN_CLASSES.DENY_MAJOR,
     encoding: bid(2, BidSuit.Diamonds),
     clauses: [
@@ -128,7 +129,7 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
 export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "stayman:raise-game-hearts",
+    meaningId: STAYMAN_MEANING_IDS.RAISE_GAME_HEARTS,
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
     encoding: bid(4, BidSuit.Hearts),
     clauses: [
@@ -155,7 +156,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:raise-invite-hearts",
+    meaningId: STAYMAN_MEANING_IDS.RAISE_INVITE_HEARTS,
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_INVITE,
     encoding: bid(3, BidSuit.Hearts),
     clauses: [
@@ -182,7 +183,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:nt-game-no-fit",
+    meaningId: STAYMAN_MEANING_IDS.NT_GAME_NO_FIT,
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_NO_FIT,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
@@ -209,7 +210,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:nt-invite-no-fit",
+    meaningId: STAYMAN_MEANING_IDS.NT_INVITE_NO_FIT,
     semanticClassId: STAYMAN_R3_CLASSES.NT_INVITE_NO_FIT,
     encoding: bid(2, BidSuit.NoTrump),
     clauses: [
@@ -241,7 +242,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
 export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "stayman:raise-game-spades",
+    meaningId: STAYMAN_MEANING_IDS.RAISE_GAME_SPADES,
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_GAME,
     encoding: bid(4, BidSuit.Spades),
     clauses: [
@@ -268,7 +269,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:raise-invite-spades",
+    meaningId: STAYMAN_MEANING_IDS.RAISE_INVITE_SPADES,
     semanticClassId: STAYMAN_R3_CLASSES.RAISE_INVITE,
     encoding: bid(3, BidSuit.Spades),
     clauses: [
@@ -295,7 +296,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:nt-game-no-fit-2s",
+    meaningId: STAYMAN_MEANING_IDS.NT_GAME_NO_FIT_2S,
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_NO_FIT,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
@@ -322,7 +323,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:nt-invite-no-fit-2s",
+    meaningId: STAYMAN_MEANING_IDS.NT_INVITE_NO_FIT_2S,
     semanticClassId: STAYMAN_R3_CLASSES.NT_INVITE_NO_FIT,
     encoding: bid(2, BidSuit.NoTrump),
     clauses: [
@@ -355,7 +356,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
 export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "stayman:nt-game-after-denial",
+    meaningId: STAYMAN_MEANING_IDS.NT_GAME_AFTER_DENIAL,
     semanticClassId: STAYMAN_R3_CLASSES.NT_GAME_DENIAL,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
@@ -375,7 +376,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
-    meaningId: "stayman:nt-invite-after-denial",
+    meaningId: STAYMAN_MEANING_IDS.NT_INVITE_AFTER_DENIAL,
     semanticClassId: STAYMAN_R3_CLASSES.NT_INVITE_DENIAL,
     encoding: bid(2, BidSuit.NoTrump),
     clauses: [

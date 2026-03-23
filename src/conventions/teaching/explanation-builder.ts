@@ -59,14 +59,18 @@ export function buildPrimaryExplanation(
   clauseDescriptions?: ReadonlyMap<string, string>,
 ): ExplanationNode[] {
   const nodes: ExplanationNode[] = [];
-  const seenMeaningIds = new Set<string>();
 
   for (const condition of provenance.applicability.evaluatedConditions) {
     const catalogEntry = catalogIndex?.byFactId.get(condition.conditionId);
     // Prefer clause description, then catalog display text, then fall back to conditionId
-    const displayContent = clauseDescriptions?.get(condition.conditionId)
-      ?? resolveDisplayText(catalogEntry)
-      ?? condition.conditionId;
+    const clauseDesc = clauseDescriptions?.get(condition.conditionId);
+    const catalogText = resolveDisplayText(catalogEntry);
+    const displayContent = clauseDesc ?? catalogText ?? condition.conditionId;
+    if (!clauseDesc && !catalogText && catalogIndex) {
+      if (import.meta.env.DEV) {
+        console.warn(`[teaching] No catalog entry found for factId: ${condition.conditionId}`);
+      }
+    }
 
     const node: ExplanationNode = catalogEntry
       ? {
@@ -82,22 +86,6 @@ export function buildPrimaryExplanation(
           passed: condition.satisfied,
         };
     nodes.push(node);
-
-    // If there is a meaning-level catalog entry linked via the same factId,
-    // emit a convention-reference node (deduplicated by meaningId).
-    if (catalogEntry?.meaningId && !seenMeaningIds.has(catalogEntry.meaningId)) {
-      const meaningEntry = catalogIndex?.byMeaningId.get(catalogEntry.meaningId);
-      if (meaningEntry) {
-        seenMeaningIds.add(catalogEntry.meaningId);
-        const meaningContent = resolveDisplayText(meaningEntry) ?? meaningEntry.meaningId!;
-        nodes.push({
-          kind: "convention-reference",
-          content: meaningContent,
-          explanationId: meaningEntry.explanationId,
-          templateKey: meaningEntry.templateKey,
-        });
-      }
-    }
   }
 
   return nodes;

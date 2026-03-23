@@ -7,7 +7,7 @@ import type {
   EncodedProposal,
 } from "../../pipeline/pipeline-types";
 import type { DecisionProvenance } from "../../../core/contracts/provenance";
-import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { FactExplanationEntry, MeaningExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { SurfaceGroup } from "../../../core/contracts/teaching-grading";
 import type { CatalogIndex } from "../teaching-projection-builder";
 
@@ -24,8 +24,8 @@ import {
 } from "../../../test-support/convention-factories";
 
 function makeCatalogIndex(
-  byFactId: [string, ExplanationEntry][] = [],
-  byMeaningId: [string, ExplanationEntry][] = [],
+  byFactId: [string, FactExplanationEntry][] = [],
+  byMeaningId: [string, MeaningExplanationEntry][] = [],
 ): CatalogIndex {
   return {
     byFactId: new Map(byFactId),

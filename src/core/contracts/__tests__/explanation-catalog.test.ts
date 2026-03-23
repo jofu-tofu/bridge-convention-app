@@ -2,31 +2,36 @@ import { describe, expect, test } from "vitest";
 import {
   createExplanationCatalog,
   type ExplanationEntry,
+  type FactExplanationEntry,
+  type MeaningExplanationEntry,
   type ExplanationCatalog,
 } from "../explanation-catalog";
 
 describe("ExplanationCatalog", () => {
-  const entry1: ExplanationEntry = {
+  const entry1: FactExplanationEntry = {
     explanationId: "explain.hand.hcp",
     factId: "hand.hcp",
     templateKey: "explain.hand.hcp.supporting",
+    displayText: "High card points",
     preferredLevel: "mechanical",
     roles: ["supporting"],
   };
 
-  const entry2: ExplanationEntry = {
+  const entry2: FactExplanationEntry = {
     explanationId: "explain.bridge.gameValues",
     factId: "bridge.gameValuesOpposite1NT",
     templateKey: "explain.bridge.gameValues.semantic",
+    displayText: "Game-level values opposite 1NT",
     contrastiveTemplateKey: "explain.bridge.gameValues.whyNot",
     preferredLevel: "semantic",
     roles: ["supporting", "pedagogical"],
   };
 
-  const meaningEntry: ExplanationEntry = {
+  const meaningEntry: MeaningExplanationEntry = {
     explanationId: "explain.stayman.ask",
     meaningId: "stayman:ask-major",
     templateKey: "explain.stayman.ask.semantic",
+    displayText: "Stayman: asks opener for a 4-card major",
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   };
@@ -59,16 +64,9 @@ describe("ExplanationCatalog", () => {
       );
     });
 
-    test("allows entries with factId, meaningId, or neither", () => {
-      const noLink: ExplanationEntry = {
-        explanationId: "explain.general.tip",
-        templateKey: "explain.general.tip.text",
-        preferredLevel: "semantic",
-        roles: ["pedagogical"],
-      };
-
-      const catalog = createExplanationCatalog([entry1, meaningEntry, noLink]);
-      expect(catalog.entries).toHaveLength(3);
+    test("allows entries with factId or meaningId", () => {
+      const catalog = createExplanationCatalog([entry1, meaningEntry]);
+      expect(catalog.entries).toHaveLength(2);
     });
 
     test("preserves entry order", () => {
@@ -88,17 +86,19 @@ describe("ExplanationCatalog", () => {
   });
 
   describe("ExplanationEntry shape", () => {
-    test("entry with factId links to fact catalog", () => {
+    test("fact entry has factId and displayText", () => {
       expect(entry1.factId).toBe("hand.hcp");
-      expect(entry1.meaningId).toBeUndefined();
+      expect(entry1.displayText).toBe("High card points");
+      expect("meaningId" in entry1).toBe(false);
     });
 
-    test("entry with meaningId links to meaning vocabulary", () => {
+    test("meaning entry has meaningId and displayText", () => {
       expect(meaningEntry.meaningId).toBe("stayman:ask-major");
-      expect(meaningEntry.factId).toBeUndefined();
+      expect(meaningEntry.displayText).toBe("Stayman: asks opener for a 4-card major");
+      expect("factId" in meaningEntry).toBe(false);
     });
 
-    test("contrastiveTemplateKey is optional", () => {
+    test("contrastiveTemplateKey is optional on fact entries", () => {
       expect(entry1.contrastiveTemplateKey).toBeUndefined();
       expect(entry2.contrastiveTemplateKey).toBe("explain.bridge.gameValues.whyNot");
     });

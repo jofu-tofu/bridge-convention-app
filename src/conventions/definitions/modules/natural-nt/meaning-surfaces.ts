@@ -11,6 +11,8 @@ import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 
+import { NATURAL_NT_MEANING_IDS } from "./meaning-ids";
+
 // ─── Module context ──────────────────────────────────────────
 
 export const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
@@ -20,7 +22,7 @@ export const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
 export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
-      meaningId: "bridge:nt-invite",
+      meaningId: NATURAL_NT_MEANING_IDS.NT_INVITE,
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_INVITE,
       encoding: bid(2, BidSuit.NoTrump),
       clauses: [
@@ -52,7 +54,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
     }, NATURAL_NT_CTX),
 
     createSurface({
-      meaningId: "bridge:to-3nt",
+      meaningId: NATURAL_NT_MEANING_IDS.TO_3NT,
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_GAME,
       encoding: bid(3, BidSuit.NoTrump),
       clauses: [
@@ -92,7 +94,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
 export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
-      meaningId: "bridge:1nt-opening",
+      meaningId: NATURAL_NT_MEANING_IDS.NT_OPENING,
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.NT_OPENING,
       encoding: bid(1, BidSuit.NoTrump),
       clauses: [

@@ -115,6 +115,7 @@ export function createJacobyTransfersDeclarations(sys: SystemConfig) {
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "jacoby-transfers",
   description: "Jacoby Transfers — bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
+  purpose: "Right-side the contract so the strong 1NT hand stays hidden, while guaranteeing a trump fit when responder has a 5+ card major",
   ...createJacobyTransfersDeclarations(sys),
   local: jacobyTransfersLocal,
   states: createJacobyTransfersStates(sys),

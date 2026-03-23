@@ -52,7 +52,8 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `posterior-backend.ts` | Backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
 | `agreement-module.ts` | Agreement module IR: system profiles, fact constraints |
 | `deal-spec.ts` | DealSpec IR types for deal generation |
-| `explanation-catalog.ts` | Explanation catalog entries for teaching projections |
+| `explanation-catalog.ts` | Explanation catalog entries for teaching projections. Discriminated union: `FactExplanationEntry` (factId, contrastive fields) and `MeaningExplanationEntry` (meaningId). `displayText` is required on both. `ExplanationEntry = FactExplanationEntry \| MeaningExplanationEntry`. Exhaustiveness is enforced at compile time via `Record<ModuleFactId, FactExplanationEntry>` and `Record<ModuleMeaningId, MeaningExplanationEntry>` in per-module explanation catalogs. |
+| `shared-fact-vocabulary.ts` | Typed constants for all shared fact IDs (`PrimitiveFactId`, `BridgeDerivedFactId`, `PosteriorFactId`, `SharedFactId`). These IDs are the ownership boundary — the platform explanation catalog (`shared-explanation-catalog.ts`) covers exactly these IDs plus system fact IDs. Module-derived fact IDs are owned by their respective modules. |
 | `convention.ts` | Convention registry types and deal constraint shapes |
 | `fact-helpers.ts` | Shared utilities for fact evaluators (`num()`, `bool()`, `fv()`) |
 | `shared-facts.ts` | Bridge-universal fact vocabulary (primitive + bridge-derived) |

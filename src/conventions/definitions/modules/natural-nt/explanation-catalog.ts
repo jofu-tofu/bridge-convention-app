@@ -1,152 +1,42 @@
-import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
+import type {
+  ExplanationEntry,
+  MeaningExplanationEntry,
+} from "../../../../core/contracts/explanation-catalog";
 
-import {
-  SYSTEM_RESPONDER_INVITE_VALUES,
-  SYSTEM_RESPONDER_GAME_VALUES,
-  SYSTEM_RESPONDER_SLAM_VALUES,
-} from "../../../../core/contracts/system-fact-vocabulary";
+import type { NaturalNtMeaningId } from "./meaning-ids";
+import { NATURAL_NT_MEANING_IDS } from "./meaning-ids";
 
-// ─── Explanation entries ─────────────────────────────────────
+// ─── Meaning explanations (exhaustive over NaturalNtMeaningId) ──
+
+const MEANING_EXPLANATIONS: Record<NaturalNtMeaningId, MeaningExplanationEntry> = {
+  [NATURAL_NT_MEANING_IDS.NT_OPENING]: {
+    explanationId: "nt.naturalNt.opening",
+    meaningId: NATURAL_NT_MEANING_IDS.NT_OPENING,
+    templateKey: "nt.naturalNt.opening.semantic",
+    displayText: "1NT opening: balanced hand with 15-17 HCP",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [NATURAL_NT_MEANING_IDS.NT_INVITE]: {
+    explanationId: "nt.naturalNt.invite",
+    meaningId: NATURAL_NT_MEANING_IDS.NT_INVITE,
+    templateKey: "nt.naturalNt.invite.semantic",
+    displayText: "2NT invite: invitational values, no 4-card major",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [NATURAL_NT_MEANING_IDS.TO_3NT]: {
+    explanationId: "nt.naturalNt.to3nt",
+    meaningId: NATURAL_NT_MEANING_IDS.TO_3NT,
+    templateKey: "nt.naturalNt.to3nt.semantic",
+    displayText: "3NT game: game values, no 4-card major",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+};
+
+// ─── Combined export ─────────────────────────────────────────
 
 export const NT_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
-  {
-    explanationId: "nt.hcp.invite",
-    factId: SYSTEM_RESPONDER_INVITE_VALUES,
-    templateKey: "nt.hcp.invite.supporting",
-    displayText: "Enough HCP to invite game",
-    contrastiveTemplateKey: "nt.hcp.invite.whyNot",
-    contrastiveDisplayText: "Not enough HCP to invite game",
-    preferredLevel: "semantic",
-    roles: ["supporting", "blocking"],
-  },
-  {
-    explanationId: "nt.hcp.game",
-    factId: SYSTEM_RESPONDER_GAME_VALUES,
-    templateKey: "nt.hcp.game.supporting",
-    displayText: "Enough HCP for game",
-    contrastiveTemplateKey: "nt.hcp.game.whyNot",
-    contrastiveDisplayText: "Not enough HCP for game",
-    preferredLevel: "semantic",
-    roles: ["supporting", "blocking"],
-  },
-  {
-    explanationId: "nt.hcp.slam",
-    factId: SYSTEM_RESPONDER_SLAM_VALUES,
-    templateKey: "nt.hcp.slam.supporting",
-    displayText: "Enough HCP for slam exploration",
-    contrastiveTemplateKey: "nt.hcp.slam.whyNot",
-    contrastiveDisplayText: "Not enough HCP for slam",
-    preferredLevel: "semantic",
-    roles: ["supporting", "blocking"],
-  },
-  {
-    explanationId: "nt.suit.fourCardMajor",
-    factId: "bridge.hasFourCardMajor",
-    templateKey: "nt.suit.fourCardMajor.supporting",
-    displayText: "Has a 4-card major",
-    contrastiveTemplateKey: "nt.suit.fourCardMajor.whyNot",
-    contrastiveDisplayText: "No 4-card major",
-    preferredLevel: "mechanical",
-    roles: ["supporting", "blocking", "pedagogical"],
-  },
-  {
-    explanationId: "nt.suit.fiveCardMajor",
-    factId: "bridge.hasFiveCardMajor",
-    templateKey: "nt.suit.fiveCardMajor.supporting",
-    displayText: "Has a 5-card major",
-    contrastiveTemplateKey: "nt.suit.fiveCardMajor.whyNot",
-    contrastiveDisplayText: "No 5-card major",
-    preferredLevel: "mechanical",
-    roles: ["supporting", "blocking", "pedagogical"],
-  },
-  {
-    explanationId: "nt.shape.balanced",
-    factId: "hand.isBalanced",
-    templateKey: "nt.shape.balanced.supporting",
-    displayText: "Balanced hand shape",
-    contrastiveTemplateKey: "nt.shape.balanced.whyNot",
-    contrastiveDisplayText: "Unbalanced hand shape",
-    preferredLevel: "semantic",
-    roles: ["supporting", "inferential"],
-  },
-  {
-    explanationId: "nt.hcp.base",
-    factId: "hand.hcp",
-    templateKey: "nt.hcp.base.mechanical",
-    displayText: "High card points",
-    preferredLevel: "mechanical",
-    roles: ["supporting"],
-  },
-  {
-    explanationId: "nt.suit.majorPattern",
-    factId: "bridge.majorPattern",
-    templateKey: "nt.suit.majorPattern.supporting",
-    displayText: "Major suit distribution",
-    preferredLevel: "mechanical",
-    roles: ["supporting", "inferential"],
-  },
-  {
-    explanationId: "nt.posterior.partnerHas4Hearts",
-    factId: "bridge.partnerHas4HeartsLikely",
-    templateKey: "nt.posterior.partnerHas4Hearts",
-    displayText: "Partner likely has 4+ hearts",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
-  {
-    explanationId: "nt.posterior.partnerHas4Spades",
-    factId: "bridge.partnerHas4SpadesLikely",
-    templateKey: "nt.posterior.partnerHas4Spades",
-    displayText: "Partner likely has 4+ spades",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
-  {
-    explanationId: "nt.posterior.partnerHas4Diamonds",
-    factId: "bridge.partnerHas4DiamondsLikely",
-    templateKey: "nt.posterior.partnerHas4Diamonds",
-    displayText: "Partner likely has 4+ diamonds",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
-  {
-    explanationId: "nt.posterior.partnerHas4Clubs",
-    factId: "bridge.partnerHas4ClubsLikely",
-    templateKey: "nt.posterior.partnerHas4Clubs",
-    displayText: "Partner likely has 4+ clubs",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
-  {
-    explanationId: "nt.posterior.nsHaveEightCardFit",
-    factId: "module.stayman.nsHaveEightCardFitLikely",
-    templateKey: "nt.posterior.nsHaveEightCardFit",
-    displayText: "N-S likely have an 8-card fit",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
-  {
-    explanationId: "nt.posterior.combinedHcpInRange",
-    factId: "bridge.combinedHcpInRangeLikely",
-    templateKey: "nt.posterior.combinedHcpInRange",
-    displayText: "Combined HCP likely in game range",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
-  {
-    explanationId: "nt.posterior.openerStillBalanced",
-    factId: "module.stayman.openerStillBalancedLikely",
-    templateKey: "nt.posterior.openerStillBalanced",
-    displayText: "Opener likely still has balanced shape",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
-  {
-    explanationId: "nt.posterior.openerHasSecondMajor",
-    factId: "module.stayman.openerHasSecondMajorLikely",
-    templateKey: "nt.posterior.openerHasSecondMajor",
-    displayText: "Opener may have a second 4-card major",
-    preferredLevel: "semantic",
-    roles: ["inferential"],
-  },
+  ...Object.values(MEANING_EXPLANATIONS),
 ];

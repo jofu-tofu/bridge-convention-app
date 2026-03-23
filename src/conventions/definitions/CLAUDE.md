@@ -24,6 +24,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 | `semantic-classes.ts` | Module-local semantic class constants (not in central registry) |
 | `system-profile.ts` | `SystemProfile` for profile-based module activation |
 | `explanation-catalog.ts` | `ExplanationCatalog` entries for teaching projections |
+| `fact-ids.ts` | `as const` typed ID constants for all module-derived fact IDs |
+| `meaning-ids.ts` | `as const` typed ID constants for all module meaning IDs |
 | `module.ts` | *(dont-bundle, weak-twos-bundle only)* Single-module convention definition |
 | `index.ts` | Barrel exports |
 | `__tests__/` | Bundle-specific tests |
@@ -100,6 +102,10 @@ See `docs/convention-templates.md` for skeleton code templates (config.ts, meani
 - **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
 - **Module-derived facts must have `composition`.** All `FactDefinition` objects with `layer: FactLayer.ModuleDerived` must declare a `composition` field describing the loosest constraint under which the fact could be true. The composition is used by deal constraint derivation to derive practitioner seat constraints from R1 surface clauses. Convention authors should write the LOOSEST correct composition — it does not need to be semantically equivalent to the evaluator. Factory helpers (`defineBooleanFact`, `defineHcpRangeFact`) auto-populate composition. Hand-written evaluators must add composition manually.
 - **System-fact-gated surfaces for cross-system modules.** When a bid has different meanings in different systems (e.g., jump shift: strong in SAYC, weak in 2/1), author surfaces for ALL meanings in the same module. Gate each with a system fact clause (`{ factId: SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, operator: "eq", value: true/false }`). The pipeline evaluates all surfaces and selects only those matching the active `SystemConfig`. Never create system-specific modules or branch on `systemId` in module code.
+- **Mandatory explanation entries.** Every module-derived fact and meaning must have an explanation entry enforced by `Record<ModuleFactId, FactExplanationEntry>` and `Record<ModuleMeaningId, MeaningExplanationEntry>` exhaustiveness in `explanation-catalog.ts`. Adding a fact or meaning ID without a corresponding explanation entry is a compile error.
+- **Typed ID constants per module.** Each module has `fact-ids.ts` and `meaning-ids.ts` with `as const` typed ID constants. These typed constants are the keys in the `Record` types, ensuring compile-time tracking of all IDs.
+- **Template-form factIds are module-owned.** Template-form factIds (`$suit`) are module-owned in explanation catalogs. The platform catalog (`shared-explanation-catalog.ts`) covers only concrete shared/system fact IDs.
+- **Non-pedagogical facts use `displayText: 'internal'`.** Facts that exist for pipeline routing but have no teaching value use `displayText: 'internal'` with `roles: []` in their explanation entry.
 
 ## Common Pitfalls
 

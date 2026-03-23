@@ -71,6 +71,7 @@ export function createStaymanDeclarations(sys: SystemConfig) {
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "stayman",
   description: "Stayman — bid 2C over 1NT to find a 4-4 major-suit fit",
+  purpose: "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
   ...createStaymanDeclarations(sys),
   local: staymanLocal,
   states: createStaymanStates(sys),

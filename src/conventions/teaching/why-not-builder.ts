@@ -114,6 +114,11 @@ function buildWhyNotExplanation(
       const displayContent = contrastiveText
         ?? clauseDesc
         ?? evidence.conditionId;
+      if (!contrastiveText && !clauseDesc && catalogIndex) {
+        if (import.meta.env.DEV) {
+          console.warn(`[teaching] No catalog entry found for factId: ${evidence.conditionId}`);
+        }
+      }
       const node: ExplanationNode = catalogEntry
         ? {
             kind: "condition",

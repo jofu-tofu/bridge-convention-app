@@ -9,7 +9,7 @@ import type {
   PipelineCarrier,
 } from "../../pipeline/pipeline-types";
 import type { DecisionProvenance } from "../../../core/contracts/provenance";
-import type { ExplanationCatalog } from "../../../core/contracts/explanation-catalog";
+import type { ExplanationCatalog, FactExplanationEntry, MeaningExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import { createExplanationCatalog } from "../../../core/contracts/explanation-catalog";
 import type { SurfaceGroup } from "../../../core/contracts/teaching-grading";
 
@@ -511,17 +511,19 @@ describe("projectTeaching", () => {
         explanationId: "nt.hcp.base",
         factId: "hand.hcp",
         templateKey: "nt.hcp.base.mechanical",
+        displayText: "High card points",
         preferredLevel: "mechanical",
         roles: ["supporting"],
-      },
+      } satisfies FactExplanationEntry,
       {
         explanationId: "nt.suit.fourCardMajor",
         factId: "bridge.hasFourCardMajor",
         templateKey: "nt.suit.fourCardMajor.supporting",
+        displayText: "Has a 4-card major",
         contrastiveTemplateKey: "nt.suit.fourCardMajor.whyNot",
         preferredLevel: "mechanical",
         roles: ["supporting", "blocking"],
-      },
+      } satisfies FactExplanationEntry,
     ]);
 
     const proposal = makeProposal({ meaningId: "stayman:ask-major" });
@@ -566,10 +568,11 @@ describe("projectTeaching", () => {
         explanationId: "nt.hcp.invite",
         factId: "hand.hcp",
         templateKey: "nt.hcp.invite.supporting",
+        displayText: "Enough HCP to invite game",
         contrastiveTemplateKey: "nt.hcp.invite.whyNot",
         preferredLevel: "semantic",
         roles: ["supporting", "blocking"],
-      },
+      } satisfies FactExplanationEntry,
     ]);
 
     const winnerProposal = makeProposal({
@@ -787,22 +790,24 @@ describe("projectTeaching", () => {
     expect(eliminatedMeaning!.eliminationReason).toContain("Too many HCP for invite");
   });
 
-  test("with catalog: meaning-level entries produce convention-reference nodes", () => {
+  test("with catalog: fact and meaning entries produce enriched condition nodes", () => {
     const catalog: ExplanationCatalog = createExplanationCatalog([
       {
         explanationId: "nt.stayman.eligible",
         factId: "module.stayman.eligible",
         templateKey: "nt.stayman.eligible.supporting",
+        displayText: "Eligible for Stayman",
         preferredLevel: "semantic",
         roles: ["supporting"],
-      },
+      } satisfies FactExplanationEntry,
       {
         explanationId: "nt.stayman.askMajor",
         meaningId: "stayman:ask-major",
         templateKey: "nt.stayman.askMajor.semantic",
+        displayText: "Stayman: asks opener for a 4-card major",
         preferredLevel: "semantic",
         roles: ["pedagogical"],
-      },
+      } satisfies MeaningExplanationEntry,
     ]);
 
     const proposal = makeProposal({ meaningId: "stayman:ask-major" });
@@ -826,14 +831,10 @@ describe("projectTeaching", () => {
       { explanationCatalog: catalog },
     );
 
-    // Should NOT produce convention-reference nodes because the fact entry has no meaningId
-    // (the fact entry "nt.stayman.eligible" has factId but no meaningId)
-    const refNodes = projection.primaryExplanation.filter(n => n.kind === "convention-reference");
-    expect(refNodes).toHaveLength(0);
-
-    // Condition node should be enriched
+    // Condition node should be enriched with fact catalog data
     const conditionNodes = projection.primaryExplanation.filter(n => n.kind === "condition");
     expect(conditionNodes).toHaveLength(1);
     expect(conditionNodes[0]!.explanationId).toBe("nt.stayman.eligible");
+    expect(conditionNodes[0]!.content).toBe("Eligible for Stayman");
   });
 });

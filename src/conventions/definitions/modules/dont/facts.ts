@@ -14,6 +14,7 @@ import type { FactEntry } from "../../../pipeline/fact-factory";
 import type { Hand } from "../../../../engine/types";
 import { Suit } from "../../../../engine/types";
 import { suitLengthOf } from "../../../../engine/hand-evaluator";
+import { DONT_FACT_IDS } from "./fact-ids";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ function longestSuitExcluding(
 // ─── Factory-based facts (simple suit-length comparisons) ───
 
 const naturalSpadesEntry = defineBooleanFact({
-  id: "module.dont.naturalSpades",
+  id: DONT_FACT_IDS.NATURAL_SPADES,
   description: "S6+ — natural spades for 2S bid",
   factId: "hand.suitLength.spades",
   operator: "gte",
@@ -50,7 +51,7 @@ const naturalSpadesEntry = defineBooleanFact({
 });
 
 const hasSpadeSupportEntry = defineBooleanFact({
-  id: "module.dont.hasSpadeSupport",
+  id: DONT_FACT_IDS.HAS_SPADE_SUPPORT,
   description: "3+ spades",
   factId: "hand.suitLength.spades",
   operator: "gte",
@@ -60,7 +61,7 @@ const hasSpadeSupportEntry = defineBooleanFact({
 });
 
 const hasDiamondSupportEntry = defineBooleanFact({
-  id: "module.dont.hasDiamondSupport",
+  id: DONT_FACT_IDS.HAS_DIAMOND_SUPPORT,
   description: "3+ diamonds",
   factId: "hand.suitLength.diamonds",
   operator: "gte",
@@ -70,7 +71,7 @@ const hasDiamondSupportEntry = defineBooleanFact({
 });
 
 const hasClubSupportEntry = defineBooleanFact({
-  id: "module.dont.hasClubSupport",
+  id: DONT_FACT_IDS.HAS_CLUB_SUPPORT,
   description: "3+ clubs",
   factId: "hand.suitLength.clubs",
   operator: "gte",
@@ -105,7 +106,7 @@ const BOTH_MAJORS_COMPOSITION: FactComposition = {
 
 const bothMajorsEntry = handWrittenEntry(
   {
-    id: "module.dont.bothMajors",
+    id: DONT_FACT_IDS.BOTH_MAJORS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "H5+S4+ or S5+H4+ — both majors for 2H bid",
@@ -118,7 +119,7 @@ const bothMajorsEntry = handWrittenEntry(
     const hearts = suitLengthOf(h, Suit.Hearts);
     const spades = suitLengthOf(h, Suit.Spades);
     return fv(
-      "module.dont.bothMajors",
+      DONT_FACT_IDS.BOTH_MAJORS,
       (hearts >= 5 && spades >= 4) || (spades >= 5 && hearts >= 4),
     );
   },
@@ -138,7 +139,7 @@ const DIAMONDS_AND_MAJOR_COMPOSITION: FactComposition = {
 
 const diamondsAndMajorEntry = handWrittenEntry(
   {
-    id: "module.dont.diamondsAndMajor",
+    id: DONT_FACT_IDS.DIAMONDS_AND_MAJOR,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "D5+ and (H4+ or S4+) — diamonds + a major for 2D bid",
@@ -152,7 +153,7 @@ const diamondsAndMajorEntry = handWrittenEntry(
     const hearts = suitLengthOf(h, Suit.Hearts);
     const spades = suitLengthOf(h, Suit.Spades);
     return fv(
-      "module.dont.diamondsAndMajor",
+      DONT_FACT_IDS.DIAMONDS_AND_MAJOR,
       diamonds >= 5 && (hearts >= 4 || spades >= 4),
     );
   },
@@ -173,7 +174,7 @@ const CLUBS_AND_HIGHER_COMPOSITION: FactComposition = {
 
 const clubsAndHigherEntry = handWrittenEntry(
   {
-    id: "module.dont.clubsAndHigher",
+    id: DONT_FACT_IDS.CLUBS_AND_HIGHER,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "C5+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
@@ -188,7 +189,7 @@ const clubsAndHigherEntry = handWrittenEntry(
     const hearts = suitLengthOf(h, Suit.Hearts);
     const spades = suitLengthOf(h, Suit.Spades);
     return fv(
-      "module.dont.clubsAndHigher",
+      DONT_FACT_IDS.CLUBS_AND_HIGHER,
       clubs >= 5 && (diamonds >= 4 || hearts >= 4 || spades >= 4),
     );
   },
@@ -207,7 +208,7 @@ const SINGLE_SUITED_COMPOSITION: FactComposition = {
 
 const singleSuitedEntry = handWrittenEntry(
   {
-    id: "module.dont.singleSuited",
+    id: DONT_FACT_IDS.SINGLE_SUITED,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "One suit 6+, no other suit 4+, longest suit is not spades — for double",
@@ -225,30 +226,30 @@ const singleSuitedEntry = handWrittenEntry(
     ];
     const longest = lengths.reduce((a, b) => (b.length > a.length ? b : a));
     if (longest.length < 6 || longest.suit === Suit.Spades) {
-      return fv("module.dont.singleSuited", false);
+      return fv(DONT_FACT_IDS.SINGLE_SUITED, false);
     }
     const otherHas4Plus = lengths.some(
       (l) => l.suit !== longest.suit && l.length >= 4,
     );
-    return fv("module.dont.singleSuited", !otherHas4Plus);
+    return fv(DONT_FACT_IDS.SINGLE_SUITED, !otherHas4Plus);
   },
 );
 
 // Overcaller reveal facts (after X → 2C)
 const singleSuitClubsEntry = handWrittenEntry(
   {
-    id: "module.dont.singleSuitClubs",
+    id: DONT_FACT_IDS.SINGLE_SUIT_CLUBS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "The 6+ single suit is clubs",
     valueType: "boolean",
-    derivesFrom: ["module.dont.singleSuited"],
+    derivesFrom: [DONT_FACT_IDS.SINGLE_SUITED],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
     const longest = longestSuitExcluding(h, []);
     return fv(
-      "module.dont.singleSuitClubs",
+      DONT_FACT_IDS.SINGLE_SUIT_CLUBS,
       longest.suit === Suit.Clubs && longest.length >= 6,
     );
   },
@@ -256,18 +257,18 @@ const singleSuitClubsEntry = handWrittenEntry(
 
 const singleSuitDiamondsEntry = handWrittenEntry(
   {
-    id: "module.dont.singleSuitDiamonds",
+    id: DONT_FACT_IDS.SINGLE_SUIT_DIAMONDS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "The 6+ single suit is diamonds",
     valueType: "boolean",
-    derivesFrom: ["module.dont.singleSuited"],
+    derivesFrom: [DONT_FACT_IDS.SINGLE_SUITED],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
     const longest = longestSuitExcluding(h, []);
     return fv(
-      "module.dont.singleSuitDiamonds",
+      DONT_FACT_IDS.SINGLE_SUIT_DIAMONDS,
       longest.suit === Suit.Diamonds && longest.length >= 6,
     );
   },
@@ -275,18 +276,18 @@ const singleSuitDiamondsEntry = handWrittenEntry(
 
 const singleSuitHeartsEntry = handWrittenEntry(
   {
-    id: "module.dont.singleSuitHearts",
+    id: DONT_FACT_IDS.SINGLE_SUIT_HEARTS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "The 6+ single suit is hearts",
     valueType: "boolean",
-    derivesFrom: ["module.dont.singleSuited"],
+    derivesFrom: [DONT_FACT_IDS.SINGLE_SUITED],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
     const longest = longestSuitExcluding(h, []);
     return fv(
-      "module.dont.singleSuitHearts",
+      DONT_FACT_IDS.SINGLE_SUIT_HEARTS,
       longest.suit === Suit.Hearts && longest.length >= 6,
     );
   },
@@ -295,12 +296,12 @@ const singleSuitHeartsEntry = handWrittenEntry(
 // 2C relay response facts
 const clubsHigherDiamondsEntry = handWrittenEntry(
   {
-    id: "module.dont.clubsHigherDiamonds",
+    id: DONT_FACT_IDS.CLUBS_HIGHER_DIAMONDS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "With clubs as anchor, higher suit is diamonds",
     valueType: "boolean",
-    derivesFrom: ["module.dont.clubsAndHigher"],
+    derivesFrom: [DONT_FACT_IDS.CLUBS_AND_HIGHER],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
@@ -308,18 +309,18 @@ const clubsHigherDiamondsEntry = handWrittenEntry(
     const hr = suitLengthOf(h, Suit.Hearts);
     const s = suitLengthOf(h, Suit.Spades);
     const isDiamonds = d >= 4 && d > hr && d > s;
-    return fv("module.dont.clubsHigherDiamonds", isDiamonds);
+    return fv(DONT_FACT_IDS.CLUBS_HIGHER_DIAMONDS, isDiamonds);
   },
 );
 
 const clubsHigherHeartsEntry = handWrittenEntry(
   {
-    id: "module.dont.clubsHigherHearts",
+    id: DONT_FACT_IDS.CLUBS_HIGHER_HEARTS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "With clubs as anchor, higher suit is hearts",
     valueType: "boolean",
-    derivesFrom: ["module.dont.clubsAndHigher"],
+    derivesFrom: [DONT_FACT_IDS.CLUBS_AND_HIGHER],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
@@ -327,18 +328,18 @@ const clubsHigherHeartsEntry = handWrittenEntry(
     const hr = suitLengthOf(h, Suit.Hearts);
     const s = suitLengthOf(h, Suit.Spades);
     const isHearts = hr >= 4 && hr >= d && hr > s;
-    return fv("module.dont.clubsHigherHearts", isHearts);
+    return fv(DONT_FACT_IDS.CLUBS_HIGHER_HEARTS, isHearts);
   },
 );
 
 const clubsHigherSpadesEntry = handWrittenEntry(
   {
-    id: "module.dont.clubsHigherSpades",
+    id: DONT_FACT_IDS.CLUBS_HIGHER_SPADES,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "With clubs as anchor, higher suit is spades",
     valueType: "boolean",
-    derivesFrom: ["module.dont.clubsAndHigher"],
+    derivesFrom: [DONT_FACT_IDS.CLUBS_AND_HIGHER],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
@@ -346,49 +347,49 @@ const clubsHigherSpadesEntry = handWrittenEntry(
     const hr = suitLengthOf(h, Suit.Hearts);
     const s = suitLengthOf(h, Suit.Spades);
     const isSpades = s >= 4 && s >= hr && s >= d;
-    return fv("module.dont.clubsHigherSpades", isSpades);
+    return fv(DONT_FACT_IDS.CLUBS_HIGHER_SPADES, isSpades);
   },
 );
 
 // 2D relay response facts
 const diamondsMajorHeartsEntry = handWrittenEntry(
   {
-    id: "module.dont.diamondsMajorHearts",
+    id: DONT_FACT_IDS.DIAMONDS_MAJOR_HEARTS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "With diamonds as anchor, the major is hearts",
     valueType: "boolean",
-    derivesFrom: ["module.dont.diamondsAndMajor"],
+    derivesFrom: [DONT_FACT_IDS.DIAMONDS_AND_MAJOR],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
     const hr = suitLengthOf(h, Suit.Hearts);
     const s = suitLengthOf(h, Suit.Spades);
-    return fv("module.dont.diamondsMajorHearts", hr >= 4 && hr > s);
+    return fv(DONT_FACT_IDS.DIAMONDS_MAJOR_HEARTS, hr >= 4 && hr > s);
   },
 );
 
 const diamondsMajorSpadesEntry = handWrittenEntry(
   {
-    id: "module.dont.diamondsMajorSpades",
+    id: DONT_FACT_IDS.DIAMONDS_MAJOR_SPADES,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "With diamonds as anchor, the major is spades",
     valueType: "boolean",
-    derivesFrom: ["module.dont.diamondsAndMajor"],
+    derivesFrom: [DONT_FACT_IDS.DIAMONDS_AND_MAJOR],
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   (h, _ev, _m) => {
     const hr = suitLengthOf(h, Suit.Hearts);
     const s = suitLengthOf(h, Suit.Spades);
-    return fv("module.dont.diamondsMajorSpades", s >= 4 && s >= hr);
+    return fv(DONT_FACT_IDS.DIAMONDS_MAJOR_SPADES, s >= 4 && s >= hr);
   },
 );
 
 // Advancer support facts (complex)
 const hasHeartSupportEntry = handWrittenEntry(
   {
-    id: "module.dont.hasHeartSupport",
+    id: DONT_FACT_IDS.HAS_HEART_SUPPORT,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "3+ hearts, or equal length in both majors (2-2)",
@@ -399,13 +400,13 @@ const hasHeartSupportEntry = handWrittenEntry(
   (h, _ev, _m) => {
     const hearts = suitLengthOf(h, Suit.Hearts);
     const spades = suitLengthOf(h, Suit.Spades);
-    return fv("module.dont.hasHeartSupport", hearts >= 3 || (hearts >= 2 && hearts >= spades));
+    return fv(DONT_FACT_IDS.HAS_HEART_SUPPORT, hearts >= 3 || (hearts >= 2 && hearts >= spades));
   },
 );
 
 const hasLongMinorEntry = handWrittenEntry(
   {
-    id: "module.dont.hasLongMinor",
+    id: DONT_FACT_IDS.HAS_LONG_MINOR,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "6+ in clubs or diamonds (for minor escape)",
@@ -416,41 +417,41 @@ const hasLongMinorEntry = handWrittenEntry(
   (h, _ev, _m) => {
     const clubs = suitLengthOf(h, Suit.Clubs);
     const diamonds = suitLengthOf(h, Suit.Diamonds);
-    return fv("module.dont.hasLongMinor", clubs >= 6 || diamonds >= 6);
+    return fv(DONT_FACT_IDS.HAS_LONG_MINOR, clubs >= 6 || diamonds >= 6);
   },
 );
 
 const longMinorIsClubsEntry = handWrittenEntry(
   {
-    id: "module.dont.longMinorIsClubs",
+    id: DONT_FACT_IDS.LONG_MINOR_IS_CLUBS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Longer minor is clubs (for 3C escape)",
     valueType: "boolean",
-    derivesFrom: ["module.dont.hasLongMinor"],
+    derivesFrom: [DONT_FACT_IDS.HAS_LONG_MINOR],
     constrainsDimensions: ["suitIdentity", "suitLength", "shapeClass"],
   },
   (h, _ev, _m) => {
     const clubs = suitLengthOf(h, Suit.Clubs);
     const diamonds = suitLengthOf(h, Suit.Diamonds);
-    return fv("module.dont.longMinorIsClubs", clubs >= 6 && clubs >= diamonds);
+    return fv(DONT_FACT_IDS.LONG_MINOR_IS_CLUBS, clubs >= 6 && clubs >= diamonds);
   },
 );
 
 const longMinorIsDiamondsEntry = handWrittenEntry(
   {
-    id: "module.dont.longMinorIsDiamonds",
+    id: DONT_FACT_IDS.LONG_MINOR_IS_DIAMONDS,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Longer minor is diamonds (for 3D escape)",
     valueType: "boolean",
-    derivesFrom: ["module.dont.hasLongMinor"],
+    derivesFrom: [DONT_FACT_IDS.HAS_LONG_MINOR],
     constrainsDimensions: ["suitIdentity", "suitLength", "shapeClass"],
   },
   (h, _ev, _m) => {
     const clubs = suitLengthOf(h, Suit.Clubs);
     const diamonds = suitLengthOf(h, Suit.Diamonds);
-    return fv("module.dont.longMinorIsDiamonds", diamonds >= 6 && diamonds > clubs);
+    return fv(DONT_FACT_IDS.LONG_MINOR_IS_DIAMONDS, diamonds >= 6 && diamonds > clubs);
   },
 );
 

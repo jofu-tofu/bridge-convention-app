@@ -6,6 +6,8 @@ import type { ModuleContext } from "../../../core/surface-builder";
 import {
   SYSTEM_DONT_OVERCALL_IN_RANGE,
 } from "../../../../core/contracts/system-fact-vocabulary";
+import { DONT_FACT_IDS } from "./fact-ids";
+import { DONT_MEANING_IDS } from "./meaning-ids";
 
 const DONT_CTX: ModuleContext = { moduleId: "dont" };
 
@@ -24,7 +26,7 @@ export const DONT_R1_SURFACES = [
   // 1. 2H — both majors (5-4+ either way)
   createSurface(
     {
-      meaningId: "dont:both-majors-2h",
+      meaningId: DONT_MEANING_IDS.BOTH_MAJORS_2H,
       semanticClassId: DONT_CLASSES.BOTH_MAJORS,
       encoding: { defaultCall: bid(2, BidSuit.Hearts) },
       clauses: [
@@ -34,7 +36,7 @@ export const DONT_R1_SURFACES = [
           value: true,
         },
         {
-          factId: "module.dont.bothMajors",
+          factId: DONT_FACT_IDS.BOTH_MAJORS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -52,7 +54,7 @@ export const DONT_R1_SURFACES = [
   // 2. 2D — diamonds + a major
   createSurface(
     {
-      meaningId: "dont:diamonds-major-2d",
+      meaningId: DONT_MEANING_IDS.DIAMONDS_MAJOR_2D,
       semanticClassId: DONT_CLASSES.DIAMONDS_AND_MAJOR,
       encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
       clauses: [
@@ -62,7 +64,7 @@ export const DONT_R1_SURFACES = [
           value: true,
         },
         {
-          factId: "module.dont.diamondsAndMajor",
+          factId: DONT_FACT_IDS.DIAMONDS_AND_MAJOR,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -81,7 +83,7 @@ export const DONT_R1_SURFACES = [
   // 3. 2C — clubs + a higher suit
   createSurface(
     {
-      meaningId: "dont:clubs-higher-2c",
+      meaningId: DONT_MEANING_IDS.CLUBS_HIGHER_2C,
       semanticClassId: DONT_CLASSES.CLUBS_AND_HIGHER,
       encoding: { defaultCall: bid(2, BidSuit.Clubs) },
       clauses: [
@@ -91,7 +93,7 @@ export const DONT_R1_SURFACES = [
           value: true,
         },
         {
-          factId: "module.dont.clubsAndHigher",
+          factId: DONT_FACT_IDS.CLUBS_AND_HIGHER,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -110,7 +112,7 @@ export const DONT_R1_SURFACES = [
   // 4. 2S — natural 6+ spades
   createSurface(
     {
-      meaningId: "dont:natural-spades-2s",
+      meaningId: DONT_MEANING_IDS.NATURAL_SPADES_2S,
       semanticClassId: DONT_CLASSES.NATURAL_SPADES,
       encoding: { defaultCall: bid(2, BidSuit.Spades) },
       clauses: [
@@ -120,7 +122,7 @@ export const DONT_R1_SURFACES = [
           value: true,
         },
         {
-          factId: "module.dont.naturalSpades",
+          factId: DONT_FACT_IDS.NATURAL_SPADES,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -138,7 +140,7 @@ export const DONT_R1_SURFACES = [
   // 5. X (double) — single suited, one suit 6+, not spades
   createSurface(
     {
-      meaningId: "dont:single-suited-double",
+      meaningId: DONT_MEANING_IDS.SINGLE_SUITED_DOUBLE,
       semanticClassId: DONT_CLASSES.SINGLE_SUITED,
       encoding: { defaultCall: { type: "double" } },
       clauses: [
@@ -148,7 +150,7 @@ export const DONT_R1_SURFACES = [
           value: true,
         },
         {
-          factId: "module.dont.singleSuited",
+          factId: DONT_FACT_IDS.SINGLE_SUITED,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -166,7 +168,7 @@ export const DONT_R1_SURFACES = [
   // 6. Pass — no DONT bid applies (fallback)
   createSurface(
     {
-      meaningId: "dont:overcaller-pass",
+      meaningId: DONT_MEANING_IDS.OVERCALLER_PASS,
       semanticClassId: DONT_CLASSES.OVERCALLER_PASS,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
@@ -191,12 +193,12 @@ export const DONT_ADVANCER_2H_SURFACES = [
   // 1. Pass — accept hearts
   createSurface(
     {
-      meaningId: "dont:accept-hearts-pass",
+      meaningId: DONT_MEANING_IDS.ACCEPT_HEARTS_PASS,
       semanticClassId: DONT_CLASSES.ACCEPT_SUIT,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [
         {
-          factId: "module.dont.hasHeartSupport",
+          factId: DONT_FACT_IDS.HAS_HEART_SUPPORT,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -214,7 +216,7 @@ export const DONT_ADVANCER_2H_SURFACES = [
   // 2. 2S — prefer spades (no heart support catch-all)
   createSurface(
     {
-      meaningId: "dont:prefer-spades-2s",
+      meaningId: DONT_MEANING_IDS.PREFER_SPADES_2S,
       semanticClassId: DONT_CLASSES.PREFER_SPADES,
       encoding: { defaultCall: bid(2, BidSuit.Spades) },
       clauses: [],
@@ -230,19 +232,19 @@ export const DONT_ADVANCER_2H_SURFACES = [
   // 3. 3C — escape with long clubs (only without spade support — prefer major fit)
   createSurface(
     {
-      meaningId: "dont:escape-clubs-3c",
+      meaningId: DONT_MEANING_IDS.ESCAPE_CLUBS_3C,
       semanticClassId: DONT_CLASSES.ESCAPE_MINOR,
       encoding: { defaultCall: bid(3, BidSuit.Clubs) },
       clauses: [
         {
-          factId: "module.dont.longMinorIsClubs",
+          factId: DONT_FACT_IDS.LONG_MINOR_IS_CLUBS,
           operator: "boolean",
           value: true,
           isPublic: true,
           description: "6+ clubs (longer minor)",
         },
         {
-          factId: "module.dont.hasSpadeSupport",
+          factId: DONT_FACT_IDS.HAS_SPADE_SUPPORT,
           operator: "boolean",
           value: false,
           description: "No spade tolerance — prefer major fit when 3+ spades",
@@ -260,19 +262,19 @@ export const DONT_ADVANCER_2H_SURFACES = [
   // 4. 3D — escape with long diamonds (only without spade support — prefer major fit)
   createSurface(
     {
-      meaningId: "dont:escape-diamonds-3d",
+      meaningId: DONT_MEANING_IDS.ESCAPE_DIAMONDS_3D,
       semanticClassId: DONT_CLASSES.ESCAPE_MINOR,
       encoding: { defaultCall: bid(3, BidSuit.Diamonds) },
       clauses: [
         {
-          factId: "module.dont.longMinorIsDiamonds",
+          factId: DONT_FACT_IDS.LONG_MINOR_IS_DIAMONDS,
           operator: "boolean",
           value: true,
           isPublic: true,
           description: "6+ diamonds (longer minor)",
         },
         {
-          factId: "module.dont.hasSpadeSupport",
+          factId: DONT_FACT_IDS.HAS_SPADE_SUPPORT,
           operator: "boolean",
           value: false,
           description: "No spade tolerance — prefer major fit when 3+ spades",
@@ -297,12 +299,12 @@ export const DONT_ADVANCER_2D_SURFACES = [
   // 1. Pass — accept diamonds
   createSurface(
     {
-      meaningId: "dont:accept-diamonds-pass",
+      meaningId: DONT_MEANING_IDS.ACCEPT_DIAMONDS_PASS,
       semanticClassId: DONT_CLASSES.ACCEPT_SUIT,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [
         {
-          factId: "module.dont.hasDiamondSupport",
+          factId: DONT_FACT_IDS.HAS_DIAMOND_SUPPORT,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -320,7 +322,7 @@ export const DONT_ADVANCER_2D_SURFACES = [
   // 2. 2H — relay asking for the major
   createSurface(
     {
-      meaningId: "dont:relay-2h-after-2d",
+      meaningId: DONT_MEANING_IDS.RELAY_2H_AFTER_2D,
       semanticClassId: DONT_CLASSES.RELAY_ASK,
       encoding: { defaultCall: bid(2, BidSuit.Hearts) },
       clauses: [],
@@ -343,12 +345,12 @@ export const DONT_ADVANCER_2C_SURFACES = [
   // 1. Pass — accept clubs
   createSurface(
     {
-      meaningId: "dont:accept-clubs-pass",
+      meaningId: DONT_MEANING_IDS.ACCEPT_CLUBS_PASS,
       semanticClassId: DONT_CLASSES.ACCEPT_SUIT,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [
         {
-          factId: "module.dont.hasClubSupport",
+          factId: DONT_FACT_IDS.HAS_CLUB_SUPPORT,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -366,7 +368,7 @@ export const DONT_ADVANCER_2C_SURFACES = [
   // 2. 2D — relay asking for higher suit
   createSurface(
     {
-      meaningId: "dont:relay-2d-after-2c",
+      meaningId: DONT_MEANING_IDS.RELAY_2D_AFTER_2C,
       semanticClassId: DONT_CLASSES.RELAY_ASK,
       encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
       clauses: [],
@@ -389,12 +391,12 @@ export const DONT_ADVANCER_2S_SURFACES = [
   // 1. Pass — accept spades (with support)
   createSurface(
     {
-      meaningId: "dont:accept-spades-pass",
+      meaningId: DONT_MEANING_IDS.ACCEPT_SPADES_PASS,
       semanticClassId: DONT_CLASSES.ACCEPT_SUIT,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [
         {
-          factId: "module.dont.hasSpadeSupport",
+          factId: DONT_FACT_IDS.HAS_SPADE_SUPPORT,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -412,7 +414,7 @@ export const DONT_ADVANCER_2S_SURFACES = [
   // 2. Pass fallback — no alternative
   createSurface(
     {
-      meaningId: "dont:accept-spades-fallback",
+      meaningId: DONT_MEANING_IDS.ACCEPT_SPADES_FALLBACK,
       semanticClassId: DONT_CLASSES.ACCEPT_SUIT,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
@@ -433,7 +435,7 @@ export const DONT_ADVANCER_2S_SURFACES = [
 export const DONT_ADVANCER_DOUBLE_SURFACES = [
   createSurface(
     {
-      meaningId: "dont:forced-relay-2c",
+      meaningId: DONT_MEANING_IDS.FORCED_RELAY_2C,
       semanticClassId: DONT_CLASSES.FORCED_RELAY,
       encoding: { defaultCall: bid(2, BidSuit.Clubs) },
       clauses: [],
@@ -457,12 +459,12 @@ export const DONT_REVEAL_SURFACES = [
   // 1. Pass — reveal clubs
   createSurface(
     {
-      meaningId: "dont:reveal-clubs-pass",
+      meaningId: DONT_MEANING_IDS.REVEAL_CLUBS_PASS,
       semanticClassId: DONT_CLASSES.REVEAL_CLUBS,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [
         {
-          factId: "module.dont.singleSuitClubs",
+          factId: DONT_FACT_IDS.SINGLE_SUIT_CLUBS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -480,12 +482,12 @@ export const DONT_REVEAL_SURFACES = [
   // 2. 2D — reveal diamonds
   createSurface(
     {
-      meaningId: "dont:reveal-diamonds-2d",
+      meaningId: DONT_MEANING_IDS.REVEAL_DIAMONDS_2D,
       semanticClassId: DONT_CLASSES.REVEAL_DIAMONDS,
       encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
       clauses: [
         {
-          factId: "module.dont.singleSuitDiamonds",
+          factId: DONT_FACT_IDS.SINGLE_SUIT_DIAMONDS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -503,12 +505,12 @@ export const DONT_REVEAL_SURFACES = [
   // 3. 2H — reveal hearts
   createSurface(
     {
-      meaningId: "dont:reveal-hearts-2h",
+      meaningId: DONT_MEANING_IDS.REVEAL_HEARTS_2H,
       semanticClassId: DONT_CLASSES.REVEAL_HEARTS,
       encoding: { defaultCall: bid(2, BidSuit.Hearts) },
       clauses: [
         {
-          factId: "module.dont.singleSuitHearts",
+          factId: DONT_FACT_IDS.SINGLE_SUIT_HEARTS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -534,12 +536,12 @@ export const DONT_2C_RELAY_SURFACES = [
   // 1. Pass — higher suit is diamonds
   createSurface(
     {
-      meaningId: "dont:clubs-higher-diamonds-pass",
+      meaningId: DONT_MEANING_IDS.CLUBS_HIGHER_DIAMONDS_PASS,
       semanticClassId: DONT_CLASSES.SHOW_HIGHER_SUIT,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [
         {
-          factId: "module.dont.clubsHigherDiamonds",
+          factId: DONT_FACT_IDS.CLUBS_HIGHER_DIAMONDS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -557,12 +559,12 @@ export const DONT_2C_RELAY_SURFACES = [
   // 2. 2H — higher suit is hearts
   createSurface(
     {
-      meaningId: "dont:clubs-higher-hearts-2h",
+      meaningId: DONT_MEANING_IDS.CLUBS_HIGHER_HEARTS_2H,
       semanticClassId: DONT_CLASSES.SHOW_HIGHER_SUIT,
       encoding: { defaultCall: bid(2, BidSuit.Hearts) },
       clauses: [
         {
-          factId: "module.dont.clubsHigherHearts",
+          factId: DONT_FACT_IDS.CLUBS_HIGHER_HEARTS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -580,12 +582,12 @@ export const DONT_2C_RELAY_SURFACES = [
   // 3. 2S — higher suit is spades
   createSurface(
     {
-      meaningId: "dont:clubs-higher-spades-2s",
+      meaningId: DONT_MEANING_IDS.CLUBS_HIGHER_SPADES_2S,
       semanticClassId: DONT_CLASSES.SHOW_HIGHER_SUIT,
       encoding: { defaultCall: bid(2, BidSuit.Spades) },
       clauses: [
         {
-          factId: "module.dont.clubsHigherSpades",
+          factId: DONT_FACT_IDS.CLUBS_HIGHER_SPADES,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -610,12 +612,12 @@ export const DONT_2D_RELAY_SURFACES = [
   // 1. Pass — major is hearts
   createSurface(
     {
-      meaningId: "dont:diamonds-major-hearts-pass",
+      meaningId: DONT_MEANING_IDS.DIAMONDS_MAJOR_HEARTS_PASS,
       semanticClassId: DONT_CLASSES.SHOW_HIGHER_SUIT,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [
         {
-          factId: "module.dont.diamondsMajorHearts",
+          factId: DONT_FACT_IDS.DIAMONDS_MAJOR_HEARTS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -633,12 +635,12 @@ export const DONT_2D_RELAY_SURFACES = [
   // 2. 2S — major is spades
   createSurface(
     {
-      meaningId: "dont:diamonds-major-spades-2s",
+      meaningId: DONT_MEANING_IDS.DIAMONDS_MAJOR_SPADES_2S,
       semanticClassId: DONT_CLASSES.SHOW_HIGHER_SUIT,
       encoding: { defaultCall: bid(2, BidSuit.Spades) },
       clauses: [
         {
-          factId: "module.dont.diamondsMajorSpades",
+          factId: DONT_FACT_IDS.DIAMONDS_MAJOR_SPADES,
           operator: "boolean",
           value: true,
           isPublic: true,

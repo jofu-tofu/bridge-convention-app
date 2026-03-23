@@ -43,6 +43,9 @@ export function buildParseTree(
   for (const encoded of arbitration.truthSet) {
     const moduleId = encoded.proposal.moduleId;
     const entry = getOrCreate(moduleMap, moduleId);
+    if (!encoded.proposal.teachingLabel && import.meta.env.DEV) {
+      console.warn(`[teaching] No teachingLabel for meaningId: ${encoded.proposal.meaningId}`);
+    }
     entry.truthMeanings.push({
       meaningId: encoded.proposal.meaningId,
       displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
@@ -82,14 +85,18 @@ export function buildParseTree(
         m => m.meaningId === elimTrace.candidateId,
       );
       if (hasElim && data.conditions.length === 0 && elimTrace.evidence.length > 0) {
-        data.conditions = elimTrace.evidence.map(ev => ({
-          factId: ev.conditionId,
-          description: resolveDisplayText(catalogIndex?.byFactId.get(ev.factId ?? ev.conditionId))
-            ?? ev.description
-            ?? ev.conditionId,
-          satisfied: ev.satisfied,
-          observedValue: ev.observedValue,
-        }));
+        data.conditions = elimTrace.evidence.map(ev => {
+          const catalogText = resolveDisplayText(catalogIndex?.byFactId.get(ev.factId ?? ev.conditionId));
+          if (!catalogText && !ev.description && catalogIndex && import.meta.env.DEV) {
+            console.warn(`[teaching] No catalog entry found for factId: ${ev.factId ?? ev.conditionId}`);
+          }
+          return {
+            factId: ev.conditionId,
+            description: catalogText ?? ev.description ?? ev.conditionId,
+            satisfied: ev.satisfied,
+            observedValue: ev.observedValue,
+          };
+        });
       }
     }
   }

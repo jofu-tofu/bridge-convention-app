@@ -1,11 +1,19 @@
-import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
+import type {
+  ExplanationEntry,
+  ExplanationCatalog,
+  FactExplanationEntry,
+  MeaningExplanationEntry,
+} from "../../../../core/contracts/explanation-catalog";
+import { createExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
+import { BERGEN_FACT_IDS, type BergenFactId } from "./fact-ids";
+import { BERGEN_MEANING_IDS, type BergenMeaningId } from "./meaning-ids";
 
 /**
  * Bergen Raises explanation catalog.
  *
  * Maps Bergen facts and meanings to template keys for teaching projections.
- * Source content derived from bergen-raises/explanations.ts decision/bid/condition
- * explanations, restructured for the ExplanationCatalog contract.
+ * Uses Record<BergenFactId, ...> and Record<BergenMeaningId, ...> for
+ * compile-time exhaustiveness — missing any key is a tsc error.
  *
  * Covers all four rounds:
  *   R1 — responder's initial Bergen raise (splinter, game, limit, constructive, preemptive)
@@ -14,9 +22,25 @@ import { createExplanationCatalog, type ExplanationEntry, type ExplanationCatalo
  *   R4 — opener's final acceptance after game try
  */
 
-export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
-  // ── Fact-based entries: HCP thresholds ──────────────────────
+// ── Module fact explanations (Record-exhaustive) ─────────────────
 
+const FACT_EXPLANATIONS: Record<BergenFactId, FactExplanationEntry> = {
+  [BERGEN_FACT_IDS.HAS_MAJOR_SUPPORT]: {
+    explanationId: "bergen.support.hasMajorSupport",
+    factId: BERGEN_FACT_IDS.HAS_MAJOR_SUPPORT,
+    templateKey: "bergen.support.hasMajorSupport.supporting",
+    displayText: "Has 4-card support in at least one major",
+    contrastiveTemplateKey: "bergen.support.hasMajorSupport.whyNot",
+    contrastiveDisplayText: "Does not have 4-card support in either major",
+    preferredLevel: "mechanical",
+    roles: ["supporting", "blocking", "pedagogical"],
+  },
+};
+
+// ── Shared-fact explanations (not keyed by BergenFactId) ─────────
+
+const SHARED_FACT_EXPLANATIONS: readonly FactExplanationEntry[] = [
+  // HCP thresholds for responder raises
   {
     explanationId: "bergen.hcp.splinter",
     factId: "hand.hcp",
@@ -68,8 +92,7 @@ export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
     roles: ["supporting", "blocking"],
   },
 
-  // ── Fact-based entries: suit support and shape ──────────────
-
+  // Suit support and shape
   {
     explanationId: "bergen.support.majorFit",
     factId: "hand.suitLength.$suit",
@@ -91,183 +114,7 @@ export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
     roles: ["supporting", "blocking", "pedagogical"],
   },
 
-  // ── R1: Meaning-based entries — responder initial bids ─────
-
-  {
-    explanationId: "bergen.r1.splinter",
-    meaningId: "bergen:splinter",
-    templateKey: "bergen.r1.splinter.semantic",
-    displayText: "Splinter: shortness with game-forcing values",
-    contrastiveTemplateKey: "bergen.r1.splinter.whyNotDirectRaise",
-    contrastiveDisplayText: "Does not qualify for a splinter (consider a direct raise)",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r1.gameRaise",
-    meaningId: "bergen:game-raise",
-    templateKey: "bergen.r1.gameRaise.semantic",
-    displayText: "Bergen game raise: 4+ support with game values",
-    contrastiveTemplateKey: "bergen.r1.gameRaise.whyNotSplinter",
-    contrastiveDisplayText: "Does not qualify for a game raise (consider splinter with shortness)",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r1.limitRaise",
-    meaningId: "bergen:limit-raise",
-    templateKey: "bergen.r1.limitRaise.semantic",
-    displayText: "Bergen limit raise: invitational values with support",
-    contrastiveTemplateKey: "bergen.r1.limitRaise.whyNot3C",
-    contrastiveDisplayText: "Does not qualify for a limit raise",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r1.constructiveRaise",
-    meaningId: "bergen:constructive-raise",
-    templateKey: "bergen.r1.constructiveRaise.semantic",
-    displayText: "Bergen constructive raise: moderate values with support",
-    contrastiveTemplateKey: "bergen.r1.constructiveRaise.whyNot3D",
-    contrastiveDisplayText: "Does not qualify for a constructive raise",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r1.preemptiveRaise",
-    meaningId: "bergen:preemptive-raise",
-    templateKey: "bergen.r1.preemptiveRaise.semantic",
-    displayText: "Preemptive raise: weak hand with good support",
-    contrastiveTemplateKey: "bergen.r1.preemptiveRaise.whyNotPass",
-    contrastiveDisplayText: "Does not qualify for a preemptive raise (consider passing)",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-
-  // ── R2: Meaning-based entries — opener rebids ──────────────
-
-  // After constructive raise (3C)
-  {
-    explanationId: "bergen.r2.gameAfterConstructive",
-    meaningId: "bergen:opener-game-after-constructive",
-    templateKey: "bergen.r2.gameAfterConstructive.semantic",
-    displayText: "Opener bids game after constructive raise",
-    contrastiveTemplateKey: "bergen.r2.gameAfterConstructive.whyNotTry",
-    contrastiveDisplayText: "Opener prefers a game try over jumping to game",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r2.signoffAfterConstructive",
-    meaningId: "bergen:opener-signoff-after-constructive",
-    templateKey: "bergen.r2.signoffAfterConstructive.semantic",
-    displayText: "Opener signs off after constructive raise",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r2.tryAfterConstructive",
-    meaningId: "bergen:opener-try-after-constructive",
-    templateKey: "bergen.r2.tryAfterConstructive.semantic",
-    displayText: "Opener makes a game try after constructive raise",
-    contrastiveTemplateKey: "bergen.r2.tryAfterConstructive.whyNotGame",
-    contrastiveDisplayText: "Opener has enough to bid game directly",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-
-  // After limit raise (3D)
-  {
-    explanationId: "bergen.r2.gameAfterLimit",
-    meaningId: "bergen:opener-game-after-limit",
-    templateKey: "bergen.r2.gameAfterLimit.semantic",
-    displayText: "Opener accepts the limit raise and bids game",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r2.signoffAfterLimit",
-    meaningId: "bergen:opener-signoff-after-limit",
-    templateKey: "bergen.r2.signoffAfterLimit.semantic",
-    displayText: "Opener declines the limit raise and signs off",
-    contrastiveTemplateKey: "bergen.r2.signoffAfterLimit.whyNotGame",
-    contrastiveDisplayText: "Not enough to accept the limit raise for game",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-
-  // After preemptive raise (3M)
-  {
-    explanationId: "bergen.r2.gameAfterPreemptive",
-    meaningId: "bergen:opener-game-after-preemptive",
-    templateKey: "bergen.r2.gameAfterPreemptive.semantic",
-    displayText: "Opener bids game despite preemptive raise",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r2.passAfterPreemptive",
-    meaningId: "bergen:opener-pass-after-preemptive",
-    templateKey: "bergen.r2.passAfterPreemptive.semantic",
-    displayText: "Opener passes after preemptive raise",
-    contrastiveTemplateKey: "bergen.r2.passAfterPreemptive.whyNotGame",
-    contrastiveDisplayText: "Not enough to bid game over preemptive raise",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-
-  // ── R3: Meaning-based entries — responder continuations ────
-
-  {
-    explanationId: "bergen.r3.acceptGame",
-    meaningId: "bergen:responder-accept-game",
-    templateKey: "bergen.r3.acceptGame.semantic",
-    displayText: "Responder accepts opener's game bid",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r3.acceptSignoff",
-    meaningId: "bergen:responder-accept-signoff",
-    templateKey: "bergen.r3.acceptSignoff.semantic",
-    displayText: "Responder accepts opener's signoff",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r3.tryAccept",
-    meaningId: "bergen:responder-try-accept",
-    templateKey: "bergen.r3.tryAccept.semantic",
-    displayText: "Accept the game try and bid game",
-    contrastiveTemplateKey: "bergen.r3.tryAccept.whyNotReject",
-    contrastiveDisplayText: "Why accept the game try instead of rejecting",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-  {
-    explanationId: "bergen.r3.tryReject",
-    meaningId: "bergen:responder-try-reject",
-    templateKey: "bergen.r3.tryReject.semantic",
-    displayText: "Reject the game try and sign off",
-    contrastiveTemplateKey: "bergen.r3.tryReject.whyNotAccept",
-    contrastiveDisplayText: "Why reject the game try instead of accepting",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-
-  // ── R4: Meaning-based entries — opener final acceptance ────
-
-  {
-    explanationId: "bergen.r4.openerAcceptAfterTry",
-    meaningId: "bergen:opener-accept-after-try",
-    templateKey: "bergen.r4.openerAcceptAfterTry.semantic",
-    displayText: "Opener accepts game after responder accepts the try",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
-
-  // ── Opener HCP thresholds for rebid decisions ──────────────
-
+  // Opener HCP thresholds for rebid decisions
   {
     explanationId: "bergen.opener.hcp.game17",
     factId: "hand.hcp",
@@ -307,8 +154,7 @@ export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
     roles: ["supporting", "blocking"],
   },
 
-  // ── Responder HCP for game-try acceptance ──────────────────
-
+  // Responder HCP for game-try acceptance
   {
     explanationId: "bergen.responder.hcp.tryAccept",
     factId: "hand.hcp",
@@ -320,18 +166,7 @@ export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
     roles: ["supporting", "blocking"],
   },
 
-  // ── Natural 1NT response (system-dependent) ────────────────
-
-  {
-    explanationId: "bergen.r1.natural1nt",
-    meaningId: "bergen:natural-1nt-response",
-    templateKey: "bergen.r1.natural1nt.semantic",
-    displayText: "Natural 1NT response — within system range, no 4-card support",
-    contrastiveTemplateKey: "bergen.r1.natural1nt.whyNotRaise",
-    contrastiveDisplayText: "Does not qualify for 1NT (outside system range or has 4-card support)",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
-  },
+  // System-dependent 1NT range
   {
     explanationId: "bergen.system.oneNtRange",
     factId: "system.responder.oneNtRange",
@@ -344,4 +179,318 @@ export const BERGEN_EXPLANATION_ENTRIES: ExplanationEntry[] = [
   },
 ];
 
-export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(BERGEN_EXPLANATION_ENTRIES);
+// ── Meaning explanations (Record-exhaustive) ─────────────────────
+
+const MEANING_EXPLANATIONS: Record<BergenMeaningId, MeaningExplanationEntry> = {
+  // ── Stub openings ───────────────────────────────────────────────
+
+  [BERGEN_MEANING_IDS.OPENER_1H]: {
+    explanationId: "bergen.stub.opener1h",
+    meaningId: BERGEN_MEANING_IDS.OPENER_1H,
+    templateKey: "bergen.stub.opener1h.semantic",
+    displayText: "Opening 1\u2665: 12+ HCP with 5+ hearts",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.OPENER_1S]: {
+    explanationId: "bergen.stub.opener1s",
+    meaningId: BERGEN_MEANING_IDS.OPENER_1S,
+    templateKey: "bergen.stub.opener1s.semantic",
+    displayText: "Opening 1\u2660: 12+ HCP with 5+ spades",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R1: Responder raises — hearts ──────────────────────────────
+
+  [BERGEN_MEANING_IDS.SPLINTER_HEARTS]: {
+    explanationId: "bergen.r1.splinterHearts",
+    meaningId: BERGEN_MEANING_IDS.SPLINTER_HEARTS,
+    templateKey: "bergen.r1.splinterHearts.semantic",
+    displayText: "Splinter in hearts: 12+ pts, 4+ trumps, shortness",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.GAME_RAISE_HEARTS]: {
+    explanationId: "bergen.r1.gameRaiseHearts",
+    meaningId: BERGEN_MEANING_IDS.GAME_RAISE_HEARTS,
+    templateKey: "bergen.r1.gameRaiseHearts.semantic",
+    displayText: "Bergen game raise in hearts: 13+ pts, 4+ trumps",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.LIMIT_RAISE_HEARTS]: {
+    explanationId: "bergen.r1.limitRaiseHearts",
+    meaningId: BERGEN_MEANING_IDS.LIMIT_RAISE_HEARTS,
+    templateKey: "bergen.r1.limitRaiseHearts.semantic",
+    displayText: "Bergen limit raise in hearts: 10-12 pts, 4+ trumps (3\u2666)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.CONSTRUCTIVE_RAISE_HEARTS]: {
+    explanationId: "bergen.r1.constructiveRaiseHearts",
+    meaningId: BERGEN_MEANING_IDS.CONSTRUCTIVE_RAISE_HEARTS,
+    templateKey: "bergen.r1.constructiveRaiseHearts.semantic",
+    displayText: "Bergen constructive raise in hearts: 7-10 pts, 4+ trumps (3\u2663)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.PREEMPTIVE_RAISE_HEARTS]: {
+    explanationId: "bergen.r1.preemptiveRaiseHearts",
+    meaningId: BERGEN_MEANING_IDS.PREEMPTIVE_RAISE_HEARTS,
+    templateKey: "bergen.r1.preemptiveRaiseHearts.semantic",
+    displayText: "Preemptive raise to 3\u2665: 0-6 pts, 4+ trumps",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.NATURAL_1NT_RESPONSE_HEARTS]: {
+    explanationId: "bergen.r1.natural1ntHearts",
+    meaningId: BERGEN_MEANING_IDS.NATURAL_1NT_RESPONSE_HEARTS,
+    templateKey: "bergen.r1.natural1ntHearts.semantic",
+    displayText: "Natural 1NT response to 1\u2665: within system range, no 4-card support",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R1: Responder raises — spades ─────────────────────────────
+
+  [BERGEN_MEANING_IDS.SPLINTER_SPADES]: {
+    explanationId: "bergen.r1.splinterSpades",
+    meaningId: BERGEN_MEANING_IDS.SPLINTER_SPADES,
+    templateKey: "bergen.r1.splinterSpades.semantic",
+    displayText: "Splinter in spades: 12+ pts, 4+ trumps, shortness",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.GAME_RAISE_SPADES]: {
+    explanationId: "bergen.r1.gameRaiseSpades",
+    meaningId: BERGEN_MEANING_IDS.GAME_RAISE_SPADES,
+    templateKey: "bergen.r1.gameRaiseSpades.semantic",
+    displayText: "Bergen game raise in spades: 13+ pts, 4+ trumps",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.LIMIT_RAISE_SPADES]: {
+    explanationId: "bergen.r1.limitRaiseSpades",
+    meaningId: BERGEN_MEANING_IDS.LIMIT_RAISE_SPADES,
+    templateKey: "bergen.r1.limitRaiseSpades.semantic",
+    displayText: "Bergen limit raise in spades: 10-12 pts, 4+ trumps (3\u2666)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.CONSTRUCTIVE_RAISE_SPADES]: {
+    explanationId: "bergen.r1.constructiveRaiseSpades",
+    meaningId: BERGEN_MEANING_IDS.CONSTRUCTIVE_RAISE_SPADES,
+    templateKey: "bergen.r1.constructiveRaiseSpades.semantic",
+    displayText: "Bergen constructive raise in spades: 7-10 pts, 4+ trumps (3\u2663)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.PREEMPTIVE_RAISE_SPADES]: {
+    explanationId: "bergen.r1.preemptiveRaiseSpades",
+    meaningId: BERGEN_MEANING_IDS.PREEMPTIVE_RAISE_SPADES,
+    templateKey: "bergen.r1.preemptiveRaiseSpades.semantic",
+    displayText: "Preemptive raise to 3\u2660: 0-6 pts, 4+ trumps",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.NATURAL_1NT_RESPONSE_SPADES]: {
+    explanationId: "bergen.r1.natural1ntSpades",
+    meaningId: BERGEN_MEANING_IDS.NATURAL_1NT_RESPONSE_SPADES,
+    templateKey: "bergen.r1.natural1ntSpades.semantic",
+    displayText: "Natural 1NT response to 1\u2660: within system range, no 4-card support",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R2: Opener rebids after constructive raise — hearts ────────
+
+  [BERGEN_MEANING_IDS.OPENER_GAME_AFTER_CONSTRUCTIVE_HEARTS]: {
+    explanationId: "bergen.r2.gameAfterConstructiveHearts",
+    meaningId: BERGEN_MEANING_IDS.OPENER_GAME_AFTER_CONSTRUCTIVE_HEARTS,
+    templateKey: "bergen.r2.gameAfterConstructiveHearts.semantic",
+    displayText: "Opener bids 4\u2665 after constructive raise (17+ HCP)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_HEARTS]: {
+    explanationId: "bergen.r2.signoffAfterConstructiveHearts",
+    meaningId: BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_HEARTS,
+    templateKey: "bergen.r2.signoffAfterConstructiveHearts.semantic",
+    displayText: "Opener signs off in 3\u2665 after constructive raise",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R2: Opener rebids after constructive raise — spades ────────
+
+  [BERGEN_MEANING_IDS.OPENER_GAME_AFTER_CONSTRUCTIVE_SPADES]: {
+    explanationId: "bergen.r2.gameAfterConstructiveSpades",
+    meaningId: BERGEN_MEANING_IDS.OPENER_GAME_AFTER_CONSTRUCTIVE_SPADES,
+    templateKey: "bergen.r2.gameAfterConstructiveSpades.semantic",
+    displayText: "Opener bids 4\u2660 after constructive raise (17+ HCP)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_SPADES]: {
+    explanationId: "bergen.r2.signoffAfterConstructiveSpades",
+    meaningId: BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_SPADES,
+    templateKey: "bergen.r2.signoffAfterConstructiveSpades.semantic",
+    displayText: "Opener signs off in 3\u2660 after constructive raise",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R2: Opener rebids after limit raise — hearts ──────────────
+
+  [BERGEN_MEANING_IDS.OPENER_GAME_AFTER_LIMIT_HEARTS]: {
+    explanationId: "bergen.r2.gameAfterLimitHearts",
+    meaningId: BERGEN_MEANING_IDS.OPENER_GAME_AFTER_LIMIT_HEARTS,
+    templateKey: "bergen.r2.gameAfterLimitHearts.semantic",
+    displayText: "Opener accepts limit raise and bids 4\u2665 (15+ HCP)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_LIMIT_HEARTS]: {
+    explanationId: "bergen.r2.signoffAfterLimitHearts",
+    meaningId: BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_LIMIT_HEARTS,
+    templateKey: "bergen.r2.signoffAfterLimitHearts.semantic",
+    displayText: "Opener declines limit raise and signs off in 3\u2665",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R2: Opener rebids after limit raise — spades ──────────────
+
+  [BERGEN_MEANING_IDS.OPENER_GAME_AFTER_LIMIT_SPADES]: {
+    explanationId: "bergen.r2.gameAfterLimitSpades",
+    meaningId: BERGEN_MEANING_IDS.OPENER_GAME_AFTER_LIMIT_SPADES,
+    templateKey: "bergen.r2.gameAfterLimitSpades.semantic",
+    displayText: "Opener accepts limit raise and bids 4\u2660 (15+ HCP)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_LIMIT_SPADES]: {
+    explanationId: "bergen.r2.signoffAfterLimitSpades",
+    meaningId: BERGEN_MEANING_IDS.OPENER_SIGNOFF_AFTER_LIMIT_SPADES,
+    templateKey: "bergen.r2.signoffAfterLimitSpades.semantic",
+    displayText: "Opener declines limit raise and signs off in 3\u2660",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R2: Opener rebids after preemptive raise — hearts ─────────
+
+  [BERGEN_MEANING_IDS.OPENER_GAME_AFTER_PREEMPTIVE_HEARTS]: {
+    explanationId: "bergen.r2.gameAfterPreemptiveHearts",
+    meaningId: BERGEN_MEANING_IDS.OPENER_GAME_AFTER_PREEMPTIVE_HEARTS,
+    templateKey: "bergen.r2.gameAfterPreemptiveHearts.semantic",
+    displayText: "Opener bids 4\u2665 despite preemptive raise (18+ total pts)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.OPENER_PASS_AFTER_PREEMPTIVE_HEARTS]: {
+    explanationId: "bergen.r2.passAfterPreemptiveHearts",
+    meaningId: BERGEN_MEANING_IDS.OPENER_PASS_AFTER_PREEMPTIVE_HEARTS,
+    templateKey: "bergen.r2.passAfterPreemptiveHearts.semantic",
+    displayText: "Opener passes after preemptive raise to 3\u2665",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R2: Opener rebids after preemptive raise — spades ─────────
+
+  [BERGEN_MEANING_IDS.OPENER_GAME_AFTER_PREEMPTIVE_SPADES]: {
+    explanationId: "bergen.r2.gameAfterPreemptiveSpades",
+    meaningId: BERGEN_MEANING_IDS.OPENER_GAME_AFTER_PREEMPTIVE_SPADES,
+    templateKey: "bergen.r2.gameAfterPreemptiveSpades.semantic",
+    displayText: "Opener bids 4\u2660 despite preemptive raise (18+ total pts)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.OPENER_PASS_AFTER_PREEMPTIVE_SPADES]: {
+    explanationId: "bergen.r2.passAfterPreemptiveSpades",
+    meaningId: BERGEN_MEANING_IDS.OPENER_PASS_AFTER_PREEMPTIVE_SPADES,
+    templateKey: "bergen.r2.passAfterPreemptiveSpades.semantic",
+    displayText: "Opener passes after preemptive raise to 3\u2660",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R3: Responder continuations — game try decisions ──────────
+
+  [BERGEN_MEANING_IDS.RESPONDER_TRY_ACCEPT_HEARTS]: {
+    explanationId: "bergen.r3.tryAcceptHearts",
+    meaningId: BERGEN_MEANING_IDS.RESPONDER_TRY_ACCEPT_HEARTS,
+    templateKey: "bergen.r3.tryAcceptHearts.semantic",
+    displayText: "Accept game try and bid 4\u2665",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.RESPONDER_TRY_ACCEPT_SPADES]: {
+    explanationId: "bergen.r3.tryAcceptSpades",
+    meaningId: BERGEN_MEANING_IDS.RESPONDER_TRY_ACCEPT_SPADES,
+    templateKey: "bergen.r3.tryAcceptSpades.semantic",
+    displayText: "Accept game try and bid 4\u2660",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.RESPONDER_TRY_REJECT_HEARTS]: {
+    explanationId: "bergen.r3.tryRejectHearts",
+    meaningId: BERGEN_MEANING_IDS.RESPONDER_TRY_REJECT_HEARTS,
+    templateKey: "bergen.r3.tryRejectHearts.semantic",
+    displayText: "Reject game try and sign off in 3\u2665",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.RESPONDER_TRY_REJECT_SPADES]: {
+    explanationId: "bergen.r3.tryRejectSpades",
+    meaningId: BERGEN_MEANING_IDS.RESPONDER_TRY_REJECT_SPADES,
+    templateKey: "bergen.r3.tryRejectSpades.semantic",
+    displayText: "Reject game try and sign off in 3\u2660",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R3: Terminal pass surfaces (suit-independent) ─────────────
+
+  [BERGEN_MEANING_IDS.RESPONDER_ACCEPT_GAME]: {
+    explanationId: "bergen.r3.acceptGame",
+    meaningId: BERGEN_MEANING_IDS.RESPONDER_ACCEPT_GAME,
+    templateKey: "bergen.r3.acceptGame.semantic",
+    displayText: "Responder accepts opener's game bid",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [BERGEN_MEANING_IDS.RESPONDER_ACCEPT_SIGNOFF]: {
+    explanationId: "bergen.r3.acceptSignoff",
+    meaningId: BERGEN_MEANING_IDS.RESPONDER_ACCEPT_SIGNOFF,
+    templateKey: "bergen.r3.acceptSignoff.semantic",
+    displayText: "Responder accepts opener's signoff",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // ── R4: Opener final acceptance (suit-independent) ────────────
+
+  [BERGEN_MEANING_IDS.OPENER_ACCEPT_AFTER_TRY]: {
+    explanationId: "bergen.r4.openerAcceptAfterTry",
+    meaningId: BERGEN_MEANING_IDS.OPENER_ACCEPT_AFTER_TRY,
+    templateKey: "bergen.r4.openerAcceptAfterTry.semantic",
+    displayText: "Opener accepts game after responder accepts the try",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+};
+
+// ── Composed export ──────────────────────────────────────────────
+
+export const BERGEN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
+  ...Object.values(FACT_EXPLANATIONS),
+  ...SHARED_FACT_EXPLANATIONS,
+  ...Object.values(MEANING_EXPLANATIONS),
+];
+
+export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(
+  [...BERGEN_EXPLANATION_ENTRIES],
+);

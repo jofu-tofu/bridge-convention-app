@@ -16,8 +16,6 @@
  */
 
 import type { SystemConfig } from "../../../../core/contracts/system-config";
-import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
-import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 import type { BidMeaning } from "../../../../core/contracts/meaning";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
@@ -27,6 +25,7 @@ import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { dontFacts } from "./facts";
 import { DONT_ENTRIES } from "./explanation-catalog";
+import { DONT_MEANING_IDS } from "./meaning-ids";
 import {
   DONT_R1_SURFACES,
   DONT_ADVANCER_2H_SURFACES,
@@ -44,7 +43,7 @@ import {
 const DONT_CTX: ModuleContext = { moduleId: "dont" };
 
 const OPPONENT_1NT_SURFACE: BidMeaning = createSurface({
-  meaningId: "dont:opponent-1nt",
+  meaningId: DONT_MEANING_IDS.OPPONENT_1NT,
   semanticClassId: "dont:opponent-open",
   encoding: bid(1, BidSuit.NoTrump),
   clauses: [],
@@ -129,6 +128,7 @@ export function createDontModule(_sys: SystemConfig) {
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "dont",
   description: "DONT — Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
+  purpose: "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
   ...createDontModule(sys),
   local: dontLocal,
   states: createDontStates(),

@@ -15,6 +15,11 @@ import type { FactEntry } from "../../../pipeline/fact-factory";
 import { Rank, Suit } from "../../../../engine/types";
 import type { Hand } from "../../../../engine/types";
 import { SUIT_NAME_MAP } from "../../../../engine/constants";
+import {
+  WEAK_TWO_FACT_IDS,
+  WEAK_TWO_TOP_HONOR_COUNT_BY_SUIT,
+  WEAK_TWO_IS_SOLID_BY_SUIT,
+} from "./fact-ids";
 
 // ─── Top honor counting helper ──────────────────────────────
 
@@ -30,13 +35,17 @@ function countTopHonorsInSuit(hand: Hand, suitName: string): number {
 // ─── Weak Two module facts (factory-based) ──────────────────
 
 const WEAK_TWO_SUITS = ["hearts", "spades", "diamonds"] as const;
+type WeakTwoSuit = (typeof WEAK_TWO_SUITS)[number];
+
+/** Type-safe cast for suit parameter from definePerSuitFacts (typed as string). */
+const asSuit = (suit: string): WeakTwoSuit => suit as WeakTwoSuit;
 
 const topHonorEntries = definePerSuitFacts({
   idPrefix: "module.weakTwo.topHonorCount",
   suits: WEAK_TWO_SUITS,
   description: (suit) => `Count of A, K, Q in ${suit}`,
   evaluator: (h, suit, _m) =>
-    fv(`module.weakTwo.topHonorCount.${suit}`, countTopHonorsInSuit(h, suit)),
+    fv(WEAK_TWO_TOP_HONOR_COUNT_BY_SUIT[asSuit(suit)], countTopHonorsInSuit(h, suit)),
   valueType: "number",
   constrainsDimensions: ["suitIdentity", "suitQuality"],
 });
@@ -46,14 +55,14 @@ const isSolidEntries = definePerSuitFacts({
   suits: WEAK_TWO_SUITS,
   description: (suit) => `All three top honors (AKQ) in ${suit}`,
   evaluator: (_h, suit, m) =>
-    fv(`module.weakTwo.isSolid.${suit}`, num(m, `module.weakTwo.topHonorCount.${suit}`) === 3),
+    fv(WEAK_TWO_IS_SOLID_BY_SUIT[asSuit(suit)], num(m, WEAK_TWO_TOP_HONOR_COUNT_BY_SUIT[asSuit(suit)]) === 3),
   valueType: "boolean",
   constrainsDimensions: ["suitIdentity", "suitLength", "suitQuality", "shapeClass"],
-  derivesFrom: (suit) => [`module.weakTwo.topHonorCount.${suit}`],
+  derivesFrom: (suit) => [WEAK_TWO_TOP_HONOR_COUNT_BY_SUIT[asSuit(suit)]],
 });
 
 const isMaximumEntry = defineHcpRangeFact({
-  id: "module.weakTwo.isMaximum",
+  id: WEAK_TWO_FACT_IDS.IS_MAXIMUM,
   description: "Opener is maximum for weak two (9-11 HCP)",
   range: { min: 9, max: 11 },
 });
@@ -61,7 +70,7 @@ const isMaximumEntry = defineHcpRangeFact({
 // ─── Vulnerability-aware facts (hand-written) ───────────────
 
 const isMinimumDef: FactDefinition = {
-  id: "module.weakTwo.isMinimum",
+  id: WEAK_TWO_FACT_IDS.IS_MINIMUM,
   layer: FactLayer.ModuleDerived,
   world: "acting-hand",
   description: "Opener is minimum for weak two (5-8 NV, 6-8 vul)",
@@ -81,12 +90,12 @@ const isMinimumEvaluator: FactEvaluatorFn = (_h, _ev, m) => {
   const hcp = num(m, "hand.hcp");
   const vul = m.get("bridge.isVulnerable")?.value === true;
   const minHcp = vul ? 6 : 5;
-  return fv("module.weakTwo.isMinimum", hcp >= minHcp && hcp <= 8);
+  return fv(WEAK_TWO_FACT_IDS.IS_MINIMUM, hcp >= minHcp && hcp <= 8);
 };
 
 const isMinimumEntry: FactEntry = {
   definition: isMinimumDef,
-  evaluator: ["module.weakTwo.isMinimum", isMinimumEvaluator],
+  evaluator: [WEAK_TWO_FACT_IDS.IS_MINIMUM, isMinimumEvaluator],
 };
 
 // Composition: loose approximation — 5-11 HCP (widest across vulnerability states)
@@ -99,7 +108,7 @@ const IN_OPENING_HCP_RANGE_COMPOSITION: FactComposition = {
 };
 
 const inOpeningHcpRangeDef: FactDefinition = {
-  id: "module.weakTwo.inOpeningHcpRange",
+  id: WEAK_TWO_FACT_IDS.IN_OPENING_HCP_RANGE,
   layer: FactLayer.ModuleDerived,
   world: "acting-hand",
   description: "HCP in weak two opening range (5-11 NV, 6-11 vul)",
@@ -113,12 +122,12 @@ const inOpeningHcpRangeEvaluator: FactEvaluatorFn = (_h, _ev, m) => {
   const hcp = num(m, "hand.hcp");
   const vul = m.get("bridge.isVulnerable")?.value === true;
   const minHcp = vul ? 6 : 5;
-  return fv("module.weakTwo.inOpeningHcpRange", hcp >= minHcp && hcp <= 11);
+  return fv(WEAK_TWO_FACT_IDS.IN_OPENING_HCP_RANGE, hcp >= minHcp && hcp <= 11);
 };
 
 const inOpeningHcpRangeEntry: FactEntry = {
   definition: inOpeningHcpRangeDef,
-  evaluator: ["module.weakTwo.inOpeningHcpRange", inOpeningHcpRangeEvaluator],
+  evaluator: [WEAK_TWO_FACT_IDS.IN_OPENING_HCP_RANGE, inOpeningHcpRangeEvaluator],
 };
 
 // ─── Compose extension ──────────────────────────────────────

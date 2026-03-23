@@ -6,6 +6,8 @@ import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 
+import { SMOLEN_FACT_IDS } from "./fact-ids";
+import { SMOLEN_MEANING_IDS } from "./meaning-ids";
 import { SMOLEN_CLASSES } from "./semantic-classes";
 
 // ─── Module context ──────────────────────────────────────────
@@ -22,7 +24,7 @@ export const SMOLEN_CTX: ModuleContext = { moduleId: "smolen" };
 export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
-      meaningId: "smolen:stayman-entry-5h4s",
+      meaningId: SMOLEN_MEANING_IDS.STAYMAN_ENTRY_5H4S,
       semanticClassId: "smolen:stayman-entry",
       encoding: bid(2, BidSuit.Clubs),
       clauses: [
@@ -34,14 +36,14 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFiveHearts",
+          factId: SMOLEN_FACT_IDS.HAS_FIVE_HEARTS,
           operator: "boolean",
           value: true,
           description: "5+ hearts",
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFourSpades",
+          factId: SMOLEN_FACT_IDS.HAS_FOUR_SPADES,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -55,7 +57,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
     }, SMOLEN_CTX),
 
     createSurface({
-      meaningId: "smolen:stayman-entry-5s4h",
+      meaningId: SMOLEN_MEANING_IDS.STAYMAN_ENTRY_5S4H,
       semanticClassId: "smolen:stayman-entry",
       encoding: bid(2, BidSuit.Clubs),
       clauses: [
@@ -67,14 +69,14 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFiveSpades",
+          factId: SMOLEN_FACT_IDS.HAS_FIVE_SPADES,
           operator: "boolean",
           value: true,
           description: "5+ spades",
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFourHearts",
+          factId: SMOLEN_FACT_IDS.HAS_FOUR_HEARTS,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -94,7 +96,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
 export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
-      meaningId: "smolen:bid-short-hearts",
+      meaningId: SMOLEN_MEANING_IDS.BID_SHORT_HEARTS,
       semanticClassId: SMOLEN_CLASSES.BID_SHORT_HEARTS,
       encoding: bid(3, BidSuit.Hearts),
       clauses: [
@@ -106,14 +108,14 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFiveSpades",
+          factId: SMOLEN_FACT_IDS.HAS_FIVE_SPADES,
           operator: "boolean",
           value: true,
           description: "5+ spades (long major)",
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFourHearts",
+          factId: SMOLEN_FACT_IDS.HAS_FOUR_HEARTS,
           operator: "boolean",
           value: true,
           description: "Exactly 4 hearts (short major, bid this suit)",
@@ -128,7 +130,7 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
     }, SMOLEN_CTX),
 
     createSurface({
-      meaningId: "smolen:bid-short-spades",
+      meaningId: SMOLEN_MEANING_IDS.BID_SHORT_SPADES,
       semanticClassId: SMOLEN_CLASSES.BID_SHORT_SPADES,
       encoding: bid(3, BidSuit.Spades),
       clauses: [
@@ -140,14 +142,14 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFiveHearts",
+          factId: SMOLEN_FACT_IDS.HAS_FIVE_HEARTS,
           operator: "boolean",
           value: true,
           description: "5+ hearts (long major)",
           isPublic: true,
         },
         {
-          factId: "module.smolen.hasFourSpades",
+          factId: SMOLEN_FACT_IDS.HAS_FOUR_SPADES,
           operator: "boolean",
           value: true,
           description: "Exactly 4 spades (short major, bid this suit)",
@@ -167,12 +169,12 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
 
 export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "smolen:place-four-hearts",
+    meaningId: SMOLEN_MEANING_IDS.PLACE_FOUR_HEARTS,
     semanticClassId: SMOLEN_CLASSES.PLACE_FOUR_HEARTS,
     encoding: bid(4, BidSuit.Hearts),
     clauses: [
       {
-        factId: "module.smolen.openerHasHeartFit",
+        factId: SMOLEN_FACT_IDS.OPENER_HAS_HEART_FIT,
         operator: "boolean",
         value: true,
         description: "Opener has 3+ hearts (fit with responder's 5)",
@@ -186,12 +188,12 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
     teachingLabel: "4H (heart fit found)",
   }, SMOLEN_CTX),
   createSurface({
-    meaningId: "smolen:place-three-nt-no-heart-fit",
+    meaningId: SMOLEN_MEANING_IDS.PLACE_THREE_NT_NO_HEART_FIT,
     semanticClassId: SMOLEN_CLASSES.PLACE_THREE_NT,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        factId: "module.smolen.openerHasHeartFit",
+        factId: SMOLEN_FACT_IDS.OPENER_HAS_HEART_FIT,
         operator: "boolean",
         value: false,
         description: "Opener has fewer than 3 hearts (no fit)",
@@ -208,12 +210,12 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
 
 export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "smolen:place-four-spades",
+    meaningId: SMOLEN_MEANING_IDS.PLACE_FOUR_SPADES,
     semanticClassId: SMOLEN_CLASSES.PLACE_FOUR_SPADES,
     encoding: bid(4, BidSuit.Spades),
     clauses: [
       {
-        factId: "module.smolen.openerHasSpadesFit",
+        factId: SMOLEN_FACT_IDS.OPENER_HAS_SPADES_FIT,
         operator: "boolean",
         value: true,
         description: "Opener has 3+ spades (fit with responder's 5)",
@@ -227,12 +229,12 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     teachingLabel: "4S (spade fit found)",
   }, SMOLEN_CTX),
   createSurface({
-    meaningId: "smolen:place-three-nt-no-spade-fit",
+    meaningId: SMOLEN_MEANING_IDS.PLACE_THREE_NT_NO_SPADE_FIT,
     semanticClassId: SMOLEN_CLASSES.PLACE_THREE_NT,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
       {
-        factId: "module.smolen.openerHasSpadesFit",
+        factId: SMOLEN_FACT_IDS.OPENER_HAS_SPADES_FIT,
         operator: "boolean",
         value: false,
         description: "Opener has fewer than 3 spades (no fit)",

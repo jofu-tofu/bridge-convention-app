@@ -103,6 +103,9 @@ export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from 
 export { ntBundle } from "./definitions/nt-bundle";
 export { bergenBundle } from "./definitions/bergen-bundle";
 
+// ── Platform explanation catalog ─────────────────────────────────────────
+export { PLATFORM_EXPLANATION_ENTRIES } from "./core/shared-explanation-catalog";
+
 // ── Teaching (resolution, projection, parse-tree) ─────────────────────
 export { resolveTeachingAnswer, gradeBid, BidGrade } from "./teaching/teaching-resolution";
 export type { AcceptableBid, TeachingResolution } from "./teaching/teaching-resolution";

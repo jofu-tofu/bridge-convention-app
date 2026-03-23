@@ -11,7 +11,7 @@ import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClaus
 import type { ArbitrationResult, EncodedProposal, PipelineCarrier, PipelineResult } from "../conventions";
 import type { CandidateEligibility } from "../core/contracts/tree-evaluation";
 import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../core/contracts/provenance";
-import type { ExplanationEntry } from "../core/contracts/explanation-catalog";
+import type { ExplanationEntry, FactExplanationEntry, MeaningExplanationEntry } from "../core/contracts/explanation-catalog";
 /** Create a minimal BidMeaning with override support. */
 export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {
   return {
@@ -185,13 +185,33 @@ export function makePipelineResult(overrides: Partial<PipelineResult> = {}): Pip
   };
 }
 
-/** Create an ExplanationEntry with defaults. */
-export function makeCatalogEntry(overrides: Partial<ExplanationEntry> = {}): ExplanationEntry {
+/** Create a FactExplanationEntry with defaults. */
+export function makeFactCatalogEntry(overrides: Partial<FactExplanationEntry> = {}): FactExplanationEntry {
   return {
     explanationId: "test.entry",
+    factId: "hand.hcp",
     templateKey: "test.entry.template",
+    displayText: "Test fact explanation",
     preferredLevel: "mechanical",
     roles: ["supporting"],
     ...overrides,
   };
+}
+
+/** Create a MeaningExplanationEntry with defaults. */
+export function makeMeaningCatalogEntry(overrides: Partial<MeaningExplanationEntry> = {}): MeaningExplanationEntry {
+  return {
+    explanationId: "test.meaning.entry",
+    meaningId: "test:meaning",
+    templateKey: "test.meaning.entry.template",
+    displayText: "Test meaning explanation",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+    ...overrides,
+  };
+}
+
+/** Create an ExplanationEntry with defaults (fact variant). */
+export function makeCatalogEntry(overrides: Partial<FactExplanationEntry> = {}): FactExplanationEntry {
+  return makeFactCatalogEntry(overrides);
 }

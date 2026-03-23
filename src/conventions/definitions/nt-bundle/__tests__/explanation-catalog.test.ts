@@ -1,54 +1,26 @@
 import { describe, expect, test } from "vitest";
 import { NT_EXPLANATION_CATALOG } from "../explanation-catalog";
-import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
-
-/**
- * Shared fact IDs from the fact catalog. Hardcoded here rather than imported
- * because the worktree may not have fact-catalog.ts; these are stable vocabulary.
- */
-const KNOWN_SHARED_FACT_IDS = new Set([
-  // Primitive
-  "hand.hcp",
-  "hand.suitLength.spades",
-  "hand.suitLength.hearts",
-  "hand.suitLength.diamonds",
-  "hand.suitLength.clubs",
-  "hand.isBalanced",
-  // Bridge-derived
-  "bridge.hasFourCardMajor",
-  "bridge.hasFiveCardMajor",
-  "bridge.majorPattern",
-  "bridge.supportForBoundSuit",
-  "bridge.fitWithBoundSuit",
-  "bridge.shortageInSuit",
-  "bridge.totalPointsForRaise",
-  // Posterior-derived
-  "bridge.partnerHas4HeartsLikely",
-  "bridge.partnerHas4SpadesLikely",
-  "bridge.partnerHas4DiamondsLikely",
-  "bridge.partnerHas4ClubsLikely",
-  "module.stayman.nsHaveEightCardFitLikely",
-  "bridge.combinedHcpInRangeLikely",
-  "module.stayman.openerStillBalancedLikely",
-  "module.stayman.openerHasSecondMajorLikely",
-]);
+import type { FactExplanationEntry } from "../../../../core/contracts/explanation-catalog";
 
 /**
  * Module-derived fact IDs used in the 1NT bundle.
+ * Shared facts (hand.hcp, bridge.hasFourCardMajor, etc.) are now covered
+ * by the platform catalog (Phase 2b) and are NOT included in module catalogs.
  */
 const KNOWN_MODULE_FACT_IDS = new Set([
+  // Stayman
   "module.stayman.eligible",
   "module.stayman.preferred",
+  "module.stayman.nsHaveEightCardFitLikely",
+  "module.stayman.openerStillBalancedLikely",
+  "module.stayman.openerHasSecondMajorLikely",
+  // Transfers
   "module.transfer.targetSuit",
   "module.transfer.eligible",
   "module.transfer.preferred",
-  "module.ntResponse.inviteValues",
-  "module.ntResponse.gameValues",
-  "module.ntResponse.slamValues",
-  // System-level fact IDs (from SystemConfig DI)
-  "system.responder.inviteValues",
-  "system.responder.gameValues",
-  "system.responder.slamValues",
+  "module.transfer.openerHasHeartFit",
+  "module.transfer.openerHasSpadesFit",
+  // Smolen
   "module.smolen.hasFiveHearts",
   "module.smolen.hasFiveSpades",
   "module.smolen.hasFourSpades",
@@ -56,8 +28,6 @@ const KNOWN_MODULE_FACT_IDS = new Set([
   "module.smolen.openerHasHeartFit",
   "module.smolen.openerHasSpadesFit",
 ]);
-
-const ALL_KNOWN_FACT_IDS = new Set([...KNOWN_SHARED_FACT_IDS, ...KNOWN_MODULE_FACT_IDS]);
 
 describe("NT_EXPLANATION_CATALOG", () => {
   test("has at least 12 entries", () => {
@@ -83,31 +53,30 @@ describe("NT_EXPLANATION_CATALOG", () => {
 
   test("all contrastiveTemplateKeys are non-empty strings when present", () => {
     for (const entry of NT_EXPLANATION_CATALOG.entries) {
-      if (entry.contrastiveTemplateKey !== undefined) {
+      if ("factId" in entry && entry.contrastiveTemplateKey !== undefined) {
         expect(entry.contrastiveTemplateKey).toBeTruthy();
         expect(typeof entry.contrastiveTemplateKey).toBe("string");
       }
     }
   });
 
-  test("all factId references point to known facts", () => {
+  test("all factId references point to known module facts", () => {
     const entriesWithFacts = NT_EXPLANATION_CATALOG.entries.filter(
-      (e): e is ExplanationEntry & { factId: string } => e.factId !== undefined,
+      (e): e is FactExplanationEntry => "factId" in e,
     );
     expect(entriesWithFacts.length).toBeGreaterThan(0);
 
     for (const entry of entriesWithFacts) {
       expect(
-        ALL_KNOWN_FACT_IDS.has(entry.factId),
-        `factId "${entry.factId}" in entry "${entry.explanationId}" is not a known fact`,
+        KNOWN_MODULE_FACT_IDS.has(entry.factId),
+        `factId "${entry.factId}" in entry "${entry.explanationId}" is not a known module fact`,
       ).toBe(true);
     }
   });
 
-  test("all roles are valid", () => {
+  test("all roles are valid values", () => {
     const validRoles = new Set(["supporting", "blocking", "inferential", "pedagogical"]);
     for (const entry of NT_EXPLANATION_CATALOG.entries) {
-      expect(entry.roles.length).toBeGreaterThan(0);
       for (const role of entry.roles) {
         expect(
           validRoles.has(role),
@@ -127,44 +96,21 @@ describe("NT_EXPLANATION_CATALOG", () => {
     }
   });
 
-  test("covers HCP threshold facts", () => {
-    const hcpEntries = NT_EXPLANATION_CATALOG.entries.filter(
-      (e) =>
-        e.factId === "module.ntResponse.inviteValues" ||
-        e.factId === "module.ntResponse.gameValues" ||
-        e.factId === "module.ntResponse.slamValues" ||
-        e.factId === "system.responder.inviteValues" ||
-        e.factId === "system.responder.gameValues" ||
-        e.factId === "system.responder.slamValues",
-    );
-    expect(hcpEntries.length).toBeGreaterThanOrEqual(3);
-  });
-
-  test("covers suit length facts", () => {
-    const suitEntries = NT_EXPLANATION_CATALOG.entries.filter(
-      (e) =>
-        e.factId === "bridge.hasFourCardMajor" ||
-        e.factId === "bridge.hasFiveCardMajor",
-    );
-    expect(suitEntries.length).toBeGreaterThanOrEqual(2);
-  });
-
-  test("covers balanced shape", () => {
-    const balancedEntries = NT_EXPLANATION_CATALOG.entries.filter(
-      (e) => e.factId === "hand.isBalanced",
-    );
-    expect(balancedEntries.length).toBeGreaterThanOrEqual(1);
-  });
-
   test("covers Stayman eligibility", () => {
-    const staymanEntries = NT_EXPLANATION_CATALOG.entries.filter(
+    const factEntries = NT_EXPLANATION_CATALOG.entries.filter(
+      (e): e is FactExplanationEntry => "factId" in e,
+    );
+    const staymanEntries = factEntries.filter(
       (e) => e.factId === "module.stayman.eligible" || e.factId === "module.stayman.preferred",
     );
     expect(staymanEntries.length).toBeGreaterThanOrEqual(1);
   });
 
   test("covers transfer preference", () => {
-    const transferEntries = NT_EXPLANATION_CATALOG.entries.filter(
+    const factEntries = NT_EXPLANATION_CATALOG.entries.filter(
+      (e): e is FactExplanationEntry => "factId" in e,
+    );
+    const transferEntries = factEntries.filter(
       (e) =>
         e.factId === "module.transfer.eligible" ||
         e.factId === "module.transfer.preferred",
@@ -172,11 +118,26 @@ describe("NT_EXPLANATION_CATALOG", () => {
     expect(transferEntries.length).toBeGreaterThanOrEqual(1);
   });
 
+  test("covers Smolen facts", () => {
+    const factEntries = NT_EXPLANATION_CATALOG.entries.filter(
+      (e): e is FactExplanationEntry => "factId" in e,
+    );
+    const smolenEntries = factEntries.filter((e) => e.factId.startsWith("module.smolen."));
+    expect(smolenEntries.length).toBe(6);
+  });
+
   test("includes meaning-linked entries", () => {
     const meaningEntries = NT_EXPLANATION_CATALOG.entries.filter(
-      (e) => e.meaningId !== undefined,
+      (e) => "meaningId" in e,
     );
     expect(meaningEntries.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("includes natural-nt meaning entries", () => {
+    const meaningEntries = NT_EXPLANATION_CATALOG.entries.filter(
+      (e) => "meaningId" in e && (e.meaningId as string).startsWith("bridge:"),
+    );
+    expect(meaningEntries.length).toBe(3);
   });
 
   test("templateKeys follow dotted naming convention", () => {

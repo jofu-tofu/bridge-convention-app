@@ -4,6 +4,8 @@ import { BERGEN_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit, otherMajorBidSuit } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
+import { BERGEN_MEANING_BY_SUIT, BERGEN_MEANING_IDS } from "./meaning-ids";
+import { BERGEN_CLAUSE_FACT_IDS } from "./fact-ids";
 
 const BERGEN_CTX: ModuleContext = { moduleId: "bergen" };
 
@@ -66,28 +68,30 @@ function createBergenR1Surfaces(
   const majorStrain = suitToBidSuit(suit);
   const otherMajor = otherMajorBidSuit(suit);
 
+  const ids = BERGEN_MEANING_BY_SUIT[suit];
+
   return [
     // 1. Splinter -- 12+ HCP, exactly 4 support, shortage (singleton or void)
     // Highest priority: checked first (declarationOrder 0)
     createSurface({
-      meaningId: `bergen:splinter-${suit}`,
+      meaningId: ids.splinter,
       semanticClassId: BERGEN_CLASSES.SPLINTER,
       encoding: { defaultCall: bid(3, otherMajor) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "gte",
           value: BERGEN_THRESHOLDS.SPLINTER_MIN,
           isPublic: true,
         },
         {
-          factId: "hand.suitLength.$suit",
+          factId: BERGEN_CLAUSE_FACT_IDS.SUIT_LENGTH_TEMPLATE,
           operator: "eq",
           value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
           isPublic: true,
         },
         {
-          factId: "bridge.hasShortage",
+          factId: BERGEN_CLAUSE_FACT_IDS.BRIDGE_HAS_SHORTAGE,
           operator: "boolean",
           value: true,
           isPublic: true,
@@ -103,18 +107,18 @@ function createBergenR1Surfaces(
 
     // 2. Game raise -- 13+ HCP, exactly 4 support
     createSurface({
-      meaningId: `bergen:game-raise-${suit}`,
+      meaningId: ids.gameRaise,
       semanticClassId: BERGEN_CLASSES.GAME_RAISE,
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "gte",
           value: BERGEN_THRESHOLDS.GAME_RAISE_MIN,
           isPublic: true,
         },
         {
-          factId: "hand.suitLength.$suit",
+          factId: BERGEN_CLAUSE_FACT_IDS.SUIT_LENGTH_TEMPLATE,
           operator: "eq",
           value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
           isPublic: true,
@@ -130,18 +134,18 @@ function createBergenR1Surfaces(
 
     // 3. Limit raise -- 10-12 HCP, exactly 4 support
     createSurface({
-      meaningId: `bergen:limit-raise-${suit}`,
+      meaningId: ids.limitRaise,
       semanticClassId: BERGEN_CLASSES.LIMIT_RAISE,
       encoding: { defaultCall: bid(3, BidSuit.Diamonds) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "range",
           value: { min: BERGEN_THRESHOLDS.LIMIT_RAISE_MIN, max: BERGEN_THRESHOLDS.LIMIT_RAISE_MAX },
           isPublic: true,
         },
         {
-          factId: "hand.suitLength.$suit",
+          factId: BERGEN_CLAUSE_FACT_IDS.SUIT_LENGTH_TEMPLATE,
           operator: "eq",
           value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
           isPublic: true,
@@ -157,18 +161,18 @@ function createBergenR1Surfaces(
 
     // 4. Constructive raise -- 7-10 HCP, exactly 4 support
     createSurface({
-      meaningId: `bergen:constructive-raise-${suit}`,
+      meaningId: ids.constructiveRaise,
       semanticClassId: BERGEN_CLASSES.CONSTRUCTIVE_RAISE,
       encoding: { defaultCall: bid(3, BidSuit.Clubs) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "range",
           value: { min: BERGEN_THRESHOLDS.CONSTRUCTIVE_MIN, max: BERGEN_THRESHOLDS.CONSTRUCTIVE_MAX },
           isPublic: true,
         },
         {
-          factId: "hand.suitLength.$suit",
+          factId: BERGEN_CLAUSE_FACT_IDS.SUIT_LENGTH_TEMPLATE,
           operator: "eq",
           value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
           isPublic: true,
@@ -184,18 +188,18 @@ function createBergenR1Surfaces(
 
     // 5. Preemptive raise -- 0-6 HCP, exactly 4 support
     createSurface({
-      meaningId: `bergen:preemptive-raise-${suit}`,
+      meaningId: ids.preemptiveRaise,
       semanticClassId: BERGEN_CLASSES.PREEMPTIVE_RAISE,
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "lte",
           value: BERGEN_THRESHOLDS.PREEMPTIVE_MAX,
           isPublic: true,
         },
         {
-          factId: "hand.suitLength.$suit",
+          factId: BERGEN_CLAUSE_FACT_IDS.SUIT_LENGTH_TEMPLATE,
           operator: "eq",
           value: BERGEN_THRESHOLDS.SUPPORT_LENGTH,
           isPublic: true,
@@ -230,15 +234,17 @@ function createBergenR2AfterConstructiveSurfaces(
   const bindings = { suit } as const;
   const majorStrain = suitToBidSuit(suit);
 
+  const ids = BERGEN_MEANING_BY_SUIT[suit];
+
   return [
     // Opener game: 17+ HCP → 4M
     createSurface({
-      meaningId: `bergen:opener-game-after-constructive-${suit}`,
+      meaningId: ids.openerGameAfterConstructive,
       semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_CONSTRUCTIVE,
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "gte",
           value: BERGEN_THRESHOLDS.OPENER_GAME_AFTER_CONSTRUCTIVE_MIN,
           isPublic: true,
@@ -254,12 +260,12 @@ function createBergenR2AfterConstructiveSurfaces(
 
     // Opener signoff: ≤13 HCP → 3M (return to trump suit)
     createSurface({
-      meaningId: `bergen:opener-signoff-after-constructive-${suit}`,
+      meaningId: ids.openerSignoffAfterConstructive,
       semanticClassId: BERGEN_CLASSES.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE,
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "lte",
           value: BERGEN_THRESHOLDS.OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_MAX,
           isPublic: true,
@@ -287,16 +293,17 @@ function createBergenR2AfterLimitSurfaces(
 ): readonly BidMeaning[] {
   const bindings = { suit } as const;
   const majorStrain = suitToBidSuit(suit);
+  const ids = BERGEN_MEANING_BY_SUIT[suit];
 
   return [
     // Opener game: 15+ HCP → 4M
     createSurface({
-      meaningId: `bergen:opener-game-after-limit-${suit}`,
+      meaningId: ids.openerGameAfterLimit,
       semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_LIMIT,
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "gte",
           value: BERGEN_THRESHOLDS.OPENER_GAME_AFTER_LIMIT_MIN,
           isPublic: true,
@@ -312,12 +319,12 @@ function createBergenR2AfterLimitSurfaces(
 
     // Opener signoff: ≤14 HCP → 3M
     createSurface({
-      meaningId: `bergen:opener-signoff-after-limit-${suit}`,
+      meaningId: ids.openerSignoffAfterLimit,
       semanticClassId: BERGEN_CLASSES.OPENER_SIGNOFF_AFTER_LIMIT,
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "lte",
           value: BERGEN_THRESHOLDS.OPENER_SIGNOFF_AFTER_LIMIT_MAX,
           isPublic: true,
@@ -346,15 +353,17 @@ function createBergenR2AfterPreemptiveSurfaces(
   const bindings = { suit } as const;
   const majorStrain = suitToBidSuit(suit);
 
+  const ids = BERGEN_MEANING_BY_SUIT[suit];
+
   return [
     // Opener game: 18+ total points → 4M
     createSurface({
-      meaningId: `bergen:opener-game-after-preemptive-${suit}`,
+      meaningId: ids.openerGameAfterPreemptive,
       semanticClassId: BERGEN_CLASSES.OPENER_GAME_AFTER_PREEMPTIVE,
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          factId: "bridge.totalPointsForRaise",
+          factId: BERGEN_CLAUSE_FACT_IDS.BRIDGE_TOTAL_POINTS_FOR_RAISE,
           operator: "gte",
           value: BERGEN_THRESHOLDS.OPENER_GAME_AFTER_PREEMPTIVE_MIN,
           isPublic: true,
@@ -370,12 +379,12 @@ function createBergenR2AfterPreemptiveSurfaces(
 
     // Opener pass: ≤17 total points → Pass
     createSurface({
-      meaningId: `bergen:opener-pass-after-preemptive-${suit}`,
+      meaningId: ids.openerPassAfterPreemptive,
       semanticClassId: BERGEN_CLASSES.OPENER_PASS_AFTER_PREEMPTIVE,
       encoding: { type: "pass" },
       clauses: [
         {
-          factId: "bridge.totalPointsForRaise",
+          factId: BERGEN_CLAUSE_FACT_IDS.BRIDGE_TOTAL_POINTS_FOR_RAISE,
           operator: "lte",
           value: BERGEN_THRESHOLDS.OPENER_PASS_AFTER_PREEMPTIVE_MAX,
           isPublic: true,
@@ -406,15 +415,17 @@ function createBergenR3AfterGameTrySurfaces(
   const bindings = { suit } as const;
   const majorStrain = suitToBidSuit(suit);
 
+  const ids = BERGEN_MEANING_BY_SUIT[suit];
+
   return [
     // Accept game try: 9-10 HCP → 4M
     createSurface({
-      meaningId: `bergen:responder-try-accept-${suit}`,
+      meaningId: ids.responderTryAccept,
       semanticClassId: BERGEN_CLASSES.RESPONDER_TRY_ACCEPT,
       encoding: { defaultCall: bid(4, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "range",
           value: { min: BERGEN_THRESHOLDS.RESPONDER_TRY_ACCEPT_MIN, max: BERGEN_THRESHOLDS.RESPONDER_TRY_ACCEPT_MAX },
           isPublic: true,
@@ -430,12 +441,12 @@ function createBergenR3AfterGameTrySurfaces(
 
     // Reject game try: 7-8 HCP → 3M
     createSurface({
-      meaningId: `bergen:responder-try-reject-${suit}`,
+      meaningId: ids.responderTryReject,
       semanticClassId: BERGEN_CLASSES.RESPONDER_TRY_REJECT,
       encoding: { defaultCall: bid(3, majorStrain) },
       clauses: [
         {
-          factId: "hand.hcp",
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
           operator: "range",
           value: { min: BERGEN_THRESHOLDS.RESPONDER_TRY_REJECT_MIN, max: BERGEN_THRESHOLDS.RESPONDER_TRY_REJECT_MAX },
           isPublic: true,
@@ -483,7 +494,7 @@ function createBergenPassSurface(
  */
 function createBergenR3AfterGameSurfaces(): readonly BidMeaning[] {
   return createBergenPassSurface(
-    "bergen:responder-accept-game",
+    BERGEN_MEANING_IDS.RESPONDER_ACCEPT_GAME,
     BERGEN_CLASSES.RESPONDER_ACCEPT_GAME,
     "Accept partner's game bid → pass",
   );
@@ -496,7 +507,7 @@ function createBergenR3AfterGameSurfaces(): readonly BidMeaning[] {
  */
 function createBergenR3AfterSignoffSurfaces(): readonly BidMeaning[] {
   return createBergenPassSurface(
-    "bergen:responder-accept-signoff",
+    BERGEN_MEANING_IDS.RESPONDER_ACCEPT_SIGNOFF,
     BERGEN_CLASSES.RESPONDER_ACCEPT_SIGNOFF,
     "Accept partner's signoff → pass",
   );
@@ -509,7 +520,7 @@ function createBergenR3AfterSignoffSurfaces(): readonly BidMeaning[] {
  */
 function createBergenR4Surfaces(): readonly BidMeaning[] {
   return createBergenPassSurface(
-    "bergen:opener-accept-after-try",
+    BERGEN_MEANING_IDS.OPENER_ACCEPT_AFTER_TRY,
     BERGEN_CLASSES.OPENER_ACCEPT_AFTER_TRY,
     "Accept partner's decision on game try → pass",
   );
@@ -535,20 +546,22 @@ function createBergenNatural1NtResponseSurfaces(
 ): readonly BidMeaning[] {
   const bindings = { suit } as const;
 
+  const ids = BERGEN_MEANING_BY_SUIT[suit];
+
   return [
     createSurface({
-      meaningId: `bergen:natural-1nt-response-${suit}`,
+      meaningId: ids.natural1nt,
       semanticClassId: BERGEN_CLASSES.NATURAL_1NT_RESPONSE,
       encoding: { defaultCall: bid(1, BidSuit.NoTrump) },
       clauses: [
         {
-          factId: "system.responder.oneNtRange",
+          factId: BERGEN_CLAUSE_FACT_IDS.SYSTEM_RESPONDER_ONE_NT_RANGE,
           operator: "boolean",
           value: true,
           isPublic: true,
         },
         {
-          factId: "hand.suitLength.$suit",
+          factId: BERGEN_CLAUSE_FACT_IDS.SUIT_LENGTH_TEMPLATE,
           operator: "lte",
           value: 3,
           isPublic: true,
@@ -556,7 +569,7 @@ function createBergenNatural1NtResponseSurfaces(
         // Over 1♥, responder must not have 4+ spades (bid 1♠ instead).
         // Over 1♠, no higher-ranking suit exists, so this clause is vacuous.
         ...(suit === "hearts" ? [{
-          factId: "hand.suitLength.spades" as const,
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_SUIT_LENGTH_SPADES,
           operator: "lte" as const,
           value: 3,
         }] : []),

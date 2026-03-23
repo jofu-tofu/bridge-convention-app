@@ -6,7 +6,7 @@ Shared test factories and stubs used across module boundaries (stores, component
 
 | File             | Exports                                                                                          |
 | ---------------- | ------------------------------------------------------------------------------------------------ |
-| `convention-factories.ts` | `makeSurface`, `makeRanking`, `buildMachine`, `makeCall`, `makePass` — canonical factories for convention system types |
+| `convention-factories.ts` | `makeSurface`, `makeRanking`, `buildMachine`, `makeCall`, `makePass`, `makeFactCatalogEntry`, `makeMeaningCatalogEntry`, `makeCatalogEntry` — canonical factories for convention system types |
 | `engine-stub.ts` | `createStubEngine(overrides?)`, `makeDeal()`                                                     |
 | `fixtures.ts`    | `makeCard`, `ALL_RANKS`, `makeSimpleTestDeal`, `makeDrillSession`, `makeContract`, `flushWithFakeTimers`, `flushWithRealTimers` |
 | `tiers.ts`       | `refDescribe`, `policyDescribe`, `PolicyRationale`, `TestTier`, `TierEntry`, `getTierRegistry`, `clearTierRegistry` |

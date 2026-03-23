@@ -5,7 +5,9 @@ import type {
 } from "../../core/contracts";
 import type { ConventionStrategy, StrategyEvaluation, BidMeaning } from "../../conventions";
 import type { FactCatalog } from "../../core/contracts/fact-catalog";
-import { createSharedFactCatalog, runPipeline } from "../../conventions";
+import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
+import { createSharedFactCatalog, runPipeline, PLATFORM_EXPLANATION_ENTRIES } from "../../conventions";
+import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
 
 import { buildBidResult } from "./bid-result-builder";
 import { projectTeaching } from "../../conventions";
@@ -23,14 +25,19 @@ export function meaningToStrategy(
     name?: string;
     factCatalog?: FactCatalog;
     surfaceGroups?: readonly SurfaceGroup[];
+    explanationCatalog?: ExplanationCatalog;
   },
 ): ConventionStrategy {
+  // Build explanation catalog: use provided catalog or default to platform entries only
+  const explCatalog = options?.explanationCatalog
+    ?? createExplanationCatalog([...PLATFORM_EXPLANATION_ENTRIES]);
+
   let lastEvaluation: StrategyEvaluation | null = {
     practicalRecommendation: null,
     surfaceGroups: options?.surfaceGroups ?? null,
     pipelineResult: null,
     posteriorSummary: null,
-    explanationCatalog: null,
+    explanationCatalog: explCatalog,
     teachingProjection: null,
     facts: null,
     machineSnapshot: null,
@@ -50,14 +57,14 @@ export function meaningToStrategy(
         catalog,
       });
 
-      const teachingProjection = projectTeaching(result);
+      const teachingProjection = projectTeaching(result, { explanationCatalog: explCatalog });
 
       lastEvaluation = {
         practicalRecommendation: null,
         surfaceGroups: options?.surfaceGroups ?? null,
         pipelineResult: result,
         posteriorSummary: null,
-        explanationCatalog: null,
+        explanationCatalog: explCatalog,
         teachingProjection,
         facts,
         machineSnapshot: null,

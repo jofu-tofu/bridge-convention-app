@@ -211,6 +211,7 @@ export function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "weak-twos",
   description: "Weak Twos — open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
+  purpose: "Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust",
   ...createWeakTwosModule(sys),
   local: weakTwosLocal,
   states: createWeakTwosStates(),

@@ -18,6 +18,7 @@ import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { bergenFacts } from "./facts";
 import { BERGEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
+import { BERGEN_MEANING_IDS } from "./meaning-ids";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,
@@ -45,7 +46,7 @@ import {
 const BERGEN_CTX: ModuleContext = { moduleId: "bergen" };
 
 const OPENER_1H_SURFACE: BidMeaning = createSurface({
-  meaningId: "bergen:opener-1h",
+  meaningId: BERGEN_MEANING_IDS.OPENER_1H,
   semanticClassId: "bergen:major-open",
   encoding: bid(1, BidSuit.Hearts),
   clauses: [],
@@ -57,7 +58,7 @@ const OPENER_1H_SURFACE: BidMeaning = createSurface({
 }, BERGEN_CTX);
 
 const OPENER_1S_SURFACE: BidMeaning = createSurface({
-  meaningId: "bergen:opener-1s",
+  meaningId: BERGEN_MEANING_IDS.OPENER_1S,
   semanticClassId: "bergen:major-open",
   encoding: bid(1, BidSuit.Spades),
   clauses: [],
@@ -320,6 +321,7 @@ export function createBergenModule(_sys: SystemConfig): BergenModuleParts {
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "bergen",
   description: "Bergen Raises — use 3C/3D as artificial raises after 1M to show different strength levels",
+  purpose: "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
   ...createBergenModule(sys),
   local: bergenLocal,
   states: createBergenStates(sys),

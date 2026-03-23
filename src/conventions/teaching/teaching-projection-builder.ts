@@ -26,6 +26,8 @@ import type {
 import type {
   ExplanationCatalog,
   ExplanationEntry,
+  FactExplanationEntry,
+  MeaningExplanationEntry,
 } from "../../core/contracts/explanation-catalog";
 
 import type { PosteriorSummary } from "../../core/contracts/recommendation";
@@ -61,20 +63,20 @@ export interface TeachingProjectionOptions {
 
 /** Pre-indexed catalog for O(1) lookups by factId and meaningId. */
 export interface CatalogIndex {
-  readonly byFactId: ReadonlyMap<string, ExplanationEntry>;
-  readonly byMeaningId: ReadonlyMap<string, ExplanationEntry>;
+  readonly byFactId: ReadonlyMap<string, FactExplanationEntry>;
+  readonly byMeaningId: ReadonlyMap<string, MeaningExplanationEntry>;
 }
 
 /** Build a CatalogIndex from an ExplanationCatalog. */
 function buildCatalogIndex(catalog: ExplanationCatalog): CatalogIndex {
-  const byFactId = new Map<string, ExplanationEntry>();
-  const byMeaningId = new Map<string, ExplanationEntry>();
+  const byFactId = new Map<string, FactExplanationEntry>();
+  const byMeaningId = new Map<string, MeaningExplanationEntry>();
 
   for (const entry of catalog.entries) {
-    if (entry.factId) {
+    if ("factId" in entry) {
       byFactId.set(entry.factId, entry);
     }
-    if (entry.meaningId) {
+    if ("meaningId" in entry) {
       byMeaningId.set(entry.meaningId, entry);
     }
   }
@@ -85,13 +87,13 @@ function buildCatalogIndex(catalog: ExplanationCatalog): CatalogIndex {
 // -- Display Text Resolver --
 
 /** Resolve display text from a catalog entry.
- *  When isContrastive is true, prefers contrastiveDisplayText, falling back to displayText. */
+ *  When isContrastive is true, prefers contrastiveDisplayText (fact entries only), falling back to displayText. */
 export function resolveDisplayText(
   catalogEntry: ExplanationEntry | undefined,
   isContrastive?: boolean,
 ): string | undefined {
   if (!catalogEntry) return undefined;
-  if (isContrastive) {
+  if (isContrastive && "factId" in catalogEntry) {
     return catalogEntry.contrastiveDisplayText ?? catalogEntry.displayText;
   }
   return catalogEntry.displayText;
@@ -245,6 +247,9 @@ function buildPartnerSummary(
     if (probability < MIN_PROBABILITY) continue;
     // Look up label from catalog, fall back to factId
     const catalogEntry = catalogIndex?.byFactId.get(fv.factId);
+    if (!catalogEntry?.displayText && catalogIndex && import.meta.env.DEV) {
+      console.warn(`[teaching] No catalog entry found for factId: ${fv.factId}`);
+    }
     const label = catalogEntry?.displayText ?? fv.factId;
     const pct = Math.round(probability * 100);
     insights.push(`${label} (${pct}%)`);

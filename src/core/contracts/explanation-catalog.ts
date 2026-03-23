@@ -15,28 +15,39 @@ export type ExplanationRole = "supporting" | "blocking" | "inferential" | "pedag
 /** Explanation level preference. */
 export type ExplanationLevel = "semantic" | "mechanical";
 
-/** A single explanation entry in the catalog. */
-export interface ExplanationEntry {
+/** Base fields shared by all explanation entries. */
+interface ExplanationEntryBase {
   /** Stable, versioned ID. */
   readonly explanationId: string;
-  /** Links to fact catalog (if explaining a fact). */
-  readonly factId?: string;
-  /** Links to meaning vocabulary (if explaining a meaning). */
-  readonly meaningId?: string;
   /** i18n-ready template reference for the primary explanation. */
   readonly templateKey: string;
-  /** Human-readable display text. When present, used directly by the teaching projection builder.
+  /** Human-readable display text. Used directly by the teaching projection builder.
    *  Prefer this over templateKey for immediate rendering; templateKey is reserved for i18n. */
-  readonly displayText?: string;
-  /** i18n-ready template reference for "why this, not that" explanations. */
-  readonly contrastiveTemplateKey?: string;
-  /** Human-readable contrastive display text (for "why not" explanations). */
-  readonly contrastiveDisplayText?: string;
+  readonly displayText: string;
   /** Whether the explanation focuses on "why" (semantic) or "what" (mechanical). */
   readonly preferredLevel: ExplanationLevel;
   /** Contexts in which this explanation is used. */
   readonly roles: readonly ExplanationRole[];
 }
+
+/** Explains a fact (from fact catalog). */
+export interface FactExplanationEntry extends ExplanationEntryBase {
+  /** Links to fact catalog. */
+  readonly factId: string;
+  /** i18n-ready template reference for "why this, not that" explanations. */
+  readonly contrastiveTemplateKey?: string;
+  /** Human-readable contrastive display text (for "why not" explanations). */
+  readonly contrastiveDisplayText?: string;
+}
+
+/** Explains a meaning (from meaning vocabulary). */
+export interface MeaningExplanationEntry extends ExplanationEntryBase {
+  /** Links to meaning vocabulary. */
+  readonly meaningId: string;
+}
+
+/** A single explanation entry in the catalog — either fact-linked or meaning-linked. */
+export type ExplanationEntry = FactExplanationEntry | MeaningExplanationEntry;
 
 /** Versioned explanation catalog. */
 export interface ExplanationCatalog {

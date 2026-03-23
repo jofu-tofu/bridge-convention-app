@@ -10,7 +10,7 @@ import type {
   EncodedProposal,
 } from "../../pipeline/pipeline-types";
 import type { DecisionProvenance } from "../../../core/contracts/provenance";
-import type { ExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { FactExplanationEntry, MeaningExplanationEntry } from "../../../core/contracts/explanation-catalog";
 import type { CatalogIndex } from "../teaching-projection-builder";
 
 import {
@@ -26,8 +26,8 @@ import {
 } from "../../../test-support/convention-factories";
 
 function makeCatalogIndex(
-  byFactId: [string, ExplanationEntry][] = [],
-  byMeaningId: [string, ExplanationEntry][] = [],
+  byFactId: [string, FactExplanationEntry][] = [],
+  byMeaningId: [string, MeaningExplanationEntry][] = [],
 ): CatalogIndex {
   return {
     byFactId: new Map(byFactId),
@@ -187,22 +187,15 @@ describe("buildPrimaryExplanation", () => {
     expect(nodes[0]!.explanationId).toBe("nt.hcp.base");
   });
 
-  it("convention-reference nodes emitted for meaning-level catalog entries", () => {
+  it("fact entries produce condition nodes with catalog enrichment", () => {
     const factEntry = makeCatalogEntry({
       explanationId: "nt.stayman.eligible",
       factId: "module.stayman.eligible",
       templateKey: "nt.stayman.eligible.supporting",
-      meaningId: "stayman:ask-major",
-    });
-    const meaningEntry = makeCatalogEntry({
-      explanationId: "nt.stayman.askMajor",
-      meaningId: "stayman:ask-major",
-      templateKey: "nt.stayman.askMajor.semantic",
-      displayText: "Stayman Convention",
+      displayText: "Eligible for Stayman",
     });
     const catalogIndex = makeCatalogIndex(
       [["module.stayman.eligible", factEntry]],
-      [["stayman:ask-major", meaningEntry]],
     );
     const provenance = makeProvenance({
       applicability: {
@@ -215,39 +208,31 @@ describe("buildPrimaryExplanation", () => {
 
     const nodes = buildPrimaryExplanation(provenance, catalogIndex);
 
-    expect(nodes).toHaveLength(2);
+    expect(nodes).toHaveLength(1);
     expect(nodes[0]!.kind).toBe("condition");
-    expect(nodes[1]!.kind).toBe("convention-reference");
-    expect(nodes[1]!.content).toBe("Stayman Convention");
-    expect(nodes[1]!.explanationId).toBe("nt.stayman.askMajor");
-    expect(nodes[1]!.templateKey).toBe("nt.stayman.askMajor.semantic");
+    expect(nodes[0]!.content).toBe("Eligible for Stayman");
+    expect(nodes[0]!.explanationId).toBe("nt.stayman.eligible");
+    expect(nodes[0]!.templateKey).toBe("nt.stayman.eligible.supporting");
   });
 
-  it("convention-reference nodes are deduplicated by meaningId", () => {
+  it("multiple fact entries each produce condition nodes", () => {
     const factEntry1 = makeCatalogEntry({
       explanationId: "nt.stayman.eligible",
       factId: "module.stayman.eligible",
       templateKey: "nt.stayman.eligible.supporting",
-      meaningId: "stayman:ask-major",
+      displayText: "Eligible for Stayman",
     });
     const factEntry2 = makeCatalogEntry({
       explanationId: "nt.stayman.fourCard",
       factId: "bridge.hasFourCardMajor",
       templateKey: "nt.stayman.fourCard.supporting",
-      meaningId: "stayman:ask-major", // same meaningId
-    });
-    const meaningEntry = makeCatalogEntry({
-      explanationId: "nt.stayman.askMajor",
-      meaningId: "stayman:ask-major",
-      templateKey: "nt.stayman.askMajor.semantic",
-      displayText: "Stayman Convention",
+      displayText: "Has a 4-card major",
     });
     const catalogIndex = makeCatalogIndex(
       [
         ["module.stayman.eligible", factEntry1],
         ["bridge.hasFourCardMajor", factEntry2],
       ],
-      [["stayman:ask-major", meaningEntry]],
     );
     const provenance = makeProvenance({
       applicability: {
@@ -261,9 +246,10 @@ describe("buildPrimaryExplanation", () => {
 
     const nodes = buildPrimaryExplanation(provenance, catalogIndex);
 
-    const refNodes = nodes.filter(n => n.kind === "convention-reference");
-    expect(refNodes).toHaveLength(1); // deduplicated
-    expect(refNodes[0]!.content).toBe("Stayman Convention");
+    const conditionNodes = nodes.filter(n => n.kind === "condition");
+    expect(conditionNodes).toHaveLength(2);
+    expect(conditionNodes[0]!.content).toBe("Eligible for Stayman");
+    expect(conditionNodes[1]!.content).toBe("Has a 4-card major");
   });
 
   it("without catalog, nodes have no explanationId or templateKey", () => {

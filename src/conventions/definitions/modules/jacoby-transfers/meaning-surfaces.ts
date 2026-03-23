@@ -11,6 +11,8 @@ import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { TRANSFER_CLASSES, TRANSFER_R3_CLASSES, OPENER_PLACE_CLASSES } from "./semantic-classes";
+import { TRANSFER_MEANING_IDS } from "./meaning-ids";
+import { TRANSFER_FACT_IDS } from "./fact-ids";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -20,7 +22,7 @@ const TRANSFER_CTX: ModuleContext = { moduleId: "jacoby-transfers" };
 
 export const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "transfer:to-hearts",
+    meaningId: TRANSFER_MEANING_IDS.TO_HEARTS,
     semanticClassId: TRANSFER_CLASSES.TO_HEARTS,
     encoding: bid(2, BidSuit.Diamonds),
     clauses: [
@@ -39,7 +41,7 @@ export const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:to-spades",
+    meaningId: TRANSFER_MEANING_IDS.TO_SPADES,
     semanticClassId: TRANSFER_CLASSES.TO_SPADES,
     encoding: bid(2, BidSuit.Hearts),
     clauses: [
@@ -62,7 +64,7 @@ export const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
 
 export const OPENER_TRANSFER_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "transfer:accept",
+    meaningId: TRANSFER_MEANING_IDS.ACCEPT,
     semanticClassId: TRANSFER_CLASSES.ACCEPT,
     encoding: bid(2, BidSuit.Hearts),
     clauses: [],
@@ -76,7 +78,7 @@ export const OPENER_TRANSFER_HEARTS_SURFACES: readonly BidMeaning[] = [
 
 export const OPENER_TRANSFER_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "transfer:accept-spades",
+    meaningId: TRANSFER_MEANING_IDS.ACCEPT_SPADES,
     semanticClassId: TRANSFER_CLASSES.ACCEPT_SPADES,
     encoding: bid(2, BidSuit.Spades),
     clauses: [],
@@ -93,7 +95,7 @@ export const OPENER_TRANSFER_SPADES_SURFACES: readonly BidMeaning[] = [
 export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "transfer:signoff-hearts",
+    meaningId: TRANSFER_MEANING_IDS.SIGNOFF_HEARTS,
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
     encoding: { type: "pass" },
     clauses: [
@@ -113,7 +115,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:game-hearts",
+    meaningId: TRANSFER_MEANING_IDS.GAME_HEARTS,
     semanticClassId: TRANSFER_R3_CLASSES.GAME_IN_MAJOR,
     encoding: bid(4, BidSuit.Hearts),
     clauses: [
@@ -140,7 +142,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:nt-game-hearts",
+    meaningId: TRANSFER_MEANING_IDS.NT_GAME_HEARTS,
     semanticClassId: TRANSFER_R3_CLASSES.NT_GAME,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
@@ -174,7 +176,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:invite-raise-hearts",
+    meaningId: TRANSFER_MEANING_IDS.INVITE_RAISE_HEARTS,
     semanticClassId: TRANSFER_R3_CLASSES.INVITE_RAISE,
     encoding: bid(3, BidSuit.Hearts),
     clauses: [
@@ -201,7 +203,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:invite-hearts",
+    meaningId: TRANSFER_MEANING_IDS.INVITE_HEARTS,
     semanticClassId: TRANSFER_R3_CLASSES.INVITE,
     encoding: bid(2, BidSuit.NoTrump),
     clauses: [
@@ -225,7 +227,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
 export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "transfer:signoff-spades",
+    meaningId: TRANSFER_MEANING_IDS.SIGNOFF_SPADES,
     semanticClassId: TRANSFER_R3_CLASSES.SIGNOFF,
     encoding: { type: "pass" },
     clauses: [
@@ -245,7 +247,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:game-spades",
+    meaningId: TRANSFER_MEANING_IDS.GAME_SPADES,
     semanticClassId: TRANSFER_R3_CLASSES.GAME_IN_MAJOR,
     encoding: bid(4, BidSuit.Spades),
     clauses: [
@@ -272,7 +274,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:nt-game-spades",
+    meaningId: TRANSFER_MEANING_IDS.NT_GAME_SPADES,
     semanticClassId: TRANSFER_R3_CLASSES.NT_GAME,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
@@ -306,7 +308,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:invite-raise-spades",
+    meaningId: TRANSFER_MEANING_IDS.INVITE_RAISE_SPADES,
     semanticClassId: TRANSFER_R3_CLASSES.INVITE_RAISE,
     encoding: bid(3, BidSuit.Spades),
     clauses: [
@@ -333,7 +335,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
   }, TRANSFER_CTX),
 
   createSurface({
-    meaningId: "transfer:invite-spades",
+    meaningId: TRANSFER_MEANING_IDS.INVITE_SPADES,
     semanticClassId: TRANSFER_R3_CLASSES.INVITE,
     encoding: bid(2, BidSuit.NoTrump),
     clauses: [
@@ -358,12 +360,12 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
 
 export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "transfer:correct-to-4h",
+    meaningId: TRANSFER_MEANING_IDS.CORRECT_TO_4H,
     semanticClassId: OPENER_PLACE_CLASSES.CORRECT_TO_MAJOR,
     encoding: bid(4, BidSuit.Hearts),
     clauses: [
       {
-        factId: "module.transfer.openerHasHeartFit",
+        factId: TRANSFER_FACT_IDS.OPENER_HAS_HEART_FIT,
         operator: "boolean",
         value: true,
         description: "Opener has 3+ hearts (fit with responder's 5)",
@@ -377,12 +379,12 @@ export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
     teachingLabel: "4H (heart fit found)",
   }, TRANSFER_CTX),
   createSurface({
-    meaningId: "transfer:pass-3nt-hearts",
+    meaningId: TRANSFER_MEANING_IDS.PASS_3NT_HEARTS,
     semanticClassId: OPENER_PLACE_CLASSES.PASS_3NT,
     encoding: { type: "pass" },
     clauses: [
       {
-        factId: "module.transfer.openerHasHeartFit",
+        factId: TRANSFER_FACT_IDS.OPENER_HAS_HEART_FIT,
         operator: "boolean",
         value: false,
         description: "Opener has fewer than 3 hearts (no fit)",
@@ -399,12 +401,12 @@ export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
 
 export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: "transfer:correct-to-4s",
+    meaningId: TRANSFER_MEANING_IDS.CORRECT_TO_4S,
     semanticClassId: OPENER_PLACE_CLASSES.CORRECT_TO_MAJOR,
     encoding: bid(4, BidSuit.Spades),
     clauses: [
       {
-        factId: "module.transfer.openerHasSpadesFit",
+        factId: TRANSFER_FACT_IDS.OPENER_HAS_SPADES_FIT,
         operator: "boolean",
         value: true,
         description: "Opener has 3+ spades (fit with responder's 5)",
@@ -418,12 +420,12 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
     teachingLabel: "4S (spade fit found)",
   }, TRANSFER_CTX),
   createSurface({
-    meaningId: "transfer:pass-3nt-spades",
+    meaningId: TRANSFER_MEANING_IDS.PASS_3NT_SPADES,
     semanticClassId: OPENER_PLACE_CLASSES.PASS_3NT,
     encoding: { type: "pass" },
     clauses: [
       {
-        factId: "module.transfer.openerHasSpadesFit",
+        factId: TRANSFER_FACT_IDS.OPENER_HAS_SPADES_FIT,
         operator: "boolean",
         value: false,
         description: "Opener has fewer than 3 spades (no fit)",
@@ -443,7 +445,7 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
 export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "transfer:accept-invite-hearts",
+    meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_HEARTS,
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
@@ -462,7 +464,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     teachingLabel: "3NT (accept invite)",
   }, TRANSFER_CTX),
   createSurface({
-    meaningId: "transfer:decline-invite-hearts",
+    meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_HEARTS,
     semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
     encoding: { type: "pass" },
     clauses: [
@@ -486,7 +488,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
 export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "transfer:accept-invite-spades",
+    meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_SPADES,
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
     encoding: bid(3, BidSuit.NoTrump),
     clauses: [
@@ -505,7 +507,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     teachingLabel: "3NT (accept invite)",
   }, TRANSFER_CTX),
   createSurface({
-    meaningId: "transfer:decline-invite-spades",
+    meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_SPADES,
     semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
     encoding: { type: "pass" },
     clauses: [
@@ -533,7 +535,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
 export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "transfer:accept-invite-raise-hearts",
+    meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_RAISE_HEARTS,
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
     encoding: bid(4, BidSuit.Hearts),
     clauses: [
@@ -552,7 +554,7 @@ export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): 
     teachingLabel: "4H (accept invite, heart fit guaranteed)",
   }, TRANSFER_CTX),
   createSurface({
-    meaningId: "transfer:decline-invite-raise-hearts",
+    meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_RAISE_HEARTS,
     semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
     encoding: { type: "pass" },
     clauses: [
@@ -576,7 +578,7 @@ export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): 
 export function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
-    meaningId: "transfer:accept-invite-raise-spades",
+    meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_RAISE_SPADES,
     semanticClassId: OPENER_PLACE_CLASSES.ACCEPT_INVITE,
     encoding: bid(4, BidSuit.Spades),
     clauses: [
@@ -595,7 +597,7 @@ export function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): 
     teachingLabel: "4S (accept invite, spade fit guaranteed)",
   }, TRANSFER_CTX),
   createSurface({
-    meaningId: "transfer:decline-invite-raise-spades",
+    meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_RAISE_SPADES,
     semanticClassId: OPENER_PLACE_CLASSES.DECLINE_INVITE,
     encoding: { type: "pass" },
     clauses: [

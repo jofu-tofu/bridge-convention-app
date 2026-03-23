@@ -13,6 +13,7 @@ core/
   rule-module.ts        Pattern primitives for rule-based surface selection: `LocalFsm`, `StateEntry` (phase + turn + surfaces + negotiationDelta), `ResolvedSurface` (surface + negotiationDelta), `TurnRole`, `ObsPattern`, `RouteExpr`, `NegotiationExpr`, `PhaseTransition`. `StateEntry` groups surfaces by conversation state — activation context stays in `conventions/core/`, not on `BidMeaning` in `contracts/`.
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
+  shared-explanation-catalog.ts  Platform shared-fact explanation catalog — FactExplanationEntry for every shared fact (primitive, bridge-derived, posterior) and system fact. Exports PLATFORM_EXPLANATION_ENTRIES. Owns explanations for all IDs in `shared-fact-vocabulary.ts` and `system-fact-vocabulary.ts`. Module-owned facts (including template-form `$suit` IDs) are NOT covered here — they belong in per-module `explanation-catalog.ts` files.
   surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())
   surface-builder.ts    createSurface() builder — simplified BidMeaning construction with auto-derived clauseId/description/moduleId. modulePrecedence defaults to 0.
   profile-builder.ts    Profile building utilities
@@ -90,4 +91,4 @@ how an agent acts here, remove it.
 
 **Staleness anchor:** This file assumes `core/registry.ts` exists. If it doesn't, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-22 | version=9 | dir-commits-at-audit=70 -->
+<!-- context-layer: generated=2026-03-14 | last-audited=2026-03-23 | version=10 | dir-commits-at-audit=71 -->

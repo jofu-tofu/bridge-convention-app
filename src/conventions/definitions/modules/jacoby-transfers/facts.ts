@@ -6,12 +6,13 @@ import type {
 } from "../../../../core/contracts/fact-catalog";
 import { num, bool, fv } from "../../../pipeline/fact-helpers";
 import type { SystemConfig } from "../../../../core/contracts/system-config";
+import { TRANSFER_FACT_IDS } from "./fact-ids";
 
 // ─── Facts ───────────────────────────────────────────────────
 
 const TRANSFER_FACTS: readonly FactDefinition[] = [
   {
-    id: "module.transfer.targetSuit",
+    id: TRANSFER_FACT_IDS.TARGET_SUIT,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Transfer target suit (hearts, spades, or none)",
@@ -20,7 +21,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
-    id: "module.transfer.eligible",
+    id: TRANSFER_FACT_IDS.ELIGIBLE,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Eligible for Jacoby transfer (5+ card major)",
@@ -29,7 +30,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
-    id: "module.transfer.preferred",
+    id: TRANSFER_FACT_IDS.PREFERRED,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Transfer preferred (eligible with 5+ card suit)",
@@ -38,7 +39,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
-    id: "module.transfer.openerHasHeartFit",
+    id: TRANSFER_FACT_IDS.OPENER_HAS_HEART_FIT,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Opener has 3+ hearts (fit with responder's 5-card suit)",
@@ -47,7 +48,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
     constrainsDimensions: ["suitIdentity", "suitLength"],
   },
   {
-    id: "module.transfer.openerHasSpadesFit",
+    id: TRANSFER_FACT_IDS.OPENER_HAS_SPADES_FIT,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
     description: "Opener has 3+ spades (fit with responder's 5-card suit)",
@@ -60,22 +61,22 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
 /** Factory: creates transfer fact evaluators parameterized by system config. */
 function createTransferEvaluators(_sys: SystemConfig): Map<string, FactEvaluatorFn> {
   return new Map<string, FactEvaluatorFn>([
-    ["module.transfer.targetSuit", (_h, _ev, m) => {
+    [TRANSFER_FACT_IDS.TARGET_SUIT, (_h, _ev, m) => {
       const spades = num(m, "hand.suitLength.spades");
       const hearts = num(m, "hand.suitLength.hearts");
-      if (spades >= 5 && hearts >= 5) return fv("module.transfer.targetSuit", "spades");
-      if (spades >= 5) return fv("module.transfer.targetSuit", "spades");
-      if (hearts >= 5) return fv("module.transfer.targetSuit", "hearts");
-      return fv("module.transfer.targetSuit", "none");
+      if (spades >= 5 && hearts >= 5) return fv(TRANSFER_FACT_IDS.TARGET_SUIT, "spades");
+      if (spades >= 5) return fv(TRANSFER_FACT_IDS.TARGET_SUIT, "spades");
+      if (hearts >= 5) return fv(TRANSFER_FACT_IDS.TARGET_SUIT, "hearts");
+      return fv(TRANSFER_FACT_IDS.TARGET_SUIT, "none");
     }],
-    ["module.transfer.eligible", (_h, _ev, m) =>
-      fv("module.transfer.eligible", bool(m, "bridge.hasFiveCardMajor"))],
-    ["module.transfer.preferred", (_h, _ev, m) =>
-      fv("module.transfer.preferred", bool(m, "module.transfer.eligible"))],
-    ["module.transfer.openerHasHeartFit", (_h, _ev, m) =>
-      fv("module.transfer.openerHasHeartFit", num(m, "hand.suitLength.hearts") >= 3)],
-    ["module.transfer.openerHasSpadesFit", (_h, _ev, m) =>
-      fv("module.transfer.openerHasSpadesFit", num(m, "hand.suitLength.spades") >= 3)],
+    [TRANSFER_FACT_IDS.ELIGIBLE, (_h, _ev, m) =>
+      fv(TRANSFER_FACT_IDS.ELIGIBLE, bool(m, "bridge.hasFiveCardMajor"))],
+    [TRANSFER_FACT_IDS.PREFERRED, (_h, _ev, m) =>
+      fv(TRANSFER_FACT_IDS.PREFERRED, bool(m, TRANSFER_FACT_IDS.ELIGIBLE))],
+    [TRANSFER_FACT_IDS.OPENER_HAS_HEART_FIT, (_h, _ev, m) =>
+      fv(TRANSFER_FACT_IDS.OPENER_HAS_HEART_FIT, num(m, "hand.suitLength.hearts") >= 3)],
+    [TRANSFER_FACT_IDS.OPENER_HAS_SPADES_FIT, (_h, _ev, m) =>
+      fv(TRANSFER_FACT_IDS.OPENER_HAS_SPADES_FIT, num(m, "hand.suitLength.spades") >= 3)],
   ]);
 }
 
