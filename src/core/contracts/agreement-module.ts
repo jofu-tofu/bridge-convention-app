@@ -8,7 +8,7 @@ export type ModuleKind = "base-system" | "add-on" | "competitive-treatment" | "s
 // ─── Priority specification ─────────────────────────────────
 
 /** How strongly convention logic requires this bid.
- *  - "forced": Only legal response in this closure domain (e.g., forced rebid, Ogust step).
+ *  - "forced": Only legal response (e.g., forced rebid, Ogust step).
  *  - "preferred": Best bid given the hand, but alternatives exist.
  *  - "acceptable": Correct but not preferred; typically a natural fallback.
  *  - "residual": What you bid when nothing else applies (e.g., Pass as fallback). */
@@ -43,18 +43,6 @@ export interface FactConstraint {
   readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
 }
 
-// ─── Closure policy ─────────────────────────────────────────
-export interface ChoiceClosurePolicy {
-  readonly exclusive: boolean;
-  readonly exhaustive: boolean;
-  readonly mandatory: boolean;
-  readonly domain: ClosureDomain;
-}
-
-type ClosureDomain =
-  | { readonly kind: "surface" }
-  | { readonly kind: "semantic-class-set"; readonly ids: readonly string[] }
-  | { readonly kind: "module-frontier"; readonly id: string };
 
 import type { SystemConfig } from "./system-config";
 import type { BaseSystemId } from "./base-system-vocabulary";
@@ -103,8 +91,8 @@ export interface PublicEvent {
 export interface PublicConstraint {
   readonly subject: string;
   readonly constraint: FactConstraint;
-  readonly origin: "call-meaning" | "entailed-denial";
-  readonly strength: "hard" | "entailed";
+  readonly origin: "call-meaning";
+  readonly strength: "hard";
   readonly sourceCall?: string;
   readonly sourceMeaning?: string;
 }

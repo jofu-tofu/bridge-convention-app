@@ -24,7 +24,7 @@ core/
   runtime/              Meaning-centric evaluation runtime (profiles + snapshots)
     machine-types.ts      MachineRegisters re-export + ForcingState default. All FSM types (ConversationMachine, MachineState, etc.) removed — rule-based system replaced FSM.
     public-snapshot-builder.ts  buildSnapshotFromAuction() — Phase 1 output
-    commitment-extractor.ts extractCommitments() — auto-derives PublicConstraint[] (promises + entailed denials from closure policy)
+    commitment-extractor.ts extractCommitments() — auto-derives PublicConstraint[] (promises from public clauses)
     profile-activation.ts resolveActiveModules() — SystemProfile activation
     fact-compiler.ts      FactConstraint compilation from surface conditions
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
@@ -47,7 +47,7 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 **Profile activation:** `resolveActiveModules()` evaluates `SystemProfile` attachments against auction patterns, capabilities, and public guards. Exclusivity groups enforce one-winner-per-group.
 
-**Commitment extraction:** `extractCommitments()` matches auction calls against surfaces with `publicConsequences` to produce `PublicConstraint[]` (promises, entailed denials from closure policy).
+**Commitment extraction:** `extractCommitments()` matches auction calls against surfaces with `publicConsequences` to produce `PublicConstraint[]` (promises from public clauses).
 
 ## Test Architecture
 

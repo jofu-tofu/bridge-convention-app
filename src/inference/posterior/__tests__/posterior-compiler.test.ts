@@ -43,31 +43,6 @@ describe("compilePublicHandSpace", () => {
     });
   });
 
-  it("extracts entailed denials as negated clauses", () => {
-    const snapshot = makeSnapshot([
-      {
-        subject: "S",
-        constraint: { factId: "hand.suitLength.H", operator: "gte", value: 5 },
-        origin: "entailed-denial",
-        strength: "entailed",
-        sourceCall: "2D",
-        sourceMeaning: "stayman-deny-major",
-      },
-    ]);
-
-    const spaces = compilePublicHandSpace(snapshot);
-    expect(spaces).toHaveLength(1);
-    expect(spaces[0]!.seatId).toBe("S");
-
-    const predicate = spaces[0]!.constraints[0]!;
-    // denial of "gte 5 hearts" → "lte 4 hearts"
-    expect(predicate.clauses[0]).toEqual({
-      factId: "hand.suitLength.H",
-      operator: "lte",
-      value: 4,
-    });
-  });
-
   it("detects contradictory constraints (estimatedSize: 0)", () => {
     const snapshot = makeSnapshot([
       {

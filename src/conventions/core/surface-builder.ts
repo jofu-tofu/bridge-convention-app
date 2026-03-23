@@ -4,7 +4,6 @@ import type {
   RecommendationBand,
 } from "../../core/contracts/meaning";
 import type { Call } from "../../engine/types";
-import type { ChoiceClosurePolicy } from "../../core/contracts/agreement-module";
 import type { TeachingTagRef } from "../../core/contracts/teaching-tag";
 import { deriveClauseId, deriveClauseDescription } from "../pipeline/clause-derivation";
 
@@ -45,7 +44,6 @@ export interface SurfaceInput {
   readonly teachingLabel: string;
   // Optional overrides:
   readonly moduleId?: string;
-  readonly closurePolicy?: ChoiceClosurePolicy;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
   readonly teachingTags?: readonly TeachingTagRef[];
 }
@@ -114,7 +112,6 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
     },
     sourceIntent: input.sourceIntent,
     teachingLabel: input.teachingLabel,
-    ...(input.closurePolicy ? { closurePolicy: input.closurePolicy } : {}),
     ...(input.surfaceBindings ? { surfaceBindings: input.surfaceBindings } : {}),
     ...(input.teachingTags ? { teachingTags: input.teachingTags } : {}),
   };

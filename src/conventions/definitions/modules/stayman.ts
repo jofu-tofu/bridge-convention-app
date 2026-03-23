@@ -69,22 +69,6 @@ export const STAYMAN_R3_CLASSES = {
   NT_INVITE_DENIAL: "stayman:nt-invite-denial",
 } as const;
 
-// ─── Closure policy (shared across opener Stayman response surfaces) ───
-
-const OPENER_STAYMAN_CLOSURE_POLICY = {
-  exclusive: true,
-  exhaustive: true,
-  mandatory: true,
-  domain: {
-    kind: "semantic-class-set" as const,
-    ids: [
-      STAYMAN_CLASSES.SHOW_HEARTS,
-      STAYMAN_CLASSES.SHOW_SPADES,
-      STAYMAN_CLASSES.DENY_MAJOR,
-    ],
-  },
-};
-
 // ─── R1 surface ──────────────────────────────────────────────
 
 /** Factory: creates the Stayman R1 surface parameterized by system config. */
@@ -147,7 +131,6 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "hearts" } },
     teachingLabel: "Show hearts",
-    closurePolicy: OPENER_STAYMAN_CLOSURE_POLICY,
   }, STAYMAN_CTX),
 
   createSurface({
@@ -171,7 +154,6 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "spades" } },
     teachingLabel: "Show spades",
-    closurePolicy: OPENER_STAYMAN_CLOSURE_POLICY,
   }, STAYMAN_CTX),
 
   createSurface({
@@ -189,7 +171,6 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 2,
     sourceIntent: { type: "DenyMajor", params: {} },
     teachingLabel: "Deny major (2♦)",
-    closurePolicy: OPENER_STAYMAN_CLOSURE_POLICY,
   }, STAYMAN_CTX),
 ];
 

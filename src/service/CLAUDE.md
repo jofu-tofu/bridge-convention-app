@@ -53,7 +53,7 @@ Nothing imports from `service/` except `stores/`, `components/`, and `cli/comman
 
 ## Inference Invariant
 
-`SessionState` preserves the existing inference model: only hard inference from the chosen bid's clauses + within-module exhaustive closure. `InferenceCoordinator` is stateful per-session; `processBid()` is called on every bid; `capturePlayInferences()` at auction end.
+`SessionState` preserves the existing inference model: only hard constraints from the chosen bid's clauses. `InferenceCoordinator` is stateful per-session; `processBid()` is called on every bid; `capturePlayInferences()` at auction end.
 
 ## IP Protection Affordance
 

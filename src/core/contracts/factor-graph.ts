@@ -11,9 +11,7 @@ export interface FactorOrigin {
   readonly sourceConstraint?: PublicConstraint;
   readonly sourceMeaning?: string;
   readonly sourceModule?: string;
-  readonly originKind:
-    | "call-meaning"
-    | "entailed-denial";
+  readonly originKind: "call-meaning";
 }
 
 // ─── Factor specifications (discriminated union) ────────────

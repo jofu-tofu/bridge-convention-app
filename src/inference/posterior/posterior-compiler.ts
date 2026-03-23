@@ -1,30 +1,7 @@
 import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import type { PublicConstraint, FactConstraint } from "../../core/contracts/agreement-module";
+import type { PublicConstraint } from "../../core/contracts/agreement-module";
 import type { PublicHandSpace } from "../../core/contracts/posterior";
 import type { HandPredicate } from "../../core/contracts/predicates";
-
-/**
- * Negate a FactConstraint for denial processing.
- * - denial of "gte X" → "lte X-1"
- * - denial of "lte X" → "gte X+1"
- * - denial of "boolean true" → "boolean false" and vice versa
- * - other operators: returned as-is (cannot be trivially negated)
- */
-function negateConstraint(
-  c: FactConstraint,
-): { factId: string; operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in"; value: number | boolean | string | { min: number; max: number } | readonly string[] } {
-  if (c.operator === "gte" && typeof c.value === "number") {
-    return { factId: c.factId, operator: "lte", value: c.value - 1 };
-  }
-  if (c.operator === "lte" && typeof c.value === "number") {
-    return { factId: c.factId, operator: "gte", value: c.value + 1 };
-  }
-  if (c.operator === "boolean" && typeof c.value === "boolean") {
-    return { factId: c.factId, operator: "boolean", value: !c.value };
-  }
-  // Fallback: return as-is
-  return { factId: c.factId, operator: c.operator, value: c.value };
-}
 
 /**
  * Check if a set of clauses contains contradictions.
@@ -63,7 +40,7 @@ function hasContradiction(
 /**
  * Compile a PublicSnapshot into PublicHandSpace[].
  * Groups constraints by subject seat, converts promises to clauses,
- * negates denials, and detects contradictions.
+ * and detects contradictions.
  */
 export function compilePublicHandSpace(snapshot: PublicSnapshot): PublicHandSpace[] {
   const commitments = snapshot.publicCommitments ?? [];
@@ -90,16 +67,11 @@ export function compilePublicHandSpace(snapshot: PublicSnapshot): PublicHandSpac
     }[] = [];
 
     for (const c of constraints) {
-      const isDenial = c.origin === "entailed-denial";
-      if (isDenial) {
-        clauses.push(negateConstraint(c.constraint));
-      } else {
-        clauses.push({
-          factId: c.constraint.factId,
-          operator: c.constraint.operator,
-          value: c.constraint.value,
-        });
-      }
+      clauses.push({
+        factId: c.constraint.factId,
+        operator: c.constraint.operator,
+        value: c.constraint.value,
+      });
     }
 
     const predicate: HandPredicate = {

@@ -40,7 +40,7 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `recommendation.ts` | Practical recommendation, posterior summary (`PracticalRecommendation`, `PracticalScoreBreakdown`, `PosteriorSummary`). `StrategyEvaluation` and `ConventionStrategy` moved to `conventions/pipeline/strategy-evaluation.ts`. |
 | `module-surface.ts` | `MachineRegisters`, `PublicSnapshot`, `buildPublicSnapshot`. Pipeline output types (`PipelineResult`, `PipelineCarrier`, `ArbitrationResult`, `EncodedProposal`, `EliminationRecord`) moved to `conventions/pipeline/pipeline-types.ts`. |
 | `meaning.ts` | BidMeaning (authored meaning units), clauses, ranking, semantic classes, teaching tags |
-| `fact-catalog.ts` | Fact definitions (with `constrainsDimensions`), evaluators, catalog, extensions, shared facts (19) |
+| `fact-catalog.ts` | Fact definitions (with `constrainsDimensions`, optional `composition` for module-derived facts), `PrimitiveClause`, `FactComposition` types, evaluators, catalog, extensions, shared facts (19) |
 | `alert.ts` | **Moved** to `conventions/pipeline/alert.ts`. Alert resolution and public constraint derivation from surface properties. |
 | `provenance.ts` | Full decision provenance DTOs for pipeline tracing |
 | `teaching-projection.ts` | Teaching-optimized views for "why not X?" UI |
@@ -50,7 +50,7 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `factor-graph.ts` | Convention-erased factor graph IR for posterior boundary |
 | `posterior-query.ts` | Consumer-facing query interface for posterior inference |
 | `posterior-backend.ts` | Backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
-| `agreement-module.ts` | Agreement module IR: priority specs, system profiles, closure policies, fact constraints |
+| `agreement-module.ts` | Agreement module IR: priority specs, system profiles, fact constraints |
 | `deal-spec.ts` | DealSpec IR types for deal generation |
 | `explanation-catalog.ts` | Explanation catalog entries for teaching projections |
 | `convention.ts` | Convention registry types and deal constraint shapes |

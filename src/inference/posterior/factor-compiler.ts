@@ -37,8 +37,6 @@ function mapOriginKind(
 }
 
 function mapStrength(_strength: PublicConstraint["strength"]): FactorStrength {
-  // Both "hard" and "entailed" map to "hard" — entailed denials are still
-  // hard constraints for sampling purposes.
   return "hard";
 }
 
@@ -63,31 +61,17 @@ function extractSuit(factId: string): SuitName | null {
 
 // ─── Factor compilation helpers ─────────────────────────────
 
-function isDenial(origin: PublicConstraint["origin"]): boolean {
-  return origin === "entailed-denial";
-}
-
 /** Shared logic for compiling HCP-range and suit-length constraints. */
 function compileRangeConstraint(
   constraint: PublicConstraint,
   kind: "hcp-range" | "suit-length",
   maxVal: number,
-  denial: boolean,
   extraFields?: Record<string, unknown>,
 ): FactorSpec {
   const { operator, value } = constraint.constraint;
   const seat = constraint.subject;
   const strength = mapStrength(constraint.strength);
   const origin = buildOrigin(constraint);
-
-  if (denial) {
-    if (operator === "gte" && typeof value === "number") {
-      return { kind, seat, min: 0, max: value - 1, strength, origin, ...extraFields } as FactorSpec;
-    }
-    if (operator === "lte" && typeof value === "number") {
-      return { kind, seat, min: value + 1, max: maxVal, strength, origin, ...extraFields } as FactorSpec;
-    }
-  }
 
   if (operator === "gte" && typeof value === "number") {
     return { kind, seat, min: value, max: maxVal, strength, origin, ...extraFields } as FactorSpec;
@@ -101,45 +85,38 @@ function compileRangeConstraint(
   return { kind: "exclusion", seat, constraint: `${label} ${operator} ${JSON.stringify(value)}`, strength, origin };
 }
 
-function compileHcpRange(constraint: PublicConstraint, denial: boolean): FactorSpec {
-  return compileRangeConstraint(constraint, "hcp-range", MAX_HCP, denial);
+function compileHcpRange(constraint: PublicConstraint): FactorSpec {
+  return compileRangeConstraint(constraint, "hcp-range", MAX_HCP);
 }
 
-function compileSuitLength(constraint: PublicConstraint, suit: SuitName, denial: boolean): FactorSpec {
-  return compileRangeConstraint(constraint, "suit-length", MAX_SUIT_LENGTH, denial, { suit });
+function compileSuitLength(constraint: PublicConstraint, suit: SuitName): FactorSpec {
+  return compileRangeConstraint(constraint, "suit-length", MAX_SUIT_LENGTH, { suit });
 }
 
 function compileIsBalanced(
   constraint: PublicConstraint,
-  denial: boolean,
 ): FactorSpec {
   const seat = constraint.subject;
   const strength = mapStrength(constraint.strength);
   const origin = buildOrigin(constraint);
-
-  if (denial) {
-    // Denial of isBalanced → exclusion with "not-balanced"
-    return { kind: "exclusion", seat, constraint: "not-balanced", strength, origin };
-  }
 
   return { kind: "shape", seat, pattern: "balanced", strength, origin };
 }
 
 function compileSingleConstraint(pc: PublicConstraint): FactorSpec {
   const factId = pc.constraint.factId;
-  const denial = isDenial(pc.origin);
 
   if (factId === "hand.hcp") {
-    return compileHcpRange(pc, denial);
+    return compileHcpRange(pc);
   }
 
   const suit = extractSuit(factId);
   if (suit !== null) {
-    return compileSuitLength(pc, suit, denial);
+    return compileSuitLength(pc, suit);
   }
 
   if (factId === "hand.isBalanced") {
-    return compileIsBalanced(pc, denial);
+    return compileIsBalanced(pc);
   }
 
   // Unknown fact ID → generic ExclusionFactor

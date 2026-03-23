@@ -1,7 +1,6 @@
 import type { ConditionResult } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
 import type {
-  ChoiceClosurePolicy,
   FactConstraint,
 } from "./agreement-module";
 import type { TeachingTagRef } from "./teaching-tag";
@@ -184,10 +183,6 @@ export interface BidMeaning {
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
   readonly teachingLabel: string;
-  /** Closure policy for entailed denials — known only to your partnership.
-   *  When a surface in a closed domain is chosen, unchosen peers' derived
-   *  public constraints become entailed denials for partnership posterior. */
-  readonly closurePolicy?: ChoiceClosurePolicy;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
   /** Cross-module pedagogical tags for deriving relations and alternatives. */
   readonly teachingTags?: readonly TeachingTagRef[];

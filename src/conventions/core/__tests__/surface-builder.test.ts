@@ -135,17 +135,6 @@ describe("createSurface", () => {
     expect(surface.clauses[0]!.isPublic).toBe(true);
   });
 
-  it("preserves closurePolicy", () => {
-    const policy = {
-      exclusive: true,
-      exhaustive: true,
-      mandatory: true,
-      domain: { kind: "semantic-class-set" as const, ids: ["a", "b"] },
-    };
-    const surface = createSurface(baseInput({ closurePolicy: policy }), CTX);
-    expect(surface.closurePolicy).toEqual(policy);
-  });
-
   it("preserves surfaceBindings", () => {
     const surface = createSurface(
       baseInput({ surfaceBindings: { suit: "hearts" } }),

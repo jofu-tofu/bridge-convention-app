@@ -3,9 +3,7 @@ import { compileFactorGraph, validateFactorGraph } from "../factor-compiler";
 import type { PublicConstraint } from "../../../core/contracts/agreement-module";
 import type {
   HcpRangeFactor,
-  SuitLengthFactor,
   ShapeFactor,
-  ExclusionFactor,
 } from "../../../core/contracts/factor-graph";
 import { makeSnapshot } from "./posterior-test-fixtures";
 
@@ -44,52 +42,6 @@ describe("compileFactorGraph", () => {
     expect(f1.min).toBe(0);
     expect(f1.max).toBe(17);
     expect(f1.strength).toBe("hard");
-  });
-
-  it("negates entailed-denial of gte 5 hearts to SuitLengthFactor with max=4", () => {
-    const snapshot = makeSnapshot([
-      {
-        subject: "S",
-        constraint: { factId: "hand.suitLength.H", operator: "gte", value: 5 },
-        origin: "entailed-denial",
-        strength: "entailed",
-        sourceCall: "2D",
-        sourceMeaning: "stayman-deny-major",
-      },
-    ]);
-
-    const graph = compileFactorGraph(snapshot);
-    expect(graph.factors).toHaveLength(1);
-
-    const f = graph.factors[0] as SuitLengthFactor;
-    expect(f.kind).toBe("suit-length");
-    expect(f.seat).toBe("S");
-    expect(f.suit).toBe("H");
-    expect(f.min).toBe(0);
-    expect(f.max).toBe(4); // negated: gte 5 → lte 4
-    expect(f.strength).toBe("hard");
-    expect(f.origin.originKind).toBe("entailed-denial");
-  });
-
-  it("maps denial of isBalanced boolean true to ExclusionFactor with not-balanced", () => {
-    const snapshot = makeSnapshot([
-      {
-        subject: "N",
-        constraint: { factId: "hand.isBalanced", operator: "boolean", value: true },
-        origin: "entailed-denial",
-        strength: "entailed",
-        sourceCall: "1S",
-      },
-    ]);
-
-    const graph = compileFactorGraph(snapshot);
-    expect(graph.factors).toHaveLength(1);
-
-    const f = graph.factors[0] as ExclusionFactor;
-    expect(f.kind).toBe("exclusion");
-    expect(f.seat).toBe("N");
-    expect(f.constraint).toBe("not-balanced");
-    expect(f.strength).toBe("hard");
   });
 
   it("references seats via seat field, not grouped per-seat", () => {
@@ -201,17 +153,10 @@ describe("compileFactorGraph", () => {
         strength: "hard",
         sourceCall: "1NT",
       },
-      {
-        subject: "S",
-        constraint: { factId: "hand.suitLength.H", operator: "gte", value: 5 },
-        origin: "entailed-denial",
-        strength: "entailed",
-      },
     ]);
 
     const graph = compileFactorGraph(snapshot);
-    expect(graph.factors).toHaveLength(3);
-    // Each factor has an origin with originKind
+    expect(graph.factors).toHaveLength(2);
     for (const factor of graph.factors) {
       expect(factor.origin).toHaveProperty("originKind");
     }
