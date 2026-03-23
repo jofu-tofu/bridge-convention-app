@@ -234,7 +234,7 @@ export function gradePlaythroughBid(
   const result = strategy.suggest(context);
 
   if (!result) {
-    const fallbackResult: BidResult = { call: { type: "pass" }, ruleName: null, explanation: "No convention bid applies" };
+    const fallbackResult: BidResult = { call: { type: "pass" }, ruleName: null, explanation: "No convention applies — pass by default" };
     const fallbackResolution = resolveTeachingAnswer(fallbackResult);
     const feedbackInput = {
       grade: BidGrade.Incorrect as BidGrade, userCall: submittedCall, expectedResult: fallbackResult,

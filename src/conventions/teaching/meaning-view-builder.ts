@@ -85,7 +85,7 @@ export function buildMeaningViews(
       semanticClassId: encoded.proposal.semanticClassId,
       displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
       status: "eliminated",
-      eliminationReason: "Hand conditions not fully satisfied",
+      eliminationReason: "Your hand doesn't fully match",
       supportingEvidence: encoded.proposal.clauses.map(clauseToEvidence),
     });
   }

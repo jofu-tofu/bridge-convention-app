@@ -91,7 +91,7 @@ function toPipelineResult(
           elimination: {
             candidateId: elim.candidateBidName,
             stage: provElim?.stage ?? "applicability",
-            reason: provElim?.reason ?? elim.reason ?? "Gate check failed",
+            reason: provElim?.reason ?? elim.reason ?? "Didn't pass the checks for this bid",
             evidence: provElim?.evidence ?? [],
             strength: (provElim?.strength as "entailed" | "preference") ?? "entailed",
           },
@@ -237,7 +237,7 @@ describe("projectTeaching", () => {
       {
         candidateBidName: "transfer:hearts",
         moduleId: "jacoby-transfers",
-        reason: "One or more clauses not satisfied",
+        reason: "Your hand doesn't meet one or more requirements",
         gateId: "semantic-applicability",
       },
     ];
@@ -253,7 +253,7 @@ describe("projectTeaching", () => {
         {
           candidateId: "transfer:hearts",
           stage: "applicability",
-          reason: "One or more clauses not satisfied",
+          reason: "Your hand doesn't meet one or more requirements",
           evidence: [{ conditionId: "hand.suitLength.hearts", satisfied: false }],
           strength: "entailed",
         },
@@ -268,7 +268,7 @@ describe("projectTeaching", () => {
     const eliminatedMeaning = projection.meaningViews.find(mv => mv.meaningId === "transfer:hearts");
     expect(liveMeaning!.status).toBe("live");
     expect(eliminatedMeaning!.status).toBe("eliminated");
-    expect(eliminatedMeaning!.eliminationReason).toBe("One or more clauses not satisfied");
+    expect(eliminatedMeaning!.eliminationReason).toBe("Your hand doesn't meet one or more requirements");
     expect(eliminatedMeaning!.supportingEvidence).toHaveLength(1);
     expect(eliminatedMeaning!.supportingEvidence[0]!.conditionId).toBe("hand.suitLength.hearts");
     expect(eliminatedMeaning!.supportingEvidence[0]!.satisfied).toBe(false);
@@ -315,7 +315,7 @@ describe("projectTeaching", () => {
         {
           candidateId: "nt:invite",
           stage: "applicability",
-          reason: "One or more clauses not satisfied",
+          reason: "Your hand doesn't meet one or more requirements",
           evidence: [{ conditionId: "hand.hcp", satisfied: false }],
           strength: "preference",
         },
@@ -353,7 +353,7 @@ describe("projectTeaching", () => {
       {
         candidateBidName: "stayman:ask-major",
         moduleId: "stayman",
-        reason: "One or more clauses not satisfied",
+        reason: "Your hand doesn't meet one or more requirements",
         gateId: "semantic-applicability",
       },
     ];
@@ -370,7 +370,7 @@ describe("projectTeaching", () => {
         {
           candidateId: "stayman:ask-major",
           stage: "applicability",
-          reason: "One or more clauses not satisfied",
+          reason: "Your hand doesn't meet one or more requirements",
           evidence: [{ conditionId: "hand.hcp", satisfied: false }],
           strength: "entailed",
         },
@@ -602,7 +602,7 @@ describe("projectTeaching", () => {
         {
           candidateId: "nt:invite",
           stage: "applicability",
-          reason: "One or more clauses not satisfied",
+          reason: "Your hand doesn't meet one or more requirements",
           evidence: [{ conditionId: "hand.hcp", satisfied: false }],
           strength: "preference",
         },

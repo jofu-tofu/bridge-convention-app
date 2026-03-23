@@ -135,7 +135,7 @@ function buildWhyNotExplanation(
     if (failedClauses.length > 0) {
       nodes.push({
         kind: "text",
-        content: "Hand conditions not satisfied",
+        content: "Your hand doesn't meet the requirements",
       });
       for (const clause of failedClauses) {
         nodes.push({

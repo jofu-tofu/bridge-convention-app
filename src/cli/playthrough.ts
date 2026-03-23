@@ -224,7 +224,7 @@ export function gradePlaythroughStep(
     const fallbackResult: BidResult = {
       call: { type: "pass" },
       ruleName: null,
-      explanation: "No convention bid applies",
+      explanation: "No convention applies — pass by default",
     };
     const fallbackFeedback = assembleBidFeedback(submittedCall, fallbackResult, null);
     return {

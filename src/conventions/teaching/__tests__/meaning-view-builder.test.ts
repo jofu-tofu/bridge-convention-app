@@ -54,7 +54,7 @@ describe("buildMeaningViews", () => {
       {
         candidateBidName: "transfer:hearts",
         moduleId: "jacoby-transfers",
-        reason: "One or more clauses not satisfied",
+        reason: "Your hand doesn't meet one or more requirements",
         gateId: "semantic-applicability",
       },
     ];
@@ -63,7 +63,7 @@ describe("buildMeaningViews", () => {
         {
           candidateId: "transfer:hearts",
           stage: "applicability",
-          reason: "One or more clauses not satisfied",
+          reason: "Your hand doesn't meet one or more requirements",
           evidence: [{ conditionId: "hand.suitLength.hearts", satisfied: false }],
           strength: "entailed",
         },
@@ -76,7 +76,7 @@ describe("buildMeaningViews", () => {
     expect(views).toHaveLength(1);
     expect(views[0]!.meaningId).toBe("transfer:hearts");
     expect(views[0]!.status).toBe("eliminated");
-    expect(views[0]!.eliminationReason).toBe("One or more clauses not satisfied");
+    expect(views[0]!.eliminationReason).toBe("Your hand doesn't meet one or more requirements");
     expect(views[0]!.supportingEvidence).toHaveLength(1);
     expect(views[0]!.supportingEvidence[0]!.conditionId).toBe("hand.suitLength.hearts");
     expect(views[0]!.supportingEvidence[0]!.satisfied).toBe(false);
@@ -97,7 +97,7 @@ describe("buildMeaningViews", () => {
     expect(views).toHaveLength(1);
     expect(views[0]!.meaningId).toBe("nt:invite");
     expect(views[0]!.status).toBe("eliminated");
-    expect(views[0]!.eliminationReason).toBe("Hand conditions not fully satisfied");
+    expect(views[0]!.eliminationReason).toBe("Your hand doesn't fully match");
   });
 
   it("same meaningId in truth and eliminated — only truth appears (deduplication)", () => {

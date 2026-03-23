@@ -111,7 +111,7 @@ describe("buildWhyNot", () => {
         {
           candidateId: "nt:invite",
           stage: "applicability",
-          reason: "One or more clauses not satisfied",
+          reason: "Your hand doesn't meet one or more requirements",
           evidence: [{ conditionId: "hand.hcp", satisfied: false }],
           strength: "preference",
         },
@@ -125,7 +125,7 @@ describe("buildWhyNot", () => {
     // First node: text with elimination reason
     const textNodes = explanation.filter(n => n.kind === "text");
     expect(textNodes).toHaveLength(1);
-    expect(textNodes[0]!.content).toBe("One or more clauses not satisfied");
+    expect(textNodes[0]!.content).toBe("Your hand doesn't meet one or more requirements");
     // Second node: condition with evidence
     const conditionNodes = explanation.filter(n => n.kind === "condition");
     expect(conditionNodes).toHaveLength(1);
@@ -160,7 +160,7 @@ describe("buildWhyNot", () => {
     // Fallback: "Hand conditions not satisfied" text + only failed clauses
     const textNodes = explanation.filter(n => n.kind === "text");
     expect(textNodes).toHaveLength(1);
-    expect(textNodes[0]!.content).toBe("Hand conditions not satisfied");
+    expect(textNodes[0]!.content).toBe("Your hand doesn't meet the requirements");
     const conditionNodes = explanation.filter(n => n.kind === "condition");
     expect(conditionNodes).toHaveLength(1);
     expect(conditionNodes[0]!.content).toBe("HCP >= 8");

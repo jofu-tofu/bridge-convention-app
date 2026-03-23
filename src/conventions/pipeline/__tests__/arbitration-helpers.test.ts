@@ -34,7 +34,7 @@ describe("evaluateProposal", () => {
     expect(result.passedAllGates).toBe(false);
     expect(result.carrier.traces.elimination).toBeDefined();
     expect(result.carrier.traces.elimination!.stage).toBe("applicability");
-    expect(result.carrier.traces.elimination!.reason).toBe("One or more clauses not satisfied");
+    expect(result.carrier.traces.elimination!.reason).toBe("Your hand doesn't meet one or more requirements");
   });
 
   it("returns carrier with elimination trace when call is illegal", () => {
@@ -48,7 +48,7 @@ describe("evaluateProposal", () => {
     expect(result.carrier.traces.elimination).toBeDefined();
     expect(result.carrier.traces.elimination!.stage).toBe("legality");
     expect(result.carrier.traces.elimination!.strength).toBe("hard");
-    expect(result.carrier.traces.elimination!.reason).toContain("not legal");
+    expect(result.carrier.traces.elimination!.reason).toContain("isn't legal");
   });
 
   it("sets addToAcceptable=true for failed-semantic may-band proposals", () => {

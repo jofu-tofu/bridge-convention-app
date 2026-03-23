@@ -59,7 +59,7 @@ export function evaluateProposal(
   const provenanceLegality: LegalityTrace = {
     call,
     legal: legalityPassed,
-    reason: legalityPassed ? undefined : "Call not legal in current auction",
+    reason: legalityPassed ? undefined : "This bid isn't legal in the current auction",
   };
 
   // Collect encoding trace using encoder resolution result
@@ -77,7 +77,7 @@ export function evaluateProposal(
       passed: semanticPassed,
       reason: semanticPassed
         ? undefined
-        : "One or more clauses not satisfied",
+        : "Your hand doesn't meet one or more requirements",
     },
     {
       // Obligation enforcement is handled at the strategy-chain level (createForcingFilter),
@@ -94,7 +94,7 @@ export function evaluateProposal(
     {
       gateId: "concrete-legality",
       passed: legalityPassed,
-      reason: legalityPassed ? undefined : "Call not legal in current auction",
+      reason: legalityPassed ? undefined : "This bid isn't legal in the current auction",
     },
   ];
 
@@ -153,7 +153,7 @@ export function evaluateProposal(
   const eliminationTrace: EliminationTrace = {
     candidateId: proposal.meaningId,
     stage: eliminationStage,
-    reason: failedGate?.reason ?? "Gate check failed",
+    reason: failedGate?.reason ?? "Didn't pass the checks for this bid",
     evidence: failedEvidenceConditions,
     strength: eliminationStage === "legality" ? "hard" : "entailed",
   };

@@ -189,7 +189,7 @@
           <p class="text-[--text-label] text-note-multi-rationale/70 mt-1">
             Correct for more than one reason
             {#if multiRationaleCall.supportingMeanings.length > 0}
-              — supported by {multiRationaleCall.supportingMeanings.length} meanings
+              — fits {multiRationaleCall.supportingMeanings.length} different meanings
             {/if}
           </p>
         {/if}
@@ -210,9 +210,9 @@
       {#if failingConditions.length > 0}
         <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-accent-danger/20">
           <p class="text-[--text-annotation] text-accent-danger/80 uppercase tracking-wide mb-1.5">
-            Where it breaks down
+            Why this doesn't work
           </p>
-          <ul class="space-y-1" role="list" aria-label="Failed conditions">
+          <ul class="space-y-1" role="list" aria-label="Why this bid doesn't work">
             {#each failingConditions as node, ci (node.content + '-fail-' + ci)}
               <li class="flex items-start gap-1.5">
                 <span class="text-accent-danger shrink-0 mt-0.5" aria-hidden="true">✗</span>
@@ -290,9 +290,9 @@
       {#if passingConditions.length > 0}
         <div class="rounded px-3 py-2 border border-fb-incorrect/15">
           <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-1.5">
-            Requirements met
+            What the correct bid needs
           </p>
-          <ul class="space-y-0.5" role="list" aria-label="Passing conditions">
+          <ul class="space-y-0.5" role="list" aria-label="Requirements for the correct bid">
             {#each passingConditions as node, ci (node.content + '-pass-' + ci)}
               <li class="flex items-start gap-1.5">
                 <span class="text-accent-success/60 shrink-0 mt-0.5" aria-hidden="true">✓</span>
@@ -340,7 +340,7 @@
               <!-- Other bids considered -->
               {#if otherWhyNotEntries.length > 0}
                 <div>
-                  <p class="text-[--text-annotation] text-fb-incorrect-text/50 mb-1">Other bids considered:</p>
+                  <p class="text-[--text-annotation] text-fb-incorrect-text/50 mb-1">Other bids:</p>
                   <div class="space-y-1">
                     {#each otherWhyNotEntries as entry, wi (wi)}
                       <div class="text-[--text-label]">
@@ -404,7 +404,7 @@
                     aria-expanded={showDecisionSpace}
                   >
                     <span class="shrink-0">{showDecisionSpace ? "▾" : "▸"}</span>
-                    <span>Other conventions considered ({eliminatedMeanings.length} ruled out)</span>
+                    <span>Other conventions ({eliminatedMeanings.length} ruled out)</span>
                   </button>
                   {#if showDecisionSpace}
                     <div class="mt-1 space-y-0.5 ml-3">

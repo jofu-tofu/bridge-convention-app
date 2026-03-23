@@ -11,24 +11,24 @@ import type { EncoderKind } from "../../../core/contracts/provenance";
 /** Human-readable ambiguity description. Returns null when score is 0 (clear-cut). */
 export function formatAmbiguity(score: number): string | null {
   if (score === 0) return null;
-  if (score <= 0.3) return "Mildly ambiguous";
-  if (score <= 0.6) return "Moderately ambiguous — alternatives exist";
-  return "Highly ambiguous — multiple bids are reasonable";
+  if (score <= 0.3) return "Close call";
+  if (score <= 0.6) return "Other reasonable bids exist";
+  return "Several bids could work here";
 }
 
 /** Map elimination stage identifiers to readable labels for teaching context. */
 export function formatEliminationStage(stage: string): string {
   switch (stage) {
     case "activation":
-      return "Convention not active";
+      return "This convention doesn't apply here";
     case "applicability":
-      return "Hand doesn't qualify";
+      return "Your hand doesn't fit this bid";
     case "encoding":
-      return "Encoding failed";
+      return "Can't be bid in this auction";
     case "legality":
-      return "Not legal here";
+      return "Not a legal bid here";
     case "arbitration":
-      return "Outranked";
+      return "A better bid takes priority";
     default:
       return stage;
   }
@@ -71,12 +71,12 @@ export function whyNotGradeClasses(grade: "near-miss" | "wrong"): {
     case "near-miss":
       return {
         badge: "bg-amber-900/70 border-amber-500/40 text-amber-200",
-        label: "Near miss",
+        label: "Close",
       };
     case "wrong":
       return {
         badge: "bg-red-900/70 border-red-500/40 text-red-300",
-        label: "Wrong",
+        label: "Doesn't fit",
       };
   }
 }
@@ -92,11 +92,11 @@ export function isArtificialEncoder(kind: EncoderKind): boolean {
 export function formatEncoderKind(kind: EncoderKind): string | null {
   switch (kind) {
     case "frontier-step":
-      return "This bid is a relay step — an artificial bid used as part of a convention sequence";
+      return "This is a relay step — an artificial bid that's part of a convention sequence";
     case "relay-map":
-      return "This bid is remapped by the convention — it doesn't mean what it normally would";
+      return "This bid is remapped by the convention — it doesn't carry its usual meaning";
     case "alternate-encoding":
-      return "This bid uses an alternate encoding due to the auction context";
+      return "This bid uses a different encoding because of the auction so far";
     case "default-call":
     case "resolver":
       return null;

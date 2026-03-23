@@ -107,7 +107,7 @@ describe("arbitrateMeanings", () => {
     expect(result.selected).toBeNull();
     expect(result.truthSet).toHaveLength(0);
     expect(result.eliminated).toHaveLength(1);
-    expect(result.eliminated[0]!.traces.elimination!.reason).toContain("not legal");
+    expect(result.eliminated[0]!.traces.elimination!.reason).toContain("isn't legal");
   });
 
   it("threads blockedCalls on carrier encoding trace when call is illegal", () => {
