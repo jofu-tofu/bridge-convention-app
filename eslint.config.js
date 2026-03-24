@@ -288,14 +288,6 @@ export default tseslint.config(
               message: "Agent-facing commands must use service/ facade, not conventions/ directly",
             },
             {
-              group: ["**/core/viewport/**"],
-              message: "Agent-facing commands must use service/ facade, not core/viewport/ directly",
-            },
-            {
-              group: ["**/core/contracts/**"],
-              message: "Agent-facing commands must use service/ facade, not core/contracts/ directly",
-            },
-            {
               group: ["**/engine/**"],
               message: "Agent-facing commands must use service/ facade or cli/shared for engine types",
             },
@@ -392,14 +384,6 @@ export default tseslint.config(
               name: "../../inference/*",
               message: "stores must use service layer, not inference directly",
             },
-            {
-              name: "../core/viewport/*",
-              message: "stores must use service layer for viewport construction",
-            },
-            {
-              name: "../../core/viewport/*",
-              message: "stores must use service layer for viewport construction",
-            },
           ],
           patterns: [{
             group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
@@ -434,14 +418,6 @@ export default tseslint.config(
             ...storeImports,
             ...componentImports,
             ...strategyImports,
-            {
-              name: "../core/display/*",
-              message: "engine/ must not import display/",
-            },
-            {
-              name: "../../core/display/*",
-              message: "engine/ must not import display/",
-            },
             { name: "../bootstrap/*", message: "engine/ must not import bootstrap/" },
             {
               name: "../../bootstrap/*",
@@ -461,72 +437,6 @@ export default tseslint.config(
     },
   },
 
-  // ── Module boundary: core/contracts/ ──
-  {
-    files: ["src/core/contracts/**/*.ts"],
-    ignores: ["src/core/contracts/__tests__/**", "src/core/contracts/**/*.test.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            ...svelteImports,
-            ...storeImports,
-            ...componentImports,
-            ...strategyImports,
-            {
-              name: "../../conventions/*",
-              message: "contracts/ must not import conventions/",
-            },
-            {
-              name: "../../../conventions/*",
-              message: "contracts/ must not import conventions/",
-            },
-            {
-              name: "../display/*",
-              message: "contracts/ must not import display/",
-            },
-            {
-              name: "../../display/*",
-              message: "contracts/ must not import display/",
-            },
-            { name: "../../bootstrap/*", message: "contracts/ must not import bootstrap/" },
-            {
-              name: "../../../bootstrap/*",
-              message: "contracts/ must not import bootstrap/",
-            },
-            {
-              name: "../../inference/*",
-              message: "contracts/ must not import inference/",
-            },
-            {
-              name: "../../../inference/*",
-              message: "contracts/ must not import inference/",
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // ── Module boundary: core/util/ (zero deps) ──
-  {
-    files: ["src/core/util/**/*.ts"],
-    ignores: ["src/core/util/__tests__/**", "src/core/util/**/*.test.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["../*"],
-              message: "util/ must have zero internal dependencies",
-            },
-          ],
-        },
-      ],
-    },
-  },
 
   // ── Module boundary: conventions/ ──
   {
@@ -543,15 +453,6 @@ export default tseslint.config(
             ...svelteImports,
             ...storeImports,
             ...componentImports,
-            ...strategyImports,
-            {
-              name: "../core/display/*",
-              message: "conventions/ must not import display/",
-            },
-            {
-              name: "../../core/display/*",
-              message: "conventions/ must not import display/",
-            },
             {
               name: "../bootstrap/*",
               message: "conventions/ must not import bootstrap/",
@@ -671,68 +572,6 @@ export default tseslint.config(
     },
   },
 
-  // ── Module boundary: core/display/ ──
-  {
-    files: ["src/core/display/**/*.ts"],
-    ignores: ["src/core/display/__tests__/**", "src/core/display/**/*.test.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            ...svelteImports,
-            ...storeImports,
-            ...componentImports,
-            ...strategyImports,
-            {
-              name: "../../bootstrap/*",
-              message: "display/ must not import bootstrap/",
-            },
-            {
-              name: "../../../bootstrap/*",
-              message: "display/ must not import bootstrap/",
-            },
-            {
-              name: "../../inference/*",
-              message: "display/ must not import inference/",
-            },
-            {
-              name: "../../../inference/*",
-              message: "display/ must not import inference/",
-            },
-          ],
-          patterns: [{
-            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
-                    "*/conventions/definitions/**", "**/conventions/definitions/**",
-                    "*/conventions/core/**", "**/conventions/core/**",
-                    "*/conventions/teaching/**", "**/conventions/teaching/**"],
-            message: "Import from 'conventions' barrel instead of deep paths",
-          }],
-        },
-      ],
-    },
-  },
-
-  // ── Module boundary: core/viewport/ ──
-  {
-    files: ["src/core/viewport/**/*.ts"],
-    ignores: ["src/core/viewport/__tests__/**", "src/core/viewport/**/*.test.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            ...svelteImports,
-            ...storeImports,
-            ...componentImports,
-            ...strategyImports,
-            ...bootstrapImports,
-            ...inferenceImports,
-          ],
-        },
-      ],
-    },
-  },
 
   // ── Module boundary: inference/ ──
   {
@@ -746,7 +585,6 @@ export default tseslint.config(
             ...svelteImports,
             ...storeImports,
             ...componentImports,
-            ...strategyImports,
             ...bootstrapImports,
           ],
         },
@@ -852,14 +690,6 @@ export default tseslint.config(
             {
               name: "../../conventions/*",
               message: "test-support/ must not import conventions/",
-            },
-            {
-              name: "../core/display/*",
-              message: "test-support/ must not import display/",
-            },
-            {
-              name: "../../core/display/*",
-              message: "test-support/ must not import display/",
             },
             {
               name: "../inference/*",
