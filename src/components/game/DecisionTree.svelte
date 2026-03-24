@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { TreeDisplayRow } from "./DecisionTree";
-  import type { Call } from "../../engine/types";
+  import type { Call } from "../../service";
   import { createDummyContext } from "./DecisionTree";
   import { formatCall, formatRuleName } from "../../service/display/format";
   import { SvelteSet, SvelteMap } from "svelte/reactivity";

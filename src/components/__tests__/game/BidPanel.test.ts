@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
 import BidPanel from "../../game/BidPanel.svelte";
-import { BidSuit } from "../../../engine/types";
-import type { Call } from "../../../engine/types";
+import { BidSuit } from "../../../service";
+import type { Call } from "../../../service";
 
 describe("BidPanel", () => {
   it("always renders all 35 level bid buttons plus 3 special buttons", () => {

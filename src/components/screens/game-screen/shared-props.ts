@@ -1,4 +1,4 @@
-import type { DDSolution } from "../../../engine/types";
+import type { DDSolution } from "../../../service";
 
 /**
  * DDS analysis state — these three props always travel together

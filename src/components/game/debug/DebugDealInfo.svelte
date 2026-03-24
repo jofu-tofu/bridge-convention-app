@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Seat, Vulnerability } from "../../../engine/types";
+  import type { Seat, Vulnerability } from "../../../service";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {

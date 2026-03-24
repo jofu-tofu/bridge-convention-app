@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { BidFeedbackInteractiveProps } from "./types";
   import { formatCall } from "../../../service/display/format";
-  import { callsMatch } from "../../../engine/call-helpers";
+  import { callsMatch } from "../../../service";
   import ParseTreePanel from "./ParseTreePanel.svelte";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import BridgeTable from "../game/BridgeTable.svelte";
-  import type { Hand } from "../../engine/types";
-  import { Seat } from "../../engine/types";
+  import type { Hand } from "../../service";
+  import { Seat } from "../../service";
 
   interface Props {
     hands: Record<Seat, Hand>;

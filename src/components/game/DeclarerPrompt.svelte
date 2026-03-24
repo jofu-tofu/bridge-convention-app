@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Contract } from "../../engine/types";
-  import { Seat } from "../../engine/types";
+  import type { Contract } from "../../service";
+  import { Seat } from "../../service";
   import { formatContractWithDeclarer } from "../../service/display/format";
 
   type PromptMode = "declarer-swap" | "defender" | "south-declarer";

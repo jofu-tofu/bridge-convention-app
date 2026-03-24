@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/svelte";
 import BridgeTableTestWrapper from "../BridgeTableTestWrapper.svelte";
-import { Seat } from "../../../engine/types";
+import { Seat } from "../../../service";
 import { makeDeal } from "../../../test-support/engine-stub";
 
 describe("BridgeTable", () => {

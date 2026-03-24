@@ -2,7 +2,7 @@
   import type {
     DDSolution,
     Contract,
-  } from "../../engine/types";
+  } from "../../service";
   import { STRAIN_SYMBOLS } from "../../service/display/format";
   import MakeableContractsTable from "./MakeableContractsTable.svelte";
 

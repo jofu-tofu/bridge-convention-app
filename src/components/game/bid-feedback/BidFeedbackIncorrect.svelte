@@ -1,10 +1,10 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import type { Call } from "../../../engine/types";
+  import type { Call } from "../../../service";
   import type { BidFeedbackInteractiveProps } from "./types";
   import type { ViewportBidFeedback } from "../../../service";
   import { formatCall } from "../../../service/display/format";
-  import { callsMatch } from "../../../engine/call-helpers";
+  import { callsMatch } from "../../../service";
   import {
     formatEliminationStage,
     formatModuleRole,

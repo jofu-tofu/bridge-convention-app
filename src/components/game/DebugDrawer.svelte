@@ -8,7 +8,7 @@
        2. Decision Pipeline (machine, facts, provenance, pipeline, posterior, suggested bid)
        3. Feedback & History (teaching, beliefs, bid log, play log) -->
 <script lang="ts">
-  import { Seat } from "../../engine/types";
+  import { Seat } from "../../service";
   import { getGameStore, getAppStore } from "../../stores/context";
   import type { DebugSnapshot, DebugBidFeedback } from "../../stores/game.svelte";
 

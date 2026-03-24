@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BidResult } from "../../../strategy/bidding/bidding-types";
+  import type { BidResult } from "../../../service";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 

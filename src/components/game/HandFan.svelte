@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Card as CardType } from "../../engine/types";
+  import type { Card as CardType } from "../../service";
   import Card from "../shared/Card.svelte";
   import { sortCards } from "../shared/sort-cards";
 

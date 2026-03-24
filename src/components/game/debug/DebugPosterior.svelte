@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { PosteriorSummary } from "../../../strategy/recommendation-types";
-  import type { PosteriorFactValue } from "../../../inference/posterior/posterior-types";
+  import type { PosteriorSummary } from "../../../service";
+  import type { PosteriorFactValue } from "../../../service";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {

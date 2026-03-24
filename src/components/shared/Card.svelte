@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Card as CardType } from "../../engine/types";
+  import type { Card as CardType } from "../../service";
   import { SUIT_CARD_COLOR_CLASS } from "./tokens";
   import { SUIT_SYMBOLS, displayRank, formatCardLabel } from "../../service/display/format";
 

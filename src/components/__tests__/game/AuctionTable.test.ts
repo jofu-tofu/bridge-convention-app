@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/svelte";
 import AuctionTable from "../../game/AuctionTable.svelte";
-import { Seat, BidSuit } from "../../../engine/types";
-import type { AuctionEntry } from "../../../engine/types";
+import { Seat, BidSuit } from "../../../service";
+import type { AuctionEntry } from "../../../service";
 
 describe("AuctionTable", () => {
   it("renders column headers N E S W", () => {

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { Trick, Seat, Card as CardType } from "../../../engine/types";
-  import type { AuctionEntry } from "../../../engine/types";
+  import type { Trick, Seat, Card as CardType } from "../../../service";
+  import type { AuctionEntry } from "../../../service";
   import type { AuctionEntryView } from "../../../service";
-  import type { BidHistoryEntry } from "../../../strategy/bidding/bidding-types";
-  import { Suit } from "../../../engine/types";
-  import { SUIT_ORDER, SEAT_INDEX } from "../../../engine/constants";
+  import type { BidHistoryEntry } from "../../../service";
+  import { Suit } from "../../../service";
+  import { SUIT_ORDER, SEAT_INDEX } from "../../../service";
   import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../service/display/format";
   import { SUIT_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../shared/tokens";
   import { sortCards } from "../../shared/sort-cards";

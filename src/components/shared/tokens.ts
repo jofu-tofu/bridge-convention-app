@@ -1,4 +1,4 @@
-import { Suit, BidSuit } from "../../engine/types";
+import { Suit, BidSuit } from "../../service";
 
 /*──────────────────────────────────────────────────────────────────────────────
  * Typography tokens

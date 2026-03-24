@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Contract } from "../../../engine/types";
+  import type { Contract } from "../../../service";
   import type { TrickScoreProps } from "./shared-props";
   import ContractDisplay from "./ContractDisplay.svelte";
   import Button from "../../shared/Button.svelte";

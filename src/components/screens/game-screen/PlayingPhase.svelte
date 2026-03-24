@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Seat } from "../../../engine/types";
-  import type { Card as CardType } from "../../../engine/types";
+  import type { Seat } from "../../../service";
+  import type { Card as CardType } from "../../../service";
   import type { PlayingViewport } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
   import { PLAYING_PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";

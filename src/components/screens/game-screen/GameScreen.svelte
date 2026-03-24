@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Seat } from "../../../engine/types";
-  import type { Call } from "../../../engine/types";
+  import { Seat } from "../../../service";
+  import type { Call } from "../../../service";
   import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
   import type { SessionConfig } from "../../../service";
 

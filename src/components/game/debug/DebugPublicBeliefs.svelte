@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Seat, Suit } from "../../../engine/types";
-  import type { PublicBeliefState } from "../../../inference/types";
+  import { Seat, Suit } from "../../../service";
+  import type { PublicBeliefState } from "../../../service";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 

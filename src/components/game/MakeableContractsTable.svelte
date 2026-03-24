@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Seat, BidSuit } from "../../engine/types";
-  import { SEATS } from "../../engine/constants";
+  import { Seat, BidSuit } from "../../service";
+  import { SEATS } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
   import { STRAIN_SYMBOLS } from "../../service/display/format";
 

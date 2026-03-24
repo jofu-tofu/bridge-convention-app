@@ -2,10 +2,10 @@
      grayed out (disabled) rather than hidden, so the table structure stays constant
      across auction states. This is a deliberate UX choice, not a bug. -->
 <script lang="ts">
-  import type { Call, ContractBid } from "../../engine/types";
-  import { BidSuit } from "../../engine/types";
+  import type { Call, ContractBid } from "../../service";
+  import { BidSuit } from "../../service";
   import { formatCall } from "../../service/display/format";
-  import { callKey } from "../../engine/call-helpers";
+  import { callKey } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
 
   interface Props {

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/svelte";
 import DecisionTree from "../../game/DecisionTree.svelte";
 import type { TreeDisplayRow } from "../../game/DecisionTree";
-import { BidSuit } from "../../../engine/types";
+import { BidSuit } from "../../../service";
 
 function makeRows(): TreeDisplayRow[] {
   return [

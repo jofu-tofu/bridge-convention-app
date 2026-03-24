@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Seat } from "../../engine/types";
-  import type { PlayedCard } from "../../engine/types";
+  import { Seat } from "../../service";
+  import type { PlayedCard } from "../../service";
   import { viewSeat } from "../shared/seat-mapping";
   import Card from "../shared/Card.svelte";
 

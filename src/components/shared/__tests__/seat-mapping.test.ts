@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Seat } from "../../../engine/types";
+import { Seat } from "../../../service";
 import { viewSeat } from "../seat-mapping";
 
 describe("viewSeat", () => {

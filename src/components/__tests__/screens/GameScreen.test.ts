@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Seat } from "../../../engine/types";
-import type { Call } from "../../../engine/types";
+import { Seat } from "../../../service";
+import type { Call } from "../../../service";
 import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle } from "../../../conventions";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);

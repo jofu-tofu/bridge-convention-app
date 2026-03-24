@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
 import Card from "../../shared/Card.svelte";
-import { Suit, Rank } from "../../../engine/types";
+import { Suit, Rank } from "../../../service";
 
 describe("Card", () => {
   it("renders rank and suit symbol when face up", () => {

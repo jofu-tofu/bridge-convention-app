@@ -1,6 +1,6 @@
-import type { BiddingContext } from "../../strategy/bidding/bidding-types";
-import type { Call, Hand } from "../../engine/types";
-import { Seat, Suit, Rank } from "../../engine/types";
+import type { BiddingContext } from "../../service";
+import type { Call, Hand } from "../../service";
+import { Seat, Suit, Rank } from "../../service";
 import { createBiddingContext } from "../../conventions";
 import { evaluateHand } from "../../engine/hand-evaluator";
 

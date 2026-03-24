@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { OpponentMode } from "../../../bootstrap/drill-types";
+  import type { OpponentMode } from "../../../service";
   import { AVAILABLE_BASE_SYSTEMS } from "../../../conventions";
   import { getAppStore } from "../../../stores/context";
 

@@ -1,5 +1,5 @@
-import type { Call, Card } from "../../../engine/types";
-import type { Suit } from "../../../engine/types";
+import type { Call, Card } from "../../../service";
+import type { Suit } from "../../../service";
 import { formatCall } from "../../../service/display/format";
 import { sortCards } from "../../shared/sort-cards";
 

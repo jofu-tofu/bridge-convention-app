@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
 import HandFan from "../../game/HandFan.svelte";
-import { Suit, Rank } from "../../../engine/types";
-import type { Card } from "../../../engine/types";
+import { Suit, Rank } from "../../../service";
+import type { Card } from "../../../service";
 
 function card(suit: Suit, rank: Rank): Card {
   return { suit, rank };

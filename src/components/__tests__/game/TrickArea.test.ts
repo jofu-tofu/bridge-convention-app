@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/svelte";
 import TrickArea from "../../game/TrickArea.svelte";
-import { Seat, Suit, Rank } from "../../../engine/types";
-import type { PlayedCard } from "../../../engine/types";
+import { Seat, Suit, Rank } from "../../../service";
+import type { PlayedCard } from "../../../service";
 
 function playedCard(seat: Seat, suit: Suit, rank: Rank): PlayedCard {
   return { seat, card: { suit, rank } };

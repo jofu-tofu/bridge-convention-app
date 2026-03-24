@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Contract } from "../../../engine/types";
+  import type { Contract } from "../../../service";
   import { formatContractWithDeclarer } from "../../../service/display/format";
 
   interface Props {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Seat } from "../../../engine/types";
+  import { Seat } from "../../../service";
   import type { ExplanationViewport } from "../../../service";
   import type { ConventionConfig } from "../../../conventions";
   import { getLayoutConfig } from "../../../stores/context";

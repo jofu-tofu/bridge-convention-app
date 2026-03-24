@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import type { Hand, Card as CardType } from "../../engine/types";
-  import { Seat, Rank, Suit as SuitEnum, Vulnerability } from "../../engine/types";
+  import type { Hand, Card as CardType } from "../../service";
+  import { Seat, Rank, Suit as SuitEnum, Vulnerability } from "../../service";
   import { viewSeat } from "../shared/seat-mapping";
   import { calculateHcp, getSuitLength, calculateDistributionPoints } from "../../engine/hand-evaluator";
-  import { isVulnerable } from "../../engine/scoring";
+  import { isVulnerable } from "../../service";
   import HandFan from "./HandFan.svelte";
 
   interface Props {

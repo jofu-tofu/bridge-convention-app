@@ -1,5 +1,5 @@
-import type { Card } from "../../engine/types";
-import { SUIT_ORDER, RANK_INDEX } from "../../engine/constants";
+import type { Card } from "../../service";
+import { SUIT_ORDER, RANK_INDEX } from "../../service";
 
 const SUIT_INDEX = new Map(SUIT_ORDER.map((s, i) => [s, i]));
 
