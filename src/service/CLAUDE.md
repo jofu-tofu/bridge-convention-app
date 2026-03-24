@@ -27,11 +27,11 @@ Session-handle-oriented service module — the **sole interface** between UI/CLI
 | `util/delay.ts` | Pure delay utility (moved from former core/util/) |
 | `evaluation/` | Stateless CLI grading logic — see below |
 
-## Hexagonal Boundary Rules
+## Boundary Rules
 
-- **Callers own types.** Service defines its own viewport/response types. Convention pipeline internals (`PipelineResult`, `MachineDebugSnapshot`, `EvaluatedFacts`) must NOT cross this boundary — create service-owned viewport types instead. Engine primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export.
-- **All UI imports go through service.** Components and stores must import from `service/index.ts` only. When the UI needs something new, add it to `ServicePort` or as a re-export from `index.ts` — never add a direct import from `engine/`, `conventions/`, `inference/`, `strategy/`, or `bootstrap/` in UI code.
-- **Test: "does this work if service runs remotely?"** If a change requires the UI to import a backend type directly, it's wrong.
+- **Callers own types.** Service defines its own viewport/response types.
+- **No barrel re-exports.** Service does NOT re-export types from other modules. Components and stores import directly from the source module (`engine/types`, `conventions/core/convention-types`, etc.). The service barrel exports only service-defined types and implementations.
+- **Service port is the interaction boundary.** Game actions (bid, play, start drill) go through `ServicePort`. But type imports come from source modules directly.
 
 ## Conventions
 
@@ -59,9 +59,8 @@ cli/commands/ → service/
 
 Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
 
-## Known Gaps (Blocking Service as Sole Interface)
+## Known Gaps
 
-These are known violations being addressed incrementally:
 - Stores call viewport builders (`buildDeclarerPromptViewport`, etc.) directly instead of through `ServicePort` methods
 - Stores create `InferenceCoordinator` directly instead of through service
 - `DevServicePort.getSessionBundle()` leaks `DrillBundle` across the boundary (transitional)
