@@ -26,9 +26,9 @@ import { startDrill as bootstrapStartDrill } from "../bootstrap/start-drill";
 import { getConvention, listConventions as listConventionConfigs } from "../conventions";
 import { getBundle, resolveConventionForSystem } from "../conventions";
 import type { ConventionConfig } from "../conventions";
-import { getSystemConfig } from "../core/contracts/system-config";
-import { BASE_SYSTEM_SAYC } from "../core/contracts/base-system-vocabulary";
-import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
+import { getSystemConfig } from "../conventions/definitions/system-config";
+import { BASE_SYSTEM_SAYC } from "../conventions/definitions/system-config";
+import type { BaseSystemId } from "../conventions/definitions/system-config";
 import type { DevServicePort } from "./port";
 import type {
   SessionHandle,

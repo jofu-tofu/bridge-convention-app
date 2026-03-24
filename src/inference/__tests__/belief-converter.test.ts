@@ -8,7 +8,7 @@ import type { PrivateBeliefState } from "../private-belief";
 import type { BeliefData } from "../../core/contracts";
 import { toBeliefData } from "../belief-converter";
 
-import type { FactConstraint } from "../../core/contracts/agreement-module";
+import type { FactConstraint } from "../../conventions/core/agreement-module";
 
 function makeAnnotation(seat: Seat, constraints: readonly FactConstraint[]): BidAnnotation {
   return { call: { type: "pass" }, seat, conventionId: null, meaning: "test", constraints };

@@ -11,10 +11,10 @@
  */
 
 import type { Seat, Call } from "../../engine/types";
-import type { CommittedStep, NegotiationState } from "../../core/contracts/committed-step";
-import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
+import type { CommittedStep, NegotiationState } from "../core/committed-step";
+import { INITIAL_NEGOTIATION } from "../core/committed-step";
 import type { PipelineResult } from "./pipeline-types";
-import type { MachineRegisters } from "../../core/contracts/module-surface";
+import type { MachineRegisters } from "../core/module-surface";
 import { buildCommittedStep } from "./committed-step-builder";
 
 /** Input for one auction step. Provided by the strategy adapter. */

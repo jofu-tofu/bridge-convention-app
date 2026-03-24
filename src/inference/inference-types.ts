@@ -1,5 +1,5 @@
-import type { Auction, AuctionEntry, NumberRange, Seat, Suit } from "../../engine/types";
-import type { FactConstraint } from "./agreement-module";
+import type { Auction, AuctionEntry, NumberRange, Seat, Suit } from "../engine/types";
+import type { FactConstraint } from "../conventions/core/agreement-module";
 
 export interface SuitInference {
   readonly minLength?: number;

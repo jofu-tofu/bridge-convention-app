@@ -15,24 +15,24 @@ import type {
 
 import type {
   DecisionProvenance,
-} from "../../core/contracts/provenance";
+} from "../pipeline/provenance";
 
 import type {
   TeachingProjection,
   ConventionContribution,
   HandSpaceSummary,
-} from "../../core/contracts/teaching-projection";
+} from "./teaching-types";
 
 import type {
   ExplanationCatalog,
   ExplanationEntry,
   FactExplanationEntry,
   MeaningExplanationEntry,
-} from "../../core/contracts/explanation-catalog";
+} from "../core/explanation-catalog";
 
-import type { PosteriorSummary } from "../../core/contracts/recommendation";
+import type { PosteriorSummary } from "../../strategy/recommendation-types";
 
-import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
+import type { SurfaceGroup } from "./teaching-types";
 
 import { buildCallViews } from "./call-view-builder";
 import { buildMeaningViews } from "./meaning-view-builder";

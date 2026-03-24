@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { BidSuit, Seat } from "../../../engine/types";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../../conventions/core/committed-step";
 import type { VerificationSnapshot } from "../types";
-import type { NegotiationState, CommittedStep } from "../../../core/contracts/committed-step";
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { BidAction } from "../../../core/contracts/bid-action";
+import type { NegotiationState, CommittedStep } from "../../../conventions/core/committed-step";
+import type { BidMeaning } from "../../../conventions/pipeline/meaning";
+import type { BidAction } from "../../../conventions/pipeline/bid-action";
 import {
   checkArbitrationTotality,
   checkKernelConsistency,

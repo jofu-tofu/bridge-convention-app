@@ -8,11 +8,11 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts } from "../../pipeline/fact-evaluator";
 import { createSharedFactCatalog } from "../../pipeline/shared-fact-catalog";
-import { createFactCatalog } from "../../../core/contracts/fact-catalog";
+import { createFactCatalog } from "../../core/fact-catalog";
 import { createStaymanFacts } from "../../definitions/modules/stayman";
 import { createTransferFacts } from "../../definitions/modules/jacoby-transfers";
 import { createSystemFactCatalog } from "../../pipeline/system-fact-catalog";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 
 const staymanFacts = createStaymanFacts(SAYC_SYSTEM_CONFIG);
 const transferFacts = createTransferFacts(SAYC_SYSTEM_CONFIG);

@@ -1,15 +1,15 @@
 /**
  * Practice preferences — persisted user choices that shape practice sessions.
  *
- * Composes domain types from drill.ts and base-system-vocabulary.ts into
+ * Composes domain types from drill-types.ts and system-config.ts into
  * a single blob for localStorage persistence. The app store owns the
  * reactive state; this file defines the shape.
  */
 
-import type { BaseSystemId } from "./base-system-vocabulary";
-import type { DrillSettings } from "./drill";
-import { DEFAULT_DRILL_SETTINGS } from "./drill";
-import { BASE_SYSTEM_SAYC } from "./base-system-vocabulary";
+import type { BaseSystemId } from "../conventions/definitions/system-config";
+import type { DrillSettings } from "../bootstrap/drill-types";
+import { DEFAULT_DRILL_SETTINGS } from "../bootstrap/drill-types";
+import { BASE_SYSTEM_SAYC } from "../conventions/definitions/system-config";
 
 // ─── Display preferences ────────────────────────────────────
 //

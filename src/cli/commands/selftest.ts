@@ -2,7 +2,7 @@
 
 import { enumerateRuleAtoms, listBundleInputs, resolveBundle } from "../../conventions";
 import type { RuleAtom } from "../../conventions";
-import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../conventions/definitions/system-config";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 

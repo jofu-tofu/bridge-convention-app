@@ -1,6 +1,6 @@
 import type { ConventionBundle } from "./bundle-types";
-import { ConventionCategory } from "../../../core/contracts/convention";
-import type { SystemProfile, ModuleEntry } from "../../../core/contracts/agreement-module";
+import { ConventionCategory } from "../convention-types";
+import type { SystemProfile, ModuleEntry } from "../agreement-module";
 import type { DealConstraints, SeatConstraint } from "../../../engine/types";
 
 /**

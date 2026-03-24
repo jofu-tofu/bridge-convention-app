@@ -3,8 +3,8 @@ import type {
   ExplanationCatalog,
   FactExplanationEntry,
   MeaningExplanationEntry,
-} from "../../../../core/contracts/explanation-catalog";
-import { createExplanationCatalog } from "../../../../core/contracts/explanation-catalog";
+} from "../../../core/explanation-catalog";
+import { createExplanationCatalog } from "../../../core/explanation-catalog";
 import { BERGEN_FACT_IDS, type BergenFactId } from "./fact-ids";
 import { BERGEN_MEANING_IDS, type BergenMeaningId } from "./meaning-ids";
 

@@ -1,4 +1,4 @@
-import type { HandPredicate, DealConstraint, PublicGuard } from "./predicates";
+import type { HandPredicate, DealConstraint, PublicGuard } from "../conventions/core/agreement-module";
 
 export type SeatRole = "self" | "partner" | "lho" | "rho" | "openingSide";
 

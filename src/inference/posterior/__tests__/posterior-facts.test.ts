@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { POSTERIOR_FACT_HANDLERS } from "../posterior-facts";
-import type { PosteriorFactRequest } from "../../../core/contracts/posterior";
+import type { PosteriorFactRequest } from "../posterior-types";
 import type { Hand } from "../../../engine/types";
 import { hand } from "../../../engine/__tests__/fixtures";
 

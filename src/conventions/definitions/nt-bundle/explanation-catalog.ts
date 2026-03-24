@@ -2,12 +2,12 @@
 import {
   createExplanationCatalog,
   type ExplanationCatalog,
-} from "../../../core/contracts/explanation-catalog";
+} from "../../core/explanation-catalog";
 import { createStaymanDeclarations } from "../modules/stayman";
 import { createJacobyTransfersDeclarations } from "../modules/jacoby-transfers";
 import { createSmolenDeclarations } from "../modules/smolen";
 import { createNaturalNtDeclarations } from "../modules/natural-nt";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../system-config";
 
 const defaultSys = SAYC_SYSTEM_CONFIG;
 

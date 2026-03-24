@@ -8,7 +8,7 @@ import { meaningToStrategy } from "../bidding/meaning-strategy";
 import { runPipeline, specFromBundle, ntBundle, bergenBundle } from "../../conventions";
 import { protocolSpecToStrategy } from "../bidding/protocol-adapter";
 import { makeSurface, makeRanking } from "../../test-support/convention-factories";
-import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../conventions/definitions/system-config";
 
 // ─── Helpers ──────────────────────────────────────────────────────
 

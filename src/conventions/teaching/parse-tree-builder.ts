@@ -9,14 +9,14 @@
  */
 
 import type { ArbitrationResult } from "../pipeline/pipeline-types";
-import type { DecisionProvenance } from "../../core/contracts/provenance";
+import type { DecisionProvenance } from "../pipeline/provenance";
 import type { Call } from "../../engine/types";
 import type {
   ParseTreeView,
   ParseTreeModuleNode,
   ParseTreeModuleVerdict,
   ParseTreeCondition,
-} from "../../core/contracts/teaching-projection";
+} from "./teaching-types";
 import type { CatalogIndex } from "./teaching-projection-builder";
 import { resolveDisplayText } from "./teaching-projection-builder";
 

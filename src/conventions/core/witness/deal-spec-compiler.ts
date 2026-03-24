@@ -2,8 +2,8 @@ import type { Suit, Seat, DealConstraints, SeatConstraint } from "../../../engin
 import type {
   DealSpec,
   TeachingControls,
-} from "../../../core/contracts/deal-spec";
-import type { HandPredicate } from "../../../core/contracts/predicates";
+} from "../../../bootstrap/deal-spec-types";
+import type { HandPredicate } from "../agreement-module";
 import { resolveRole } from "../../pipeline/deal-spec-generator";
 import { VULNERABILITY_MAP } from "../../pipeline/witness-constants";
 import { compileFactClause, SUIT_FACT_MAP, type MutableSeatConstraint } from "../runtime/fact-compiler";

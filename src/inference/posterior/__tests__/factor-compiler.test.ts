@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { compileFactorGraph, validateFactorGraph } from "../factor-compiler";
-import type { PublicConstraint } from "../../../core/contracts/agreement-module";
+import type { PublicConstraint } from "../../../conventions/core/agreement-module";
 import type {
   HcpRangeFactor,
   ShapeFactor,
-} from "../../../core/contracts/factor-graph";
+} from "../posterior-boundary";
 import { makeSnapshot } from "./posterior-test-fixtures";
 
 describe("compileFactorGraph", () => {

@@ -1,5 +1,5 @@
-import type { BidMeaningClause } from "../../core/contracts/meaning";
-import type { FactOperator } from "../../core/contracts/meaning";
+import type { BidMeaningClause } from "./meaning";
+import type { FactOperator } from "./meaning";
 
 /**
  * Derive a deterministic clauseId from fact constraint fields.

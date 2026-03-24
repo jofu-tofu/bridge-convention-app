@@ -16,9 +16,9 @@
  * No manual tuning. No overrides. The dimension count IS the specificity.
  */
 
-import type { BidMeaning, ConstraintDimension, SpecificityBasis } from "../../core/contracts/meaning";
-import type { BidMeaningClause } from "../../core/contracts/meaning";
-import type { FactCatalogExtension, FactDefinition } from "../../core/contracts/fact-catalog";
+import type { BidMeaning, ConstraintDimension, SpecificityBasis } from "./meaning";
+import type { BidMeaningClause } from "./meaning";
+import type { FactCatalogExtension, FactDefinition } from "../core/fact-catalog";
 import { classifySpecificityBasis } from "./specificity-classifier";
 
 /**

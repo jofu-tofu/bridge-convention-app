@@ -13,7 +13,7 @@
  */
 
 import type { Suit } from "../../engine/types";
-import type { FactComposition, PrimitiveClause } from "../../core/contracts/fact-catalog";
+import type { FactComposition, PrimitiveClause } from "../core/fact-catalog";
 import { SUIT_FACT_MAP } from "../core/runtime/fact-compiler";
 
 // ── Result type ─────────────────────────────────────────────────────

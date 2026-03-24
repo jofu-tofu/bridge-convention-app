@@ -13,9 +13,9 @@
 
 import type { Seat } from "../../engine/types";
 import { partnerSeat } from "../../engine/constants";
-import type { BidMeaning } from "../../core/contracts/meaning";
-import type { AuctionContext, CommittedStep, NegotiationState } from "../../core/contracts/committed-step";
-import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
+import type { BidMeaning } from "./meaning";
+import type { AuctionContext, CommittedStep, NegotiationState } from "../core/committed-step";
+import { INITIAL_NEGOTIATION } from "../core/committed-step";
 import type { ConventionModule } from "../core/convention-module";
 import type { TurnRole, ResolvedSurface, StateEntry } from "../core/rule-module";
 import { advanceLocalFsm } from "./local-fsm";

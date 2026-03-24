@@ -3,22 +3,22 @@ import type {
   PipelineResult,
 } from "./pipeline-types";
 import type { Call } from "../../engine/types";
-import type { BidMeaning } from "../../core/contracts/meaning";
+import type { BidMeaning } from "./meaning";
 import type {
   ArbitrationTrace,
   ApplicabilityEvidence,
   HandoffTrace,
-} from "../../core/contracts/provenance";
-import type { MeaningProposal } from "../../core/contracts/meaning";
-import { compareRanking, BAND_PRIORITY } from "../../core/contracts/meaning";
+} from "./provenance";
+import type { MeaningProposal } from "./meaning";
+import { compareRanking, BAND_PRIORITY } from "./meaning";
 import { evaluateProposal, classifyIntoSets } from "./arbitration-helpers";
 import type {
   EvidenceBundle,
   ConditionEvidence,
   RejectionEvidence,
   AlternativeEvidence,
-} from "../../core/contracts/evidence-bundle";
-import type { DeclaredEncoderKind } from "../../core/contracts/agreement-module";
+} from "./evidence-bundle";
+import type { DeclaredEncoderKind } from "../core/agreement-module";
 import type { EncoderConfig } from "./encoder-resolver";
 import { formatCallForEvidence } from "../../engine/call-helpers";
 

@@ -7,7 +7,7 @@ import type {
   EncodedProposal,
   EliminationRecord,
 } from "../../pipeline/pipeline-types";
-import type { DecisionProvenance } from "../../../core/contracts/provenance";
+import type { DecisionProvenance } from "../../pipeline/provenance";
 
 import {
   makeCall,

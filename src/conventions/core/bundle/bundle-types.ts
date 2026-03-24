@@ -1,9 +1,9 @@
 import type { DealConstraints, Deal, Auction } from "../../../engine/types";
 import type { Seat } from "../../../engine/types";
-import type { SurfaceGroup } from "../../../core/contracts/teaching-grading";
-import type { SystemProfile } from "../../../core/contracts/agreement-module";
-import type { ConventionConfig, ConventionTeaching } from "../../../core/contracts/convention";
-import type { ConventionCategory } from "../../../core/contracts/convention";
+import type { SurfaceGroup } from "../../teaching/teaching-types";
+import type { SystemProfile } from "../agreement-module";
+import type { ConventionConfig, ConventionTeaching } from "../convention-types";
+import type { ConventionCategory } from "../convention-types";
 import type { ConventionModule } from "../convention-module";
 import { moduleSurfaces } from "../convention-module";
 

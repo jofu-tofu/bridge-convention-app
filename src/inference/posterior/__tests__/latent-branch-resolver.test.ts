@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveLatentBranches } from "../latent-branch-resolver";
-import type { LatentBranchSet } from "../../../core/contracts/posterior";
+import type { LatentBranchSet } from "../posterior-types";
 import type { WeightedDealSample } from "../posterior-sampler";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand, Card } from "../../../engine/types";

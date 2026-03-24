@@ -4,7 +4,7 @@ import {
   generateRuleCoverageManifest,
 } from "../rule-enumeration";
 import type { ConventionModule } from "../../core/convention-module";
-import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../meaning";
 import { BidSuit, Seat } from "../../../engine/types";
 
 // ── Real module imports for equivalence checks ──────────────────────

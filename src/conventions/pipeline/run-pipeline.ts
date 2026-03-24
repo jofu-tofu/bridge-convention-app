@@ -1,7 +1,7 @@
-import type { BiddingContext } from "../../core/contracts/bidding";
-import type { BidMeaning, ConstraintDimension } from "../../core/contracts/meaning";
-import type { EvaluatedFacts, FactCatalog } from "../../core/contracts/fact-catalog";
-import type { PosteriorFactProvider } from "../../core/contracts/posterior";
+import type { BiddingContext } from "../../strategy/bidding/bidding-types";
+import type { BidMeaning, ConstraintDimension } from "./meaning";
+import type { EvaluatedFacts, FactCatalog } from "../core/fact-catalog";
+import type { PosteriorFactProvider } from "../../inference/posterior/posterior-types";
 import type { PipelineResult } from "./pipeline-types";
 import type { RelationalFactContext } from "./fact-evaluator";
 import { evaluateFacts } from "./fact-evaluator";

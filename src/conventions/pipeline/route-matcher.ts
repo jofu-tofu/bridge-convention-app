@@ -7,8 +7,8 @@
 
 import type { Seat } from "../../engine/types";
 import { partnerSeat } from "../../engine/constants";
-import type { BidAction } from "../../core/contracts/bid-action";
-import type { CommittedStep } from "../../core/contracts/committed-step";
+import type { BidAction } from "./bid-action";
+import type { CommittedStep } from "../core/committed-step";
 import type { ObsPattern, RouteExpr, TurnRole } from "../core/rule-module";
 
 /**

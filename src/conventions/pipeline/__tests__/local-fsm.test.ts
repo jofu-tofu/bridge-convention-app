@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { advanceLocalFsm } from "../local-fsm";
 import type { PhaseTransition } from "../../core/rule-module";
-import type { CommittedStep } from "../../../core/contracts/committed-step";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
+import type { CommittedStep } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import { Seat } from "../../../engine/types";
 
 type Phase = "idle" | "asked" | "shown" | "denied";

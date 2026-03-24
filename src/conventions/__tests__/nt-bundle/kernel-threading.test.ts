@@ -11,7 +11,7 @@
 import { describe, it, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { ConventionModule } from "../../core/convention-module";
 
 import { getModules } from "../../definitions/module-registry";

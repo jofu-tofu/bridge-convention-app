@@ -5,7 +5,7 @@ import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import {
   SYSTEM_DONT_OVERCALL_IN_RANGE,
-} from "../../../../core/contracts/system-fact-vocabulary";
+} from "../../system-fact-vocabulary";
 import { DONT_FACT_IDS } from "./fact-ids";
 import { DONT_MEANING_IDS } from "./meaning-ids";
 

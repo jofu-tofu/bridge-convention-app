@@ -3,11 +3,11 @@ import type {
   InferenceHealth,
   PosteriorQueryResult,
   ConditioningContext,
-} from "../posterior-query";
-import type { PosteriorQuery } from "../posterior-backend";
-import type { FactorGraph, FactorOrigin } from "../factor-graph";
-import type { PublicSnapshot } from "../module-surface";
-import { ForcingState } from "../bidding";
+} from "../posterior-boundary";
+import type { PosteriorQuery } from "../posterior-boundary";
+import type { FactorGraph, FactorOrigin } from "../posterior-boundary";
+import type { PublicSnapshot } from "../../../conventions/core/module-surface";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
 

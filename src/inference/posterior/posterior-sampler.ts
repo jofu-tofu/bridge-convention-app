@@ -1,7 +1,7 @@
-import type { PublicHandSpace } from "../../core/contracts/posterior";
-import type { HandPredicate } from "../../core/contracts/predicates";
+import type { PublicHandSpace } from "./posterior-types";
+import type { HandPredicate } from "../../conventions/core/agreement-module";
 import type { Hand, Card, Seat } from "../../engine/types";
-import type { HandFactResolverFn } from "../../core/contracts/fact-helpers";
+import type { HandFactResolverFn } from "../../conventions/core/fact-catalog";
 import { createDeck, SUIT_NAME_MAP } from "../../engine/constants";
 import { mulberry32 } from "../../core/util/seeded-rng";
 import { calculateHcp, calculateHcpAndShape, isBalanced, evaluateHand } from "../../engine/hand-evaluator";

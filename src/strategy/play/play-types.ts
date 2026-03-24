@@ -7,7 +7,7 @@ import type {
   Suit,
   Trick,
 } from "../../engine/types";
-import type { PublicBeliefs } from "./inference";
+import type { PublicBeliefs } from "../../inference/inference-types";
 
 /** Context passed to play strategies for card selection. */
 export interface PlayContext {

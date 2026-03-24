@@ -2,7 +2,7 @@ import type {
   ExplanationEntry,
   FactExplanationEntry,
   MeaningExplanationEntry,
-} from "../../../../core/contracts/explanation-catalog";
+} from "../../../core/explanation-catalog";
 import type { TransferFactId } from "./fact-ids";
 import type { TransferMeaningId } from "./meaning-ids";
 

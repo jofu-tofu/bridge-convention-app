@@ -7,13 +7,13 @@
  * "for free" from this catalog instead of duplicating entries.
  */
 
-import type { FactExplanationEntry } from "../../core/contracts/explanation-catalog";
+import type { FactExplanationEntry } from "./explanation-catalog";
 import {
   PRIMITIVE_FACT_IDS,
   BRIDGE_DERIVED_FACT_IDS,
   POSTERIOR_FACT_IDS,
-} from "../../core/contracts/shared-fact-vocabulary";
-import type { SharedFactId } from "../../core/contracts/shared-fact-vocabulary";
+} from "./shared-fact-vocabulary";
+import type { SharedFactId } from "./shared-fact-vocabulary";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
@@ -25,8 +25,8 @@ import {
   SYSTEM_ONE_NT_FORCING_AFTER_MAJOR,
   SYSTEM_RESPONDER_ONE_NT_RANGE,
   SYSTEM_DONT_OVERCALL_IN_RANGE,
-} from "../../core/contracts/system-fact-vocabulary";
-import type { SystemFactId } from "../../core/contracts/system-fact-vocabulary";
+} from "../definitions/system-fact-vocabulary";
+import type { SystemFactId } from "../definitions/system-fact-vocabulary";
 
 type PlatformFactId = SharedFactId | SystemFactId;
 

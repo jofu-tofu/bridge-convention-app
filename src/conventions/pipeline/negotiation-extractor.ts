@@ -5,10 +5,10 @@
  * NegotiationState is a closed, typed representation suitable for rule matching.
  */
 
-import type { MachineRegisters } from "../../core/contracts/module-surface";
-import { ForcingState } from "../../core/contracts/bidding";
-import type { NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
-import type { BidSuitName } from "../../core/contracts/bid-action";
+import type { MachineRegisters } from "../core/module-surface";
+import { ForcingState } from "../../strategy/bidding/bidding-types";
+import type { NegotiationState, NegotiationDelta } from "../core/committed-step";
+import type { BidSuitName } from "./bid-action";
 
 /**
  * Extract a clean NegotiationState from stringly-typed MachineRegisters.

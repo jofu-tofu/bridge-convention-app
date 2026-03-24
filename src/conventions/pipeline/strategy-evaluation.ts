@@ -1,13 +1,13 @@
-import type { BiddingStrategy } from "../../core/contracts/bidding";
-import type { MachineRegisters } from "../../core/contracts/module-surface";
+import type { BiddingStrategy } from "../../strategy/bidding/bidding-types";
+import type { MachineRegisters } from "../core/module-surface";
 import type { PipelineResult } from "./pipeline-types";
-import type { HandoffTrace } from "../../core/contracts/provenance";
-import type { TeachingProjection } from "../../core/contracts/teaching-projection";
-import type { PracticalRecommendation, PosteriorSummary } from "../../core/contracts/recommendation";
-import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
-import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import type { EvaluatedFacts } from "../../core/contracts/fact-catalog";
-import type { AuctionContext } from "../../core/contracts/committed-step";
+import type { HandoffTrace } from "./provenance";
+import type { TeachingProjection } from "../teaching/teaching-types";
+import type { PracticalRecommendation, PosteriorSummary } from "../../strategy/recommendation-types";
+import type { SurfaceGroup } from "../teaching/teaching-types";
+import type { ExplanationCatalog } from "../core/explanation-catalog";
+import type { EvaluatedFacts } from "../core/fact-catalog";
+import type { AuctionContext } from "../core/committed-step";
 
 /** Lightweight DTO for convention machine state — avoids importing from conventions/core. */
 export interface MachineDebugSnapshot {

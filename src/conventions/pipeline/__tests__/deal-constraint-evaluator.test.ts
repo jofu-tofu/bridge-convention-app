@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { evaluateDealConstraint } from "../deal-constraint-evaluator";
 import { Seat, Suit, Rank, Vulnerability } from "../../../engine/types";
 import type { Deal, Hand, Card } from "../../../engine/types";
-import type { DealConstraint } from "../../../core/contracts/predicates";
+import type { DealConstraint } from "../../core/agreement-module";
 
 // ─── Test helpers ──────────────────────────────────────────
 

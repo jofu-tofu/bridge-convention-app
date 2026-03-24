@@ -1,4 +1,4 @@
-import type { TeachingControls } from "../core/contracts/deal-spec";
+import type { TeachingControls } from "./deal-spec-types";
 
 /**
  * Distribution parameters for scenario sampling in deal generation.

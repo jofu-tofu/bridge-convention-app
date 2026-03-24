@@ -15,14 +15,14 @@ import type {
 import type {
   DecisionProvenance,
   EliminationTrace,
-} from "../../core/contracts/provenance";
+} from "../pipeline/provenance";
 
 import type {
   WhyNotEntry,
   ExplanationNode,
-} from "../../core/contracts/teaching-projection";
+} from "./teaching-types";
 
-import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
+import type { SurfaceGroup } from "./teaching-types";
 
 import type { CatalogIndex } from "./teaching-projection-builder";
 import { resolveDisplayText } from "./teaching-projection-builder";

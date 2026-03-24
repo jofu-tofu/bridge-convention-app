@@ -1,5 +1,5 @@
-import type { BidAlert } from "../../core/contracts/bidding";
-import type { BidMeaningClause } from "../../core/contracts/meaning";
+import type { BidAlert } from "../../strategy/bidding/bidding-types";
+import type { BidMeaningClause } from "./meaning";
 
 // ─── Disclosure-based conventionality derivation ─────────────────────
 //

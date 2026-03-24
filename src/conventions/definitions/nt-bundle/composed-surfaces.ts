@@ -1,7 +1,7 @@
 // Composed NT surfaces — re-exports individual module surfaces and defines
 // cross-module composed surfaces (createStaymanR3After2DSurfaces).
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { SystemConfig } from "../../../core/contracts/system-config";
+import type { BidMeaning } from "../../pipeline/meaning";
+import type { SystemConfig } from "../system-config";
 import { createSmolenR3Surfaces } from "../modules/smolen";
 import { createStaymanR3After2DSurfaces as createStaymanOnlyR3_2D } from "../modules/stayman";
 

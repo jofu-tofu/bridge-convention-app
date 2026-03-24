@@ -10,7 +10,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `capability-constraint-registry.ts` — Maps each capability ID to a `CapabilityArchetype` defining opener constraints, default auction, allowed dealers, and practitioner turn/seat.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
-- `system-fact-vocabulary.ts` (in `core/contracts/`) — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs.
+- `system-config.ts` — Merged from `core/contracts/system-config.ts` + `core/contracts/base-system-vocabulary.ts`. Contains `BaseSystemId`, `BASE_SYSTEM_SAYC`, `BASE_SYSTEM_TWO_OVER_ONE`, `BASE_SYSTEM_ACOL`, `SystemConfig`, concrete system configs (`SAYC_SYSTEM_CONFIG`, etc.), `getSystemConfig()`, `AVAILABLE_BASE_SYSTEMS`.
+- `system-fact-vocabulary.ts` — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs. Moved from `core/contracts/`.
 
 **Architectural rule:** Pedagogical content is auto-derived from module structure. Surface groups come from `deriveSurfaceGroupsFromModules()` (state entries with 2+ surfaces). Cross-module alternatives are handled by `truthSetCalls` in `teaching-resolution.ts`. No manual teaching tags, scope annotations, or derivation files needed. Modules are portable building blocks.
 

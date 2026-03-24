@@ -1,12 +1,12 @@
-import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import type { PublicConstraint } from "../../core/contracts/agreement-module";
+import type { PublicSnapshot } from "../../conventions/core/module-surface";
+import type { PublicConstraint } from "../../conventions/core/agreement-module";
 import type {
   FactorGraph,
   FactorSpec,
   FactorOrigin,
   AmbiguityFamily,
   FactorStrength,
-} from "../../core/contracts/factor-graph";
+} from "./posterior-boundary";
 import type { SuitName } from "../../engine/types";
 
 // ─── Validation types ───────────────────────────────────────

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { matchRoute, matchObs } from "../route-matcher";
 import type { ObsPattern, RouteExpr } from "../../core/rule-module";
-import type { CommittedStep } from "../../../core/contracts/committed-step";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { BidAction } from "../../../core/contracts/bid-action";
+import type { CommittedStep } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import type { BidAction } from "../bid-action";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { ContractBid, SpecialCall } from "../../../engine/types";
 

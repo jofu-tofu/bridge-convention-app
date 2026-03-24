@@ -3,11 +3,11 @@ import {
   createPosteriorFactEvaluators,
   createPosteriorFactProviderFromBackend,
 } from "../posterior-catalog";
-import type { PosteriorFactValue } from "../../../core/contracts/posterior";
-import type { PosteriorFactProvider as PosteriorFactProviderType } from "../../../core/contracts/posterior";
-import { SHARED_POSTERIOR_FACT_IDS } from "../../../core/contracts/posterior";
-import type { PosteriorState, WeightedParticle } from "../../../core/contracts/posterior-backend";
-import type { ConditioningContext } from "../../../core/contracts/posterior-query";
+import type { PosteriorFactValue } from "../posterior-types";
+import type { PosteriorFactProvider as PosteriorFactProviderType } from "../posterior-types";
+import { SHARED_POSTERIOR_FACT_IDS } from "../posterior-types";
+import type { PosteriorState, WeightedParticle } from "../posterior-boundary";
+import type { ConditioningContext } from "../posterior-boundary";
 import type { Hand } from "../../../engine/types";
 import { Suit, Rank } from "../../../engine/types";
 

@@ -11,7 +11,7 @@ import {
   HAND_SUIT_LENGTH_SPADES,
   BRIDGE_HAS_SHORTAGE,
   BRIDGE_TOTAL_POINTS_FOR_RAISE,
-} from "../../../../core/contracts/shared-fact-vocabulary";
+} from "../../../core/shared-fact-vocabulary";
 
 // ─── Bergen module fact IDs ──────────────────────────────────
 

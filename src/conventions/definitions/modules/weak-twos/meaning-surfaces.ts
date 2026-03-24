@@ -1,4 +1,4 @@
-import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../pipeline/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { WEAK_TWO_CLASSES } from "./semantic-classes";
 import { bid, suitToBidSuit } from "../../../core/surface-helpers";

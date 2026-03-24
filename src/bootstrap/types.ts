@@ -9,10 +9,10 @@ import type { InferenceConfig } from "../inference/types";
 import type { InferenceEngine } from "../inference/inference-engine";
 
 // Re-export drill tuning types from contracts so existing importers continue to work
-export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../core/contracts/drill";
-export type { OpponentMode, VulnerabilityDistribution, DrillTuning, DrillSettings } from "../core/contracts/drill";
-export { DEFAULT_DISPLAY_PREFERENCES as DEFAULT_DISPLAY_SETTINGS } from "../core/contracts/practice-preferences";
-export type { DisplayPreferences as DisplaySettings } from "../core/contracts/practice-preferences";
+export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "./drill-types";
+export type { OpponentMode, VulnerabilityDistribution, DrillTuning, DrillSettings } from "./drill-types";
+export { DEFAULT_DISPLAY_PREFERENCES as DEFAULT_DISPLAY_SETTINGS } from "../service/practice-preferences";
+export type { DisplayPreferences as DisplaySettings } from "../service/practice-preferences";
 
 // ─── Drill config ───────────────────────────────────────────
 

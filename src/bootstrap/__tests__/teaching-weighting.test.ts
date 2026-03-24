@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeScenarioDistribution,
 } from "../teaching-weighting";
-import type { TeachingControls } from "../../core/contracts/deal-spec";
+import type { TeachingControls } from "../../bootstrap/deal-spec-types";
 
 describe("computeScenarioDistribution", () => {
   it("positiveOnly returns 100% positive, 0% boundary and competitive", () => {

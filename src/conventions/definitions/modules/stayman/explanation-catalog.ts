@@ -2,7 +2,7 @@ import type {
   ExplanationEntry,
   FactExplanationEntry,
   MeaningExplanationEntry,
-} from "../../../../core/contracts/explanation-catalog";
+} from "../../../core/explanation-catalog";
 import type { StaymanFactId } from "./fact-ids";
 import { STAYMAN_FACT_IDS } from "./fact-ids";
 import type { StaymanMeaningId } from "./meaning-ids";

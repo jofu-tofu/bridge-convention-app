@@ -13,13 +13,13 @@
 
 import type { ConventionBundle, BundleInput } from "../core/bundle/bundle-types";
 import type { ConventionSpec } from "../core/protocol/types";
-import type { SystemConfig } from "../../core/contracts/system-config";
+import type { SystemConfig } from "./system-config";
 import type { ConventionModule } from "../core/convention-module";
-import type { SurfaceGroup } from "../../core/contracts/teaching-grading";
+import type { SurfaceGroup } from "../teaching/teaching-types";
 import { getModules } from "./module-registry";
 import { deriveBundleDealConstraints } from "./derive-deal-constraints";
 
-import { ConventionCategory } from "../../core/contracts/convention";
+import { ConventionCategory } from "../core/convention-types";
 import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPENING_WEAK_TWO, CAP_OPPONENT_1NT } from "./capability-vocabulary";
 import { NT_SAYC_PROFILE, NT_STAYMAN_ONLY_PROFILE, NT_TRANSFERS_ONLY_PROFILE } from "./nt-bundle/system-profile";
 import { BERGEN_PROFILE } from "./bergen-bundle/system-profile";

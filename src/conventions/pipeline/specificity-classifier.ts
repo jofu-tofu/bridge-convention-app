@@ -1,5 +1,5 @@
-import type { BidMeaning, SpecificityBasis } from "../../core/contracts/meaning";
-import type { FactCatalogExtension, FactDefinition } from "../../core/contracts/fact-catalog";
+import type { BidMeaning, SpecificityBasis } from "./meaning";
+import type { FactCatalogExtension, FactDefinition } from "../core/fact-catalog";
 
 /**
  * Classify how a surface's specificity was determined by inspecting its clauses.

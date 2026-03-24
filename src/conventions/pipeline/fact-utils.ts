@@ -1,4 +1,4 @@
-import type { FactDefinition } from "../../core/contracts/fact-catalog";
+import type { FactDefinition } from "../core/fact-catalog";
 
 /**
  * Topological sort of fact definitions by dependency order.

@@ -1,8 +1,8 @@
-import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../pipeline/meaning";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
-import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
-import type { SystemConfig } from "../../../../core/contracts/system-config";
+import type { NegotiationDelta } from "../../../core/committed-step";
+import type { SystemConfig } from "../../system-config";
 
 import { createTransferFacts } from "./facts";
 import { TRANSFER_EXPLANATION_ENTRIES } from "./explanation-catalog";

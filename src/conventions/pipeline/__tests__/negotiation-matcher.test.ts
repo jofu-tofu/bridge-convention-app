@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { matchKernel } from "../negotiation-matcher";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { NegotiationState } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import type { NegotiationState } from "../../core/committed-step";
 import type { NegotiationExpr } from "../../core/rule-module";
 
 function kernel(overrides: Partial<NegotiationState> = {}): NegotiationState {

@@ -14,7 +14,7 @@ import type {
 
 import type {
   CallProjection,
-} from "../../core/contracts/teaching-projection";
+} from "./teaching-types";
 
 // -- Call Views --
 

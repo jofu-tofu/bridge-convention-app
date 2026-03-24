@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { sampleDeals } from "../posterior-sampler";
-import type { PublicHandSpace } from "../../../core/contracts/posterior";
-import type { HandFactResolverFn } from "../../../core/contracts/fact-helpers";
+import type { PublicHandSpace } from "../posterior-types";
+import type { HandFactResolverFn } from "../../../conventions/core/fact-catalog";
 import { Suit, Rank, Seat } from "../../../engine/types";
 import type { Hand, Card } from "../../../engine/types";
 import { HCP_VALUES } from "../../../engine/constants";

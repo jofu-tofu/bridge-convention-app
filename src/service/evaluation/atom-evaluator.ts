@@ -9,22 +9,22 @@
 // Phase 6: Uses rule enumeration (RuleAtom) instead of FSM BFS coverage.
 // Atom ID format: `moduleId/meaningId`.
 
-import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
-import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
-import { getSystemConfig } from "../../core/contracts/system-config";
+import type { BaseSystemId } from "../../conventions/definitions/system-config";
+import { BASE_SYSTEM_SAYC } from "../../conventions/definitions/system-config";
+import { getSystemConfig } from "../../conventions/definitions/system-config";
 import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../../conventions";
 import { enumerateRuleAtoms, type RuleAtom } from "../../conventions";
 import { getBundle } from "../../conventions";
 import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
 import { resolveTeachingAnswer, gradeBid } from "../../conventions";
-import { BidGrade } from "../../core/contracts/teaching-grading";
+import { BidGrade } from "../../conventions/teaching/teaching-types";
 import { buildViewportFeedback, buildTeachingDetail, projectObservationHistory } from "../build-viewport";
 import { callKey, callsMatch } from "../../engine/call-helpers";
 import { parsePatternCall } from "../../engine/auction-helpers";
 import { Vulnerability } from "../../engine/types";
 import type { Seat } from "../../engine/types";
 import type { Auction, Deal, Call } from "../../engine/types";
-import type { BiddingStrategy } from "../../core/contracts/bidding";
+import type { BiddingStrategy } from "../../strategy/bidding/bidding-types";
 import type { ConventionStrategy } from "../../conventions";
 import type { ConventionBundle } from "../../conventions";
 import type { BiddingViewport } from "../response-types";

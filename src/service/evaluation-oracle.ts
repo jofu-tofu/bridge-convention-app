@@ -7,9 +7,9 @@
 //   3. Aggregate reporting (accuracy metrics)
 
 import type { Call, Hand, Seat } from "../engine/types";
-import type { BidResult, BidAlert } from "../core/contracts/bidding";
-import type { TeachingResolution } from "../core/contracts/teaching-grading";
-import type { TeachingProjection } from "../core/contracts/teaching-projection";
+import type { BidResult, BidAlert } from "../strategy/bidding/bidding-types";
+import type { TeachingResolution } from "../conventions/teaching/teaching-types";
+import type { TeachingProjection } from "../conventions/teaching/teaching-types";
 import type { StrategyEvaluation } from "../conventions";
 
 /** The answer key for a single bidding decision point. */

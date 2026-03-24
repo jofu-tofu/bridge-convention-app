@@ -16,14 +16,14 @@ import { describe, it, expect } from "vitest";
 import "../../../conventions";
 
 import { listBundleInputs, resolveBundle } from "../../../conventions/definitions/system-registry";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 import { lintModule } from "../../../cli/verify/lint";
 import { analyzeBundle } from "../../../cli/verify/interfere";
 import { moduleSurfaces } from "../../core/convention-module";
 import type { ConventionBundle } from "../../core";
 import type { ConventionModule } from "../../core/convention-module";
 import type { LintDiagnostic } from "../../../cli/verify/types";
-import type { FactExplanationEntry, MeaningExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { FactExplanationEntry, MeaningExplanationEntry } from "../../core/explanation-catalog";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 

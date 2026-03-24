@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { NT_EXPLANATION_CATALOG } from "../explanation-catalog";
-import type { FactExplanationEntry } from "../../../../core/contracts/explanation-catalog";
+import type { FactExplanationEntry } from "../../../core/explanation-catalog";
 
 /**
  * Module-derived fact IDs used in the 1NT bundle.

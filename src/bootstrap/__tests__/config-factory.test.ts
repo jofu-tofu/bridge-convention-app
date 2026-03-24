@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createProtocolDrillConfig } from "../config-factory";
 import { Seat } from "../../engine/types";
-import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTEM_ACOL } from "../../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTEM_ACOL } from "../../conventions/definitions/system-config";
 
 describe("createProtocolDrillConfig", () => {
   it("assigns user seat as 'user'", () => {

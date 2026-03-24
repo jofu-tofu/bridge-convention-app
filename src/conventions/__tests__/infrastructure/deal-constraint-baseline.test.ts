@@ -13,8 +13,8 @@ import {
   SAYC_SYSTEM_CONFIG,
   TWO_OVER_ONE_SYSTEM_CONFIG,
   ACOL_SYSTEM_CONFIG,
-} from "../../../core/contracts/system-config";
-import type { SystemConfig } from "../../../core/contracts/system-config";
+} from "../../definitions/system-config";
+import type { SystemConfig } from "../../definitions/system-config";
 import type { DealConstraints } from "../../../engine/types";
 import { Seat, Suit } from "../../../engine/types";
 

@@ -1,7 +1,7 @@
-import { FactLayer } from "../../../../core/contracts/fact-layer";
+import { FactLayer } from "../../../core/fact-layer";
 import type {
   FactCatalogExtension,
-} from "../../../../core/contracts/fact-catalog";
+} from "../../../core/fact-catalog";
 import { num, fv } from "../../../pipeline/fact-helpers";
 import { buildExtension } from "../../../pipeline/fact-factory";
 import type { FactEntry } from "../../../pipeline/fact-factory";

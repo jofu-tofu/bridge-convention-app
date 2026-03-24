@@ -1,4 +1,4 @@
-import type { DealSpec } from "../../../../core/contracts/deal-spec";
+import type { DealSpec } from "../../../../bootstrap/deal-spec-types";
 
 /** Build a minimal DealSpec, overriding any fields as needed. */
 export function makeSpec(

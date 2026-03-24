@@ -8,7 +8,7 @@
 // - ConventionSpec top-level composition type
 
 import type { Call } from "../../../engine/types";
-import type { ConstraintDimension, BidMeaning } from "../../../core/contracts/meaning";
+import type { ConstraintDimension, BidMeaning } from "../../pipeline/meaning";
 
 
 // ── Declarative Expression Types ────────────────────────────────────
@@ -225,6 +225,6 @@ export interface ConventionSpec {
 }
 
 import type { ConventionModule } from "../convention-module";
-import type { SystemConfig } from "../../../core/contracts/system-config";
+import type { SystemConfig } from "../../definitions/system-config";
 
 

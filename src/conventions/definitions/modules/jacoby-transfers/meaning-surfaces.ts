@@ -1,11 +1,11 @@
-import type { BidMeaning } from "../../../../core/contracts/meaning";
-import type { SystemConfig } from "../../../../core/contracts/system-config";
+import type { BidMeaning } from "../../../pipeline/meaning";
+import type { SystemConfig } from "../../system-config";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
   SYSTEM_OPENER_NOT_MINIMUM,
-} from "../../../../core/contracts/system-fact-vocabulary";
+} from "../../system-fact-vocabulary";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";

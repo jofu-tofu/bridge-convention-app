@@ -1,22 +1,22 @@
 import type {
   BidMeaning,
   BidMeaningClause,
-} from "../../core/contracts/meaning";
+} from "./meaning";
 import type {
   MeaningProposal,
   MeaningClause,
   EvaluationEvidence,
   RankingMetadata,
-} from "../../core/contracts/meaning";
+} from "./meaning";
 import type {
   EvaluatedFacts,
   FactValue,
   FactCatalogExtension,
-} from "../../core/contracts/fact-catalog";
-import { getFactValue } from "../../core/contracts/fact-catalog";
+} from "../core/fact-catalog";
+import { getFactValue } from "../core/fact-catalog";
 import { resolveAlert } from "./alert";
 import { resolveFactId } from "./binding-resolver";
-import type { ConstraintDimension } from "../../core/contracts/meaning";
+import type { ConstraintDimension } from "./meaning";
 import { deriveSpecificity } from "./specificity-deriver";
 import { fillClauseDefaults, deriveClauseDescription } from "./clause-derivation";
 

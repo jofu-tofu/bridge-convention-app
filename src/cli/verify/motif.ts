@@ -5,7 +5,7 @@
 
 import type { ConventionModule, ConventionBundle } from "../../conventions";
 
-import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
+import type { BaseSystemId } from "../../conventions/definitions/system-config";
 import { exploreBundle } from "./explore";
 import type { MotifResult, InvariantViolation } from "./types";
 

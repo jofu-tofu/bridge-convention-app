@@ -1,8 +1,8 @@
 import { callsMatch } from "../../engine/call-helpers";
 import type { Call } from "../../engine/types";
 import type { BidResult, ResolvedCandidateDTO, SurfaceGroup } from "../../core/contracts";
-import { BidGrade } from "../../core/contracts/teaching-grading";
-import type { AcceptableBid, TeachingResolution } from "../../core/contracts/teaching-grading";
+import { BidGrade } from "./teaching-types";
+import type { AcceptableBid, TeachingResolution } from "./teaching-types";
 
 // Re-export contract types so existing importers continue to work
 export { BidGrade };

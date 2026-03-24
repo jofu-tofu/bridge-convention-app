@@ -10,10 +10,10 @@ import type {
   NegotiationState,
   ClaimRef,
   CommittedStep,
-} from "../../core/contracts/committed-step";
+} from "../core/committed-step";
 import type { PipelineResult } from "./pipeline-types";
-import type { MachineRegisters } from "../../core/contracts/module-surface";
-import type { BidAction } from "../../core/contracts/bid-action";
+import type { MachineRegisters } from "../core/module-surface";
+import type { BidAction } from "./bid-action";
 import { extractKernelState, computeKernelDelta } from "./negotiation-extractor";
 import { normalizeIntent } from "./normalize-intent";
 

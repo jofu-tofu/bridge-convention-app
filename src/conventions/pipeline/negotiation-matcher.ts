@@ -2,8 +2,8 @@
  * Kernel matcher — evaluates NegotiationExpr predicates against NegotiationState.
  */
 
-import type { NegotiationState } from "../../core/contracts/committed-step";
-import type { BidSuitName } from "../../core/contracts/bid-action";
+import type { NegotiationState } from "../core/committed-step";
+import type { BidSuitName } from "./bid-action";
 import type { NegotiationExpr } from "../core/rule-module";
 
 /**

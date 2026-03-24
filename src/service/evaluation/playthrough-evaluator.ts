@@ -5,17 +5,17 @@
 //
 // Internal strategy/teaching/convention access is encapsulated here.
 
-import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
-import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
-import { getSystemConfig } from "../../core/contracts/system-config";
+import type { BaseSystemId } from "../../conventions/definitions/system-config";
+import { BASE_SYSTEM_SAYC } from "../../conventions/definitions/system-config";
+import { getSystemConfig } from "../../conventions/definitions/system-config";
 import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../../conventions";
 import { enumerateRuleAtoms } from "../../conventions";
 import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
 import { naturalFallbackStrategy } from "../../strategy/bidding/natural-fallback";
 import { createStrategyChain } from "../../strategy/bidding/strategy-chain";
 import { resolveTeachingAnswer, gradeBid } from "../../conventions";
-import { BidGrade } from "../../core/contracts/teaching-grading";
-import type { BidResult } from "../../core/contracts/bidding";
+import { BidGrade } from "../../conventions/teaching/teaching-types";
+import type { BidResult } from "../../strategy/bidding/bidding-types";
 import { buildViewportFeedback, buildTeachingDetail, projectObservationHistory } from "../build-viewport";
 import type { BiddingViewport } from "../response-types";
 import { callKey } from "../../engine/call-helpers";
@@ -24,7 +24,7 @@ import { Vulnerability } from "../../engine/types";
 import type { Auction, Call, Deal,  Seat} from "../../engine/types";
 import type { ConventionBundle } from "../../conventions";
 import type { ConventionSpec } from "../../conventions";
-import type { OpponentMode } from "../../core/contracts/drill";
+import type { OpponentMode } from "../../bootstrap/drill-types";
 import type { PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./types";
 import { nextSeat, partnerSeat, generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, makeViewport } from "./helpers";
 

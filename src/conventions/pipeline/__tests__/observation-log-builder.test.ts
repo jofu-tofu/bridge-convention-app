@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { buildObservationLog } from "../observation-log-builder";
 import type { ObservationLogStep } from "../observation-log-builder";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { PipelineResult, PipelineCarrier } from "../pipeline-types";
-import type { MachineRegisters } from "../../../core/contracts/module-surface";
-import type { MeaningProposal } from "../../../core/contracts/meaning";
-import { ForcingState } from "../../../core/contracts/bidding";
+import type { MachineRegisters } from "../../core/module-surface";
+import type { MeaningProposal } from "../meaning";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call, ContractBid, SpecialCall } from "../../../engine/types";
 

@@ -2,12 +2,12 @@ import { describe, it, expect } from "vitest";
 import { getAllModules } from "../module-registry";
 import type { ConventionModule } from "../../core/convention-module";
 import { moduleSurfaces } from "../../core/convention-module";
-import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../pipeline/meaning";
 import {
   PRIMITIVE_FACTS,
   BRIDGE_DERIVED_FACTS,
   SHARED_FACTS,
-} from "../../../core/contracts/shared-facts";
+} from "../../core/shared-facts";
 
 // ── Helpers ──────────────────────────────────────────────────────
 

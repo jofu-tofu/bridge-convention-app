@@ -5,7 +5,7 @@ import {
   resolveBundle,
   specFromBundle,
 } from "../system-registry";
-import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../system-config";
 import { moduleSurfaces } from "../../core/convention-module";
 
 const ALL_IDS = ["nt-bundle", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"] as const;

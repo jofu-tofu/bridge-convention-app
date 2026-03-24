@@ -14,7 +14,7 @@
  */
 
 import type { Seat, Call } from "../../engine/types";
-import type { BidAction, BidSuitName } from "./bid-action";
+import type { BidAction, BidSuitName } from "../pipeline/bid-action";
 import type { PublicSnapshot } from "./module-surface";
 
 // ── NegotiationState ──────────────────────────────────────────────────────

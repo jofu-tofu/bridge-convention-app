@@ -485,12 +485,12 @@ export default tseslint.config(
         {
           paths: [
             {
-              name: "../../../core/contracts/system-config",
+              name: "../system-config",
               importNames: ["SAYC_SYSTEM_CONFIG", "TWO_OVER_ONE_SYSTEM_CONFIG"],
               message: "Convention modules must receive SystemConfig via factory parameter, not import a concrete system config.",
             },
             {
-              name: "../../../../core/contracts/system-config",
+              name: "../../system-config",
               importNames: ["SAYC_SYSTEM_CONFIG", "TWO_OVER_ONE_SYSTEM_CONFIG"],
               message: "Convention modules must receive SystemConfig via factory parameter, not import a concrete system config.",
             },

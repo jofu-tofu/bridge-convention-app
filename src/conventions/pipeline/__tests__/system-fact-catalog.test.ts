@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createSystemFactCatalog } from "../system-fact-catalog";
-import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
-import type { SystemConfig } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../definitions/system-config";
+import type { SystemConfig } from "../../definitions/system-config";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
@@ -13,10 +13,10 @@ import {
   SYSTEM_ONE_NT_FORCING_AFTER_MAJOR,
   SYSTEM_RESPONDER_ONE_NT_RANGE,
   SYSTEM_FACT_IDS,
-} from "../../../core/contracts/system-fact-vocabulary";
-import { TWO_OVER_ONE_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
-import type { FactValue } from "../../../core/contracts/fact-catalog";
-import { FactLayer } from "../../../core/contracts/fact-layer";
+} from "../../definitions/system-fact-vocabulary";
+import { TWO_OVER_ONE_SYSTEM_CONFIG } from "../../definitions/system-config";
+import type { FactValue } from "../../core/fact-catalog";
+import { FactLayer } from "../../core/fact-layer";
 
 function hcpMap(hcp: number): ReadonlyMap<string, FactValue> {
   return new Map([["hand.hcp", { factId: "hand.hcp", value: hcp }]]);

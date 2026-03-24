@@ -11,16 +11,16 @@ import type {
   BidResult,
 } from "../../core/contracts";
 import type { ConventionStrategy, StrategyEvaluation, BidMeaning, ConventionSpec, ConventionModule, ModuleSurfaceResult } from "../../conventions";
-import type { FactCatalog } from "../../core/contracts/fact-catalog";
+import type { FactCatalog } from "../../conventions/core/fact-catalog";
 import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, runPipeline, PLATFORM_EXPLANATION_ENTRIES } from "../../conventions";
-import { createFactCatalog } from "../../core/contracts/fact-catalog";
-import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
-import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
+import { createFactCatalog } from "../../conventions/core/fact-catalog";
+import { createExplanationCatalog } from "../../conventions/core/explanation-catalog";
+import { SAYC_SYSTEM_CONFIG } from "../../conventions/definitions/system-config";
 import { buildBidResult } from "./bid-result-builder";
 import { projectTeaching } from "../../conventions";
-import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
-import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
-import type { PublicSnapshot } from "../../core/contracts/module-surface";
+import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta } from "../../conventions/core/committed-step";
+import { INITIAL_NEGOTIATION } from "../../conventions/core/committed-step";
+import type { PublicSnapshot } from "../../conventions/core/module-surface";
 import type { Seat, Call } from "../../engine/types";
 
 /**

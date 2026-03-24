@@ -1,5 +1,5 @@
-import type { HandPredicate } from "./predicates";
-import type { FactConstraint } from "./agreement-module";
+import type { HandPredicate } from "../../conventions/core/agreement-module";
+import type { FactConstraint } from "../../conventions/core/agreement-module";
 
 // ─── Hand space types ───────────────────────────────────────
 export interface PublicHandSpace {
@@ -94,4 +94,3 @@ export const SHARED_POSTERIOR_FACT_IDS = [
   "bridge.partnerHas4ClubsLikely",
   "bridge.combinedHcpInRangeLikely",
 ] as const;
-

@@ -7,7 +7,7 @@
  * fact IDs before any downstream lookup.
  */
 
-import type { BidMeaningClause } from "../../core/contracts/meaning";
+import type { BidMeaningClause } from "./meaning";
 
 /**
  * Resolve $-prefixed binding references in a factId.

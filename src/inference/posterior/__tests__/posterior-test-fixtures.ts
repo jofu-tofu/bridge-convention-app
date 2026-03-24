@@ -6,9 +6,9 @@
  * posterior-compiler, and factor-compiler tests.
  */
 
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import { ForcingState } from "../../../core/contracts/bidding";
+import type { PublicSnapshot } from "../../../conventions/core/module-surface";
+import type { PublicConstraint } from "../../../conventions/core/agreement-module";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand, Card } from "../../../engine/types";
 

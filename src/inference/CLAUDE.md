@@ -13,6 +13,7 @@ Auction inference system — extracts hand information from bids with per-partne
 
 | File | Role |
 |------|------|
+| `inference-types.ts` | Cross-boundary inference types (moved from `core/contracts/inference.ts`): `HandInference`, `SuitInference`, `PublicBeliefs`, `DerivedRanges`, `QualitativeConstraint`, `BeliefData`, `InferenceProvider` |
 | `types.ts` | Core interfaces: `ConditionInference`, `InferenceExtractorInput`, `InferenceExtractor`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`. `ConditionInference` is now owned locally (no conventions/core dependency). |
 | `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
 | `condition-mapper.ts` | `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` — maps `ConditionInference` → `HandInference` |
@@ -32,7 +33,9 @@ Auction inference system — extracts hand information from bids with per-partne
 
 ## Contracts Boundary
 
-- Cross-boundary shapes consumed by inference, such as `HandInference`, `InferredHoldings`, `EvidenceBundle`, and `BidAlert`, live in `src/core/contracts/`.
+- Cross-boundary inference types (`HandInference`, `PublicBeliefs`, `InferenceProvider`) now live in `inference/inference-types.ts` (moved from `core/contracts/inference.ts`). Re-exported via `core/contracts/convention-types.ts` for backward compatibility.
+- Posterior types (`PosteriorFactProvider`, `BeliefView`, `PublicHandSpace`) live in `inference/posterior/posterior-types.ts` (moved from `core/contracts/posterior.ts`).
+- Posterior boundary types (`FactorGraph`, `PosteriorQueryPort`, `PosteriorBackend`, etc.) live in `inference/posterior/posterior-boundary.ts` (merged from `core/contracts/factor-graph.ts`, `posterior-query.ts`, `posterior-backend.ts`).
 - `inference/types.ts` is the subsystem-local interface layer including the locally-owned `ConditionInference` type.
 
 ## Belief Derivation

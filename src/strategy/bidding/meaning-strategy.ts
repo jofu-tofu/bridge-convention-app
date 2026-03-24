@@ -4,10 +4,10 @@ import type {
   SurfaceGroup,
 } from "../../core/contracts";
 import type { ConventionStrategy, StrategyEvaluation, BidMeaning } from "../../conventions";
-import type { FactCatalog } from "../../core/contracts/fact-catalog";
-import type { ExplanationCatalog } from "../../core/contracts/explanation-catalog";
+import type { FactCatalog } from "../../conventions/core/fact-catalog";
+import type { ExplanationCatalog } from "../../conventions/core/explanation-catalog";
 import { createSharedFactCatalog, runPipeline, PLATFORM_EXPLANATION_ENTRIES } from "../../conventions";
-import { createExplanationCatalog } from "../../core/contracts/explanation-catalog";
+import { createExplanationCatalog } from "../../conventions/core/explanation-catalog";
 
 import { buildBidResult } from "./bid-result-builder";
 import { projectTeaching } from "../../conventions";

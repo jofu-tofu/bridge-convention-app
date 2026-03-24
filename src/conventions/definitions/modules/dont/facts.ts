@@ -1,10 +1,10 @@
-import { FactLayer } from "../../../../core/contracts/fact-layer";
+import { FactLayer } from "../../../core/fact-layer";
 import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
   FactComposition,
-} from "../../../../core/contracts/fact-catalog";
+} from "../../../core/fact-catalog";
 import { fv } from "../../../pipeline/fact-helpers";
 import {
   defineBooleanFact,

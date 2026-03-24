@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
   createFactCatalog,
-} from "../fact-catalog";
-import { SHARED_FACTS, POSTERIOR_DERIVED_FACTS } from "../shared-facts";
-import { FactLayer } from '../fact-layer';
-import type { FactCatalog, FactCatalogExtension } from "../fact-catalog";
-import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../fact-catalog";
-import { SHARED_POSTERIOR_FACT_IDS } from "../posterior";
+} from "../../../conventions/core/fact-catalog";
+import { SHARED_FACTS, POSTERIOR_DERIVED_FACTS } from "../../../conventions/core/shared-facts";
+import { FactLayer } from '../../../conventions/core/fact-layer';
+import type { FactCatalog, FactCatalogExtension } from "../../../conventions/core/fact-catalog";
+import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../../../conventions/core/fact-catalog";
+import { SHARED_POSTERIOR_FACT_IDS } from "../posterior-types";
 
 describe("POSTERIOR_DERIVED_FACTS", () => {
   it("has exactly 5 shared entries (NT-specific facts moved to nt-bundle)", () => {

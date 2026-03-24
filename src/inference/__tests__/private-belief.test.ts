@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat, Suit } from "../../engine/types";
 import { conditionOnOwnHand } from "../private-belief";
 import type { PublicBeliefState, BidAnnotation } from "../types";
-import type { FactConstraint } from "../../core/contracts/agreement-module";
+import type { FactConstraint } from "../../conventions/core/agreement-module";
 import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { createInitialBeliefState, applyAnnotation } from "../belief-accumulator";

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { OpponentMode } from "../../../core/contracts/drill";
-  import { AVAILABLE_BASE_SYSTEMS } from "../../../core/contracts/system-config";
+  import type { OpponentMode } from "../../../bootstrap/drill-types";
+  import { AVAILABLE_BASE_SYSTEMS } from "../../../conventions/definitions/system-config";
   import { getAppStore } from "../../../stores/context";
 
   const appStore = getAppStore();

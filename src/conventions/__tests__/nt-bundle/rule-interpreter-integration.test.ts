@@ -9,9 +9,9 @@
 import { describe, it, expect } from "vitest";
 import { collectMatchingClaims } from "../../pipeline/rule-interpreter";
 import type { ConventionModule } from "../../core/convention-module";
-import type { AuctionContext, CommittedStep, NegotiationState } from "../../../core/contracts/committed-step";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { AuctionContext, CommittedStep, NegotiationState } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import type { PublicSnapshot } from "../../core/module-surface";
 import { Seat } from "../../../engine/types";
 
 // Rule modules under test

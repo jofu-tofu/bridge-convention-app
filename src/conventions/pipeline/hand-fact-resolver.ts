@@ -2,8 +2,8 @@ import type { Hand, HandEvaluation } from "../../engine/types";
 import type {
   FactCatalog,
   FactValue,
-} from "../../core/contracts/fact-catalog";
-import type { HandFactResolverFn } from "../../core/contracts/fact-helpers";
+} from "../core/fact-catalog";
+import type { HandFactResolverFn } from "../core/fact-catalog";
 import { createSharedFactCatalog } from "./shared-fact-catalog";
 import { topologicalSort } from "./fact-utils";
 

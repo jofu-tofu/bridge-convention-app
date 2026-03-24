@@ -2,7 +2,7 @@ import type {
   BidMeaning,
   BidMeaningClause,
   RecommendationBand,
-} from "../../core/contracts/meaning";
+} from "../pipeline/meaning";
 import type { Call } from "../../engine/types";
 import { deriveClauseId, deriveClauseDescription } from "../pipeline/clause-derivation";
 

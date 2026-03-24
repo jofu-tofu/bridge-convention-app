@@ -16,8 +16,8 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | Sub-barrel | Stability | Contents |
 |---|---|---|
 | `engine-types.ts` | Tier 1 — rarely changes | Bridge primitives: meaning, fact-catalog, agreement-module, bid-action, committed-step |
-| `convention-types.ts` | Tier 2 — convention/strategy/teaching scope | Pipeline infrastructure: bidding, explanation-catalog, inference, play, recommendation, tree-evaluation, module-surface, provenance, predicates, evidence-bundle, posterior, factor-graph, posterior-query, posterior-backend |
-| `session-types.ts` | Tier 3 — orchestration/presentation scope | Session lifecycle & UI: teaching-projection, deal-spec, convention, system-config, base-system-vocabulary, teaching-grading, drill, practice-preferences |
+| `convention-types.ts` | Tier 2 — convention/strategy/teaching scope | Pipeline infrastructure: bidding, explanation-catalog, inference (from inference/), play, recommendation, tree-evaluation, module-surface, provenance, predicates, evidence-bundle, posterior types + boundary (from inference/posterior/) |
+| `session-types.ts` | Tier 3 — orchestration/presentation scope | Session lifecycle & UI: teaching-types (from conventions/teaching), deal-spec, convention, system-config (from conventions/definitions), system-fact-vocabulary (from conventions/definitions), drill, practice-preferences |
 
 **When to use each tier import:**
 - `engine-types` — you only need core bridge semantics (meanings, facts, observations, kernel state)
@@ -34,7 +34,7 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `convention-types.ts` | Tier 2 sub-barrel: convention pipeline infrastructure |
 | `session-types.ts` | Tier 3 sub-barrel: session lifecycle and UI preferences |
 | `bidding.ts` | Bidding context, forcing state, bid alerts, strategy interface, bid results |
-| `inference.ts` | Suit/hand inference, qualitative constraints, public beliefs |
+| `inference.ts` | **Moved** to `inference/inference-types.ts`. Suit/hand inference, qualitative constraints, public beliefs |
 | `tree-evaluation.ts` | Candidate eligibility, alternative groups, surface groups, evaluation trace |
 | `play.ts` | Play context, results, strategy interface |
 | `recommendation.ts` | Practical recommendation, posterior summary (`PracticalRecommendation`, `PracticalScoreBreakdown`, `PosteriorSummary`). `StrategyEvaluation` and `ConventionStrategy` moved to `conventions/pipeline/strategy-evaluation.ts`. |
@@ -43,13 +43,13 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `fact-catalog.ts` | Fact definitions (with `constrainsDimensions`, optional `composition` for module-derived facts), `PrimitiveClause`, `FactComposition` types, evaluators, catalog, extensions, shared facts (19) |
 | `alert.ts` | **Moved** to `conventions/pipeline/alert.ts`. Alert resolution and public constraint derivation from surface properties. |
 | `provenance.ts` | Full decision provenance DTOs for pipeline tracing |
-| `teaching-projection.ts` | Teaching-optimized views for "why not X?" UI |
+| `teaching-projection.ts` | **Moved** to `conventions/teaching/teaching-types.ts` (merged with teaching-grading.ts). Teaching-optimized views for "why not X?" UI. |
 | `predicates.ts` | Typed predicate surfaces scoped by evaluation world |
 | `evidence-bundle.ts` | `ConditionEvidence` (sole evidence type), rejection/alternative evidence |
-| `posterior.ts` | Posterior fact provider, belief views, hand space types, and shared posterior fact IDs |
-| `factor-graph.ts` | Convention-erased factor graph IR for posterior boundary |
-| `posterior-query.ts` | Consumer-facing query interface for posterior inference |
-| `posterior-backend.ts` | Backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
+| `posterior.ts` | **Moved** to `inference/posterior/posterior-types.ts`. Posterior fact provider, belief views, hand space types, and shared posterior fact IDs |
+| `factor-graph.ts` | **Moved** to `inference/posterior/posterior-boundary.ts` (merged with posterior-query.ts, posterior-backend.ts). Convention-erased factor graph IR for posterior boundary |
+| `posterior-query.ts` | **Moved** to `inference/posterior/posterior-boundary.ts` (merged). Consumer-facing query interface for posterior inference |
+| `posterior-backend.ts` | **Moved** to `inference/posterior/posterior-boundary.ts` (merged). Backend contract for posterior sampling (replaceable: TS or Rust/WASM) |
 | `agreement-module.ts` | Agreement module IR: system profiles, fact constraints |
 | `deal-spec.ts` | DealSpec IR types for deal generation |
 | `explanation-catalog.ts` | Explanation catalog entries for teaching projections. Discriminated union: `FactExplanationEntry` (factId, contrastive fields) and `MeaningExplanationEntry` (meaningId). `displayText` is required on both. `ExplanationEntry = FactExplanationEntry \| MeaningExplanationEntry`. Exhaustiveness is enforced at compile time via `Record<ModuleFactId, FactExplanationEntry>` and `Record<ModuleMeaningId, MeaningExplanationEntry>` in per-module explanation catalogs. |
@@ -57,11 +57,12 @@ The barrel is split into 3 sub-barrels by change-frequency. `index.ts` re-export
 | `convention.ts` | Convention registry types and deal constraint shapes |
 | `fact-helpers.ts` | Shared utilities for fact evaluators (`num()`, `bool()`, `fv()`) |
 | `shared-facts.ts` | Bridge-universal fact vocabulary (primitive + bridge-derived) |
-| `teaching-grading.ts` | BidGrade, TeachingResolution, SurfaceGroup — cross-boundary grading types |
+| `teaching-grading.ts` | **Moved** to `conventions/teaching/teaching-types.ts` (merged with teaching-projection.ts). BidGrade, TeachingResolution, SurfaceGroup — cross-boundary grading types. |
 | `drill.ts` | Drill session tuning DTOs (opponent mode, vulnerability, tuning) |
 | `bid-action.ts` | 17-act bridge-universal observation vocabulary for convention-erased pattern matching |
-| `system-config.ts` | SystemConfig with per-system thresholds (SAYC, 2/1, Acol) |
-| `system-fact-vocabulary.ts` | System-provided fact IDs for system-dependent surface clauses |
+| `system-config.ts` | **Moved** to `conventions/definitions/system-config.ts` (merged with base-system-vocabulary.ts). SystemConfig with per-system thresholds (SAYC, 2/1, Acol). |
+| `base-system-vocabulary.ts` | **Moved** to `conventions/definitions/system-config.ts` (merged with system-config.ts). BaseSystemId, BASE_SYSTEM_SAYC, etc. |
+| `system-fact-vocabulary.ts` | **Moved** to `conventions/definitions/system-fact-vocabulary.ts`. System-provided fact IDs for system-dependent surface clauses. |
 | `committed-step.ts` | NegotiationState, CommittedStep, AuctionContext — adjudicated auction actions |
 
 ## Design Decisions

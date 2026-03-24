@@ -1,5 +1,5 @@
 /**
- * System-level bidding configuration.
+ * Base bidding system identifiers and system-level bidding configuration.
  *
  * Captures HCP thresholds and ranges that vary between bidding systems
  * (SAYC, 2/1 Game Forcing, Acol, etc.) but are shared across all
@@ -12,8 +12,22 @@
  * are NOT part of SystemConfig; they belong to the convention module.
  */
 
-import type { BaseSystemId } from "./base-system-vocabulary";
-import { BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTEM_ACOL } from "./base-system-vocabulary";
+// ─── Known system IDs ───────────────────────────────────────
+
+/** Standard American Yellow Card (SAYC). */
+export const BASE_SYSTEM_SAYC = "sayc" as const;
+
+/** Two-Over-One Game Forcing. */
+export const BASE_SYSTEM_TWO_OVER_ONE = "two-over-one" as const;
+
+/** Acol (standard weak-NT variant, UK tournament bridge). */
+export const BASE_SYSTEM_ACOL = "acol" as const;
+
+/** All known base-system identifiers. Extend this union as new systems are added. */
+export type BaseSystemId =
+  | typeof BASE_SYSTEM_SAYC
+  | typeof BASE_SYSTEM_TWO_OVER_ONE
+  | typeof BASE_SYSTEM_ACOL;
 
 // ─── 1NT system parameters ──────────────────────────────────
 

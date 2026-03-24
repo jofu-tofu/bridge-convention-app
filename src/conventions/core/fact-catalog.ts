@@ -1,7 +1,7 @@
 import type { Hand, HandEvaluation } from "../../engine/types";
 import type { PublicConstraint } from "./agreement-module";
-import type { PosteriorFactProvider, PosteriorFactRequest } from "./posterior";
-import type { ConstraintDimension } from "./meaning";
+import type { PosteriorFactProvider, PosteriorFactRequest } from "../../inference/posterior/posterior-types";
+import type { ConstraintDimension } from "../pipeline/meaning";
 import type { FactLayer } from "./fact-layer";
 
 
@@ -46,15 +46,15 @@ export interface FactDefinition {
   /** Communicative constraint dimensions this fact provides when used in a bid's clause.
    *  REQUIRED. Describes what information the bid communicates to partner when this
    *  fact is checked — NOT what the evaluator code reads internally.
-   *  
+   *
    *  Rules for assignment:
    *  - "suitIdentity": the fact identifies which specific suit(s) are promised
-   *  - "suitLength": the fact constrains min/max cards in specific suits  
+   *  - "suitLength": the fact constrains min/max cards in specific suits
    *  - "pointRange": the fact constrains HCP or total point bounds
    *  - "shapeClass": the fact constrains distributional shape (balanced, shortage, etc.)
    *  - "suitRelation": the fact constrains relationships between suits
    *  - "suitQuality": the fact constrains honor holdings or suit solidity
-   *  
+   *
    *  For boolean facts that wrap multiple conditions (e.g., module.dont.bothMajors),
    *  list the dimensions the BID COMMUNICATES, not what the evaluator reads.
    *  Specificity is derived from the union of dimensions across a surface's clauses. */
@@ -167,3 +167,29 @@ export function createFactCatalog(
   };
 }
 
+// ─── Fact authoring helpers ────────────────────────────────────
+// Shared utilities for convention fact evaluators and pipeline fact evaluation.
+
+/** Extract a numeric fact value from evaluated facts. */
+export function num(evaluated: ReadonlyMap<string, FactValue>, id: string): number {
+  return evaluated.get(id)!.value as number;
+}
+
+/** Extract a boolean fact value from evaluated facts. */
+export function bool(evaluated: ReadonlyMap<string, FactValue>, id: string): boolean {
+  return evaluated.get(id)!.value as boolean;
+}
+
+/** Create a FactValue object from a factId and value. */
+export function fv(factId: string, value: number | boolean | string): FactValue {
+  return { factId, value };
+}
+
+/** Resolves a factId to its value for a given hand.
+ *  Used by the posterior sampler to check constraints against any fact,
+ *  not just hardcoded primitives. */
+export type HandFactResolverFn = (
+  hand: Hand,
+  evaluation: HandEvaluation,
+  factId: string,
+) => number | boolean | string | undefined;

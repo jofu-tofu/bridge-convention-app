@@ -5,10 +5,10 @@
  */
 import { describe, it, expect } from "vitest";
 import type { SystemProfile } from "../agreement-module";
-import type { EvaluationResult, RuntimeModule } from "../../../conventions/core/runtime/types";
+import type { EvaluationResult, RuntimeModule } from "../runtime/types";
 import type { PublicSnapshot } from "../module-surface";
-import { ForcingState } from "../bidding";
-import { BASE_SYSTEM_SAYC } from "../base-system-vocabulary";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
+import { BASE_SYSTEM_SAYC } from "../../definitions/system-config";
 
 // Helper: assert a value structurally satisfies the interface at compile time
 // and verify key fields exist at runtime via a factory.

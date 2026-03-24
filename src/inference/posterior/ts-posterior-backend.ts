@@ -1,7 +1,7 @@
 import type { Hand, Seat } from "../../engine/types";
-import type { PosteriorBackend, PosteriorState, WeightedParticle, PosteriorQuery } from "../../core/contracts/posterior-backend";
-import type { ConditioningContext, PosteriorQueryResult, InferenceHealth, FactorIntrospection } from "../../core/contracts/posterior-query";
-import type { HandFactResolverFn } from "../../core/contracts/fact-helpers";
+import type { PosteriorBackend, PosteriorState, WeightedParticle, PosteriorQuery } from "./posterior-boundary";
+import type { ConditioningContext, PosteriorQueryResult, InferenceHealth, FactorIntrospection } from "./posterior-boundary";
+import type { HandFactResolverFn } from "../../conventions/core/fact-catalog";
 import { sampleDeals } from "./posterior-sampler";
 import { compilePublicHandSpace } from "./posterior-compiler";
 import { calculateHcp, calculateHcpAndShape, isBalanced, suitLengthOf } from "../../engine/hand-evaluator";

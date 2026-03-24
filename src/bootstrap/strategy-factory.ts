@@ -6,7 +6,7 @@
 
 import type { ConventionSpec, ConventionStrategy } from "../conventions";
 import type { BiddingStrategy } from "../core/contracts";
-import type { OpponentMode } from "../core/contracts/drill";
+import type { OpponentMode } from "./drill-types";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";
 import { naturalFallbackStrategy } from "../strategy/bidding/natural-fallback";

@@ -22,8 +22,8 @@ export type {
   ConstraintDimension,
   FactOperator,
   EvaluationEvidence,
-} from "../core/contracts/meaning";
-export { compareRanking, BAND_PRIORITY } from "../core/contracts/meaning";
+} from "./pipeline/meaning";
+export { compareRanking, BAND_PRIORITY } from "./pipeline/meaning";
 
 export type {
   DecisionProvenance,
@@ -35,14 +35,14 @@ export type {
   LegalityTrace,
   HandoffTrace,
   EncoderKind,
-} from "../core/contracts/provenance";
+} from "./pipeline/provenance";
 
 export type {
   CandidateEligibility,
   ResolvedCandidateDTO,
   EvaluationTrace,
-} from "../core/contracts/tree-evaluation";
-export { isDtoSelectable, isDtoTeachingAcceptable } from "../core/contracts/tree-evaluation";
+} from "./pipeline/tree-evaluation";
+export { isDtoSelectable, isDtoTeachingAcceptable } from "./pipeline/tree-evaluation";
 
 export type {
   TeachingProjection,
@@ -53,7 +53,7 @@ export type {
   ConventionContribution,
   ParseTreeModuleNode,
   ParseTreeCondition,
-} from "../core/contracts/teaching-projection";
+} from "./teaching/teaching-types";
 
 // ── Pipeline types (moved from contracts) ───────────────────────────────
 export type { PipelineResult, PipelineCarrier, ArbitrationResult, EncodedProposal, EliminationRecord } from "./pipeline/pipeline-types";
@@ -80,8 +80,8 @@ export { runPipeline } from "./pipeline/run-pipeline";
 export type { PipelineInput, PipelineOutput } from "./pipeline/run-pipeline";
 
 // ── Core (registry, context, modules, bundles) ─────────────────────────
-export { ConventionCategory } from "../core/contracts/convention";
-export type { ConventionConfig, ConventionLookup, ConventionTeaching } from "../core/contracts/convention";
+export { ConventionCategory } from "./core/convention-types";
+export type { ConventionConfig, ConventionLookup, ConventionTeaching } from "./core/convention-types";
 export { registerConvention, clearRegistry, getConvention, listConventions } from "./core/registry";
 export { createBiddingContext } from "./core/context-factory";
 export { findBundleForConvention, getBundle, listBundles, composeBundles, resolveConventionForSystem } from "./core/bundle";

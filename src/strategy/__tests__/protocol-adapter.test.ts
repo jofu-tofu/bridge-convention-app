@@ -15,14 +15,14 @@ import { evaluateHand } from "../../engine/hand-evaluator";
 import { createBiddingContext, specFromBundle, ntBundle } from "../../conventions";
 import type { ConventionModule, ConventionSpec } from "../../conventions";
 import { makeSurface, makeRanking } from "../../test-support/convention-factories";
-import type { BidMeaning } from "../../core/contracts/meaning";
-import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
+import type { BidMeaning } from "../../conventions/pipeline/meaning";
+import type { FactCatalogExtension } from "../../conventions/core/fact-catalog";
 import {
   protocolSpecToStrategy,
   buildObservationLogViaRules,
   findMatchingClaimForCall,
 } from "../bidding/protocol-adapter";
-import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../conventions/definitions/system-config";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 

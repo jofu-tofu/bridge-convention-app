@@ -4,7 +4,7 @@ import {
   type ExplanationCatalog,
   type FactExplanationEntry,
   type MeaningExplanationEntry,
-} from "../../../../core/contracts/explanation-catalog";
+} from "../../../core/explanation-catalog";
 import type { WeakTwoFactId } from "./fact-ids";
 import type { WeakTwoMeaningId } from "./meaning-ids";
 

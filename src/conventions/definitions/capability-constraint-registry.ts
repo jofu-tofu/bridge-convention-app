@@ -11,7 +11,7 @@
 import { Seat, Suit, type Hand, type Deal, type SeatConstraint, type Auction } from "../../engine/types";
 import { suitLengthOf } from "../../engine/hand-evaluator";
 import { buildAuction } from "../../engine/auction-helpers";
-import type { SystemConfig } from "../../core/contracts/system-config";
+import type { SystemConfig } from "./system-config";
 import {
   CAP_OPENING_1NT,
   CAP_OPENING_MAJOR,

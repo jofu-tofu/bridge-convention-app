@@ -12,7 +12,7 @@ import type {
   OwnHandPin,
   AuctionRecordPin,
   AlertPin,
-} from "../factor-graph";
+} from "../posterior-boundary";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
 

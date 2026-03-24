@@ -15,8 +15,8 @@ import type {
   SeatRole,
   JointConstraint,
   UnsatisfiableResult,
-} from "../../core/contracts/deal-spec";
-import type { HandPredicate } from "../../core/contracts/predicates";
+} from "../../bootstrap/deal-spec-types";
+import type { HandPredicate } from "../core/agreement-module";
 import { Suit } from "../../engine/types";
 import type { Seat, Vulnerability, DealConstraints, SeatConstraint, Deal } from "../../engine/types";
 import { generateDeal } from "../../engine/deal-generator";

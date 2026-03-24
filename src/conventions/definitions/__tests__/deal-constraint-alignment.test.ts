@@ -16,12 +16,12 @@ import { evaluateFacts } from "../../pipeline/fact-evaluator";
 import { evaluateBidMeaning } from "../../pipeline/meaning-evaluator";
 import { createSharedFactCatalog } from "../../pipeline/shared-fact-catalog";
 import { createSystemFactCatalog } from "../../pipeline/system-fact-catalog";
-import { createFactCatalog } from "../../../core/contracts/fact-catalog";
-import type { FactCatalog } from "../../../core/contracts/fact-catalog";
-import type { BidMeaning } from "../../../core/contracts/meaning";
+import { createFactCatalog } from "../../core/fact-catalog";
+import type { FactCatalog } from "../../core/fact-catalog";
+import type { BidMeaning } from "../../pipeline/meaning";
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import { getBundleInput, resolveBundle } from "../system-registry";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../system-config";
 import { Seat } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
 

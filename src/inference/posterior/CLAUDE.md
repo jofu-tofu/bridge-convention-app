@@ -6,6 +6,8 @@ Posterior inference engine — sampling, factor compilation, and probabilistic h
 
 | File | Role |
 |------|------|
+| `posterior-types.ts` | Cross-boundary posterior types (moved from `core/contracts/posterior.ts`): `PosteriorFactProvider`, `BeliefView`, `PublicHandSpace`, `PosteriorFactRequest`, `PosteriorFactValue`, `LatentBranchSet`, `SHARED_POSTERIOR_FACT_IDS` |
+| `posterior-boundary.ts` | Cross-boundary posterior boundary types (merged from `core/contracts/factor-graph.ts`, `posterior-query.ts`, `posterior-backend.ts`): `FactorGraph`, `FactorSpec`, `PosteriorQueryPort`, `PosteriorBackend`, `PosteriorState`, `ConditioningContext`, etc. |
 | `posterior-compiler.ts` | `compilePublicHandSpace()` — compilation path used internally by `ts-posterior-backend.ts`. |
 | `factor-compiler.ts` | `compileFactorGraph()`, `validateFactorGraph()` — new compilation: `PublicSnapshot` → `FactorGraph`. Convention-erased. |
 | `ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation. Wraps existing sampler, answers `PosteriorQuery` queries. |

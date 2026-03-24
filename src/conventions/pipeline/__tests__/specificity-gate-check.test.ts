@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { deriveSpecificity } from "../specificity-deriver";
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
-import { SHARED_FACTS } from "../../../core/contracts/shared-facts";
+import type { BidMeaning } from "../meaning";
+import type { FactCatalogExtension } from "../../core/fact-catalog";
+import { SHARED_FACTS } from "../../core/shared-facts";
 
 // ─── Bergen surfaces ────────────────────────────────────────
 import {
@@ -55,7 +55,7 @@ import { createStaymanFacts } from "../../definitions/modules/stayman";
 import { createTransferFacts } from "../../definitions/modules/jacoby-transfers";
 import { createSmolenFacts } from "../../definitions/modules/smolen";
 import { weakTwoFacts } from "../../definitions/modules/weak-twos/facts";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 
 const staymanFacts = createStaymanFacts(SAYC_SYSTEM_CONFIG);
 const transferFacts = createTransferFacts(SAYC_SYSTEM_CONFIG);

@@ -1,6 +1,6 @@
-import type { ForcingState } from "./bidding";
+import type { ForcingState } from "../../strategy/bidding/bidding-types";
 import type { PublicEvent, PublicConstraint } from "./agreement-module";
-import type { LatentBranchSet } from "./posterior";
+import type { LatentBranchSet } from "../../inference/posterior/posterior-types";
 
 /** Conversation machine register state — shared by PublicSnapshot and debug views. */
 export interface MachineRegisters {

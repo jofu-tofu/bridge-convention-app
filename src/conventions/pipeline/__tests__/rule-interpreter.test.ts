@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { collectMatchingClaims } from "../rule-interpreter";
 import type { ConventionModule } from "../../core/convention-module";
-import type { AuctionContext, CommittedStep } from "../../../core/contracts/committed-step";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { NegotiationState } from "../../../core/contracts/committed-step";
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { AuctionContext, CommittedStep } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import type { NegotiationState } from "../../core/committed-step";
+import type { BidMeaning } from "../meaning";
+import type { PublicSnapshot } from "../../core/module-surface";
 import { Seat } from "../../../engine/types";
 
 function makeSurface(id: string): BidMeaning {

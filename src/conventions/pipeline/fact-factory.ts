@@ -3,9 +3,9 @@ import type {
   FactEvaluatorFn,
   FactValue,
   FactComposition,
-} from "../../core/contracts/fact-catalog";
-import { FactLayer } from "../../core/contracts/fact-layer";
-import type { ConstraintDimension } from "../../core/contracts/meaning";
+} from "../core/fact-catalog";
+import { FactLayer } from "../core/fact-layer";
+import type { ConstraintDimension } from "./meaning";
 import type { Hand } from "../../engine/types";
 import { num, fv } from "./fact-helpers";
 

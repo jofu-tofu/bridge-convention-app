@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { isDtoSelectable, isDtoTeachingAcceptable } from "../tree-evaluation";
-import type { ResolvedCandidateDTO, CandidateEligibility } from "../tree-evaluation";
+import { isDtoSelectable, isDtoTeachingAcceptable } from "../../pipeline/tree-evaluation";
+import type { ResolvedCandidateDTO, CandidateEligibility } from "../../pipeline/tree-evaluation";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 

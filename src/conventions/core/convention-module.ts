@@ -12,9 +12,9 @@
  * module state structure (each state entry with 2+ surfaces).
  */
 
-import type { BidMeaning } from "../../core/contracts/meaning";
-import type { FactCatalogExtension } from "../../core/contracts/fact-catalog";
-import type { ExplanationEntry } from "../../core/contracts/explanation-catalog";
+import type { BidMeaning } from "../pipeline/meaning";
+import type { FactCatalogExtension } from "./fact-catalog";
+import type { ExplanationEntry } from "./explanation-catalog";
 import type { LocalFsm, StateEntry } from "./rule-module";
 
 // Re-export for consumer convenience (ResolvedSurface, LocalFsm, and StateEntry are structurally

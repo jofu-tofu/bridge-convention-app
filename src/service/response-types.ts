@@ -14,9 +14,9 @@
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution } from "../engine/types";
 import type { BidHistoryEntry } from "../core/contracts";
-import type { BidGrade } from "../core/contracts/teaching-grading";
-import type { ExplanationNode, WhyNotEntry, ConventionContribution, MeaningView, CallProjection, ParseTreeView } from "../core/contracts/teaching-projection";
-import type { EncoderKind } from "../core/contracts/provenance";
+import type { BidGrade } from "../conventions/teaching/teaching-types";
+import type { ExplanationNode, WhyNotEntry, ConventionContribution, MeaningView, CallProjection, ParseTreeView } from "../conventions/teaching/teaching-types";
+import type { EncoderKind } from "../conventions/pipeline/provenance";
 import type { GamePhase } from "../core/phase-machine";
 import type { DebugSnapshot, DebugLogEntry } from "../stores/game.svelte";
 import type { InferenceSnapshot } from "../inference/types";

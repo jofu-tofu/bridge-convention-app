@@ -1,6 +1,6 @@
 import type { Auction, Seat } from "../../../engine/types";
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { BidMeaning } from "../../pipeline/meaning";
+import type { PublicSnapshot } from "../module-surface";
 
 /** A runtime module that can emit decision surfaces for evaluation. */
 export interface RuntimeModule {

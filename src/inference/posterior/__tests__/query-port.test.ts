@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { createQueryPort } from "../query-port";
 import { createTsBackend } from "../ts-posterior-backend";
 import { compileFactorGraph } from "../factor-compiler";
-import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import type { ConditioningContext } from "../../../core/contracts/posterior-query";
-import type { PosteriorState } from "../../../core/contracts/posterior-backend";
+import type { PublicConstraint } from "../../../conventions/core/agreement-module";
+import type { ConditioningContext } from "../posterior-boundary";
+import type { PosteriorState } from "../posterior-boundary";
 import type { Hand } from "../../../engine/types";
 import { makeSnapshot, southHand, oneNtCommitments } from "./posterior-test-fixtures";
 

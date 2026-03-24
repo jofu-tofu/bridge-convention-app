@@ -1,10 +1,10 @@
 import type { Auction, Seat } from "../../../engine/types";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
-import { buildPublicSnapshot } from "../../../core/contracts/module-surface";
-import type { PublicEvent } from "../../../core/contracts/agreement-module";
-import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { PublicSnapshot } from "../module-surface";
+import { buildPublicSnapshot } from "../module-surface";
+import type { PublicEvent } from "../agreement-module";
+import type { BidMeaning } from "../../pipeline/meaning";
 import type { MachineRegisters } from "./machine-types";
-import { ForcingState } from "../../../core/contracts/bidding";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
 import { callKey } from "../../../engine/call-helpers";
 import { extractCommitments } from "./commitment-extractor";
 

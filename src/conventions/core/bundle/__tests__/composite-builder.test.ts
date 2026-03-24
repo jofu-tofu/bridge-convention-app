@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { composeBundles } from "../composite-builder";
 import type { ConventionBundle } from "../bundle-types";
-import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
-import { ConventionCategory } from "../../../../core/contracts/convention";
+import { BASE_SYSTEM_SAYC } from "../../../definitions/system-config";
+import { ConventionCategory } from "../../convention-types";
 
 function makeBundle(
   id: string,

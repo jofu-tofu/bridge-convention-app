@@ -1,10 +1,10 @@
 import type { ConventionConfig } from "../conventions";
-import type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../core/contracts/drill";
-import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../core/contracts/drill";
-import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
-import type { PracticePreferences, DisplayPreferences } from "../core/contracts/practice-preferences";
-import { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../core/contracts/practice-preferences";
-import { AVAILABLE_BASE_SYSTEMS } from "../core/contracts/system-config";
+import type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../bootstrap/drill-types";
+import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../bootstrap/drill-types";
+import type { BaseSystemId } from "../conventions/definitions/system-config";
+import type { PracticePreferences, DisplayPreferences } from "../service/practice-preferences";
+import { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service/practice-preferences";
+import { AVAILABLE_BASE_SYSTEMS } from "../conventions/definitions/system-config";
 
 export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
 

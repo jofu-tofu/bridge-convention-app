@@ -1,5 +1,5 @@
 import type { Hand } from "../../engine/types";
-import type { PosteriorFactRequest, PosteriorFactValue } from "../../core/contracts/posterior";
+import type { PosteriorFactRequest, PosteriorFactValue } from "./posterior-types";
 import { Suit } from "../../engine/types";
 import { calculateHcp, calculateHcpAndShape, isBalanced, suitLengthOf } from "../../engine/hand-evaluator";
 

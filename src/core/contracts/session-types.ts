@@ -1,9 +1,8 @@
 // Tier 3: Session lifecycle and UI preferences. Changes affect orchestration and presentation.
-export * from "./teaching-projection";
-export * from "./deal-spec";
-export * from "./convention";
-export * from "./system-config";
-export * from "./base-system-vocabulary";
-export * from "./teaching-grading";
-export * from "./drill";
-export * from "./practice-preferences";
+export * from "../../conventions/teaching/teaching-types";
+export * from "../../bootstrap/deal-spec-types";
+export * from "../../conventions/core/convention-types";
+export * from "../../conventions/definitions/system-config";
+export * from "../../conventions/definitions/system-fact-vocabulary";
+export * from "../../bootstrap/drill-types";
+export * from "../../service/practice-preferences";

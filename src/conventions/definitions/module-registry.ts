@@ -7,8 +7,8 @@
  */
 
 import type { ConventionModule } from "../core/convention-module";
-import type { SystemConfig } from "../../core/contracts/system-config";
-import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
+import type { SystemConfig } from "./system-config";
+import { SAYC_SYSTEM_CONFIG } from "./system-config";
 
 // ── Module factory imports ──────────────────────────────────────────
 // Each module exports a standardized `moduleFactory: ModuleFactory`.

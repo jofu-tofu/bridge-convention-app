@@ -1,7 +1,7 @@
 import type { LocalFsm, StateEntry, RouteExpr } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
-import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
-import type { SystemConfig } from "../../../../core/contracts/system-config";
+import type { NegotiationDelta } from "../../../core/committed-step";
+import type { SystemConfig } from "../../system-config";
 
 import { createSmolenEntrySurfaces, createSmolenR3Surfaces, OPENER_SMOLEN_HEARTS_SURFACES, OPENER_SMOLEN_SPADES_SURFACES } from "./meaning-surfaces";
 import { createSmolenFacts } from "./facts";

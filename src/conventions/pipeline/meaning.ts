@@ -2,7 +2,7 @@ import type { ConditionResult } from "./evidence-bundle";
 import type { Call } from "../../engine/types";
 import type {
   FactConstraint,
-} from "./agreement-module";
+} from "../core/agreement-module";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;

@@ -1,7 +1,7 @@
 import type {
   ExplanationEntry,
   MeaningExplanationEntry,
-} from "../../../../core/contracts/explanation-catalog";
+} from "../../../core/explanation-catalog";
 
 import type { NaturalNtMeaningId } from "./meaning-ids";
 import { NATURAL_NT_MEANING_IDS } from "./meaning-ids";

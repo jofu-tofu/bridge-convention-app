@@ -1,4 +1,4 @@
-import type { SystemConfig } from "../../../../core/contracts/system-config";
+import type { SystemConfig } from "../../system-config";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 

@@ -5,13 +5,13 @@
  * Full ConventionModule assembly happens in module-registry.ts.
  */
 
-import type { SystemConfig } from "../../../../core/contracts/system-config";
-import type { FactCatalogExtension } from "../../../../core/contracts/fact-catalog";
-import type { ExplanationEntry } from "../../../../core/contracts/explanation-catalog";
+import type { SystemConfig } from "../../system-config";
+import type { FactCatalogExtension } from "../../../core/fact-catalog";
+import type { ExplanationEntry } from "../../../core/explanation-catalog";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
-import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
-import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { NegotiationDelta } from "../../../core/committed-step";
+import type { BidMeaning } from "../../../pipeline/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";

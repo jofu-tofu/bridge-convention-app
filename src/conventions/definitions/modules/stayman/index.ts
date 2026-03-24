@@ -1,7 +1,7 @@
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
-import type { NegotiationDelta } from "../../../../core/contracts/committed-step";
-import type { SystemConfig } from "../../../../core/contracts/system-config";
+import type { NegotiationDelta } from "../../../core/committed-step";
+import type { SystemConfig } from "../../system-config";
 
 import {
   createStaymanR1Surface,

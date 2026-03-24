@@ -6,7 +6,7 @@
  * 1NT opening, 10+ HCP for Stayman entry).
  */
 import { describe, it, expect } from "vitest";
-import { ACOL_SYSTEM_CONFIG, SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { ACOL_SYSTEM_CONFIG, SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 import { moduleSurfaces } from "../../core/convention-module";
 import { getModule } from "../../definitions/module-registry";
 import { getBundleInput, resolveBundle } from "../../definitions/system-registry";

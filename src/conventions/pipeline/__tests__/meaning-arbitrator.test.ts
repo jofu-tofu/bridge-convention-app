@@ -4,7 +4,7 @@ import {
   zipProposalsWithSurfaces,
   type ArbitrationInput,
 } from "../meaning-arbitrator";
-import type { MeaningProposal } from "../../../core/contracts/meaning";
+import type { MeaningProposal } from "../meaning";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { makeCall, makeMeaningProposal, makeArbitrationInput } from "./pipeline-test-helpers";

@@ -11,15 +11,15 @@ import type {
 
 import type {
   DecisionProvenance,
-} from "../../core/contracts/provenance";
+} from "../pipeline/provenance";
 
 import type {
   MeaningView,
-} from "../../core/contracts/teaching-projection";
+} from "./teaching-types";
 
-import type { MeaningClause } from "../../core/contracts/meaning";
+import type { MeaningClause } from "../pipeline/meaning";
 
-import type { ConditionEvidence } from "../../core/contracts/evidence-bundle";
+import type { ConditionEvidence } from "../pipeline/evidence-bundle";
 
 // -- Meaning Views --
 

@@ -6,8 +6,8 @@ import {
   buildExtension,
 } from "../fact-factory";
 import type { FactEntry } from "../fact-factory";
-import type { FactValue } from "../../../core/contracts/fact-catalog";
-import { FactLayer } from "../../../core/contracts/fact-layer";
+import type { FactValue } from "../../core/fact-catalog";
+import { FactLayer } from "../../core/fact-layer";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 

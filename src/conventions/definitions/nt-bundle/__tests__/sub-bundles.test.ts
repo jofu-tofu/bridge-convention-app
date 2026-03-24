@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { resolveActiveModules } from "../../../core/runtime/profile-activation";
 import { NT_SAYC_PROFILE } from "../system-profile";
-import type { SystemProfile } from "../../../../core/contracts/agreement-module";
+import type { SystemProfile } from "../../../core/agreement-module";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import { CAP_OPENING_1NT } from "../../capability-vocabulary";

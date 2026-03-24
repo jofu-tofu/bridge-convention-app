@@ -6,9 +6,9 @@ import type {
   FactCatalog,
   FactEvaluatorFn,
   RelationalFactEvaluatorFn,
-} from "../../core/contracts/fact-catalog";
-import type { PosteriorFactProvider, PosteriorFactRequest } from "../../core/contracts/posterior";
-import type { PublicConstraint } from "../../core/contracts/agreement-module";
+} from "../core/fact-catalog";
+import type { PosteriorFactProvider, PosteriorFactRequest } from "../../inference/posterior/posterior-types";
+import type { PublicConstraint } from "../core/agreement-module";
 import { createSharedFactCatalog, SHARED_EVALUATORS } from "./shared-fact-catalog";
 import { topologicalSort } from "./fact-utils";
 

@@ -7,7 +7,7 @@ import { enumerateRuleAtoms } from "../conventions";
 import type { ConventionModule } from "../conventions";
 import { createSpecStrategy, createOpponentStrategy } from "../bootstrap/strategy-factory";
 import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder";
-import type { BidResult } from "../core/contracts/bidding";
+import type { BidResult } from "../strategy/bidding/bidding-types";
 import { buildViewportFeedback, buildTeachingDetail } from "../service/build-viewport";
 
 import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat, BiddingViewport, Deal } from "./shared";

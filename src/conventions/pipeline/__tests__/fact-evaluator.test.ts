@@ -3,11 +3,11 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts } from "../fact-evaluator";
 import { createSharedFactCatalog } from "../shared-fact-catalog";
-import { createFactCatalog } from "../../../core/contracts/fact-catalog";
-import { SHARED_FACTS } from "../../../core/contracts/shared-facts";
-import type { PublicConstraint } from "../../../core/contracts/agreement-module";
+import { createFactCatalog } from "../../core/fact-catalog";
+import { SHARED_FACTS } from "../../core/shared-facts";
+import type { PublicConstraint } from "../../core/agreement-module";
 import type { RelationalFactContext } from "../fact-evaluator";
-import { FactLayer } from "../../../core/contracts/fact-layer";
+import { FactLayer } from "../../core/fact-layer";
 
 function sharedFactsFor(...notations: string[]) {
   const h = hand(...notations);

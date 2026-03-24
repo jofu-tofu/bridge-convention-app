@@ -5,13 +5,11 @@ import {
   TWO_OVER_ONE_SYSTEM_CONFIG,
   ACOL_SYSTEM_CONFIG,
   AVAILABLE_BASE_SYSTEMS,
-} from "../system-config";
-import {
   BASE_SYSTEM_SAYC,
   BASE_SYSTEM_TWO_OVER_ONE,
   BASE_SYSTEM_ACOL,
   type BaseSystemId,
-} from "../base-system-vocabulary";
+} from "../system-config";
 
 describe("getSystemConfig", () => {
   it("returns SAYC config for BASE_SYSTEM_SAYC", () => {

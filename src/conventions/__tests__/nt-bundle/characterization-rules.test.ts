@@ -22,12 +22,12 @@ import { Seat, Vulnerability } from "../../../engine/types";
 import { ntBundle } from "../../definitions/nt-bundle";
 import { createSharedFactCatalog } from "../../pipeline/shared-fact-catalog";
 import { collectMatchingClaims } from "../../pipeline/rule-interpreter";
-import { createFactCatalog } from "../../../core/contracts/fact-catalog";
+import { createFactCatalog } from "../../core/fact-catalog";
 import { createBiddingContext } from "../../core/context-factory";
 import { runPipeline } from "../../pipeline/run-pipeline";
 import { buildObservationLogViaRules } from "../../../strategy/bidding/protocol-adapter";
-import type { AuctionContext } from "../../../core/contracts/committed-step";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { AuctionContext } from "../../core/committed-step";
+import type { PublicSnapshot } from "../../core/module-surface";
 import type { ConventionModule } from "../../core/convention-module";
 
 const ruleModules: readonly ConventionModule[] = ntBundle.modules;

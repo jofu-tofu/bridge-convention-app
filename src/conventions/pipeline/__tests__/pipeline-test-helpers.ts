@@ -2,9 +2,9 @@
 
 import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
-import type { MeaningProposal } from "../../../core/contracts/meaning";
+import type { MeaningProposal } from "../meaning";
 import type { ArbitrationInput } from "../meaning-arbitrator";
-import type { CandidateEligibility } from "../../../core/contracts/tree-evaluation";
+import type { CandidateEligibility } from "../tree-evaluation";
 import { makeCall, makePass, makeRanking } from "../../../test-support/convention-factories";
 
 // Re-export shared factories so existing consumers don't break.

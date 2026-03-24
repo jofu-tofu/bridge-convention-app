@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { resolveActiveModules } from "../profile-activation";
-import type { SystemProfile, PublicConstraint } from "../../../../core/contracts/agreement-module";
-import type { PublicSnapshot } from "../../../../core/contracts/module-surface";
+import type { SystemProfile, PublicConstraint } from "../../agreement-module";
+import type { PublicSnapshot } from "../../module-surface";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
-import { ForcingState } from "../../../../core/contracts/bidding";
-import { BASE_SYSTEM_SAYC } from "../../../../core/contracts/base-system-vocabulary";
+import { ForcingState } from "../../../../strategy/bidding/bidding-types";
+import { BASE_SYSTEM_SAYC } from "../../../definitions/system-config";
 
 /** Minimal PublicSnapshot for testing — only publicRegisters and publicCommitments matter. */
 function makeSnapshot(overrides: Partial<PublicSnapshot> = {}): PublicSnapshot {

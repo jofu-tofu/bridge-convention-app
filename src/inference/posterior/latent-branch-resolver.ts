@@ -1,4 +1,4 @@
-import type { LatentBranchSet } from "../../core/contracts/posterior";
+import type { LatentBranchSet } from "./posterior-types";
 import type { Hand } from "../../engine/types";
 import type { WeightedDealSample } from "./posterior-sampler";
 

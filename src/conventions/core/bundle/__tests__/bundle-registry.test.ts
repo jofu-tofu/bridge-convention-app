@@ -7,7 +7,7 @@ import {
   clearBundleRegistry,
 } from "../bundle-registry";
 import type { ConventionBundle } from "../bundle-types";
-import { ConventionCategory } from "../../../../core/contracts/convention";
+import { ConventionCategory } from "../../convention-types";
 
 function makeBundle(id: string, memberIds: string[] = []): ConventionBundle {
   return {

@@ -9,8 +9,8 @@ import type {
   ArbitrationResult,
   EncodedProposal,
 } from "../../pipeline/pipeline-types";
-import type { DecisionProvenance } from "../../../core/contracts/provenance";
-import type { FactExplanationEntry, MeaningExplanationEntry } from "../../../core/contracts/explanation-catalog";
+import type { DecisionProvenance } from "../../pipeline/provenance";
+import type { FactExplanationEntry, MeaningExplanationEntry } from "../../core/explanation-catalog";
 import type { CatalogIndex } from "../teaching-projection-builder";
 
 import {

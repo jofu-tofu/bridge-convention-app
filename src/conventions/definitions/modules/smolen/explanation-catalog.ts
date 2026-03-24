@@ -2,7 +2,7 @@ import type {
   ExplanationEntry,
   FactExplanationEntry,
   MeaningExplanationEntry,
-} from "../../../../core/contracts/explanation-catalog";
+} from "../../../core/explanation-catalog";
 
 import type { SmolenFactId } from "./fact-ids";
 import { SMOLEN_FACT_IDS } from "./fact-ids";

@@ -9,9 +9,9 @@ import type {
 import type {
   EvaluationTrace,
   ResolvedCandidateDTO,
-} from "./tree-evaluation";
-import type { TeachingProjection } from "./teaching-projection";
-import type { FactConstraint } from "./agreement-module";
+} from "../../conventions/pipeline/tree-evaluation";
+import type { TeachingProjection } from "../../conventions/teaching/teaching-types";
+import type { FactConstraint } from "../../conventions/core/agreement-module";
 
 export interface BiddingContext {
   readonly hand: Hand;

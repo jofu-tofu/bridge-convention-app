@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { evaluateFacts } from "../fact-evaluator";
 import { createSharedFactCatalog } from "../shared-fact-catalog";
-import type { FactCatalog } from "../../../core/contracts/fact-catalog";
-import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../../../core/contracts/fact-catalog";
-import type { PosteriorFactProvider } from "../../../core/contracts/posterior";
+import type { FactCatalog } from "../../core/fact-catalog";
+import type { PosteriorFactEvaluatorFn, PosteriorFactEvaluator } from "../../core/fact-catalog";
+import type { PosteriorFactProvider } from "../../../inference/posterior/posterior-types";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand, HandEvaluation } from "../../../engine/types";
 

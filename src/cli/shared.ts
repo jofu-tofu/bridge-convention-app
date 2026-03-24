@@ -21,14 +21,14 @@ import type {
   Card,
 } from "../engine/types";
 import type { ConventionSpec, ConventionBundle } from "../conventions";
-import type { BiddingContext, BidHistoryEntry } from "../core/contracts/bidding";
-import type { BiddingStrategy } from "../core/contracts/bidding";
-import type { OpponentMode } from "../core/contracts/drill";
-import type { DrillSettings } from "../core/contracts/drill";
-import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
-import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
-import { BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL } from "../core/contracts/base-system-vocabulary";
-import { getSystemConfig } from "../core/contracts/system-config";
+import type { BiddingContext, BidHistoryEntry } from "../strategy/bidding/bidding-types";
+import type { BiddingStrategy } from "../strategy/bidding/bidding-types";
+import type { OpponentMode } from "../bootstrap/drill-types";
+import type { DrillSettings } from "../bootstrap/drill-types";
+import { DEFAULT_DRILL_TUNING } from "../bootstrap/drill-types";
+import type { BaseSystemId } from "../conventions/definitions/system-config";
+import { BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL } from "../conventions/definitions/system-config";
+import { getSystemConfig } from "../conventions/definitions/system-config";
 import type { BiddingViewport } from "../service/response-types";
 import { buildBiddingViewport } from "../service/build-viewport";
 

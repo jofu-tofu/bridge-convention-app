@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { compilePublicHandSpace } from "../posterior-compiler";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { PublicSnapshot } from "../../../conventions/core/module-surface";
 import { makeSnapshot } from "./posterior-test-fixtures";
 
 describe("compilePublicHandSpace", () => {

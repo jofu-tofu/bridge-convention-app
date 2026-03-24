@@ -13,7 +13,7 @@ import { mulberry32 } from "../../core/util/seeded-rng";
 import { buildBiddingViewport } from "../build-viewport";
 import { Seat } from "../../engine/types";
 import type { Auction, Deal, Hand, DealConstraints , Vulnerability } from "../../engine/types";
-import type { BiddingStrategy, BidHistoryEntry } from "../../core/contracts/bidding";
+import type { BiddingStrategy, BidHistoryEntry } from "../../strategy/bidding/bidding-types";
 import type { ConventionBundle } from "../../conventions";
 import type { BiddingViewport } from "../response-types";
 

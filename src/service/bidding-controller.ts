@@ -9,7 +9,7 @@
 import type { Call, Auction, Seat } from "../engine/types";
 import { BidSuit } from "../engine/types";
 import type { BidResult, BidHistoryEntry } from "../core/contracts";
-import { BidGrade } from "../core/contracts/teaching-grading";
+import { BidGrade } from "../conventions/teaching/teaching-types";
 import { nextSeat } from "../engine/constants";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { createBiddingContext } from "../conventions";

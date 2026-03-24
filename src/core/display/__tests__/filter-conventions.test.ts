@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { filterConventions } from "../filter-conventions";
-import { ConventionCategory } from "../../contracts/convention";
-import type { ConventionConfig } from "../../contracts/convention";
+import { ConventionCategory } from "../../../conventions/core/convention-types";
+import type { ConventionConfig } from "../../../conventions/core/convention-types";
 
 function makeConvention(
   overrides: Partial<ConventionConfig>,

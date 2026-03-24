@@ -1,6 +1,6 @@
 import type { AuctionEntry, Auction } from "../engine/types";
 import type { BidAnnotation, InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "./types";
-import type { FactConstraint } from "../core/contracts/agreement-module";
+import type { FactConstraint } from "../conventions/core/agreement-module";
 import { handInferenceToConstraints } from "./derive-beliefs";
 
 /**

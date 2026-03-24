@@ -1,6 +1,6 @@
-import type { SystemProfile, Attachment } from "../../../core/contracts/agreement-module";
-import type { AuctionPattern, PublicGuard } from "../../../core/contracts/predicates";
-import type { PublicSnapshot } from "../../../core/contracts/module-surface";
+import type { SystemProfile, Attachment } from "../agreement-module";
+import type { AuctionPattern, PublicGuard } from "../agreement-module";
+import type { PublicSnapshot } from "../module-surface";
 import type { Auction, Seat } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";

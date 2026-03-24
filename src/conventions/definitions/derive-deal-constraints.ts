@@ -13,11 +13,11 @@
 
 import type { DealConstraints, SeatConstraint, Hand, Deal, Auction } from "../../engine/types";
 import { Seat, Suit } from "../../engine/types";
-import type { SystemConfig } from "../../core/contracts/system-config";
+import type { SystemConfig } from "./system-config";
 import type { ConventionModule } from "../core/convention-module";
 import type { StateEntry, TurnRole } from "../core/rule-module";
-import type { BidMeaning } from "../../core/contracts/meaning";
-import type { FactComposition } from "../../core/contracts/fact-catalog";
+import type { BidMeaning } from "../pipeline/meaning";
+import type { FactComposition } from "../core/fact-catalog";
 import type { BundleInput } from "../core/bundle/bundle-types";
 
 import { getArchetype, getPrimaryCapability } from "./capability-constraint-registry";
@@ -31,7 +31,7 @@ import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_DONT_OVERCALL_IN_RANGE,
   SYSTEM_RESPONDER_ONE_NT_RANGE,
-} from "../../core/contracts/system-fact-vocabulary";
+} from "./system-fact-vocabulary";
 import { calculateHcp, getSuitLength, isBalanced } from "../../engine/hand-evaluator";
 import { SUIT_ORDER } from "../../engine/constants";
 

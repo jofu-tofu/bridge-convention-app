@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { ConventionModule } from "../../../conventions";
-import type { BidMeaning } from "../../../core/contracts/meaning";
+import type { BidMeaning } from "../../../conventions/pipeline/meaning";
 import type { InterferenceEdge } from "../types";
 import {
   detectActivationOverlap,

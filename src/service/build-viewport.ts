@@ -5,18 +5,18 @@
 // Both the Svelte UI and the CLI harness call this same function.
 
 import { type Seat, type Call, type Hand, type Deal, type Auction, type Contract, type PlayedCard, type Trick, type Card, type Suit } from "../engine/types";
-import type { AuctionContext } from "../core/contracts/committed-step";
-import type { BidAction } from "../core/contracts/bid-action";
+import type { AuctionContext } from "../conventions/core/committed-step";
+import type { BidAction } from "../conventions/pipeline/bid-action";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { formatCall } from "../core/display/format";
 import { formatHandSummary } from "../core/display/hand-summary";
-import type { BidHistoryEntry, BidResult } from "../core/contracts/bidding";
-import type { BidMeaning } from "../core/contracts/meaning";
+import type { BidHistoryEntry, BidResult } from "../strategy/bidding/bidding-types";
+import type { BidMeaning } from "../conventions/pipeline/meaning";
 import { isAlertable } from "../conventions";
-import type { TeachingProjection } from "../core/contracts/teaching-projection";
-import type { TeachingResolution } from "../core/contracts/teaching-grading";
-import type { BidGrade } from "../core/contracts/teaching-grading";
-import type { PracticalScoreBreakdown } from "../core/contracts/recommendation";
+import type { TeachingProjection } from "../conventions/teaching/teaching-types";
+import type { TeachingResolution } from "../conventions/teaching/teaching-types";
+import type { BidGrade } from "../conventions/teaching/teaching-types";
+import type { PracticalScoreBreakdown } from "../strategy/recommendation-types";
 // Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
 // Defined here to avoid importing the Svelte store in CLI context.
 interface BidFeedbackLike {

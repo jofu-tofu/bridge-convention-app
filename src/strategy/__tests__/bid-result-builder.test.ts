@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { BidSuit, Seat } from "../../engine/types";
-import type { BiddingContext } from "../../core/contracts/bidding";
+import type { BiddingContext } from "../../strategy/bidding/bidding-types";
 import type { HandEvaluation } from "../../engine/types";
 import {
   makeCarrier,

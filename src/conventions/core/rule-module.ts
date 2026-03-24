@@ -14,9 +14,9 @@ import type {
   BidSuitName,
   HandFeature,
   HandStrength,
-} from "../../core/contracts/bid-action";
-import type { NegotiationState, NegotiationDelta } from "../../core/contracts/committed-step";
-import type { BidMeaning } from "../../core/contracts/meaning";
+} from "../pipeline/bid-action";
+import type { NegotiationState, NegotiationDelta } from "./committed-step";
+import type { BidMeaning } from "../pipeline/meaning";
 // FactCatalogExtension import removed — facts now live on ConventionModule, not here.
 
 // ── TurnRole ─────────────────────────────────────────────────────────

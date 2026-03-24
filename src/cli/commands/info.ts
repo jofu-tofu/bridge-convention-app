@@ -1,8 +1,8 @@
 // ── CLI info commands: list, bundles, describe ──────────────────────
 
 import { enumerateRuleAtoms, generateRuleCoverageManifest, listBundleInputs, resolveBundle as resolveBundleFn } from "../../conventions";
-import { SAYC_SYSTEM_CONFIG } from "../../core/contracts/system-config";
-import { AVAILABLE_BASE_SYSTEMS } from "../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../conventions/definitions/system-config";
+import { AVAILABLE_BASE_SYSTEMS } from "../../conventions/definitions/system-config";
 import { createSpecStrategy } from "../../bootstrap/strategy-factory";
 
 import type { Flags, Vulnerability, BaseSystemId } from "../shared";

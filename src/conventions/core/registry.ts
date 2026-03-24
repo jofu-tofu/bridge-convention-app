@@ -1,4 +1,4 @@
-import type { ConventionConfig } from "../../core/contracts/convention";
+import type { ConventionConfig } from "./convention-types";
 
 const registry = new Map<string, ConventionConfig>();
 

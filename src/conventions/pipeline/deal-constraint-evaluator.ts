@@ -1,7 +1,7 @@
 import type { Deal } from "../../engine/types";
 import { Suit } from "../../engine/types";
 import { calculateHcp } from "../../engine/hand-evaluator";
-import type { DealConstraint } from "../../core/contracts/predicates";
+import type { DealConstraint } from "../core/agreement-module";
 
 const SUIT_MAP: Record<string, Suit> = {
   S: Suit.Spades,

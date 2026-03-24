@@ -4,7 +4,7 @@ import {
   CANON_DIMENSIONAL_COUNT,
   CANON_DIMENSION_PRIORITY,
 } from "../specificity-canons";
-import type { ConstraintDimension } from "../../../core/contracts/meaning";
+import type { ConstraintDimension } from "../meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 

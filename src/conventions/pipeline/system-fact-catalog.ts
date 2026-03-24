@@ -10,14 +10,14 @@
  * and conventions own the "what to do about it."
  */
 
-import { FactLayer } from "../../core/contracts/fact-layer";
+import { FactLayer } from "../core/fact-layer";
 import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
-} from "../../core/contracts/fact-catalog";
+} from "../core/fact-catalog";
 import { num, fv } from "./fact-helpers";
-import type { SystemConfig } from "../../core/contracts/system-config";
+import type { SystemConfig } from "../definitions/system-config";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
@@ -29,7 +29,7 @@ import {
   SYSTEM_ONE_NT_FORCING_AFTER_MAJOR,
   SYSTEM_RESPONDER_ONE_NT_RANGE,
   SYSTEM_DONT_OVERCALL_IN_RANGE,
-} from "../../core/contracts/system-fact-vocabulary";
+} from "../definitions/system-fact-vocabulary";
 
 // ─── Fact definitions ───────────────────────────────────────
 //

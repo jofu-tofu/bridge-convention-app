@@ -1,7 +1,7 @@
 import type { Call } from "../../engine/types";
-import type { CandidateEligibility } from "../../core/contracts/tree-evaluation";
-import type { MeaningProposal } from "../../core/contracts/meaning";
-import type { DecisionProvenance } from "../../core/contracts/provenance";
+import type { CandidateEligibility } from "./tree-evaluation";
+import type { MeaningProposal } from "./meaning";
+import type { DecisionProvenance } from "./provenance";
 import type {
   ApplicabilityEvidence,
   ActivationTrace,
@@ -10,8 +10,8 @@ import type {
   HandoffTrace,
   LegalityTrace,
   EliminationTrace,
-} from "../../core/contracts/provenance";
-import type { EvidenceBundle } from "../../core/contracts/evidence-bundle";
+} from "./provenance";
+import type { EvidenceBundle } from "./evidence-bundle";
 
 /** Meaning after call assignment. */
 export interface EncodedProposal {

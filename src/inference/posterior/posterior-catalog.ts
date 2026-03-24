@@ -2,11 +2,11 @@ import type {
   PosteriorFactProvider,
   PosteriorFactRequest,
   PosteriorFactValue,
-} from "../../core/contracts/posterior";
-import { SHARED_POSTERIOR_FACT_IDS } from "../../core/contracts/posterior";
-import type { PosteriorFactEvaluator, FactValue } from "../../core/contracts/fact-catalog";
+} from "./posterior-types";
+import { SHARED_POSTERIOR_FACT_IDS } from "./posterior-types";
+import type { PosteriorFactEvaluator, FactValue } from "../../conventions/core/fact-catalog";
 import type { Hand } from "../../engine/types";
-import type { PosteriorState } from "../../core/contracts/posterior-backend";
+import type { PosteriorState } from "./posterior-boundary";
 import { POSTERIOR_FACT_HANDLERS } from "./posterior-facts";
 
 /**

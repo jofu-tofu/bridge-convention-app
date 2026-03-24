@@ -4,7 +4,7 @@ import {
   type ExplanationCatalog,
   type FactExplanationEntry,
   type MeaningExplanationEntry,
-} from "../../../../core/contracts/explanation-catalog";
+} from "../../../core/explanation-catalog";
 import { DONT_FACT_IDS, type DontFactId } from "./fact-ids";
 import { DONT_MEANING_IDS, type DontMeaningId } from "./meaning-ids";
 

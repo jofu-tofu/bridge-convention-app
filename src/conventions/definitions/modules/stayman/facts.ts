@@ -1,13 +1,13 @@
-import { FactLayer } from "../../../../core/contracts/fact-layer";
+import { FactLayer } from "../../../core/fact-layer";
 import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
-} from "../../../../core/contracts/fact-catalog";
+} from "../../../core/fact-catalog";
 import { num, bool, fv } from "../../../pipeline/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../../inference/posterior";
 
-import type { SystemConfig } from "../../../../core/contracts/system-config";
+import type { SystemConfig } from "../../system-config";
 import { STAYMAN_FACT_IDS } from "./fact-ids";
 
 // ─── Facts ───────────────────────────────────────────────────

@@ -16,7 +16,7 @@ import type {
   BidAction,
   ObsSuit,
   BidSuitName,
-} from "../../core/contracts/bid-action";
+} from "./bid-action";
 
 // ── Types ──────────────────────────────────────────────────────────
 

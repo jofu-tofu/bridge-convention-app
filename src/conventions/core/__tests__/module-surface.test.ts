@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
 import { buildPublicSnapshot } from "../module-surface";
 import type { PublicSnapshot } from "../module-surface";
-import { ForcingState } from "../bidding";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
 
 describe("buildPublicSnapshot", () => {
   const baseParams = {

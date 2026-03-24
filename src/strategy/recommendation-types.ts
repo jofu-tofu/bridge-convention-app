@@ -1,5 +1,5 @@
-import type { Call } from "../../engine/types";
-import type { PosteriorFactValue } from "./posterior";
+import type { Call } from "../engine/types";
+import type { PosteriorFactValue } from "../inference/posterior/posterior-types";
 
 /** Summary of posterior engine results from the most recent suggest() call. */
 export interface PosteriorSummary {

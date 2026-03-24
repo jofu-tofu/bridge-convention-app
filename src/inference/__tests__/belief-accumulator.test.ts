@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit } from "../../engine/types";
-import type { FactConstraint } from "../../core/contracts/agreement-module";
+import type { FactConstraint } from "../../conventions/core/agreement-module";
 import type { BidAnnotation } from "../types";
 import {
   createInitialBeliefState,

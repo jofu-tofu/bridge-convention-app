@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ParseTreeView } from "../../../core/contracts/teaching-projection";
+  import type { ParseTreeView } from "../../../conventions/teaching/teaching-types";
   import { formatCall } from "../../../core/display/format";
   import { formatRuleName } from "../../../core/display/format";
 

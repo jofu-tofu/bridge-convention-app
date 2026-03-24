@@ -1,7 +1,7 @@
-import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import type { PublicConstraint } from "../../core/contracts/agreement-module";
-import type { PublicHandSpace } from "../../core/contracts/posterior";
-import type { HandPredicate } from "../../core/contracts/predicates";
+import type { PublicSnapshot } from "../../conventions/core/module-surface";
+import type { PublicConstraint } from "../../conventions/core/agreement-module";
+import type { PublicHandSpace } from "./posterior-types";
+import type { HandPredicate } from "../../conventions/core/agreement-module";
 
 /**
  * Check if a set of clauses contains contradictions.

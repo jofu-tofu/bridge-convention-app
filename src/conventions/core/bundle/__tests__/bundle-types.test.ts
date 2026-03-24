@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { createConventionConfigFromBundle, resolveConventionForSystem } from "../bundle-types";
-import { ConventionCategory } from "../../../../core/contracts/convention";
+import { ConventionCategory } from "../../convention-types";
 import type { ConventionBundle } from "../bundle-types";
-import type { ConventionConfig } from "../../../../core/contracts/convention";
+import type { ConventionConfig } from "../../convention-types";
 import type { ConventionModule } from "../../convention-module";
-import { SAYC_SYSTEM_CONFIG } from "../../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../../definitions/system-config";
 import { Seat } from "../../../../engine/types";
 
 function stubBundle(overrides: Partial<ConventionBundle> = {}): ConventionBundle {

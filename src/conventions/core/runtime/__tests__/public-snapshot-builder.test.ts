@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { buildSnapshotFromAuction } from "../public-snapshot-builder";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
-import { ForcingState } from "../../../../core/contracts/bidding";
+import { ForcingState } from "../../../../strategy/bidding/bidding-types";
 import { CAP_OPENING_1NT } from "../../../definitions/capability-vocabulary";
 
 describe("buildSnapshotFromAuction", () => {

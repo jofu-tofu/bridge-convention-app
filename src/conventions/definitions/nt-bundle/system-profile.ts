@@ -1,5 +1,5 @@
 import { createSystemProfile } from "../../core/profile-builder";
-import { BASE_SYSTEM_SAYC } from "../../../core/contracts/base-system-vocabulary";
+import { BASE_SYSTEM_SAYC } from "../system-config";
 import { CAP_OPENING_1NT } from "../capability-vocabulary";
 
 export const NT_SAYC_PROFILE = createSystemProfile({

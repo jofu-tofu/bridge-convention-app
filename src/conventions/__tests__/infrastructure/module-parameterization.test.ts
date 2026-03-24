@@ -7,7 +7,7 @@
 import { describe, it, expect } from "vitest";
 import { getModule } from "../../definitions/module-registry";
 import { moduleSurfaces } from "../../core/convention-module";
-import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../definitions/system-config";
 import { resolveBundle, getBundleInput } from "../../definitions/system-registry";
 
 describe("Module registry produces unified ConventionModule", () => {

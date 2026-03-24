@@ -11,11 +11,11 @@ import type {
 
 import type {
   DecisionProvenance,
-} from "../../core/contracts/provenance";
+} from "../pipeline/provenance";
 
 import type {
   ExplanationNode,
-} from "../../core/contracts/teaching-projection";
+} from "./teaching-types";
 
 import type { CatalogIndex } from "./teaching-projection-builder";
 import { resolveDisplayText } from "./teaching-projection-builder";

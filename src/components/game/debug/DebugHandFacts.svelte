@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { EvaluatedFacts } from "../../../core/contracts/fact-catalog";
+  import type { EvaluatedFacts } from "../../../conventions/core/fact-catalog";
   import { fmtFactValue } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 

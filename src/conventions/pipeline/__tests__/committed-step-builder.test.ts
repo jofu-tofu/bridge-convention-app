@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { buildCommittedStep } from "../committed-step-builder";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { MachineRegisters } from "../../../core/contracts/module-surface";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import type { MachineRegisters } from "../../core/module-surface";
 import type { PipelineResult, PipelineCarrier } from "../pipeline-types";
-import type { MeaningProposal } from "../../../core/contracts/meaning";
-import { ForcingState } from "../../../core/contracts/bidding";
+import type { MeaningProposal } from "../meaning";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call, ContractBid, SpecialCall } from "../../../engine/types";
 

@@ -1,8 +1,8 @@
 import type { Auction, Call, Seat } from "../../../engine/types";
 import type {
   PublicConstraint,
-} from "../../../core/contracts/agreement-module";
-import type { BidMeaning } from "../../../core/contracts/meaning";
+} from "../agreement-module";
+import type { BidMeaning } from "../../pipeline/meaning";
 import { callsMatch, callKey } from "../../../engine/call-helpers";
 import { resolveClause } from "../../pipeline/binding-resolver";
 

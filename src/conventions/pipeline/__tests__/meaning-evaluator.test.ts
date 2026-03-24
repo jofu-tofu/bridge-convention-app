@@ -3,8 +3,8 @@ import {
   evaluateBidMeaning,
   evaluateAllBidMeanings,
 } from "../meaning-evaluator";
-import type { BidMeaning } from "../../../core/contracts/meaning";
-import type { EvaluatedFacts, FactValue } from "../../../core/contracts/fact-catalog";
+import type { BidMeaning } from "../meaning";
+import type { EvaluatedFacts, FactValue } from "../../core/fact-catalog";
 import { BidSuit } from "../../../engine/types";
 
 function buildFacts(

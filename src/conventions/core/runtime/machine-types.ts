@@ -7,6 +7,6 @@
  * replaced all FSM functionality.
  */
 
-import type { MachineRegisters } from "../../../core/contracts/module-surface";
+import type { MachineRegisters } from "../module-surface";
 export type { MachineRegisters };
-export { ForcingState } from "../../../core/contracts/bidding";
+export { ForcingState } from "../../../strategy/bidding/bidding-types";

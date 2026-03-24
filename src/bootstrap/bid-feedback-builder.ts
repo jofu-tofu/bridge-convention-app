@@ -8,15 +8,15 @@
 // by buildViewportFeedback() and buildTeachingDetail().
 
 import type { Call } from "../engine/types";
-import type { BidResult } from "../core/contracts/bidding";
-import type { BidGrade } from "../core/contracts/teaching-grading";
+import type { BidResult } from "../strategy/bidding/bidding-types";
+import type { BidGrade } from "../conventions/teaching/teaching-types";
 import type {
   PracticalRecommendation,
   PracticalScoreBreakdown,
-} from "../core/contracts/recommendation";
+} from "../strategy/recommendation-types";
 import type { StrategyEvaluation } from "../conventions";
-import type { TeachingProjection } from "../core/contracts/teaching-projection";
-import type { TeachingResolution } from "../core/contracts/teaching-grading";
+import type { TeachingProjection } from "../conventions/teaching/teaching-types";
+import type { TeachingResolution } from "../conventions/teaching/teaching-types";
 import {
   resolveTeachingAnswer,
   gradeBid,
@@ -58,5 +58,5 @@ export function assembleBidFeedback(
 }
 
 // Re-export grading utilities for callers that need just the grade
-export { BidGrade } from "../core/contracts/teaching-grading";
+export { BidGrade } from "../conventions/teaching/teaching-types";
 export { resolveTeachingAnswer, gradeBid } from "../conventions";

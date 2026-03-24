@@ -15,8 +15,8 @@
  * - done: terminal
  */
 
-import type { SystemConfig } from "../../../../core/contracts/system-config";
-import type { BidMeaning } from "../../../../core/contracts/meaning";
+import type { SystemConfig } from "../../system-config";
+import type { BidMeaning } from "../../../pipeline/meaning";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import { BidSuit } from "../../../../engine/types";

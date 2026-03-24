@@ -4,14 +4,14 @@
 // at each step. Reports coverage and violations.
 
 import type { ConventionModule, ConventionBundle } from "../../conventions";
-import type { AuctionContext } from "../../core/contracts/committed-step";
-import type { PublicSnapshot } from "../../core/contracts/module-surface";
-import { INITIAL_NEGOTIATION } from "../../core/contracts/committed-step";
+import type { AuctionContext } from "../../conventions/core/committed-step";
+import type { PublicSnapshot } from "../../conventions/core/module-surface";
+import { INITIAL_NEGOTIATION } from "../../conventions/core/committed-step";
 import { collectMatchingClaims, advanceLocalFsm, specFromBundle } from "../../conventions";
 import { buildObservationLogViaRules, protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
-import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
-import { BASE_SYSTEM_SAYC } from "../../core/contracts/base-system-vocabulary";
-import { getSystemConfig } from "../../core/contracts/system-config";
+import type { BaseSystemId } from "../../conventions/definitions/system-config";
+import { BASE_SYSTEM_SAYC } from "../../conventions/definitions/system-config";
+import { getSystemConfig } from "../../conventions/definitions/system-config";
 import { callKey } from "../../engine/call-helpers";
 import type { Call, Seat } from "../../engine/types";
 

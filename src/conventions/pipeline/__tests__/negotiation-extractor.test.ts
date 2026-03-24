@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { extractKernelState, computeKernelDelta } from "../negotiation-extractor";
-import { INITIAL_NEGOTIATION } from "../../../core/contracts/committed-step";
-import type { NegotiationState } from "../../../core/contracts/committed-step";
-import type { MachineRegisters } from "../../../core/contracts/module-surface";
-import { ForcingState } from "../../../core/contracts/bidding";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import type { NegotiationState } from "../../core/committed-step";
+import type { MachineRegisters } from "../../core/module-surface";
+import { ForcingState } from "../../../strategy/bidding/bidding-types";
 
 function makeRegisters(
   overrides: Partial<MachineRegisters> = {},

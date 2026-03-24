@@ -1,7 +1,7 @@
-import type { SystemProfile, ModuleEntry } from "../../core/contracts/agreement-module";
-import type { SystemConfig } from "../../core/contracts/system-config";
-import { getSystemConfig } from "../../core/contracts/system-config";
-import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
+import type { SystemProfile, ModuleEntry } from "./agreement-module";
+import type { SystemConfig } from "../definitions/system-config";
+import { getSystemConfig } from "../definitions/system-config";
+import type { BaseSystemId } from "../definitions/system-config";
 
 interface SystemProfileConfig {
   readonly baseSystem: BaseSystemId;

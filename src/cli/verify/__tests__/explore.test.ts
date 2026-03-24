@@ -9,7 +9,7 @@ import { describe, it, expect } from "vitest";
 import "../../../conventions";
 
 import { resolveBundle, getBundleInput } from "../../../conventions";
-import { SAYC_SYSTEM_CONFIG } from "../../../core/contracts/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../../../conventions/definitions/system-config";
 import { exploreBundle } from "../explore";
 
 describe("exploreBundle", () => {

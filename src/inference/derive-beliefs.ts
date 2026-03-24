@@ -3,8 +3,8 @@
 
 import type { Seat, Suit } from "../engine/types";
 import { Suit as SuitEnum } from "../engine/types";
-import type { FactConstraint } from "../core/contracts/agreement-module";
-import type { PublicBeliefs, DerivedRanges, QualitativeConstraint } from "../core/contracts/inference";
+import type { FactConstraint } from "../conventions/core/agreement-module";
+import type { PublicBeliefs, DerivedRanges, QualitativeConstraint } from "./inference-types";
 
 const ALL_SUITS: Suit[] = [SuitEnum.Spades, SuitEnum.Hearts, SuitEnum.Diamonds, SuitEnum.Clubs];
 

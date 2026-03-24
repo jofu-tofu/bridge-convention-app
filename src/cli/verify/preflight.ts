@@ -4,7 +4,7 @@
 // lint → interfere → explore → motif (if needed) → fuzz
 
 import type { ConventionModule, ConventionBundle } from "../../conventions";
-import type { BaseSystemId } from "../../core/contracts/base-system-vocabulary";
+import type { BaseSystemId } from "../../conventions/definitions/system-config";
 
 import { lintModule } from "./lint";
 import { analyzeBundle } from "./interfere";

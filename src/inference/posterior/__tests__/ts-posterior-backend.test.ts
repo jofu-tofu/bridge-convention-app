@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { createTsBackend } from "../ts-posterior-backend";
 import { compileFactorGraph } from "../factor-compiler";
-import type { PublicConstraint } from "../../../core/contracts/agreement-module";
-import type { ConditioningContext } from "../../../core/contracts/posterior-query";
+import type { PublicConstraint } from "../../../conventions/core/agreement-module";
+import type { ConditioningContext } from "../posterior-boundary";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
 import { makeSnapshot, makeHand, southHand, oneNtCommitments } from "./posterior-test-fixtures";

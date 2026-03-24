@@ -1,4 +1,4 @@
-import type { ConstraintDimension } from "../../core/contracts/meaning";
+import type { ConstraintDimension } from "./meaning";
 
 /**
  * Linearization canons for resolving specificity between incomparable surfaces.
