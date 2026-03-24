@@ -69,11 +69,11 @@ describe("computeTableScale", () => {
 describe("mobile and tablet viewports", () => {
   const mobile = { sidePanel: false } as const;
 
-  // ── iPhone SE (375 × 667) ─────────────────────────────────────
-  // availW = 375 - 32 = 343   → 343 / 800 = 0.42875
-  // availH = 667 - 96 = 571   → 571 / 650 ≈ 0.87846
+  // -- iPhone SE (375 x 667) ---------
+  // availW = 375 - 32 = 343   -> 343 / 800 = 0.42875
+  // availH = 667 - 96 = 571   -> 571 / 650 ~ 0.87846
   // scale  = min(0.42875, 0.87846) = 0.42875  (width-constrained)
-  describe("iPhone SE (375×667)", () => {
+  describe("iPhone SE (375x667)", () => {
     const scale = computeTableScale(375, 667, mobile);
 
     it("produces the expected scale", () => {
@@ -92,11 +92,11 @@ describe("mobile and tablet viewports", () => {
     });
   });
 
-  // ── iPhone 14 (390 × 844) ────────────────────────────────────
-  // availW = 390 - 32 = 358   → 358 / 800 = 0.4475
-  // availH = 844 - 96 = 748   → 748 / 650 ≈ 1.15077
+  // -- iPhone 14 (390 x 844) ---------
+  // availW = 390 - 32 = 358   -> 358 / 800 = 0.4475
+  // availH = 844 - 96 = 748   -> 748 / 650 ~ 1.15077
   // scale  = min(0.4475, 1.15077) = 0.4475  (width-constrained)
-  describe("iPhone 14 (390×844)", () => {
+  describe("iPhone 14 (390x844)", () => {
     const scale = computeTableScale(390, 844, mobile);
 
     it("produces the expected scale", () => {
@@ -115,11 +115,11 @@ describe("mobile and tablet viewports", () => {
     });
   });
 
-  // ── iPad Mini (768 × 1024) ───────────────────────────────────
-  // availW = 768 - 32 = 736   → 736 / 800 = 0.92
-  // availH = 1024 - 96 = 928  → 928 / 650 ≈ 1.42769
+  // -- iPad Mini (768 x 1024) ---------
+  // availW = 768 - 32 = 736   -> 736 / 800 = 0.92
+  // availH = 1024 - 96 = 928  -> 928 / 650 ~ 1.42769
   // scale  = min(0.92, 1.42769) = 0.92  (width-constrained)
-  describe("iPad Mini (768×1024)", () => {
+  describe("iPad Mini (768x1024)", () => {
     const scale = computeTableScale(768, 1024, mobile);
 
     it("produces the expected scale", () => {
@@ -138,11 +138,11 @@ describe("mobile and tablet viewports", () => {
     });
   });
 
-  // ── iPad (810 × 1080) ────────────────────────────────────────
-  // availW = 810 - 32 = 778   → 778 / 800 = 0.9725
-  // availH = 1080 - 96 = 984  → 984 / 650 ≈ 1.51385
+  // -- iPad (810 x 1080) ---------
+  // availW = 810 - 32 = 778   -> 778 / 800 = 0.9725
+  // availH = 1080 - 96 = 984  -> 984 / 650 ~ 1.51385
   // scale  = min(0.9725, 1.51385) = 0.9725  (width-constrained)
-  describe("iPad (810×1080)", () => {
+  describe("iPad (810x1080)", () => {
     const scale = computeTableScale(810, 1080, mobile);
 
     it("produces the expected scale", () => {
@@ -161,11 +161,11 @@ describe("mobile and tablet viewports", () => {
     });
   });
 
-  // ── Small Android (360 × 640) ────────────────────────────────
-  // availW = 360 - 32 = 328   → 328 / 800 = 0.41
-  // availH = 640 - 96 = 544   → 544 / 650 ≈ 0.83692
+  // -- Small Android (360 x 640) ---------
+  // availW = 360 - 32 = 328   -> 328 / 800 = 0.41
+  // availH = 640 - 96 = 544   -> 544 / 650 ~ 0.83692
   // scale  = min(0.41, 0.83692) = 0.41  (width-constrained)
-  describe("Small Android (360×640)", () => {
+  describe("Small Android (360x640)", () => {
     const scale = computeTableScale(360, 640, mobile);
 
     it("produces the expected scale", () => {
@@ -184,23 +184,23 @@ describe("mobile and tablet viewports", () => {
     });
   });
 
-  // ── GameScreen mobile layout breakpoint (width <= 1023) ──────
+  // -- GameScreen mobile layout breakpoint (width <= 1023) ------
   // GameScreen uses sidePanel=false when width <= 1023,
   // and sidePanel=true when width > 1023.
   describe("GameScreen layout breakpoint at 1023px", () => {
     const height = 768;
 
     it("uses sidePanel=false at width=1023 (mobile), giving a larger scale", () => {
-      // Mobile: availW = 1023 - 0 - 32 = 991  → 991/800 = 1.23875
-      //         availH = 768 - 96 = 672         → 672/650 ≈ 1.03385
-      //         scale = min(1.4, 1.23875, 1.03385) ≈ 1.03385
+      // Mobile: availW = 1023 - 0 - 32 = 991  -> 991/800 = 1.23875
+      //         availH = 768 - 96 = 672         -> 672/650 ~ 1.03385
+      //         scale = min(1.4, 1.23875, 1.03385) ~ 1.03385
       const mobileScale = computeTableScale(1023, height, { sidePanel: false });
       expect(mobileScale).toBe(Math.max(0.35, Math.min(1.4, 991 / 800, 672 / 650)));
     });
 
     it("uses sidePanel=true at width=1024 (desktop), giving a smaller scale", () => {
-      // Desktop: availW = 1024 - 400 - 32 = 592  → 592/800 = 0.74
-      //          availH = 768 - 96 = 672           → 672/650 ≈ 1.03385
+      // Desktop: availW = 1024 - 400 - 32 = 592  -> 592/800 = 0.74
+      //          availH = 768 - 96 = 672           -> 672/650 ~ 1.03385
       //          scale = min(1.4, 0.74, 1.03385) = 0.74
       const desktopScale = computeTableScale(1024, height, { sidePanel: true });
       expect(desktopScale).toBe(592 / 800);

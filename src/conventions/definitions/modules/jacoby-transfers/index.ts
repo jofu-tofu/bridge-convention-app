@@ -20,7 +20,7 @@ import {
   createOpenerAcceptInviteRaiseSpadesSurfaces,
 } from "./meaning-surfaces";
 
-export { TRANSFER_CLASSES, TRANSFER_R3_CLASSES, OPENER_PLACE_CLASSES } from "./semantic-classes";
+export { TRANSFER_CLASSES, TRANSFER_R3_CLASSES, OPENER_PLACE_CLASSES } from "./ids";
 export { createTransferFacts } from "./facts";
 export {
   TRANSFER_R1_SURFACES,

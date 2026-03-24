@@ -3,7 +3,7 @@ import { Suit, Seat, Vulnerability } from "../types";
 import type { Card, Deal, DealConstraints } from "../types";
 import { checkConstraints, generateDeal } from "../deal-generator";
 import { calculateHcp } from "../hand-evaluator";
-import { mulberry32 } from "../../core/util/seeded-rng";
+import { mulberry32 } from "../seeded-rng";
 import { hand } from "./fixtures";
 
 // Fixture deal with known properties

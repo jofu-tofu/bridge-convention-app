@@ -10,9 +10,7 @@ import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
-import { TRANSFER_CLASSES, TRANSFER_R3_CLASSES, OPENER_PLACE_CLASSES } from "./semantic-classes";
-import { TRANSFER_MEANING_IDS } from "./meaning-ids";
-import { TRANSFER_FACT_IDS } from "./fact-ids";
+import { TRANSFER_CLASSES, TRANSFER_R3_CLASSES, OPENER_PLACE_CLASSES, TRANSFER_MEANING_IDS, TRANSFER_FACT_IDS } from "./ids";
 
 // ─── Module context ──────────────────────────────────────────
 

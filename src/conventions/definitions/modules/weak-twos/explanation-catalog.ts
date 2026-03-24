@@ -5,8 +5,7 @@ import {
   type FactExplanationEntry,
   type MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
-import type { WeakTwoFactId } from "./fact-ids";
-import type { WeakTwoMeaningId } from "./meaning-ids";
+import type { WeakTwoFactId, WeakTwoMeaningId } from "./ids";
 
 /**
  * Weak Two Bids explanation catalog.

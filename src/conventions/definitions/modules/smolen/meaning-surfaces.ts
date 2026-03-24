@@ -6,9 +6,7 @@ import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 
-import { SMOLEN_FACT_IDS } from "./fact-ids";
-import { SMOLEN_MEANING_IDS } from "./meaning-ids";
-import { SMOLEN_CLASSES } from "./semantic-classes";
+import { SMOLEN_FACT_IDS, SMOLEN_MEANING_IDS, SMOLEN_CLASSES } from "./ids";
 
 // ─── Module context ──────────────────────────────────────────
 

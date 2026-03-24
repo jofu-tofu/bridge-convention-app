@@ -19,7 +19,7 @@ import { getBundleInput, specFromBundle } from "../conventions";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
-import { mulberry32 } from "../core/util/seeded-rng";
+import { mulberry32 } from "../engine/seeded-rng";
 
 /** 180° table rotation: N↔S, E↔W */
 export function rotateSeat180(seat: Seat): Seat {

@@ -11,7 +11,7 @@ import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 
-import { NATURAL_NT_MEANING_IDS } from "./meaning-ids";
+import { NATURAL_NT_MEANING_IDS } from "./ids";
 
 // ─── Module context ──────────────────────────────────────────
 

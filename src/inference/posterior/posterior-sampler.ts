@@ -3,7 +3,7 @@ import type { HandPredicate } from "../../conventions/core/agreement-module";
 import type { Hand, Card, Seat } from "../../engine/types";
 import type { HandFactResolverFn } from "../../conventions/core/fact-catalog";
 import { createDeck, SUIT_NAME_MAP } from "../../engine/constants";
-import { mulberry32 } from "../../core/util/seeded-rng";
+import { mulberry32 } from "../../engine/seeded-rng";
 import { calculateHcp, calculateHcpAndShape, isBalanced, evaluateHand } from "../../engine/hand-evaluator";
 
 export interface WeightedDealSample {

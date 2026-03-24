@@ -1,3 +1,47 @@
+// ─── Fact IDs ───────────────────────────────────────────────
+
+/**
+ * Typed ID constants for Bergen Raises fact IDs.
+ *
+ * Module-derived facts defined in facts.ts, plus shared/template fact IDs
+ * referenced in Bergen surface clauses.
+ */
+
+import {
+  HAND_HCP,
+  HAND_SUIT_LENGTH_HEARTS,
+  HAND_SUIT_LENGTH_SPADES,
+  BRIDGE_HAS_SHORTAGE,
+  BRIDGE_TOTAL_POINTS_FOR_RAISE,
+} from "../../../core/shared-fact-vocabulary";
+
+// ─── Bergen module fact IDs ──────────────────────────────────
+
+export const BERGEN_FACT_IDS = {
+  HAS_MAJOR_SUPPORT: "module.bergen.hasMajorSupport",
+} as const;
+
+export type BergenFactId = (typeof BERGEN_FACT_IDS)[keyof typeof BERGEN_FACT_IDS];
+
+// ─── Clause fact IDs referenced in Bergen surfaces ───────────
+//
+// These are shared/template fact IDs that Bergen clauses reference.
+// Re-exported here for single-source-of-truth imports within the module.
+
+export const BERGEN_CLAUSE_FACT_IDS = {
+  HAND_HCP,
+  HAND_SUIT_LENGTH_HEARTS,
+  HAND_SUIT_LENGTH_SPADES,
+  /** Template: resolved via surfaceBindings { suit } */
+  SUIT_LENGTH_TEMPLATE: "hand.suitLength.$suit",
+  BRIDGE_HAS_SHORTAGE,
+  BRIDGE_TOTAL_POINTS_FOR_RAISE,
+  /** System fact for 1NT response HCP range */
+  SYSTEM_RESPONDER_ONE_NT_RANGE: "system.responder.oneNtRange",
+} as const;
+
+// ─── Meaning IDs ────────────────────────────────────────────
+
 /**
  * Typed ID constants for all Bergen Raises meaning IDs.
  *
@@ -170,4 +214,36 @@ export const BERGEN_MEANING_BY_SUIT = {
     responderTryAccept: BERGEN_RESPONDER_TRY_ACCEPT_SPADES,
     responderTryReject: BERGEN_RESPONDER_TRY_REJECT_SPADES,
   },
+} as const;
+
+// ─── Semantic Classes ───────────────────────────────────────
+
+/** Bergen Raises semantic class IDs -- module-local, not in the central registry. */
+export const BERGEN_CLASSES = {
+  // R1: Responder initial bids
+  SPLINTER: "bergen:splinter",
+  GAME_RAISE: "bergen:game-raise",
+  LIMIT_RAISE: "bergen:limit-raise",
+  CONSTRUCTIVE_RAISE: "bergen:constructive-raise",
+  PREEMPTIVE_RAISE: "bergen:preemptive-raise",
+
+  // R2: Opener rebids
+  OPENER_GAME_AFTER_CONSTRUCTIVE: "bergen:opener-game-after-constructive",
+  OPENER_SIGNOFF_AFTER_CONSTRUCTIVE: "bergen:opener-signoff-after-constructive",
+  OPENER_GAME_AFTER_LIMIT: "bergen:opener-game-after-limit",
+  OPENER_SIGNOFF_AFTER_LIMIT: "bergen:opener-signoff-after-limit",
+  OPENER_GAME_AFTER_PREEMPTIVE: "bergen:opener-game-after-preemptive",
+  OPENER_PASS_AFTER_PREEMPTIVE: "bergen:opener-pass-after-preemptive",
+
+  // R3: Responder continuations
+  RESPONDER_ACCEPT_GAME: "bergen:responder-accept-game",
+  RESPONDER_ACCEPT_SIGNOFF: "bergen:responder-accept-signoff",
+  RESPONDER_TRY_ACCEPT: "bergen:responder-try-accept",
+  RESPONDER_TRY_REJECT: "bergen:responder-try-reject",
+
+  // R4: Opener final acceptance
+  OPENER_ACCEPT_AFTER_TRY: "bergen:opener-accept-after-try",
+
+  // Natural alternative: 1NT response to 1M (system-dependent range)
+  NATURAL_1NT_RESPONSE: "bergen:natural-1nt-response",
 } as const;

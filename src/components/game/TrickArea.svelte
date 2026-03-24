@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Seat } from "../../engine/types";
   import type { PlayedCard } from "../../engine/types";
-  import { viewSeat } from "../../core/display/seat-mapping";
+  import { viewSeat } from "../shared/seat-mapping";
   import Card from "../shared/Card.svelte";
 
   interface Props {

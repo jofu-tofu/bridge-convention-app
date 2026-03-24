@@ -19,7 +19,7 @@ import {
   WEAK_TWO_FACT_IDS,
   WEAK_TWO_TOP_HONOR_COUNT_BY_SUIT,
   WEAK_TWO_IS_SOLID_BY_SUIT,
-} from "./fact-ids";
+} from "./ids";
 
 // ─── Top honor counting helper ──────────────────────────────
 

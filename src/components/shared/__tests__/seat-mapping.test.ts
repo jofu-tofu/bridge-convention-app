@@ -10,7 +10,7 @@ describe("viewSeat", () => {
     expect(viewSeat(Seat.West, false)).toBe(Seat.West);
   });
 
-  it("swaps N↔S and E↔W when rotated", () => {
+  it("swaps N\u2194S and E\u2194W when rotated", () => {
     expect(viewSeat(Seat.North, true)).toBe(Seat.South);
     expect(viewSeat(Seat.South, true)).toBe(Seat.North);
     expect(viewSeat(Seat.East, true)).toBe(Seat.West);

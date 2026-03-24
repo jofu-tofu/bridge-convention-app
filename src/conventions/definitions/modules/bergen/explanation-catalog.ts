@@ -5,8 +5,7 @@ import type {
   MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
 import { createExplanationCatalog } from "../../../core/explanation-catalog";
-import { BERGEN_FACT_IDS, type BergenFactId } from "./fact-ids";
-import { BERGEN_MEANING_IDS, type BergenMeaningId } from "./meaning-ids";
+import { BERGEN_FACT_IDS, BERGEN_MEANING_IDS, type BergenFactId, type BergenMeaningId } from "./ids";
 
 /**
  * Bergen Raises explanation catalog.

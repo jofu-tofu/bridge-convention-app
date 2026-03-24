@@ -25,7 +25,7 @@ import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { dontFacts } from "./facts";
 import { DONT_ENTRIES } from "./explanation-catalog";
-import { DONT_MEANING_IDS } from "./meaning-ids";
+import { DONT_MEANING_IDS } from "./ids";
 import {
   DONT_R1_SURFACES,
   DONT_ADVANCER_2H_SURFACES,

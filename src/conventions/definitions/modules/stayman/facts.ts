@@ -8,7 +8,7 @@ import { num, bool, fv } from "../../../pipeline/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../../inference/posterior";
 
 import type { SystemConfig } from "../../system-config";
-import { STAYMAN_FACT_IDS } from "./fact-ids";
+import { STAYMAN_FACT_IDS } from "./ids";
 
 // ─── Facts ───────────────────────────────────────────────────
 

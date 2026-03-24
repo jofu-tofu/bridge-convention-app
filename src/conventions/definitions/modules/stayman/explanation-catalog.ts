@@ -3,10 +3,8 @@ import type {
   FactExplanationEntry,
   MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
-import type { StaymanFactId } from "./fact-ids";
-import { STAYMAN_FACT_IDS } from "./fact-ids";
-import type { StaymanMeaningId } from "./meaning-ids";
-import { STAYMAN_MEANING_IDS } from "./meaning-ids";
+import { STAYMAN_FACT_IDS, STAYMAN_MEANING_IDS } from "./ids";
+import type { StaymanFactId, StaymanMeaningId } from "./ids";
 
 // ─── Fact explanations (Record-exhaustive) ──────────────────
 

@@ -7,7 +7,7 @@ import type { FactConstraint } from "../../conventions/core/agreement-module";
 import type { ResolvedCandidateDTO } from "../../conventions/pipeline/tree-evaluation";
 import type { PipelineCarrier, PipelineResult } from "../../conventions";
 import type { PosteriorSummary } from "../recommendation-types";
-import { formatHandSummary } from "../../core/display/hand-summary";
+import { formatHandSummary } from "../../service/display/hand-summary";
 
 // ─── Result Mapping ────────────────────────────────────────────
 

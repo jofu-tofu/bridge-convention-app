@@ -4,9 +4,9 @@ import { Seat } from "../../engine/types";
  * Maps a logical seat to its visual screen position.
  *
  * When rotated=false: identity (South at bottom).
- * When rotated=true: 180° rotation (North at bottom, South at top, E↔W swap).
+ * When rotated=true: 180\u00b0 rotation (North at bottom, South at top, E\u2194W swap).
  *
- * This is a pure remapping — NOT a CSS transform. CSS rotation would flip
+ * This is a pure remapping -- NOT a CSS transform. CSS rotation would flip
  * text and card pips upside-down. This function is self-inverse:
  * viewSeat(viewSeat(seat, true), true) === seat.
  *

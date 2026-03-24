@@ -5,9 +5,9 @@
   import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
   import type { SessionConfig } from "../../../service";
 
-  import { computeTableScale } from "../../../core/display/table-scale";
-  import { displayConventionName } from "../../../core/display/format";
-  import { DESKTOP_MIN } from "../../../core/display/breakpoints.svelte";
+  import { computeTableScale } from "../../shared/table-scale";
+  import { displayConventionName } from "../../../service/display/format";
+  import { DESKTOP_MIN } from "../../shared/breakpoints.svelte";
 
   import BiddingPhase from "./BiddingPhase.svelte";
   import DeclarerPromptPhase from "./DeclarerPromptPhase.svelte";

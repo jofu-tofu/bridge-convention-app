@@ -48,14 +48,14 @@ import type {
 } from "../service";
 import type { ViewportBidGrade } from "../service/response-types";
 import type { BidFeedbackDTO } from "../service";
-import { isValidTransition } from "../core/phase-machine";
-import type { GamePhase } from "../core/phase-machine";
-import { delay } from "../core/util/delay";
+import { isValidTransition } from "../service/phase-machine";
+import type { GamePhase } from "../service/phase-machine";
+import { delay } from "../service/util/delay";
 import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
 
 // ── Re-exports ──────────────────────────────────────────────────────
 
-export type { GamePhase } from "../core/phase-machine";
+export type { GamePhase } from "../service/phase-machine";
 export type { BidHistoryEntry } from "../core/contracts";
 
 // ── Exported types (previously in sub-stores) ───────────────────────

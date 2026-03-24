@@ -9,7 +9,7 @@ import { evaluateHand } from "../../engine/hand-evaluator";
 import { callsMatch } from "../../engine/call-helpers";
 import { getLegalCalls } from "../../engine/auction";
 import { generateDeal } from "../../engine/deal-generator";
-import { mulberry32 } from "../../core/util/seeded-rng";
+import { mulberry32 } from "../../engine/seeded-rng";
 import { buildBiddingViewport } from "../build-viewport";
 import { Seat } from "../../engine/types";
 import type { Auction, Deal, Hand, DealConstraints , Vulnerability } from "../../engine/types";

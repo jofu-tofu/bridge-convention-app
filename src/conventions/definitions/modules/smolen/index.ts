@@ -8,7 +8,7 @@ import { createSmolenFacts } from "./facts";
 import { SMOLEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
 // Re-export everything external consumers need
-export { SMOLEN_CLASSES } from "./semantic-classes";
+export { SMOLEN_CLASSES } from "./ids";
 export { createSmolenEntrySurfaces, createSmolenR3Surfaces, OPENER_SMOLEN_HEARTS_SURFACES, OPENER_SMOLEN_SPADES_SURFACES } from "./meaning-surfaces";
 export { createSmolenFacts } from "./facts";
 

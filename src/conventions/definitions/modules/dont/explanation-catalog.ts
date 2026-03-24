@@ -5,8 +5,7 @@ import {
   type FactExplanationEntry,
   type MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
-import { DONT_FACT_IDS, type DontFactId } from "./fact-ids";
-import { DONT_MEANING_IDS, type DontMeaningId } from "./meaning-ids";
+import { DONT_FACT_IDS, DONT_MEANING_IDS, type DontFactId, type DontMeaningId } from "./ids";
 
 /**
  * DONT explanation catalog.

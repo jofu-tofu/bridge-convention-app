@@ -15,7 +15,7 @@ import { STAYMAN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
 // ── Re-exports ────────────────────────────────────────────────────
 
-export { STAYMAN_CLASSES, STAYMAN_R3_CLASSES } from "./semantic-classes";
+export { STAYMAN_CLASSES, STAYMAN_R3_CLASSES } from "./ids";
 export {
   createStaymanR1Surface,
   OPENER_STAYMAN_SURFACES,

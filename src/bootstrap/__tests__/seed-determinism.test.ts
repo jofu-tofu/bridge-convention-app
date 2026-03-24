@@ -5,7 +5,7 @@ import { Seat } from "../../engine/types";
 import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle } from "../../conventions";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
-import { mulberry32 } from "../../core/util/seeded-rng";
+import { mulberry32 } from "../../engine/seeded-rng";
 import { generateDeal } from "../../engine/deal-generator";
 
 describe("seed determinism", () => {

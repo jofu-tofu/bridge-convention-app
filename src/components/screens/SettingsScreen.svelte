@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { OpponentMode, VulnerabilityDistribution } from "../../bootstrap/drill-types";
   import { DEFAULT_DRILL_TUNING } from "../../bootstrap/drill-types";
-  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../../core/display/vulnerability-labels";
-  import type { VulnKey } from "../../core/display/vulnerability-labels";
+  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
+  import type { VulnKey } from "../shared/vulnerability-labels";
   import { getAppStore } from "../../stores/context";
 
   const appStore = getAppStore();

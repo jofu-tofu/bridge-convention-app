@@ -1,3 +1,5 @@
+// ─── Meaning IDs ────────────────────────────────────────────
+
 /**
  * Typed ID constants for all Natural NT meaning IDs.
  *

@@ -2,7 +2,7 @@
   import type { TreeDisplayRow } from "./DecisionTree";
   import type { Call } from "../../engine/types";
   import { createDummyContext } from "./DecisionTree";
-  import { formatCall, formatRuleName } from "../../core/display/format";
+  import { formatCall, formatRuleName } from "../../service/display/format";
   import { SvelteSet, SvelteMap } from "svelte/reactivity";
 
   type DepthMode = "compact" | "study" | "learn";

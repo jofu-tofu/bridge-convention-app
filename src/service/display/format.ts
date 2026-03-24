@@ -25,12 +25,12 @@ export function formatCall(call: Call): string {
   return "Pass";
 }
 
-/** Format a contract as a short string, e.g. "3NT", "4♠X", "6♥XX". */
+/** Format a contract as a short string, e.g. "3NT", "4\u2660X", "6\u2665XX". */
 export function formatContract(contract: Contract): string {
   return `${contract.level}${STRAIN_SYMBOLS[contract.strain]}${contract.doubled ? "X" : ""}${contract.redoubled ? "XX" : ""}`;
 }
 
-/** Format a contract with declarer, e.g. "3NT by N", "4♠X by S". */
+/** Format a contract with declarer, e.g. "3NT by N", "4\u2660X by S". */
 export function formatContractWithDeclarer(contract: Contract): string {
   return `${formatContract(contract)} by ${contract.declarer}`;
 }
@@ -39,7 +39,7 @@ export function formatContractWithDeclarer(contract: Contract): string {
 const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp"]);
 
 /** Convert kebab-case rule name to Title Case display name.
- *  e.g., "stayman-ask" → "Stayman Ask", "sayc-open-1nt" → "SAYC Open 1NT" */
+ *  e.g., "stayman-ask" \u2192 "Stayman Ask", "sayc-open-1nt" \u2192 "SAYC Open 1NT" */
 export function formatRuleName(name: string): string {
   if (name === "") return "";
   return name
@@ -47,7 +47,7 @@ export function formatRuleName(name: string): string {
     .map((w) => {
       const lower = w.toLowerCase();
       if (BRIDGE_ABBREVIATIONS.has(lower)) return w.toUpperCase();
-      // Handle numeric prefix + abbreviation, e.g., "1nt" → "1NT"
+      // Handle numeric prefix + abbreviation, e.g., "1nt" \u2192 "1NT"
       const match = lower.match(/^(\d+)(.+)$/);
       if (match && BRIDGE_ABBREVIATIONS.has(match[2]!)) {
         return match[1] + match[2]!.toUpperCase();
@@ -96,4 +96,3 @@ export function formatCardLabel(rank: Rank, suit: Suit): string {
 export function displayConventionName(name: string): string {
   return name.replace(/\s*\(Bundle\)\s*$/i, "");
 }
-

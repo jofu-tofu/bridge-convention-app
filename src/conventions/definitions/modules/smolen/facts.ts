@@ -7,7 +7,7 @@ import type {
 import { num, fv } from "../../../pipeline/fact-helpers";
 
 import type { SystemConfig } from "../../system-config";
-import { SMOLEN_FACT_IDS } from "./fact-ids";
+import { SMOLEN_FACT_IDS } from "./ids";
 
 // ─── Facts ───────────────────────────────────────────────────
 

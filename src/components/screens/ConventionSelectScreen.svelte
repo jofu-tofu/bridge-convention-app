@@ -4,9 +4,9 @@
   import { ConventionCategory } from "../../conventions/core/convention-types";
   import type { ConventionConfig } from "../../conventions/core/convention-types";
   import { getAppStore } from "../../stores/context";
-  import { filterConventions } from "../../core/display/filter-conventions";
-  import { displayConventionName } from "../../core/display/format";
-  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../../core/display/vulnerability-labels";
+  import { filterConventions } from "./filter-conventions";
+  import { displayConventionName } from "../../service/display/format";
+  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
 
   const appStore = getAppStore();
 

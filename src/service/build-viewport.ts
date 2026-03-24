@@ -8,8 +8,8 @@ import { type Seat, type Call, type Hand, type Deal, type Auction, type Contract
 import type { AuctionContext } from "../conventions/core/committed-step";
 import type { BidAction } from "../conventions/pipeline/bid-action";
 import { evaluateHand } from "../engine/hand-evaluator";
-import { formatCall } from "../core/display/format";
-import { formatHandSummary } from "../core/display/hand-summary";
+import { formatCall } from "./display/format";
+import { formatHandSummary } from "./display/hand-summary";
 import type { BidHistoryEntry, BidResult } from "../strategy/bidding/bidding-types";
 import type { BidMeaning } from "../conventions/pipeline/meaning";
 import { isAlertable } from "../conventions";

@@ -4,9 +4,9 @@
 <script lang="ts">
   import type { Call, ContractBid } from "../../engine/types";
   import { BidSuit } from "../../engine/types";
-  import { formatCall } from "../../core/display/format";
+  import { formatCall } from "../../service/display/format";
   import { callKey } from "../../engine/call-helpers";
-  import { BID_SUIT_COLOR_CLASS } from "../../core/display/tokens";
+  import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
 
   interface Props {
     legalCalls: Call[];

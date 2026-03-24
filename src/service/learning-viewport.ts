@@ -10,7 +10,7 @@
 import type { ConventionBundle } from "../conventions/core/bundle/bundle-types";
 import type { ConventionModule } from "../conventions/core/convention-module";
 import { moduleSurfaces } from "../conventions/core/convention-module";
-import { formatCall } from "../core/display/format";
+import { formatCall } from "./display/format";
 import type { LearningViewport, ModuleView } from "./response-types";
 
 /** Known bridge abbreviations that should be fully uppercased. */

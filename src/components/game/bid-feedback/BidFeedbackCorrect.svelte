@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BidFeedbackBaseProps } from "./types";
-  import { formatCall } from "../../../core/display/format";
+  import { formatCall } from "../../../service/display/format";
   import { formatAmbiguity } from "./BidFeedbackPanel";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
 

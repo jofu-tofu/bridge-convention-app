@@ -1,11 +1,9 @@
 import type { BidMeaning } from "../../../pipeline/meaning";
 import { BidSuit } from "../../../../engine/types";
-import { BERGEN_CLASSES } from "./semantic-classes";
+import { BERGEN_CLASSES, BERGEN_MEANING_BY_SUIT, BERGEN_MEANING_IDS, BERGEN_CLAUSE_FACT_IDS } from "./ids";
 import { bid, suitToBidSuit, otherMajorBidSuit } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
-import { BERGEN_MEANING_BY_SUIT, BERGEN_MEANING_IDS } from "./meaning-ids";
-import { BERGEN_CLAUSE_FACT_IDS } from "./fact-ids";
 
 const BERGEN_CTX: ModuleContext = { moduleId: "bergen" };
 

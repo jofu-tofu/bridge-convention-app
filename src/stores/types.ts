@@ -28,7 +28,7 @@ import type {
   PlayLogEntry,
 } from "./game.svelte";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
-import type { GamePhase } from "../core/phase-machine";
+import type { GamePhase } from "../service/phase-machine";
 
 // ── Game Store ──────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@
 
 import { getBundleInput, listBundleInputs, resolveBundle as resolveBundleFn, specFromBundle, createBiddingContext } from "../conventions";
 import { generateDeal } from "../engine/deal-generator";
-import { mulberry32 } from "../core/util/seeded-rng";
+import { mulberry32 } from "../engine/seeded-rng";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callKey } from "../engine/call-helpers";
 import { parsePatternCall } from "../engine/auction-helpers";

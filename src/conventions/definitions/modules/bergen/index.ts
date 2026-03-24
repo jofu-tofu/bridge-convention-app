@@ -18,7 +18,7 @@ import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { bergenFacts } from "./facts";
 import { BERGEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
-import { BERGEN_MEANING_IDS } from "./meaning-ids";
+import { BERGEN_MEANING_IDS } from "./ids";
 import {
   BERGEN_R1_HEARTS_SURFACES,
   BERGEN_R1_SPADES_SURFACES,

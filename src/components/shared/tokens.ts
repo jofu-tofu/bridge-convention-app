@@ -9,15 +9,15 @@ import { Suit, BidSuit } from "../../engine/types";
  * classes like text-xs / text-sm / text-base.
  *
  * Values are defined in app.css :root and cascade from the local font-size:
- *   • In panels — cascades from --panel-font (set on <aside> by GameScreen)
- *   • In the table — cascades from a compensated font-size on
+ *   * In panels -- cascades from --panel-font (set on <aside> by GameScreen)
+ *   * In the table -- cascades from a compensated font-size on
  *     ScaledTableArea that accounts for the CSS transform scale
  *
  * This means the SAME token produces the same apparent pixel size in both
  * panels and on the CSS-transformed table.
  *─────────────────────────────────────────────────────────────────────────── */
 
-/** Typography token names — CSS custom property names for the app's type scale. */
+/** Typography token names -- CSS custom property names for the app's type scale. */
 export type TextToken =
   | "--text-annotation"
   | "--text-label"

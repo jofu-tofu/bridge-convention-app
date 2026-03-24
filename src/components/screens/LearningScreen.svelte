@@ -3,9 +3,9 @@
   import { listConventions } from "../../conventions";
   import type { ConventionConfig } from "../../conventions/core/convention-types";
   import type { LearningViewport } from "../../service";
-  import { filterConventions } from "../../core/display/filter-conventions";
-  import { displayConventionName } from "../../core/display/format";
-  import { DESKTOP_MIN } from "../../core/display/breakpoints.svelte";
+  import { filterConventions } from "./filter-conventions";
+  import { displayConventionName } from "../../service/display/format";
+  import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
 
   const appStore = getAppStore();
   const service = getService();

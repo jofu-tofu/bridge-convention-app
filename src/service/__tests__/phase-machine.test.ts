@@ -3,7 +3,7 @@
  * Reuses Phase 0 characterization tests against the extracted pure function.
  */
 import { describe, it, expect } from "vitest";
-import { isValidTransition } from "../../core/phase-machine";
+import { isValidTransition } from "../phase-machine";
 
 describe("phase machine (service)", () => {
   it("BIDDING → DECLARER_PROMPT is valid", () => {

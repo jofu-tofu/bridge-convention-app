@@ -5,9 +5,9 @@
   import type { BidHistoryEntry } from "../../../core/contracts";
   import { Suit } from "../../../engine/types";
   import { SUIT_ORDER, SEAT_INDEX } from "../../../engine/constants";
-  import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../core/display/format";
-  import { SUIT_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../../core/display/tokens";
-  import { sortCards } from "../../../core/display/sort-cards";
+  import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../service/display/format";
+  import { SUIT_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../shared/tokens";
+  import { sortCards } from "../../shared/sort-cards";
 
   interface Props {
     tricks: readonly Trick[];

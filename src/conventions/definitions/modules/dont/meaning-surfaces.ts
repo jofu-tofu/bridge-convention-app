@@ -1,13 +1,11 @@
 import { BidSuit } from "../../../../engine/types";
-import { DONT_CLASSES } from "./semantic-classes";
+import { DONT_CLASSES, DONT_FACT_IDS, DONT_MEANING_IDS } from "./ids";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import {
   SYSTEM_DONT_OVERCALL_IN_RANGE,
 } from "../../system-fact-vocabulary";
-import { DONT_FACT_IDS } from "./fact-ids";
-import { DONT_MEANING_IDS } from "./meaning-ids";
 
 const DONT_CTX: ModuleContext = { moduleId: "dont" };
 

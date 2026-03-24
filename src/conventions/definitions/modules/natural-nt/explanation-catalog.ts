@@ -3,8 +3,8 @@ import type {
   MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
 
-import type { NaturalNtMeaningId } from "./meaning-ids";
-import { NATURAL_NT_MEANING_IDS } from "./meaning-ids";
+import { NATURAL_NT_MEANING_IDS } from "./ids";
+import type { NaturalNtMeaningId } from "./ids";
 
 // ─── Meaning explanations (exhaustive over NaturalNtMeaningId) ──
 

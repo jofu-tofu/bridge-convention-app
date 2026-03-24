@@ -1,3 +1,55 @@
+// ─── Fact IDs ───────────────────────────────────────────────
+
+/**
+ * Typed ID constants for all Weak Two module fact IDs.
+ *
+ * Every concrete fact ID used in facts.ts and meaning-surfaces.ts
+ * is enumerated here. Per-suit facts are expanded for all three
+ * weak-two suits (hearts, spades, diamonds).
+ */
+
+export const WEAK_TWO_FACT_IDS = {
+  // ── Vulnerability-aware HCP range facts ─────────────────────
+  IN_OPENING_HCP_RANGE: "module.weakTwo.inOpeningHcpRange",
+  IS_MAXIMUM: "module.weakTwo.isMaximum",
+  IS_MINIMUM: "module.weakTwo.isMinimum",
+
+  // ── Per-suit solid (AKQ) facts ──────────────────────────────
+  IS_SOLID_HEARTS: "module.weakTwo.isSolid.hearts",
+  IS_SOLID_SPADES: "module.weakTwo.isSolid.spades",
+  IS_SOLID_DIAMONDS: "module.weakTwo.isSolid.diamonds",
+
+  // ── Per-suit top honor count facts ──────────────────────────
+  TOP_HONOR_COUNT_HEARTS: "module.weakTwo.topHonorCount.hearts",
+  TOP_HONOR_COUNT_SPADES: "module.weakTwo.topHonorCount.spades",
+  TOP_HONOR_COUNT_DIAMONDS: "module.weakTwo.topHonorCount.diamonds",
+} as const;
+
+export type WeakTwoFactId =
+  (typeof WEAK_TWO_FACT_IDS)[keyof typeof WEAK_TWO_FACT_IDS];
+
+/**
+ * Lookup from suit name to the corresponding isSolid fact ID.
+ * Used by factory-generated surfaces with $suit bindings.
+ */
+export const WEAK_TWO_IS_SOLID_BY_SUIT = {
+  hearts: WEAK_TWO_FACT_IDS.IS_SOLID_HEARTS,
+  spades: WEAK_TWO_FACT_IDS.IS_SOLID_SPADES,
+  diamonds: WEAK_TWO_FACT_IDS.IS_SOLID_DIAMONDS,
+} as const;
+
+/**
+ * Lookup from suit name to the corresponding topHonorCount fact ID.
+ * Used by factory-generated surfaces with $suit bindings.
+ */
+export const WEAK_TWO_TOP_HONOR_COUNT_BY_SUIT = {
+  hearts: WEAK_TWO_FACT_IDS.TOP_HONOR_COUNT_HEARTS,
+  spades: WEAK_TWO_FACT_IDS.TOP_HONOR_COUNT_SPADES,
+  diamonds: WEAK_TWO_FACT_IDS.TOP_HONOR_COUNT_DIAMONDS,
+} as const;
+
+// ─── Meaning IDs ────────────────────────────────────────────
+
 /**
  * Typed ID constants for all Weak Two module meaning IDs.
  *
@@ -70,3 +122,32 @@ export const WEAK_TWO_MEANING_IDS = {
 
 export type WeakTwoMeaningId =
   (typeof WEAK_TWO_MEANING_IDS)[keyof typeof WEAK_TWO_MEANING_IDS];
+
+// ─── Semantic Classes ───────────────────────────────────────
+
+/** Weak Two Bids semantic class IDs -- module-local, not in the central registry. */
+export const WEAK_TWO_CLASSES = {
+  // R1: Opener initial bids
+  OPEN_2D: "weak-two:open-2d",
+  OPEN_2H: "weak-two:open-2h",
+  OPEN_2S: "weak-two:open-2s",
+
+  // R2: Responder actions
+  GAME_RAISE: "weak-two:game-raise",
+  OGUST_ASK: "weak-two:ogust-ask",
+  INVITE_RAISE: "weak-two:invite-raise",
+  WEAK_PASS: "weak-two:weak-pass",
+
+  // R3: Ogust rebid responses
+  OGUST_SOLID: "weak-two:ogust-solid",
+  OGUST_MIN_BAD: "weak-two:ogust-min-bad",
+  OGUST_MIN_GOOD: "weak-two:ogust-min-good",
+  OGUST_MAX_BAD: "weak-two:ogust-max-bad",
+  OGUST_MAX_GOOD: "weak-two:ogust-max-good",
+
+  // R4: Responder rebid after Ogust
+  POST_OGUST_GAME: "weak-two:post-ogust-game",
+  POST_OGUST_3NT: "weak-two:post-ogust-3nt",
+  POST_OGUST_SIGNOFF: "weak-two:post-ogust-signoff",
+  POST_OGUST_PASS: "weak-two:post-ogust-pass",
+} as const;

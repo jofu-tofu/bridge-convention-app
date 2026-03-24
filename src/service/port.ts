@@ -9,7 +9,7 @@
 import type { Call, Card, Seat } from "../engine/types";
 import type { BiddingViewport } from "./response-types";
 import type { LearningViewport } from "./response-types";
-import type { GamePhase } from "../core/phase-machine";
+import type { GamePhase } from "./phase-machine";
 import type { DrillBundle } from "../bootstrap/types";
 import type {
   SessionHandle,

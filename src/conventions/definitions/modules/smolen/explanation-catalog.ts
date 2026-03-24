@@ -4,10 +4,8 @@ import type {
   MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
 
-import type { SmolenFactId } from "./fact-ids";
-import { SMOLEN_FACT_IDS } from "./fact-ids";
-import type { SmolenMeaningId } from "./meaning-ids";
-import { SMOLEN_MEANING_IDS } from "./meaning-ids";
+import { SMOLEN_FACT_IDS, SMOLEN_MEANING_IDS } from "./ids";
+import type { SmolenFactId, SmolenMeaningId } from "./ids";
 
 // ─── Fact explanations (exhaustive over SmolenFactId) ────────
 

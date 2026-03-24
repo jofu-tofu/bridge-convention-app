@@ -3,8 +3,7 @@ import type {
   FactExplanationEntry,
   MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
-import type { TransferFactId } from "./fact-ids";
-import type { TransferMeaningId } from "./meaning-ids";
+import type { TransferFactId, TransferMeaningId } from "./ids";
 
 // ─── Fact explanations (exhaustive over TransferFactId) ─────
 

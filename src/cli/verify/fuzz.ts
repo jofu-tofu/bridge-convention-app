@@ -13,7 +13,7 @@ import type { BaseSystemId } from "../../conventions/definitions/system-config";
 import { BASE_SYSTEM_SAYC } from "../../conventions/definitions/system-config";
 import { getSystemConfig } from "../../conventions/definitions/system-config";
 import { callKey } from "../../engine/call-helpers";
-import { mulberry32 } from "../../core/util/seeded-rng";
+import { mulberry32 } from "../../engine/seeded-rng";
 import type { Seat } from "../../engine/types";
 import { Vulnerability } from "../../engine/types";
 import type { Call } from "../../engine/types";

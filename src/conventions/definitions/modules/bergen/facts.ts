@@ -5,7 +5,7 @@ import type {
 import { num, fv } from "../../../pipeline/fact-helpers";
 import { buildExtension } from "../../../pipeline/fact-factory";
 import type { FactEntry } from "../../../pipeline/fact-factory";
-import { BERGEN_FACT_IDS, BERGEN_CLAUSE_FACT_IDS } from "./fact-ids";
+import { BERGEN_FACT_IDS, BERGEN_CLAUSE_FACT_IDS } from "./ids";
 
 // ─── Bergen module facts (factory-based) ─────────────────────
 

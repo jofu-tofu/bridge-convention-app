@@ -9,7 +9,7 @@ export interface LayoutProps {
   tableBaseH: number;
 }
 
-// Static responsive layout classes — mobile-first with lg: desktop overrides.
+// Static responsive layout classes -- mobile-first with lg: desktop overrides.
 // lg: (1024px) matches DESKTOP_MIN in breakpoints.svelte.ts.
 
 /** 2-column phase layout: table + side panel (grid on desktop, stacked on mobile). */

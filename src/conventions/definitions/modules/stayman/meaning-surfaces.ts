@@ -11,8 +11,7 @@ import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 
-import { STAYMAN_CLASSES, STAYMAN_R3_CLASSES } from "./semantic-classes";
-import { STAYMAN_MEANING_IDS } from "./meaning-ids";
+import { STAYMAN_CLASSES, STAYMAN_R3_CLASSES, STAYMAN_MEANING_IDS } from "./ids";
 
 // ─── Module context ──────────────────────────────────────────
 

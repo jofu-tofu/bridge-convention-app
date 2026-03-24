@@ -3,7 +3,7 @@
     DDSolution,
     Contract,
   } from "../../engine/types";
-  import { STRAIN_SYMBOLS } from "../../core/display/format";
+  import { STRAIN_SYMBOLS } from "../../service/display/format";
   import MakeableContractsTable from "./MakeableContractsTable.svelte";
 
   interface Props {

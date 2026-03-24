@@ -4,7 +4,7 @@
   import { Vulnerability as Vul } from "../../../engine/types";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import type { ConventionContribution } from "../../../conventions/teaching/teaching-types";
-  import { formatContractWithDeclarer, formatRuleName } from "../../../core/display/format";
+  import { formatContractWithDeclarer, formatRuleName } from "../../../service/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import type { DDSAnalysisProps } from "./shared-props";
   import ContractDisplay from "./ContractDisplay.svelte";

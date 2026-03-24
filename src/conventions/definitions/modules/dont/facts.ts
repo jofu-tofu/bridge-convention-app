@@ -14,7 +14,7 @@ import type { FactEntry } from "../../../pipeline/fact-factory";
 import type { Hand } from "../../../../engine/types";
 import { Suit } from "../../../../engine/types";
 import { suitLengthOf } from "../../../../engine/hand-evaluator";
-import { DONT_FACT_IDS } from "./fact-ids";
+import { DONT_FACT_IDS } from "./ids";
 
 // ─── Helpers ────────────────────────────────────────────────
 

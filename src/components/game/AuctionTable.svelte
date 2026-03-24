@@ -3,8 +3,8 @@
   import type { BidHistoryEntry } from "../../core/contracts";
   import { Seat } from "../../engine/types";
   import { SEAT_INDEX } from "../../engine/constants";
-  import { formatCall } from "../../core/display/format";
-  import { BID_SUIT_COLOR_CLASS } from "../../core/display/tokens";
+  import { formatCall } from "../../service/display/format";
+  import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
 
   interface Props {
     entries: readonly AuctionEntry[];
