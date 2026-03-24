@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Seat } from "../../../engine/types";
   import type { Card as CardType } from "../../../engine/types";
-  import type { PlayingViewport } from "../../../core/viewport";
+  import type { PlayingViewport } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
   import { PLAYING_PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../../core/display/layout-props";
   import BridgeTable from "../../game/BridgeTable.svelte";

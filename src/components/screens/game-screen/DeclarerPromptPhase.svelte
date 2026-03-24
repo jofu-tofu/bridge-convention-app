@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DeclarerPromptViewport } from "../../../core/viewport";
+  import type { DeclarerPromptViewport } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
   import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../../core/display/layout-props";

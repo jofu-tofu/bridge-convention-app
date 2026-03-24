@@ -2,7 +2,7 @@
   import { SvelteSet } from "svelte/reactivity";
   import type { Call } from "../../../engine/types";
   import type { BidFeedbackInteractiveProps } from "./types";
-  import type { ViewportBidFeedback } from "../../../core/viewport";
+  import type { ViewportBidFeedback } from "../../../service";
   import { formatCall } from "../../../core/display/format";
   import { callsMatch } from "../../../engine/call-helpers";
   import {

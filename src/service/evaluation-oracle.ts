@@ -6,11 +6,11 @@
 //   2. Post-mortem diagnostics (after the session ends)
 //   3. Aggregate reporting (accuracy metrics)
 
-import type { Call, Hand, Seat } from "../../engine/types";
-import type { BidResult, BidAlert } from "../contracts/bidding";
-import type { TeachingResolution } from "../contracts/teaching-grading";
-import type { TeachingProjection } from "../contracts/teaching-projection";
-import type { StrategyEvaluation } from "../../conventions";
+import type { Call, Hand, Seat } from "../engine/types";
+import type { BidResult, BidAlert } from "../core/contracts/bidding";
+import type { TeachingResolution } from "../core/contracts/teaching-grading";
+import type { TeachingProjection } from "../core/contracts/teaching-projection";
+import type { StrategyEvaluation } from "../conventions";
 
 /** The answer key for a single bidding decision point. */
 export interface EvaluationOracle {

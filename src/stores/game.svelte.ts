@@ -46,7 +46,7 @@ import type {
   PlayingViewport,
   ExplanationViewport,
 } from "../service";
-import type { ViewportBidGrade } from "../core/viewport/player-viewport";
+import type { ViewportBidGrade } from "../service/response-types";
 import type { BidFeedbackDTO } from "../service";
 import { isValidTransition } from "../core/phase-machine";
 import type { GamePhase } from "../core/phase-machine";

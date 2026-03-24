@@ -29,8 +29,8 @@ import { DEFAULT_DRILL_TUNING } from "../core/contracts/drill";
 import type { BaseSystemId } from "../core/contracts/base-system-vocabulary";
 import { BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL } from "../core/contracts/base-system-vocabulary";
 import { getSystemConfig } from "../core/contracts/system-config";
-import type { BiddingViewport } from "../core/viewport/player-viewport";
-import { buildBiddingViewport } from "../core/viewport/build-viewport";
+import type { BiddingViewport } from "../service/response-types";
+import { buildBiddingViewport } from "../service/build-viewport";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 

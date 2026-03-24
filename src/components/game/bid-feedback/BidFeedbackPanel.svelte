@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
+  import type { ViewportBidFeedback, TeachingDetail } from "../../../service";
   import { callsMatch } from "../../../engine/call-helpers";
   import BidFeedbackCorrect from "./BidFeedbackCorrect.svelte";
   import BidFeedbackAcceptable from "./BidFeedbackAcceptable.svelte";

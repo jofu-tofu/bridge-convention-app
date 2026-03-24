@@ -18,7 +18,7 @@ import { getBundle } from "../../conventions";
 import { protocolSpecToStrategy } from "../../strategy/bidding/protocol-adapter";
 import { resolveTeachingAnswer, gradeBid } from "../../conventions";
 import { BidGrade } from "../../core/contracts/teaching-grading";
-import { buildViewportFeedback, buildTeachingDetail, projectObservationHistory } from "../../core/viewport/build-viewport";
+import { buildViewportFeedback, buildTeachingDetail, projectObservationHistory } from "../build-viewport";
 import { callKey, callsMatch } from "../../engine/call-helpers";
 import { parsePatternCall } from "../../engine/auction-helpers";
 import { Vulnerability } from "../../engine/types";
@@ -27,7 +27,7 @@ import type { Auction, Deal, Call } from "../../engine/types";
 import type { BiddingStrategy } from "../../core/contracts/bidding";
 import type { ConventionStrategy } from "../../conventions";
 import type { ConventionBundle } from "../../conventions";
-import type { BiddingViewport } from "../../core/viewport/player-viewport";
+import type { BiddingViewport } from "../response-types";
 import type { AtomGradeResult } from "./types";
 import { nextSeat, partnerSeat, generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, makeViewport } from "./helpers";
 

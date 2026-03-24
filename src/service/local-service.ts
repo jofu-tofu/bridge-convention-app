@@ -13,8 +13,8 @@
 
 import type { Call, Card, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
-import type { BiddingViewport } from "../core/viewport";
-import { buildBiddingViewport } from "../core/viewport";
+import type { BiddingViewport } from "./response-types";
+import { buildBiddingViewport } from "./build-viewport";
 import type { LearningViewport } from "./response-types";
 import { buildLearningViewport } from "./learning-viewport";
 import type { GamePhase } from "../core/phase-machine";

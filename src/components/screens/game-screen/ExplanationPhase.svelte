@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Seat } from "../../../engine/types";
-  import type { ExplanationViewport } from "../../../core/viewport";
+  import type { ExplanationViewport } from "../../../service";
   import type { ConventionConfig } from "../../../core/contracts/convention";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";

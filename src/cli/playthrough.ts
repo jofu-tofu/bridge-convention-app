@@ -8,7 +8,7 @@ import type { ConventionModule } from "../conventions";
 import { createSpecStrategy, createOpponentStrategy } from "../bootstrap/strategy-factory";
 import { assembleBidFeedback, BidGrade } from "../bootstrap/bid-feedback-builder";
 import type { BidResult } from "../core/contracts/bidding";
-import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport/build-viewport";
+import { buildViewportFeedback, buildTeachingDetail } from "../service/build-viewport";
 
 import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat, BiddingViewport, Deal } from "./shared";
 import { Vulnerability,

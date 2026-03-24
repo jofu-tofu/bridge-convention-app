@@ -1,4 +1,4 @@
-import type { ViewportBidFeedback, TeachingDetail } from "../../../core/viewport";
+import type { ViewportBidFeedback, TeachingDetail } from "../../../service";
 
 /**
  * Base props shared by all bid feedback variants (Correct, Acceptable, NearMiss, Incorrect).

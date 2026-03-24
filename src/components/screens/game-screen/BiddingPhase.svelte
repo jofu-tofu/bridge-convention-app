@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BiddingViewport } from "../../../core/viewport";
+  import type { BiddingViewport } from "../../../service";
   import { getGameStore, getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
   import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../../core/display/layout-props";

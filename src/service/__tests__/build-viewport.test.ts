@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { Seat, Vulnerability, BidSuit, Suit, Rank } from "../../../engine/types";
-import type { Auction, Call, Hand, Contract, PlayedCard, Trick, Card } from "../../../engine/types";
-import { makeSimpleTestDeal, makeCard, makeContract, ALL_RANKS } from "../../../test-support/fixtures";
+import { Seat, Vulnerability, BidSuit, Suit, Rank } from "../../engine/types";
+import type { Auction, Call, Hand, Contract, PlayedCard, Trick, Card } from "../../engine/types";
+import { makeSimpleTestDeal, makeCard, makeContract, ALL_RANKS } from "../../test-support/fixtures";
 import {
   buildBiddingViewport,
   buildDeclarerPromptViewport,
@@ -12,7 +12,7 @@ import {
   type BuildPlayingViewportInput,
   type BuildExplanationViewportInput,
 } from "../build-viewport";
-import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport } from "../player-viewport";
+import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport } from "../response-types";
 import type { EvaluationOracle } from "../evaluation-oracle";
 
 // ── Helpers ──────────────────────────────────────────────────────────

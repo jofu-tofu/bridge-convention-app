@@ -6,7 +6,7 @@
 //
 // This is the type-level enforcement of the viewport boundary.
 
-import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../../core/viewport/player-viewport";
+import type { BiddingViewport, ViewportBidFeedback, TeachingDetail } from "../response-types";
 import type { BidGrade } from "../../core/contracts/teaching-grading";
 
 // ── Atom evaluation (Phase 1) ───────────────────────────────────────

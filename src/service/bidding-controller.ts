@@ -20,9 +20,9 @@ import { getCurrentTurn, type SessionState } from "./session-state";
 import type { AiBidEntry } from "./response-types";
 import type { GamePhase } from "../core/phase-machine";
 import { isValidTransition } from "../core/phase-machine";
-import { buildViewportFeedback, buildTeachingDetail } from "../core/viewport";
-import type { ViewportBidFeedback, TeachingDetail } from "../core/viewport";
-import type { ViewportBidGrade } from "../core/viewport/player-viewport";
+import { buildViewportFeedback, buildTeachingDetail } from "./build-viewport";
+import type { ViewportBidFeedback, TeachingDetail } from "./response-types";
+import type { ViewportBidGrade } from "./response-types";
 
 /** Result of processing a user bid — returned by processBid(). */
 export interface BidProcessResult {

@@ -19,7 +19,7 @@ import type { Suit } from "../engine/types";
 import type { DrillBundle } from "../bootstrap/types";
 import type { DevServicePort, SessionHandle } from "../service";
 import type { PublicBeliefs } from "../core/contracts";
-import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../core/viewport";
+import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
   BidFeedback,
   BidHistoryEntry,

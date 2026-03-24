@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Trick, Seat, Card as CardType } from "../../../engine/types";
   import type { AuctionEntry } from "../../../engine/types";
-  import type { AuctionEntryView } from "../../../core/viewport";
+  import type { AuctionEntryView } from "../../../service";
   import type { BidHistoryEntry } from "../../../core/contracts";
   import { Suit } from "../../../engine/types";
   import { SUIT_ORDER, SEAT_INDEX } from "../../../engine/constants";

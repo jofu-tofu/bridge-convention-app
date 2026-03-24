@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TeachingDetail } from "../../../core/viewport";
+  import type { TeachingDetail } from "../../../service";
   import { formatCall } from "../../../core/display/format";
 
   interface Props {

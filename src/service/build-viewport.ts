@@ -4,19 +4,19 @@
 // This is the SINGLE function that enforces the information boundary.
 // Both the Svelte UI and the CLI harness call this same function.
 
-import { type Seat, type Call, type Hand, type Deal, type Auction, type Contract, type PlayedCard, type Trick, type Card, type Suit } from "../../engine/types";
-import type { AuctionContext } from "../contracts/committed-step";
-import type { BidAction } from "../contracts/bid-action";
-import { evaluateHand } from "../../engine/hand-evaluator";
-import { formatCall } from "../display/format";
-import { formatHandSummary } from "../display/hand-summary";
-import type { BidHistoryEntry, BidResult } from "../contracts/bidding";
-import type { BidMeaning } from "../contracts/meaning";
-import { isAlertable } from "../../conventions";
-import type { TeachingProjection } from "../contracts/teaching-projection";
-import type { TeachingResolution } from "../contracts/teaching-grading";
-import type { BidGrade } from "../contracts/teaching-grading";
-import type { PracticalScoreBreakdown } from "../contracts/recommendation";
+import { type Seat, type Call, type Hand, type Deal, type Auction, type Contract, type PlayedCard, type Trick, type Card, type Suit } from "../engine/types";
+import type { AuctionContext } from "../core/contracts/committed-step";
+import type { BidAction } from "../core/contracts/bid-action";
+import { evaluateHand } from "../engine/hand-evaluator";
+import { formatCall } from "../core/display/format";
+import { formatHandSummary } from "../core/display/hand-summary";
+import type { BidHistoryEntry, BidResult } from "../core/contracts/bidding";
+import type { BidMeaning } from "../core/contracts/meaning";
+import { isAlertable } from "../conventions";
+import type { TeachingProjection } from "../core/contracts/teaching-projection";
+import type { TeachingResolution } from "../core/contracts/teaching-grading";
+import type { BidGrade } from "../core/contracts/teaching-grading";
+import type { PracticalScoreBreakdown } from "../core/contracts/recommendation";
 // Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
 // Defined here to avoid importing the Svelte store in CLI context.
 interface BidFeedbackLike {
@@ -49,7 +49,7 @@ import type {
   DeclarerPromptViewport,
   PlayingViewport,
   ExplanationViewport,
-} from "./player-viewport";
+} from "./response-types";
 
 // ── Build Bidding Viewport ──────────────────────────────────────────
 
