@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
 import type { ViewportBidFeedback, TeachingDetail } from "../../../service";
-import { formatCall } from "../../../service/display/format";
 
 function makeWrongViewportFeedback(): ViewportBidFeedback {
   return {

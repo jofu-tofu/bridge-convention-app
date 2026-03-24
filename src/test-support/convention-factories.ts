@@ -11,7 +11,7 @@ import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClaus
 import type { ArbitrationResult, EncodedProposal, PipelineCarrier, PipelineResult } from "../conventions";
 import type { CandidateEligibility } from "../conventions/pipeline/tree-evaluation";
 import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../conventions/pipeline/provenance";
-import type { ExplanationEntry, FactExplanationEntry, MeaningExplanationEntry } from "../conventions/core/explanation-catalog";
+import type { FactExplanationEntry, MeaningExplanationEntry } from "../conventions/core/explanation-catalog";
 /** Create a minimal BidMeaning with override support. */
 export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {
   return {

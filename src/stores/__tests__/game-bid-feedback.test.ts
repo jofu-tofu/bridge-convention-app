@@ -130,7 +130,7 @@ describe("bid feedback — user-facing behavior", () => {
       // Feedback contains the correct bid the user should have made
       const feedback = store.bidFeedback!;
       expect(feedback.grade).toBe(BidGrade.Incorrect);
-      expect(feedback.viewportFeedback!.correctCall).toEqual({
+      expect(feedback.viewportFeedback.correctCall).toEqual({
         type: "bid",
         level: 2,
         strain: BidSuit.Clubs,
@@ -247,7 +247,7 @@ describe("bid feedback — user-facing behavior", () => {
 
       expect(store.bidFeedback).not.toBeNull();
       expect(store.bidFeedback!.grade).toBe(BidGrade.Incorrect);
-      expect(store.bidFeedback!.viewportFeedback!.correctCall).toEqual({ type: "pass" });
+      expect(store.bidFeedback!.viewportFeedback.correctCall).toEqual({ type: "pass" });
       expect(store.isFeedbackBlocking).toBe(true);
     });
 

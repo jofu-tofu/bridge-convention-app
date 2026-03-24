@@ -53,7 +53,7 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
       tuning: {
         ...DEFAULT_DRILL_TUNING,
         ...tuningRaw,
-        vulnerabilityDistribution: validVd ? vd! : DEFAULT_DRILL_TUNING.vulnerabilityDistribution,
+        vulnerabilityDistribution: validVd ? vd : DEFAULT_DRILL_TUNING.vulnerabilityDistribution,
       },
     },
     display: {

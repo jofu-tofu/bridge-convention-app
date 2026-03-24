@@ -200,17 +200,17 @@ async function probeAndReadAllDebug(page: Page): Promise<string> {
 
   // Open debug drawer via JS (bypasses overlay issues on mobile)
   await page.evaluate(() => {
-    const toggleBtn = document.querySelector('[data-testid="debug-toggle"]') as HTMLElement | null;
+    const toggleBtn = document.querySelector('[data-testid="debug-toggle"]');
     if (toggleBtn) toggleBtn.click();
   });
   await page.waitForTimeout(500);
 
   // Read debug data via page.evaluate with inert check
   const body = await page.evaluate(() => {
-    const drawer = document.querySelector('aside[aria-label="Debug drawer"]') as HTMLElement | null;
+    const drawer = document.querySelector('aside[aria-label="Debug drawer"]');
     if (drawer && !drawer.hasAttribute("inert")) {
       drawer.querySelectorAll("details").forEach((d) => {
-        (d as HTMLDetailsElement).open = true;
+        (d).open = true;
       });
       return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
     }

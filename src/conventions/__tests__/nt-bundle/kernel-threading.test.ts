@@ -10,7 +10,7 @@
 
 import { describe, it, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
-import type { Call } from "../../../engine/types";
+import type { Call, ContractBid } from "../../../engine/types";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { ConventionModule } from "../../core/convention-module";
 
@@ -29,7 +29,7 @@ const allRuleModules: readonly ConventionModule[] = getModules([
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function bid(level: number, strain: BidSuit): Call {
-  return { type: "bid", level, strain };
+  return { type: "bid", level: level as ContractBid["level"], strain };
 }
 
 function pass(): Call {

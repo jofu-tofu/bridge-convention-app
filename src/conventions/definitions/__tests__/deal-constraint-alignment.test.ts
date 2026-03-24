@@ -58,7 +58,7 @@ function collectR1Surfaces(
         const p = e.phase;
         return Array.isArray(p)
           ? p.some((ph) => phases.includes(ph))
-          : phases.includes(p);
+          : phases.includes(p as string);
       })
       .flatMap((e) => e.surfaces),
   );

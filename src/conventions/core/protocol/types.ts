@@ -40,9 +40,9 @@ export type BoolExpr =
 
 /** State effect — writes to public registers or local protocol state. */
 export type EffectSpec =
-  | { readonly op: "setReg"; readonly path: string; readonly value: unknown | Ref }
+  | { readonly op: "setReg"; readonly path: string; readonly value: unknown }
   | { readonly op: "clearReg"; readonly path: string }
-  | { readonly op: "setLocal"; readonly path: string; readonly value: unknown | Ref }
+  | { readonly op: "setLocal"; readonly path: string; readonly value: unknown }
   | { readonly op: "clearLocal"; readonly path: string }
   | { readonly op: "exportTag"; readonly tag: string }
   | { readonly op: "removeTag"; readonly tag: string };
@@ -142,7 +142,7 @@ export interface TransitionSpec {
   /** Event pattern to match. */
   readonly when: EventPattern;
   /** Target state ID, or "STAY" to remain, or "POP" to exit protocol. */
-  readonly goto: string | "STAY" | "POP";
+  readonly goto: string;
   readonly effects?: readonly EffectSpec[];
   /** Guard predicate over public state — transition only fires if true. */
   readonly guard?: BoolExpr;
@@ -161,7 +161,7 @@ export interface ReactionSpec {
   /** Condition over public state. */
   readonly when: BoolExpr;
   /** Target state or special target. */
-  readonly goto: string | "POP" | "STAY";
+  readonly goto: string;
   readonly effects?: readonly EffectSpec[];
   readonly priority?: number;
 }

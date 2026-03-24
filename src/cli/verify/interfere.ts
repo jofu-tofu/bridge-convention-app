@@ -29,7 +29,7 @@ function getVirtualRules(mod: ConventionModule): readonly NormalizedRule[] {
   return (mod.states ?? []).map((entry) => ({
     match: {
       turn: entry.turn,
-      local: entry.phase as string | readonly string[],
+      local: entry.phase,
       kernel: entry.kernel,
       route: entry.route,
     },

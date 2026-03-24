@@ -89,7 +89,7 @@ export function protocolSpecToStrategy(
       // given state share bindings (e.g. { suit: "hearts" }), so take the first.
       const firstBindings = visibleSurfaces.find(s => s.surfaceBindings)?.surfaceBindings;
       const relationalContext = firstBindings
-        ? { bindings: firstBindings as Readonly<Record<string, string>> }
+        ? { bindings: firstBindings }
         : undefined;
 
       const { result, facts } = runPipeline({

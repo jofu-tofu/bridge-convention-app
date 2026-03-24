@@ -2,17 +2,12 @@ import { describe, it, expect } from "vitest";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { buildCallViews } from "../call-view-builder";
-import type {
-  ArbitrationResult,
-  EncodedProposal,
-} from "../../pipeline/pipeline-types";
+
+
 
 import {
   makeCall,
-  makeRankingMetadata as makeRanking,
-  makeClause,
   makeProposal,
-  makeEligibility,
   makeEncoded,
   makeArbitration,
 } from "../../../test-support/convention-factories";

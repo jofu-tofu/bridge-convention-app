@@ -107,14 +107,14 @@ describe("variesBySystem derivation", () => {
           meaningId: "test-meaning",
           semanticClassId: "test:class",
           clauses: clauses.map((c) => ({ ...c, operator: "boolean" as const, value: true })),
-          encoding: { defaultCall: { type: "bid" as const, level: 2, suit: "C" as const } },
+          encoding: { defaultCall: { type: "bid" as const, level: 2, strain: "C" as const } },
           ranking: { recommendationBand: "preferred" as const, declarationOrder: 0 },
           sourceIntent: { type: "test", params: {} },
           disclosure: "natural" as const,
           teachingLabel: "Test",
         }],
       }],
-    } as ConventionModule;
+    } as unknown as ConventionModule;
   }
 
   it("is true when a surface clause references a system fact", () => {

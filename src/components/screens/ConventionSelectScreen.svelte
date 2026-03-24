@@ -246,7 +246,7 @@
                   {#if convention.moduleDescriptions?.size}
                     <div class="mt-2 space-y-1">
                       <p class="text-xs font-medium text-text-secondary">Conventions in this bundle:</p>
-                      {#each [...convention.moduleDescriptions.entries()] as [moduleId, desc]}
+                      {#each [...convention.moduleDescriptions.entries()] as [moduleId, desc] (moduleId)}
                         <p class="text-xs text-text-muted pl-2">
                           <span class="text-text-secondary">{formatModuleName(moduleId)}</span> — {desc}
                         </p>

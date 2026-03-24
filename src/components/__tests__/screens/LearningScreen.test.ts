@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/svelte";
+import { render, screen, fireEvent } from "@testing-library/svelte";
 import LearningScreenTestWrapper from "./LearningScreenTestWrapper.svelte";
 import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";

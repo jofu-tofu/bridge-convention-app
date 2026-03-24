@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { SCREEN_REGISTRY } from "../responsive-registry";
-import type { ScreenEntry, MobileStrategy } from "../responsive-registry";
+import type { MobileStrategy } from "../responsive-registry";
 
 const SCREENS_DIR = path.resolve(__dirname, "..");
 

@@ -7,7 +7,7 @@ export interface SuitInference {
 }
 
 /** What a single bid reveals about the bidder's hand.
- *  Used internally by InferenceProvider (e.g. natural-inference) and partner-interpretation.
+ *  Used internally by InferenceProvider (e.g. natural-inference).
  *  For public beliefs, prefer FactConstraint[] — see PublicBeliefs. */
 export interface HandInference {
   readonly seat: Seat;
@@ -49,21 +49,10 @@ export interface PublicBeliefs {
   readonly qualitative: readonly QualitativeConstraint[];
 }
 
-/**
- * @deprecated Use PosteriorQueryPort (from posterior-query.ts) for modern belief queries.
- * Legacy belief data for convention pipeline. Per-seat HCP ranges and suit length ranges.
- */
-export interface BeliefData {
-  readonly beliefs: Record<Seat, {
-    readonly hcpRange: NumberRange;
-    readonly suitLengths: Record<Suit, NumberRange>;
-  }>;
-}
-
 // ─── Inference strategy interface ────────────────────────────
 
 /** Determines how a partnership's bids are interpreted.
- *  Implementations live in inference/ (natural-inference, partner-interpretation). */
+ *  Implementations live in inference/ (e.g. natural-inference). */
 export interface InferenceProvider {
   readonly id: string;
   readonly name: string;

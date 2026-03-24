@@ -304,7 +304,7 @@ const midGameLeadHeuristic: PlayHeuristic = {
     if (isDefender(seat, contract.declarer)) {
       const partnerSuit = findPartnerLedSuit(previousTricks, seat, trumpSuit);
       if (partnerSuit && suitGroups[partnerSuit]) {
-        const cards = suitGroups[partnerSuit]!;
+        const cards = suitGroups[partnerSuit];
         // Remaining doubleton or less: lead top (high-low to show count)
         if (cards.length <= 2) {
           return sortByRankDesc(cards)[0] ?? null;

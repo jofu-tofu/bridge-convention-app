@@ -147,7 +147,7 @@
     if (gameStore.phase === "DECLARER_PROMPT" && gameStore.promptMode === "defender") {
       return DEFENDER_PHASE;
     }
-    return PHASE_DISPLAY[gameStore.phase] ?? { label: "Unknown", color: "bg-gray-700", textColor: "text-gray-300" };
+    return PHASE_DISPLAY[gameStore.phase] ?? { label: "Unknown", color: "bg-phase-unknown", textColor: "text-phase-unknown-text" };
   });
 
   // Responsive layout — single source of truth for all sizing.

@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { matchRoute, matchObs } from "../route-matcher";
-import type { ObsPattern, RouteExpr } from "../../core/rule-module";
+import type { RouteExpr } from "../../core/rule-module";
 import type { CommittedStep } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { BidAction } from "../bid-action";
-import { Seat, BidSuit } from "../../../engine/types";
-import type { ContractBid, SpecialCall } from "../../../engine/types";
+import { Seat } from "../../../engine/types";
+import type { SpecialCall } from "../../../engine/types";
 
 function makeStep(
   publicActions: readonly BidAction[],

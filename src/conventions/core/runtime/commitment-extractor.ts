@@ -1,4 +1,4 @@
-import type { Auction, Call, Seat } from "../../../engine/types";
+import type { Auction, Seat } from "../../../engine/types";
 import type {
   PublicConstraint,
 } from "../agreement-module";

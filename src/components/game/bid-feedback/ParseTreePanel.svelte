@@ -14,19 +14,19 @@
   function moduleClasses(verdict: string): string {
     switch (verdict) {
       case "selected":
-        return "rounded border px-2 py-1.5 text-[--text-label] bg-green-900/30 border-green-500/30";
+        return "rounded border px-2 py-1.5 text-[--text-label] bg-pt-selected/30 border-pt-selected-accent/30";
       case "applicable":
-        return "rounded border px-2 py-1.5 text-[--text-label] bg-sky-900/20 border-sky-500/20";
+        return "rounded border px-2 py-1.5 text-[--text-label] bg-pt-applicable/20 border-pt-applicable-accent/20";
       default:
-        return "rounded border px-2 py-1.5 text-[--text-label] bg-zinc-800/30 border-zinc-500/20";
+        return "rounded border px-2 py-1.5 text-[--text-label] bg-pt-eliminated/30 border-pt-eliminated-accent/20";
     }
   }
 
   function moduleLabelClasses(verdict: string): string {
     switch (verdict) {
-      case "selected": return "font-medium text-green-200";
-      case "applicable": return "font-medium text-sky-200";
-      default: return "font-medium text-zinc-400";
+      case "selected": return "font-medium text-pt-selected-text";
+      case "applicable": return "font-medium text-pt-applicable-text";
+      default: return "font-medium text-pt-eliminated-text";
     }
   }
 
@@ -64,21 +64,21 @@
             {:else if isEliminated}
               <span class="text-fb-incorrect-emphasis/50 shrink-0" aria-hidden="true">○</span>
             {:else}
-              <span class="text-sky-400/60 shrink-0" aria-hidden="true">●</span>
+              <span class="text-pt-applicable-dot/60 shrink-0" aria-hidden="true">●</span>
             {/if}
             <span class={moduleLabelClasses(mod.verdict)}>
               {formatRuleName(mod.displayLabel)}
             </span>
             {#if isSelected}
-              <span class="rounded bg-green-900/70 border border-green-500/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-green-200">
+              <span class="rounded bg-pt-selected/70 border border-pt-selected-accent/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-pt-selected-text">
                 Selected
               </span>
             {:else if mod.verdict === "applicable"}
-              <span class="rounded bg-sky-900/70 border border-sky-500/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-sky-200">
+              <span class="rounded bg-pt-applicable/70 border border-pt-applicable-accent/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-pt-applicable-text">
                 Also valid
               </span>
             {:else}
-              <span class="rounded bg-zinc-800/70 border border-zinc-500/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-zinc-400">
+              <span class="rounded bg-pt-eliminated/70 border border-pt-eliminated-accent/40 px-1.5 py-0.5 text-[--text-annotation] uppercase tracking-wide text-pt-eliminated-text">
                 Ruled out
               </span>
             {/if}
@@ -115,9 +115,9 @@
             {#if winMeaning}
               <div class="mt-1 ml-4 flex items-center gap-1.5 text-[--text-annotation]">
                 <span class="text-accent-success" aria-hidden="true">→</span>
-                <span class="text-green-200/80">{winMeaning.displayLabel}</span>
+                <span class="text-pt-selected-text/80">{winMeaning.displayLabel}</span>
                 {#if winMeaning.call}
-                  <span class="font-mono font-bold text-green-200">{formatCall(winMeaning.call)}</span>
+                  <span class="font-mono font-bold text-pt-selected-text">{formatCall(winMeaning.call)}</span>
                 {/if}
               </div>
             {/if}

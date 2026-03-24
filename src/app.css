@@ -85,6 +85,24 @@
   --color-phase-review: #9333ea;
   --color-phase-review-text: #f3e8ff;
 
+  /* ── Parse tree (decision chain) — module verdict colors ── */
+  --color-pt-selected: #14532d;
+  --color-pt-selected-accent: #22c55e;
+  --color-pt-selected-text: #bbf7d0;
+
+  --color-pt-applicable: #0c4a6e;
+  --color-pt-applicable-accent: #0ea5e9;
+  --color-pt-applicable-dot: #38bdf8;
+  --color-pt-applicable-text: #bae6fd;
+
+  --color-pt-eliminated: #27272a;
+  --color-pt-eliminated-accent: #71717a;
+  --color-pt-eliminated-text: #a1a1aa;
+
+  /* ── Phase fallback (unknown/defensive) ── */
+  --color-phase-unknown: #374151;
+  --color-phase-unknown-text: #d1d5db;
+
   /* ── Vulnerable seat ── */
   --color-vulnerable: #7f1d1d;
   --color-vulnerable-ring: #ef4444;

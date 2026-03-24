@@ -42,9 +42,9 @@ function formatClause(clause: { factId: string; operator: string; value: unknown
   const val = clause.value;
 
   if (op === "boolean") return val ? fact : `no ${fact}`;
-  if (op === "gte") return `${fact} >= ${val}`;
-  if (op === "lte") return `${fact} <= ${val}`;
-  if (op === "eq") return `${fact} = ${val}`;
+  if (op === "gte") return `${fact} >= ${String(val)}`;
+  if (op === "lte") return `${fact} <= ${String(val)}`;
+  if (op === "eq") return `${fact} = ${String(val)}`;
   if (op === "range" && typeof val === "object" && val !== null && "min" in val && "max" in val) {
     return `${fact}: ${(val as { min: number; max: number }).min}-${(val as { min: number; max: number }).max}`;
   }

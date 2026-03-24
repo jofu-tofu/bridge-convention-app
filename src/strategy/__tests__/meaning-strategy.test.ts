@@ -47,7 +47,7 @@ describe("meaningToStrategy", () => {
       meaningId: "strong-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [
-        { factId: "hand.hcp", operator: "gte" as const, value: 15, satisfied: false, description: "HCP >= 15" },
+        { factId: "hand.hcp", operator: "gte" as const, value: 15, description: "HCP >= 15" },
       ],
     });
 
@@ -64,7 +64,7 @@ describe("meaningToStrategy", () => {
       meaningId: "strong-bid",
       encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
       clauses: [
-        { factId: "hand.hcp", operator: "gte" as const, value: 15, satisfied: true, description: "HCP >= 15" },
+        { factId: "hand.hcp", operator: "gte" as const, value: 15, description: "HCP >= 15" },
       ],
       ranking: makeRanking({ recommendationBand: "should", modulePrecedence: 0, declarationOrder: 0 }),
       sourceIntent: { type: "OpenNT", params: {} },

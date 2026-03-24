@@ -115,7 +115,7 @@ async function expandDetailsInDrawer(page: Page, summaryText: string | RegExp) {
       const text = s.textContent?.trim() ?? "";
       const matches = isRegex ? new RegExp(pattern).test(text) : text.includes(pattern);
       if (matches) {
-        const details = s.closest("details") as HTMLDetailsElement | null;
+        const details = s.closest("details");
         if (details) details.open = true;
         break;
       }

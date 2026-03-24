@@ -5,7 +5,7 @@ import {
 } from "../rule-enumeration";
 import type { ConventionModule } from "../../core/convention-module";
 import type { BidMeaning } from "../meaning";
-import { BidSuit, Seat } from "../../../engine/types";
+import { BidSuit } from "../../../engine/types";
 
 // ── Real module imports for equivalence checks ──────────────────────
 import { getModule } from "../../definitions/module-registry";

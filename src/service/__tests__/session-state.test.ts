@@ -5,8 +5,8 @@
  * user-controlled seat detection, and remaining-card tracking.
  */
 import { describe, it, expect } from "vitest";
-import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../../engine/types";
-import type { Contract, PlayedCard, Trick } from "../../engine/types";
+import { Seat, BidSuit, Suit, Rank } from "../../engine/types";
+import type { Contract, Trick } from "../../engine/types";
 import { makeSimpleTestDeal, makeDrillSession, makeContract, makeCard } from "../../test-support/fixtures";
 import { createInferenceCoordinator } from "../../inference/inference-coordinator";
 import { SessionState } from "../session-state";

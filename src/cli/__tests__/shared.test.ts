@@ -12,7 +12,6 @@ import {
   formatHandBySuit,
   Seat,
   Vulnerability,
-  type Flags,
   type ScenarioConfig,
 } from "../shared";
 
@@ -23,7 +22,7 @@ let exitSpy: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
   exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
     throw new Error("process.exit");
-  }) as any);
+  }) as any) as ReturnType<typeof vi.spyOn>;
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => {

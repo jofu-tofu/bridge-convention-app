@@ -53,12 +53,14 @@ export type { DrillSession, DrillBundle } from "../bootstrap/types";
 export { Seat, Suit, Rank, BidSuit, Vulnerability } from "../engine/types";
 // Engine types — type-only
 export type { Call, Card, Hand, ContractBid, Contract, AuctionEntry, Trick, PlayedCard, DDSolution, Deal, SuitLength, DistributionPoints } from "../engine/types";
+// Engine port
+export type { EnginePort } from "../engine/port";
 // Engine constants (display/layout concerns)
 export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS } from "../engine/constants";
 // Engine display utilities (pure functions on API contract types)
 export { callKey, callsMatch } from "../engine/call-helpers";
 export { isVulnerable } from "../engine/scoring";
-export { evaluateHand } from "../engine/hand-evaluator";
+export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
 
 // ── Convention system re-exports ──
 

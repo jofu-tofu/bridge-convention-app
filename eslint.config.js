@@ -145,6 +145,8 @@ export default tseslint.config(
             "tests/e2e/test-dont.spec.ts",
             "tests/e2e/test-transfers.spec.ts",
             "tests/e2e/test-weak-two.spec.ts",
+            "tests/e2e/responsive-layout.spec.ts",
+            "tests/e2e/smoke.spec.ts",
             "vite.config.ts",
             "vitest.config.ts",
           ],

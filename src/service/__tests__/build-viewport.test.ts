@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Vulnerability, BidSuit, Suit, Rank } from "../../engine/types";
-import type { Auction, Call, Hand, Contract, PlayedCard, Trick, Card } from "../../engine/types";
-import { makeSimpleTestDeal, makeCard, makeContract, ALL_RANKS } from "../../test-support/fixtures";
+import type { Auction, Call, PlayedCard, Card } from "../../engine/types";
+import { makeSimpleTestDeal, makeCard, makeContract } from "../../test-support/fixtures";
 import {
   buildBiddingViewport,
   buildDeclarerPromptViewport,
@@ -12,8 +12,6 @@ import {
   type BuildPlayingViewportInput,
   type BuildExplanationViewportInput,
 } from "../build-viewport";
-import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport } from "../response-types";
-import type { EvaluationOracle } from "../evaluation-oracle";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -133,7 +131,7 @@ describe("buildBiddingViewport", () => {
       isComplete: false,
     };
     const bidHistory = [
-      { alertLabel: "15-17 HCP", annotationType: "announce" as const },
+      { seat: Seat.North, call: make1NTBid(), isUser: false, alertLabel: "15-17 HCP", annotationType: "announce" as const },
     ];
     const vp = buildBiddingViewport(makeInput({ auction, bidHistory }));
 

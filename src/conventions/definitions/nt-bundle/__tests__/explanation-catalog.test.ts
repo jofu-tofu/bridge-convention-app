@@ -135,7 +135,7 @@ describe("NT_EXPLANATION_CATALOG", () => {
 
   test("includes natural-nt meaning entries", () => {
     const meaningEntries = NT_EXPLANATION_CATALOG.entries.filter(
-      (e) => "meaningId" in e && (e.meaningId as string).startsWith("bridge:"),
+      (e) => "meaningId" in e && (e.meaningId).startsWith("bridge:"),
     );
     expect(meaningEntries.length).toBe(3);
   });

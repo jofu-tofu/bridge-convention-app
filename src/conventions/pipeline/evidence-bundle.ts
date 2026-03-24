@@ -34,7 +34,7 @@ export interface RejectionEvidence {
   readonly meaningId: string;
   readonly failedConditions: readonly ConditionEvidence[];
   readonly moduleId: string;
-  /** Conditions whose failure supports negative inference (invertInference). Optional for backward compat. */
+  /** Conditions whose failure supports negative inference. Optional for backward compat. */
   readonly negatableFailures?: readonly ConditionEvidence[];
 }
 

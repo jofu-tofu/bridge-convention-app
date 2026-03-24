@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { Suit } from "../../../service";
+  import { Suit, calculateHcp } from "../../../service";
   import type { Seat, Deal } from "../../../service";
-  import { calculateHcp } from "../../../engine/hand-evaluator";
   import { formatSuitCards } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 

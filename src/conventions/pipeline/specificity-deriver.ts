@@ -106,10 +106,10 @@ export function deriveSpecificity(
   const dimensions = new Set<ConstraintDimension>();
 
   // Bindings use key "suit" (not "$suit"); clause factIds use "$suit" as placeholder.
-  const suitBindingValue = surface.surfaceBindings != null
+  const suitBindingValue = surface.surfaceBindings !== null && surface.surfaceBindings !== undefined
     ? (surface.surfaceBindings as Record<string, string>)["suit"]
     : undefined;
-  const hasSuitBinding = suitBindingValue != null;
+  const hasSuitBinding = suitBindingValue !== null && suitBindingValue !== undefined;
 
   // First pass: identify whether the surface has any positive (non-negative) clauses.
   // This determines how boolean(false) clauses are handled.
@@ -122,7 +122,7 @@ export function deriveSpecificity(
 
     // Resolve $suit placeholder
     if (hasSuitBinding && factId.includes("$suit")) {
-      factId = factId.replace("$suit", suitBindingValue!);
+      factId = factId.replace("$suit", suitBindingValue);
     }
 
     // ── Suit length upper bounds (lte) → always shapeClass ──

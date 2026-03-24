@@ -1,20 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { BidSuit } from "../../../engine/types";
-import type { Call } from "../../../engine/types";
 import { buildMeaningViews } from "../meaning-view-builder";
 import type {
-  ArbitrationResult,
-  EncodedProposal,
   EliminationRecord,
 } from "../../pipeline/pipeline-types";
-import type { DecisionProvenance } from "../../pipeline/provenance";
 
 import {
-  makeCall,
-  makeRankingMetadata as makeRanking,
   makeClause,
   makeProposal,
-  makeEligibility,
   makeEncoded,
   makeArbitration,
   makeProvenance,
