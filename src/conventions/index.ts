@@ -99,9 +99,16 @@ export { registerBundle, clearBundleRegistry, createConventionConfigFromBundle }
 // ── Definitions (system registry) ──────────────────────────────────────
 export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "./definitions/system-registry";
 
+// ── Definitions (system config) ──────────────────────────────────────────
+export type { BaseSystemId } from "./definitions/system-config";
+export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS } from "./definitions/system-config";
+
 // ── Definitions (concrete bundles — for test setup) ─────────────────────
 export { ntBundle } from "./definitions/nt-bundle";
 export { bergenBundle } from "./definitions/bergen-bundle";
+
+// ── Fact catalog ─────────────────────────────────────────────────────────
+export type { EvaluatedFacts } from "./core/fact-catalog";
 
 // ── Platform explanation catalog ─────────────────────────────────────────
 export { PLATFORM_EXPLANATION_ENTRIES } from "./core/shared-explanation-catalog";

@@ -6,7 +6,7 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 
 - **Designed for 100+ modules.** The module/bundle system scales to hundreds of convention modules composed into arbitrary bundles. Adding a module never requires editing existing modules or core infrastructure. Registries, derivation, and composition are all O(N).
 - **Registry pattern.** All conventions register via `registerBundle()` in `core/`, which auto-derives and registers `ConventionConfig`. No separate `registerConvention()` calls needed. Never hardcode convention logic in switch statements.
-- **Contract boundary.** Cross-module DTOs come from `src/core/contracts/`; convention internals must not leak across that boundary.
+- **Contract boundary.** Cross-module DTOs live in their owning subsystems (conventions/core/, inference/, strategy/, etc.); convention internals must not leak across the service boundary.
 - **Four-way split.** `core/` contains stable infrastructure (runtime, registry). `pipeline/` contains the meaning pipeline (surfaces → facts → evaluation → arbitration). `teaching/` contains teaching resolution, projection, and parse-tree builders — derived views over pipeline results. `definitions/` contains convention modules and bundles. Convention-specific logic belongs in `definitions/`, never in `core/`, `pipeline/`, or `teaching/`.
 - **Bounded-context barrel.** `index.ts` is the single public API for external consumers. Import from the barrel, not deep paths (e.g., `conventions/core/registry` or `conventions/pipeline/meaning-evaluator`). ESLint enforces this boundary.
 - **Auto-registration.** `index.ts` imports each convention and calls `registerBundle()`, which auto-derives `ConventionConfig`. No `convention-config.ts` wrappers needed.
@@ -20,7 +20,7 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 
 A convention bundle provides:
 1. **`meaningSurfaces`** — grouped by `surfaceGroupId`, each surface has clauses (fact conditions), encoding (default call), ranking, and teachingLabel
-2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions. Use factory helpers in `core/pipeline/fact-factory.ts` for common patterns (boolean comparison, per-suit, HCP range).
+2. **`factExtensions`** — module-derived facts (e.g., `module.stayman.eligible`) with evaluator functions. Use factory helpers in `conventions/pipeline/fact-factory.ts` for common patterns (boolean comparison, per-suit, HCP range).
 3. **`modules`** — `ConventionModule[]` for declarative surface selection via `collectMatchingClaims()`. Each module has `local` (LocalFsm with phases + phase transitions) and `states` (StateEntry[] — surfaces grouped by conversation state with phase/turn/route/kernel constraints and group-level `negotiationDelta`). Modules are resolved by `buildBundle()` from `memberIds` via module-registry.
 4. **`systemProfile`** — `SystemProfile` declaring modules and attachments
 
@@ -48,7 +48,7 @@ Convention-specific tests live in `__tests__/<convention-name>/` (e.g., `__tests
 
 - Deal constraint `minLengthAny` is OR (any suit meets minimum), not AND
 - Shape indices follow `SUIT_ORDER`: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
-- Conventions with `internal: true` are filtered from the UI by `filterConventions()` in `src/core/display/filter-conventions.ts`
+- Conventions with `internal: true` are filtered from the UI by `filterConventions()` in `src/components/screens/filter-conventions.ts`
 
 ---
 

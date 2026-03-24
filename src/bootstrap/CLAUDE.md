@@ -4,17 +4,23 @@ Dependency assembly and drill lifecycle — session management, config construct
 
 ## Conventions
 
-- **Dependency direction:** `bootstrap/ → engine/ + conventions/core/ + contracts/ + strategy/ + inference/`. Nothing imports from bootstrap/ except `stores/` (type-only for `DrillConfig`, `DrillSession`, `DrillBundle`).
+- **Dependency direction:** `bootstrap/ → engine/ + conventions/ + strategy/ + inference/`. Nothing imports from bootstrap/ except `stores/` (type-only for `DrillConfig`, `DrillSession`, `DrillBundle`).
 - **DrillBundle is the bridge between bootstrap and stores.** `startDrill()` returns a `DrillBundle` containing deal, session, inference engines, and strategy. The caller (GameScreen) passes the bundle to `gameStore.startDrill(bundle)`.
 - **No Svelte imports.** Bootstrap is plain .ts — inference engines are created statically (no dynamic import workaround needed).
-- **Drill tuning types live in `core/contracts/drill.ts`.** `OpponentMode`, `VulnerabilityDistribution`, `DrillTuning`, `DEFAULT_DRILL_TUNING` are re-exported from `bootstrap/types.ts` for backwards compatibility but canonically live in contracts.
 - **`baseSystem` is required at the backend boundary.** `createProtocolDrillConfig()` requires `{ baseSystem: BaseSystemId }` in its options. `startDrill()` accepts an optional `baseSystem` parameter (defaults to SAYC). Backend code never implicitly defaults — the caller provides the system ID.
+
+## Absorbed Types (from former core/contracts/)
+
+- `drill-types.ts` — `DrillTuning`, `DrillSettings`, `OpponentMode`, `VulnerabilityDistribution`, `DEFAULT_DRILL_TUNING` (from former `core/contracts/drill.ts`).
+- `deal-spec-types.ts` — `DealSpec`, `DealSeatConstraint` (from former `core/contracts/deal-spec.ts`).
 
 ## Architecture
 
 ```
 bootstrap/
-  types.ts            DrillConfig, DrillSession, DrillBundle (+ re-exports drill tuning types from contracts/drill.ts)
+  types.ts            DrillConfig, DrillSession, DrillBundle
+  drill-types.ts      DrillTuning, DrillSettings, OpponentMode, VulnerabilityDistribution (from former contracts/)
+  deal-spec-types.ts  DealSpec, DealSeatConstraint (from former contracts/)
   session.ts          createDrillSession() — DrillSession implementation
   config-factory.ts   createDrillConfig() — builds DrillConfig from convention ID + user seat
   start-drill.ts      startDrill() + pickVulnerability() + rotation utilities (rotateSeat180, rotateDealConstraints, rotateAuction)

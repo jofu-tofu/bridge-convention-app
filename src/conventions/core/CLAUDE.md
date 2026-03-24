@@ -36,6 +36,19 @@ core/
     deal-spec-unsat.ts      detectUnsat() — satisfiability checking
 ```
 
+## Absorbed Types (from former core/contracts/)
+
+The following types were absorbed from the dissolved `src/core/contracts/` directory:
+- `fact-catalog.ts` — FactCatalog, FactDefinition, FactLayer, FactComposition (merged with fact-helpers)
+- `agreement-module.ts` — AgreementModule predicates (merged with existing predicates)
+- `explanation-catalog.ts` — ExplanationCatalog, FactExplanationEntry, MeaningExplanationEntry
+- `fact-layer.ts` — FactLayer enum, fact evaluation types
+- `shared-fact-vocabulary.ts` — shared fact ID constants (primitive, bridge-derived)
+- `shared-facts.ts` — shared fact definitions
+- `module-surface.ts` — BidMeaning, FactConstraint, and surface-related types
+- `committed-step.ts` — CommittedStep, NegotiationState, MachineRegisters
+- `convention-types.ts` — ConventionConfig, ConventionBundle, and convention DTOs
+
 ## Convention-Universality Validation
 
 Every subsystem here exists because simpler designs failed the convention-universality test. When modifying any abstraction in this directory, validate the change against all conventions using the meaning pipeline — not just the one motivating the change. If a change would require a convention-specific `if` branch in core infrastructure, the abstraction needs rethinking.

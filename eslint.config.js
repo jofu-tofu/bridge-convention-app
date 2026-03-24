@@ -220,13 +220,6 @@ export default tseslint.config(
             ...componentImports,
             ...strategyImports,
           ],
-          patterns: [{
-            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
-                      "*/conventions/definitions/**", "**/conventions/definitions/**",
-                      "*/conventions/core/**", "**/conventions/core/**",
-                      "*/conventions/teaching/**", "**/conventions/teaching/**"],
-            message: "Import from 'conventions' barrel instead of deep paths",
-          }],
         },
       ],
     },
@@ -648,11 +641,12 @@ export default tseslint.config(
   },
 
   // ── Barrel enforcement: conventions/ ──
+  // Backend modules (strategy/, inference/, bootstrap/, engine/, service/) are exempt —
+  // they import from conventions/ subfolders freely after core/ dissolution.
+  // Only frontend (components/) must use the conventions/ barrel.
   {
     files: [
-      "src/strategy/**/*.ts", "src/inference/**/*.ts", "src/bootstrap/**/*.ts",
       "src/components/**/*.ts", "src/components/**/*.svelte",
-      "src/engine/**/*.ts", "src/evaluation/**/*.ts", "src/service/**/*.ts",
     ],
     ignores: ["**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"],
     rules: {

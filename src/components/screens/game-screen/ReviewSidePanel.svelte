@@ -3,7 +3,7 @@
   import type { Contract, Vulnerability } from "../../../engine/types";
   import { Vulnerability as Vul } from "../../../engine/types";
   import type { BidHistoryEntry } from "../../../strategy/bidding/bidding-types";
-  import type { ConventionContribution } from "../../../conventions/teaching/teaching-types";
+  import type { ConventionContribution } from "../../../conventions";
   import { formatContractWithDeclarer, formatRuleName } from "../../../service/display/format";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import type { DDSAnalysisProps } from "./shared-props";

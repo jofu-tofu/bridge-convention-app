@@ -31,11 +31,11 @@ Auction inference system — extracts hand information from bids with per-partne
 | `posterior/ts-posterior-backend.ts` | `createTsBackend()` — `PosteriorBackend` implementation wrapping existing sampler. Answers `PosteriorQuery` queries. |
 | `posterior/query-port.ts` | `createQueryPort()` — creates `PosteriorQueryPort` from backend + state. Consumer-facing query interface. |
 
-## Contracts Boundary
+## Absorbed Types (from former core/contracts/)
 
-- Cross-boundary inference types (`HandInference`, `PublicBeliefs`, `InferenceProvider`) now live in `inference/inference-types.ts` (moved from `core/contracts/inference.ts`). Re-exported via `core/contracts/convention-types.ts` for backward compatibility.
-- Posterior types (`PosteriorFactProvider`, `BeliefView`, `PublicHandSpace`) live in `inference/posterior/posterior-types.ts` (moved from `core/contracts/posterior.ts`).
-- Posterior boundary types (`FactorGraph`, `PosteriorQueryPort`, `PosteriorBackend`, etc.) live in `inference/posterior/posterior-boundary.ts` (merged from `core/contracts/factor-graph.ts`, `posterior-query.ts`, `posterior-backend.ts`).
+- `inference-types.ts` — Cross-boundary inference types (`HandInference`, `PublicBeliefs`, `InferenceProvider`) moved from `core/contracts/inference.ts`.
+- `posterior/posterior-types.ts` — Posterior types (`PosteriorFactProvider`, `BeliefView`, `PublicHandSpace`) moved from `core/contracts/posterior.ts`.
+- `posterior/posterior-boundary.ts` — Posterior boundary types (`FactorGraph`, `PosteriorQueryPort`, `PosteriorBackend`, etc.) merged from `core/contracts/factor-graph.ts`, `posterior-query.ts`, `posterior-backend.ts`.
 - `inference/types.ts` is the subsystem-local interface layer including the locally-owned `ConditionInference` type.
 
 ## Belief Derivation

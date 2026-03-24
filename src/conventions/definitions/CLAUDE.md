@@ -10,8 +10,8 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `capability-constraint-registry.ts` — Maps each capability ID to a `CapabilityArchetype` defining opener constraints, default auction, allowed dealers, and practitioner turn/seat.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
-- `system-config.ts` — Merged from `core/contracts/system-config.ts` + `core/contracts/base-system-vocabulary.ts`. Contains `BaseSystemId`, `BASE_SYSTEM_SAYC`, `BASE_SYSTEM_TWO_OVER_ONE`, `BASE_SYSTEM_ACOL`, `SystemConfig`, concrete system configs (`SAYC_SYSTEM_CONFIG`, etc.), `getSystemConfig()`, `AVAILABLE_BASE_SYSTEMS`.
-- `system-fact-vocabulary.ts` — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs. Moved from `core/contracts/`.
+- `system-config.ts` — Merged from former `core/contracts/system-config.ts` + `core/contracts/base-system-vocabulary.ts`. Contains `BaseSystemId`, `BASE_SYSTEM_SAYC`, `BASE_SYSTEM_TWO_OVER_ONE`, `BASE_SYSTEM_ACOL`, `SystemConfig`, concrete system configs (`SAYC_SYSTEM_CONFIG`, etc.), `getSystemConfig()`, `AVAILABLE_BASE_SYSTEMS`.
+- `system-fact-vocabulary.ts` — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs. Moved from former `core/contracts/`.
 
 **Architectural rule:** Pedagogical content is auto-derived from module structure. Surface groups come from `deriveSurfaceGroupsFromModules()` (state entries with 2+ surfaces). Cross-module alternatives are handled by `truthSetCalls` in `teaching-resolution.ts`. No manual teaching tags, scope annotations, or derivation files needed. Modules are portable building blocks.
 
@@ -21,12 +21,11 @@ Convention bundles that each implement a bridge bidding convention using the mea
 |------|---------|
 | `config.ts` | Pre-resolved SAYC bundle constant via `resolveBundle(getBundleInput(...), SAYC_SYSTEM_CONFIG)` |
 | `meaning-surfaces.ts` | `BidMeaning[]` definitions — the core bidding logic (single-module bundles). In multi-module bundles like nt-bundle, this is `composed-surfaces.ts` (cross-module composition re-exports). |
-| `facts.ts` | `FactCatalogExtension`s for module-derived facts. Use factory helpers from `core/pipeline/fact-factory.ts` for common patterns. |
+| `facts.ts` | `FactCatalogExtension`s for module-derived facts. Use factory helpers from `conventions/pipeline/fact-factory.ts` for common patterns. |
 | `semantic-classes.ts` | Module-local semantic class constants (not in central registry) |
 | `system-profile.ts` | `SystemProfile` for profile-based module activation |
 | `explanation-catalog.ts` | `ExplanationCatalog` entries for teaching projections |
-| `fact-ids.ts` | `as const` typed ID constants for all module-derived fact IDs |
-| `meaning-ids.ts` | `as const` typed ID constants for all module meaning IDs |
+| `ids.ts` | `as const` typed ID constants for all module-derived fact IDs and meaning IDs (merged from former separate `fact-ids.ts` + `meaning-ids.ts` + `semantic-classes.ts`) |
 | `module.ts` | *(dont-bundle, weak-twos-bundle only)* Single-module convention definition |
 | `index.ts` | Barrel exports |
 | `__tests__/` | Bundle-specific tests |
@@ -66,7 +65,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 Every convention bundle must satisfy all items before being considered complete:
 
 1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `declarationOrder`). `modulePrecedence` defaults to 0 — do NOT set it on surfaces. **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
-2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state. Use factory helpers (`defineBooleanFact`, `definePerSuitFacts`, `defineHcpRangeFact`, `buildExtension`) from `core/pipeline/fact-factory.ts` for common patterns.
+2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state. Use factory helpers (`defineBooleanFact`, `definePerSuitFacts`, `defineHcpRangeFact`, `buildExtension`) from `conventions/pipeline/fact-factory.ts` for common patterns.
 3. **`modules` for surface selection.** `ConventionModule[]` with `local` (LocalFsm: phases + phase transitions) and `states` (StateEntry[]: phase + turn role + optional route/kernel constraints + surfaces). The rule interpreter (`collectMatchingClaims()`) handles surface selection. Modules are resolved by `buildBundle()` from `memberIds` via module-registry.
 4. **`systemProfile` for activation.** Profile-based module activation via `SystemProfile`.
 6. **`declaredCapabilities` for deal constraint derivation.** Declare the bundle's capability (e.g., `CAP_OPENING_1NT`) so `deriveBundleDealConstraints()` can derive opener constraints, default auction, and allowed dealers from the capability archetype registry. Deal constraints are NOT hand-authored — they are derived from capabilities + R1 surface analysis.
@@ -83,7 +82,7 @@ See `docs/convention-templates.md` for skeleton code templates (config.ts, meani
 
 1. Create `definitions/{name}-bundle/` folder with the modules listed in the Folder Structure table above.
 2. Define `BidMeaning[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
-3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses. Use factory helpers from `core/pipeline/fact-factory.ts` for common patterns.
+3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses. Use factory helpers from `conventions/pipeline/fact-factory.ts` for common patterns.
 4. Define module-local semantic class constants in `semantic-classes.ts`.
 5. Define `LocalFsm` and `StateEntry[]` in `{name}-rules.ts`. Declare phases, phase transitions (observation patterns that advance the local FSM), and state entries (phase + turn + optional route/kernel constraints + surfaces). The module-registry assembles these into a `ConventionModule`.
 6. Define `SystemProfile` in `system-profile.ts`.
@@ -100,11 +99,11 @@ See `docs/convention-templates.md` for skeleton code templates (config.ts, meani
 - **Use `createSurface()` for all new surfaces.** Import from `conventions/core/surface-builder.ts` with a `ModuleContext`. The builder derives `clauseId` and `description` automatically. Provide `description` only when it adds parenthetical rationale beyond the mechanical constraint (test: contains `(`). `moduleId` is injected from `ModuleContext`. `modulePrecedence` defaults to 0 — not hand-authored.
 - **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs.
 - **Adding a module must not edit existing modules.**
-- **Generalize before specializing.** When a convention needs a capability that doesn't exist in `core/`, design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in `core/`.
+- **Generalize before specializing.** When a convention needs a capability that doesn't exist in the infrastructure (`conventions/core/`, `conventions/pipeline/`), design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in infrastructure.
 - **Module-derived facts must have `composition`.** All `FactDefinition` objects with `layer: FactLayer.ModuleDerived` must declare a `composition` field describing the loosest constraint under which the fact could be true. The composition is used by deal constraint derivation to derive practitioner seat constraints from R1 surface clauses. Convention authors should write the LOOSEST correct composition — it does not need to be semantically equivalent to the evaluator. Factory helpers (`defineBooleanFact`, `defineHcpRangeFact`) auto-populate composition. Hand-written evaluators must add composition manually.
 - **System-fact-gated surfaces for cross-system modules.** When a bid has different meanings in different systems (e.g., jump shift: strong in SAYC, weak in 2/1), author surfaces for ALL meanings in the same module. Gate each with a system fact clause (`{ factId: SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, operator: "eq", value: true/false }`). The pipeline evaluates all surfaces and selects only those matching the active `SystemConfig`. Never create system-specific modules or branch on `systemId` in module code.
 - **Mandatory explanation entries.** Every module-derived fact and meaning must have an explanation entry enforced by `Record<ModuleFactId, FactExplanationEntry>` and `Record<ModuleMeaningId, MeaningExplanationEntry>` exhaustiveness in `explanation-catalog.ts`. Adding a fact or meaning ID without a corresponding explanation entry is a compile error.
-- **Typed ID constants per module.** Each module has `fact-ids.ts` and `meaning-ids.ts` with `as const` typed ID constants. These typed constants are the keys in the `Record` types, ensuring compile-time tracking of all IDs.
+- **Typed ID constants per module.** Each module has `ids.ts` with `as const` typed ID constants for both fact IDs and meaning IDs. These typed constants are the keys in the `Record` types, ensuring compile-time tracking of all IDs.
 - **Template-form factIds are module-owned.** Template-form factIds (`$suit`) are module-owned in explanation catalogs. The platform catalog (`shared-explanation-catalog.ts`) covers only concrete shared/system fact IDs.
 - **Non-pedagogical facts use `displayText: 'internal'`.** Facts that exist for pipeline routing but have no teaching value use `displayText: 'internal'` with `roles: []` in their explanation entry.
 
@@ -173,7 +172,6 @@ Adding a new convention is a **definitions-only** change. The following director
 | `src/stores/` | Stores bind to the convention registry, not individual conventions |
 | `src/components/` | UI renders from generic `ConventionConfig` and `DecisionSurfaceEntry[]` |
 | `src/conventions/core/` | Pipeline infrastructure is convention-universal (see `core/CLAUDE.md`) |
-| `src/core/contracts/` | Shared contracts are stable; adding a new fact type is a separate task |
 
 If any of these need changes to support a new convention, the boundary has leaked and the core architecture should be fixed instead. ESLint import boundaries enforce this at build time -- a convention that compiles and passes lint has respected the contract.
 

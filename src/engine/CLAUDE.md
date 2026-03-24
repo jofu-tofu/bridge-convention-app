@@ -5,7 +5,7 @@ Pure TypeScript game logic. Zero platform dependencies.
 ## Conventions
 
 - Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `@tauri-apps/*`, `window`, `document`, or `localStorage`. Transport adapters (`tauri-ipc-engine.ts`, `wasm-engine.ts`, `dds-client.ts`, `dds-worker.ts`) are the explicit exception.
-- Engine-facing cross-boundary interfaces and DTOs live in `src/core/contracts/`. Engine may import `core/contracts/`, but `core/contracts/` must stay free of `strategy/`, `stores/`, `components/`, and other higher-level modules.
+- Engine is a leaf module — it does not import from `strategy/`, `conventions/`, `inference/`, `stores/`, `components/`, or other higher-level modules. Cross-boundary types that engine needs are defined locally in `engine/` or passed in by callers.
 - All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator

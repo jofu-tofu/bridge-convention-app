@@ -1,11 +1,17 @@
 # Strategy
 
-AI bidding and play strategies. Consumer of `conventions/core/`, `engine/`, `inference/`, and `contracts/`.
+AI bidding and play strategies. Consumer of `conventions/core/`, `engine/`, and `inference/`.
+
+## Absorbed Types (from former core/contracts/)
+
+- `bidding/bidding-types.ts` — `BiddingStrategy`, `BidResult`, `BiddingContext`, and related bidding contract types.
+- `play/play-types.ts` — `PlayStrategy`, `PlayResult`, and related play contract types.
+- `recommendation-types.ts` — `PracticalRecommendation` and recommendation DTOs.
 
 ## Conventions
 
-- **Dependency direction:** `strategy/ → contracts/ + conventions/core/ + engine/ + inference/`. Engine never imports from strategy/. Conventions never import from strategy/.
-- **Strategy pattern.** `BiddingStrategy` and `PlayStrategy` (defined in `contracts/`) are the core interfaces. Strategies are passed to callers by the drill system.
+- **Dependency direction:** `strategy/ → conventions/core/ + engine/ + inference/`. Engine never imports from strategy/. Conventions never import from strategy/.
+- **Strategy pattern.** `BiddingStrategy` and `PlayStrategy` (defined in `strategy/bidding/bidding-types.ts` and `strategy/play/play-types.ts`) are the core interfaces. Strategies are passed to callers by the drill system.
 - **`null` means "no opinion."** A strategy returning `null` defers to the next strategy in a chain.
 
 ## Architecture
@@ -35,7 +41,7 @@ strategy/
 - `second-hand-low` only fires when following suit (defers to trump/discard when void)
 - `trump-management` won't ruff partner's winning trick
 - All heuristics return cards from `legalPlays` only; fallback always returns lowest legal card
-- `strategy/play/` depends only on `engine/` and `contracts/` — deliberately isolated for independent testing
+- `strategy/play/` depends only on `engine/` — deliberately isolated for independent testing
 
 ## Gotchas
 

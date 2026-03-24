@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getAppStore, getService } from "../../stores/context";
   import { listConventions } from "../../conventions";
-  import type { ConventionConfig } from "../../conventions/core/convention-types";
+  import type { ConventionConfig } from "../../conventions";
   import type { LearningViewport } from "../../service";
   import { filterConventions } from "./filter-conventions";
   import { displayConventionName } from "../../service/display/format";

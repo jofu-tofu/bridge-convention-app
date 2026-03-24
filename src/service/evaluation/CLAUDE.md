@@ -4,7 +4,7 @@ Integration layer between engine internals and CLI agent-facing commands. All ex
 
 ## Conventions
 
-- **Dependency direction:** `evaluation/ → engine/ + core/contracts/ + core/viewport/ + conventions/ + strategy/`. Teaching is accessed via the conventions barrel. CLI commands (`eval.ts`, `play.ts`) import from `evaluation/` only — ESLint blocks direct strategy/conventions/viewport imports in those files.
+- **Dependency direction:** `evaluation/ → engine/ + conventions/ + strategy/ + service/`. Teaching is accessed via the conventions barrel. Viewport builders live in `service/`. CLI commands (`eval.ts`, `play.ts`) import from `evaluation/` only — ESLint blocks direct strategy/conventions imports in those files.
 - **Orchestrator exception:** diagnostic commands (`plan`, `selftest`, `list`, `describe`, `bundles`) access convention internals directly; they are not agent-facing.
 - **Convention authors never modify this module** — it is infrastructure.
 

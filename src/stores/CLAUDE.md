@@ -14,7 +14,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| `app.svelte.ts`      | `createAppStore()` — screen navigation (`select`/`game`/`learning`/`coverage`), selected convention, `learningConvention` state, `coverageBundle` state, dev seed state, autoplay flag, `drillTuning` state (`DrillTuning` from `contracts/drill`, persisted to localStorage — vulnerability distribution, off-convention toggle/rate) |
+| `app.svelte.ts`      | `createAppStore()` — screen navigation (`select`/`game`/`learning`/`coverage`), selected convention, `learningConvention` state, `coverageBundle` state, dev seed state, autoplay flag, `drillTuning` state (`DrillTuning` from `bootstrap/drill-types`, persisted to localStorage — vulnerability distribution, off-convention toggle/rate) |
 | `game.svelte.ts`     | `createGameStore(engine)` — coordinator/facade, phase machine, drill lifecycle, delegates to sub-stores |
 | `bidding.svelte.ts`  | Bidding sub-store — auction state, bid history, feedback, AI bid loop, convention strategy          |
 | `play.svelte.ts`     | Play sub-store — trick state, AI play loop, score calculation, legal plays                         |
@@ -27,9 +27,9 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 
-**Viewport getters:** `gameStore.biddingViewport` — `$derived` `BiddingViewport` computed from current state (see `src/core/viewport/`). `gameStore.viewportFeedback` — `$derived` `ViewportBidFeedback` computed after grading. `gameStore.declarerPromptViewport` — `$derived` `DeclarerPromptViewport` for DECLARER_PROMPT phase. `gameStore.playingViewport` — `$derived` `PlayingViewport` for PLAYING phase. `gameStore.explanationViewport` — `$derived` `ExplanationViewport` for EXPLANATION phase. All enforce the player information boundary: components consume these instead of raw deal/engine state.
+**Viewport getters:** `gameStore.biddingViewport` — `$derived` `BiddingViewport` computed from current state (see `src/service/`). `gameStore.viewportFeedback` — `$derived` `ViewportBidFeedback` computed after grading. `gameStore.declarerPromptViewport` — `$derived` `DeclarerPromptViewport` for DECLARER_PROMPT phase. `gameStore.playingViewport` — `$derived` `PlayingViewport` for PLAYING phase. `gameStore.explanationViewport` — `$derived` `ExplanationViewport` for EXPLANATION phase. All enforce the player information boundary: components consume these instead of raw deal/engine state.
 
-**Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `contracts/`), `TeachingResolution` (re-exported from `contracts/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
+**Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `service/`), `TeachingResolution` (re-exported from `service/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
 
 **Service delegation:** When `BiddingStoreConfig.service` and `handle` are provided, `userBid` delegates to `service.submitBid()` for grading and auction advancement. The store then animates AI bids locally with delays. Legacy local path (no service) preserved for tests. `getExpectedBid()` and `getDebugSnapshot()` are async — they delegate to service when wired.
 
@@ -42,7 +42,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 **User always bids as South.** The `effectiveUserSeat` handles play-phase seat swaps.
 
 **DECLARER_PROMPT conditions:**
-- **North declares (user is dummy):** Offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/core/display/seat-mapping.ts`) or "Skip to Review"
+- **North declares (user is dummy):** Offers "Play as Declarer" (rotates table 180° via `viewSeat()` in `src/components/shared/seat-mapping.ts`) or "Skip to Review"
 - **E/W declares:** Offers "Play as Defender" (user stays South) or "Skip to Review"
 - **South declares:** Shows DECLARER_PROMPT with Play/Skip options (`acceptSouthPlay`/`declineSouthPlay`).
 

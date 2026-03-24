@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Seat } from "../../../engine/types";
   import type { ExplanationViewport } from "../../../service";
-  import type { ConventionConfig } from "../../../conventions/core/convention-types";
+  import type { ConventionConfig } from "../../../conventions";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
   import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";

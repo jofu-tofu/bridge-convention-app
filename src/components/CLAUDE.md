@@ -10,9 +10,9 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 - **EnginePort boundary.** Components never import engine internals (`hand-evaluator`, `deal-generator`, `auction`, `scoring`, `play`). Import types from `engine/types.ts` and constants from `engine/constants.ts` only. Engine access goes through `EnginePort` via context.
 - **Context for DI.** Engine, game store, and app store provided via Svelte context (set in App.svelte, retrieved via `src/stores/context.ts` helpers).
 - **Tailwind CSS + design tokens.** Tailwind utility classes augmented with CSS custom properties defined via `@theme` in `src/app.css`. Midnight Table dark theme. No `<style>` blocks in new components except for CSS that Tailwind can't express (e.g., HandFan overlap/rotation).
-- **Typography tokens for game screens.** All text sizing in game-screen components uses `--text-*` CSS custom properties (via `text-[--text-label]` Tailwind syntax or `font-size: var(--text-label)`) instead of hardcoded Tailwind size classes (`text-xs`, `text-sm`, etc.). `TextToken` type in `src/core/display/tokens.ts`.
-- **Pure function extraction.** Complex logic extracted to `src/core/display/` and `src/bootstrap/` for testability: `sortCards`, `computeTableScale`, `filterConventions` (display/), `startDrill` (bootstrap/).
-- **Companion `.ts` files.** Components with non-trivial logic co-locate a PascalCase `.ts` file next to the `.svelte` file (e.g., `DecisionTree.ts` + `DecisionTree.svelte`). The `.ts` file holds pure functions and types; the `.svelte` file handles rendering. If a second component needs the same logic, move the `.ts` file to `core/display/` or `teaching/`. Tests go in `__tests__/game/` with the original descriptive name (e.g., `DecisionTree.test.ts`).
+- **Typography tokens for game screens.** All text sizing in game-screen components uses `--text-*` CSS custom properties (via `text-[--text-label]` Tailwind syntax or `font-size: var(--text-label)`) instead of hardcoded Tailwind size classes (`text-xs`, `text-sm`, etc.). `TextToken` type in `src/components/shared/tokens.ts`.
+- **Pure function extraction.** Complex logic extracted to `src/components/shared/` and `src/bootstrap/` for testability: `sortCards`, `computeTableScale` (shared/), `startDrill` (bootstrap/). `filterConventions` lives in `src/components/screens/filter-conventions.ts`.
+- **Companion `.ts` files.** Components with non-trivial logic co-locate a PascalCase `.ts` file next to the `.svelte` file (e.g., `DecisionTree.ts` + `DecisionTree.svelte`). The `.ts` file holds pure functions and types; the `.svelte` file handles rendering. If a second component needs the same logic, move the `.ts` file to `components/shared/` or `teaching/`. Tests go in `__tests__/game/` with the original descriptive name (e.g., `DecisionTree.test.ts`).
 
 ## Typography & Responsive Sizing
 
@@ -43,7 +43,7 @@ The game screen uses a **single-source typography system** so that card text, pa
 - **Game screen components MUST use `--text-*` tokens** (via `text-[--text-label]` Tailwind syntax or `font-size: var(--text-label)`) instead of hardcoded `text-xs` / `text-sm` / `text-base`. **Enforced by ESLint** (`local/no-hardcoded-style-classes` — error).
 - **Raw Tailwind color-palette classes** (e.g. `text-red-400`, `bg-green-600`) are **banned** in game components. Use `--color-*` tokens from `app.css @theme` instead: existing semantics (`text-accent-success`, `bg-bg-card`), feedback palettes (`text-fb-incorrect-text`, `bg-fb-correct-bg/80`), phase badges (`bg-phase-bidding`), vulnerable seat (`text-vulnerable-text`), annotations (`text-annotation-announce`), supplementary notes (`text-note-encoding`). **Enforced by ESLint** (`local-colors/no-hardcoded-style-classes` — error).
 - **Non-game screens** (ConventionSelectScreen, LearningScreen, etc.) may use standard Tailwind text classes for now — they scale with the root `clamp(16px, 1.5vw, 28px)`.
-- **TypeScript typing:** `TextToken` type and `TEXT_TOKEN_CLASS` map in `src/core/display/tokens.ts`.
+- **TypeScript typing:** `TextToken` type and `TEXT_TOKEN_CLASS` map in `src/components/shared/tokens.ts`.
 - **Do NOT add new hardcoded px font-sizes** to game components. Derive from the token scale.
 - **ESLint rule:** `eslint-rules/no-hardcoded-style-classes.js` — bans hardcoded Tailwind text-size, raw color-palette, z-index (`z-10` etc.), and border-radius (`rounded-lg` etc.) classes. Scoped to `game-screen/` and `game/` (excluding debug components). All checks = error. Use `--text-*`, `--color-*`, `--z-*`, `--radius-*` tokens instead.
 - **Border-radius:** Use `rounded-[--radius-sm]` / `rounded-[--radius-md]` / `rounded-[--radius-lg]` / `rounded-[--radius-xl]` instead of raw Tailwind `rounded-sm/md/lg/xl`. `rounded-full` is allowed (it's a shape, not a configurable radius).
@@ -73,7 +73,7 @@ components/
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
       ExplanationPhase.svelte        Review phase with showAllCards toggle
-      layout-props.ts                (moved to src/core/display/layout-props.ts)
+      layout-props.ts                (moved to src/components/shared/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, skip-to-review
       ReviewSidePanel.svelte         Tabbed review: Bidding + Analysis, next deal / back to menu
@@ -130,7 +130,7 @@ components/
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
-**Design tokens:** Suit colors use 4-color scheme — card-face colors differ from on-dark-bg colors. See `src/core/display/tokens.ts`.
+**Design tokens:** Suit colors use 4-color scheme — card-face colors differ from on-dark-bg colors. See `src/components/shared/tokens.ts`.
 
 ## Gotchas
 
@@ -139,11 +139,11 @@ components/
 - **Autoplay effect:** GameScreen has a DEV-only `$effect` for `?autoplay=true` that uses `requestAnimationFrame` to defer actions per frame (not `tick()` which causes infinite microtask loops, not `setTimeout` which is a real timer).
 - **Store methods:** `userBid`, `userPlayCard`, `retryBid`, `skipToReview` return `void` (safe for onclick). Only `startDrill` and `getLegalPlaysForSeat` return Promises.
 - GameScreen routes phases to extracted pure components (BiddingPhase, DeclarerPromptPhase, PlayingPhase, ExplanationPhase). GameScreen owns the legal-plays `$effect`.
-- BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. See `src/core/viewport/CLAUDE.md`.
+- BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. Viewport builders live in `src/service/`.
 - DeclarerPromptPhase receives `DeclarerPromptViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
 - PlayingPhase receives `PlayingViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
 - ExplanationPhase receives `ExplanationViewport` as prop — all 4 hands via `allHands`, no raw `Deal`.
-- BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/core/display/seat-mapping.ts`, not CSS rotation.
+- BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/components/shared/seat-mapping.ts`, not CSS rotation.
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.
 - User seat hardcoded to `Seat.South` — future: configurable.
 - Dev-mode seeded RNG via `appStore.devSeed`; seed advances per deal.

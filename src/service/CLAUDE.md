@@ -1,8 +1,8 @@
-<!-- context-layer: service | version: 2 | last-audited: 2026-03-22 -->
+<!-- context-layer: service | version: 3 | last-audited: 2026-03-23 -->
 
 # Service
 
-Session-handle-oriented service module — the single cross-consumer facade for both UI stores and CLI commands. The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never `Deal`, `BidResult`, `ArbitrationResult`, or strategy internals.
+Session-handle-oriented service module — the **sole interface** between UI/CLI and backend game logic. The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never `Deal`, `BidResult`, `ArbitrationResult`, or strategy internals. This is the hexagonal "port" — all game logic lives behind it, enabling future FE/BE split (server-side deployment, remote service adapter, tiered WASM).
 
 ## Architecture
 
@@ -10,7 +10,7 @@ Session-handle-oriented service module — the single cross-consumer facade for 
 |------|------|
 | `index.ts` | Barrel: ServicePort, DevServicePort, createLocalService(), boundary types, store-facing re-exports, evaluation re-exports |
 | `request-types.ts` | Request DTOs: SessionHandle, SessionConfig |
-| `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, etc. |
+| `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, etc. |
 | `port.ts` | ServicePort + DevServicePort interfaces |
 | `local-service.ts` | In-process implementation (implements DevServicePort) |
 | `session-manager.ts` | Map<SessionHandle, SessionState>, createHandle() |
@@ -18,12 +18,20 @@ Session-handle-oriented service module — the single cross-consumer facade for 
 | `bidding-controller.ts` | Pure bidding logic: processBid(), runInitialAiBids(), initializeAuction() |
 | `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
+| `build-viewport.ts` | Viewport builders: buildBiddingViewport(), buildDeclarerPromptViewport(), buildPlayingViewport(), buildExplanationViewport() |
+| `evaluation-oracle.ts` | EvaluationOracle (answer key, internal only) |
+| `learning-viewport.ts` | buildLearningViewport() |
+| `phase-machine.ts` | GamePhase state machine |
+| `practice-preferences.ts` | User preference DTOs (PracticePreferences, DisplayPreferences — from former core/contracts/) |
+| `display/` | Call/contract/card formatting, hand summary (moved from former core/display/) |
+| `util/delay.ts` | Pure delay utility (moved from former core/util/) |
 | `evaluation/` | Stateless CLI grading logic — see below |
-| `evaluation/index.ts` | Subfolder barrel: evaluation-specific exports only |
-| `evaluation/types.ts` | Result types: AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult, RevealStep |
-| `evaluation/helpers.ts` | Shared helpers: seat ops, deal gen, context/viewport construction |
-| `evaluation/atom-evaluator.ts` | `buildAtomViewport()`, `gradeAtomBid()`, `validateAtomId()`, `parseAtomId()` |
-| `evaluation/playthrough-evaluator.ts` | `startPlaythrough()`, `getPlaythroughStepViewport()`, `gradePlaythroughBid()`, `getPlaythroughRevealSteps()` |
+
+## Hexagonal Boundary Rules
+
+- **Callers own types.** Service defines its own viewport/response types. Convention pipeline internals (`PipelineResult`, `MachineDebugSnapshot`, `EvaluatedFacts`) must NOT cross this boundary — create service-owned viewport types instead. Engine primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export.
+- **All UI imports go through service.** Components and stores must import from `service/index.ts` only. When the UI needs something new, add it to `ServicePort` or as a re-export from `index.ts` — never add a direct import from `engine/`, `conventions/`, `inference/`, `strategy/`, or `bootstrap/` in UI code.
+- **Test: "does this work if service runs remotely?"** If a change requires the UI to import a backend type directly, it's wrong.
 
 ## Conventions
 
@@ -45,11 +53,19 @@ The `evaluation/` subfolder contains stateless CLI grading logic (atom evaluatio
 ## Dependency Direction
 
 ```
-components/ → stores/ → service/ → {bootstrap, engine, conventions, strategy, teaching, inference, core}
-cli/agent-commands → service/
+components/ → stores/ → service/ → {bootstrap, engine, conventions, strategy, inference}
+cli/commands/ → service/
 ```
 
 Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
+
+## Known Gaps (Blocking Service as Sole Interface)
+
+These are known violations being addressed incrementally:
+- Stores call viewport builders (`buildDeclarerPromptViewport`, etc.) directly instead of through `ServicePort` methods
+- Stores create `InferenceCoordinator` directly instead of through service
+- `DevServicePort.getSessionBundle()` leaks `DrillBundle` across the boundary (transitional)
+- Several UI components import directly from `engine/` and `conventions/` (see root CLAUDE.md)
 
 ## Inference Invariant
 

@@ -164,7 +164,7 @@ Playthrough-based testing over-covers shallow atoms (depth 0 is hit on every see
 `eval` always outputs sanitized viewports. The plan's `phase1` data (expected bids, state IDs, dependency tree) stays with the orchestrator. Phase 2 agents receive only bundle + seed lists. Agents evaluate using bridge knowledge, not the app's own clauses.
 
 ### Full teaching feedback mirrors the app UI
-`eval --bid` and `play --bid` return `ViewportBidFeedback` + `TeachingDetail` — the same types the Svelte UI renders. Built via `buildViewportFeedback()` and `buildTeachingDetail()` from `src/core/viewport/build-viewport.ts`, using the `BidFeedbackLike` interface (designed for CLI use, no Svelte dependency).
+`eval --bid` and `play --bid` return `ViewportBidFeedback` + `TeachingDetail` — the same types the Svelte UI renders. Built via `buildViewportFeedback()` and `buildTeachingDetail()` from `src/service/build-viewport.ts`, using the `BidFeedbackLike` interface (designed for CLI use, no Svelte dependency).
 
 ### Both seats are testable
 Atoms include both opener (North) and responder (South) states. The BFS path determines which seat is active. In playthroughs, both convention-player bids are presented as steps.
@@ -203,14 +203,14 @@ Controls opponent (E/W) bidding behavior. Maps to the app's `OpponentMode` setti
 | `src/cli/commands/play.ts` | `play` subcommand — playthrough evaluation |
 | `src/cli/commands/plan.ts` | `plan` subcommand — two-phase evaluation plan |
 | `src/cli/help.ts` | Usage text and per-subcommand help |
-| `src/core/viewport/build-viewport.ts` | `buildViewportFeedback()`, `buildTeachingDetail()` — information boundary |
-| `src/core/viewport/player-viewport.ts` | `ViewportBidFeedback`, `TeachingDetail` type definitions |
-| `src/core/contracts/teaching-grading.ts` | `BidGrade`, `TeachingResolution`, `AcceptableBid` — grading contracts |
+| `src/service/build-viewport.ts` | `buildViewportFeedback()`, `buildTeachingDetail()` — information boundary |
+| `src/service/response-types.ts` | `ViewportBidFeedback`, `TeachingDetail` type definitions |
+| `src/conventions/teaching/teaching-types.ts` | `BidGrade`, `TeachingResolution`, `AcceptableBid` — grading contracts |
 | `src/conventions/teaching/teaching-resolution.ts` | `resolveTeachingAnswer()`, `gradeBid()` — 5-level grading implementation |
 | `src/strategy/bidding/protocol-adapter.ts` | `protocolSpecToStrategy()` — ConventionSpec to strategy |
-| `src/conventions/core/pipeline/rule-enumeration.ts` | Rule-based atom enumeration, coverage manifest |
+| `src/conventions/pipeline/rule-enumeration.ts` | Rule-based atom enumeration, coverage manifest |
 | `src/engine/deal-generator.ts` | Constraint-based deal generation with seeded PRNG |
-| `src/core/util/seeded-rng.ts` | `mulberry32()` — deterministic PRNG |
+| `src/engine/seeded-rng.ts` | `mulberry32()` — deterministic PRNG |
 | `src/cli/verify/index.ts` | Verify subcommand dispatcher |
 | `src/cli/verify/types.ts` | Shared types for verification framework |
 | `src/cli/verify/lint.ts` | Module linting (static analysis) |

@@ -32,7 +32,7 @@ Meaning pipeline: surfaces → facts → evaluation → arbitration → encoding
 | `specificity-canons.ts` | Linearization canons for resolving specificity between incomparable surfaces. Canon numbering is stable (append-only). |
 | `fact-inversion.ts` | `invertComposition()` — converts `FactComposition` trees into `InvertedConstraint` (partial `SeatConstraint`). Used by deal constraint derivation to convert module-derived fact compositions into engine-level constraints. |
 | `fact-factory.ts` | `defineBooleanFact()`, `definePerSuitFacts()`, `defineHcpRangeFact()`, `buildExtension()` — factory helpers for module-derived fact definitions |
-| `fact-helpers.ts` | Re-exports `num`, `bool`, `fv` from `core/contracts/fact-helpers.ts` |
+| `fact-helpers.ts` | Re-exports `num`, `bool`, `fv` fact constraint builder helpers |
 | `fact-utils.ts` | `topologicalSort()` — dependency-ordered sort of `FactDefinition[]` by `derivesFrom` edges |
 | `hand-fact-resolver.ts` | `createHandFactResolver()` — bridge between fact catalog and posterior sampler. Evaluates any factId against a hand using catalog evaluators in dependency order. |
 | `shared-fact-catalog.ts` | `createSharedFactCatalog()`, `SHARED_EVALUATORS` — shared (non-module) fact catalog with primitive and bridge-derived evaluators |
@@ -61,9 +61,18 @@ Tests live in `__tests__/` and use:
 
 Convention-specific integration tests belong in `conventions/__tests__/<bundle-name>/`, not here.
 
+## Absorbed Types (from former core/contracts/)
+
+The following types were absorbed from the dissolved `src/core/contracts/` directory:
+- `meaning.ts` — BidMeaning, MeaningProposal, and meaning-related types
+- `bid-action.ts` — BidAction, intent types
+- `tree-evaluation.ts` — EvaluatedFacts, clause evaluation types
+- `provenance.ts` — DecisionProvenance, ActivationTrace
+- `evidence-bundle.ts` — EvidenceBundle, evidence types
+
 ## Boundary Rules
 
-- **Allowed imports:** `engine/`, `core/contracts/`, `conventions/core/` (for `ConventionModule`, `rule-module` types)
+- **Allowed imports:** `engine/`, `conventions/core/` (for `ConventionModule`, `rule-module` types)
 - **Blocked imports:** `conventions/definitions/`, `components/`, `stores/`, `strategy/`, `bootstrap/`, `service/`, `teaching/`
 
 ---
