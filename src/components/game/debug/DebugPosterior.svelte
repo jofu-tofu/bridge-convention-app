@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PosteriorSummary } from "../../../core/contracts";
+  import type { PosteriorSummary } from "../../../strategy/recommendation-types";
   import type { PosteriorFactValue } from "../../../inference/posterior/posterior-types";
   import DebugSection from "./DebugSection.svelte";
 

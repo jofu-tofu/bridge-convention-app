@@ -4,7 +4,7 @@
 import { describe, test, expect } from "vitest";
 import { BidSuit } from "../../engine/types";
 import type { Call, ContractBid } from "../../engine/types";
-import type { ResolvedCandidateDTO } from "../../core/contracts";
+import type { ResolvedCandidateDTO } from "../../conventions/pipeline/tree-evaluation";
 import {
   scoreCandidatePractically,
   buildPracticalRecommendation,

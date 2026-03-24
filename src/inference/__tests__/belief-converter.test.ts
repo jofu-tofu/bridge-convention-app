@@ -5,7 +5,7 @@ import { createInitialBeliefState } from "../belief-accumulator";
 import { applyAnnotation } from "../belief-accumulator";
 import type { PublicBeliefState, BidAnnotation } from "../types";
 import type { PrivateBeliefState } from "../private-belief";
-import type { BeliefData } from "../../core/contracts";
+import type { BeliefData } from "../inference-types";
 import { toBeliefData } from "../belief-converter";
 
 import type { FactConstraint } from "../../conventions/core/agreement-module";

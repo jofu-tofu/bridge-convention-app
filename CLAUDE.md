@@ -46,8 +46,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 
 ## Conventions
 
-- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `strategy/`. Engine imports `core/contracts/` for cross-boundary types (`BiddingStrategy`, `BidResult`)
-- **Contracts layer.** `src/core/contracts/` contains cross-boundary DTOs and strategy interfaces shared across module boundaries. Keep files domain-grouped; do not add types used by only one subsystem.
+- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `strategy/`.
 - **Registry pattern.** Use registries for conventions and strategies, not hardcoded switch statements
 - **EnginePort abstraction.** UI communicates with engine through `EnginePort` interface; engine never imports UI
 - **Svelte 5 runes.** Use `$state`, `$derived`, `$effect` — no legacy `$:` reactive statements
@@ -55,8 +54,9 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **No `const enum`** — breaks Vite/isolatedModules; use regular `enum`
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
-- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Builders in `src/core/viewport/` filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
-- **Service is the single cross-consumer facade for both UI stores and CLI commands.** `service/evaluation/` is an internal subfolder containing stateless CLI grading logic (atom evaluation, playthrough evaluation). External consumers must import via the `service/` root barrel, enforced by ESLint. Agent-facing CLI commands (`eval.ts`, `play.ts`) import from `service/` only — ESLint blocks direct imports from `strategy/`, `conventions/`, `core/viewport/`, `core/contracts/`, `engine/`, and `evaluation/` in those files.
+- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Viewport builders in `src/service/` filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
+- **Service is the sole interface for UI and CLI.** All UI components (`components/`, `stores/`) and CLI commands (`cli/`) must import exclusively from `service/` — never directly from `engine/`, `conventions/`, `inference/`, `strategy/`, or `bootstrap/`. `service/evaluation/` is an internal subfolder containing stateless CLI grading logic. ESLint enforces this for CLI commands; UI enforcement is in progress. When adding new functionality the UI needs, expose it through `ServicePort` or as a re-export from `service/index.ts` — do not add direct imports from backend modules.
+- **Callers own their types.** Service defines its own viewport/response types (`BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, etc.) rather than exposing internal types from backend modules. Engine domain primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export since they are universal vocabulary. Convention pipeline internals (`PipelineResult`, `ArbitrationResult`, `MachineDebugSnapshot`, `EvaluatedFacts`) must NOT cross the service boundary — create service-owned viewport types instead.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
 ## Design Philosophy
@@ -67,7 +67,8 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Contain complexity through modularity.** Low impact radius (changes to one convention don't ripple), clean module boundaries (runtime/pipeline are separate subsystems), and convention-agnostic infrastructure in `core/` that never assumes convention-specific structure.
 - **Semantic ownership: fields belong where they mean something.** Before adding a field to a type, ask: "does this describe what this type IS, or is it metadata about how something else uses it?" Derive what you can from existing data; don't store what can be computed.
 - **No backwards compatibility during migrations.** When refactoring types or interfaces, delete the old versions immediately. Do not keep deprecated shims or backward-compat aliases — removing them lets the compiler surface every call site that needs updating, ensuring the migration is completed fully rather than left half-done.
-- **Bundle-specific knowledge stays in the bundle.** Core infrastructure (`core/`, `inference/`, `conventions/core/`, `conventions/pipeline/`) must not contain convention-specific fact IDs, heuristics, or special-case logic. If a behavior differs between conventions, the bundle declares it (e.g., `isPublic` on clauses) and the framework reads the declaration.
+- **Hexagonal architecture: service as the port.** The system is moving toward a clean front-end / back-end split. `ServicePort` is the hexagonal port — all game logic lives behind it, and all UI consumers (stores, components) call through it. This enables: (1) server-side deployment of convention logic, (2) tiered WASM builds, (3) a remote service adapter replacing `local-service.ts`. When evaluating any change, ask: "does this work if service runs on a different machine?" If it requires the UI to import backend types directly, it's wrong.
+- **Bundle-specific knowledge stays in the bundle.** Infrastructure modules (`inference/`, `conventions/core/`, `conventions/pipeline/`) must not contain convention-specific fact IDs, heuristics, or special-case logic. If a behavior differs between conventions, the bundle declares it (e.g., `isPublic` on clauses) and the framework reads the declaration.
 - **System-agnostic modules, system-aware facts.** Modules never import concrete system configs or branch on system identity. System-level differences (HCP thresholds, forcing durations) are expressed as `SystemConfig` fields, surfaced as system facts via `system-fact-vocabulary.ts`, and referenced in surface clauses. See `src/core/contracts/CLAUDE.md` § System Parameterization for the full module author guide.
 
 ## System Parameterization
@@ -76,25 +77,28 @@ Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differen
 
 ## Architecture
 
+**Dependency direction (hexagonal boundary):**
+```
+components/ → stores/ → service/ → {bootstrap, engine, conventions, strategy, inference}
+cli/commands/ → service/
+```
+UI layers (`components/`, `stores/`) import ONLY from `service/`. Backend modules behind service import freely from each other. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
+
 ```
 src/
   engine/          Pure TS game logic (zero platform deps)
-  core/            Shared infrastructure
-    contracts/       Cross-boundary DTOs and strategy interfaces (bidding, meaning, facts, provenance, posterior)
-    display/         UI display utilities (format, hand-summary, tokens, sort-cards, seat-mapping, hcp)
-    viewport/        Player information boundary (BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, EvaluationOracle)
-    util/            Zero-dep pure utilities (delay, seeded-rng)
   conventions/     Convention system
-    core/            Registry, context factory, bundle registry, runtime (runtime/) — public API via index.ts barrel
+    core/            Registry, context factory, bundle registry, runtime — public API via index.ts barrel
     pipeline/        Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding)
     teaching/        Teaching resolution, projection builder, parse-tree builder, teaching graph
-    definitions/     Convention bundles: nt-bundle/ (1NT Responses), bergen-bundle/ (Bergen Raises), weak-twos-bundle/ (Weak Two Bids + Ogust), dont-bundle/ (DONT competitive overcalls) — each with meaning-surfaces.ts, machine.ts, facts.ts, config.ts
+    definitions/     Convention bundles: nt-bundle/, bergen-bundle/, weak-twos-bundle/, dont-bundle/
   inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
   strategy/        AI strategies
-    bidding/         Meaning-pipeline strategy adapter (meaning-strategy.ts), pass strategy, natural fallback, practical recommender
+    bidding/         Meaning-pipeline strategy adapter, pass strategy, natural fallback, practical recommender
     play/            Play strategies (random, heuristic; future: DDS, signal/discard)
   service/         Session-handle-oriented service layer — owns game state, exposes viewport-only data
     evaluation/    Stateless CLI grading logic (atom evaluation, playthrough evaluation) — internal to service
+    display/       Call/contract/card formatting, hand summary
   bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
   cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
@@ -117,17 +121,12 @@ tests/
 | Subsystem | Entry | Summary |
 |-----------|-------|---------|
 | Engine | `src/engine/types.ts` | Pure TS game logic |
-| Core | `src/core/` | Shared infrastructure (contracts, display, util) |
-| Contracts | `src/core/contracts/index.ts` | Cross-boundary DTOs and strategy interfaces |
-| Display | `src/core/display/format.ts` | UI display utilities |
-| Util | `src/core/util/delay.ts` | Zero-dep pure utilities |
-| Viewport | `src/core/viewport/player-viewport.ts` | Player information boundary (BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, EvaluationOracle) |
 | Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + teaching/ + definitions/) |
 | Pipeline | `src/conventions/pipeline/run-pipeline.ts` | Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding) |
 | Teaching | `src/conventions/teaching/teaching-resolution.ts` | Teaching resolution and projection (inside conventions/) |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
 | Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline; `runPipeline()` in `conventions/pipeline/run-pipeline.ts`) |
-| Service | `src/service/index.ts` | Session-handle service layer + evaluation facade (local-service, bidding/play/dds controllers, evaluation/) |
+| Service | `src/service/index.ts` | Session-handle service layer + evaluation facade (local-service, bidding/play/dds controllers, evaluation/, display/) |
 | Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
 | CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
@@ -225,7 +224,7 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
-- **Convention imports.** External consumers import from `conventions/index.ts` barrel — deep imports into `conventions/core/`, `conventions/pipeline/`, `conventions/teaching/`, or `conventions/definitions/` are ESLint-blocked.
+- **Convention imports.** External consumers import from `conventions/index.ts` barrel — deep imports into `conventions/core/`, `conventions/pipeline/`, `conventions/teaching/`, or `conventions/definitions/` are ESLint-blocked. UI components should import convention types only through `service/index.ts`.
 - All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. Deal constraints are DERIVED from capabilities + R1 surface analysis by `deriveBundleDealConstraints()` — not hand-authored on `BundleInput`. All teaching content (surface groups, alternatives) is auto-derived from module structure — surface groups come from `deriveSurfaceGroupsFromModules()` (state entries with 2+ surfaces), cross-module alternatives from `truthSetCalls` in `teaching-resolution.ts`. No manual tags, scope annotations, or derivation files needed. Modules are portable building blocks that compose into any bundle.
 - **CLI commands use rule enumeration.** All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration (`findPathToState`, `buildTargetedAuction`, `resolveAuction`) has been removed from `cli/shared.ts`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
 - Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
@@ -244,9 +243,6 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 **Context tree** (read the relevant one before working in that directory):
 
 - `src/engine/CLAUDE.md` — engine purity, module graph, key patterns
-- `src/core/CLAUDE.md` — shared infrastructure overview (contracts, display, util)
-- `src/core/contracts/CLAUDE.md` — cross-boundary contract inventory and dependency rules
-- `src/core/viewport/CLAUDE.md` — player information boundary (BiddingViewport, EvaluationOracle)
 - `src/conventions/CLAUDE.md` — registry pattern, convention bundles
 - `src/conventions/core/CLAUDE.md` — runtime, bundle systems
 - `src/conventions/pipeline/CLAUDE.md` — pipeline module graph, 6-stage pipeline flow, test architecture
@@ -255,9 +251,9 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port, migration status
 - `src/strategy/CLAUDE.md` — meaning-strategy pattern, play heuristics
 - `src/service/CLAUDE.md` — session-handle service layer, viewport-only boundary, controllers
+- `src/service/evaluation/CLAUDE.md` — stateless CLI grading logic
 - `src/bootstrap/CLAUDE.md` — DrillConfig, DrillSession, DrillBundle, drill lifecycle
 - `src/cli/CLAUDE.md` — headless coverage test runner
-- `src/core/display/CLAUDE.md` — display utility inventory, dependency rules
 - `src/conventions/teaching/CLAUDE.md` — convention evaluation for teaching
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
@@ -300,4 +296,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-22 | version=17 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-23 | version=18 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->

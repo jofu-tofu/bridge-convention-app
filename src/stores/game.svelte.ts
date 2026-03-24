@@ -20,13 +20,9 @@ import type {
   SessionHandle,
   AiBidEntry,
 } from "../service";
-import type {
-  BidResult,
-  BidHistoryEntry,
-  PlayStrategy,
-  PlayContext,
-  PublicBeliefs,
-} from "../core/contracts";
+import type { BidResult, BidHistoryEntry } from "../strategy/bidding/bidding-types";
+import type { PlayStrategy, PlayContext } from "../strategy/play/play-types";
+import type { PublicBeliefs } from "../inference/inference-types";
 import type { StrategyEvaluation } from "../conventions";
 import type { PublicBeliefState, InferenceSnapshot } from "../service";
 import { createInferenceCoordinator } from "../service";
@@ -56,7 +52,7 @@ import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
 // ── Re-exports ──────────────────────────────────────────────────────
 
 export type { GamePhase } from "../service/phase-machine";
-export type { BidHistoryEntry } from "../core/contracts";
+export type { BidHistoryEntry } from "../strategy/bidding/bidding-types";
 
 // ── Exported types (previously in sub-stores) ───────────────────────
 

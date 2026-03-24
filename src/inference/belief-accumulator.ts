@@ -1,6 +1,6 @@
 import type { Seat } from "../engine/types";
 import { Seat as SeatEnum } from "../engine/types";
-import type { PublicBeliefs } from "../core/contracts";
+import type { PublicBeliefs } from "./inference-types";
 import type { BidAnnotation, PublicBeliefState } from "./types";
 import { derivePublicBeliefs } from "./derive-beliefs";
 

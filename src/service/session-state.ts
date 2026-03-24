@@ -7,9 +7,10 @@
 import type { Deal, Auction, AuctionEntry, Contract, Call, Seat, Card, Trick, PlayedCard } from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
 import type { DrillSession, DrillBundle } from "../bootstrap/types";
-import type { BidResult, BidHistoryEntry, PlayStrategy } from "../core/contracts";
+import type { BidResult, BidHistoryEntry } from "../strategy/bidding/bidding-types";
+import type { PlayStrategy } from "../strategy/play/play-types";
 import type { ConventionStrategy, StrategyEvaluation } from "../conventions";
-import type { PublicBeliefs } from "../core/contracts";
+import type { PublicBeliefs } from "../inference/inference-types";
 import type { InferenceCoordinator } from "../inference/inference-coordinator";
 import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
 import type { GamePhase } from "./phase-machine";

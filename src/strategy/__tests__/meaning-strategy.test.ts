@@ -3,7 +3,7 @@ import { BidSuit, Seat } from "../../engine/types";
 import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { buildAuction } from "../../engine/auction-helpers";
-import type { BiddingContext } from "../../core/contracts";
+import type { BiddingContext } from "../bidding/bidding-types";
 import { meaningToStrategy } from "../bidding/meaning-strategy";
 import { runPipeline, specFromBundle, ntBundle, bergenBundle } from "../../conventions";
 import { protocolSpecToStrategy } from "../bidding/protocol-adapter";

@@ -1,4 +1,4 @@
-import type { BidHistoryEntry } from "../../core/contracts";
+import type { BidHistoryEntry } from "../../strategy/bidding/bidding-types";
 
 // ─── Round-by-round grouping ──────────────────────────────────
 

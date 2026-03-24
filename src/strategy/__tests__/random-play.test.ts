@@ -3,7 +3,7 @@ import {
   createRandomPlayStrategy,
   randomPlayStrategy,
 } from "../play/random-play";
-import type { PlayContext } from "../../core/contracts";
+import type { PlayContext } from "../play/play-types";
 import { Suit, Rank, Seat, BidSuit } from "../../engine/types";
 import type { Card, Contract } from "../../engine/types";
 

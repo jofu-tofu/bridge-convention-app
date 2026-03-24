@@ -1,7 +1,7 @@
 // TraceCollector — mutable builder that collects trace events during convention
 // evaluation and produces an immutable EvaluationTrace DTO.
 
-import type { EvaluationTrace } from "../../core/contracts";
+import type { EvaluationTrace } from "../../conventions/pipeline/tree-evaluation";
 
 export class TraceCollector {
   private conventionId = "";

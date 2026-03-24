@@ -1,7 +1,8 @@
 // Practical scorer types — local to strategy/bidding/.
 // Only PracticalRecommendation crosses to contracts/.
 
-import type { ResolvedCandidateDTO, PracticalScoreBreakdown } from "../../core/contracts";
+import type { ResolvedCandidateDTO } from "../../conventions/pipeline/tree-evaluation";
+import type { PracticalScoreBreakdown } from "../recommendation-types";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 
 /** Discriminated union for scorer input — normative (from convention pipeline) or pragmatic (tactical). */

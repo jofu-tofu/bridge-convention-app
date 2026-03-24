@@ -4,7 +4,7 @@ import type { Call } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { BidGrade } from "../../conventions";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { BidResult } from "../../core/contracts";
+import type { BidResult } from "../../strategy/bidding/bidding-types";
 import type { ConventionStrategy } from "../../conventions";
 import { makeDrillSession, makeSimpleTestDeal, flushWithFakeTimers, createTestServiceSession } from "../../test-support/fixtures";
 import type { DrillBundle } from "../../bootstrap/types";

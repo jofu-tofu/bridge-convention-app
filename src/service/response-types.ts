@@ -13,7 +13,7 @@
  */
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution } from "../engine/types";
-import type { BidHistoryEntry } from "../core/contracts";
+import type { BidHistoryEntry } from "../strategy/bidding/bidding-types";
 import type { BidGrade } from "../conventions/teaching/teaching-types";
 import type { ExplanationNode, WhyNotEntry, ConventionContribution, MeaningView, CallProjection, ParseTreeView } from "../conventions/teaching/teaching-types";
 import type { EncoderKind } from "../conventions/pipeline/provenance";

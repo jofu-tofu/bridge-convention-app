@@ -1,8 +1,5 @@
-import type {
-  BiddingContext,
-  BidResult,
-  SurfaceGroup,
-} from "../../core/contracts";
+import type { BiddingContext, BidResult } from "./bidding-types";
+import type { SurfaceGroup } from "../../conventions/teaching/teaching-types";
 import type { ConventionStrategy, StrategyEvaluation, BidMeaning } from "../../conventions";
 import type { FactCatalog } from "../../conventions/core/fact-catalog";
 import type { ExplanationCatalog } from "../../conventions/core/explanation-catalog";

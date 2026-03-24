@@ -1,5 +1,5 @@
 import { Seat } from "../engine/types";
-import type { BiddingStrategy } from "../core/contracts";
+import type { BiddingStrategy } from "../strategy/bidding/bidding-types";
 import type { DrillConfig } from "./types";
 import type { OpponentMode } from "./types";
 import type { BaseSystemId } from "../conventions/definitions/system-config";

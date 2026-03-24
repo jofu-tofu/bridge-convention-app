@@ -5,7 +5,7 @@
 import { describe, test, expect } from "vitest";
 import { BidSuit, Seat, Vulnerability } from "../../engine/types";
 import type { Auction, AuctionEntry, Call, ContractBid, HandEvaluation } from "../../engine/types";
-import type { BiddingContext } from "../../core/contracts";
+import type { BiddingContext } from "../bidding/bidding-types";
 import type { PrivateBeliefState } from "../../inference/private-belief";
 import {
   DistortionType,

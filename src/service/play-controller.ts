@@ -8,7 +8,7 @@
 
 import type { Card, Trick, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
-import type { PlayContext } from "../core/contracts";
+import type { PlayContext } from "../strategy/play/play-types";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import { randomPlayStrategy } from "../strategy/play/random-play";
 import type { SessionState } from "./session-state";

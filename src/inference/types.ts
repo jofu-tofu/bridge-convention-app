@@ -1,5 +1,6 @@
 import type { Seat, AuctionEntry, Call } from "../engine/types";
-import type { PublicBeliefs, BidAlert, InferenceProvider } from "../core/contracts";
+import type { PublicBeliefs, InferenceProvider } from "./inference-types";
+import type { BidAlert } from "../strategy/bidding/bidding-types";
 import type { FactConstraint } from "../conventions/core/agreement-module";
 
 // ConditionInference — structured inference metadata for condition → HandInference mapping.
@@ -17,7 +18,7 @@ export interface ConditionInference {
   readonly params: Record<string, unknown>;
 }
 
-// Re-export inference DTOs from contracts (canonical location for cross-boundary types)
+// Re-export inference DTOs (canonical location: inference-types.ts)
 export type {
   SuitInference,
   HandInference,
@@ -25,7 +26,7 @@ export type {
   DerivedRanges,
   QualitativeConstraint,
   InferenceProvider,
-} from "../core/contracts";
+} from "./inference-types";
 
 /** Snapshot of inference state after a single bid is processed. */
 export interface InferenceSnapshot {

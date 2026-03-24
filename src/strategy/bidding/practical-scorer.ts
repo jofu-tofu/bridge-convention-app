@@ -3,7 +3,8 @@
 
 import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
-import type { ResolvedCandidateDTO, PracticalRecommendation, PracticalScoreBreakdown } from "../../core/contracts";
+import type { ResolvedCandidateDTO } from "../../conventions/pipeline/tree-evaluation";
+import type { PracticalRecommendation, PracticalScoreBreakdown } from "../recommendation-types";
 import type { PragmaticCandidate } from "./pragmatic-generator";
 import type { ScoredCandidate, ScorableCandidate } from "./practical-types";
 

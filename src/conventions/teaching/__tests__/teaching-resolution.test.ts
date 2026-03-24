@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../../engine/types";
-import type { BidResult, ResolvedCandidateDTO, SurfaceGroup } from "../../../core/contracts";
+import type { BidResult } from "../../../strategy/bidding/bidding-types";
+import type { ResolvedCandidateDTO } from "../../pipeline/tree-evaluation";
+import type { SurfaceGroup } from "../teaching-types";
 import { BidGrade, gradeBid, resolveTeachingAnswer } from "../teaching-resolution";
 
 function makeCandidate(overrides: Partial<ResolvedCandidateDTO> = {}): ResolvedCandidateDTO {

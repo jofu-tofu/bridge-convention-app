@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BidHistoryEntry } from "../../core/contracts";
+  import type { BidHistoryEntry } from "../../strategy/bidding/bidding-types";
   import RoundBidList from "./RoundBidList.svelte";
 
   interface Props {

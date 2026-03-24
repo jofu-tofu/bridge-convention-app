@@ -8,8 +8,8 @@ import { hand } from "../../engine/__tests__/fixtures";
 import { buildAuction } from "../../engine/auction-helpers";
 import { createStrategyChain } from "../bidding/strategy-chain";
 import { TraceCollector } from "../bidding/trace-collector";
-import type { BiddingStrategy, BidResult } from "../../core/contracts";
-import type { BiddingContext } from "../../core/contracts";
+import type { BiddingStrategy, BidResult } from "../bidding/bidding-types";
+import type { BiddingContext } from "../bidding/bidding-types";
 
 describe("TraceCollector", () => {
   test("builds an EvaluationTrace with all fields", () => {

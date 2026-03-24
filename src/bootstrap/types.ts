@@ -1,9 +1,6 @@
 import type { Hand, Auction, Seat, Deal } from "../engine/types";
-import type {
-  BiddingStrategy,
-  BidResult,
-  PlayStrategy,
-} from "../core/contracts";
+import type { BiddingStrategy, BidResult } from "../strategy/bidding/bidding-types";
+import type { PlayStrategy } from "../strategy/play/play-types";
 import type { ConventionStrategy } from "../conventions";
 import type { InferenceConfig } from "../inference/types";
 import type { InferenceEngine } from "../inference/inference-engine";

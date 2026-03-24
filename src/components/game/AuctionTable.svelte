@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AuctionEntry } from "../../engine/types";
-  import type { BidHistoryEntry } from "../../core/contracts";
+  import type { BidHistoryEntry } from "../../strategy/bidding/bidding-types";
   import { Seat } from "../../engine/types";
   import { SEAT_INDEX } from "../../engine/constants";
   import { formatCall } from "../../service/display/format";

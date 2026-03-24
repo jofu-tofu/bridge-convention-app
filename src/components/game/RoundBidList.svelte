@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BidHistoryEntry } from "../../core/contracts";
+  import type { BidHistoryEntry } from "../../strategy/bidding/bidding-types";
   import { groupBidsByRound } from "./RoundBidList";
   import { formatCall } from "../../service/display/format";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";

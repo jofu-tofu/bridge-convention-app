@@ -4,7 +4,7 @@
 import { Seat, Suit } from "../engine/types";
 import type { PublicBeliefState } from "./types";
 import type { PrivateBeliefState } from "./private-belief";
-import type { BeliefData } from "../core/contracts";
+import type { BeliefData } from "./inference-types";
 
 /**
  * Convert PublicBeliefState to BeliefData structural type for convention pipeline.

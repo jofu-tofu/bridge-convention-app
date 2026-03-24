@@ -2,7 +2,7 @@
   import type { Trick, Seat, Card as CardType } from "../../../engine/types";
   import type { AuctionEntry } from "../../../engine/types";
   import type { AuctionEntryView } from "../../../service";
-  import type { BidHistoryEntry } from "../../../core/contracts";
+  import type { BidHistoryEntry } from "../../../strategy/bidding/bidding-types";
   import { Suit } from "../../../engine/types";
   import { SUIT_ORDER, SEAT_INDEX } from "../../../engine/constants";
   import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../service/display/format";

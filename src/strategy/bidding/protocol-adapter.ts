@@ -6,10 +6,7 @@
 // Rule-only path: all bundles use modules for surface selection
 // with per-step kernel threading (Phase 5 complete). Old FSM path removed.
 
-import type {
-  BiddingContext,
-  BidResult,
-} from "../../core/contracts";
+import type { BiddingContext, BidResult } from "./bidding-types";
 import type { ConventionStrategy, StrategyEvaluation, BidMeaning, ConventionSpec, ConventionModule, ModuleSurfaceResult } from "../../conventions";
 import type { FactCatalog } from "../../conventions/core/fact-catalog";
 import { createSharedFactCatalog, createSystemFactCatalog, collectMatchingClaims, collectMatchingClaimsWithPhases, flattenSurfaces, normalizeIntent, advanceLocalFsm, runPipeline, PLATFORM_EXPLANATION_ENTRIES } from "../../conventions";

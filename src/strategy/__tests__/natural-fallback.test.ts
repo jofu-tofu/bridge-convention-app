@@ -4,7 +4,7 @@ import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { buildAuction } from "../../engine/auction-helpers";
 import { isLegalCall } from "../../engine/auction";
-import type { BiddingContext } from "../../core/contracts";
+import type { BiddingContext } from "../bidding/bidding-types";
 import { naturalFallbackStrategy } from "../bidding/natural-fallback";
 
 function makeContext(

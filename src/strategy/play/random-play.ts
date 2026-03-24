@@ -1,4 +1,4 @@
-import type { PlayStrategy, PlayResult } from "../../core/contracts";
+import type { PlayStrategy, PlayResult } from "./play-types";
 
 export function createRandomPlayStrategy(
   rng: () => number = Math.random,

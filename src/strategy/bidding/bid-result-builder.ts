@@ -1,8 +1,4 @@
-import type {
-  BiddingContext,
-  BidResult,
-  BidAlert,
-} from "../../core/contracts";
+import type { BiddingContext, BidResult, BidAlert } from "./bidding-types";
 import type { FactConstraint } from "../../conventions/core/agreement-module";
 import type { ResolvedCandidateDTO } from "../../conventions/pipeline/tree-evaluation";
 import type { PipelineCarrier, PipelineResult } from "../../conventions";

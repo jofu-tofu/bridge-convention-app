@@ -5,7 +5,7 @@
 // directly into strategy/bidding/ internals.
 
 import type { ConventionSpec, ConventionStrategy } from "../conventions";
-import type { BiddingStrategy } from "../core/contracts";
+import type { BiddingStrategy } from "../strategy/bidding/bidding-types";
 import type { OpponentMode } from "./drill-types";
 import { protocolSpecToStrategy } from "../strategy/bidding/protocol-adapter";
 import { createStrategyChain } from "../strategy/bidding/strategy-chain";

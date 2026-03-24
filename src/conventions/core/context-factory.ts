@@ -1,6 +1,6 @@
 import type { Hand, Auction, HandEvaluation } from "../../engine/types";
 import { Seat, Vulnerability } from "../../engine/types";
-import type { BiddingContext } from "../../core/contracts";
+import type { BiddingContext } from "../../strategy/bidding/bidding-types";
 
 /**
  * Canonical factory for BiddingContext construction.

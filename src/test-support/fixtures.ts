@@ -9,7 +9,7 @@ import { tick } from "svelte";
 import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../engine/types";
 import type { Card, Contract, Deal } from "../engine/types";
 import type { DrillSession } from "../bootstrap/types";
-import type { PlayStrategy } from "../core/contracts";
+import type { PlayStrategy } from "../strategy/play/play-types";
 import type { EnginePort } from "../engine/port";
 import type { DevServicePort, SessionHandle } from "../service";
 import { createLocalService } from "../service";

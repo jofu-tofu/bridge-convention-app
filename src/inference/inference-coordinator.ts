@@ -1,7 +1,7 @@
 import type { Auction, AuctionEntry } from "../engine/types";
 import type { Seat } from "../engine/types";
-import type { BidResult } from "../core/contracts";
-import type { PublicBeliefs } from "../core/contracts";
+import type { BidResult } from "../strategy/bidding/bidding-types";
+import type { PublicBeliefs } from "./inference-types";
 import type { InferenceEngine } from "./inference-engine";
 import type { InferenceExtractor, InferenceExtractorInput, InferenceSnapshot, PublicBeliefState } from "./types";
 import { createInitialBeliefState, applyAnnotation } from "./belief-accumulator";
