@@ -58,6 +58,7 @@ export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS } from "../engine/constants";
 // Engine display utilities (pure functions on API contract types)
 export { callKey, callsMatch } from "../engine/call-helpers";
 export { isVulnerable } from "../engine/scoring";
+export { evaluateHand } from "../engine/hand-evaluator";
 
 // ── Convention system re-exports ──
 

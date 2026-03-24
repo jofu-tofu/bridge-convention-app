@@ -226,6 +226,9 @@ export default tseslint.config(
   },
 
   // ── Module boundary: components/ ──
+  // Components must import ONLY from service/, stores/, other components,
+  // and external packages. All backend modules are blocked.
+  // Debug drawer components are exempt (need raw Deal access for dev tools).
   {
     files: ["src/components/**/*.svelte", "src/components/**/*.ts"],
     ignores: [
@@ -237,17 +240,28 @@ export default tseslint.config(
       "no-restricted-imports": [
         "error",
         {
-          paths: [
-            ...strategyImports,
-            ...inferenceImports,
+          patterns: [
+            {
+              group: ["**/engine/**", "*/engine/**"],
+              message: "UI boundary: components must import from service/, not engine/ directly.",
+            },
+            {
+              group: ["**/conventions/**", "*/conventions/**"],
+              message: "UI boundary: components must import from service/, not conventions/ directly.",
+            },
+            {
+              group: ["**/strategy/**", "*/strategy/**"],
+              message: "UI boundary: components must import from service/, not strategy/ directly.",
+            },
+            {
+              group: ["**/inference/**", "*/inference/**"],
+              message: "UI boundary: components must import from service/, not inference/ directly.",
+            },
+            {
+              group: ["**/bootstrap/**", "*/bootstrap/**"],
+              message: "UI boundary: components must import from service/, not bootstrap/ directly.",
+            },
           ],
-          patterns: [{
-            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
-                      "*/conventions/definitions/**", "**/conventions/definitions/**",
-                      "*/conventions/core/**", "**/conventions/core/**",
-                      "*/conventions/teaching/**", "**/conventions/teaching/**"],
-            message: "Import from 'conventions' barrel instead of deep paths",
-          }],
         },
       ],
     },

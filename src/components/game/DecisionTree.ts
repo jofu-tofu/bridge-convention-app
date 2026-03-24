@@ -1,8 +1,5 @@
-import type { BiddingContext } from "../../service";
-import type { Call, Hand } from "../../service";
-import { Seat, Suit, Rank } from "../../service";
-import { createBiddingContext } from "../../conventions";
-import { evaluateHand } from "../../engine/hand-evaluator";
+import type { BiddingContext, Call, Hand } from "../../service";
+import { Seat, Suit, Rank, createBiddingContext, evaluateHand } from "../../service";
 
 export interface TreeDisplayRow {
   readonly id: string;

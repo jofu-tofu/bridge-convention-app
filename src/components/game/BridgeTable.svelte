@@ -1,10 +1,8 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import type { Hand, Card as CardType } from "../../service";
-  import { Seat, Rank, Suit as SuitEnum, Vulnerability } from "../../service";
+  import type { Hand, Card as CardType, HandEvaluationView } from "../../service";
+  import { Seat, Rank, Suit as SuitEnum, Vulnerability, isVulnerable } from "../../service";
   import { viewSeat } from "../shared/seat-mapping";
-  import { calculateHcp, getSuitLength, calculateDistributionPoints } from "../../engine/hand-evaluator";
-  import { isVulnerable } from "../../service";
   import HandFan from "./HandFan.svelte";
 
   interface Props {
@@ -16,6 +14,8 @@
      *  When provided, only seats present in the map are rendered face-up.
      *  Seats absent from the map are shown face-down with no cards. */
     visibleHands?: Partial<Record<Seat, Hand>>;
+    /** Pre-computed hand evaluation from viewport (avoids calling engine functions). */
+    handEvaluation?: HandEvaluationView;
     children?: Snippet;
     /** During play: legal cards for the active seat */
     legalPlays?: readonly CardType[];
@@ -37,6 +37,7 @@
     hands,
     faceUpSeats,
     visibleHands,
+    handEvaluation,
     children,
     legalPlays = [],
     onPlayCard,
@@ -56,20 +57,9 @@
     rank: Object.values(Rank)[i]!,
   }));
 
-  const southHcp = $derived.by(() => {
-    if (useViewport) {
-      const southHand = visibleHands?.[Seat.South];
-      return southHand ? calculateHcp(southHand) : 0;
-    }
-    const southHand = hands?.[Seat.South];
-    return southHand ? calculateHcp(southHand) : 0;
-  });
-
-  const southDistPoints = $derived.by(() => {
-    const hand = useViewport ? visibleHands?.[Seat.South] : hands?.[Seat.South];
-    if (!hand) return 0;
-    return calculateDistributionPoints(getSuitLength(hand)).total;
-  });
+  // Use pre-computed viewport handEvaluation when available
+  const southHcp = $derived(handEvaluation?.hcp ?? 0);
+  const southDistPoints = $derived(handEvaluation?.distributionPoints.total ?? 0);
 
   // Map physical screen positions to logical seats
   const northSeat = $derived(viewSeat(Seat.North, rotated));
