@@ -1093,8 +1093,11 @@ export function createGameStore(
     },
     get playingViewport(): PlayingViewport | null {
       if (!deal || phase !== "PLAYING") return null;
+      const seat = effectiveUserSeat ?? userSeat;
+      if (!seat) return null;
       return buildPlayingViewport({
         deal,
+        userSeat: seat,
         faceUpSeats: getFaceUpSeats(),
         auction,
         bidHistory,

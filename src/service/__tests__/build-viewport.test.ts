@@ -218,6 +218,7 @@ describe("buildPlayingViewport", () => {
   ): BuildPlayingViewportInput {
     return {
       deal: makeSimpleTestDeal(),
+      userSeat: Seat.South,
       faceUpSeats: new Set([Seat.South, Seat.North]),
       rotated: false,
       contract: makeContract(Seat.South),
@@ -420,6 +421,7 @@ describe("information boundary", () => {
   it("PlayingViewport does not contain EvaluationOracle fields", () => {
     const vp = buildPlayingViewport({
       deal,
+      userSeat: Seat.South,
       faceUpSeats: new Set([Seat.South, Seat.North]),
       rotated: false,
       contract: makeContract(Seat.South),

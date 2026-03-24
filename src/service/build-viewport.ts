@@ -418,6 +418,7 @@ export function buildDeclarerPromptViewport(
 
 export interface BuildPlayingViewportInput {
   readonly deal: Deal;
+  readonly userSeat: Seat;
   readonly faceUpSeats: ReadonlySet<Seat>;
   readonly auction?: Auction;
   readonly bidHistory?: readonly BidHistoryEntry[];
@@ -444,13 +445,14 @@ export function buildPlayingViewport(
   input: BuildPlayingViewportInput,
 ): PlayingViewport {
   const {
-    deal, faceUpSeats, auction, bidHistory, rotated, contract,
+    deal, userSeat, faceUpSeats, auction, bidHistory, rotated, contract,
     currentPlayer, currentTrick, trumpSuit, legalPlays,
     userControlledSeats, remainingCards, tricks,
     declarerTricksWon, defenderTricksWon,
   } = input;
 
   return {
+    userSeat,
     rotated,
     visibleHands: filterVisibleHands(deal, faceUpSeats),
     dealer: deal.dealer,

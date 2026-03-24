@@ -462,6 +462,7 @@ export interface DeclarerPromptViewport {
 
 /** Viewport for the play phase. */
 export interface PlayingViewport {
+  readonly userSeat: Seat;
   readonly rotated: boolean;
   readonly visibleHands: Partial<Record<Seat, Hand>>;
   readonly dealer: Seat;

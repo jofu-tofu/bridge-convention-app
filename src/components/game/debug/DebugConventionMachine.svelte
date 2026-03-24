@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { MachineDebugSnapshot } from "../../../conventions";
+  import type { MachineDebugSnapshot } from "../../../service";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {

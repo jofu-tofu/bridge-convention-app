@@ -641,26 +641,9 @@ export default tseslint.config(
   },
 
   // ── Barrel enforcement: conventions/ ──
-  // Backend modules (strategy/, inference/, bootstrap/, engine/, service/) are exempt —
-  // they import from conventions/ subfolders freely after core/ dissolution.
-  // Only frontend (components/) must use the conventions/ barrel.
-  {
-    files: [
-      "src/components/**/*.ts", "src/components/**/*.svelte",
-    ],
-    ignores: ["**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"],
-    rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [{
-          group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
-                    "*/conventions/definitions/**", "**/conventions/definitions/**",
-                    "*/conventions/core/**", "**/conventions/core/**",
-                    "*/conventions/teaching/**", "**/conventions/teaching/**"],
-          message: "Import from 'conventions' barrel instead of deep paths",
-        }],
-      }],
-    },
-  },
+  // REMOVED after core/ dissolution. Types now live in their owning modules
+  // (conventions/core/, conventions/pipeline/, etc.) and all consumers import
+  // from those modules directly. No barrel re-export indirection needed.
 
   // ── Module boundary: test-support/ ──
   {

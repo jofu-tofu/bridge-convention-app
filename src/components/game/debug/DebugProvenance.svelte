@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PipelineResult } from "../../../conventions";
+  import type { PipelineResult } from "../../../service";
   import { fmtCall, truncate } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
