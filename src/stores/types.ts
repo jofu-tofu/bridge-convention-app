@@ -16,9 +16,8 @@ import type {
   DDSolution,
 } from "../engine/types";
 import type { Suit } from "../engine/types";
-import type { DrillBundle } from "../bootstrap/types";
-import type { DevServicePort, SessionHandle } from "../service";
-import type { PublicBeliefs } from "../inference/inference-types";
+import type { DrillBundle, DevServicePort, SessionHandle } from "../service";
+import type { ServicePublicBeliefs, ServiceGamePhase, ServiceInferenceSnapshot, ServicePublicBeliefState } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
   BidFeedback,
@@ -27,8 +26,6 @@ import type {
   DebugLogEntry,
   PlayLogEntry,
 } from "./game.svelte";
-import type { InferenceSnapshot, PublicBeliefState } from "../inference/types";
-import type { GamePhase } from "../service/phase-machine";
 
 // ── Game Store ──────────────────────────────────────────────────────
 
@@ -37,7 +34,7 @@ type PromptMode = "defender" | "south-declarer" | "declarer-swap";
 export interface GameStore {
   // Coordinator state
   readonly deal: Deal | null;
-  readonly phase: GamePhase;
+  readonly phase: ServiceGamePhase;
   readonly contract: Contract | null;
   readonly effectiveUserSeat: Seat | null;
   readonly playUserSeat: Seat;
@@ -86,14 +83,14 @@ export interface GameStore {
   readonly teachingDetail: TeachingDetail | null;
 
   // Public belief state
-  readonly publicBeliefState: PublicBeliefState;
+  readonly publicBeliefState: ServicePublicBeliefState;
 
   // Debug observability
   readonly debugLog: DebugLogEntry[];
   readonly playLog: PlayLogEntry[];
-  readonly playInferences: Record<Seat, PublicBeliefs> | null;
-  readonly inferenceTimeline: readonly InferenceSnapshot[];
-  readonly ewInferenceTimeline: readonly InferenceSnapshot[];
+  readonly playInferences: Record<Seat, ServicePublicBeliefs> | null;
+  readonly inferenceTimeline: readonly ServiceInferenceSnapshot[];
+  readonly ewInferenceTimeline: readonly ServiceInferenceSnapshot[];
 
   // Namespaced sub-store accessors (backward compat)
   readonly bidding: {

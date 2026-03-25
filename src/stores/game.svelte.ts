@@ -20,14 +20,14 @@ import type {
   SessionHandle,
   AiBidEntry,
 } from "../service";
-import type { BidResult, BidHistoryEntry } from "../strategy/bidding/bidding-types";
-import type { PlayStrategy, PlayContext } from "../strategy/play/play-types";
-import type { PublicBeliefs } from "../inference/inference-types";
+import type { BidResult, BidHistoryEntry } from "../service";
+import type { PlayStrategy, PlayContext } from "../service";
+import type { ServicePublicBeliefs } from "../service/response-types";
 import type { StrategyEvaluation } from "../conventions";
 import type { PublicBeliefState, InferenceSnapshot } from "../service";
 import { createInferenceCoordinator } from "../service";
 import { randomPlayStrategy } from "../service";
-import { nextSeat, partnerSeat, areSamePartnership } from "../engine/constants";
+import { nextSeat, partnerSeat, areSamePartnership } from "../service";
 import {
   buildBiddingViewport,
   buildDeclarerPromptViewport,
@@ -42,17 +42,17 @@ import type {
   PlayingViewport,
   ExplanationViewport,
 } from "../service";
-import type { ViewportBidGrade } from "../service/response-types";
+import type { ViewportBidGrade } from "../service";
 import type { BidFeedbackDTO } from "../service";
-import { isValidTransition } from "../service/phase-machine";
-import type { GamePhase } from "../service/phase-machine";
+import { isValidTransition } from "../session/phase-machine";
+import type { GamePhase } from "../session/phase-machine";
 import { delay } from "../service/util/delay";
 import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
 
 // ── Re-exports ──────────────────────────────────────────────────────
 
-export type { GamePhase } from "../service/phase-machine";
-export type { BidHistoryEntry } from "../strategy/bidding/bidding-types";
+export type { ServiceGamePhase as GamePhase } from "../service/response-types";
+export type { BidHistoryEntry } from "../service";
 
 // ── Exported types (previously in sub-stores) ───────────────────────
 
@@ -194,7 +194,7 @@ export function createGameStore(
   let activePlayStrategy: PlayStrategy | null = null;
   let activeContract: Contract | null = null;
   let activeUserSeat: Seat | null = null;
-  let activeInferences: Record<Seat, PublicBeliefs> | null = null;
+  let activeInferences: Record<Seat, ServicePublicBeliefs> | null = null;
   let onPlayComplete: ((score: number | null) => void) | null = null;
 
   // ── DDS state ─────────────────────────────────────────────────
@@ -206,7 +206,7 @@ export function createGameStore(
 
   // ── Inference state ───────────────────────────────────────────
   const inference = createInferenceCoordinator();
-  let playInferences = $state<Record<Seat, PublicBeliefs> | null>(null);
+  let playInferences = $state<Record<Seat, ServicePublicBeliefs> | null>(null);
   let publicBeliefState = $state<PublicBeliefState>(inference.getPublicBeliefState());
 
   // ── Derived ───────────────────────────────────────────────────

@@ -2,12 +2,12 @@
      Shows the most important info (state, recommended bid, grade) without
      requiring any expansion. Designed for quick "what happened?" scanning. -->
 <script lang="ts">
-  import type { DebugSnapshot } from "../../../stores/game.svelte";
+  import type { DebugSnapshotBase } from "../../../service/debug-types";
   import type { DebugBidFeedback } from "../../../stores/game.svelte";
   import { fmtCall, GRADE_COLORS, GRADE_COLOR_FALLBACK } from "./debug-helpers";
 
   interface Props {
-    snapshot: DebugSnapshot | null;
+    snapshot: DebugSnapshotBase | null;
     feedback: DebugBidFeedback | null;
     phase: string;
   }

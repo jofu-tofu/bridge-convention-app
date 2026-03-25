@@ -1,5 +1,5 @@
 import type { createAppStore } from "./app.svelte";
-import { getConvention, getModule } from "../conventions";
+import { getConvention, getModule } from "../service";
 
 export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const params = new URLSearchParams(window.location.search);

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { DebugLogEntry } from "../../../stores/game.svelte";
+  import type { ServiceDebugLogEntry } from "../../../service/debug-types";
   import { fmtCall, gradeBorderColor } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
-    debugLog: readonly DebugLogEntry[];
+    debugLog: readonly ServiceDebugLogEntry[];
   }
 
   let { debugLog }: Props = $props();

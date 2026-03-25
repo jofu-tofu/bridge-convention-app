@@ -75,7 +75,7 @@ export type { Call, Card, Hand, ContractBid, Contract, AuctionEntry, Trick, Play
 // Engine port
 export type { EnginePort } from "../engine/port";
 // Engine constants (display/layout concerns)
-export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS } from "../engine/constants";
+export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS, nextSeat, partnerSeat, areSamePartnership } from "../engine/constants";
 // Engine display utilities (pure functions on API contract types)
 export { callKey, callsMatch } from "../engine/call-helpers";
 export { isVulnerable } from "../engine/scoring";
@@ -85,6 +85,8 @@ export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
 
 export { ConventionCategory } from "../conventions/core/convention-types";
 export type { ConventionConfig } from "../conventions/core/convention-types";
+export { getConvention } from "../conventions";
+export { getModule } from "../conventions";
 export type { ConventionContribution, ParseTreeView, TeachingProjection, CallProjection, MeaningView, WhyNotEntry } from "../conventions/teaching/teaching-types";
 export type { EncoderKind } from "../conventions/pipeline/provenance";
 export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions/definitions/system-config";
@@ -108,8 +110,5 @@ export type { PosteriorFactValue } from "../inference/posterior/posterior-types"
 export type { OpponentMode, VulnerabilityDistribution } from "../session/drill-types";
 export { DEFAULT_DRILL_TUNING } from "../session/drill-types";
 
-// ── Debug-only re-exports (for debug drawer components) ──
-
-export type { EvaluatedFacts } from "../conventions/core/fact-catalog";
-export type { PipelineResult } from "../conventions/pipeline/pipeline-types";
-export type { MachineDebugSnapshot } from "../conventions/pipeline/strategy-evaluation";
+// ── Debug-only types — import from service/debug-types instead ──
+// EvaluatedFacts, PipelineResult, MachineDebugSnapshot moved to debug-types.ts
