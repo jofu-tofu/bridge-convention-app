@@ -31,9 +31,17 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `service/`), `TeachingResolution` (re-exported from `service/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
 
-**Service delegation:** When `BiddingStoreConfig.service` and `handle` are provided, `userBid` delegates to `service.submitBid()` for grading and auction advancement. The store then animates AI bids locally with delays. Legacy local path (no service) preserved for tests. `getExpectedBid()` and `getDebugSnapshot()` are async — they delegate to service when wired.
+**Viewport as single source of truth (service path).** When `activeHandle` is set (service-backed session), the store is a thin reactive cache of viewports from the service. Bidding state (`auction`, `bidHistory`, `legalCalls`, `currentTurn`, `isUserTurn`) and play state (`tricks`, `currentTrick`, `currentPlayer`, etc.) are derived from `cachedBiddingViewport` / `cachedPlayingViewport` via `$derived`. No local state mutation during the game — the service owns the truth.
 
-**Race condition protection:** `isProcessing` flag + `playAborted` cancellation flag for AI play loop.
+**Animation via incremental reveal.** AI bid/play animation uses an overlay counter (`biddingAnim` / `playAnim`) that controls how much of a complete viewport to display. The service returns the *final* viewport (including all AI bids/plays); the store holds `{ totalAiBids, revealed }` and increments `revealed` with delays. `displayedAuctionEntries` / `displayedCurrentTrick` are `$derived` values that slice the viewport's entries. No state mutation during animation.
+
+**Legacy local path.** When no `activeHandle` is set (no service session), the store falls back to local bidding/play with engine calls. Preserved for tests that don't wire a service.
+
+**Inference via service.** In the service path, inference state is fetched from `service.getPublicBeliefState(handle)` after bids complete — no local inference feeding needed. The local `InferenceCoordinator` is still initialized for the legacy (no-handle) path and for `capturePlayInferences()`.
+
+**Cancellation via handle comparison.** Every animation loop captures `handle` at the start and checks `activeHandle !== handle` after each await. If a new drill started mid-animation, the operation bails cleanly. `resetImpl()` sets `activeHandle = null` and clears all animation state.
+
+**Race condition protection:** `biddingProcessing` / `playProcessing` flags + `playAborted` cancellation flag. `biddingProcessing` stays true throughout animation AND phase transitions, so bid buttons are disabled the entire time.
 
 ## Game Phases
 
@@ -62,7 +70,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - `context.ts` provides Svelte context DI helpers (`setEngine`, `setGameStore`, `setAppStore`, `getEngine`, `getGameStore`, `getAppStore`) — used by `App.svelte` and components
 - `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `meaning`) + `seat` and `isUser`
 - Default auction entries get generic explanations (e.g., "Opening 1NT bid") — richer explanations deferred to V2
-- `isUserTurn` is `$derived` — combines `currentTurn`, `drillSession.isUserSeat()`, and `!isProcessing`
+- `isUserTurn` — in service path, derived from `!biddingProcessing && !biddingAnim && phase === "BIDDING" && cachedBiddingViewport?.isUserTurn`. In legacy local path, derived from `currentTurn`, `activeSession.isUserSeat()`, and `!biddingProcessing`. Bidding animation keeps `biddingProcessing` true, so buttons are disabled throughout.
 
 ---
 
@@ -85,4 +93,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-18 | version=10 | dir-commits-at-audit=13 | tree-sig=dirs:2,files:19,exts:ts:18,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-25 | version=11 | dir-commits-at-audit=14 | tree-sig=dirs:2,files:19,exts:ts:18,md:1 -->

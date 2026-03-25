@@ -116,7 +116,7 @@
 
   onMount(() => {
     // Skip if a deal is already in progress
-    if (gameStore.deal && gameStore.phase === "BIDDING") {
+    if (gameStore.isInitialized && gameStore.phase === "BIDDING") {
       dealNumber++;
       return;
     }
@@ -230,7 +230,7 @@
 
 <svelte:window bind:innerWidth={innerW} bind:innerHeight={innerH} />
 
-{#if gameStore.deal}
+{#if gameStore.isInitialized}
   <main class="h-full w-full flex flex-row overflow-hidden" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px; --width-side-panel: {sidePanelW}px;">
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden" style="max-width: {availableW}px;">
     <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[--z-above-all] focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">

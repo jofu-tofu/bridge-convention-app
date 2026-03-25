@@ -28,6 +28,7 @@ import type {
   DDSolutionResult,
   ConventionInfo,
   ServiceInferenceSnapshot,
+  ServicePublicBeliefState,
 } from "./response-types";
 import type {
   ServiceDebugSnapshot,
@@ -61,6 +62,11 @@ export interface ServicePort {
   getDeclarerPromptViewport(handle: SessionHandle): Promise<DeclarerPromptViewport | null>;
   getPlayingViewport(handle: SessionHandle): Promise<PlayingViewport | null>;
   getExplanationViewport(handle: SessionHandle): Promise<ExplanationViewport | null>;
+
+  // ── Inference ─────────────────────────────────────────────────────
+  /** Get the current public belief state from the session's inference coordinator.
+   *  Eliminates the need for the store to maintain its own inference coordinator. */
+  getPublicBeliefState(handle: SessionHandle): Promise<ServicePublicBeliefState>;
 
   // ── DDS analysis ────────────────────────────────────────────────
   getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;

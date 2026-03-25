@@ -13,7 +13,7 @@
 
 import { type Call, type Card, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
-import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport } from "./response-types";
+import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ServicePublicBeliefState } from "./response-types";
 import { buildBiddingViewport, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
 import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
 import { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
@@ -146,9 +146,10 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       const state = manager.get(handle);
       const result = await processBid(state, call, engine);
 
-      // Build next viewport if bid was accepted
+      // Build next viewport if bid was accepted (including auction-completing bids,
+      // so the store can animate AI bids before transitioning phases)
       let nextViewport: BiddingViewport | null = null;
-      if (result.accepted && !result.auctionComplete) {
+      if (result.accepted) {
         nextViewport = buildBiddingViewportFromState(state);
       }
 
@@ -226,6 +227,13 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async getExplanationViewport(handle: SessionHandle): Promise<ExplanationViewport | null> {
       const state = manager.get(handle);
       return buildExplanationViewportFromState(state);
+    },
+
+    // ── Inference ────────────────────────────────────────────────
+
+    async getPublicBeliefState(handle: SessionHandle): Promise<ServicePublicBeliefState> {
+      const state = manager.get(handle);
+      return state.publicBeliefState as ServicePublicBeliefState;
     },
 
     // ── DDS analysis ──────────────────────────────────────────────

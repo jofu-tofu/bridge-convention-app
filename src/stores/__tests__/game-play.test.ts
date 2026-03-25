@@ -259,7 +259,7 @@ describe("randomPlayStrategy", () => {
       makeCard(Suit.Hearts, Rank.Ace),
       makeCard(Suit.Spades, Rank.King),
     ];
-    const result = randomPlayStrategy.suggest({
+    const result = await randomPlayStrategy.suggest({
       hand: { cards: [] },
       currentTrick: [],
       previousTricks: [],

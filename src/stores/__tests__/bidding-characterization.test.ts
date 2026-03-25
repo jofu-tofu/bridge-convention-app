@@ -107,8 +107,8 @@ describe("bidding characterization — lock existing behavior", () => {
 
     expect(store.bidFeedback).not.toBeNull();
     expect(store.bidFeedback!.grade).not.toBe(BidGrade.Correct);
-    // Auction unchanged
-    expect(store.auction).toBe(auctionBefore);
+    // Auction unchanged (structural equality — getter may return new object)
+    expect(store.auction).toEqual(auctionBefore);
   });
 
   it("retryBid clears feedback without changing auction", async () => {
@@ -129,7 +129,7 @@ describe("bidding characterization — lock existing behavior", () => {
     await flushActions();
 
     expect(store.bidFeedback).toBeNull();
-    expect(store.auction).toBe(auctionBefore);
+    expect(store.auction).toEqual(auctionBefore);
   });
 
   it("AI bids run after user's correct bid", async () => {

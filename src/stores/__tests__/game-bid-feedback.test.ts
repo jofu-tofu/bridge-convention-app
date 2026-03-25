@@ -176,7 +176,7 @@ describe("bid feedback — user-facing behavior", () => {
       await flushActions();
 
       // Auction unchanged — wrong bid was not applied
-      expect(store.auction).toBe(auctionBefore);
+      expect(store.auction).toEqual(auctionBefore);
     });
   });
 
@@ -265,7 +265,7 @@ describe("bid feedback — user-facing behavior", () => {
       await flushActions();
 
       // Auction unchanged — wrong bid was not applied
-      expect(store.auction).toBe(auctionBefore);
+      expect(store.auction).toEqual(auctionBefore);
     });
   });
 

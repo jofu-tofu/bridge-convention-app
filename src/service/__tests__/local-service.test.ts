@@ -66,6 +66,32 @@ describe("local service", () => {
     expect(result.aiBids).toBeDefined();
   });
 
+  it("submitBid accepted with auction complete → nextViewport is non-null", async () => {
+    // After a few calls the auction completes — nextViewport should still be returned
+    let callCount = 0;
+    const engine = createStubEngine({
+      async isAuctionComplete() {
+        callCount++;
+        // Complete after enough bids (user bid + AI bids cycle)
+        return callCount >= 4;
+      },
+    });
+    const service = createLocalService(engine);
+
+    const handle = await service.createSession({ conventionId: "nt-bundle" });
+    await service.startDrill(handle);
+
+    const expected = await service.getExpectedBid(handle);
+    expect(expected).not.toBeNull();
+
+    const result = await service.submitBid(handle, expected!.call);
+
+    expect(result.accepted).toBe(true);
+    // Key assertion: nextViewport is populated even when auction completes
+    expect(result.nextViewport).not.toBeNull();
+    expect(result.nextViewport!.auctionEntries.length).toBeGreaterThan(0);
+  });
+
   it("submitBid wrong → not accepted, feedback with grade", async () => {
     const engine = createStubEngine({
       async isAuctionComplete() { return false; },

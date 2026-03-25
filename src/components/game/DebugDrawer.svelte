@@ -122,8 +122,8 @@
           conventionName={appStore.selectedConvention?.name ?? null}
           conventionId={appStore.selectedConvention?.id ?? null}
           devSeed={appStore.devSeed}
-          dealer={gameStore.deal?.dealer}
-          vulnerability={gameStore.deal?.vulnerability}
+          dealer={gameStore.biddingViewport?.dealer ?? gameStore.deal?.dealer}
+          vulnerability={gameStore.biddingViewport?.vulnerability ?? gameStore.deal?.vulnerability}
           phase={gameStore.phase}
         />
         <DebugAllHands deal={gameStore.deal} allSeats={ALL_SEATS} />

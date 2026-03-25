@@ -32,6 +32,12 @@ import type {
 type PromptMode = "defender" | "south-declarer" | "declarer-swap";
 
 export interface GameStore {
+  // Session identity
+  readonly activeHandle: SessionHandle | null;
+
+  /** True when a drill has been started (deal is loaded). Prefer over `deal !== null`. */
+  readonly isInitialized: boolean;
+
   // Coordinator state
   readonly deal: Deal | null;
   readonly phase: ServiceGamePhase;
@@ -51,15 +57,15 @@ export interface GameStore {
   readonly isFeedbackBlocking: boolean;
 
   // Play state
-  readonly tricks: Trick[];
-  readonly currentTrick: PlayedCard[];
+  readonly tricks: readonly Trick[];
+  readonly currentTrick: readonly PlayedCard[];
   readonly currentPlayer: Seat | null;
   readonly declarerTricksWon: number;
   readonly defenderTricksWon: number;
   readonly dummySeat: Seat | null;
   readonly score: number | null;
   readonly trumpSuit: Suit | undefined;
-  readonly legalPlaysForCurrentPlayer: Card[];
+  readonly legalPlaysForCurrentPlayer: readonly Card[];
   readonly userControlledSeats: readonly Seat[];
   readonly remainingCardsPerSeat: Partial<Record<Seat, readonly Card[]>>;
 
@@ -102,8 +108,8 @@ export interface GameStore {
     readonly isUserTurn: boolean;
   };
   readonly play: {
-    readonly tricks: Trick[];
-    readonly currentTrick: PlayedCard[];
+    readonly tricks: readonly Trick[];
+    readonly currentTrick: readonly PlayedCard[];
     readonly currentPlayer: Seat | null;
     readonly declarerTricksWon: number;
     readonly defenderTricksWon: number;
