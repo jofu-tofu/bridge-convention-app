@@ -60,7 +60,7 @@ export function buildBidResult(
   return {
     call: selected.call,
     ruleName: selected.proposal.meaningId,
-    explanation: selected.proposal.evidence.provenance.nodeName,
+    explanation: selected.proposal.teachingLabel ?? selected.proposal.evidence.provenance.nodeName,
     meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
     alert,
     constraints,

@@ -82,6 +82,35 @@ describe("buildModuleLearningViewport", () => {
     it("is in nt-bundle", () => {
       expect(viewport.bundleIds).toContain("nt-bundle");
     });
+
+    it("surfaces include clause data", () => {
+      for (const phase of viewport.phases) {
+        for (const surface of phase.surfaces) {
+          expect(surface.clauses.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it("each clause has required fields", () => {
+      for (const phase of viewport.phases) {
+        for (const surface of phase.surfaces) {
+          for (const clause of surface.clauses) {
+            expect(clause.factId).toBeTruthy();
+            expect(clause.operator).toBeTruthy();
+            expect(clause.description).toBeTruthy();
+            expect(typeof clause.isPublic).toBe("boolean");
+          }
+        }
+      }
+    });
+
+    it("Stayman ask-major has HCP clause", () => {
+      const idlePhase = viewport.phases.find((p) => p.phase === "idle")!;
+      const askMajor = idlePhase.surfaces.find((s) => s.meaningId.includes("ask-major"))!;
+      const hcpClause = askMajor.clauses.find((c) => c.factId === "hand.hcp");
+      expect(hcpClause).toBeDefined();
+      expect(hcpClause!.description).toContain("HCP");
+    });
   });
 
   describe("bergen viewport", () => {

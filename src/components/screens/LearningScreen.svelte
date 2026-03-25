@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteSet } from "svelte/reactivity";
   import { getAppStore, getService } from "../../stores/context";
   import type { ModuleCatalogEntry, ModuleLearningViewport } from "../../service";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
@@ -10,6 +11,12 @@
   let innerW = $state(1024);
   let sidebarOpen = $state(false);
   let showAllModules = $state(false);
+  let expandedClauses = new SvelteSet<string>();
+
+  function toggleClauses(meaningId: string) {
+    if (expandedClauses.has(meaningId)) expandedClauses.delete(meaningId);
+    else expandedClauses.add(meaningId);
+  }
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
 
@@ -278,6 +285,22 @@
                           </div>
                           {#if surface.explanationText && surface.explanationText !== "internal"}
                             <p class="text-xs text-text-muted leading-relaxed mt-1">{surface.explanationText}</p>
+                          {/if}
+                          {#if surface.clauses.length > 0}
+                            <button class="text-xs text-text-muted hover:text-text-secondary mt-1 cursor-pointer"
+                              onclick={() => toggleClauses(surface.meaningId)}>
+                              {expandedClauses.has(surface.meaningId) ? '\u25BE' : '\u25B8'}
+                              {surface.clauses.length} requirement{surface.clauses.length === 1 ? '' : 's'}
+                            </button>
+                            {#if expandedClauses.has(surface.meaningId)}
+                              <div class="mt-2 ml-4 space-y-1">
+                                {#each surface.clauses as clause, i (i)}
+                                  <div class="text-xs {clause.isPublic ? 'text-text-secondary' : 'text-text-muted italic'}">
+                                    {clause.description}
+                                  </div>
+                                {/each}
+                              </div>
+                            {/if}
                           {/if}
                         </div>
                       {/each}

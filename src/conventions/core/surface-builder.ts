@@ -8,18 +8,17 @@ import { deriveClauseId, deriveClauseDescription } from "../pipeline/clause-deri
 
 /**
  * Simplified clause input for the surface builder.
- * `clauseId` and `description` are auto-derived from factId/operator/value.
- * Provide `description` explicitly only when adding convention-specific
- * rationale (e.g., parenthetical context like "(transfer instead)").
+ * `clauseId` and `description` are always auto-derived from factId/operator/value.
+ * Provide `rationale` to append author context in parentheses (e.g., "fit with opener").
  */
 export interface SimplifiedClause {
   readonly factId: string;
   readonly operator: BidMeaningClause["operator"];
   readonly value: number | boolean | { min: number; max: number };
   readonly isPublic?: boolean;
-  /** Override auto-derived description. Use only when adding parenthetical
-   *  rationale beyond the mechanical constraint. */
-  readonly description?: string;
+  /** Author-provided rationale appended in parentheses to the auto-derived description.
+   *  Use only for context beyond the mechanical constraint (e.g., "fit with opener"). */
+  readonly rationale?: string;
 }
 
 /**
@@ -71,8 +70,8 @@ export interface ModuleContext {
  * - `modulePrecedence` defaults to 0; the composition layer stamps it
  *   positionally via `precedenceOverride`
  * - Derives `clauseId` and `description` at build time via `deriveClauseId()`
- *   and `deriveClauseDescription()`. Explicit `description` on SimplifiedClause
- *   takes precedence over auto-derived values.
+ *   and `deriveClauseDescription()`. Optional `rationale` on SimplifiedClause
+ *   is appended in parentheses to the auto-derived description.
  * - Returns a complete BidMeaning with all fields populated
  *
  * @param precedenceOverride Used only by composeModules() to stamp positional precedence.
@@ -94,15 +93,19 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
       ? input.encoding
       : { defaultCall: input.encoding };
 
-  // Build clauses with derived clauseId and description
-  const clauses: readonly BidMeaningClause[] = input.clauses.map((c) => ({
-    factId: c.factId,
-    operator: c.operator,
-    value: c.value,
-    clauseId: deriveClauseId(c.factId, c.operator, c.value),
-    description: c.description ?? deriveClauseDescription(c.factId, c.operator, c.value),
-    ...(c.isPublic !== undefined ? { isPublic: c.isPublic } : {}),
-  }));
+  // Build clauses with derived clauseId and description (always auto-derived + optional rationale)
+  const clauses: readonly BidMeaningClause[] = input.clauses.map((c) => {
+    const derived = deriveClauseDescription(c.factId, c.operator, c.value);
+    const description = c.rationale ? `${derived} (${c.rationale})` : derived;
+    return {
+      factId: c.factId,
+      operator: c.operator,
+      value: c.value,
+      clauseId: deriveClauseId(c.factId, c.operator, c.value),
+      description,
+      ...(c.isPublic !== undefined ? { isPublic: c.isPublic } : {}),
+    };
+  });
 
   const surface: BidMeaning = {
     meaningId: input.meaningId,

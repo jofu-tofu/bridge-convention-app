@@ -19,7 +19,9 @@ import type {
   ModuleLearningViewport,
   PhaseGroupView,
   SurfaceDetailView,
+  SurfaceClauseView,
 } from "../service/response-types";
+import type { BidMeaningClause } from "../conventions/pipeline/meaning";
 
 /** Known bridge abbreviations that should be fully uppercased. */
 const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp"]);
@@ -156,6 +158,17 @@ function findExplanationText(entries: readonly ExplanationEntry[], meaningId: st
   return null;
 }
 
+/** Map raw BidMeaningClause[] to SurfaceClauseView[] for the learning viewport. */
+function mapClauses(clauses: readonly BidMeaningClause[]): readonly SurfaceClauseView[] {
+  return clauses.map((c) => ({
+    factId: c.factId,
+    operator: c.operator,
+    value: c.value,
+    description: (c as BidMeaningClause & { description?: string }).description ?? `${c.factId} ${c.operator} ${JSON.stringify(c.value)}`,
+    isPublic: c.isPublic ?? false,
+  }));
+}
+
 /** Build PhaseGroupView[] from a module's states, ordered by FSM topology. */
 function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
   const states = mod.states ?? [];
@@ -191,6 +204,7 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
           disclosure: surface.disclosure,
           recommendation: surface.ranking.recommendationBand ?? null,
           explanationText: findExplanationText(mod.explanationEntries, surface.meaningId),
+          clauses: mapClauses(surface.clauses),
         });
       }
     }

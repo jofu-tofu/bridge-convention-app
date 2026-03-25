@@ -149,10 +149,10 @@ export interface BidMeaningClause extends FactConstraint {
   /** Deterministic identifier. Optional — auto-derived from factId:operator:value
    *  by the `createSurface()` builder or pipeline fallback. */
   readonly clauseId?: string;
-  /** Human-readable description. Optional — auto-derived from factId/operator/value
-   *  by the `createSurface()` builder or pipeline fallback. Provide explicitly only
-   *  when adding convention-specific rationale (e.g., parenthetical context). */
-  readonly description?: string;
+  /** Author-provided rationale for why this clause exists (e.g., "fit with opener").
+   *  Optional — when present, appended in parentheses to the auto-derived description.
+   *  The auto-derived description is always computed from factId/operator/value. */
+  readonly rationale?: string;
   /** When true, this clause is included in the alert's public constraints.
    *  Primitive hand facts (hand.*) are always public regardless of this flag.
    *  Use this for bridge-derived or module facts the bundle wants to disclose. */

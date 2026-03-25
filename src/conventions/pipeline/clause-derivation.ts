@@ -29,21 +29,35 @@ export function deriveClauseId(
   return `${factId}:${operator}:${String(scalar)}`;
 }
 
+/** Well-known factId → natural language display name mappings. */
+const DISPLAY_NAMES: Record<string, string> = {
+  "hand.hcp": "HCP",
+  "hand.isBalanced": "balanced",
+  "bridge.hasFourCardMajor": "4-card major",
+  "bridge.hasFiveCardMajor": "5-card major",
+  "bridge.hasShortage": "short suit",
+  "bridge.fitWithBoundSuit": "fit with partner's suit",
+  "bridge.totalPointsForRaise": "total points",
+};
+
 /**
- * Strip common fact namespace prefixes for readable display names.
+ * Derive a readable display name from a factId.
  *
- * Prefix stripping rules:
- * - `hand.`             → removed (e.g., `hand.hcp` → `hcp`)
- * - `bridge.`           → removed (e.g., `bridge.hasFourCardMajor` → `hasFourCardMajor`)
- * - `module.<name>.`    → removed (e.g., `module.stayman.eligible` → `eligible`)
- *
- * The result is then converted from camelCase to readable form:
- * - `hasFourCardMajor` → `has four card major`
- * - `hcp` → `HCP` (special case)
- * - `suitLength` → `suit length`
+ * Resolution order:
+ * 1. Well-known mapping (e.g., `hand.hcp` → `"HCP"`)
+ * 2. Suit extraction for `hand.suitLength.<suit>` → `"<suit>"`
+ * 3. Namespace stripping + camelCase expansion for unknown factIds
  */
 function displayName(factId: string): string {
-  // Strip namespace prefix
+  // 1. Well-known mapping
+  const known = DISPLAY_NAMES[factId];
+  if (known) return known;
+
+  // 2. Extract suit from suitLength path: hand.suitLength.hearts → "hearts"
+  const suitLengthMatch = factId.match(/^hand\.suitLength\.(.+)$/);
+  if (suitLengthMatch) return suitLengthMatch[1]!;
+
+  // 3. Strip namespace prefix
   let name = factId;
   if (name.startsWith("hand.")) {
     name = name.slice(5);
@@ -55,10 +69,6 @@ function displayName(factId: string): string {
     name = parts.slice(2).join(".");
   }
 
-  // Special cases
-  if (name === "hcp") return "HCP";
-  if (name === "isBalanced") return "balanced";
-
   // Convert camelCase to space-separated, handle dots as spaces
   return name
     .replace(/\./g, " ")
@@ -67,17 +77,23 @@ function displayName(factId: string): string {
     .toLowerCase();
 }
 
+/** Whether a display name is adjective-like (can stand alone as "Balanced") vs noun-like (needs "Has a"). */
+function isAdjectiveLike(dn: string): boolean {
+  const lower = dn.toLowerCase();
+  return lower === "balanced" || lower === "eligible";
+}
+
 /**
- * Derive a readable clause description from fact constraint fields.
+ * Derive a natural-language clause description from fact constraint fields.
  *
  * Description rules:
- * - number + `gte`:     `"${displayName} >= ${value}"`  → `"HCP >= 12"`
- * - number + `lte`:     `"${displayName} <= ${value}"`  → `"HCP <= 6"`
- * - number + `eq`:      `"${displayName} = ${value}"`
- * - range:              `"${displayName} ${min}-${max}"` → `"HCP 10-12"`
- * - boolean + true:     `"${displayName}"`              → `"has four card major"`
- * - boolean + false:    `"no ${displayName}"`           → `"no five card major"`
- * - `in`:               `"${displayName} in [${values}]"`
+ * - number + `gte`:     `"${value}+ ${dn}"`          → `"12+ HCP"`, `"5+ hearts"`
+ * - number + `lte`:     `"At most ${value} ${dn}"`    → `"At most 3 spades"`
+ * - number + `eq`:      `"Exactly ${value} ${dn}"`    → `"Exactly 5 hearts"`
+ * - range:              `"${min}–${max} ${dn}"`       → `"10–12 HCP"`
+ * - boolean + true:     `"Has a ${dn}"` or `"${Dn}"`  → `"Has a 4-card major"`, `"Balanced"`
+ * - boolean + false:    `"No ${dn}"`                  → `"No 5-card major"`
+ * - `in`:               `"${dn} in [${values}]"`
  *
  * `$suit` binding references in factId are kept as-is for runtime resolution.
  */
@@ -90,17 +106,22 @@ export function deriveClauseDescription(
 
   switch (operator) {
     case "gte":
-      return `${dn} >= ${value as number}`;
+      return `${value as number}+ ${dn}`;
     case "lte":
-      return `${dn} <= ${value as number}`;
+      return `At most ${value as number} ${dn}`;
     case "eq":
-      return `${dn} = ${String(value as number | boolean | string)}`;
+      return `Exactly ${String(value as number | boolean | string)} ${dn}`;
     case "range": {
       const range = value as { min: number; max: number };
-      return `${dn} ${range.min}-${range.max}`;
+      return `${range.min}\u2013${range.max} ${dn}`;
     }
     case "boolean":
-      return value === true ? dn : `no ${dn}`;
+      if (value === true) {
+        return isAdjectiveLike(dn)
+          ? dn.charAt(0).toUpperCase() + dn.slice(1)
+          : `Has a ${dn}`;
+      }
+      return `No ${dn}`;
     case "in": {
       const arr = value as readonly string[];
       return `${dn} in [${arr.join(", ")}]`;
@@ -109,18 +130,25 @@ export function deriveClauseDescription(
 }
 
 /**
- * Fill in missing `clauseId` and `description` on a BidMeaningClause.
- * Returns the clause unchanged if both fields are already present.
+ * Fill in missing `clauseId` on a BidMeaningClause and ensure `description` is always set.
+ * Description is always auto-derived from factId/operator/value, with optional rationale appended.
+ * The `description` field is added as a runtime property (not typed on BidMeaningClause) for
+ * downstream consumers like the meaning evaluator.
  */
-export function fillClauseDefaults(clause: BidMeaningClause): BidMeaningClause {
+export function fillClauseDefaults(clause: BidMeaningClause): BidMeaningClause & { description: string } {
   const needsId = clause.clauseId === undefined;
-  const needsDesc = clause.description === undefined;
+  const existing = (clause as BidMeaningClause & { description?: string }).description;
 
-  if (!needsId && !needsDesc) return clause;
+  if (!needsId && existing !== undefined) {
+    return clause as BidMeaningClause & { description: string };
+  }
+
+  const derived = deriveClauseDescription(clause.factId, clause.operator, clause.value);
+  const description = clause.rationale ? `${derived} (${clause.rationale})` : derived;
 
   return {
     ...clause,
     clauseId: needsId ? deriveClauseId(clause.factId, clause.operator, clause.value) : clause.clauseId,
-    description: needsDesc ? deriveClauseDescription(clause.factId, clause.operator, clause.value) : clause.description,
-  };
+    ...(existing === undefined ? { description } : {}),
+  } as BidMeaningClause & { description: string };
 }

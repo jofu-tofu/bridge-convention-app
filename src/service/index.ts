@@ -60,7 +60,7 @@ export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail } from
 export type { BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildPlayingViewportInput, BuildExplanationViewportInput } from "../session/build-viewport";
 export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, HandEvaluationView, AuctionEntryView, BiddingOptionView, ConditionView, AlternativeView, NearMissView, ConventionView } from "./response-types";
 export type { ServiceDebugSnapshot, ServiceDebugLogEntry, DebugSnapshotBase } from "./debug-types";
-export type { ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView } from "./response-types";
+export type { ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView, SurfaceClauseView } from "./response-types";
 export { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
 export type { EvaluationOracle, OracleGradingResult } from "../session/evaluation-oracle";
 export { randomPlayStrategy } from "../session/heuristics/random-play";

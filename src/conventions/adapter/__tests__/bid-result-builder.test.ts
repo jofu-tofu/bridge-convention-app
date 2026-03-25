@@ -62,9 +62,25 @@ describe("buildBidResult", () => {
     expect(bidResult.ruleName).toBe("stayman:ask-major");
   });
 
-  test("maps provenance nodeName to explanation", () => {
-    const selected = makeCarrier({
+  test("uses teachingLabel for explanation, falling back to provenance nodeName", () => {
+    // When teachingLabel is present, it takes priority
+    const withLabel = makeCarrier({
       proposal: makeProposal({
+        teachingLabel: "Stayman 2C",
+        evidence: {
+          factDependencies: [],
+          evaluatedConditions: [],
+          provenance: { moduleId: "stayman", nodeName: "stayman:ask-major", origin: "meaning-pipeline" },
+        },
+      }),
+    });
+    const result1 = makePipelineResult({ selected: withLabel, truthSet: [withLabel] });
+    expect(buildBidResult(withLabel, makeBiddingContext(), "nt", result1).explanation).toBe("Stayman 2C");
+
+    // When teachingLabel is absent, falls back to provenance nodeName
+    const withoutLabel = makeCarrier({
+      proposal: makeProposal({
+        teachingLabel: undefined,
         evidence: {
           factDependencies: [],
           evaluatedConditions: [],
@@ -72,11 +88,8 @@ describe("buildBidResult", () => {
         },
       }),
     });
-    const result = makePipelineResult({ selected, truthSet: [selected] });
-
-    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
-
-    expect(bidResult.explanation).toBe("Stayman convention bid");
+    const result2 = makePipelineResult({ selected: withoutLabel, truthSet: [withoutLabel] });
+    expect(buildBidResult(withoutLabel, makeBiddingContext(), "nt", result2).explanation).toBe("Stayman convention bid");
   });
 
   test("uses teachingLabel for meaning when present", () => {

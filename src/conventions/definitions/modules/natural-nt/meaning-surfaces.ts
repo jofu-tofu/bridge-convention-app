@@ -30,7 +30,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
           factId: SYSTEM_RESPONDER_INVITE_VALUES,
           operator: "boolean",
           value: true,
-          description: `Invite values opposite 1NT (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
+          rationale: `${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP`,
           isPublic: true,
         },
         {
@@ -62,7 +62,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
           factId: SYSTEM_RESPONDER_GAME_VALUES,
           operator: "boolean",
           value: true,
-          description: `Game values opposite 1NT (${sys.responderThresholds.gameMin}+ HCP)`,
+          rationale: `${sys.responderThresholds.gameMin}+ HCP`,
           isPublic: true,
         },
         {
@@ -102,14 +102,12 @@ export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[]
           factId: "hand.hcp",
           operator: "gte",
           value: sys.ntOpening.minHcp,
-          description: `${sys.ntOpening.minHcp}+ HCP for 1NT opening`,
           isPublic: true,
         },
         {
           factId: "hand.hcp",
           operator: "lte",
           value: sys.ntOpening.maxHcp,
-          description: `At most ${sys.ntOpening.maxHcp} HCP for 1NT opening`,
           isPublic: true,
         },
         {

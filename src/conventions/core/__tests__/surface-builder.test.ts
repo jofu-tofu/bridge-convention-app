@@ -74,10 +74,11 @@ describe("createSurface", () => {
 
   it("auto-derives description from factId/operator/value", () => {
     const surface = createSurface(baseInput(), CTX);
-    expect(surface.clauses[0]!.description).toBe("HCP >= 12");
+    const clause = surface.clauses[0] as typeof surface.clauses[0] & { description: string };
+    expect(clause.description).toBe("12+ HCP");
   });
 
-  it("explicit description on SimplifiedClause overrides auto-derived value", () => {
+  it("rationale on SimplifiedClause is appended to auto-derived description", () => {
     const surface = createSurface(
       baseInput({
         clauses: [
@@ -85,13 +86,14 @@ describe("createSurface", () => {
             factId: "hand.hcp",
             operator: "gte",
             value: 12,
-            description: "12+ HCP for splinter",
+            rationale: "for splinter",
           },
         ],
       }),
       CTX,
     );
-    expect(surface.clauses[0]!.description).toBe("12+ HCP for splinter");
+    const clause = surface.clauses[0] as typeof surface.clauses[0] & { description: string };
+    expect(clause.description).toBe("12+ HCP (for splinter)");
     // clauseId is still auto-derived
     expect(surface.clauses[0]!.clauseId).toBe("hand.hcp:gte:12");
   });
@@ -158,7 +160,7 @@ describe("createSurface", () => {
       CTX,
     );
     expect(surface.clauses[0]!.clauseId).toBe("hand.hcp:range:10-12");
-    expect(surface.clauses[0]!.description).toBe("HCP 10-12");
+    expect((surface.clauses[0] as typeof surface.clauses[0] & { description: string }).description).toBe("10–12 HCP");
   });
 
   it("handles boolean clause correctly", () => {
@@ -171,7 +173,7 @@ describe("createSurface", () => {
       CTX,
     );
     expect(surface.clauses[0]!.clauseId).toBe("bridge.hasFiveCardMajor:boolean:false");
-    expect(surface.clauses[0]!.description).toBe("no has five card major");
+    expect((surface.clauses[0] as typeof surface.clauses[0] & { description: string }).description).toBe("No 5-card major");
   });
 
   it("handles multiple clauses", () => {

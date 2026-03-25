@@ -7,23 +7,21 @@ import type { BidMeaningClause } from "../meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 
-function clause(factId: string, description = factId, value: number = 4): BidMeaningClause {
+function clause(factId: string, value: number = 4): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
     operator: "gte",
     value,
-    description,
   };
 }
 
-function boolClause(factId: string, description = factId): BidMeaningClause {
+function boolClause(factId: string): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
     operator: "boolean",
     value: true,
-    description,
   };
 }
 
@@ -115,9 +113,9 @@ describe("deriveSpecificity", () => {
     // Total unique dimensions: pointRange, suitLength, suitIdentity, shapeClass = 4
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "10+ HCP"),
-        clause("hand.suitLength.$suit", "4+ in bound suit"),
-        boolClause("bridge.hasShortage", "Has shortage"),
+        clause("hand.hcp"),
+        clause("hand.suitLength.$suit"),
+        boolClause("bridge.hasShortage"),
       ],
       surfaceBindings: { suit: "hearts" },
     });
@@ -134,7 +132,7 @@ describe("deriveSpecificity", () => {
     // module.dont.bothMajors → suitIdentity + suitLength + suitRelation
     const surface = makeSurface({
       clauses: [
-        boolClause("module.dont.bothMajors", "Both majors"),
+        boolClause("module.dont.bothMajors"),
       ],
     });
 
@@ -149,7 +147,7 @@ describe("deriveSpecificity", () => {
     // module.dont.singleSuited → shapeClass + suitLength
     const surface = makeSurface({
       clauses: [
-        boolClause("module.dont.singleSuited", "Single suited"),
+        boolClause("module.dont.singleSuited"),
       ],
     });
 
@@ -173,7 +171,7 @@ describe("deriveSpecificity", () => {
     // Bergen opener game after constructive: only hand.hcp → pointRange
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "14+ HCP"),
+        clause("hand.hcp"),
       ],
     });
 
@@ -187,8 +185,8 @@ describe("deriveSpecificity", () => {
     // Should still only count pointRange once → specificity 1
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "10+ HCP"),
-        boolClause("module.ntResponse.gameValues", "Game values"),
+        clause("hand.hcp"),
+        boolClause("module.ntResponse.gameValues"),
       ],
     });
 
@@ -201,7 +199,7 @@ describe("deriveSpecificity", () => {
     // hand.suitLength.hearts with no $suit binding → suitLength + suitIdentity
     const surface = makeSurface({
       clauses: [
-        clause("hand.suitLength.hearts", "5+ hearts", 5),
+        clause("hand.suitLength.hearts", 5),
       ],
     });
 
@@ -214,8 +212,8 @@ describe("deriveSpecificity", () => {
   it("handles hand.isBalanced as shapeClass", () => {
     const surface = makeSurface({
       clauses: [
-        boolClause("hand.isBalanced", "Balanced"),
-        clause("hand.hcp", "15-17 HCP"),
+        boolClause("hand.isBalanced"),
+        clause("hand.hcp"),
       ],
     });
 
@@ -232,7 +230,7 @@ describe("deriveSpecificity", () => {
     // With inherited suitIdentity → pointRange + suitIdentity = 2
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "17+ HCP"),
+        clause("hand.hcp"),
       ],
     });
 
@@ -259,7 +257,7 @@ describe("deriveSpecificity", () => {
     // Should still be 1 (union, not sum)
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "10+ HCP"),
+        clause("hand.hcp"),
       ],
     });
 
@@ -284,7 +282,7 @@ describe("deriveSpecificity", () => {
   it("no inherited dimensions (undefined) leaves result unchanged", () => {
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "10+ HCP"),
+        clause("hand.hcp"),
       ],
     });
 

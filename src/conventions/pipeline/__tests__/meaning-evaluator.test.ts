@@ -48,7 +48,6 @@ describe("evaluateBidMeaning", () => {
           factId: "bridge.hasFourCardMajor",
           operator: "boolean",
           value: true,
-          description: "Has a 4-card major",
         },
       ],
     });
@@ -66,7 +65,6 @@ describe("evaluateBidMeaning", () => {
           factId: "bridge.hasFourCardMajor",
           operator: "boolean",
           value: true,
-          description: "Has a 4-card major",
         },
       ],
     });
@@ -84,7 +82,6 @@ describe("evaluateBidMeaning", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
       ],
     });
@@ -108,7 +105,6 @@ describe("evaluateBidMeaning", () => {
           factId: "hand.hcp",
           operator: "lte",
           value: 9,
-          description: "At most 9 HCP",
         },
       ],
     });
@@ -132,7 +128,6 @@ describe("evaluateBidMeaning", () => {
           factId: "bridge.trumpSuit",
           operator: "eq",
           value: "spades",
-          description: "Trump suit is spades",
         },
       ],
     });
@@ -156,7 +151,6 @@ describe("evaluateBidMeaning", () => {
           factId: "hand.hcp",
           operator: "range",
           value: { min: 8, max: 9 },
-          description: "8-9 HCP",
         },
       ],
     });
@@ -190,7 +184,6 @@ describe("evaluateBidMeaning", () => {
           factId: "bridge.majorPattern",
           operator: "in",
           value: ["one-four", "both-four"],
-          description: "Major pattern matches",
         },
       ],
     });
@@ -218,7 +211,6 @@ describe("evaluateBidMeaning", () => {
           factId: "bridge.majorPattern",
           operator: "in",
           value: ["one-four", "both-four"],
-          description: "Major pattern matches",
         },
       ],
     });
@@ -240,7 +232,6 @@ describe("evaluateBidMeaning", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
       ],
     });
@@ -261,14 +252,12 @@ describe("evaluateBidMeaning", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
         {
           clauseId: "has-major",
           factId: "bridge.hasFourCardMajor",
           operator: "boolean",
           value: true,
-          description: "Has a 4-card major",
         },
       ],
     });
@@ -289,7 +278,7 @@ describe("evaluateBidMeaning", () => {
     expect(proposal.evidence.evaluatedConditions[0]!).toEqual({
       conditionId: "hcp-min",
       satisfied: true,
-      description: "At least 8 HCP",
+      description: "8+ HCP",
       conditionRole: "semantic",
     });
     expect(proposal.evidence.evaluatedConditions[1]!).toEqual({
@@ -301,7 +290,7 @@ describe("evaluateBidMeaning", () => {
 
     expect(proposal.evidence.provenance).toEqual({
       moduleId: "stayman",
-      nodeName: "stayman:ask",
+      nodeName: "Test meaning",
       origin: "meaning-pipeline",
     });
   });
@@ -338,21 +327,18 @@ describe("evaluateBidMeaning", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
         {
           clauseId: "has-major",
           factId: "bridge.hasFourCardMajor",
           operator: "boolean",
           value: true,
-          description: "Has a 4-card major",
         },
         {
           clauseId: "balanced",
           factId: "hand.isBalanced",
           operator: "boolean",
           value: false,
-          description: "Not balanced",
         },
       ],
     });
@@ -389,7 +375,6 @@ describe("evaluateAllBidMeanings", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 10,
-          description: "10+ HCP",
         },
       ],
     });
@@ -401,7 +386,6 @@ describe("evaluateAllBidMeanings", () => {
           factId: "hand.isBalanced",
           operator: "boolean",
           value: true,
-          description: "Balanced",
         },
       ],
     });
@@ -427,7 +411,6 @@ describe("surface bindings", () => {
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 5,
-          description: "5+ cards in transfer suit",
         },
       ],
     });
@@ -454,7 +437,6 @@ describe("surface bindings", () => {
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 5,
-          description: "5+ cards in suit",
         },
       ],
     });
@@ -476,14 +458,12 @@ describe("surface bindings", () => {
           factId: "hand.suitLength.$suit",
           operator: "gte",
           value: 4,
-          description: "4+ in suit",
         },
         {
           clauseId: "strength-check",
           factId: "bridge.$level.values",
           operator: "boolean",
           value: true,
-          description: "Has game values",
         },
       ],
     });
@@ -510,7 +490,6 @@ describe("surface bindings", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
       ],
     });
@@ -532,7 +511,6 @@ describe("observedValue on MeaningClause", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
       ],
     });
@@ -551,7 +529,6 @@ describe("observedValue on MeaningClause", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
       ],
     });
@@ -570,7 +547,6 @@ describe("observedValue on MeaningClause", () => {
           factId: "hand.isBalanced",
           operator: "boolean",
           value: true,
-          description: "Is balanced",
         },
       ],
     });
@@ -589,7 +565,6 @@ describe("observedValue on MeaningClause", () => {
           factId: "bridge.majorPattern",
           operator: "in",
           value: ["one-four", "both-four"],
-          description: "Major pattern matches",
         },
       ],
     });

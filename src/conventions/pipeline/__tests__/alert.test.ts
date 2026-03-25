@@ -40,7 +40,7 @@ describe("resolveAlert", () => {
       disclosure: "alert",
       teachingLabel: "Constructive raise (3C)",
       clauses: [
-        { clauseId: "hcp-8", factId: "hand.hcp", operator: "gte", value: 8, description: "8+ HCP", isPublic: true },
+        { clauseId: "hcp-8", factId: "hand.hcp", operator: "gte", value: 8, isPublic: true },
       ],
     });
     const result = resolveAlert(surface);

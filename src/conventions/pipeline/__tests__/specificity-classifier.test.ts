@@ -7,23 +7,21 @@ import type { BidMeaningClause } from "../meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 
-function clause(factId: string, description = factId): BidMeaningClause {
+function clause(factId: string): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
     operator: "gte",
     value: 1,
-    description,
   };
 }
 
-function boolClause(factId: string, description = factId): BidMeaningClause {
+function boolClause(factId: string): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
     operator: "boolean",
     value: true,
-    description,
   };
 }
 
@@ -123,8 +121,8 @@ describe("classifySpecificityBasis", () => {
   it('returns "derived" for a surface with only primitive facts (hand.*)', () => {
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "8+ HCP"),
-        clause("hand.suitLength.hearts", "4+ hearts"),
+        clause("hand.hcp"),
+        clause("hand.suitLength.hearts"),
       ],
     });
     expect(classifySpecificityBasis(surface, [bridgeExtension])).toBe("derived");
@@ -133,8 +131,8 @@ describe("classifySpecificityBasis", () => {
   it('returns "asserted" for a surface using module-derived facts with empty derivesFrom', () => {
     const surface = makeSurface({
       clauses: [
-        boolClause("module.dont.bothMajors", "Both majors"),
-        boolClause("module.dont.hasHeartSupport", "Heart support"),
+        boolClause("module.dont.bothMajors"),
+        boolClause("module.dont.hasHeartSupport"),
       ],
     });
     expect(classifySpecificityBasis(surface, [opaqueModuleExtension])).toBe("asserted");
@@ -143,8 +141,8 @@ describe("classifySpecificityBasis", () => {
   it('returns "partial" for a surface mixing primitive and opaque module facts', () => {
     const surface = makeSurface({
       clauses: [
-        clause("hand.hcp", "8+ HCP"),
-        boolClause("module.dont.bothMajors", "Both majors"),
+        clause("hand.hcp"),
+        boolClause("module.dont.bothMajors"),
       ],
     });
     expect(classifySpecificityBasis(surface, [opaqueModuleExtension])).toBe("partial");
@@ -158,7 +156,7 @@ describe("classifySpecificityBasis", () => {
   it('returns "derived" for a surface using a bridge-derived fact with populated derivesFrom', () => {
     const surface = makeSurface({
       clauses: [
-        boolClause("bridge.hasFourCardMajor", "Has 4+ card major"),
+        boolClause("bridge.hasFourCardMajor"),
       ],
     });
     expect(classifySpecificityBasis(surface, [bridgeExtension])).toBe("derived");
@@ -167,7 +165,7 @@ describe("classifySpecificityBasis", () => {
   it('returns "derived" for module facts with transparent derivesFrom chains to primitives', () => {
     const surface = makeSurface({
       clauses: [
-        boolClause("module.stayman.hasFourCardMajor", "Stayman 4-card major"),
+        boolClause("module.stayman.hasFourCardMajor"),
       ],
     });
     expect(classifySpecificityBasis(surface, [transparentModuleExtension])).toBe("derived");
@@ -176,7 +174,7 @@ describe("classifySpecificityBasis", () => {
   it('returns "asserted" for module facts with transitive derivesFrom leading to opaque root', () => {
     const surface = makeSurface({
       clauses: [
-        boolClause("module.dont.singleSuitClubs", "Single suit clubs"),
+        boolClause("module.dont.singleSuitClubs"),
       ],
     });
     expect(classifySpecificityBasis(surface, [transitiveModuleExtension])).toBe("asserted");
@@ -185,8 +183,8 @@ describe("classifySpecificityBasis", () => {
   it('returns "partial" when mixing bridge-derived transparent and module opaque facts', () => {
     const surface = makeSurface({
       clauses: [
-        boolClause("bridge.hasFiveCardMajor", "Has 5+ card major"),
-        boolClause("module.dont.bothMajors", "Both majors"),
+        boolClause("bridge.hasFiveCardMajor"),
+        boolClause("module.dont.bothMajors"),
       ],
     });
     expect(

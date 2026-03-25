@@ -338,6 +338,17 @@ export interface PhaseGroupView {
   readonly surfaces: readonly SurfaceDetailView[];
 }
 
+/** A single fact requirement on a learning surface. */
+export interface SurfaceClauseView {
+  readonly factId: string;
+  readonly operator: ServiceFactOperator;
+  readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
+  /** Human-readable description — always auto-derived, optionally with author rationale appended. */
+  readonly description: string;
+  /** True if this clause is disclosed to opponents (communicative). */
+  readonly isPublic: boolean;
+}
+
 /** Surface detail with explanation text. */
 export interface SurfaceDetailView {
   readonly meaningId: string;
@@ -347,6 +358,7 @@ export interface SurfaceDetailView {
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
   readonly recommendation: "must" | "should" | "may" | "avoid" | null;
   readonly explanationText: string | null;
+  readonly clauses: readonly SurfaceClauseView[];
 }
 
 // ── Player Viewport ─────────────────────────────────────────────────
@@ -686,55 +698,6 @@ export interface ExplanationViewport {
   readonly score: number | null;
   readonly declarerTricksWon: number;
   readonly bidHistory: readonly ServiceBidHistoryEntry[];
-}
-
-// ── Module-Centric Learning Viewport ─────────────────────────────────
-
-/** Module catalog entry for sidebar listing. */
-export interface ModuleCatalogEntry {
-  readonly moduleId: string;
-  readonly displayName: string;
-  readonly description: string;
-  readonly purpose: string;
-  readonly surfaceCount: number;
-  readonly bundleIds: readonly string[];
-}
-
-/** Full learning viewport for a single module. */
-export interface ModuleLearningViewport {
-  readonly moduleId: string;
-  readonly displayName: string;
-  readonly description: string;
-  readonly purpose: string;
-  /** Authored teaching content (orthogonal to structure, self-contained). */
-  readonly teaching: {
-    readonly tradeoff: string | null;
-    readonly principle: string | null;
-    readonly commonMistakes: readonly string[];
-  };
-  /** Surfaces grouped by conversation phase. */
-  readonly phases: readonly PhaseGroupView[];
-  readonly bundleIds: readonly string[];
-}
-
-/** Surfaces grouped by conversation phase. */
-export interface PhaseGroupView {
-  readonly phase: string;
-  /** Human-readable, e.g., "Asked — Opener". */
-  readonly phaseDisplay: string;
-  readonly turn: string | null;
-  readonly surfaces: readonly SurfaceDetailView[];
-}
-
-/** Surface detail with explanation text. */
-export interface SurfaceDetailView {
-  readonly meaningId: string;
-  readonly teachingLabel: string;
-  readonly call: Call;
-  readonly callDisplay: string;
-  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
-  readonly recommendation: "must" | "should" | "may" | "avoid" | null;
-  readonly explanationText: string | null;
 }
 
 // ── Convention Card ──────────────────────────────────────────────────

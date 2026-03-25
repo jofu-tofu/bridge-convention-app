@@ -30,12 +30,14 @@ function evaluateClause(
 
   if (!factEntry) {
     // Fail-closed: missing fact → not satisfied, observedValue undefined
+    const derived = deriveClauseDescription(clause.factId, clause.operator, clause.value);
+    const desc = clause.rationale ? `${derived} (${clause.rationale})` : derived;
     return {
       factId: resolvedFactId,
       operator: clause.operator === "in" ? "eq" : clause.operator,
       value: clause.operator === "in" ? false : (clause.value as MeaningClause["value"]),
       satisfied: false,
-      description: clause.description ?? deriveClauseDescription(clause.factId, clause.operator, clause.value),
+      description: desc,
     };
   }
 
@@ -88,12 +90,15 @@ function evaluateClause(
       ? (satisfied ? factValue : false) as MeaningClause["value"]
       : (clause.value as MeaningClause["value"]);
 
+  const derived = deriveClauseDescription(clause.factId, clause.operator, clause.value);
+  const desc = clause.rationale ? `${derived} (${clause.rationale})` : derived;
+
   return {
     factId: resolvedFactId,
     operator: outputOperator,
     value: outputValue,
     satisfied,
-    description: clause.description ?? deriveClauseDescription(clause.factId, clause.operator, clause.value),
+    description: desc,
     observedValue: factValue,
   };
 }
@@ -124,13 +129,13 @@ export function evaluateBidMeaning(
       return {
         conditionId: sourceClause?.clauseId ?? clause.factId,
         satisfied: clause.satisfied,
-        description: clause.description ?? deriveClauseDescription(clause.factId, clause.operator, clause.value),
+        description: clause.description,
         conditionRole: "semantic" as const,
       };
     }),
     provenance: {
       moduleId: surface.moduleId ?? "unknown",
-      nodeName: surface.meaningId,
+      nodeName: surface.teachingLabel ?? surface.meaningId,
       origin: "meaning-pipeline" as const,
     },
   };

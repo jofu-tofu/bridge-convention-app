@@ -18,7 +18,6 @@ describe("BidMeaning", () => {
           factId: "hand.hcp",
           operator: "gte",
           value: 8,
-          description: "At least 8 HCP",
         },
       ],
       ranking: {
@@ -88,42 +87,36 @@ describe("BidMeaning", () => {
         factId: "hand.hcp",
         operator: "gte",
         value: 8,
-        description: "At least 8 HCP",
       },
       {
         clauseId: "hcp-max",
         factId: "hand.hcp",
         operator: "lte",
         value: 14,
-        description: "At most 14 HCP",
       },
       {
         clauseId: "exact-length",
         factId: "hand.suitLength.spades",
         operator: "eq",
         value: 5,
-        description: "Exactly 5 spades",
       },
       {
         clauseId: "hcp-range",
         factId: "hand.hcp",
         operator: "range",
         value: { min: 8, max: 9 },
-        description: "8-9 HCP",
       },
       {
         clauseId: "has-major",
         factId: "bridge.hasFourCardMajor",
         operator: "boolean",
         value: true,
-        description: "Has a 4-card major",
       },
       {
         clauseId: "pattern-check",
         factId: "bridge.majorPattern",
         operator: "in",
         value: ["one-four", "both-four"],
-        description: "Major pattern is one-four or both-four",
       },
     ];
 
